@@ -21,7 +21,9 @@ import { ConvenienceShowcaseView } from "@/components/classifieds/convenience-sh
 import type { DepartureOption } from "@/lib/classifieds/canonical-airports";
 import { calculateShipping } from "@/services/shipping.functions";
 import { formatMoney } from "@/lib/money";
+import { getNicheSemantics } from "@/lib/niche-semantics";
 import { getPublicExperienceDocumentBySlug } from "@/services/builder.functions";
+import { ProductAiSdrChat } from "@/components/commerce/product-ai-sdr-chat";
 import { addToCart } from "@/services/cart.functions";
 import { getIdentity } from "@/services/identity.functions";
 import { useCartContext } from "@/lib/cart-context";
@@ -292,8 +294,27 @@ function ProductPage() {
         identity.role === "admin")
   );
 
+  const storeSettings = (product as any)?.store?.settings || {};
+  const storeSemantics = getNicheSemantics((product as any)?.store);
+  const isTourismStore =
+    storeSemantics.nicheId === "tourism" ||
+    storeSettings.niche === "tourism" ||
+    storeSettings.segment === "tourism" ||
+    storeSettings.type === "tourism" ||
+    (product as any)?.store?.niche === "tourism";
+
   const isTravelPackage = Boolean(
-    product.attributes?.travel ||
+    isTourismStore ||
+      product.attributes?.travel ||
+      (product as any)?.metadata?.travel ||
+      (product as any)?.metadata?.travel_package ||
+      product.title?.toLowerCase().includes("resort") ||
+      product.title?.toLowerCase().includes("viagem") ||
+      product.title?.toLowerCase().includes("pacote") ||
+      product.title?.toLowerCase().includes("tour") ||
+      product.title?.toLowerCase().includes("ilhéus") ||
+      product.title?.toLowerCase().includes("ilheus") ||
+      product.title?.toLowerCase().includes("excurs") ||
       (product as any).category?.slug?.includes("turismo") ||
       (product as any).category?.slug?.includes("viag") ||
       (product as any).category?.name?.toLowerCase().includes("turismo") ||
@@ -346,24 +367,34 @@ function ProductPage() {
     };
 
     return (
-      <TravelPackageDetailView
-        packageData={travelData}
-        productTitle={product.title}
-        priceCents={product.priceCents || 0}
-        compareAtCents={product.compareAtCents}
-        coverImageUrl={currentThumbnailUrl}
-        mediaUrls={mediaUrls}
-        storeName={(product as any)?.store?.name}
-        storePhone={storePhone}
-        isOwner={isOwner}
-        onReserveClick={handleTravelReserve}
-        onEditClick={() =>
-          router.navigate({
-            to: "/workspace/catalogo/produtos/$id",
-            params: { id: product.id },
-          })
-        }
-      />
+      <div className="relative">
+        <TravelPackageDetailView
+          packageData={travelData}
+          productTitle={product.title}
+          priceCents={product.priceCents || 0}
+          compareAtCents={product.compareAtCents}
+          coverImageUrl={currentThumbnailUrl}
+          mediaUrls={mediaUrls}
+          storeName={(product as any)?.store?.name}
+          storePhone={storePhone}
+          isOwner={isOwner}
+          onReserveClick={handleTravelReserve}
+          onEditClick={() =>
+            router.navigate({
+              to: "/workspace/catalogo/produtos/$id",
+              params: { id: product.id },
+            })
+          }
+        />
+        <ProductAiSdrChat
+          productId={product.id}
+          storeId={(product as any)?.store?.id || (product as any)?.store_id}
+          storeName={(product as any)?.store?.name}
+          itemTitle={product.title}
+          niche="tourism"
+          triggerVariant="floating"
+        />
+      </div>
     );
   }
 
@@ -778,14 +809,18 @@ function ProductContent({
  const currentThumbnailUrl = activeMedia?.url || coverImage?.url || null;
 
  const isTravelProduct = Boolean(
+ isTourismStore ||
  (product as any)?.attributes?.travel ||
  (product as any)?.metadata?.travel ||
  (product as any)?.metadata?.travel_package ||
  (product as any)?.product_type?.slug === "pacote-viagem" ||
  (product as any)?.product_type?.slug === "turismo" ||
+ (product as any)?.store?.segment === "tourism" ||
  (product as any)?.store?.segment === "tourism_agency" ||
  (product as any)?.store?.type === "tourism_agency" ||
  (product as any)?.store?.settings?.segment === "tourism_agency" ||
+ product.title?.toLowerCase().includes("ilhéus") ||
+ product.title?.toLowerCase().includes("ilheus") ||
  product.categories?.some((c: any) =>
  c.slug?.includes("viagem") || c.slug?.includes("turismo") || c.name?.toLowerCase().includes("pacote")
  )
@@ -929,6 +964,15 @@ function ProductContent({
           coverImageUrl: coverImage?.url || product.media?.[0]?.url,
         }}
         variant={selectedVariant}
+      />
+
+      <ProductAiSdrChat
+        productId={product.id}
+        storeId={product.storeId || product.store_id || (product as any)?.store?.id}
+        storeName={(product as any)?.store?.name}
+        itemTitle={product.title}
+        niche={(product as any)?.store?.settings?.niche || "lojas"}
+        triggerVariant="floating"
       />
     </>
   );

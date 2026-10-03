@@ -3011,7 +3011,7 @@ function ExperienceEditModal({
  <img src={url} className="size-full object-cover" />
  <button
  type="button"
- className="absolute inset-0 bg-black/60 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+ className="absolute inset-0 bg-black/60 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  onClick={() => setMediaUrls(mediaUrls.filter((_, i) => i !== idx))}
  >
  <Trash2 className="size-4" />

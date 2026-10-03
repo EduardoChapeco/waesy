@@ -27,6 +27,7 @@ export function CartSheet() {
   const router = useRouter();
 
   const [editingItem, setEditingItem] = useState<any | null>(null);
+  const [modalityFilter, setModalityFilter] = useState<"all" | "delivery" | "services" | "digital">("all");
 
   const handleNavigateToCheckoutHub = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -71,6 +72,60 @@ export function CartSheet() {
             </SheetTitle>
           </SheetHeader>
 
+          {/* ── Sacola Modular em Abas (Alinhamento Estratégico R1) ── */}
+          {totalItemCount > 0 && (
+            <div className="px-4 sm:px-6 py-2 bg-muted/20 border-b border-border/40 flex items-center gap-2 overflow-x-auto no-scrollbar shrink-0">
+              <button
+                type="button"
+                onClick={() => setModalityFilter("all")}
+                className={cn(
+                  "px-3 py-2 text-xs font-semibold rounded-md transition-colors cursor-pointer shrink-0",
+                  modalityFilter === "all"
+                    ? "bg-foreground text-background"
+                    : "bg-muted/50 text-muted-foreground hover:text-foreground"
+                )}
+              >
+                Tudo ({totalItemCount})
+              </button>
+              <button
+                type="button"
+                onClick={() => setModalityFilter("delivery")}
+                className={cn(
+                  "px-3 py-2 text-xs font-semibold rounded-md transition-colors cursor-pointer shrink-0",
+                  modalityFilter === "delivery"
+                    ? "bg-foreground text-background"
+                    : "bg-muted/50 text-muted-foreground hover:text-foreground"
+                )}
+              >
+                Entrega / Físico
+              </button>
+              <button
+                type="button"
+                onClick={() => setModalityFilter("services")}
+                className={cn(
+                  "px-3 py-2 text-xs font-semibold rounded-md transition-colors cursor-pointer shrink-0",
+                  modalityFilter === "services"
+                    ? "bg-foreground text-background"
+                    : "bg-muted/50 text-muted-foreground hover:text-foreground"
+                )}
+              >
+                Agendamentos
+              </button>
+              <button
+                type="button"
+                onClick={() => setModalityFilter("digital")}
+                className={cn(
+                  "px-3 py-2 text-xs font-semibold rounded-md transition-colors cursor-pointer shrink-0",
+                  modalityFilter === "digital"
+                    ? "bg-foreground text-background"
+                    : "bg-muted/50 text-muted-foreground hover:text-foreground"
+                )}
+              >
+                Digitais & Vouchers
+              </button>
+            </div>
+          )}
+
           {/* Corpo com scroll */}
           <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 bg-background scrollbar-none">
             {globalCarts.length === 0 ? (
@@ -91,7 +146,19 @@ export function CartSheet() {
               </div>
             ) : (
               <div className="flex flex-col gap-4">
-                {globalCarts.map((storeCart, idx) => (
+                {globalCarts.map((storeCart, idx) => {
+                  const filteredItems = storeCart.items.filter((item: any) => {
+                    if (modalityFilter === "all") return true;
+                    const isDigital = Boolean(item.is_digital || item.type === "digital" || item.product?.type === "digital");
+                    const isService = Boolean(item.is_service || item.type === "service" || item.item_type === "service");
+                    if (modalityFilter === "digital") return isDigital;
+                    if (modalityFilter === "services") return isService;
+                    if (modalityFilter === "delivery") return !isDigital && !isService;
+                    return true;
+                  });
+
+                  if (filteredItems.length === 0) return null;
+                  return (
                   <Surface
                     key={storeCart.id}
                     variant="default"
@@ -128,7 +195,7 @@ export function CartSheet() {
 
                     {/* Lista de Itens do Pacote */}
                     <div className="p-4 flex flex-col gap-4 divide-y divide-border/40">
-                      {storeCart.items.map((item: any) => (
+                      {filteredItems.map((item: any) => (
                         <div
                           key={item.id}
                           className={cn(
@@ -243,7 +310,8 @@ export function CartSheet() {
                       onRefresh={refreshCart}
                     />
                   </Surface>
-                ))}
+                );
+                })}
               </div>
             )}
           </div>

@@ -4,7 +4,7 @@ import { Link, useLocation } from "@tanstack/react-router";
 import { type ContextConfig } from "@/lib/navigation-registry";
 import { PublishSheet } from "@/components/commerce/publish-sheet";
 import { PlacesHighlightBadge } from "@/components/shell/places-highlight-badge";
-import { House, CalendarDots, Briefcase, Compass, Scissors, BookmarkSimple, ChatCircleDots, Package, Ticket, ArrowSquareOut, Gear, UserCircle, Storefront } from "@phosphor-icons/react";
+import { House, CalendarDots, Briefcase, Compass, Scissors, BookmarkSimple, ChatCircleDots, Package, Ticket, ArrowSquareOut, Gear, UserCircle, Storefront, Sparkle } from "@phosphor-icons/react";
 import { useWindowSizeClass } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 
@@ -16,8 +16,10 @@ export interface ContextSidebarProps {
 // ── 1. Módulos Principais Comunitários (Rótulos Diretos, Sem Títulos Compostos) ──
 const MAIN_EXPLORER_ITEMS = [
   { to: "/", label: "Início", icon: House, exact: true },
+  { to: "/marketplace", label: "Marketplace", icon: Storefront, exact: true },
   { to: "/diretorio", label: "Places", isPlacesBadge: true, icon: Compass, exact: true },
   { to: "/classificados", label: "Classificados", icon: Tag, exact: true, isLucide: true },
+  { to: "/copilot", label: "Copilot", icon: Sparkle, exact: true },
   { to: "/feed", label: "Feed", icon: Rss, exact: true, isLucide: true },
   { to: "/noticias", label: "Notícias", icon: Newspaper, exact: true, isLucide: true },
   { to: "/empregos", label: "Empregos", icon: Briefcase, exact: true },

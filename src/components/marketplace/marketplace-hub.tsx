@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 
 export interface MarketplaceOffer {
   id: string;
+  slug?: string;
   title: string;
   storeName: string;
   storeSlug: string;
@@ -23,6 +24,7 @@ export interface MarketplaceOffer {
   imageUrl?: string;
   ratingAverage?: number;
   deliveryAvailable?: boolean;
+  origin?: "workspace" | "classified";
 }
 
 export interface MarketplaceHubProps {
@@ -244,13 +246,28 @@ export function MarketplaceHub({ initialNiche = "todos", offers = [] }: Marketpl
                     </span>
                   </div>
 
-                  <Link
-                    to="/buscar"
-                    className="h-11 px-4 bg-primary text-primary-foreground rounded-md text-xs font-medium inline-flex items-center gap-1 hover:bg-primary/90 transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-                  >
-                    Ver Detalhes
-                    <ArrowRight className="size-3.5" />
-                  </Link>
+                  {(() => {
+                    const isProduct = offer.origin === "workspace" || (Boolean(offer.slug) && offer.origin !== "classified");
+                    const targetTo = isProduct
+                      ? "/produto/$slug"
+                      : offer.niche === "turismo"
+                      ? "/turismo/$id"
+                      : "/classificados/$id";
+                    const targetParams = isProduct
+                      ? ({ slug: offer.slug || offer.id } as any)
+                      : ({ id: offer.id } as any);
+
+                    return (
+                      <Link
+                        to={targetTo as any}
+                        params={targetParams}
+                        className="h-11 px-4 bg-primary text-primary-foreground rounded-lg text-xs font-semibold inline-flex items-center gap-2 hover:bg-primary/90 transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none cursor-pointer"
+                      >
+                        Ver Detalhes
+                        <ArrowRight className="size-3.5" />
+                      </Link>
+                    );
+                  })()}
                 </div>
               </article>
             ))}

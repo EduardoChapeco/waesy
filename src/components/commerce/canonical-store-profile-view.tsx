@@ -40,6 +40,7 @@ import { SocialCardGeneratorModal } from "@/components/studio/SocialCardGenerato
 import { PromotionalFlyersRail } from "@/components/commerce/flyers/promotional-flyers-rail";
 import { listActiveStoreFlyers, type PromotionalFlyerDTO } from "@/services/store-flyers.functions";
 import { ClaimBusinessModal } from "@/components/commerce/claim-business-modal";
+import { ProductAiSdrChat } from "@/components/commerce/product-ai-sdr-chat";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -659,11 +660,11 @@ function cleanAddressSegment(text: string): string {
             <div>
               <div className="text-xs sm:text-sm font-semibold text-foreground flex items-center gap-2">
                 <span>Você é proprietário(a) desta empresa?</span>
-                <Badge variant="outline" className="text-[10px] font-mono py-0 px-2 border-amber-500/40 text-amber-600 dark:text-amber-400">
+                <Badge variant="outline" className="text-xs font-mono py-0 px-2 border-amber-500/40 text-amber-600 dark:text-amber-400">
                   {store?.is_verified ? "Perfil Verificado" : "Aguardando Reivindicação"}
                 </Badge>
               </div>
-              <p className="text-[11px] sm:text-xs text-muted-foreground mt-1">
+              <p className="text-xs sm:text-xs text-muted-foreground mt-1">
                 Reivindique o perfil oficial gratuitamente para gerenciar cardápio, produtos, pedidos e horários.
               </p>
             </div>
@@ -782,7 +783,7 @@ function cleanAddressSegment(text: string): string {
                 title="Alterar Logo da Marca"
               >
                 <Camera className="size-4 sm:size-5" />
-                <span className="text-[9px] sm:text-[10px]">Alterar</span>
+                <span className="text-xs sm:text-xs">Alterar</span>
               </button>
             )}
           </div>
@@ -793,19 +794,19 @@ function cleanAddressSegment(text: string): string {
             <span className="block text-sm sm:text-base font-bold text-foreground font-mono">
               {store.followers_count || store.followersCount || 0}
             </span>
-            <span className="text-[11px] text-muted-foreground">Seguidores</span>
+            <span className="text-xs text-muted-foreground">Seguidores</span>
           </div>
           <div className="text-left">
             <span className="block text-sm sm:text-base font-bold text-foreground font-mono">
               {store.following_count || store.followingCount || 0}
             </span>
-            <span className="text-[11px] text-muted-foreground">Seguindo</span>
+            <span className="text-xs text-muted-foreground">Seguindo</span>
           </div>
           <div className="text-left">
             <span className="block text-sm sm:text-base font-bold text-foreground font-mono">
               {store.likes_count || (Array.isArray(posts) ? posts.reduce((acc: number, p: any) => acc + (p.likes_count || p.likes || 0), 0) : 0)}
             </span>
-            <span className="text-[11px] text-muted-foreground">Curtidas</span>
+            <span className="text-xs text-muted-foreground">Curtidas</span>
           </div>
         </div>
       </div>
@@ -819,7 +820,7 @@ function cleanAddressSegment(text: string): string {
               </h1>
               <ShieldCheck className="size-4 text-primary fill-primary/20 shrink-0" />
               {isOwner && (
-                <Badge variant="secondary" className="h-5 px-2 text-[10px] font-bold rounded-full border border-border/60 bg-muted/60 text-foreground gap-1 shrink-0">
+                <Badge variant="secondary" className="h-5 px-2 text-xs font-bold rounded-full border border-border/60 bg-muted/60 text-foreground gap-1 shrink-0">
                   <Shield className="size-2.5 text-primary" />
                   <span>Admin</span>
                 </Badge>
@@ -889,7 +890,7 @@ function cleanAddressSegment(text: string): string {
                 <button
                   type="button"
                   onClick={() => setIsBioExpanded(!isBioExpanded)}
-                  className="text-[11px] font-bold text-primary hover:underline cursor-pointer inline-flex items-center gap-1"
+                  className="text-xs font-bold text-primary hover:underline cursor-pointer inline-flex items-center gap-1"
                 >
                   {isBioExpanded ? "Ver menos" : "...mais"}
                 </button>
@@ -1024,6 +1025,13 @@ function cleanAddressSegment(text: string): string {
                   </Button>
                 )}
 
+                <ProductAiSdrChat
+                  storeId={store.id}
+                  storeName={store.name || store.business_name}
+                  niche={segment}
+                  triggerVariant="compact"
+                />
+
                 <Dialog open={isQuoteOpen} onOpenChange={setIsQuoteOpen}>
                   <DialogTrigger asChild>
                     <Button
@@ -1067,7 +1075,7 @@ function cleanAddressSegment(text: string): string {
                     ) : (
                       <form onSubmit={handleSendQuote} className="space-y-3 pt-2">
                         <div className="space-y-1">
-                          <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                          <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                             Seu Nome Completo
                           </label>
                           <Input
@@ -1080,7 +1088,7 @@ function cleanAddressSegment(text: string): string {
                         </div>
                         <div className="grid grid-cols-2 gap-2">
                           <div className="space-y-1">
-                            <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                            <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                               WhatsApp
                             </label>
                             <Input
@@ -1092,7 +1100,7 @@ function cleanAddressSegment(text: string): string {
                             />
                           </div>
                           <div className="space-y-1">
-                            <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                            <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                               E-mail
                             </label>
                             <Input
@@ -1106,7 +1114,7 @@ function cleanAddressSegment(text: string): string {
                           </div>
                         </div>
                         <div className="space-y-1">
-                          <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                          <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                             O que você precisa?
                           </label>
                           <Input
@@ -1175,7 +1183,7 @@ function cleanAddressSegment(text: string): string {
               <CatalogIcon className="size-3.5 sm:size-4" />
               <span>{catalogTabTitle}</span>
               {catalog.length > 0 && (
-                <span className="text-[10px] px-2 py-0.2 rounded-full bg-muted text-muted-foreground font-bold font-mono">
+                <span className="text-xs px-2 py-0.2 rounded-full bg-muted text-muted-foreground font-bold font-mono">
                   {catalog.length}
                 </span>
               )}
@@ -1210,7 +1218,7 @@ function cleanAddressSegment(text: string): string {
               <MessageSquare className="size-3.5 sm:size-4" />
               <span>Posts</span>
               {posts.length > 0 && (
-                <span className="text-[10px] px-2 py-0.2 rounded-full bg-muted text-muted-foreground font-bold font-mono">
+                <span className="text-xs px-2 py-0.2 rounded-full bg-muted text-muted-foreground font-bold font-mono">
                   {posts.length}
                 </span>
               )}
@@ -1230,7 +1238,7 @@ function cleanAddressSegment(text: string): string {
               <Star className="size-3.5 sm:size-4" />
               <span>Avaliações</span>
               {reviews.length > 0 && (
-                <span className="text-[10px] px-2 py-0.2 rounded-full bg-muted text-muted-foreground font-bold font-mono">
+                <span className="text-xs px-2 py-0.2 rounded-full bg-muted text-muted-foreground font-bold font-mono">
                   {reviews.length}
                 </span>
               )}
@@ -1250,7 +1258,7 @@ function cleanAddressSegment(text: string): string {
               <Briefcase className="size-3.5 sm:size-4" />
               <span>Vagas</span>
               {jobs.length > 0 && (
-                <span className="text-[10px] px-2 py-0.2 rounded-full bg-muted text-muted-foreground font-bold font-mono">
+                <span className="text-xs px-2 py-0.2 rounded-full bg-muted text-muted-foreground font-bold font-mono">
                   {jobs.length}
                 </span>
               )}
@@ -1270,7 +1278,7 @@ function cleanAddressSegment(text: string): string {
               >
                 <Tag className="size-3.5 sm:size-4" />
                 <span>Classificados</span>
-                <span className="text-[10px] px-2 py-0.2 rounded-full bg-muted text-muted-foreground font-bold font-mono">
+                <span className="text-xs px-2 py-0.2 rounded-full bg-muted text-muted-foreground font-bold font-mono">
                   {ads.length}
                 </span>
               </button>
@@ -1290,7 +1298,7 @@ function cleanAddressSegment(text: string): string {
               >
                 <Ticket className="size-3.5 sm:size-4" />
                 <span>Sorteios</span>
-                <span className="text-[10px] px-2 py-0.2 rounded-full bg-muted text-muted-foreground font-bold font-mono">
+                <span className="text-xs px-2 py-0.2 rounded-full bg-muted text-muted-foreground font-bold font-mono">
                   {concursos.length}
                 </span>
               </button>
@@ -1431,7 +1439,7 @@ function cleanAddressSegment(text: string): string {
                                       loading="lazy"
                                     />
                                     {card.tag && (
-                                      <span className="absolute top-2.5 left-2.5 px-2 py-1 rounded-md bg-background/90 backdrop-blur-md text-[10px] font-bold text-foreground">
+                                      <span className="absolute top-2.5 left-2.5 px-2 py-1 rounded-md bg-background/90 backdrop-blur-md text-xs font-bold text-foreground">
                                         {card.tag}
                                       </span>
                                     )}
@@ -1439,7 +1447,7 @@ function cleanAddressSegment(text: string): string {
                                 ) : (
                                   card.tag && (
                                     <div className="p-4 pb-0">
-                                      <span className="px-2 py-1 rounded-md bg-muted text-[10px] font-bold text-muted-foreground">
+                                      <span className="px-2 py-1 rounded-md bg-muted text-xs font-bold text-muted-foreground">
                                         {card.tag}
                                       </span>
                                     </div>
@@ -1771,13 +1779,13 @@ function cleanAddressSegment(text: string): string {
                             <div className="flex items-center gap-2 flex-wrap">
                               <h4 className="text-xs font-bold text-foreground line-clamp-1 leading-tight">{p.title}</h4>
                               {p.is_mined && (
-                                <span className="text-[9px] font-mono px-1 py-0 rounded border border-border/60 text-muted-foreground">
+                                <span className="text-xs font-mono px-1 py-0 rounded border border-border/60 text-muted-foreground">
                                   Web
                                 </span>
                               )}
                             </div>
                             {p.description && (
-                              <p className="text-[11px] text-muted-foreground line-clamp-1">{p.description}</p>
+                              <p className="text-xs text-muted-foreground line-clamp-1">{p.description}</p>
                             )}
                             <div className="text-xs font-black font-mono text-foreground">
                               {formatMoney(priceCents)}
@@ -1794,7 +1802,7 @@ function cleanAddressSegment(text: string): string {
                                 title="Importar para o Catálogo Oficial"
                               >
                                 <Plus className="size-3.5" />
-                                <span className="text-[10px]">Importar</span>
+                                <span className="text-xs">Importar</span>
                               </Button>
                             )}
                             <Button
@@ -1829,7 +1837,7 @@ function cleanAddressSegment(text: string): string {
                                   {p.title}
                                 </h3>
                                 {p.is_mined && (
-                                  <Badge variant="outline" className="text-[9px] font-mono py-0 px-1 border-border/70">
+                                  <Badge variant="outline" className="text-xs font-mono py-0 px-1 border-border/70">
                                     Catálogo Web
                                   </Badge>
                                 )}
@@ -1950,7 +1958,7 @@ function cleanAddressSegment(text: string): string {
                       <div className="flex items-center gap-2">
                         <Building2 className="size-4 text-primary" />
                         <h3 className="text-sm font-bold text-foreground">Inteligência de Empregador</h3>
-                        <Badge variant="outline" className="text-[10px] font-mono bg-primary/5 text-primary border-primary/20">
+                        <Badge variant="outline" className="text-xs font-mono bg-primary/5 text-primary border-primary/20">
                           Verificado Waesy
                         </Badge>
                       </div>
@@ -1968,37 +1976,37 @@ function cleanAddressSegment(text: string): string {
 
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                     <div className="p-4 rounded-lg bg-muted/30 border border-border/40 space-y-1">
-                      <span className="text-[11px] text-muted-foreground font-medium flex items-center gap-2">
+                      <span className="text-xs text-muted-foreground font-medium flex items-center gap-2">
                         <Award className="size-3.5 text-primary" /> Recomendação
                       </span>
                       <p className="text-base font-black text-foreground font-mono">
                         {employerStats.recommendRate ?? 100}%
                       </p>
-                      <span className="text-[10px] text-muted-foreground block">
+                      <span className="text-xs text-muted-foreground block">
                         recomendam a empresa
                       </span>
                     </div>
 
                     <div className="p-4 rounded-lg bg-muted/30 border border-border/40 space-y-1">
-                      <span className="text-[11px] text-muted-foreground font-medium flex items-center gap-2">
+                      <span className="text-xs text-muted-foreground font-medium flex items-center gap-2">
                         <Briefcase className="size-3.5 text-emerald-600" /> Média Salarial
                       </span>
                       <p className="text-base font-black text-foreground font-mono">
                         {employerStats.avgSalaryCents ? formatMoney(employerStats.avgSalaryCents) : "Sigiloso / CLT"}
                       </p>
-                      <span className="text-[10px] text-muted-foreground block">
+                      <span className="text-xs text-muted-foreground block">
                         remuneração informada
                       </span>
                     </div>
 
                     <div className="p-4 rounded-lg bg-muted/30 border border-border/40 space-y-1 col-span-2 sm:col-span-1">
-                      <span className="text-[11px] text-muted-foreground font-medium flex items-center gap-2">
+                      <span className="text-xs text-muted-foreground font-medium flex items-center gap-2">
                         <FileCheck className="size-3.5 text-sky-600" /> Avaliações
                       </span>
                       <p className="text-base font-black text-foreground font-mono">
                         {employerStats.reviewsCount ?? 0}
                       </p>
-                      <span className="text-[10px] text-muted-foreground block">
+                      <span className="text-xs text-muted-foreground block">
                         depoimentos anônimos
                       </span>
                     </div>
@@ -2084,7 +2092,7 @@ function cleanAddressSegment(text: string): string {
                           </div>
                         )}
                         {ad.deal_type && (
-                          <span className="absolute top-2.5 left-2.5 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full bg-background/90 backdrop-blur-xs text-foreground border border-border/50">
+                          <span className="absolute top-2.5 left-2.5 text-xs font-bold uppercase tracking-wider px-2 py-1 rounded-full bg-background/90 backdrop-blur-xs text-foreground border border-border/50">
                             {ad.deal_type === "sale" ? "Venda" : ad.deal_type === "rent" ? "Aluguel" : ad.deal_type}
                           </span>
                         )}
@@ -2095,7 +2103,7 @@ function cleanAddressSegment(text: string): string {
                             {ad.title}
                           </h4>
                           {ad.category && (
-                            <span className="text-[11px] text-muted-foreground capitalize">
+                            <span className="text-xs text-muted-foreground capitalize">
                               {ad.category}
                             </span>
                           )}
@@ -2163,12 +2171,12 @@ function cleanAddressSegment(text: string): string {
                               <Star key={i} className="size-3 fill-amber-500" />
                             ))}
                           </div>
-                          <span className="text-[10px] text-muted-foreground font-mono">
+                          <span className="text-xs text-muted-foreground font-mono">
                             {formatDate(r.created_at)}
                           </span>
                         </div>
                         {r.product_name && (
-                          <Badge variant="outline" className="text-[10px]">
+                          <Badge variant="outline" className="text-xs">
                             {r.product_name}
                           </Badge>
                         )}
@@ -2221,7 +2229,7 @@ function cleanAddressSegment(text: string): string {
                                 <Star key={i} className="size-3 fill-amber-500" />
                               ))}
                             </div>
-                            <Badge variant="outline" className="text-[10px] text-muted-foreground">
+                            <Badge variant="outline" className="text-xs text-muted-foreground">
                               {rev.exit_reason || "Colaborador"}
                             </Badge>
                           </div>
@@ -2230,7 +2238,7 @@ function cleanAddressSegment(text: string): string {
                               "{rev.review_text}"
                             </p>
                           )}
-                          <div className="flex items-center justify-between text-[10px] text-muted-foreground pt-1 border-t border-border/30">
+                          <div className="flex items-center justify-between text-xs text-muted-foreground pt-1 border-t border-border/30">
                             <span>{rev.would_recommend ? "✓ Recomenda a empresa" : "Não recomendou"}</span>
                             {rev.salary_cents ? <span>{formatMoney(rev.salary_cents)}</span> : null}
                           </div>
@@ -2263,7 +2271,7 @@ function cleanAddressSegment(text: string): string {
                         <Badge
                           variant="outline"
                           className={cn(
-                            "text-[10px] uppercase font-bold",
+                            "text-xs uppercase font-bold",
                             sp.tier === "gold"
                               ? "bg-amber-500/10 text-amber-600 border-amber-500/30"
                               : sp.tier === "silver"
@@ -2332,7 +2340,7 @@ function cleanAddressSegment(text: string): string {
                       <Badge
                         variant="outline"
                         className={cn(
-                          "text-[10px] font-mono font-bold",
+                          "text-xs font-mono font-bold",
                           openStatus.isOpenNow
                             ? "border-emerald-500/40 text-emerald-600 bg-emerald-500/10"
                             : "border-border/60 text-muted-foreground bg-muted/20"
@@ -2451,17 +2459,17 @@ function cleanAddressSegment(text: string): string {
 
                   <div className="pt-2 flex flex-wrap gap-2">
                     {orderTypes.delivery && (
-                      <Badge variant="outline" className="text-[10px] gap-1">
+                      <Badge variant="outline" className="text-xs gap-1">
                         <Truck className="size-3" /> Delivery
                       </Badge>
                     )}
                     {orderTypes.takeout && (
-                      <Badge variant="outline" className="text-[10px] gap-1">
+                      <Badge variant="outline" className="text-xs gap-1">
                         <Package className="size-3" /> Retirada no Balcão
                       </Badge>
                     )}
                     {orderTypes.dine_in && (
-                      <Badge variant="outline" className="text-[10px] gap-1">
+                      <Badge variant="outline" className="text-xs gap-1">
                         <UtensilsCrossed className="size-3" /> Consumo no Local
                       </Badge>
                     )}
@@ -2534,8 +2542,8 @@ function cleanAddressSegment(text: string): string {
                           <Badge
                             className={
                               isCompleted
-                                ? "bg-muted text-muted-foreground font-mono text-[10px]"
-                                : "bg-emerald-600 text-white font-mono text-[10px] font-bold"
+                                ? "bg-muted text-muted-foreground font-mono text-xs"
+                                : "bg-emerald-600 text-white font-mono text-xs font-bold"
                             }
                           >
                             {isCompleted ? "Sorteio Encerrado" : "Sorteio Aberto"}
@@ -2739,7 +2747,7 @@ function cleanAddressSegment(text: string): string {
             <div className="space-y-4 py-1">
               {/* Uploads de Capa (21:9) e Logo (1:1) */}
               <div className="space-y-3 p-4 rounded-lg bg-muted/20 border border-border/50">
-                <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block">
+                <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider block">
                   Identidade Visual Canônica
                 </span>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -2901,7 +2909,7 @@ function cleanAddressSegment(text: string): string {
 
               {/* Biolinks / Links Externos Customizados */}
               <div className="space-y-2 p-4 rounded-lg bg-muted/20 border border-border/50">
-                <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block">
+                <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider block">
                   Biolinks & Links Oficiais
                 </span>
                 {editCompanyBiolinks.length > 0 && (
@@ -2910,7 +2918,7 @@ function cleanAddressSegment(text: string): string {
                       <div key={link.id || idx} className="flex items-center justify-between p-2 rounded-lg bg-background border border-border/40 text-xs">
                         <div className="min-w-0 flex-1 pr-2">
                           <p className="font-semibold text-foreground truncate">{link.title}</p>
-                          <p className="text-[10px] text-muted-foreground font-mono truncate">{link.url}</p>
+                          <p className="text-xs text-muted-foreground font-mono truncate">{link.url}</p>
                         </div>
                         <Button
                           type="button"

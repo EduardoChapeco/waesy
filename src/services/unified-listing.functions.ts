@@ -49,6 +49,8 @@ export function mapDatabaseRowToUnifiedListing(row: any, origin: "classified" | 
     author_id: row.author_profile_id || row.author_id || row.created_by || "system",
     organization_id: row.organization_id || null,
     store_id: row.store_id || null,
+    store_name: row.store_name || row.stores?.name || null,
+    store_slug: row.store_slug || row.stores?.slug || null,
     
     title: row.title || "Sem título",
     slug: row.slug || `${row.id}`,
@@ -228,40 +230,89 @@ export const listUnifiedListings = createServerFn({ method: "GET" })
     const limit = data.limit || 24;
     const offset = data.offset || 0;
 
-    // Buscar anúncios ativos na tabela classifieds
-    let query = db
+    // 1. Buscar produtos do catálogo Workspace Pro
+    let productsQuery = db
+      .from("products")
+      .select(`
+        id, title, slug, description, short_description, price_cents, compare_at_cents,
+        status, store_id, attributes, is_physical, created_at, updated_at,
+        stores (id, name, slug, settings),
+        product_media (url, sort_order)
+      `)
+      .in("status", ["published", "active"])
+      .order("created_at", { ascending: false })
+      .range(offset, offset + limit - 1);
+
+    if (data.q && data.q.trim()) {
+      const term = `%${data.q.trim()}%`;
+      productsQuery = productsQuery.or(`title.ilike.${term},description.ilike.${term}`);
+    }
+
+    // 2. Buscar classificados ativos
+    let classifiedsQuery = db
       .from("classifieds")
-      .select("*")
+      .select(`
+        id, title, content, price_cents, status, attributes, images, created_at, updated_at,
+        store_id, contact_name,
+        stores (id, name, slug, settings)
+      `)
       .eq("status", "active")
       .order("created_at", { ascending: false })
       .range(offset, offset + limit - 1);
 
     if (data.q && data.q.trim()) {
       const term = `%${data.q.trim()}%`;
-      query = query.or(`title.ilike.${term},content.ilike.${term}`);
+      classifiedsQuery = classifiedsQuery.or(`title.ilike.${term},content.ilike.${term}`);
     }
 
     if (data.min_price_cents !== undefined) {
-      query = query.gte("price_cents", data.min_price_cents);
+      productsQuery = productsQuery.gte("price_cents", data.min_price_cents);
+      classifiedsQuery = classifiedsQuery.gte("price_cents", data.min_price_cents);
     }
     if (data.max_price_cents !== undefined) {
-      query = query.lte("price_cents", data.max_price_cents);
+      productsQuery = productsQuery.lte("price_cents", data.max_price_cents);
+      classifiedsQuery = classifiedsQuery.lte("price_cents", data.max_price_cents);
     }
 
-    const { data: rows, error } = await query;
-    if (error) {
-      console.error("[unified-listing] Erro ao buscar anúncios facetados:", error);
-      return [];
-    }
+    const [prodRes, classRes] = await Promise.all([productsQuery, classifiedsQuery]);
 
-    const listings = (rows || []).map((r) => mapDatabaseRowToUnifiedListing(r, "classified"));
+    const productRows = prodRes.data || [];
+    const classifiedRows = classRes.data || [];
+
+    const productListings = productRows.map((p: any) => {
+      const store = Array.isArray(p.stores) ? p.stores[0] : p.stores;
+      const sortedMedia = Array.isArray(p.product_media)
+        ? [...p.product_media].sort((a: any, b: any) => (a.sort_order || 0) - (b.sort_order || 0))
+        : [];
+      const primaryMedia = sortedMedia[0];
+      return mapDatabaseRowToUnifiedListing({
+        ...p,
+        store_name: store?.name || null,
+        store_slug: store?.slug || null,
+        cover_url: primaryMedia?.url || null,
+        media_urls: sortedMedia.map((m: any) => m.url),
+        niche_id: store?.settings?.niche || store?.settings?.segment || p.attributes?.niche || "varejo",
+      }, "workspace");
+    });
+
+    const classifiedListings = classifiedRows.map((c: any) => {
+      const store = Array.isArray(c.stores) ? c.stores[0] : c.stores;
+      return mapDatabaseRowToUnifiedListing({
+        ...c,
+        store_name: store?.name || c.contact_name || null,
+        store_slug: store?.slug || null,
+        niche_id: c.attributes?.niche || (store?.settings?.niche) || "desapego",
+      }, "classified");
+    });
+
+    const combined = [...productListings, ...classifiedListings];
 
     // Filtragem em memória para campos JSONB dinâmicos caso necessário
     if (data.niche_id) {
-      return listings.filter((l) => l.niche_id === data.niche_id);
+      return combined.filter((l) => l.niche_id === data.niche_id);
     }
 
-    return listings;
+    return combined.slice(0, limit);
   });
 
 // ---------------------------------------------------------------------------

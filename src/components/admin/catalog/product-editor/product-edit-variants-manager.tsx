@@ -101,6 +101,19 @@ export function ProductEditVariantsManager({ product }: ProductEditVariantsManag
             basePriceCents={product.price_cents || 0}
           />
         </div>
+
+        <div className="flex justify-end pt-4">
+          <Button
+            onClick={handleSaveMatrix}
+            disabled={isSubmitting}
+            className="font-bold gap-2 rounded-lg h-11 px-6 focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
+          >
+            {isSubmitting ? (
+              <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
+            ) : null}
+            Salvar Matriz de Variações
+          </Button>
+        </div>
       </div>
     </div>
   );

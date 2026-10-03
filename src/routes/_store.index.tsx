@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Tag, Newspaper, Briefcase, CalendarDots, MapPin, Clock, WhatsappLogo, Buildings, Star, CheckCircle, Storefront, ArrowRight, Ticket, UserCircle, Target, Rss, ChatCircleDots, Globe, CookingPot, Airplane, Trophy, ShieldCheck } from "@phosphor-icons/react";
 import { BannerHeroCarousel } from "@/components/commerce/banner-hero-carousel";
 import { HorizontalRail } from "@/components/commerce/horizontal-rail";
@@ -27,6 +27,11 @@ import { getMuralFeed, type MuralFeedResponse } from "@/services/social.function
 import { getAllPublicConcursos, type RaffleDTO } from "@/services/invite.functions";
 
 const CANONICAL_PILLARS = [
+  {
+    slug: "marketplace",
+    title: "Marketplace",
+    to: "/marketplace",
+  },
   {
     slug: "places",
     title: "Lugares e Negócios",
@@ -206,6 +211,7 @@ function CommunityMarketplaceView({ data }: { data: any }) {
   } = (data || {});
 
   // Estado dos 3 Modos Canônicos de Visualização (Feed, Grid, List) e Filtros
+  const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState("todos");
   const [viewMode, setViewMode] = useState<ViewModeType>("feed");
@@ -587,7 +593,7 @@ function CommunityMarketplaceView({ data }: { data: any }) {
           if (mode === "empresas") {
             setActiveCategory("places");
           } else if (mode === "marketplace") {
-            setActiveCategory("todos");
+            navigate({ to: "/marketplace" });
           } else {
             setActiveCategory("classificados");
           }

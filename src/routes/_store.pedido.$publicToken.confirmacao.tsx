@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useEffect, useRef } from "react";
-import { CheckCircle2, Package, ArrowRight, Copy, Info, MessageCircle, ShieldCheck, Clock, ChefHat, Bike, Truck } from "lucide-react";
+import { CheckCircle2, Package, ArrowRight, Copy, Info, MessageCircle, ShieldCheck, Clock, ChefHat, Bike, Truck, Plane, Users, Calendar, Sparkles, Key, Download, ExternalLink } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/commerce/page-header";
 import { ErrorState } from "@/components/state/states";
@@ -488,7 +489,162 @@ function ConfirmationPage() {
  </div>
  )}
 
- {/* Detalhes de Atendimento e Entrega do Nicho */}
+ {/* ── V200: VOUCHER DIGITAL & MANIFESTO DE TURISMO (METAMÓRFICO) ── */}
+        {order.checkout_niche_metadata?.niche === "tourism" && (
+          <div className="mt-4 p-5 rounded-lg bg-card border border-border/80 space-y-4 shadow-2xs">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border/60">
+              <div className="flex items-center gap-3">
+                <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                  <Plane size={18} />
+                </div>
+                <div>
+                  <h4 className="text-sm font-bold text-foreground">Voucher Oficial de Viagem & Turismo</h4>
+                  <p className="text-xs text-muted-foreground">Documento emitido com garantia legal Cadastur / Embratur</p>
+                </div>
+              </div>
+              <Badge variant="outline" className="font-mono text-xs text-emerald-600 dark:text-emerald-400 border-emerald-500/30 gap-1 w-fit">
+                <CheckCircle2 size={12} /> Voucher Ativo
+              </Badge>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+              <div className="p-3 rounded-lg bg-muted/20 space-y-1">
+                <span className="text-[10px] font-mono uppercase text-muted-foreground block">Pacote / Roteiro</span>
+                <p className="font-bold text-foreground">{order.checkout_niche_metadata.tripTitle || "Pacote Turístico Oficial"}</p>
+              </div>
+              <div className="p-3 rounded-lg bg-muted/20 space-y-1">
+                <span className="text-[10px] font-mono uppercase text-muted-foreground block">Embarque / Saída</span>
+                <p className="font-bold text-foreground">{order.checkout_niche_metadata.boardingPoint || "Balcão da Agência"}</p>
+              </div>
+              {order.checkout_niche_metadata.departureDate && (
+                <div className="p-3 rounded-lg bg-muted/20 space-y-1">
+                  <span className="text-[10px] font-mono uppercase text-muted-foreground block">Data de Ida / Check-in</span>
+                  <p className="font-bold text-foreground">{order.checkout_niche_metadata.departureDate}</p>
+                </div>
+              )}
+              {order.checkout_niche_metadata.returnDate && (
+                <div className="p-3 rounded-lg bg-muted/20 space-y-1">
+                  <span className="text-[10px] font-mono uppercase text-muted-foreground block">Data de Retorno / Check-out</span>
+                  <p className="font-bold text-foreground">{order.checkout_niche_metadata.returnDate}</p>
+                </div>
+              )}
+            </div>
+
+            {/* Lista de Passageiros */}
+            {Array.isArray(order.checkout_niche_metadata.passengers) && order.checkout_niche_metadata.passengers.length > 0 && (
+              <div className="space-y-2 pt-1">
+                <span className="text-xs font-bold text-foreground flex items-center gap-2">
+                  <Users size={13} className="text-primary" /> Passageiros Registrados ({order.checkout_niche_metadata.passengers.length})
+                </span>
+                <div className="divide-y divide-border/40 rounded-lg border border-border/60 bg-muted/10 overflow-hidden">
+                  {order.checkout_niche_metadata.passengers.map((p: any, idx: number) => (
+                    <div key={idx} className="p-3 flex items-center justify-between text-xs">
+                      <div>
+                        <p className="font-bold text-foreground">{p.name || "Passageiro"}</p>
+                        <p className="text-muted-foreground font-mono text-[11px]">Doc: {p.document || "Não informado"}</p>
+                      </div>
+                      <span className="text-[10px] font-mono text-muted-foreground">
+                        {p.isLead ? "Titular" : `Acompanhante ${idx}`}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {order.checkout_niche_metadata.specialRequests && (
+              <div className="p-3 rounded-lg bg-muted/20 text-xs">
+                <span className="text-[10px] text-muted-foreground font-bold uppercase block">Solicitações de Hospedagem:</span>
+                <p className="text-foreground mt-1">{order.checkout_niche_metadata.specialRequests}</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ── V200: ENVIO DIGITAL CONFIRMADO & CREDENCIAIS DE ACESSO ── */}
+        {(order.checkout_niche_metadata?.niche === "digital" || order.checkout_niche_metadata?.isDigital || (order.items_snapshot && order.items_snapshot.some((i: any) => i.is_digital || i.type === "digital"))) && (
+          <div className="mt-4 p-5 rounded-lg bg-card border border-border/80 space-y-4 shadow-2xs">
+            <div className="flex items-center justify-between pb-3 border-b border-border/60">
+              <div className="flex items-center gap-3">
+                <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+                  <Sparkles size={16} />
+                </div>
+                <div>
+                  <h4 className="text-sm font-bold text-foreground">Liberação Digital Instantânea</h4>
+                  <p className="text-xs text-muted-foreground">Acesso seguro emitido com validação transacional</p>
+                </div>
+              </div>
+              <Badge variant="outline" className="border-emerald-500/40 text-emerald-600 bg-emerald-500/10 text-[10px] font-bold">
+                Liberado
+              </Badge>
+            </div>
+
+            {/* Chave de Licença / Senha Única */}
+            <div className="p-4 rounded-lg bg-muted/30 border border-border/40 space-y-2">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                <Key size={12} className="text-primary" /> Chave de Acesso / Licença Individual
+              </span>
+              <div className="flex items-center justify-between gap-2">
+                <span className="font-mono font-bold text-xs sm:text-sm text-foreground bg-background px-3 py-2 rounded-md border border-border/60 select-all">
+                  {order.checkout_niche_metadata?.accessKey || `WAESY-${order.public_token.toUpperCase().slice(0, 8)}`}
+                </span>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-8 text-xs font-semibold rounded-md gap-2 cursor-pointer"
+                  onClick={() => {
+                    navigator.clipboard.writeText(order.checkout_niche_metadata?.accessKey || `WAESY-${order.public_token.toUpperCase().slice(0, 8)}`);
+                    toast.success("Chave copiada para a área de transferência!");
+                  }}
+                >
+                  <Copy size={12} />
+                  <span>Copiar</span>
+                </Button>
+              </div>
+            </div>
+
+            {/* Botão de Acesso / Download */}
+            <div className="pt-1 flex flex-col sm:flex-row gap-3">
+              <a
+                href={order.checkout_niche_metadata?.digitalDeliveryUrl || "#"}
+                target={order.checkout_niche_metadata?.digitalDeliveryUrl ? "_blank" : undefined}
+                rel="noreferrer"
+                className="flex-1"
+                onClick={(e) => {
+                  if (!order.checkout_niche_metadata?.digitalDeliveryUrl) {
+                    e.preventDefault();
+                    toast.info("As credenciais completas e link foram enviados ao seu e-mail.");
+                  }
+                }}
+              >
+                <Button className="w-full h-11 rounded-lg font-bold text-xs gap-2 bg-primary text-primary-foreground cursor-pointer">
+                  <ExternalLink size={14} />
+                  <span>Acessar Conteúdo Digital</span>
+                </Button>
+              </a>
+            </div>
+
+            <p className="text-[11px] text-muted-foreground leading-relaxed">
+              As instruções detalhadas de acesso e recibo foram enviadas para seu e-mail cadastrado. Guarde sua chave para suporte ou renovações.
+            </p>
+          </div>
+        )}
+
+        {/* ── V200: AGENDAMENTO CONFIRMADO ── */}
+        {order.checkout_niche_metadata?.niche === "services" && (
+          <div className="mt-4 p-5 rounded-lg bg-card border border-border/80 space-y-3 shadow-2xs">
+            <div className="flex items-center gap-3 pb-2 border-b border-border/60">
+              <Calendar size={18} className="text-primary" />
+              <h4 className="text-sm font-bold text-foreground">Atendimento Agendado</h4>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Data: <strong className="text-foreground">{order.checkout_niche_metadata.serviceDate || "A combinar"}</strong>
+              {order.checkout_niche_metadata.serviceTimeSlot ? ` às ${order.checkout_niche_metadata.serviceTimeSlot}` : ""}
+            </p>
+          </div>
+        )}
+
+        {/* Detalhes de Atendimento e Entrega do Nicho */}
  {(order.cpf_on_receipt?.requested || order.receiver_info?.isOtherPerson || order.substitution_policy || order.checkout_niche_metadata?.utensilsRequested) && (
  <div className="mt-4 p-4 rounded-lg bg-muted/20 border border-border/40 space-y-2 text-xs">
  <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider block">

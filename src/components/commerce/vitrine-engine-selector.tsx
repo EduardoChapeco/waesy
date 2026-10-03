@@ -60,7 +60,7 @@ export function VitrineEngineSelector({
         </span>
       </button>
 
-      {/* ── Card 2: Lojas ── */}
+      {/* ── Card 2: Marketplace ── */}
       <button
         type="button"
         role="tab"
@@ -89,7 +89,7 @@ export function VitrineEngineSelector({
           />
         </div>
         <span className="text-sm sm:text-base font-bold tracking-tight truncate leading-none">
-          Lojas
+          Marketplace
         </span>
       </button>
 

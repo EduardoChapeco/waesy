@@ -119,6 +119,8 @@ export interface UnifiedListing {
   author_id: string;
   organization_id?: string | null;
   store_id?: string | null;
+  store_name?: string | null;
+  store_slug?: string | null;
   
   // Identificação e Conteúdo
   title: string;

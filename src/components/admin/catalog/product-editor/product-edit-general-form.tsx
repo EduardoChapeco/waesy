@@ -229,7 +229,7 @@ export function ProductEditGeneralForm({
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-10 pb-24">
+    <form id="product-edit-general-form" onSubmit={handleSubmit(onSubmit)} className="space-y-10 pb-12">
       <div>
         <div className="mb-4">
           <h3 className="text-lg font-bold text-foreground">Informações de Identificação</h3>
@@ -454,7 +454,7 @@ export function ProductEditGeneralForm({
         </div>
       </div>
 
-      <div className="pt-6 border-t hidden md:flex justify-end">
+      <div className="pt-6 border-t flex justify-end">
         <Button
           type="submit"
           disabled={isSubmitting}
@@ -462,18 +462,6 @@ export function ProductEditGeneralForm({
         >
           {isSubmitting ? <Loader2 className="size-4 animate-spin motion-reduce:animate-none" /> : <CheckCircle2 className="size-4" />}
           Salvar Alterações
-        </Button>
-      </div>
-
-      {/* Sticky Bottom Bar (Mobile Only) */}
-      <div className="fixed bottom-0 inset-x-0 p-3 pb-safe bg-background border-t z-50 md:hidden flex">
-        <Button
-          type="submit"
-          disabled={isSubmitting}
-          className="w-full rounded-lg h-11 text-sm font-bold bg-primary text-primary-foreground gap-2 shadow-xs focus-visible:ring-2 focus-visible:ring-ring"
-        >
-          {isSubmitting ? <Loader2 className="size-5 animate-spin motion-reduce:animate-none" /> : <CheckCircle2 className="size-5" />}
-          Salvar {nicheCtx.entityName}
         </Button>
       </div>
     </form>

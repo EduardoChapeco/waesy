@@ -516,7 +516,7 @@ function CashRegisterManagerPage() {
               return (
                 <div
                   key={entry.id}
-                  className="p-4 flex items-center justify-between gap-3 min-h-[50px] active:bg-muted/40 transition-colors"
+                  className="p-4 flex items-center justify-between gap-3 min-h-12 active:bg-muted/40 transition-colors"
                 >
                   <div className="min-w-0 flex-1 space-y-1">
                     <div className="flex items-center gap-2 flex-wrap">
@@ -957,7 +957,7 @@ function CashRegisterManagerPage() {
             return (
               <div
                 key={row.id}
-                className="min-h-[52px] px-4 py-3 flex items-center justify-between gap-3 hover:bg-muted/20 transition-colors"
+                className="min-h-14 px-4 py-3 flex items-center justify-between gap-3 hover:bg-muted/20 transition-colors"
               >
                 <div className="flex items-center gap-3 min-w-0">
                   <Badge

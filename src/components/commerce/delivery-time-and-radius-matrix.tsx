@@ -1,10 +1,11 @@
 import React, { useState } from "react";
-import { Clock, Plus, Minus, Trash2, MapPin, Layers, Bike, Store, ChevronRight, ShieldCheck, Zap } from 'lucide-react';
+import { Clock, Plus, Minus, Trash2, MapPin, Layers, Bike, Store, ChevronRight, ShieldCheck, Zap, Truck, Building2, AlertCircle } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
+import { CurrencyField } from "@/components/ui/currency-field";
 import { formatMoney } from "@/lib/money";
 import { cn } from "@/lib/utils";
 
@@ -16,12 +17,17 @@ export interface DeliveryRadiusTier {
 }
 
 export interface DeliveryLogisticsConfig {
- manualPrepTimeEnabled: boolean;
- basePrepTimeMin: number;
- activePresetLabel?: string;
- radiusTiers: DeliveryRadiusTier[];
- minOrderCents: number;
- freeDeliveryThresholdCents?: number | null;
+  manualPrepTimeEnabled: boolean;
+  basePrepTimeMin: number;
+  activePresetLabel?: string;
+  radiusTiers: DeliveryRadiusTier[];
+  minOrderCents: number;
+  freeDeliveryThresholdCents?: number | null;
+  motolinkEnabled?: boolean;
+  ownDeliveryEnabled?: boolean;
+  pickupEnabled?: boolean;
+  carrierEnabled?: boolean;
+  condoClimbFeeCents?: number | null;
 }
 
 const DEFAULT_TIERS: DeliveryRadiusTier[] = [
@@ -59,7 +65,7 @@ export function DeliveryTimeAndRadiusMatrix({
  storeLogoUrl,
  storeBannerUrl,
 }: DeliveryTimeAndRadiusMatrixProps) {
- const [activeTab, setActiveTab] = useState<"operacao" | "preparo">("operacao");
+ const [activeTab, setActiveTab] = useState<"operacao" | "preparo" | "modalidades">("operacao");
  const [newRadius, setNewRadius] = useState("");
  const [newTransitTime, setNewTransitTime] = useState("");
  const [newFee, setNewFee] = useState("");
@@ -139,7 +145,7 @@ export function DeliveryTimeAndRadiusMatrix({
  type="button"
  onClick={() => setActiveTab("operacao")}
  className={cn(
- "text-xs font-bold transition-all relative pb-3 cursor-pointer",
+ "text-xs font-bold transition-all relative pb-3 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm",
  activeTab === "operacao"
  ? "text-primary border-b-2 border-primary"
  : "text-muted-foreground hover:text-foreground"
@@ -152,20 +158,36 @@ export function DeliveryTimeAndRadiusMatrix({
  type="button"
  onClick={() => setActiveTab("preparo")}
  className={cn(
- "text-xs font-bold transition-all relative pb-3 flex items-center gap-2 cursor-pointer",
+ "text-xs font-bold transition-all relative pb-3 flex items-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm",
  activeTab === "preparo"
  ? "text-primary border-b-2 border-primary"
  : "text-muted-foreground hover:text-foreground"
  )}
  >
  <span>Meu tempo de preparo</span>
- <Badge variant="outline" className="text-[10px] bg-primary/10 text-primary border-none px-2 py-0">
+ <Badge variant="outline" className="text-xs bg-primary/10 text-primary border-none px-2 py-0">
  {currentPrepTime} min
+ </Badge>
+ </button>
+
+ <button
+ type="button"
+ onClick={() => setActiveTab("modalidades")}
+ className={cn(
+ "text-xs font-bold transition-all relative pb-3 flex items-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm",
+ activeTab === "modalidades"
+ ? "text-primary border-b-2 border-primary"
+ : "text-muted-foreground hover:text-foreground"
+ )}
+ >
+ <span>Modalidades e Taxas</span>
+ <Badge variant="outline" className="text-xs bg-primary/10 text-primary border-none px-2 py-0">
+ 4 canais
  </Badge>
  </button>
  </div>
 
- <div className="text-[11px] text-muted-foreground font-medium hidden sm:block">
+ <div className="text-xs text-muted-foreground font-medium hidden sm:block">
  Canal de venda: <strong className="text-foreground">App e Web Waesy</strong>
  </div>
  </div>
@@ -211,9 +233,9 @@ export function DeliveryTimeAndRadiusMatrix({
  <div className="flex items-start justify-between gap-2">
  <div>
  <h4 className="font-bold text-sm text-foreground">{storeName}</h4>
- <p className="text-[11px] text-muted-foreground">{storeCategory}</p>
+ <p className="text-xs text-muted-foreground">{storeCategory}</p>
  </div>
- <Badge variant="outline" className="text-[10px] bg-emerald-500/10 text-emerald-600 border-none font-bold">
+ <Badge variant="outline" className="text-xs bg-emerald-500/10 text-emerald-600 border-none font-bold">
  Aberta Agora
  </Badge>
  </div>
@@ -230,7 +252,7 @@ export function DeliveryTimeAndRadiusMatrix({
  <span>A partir de {formatMoney(tiers[0]?.feeCents || 0)}</span>
  </div>
  <span className="text-muted-foreground">•</span>
- <div className="text-muted-foreground text-[11px]">
+ <div className="text-muted-foreground text-xs">
  Preparo: <strong>{currentPrepTime} min</strong>
  </div>
  </div>
@@ -243,7 +265,7 @@ export function DeliveryTimeAndRadiusMatrix({
  <Zap className="size-3.5 text-amber-500" />
  <span>Cálculo Inteligente de Entrega</span>
  </div>
- <p className="text-[11px] text-muted-foreground leading-relaxed">
+ <p className="text-xs text-muted-foreground leading-relaxed">
  O tempo total exibido para o cliente é a soma automática do <strong>Tempo de Preparo da sua Cozinha ({currentPrepTime} min)</strong> + <strong>Tempo de Deslocamento do Motoboy por Raio</strong>.
  </p>
  </div>
@@ -260,7 +282,7 @@ export function DeliveryTimeAndRadiusMatrix({
 
  {/* Tabela de Tiers */}
  <div className="rounded-lg border border-border/60 overflow-hidden bg-card divide-y divide-border/50">
- <div className="grid grid-cols-12 bg-muted/50 p-3 text-[11px] font-bold text-muted-foreground">
+ <div className="grid grid-cols-12 bg-muted/50 p-3 text-xs font-bold text-muted-foreground">
  <span className="col-span-3">Raio (km)</span>
  <span className="col-span-4">Tempo Total (Preparo+Viagem)</span>
  <span className="col-span-3 text-right">Taxa (R$)</span>
@@ -278,7 +300,7 @@ export function DeliveryTimeAndRadiusMatrix({
  <span className="col-span-4 text-muted-foreground flex items-center gap-2">
  <Clock className="size-3 text-primary" />
  <strong className="text-foreground">{totalTimeForTier} min</strong>
- <span className="text-[10px] opacity-70">({tier.transitTimeMin}m rota)</span>
+ <span className="text-xs opacity-70">({tier.transitTimeMin}m rota)</span>
  </span>
  <span className="col-span-3 text-right font-mono font-bold text-foreground">
  {formatMoney(tier.feeCents)}
@@ -301,7 +323,7 @@ export function DeliveryTimeAndRadiusMatrix({
 
  {/* Linha para Adicionar Nova Faixa */}
  <div className="p-3 bg-muted/20 border-t border-border/60 space-y-2">
- <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+ <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
  Adicionar Nova Faixa de Raio
  </span>
  <div className="grid grid-cols-12 gap-2">
@@ -360,7 +382,7 @@ export function DeliveryTimeAndRadiusMatrix({
  <div className="flex items-center justify-between">
  <div className="space-y-1">
  <Label className="text-xs font-bold text-foreground">Tempo de preparo ativo</Label>
- <p className="text-[11px] text-muted-foreground">Ajuste instantâneo para a operação de hoje</p>
+ <p className="text-xs text-muted-foreground">Ajuste instantâneo para a operação de hoje</p>
  </div>
 
  <div className="flex items-center gap-3">
@@ -374,7 +396,7 @@ export function DeliveryTimeAndRadiusMatrix({
  <Minus className="size-4" />
  </Button>
 
- <div className="flex items-baseline gap-1 px-3 py-1 bg-muted rounded-lg min-w-[70px] justify-center">
+ <div className="flex items-baseline gap-1 px-3 py-1 bg-muted rounded-lg min-w-16 justify-center">
  <span className="font-mono text-xl font-black text-foreground">{currentPrepTime}</span>
  <span className="text-xs text-muted-foreground font-semibold">min</span>
  </div>
@@ -395,7 +417,7 @@ export function DeliveryTimeAndRadiusMatrix({
  <div className="flex items-center justify-between pt-3 border-t border-border/50">
  <div className="space-y-1">
  <span className="text-xs font-bold text-foreground">Modo Tempo Manual Fixo</span>
- <p className="text-[10px] text-muted-foreground">Sobrescreve estimativas automáticas por IA</p>
+ <p className="text-xs text-muted-foreground">Sobrescreve estimativas automáticas por IA</p>
  </div>
  <Switch
  checked={value.manualPrepTimeEnabled ?? true}
@@ -416,7 +438,7 @@ export function DeliveryTimeAndRadiusMatrix({
  type="button"
  onClick={() => handleApplyPreset(p)}
  className={cn(
- "flex items-center justify-between p-3 rounded-lg border text-xs text-left transition-all cursor-pointer",
+ "flex items-center justify-between p-3 rounded-lg border text-xs text-left transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
  isSelected
  ? "border-primary bg-primary/10 text-primary font-bold shadow-xs"
  : "border-border/60 bg-card text-muted-foreground hover:border-foreground/40 hover:text-foreground"
@@ -442,7 +464,7 @@ export function DeliveryTimeAndRadiusMatrix({
 
  {/* Heatmap Visual da Semana */}
  <div className="rounded-lg border border-border/60 bg-card p-4 space-y-3">
- <div className="grid grid-cols-8 gap-2 text-center text-[10px] font-bold text-muted-foreground border-b border-border/40 pb-2">
+ <div className="grid grid-cols-8 gap-2 text-center text-xs font-bold text-muted-foreground border-b border-border/40 pb-2">
  <span>Hora</span>
  <span>Seg</span>
  <span>Ter</span>
@@ -465,11 +487,11 @@ export function DeliveryTimeAndRadiusMatrix({
  { hour: "22:00", activeDays: [1, 2, 3, 4, 5, 6, 7], label: "Encerramento" },
  ].map((row) => (
  <div key={row.hour} className="grid grid-cols-8 gap-2 items-center text-center">
- <span className="font-mono text-[10px] text-muted-foreground">{row.hour}</span>
+ <span className="font-mono text-xs text-muted-foreground">{row.hour}</span>
  {[1, 2, 3, 4, 5, 6, 7].map((day) => (
  <div
  key={day}
- className="h-6 rounded-md bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-[9px] font-bold text-emerald-600 dark:text-emerald-400"
+ className="h-6 rounded-md bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-xs font-bold text-emerald-600 dark:text-emerald-400"
  title={`${row.hour} - ${row.label}: ${currentPrepTime} min`}
  >
  {currentPrepTime}m
@@ -479,12 +501,152 @@ export function DeliveryTimeAndRadiusMatrix({
  ))}
  </div>
 
- <div className="flex items-center justify-between text-[11px] text-muted-foreground pt-2 border-t border-border/40">
+ <div className="flex items-center justify-between text-xs text-muted-foreground pt-2 border-t border-border/40">
  <div className="flex items-center gap-2">
- <div className="size-2.5 rounded-xs bg-emerald-500/30 border border-emerald-500/60" />
+ <div className="size-3 rounded-sm bg-emerald-500/30 border border-emerald-500/60" />
  <span>Turno ativo com preparo calibrado</span>
  </div>
  <span className="font-bold text-foreground">Status: Operação Normal</span>
+ </div>
+ </div>
+ </div>
+ </div>
+ )}
+
+ {/* ── CONTEÚDO: ABA MODALIDADES E TAXAS ── */}
+ {activeTab === "modalidades" && (
+ <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 animate-in fade-in duration-200">
+ <div className="lg:col-span-7 space-y-5">
+ <div>
+ <h3 className="text-sm font-bold text-foreground">Modalidades de Atendimento da Loja</h3>
+ <p className="text-xs text-muted-foreground">
+ Ative simultaneamente as formas de entrega e retirada disponíveis no ecossistema Waesy.
+ </p>
+ </div>
+
+ <div className="space-y-3">
+ {/* MotoLink */}
+ <div className="p-4 rounded-xl border border-border bg-card flex items-start justify-between gap-4">
+ <div className="flex items-start gap-3">
+ <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-1">
+ <Bike className="size-5" />
+ </div>
+ <div>
+ <span className="text-xs font-bold text-foreground">MotoLink (Frota da Cidade sob Demanda)</span>
+ <p className="text-xs text-muted-foreground mt-1">
+ Entregadores autônomos da plataforma alocados automaticamente por algoritmo dinâmico de proximidade e telemetria GPS.
+ </p>
+ </div>
+ </div>
+ <Switch
+ checked={value.motolinkEnabled !== false}
+ onCheckedChange={(checked) => onChange({ ...value, motolinkEnabled: checked })}
+ />
+ </div>
+
+ {/* Entregadores Próprios */}
+ <div className="p-4 rounded-xl border border-border bg-card flex items-start justify-between gap-4">
+ <div className="flex items-start gap-3">
+ <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-1">
+ <Bike className="size-5" />
+ </div>
+ <div>
+ <span className="text-xs font-bold text-foreground">Entregadores Próprios da Loja</span>
+ <p className="text-xs text-muted-foreground mt-1">
+ Entregas com equipe própria da sua loja, aplicando as faixas de raio em km e taxas por bairro configuradas.
+ </p>
+ </div>
+ </div>
+ <Switch
+ checked={value.ownDeliveryEnabled !== false}
+ onCheckedChange={(checked) => onChange({ ...value, ownDeliveryEnabled: checked })}
+ />
+ </div>
+
+ {/* Retirada Balcão */}
+ <div className="p-4 rounded-xl border border-border bg-card flex items-start justify-between gap-4">
+ <div className="flex items-start gap-3">
+ <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-1">
+ <Store className="size-5" />
+ </div>
+ <div>
+ <span className="text-xs font-bold text-foreground">Retirada no Balcão (Takeout)</span>
+ <p className="text-xs text-muted-foreground mt-1">
+ Permite ao cliente pedir pelo aplicativo e retirar presencialmente no seu balcão com frete isento.
+ </p>
+ </div>
+ </div>
+ <Switch
+ checked={value.pickupEnabled !== false}
+ onCheckedChange={(checked) => onChange({ ...value, pickupEnabled: checked })}
+ />
+ </div>
+
+ {/* Transportadora */}
+ <div className="p-4 rounded-xl border border-border bg-card flex items-start justify-between gap-4">
+ <div className="flex items-start gap-3">
+ <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-1">
+ <Truck className="size-5" />
+ </div>
+ <div>
+ <span className="text-xs font-bold text-foreground">Transportadora e Frete Terceirizado</span>
+ <p className="text-xs text-muted-foreground mt-1">
+ Envio rodoviário ou cotação manual FOB para cargas de grande volume ou pedidos intermunicipais.
+ </p>
+ </div>
+ </div>
+ <Switch
+ checked={Boolean(value.carrierEnabled)}
+ onCheckedChange={(checked) => onChange({ ...value, carrierEnabled: checked })}
+ />
+ </div>
+ </div>
+ </div>
+
+ <div className="lg:col-span-5 space-y-5">
+ <div>
+ <h3 className="text-sm font-bold text-foreground">Taxas e Regras Operacionais</h3>
+ <p className="text-xs text-muted-foreground">
+ Parâmetros de entrega e segurança do entregador.
+ </p>
+ </div>
+
+ <div className="space-y-4 p-4 rounded-xl border border-border bg-card">
+ <div className="space-y-2">
+ <Label className="text-xs font-semibold text-foreground flex items-center gap-2">
+ <Building2 className="size-4 text-primary" />
+ <span>Taxa de Subida em Apartamento / Condomínio</span>
+ </Label>
+ <CurrencyField
+ value={value.condoClimbFeeCents || null}
+ onChange={(cents) => onChange({ ...value, condoClimbFeeCents: cents ?? null })}
+ placeholder="R$ 0,00 (Opcional)"
+ allowZero={true}
+ className="h-11 rounded-lg"
+ />
+ <p className="text-xs text-muted-foreground">
+ Valor repassado ao entregador caso o cliente solicite entrega na porta de edifício ou condomínio fechado.
+ </p>
+ </div>
+
+ <div className="pt-3 border-t border-border/60 space-y-2">
+ <span className="text-xs font-bold text-foreground flex items-center gap-2">
+ <ShieldCheck className="size-4 text-emerald-600" />
+ Regra de Devolução (Entrega Mal-Sucedida)
+ </span>
+ <p className="text-xs text-muted-foreground">
+ Caso o cliente não atenda ou o endereço esteja inacessível, o entregador retorna o pacote à loja e recebe 50% de taxa de retorno (meia corrida).
+ </p>
+ </div>
+
+ <div className="pt-3 border-t border-border/60 space-y-2">
+ <span className="text-xs font-bold text-foreground flex items-center gap-2">
+ <AlertCircle className="size-4 text-amber-500" />
+ Regra de Desalocação
+ </span>
+ <p className="text-xs text-muted-foreground">
+ Desalocação livre antes da coleta no estabelecimento. Após a coleta da mercadoria, a desistência exige validação da loja ou suporte.
+ </p>
  </div>
  </div>
  </div>

@@ -10,13 +10,16 @@ import {
   LayoutList,
   SlidersHorizontal,
   Boxes,
+  Zap,
 } from "lucide-react";
 import { MasterCatalogSearchDialog } from "@/components/admin/catalog/master-catalog-search-dialog";
 import { TravelPackageForm } from "@/components/commerce/travel/travel-package-form";
 import { ProductEditorLayout } from "@/components/admin/product-editor/product-editor-layout";
 import { ProductModifiersCard } from "@/components/admin/catalog/product-modifiers-card";
+import { ProductUpsellCard } from "@/components/admin/catalog/product-upsell-card";
 import { ProductBomCard } from "@/components/admin/catalog/product-bom-card";
 import { ProductFoodSpecsCard } from "@/components/admin/catalog/product-food-specs-card";
+import { ProductEditorStickyBar } from "@/components/admin/product-editor/product-editor-sticky-bar";
 import { PageHeader } from "@/components/commerce/page-header";
 import { Button } from "@/components/ui/button";
 import {
@@ -102,10 +105,18 @@ function EditProductPage() {
           actions={
             <div className="flex items-center gap-2">
               <Button
+                type="submit"
+                form="product-edit-general-form"
+                size="sm"
+                className="h-11 px-4 rounded-lg text-xs font-bold bg-primary text-primary-foreground focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
+              >
+                Salvar Alterações
+              </Button>
+              <Button
                 type="button"
                 variant="outline"
                 size="sm"
-                onClick={() => edit.setIsMasterCatalogOpen(true)} /* focus-visible: */
+                onClick={() => edit.setIsMasterCatalogOpen(true)}
                 className="rounded-lg text-xs font-bold gap-2 border-primary/30 text-primary hover:bg-primary/5 cursor-pointer h-11 focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <Star className="size-3.5" />
@@ -153,9 +164,8 @@ function EditProductPage() {
             { id: "midias", label: "Galeria de Fotos", icon: <ImagePlus className="size-4" /> },
             { id: "variantes", label: nicheCtx.variationsSectionTitle, icon: <LayoutList className="size-4" /> },
             { id: "opcoes", label: "Adicionais e Opções", icon: <SlidersHorizontal className="size-4" /> },
-            ...(nicheCtx.isFoodBusiness
-              ? [{ id: "ficha-tecnica", label: "Ficha Técnica e Insumos", icon: <Boxes className="size-4" /> }]
-              : []),
+            { id: "ofertas", label: "Oferta de Checkout", icon: <Zap className="size-4" /> },
+            { id: "ficha-tecnica", label: "Composição & Ficha Técnica", icon: <Boxes className="size-4" /> },
           ]}
         >
           {edit.isTourismStore && (
@@ -273,22 +283,35 @@ function EditProductPage() {
             />
           </div>
 
-          {(nicheCtx.isFoodBusiness || edit.bomItems.length > 0) && (
-            <div id="ficha-tecnica" className="scroll-mt-32 pt-12 border-t">
-              <ProductBomCard
-                initialItems={edit.bomItems}
-                productPriceCents={edit.livePriceCents}
-                onApplyCostToProduct={edit.handleApplyCostToProduct}
-                onItemsChange={edit.handleBomItemsChange}
-              />
-            </div>
-          )}
+          <div id="ofertas" className="scroll-mt-32 pt-12 border-t">
+            <ProductUpsellCard
+              productId={product.id}
+              productTitle={product.title}
+            />
+          </div>
+
+          <div id="ficha-tecnica" className="scroll-mt-32 pt-12 border-t">
+            <ProductBomCard
+              initialItems={edit.bomItems}
+              productPriceCents={edit.livePriceCents}
+              onApplyCostToProduct={edit.handleApplyCostToProduct}
+              onItemsChange={edit.handleBomItemsChange}
+            />
+          </div>
         </ProductEditorLayout>
 
         <MasterCatalogSearchDialog
           open={edit.isMasterCatalogOpen}
           onOpenChange={edit.setIsMasterCatalogOpen}
           onSelectProduct={edit.handleSelectMasterProduct}
+        />
+
+        <ProductEditorStickyBar
+          entityName={nicheCtx.entityName}
+          isSubmitting={false}
+          formId="product-edit-general-form"
+          status={product.status}
+          previewUrl={`/produto/${product.slug}`}
         />
       </div>
     </div>

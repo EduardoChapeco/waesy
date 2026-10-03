@@ -1390,6 +1390,168 @@ export default function WorkspaceConfiguracoesPage() {
             </div>
           </div>
         </Card>
+
+        {/* ── Seletor de Modo de Layout do Checkout ── */}
+        <Card className="p-6 rounded-lg border-border bg-card space-y-4">
+          <div className="pb-2 border-b border-border/40">
+            <h2 className="text-sm font-bold text-foreground">Layout e Fluxo do Checkout</h2>
+            <p className="text-xs text-muted-foreground mt-1">
+              Escolha a apresentação do fechamento de pedido da sua loja.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {[
+              { id: "auto", title: "Adaptativo por Nicho", desc: "Recomendado (Zero-Config). Ajusta automaticamente conforme o segmento." },
+              { id: "one_page", title: "One-Page Fluido", desc: "Todas as seções em página contínua de alta conversão (padrão Yampi/Shopify)." },
+              { id: "multi_step", title: "Multi-Step Wizard", desc: "Etapas sequenciais com avanço guiado (1. Dados -> 2. Entrega -> 3. Pagamento)." },
+            ].map((opt) => (
+              <div
+                key={opt.id}
+                onClick={() => setCheckoutLayoutMode(opt.id as any)}
+                className={cn(
+                  "p-4 rounded-lg border text-left cursor-pointer transition-all space-y-2",
+                  checkoutLayoutMode === opt.id
+                    ? "border-primary bg-primary/5 ring-1 ring-primary"
+                    : "border-border/60 hover:border-border"
+                )}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-foreground">{opt.title}</span>
+                  {checkoutLayoutMode === opt.id && <CheckCircle2 className="size-4 text-primary" />}
+                </div>
+                <p className="text-xs text-muted-foreground leading-snug">{opt.desc}</p>
+              </div>
+            ))}
+          </div>
+        </Card>
+
+        {/* ── Módulo de Produtos Digitais & Entregáveis (A05) ── */}
+        <Card className="p-6 rounded-lg border-border bg-card space-y-4">
+          <div className="pb-2 border-b border-border/40">
+            <h2 className="text-sm font-bold text-foreground">Produtos Digitais & Vouchers</h2>
+            <p className="text-xs text-muted-foreground mt-1">
+              Defina como seus clientes recebem conteúdos, arquivos, cursos ou acessos após a confirmação do pagamento.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {[
+              { id: "secure_link", title: "Link com Senha Gerada", desc: "Link seguro com token/senha exclusiva gerada para cada comprador." },
+              { id: "direct_download", title: "Download Direto de Arquivo", desc: "Download instantâneo de PDF, ZIP, áudio ou software na confirmação." },
+              { id: "license_key", title: "Chave Serial / Licença", desc: "Emissão de código de ativação individual para desbloqueio." },
+            ].map((dOpt) => (
+              <div
+                key={dOpt.id}
+                onClick={() => setDigitalDeliveryType(dOpt.id as any)}
+                className={cn(
+                  "p-3 rounded-lg border cursor-pointer transition-all space-y-1",
+                  digitalDeliveryType === dOpt.id
+                    ? "border-primary bg-primary/5 ring-1 ring-primary"
+                    : "border-border/60 hover:border-border"
+                )}
+              >
+                <span className="text-xs font-bold text-foreground">{dOpt.title}</span>
+                <p className="text-xs text-muted-foreground leading-snug">{dOpt.desc}</p>
+              </div>
+            ))}
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+            <div className="space-y-2">
+              <Label className="text-xs font-semibold text-foreground">URL Externa do Conteúdo (Drive, Notion, Membros)</Label>
+              <Input
+                placeholder="https://drive.google.com/... ou https://notion.so/..."
+                value={digitalExternalUrl}
+                onChange={(e) => setDigitalExternalUrl(e.target.value)}
+                className="h-10 text-xs rounded-lg"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-xs font-semibold text-foreground">Instruções de Acesso para o Comprador</Label>
+              <Input
+                placeholder="Ex: Acesse o link acima e use sua senha gerada para desbloquear..."
+                value={digitalInstructions}
+                onChange={(e) => setDigitalInstructions(e.target.value)}
+                className="h-10 text-xs rounded-lg"
+              />
+            </div>
+          </div>
+        </Card>
+
+        {/* ── Módulo de Varejo por Quilo & Mercado (A14) ── */}
+        <Card className="p-6 rounded-lg border-border bg-card space-y-4">
+          <div className="pb-2 border-b border-border/40">
+            <h2 className="text-sm font-bold text-foreground">Produtos por Quilo / Pesáveis (Mercado & Açougue)</h2>
+            <p className="text-xs text-muted-foreground mt-1">
+              Como sua empresa prefere gerenciar itens com microvariações de peso.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {[
+              { id: "bands", title: "Faixas Fixas de Peso (100g em 100g)", desc: "Venda por faixas estimadas. O caixa físico ou PDV próprio absorve o acerto final." },
+              { id: "scale_adjustment", title: "Separação com Ajuste de Balança", desc: "O separador digita o peso real medido no painel e o valor da nota/recibo é ajustado." },
+            ].map((pOpt) => (
+              <div
+                key={pOpt.id}
+                onClick={() => setWeighablePricingMode(pOpt.id as any)}
+                className={cn(
+                  "p-4 rounded-lg border cursor-pointer transition-all space-y-2",
+                  weighablePricingMode === pOpt.id
+                    ? "border-primary bg-primary/5 ring-1 ring-primary"
+                    : "border-border/60 hover:border-border"
+                )}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-foreground">{pOpt.title}</span>
+                  {weighablePricingMode === pOpt.id && <CheckCircle2 className="size-4 text-primary" />}
+                </div>
+                <p className="text-xs text-muted-foreground leading-snug">{pOpt.desc}</p>
+              </div>
+            ))}
+          </div>
+        </Card>
+
+        {/* ── Módulo de Políticas Financeiras de Serviços & Agendamentos (A08) ── */}
+        <Card className="p-6 rounded-lg border-border bg-card space-y-4">
+          <div className="pb-2 border-b border-border/40">
+            <h2 className="text-sm font-bold text-foreground">Regras Financeiras de Agendamento</h2>
+            <p className="text-xs text-muted-foreground mt-1">
+              Políticas de cobrança e proteção contra faltas (no-show) em serviços.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {[
+              { id: "online_full", title: "100% Online Antecipado", desc: "Pagamento integral no ato da reserva pelo app para confirmar o horário." },
+              { id: "deposit_and_balance", title: "Sinal Antecipado + Saldo Local", desc: "Cobrança de percentual antecipado para garantir a vaga, com saldo no local." },
+              { id: "venue_pay", title: "Pagamento no Balcão", desc: "Apenas reserva de horário. Pagamento total presencial após o atendimento." },
+            ].map((sOpt) => (
+              <div
+                key={sOpt.id}
+                onClick={() => setServicePaymentPolicy(sOpt.id as any)}
+                className={cn(
+                  "p-3 rounded-lg border cursor-pointer transition-all space-y-1",
+                  servicePaymentPolicy === sOpt.id
+                    ? "border-primary bg-primary/5 ring-1 ring-primary"
+                    : "border-border/60 hover:border-border"
+                )}
+              >
+                <span className="text-xs font-bold text-foreground">{sOpt.title}</span>
+                <p className="text-xs text-muted-foreground leading-snug">{sOpt.desc}</p>
+              </div>
+            ))}
+          </div>
+          {servicePaymentPolicy === "deposit_and_balance" && (
+            <div className="pt-2 flex items-center gap-3">
+              <Label className="text-xs text-muted-foreground whitespace-nowrap">Percentual de Sinal Antecipado (%):</Label>
+              <Input
+                type="number"
+                min={5}
+                max={90}
+                value={serviceDepositPercentage}
+                onChange={(e) => setServiceDepositPercentage(parseInt(e.target.value, 10) || 30)}
+                className="w-24 h-9 text-xs rounded-lg"
+              />
+            </div>
+          )}
+        </Card>
  {/* ── Modalidade de Processamento de Pagamentos & Gateway ── */}
  <Card className="p-6 rounded-lg border-border bg-card space-y-6">
  <div className="pb-2 border-b border-border/40 flex items-center justify-between">
@@ -1464,7 +1626,7 @@ export default function WorkspaceConfiguracoesPage() {
  value={paymentInstructions}
  onChange={(e) => setPaymentInstructions(e.target.value)}
  placeholder="Ex: Efetue o Pix e envie o comprovante pelo WhatsApp da loja, ou pague com maquininha no momento da entrega."
- className="min-h-[80px] text-xs rounded-lg"
+ className="min-h-20 text-xs rounded-lg"
  />
  </div>
  </div>

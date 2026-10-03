@@ -30,17 +30,29 @@ export const Route = createFileRoute("/_store/marketplace/")({
         },
       }).catch(() => []);
 
-      // Mapeia para o DTO de ofertas do Marketplace
+      function normalizeNiche(raw?: string): MarketplaceOffer["niche"] {
+        const n = (raw || "").toLowerCase();
+        if (n.includes("turis") || n.includes("viag") || n === "tourism") return "turismo";
+        if (n.includes("gastro") || n.includes("restaur") || n.includes("aliment") || n.includes("mercado") || n.includes("food")) return "gastronomia";
+        if (n.includes("servic") || n.includes("serviç") || n.includes("profis") || n === "service") return "servicos";
+        if (n.includes("imov") || n.includes("imóv") || n.includes("hosped") || n.includes("chale") || n.includes("chalé") || n.includes("aluguel")) return "imoveis";
+        if (n.includes("veic") || n.includes("veíc") || n.includes("auto") || n.includes("carro") || n.includes("moto")) return "veiculos";
+        return "lojas";
+      }
+
+      // Mapeia para o DTO de ofertas do Marketplace com metadados reais
       const offers: MarketplaceOffer[] = (items || []).map((item) => ({
         id: item.id,
+        slug: item.slug && item.slug !== item.id ? item.slug : undefined,
         title: item.title,
-        storeName: item.store_id ? "Loja Credenciada" : "Empresa Verificada",
-        storeSlug: item.store_id || "loja",
-        niche: (item.niche_id as MarketplaceOffer["niche"]) || "lojas",
+        storeName: item.store_name || (item.store_id ? "Empresa Credenciada" : "Anunciante Verificado"),
+        storeSlug: item.store_slug || item.store_id || "loja",
+        niche: normalizeNiche(item.niche_id),
         priceCents: item.price_cents || 0,
         imageUrl: item.cover_url || item.media_urls?.[0] || undefined,
         ratingAverage: 5.0,
-        deliveryAvailable: true,
+        deliveryAvailable: item.shipping_mode !== "pickup",
+        origin: item.origin,
       }));
 
       return { offers };

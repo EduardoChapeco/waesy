@@ -131,3 +131,130 @@ export const deleteUpsellRule = createServerFn({ method: "POST" })
 
  return { status: "success" as const };
  });
+
+
+export interface OrderBumpOfferDTO {
+  ruleId: string;
+  productId: string;
+  variantId: string;
+  title: string;
+  originalPriceCents: number;
+  discountPercentage: number;
+  offerPriceCents: number;
+  coverUrl: string | null;
+  headline: string;
+}
+
+export const getActiveOrderBumpForCart = createServerFn({ method: "GET" })
+  .validator(
+    z.object({
+      storeId: z.string().uuid().optional(),
+      cartProductIds: z.array(z.string().uuid()).default([]),
+    })
+  )
+  .handler(async ({ data: { storeId, cartProductIds } }): Promise<OrderBumpOfferDTO | null> => {
+    try {
+      const supabase = getServerClient();
+      let targetStoreId = storeId;
+
+      if (!targetStoreId) {
+        const { data: firstStore } = await supabase
+          .from("stores")
+          .select("id")
+          .limit(1)
+          .maybeSingle();
+        targetStoreId = firstStore?.id;
+      }
+
+      if (!targetStoreId) return null;
+
+      // 1. Busca regra onde o trigger_product_id esta no carrinho
+      let selectedRule: any = null;
+      if (cartProductIds.length > 0) {
+        const { data: triggerRules } = await supabase
+          .from("upsell_rules")
+          .select(`
+            id,
+            trigger_product_id,
+            offer_product_id,
+            discount_percentage,
+            active
+          `)
+          .eq("store_id", targetStoreId)
+          .eq("active", true)
+          .in("trigger_product_id", cartProductIds)
+          .limit(1);
+
+        if (triggerRules && triggerRules.length > 0) {
+          selectedRule = triggerRules[0];
+        }
+      }
+
+      // 2. Fallback: regra geral da loja se nao encontrou gatilho especifico
+      if (!selectedRule) {
+        const { data: generalRules } = await supabase
+          .from("upsell_rules")
+          .select(`
+            id,
+            trigger_product_id,
+            offer_product_id,
+            discount_percentage,
+            active
+          `)
+          .eq("store_id", targetStoreId)
+          .eq("active", true)
+          .limit(1);
+
+        if (generalRules && generalRules.length > 0) {
+          selectedRule = generalRules[0];
+        }
+      }
+
+      if (!selectedRule || !selectedRule.offer_product_id) return null;
+
+      // Nao oferece um item que o cliente ja tem no carrinho
+      if (cartProductIds.includes(selectedRule.offer_product_id)) {
+        return null;
+      }
+
+      // 3. Busca os dados reais do produto da oferta
+      const { data: product, error: pErr } = await supabase
+        .from("products")
+        .select(`
+          id,
+          title,
+          price_cents,
+          product_media (url),
+          product_variants (id, price_override_cents, stock_on_hand)
+        `)
+        .eq("id", selectedRule.offer_product_id)
+        .single();
+
+      if (pErr || !product) return null;
+
+      const activeVariant = product.product_variants?.[0];
+      if (!activeVariant) return null;
+
+      const originalPrice = activeVariant.price_override_cents ?? product.price_cents ?? 0;
+      const discount = selectedRule.discount_percentage || 0;
+      const offerPrice = Math.max(0, Math.round(originalPrice * (1 - discount / 100)));
+      const coverUrl = product.product_media?.[0]?.url || null;
+
+      return {
+        ruleId: selectedRule.id,
+        productId: product.id,
+        variantId: activeVariant.id,
+        title: product.title,
+        originalPriceCents: originalPrice,
+        discountPercentage: discount,
+        offerPriceCents: offerPrice,
+        coverUrl,
+        headline: discount > 0
+          ? `Oferta Especial: Leve com ${discount}% de desconto!`
+          : "Complemento perfeito para seu pedido!",
+      };
+    } catch (err) {
+      console.warn("[upsell] Falha ao obter Order Bump:", err);
+      return null;
+    }
+  });

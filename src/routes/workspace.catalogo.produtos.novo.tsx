@@ -25,6 +25,7 @@ import {
   ProductDimensionModal,
   useProductEditor,
 } from "@/components/admin/catalog/product-editor";
+import { ProductEditorStickyBar } from "@/components/admin/product-editor/product-editor-sticky-bar";
 
 export const Route = createFileRoute("/workspace/catalogo/produtos/novo")({
   head: () => ({ meta: [{ title: "Criar Novo Produto | Workspace Waesy" }] }),
@@ -179,11 +180,9 @@ export function UnifiedNewProductPage() {
                 <TabsTrigger value="midias" className="rounded-md text-xs font-bold whitespace-nowrap shrink-0 px-3 h-9">
                   Fotos
                 </TabsTrigger>
-                {nicheCtx.isFoodBusiness && (
-                  <TabsTrigger value="insumos" className="rounded-md text-xs font-bold whitespace-nowrap shrink-0 px-3 h-9">
-                    Insumos
-                  </TabsTrigger>
-                )}
+                <TabsTrigger value="insumos" className="rounded-md text-xs font-bold whitespace-nowrap shrink-0 px-3 h-9">
+                  Composição / Insumos
+                </TabsTrigger>
               </TabsList>
 
               <TabsContent value="basico" className="space-y-4 m-0">
@@ -237,19 +236,17 @@ export function UnifiedNewProductPage() {
                 </TabsContent>
               )}
 
-              {nicheCtx.isFoodBusiness && (
-                <TabsContent value="insumos" className="space-y-4 m-0">
-                  <ProductBomCard
-                    initialItems={editor.bomItems}
-                    productPriceCents={editor.formValues.price_cents || 0}
-                    onApplyCostToProduct={(calculatedCostCents) => {
-                      editor.form.setValue("cost_cents", calculatedCostCents);
-                      toast.success(`Custo calculado aplicado!`);
-                    }}
-                    onItemsChange={editor.setBomItems}
-                  />
-                </TabsContent>
-              )}
+              <TabsContent value="insumos" className="space-y-4 m-0">
+                <ProductBomCard
+                  initialItems={editor.bomItems}
+                  productPriceCents={editor.formValues.price_cents || 0}
+                  onApplyCostToProduct={(calculatedCostCents) => {
+                    editor.form.setValue("cost_cents", calculatedCostCents);
+                    toast.success(`Custo calculado aplicado!`);
+                  }}
+                  onItemsChange={editor.setBomItems}
+                />
+              </TabsContent>
             </Tabs>
           }
           rightPane={
@@ -266,6 +263,13 @@ export function UnifiedNewProductPage() {
           }
         />
       </div>
+
+      <ProductEditorStickyBar
+        entityName={nicheCtx.entityName}
+        isSubmitting={editor.isSubmitting}
+        onSave={editor.form.handleSubmit(editor.onSubmit)}
+        status="draft"
+      />
     </CanonicalPage>
   );
 }

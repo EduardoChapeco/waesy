@@ -1,5 +1,7 @@
 import { createFileRoute, useNavigate, useRouter, Link } from "@tanstack/react-router";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { getActiveOrderBumpForCart, type OrderBumpOfferDTO } from "@/services/upsell.functions";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,7 +18,7 @@ import { getProfile } from "@/services/auth.functions";
 import { getUserAddresses, validateDeliveryLocationGPS } from "@/services/addresses.functions";
 import { DeliveryLocationPolicySheet } from "@/components/commerce/delivery-location-policy-sheet";
 import { GpsMismatchModal } from "@/components/commerce/gps-mismatch-modal";
-import { Check, CheckCircle2, Ticket, User, Truck, CreditCard, ShoppingBag, AlertCircle, MapPin, Loader2, Gift, QrCode, Clock, Store, ChevronRight, ArrowLeft, Navigation, Layers, Plus, ShieldCheck, Building2, ShieldAlert } from 'lucide-react';
+import { Check, CheckCircle2, Ticket, User, Truck, CreditCard, ShoppingBag, AlertCircle, MapPin, Loader2, Gift, QrCode, Clock, Store, ChevronRight, ArrowLeft, Navigation, Layers, Plus, ShieldCheck, Building2, ShieldAlert, Plane, Users, Calendar, Sparkles, FileText, Trash2 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
@@ -26,6 +28,7 @@ import { CepField } from "@/components/ui/cep-field";
 import { PhoneField } from "@/components/ui/phone-field";
 import { CreditCardNumberInput, CardExpiryInput, CardCvvInput } from "@/components/ui/credit-card-field";
 import { Surface } from "@/components/ui/surface";
+import { getNicheSemantics } from "@/lib/niche-semantics";
 
 export const Route = createFileRoute("/_store/checkout")({
   head: () => ({ meta: [{ title: "Checkout | Waesy" }] }),
@@ -135,6 +138,26 @@ export function CheckoutPage() {
   const [activeStep, setActiveStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // ── V11: Order Bump State & Contextual Query ──
+  const [isOrderBumpAccepted, setIsOrderBumpAccepted] = useState(false);
+  const cartProductIds = useMemo(() => {
+    return (cart?.items || [])
+      .map((it: any) => it.productId || it.product_id || it.product?.id)
+      .filter(Boolean);
+  }, [cart?.items]);
+
+  const { data: orderBumpOffer } = useQuery({
+    queryKey: ["active-order-bump", storeProfile?.id || cart?.storeId, cartProductIds],
+    queryFn: () =>
+      getActiveOrderBumpForCart({
+        data: {
+          storeId: storeProfile?.id || cart?.storeId || undefined,
+          cartProductIds,
+        },
+      }),
+    enabled: Boolean(cart?.items && cart.items.length > 0),
+  });
+
   // ── V10: Multi-Nicho Dynamic Checkout States ──
   const [cpfRequested, setCpfRequested] = useState<boolean>(
     Boolean(userProfile?.cpf || checkoutConfig?.cpfOnReceipt?.defaultRequested || false)
@@ -150,11 +173,138 @@ export function CheckoutPage() {
   const [itemNotes, setItemNotes] = useState<Record<string, string>>({});
   const [openItemNoteId, setOpenItemNoteId] = useState<string | null>(null);
 
+  // ── Metamorphic Niche Semantics & Category Resolution (Zero Generics / Zero Mocks) ──
+  const storeSemantics = useMemo(() => getNicheSemantics(storeProfile), [storeProfile]);
+
+  const hasTourismItem = Boolean(
+    cart?.items &&
+      cart.items.some(
+        (i: any) =>
+          i.category === "tourism" ||
+          i.item_type === "trip" ||
+          i.item_type === "travel" ||
+          i.package_type ||
+          i.travel_data ||
+          /tour|viag|turis|travel|hotel|pousad|guia|excurs|passeio|roteir|passag|aereo|cruzeir|resort|ilheus|porto seguro|salvador|gramado|natal|maceio|fortaleza|cancun|paris|orlando|disney/i.test(
+            i.productTitle || i.title || ""
+          )
+      )
+  );
+
+  const isTourismNiche =
+    storeSemantics.nicheId === "tourism" ||
+    checkoutConfig?.niche === "tourism" ||
+    storeProfile?.niche === "tourism" ||
+    storeProfile?.settings?.niche === "tourism" ||
+    storeProfile?.settings?.segment === "tourism" ||
+    storeProfile?.settings?.type === "tourism" ||
+    hasTourismItem;
+
+  const hasDigitalItem = Boolean(
+    cart?.items &&
+      cart.items.some(
+        (i: any) =>
+          i.is_physical === false ||
+          i.category === "digital" ||
+          i.item_type === "digital" ||
+          /curso|ebook|software|template|ingresso|voucher|mentoria digital|download/i.test(
+            i.productTitle || i.title || ""
+          )
+      )
+  );
+
+  const isAllDigitalCart = Boolean(
+    cart?.items &&
+      cart.items.length > 0 &&
+      cart.items.every(
+        (i: any) =>
+          i.is_physical === false ||
+          i.category === "digital" ||
+          i.item_type === "digital" ||
+          /curso|ebook|software|template|ingresso|voucher/i.test(
+            i.productTitle || i.title || ""
+          )
+      )
+  );
+
+  const isDigitalNiche =
+    !isTourismNiche &&
+    (storeSemantics.nicheId === "education" || isAllDigitalCart);
+
+  const hasServiceItem = Boolean(
+    cart?.items &&
+      cart.items.some(
+        (i: any) =>
+          i.type === "service" ||
+          i.item_type === "service" ||
+          i.category === "services" ||
+          i.appointment_data ||
+          i.service_duration
+      )
+  );
+
+  const isServiceNiche =
+    !isTourismNiche &&
+    !isDigitalNiche &&
+    (storeSemantics.nicheId === "services" ||
+      storeSemantics.nicheId === "legal" ||
+      storeSemantics.nicheId === "tech_repair" ||
+      checkoutConfig?.niche === "services" ||
+      storeProfile?.niche === "services" ||
+      storeProfile?.settings?.niche === "services" ||
+      hasServiceItem);
+
   const isFoodNiche =
-    checkoutConfig?.niche === "food" ||
-    checkoutConfig?.niche === "gastronomy" ||
-    storeProfile?.niche === "food" ||
-    storeProfile?.niche === "gastronomy";
+    !isTourismNiche &&
+    !isDigitalNiche &&
+    (storeSemantics.nicheId === "gastronomy" ||
+      storeSemantics.isFoodBusiness ||
+      checkoutConfig?.niche === "food" ||
+      checkoutConfig?.niche === "gastronomy" ||
+      storeProfile?.niche === "food" ||
+      storeProfile?.niche === "gastronomy");
+
+  const isSupermarketNiche =
+    !isTourismNiche &&
+    !isDigitalNiche &&
+    (storeSemantics.nicheId === "supermarket" ||
+      checkoutConfig?.niche === "supermarket");
+
+  const isRentalNiche =
+    !isTourismNiche &&
+    !isDigitalNiche &&
+    (storeSemantics.nicheId === "rental" ||
+      checkoutConfig?.niche === "rental" ||
+      Boolean(cart?.items && cart.items.some((i: any) => i.rental_days || i.item_type === "rental")));
+
+  const isPhysicalDelivery = !isTourismNiche && !isDigitalNiche && !isServiceNiche;
+
+  // ── V200: Metamorphic States (Tourism / Digital / Services) ──
+  const [travelDepartureDate, setTravelDepartureDate] = useState("");
+  const [travelReturnDate, setTravelReturnDate] = useState("");
+  const [travelBoardingPoint, setTravelBoardingPoint] = useState("Balcão da Agência");
+  const [travelSpecialRequests, setTravelSpecialRequests] = useState("");
+  const [passengers, setPassengers] = useState<Array<{
+    id: string;
+    name: string;
+    document: string;
+    birthDate: string;
+    phone?: string;
+    isLead?: boolean;
+  }>>([
+    {
+      id: "p-lead",
+      name: userProfile?.fullName || "",
+      document: userProfile?.cpf || "",
+      birthDate: "",
+      phone: userProfile?.phone || "",
+      isLead: true,
+    },
+  ]);
+
+  const [serviceDate, setServiceDate] = useState("");
+  const [serviceTimeSlot, setServiceTimeSlot] = useState("");
+  const [serviceLocationType, setServiceLocationType] = useState<"store" | "home">("store");
 
   // Credit card states
   const [selectedInstallment, setSelectedInstallment] = useState<number>(1);
@@ -244,6 +394,35 @@ export function CheckoutPage() {
  }
  }
  }, [userProfile]);
+
+  // Sync lead passenger when customer identification fields change
+  useEffect(() => {
+    if (formData.customerName || formData.customerDocument || formData.customerPhone) {
+      setPassengers((prev) => {
+        if (!prev || prev.length === 0) {
+          return [
+            {
+              id: "p-lead",
+              name: formData.customerName,
+              document: formData.customerDocument,
+              birthDate: "",
+              phone: formData.customerPhone,
+              isLead: true,
+            },
+          ];
+        }
+        return [
+          {
+            ...prev[0],
+            name: prev[0].name || formData.customerName,
+            document: prev[0].document || formData.customerDocument,
+            phone: prev[0].phone || formData.customerPhone,
+          },
+          ...prev.slice(1),
+        ];
+      });
+    }
+  }, [formData.customerName, formData.customerDocument, formData.customerPhone]);
 
  // Pre-fill default saved address if available
  useEffect(() => {
@@ -498,15 +677,22 @@ export function CheckoutPage() {
  }
  return options;
  };
+      const passengerCount = isTourismNiche ? Math.max(1, passengers.length) : 1;
+      const effectiveSubtotalCents = isTourismNiche
+        ? cart.subtotalCents * passengerCount
+        : cart.subtotalCents;
 
-   const doorFeeCents = (formData.shippingMethod !== "pickup" && deliveryToDoor) ? doorDeliveryFeeCents : 0;
-  const preGiftTotalCents =
-    cart.subtotalCents +
-    (formData.shippingMethod === "pickup" ? 0 : cart.shippingCents) +
-    doorFeeCents -
-    cart.discountCents -
-    paymentDiscountCents +
-    paymentSurchargeCents;
+      const doorFeeCents = (!isPhysicalDelivery) ? 0 : (formData.shippingMethod !== "pickup" && deliveryToDoor) ? doorDeliveryFeeCents : 0;
+      const effectiveShippingCents = !isPhysicalDelivery || formData.shippingMethod === "pickup" ? 0 : cart.shippingCents;
+      const orderBumpExtraCents = isOrderBumpAccepted && orderBumpOffer ? orderBumpOffer.offerPriceCents : 0;
+      const preGiftTotalCents =
+        effectiveSubtotalCents +
+        effectiveShippingCents +
+        doorFeeCents +
+        orderBumpExtraCents -
+        cart.discountCents -
+        paymentDiscountCents +
+        paymentSurchargeCents;
 
  const giftCardDeductionCents = appliedGiftCard
  ? Math.min(appliedGiftCard.balanceCents, preGiftTotalCents)
@@ -634,34 +820,66 @@ export function CheckoutPage() {
 
  setIsSubmitting(true);
  try {
- const res = await processCheckout({
- data: {
- cartId: cart.id,
- customerName: formData.customerName,
- customerEmail: formData.customerEmail,
- customerPhone: formData.customerPhone,
- customerDocument: formData.customerDocument,
- shippingMethod: formData.shippingMethod,
- shippingAddress:
- formData.shippingMethod === "pickup" ? undefined : formData.shippingAddress,
- paymentMethod: formData.paymentMethod,
- paymentMethodId:
- formData.paymentMethod === "manual" ? formData.paymentMethodId : undefined,
- giftCardCode: appliedGiftCard?.code || undefined,
- customFields: Object.keys(customFieldValues).length > 0 ? customFieldValues : undefined,
-         notes: orderNotes.trim() || undefined,
-        deliveryToDoor: deliveryToDoor,
-        doorDeliveryFeeCents: deliveryToDoor ? doorDeliveryFeeCents : 0,
-        deliveryLocationType: deliveryToDoor ? "apartment_door" : "apartment_reception",
-        cpfOnReceipt: cpfRequested ? { requested: true, document: cpfDocument.trim() } : { requested: false },
- substitutionPolicy: substitutionPolicy,
- receiverInfo: receiverMode === "other"
- ? { isOtherPerson: true, name: receiverName.trim(), phone: receiverPhone.trim() }
- : { isOtherPerson: false },
- utensilsRequested: utensilsRequested,
- itemNotes: Object.keys(itemNotes).length > 0 ? itemNotes : undefined,
- },
- });
+       const metamorphicNicheMetadata: Record<string, any> = {
+        niche: isTourismNiche ? "tourism" : isDigitalNiche ? "digital" : isServiceNiche ? "services" : "retail",
+        ...(isTourismNiche ? {
+          tripTitle: cart.items[0]?.productTitle || "Pacote de Viagem",
+          departureDate: travelDepartureDate || undefined,
+          returnDate: travelReturnDate || undefined,
+          boardingPoint: travelBoardingPoint || "Balcão da Agência",
+          passengers: passengers,
+          specialRequests: travelSpecialRequests || undefined,
+          voucherDelivery: "digital_immediate",
+        } : {}),
+        ...(isDigitalNiche ? {
+          deliveryEmail: formData.customerEmail,
+          deliveryPhone: formData.customerPhone,
+          digitalAccessType: "instant_voucher",
+        } : {}),
+        ...(isServiceNiche ? {
+          serviceDate: serviceDate || undefined,
+          serviceTimeSlot: serviceTimeSlot || undefined,
+          serviceLocationType: serviceLocationType,
+        } : {}),
+        utensilsRequested: utensilsRequested,
+      };
+
+      const res = await processCheckout({
+        data: {
+          cartId: cart.id,
+          customerName: formData.customerName,
+          customerEmail: formData.customerEmail,
+          customerPhone: formData.customerPhone,
+          customerDocument: formData.customerDocument,
+          shippingMethod: isPhysicalDelivery ? formData.shippingMethod : "pickup",
+          shippingAddress:
+            (!isPhysicalDelivery || formData.shippingMethod === "pickup") ? undefined : formData.shippingAddress,
+          paymentMethod: formData.paymentMethod,
+          paymentMethodId:
+            formData.paymentMethod === "manual" ? formData.paymentMethodId : undefined,
+          giftCardCode: appliedGiftCard?.code || undefined,
+          customFields: Object.keys(customFieldValues).length > 0 ? customFieldValues : undefined,
+          notes: orderNotes.trim() || undefined,
+          deliveryToDoor: isPhysicalDelivery ? deliveryToDoor : false,
+          doorDeliveryFeeCents: (isPhysicalDelivery && deliveryToDoor) ? doorDeliveryFeeCents : 0,
+          deliveryLocationType: isPhysicalDelivery ? (deliveryToDoor ? "apartment_door" : "apartment_reception") : undefined,
+          cpfOnReceipt: cpfRequested ? { requested: true, document: cpfDocument.trim() } : { requested: false },
+          substitutionPolicy: substitutionPolicy,
+          orderBump: isOrderBumpAccepted && orderBumpOffer ? {
+            ruleId: orderBumpOffer.ruleId,
+            productId: orderBumpOffer.productId,
+            variantId: orderBumpOffer.variantId,
+            offerPriceCents: orderBumpOffer.offerPriceCents,
+            title: orderBumpOffer.title,
+          } : undefined,
+          receiverInfo: receiverMode === "other"
+            ? { isOtherPerson: true, name: receiverName.trim(), phone: receiverPhone.trim() }
+            : { isOtherPerson: false },
+          utensilsRequested: utensilsRequested,
+          itemNotes: Object.keys(itemNotes).length > 0 ? itemNotes : undefined,
+          checkoutNicheMetadata: metamorphicNicheMetadata,
+        },
+      });
 
  if ((res as any)?.status === "error") {
  throw new Error((res as any)?.message || "Não foi possível finalizar o pedido.");
@@ -717,13 +935,29 @@ export function CheckoutPage() {
  // Check custom delivery windows configured by store
  const storeDeliveryWindows: any[] = storeProfile?.settings?.delivery_windows || [];
 
- // Steps definition for Menu Tabs
- const steps = [
- { number: 1, label: "Identificação", isReady: Boolean(formData.customerName && formData.customerEmail && formData.customerPhone) },
- { number: 2, label: "Entrega / Retirada", isReady: Boolean(formData.shippingMethod === "pickup" || selectedRateId) },
- { number: 3, label: "Pagamento", isReady: Boolean(formData.paymentMethod) },
- { number: 4, label: "Revisão", isReady: true },
- ];
+ // Steps definition for Menu Tabs (Metamórfico por Nicho)
+  const step2Label = isTourismNiche
+    ? "Passageiros e Reserva"
+    : isDigitalNiche
+    ? "Envio Digital"
+    : isServiceNiche
+    ? "Agendamento"
+    : "Entrega / Retirada";
+
+  const isStep2Ready = isTourismNiche
+    ? Boolean(passengers.length > 0 && passengers[0]?.name && passengers[0]?.document)
+    : isDigitalNiche
+    ? Boolean(formData.customerEmail)
+    : isServiceNiche
+    ? Boolean(serviceDate)
+    : Boolean(formData.shippingMethod === "pickup" || selectedRateId);
+
+  const steps = [
+    { number: 1, label: "Identificação", isReady: Boolean(formData.customerName && formData.customerEmail && formData.customerPhone) },
+    { number: 2, label: step2Label, isReady: isStep2Ready },
+    { number: 3, label: "Pagamento", isReady: Boolean(formData.paymentMethod) },
+    { number: 4, label: isTourismNiche ? "Revisão e Voucher" : "Revisão", isReady: true },
+  ];
 
   if (!cart.items || cart.items.length === 0) {
     return (
@@ -1095,15 +1329,449 @@ export function CheckoutPage() {
  disabled={!formData.customerName || !formData.customerEmail || !formData.customerPhone}
  className="rounded-lg px-6 h-11 w-full sm:w-auto font-bold text-xs sm:text-sm cursor-pointer active:scale-98 transition-all"
  >
- <span>Continuar para Entrega</span>
+ <span>{isTourismNiche ? "Continuar para Passageiros e Reserva" : isDigitalNiche ? "Continuar para Envio Digital" : isServiceNiche ? "Continuar para Agendamento" : "Continuar para Entrega"}</span>
  <ChevronRight size={15} className="ml-1" />
  </Button>
  </div>
  </Surface>
  )}
 
- {/* ── ETAPA 2: ENTREGA OU RETIRADA ── */}
- {activeStep === 2 && (
+ {/* ── ETAPA 2: RESERVA DE TURISMO & MANIFESTO DE PASSAGEIROS ── */}
+        {activeStep === 2 && isTourismNiche && (
+          <Surface variant="default" className="p-5 sm:p-6 rounded-lg space-y-6">
+            {/* Header */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-border/60">
+              <div className="flex items-center gap-3">
+                <div className="size-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                  <Plane size={20} />
+                </div>
+                <div>
+                  <h3 className="text-sm sm:text-base font-bold text-foreground">Reserva de Viagem & Turismo</h3>
+                  <p className="text-xs text-muted-foreground">Emissão de Voucher Digital com validade legal Embratur e Cadastur</p>
+                </div>
+              </div>
+              <Badge variant="outline" className="font-mono text-xs text-emerald-600 dark:text-emerald-400 border-emerald-500/30 gap-2 w-fit">
+                <Sparkles size={12} /> Frete Isento (Voucher Digital)
+              </Badge>
+            </div>
+
+            {/* Pacote Selecionado */}
+            <div className="p-4 rounded-lg bg-muted/20 border border-border/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="space-y-0.5">
+                <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground block">
+                  Pacote / Destino Confirmado
+                </span>
+                <h4 className="text-sm font-bold text-foreground">
+                  {cart.items[0]?.productTitle || "Pacote de Viagem Oficial"}
+                </h4>
+                <p className="text-xs text-muted-foreground">
+                  {storeProfile?.name || "Agência de Viagens Credenciada"}
+                </p>
+              </div>
+              <div className="sm:text-right">
+                <span className="text-[10px] font-mono text-muted-foreground block">Total do Pacote</span>
+                <span className="text-base font-black font-mono text-foreground">{formatMoney(cart.subtotalCents)}</span>
+              </div>
+            </div>
+
+            {/* Datas da Viagem & Embarque */}
+            <div className="space-y-3">
+              <Label className="text-xs font-bold text-foreground flex items-center gap-2">
+                <Calendar size={14} className="text-primary" /> Datas da Viagem & Ponto de Embarque
+              </Label>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="space-y-1">
+                  <label className="text-[11px] font-semibold text-muted-foreground">Data de Saída / Check-in *</label>
+                  <Input
+                    type="date"
+                    value={travelDepartureDate}
+                    onChange={(e) => setTravelDepartureDate(e.target.value)}
+                    className="h-11 rounded-lg text-xs"
+                    required
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[11px] font-semibold text-muted-foreground">Data de Retorno / Check-out</label>
+                  <Input
+                    type="date"
+                    value={travelReturnDate}
+                    onChange={(e) => setTravelReturnDate(e.target.value)}
+                    className="h-11 rounded-lg text-xs"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[11px] font-semibold text-muted-foreground">Ponto de Embarque / Saída</label>
+                  <Input
+                    type="text"
+                    placeholder="Ex: Aeroporto, Balcão da Agência, Terminal"
+                    value={travelBoardingPoint}
+                    onChange={(e) => setTravelBoardingPoint(e.target.value)}
+                    className="h-11 rounded-lg text-xs"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Manifesto de Passageiros */}
+            <div className="space-y-3 pt-2">
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label className="text-xs font-bold text-foreground flex items-center gap-2">
+                    <Users size={14} className="text-primary" /> Manifesto de Passageiros e Viajantes ({passengers.length} {passengers.length === 1 ? "vaga" : "vagas"})
+                  </Label>
+                  <p className="text-[11px] text-muted-foreground">
+                    Cada passageiro adicionado garante uma vaga confirmada. O valor total se ajusta automaticamente ({passengers.length}x).
+                  </p>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setPassengers((prev) => [
+                      ...prev,
+                      {
+                        id: `p-${Date.now()}`,
+                        name: "",
+                        document: "",
+                        birthDate: "",
+                        phone: "",
+                        isLead: false,
+                      },
+                    ]);
+                  }}
+                  className="h-9 px-3 rounded-lg text-xs font-semibold gap-2 cursor-pointer"
+                >
+                  <Plus size={13} /> Adicionar Passageiro
+                </Button>
+              </div>
+
+              <div className="space-y-3">
+                {passengers.map((p, idx) => (
+                  <div key={p.id} className="p-4 rounded-lg bg-card border border-border/70 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-foreground flex items-center gap-2">
+                        <span className="size-5 rounded-full bg-primary/10 text-primary text-[10px] font-mono font-bold flex items-center justify-center">
+                          {idx + 1}
+                        </span>
+                        {p.isLead ? "Passageiro Titular (Contratante)" : `Acompanhante ${idx}`}
+                      </span>
+                      {!p.isLead && (
+                        <button
+                          type="button"
+                          onClick={() => setPassengers((prev) => prev.filter((item) => item.id !== p.id))}
+                          className="size-8 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors flex items-center justify-center cursor-pointer"
+                          title="Remover passageiro"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div className="space-y-1">
+                        <label className="text-[11px] font-semibold text-muted-foreground">Nome Completo *</label>
+                        <Input
+                          placeholder="Nome conforme documento"
+                          value={p.name}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setPassengers((prev) => prev.map((item) => (item.id === p.id ? { ...item, name: val } : item)));
+                          }}
+                          className="h-11 rounded-lg text-xs"
+                          required
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[11px] font-semibold text-muted-foreground">CPF / Passaporte *</label>
+                        <Input
+                          placeholder="Documento oficial"
+                          value={p.document}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setPassengers((prev) => prev.map((item) => (item.id === p.id ? { ...item, document: val } : item)));
+                          }}
+                          className="h-11 rounded-lg text-xs font-mono"
+                          required
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[11px] font-semibold text-muted-foreground">Data de Nascimento</label>
+                        <Input
+                          type="date"
+                          value={p.birthDate}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setPassengers((prev) => prev.map((item) => (item.id === p.id ? { ...item, birthDate: val } : item)));
+                          }}
+                          className="h-11 rounded-lg text-xs"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Preferências e Solicitações Especiais */}
+            <div className="space-y-2 pt-1">
+              <Label className="text-xs font-bold text-foreground">Solicitações Especiais ou Preferências de Hospedagem</Label>
+              <Input
+                placeholder="Ex: Cama de casal, preferências alimentares, quarto silencioso, acessibilidade..."
+                value={travelSpecialRequests}
+                onChange={(e) => setTravelSpecialRequests(e.target.value)}
+                className="h-11 rounded-lg text-xs"
+              />
+            </div>
+
+            {/* Selo de Garantia do Voucher */}
+            <div className="p-4 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-xs text-foreground flex items-start gap-3">
+              <ShieldCheck size={18} className="text-emerald-600 dark:text-emerald-400 shrink-0 mt-1" />
+              <div className="space-y-1">
+                <p className="font-bold text-emerald-800 dark:text-emerald-300">Emissão Garantida de Voucher Oficial</p>
+                <p className="text-muted-foreground leading-relaxed">
+                  Ao finalizar a compra, seu Voucher Digital com QR Code de embarque e número de reserva será emitido imediatamente. Os dados dos passageiros serão anexados ao contrato da viagem.
+                </p>
+              </div>
+            </div>
+
+            {/* Navegação da Etapa 2 Turismo */}
+            {/* ── Order Bump: Oferta Relâmpago de 1-Clique ── */}
+        {orderBumpOffer && (
+          <div
+            className={cn(
+              "p-4 rounded-lg border transition-all space-y-3 cursor-pointer select-none",
+              isOrderBumpAccepted
+                ? "bg-emerald-500/10 border-emerald-500 ring-1 ring-emerald-500/30"
+                : "bg-muted/20 border-dashed border-border/80 hover:border-border"
+            )}
+            onClick={() => setIsOrderBumpAccepted(!isOrderBumpAccepted)}
+          >
+            <div className="flex items-start gap-3">
+              <div className="pt-1">
+                <input
+                  type="checkbox"
+                  checked={isOrderBumpAccepted}
+                  onChange={(e) => setIsOrderBumpAccepted(e.target.checked)}
+                  className="size-5 rounded border-border text-emerald-600 focus:ring-emerald-500 cursor-pointer"
+                  onClick={(e) => e.stopPropagation()}
+                />
+              </div>
+              {orderBumpOffer.coverUrl && (
+                <img
+                  src={orderBumpOffer.coverUrl}
+                  alt={orderBumpOffer.title}
+                  className="size-12 rounded-lg object-cover border border-border/40 shrink-0"
+                />
+              )}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 text-[10px] font-bold">
+                    {orderBumpOffer.discountPercentage > 0 ? `${orderBumpOffer.discountPercentage}% OFF` : "Exclusivo"}
+                  </Badge>
+                  <span className="text-xs font-bold text-foreground">
+                    {orderBumpOffer.headline}
+                  </span>
+                </div>
+                <p className="text-xs text-foreground/90 font-medium mt-1">
+                  {orderBumpOffer.title}
+                </p>
+                <div className="flex items-center gap-2 mt-1">
+                  {orderBumpOffer.originalPriceCents > orderBumpOffer.offerPriceCents && (
+                    <span className="text-xs text-muted-foreground line-through font-mono">
+                      {formatMoney(orderBumpOffer.originalPriceCents)}
+                    </span>
+                  )}
+                  <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 font-mono">
+                    {formatMoney(orderBumpOffer.offerPriceCents)}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div className="pt-3 grid grid-cols-2 sm:flex sm:items-center sm:justify-between gap-3">
+              <Button
+                variant="outline"
+                onClick={() => setActiveStep(1)}
+                className="rounded-lg px-5 h-11 font-bold text-xs sm:text-sm"
+              >
+                Voltar
+              </Button>
+              <Button
+                onClick={() => setActiveStep(3)}
+                disabled={!passengers[0]?.name || !passengers[0]?.document}
+                className="rounded-lg px-6 h-11 font-bold text-xs sm:text-sm cursor-pointer active:scale-98 transition-all flex items-center gap-2"
+              >
+                <span>Ir para Pagamento</span>
+                <ChevronRight size={15} />
+              </Button>
+            </div>
+          </Surface>
+        )}
+
+        {/* ── ETAPA 2: ENVIO DIGITAL INSTANTÂNEO ── */}
+        {activeStep === 2 && isDigitalNiche && (
+          <Surface variant="default" className="p-5 sm:p-6 rounded-lg space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-border/60">
+              <div className="flex items-center gap-3">
+                <div className="size-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                  <Sparkles size={20} />
+                </div>
+                <div>
+                  <h3 className="text-sm sm:text-base font-bold text-foreground">Envio Digital Instantâneo</h3>
+                  <p className="text-xs text-muted-foreground">Produto 100% digital com liberação imediata via e-mail e app</p>
+                </div>
+              </div>
+              <Badge variant="outline" className="font-mono text-xs text-emerald-600 dark:text-emerald-400 border-emerald-500/30 gap-2 w-fit">
+                Frete Isento (R$ 0,00)
+              </Badge>
+            </div>
+
+            <div className="p-4 rounded-lg bg-muted/20 border border-border/50 space-y-2">
+              <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground block">
+                Destinatário dos Acessos
+              </span>
+              <p className="text-xs text-foreground font-semibold">
+                E-mail de Envio: <span className="font-mono text-primary">{formData.customerEmail || "Não informado"}</span>
+              </p>
+              {formData.customerPhone && (
+                <p className="text-xs text-foreground font-semibold">
+                  WhatsApp para Chave / Voucher: <span className="font-mono text-primary">{formData.customerPhone}</span>
+                </p>
+              )}
+            </div>
+
+            <div className="p-4 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-xs text-foreground flex items-start gap-3">
+              <ShieldCheck size={18} className="text-emerald-600 dark:text-emerald-400 shrink-0 mt-1" />
+              <div className="space-y-1">
+                <p className="font-bold text-emerald-800 dark:text-emerald-300">Liberação Automática Pós-Pagamento</p>
+                <p className="text-muted-foreground leading-relaxed">
+                  Assim que o pagamento for compensado, os links de download e credenciais de acesso serão liberados na sua conta Waesy e enviados para o seu e-mail.
+                </p>
+              </div>
+            </div>
+
+            <div className="pt-3 grid grid-cols-2 sm:flex sm:items-center sm:justify-between gap-3">
+              <Button
+                variant="outline"
+                onClick={() => setActiveStep(1)}
+                className="rounded-lg px-5 h-11 font-bold text-xs sm:text-sm"
+              >
+                Voltar
+              </Button>
+              <Button
+                onClick={() => setActiveStep(3)}
+                disabled={!formData.customerEmail}
+                className="rounded-lg px-6 h-11 font-bold text-xs sm:text-sm cursor-pointer active:scale-98 transition-all flex items-center gap-2"
+              >
+                <span>Ir para Pagamento</span>
+                <ChevronRight size={15} />
+              </Button>
+            </div>
+          </Surface>
+        )}
+
+        {/* ── ETAPA 2: AGENDAMENTO DE SERVIÇO ── */}
+        {activeStep === 2 && isServiceNiche && (
+          <Surface variant="default" className="p-5 sm:p-6 rounded-lg space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-border/60">
+              <div className="flex items-center gap-3">
+                <div className="size-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                  <Calendar size={20} />
+                </div>
+                <div>
+                  <h3 className="text-sm sm:text-base font-bold text-foreground">Agendamento do Serviço</h3>
+                  <p className="text-xs text-muted-foreground">Escolha a data e local de atendimento</p>
+                </div>
+              </div>
+              <Badge variant="outline" className="font-mono text-xs text-primary border-primary/30 gap-2 w-fit">
+                Atendimento Profissional
+              </Badge>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <label className="text-[11px] font-semibold text-muted-foreground">Data do Atendimento *</label>
+                <Input
+                  type="date"
+                  value={serviceDate}
+                  onChange={(e) => setServiceDate(e.target.value)}
+                  className="h-11 rounded-lg text-xs"
+                  required
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[11px] font-semibold text-muted-foreground">Horário / Turno de Preferência</label>
+                <Input
+                  type="text"
+                  placeholder="Ex: 14:00, Manhã, Tarde"
+                  value={serviceTimeSlot}
+                  onChange={(e) => setServiceTimeSlot(e.target.value)}
+                  className="h-11 rounded-lg text-xs"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-xs font-bold text-foreground">Local do Atendimento</Label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => setServiceLocationType("store")}
+                  className={cn(
+                    "p-3 rounded-lg border text-left text-xs transition-all cursor-pointer",
+                    serviceLocationType === "store"
+                      ? "bg-foreground text-background border-foreground font-bold"
+                      : "bg-card border-border text-foreground hover:bg-muted/40"
+                  )}
+                >
+                  <p className="font-bold">No Estabelecimento</p>
+                  <p className={cn("text-xs", serviceLocationType === "store" ? "text-background/80" : "text-muted-foreground")}>
+                    {storeProfile?.address || "Endereço da Empresa"}
+                  </p>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setServiceLocationType("home")}
+                  className={cn(
+                    "p-3 rounded-lg border text-left text-xs transition-all cursor-pointer",
+                    serviceLocationType === "home"
+                      ? "bg-foreground text-background border-foreground font-bold"
+                      : "bg-card border-border text-foreground hover:bg-muted/40"
+                  )}
+                >
+                  <p className="font-bold">Em Domicílio</p>
+                  <p className={cn("text-xs", serviceLocationType === "home" ? "text-background/80" : "text-muted-foreground")}>
+                    Atendimento no endereço do cliente
+                  </p>
+                </button>
+              </div>
+            </div>
+
+            <div className="pt-3 grid grid-cols-2 sm:flex sm:items-center sm:justify-between gap-3">
+              <Button
+                variant="outline"
+                onClick={() => setActiveStep(1)}
+                className="rounded-lg px-5 h-11 font-bold text-xs sm:text-sm"
+              >
+                Voltar
+              </Button>
+              <Button
+                onClick={() => setActiveStep(3)}
+                disabled={!serviceDate}
+                className="rounded-lg px-6 h-11 font-bold text-xs sm:text-sm cursor-pointer active:scale-98 transition-all flex items-center gap-2"
+              >
+                <span>Ir para Pagamento</span>
+                <ChevronRight size={15} />
+              </Button>
+            </div>
+          </Surface>
+        )}
+
+        {/* ── ETAPA 2: ENTREGA FÍSICA OU RETIRADA ── */}
+        {activeStep === 2 && isPhysicalDelivery && (
  <Surface variant="default" className="p-5 sm:p-6 rounded-lg space-y-5">
  {/* Seletor de Modalidade: Entrega vs Retirada */}
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -1910,34 +2578,104 @@ export function CheckoutPage() {
  {activeStep === 4 && (
  <Surface variant="default" className="p-5 sm:p-6 rounded-lg space-y-5">
  <div className="space-y-4">
- {/* Resumo de Entrega */}
- <div className="p-4 rounded-lg bg-muted/20 space-y-2">
- <div className="flex items-center justify-between">
- <span className="text-xs font-bold text-foreground flex items-center gap-2">
- <Truck size={14} className="text-primary" />
- {formData.shippingMethod === "pickup" ? "Retirada no Balcão" : "Entrega em Domicílio"}
- </span>
- <button
- type="button"
- onClick={() => setActiveStep(2)}
- className="text-xs text-primary font-bold hover:underline cursor-pointer"
- >
- Alterar
- </button>
- </div>
- {formData.shippingMethod !== "pickup" ? (
- <p className="text-xs text-muted-foreground">
- {formData.shippingAddress.street}, {formData.shippingAddress.number}{" "}
- {formData.shippingAddress.complement && `(${formData.shippingAddress.complement})`} -{" "}
- {formData.shippingAddress.neighborhood}, {formData.shippingAddress.city}/
- {formData.shippingAddress.state} (CEP: {formData.shippingAddress.zipcode})
- </p>
- ) : (
- <p className="text-xs text-muted-foreground">
- {storeProfile?.address ? `${storeProfile.address}, ${storeProfile.city}` : "Endereço da loja"}
- </p>
- )}
- </div>
+ {/* Resumo de Entrega / Reserva Metamórfico */}
+                {isTourismNiche ? (
+                  <div className="p-4 rounded-lg bg-muted/20 border border-border/40 space-y-2 text-xs">
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-foreground flex items-center gap-2">
+                        <Plane size={14} className="text-primary" /> Reserva de Viagem & Turismo
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setActiveStep(2)}
+                        className="text-xs text-primary font-bold hover:underline cursor-pointer"
+                      >
+                        Alterar
+                      </button>
+                    </div>
+                    <p className="text-foreground font-semibold">
+                      Pacote: {cart.items[0]?.productTitle || "Pacote de Viagem"}
+                    </p>
+                    <p className="text-muted-foreground">
+                      Passageiros: {passengers.map((p) => p.name).filter(Boolean).join(", ") || "Conforme informado"}
+                    </p>
+                    {travelDepartureDate && (
+                      <p className="text-muted-foreground">
+                        Data de Saída: {travelDepartureDate} {travelReturnDate ? `| Retorno: ${travelReturnDate}` : ""}
+                      </p>
+                    )}
+                    <Badge variant="outline" className="text-emerald-600 dark:text-emerald-400 border-emerald-500/30 font-mono text-[10px]">
+                      Voucher Digital Oficial — Frete Isento
+                    </Badge>
+                  </div>
+                ) : isDigitalNiche ? (
+                  <div className="p-4 rounded-lg bg-muted/20 border border-border/40 space-y-2 text-xs">
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-foreground flex items-center gap-2">
+                        <Sparkles size={14} className="text-primary" /> Envio Digital Instantâneo
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setActiveStep(2)}
+                        className="text-xs text-primary font-bold hover:underline cursor-pointer"
+                      >
+                        Alterar
+                      </button>
+                    </div>
+                    <p className="text-muted-foreground">
+                      Acessos e vouchers serão enviados para: <strong className="text-foreground font-mono">{formData.customerEmail}</strong>
+                    </p>
+                  </div>
+                ) : isServiceNiche ? (
+                  <div className="p-4 rounded-lg bg-muted/20 border border-border/40 space-y-2 text-xs">
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-foreground flex items-center gap-2">
+                        <Calendar size={14} className="text-primary" /> Agendamento de Atendimento
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setActiveStep(2)}
+                        className="text-xs text-primary font-bold hover:underline cursor-pointer"
+                      >
+                        Alterar
+                      </button>
+                    </div>
+                    <p className="text-muted-foreground">
+                      Data: <strong className="text-foreground">{serviceDate || "A combinar"}</strong> {serviceTimeSlot ? `(${serviceTimeSlot})` : ""}
+                    </p>
+                    <p className="text-muted-foreground">
+                      Local: {serviceLocationType === "store" ? (storeProfile?.address || "No Estabelecimento") : "Em Domicílio"}
+                    </p>
+                  </div>
+                ) : (
+                  <div className="p-4 rounded-lg bg-muted/20 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-foreground flex items-center gap-2">
+                        <Truck size={14} className="text-primary" />
+                        {formData.shippingMethod === "pickup" ? "Retirada no Balcão" : "Entrega em Domicílio"}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setActiveStep(2)}
+                        className="text-xs text-primary font-bold hover:underline cursor-pointer"
+                      >
+                        Alterar
+                      </button>
+                    </div>
+                    {formData.shippingMethod !== "pickup" ? (
+                      <p className="text-xs text-muted-foreground">
+                        {formData.shippingAddress.street}, {formData.shippingAddress.number}{" "}
+                        {formData.shippingAddress.complement && `(${formData.shippingAddress.complement})`} -{" "}
+                        {formData.shippingAddress.neighborhood}, {formData.shippingAddress.city}/
+                        {formData.shippingAddress.state} (CEP: {formData.shippingAddress.zipcode})
+                      </p>
+                    ) : (
+                      <p className="text-xs text-muted-foreground">
+                        {storeProfile?.address ? `${storeProfile.address}, ${storeProfile.city}` : "Endereço da loja"}
+                      </p>
+                    )}
+                  </div>
+                )}
 
  {/* Resumo de Pagamento */}
  <div className="p-4 rounded-lg bg-muted/20 space-y-2">
@@ -2023,44 +2761,97 @@ export function CheckoutPage() {
  </h3>
 
  <div className="space-y-3 divide-y divide-border/40">
- {cart.items.map((item: any) => (
- <div key={item.id} className="pt-3 first:pt-0 flex items-start justify-between gap-3 text-xs">
- <div className="min-w-0 flex-1">
- <p className="font-bold text-foreground truncate">
- {item.quantity}x {item.product?.title || item.title || "Produto"}
- </p>
- {item.variant_name && (
- <p className="text-xs text-muted-foreground/75 text-muted-foreground">{item.variant_name}</p>
+ {cart.items.map((item: any) => {
+   const itemImg = item.coverUrl || item.imageUrl || item.image_url || item.product?.cover_url || (item.product?.media && item.product.media[0]?.url);
+   const itemTitle = item.product?.title || item.title || item.productTitle || "Produto";
+   return (
+     <div key={item.id} className="pt-3 first:pt-0 flex items-start gap-3 text-xs">
+       {/* Miniatura Fotográfica Squircle do Produto */}
+       <div className="size-12 rounded-lg bg-muted/20 border border-border/50 shrink-0 overflow-hidden flex items-center justify-center">
+         {itemImg ? (
+           <img
+             src={itemImg}
+             alt={itemTitle}
+             className="size-full object-cover"
+             loading="lazy"
+           />
+         ) : (
+           <Package className="size-5 text-muted-foreground/50" />
+         )}
+       </div>
+
+       <div className="min-w-0 flex-1">
+         <p className="font-bold text-foreground truncate">
+           {isTourismNiche ? `${passengerCount}x vaga(s) • ` : `${item.quantity || item.qty || 1}x `}{itemTitle}
+         </p>
+         {item.variant_name && (
+           <p className="text-xs text-muted-foreground/75">{item.variant_name}</p>
+         )}
+         {item.selectedOptionsLabels && item.selectedOptionsLabels.length > 0 && (
+           <div className="flex flex-wrap gap-1 mt-1">
+             {item.selectedOptionsLabels.map((lbl: string, i: number) => (
+               <span key={i} className="inline-flex items-center text-[10px] px-2 py-1 rounded bg-muted/60 text-muted-foreground">
+                 {lbl}
+               </span>
+             ))}
+           </div>
+         )}
+         {/* Observação por item */}
+         <div className="mt-1">
+           {openItemNoteId === item.id || itemNotes[item.id] ? (
+             <div className="space-y-1 pt-1 animate-in fade-in-50">
+               <Input
+                 placeholder="Ex: ponto da carne, sem cebola, etc."
+                 value={itemNotes[item.id] || ""}
+                 onChange={(e) =>
+                   setItemNotes((prev) => ({ ...prev, [item.id]: e.target.value }))
+                 }
+                 className="h-7 text-xs rounded-lg px-2"
+               />
+             </div>
+           ) : (
+             <button
+               type="button"
+               onClick={() => setOpenItemNoteId(item.id)}
+               className="text-xs font-medium text-emerald-600 dark:text-emerald-400 hover:underline cursor-pointer select-none"
+             >
+               + Observação do item
+             </button>
+           )}
+         </div>
+       </div>
+
+       <span className="font-mono font-bold text-foreground shrink-0">
+         {formatMoney(isTourismNiche ? item.price_cents * passengerCount : item.price_cents * (item.quantity || item.qty || 1))}
+       </span>
+     </div>
+   );
+ })}
+
+ {/* Order Bump adicionado ao resumo se aceito */}
+ {isOrderBumpAccepted && orderBumpOffer && (
+   <div className="pt-3 flex items-start gap-3 text-xs bg-emerald-500/5 p-3 rounded-lg border border-emerald-500/30">
+     {orderBumpOffer.coverUrl && (
+       <img
+         src={orderBumpOffer.coverUrl}
+         alt={orderBumpOffer.title}
+         className="size-10 rounded-lg object-cover border border-emerald-500/30 shrink-0"
+       />
+     )}
+     <div className="min-w-0 flex-1">
+       <div className="flex items-center gap-2 flex-wrap">
+         <span className="font-bold text-foreground truncate">1x {orderBumpOffer.title}</span>
+         <Badge variant="outline" className="text-[9px] px-1 py-0 border-emerald-500/40 text-emerald-600">
+           Order Bump
+         </Badge>
+       </div>
+       <p className="text-[11px] text-muted-foreground">Oferta especial de checkout</p>
+     </div>
+     <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400 shrink-0">
+       {formatMoney(orderBumpOffer.offerPriceCents)}
+     </span>
+   </div>
  )}
-                      {/* Observação por item */}
-                      <div className="mt-1">
-                        {openItemNoteId === item.id || itemNotes[item.id] ? (
-                          <div className="space-y-1 pt-1 animate-in fade-in-50">
-                            <Input
-                              placeholder="Ex: ponto da carne, sem cebola, etc."
-                              value={itemNotes[item.id] || ""}
-                              onChange={(e) =>
-                                setItemNotes((prev) => ({ ...prev, [item.id]: e.target.value }))
-                              }
-                              className="h-7 text-xs rounded-lg px-2"
-                            />
-                          </div>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={() => setOpenItemNoteId(item.id)}
-                            className="text-xs font-medium text-emerald-600 dark:text-emerald-400 hover:underline cursor-pointer select-none"
-                          >
-                            + Observação do item
-                          </button>
-                        )}
-                      </div>
- </div>
- <span className="font-mono font-bold text-foreground shrink-0">
- {formatMoney(item.price_cents * item.quantity)}
- </span>
- </div>
- ))}
  </div>
 
  {/* Cupom / Vale Presente */}
@@ -2096,8 +2887,8 @@ export function CheckoutPage() {
  {/* Linhas de Totais */}
  <div className="pt-3 space-y-2 text-xs">
  <div className="flex justify-between text-muted-foreground">
- <span>Subtotal</span>
- <span className="font-mono">{formatMoney(cart.subtotalCents)}</span>
+ <span>Subtotal {isTourismNiche && passengerCount > 1 ? `(${passengerCount} passageiros)` : ""}</span>
+ <span className="font-mono">{formatMoney(effectiveSubtotalCents)}</span>
  </div>
 
  {cart.discountCents > 0 && (
@@ -2114,22 +2905,31 @@ export function CheckoutPage() {
  </div>
  )}
 
- {formData.shippingMethod !== "pickup" && deliveryToDoor && (
+ {isPhysicalDelivery ? (
+                <>
+                  {formData.shippingMethod !== "pickup" && deliveryToDoor && (
+                    <div className="flex justify-between text-muted-foreground">
+                      <span className="flex items-center gap-1">Entrega na Porta / Apto</span>
+                      <span className="font-mono">{formatMoney(doorDeliveryFeeCents)}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between text-muted-foreground">
+                    <span>Frete / Entrega</span>
+                    <span className="font-mono">
+                      {formData.shippingMethod === "pickup"
+                        ? "Grátis"
+                        : cart.shippingCents > 0
+                        ? formatMoney(cart.shippingCents)
+                        : "A calcular"}
+                    </span>
+                  </div>
+                </>
+              ) : (
                 <div className="flex justify-between text-muted-foreground">
-                  <span className="flex items-center gap-1">Entrega na Porta / Apto</span>
-                  <span className="font-mono">{formatMoney(doorDeliveryFeeCents)}</span>
+                  <span>{isTourismNiche ? "Emissão de Voucher Digital" : isDigitalNiche ? "Envio Digital" : "Taxa de Atendimento"}</span>
+                  <span className="font-mono text-emerald-600 dark:text-emerald-400 font-bold">Grátis (Sem Frete)</span>
                 </div>
               )}
-              <div className="flex justify-between text-muted-foreground">
-                <span>Frete / Entrega</span>
-                <span className="font-mono">
-                  {formData.shippingMethod === "pickup"
-                    ? "Grátis"
-                    : cart.shippingCents > 0
-                    ? formatMoney(cart.shippingCents)
-                    : "A calcular"}
-                </span>
-              </div>
 
               <div className="pt-2 flex justify-between items-baseline text-base font-bold text-foreground">
                 <span>Total</span>

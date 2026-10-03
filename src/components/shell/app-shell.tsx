@@ -9,11 +9,14 @@ import { InterestPickerModal } from "@/components/onboarding/interest-picker-mod
 import { GeolocationPermissionSheet } from "@/components/location/geolocation-permission-sheet";
 import { PWAInstallBanner } from "@/components/commerce/pwa-install-banner";
 import { OfflineIndicator } from "./offline-indicator";
+import { WaesyCopilotDrawer } from "@/components/chat/waesy-copilot-drawer";
 import { NativeMobileHeader } from "@/components/navigation/native-mobile-header";
 import { useWindowSizeClass } from "@/hooks/use-mobile";
 
 function resolveCleanMobileTitle(pathname: string, fallbackTitle?: string): string {
   const map: Record<string, string> = {
+    "/marketplace": "Marketplace",
+    "/copilot": "Waesy Copilot",
     "/buscar": "Buscar",
     "/carrinho": "Carrinho",
     "/checkout": "Finalizar Pedido",
@@ -326,6 +329,9 @@ export function AppShell({ children, session, brandSettings }: AppShellProps) {
 
       {/* Mobile Bottom Navigation com Botão Criar Flutuante & Action Sheet (Ocultado em páginas de detalhe para liberar a barra de compra/conversão) */}
       {isCompact && !isDetailPage && <MobileNav session={session} userRole={session?.role} />}
+
+      {/* Waesy Copilot Drawer Global Flutuante */}
+      <WaesyCopilotDrawer session={session} />
 
       {/* Indicador Flutuante de Conexão Offline */}
       <OfflineIndicator />

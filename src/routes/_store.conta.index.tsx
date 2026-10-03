@@ -244,7 +244,7 @@ function AccountDashboardPage() {
           type="button"
           onClick={handleSignOut}
           disabled={isLoggingOut}
-          className="absolute right-3 top-3 sm:right-4 sm:top-4 p-2 rounded-lg text-muted-foreground/70 hover:text-destructive hover:bg-destructive/10 transition-colors cursor-pointer"
+          className="absolute right-3 top-3 sm:right-4 sm:top-4 p-2 rounded-lg text-muted-foreground/70 hover:text-destructive hover:bg-destructive/10 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           title="Encerrar Sessão"
         >
           <LogOut className="size-4" />

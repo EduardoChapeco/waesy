@@ -1,4 +1,4 @@
-import { Home, MapPin, ShoppingBag, Tag, Calendar, Compass, User, LayoutDashboard, Bookmark, Handshake, Package, MessageSquare, Coins, Gift, CreditCard, RefreshCcw, Sliders, Flame, Clock, Heart, Plus, Search, SlidersHorizontal, Store, Layers, Utensils, Music, Shirt, HelpCircle, ShieldCheck, Building, Car, Truck, Laptop, Briefcase, Ticket, Mountain, Newspaper, Target, Trophy } from 'lucide-react';
+import { Home, MapPin, ShoppingBag, Tag, Calendar, Compass, User, LayoutDashboard, Bookmark, Handshake, Package, MessageSquare, Coins, Gift, CreditCard, RefreshCcw, Sliders, Flame, Clock, Heart, Plus, Search, SlidersHorizontal, Store, Layers, Utensils, Music, Shirt, HelpCircle, ShieldCheck, Building, Car, Truck, Laptop, Briefcase, Ticket, Mountain, Newspaper, Target, Trophy, Sparkles } from 'lucide-react';
 
 export type ContentWidthMode =
  "social-feed" | "catalog" | "reading" | "workspace" | "full" | "media-detail";
@@ -40,8 +40,10 @@ export interface ContextConfig {
  * ─── Destinos Globais da Global Rail (8 Módulos Canônicos Independentes) ─────
  */
 export const GLOBAL_DESTINATIONS: NavigationItem[] = [
+  { to: "/marketplace", label: "Marketplace", icon: ShoppingBag },
   { to: "/diretorio", label: "Places", icon: Compass },
   { to: "/classificados", label: "Classificados", icon: Tag },
+  { to: "/copilot", label: "Copilot", icon: Sparkles },
   { to: "/feed", label: "Feed", icon: MessageSquare },
   { to: "/noticias", label: "Notícias", icon: Newspaper },
   { to: "/empregos", label: "Empregos", icon: Briefcase },

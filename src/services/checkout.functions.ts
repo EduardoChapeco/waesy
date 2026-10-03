@@ -248,6 +248,13 @@ const CheckoutSchema = z
  utensilsRequested: z.boolean().optional(),
  itemNotes: z.record(z.string()).optional(),
  checkoutNicheMetadata: z.record(z.unknown()).optional(),
+  orderBump: z.object({
+    ruleId: z.string().uuid(),
+    productId: z.string().uuid(),
+    variantId: z.string().uuid(),
+    offerPriceCents: z.number().int().min(0),
+    title: z.string(),
+  }).optional(),
   deliveryToDoor: z.boolean().optional(),
   doorDeliveryFeeCents: z.number().int().optional(),
   deliveryLocationType: z.enum(["reception", "apartment_door", "direct_hand", "apartment_reception"]).optional(),
@@ -448,6 +455,27 @@ export const processCheckout = createServerFn({ method: "POST" })
           }
         }
         updatePayload.checkout_niche_metadata = nicheMeta;
+
+        if (params.orderBump && params.orderBump.offerPriceCents > 0) {
+          try {
+            await db.from('order_items').insert({
+              order_id: result.orderId,
+              variant_id: params.orderBump.variantId,
+              product_title: params.orderBump.title + ' (Oferta Exclusiva)',
+              variant_sku: 'ORDER-BUMP',
+              qty: 1,
+              unit_price_cents: params.orderBump.offerPriceCents,
+              total_cents: params.orderBump.offerPriceCents,
+            });
+            const { data: curOrd } = await db.from('orders').select('total_cents, subtotal_cents').eq('id', result.orderId).maybeSingle();
+            if (curOrd) {
+              updatePayload.total_cents = (curOrd.total_cents || 0) + params.orderBump.offerPriceCents;
+              updatePayload.subtotal_cents = (curOrd.subtotal_cents || 0) + params.orderBump.offerPriceCents;
+            }
+          } catch (bumpErr) {
+            console.warn('[checkout.functions] Falha ao gravar order bump item:', bumpErr);
+          }
+        }
 
         await db.from("orders").update(updatePayload).eq("id", result.orderId);
 
