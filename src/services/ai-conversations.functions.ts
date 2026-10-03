@@ -8,6 +8,7 @@ import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
 import { inspectPromptSecurity } from "@/lib/prompt-shield";
+import { formatMoney } from "@/lib/money";
 import { executeAiCoreGateway } from "./ai-core-gateway.functions";
 import type {
   AIActivityStep,
@@ -496,6 +497,7 @@ export async function executeAiCopilotPipeline(
   const startTime = Date.now();
   const steps: AIActivityStep[] = [];
   const updatedMemory: Record<string, any> = { ...workingMemory };
+  const promptLower = userPrompt.toLowerCase();
 
   // 1. Inspeciona segurança do prompt contra injeção e jailbreak
   const securityCheck = inspectPromptSecurity(userPrompt);
@@ -559,7 +561,6 @@ export async function executeAiCopilotPipeline(
   });
 
   const db = getServerClient();
-  const promptLower = userPrompt.toLowerCase();
 
   // Executa o Gateway de IA Soberano se houver modelo ativo no pool
   let gatewayResponse: any = null;

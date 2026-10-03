@@ -268,6 +268,28 @@ export default function WorkspaceConfiguracoesPage() {
     initialCheckoutCfg.item_notes?.enabled ?? true
   );
 
+  const [checkoutLayoutMode, setCheckoutLayoutMode] = useState<"auto" | "one_page" | "multi_step">(
+    store?.settings?.checkout_layout_mode || "auto"
+  );
+  const [digitalDeliveryType, setDigitalDeliveryType] = useState<"secure_link" | "direct_download" | "license_key">(
+    store?.settings?.digital_delivery_type || "secure_link"
+  );
+  const [digitalExternalUrl, setDigitalExternalUrl] = useState<string>(
+    store?.settings?.digital_external_url || ""
+  );
+  const [digitalInstructions, setDigitalInstructions] = useState<string>(
+    store?.settings?.digital_instructions || ""
+  );
+  const [weighablePricingMode, setWeighablePricingMode] = useState<"bands" | "scale_adjustment">(
+    store?.settings?.weighable_pricing_mode || "bands"
+  );
+  const [servicePaymentPolicy, setServicePaymentPolicy] = useState<"online_full" | "deposit_and_balance" | "venue_pay">(
+    store?.settings?.service_payment_policy || "online_full"
+  );
+  const [serviceDepositPercentage, setServiceDepositPercentage] = useState<number>(
+    store?.settings?.service_deposit_percentage ?? 30
+  );
+
   const [customFields, setCustomFields] = useState<any[]>(
  store?.settings?.custom_checkout_fields || [],
  );
@@ -398,6 +420,13 @@ export default function WorkspaceConfiguracoesPage() {
           pix_key: pixKey.trim() || undefined,
           payment_instructions: paymentInstructions.trim() || undefined,
           payment_processing_mode: paymentProcessingMode,
+          checkout_layout_mode: checkoutLayoutMode,
+          digital_delivery_type: digitalDeliveryType,
+          digital_external_url: digitalExternalUrl,
+          digital_instructions: digitalInstructions,
+          weighable_pricing_mode: weighablePricingMode,
+          service_payment_policy: servicePaymentPolicy,
+          service_deposit_percentage: serviceDepositPercentage,
         } as any,
       });
 

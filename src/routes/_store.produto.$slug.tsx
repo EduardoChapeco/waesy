@@ -808,6 +808,16 @@ function ProductContent({
 
  const currentThumbnailUrl = activeMedia?.url || coverImage?.url || null;
 
+  const storeSettings = (product as any)?.store?.settings || {};
+  const storeSemantics = getNicheSemantics((product as any)?.store);
+  const isTourismStore =
+    storeSemantics.nicheId === "tourism" ||
+    storeSettings.niche === "tourism" ||
+    storeSettings.segment === "tourism" ||
+    storeSettings.type === "tourism" ||
+    (product as any)?.store?.segment === "tourism" ||
+    (product as any)?.store?.niche === "tourism";
+
  const isTravelProduct = Boolean(
  isTourismStore ||
  (product as any)?.attributes?.travel ||

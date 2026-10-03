@@ -35,7 +35,9 @@ export type ChatArtifactType =
   | "presentation"
   | "landing_page"
   | "proposal"
-  | "image";
+  | "image"
+  | "itinerary"
+  | "travel_itinerary";
 
 export interface ChatArtifactData {
   id: string;
