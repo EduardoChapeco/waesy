@@ -190,39 +190,10 @@ export async function searchUnsplash(query: string): Promise<UnsplashPhoto[]> {
       }
     }
   } catch (err) {
-    console.warn("[searchUnsplash] Fallback para fotos curadas:", err);
+    console.warn("[searchUnsplash] Falha na busca de fotos externas:", err);
   }
 
-  // Fallback curado para destinos turísticos populares
-  const fallbackImages = [
-    { id: "img-1", url: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e" },
-    { id: "img-2", url: "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1" },
-    { id: "img-3", url: "https://images.unsplash.com/photo-1506744038136-46273834b3fb" },
-    { id: "img-4", url: "https://images.unsplash.com/photo-1512100356356-de1b84283e18" },
-    { id: "img-5", url: "https://images.unsplash.com/photo-1499856871958-5b9627545d1a" },
-    { id: "img-6", url: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34" },
-    { id: "img-7", url: "https://images.unsplash.com/photo-1516483638261-f4dbaf036963" },
-    { id: "img-8", url: "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800" },
-  ];
-
-  return fallbackImages.map((f, i) => ({
-    id: `${f.id}-${clean}`,
-    urls: {
-      regular: `${f.url}?auto=format&fit=crop&w=1600&q=80`,
-      small: `${f.url}?auto=format&fit=crop&w=800&q=80`,
-      thumb: `${f.url}?auto=format&fit=crop&w=400&q=80`,
-    },
-    url_full: `${f.url}?auto=format&fit=crop&w=1600&q=80`,
-    url_thumb: `${f.url}?auto=format&fit=crop&w=400&q=80`,
-    alt: `${query} - Foto ${i + 1}`,
-    photographer: "Fotógrafo Unsplash",
-    alt_description: `${query} - Foto ${i + 1}`,
-    description: `Paisagem de viagem para ${query}`,
-    user: {
-      name: "Fotógrafo Unsplash",
-      username: "travel_curated",
-    },
-  }));
+  return [];
 }
 
 /**

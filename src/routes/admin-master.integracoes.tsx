@@ -131,7 +131,7 @@ function AdminMasterIntegracoesPage() {
  const [promptDescription, setPromptDescription] = useState("");
  const [promptSystemInstruction, setPromptSystemInstruction] = useState("");
  const [promptTemplate, setPromptTemplate] = useState("");
- const [promptModel, setPromptModel] = useState("gemini-1.5-flash");
+ const [promptModel, setPromptModel] = useState("gemini-2.5-flash");
  const [promptTemperature, setPromptTemperature] = useState(0.2);
 
   // Governança de Mapas & APIs Públicas
@@ -351,7 +351,7 @@ function AdminMasterIntegracoesPage() {
  setPromptDescription("");
  setPromptSystemInstruction("Você é um assistente de catálogo de alto padrão...");
  setPromptTemplate("Analise o conteúdo:\n{{raw_content}}\n\nRetorne JSON...");
- setPromptModel("gemini-1.5-flash");
+ setPromptModel("gemini-2.5-flash");
  setPromptTemperature(0.2);
  }
  setIsPromptModalOpen(true);
@@ -1764,7 +1764,7 @@ function AdminMasterIntegracoesPage() {
  <Input
  value={promptModel}
  onChange={(e) => setPromptModel(e.target.value)}
- placeholder="gemini-1.5-flash ou llama-3.1-70b"
+ placeholder="gemini-2.5-flash ou llama-3.1-70b"
  className="h-9 text-xs font-mono rounded-lg"
  />
  </div>

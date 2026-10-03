@@ -69,13 +69,17 @@ function RecipeCard({ recipe, isMobileList = false }: { recipe: SearchResultReci
         params={{ id: recipe.id }}
         className="flex items-center gap-3 p-3 hover:bg-muted/40 transition-colors group cursor-pointer"
       >
-        <div className="size-12 rounded-lg overflow-hidden bg-muted shrink-0 relative border border-border/40">
-          <img
-            src={recipe.cover_image_url || "https://images.unsplash.com/photo-1495521821757-a1efb6729352?auto=format&fit=crop&w=400&q=80"}
-            alt={recipe.title}
-            className="size-full object-cover group-hover:scale-105 transition-transform"
-            loading="lazy"
-          />
+        <div className="size-12 rounded-lg overflow-hidden bg-muted shrink-0 relative border border-border/40 flex items-center justify-center">
+          {recipe.cover_image_url ? (
+            <img
+              src={recipe.cover_image_url}
+              alt={recipe.title}
+              className="size-full object-cover group-hover:scale-105 transition-transform"
+              loading="lazy"
+            />
+          ) : (
+            <CookingPot className="size-5 text-muted-foreground/60" />
+          )}
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
@@ -108,13 +112,20 @@ function RecipeCard({ recipe, isMobileList = false }: { recipe: SearchResultReci
       params={{ id: recipe.id }}
       className="group rounded-lg border border-border/50 bg-card overflow-hidden hover:border-primary/40 transition-all flex flex-col justify-between"
     >
-      <div className="aspect-video w-full bg-muted overflow-hidden relative">
-        <img
-          src={recipe.cover_image_url || "https://images.unsplash.com/photo-1495521821757-a1efb6729352?auto=format&fit=crop&w=600&q=80"}
-          alt={recipe.title}
-          className="size-full object-cover group-hover:scale-103 transition-transform duration-300"
-          loading="lazy"
-        />
+      <div className="aspect-video w-full bg-muted overflow-hidden relative flex items-center justify-center">
+        {recipe.cover_image_url ? (
+          <img
+            src={recipe.cover_image_url}
+            alt={recipe.title}
+            className="size-full object-cover group-hover:scale-103 transition-transform duration-300"
+            loading="lazy"
+          />
+        ) : (
+          <div className="flex flex-col items-center justify-center gap-1 text-muted-foreground/60 p-4">
+            <CookingPot className="size-8" />
+            <span className="text-[11px] font-mono">Gastronomia</span>
+          </div>
+        )}
         {recipe.prep_time && (
           <span className="absolute bottom-2 left-2 rounded-md bg-background/90 px-2 py-1 text-[10px] font-mono font-medium text-foreground">
             {recipe.prep_time}

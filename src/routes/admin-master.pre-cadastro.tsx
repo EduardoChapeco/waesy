@@ -167,8 +167,7 @@ export default function AdminPreCadastroPage() {
           id: `slide-${Date.now()}`,
           title: "Novo Destaque / Show",
           tag: "Evento",
-          image_url:
-            "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&w=1200&q=80",
+          image_url: "/brand-logo.png",
         },
       ],
     }));

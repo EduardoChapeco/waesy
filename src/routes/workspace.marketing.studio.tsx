@@ -100,7 +100,7 @@ export default function WorkspaceSocialStudioPage() {
   const [price, setPrice] = useState("R$ 189,90");
   const [installments, setInstallments] = useState("3x sem juros de R$ 63,30");
   const [badgeText, setBadgeText] = useState("Destaque • Pronta Entrega");
-  const [imageUrl, setImageUrl] = useState("https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=1080&q=80");
+  const [imageUrl, setImageUrl] = useState("");
   const [isExporting, setIsExporting] = useState(false);
   const [isExportingPdf, setIsExportingPdf] = useState(false);
   const [copied, setCopied] = useState(false);

@@ -196,23 +196,7 @@ Retorne ESTRITAMENTE um JSON minificado compatível com este formato:
       }
     }
 
-    // Fallbacks de alta resolução caso ainda não tenha imagem de background
-    if (!suggestedBackgroundUrl) {
-      const cityLower = (extracted.destination_city || "").toLowerCase();
-      if (cityLower.includes("joão pessoa") || cityLower.includes("jampa")) {
-        suggestedBackgroundUrl = "https://images.unsplash.com/photo-1590523741831-ab7e8b8f9c7f?q=80&w=1600&auto=format&fit=crop";
-      } else if (cityLower.includes("santiago") || cityLower.includes("chile")) {
-        suggestedBackgroundUrl = "https://images.unsplash.com/photo-1589308078059-be1415eab4c3?q=80&w=1600&auto=format&fit=crop";
-      } else if (cityLower.includes("bariloche") || cityLower.includes("argentina")) {
-        suggestedBackgroundUrl = "https://images.unsplash.com/photo-1544644181-1484b3fdfc62?q=80&w=1600&auto=format&fit=crop";
-      } else if (cityLower.includes("beach park") || cityLower.includes("fortaleza") || cityLower.includes("cumbuco")) {
-        suggestedBackgroundUrl = "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1600&auto=format&fit=crop";
-      } else if (cityLower.includes("machu picchu") || cityLower.includes("peru")) {
-        suggestedBackgroundUrl = "https://images.unsplash.com/photo-1526392060635-9d6019884377?q=80&w=1600&auto=format&fit=crop";
-      } else {
-        suggestedBackgroundUrl = "https://images.unsplash.com/photo-1488646953014-85cb44e25828?q=80&w=1600&auto=format&fit=crop";
-      }
-    }
+
 
     // Cálculo exato de parcela se houver preço total
     let finalInstallmentCents = extracted.installment_cents;

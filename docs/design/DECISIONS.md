@@ -2068,3 +2068,11 @@
 - **Fundamentação:** AGENTS.md B.1 a B.12, DESIGN.md (Apple HIG / Silent Design), WCAG 2.2 AA (DL-14, DL-15) e Doutrina Zero-Mock.
 - **Consequências:** Zero controles espremidos abaixo de 44px, total acessibilidade por teclado com foco visual, zero títulos prolixos ou compostos, e transferência transparente de dados de qualificação de leads diretamente para a thread de chat.
 
+
+
+## DEC-162: Saneamento Forense — Onda 1/2/3 (Mocks, Motores de IA, Leads Civis)
+- **Data:** 2026-10-03
+- **Contexto:** Auditoria `/gap-hunter` revelou fallbacks Unsplash mascarando ausência de mídia, chaves Groq desativadas por modelo inválido (`gemini-1.5-flash` despachado ao Groq, HTTP 404), timeout de 8s abortando Gemini, print do Steel ignorado pela IA, e dois selects com colunas inexistentes (`classifieds.contact_phone`, `classifieds.niche`) que quebravam 100% do formulário de lead civil e do chat SDR em classificados.
+- **Decisão Adotada:** (1) Fallbacks Unsplash substituídos por empty state com ícone ou asset da marca em rotas públicas, workspace e serviços; (2) orquestrador higieniza modelo por provedor, timeouts Groq 20s / Gemini 30s, chave só é desativada em erro 401; (3) print Steel baixado em base64 e enviado à visão do Gemini nos squads de Design e Copy; (4) `lead_forms`/`lead_form_submissions` aceitam posse civil (`author_profile_id`) com CHECK de dono e RLS própria; (5) deduplicação normalizada (sem acento) de métodos de pagamento manuais; (6) modelos Gemini 1.5 migrados para 2.5 no código e em `ai_task_routing_rules`/`ai_master_prompts`.
+- **Fundamentação:** Mandato Zero-Mock; integridade transacional; RLS deny-by-default com posse explícita.
+- **Consequências:** Restam presets de catálogo com URLs Unsplash (`hotel-presets.ts`, `vehicles-catalog.ts`) e arquivos de teste — pendentes para a Onda 1.2. Migração: `20261229000000_civil_lead_forms_author_ownership.sql`.

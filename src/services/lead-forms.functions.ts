@@ -890,7 +890,7 @@ export const submitCivilInquiryLead = createServerFn({ method: "POST" })
     // 1. Busca dados do classificado
     const { data: classified, error: classErr } = await supabase
       .from("classifieds")
-      .select("id, title, store_id, author_profile_id, price_cents, contact_phone, attributes")
+      .select("id, title, store_id, author_profile_id, price_cents, contact_whatsapp, whatsapp, attributes")
       .eq("id", data.classifiedId)
       .single();
 
@@ -905,8 +905,7 @@ export const submitCivilInquiryLead = createServerFn({ method: "POST" })
       if (authData?.user) profileId = authData.user.id;
     } catch {}
 
-    // 3. Registra na tabela de leads (leads_crm ou lead_form_submissions)
-    const storeId = classified.store_id || "00000000-0000-0000-0000-000000000001";
+    // 3. Registra na tabela de leads (lead_form_submissions)
     let submissionId = crypto.randomUUID();
 
     try {
@@ -914,8 +913,9 @@ export const submitCivilInquiryLead = createServerFn({ method: "POST" })
         .from("lead_form_submissions")
         .insert({
           id: submissionId,
-          form_id: "00000000-0000-0000-0000-000000000000",
-          store_id: storeId,
+          form_id: (classified.attributes as any)?.lead_form_id || null,
+          store_id: classified.store_id || null,
+          author_profile_id: classified.author_profile_id || null,
           classified_id: classified.id,
           profile_id: profileId,
           contact_name: data.contactName.trim(),
@@ -936,13 +936,13 @@ export const submitCivilInquiryLead = createServerFn({ method: "POST" })
 
     // 4. Prepara link do WhatsApp como fallback
     let whatsappUrl: string | null = null;
-    const targetPhone = classified.contact_phone;
+    const targetPhone = (classified as any).contact_whatsapp || (classified as any).whatsapp || null;
     if (targetPhone) {
-      const cleanTarget = targetPhone.replace(/\D/g, "");
-      let msg = `Olá! Enviei meus dados com interesse no anúncio *${classified.title}* no Waesy.\n\n👤 *Nome:* ${data.contactName.trim()}\n📱 *Telefone:* ${data.contactPhone.trim()}`;
+      const cleanTarget = String(targetPhone).replace(/\D/g, "");
+      let msg = `Olá! Enviei meus dados com interesse no anúncio *${classified.title}* no Waesy.\n\n*Nome:* ${data.contactName.trim()}\n*Telefone:* ${data.contactPhone.trim()}`;
       const answerEntries = Object.entries(data.answers || {});
       if (answerEntries.length > 0) {
-        msg += "\n\n📋 *Respostas de Qualificação:*";
+        msg += "\n\n*Respostas de Qualificação:*";
         for (const [key, val] of answerEntries) {
           if (val !== undefined && val !== null && val !== "") {
             msg += `\n• ${key}: ${typeof val === "object" ? JSON.stringify(val) : val}`;

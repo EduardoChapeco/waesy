@@ -52,29 +52,25 @@ const DEFAULT_LAUNCH_SETTINGS: LaunchLandingSettingsDTO = {
       id: "slide-1",
       title: "Shows Nacionais e Internacional",
       tag: "Música & Cultura",
-      image_url:
-        "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&w=1200&q=80",
+      image_url: "/brand-logo.png",
     },
     {
       id: "slide-2",
       title: "Feira de Negócios e Inovação",
       tag: "Conexões Regionais",
-      image_url:
-        "https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=1200&q=80",
+      image_url: "/brand-logo.png",
     },
     {
       id: "slide-3",
       title: "Workshops e Mentorias Executivas",
       tag: "Capacitação",
-      image_url:
-        "https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=1200&q=80",
+      image_url: "/brand-logo.png",
     },
     {
       id: "slide-4",
       title: "Sorteio de Viagens o Ano Inteiro 2027",
       tag: "Exclusivo Fundadores",
-      image_url:
-        "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=1200&q=80",
+      image_url: "/brand-logo.png",
     },
   ],
   event_info: {

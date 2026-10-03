@@ -293,7 +293,7 @@ export const chatWithSDR = createServerFn({ method: "POST" })
       const { data: classified, error } = await db
         .from("classifieds")
         .select(`
-          id, title, content, price_cents, category, niche,
+          id, title, content, price_cents, category, sub_category, deal_type, attributes,
           ai_agent_enabled, ai_instructions, max_discount_pct,
           delivery_type, contact_whatsapp, store_id,
           store:stores (id, name, ai_knowledge_base, ai_sales_agent_enabled)
@@ -307,7 +307,7 @@ export const chatWithSDR = createServerFn({ method: "POST" })
       itemTitle = classified.title;
       basePriceCents = classified.price_cents || 0;
       itemDescription = classified.content || "";
-      itemNiche = classified.niche || classified.category || "desapego";
+      itemNiche = (classified.attributes as any)?.niche || classified.sub_category || classified.category || "desapego";
       isTravel = Boolean(
         itemNiche === "viagem" ||
         itemNiche === "turismo" ||
@@ -317,7 +317,7 @@ export const chatWithSDR = createServerFn({ method: "POST" })
       isPickupOnly = classified.delivery_type === "pickup" || classified.delivery_type === "local_pickup";
       maxDiscountPct = classified.max_discount_pct ?? 0;
       customAiInstructions = classified.ai_instructions || "";
-      isDonationListing = classified.niche === "donation" || classified.category === "donation" || basePriceCents === 0;
+      isDonationListing = classified.deal_type === "doacao" || classified.category === "donation" || basePriceCents === 0;
     } else if (storeId) {
       const { data: store, error } = await db
         .from("stores")

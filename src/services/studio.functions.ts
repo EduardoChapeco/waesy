@@ -1200,7 +1200,7 @@ export const generateCarouselFromMinedContent = createServerFn({ method: "POST" 
 
     // 2. Extrai Pauta & Roteirização Narrativa por Tipo de Conteúdo
     const slides: EscamasSlide[] = [];
-    const coverImage = data.coverUrl || "https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=1200&q=80";
+    const coverImage = data.coverUrl || "/brand-logo.png";
 
     if (data.contentType === "licitacoes") {
       const orgao = data.details?.orgao || data.details?.orgao_nome || "Órgão Público";

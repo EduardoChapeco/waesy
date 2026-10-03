@@ -385,7 +385,7 @@ function AIConfigurationPage() {
  </p>
  </div>
  <Badge variant="outline" className="font-mono text-xs">
- gemini-1.5-pro
+ gemini-2.5-pro
  </Badge>
  </div>
 
@@ -409,7 +409,7 @@ function AIConfigurationPage() {
  </p>
  </div>
  <Badge variant="outline" className="font-mono text-xs">
- gemini-1.5-flash-vision
+ gemini-2.5-flash
  </Badge>
  </div>
  </div>

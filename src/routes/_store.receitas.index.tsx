@@ -174,16 +174,20 @@ function PublicRecipesPage() {
             >
               <div>
                 {/* Imagem de Capa 16:9 */}
-                <div className="relative aspect-video w-full overflow-hidden bg-muted">
-                  <img
-                    src={
-                      rec.cover_image_url ||
-                      "https://images.unsplash.com/photo-1495521821757-a1efb6729352?auto=format&fit=crop&w=800&q=80"
-                    }
-                    alt={rec.title}
-                    className="size-full object-cover group-hover:scale-103 transition-transform duration-300"
-                    loading="lazy"
-                  />
+                <div className="relative aspect-video w-full overflow-hidden bg-muted flex items-center justify-center">
+                  {rec.cover_image_url ? (
+                    <img
+                      src={rec.cover_image_url}
+                      alt={rec.title}
+                      className="size-full object-cover group-hover:scale-103 transition-transform duration-300"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className="flex flex-col items-center justify-center gap-2 text-muted-foreground/60 p-4">
+                      <CookingPot className="size-8" />
+                      <span className="text-[11px] font-mono">Receita Editorial</span>
+                    </div>
+                  )}
                   {rec.total_time && (
                     <span className="absolute bottom-2 left-2 inline-flex items-center gap-1 rounded-lg bg-background/90 px-2 py-1 text-[11px] font-mono font-bold text-foreground">
                       <Clock className="size-3 text-primary" />
@@ -244,15 +248,19 @@ function PublicRecipesPage() {
           {selectedRecipe && (
             <div>
               {/* Capa */}
-              <div className="relative aspect-video w-full overflow-hidden bg-muted">
-                <img
-                  src={
-                    selectedRecipe.cover_image_url ||
-                    "https://images.unsplash.com/photo-1495521821757-a1efb6729352?auto=format&fit=crop&w=1200&q=80"
-                  }
-                  alt={selectedRecipe.title}
-                  className="size-full object-cover"
-                />
+              <div className="relative aspect-video w-full overflow-hidden bg-muted flex items-center justify-center">
+                {selectedRecipe.cover_image_url ? (
+                  <img
+                    src={selectedRecipe.cover_image_url}
+                    alt={selectedRecipe.title}
+                    className="size-full object-cover"
+                  />
+                ) : (
+                  <div className="flex flex-col items-center justify-center gap-2 text-muted-foreground/60 p-4">
+                    <CookingPot className="size-12" />
+                    <span className="text-xs font-mono">Receita da Comunidade</span>
+                  </div>
+                )}
                 <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent" />
                 <div className="absolute bottom-3 left-4 right-4">
                   <Badge variant="outline" className="text-xs uppercase font-mono py-0 px-2 text-primary border-primary/30 bg-background/80 mb-2">

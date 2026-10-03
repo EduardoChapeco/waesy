@@ -33,6 +33,7 @@ export interface ScrapedEvidence {
   scrapedMarkdown?: string;
   rawTextSample: string;
   screenshotUrl?: string | null;
+  screenshotBase64?: string | null;
   extractionProvider: "firecrawl" | "steel" | "native_fetch";
   instagramStatus?: {
     isInstagram: boolean;
@@ -269,6 +270,7 @@ export async function captureWebEvidence(
   let metaDescription = "";
   let extractionProvider: "firecrawl" | "steel" | "native_fetch" = "native_fetch";
   let screenshotUrl: string | null = null;
+  let screenshotBase64: string | null = null;
   let instagramStatus: ScrapedEvidence["instagramStatus"] = undefined;
 
   // A. Firecrawl Scrape Oficial
@@ -383,9 +385,17 @@ export async function captureWebEvidence(
         const sData = await steelRes.json();
         const rawShotUrl = sData?.url || sData?.screenshotUrl;
         if (rawShotUrl) {
-          // Salva referência ou faz upload para bucket public_media
           screenshotUrl = rawShotUrl;
           extractionProvider = "steel";
+          try {
+            const shotBufferRes = await fetch(rawShotUrl, { signal: AbortSignal.timeout(12000) });
+            if (shotBufferRes.ok) {
+              const arrayBuffer = await shotBufferRes.arrayBuffer();
+              screenshotBase64 = Buffer.from(arrayBuffer).toString("base64");
+            }
+          } catch (shotBufferErr: any) {
+            console.warn("[OnboardingPipeline] Falha ao descarregar buffer do print Steel:", shotBufferErr?.message);
+          }
         }
       } else {
         await markKeyError(steelKey.id, `Steel HTTP ${steelRes.status}`);
@@ -405,6 +415,7 @@ export async function captureWebEvidence(
     scrapedMarkdown: scrapedMarkdown.slice(0, 8000),
     rawTextSample: scrapedMarkdown.slice(0, 3000),
     screenshotUrl,
+    screenshotBase64,
     extractionProvider,
     instagramStatus,
   };
@@ -507,6 +518,9 @@ Retorne o JSON:
     userPrompt,
     responseFormat: "json_object",
     temperature: 0.2,
+    images: evidence.screenshotBase64
+      ? [{ mimeType: "image/png", base64: evidence.screenshotBase64 }]
+      : undefined,
   });
 
   const parsed = res.parsedJson || {};
@@ -573,6 +587,9 @@ Retorne o JSON:
     userPrompt,
     responseFormat: "json_object",
     temperature: 0.3,
+    images: evidence.screenshotBase64
+      ? [{ mimeType: "image/png", base64: evidence.screenshotBase64 }]
+      : undefined,
   });
 
   const parsed = res.parsedJson || {};

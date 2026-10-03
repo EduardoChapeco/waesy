@@ -67,7 +67,7 @@ export default function WorkspaceMarketingSocialPage() {
       defaultOgImageUrl ||
       settings?.store_banner_url ||
       settings?.store_logo_url ||
-      "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1200&h=630&fit=crop",
+      "/brand-logo.png",
   };
 
   // Gerador dinâmico de texto formatado

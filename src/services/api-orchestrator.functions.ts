@@ -416,13 +416,13 @@ export async function markKeyError(
   if (!keyId || keyId.startsWith("env-") || keyId.startsWith("byok-")) return;
   const supabase = getServerClient();
   try {
-    const isRateLimit = statusCode === 429 || errorMessage.toLowerCase().includes("rate limit") || errorMessage.includes("429");
+    const isAuthError = statusCode === 401 || errorMessage.toLowerCase().includes("invalid api key") || errorMessage.toLowerCase().includes("unauthorized");
     await supabase
       .from("api_key_pools")
       .update({
         last_error_at: new Date().toISOString(),
         last_error_message: errorMessage.slice(0, 255),
-        is_active: isRateLimit ? true : false,
+        is_active: isAuthError ? false : true,
       })
       .eq("id", keyId);
   } catch (err) {
@@ -703,8 +703,15 @@ export async function executeUnifiedAiCall(options: UnifiedAiCallOptions): Promi
           continue;
         }
 
-        // Modelo validado e ativo no pool Groq em 2026 (substitui o descontinuado llama-3.3-70b-versatile)
-        const model = options.modelOverride || "qwen/qwen3.8-27b";
+        // Higienização de modelo para o Groq: nunca despachar modelos Gemini/OpenAI para o Groq
+        let model = "llama-3.3-70b-versatile";
+        if (options.modelOverride) {
+          const o = options.modelOverride.toLowerCase();
+          if (o.includes("llama") || o.includes("mixtral") || o.includes("gemma")) {
+            model = options.modelOverride;
+          }
+        }
+
         const messages: any[] = [];
         if (systemPrompt) {
           messages.push({ role: "system", content: systemPrompt });
@@ -715,7 +722,7 @@ export async function executeUnifiedAiCall(options: UnifiedAiCallOptions): Promi
           model,
           messages,
           temperature: options.temperature ?? 0.3,
-          max_tokens: options.maxTokens ?? 2048,
+          max_tokens: options.maxTokens ?? 4096,
         };
         if (isJson) {
           bodyPayload.response_format = { type: "json_object" };
@@ -728,12 +735,12 @@ export async function executeUnifiedAiCall(options: UnifiedAiCallOptions): Promi
             Authorization: `Bearer ${keyInfo.rawKey}`,
           },
           body: JSON.stringify(bodyPayload),
-          signal: AbortSignal.timeout(8000),
+          signal: AbortSignal.timeout(20000),
         });
 
         if (!res.ok) {
           const errText = await res.text().catch(() => "");
-          await markKeyError(keyInfo.id, `Groq HTTP ${res.status}: ${errText.slice(0, 150)}`);
+          await markKeyError(keyInfo.id, `Groq HTTP ${res.status}: ${errText.slice(0, 150)}`, res.status);
           errors.push(`Groq (${res.status})`);
           continue;
         }
@@ -762,8 +769,14 @@ export async function executeUnifiedAiCall(options: UnifiedAiCallOptions): Promi
       }
 
       if (provider === "gemini") {
-        // Modelo validado e ativo no pool Google em 2026 (substitui o descontinuado gemini-1.5-flash)
-        const model = options.modelOverride || "gemini-2.5-flash";
+        // Higienização de modelo para o Google Gemini
+        let model = "gemini-2.5-flash";
+        if (options.modelOverride) {
+          const o = options.modelOverride.toLowerCase();
+          if (o.includes("gemini")) {
+            model = options.modelOverride;
+          }
+        }
         const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${keyInfo.rawKey}`;
 
         const parts: any[] = [{ text: userPrompt }];
@@ -780,7 +793,7 @@ export async function executeUnifiedAiCall(options: UnifiedAiCallOptions): Promi
           contents: [{ parts }],
           generationConfig: {
             temperature: options.temperature ?? 0.3,
-            maxOutputTokens: options.maxTokens ?? 2048,
+            maxOutputTokens: options.maxTokens ?? 4096,
           },
         };
 
@@ -798,7 +811,7 @@ export async function executeUnifiedAiCall(options: UnifiedAiCallOptions): Promi
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
-          signal: AbortSignal.timeout(8000),
+          signal: AbortSignal.timeout(30000),
         });
 
         if (!res.ok) {

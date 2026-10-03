@@ -74,12 +74,11 @@ const MONTH_NAMES = [
   "DEZ",
 ];
 
-const FALLBACK_EVENT_COVERS = {
-  default: "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=800&auto=format&fit=crop&q=80",
-};
+const FALLBACK_EVENT_COVER =
+  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='500' viewBox='0 0 800 500'%3E%3Crect width='800' height='500' fill='%2318181b'/%3E%3Ccircle cx='400' cy='250' r='90' fill='%2327272a'/%3E%3Cpath d='M360 210h80v80H360z' fill='none' stroke='%2352525b' stroke-width='4'/%3E%3Ctext x='400' y='340' font-family='sans-serif' font-size='18' font-weight='600' fill='%23a1a1aa' text-anchor='middle'%3EWaesy Eventos%3C/text%3E%3C/svg%3E";
 
 function getEventCover(event: any) {
-  return event.cover_image || event.cover_image_url || event.image_url || FALLBACK_EVENT_COVERS.default;
+  return event.cover_image || event.cover_image_url || event.image_url || FALLBACK_EVENT_COVER;
 }
 
 export const Route = createFileRoute("/_store/eventos")({
@@ -803,7 +802,7 @@ function EventosPage() {
                         alt={event.title}
                         className="absolute inset-0 size-full object-cover group-hover:scale-105 transition-transform duration-500"
                         onError={(e) => {
-                          e.currentTarget.src = FALLBACK_EVENT_COVERS.default;
+                          e.currentTarget.src = FALLBACK_EVENT_COVER;
                         }}
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
@@ -874,7 +873,7 @@ function EventosPage() {
                     alt={event.title}
                     className="absolute inset-0 size-full object-cover group-hover:scale-105 transition-transform duration-500"
                     onError={(e) => {
-                      e.currentTarget.src = FALLBACK_EVENT_COVERS.default;
+                      e.currentTarget.src = FALLBACK_EVENT_COVER;
                     }}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
@@ -932,7 +931,7 @@ function EventosPage() {
                   alt={event.title}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   onError={(e) => {
-                    e.currentTarget.src = FALLBACK_EVENT_COVERS.default;
+                    e.currentTarget.src = FALLBACK_EVENT_COVER;
                   }}
                 />
               </div>

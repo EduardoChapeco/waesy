@@ -914,7 +914,7 @@ function UnifiedIntegrationsHubPage() {
               title="Google Gemini AI"
               description="Modelos Gemini 2.5 Flash e 1.5 Pro. Usado na síntese do Studio Escamas, OCR de contratos e curadoria."
               icon={Layers}
-              modelsLabel="gemini-2.5-flash, gemini-1.5-pro"
+              modelsLabel="gemini-2.5-flash, gemini-2.5-pro"
               existingSecret={secrets.find((s: any) => s.provider === "gemini" && s.is_active)}
               onSave={handleSaveSecret}
               onTestConnection={handleTestSecret}
@@ -938,7 +938,7 @@ function UnifiedIntegrationsHubPage() {
               title="Groq Cloud LPU"
               description="Inferência ultra-rápida de modelos abertos com baixa latência para atendimento conversacional."
               icon={Zap}
-              modelsLabel="llama-3.3-70b-versatile, mixtral-8x7b"
+              modelsLabel="llama-3.3-70b-versatile, llama-3.1-8b-instant"
               existingSecret={secrets.find((s: any) => s.provider === "groq" && s.is_active)}
               onSave={handleSaveSecret}
               onTestConnection={handleTestSecret}

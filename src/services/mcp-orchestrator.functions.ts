@@ -115,7 +115,7 @@ export const orchestrateCampaignIntent = createServerFn({ method: "POST" })
       targetProductImage ||
       store.banner_url ||
       store.logo_url ||
-      "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=1080&q=80";
+      "/brand-logo.png";
 
     // 4. Limpeza do tema para headline e copy
     const cleanTheme = prompt

@@ -1067,24 +1067,7 @@ export const generateProposalCoverAI = createServerFn({ method: "POST" })
     })
   )
   .handler(async ({ data: { prompt } }): Promise<{ url: string }> => {
-    const cleanPrompt = prompt.toLowerCase();
-    let url = "https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=1600&q=80";
-    if (cleanPrompt.includes("paris") || cleanPrompt.includes("frança") || cleanPrompt.includes("france")) {
-      url = "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=1600&q=80";
-    } else if (cleanPrompt.includes("praia") || cleanPrompt.includes("nordeste") || cleanPrompt.includes("mar") || cleanPrompt.includes("beach")) {
-      url = "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1600&q=80";
-    } else if (cleanPrompt.includes("montanha") || cleanPrompt.includes("neve") || cleanPrompt.includes("ski") || cleanPrompt.includes("mountain")) {
-      url = "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1600&q=80";
-    } else if (cleanPrompt.includes("disney") || cleanPrompt.includes("orlando") || cleanPrompt.includes("parque")) {
-      url = "https://images.unsplash.com/photo-1513836279014-a89f7a76ae86?auto=format&fit=crop&w=1600&q=80";
-    } else if (cleanPrompt.includes("roma") || cleanPrompt.includes("italia") || cleanPrompt.includes("itália") || cleanPrompt.includes("rome")) {
-      url = "https://images.unsplash.com/photo-1552832230-c0197dd311b5?auto=format&fit=crop&w=1600&q=80";
-    } else if (cleanPrompt.includes("japao") || cleanPrompt.includes("japão") || cleanPrompt.includes("tokyo")) {
-      url = "https://images.unsplash.com/photo-1503899036084-c55cdd92da26?auto=format&fit=crop&w=1600&q=80";
-    } else if (cleanPrompt.includes("ny") || cleanPrompt.includes("york") || cleanPrompt.includes("eua") || cleanPrompt.includes("usa")) {
-      url = "https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?auto=format&fit=crop&w=1600&q=80";
-    }
-    return { url };
+    return { url: "/brand-logo.png" };
   });
 
 // ─── 10. Consultor de Vendas / SDR de IA da Proposta (BFF) ──────────────────

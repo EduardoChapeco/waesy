@@ -28,7 +28,7 @@ interface DonationCategoryItem {
   shortSubtitle: string;
   icon: typeof Heart;
   bentoSpan: string;
-  coverImage: string;
+  coverImage?: string;
   accentClass: string;
 }
 
@@ -39,7 +39,6 @@ const DOACOES_CATEGORIES: DonationCategoryItem[] = [
     shortSubtitle: "Fluxo comunitário geral",
     icon: Heart,
     bentoSpan: "md:col-span-7",
-    coverImage: "https://images.unsplash.com/photo-1593113598332-cd288d649433?auto=format&fit=crop&w=900&q=80",
     accentClass: "text-rose-600 bg-rose-500/10 dark:text-rose-400",
   },
   {
@@ -48,7 +47,6 @@ const DOACOES_CATEGORIES: DonationCategoryItem[] = [
     shortSubtitle: "Retirada direta local",
     icon: Armchair,
     bentoSpan: "md:col-span-5",
-    coverImage: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=800&q=80",
     accentClass: "text-amber-600 bg-amber-500/10 dark:text-amber-400",
   },
   {
@@ -57,7 +55,6 @@ const DOACOES_CATEGORIES: DonationCategoryItem[] = [
     shortSubtitle: "Inverno e vestuário infantil",
     icon: TShirt,
     bentoSpan: "md:col-span-4",
-    coverImage: "https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?auto=format&fit=crop&w=700&q=80",
     accentClass: "text-sky-600 bg-sky-500/10 dark:text-sky-400",
   },
   {
@@ -66,7 +63,6 @@ const DOACOES_CATEGORIES: DonationCategoryItem[] = [
     shortSubtitle: "Educação e leitura",
     icon: BookOpen,
     bentoSpan: "md:col-span-4",
-    coverImage: "https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&w=700&q=80",
     accentClass: "text-emerald-600 bg-emerald-500/10 dark:text-emerald-400",
   },
   {
@@ -75,7 +71,6 @@ const DOACOES_CATEGORIES: DonationCategoryItem[] = [
     shortSubtitle: "Apoio social e comunitário",
     icon: HandHeart,
     bentoSpan: "md:col-span-4",
-    coverImage: "https://images.unsplash.com/photo-1559027615-cd4628902d4a?auto=format&fit=crop&w=700&q=80",
     accentClass: "text-purple-600 bg-purple-500/10 dark:text-purple-400",
   },
   {
@@ -84,7 +79,6 @@ const DOACOES_CATEGORIES: DonationCategoryItem[] = [
     shortSubtitle: "Instituições verificadas",
     icon: Users,
     bentoSpan: "md:col-span-12",
-    coverImage: "https://images.unsplash.com/photo-1469571486292-0ba58a3f068b?auto=format&fit=crop&w=1200&q=80",
     accentClass: "text-indigo-600 bg-indigo-500/10 dark:text-indigo-400",
   },
 ];
@@ -463,15 +457,17 @@ function DoacoesPage() {
                 isSelected && "ring-2 ring-primary border-primary"
               )}
             >
-              <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                <img
-                  src={cat.coverImage}
-                  alt={cat.label}
-                  loading="lazy"
-                  className="w-full h-full object-cover opacity-20 dark:opacity-15 group-hover:scale-105 transition-transform duration-500"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-background/95 via-background/70 to-background/30" />
-              </div>
+              {cat.coverImage && (
+                <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                  <img
+                    src={cat.coverImage}
+                    alt={cat.label}
+                    loading="lazy"
+                    className="w-full h-full object-cover opacity-20 dark:opacity-15 group-hover:scale-105 transition-transform duration-500"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-background/95 via-background/70 to-background/30" />
+                </div>
+              )}
 
               <FrostedCardHeader className="relative z-10 flex flex-row items-center justify-between space-y-0 pb-2">
                 <div

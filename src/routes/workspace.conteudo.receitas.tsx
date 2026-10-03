@@ -374,16 +374,17 @@ function WorkspaceRecipesManagementPage() {
               >
                 {/* Visual Thumbnail & Metadata */}
                 <div className="flex items-center gap-4 min-w-0">
-                  <div className="size-12 rounded-lg bg-muted overflow-hidden shrink-0 border border-border/40 relative">
-                    <img
-                      src={
-                        rec.cover_image_url ||
-                        "https://images.unsplash.com/photo-1495521821757-a1efb6729352?auto=format&fit=crop&w=200&q=80"
-                      }
-                      alt={rec.title}
-                      className="size-full object-cover"
-                      loading="lazy"
-                    />
+                  <div className="size-12 rounded-lg bg-muted overflow-hidden shrink-0 border border-border/40 relative flex items-center justify-center">
+                    {rec.cover_image_url ? (
+                      <img
+                        src={rec.cover_image_url}
+                        alt={rec.title}
+                        className="size-full object-cover"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <ChefHat className="size-5 text-muted-foreground/60" />
+                    )}
                   </div>
 
                   <div className="min-w-0 space-y-1">

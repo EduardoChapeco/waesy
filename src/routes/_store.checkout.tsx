@@ -2516,10 +2516,15 @@ export function CheckoutPage() {
 
  {/* 3. Pagamento na Entrega / Manual (se configurado pela loja) */}
  {(() => {
+ const seenNames = new Set<string>();
  const deduplicatedManualMethods = (paymentMethods || []).filter((pm: any) => {
- const norm = (pm.name || "").toLowerCase().trim();
- if (norm === "pix") return false;
- if ((norm === "cartão de crédito" || norm === "cartao de credito" || norm === "cartão online") && (isGatewayConfigured || storeProfile?.settings?.payment_processing_mode !== "direct_store")) return false;
+ const norm = (pm.name || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+ if (!norm) return false;
+ if (norm.includes("pix")) return false;
+ const isOnlineCard = norm.includes("credito") || norm.includes("credit card") || norm === "cartao online";
+ if (isOnlineCard && (isGatewayConfigured || storeProfile?.settings?.payment_processing_mode !== "direct_store")) return false;
+ if (seenNames.has(norm)) return false;
+ seenNames.add(norm);
  return true;
  });
 

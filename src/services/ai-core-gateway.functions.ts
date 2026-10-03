@@ -93,8 +93,8 @@ export interface AIGatewayResponse {
 const MODEL_PRICING: Record<string, { inPer1M: number; outPer1M: number }> = {
   "groq:llama-3.3-70b-versatile": { inPer1M: 0.59, outPer1M: 0.79 },
   "groq:llama-3.1-8b-instant": { inPer1M: 0.05, outPer1M: 0.08 },
-  "gemini:gemini-1.5-flash": { inPer1M: 0.075, outPer1M: 0.30 },
-  "gemini:gemini-1.5-pro": { inPer1M: 1.25, outPer1M: 5.00 },
+  "gemini:gemini-2.5-flash": { inPer1M: 0.075, outPer1M: 0.30 },
+  "gemini:gemini-2.5-pro": { inPer1M: 1.25, outPer1M: 5.00 },
   "gemini:text-embedding-004": { inPer1M: 0.02, outPer1M: 0.00 },
   "openai:gpt-4o-mini": { inPer1M: 0.15, outPer1M: 0.60 },
   "openai:gpt-4o": { inPer1M: 2.50, outPer1M: 10.00 },
@@ -164,35 +164,35 @@ export interface RouteCandidate {
 export const CANONICAL_TASK_ROUTES: Record<AITaskType, RouteCandidate[]> = {
   chat: [
     { provider: "groq", model: "llama-3.3-70b-versatile" },
-    { provider: "gemini", model: "gemini-1.5-flash" },
+    { provider: "gemini", model: "gemini-2.5-flash" },
     { provider: "openrouter", model: "google/gemma-2-9b-it:free" },
   ],
   resumo: [
     { provider: "groq", model: "llama-3.1-8b-instant" },
-    { provider: "gemini", model: "gemini-1.5-flash" },
+    { provider: "gemini", model: "gemini-2.5-flash" },
     { provider: "openai", model: "gpt-4o-mini" },
   ],
   classificacao: [
     { provider: "groq", model: "llama-3.1-8b-instant" },
-    { provider: "gemini", model: "gemini-1.5-flash" },
+    { provider: "gemini", model: "gemini-2.5-flash" },
     { provider: "openai", model: "gpt-4o-mini" },
   ],
   extracao: [
-    { provider: "gemini", model: "gemini-1.5-flash" },
+    { provider: "gemini", model: "gemini-2.5-flash" },
     { provider: "groq", model: "llama-3.3-70b-versatile" },
     { provider: "openai", model: "gpt-4o-mini" },
   ],
   geracao_texto: [
     { provider: "groq", model: "llama-3.3-70b-versatile" },
-    { provider: "gemini", model: "gemini-1.5-flash" },
+    { provider: "gemini", model: "gemini-2.5-flash" },
     { provider: "openrouter", model: "meta-llama/llama-3.1-70b-instruct:free" },
   ],
   ocr: [
-    { provider: "gemini", model: "gemini-1.5-flash" },
+    { provider: "gemini", model: "gemini-2.5-flash" },
     { provider: "openai", model: "gpt-4o-mini" },
   ],
   codigo: [
-    { provider: "gemini", model: "gemini-1.5-pro" },
+    { provider: "gemini", model: "gemini-2.5-pro" },
     { provider: "groq", model: "llama-3.3-70b-versatile" },
     { provider: "openai", model: "gpt-4o" },
   ],

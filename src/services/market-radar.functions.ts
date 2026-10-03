@@ -399,9 +399,7 @@ export async function captureAndAnalyzeCompetitorLogic(data: {
     promotional_intensity: "moderate",
   };
 
-  const defaultScreenshot =
-    screenshotUrl ||
-    `https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1200&auto=format&fit=crop&q=80`;
+  const defaultScreenshot = screenshotUrl || null;
 
   const { data: snapshotRow, error: snapErr } = await supabase
     .from("competitor_snapshots")

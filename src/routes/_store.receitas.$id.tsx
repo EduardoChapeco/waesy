@@ -15,7 +15,7 @@ export const Route = createFileRoute("/_store/receitas/$id")({
     const recipe = loaderData?.recipe as MinedRecipeDTO | null | undefined;
     const title = recipe ? `${recipe.title} | Receitas Waesy` : "Receita | Waesy Gastronomia";
     const description = recipe?.description || "Veja ingredientes, tempo de preparo e modo de fazer completo.";
-    const imageUrl = recipe?.cover_image_url || "https://images.unsplash.com/photo-1495521821757-a1efb6729352?auto=format&fit=crop&w=1200&q=80";
+    const imageUrl = recipe?.cover_image_url || "/assets/brand/hero-og.png";
 
     return {
       meta: [
@@ -266,15 +266,19 @@ function RecipeDetailPage() {
         )}
 
         {/* ── 2. Imersão Visual: Imagem Destaque Clean (Apple HIG) ── */}
-        <div className="relative w-full aspect-video sm:aspect-[21/9] rounded-lg overflow-hidden bg-muted border border-border/50">
-          <img
-            src={
-              recipe.cover_image_url ||
-              "https://images.unsplash.com/photo-1495521821757-a1efb6729352?auto=format&fit=crop&w=1200&q=80"
-            }
-            alt={recipe.title}
-            className="size-full object-cover"
-          />
+        <div className="relative w-full aspect-video sm:aspect-[21/9] rounded-lg overflow-hidden bg-muted border border-border/50 flex items-center justify-center">
+          {recipe.cover_image_url ? (
+            <img
+              src={recipe.cover_image_url}
+              alt={recipe.title}
+              className="size-full object-cover"
+            />
+          ) : (
+            <div className="flex flex-col items-center justify-center gap-2 text-muted-foreground/60 p-6">
+              <ChefHat className="size-16" />
+              <span className="text-xs font-mono">Gastronomia Autêntica Local</span>
+            </div>
+          )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
 
           {/* Badges Flutuantes sobre a Imagem */}
