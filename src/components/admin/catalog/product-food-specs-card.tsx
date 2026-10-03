@@ -120,7 +120,7 @@ export function ProductFoodSpecsCard({
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <Layers className="size-4 text-primary" />
-            <h3 className="text-sm font-bold text-foreground line-clamp-1 truncate">Especificações de Varejo, Alimentação</h3>
+            <h3 className="text-sm font-bold text-foreground line-clamp-1 truncate">Especificações de Varejo e Alimentação</h3>
             <Badge variant="outline" className="text-[10px] font-bold bg-primary/10 text-primary border-none">
               Padrão iFood / Osuper
             </Badge>
@@ -142,7 +142,7 @@ export function ProductFoodSpecsCard({
             placeholder="Ex: 7891000100103"
             value={value.barcodeEan || ""}
             onChange={(e) => onChange({ ...value, barcodeEan: e.target.value.trim() })}
-            className="h-9 text-xs rounded-lg font-mono"
+            className="h-11 text-xs rounded-lg font-mono"
             maxLength={14}
           />
           <p className="text-[11px] text-muted-foreground">
@@ -159,7 +159,7 @@ export function ProductFoodSpecsCard({
             placeholder="Ex: XGAHTQ ou PRD-01"
             value={value.posCode || ""}
             onChange={(e) => onChange({ ...value, posCode: e.target.value.toUpperCase() })}
-            className="h-9 text-xs rounded-lg font-mono uppercase"
+            className="h-11 text-xs rounded-lg font-mono uppercase"
           />
           <p className="text-[11px] text-muted-foreground">
             Código interno do ERP/Frente de caixa para conciliação automática de vendas.
@@ -194,7 +194,7 @@ export function ProductFoodSpecsCard({
                   value={value.freshPricingMode || "unit"}
                   onValueChange={(val: "unit" | "weight") => onChange({ ...value, freshPricingMode: val })}
                 >
-                  <SelectTrigger className="h-9 rounded-lg text-xs bg-background">
+                  <SelectTrigger className="h-11 rounded-lg text-xs bg-background">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="rounded-lg text-xs">
@@ -219,7 +219,7 @@ export function ProductFoodSpecsCard({
                         avgPieceWeightGrams: e.target.value ? parseInt(e.target.value, 10) : undefined,
                       })
                     }
-                    className="h-9 text-xs rounded-lg bg-background pr-10"
+                    className="h-11 text-xs rounded-lg bg-background pr-10"
                   />
                   <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground font-bold">
                     g / un
@@ -255,7 +255,7 @@ export function ProductFoodSpecsCard({
                           type="button"
                           onClick={() => toggleRipenessStage(opt)}
                           className={cn(
-                            "inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium border transition-all cursor-pointer",
+                            "inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium border transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
                             isSelected
                               ? "bg-primary text-primary-foreground border-primary font-bold shadow-xs"
                               : "bg-background text-muted-foreground border-border/70 hover:border-foreground/30 hover:text-foreground"
@@ -291,7 +291,7 @@ export function ProductFoodSpecsCard({
             variant="outline"
             size="sm"
             onClick={handleAddDiscountRule}
-            className="h-8 rounded-lg text-xs font-bold gap-1 cursor-pointer"
+            className="h-11 px-3 rounded-lg text-xs font-bold gap-1 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
           >
             <Plus className="size-3" />
             <span>Adicionar Faixa</span>
@@ -314,7 +314,7 @@ export function ProductFoodSpecsCard({
                     onChange={(e) =>
                       handleUpdateDiscountRule(idx, "minQuantity", parseInt(e.target.value, 10) || 1)
                     }
-                    className="h-8 w-20 rounded-lg text-xs bg-background text-center font-bold"
+                    className="h-11 w-20 rounded-lg text-xs bg-background text-center font-bold"
                   />
                   <span className="text-muted-foreground">unidades:</span>
                   <Input
@@ -325,7 +325,7 @@ export function ProductFoodSpecsCard({
                     onChange={(e) =>
                       handleUpdateDiscountRule(idx, "discountPercentage", parseInt(e.target.value, 10) || 0)
                     }
-                    className="h-8 w-20 rounded-lg text-xs bg-background text-center font-bold"
+                    className="h-11 w-20 rounded-lg text-xs bg-background text-center font-bold"
                   />
                   <span className="font-bold text-primary">% de desconto</span>
                 </div>
@@ -334,7 +334,7 @@ export function ProductFoodSpecsCard({
                   variant="ghost"
                   size="sm"
                   onClick={() => handleRemoveDiscountRule(idx)}
-                  className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive cursor-pointer"
+                  className="size-10 sm:size-9 p-0 flex items-center justify-center text-muted-foreground hover:text-destructive cursor-pointer rounded-lg focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                 >
                   <Trash2 className="size-3.5" />
                 </Button>
@@ -367,7 +367,7 @@ export function ProductFoodSpecsCard({
                 type="button"
                 onClick={() => toggleDietary(item.id)}
                 className={cn(
-                  "inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium border transition-all cursor-pointer",
+                  "inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium border transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
                   isSelected
                     ? "bg-primary text-primary-foreground border-primary font-bold shadow-xs"
                     : "bg-muted/40 text-muted-foreground border-border/70 hover:border-foreground/30 hover:text-foreground"
@@ -396,7 +396,7 @@ export function ProductFoodSpecsCard({
                 type="button"
                 onClick={() => toggleBeverage(item.id)}
                 className={cn(
-                  "inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium border transition-all cursor-pointer",
+                  "inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium border transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
                   isSelected
                     ? "bg-foreground text-background border-foreground font-bold shadow-xs"
                     : "bg-muted/40 text-muted-foreground border-border/70 hover:border-foreground/30 hover:text-foreground"
@@ -427,7 +427,7 @@ export function ProductFoodSpecsCard({
               value={value.servesCount || "1 pessoa"}
               onValueChange={(val) => onChange({ ...value, servesCount: val })}
             >
-              <SelectTrigger className="h-9 rounded-lg text-xs">
+              <SelectTrigger className="h-11 rounded-lg text-xs">
                 <SelectValue placeholder="Selecione a porção" />
               </SelectTrigger>
               <SelectContent className="rounded-lg text-xs">
@@ -452,13 +452,13 @@ export function ProductFoodSpecsCard({
                 placeholder="Ex: 750"
                 value={value.portionWeight || ""}
                 onChange={(e) => onChange({ ...value, portionWeight: e.target.value })}
-                className="h-9 text-xs rounded-lg flex-1"
+                className="h-11 text-xs rounded-lg flex-1"
               />
               <Select
                 value={value.portionUnit || "g"}
                 onValueChange={(val) => onChange({ ...value, portionUnit: val })}
               >
-                <SelectTrigger className="h-9 w-20 rounded-lg text-xs shrink-0">
+                <SelectTrigger className="h-11 w-20 rounded-lg text-xs shrink-0">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="rounded-lg text-xs">
@@ -490,7 +490,7 @@ export function ProductFoodSpecsCard({
                     preparationTimeMinutes: e.target.value ? parseInt(e.target.value, 10) : undefined,
                   })
                 }
-                className="h-9 text-xs rounded-lg pr-10"
+                className="h-11 text-xs rounded-lg pr-10"
               />
               <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground font-bold">
                 min

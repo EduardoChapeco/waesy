@@ -132,7 +132,7 @@ export function ProductBomCard({
  <div className="space-y-1">
  <CardTitle className="text-base font-bold flex items-center gap-2">
  <Boxes className="size-4 text-primary" />
- <span>Ficha Técnica e Composição de Insumos</span>
+ <span>Ficha Técnica e Insumos</span>
  <Badge variant="outline" className="text-[10px] font-mono uppercase">
  Estoque Composto
  </Badge>
@@ -149,7 +149,7 @@ export function ProductBomCard({
  size="sm"
  onClick={handleApplyCost}
  disabled={items.length === 0}
- className="rounded-lg text-xs font-bold h-9 bg-primary/5 hover:bg-primary/10 text-primary border-primary/20 gap-2"
+ className="rounded-lg text-xs font-bold h-11 px-4 bg-primary/5 hover:bg-primary/10 text-primary border-primary/20 gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
  >
  <CheckCircle2 className="size-3.5" />
  <span>Aplicar Custo ({formatMoney(summary.totalCostCents)})</span>
@@ -215,7 +215,7 @@ export function ProductBomCard({
  value={newItemName}
  onChange={(e) => setNewItemName(e.target.value)}
  placeholder="Ex: Pão Australiano, Caixa Kraft 20cm"
- className="h-9 text-xs rounded-lg font-medium"
+ className="h-11 text-xs rounded-lg font-medium"
  />
  </div>
 
@@ -225,7 +225,7 @@ export function ProductBomCard({
  value={newItemType}
  onValueChange={(v: any) => setNewItemType(v)}
  >
- <SelectTrigger className="h-9 text-xs rounded-lg">
+ <SelectTrigger className="h-11 text-xs rounded-lg">
  <SelectValue />
  </SelectTrigger>
  <SelectContent className="rounded-lg">
@@ -245,7 +245,7 @@ export function ProductBomCard({
  min="0.001"
  value={newItemQty}
  onChange={(e) => setNewItemQty(e.target.value)}
- className="h-9 text-xs rounded-lg font-mono"
+ className="h-11 text-xs rounded-lg font-mono"
  />
  </div>
 
@@ -257,14 +257,14 @@ export function ProductBomCard({
  value={newItemCost}
  onChange={(e) => setNewItemCost(e.target.value)}
  placeholder="0,00"
- className="h-9 text-xs rounded-lg font-mono"
+ className="h-11 text-xs rounded-lg font-mono"
  />
  </div>
 
  <div className="sm:col-span-2">
  <Button
  type="submit"
- className="w-full h-9 rounded-lg text-xs font-bold bg-primary text-primary-foreground gap-1"
+ className="w-full h-11 rounded-lg text-xs font-bold bg-primary text-primary-foreground gap-1 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
  >
  <Plus className="size-3.5" />
  <span>Incluir</span>
@@ -318,7 +318,7 @@ export function ProductBomCard({
  variant="ghost"
  size="icon"
  onClick={() => handleRemoveItem(item.id)}
- className="size-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg"
+ className="size-10 sm:size-9 flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
  >
  <Trash2 className="size-3.5" />
  </Button>

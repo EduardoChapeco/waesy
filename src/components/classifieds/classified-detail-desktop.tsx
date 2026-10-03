@@ -63,7 +63,7 @@ export function ClassifiedDetailDesktop({
   const displayMode = (classified.attributes?.display_mode as string) || "tabs";
   const templateStyle = (classified.attributes?.template_style as string) || "standard";
 
-  const handleStartNativeChat = async () => {
+  const handleStartNativeChat = async (customInitialMessage?: string) => {
     setIsStartingChat(true);
     try {
       const res = await startCustomerChatThread({
@@ -71,7 +71,7 @@ export function ClassifiedDetailDesktop({
           storeId: classified.store_id || classified.storeId || undefined,
           recipientProfileId: classified.author_profile_id || undefined,
           subject: classified.title,
-          initialMessage: `Olá, tenho interesse no anúncio: ${classified.title}`,
+          initialMessage: customInitialMessage || `Olá, tenho interesse no anúncio: ${classified.title}`,
         },
       });
       if (res?.threadId) {
@@ -968,11 +968,15 @@ export function ClassifiedDetailDesktop({
           classifiedTitle={classified.title}
           isOpen={isLeadFormModalOpen}
           onOpenChange={setIsLeadFormModalOpen}
-          onStartSdrChat={() => {
+          onStartSdrChat={(payload) => {
+            const formattedAnswers = payload?.answers && Object.keys(payload.answers).length > 0
+              ? `\n\nRespostas do Formulário:\n` + Object.entries(payload.answers).map(([k, v]) => `• ${v}`).join("\n")
+              : "";
+            const initialMsg = `Olá, tenho interesse no anúncio: ${classified.title}${formattedAnswers}`;
             if (onOpenCompanion) {
               onOpenCompanion();
             } else {
-              handleStartNativeChat();
+              handleStartNativeChat(initialMsg);
             }
           }}
         />

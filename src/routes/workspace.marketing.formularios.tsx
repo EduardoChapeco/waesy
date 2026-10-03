@@ -511,7 +511,7 @@ function WorkspaceLeadFormsPage() {
         <button
           type="button"
           onClick={() => setActiveTab("formularios")}
-          className={`px-4 py-2 text-xs font-medium rounded-lg transition-all ${
+          className={`px-4 py-2 text-xs font-medium rounded-lg transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none ${
             activeTab === "formularios"
               ? "bg-background text-foreground shadow-xs"
               : "text-muted-foreground hover:text-foreground"
@@ -522,7 +522,7 @@ function WorkspaceLeadFormsPage() {
         <button
           type="button"
           onClick={() => setActiveTab("builder")}
-          className={`px-4 py-2 text-xs font-medium rounded-lg transition-all ${
+          className={`px-4 py-2 text-xs font-medium rounded-lg transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none ${
             activeTab === "builder"
               ? "bg-background text-foreground shadow-xs"
               : "text-muted-foreground hover:text-foreground"
@@ -533,7 +533,7 @@ function WorkspaceLeadFormsPage() {
         <button
           type="button"
           onClick={() => setActiveTab("crm")}
-          className={`px-4 py-2 text-xs font-medium rounded-lg transition-all flex items-center gap-2 ${
+          className={`px-4 py-2 text-xs font-medium rounded-lg transition-all flex items-center gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none ${
             activeTab === "crm"
               ? "bg-background text-foreground shadow-xs"
               : "text-muted-foreground hover:text-foreground"
@@ -683,7 +683,7 @@ function WorkspaceLeadFormsPage() {
                 variant="outline"
                 size="sm"
                 onClick={() => applyPreset("turismo")}
-                className="h-8 text-xs rounded-lg"
+                className="h-11 px-3 text-xs rounded-lg cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
               >
                 Viagens
               </Button>
@@ -691,7 +691,7 @@ function WorkspaceLeadFormsPage() {
                 variant="outline"
                 size="sm"
                 onClick={() => applyPreset("imoveis")}
-                className="h-8 text-xs rounded-lg"
+                className="h-11 px-3 text-xs rounded-lg cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
               >
                 Imóveis
               </Button>
@@ -699,7 +699,7 @@ function WorkspaceLeadFormsPage() {
                 variant="outline"
                 size="sm"
                 onClick={() => applyPreset("veiculos")}
-                className="h-8 text-xs rounded-lg"
+                className="h-11 px-3 text-xs rounded-lg cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
               >
                 Veículos
               </Button>
@@ -707,7 +707,7 @@ function WorkspaceLeadFormsPage() {
                 variant="outline"
                 size="sm"
                 onClick={() => applyPreset("geral")}
-                className="h-8 text-xs rounded-lg"
+                className="h-11 px-3 text-xs rounded-lg cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
               >
                 Geral
               </Button>
@@ -805,7 +805,7 @@ function WorkspaceLeadFormsPage() {
                   <button
                     type="button"
                     onClick={() => setBuilderAfterSubmitAction("start_sdr_chat")}
-                    className={`p-3 rounded-lg border text-xs font-medium text-left transition-all flex flex-col justify-between gap-1.5 ${
+                    className={`p-3 rounded-lg border text-xs font-medium text-left transition-all flex flex-col justify-between gap-1.5 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none ${
                       builderAfterSubmitAction === "start_sdr_chat"
                         ? "border-primary bg-primary/10 text-primary"
                         : "border-border/50 text-muted-foreground hover:bg-muted/40"
@@ -820,7 +820,7 @@ function WorkspaceLeadFormsPage() {
                   <button
                     type="button"
                     onClick={() => setBuilderAfterSubmitAction("whatsapp_redirect")}
-                    className={`p-3 rounded-lg border text-xs font-medium text-left transition-all flex flex-col justify-between gap-1.5 ${
+                    className={`p-3 rounded-lg border text-xs font-medium text-left transition-all flex flex-col justify-between gap-1.5 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none ${
                       builderAfterSubmitAction === "whatsapp_redirect"
                         ? "border-primary bg-primary/10 text-primary"
                         : "border-border/50 text-muted-foreground hover:bg-muted/40"
@@ -835,7 +835,7 @@ function WorkspaceLeadFormsPage() {
                   <button
                     type="button"
                     onClick={() => setBuilderAfterSubmitAction("show_success_message")}
-                    className={`p-3 rounded-lg border text-xs font-medium text-left transition-all flex flex-col justify-between gap-1.5 ${
+                    className={`p-3 rounded-lg border text-xs font-medium text-left transition-all flex flex-col justify-between gap-1.5 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none ${
                       builderAfterSubmitAction === "show_success_message"
                         ? "border-primary bg-primary/10 text-primary"
                         : "border-border/50 text-muted-foreground hover:bg-muted/40"
@@ -907,7 +907,7 @@ function WorkspaceLeadFormsPage() {
                       },
                     ]);
                   }}
-                  className="rounded-lg h-8 text-xs gap-1"
+                  className="rounded-lg h-11 px-3 text-xs font-bold gap-1 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   <span>Adicionar Campo</span>
@@ -930,7 +930,7 @@ function WorkspaceLeadFormsPage() {
                           );
                         }}
                         placeholder="Rótulo da pergunta..."
-                        className="h-9 text-xs rounded-lg font-medium flex-1"
+                        className="h-11 text-xs rounded-lg font-medium flex-1"
                       />
                       <select
                         value={field.field_type}
@@ -940,7 +940,7 @@ function WorkspaceLeadFormsPage() {
                             prev.map((f, i) => (i === idx ? { ...f, field_type: val } : f))
                           );
                         }}
-                        className="h-9 px-2 text-xs rounded-lg border border-input bg-background"
+                        className="h-11 px-3 text-xs rounded-lg border border-input bg-background"
                       >
                         <option value="text">Texto Curto</option>
                         <option value="phone">Telefone / WhatsApp</option>
@@ -959,7 +959,7 @@ function WorkspaceLeadFormsPage() {
                         onClick={() => {
                           setBuilderFields((prev) => prev.filter((_, i) => i !== idx));
                         }}
-                        className="p-2 text-muted-foreground hover:text-destructive transition-colors"
+                        className="size-10 sm:size-9 flex items-center justify-center text-muted-foreground hover:text-destructive rounded-lg transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                         title="Remover pergunta"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -978,7 +978,7 @@ function WorkspaceLeadFormsPage() {
                               prev.map((f, i) => (i === idx ? { ...f, step_index: val } : f))
                             );
                           }}
-                          className="w-full h-8 px-2 text-xs rounded-lg border border-input bg-background mt-1"
+                          className="w-full h-11 px-3 text-xs rounded-lg border border-input bg-background mt-1"
                         >
                           <option value={1}>Etapa 1 (Início)</option>
                           <option value={2}>Etapa 2</option>
@@ -998,7 +998,7 @@ function WorkspaceLeadFormsPage() {
                               prev.map((f, i) => (i === idx ? { ...f, skip_to_step: val } : f))
                             );
                           }}
-                          className="w-full h-8 px-2 text-xs rounded-lg border border-input bg-background mt-1"
+                          className="w-full h-11 px-3 text-xs rounded-lg border border-input bg-background mt-1"
                         >
                           <option value="">Fluxo Sequencial Padrão</option>
                           <option value={2}>Ir para Etapa 2</option>
@@ -1046,7 +1046,7 @@ function WorkspaceLeadFormsPage() {
                                   );
                                 }}
                                 placeholder="Texto da opção..."
-                                className="h-7 text-xs rounded-md flex-1"
+                                className="h-9 text-xs rounded-md flex-1"
                               />
                               <button
                                 type="button"
@@ -1056,7 +1056,7 @@ function WorkspaceLeadFormsPage() {
                                     prev.map((f, i) => (i === idx ? { ...f, options: updatedOpts } : f))
                                   );
                                 }}
-                                className="p-1 text-muted-foreground hover:text-destructive"
+                                className="size-9 flex items-center justify-center text-muted-foreground hover:text-destructive rounded-md cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
                               </button>

@@ -2369,7 +2369,7 @@ export function CheckoutPage() {
  type="button"
  onClick={() => setFormData({ ...formData, paymentMethod: "pix", paymentMethodId: "" })}
  className={cn(
- "w-full p-4 rounded-lg border text-left flex items-center justify-between transition-all cursor-pointer",
+ "w-full p-4 rounded-lg border text-left flex items-center justify-between transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
  formData.paymentMethod === "pix"
  ? "border-primary bg-primary/5 ring-1 ring-primary font-bold"
  : "bg-card border-border/80 hover:bg-muted/40"
@@ -2426,7 +2426,7 @@ export function CheckoutPage() {
  type="button"
  onClick={() => setFormData({ ...formData, paymentMethod: "credit_card", paymentMethodId: "" })}
  className={cn(
- "w-full p-4 rounded-lg border text-left flex items-center justify-between transition-all cursor-pointer",
+ "w-full p-4 rounded-lg border text-left flex items-center justify-between transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
  formData.paymentMethod === "credit_card"
  ? "border-primary bg-primary/5 ring-1 ring-primary font-bold"
  : "bg-card border-border/80 hover:bg-muted/40"
@@ -2545,7 +2545,7 @@ export function CheckoutPage() {
  })
  }
  className={cn(
- "w-full p-4 rounded-lg border text-left flex items-center justify-between transition-all cursor-pointer",
+ "w-full p-4 rounded-lg border text-left flex items-center justify-between transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
  isSelected
  ? "border-primary bg-primary/5 ring-1 ring-primary font-bold"
  : "bg-card border-border/80 hover:bg-muted/40"

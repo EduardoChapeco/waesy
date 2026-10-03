@@ -53,7 +53,7 @@ export function ProductFiscalTab({
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
             <Plane className="size-4 text-primary" />
-            <span>Regime Fiscal de Turismo, Hospedagem e Eventos (EC 132/2023)</span>
+            <span>Regime Fiscal de Turismo</span>
           </div>
           <Badge variant="outline" className="text-xs bg-emerald-500/10 text-emerald-600 border-emerald-500/20 font-semibold">
             Redução de 60% IBS/CBS
@@ -131,7 +131,7 @@ export function ProductFiscalTab({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
           <ShieldCheck className="size-4 text-primary" />
-          <span>Classificação Fiscal e Danfe NF-e de Mercadorias</span>
+          <span>Classificação Fiscal NF-e</span>
         </div>
         <Badge variant="outline" className="text-xs bg-primary/5 text-primary border-primary/20 font-semibold">
           NF-e / NFC-e
