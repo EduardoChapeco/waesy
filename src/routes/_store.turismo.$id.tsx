@@ -18,6 +18,8 @@ import { ProtectedContactButton } from "@/components/common/protected-contact-bu
 import { ProductTelemetry } from "@/components/commerce/product-telemetry";
 import { WeatherWidget } from "@/components/classifieds/weather-widget";
 import { InstagramTravelView } from "@/components/classifieds/instagram-travel-view";
+import { ActionAuthGuardModal } from "@/components/common/action-auth-guard-modal";
+import { useActionAuthGuard } from "@/hooks/use-action-auth-guard";
 
 export const Route = createFileRoute("/_store/turismo/$id")({
   head: ({
@@ -53,6 +55,8 @@ function TourismDetailPage() {
   const { experience, session } = ((Route.useLoaderData?.() as any) || {});
   const navigate = useNavigate();
 
+  const { requireAuth, modalProps } = useActionAuthGuard();
+
   const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [isTravelQuoteOpen, setIsTravelQuoteOpen] = useState(false);
   const [customerName, setCustomerName] = useState(session?.user_metadata?.full_name || "");
@@ -67,6 +71,17 @@ function TourismDetailPage() {
   const [message, setMessage] = useState("");
   const [activeImage, setActiveImage] = useState(0);
   const [issuedVoucher, setIssuedVoucher] = useState<{ voucherCode: string; bookingId: string } | null>(null);
+
+  const handleOpenBooking = () => {
+    requireAuth({
+      title: "Faça login para reservar",
+      description: `Para emitir seu voucher digital de "${experience?.title || "viagem"}" e salvar em sua conta, faça login.`,
+      actionContext: `Reserva: ${experience?.title || "Turismo"}`,
+      onSuccess: () => {
+        setIsBookingOpen(true);
+      },
+    });
+  };
 
   const handleGuestsCountChange = (count: number) => {
     const validCount = Math.max(1, Math.min(50, count));
@@ -145,8 +160,8 @@ function TourismDetailPage() {
       content: meta.notes || experience.notes || experience.subtitle || experience.title,
       images:
         gallery.length > 0
-          ? gallery
-          : ["https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=1200&auto=format&fit=crop&q=80"],
+          ? (gallery as string[])
+          : ([experience.image_url, experience.cover_image_url].filter(Boolean) as string[]),
       location_name: dest,
       city: depCity,
       contact_whatsapp: experience.contact_whatsapp,
@@ -395,7 +410,7 @@ function TourismDetailPage() {
   // ── Vista Instagram Editorial ─────────────────────────────────────
   if (viewMode === "instagram_editorial" && editorialClassified) {
     return (
-      <div className="w-full min-h-[100dvh] bg-background">
+      <div className="w-full min-h-screen bg-background">
         <div className="max-w-6xl mx-auto px-0 sm:px-4 pt-3 flex items-center justify-between">
           <Link
             to="/turismo"
@@ -410,7 +425,7 @@ function TourismDetailPage() {
             <button
               type="button"
               onClick={() => setViewMode("instagram_editorial")}
-              className={`px-3 py-1 text-[11px] font-bold rounded-lg transition-all cursor-pointer ${
+              className={`px-3 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                 viewMode === "instagram_editorial"
                   ? "bg-background text-foreground"
                   : "text-muted-foreground hover:text-foreground"
@@ -421,7 +436,7 @@ function TourismDetailPage() {
             <button
               type="button"
               onClick={() => setViewMode("standard")}
-              className={`px-3 py-1 text-[11px] font-bold rounded-lg transition-all cursor-pointer ${
+              className={`px-3 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                 (viewMode as string) === "standard"
                   ? "bg-background text-foreground"
                   : "text-muted-foreground hover:text-foreground"
@@ -435,7 +450,7 @@ function TourismDetailPage() {
         <InstagramTravelView
           classified={editorialClassified}
           isOwner={isOwner}
-          onOpenBookingModal={() => setIsBookingOpen(true)}
+          onOpenBookingModal={handleOpenBooking}
           onOpenProposalModal={() => setIsTravelQuoteOpen(true)}
         />
 
@@ -446,6 +461,7 @@ function TourismDetailPage() {
           defaultDestination={experience.destination || experience.location || experience.title}
           defaultTripType={experience.category === "hospedagens" ? "hotel_only" : "air_package"}
         />
+        <ActionAuthGuardModal {...modalProps} />
       </div>
     );
   }
@@ -476,7 +492,7 @@ function TourismDetailPage() {
               asChild
               size="sm"
               variant="outline"
-              className="h-7 text-[11px] font-semibold rounded-lg border-border/80"
+              className="h-7 text-xs font-semibold rounded-lg border-border/80"
             >
               <Link to={`/workspace/turismo` as any}>
                 <PencilSimple size={14} className="mr-2" />
@@ -516,14 +532,14 @@ function TourismDetailPage() {
               <button
                 type="button"
                 onClick={() => setViewMode("instagram_editorial")}
-                className="px-3 py-1 text-[11px] font-bold rounded-lg transition-all text-muted-foreground hover:text-foreground cursor-pointer"
+                className="px-3 py-1 text-xs font-bold rounded-lg transition-all text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
                 Instagram Editorial
               </button>
               <button
                 type="button"
                 onClick={() => setViewMode("standard")}
-                className="px-3 py-1 text-[11px] font-bold rounded-lg transition-all bg-background text-foreground cursor-pointer"
+                className="px-3 py-1 text-xs font-bold rounded-lg transition-all bg-background text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
                 Página Padrão
               </button>
@@ -595,7 +611,7 @@ function TourismDetailPage() {
                 <button
                   key={idx}
                   onClick={() => setActiveImage(idx)}
-                  className={`relative w-20 sm:w-24 aspect-video rounded-lg overflow-hidden border-2 transition-all shrink-0 cursor-pointer ${
+                  className={`relative w-20 sm:w-24 aspect-video rounded-lg overflow-hidden border-2 transition-all shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                     activeImage === idx ? "border-foreground" : "border-transparent opacity-70 hover:opacity-100"
                   }`}
                 >
@@ -632,7 +648,7 @@ function TourismDetailPage() {
                     <CalendarDots size={18} weight="bold" className="text-primary" />
                     <span>Roteiro Dia a Dia e Atividades</span>
                   </h3>
-                  <Badge variant="outline" className="text-[10px] font-mono font-bold">
+                  <Badge variant="outline" className="text-xs font-mono font-bold">
                     Programação Oficial
                   </Badge>
                 </div>
@@ -641,7 +657,7 @@ function TourismDetailPage() {
                   {experience.itinerary.map((item: any, idx: number) => (
                     <div key={idx} className="relative pl-8 space-y-1">
                       <div className="absolute left-2 top-1.5 size-3.5 rounded-full bg-primary ring-4 ring-background -translate-x-1/2" />
-                      <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-primary block">
+                      <span className="text-xs font-mono font-bold uppercase tracking-wider text-primary block">
                         Dia {item.day || idx + 1} {item.time ? `• ${item.time}` : ""}
                       </span>
                       <p className="text-xs font-bold text-foreground">{item.title}</p>
@@ -729,12 +745,13 @@ function TourismDetailPage() {
                 <div className="text-2xl font-black text-foreground mt-1">{experience.price_display}</div>
               </div>
 
-              {renderBookingDialog(
-                <Button className="w-full rounded-lg font-bold h-12 text-sm bg-foreground text-background gap-2">
-                  <Ticket size={18} weight="bold" />
-                  <span>Reservar</span>
-                </Button>
-              )}
+              <Button
+                onClick={handleOpenBooking}
+                className="w-full rounded-lg font-bold h-12 text-sm bg-foreground text-background gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              >
+                <Ticket size={18} weight="bold" />
+                <span>Reservar</span>
+              </Button>
 
               <Button
                 type="button"
@@ -761,7 +778,7 @@ function TourismDetailPage() {
                 />
               )}
 
-              <div className="pt-3 space-y-2 text-[11px] text-muted-foreground">
+              <div className="pt-3 space-y-2 text-xs text-muted-foreground">
                 <div className="flex items-center gap-2">
                   <ShieldCheck size={16} weight="bold" className="text-foreground shrink-0" />
                   <span>Experiência verificada e curada pelo ecossistema Waesy.</span>
@@ -789,7 +806,7 @@ function TourismDetailPage() {
       <div className="fixed bottom-0 left-0 right-0 z-40 md:hidden pb-[env(safe-area-inset-bottom)] bg-background/95 backdrop-blur-md border-t border-border/60 px-4 py-3">
         <div className="flex items-center gap-2">
           <div className="flex-1">
-            <span className="text-[10px] text-muted-foreground font-semibold block leading-none">A partir de</span>
+            <span className="text-xs text-muted-foreground font-semibold block leading-none">A partir de</span>
             <span className="text-base font-black font-mono text-foreground leading-tight">
               {experience.price_display || "Consulte"}
             </span>
@@ -805,7 +822,7 @@ function TourismDetailPage() {
           </Button>
           <Button
             size="sm"
-            onClick={() => setIsBookingOpen(true)}
+            onClick={handleOpenBooking}
             className="rounded-lg font-bold text-xs h-11 px-5 bg-foreground text-background"
           >
             <Ticket size={15} weight="bold" className="mr-2" />
@@ -813,6 +830,9 @@ function TourismDetailPage() {
           </Button>
         </div>
       </div>
+
+      {renderBookingDialog()}
+      <ActionAuthGuardModal {...modalProps} />
     </>
   );
 }

@@ -493,7 +493,7 @@ async function _getEventWithLots(eventId: string) {
  .single();
 
     if (!eventError && event) {
-      const [{ data: lots }, { data: relations }] = await Promise.all([
+      const [{ data: lots }, { data: relations }, { data: partners }] = await Promise.all([
         supabase
           .from("ticket_lots")
           .select("*")
@@ -504,11 +504,18 @@ async function _getEventWithLots(eventId: string) {
           .select("news_articles(id, title, slug, cover_media_url, kicker, subtitle, published_at)")
           .eq("event_id", eventId)
           .limit(1),
+        supabase
+          .from("eventos_parceiros")
+          .select("*")
+          .eq("evento_id", eventId)
+          .order("ordem", { ascending: true })
+          .then((res) => res)
+          .catch(() => ({ data: [] })),
       ]);
 
       const linkedNews = relations?.[0]?.news_articles || null;
 
-      return { event, lots: lots || [], linkedNews };
+      return { event, lots: lots || [], linkedNews, partners: partners || [] };
     }
  } catch (err) {
  console.warn("[events] Erro ao buscar evento no banco:", err);

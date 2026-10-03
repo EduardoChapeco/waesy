@@ -3,13 +3,14 @@ import { Link } from "@tanstack/react-router";
 import { formatMoney } from "@/lib/money";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CalendarBlank, Ticket, ArrowLeft, MapPin, ArrowSquareOut, Users, CheckCircle, Star, XCircle, Newspaper, PencilSimple } from "@phosphor-icons/react";
+import { CalendarBlank, Ticket, ArrowLeft, MapPin, ArrowSquareOut, Users, CheckCircle, Star, XCircle, Newspaper, PencilSimple, Handshake } from "@phosphor-icons/react";
 import { ContentActionsMenu } from "@/components/common/content-actions-menu";
 
 export interface EventDetailMobileProps {
   event: any;
   lots: any[];
   linkedNews?: any;
+  partners?: any[];
   userRsvp: string | null;
   rsvpCounts: { going: number; interested: number; not_going: number };
   isSubmittingRsvp: boolean;
@@ -22,6 +23,7 @@ export function EventDetailMobile({
   event,
   lots,
   linkedNews,
+  partners = [],
   userRsvp,
   rsvpCounts,
   isSubmittingRsvp,
@@ -44,7 +46,7 @@ export function EventDetailMobile({
   };
 
   return (
-    <div className="w-full min-h-[100dvh] bg-background text-foreground pb-24 font-sans select-none antialiased">
+    <div className="w-full min-h-screen bg-background text-foreground pb-24 font-sans select-none antialiased">
       {/* ── 1. Hero Edge-to-Edge com Ações Flutuantes ── */}
       <div className="relative w-full aspect-video sm:aspect-[16/9] bg-muted overflow-hidden">
         {event.cover_image ? (
@@ -98,7 +100,7 @@ export function EventDetailMobile({
         {/* Badge de Evento Externo sobre a mídia */}
         {event.is_external && (
           <div className="absolute bottom-3 left-3 z-20">
-            <Badge className="bg-background/90 text-foreground text-[10px] font-bold border border-border/50 uppercase tracking-wider backdrop-blur-md">
+            <Badge className="bg-background/90 text-foreground text-xs font-bold border border-border/50 uppercase tracking-wider backdrop-blur-md">
               {event.external_source ? `Via ${event.external_source}` : "Evento Externo"}
             </Badge>
           </div>
@@ -114,7 +116,7 @@ export function EventDetailMobile({
           </div>
           <Link
             to="/workspace/eventos"
-            className="text-[11px] font-bold underline hover:text-amber-800 dark:hover:text-amber-100"
+            className="text-xs font-bold underline hover:text-amber-800 dark:hover:text-amber-100"
           >
             Gerenciar
           </Link>
@@ -173,7 +175,7 @@ export function EventDetailMobile({
               <Users size={16} weight="bold" className="text-primary" />
               <span className="text-xs font-bold text-foreground">Confirmação de Presença</span>
             </div>
-            <span className="text-[11px] text-muted-foreground font-medium">
+            <span className="text-xs text-muted-foreground font-medium">
               {rsvpCounts.going} {rsvpCounts.going === 1 ? "confirmado" : "confirmados"}
             </span>
           </div>
@@ -183,7 +185,7 @@ export function EventDetailMobile({
               type="button"
               onClick={() => handleToggleRsvp("going")}
               disabled={isSubmittingRsvp}
-              className={`flex flex-col items-center justify-center p-3 rounded-lg border text-center transition-all min-h-[54px] active:scale-95 ${
+              className={`flex flex-col items-center justify-center p-3 rounded-lg border text-center transition-all min-h-14 active:scale-95 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                 userRsvp === "going"
                   ? "bg-primary/10 border-primary text-primary font-bold shadow-sm"
                   : "bg-background border-border/70 text-foreground hover:bg-muted/40"
@@ -194,15 +196,15 @@ export function EventDetailMobile({
                 weight={userRsvp === "going" ? "fill" : "regular"}
                 className={userRsvp === "going" ? "text-primary" : "text-muted-foreground"}
               />
-              <span className="text-[11px] mt-1">Eu vou</span>
-              <span className="text-[10px] text-muted-foreground font-mono">{rsvpCounts.going}</span>
+              <span className="text-xs mt-1">Eu vou</span>
+              <span className="text-xs text-muted-foreground font-mono">{rsvpCounts.going}</span>
             </button>
 
             <button
               type="button"
               onClick={() => handleToggleRsvp("interested")}
               disabled={isSubmittingRsvp}
-              className={`flex flex-col items-center justify-center p-3 rounded-lg border text-center transition-all min-h-[54px] active:scale-95 ${
+              className={`flex flex-col items-center justify-center p-3 rounded-lg border text-center transition-all min-h-14 active:scale-95 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                 userRsvp === "interested"
                   ? "bg-amber-500/10 border-amber-500 text-amber-700 dark:text-amber-400 font-bold shadow-sm"
                   : "bg-background border-border/70 text-foreground hover:bg-muted/40"
@@ -213,15 +215,15 @@ export function EventDetailMobile({
                 weight={userRsvp === "interested" ? "fill" : "regular"}
                 className={userRsvp === "interested" ? "text-amber-500" : "text-muted-foreground"}
               />
-              <span className="text-[11px] mt-1">Interesse</span>
-              <span className="text-[10px] text-muted-foreground font-mono">{rsvpCounts.interested}</span>
+              <span className="text-xs mt-1">Interesse</span>
+              <span className="text-xs text-muted-foreground font-mono">{rsvpCounts.interested}</span>
             </button>
 
             <button
               type="button"
               onClick={() => handleToggleRsvp("not_going")}
               disabled={isSubmittingRsvp}
-              className={`flex flex-col items-center justify-center p-3 rounded-lg border text-center transition-all min-h-[54px] active:scale-95 ${
+              className={`flex flex-col items-center justify-center p-3 rounded-lg border text-center transition-all min-h-14 active:scale-95 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                 userRsvp === "not_going"
                   ? "bg-rose-500/10 border-rose-500 text-rose-700 dark:text-rose-400 font-bold shadow-sm"
                   : "bg-background border-border/70 text-foreground hover:bg-muted/40"
@@ -232,8 +234,8 @@ export function EventDetailMobile({
                 weight={userRsvp === "not_going" ? "fill" : "regular"}
                 className={userRsvp === "not_going" ? "text-rose-500" : "text-muted-foreground"}
               />
-              <span className="text-[11px] mt-1">Não vou</span>
-              <span className="text-[10px] text-muted-foreground font-mono">{rsvpCounts.not_going}</span>
+              <span className="text-xs mt-1">Não vou</span>
+              <span className="text-xs text-muted-foreground font-mono">{rsvpCounts.not_going}</span>
             </button>
           </div>
         </div>
@@ -246,7 +248,7 @@ export function EventDetailMobile({
               {event.is_external || event.is_external_ticket ? "Ingressos Oficiais" : "Lotes de Ingressos"}
             </h2>
             {(event.is_external || event.is_external_ticket) && (
-              <Badge variant="outline" className="text-[10px] font-mono border-amber-500/30 text-amber-600 bg-amber-500/10">
+              <Badge variant="outline" className="text-xs font-mono border-amber-500/30 text-amber-600 bg-amber-500/10">
                 {event.external_source ? `Oficial ${event.external_source}` : "Link Externo"}
               </Badge>
             )}
@@ -262,7 +264,7 @@ export function EventDetailMobile({
                 href={event.external_ticket_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full inline-flex items-center justify-center gap-2 h-11 px-4 rounded-lg bg-foreground text-background font-bold text-xs hover:bg-foreground/90 transition-colors"
+                className="w-full inline-flex items-center justify-center gap-2 h-11 px-4 rounded-lg bg-foreground text-background font-bold text-xs hover:bg-foreground/90 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
                 <Ticket size={16} weight="bold" />
                 Comprar no Site Oficial
@@ -293,7 +295,7 @@ export function EventDetailMobile({
                     <div className="flex justify-between items-start mb-3 gap-2">
                       <div>
                         <h3 className="font-bold text-sm text-foreground">{lot.name}</h3>
-                        <p className="text-[11px] text-muted-foreground mt-1">
+                        <p className="text-xs text-muted-foreground mt-1">
                           {isSoldOut ? "Esgotado" : `Restam ${available} ingressos`}
                         </p>
                       </div>
@@ -305,7 +307,7 @@ export function EventDetailMobile({
                     </div>
 
                     <Button
-                      className="w-full font-bold h-10 text-xs rounded-lg"
+                      className="w-full font-bold h-11 text-xs rounded-lg"
                       variant={isSoldOut ? "secondary" : "default"}
                       disabled={isSoldOut}
                       onClick={() => handleBuyTicket(lot)}
@@ -342,7 +344,7 @@ export function EventDetailMobile({
             <Link
               to="/noticias/$slug"
               params={{ slug: linkedNews.slug }}
-              className="block group p-4 rounded-lg border border-border/70 bg-card active:scale-[0.99] transition-all"
+              className="block group p-4 rounded-lg border border-border/70 bg-card active:scale-95 transition-all"
             >
               <div className="flex gap-3 items-center">
                 {linkedNews.cover_media_url && (
@@ -356,7 +358,7 @@ export function EventDetailMobile({
                 )}
                 <div className="space-y-1 min-w-0">
                   {linkedNews.kicker && (
-                    <span className="text-[10px] font-black uppercase tracking-wider text-primary">
+                    <span className="text-xs font-black uppercase tracking-wider text-primary">
                       {linkedNews.kicker}
                     </span>
                   )}
@@ -368,14 +370,91 @@ export function EventDetailMobile({
             </Link>
           </div>
         )}
+
+        {/* ── 8. Patrocinadores & Apoio Oficial (Mobile) ── */}
+        {partners && partners.length > 0 && (
+          <div className="pt-3 border-t border-border/40 space-y-3">
+            <div className="flex items-center gap-2">
+              <Handshake size={16} weight="bold" className="text-primary" />
+              <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                Patrocinadores & Apoio Oficial
+              </h2>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              {partners.map((partner: any) => {
+                const badgeClass =
+                  partner.nivel === "diamante"
+                    ? "border-purple-500/30 text-purple-600 bg-purple-500/10"
+                    : partner.nivel === "ouro"
+                    ? "border-amber-500/30 text-amber-600 bg-amber-500/10"
+                    : partner.nivel === "bronze"
+                    ? "border-orange-500/30 text-orange-600 bg-orange-500/10"
+                    : "border-slate-500/30 text-slate-600 bg-slate-500/10";
+
+                const nivelLabel =
+                  partner.nivel === "diamante"
+                    ? "Master"
+                    : partner.nivel === "ouro"
+                    ? "Ouro"
+                    : partner.nivel === "prata"
+                    ? "Prata"
+                    : partner.nivel === "bronze"
+                    ? "Bronze"
+                    : "Apoio";
+
+                return (
+                  <div
+                    key={partner.id}
+                    className="p-2.5 rounded-lg border border-border/70 bg-card space-y-1.5 flex flex-col justify-between"
+                  >
+                    <div className="flex items-center justify-between gap-1">
+                      <span className={`text-xs px-1.5 py-0.5 rounded font-bold border uppercase tracking-wider ${badgeClass}`}>
+                        {nivelLabel}
+                      </span>
+                      {(partner.site_url || partner.siteUrl) && (
+                        <a
+                          href={partner.site_url || partner.siteUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-muted-foreground hover:text-foreground p-1 rounded focus-visible:ring-2 focus-visible:ring-primary"
+                          aria-label={`Visitar site de ${partner.nome}`}
+                        >
+                          <ArrowSquareOut size={12} weight="bold" />
+                        </a>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-2 pt-1">
+                      {(partner.logo_url || partner.logoUrl) ? (
+                        <div className="size-8 rounded overflow-hidden bg-muted border border-border/40 shrink-0">
+                          <img
+                            src={partner.logo_url || partner.logoUrl}
+                            alt={partner.nome}
+                            className="size-full object-contain p-0.5"
+                          />
+                        </div>
+                      ) : (
+                        <div className="size-8 rounded bg-muted flex items-center justify-center text-muted-foreground shrink-0 border border-border/40 font-bold text-xs uppercase">
+                          {partner.nome?.slice(0, 2) || "AP"}
+                        </div>
+                      )}
+                      <span className="font-bold text-xs text-foreground truncate">{partner.nome}</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* ── 8. Sticky Bottom Bar Anti-Jank (Safe-Area & Thumb Zone) ── */}
+      {/* ── 9. Sticky Bottom Bar Anti-Jank (Safe-Area & Thumb Zone) ── */}
       <div className="fixed bottom-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-md border-t border-border/60 p-3 pb-[calc(0.65rem+env(safe-area-inset-bottom))] mobile-nav-hide-on-keyboard flex items-center justify-between gap-3 shadow-lg">
         <div className="min-w-0 flex-1">
           {lowestLotPrice !== null ? (
             <div>
-              <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider block">
+              <span className="text-xs text-muted-foreground uppercase font-bold tracking-wider block">
                 Ingressos a partir de
               </span>
               <span className="text-base font-black text-foreground">
@@ -384,7 +463,7 @@ export function EventDetailMobile({
             </div>
           ) : event.external_ticket_url ? (
             <div>
-              <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider block">
+              <span className="text-xs text-muted-foreground uppercase font-bold tracking-wider block">
                 Plataforma Oficial
               </span>
               <span className="text-xs font-bold text-foreground capitalize line-clamp-1">
@@ -393,7 +472,7 @@ export function EventDetailMobile({
             </div>
           ) : (
             <div>
-              <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider block">
+              <span className="text-xs text-muted-foreground uppercase font-bold tracking-wider block">
                 Status
               </span>
               <span className="text-xs font-bold text-foreground">
@@ -408,7 +487,7 @@ export function EventDetailMobile({
             href={event.external_ticket_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center justify-center gap-2 h-12 px-5 rounded-lg bg-foreground text-background font-bold text-xs hover:bg-foreground/90 transition-colors shadow-sm shrink-0"
+            className="inline-flex items-center justify-center gap-2 h-12 px-5 rounded-lg bg-foreground text-background font-bold text-xs hover:bg-foreground/90 transition-colors shadow-sm shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           >
             <span>Comprar</span>
             <ArrowSquareOut size={14} weight="bold" />

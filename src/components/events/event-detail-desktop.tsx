@@ -3,7 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { formatMoney } from "@/lib/money";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CalendarBlank, Ticket, ArrowLeft, MapPin, ArrowSquareOut, Users, CheckCircle, Star, XCircle, Newspaper, PencilSimple } from "@phosphor-icons/react";
+import { CalendarBlank, Ticket, ArrowLeft, MapPin, ArrowSquareOut, Users, CheckCircle, Star, XCircle, Newspaper, PencilSimple, Handshake } from "@phosphor-icons/react";
 import { ContentActionsMenu } from "@/components/common/content-actions-menu";
 
 import { NativeBackButton } from "@/components/ui/native-back-button";
@@ -12,6 +12,7 @@ export interface EventDetailDesktopProps {
   event: any;
   lots: any[];
   linkedNews?: any;
+  partners?: any[];
   userRsvp: string | null;
   rsvpCounts: { going: number; interested: number; not_going: number };
   isSubmittingRsvp: boolean;
@@ -24,6 +25,7 @@ export function EventDetailDesktop({
   event,
   lots,
   linkedNews,
+  partners = [],
   userRsvp,
   rsvpCounts,
   isSubmittingRsvp,
@@ -46,7 +48,7 @@ export function EventDetailDesktop({
             asChild
             size="sm"
             variant="outline"
-            className="h-7 text-[11px] font-bold rounded-lg border-amber-500/40 hover:bg-amber-500/15"
+            className="h-7 text-xs font-bold rounded-lg border-amber-500/40 hover:bg-amber-500/15"
           >
             <Link to="/workspace/eventos">
               <PencilSimple size={14} className="mr-2" />
@@ -94,7 +96,7 @@ export function EventDetailDesktop({
               <img src={event.cover_image} alt={event.title} className="w-full h-full object-cover" />
               {event.is_external && (
                 <div className="absolute top-3 left-3">
-                  <Badge className="bg-background/90 text-foreground text-[11px] font-bold border border-border/50 uppercase tracking-wider backdrop-blur-md">
+                  <Badge className="bg-background/90 text-foreground text-xs font-bold border border-border/50 uppercase tracking-wider backdrop-blur-md">
                     {event.external_source ? `Via ${event.external_source}` : "Evento Externo"}
                   </Badge>
                 </div>
@@ -170,7 +172,7 @@ export function EventDetailDesktop({
                     )}
                     <div className="space-y-1 min-w-0">
                       {linkedNews.kicker && (
-                        <span className="text-[10px] font-black uppercase tracking-wider text-primary">
+                        <span className="text-xs font-black uppercase tracking-wider text-primary">
                           {linkedNews.kicker}
                         </span>
                       )}
@@ -185,6 +187,88 @@ export function EventDetailDesktop({
                     </div>
                   </div>
                 </Link>
+              </div>
+            )}
+
+            {/* ── Patrocinadores e Apoiadores Oficiais ── */}
+            {partners && partners.length > 0 && (
+              <div className="pt-4 border-t border-border/40 space-y-3">
+                <div className="flex items-center gap-2">
+                  <Handshake size={18} weight="bold" className="text-primary" />
+                  <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                    Patrocinadores & Apoio Oficial
+                  </h2>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {partners.map((partner: any) => {
+                    const badgeClass =
+                      partner.nivel === "diamante"
+                        ? "border-purple-500/30 text-purple-600 bg-purple-500/10"
+                        : partner.nivel === "ouro"
+                        ? "border-amber-500/30 text-amber-600 bg-amber-500/10"
+                        : partner.nivel === "bronze"
+                        ? "border-orange-500/30 text-orange-600 bg-orange-500/10"
+                        : "border-slate-500/30 text-slate-600 bg-slate-500/10";
+
+                    const nivelLabel =
+                      partner.nivel === "diamante"
+                        ? "Cota Master"
+                        : partner.nivel === "ouro"
+                        ? "Ouro"
+                        : partner.nivel === "prata"
+                        ? "Prata"
+                        : partner.nivel === "bronze"
+                        ? "Bronze"
+                        : "Apoio";
+
+                    return (
+                      <div
+                        key={partner.id}
+                        className="p-3 rounded-lg border border-border/70 bg-card hover:border-primary/50 transition-all space-y-2 flex flex-col justify-between"
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <span className={`text-xs px-2 py-0.5 rounded font-bold border uppercase tracking-wider ${badgeClass}`}>
+                            {nivelLabel}
+                          </span>
+                          {(partner.site_url || partner.siteUrl) && (
+                            <a
+                              href={partner.site_url || partner.siteUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-muted-foreground hover:text-foreground p-1 rounded-md focus-visible:ring-2 focus-visible:ring-primary"
+                              aria-label={`Visitar site de ${partner.nome}`}
+                            >
+                              <ArrowSquareOut size={14} weight="bold" />
+                            </a>
+                          )}
+                        </div>
+
+                        <div className="flex items-center gap-3 pt-1">
+                          {(partner.logo_url || partner.logoUrl) ? (
+                            <div className="size-10 rounded-md overflow-hidden bg-muted border border-border/40 shrink-0">
+                              <img
+                                src={partner.logo_url || partner.logoUrl}
+                                alt={partner.nome}
+                                className="size-full object-contain p-1"
+                              />
+                            </div>
+                          ) : (
+                            <div className="size-10 rounded-md bg-muted flex items-center justify-center text-muted-foreground shrink-0 border border-border/40 font-bold text-xs uppercase">
+                              {partner.nome?.slice(0, 2) || "AP"}
+                            </div>
+                          )}
+                          <div className="min-w-0 flex-1">
+                            <h4 className="font-bold text-xs text-foreground truncate">{partner.nome}</h4>
+                            <span className="text-xs text-muted-foreground capitalize">
+                              {partner.tipo || "Patrocinador"}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             )}
           </div>
@@ -209,7 +293,7 @@ export function EventDetailDesktop({
                 type="button"
                 onClick={() => handleToggleRsvp("going")}
                 disabled={isSubmittingRsvp}
-                className={`flex flex-col items-center justify-center p-3 rounded-lg border text-center transition-all min-h-[58px] ${
+                className={`flex flex-col items-center justify-center p-3 rounded-lg border text-center transition-all min-h-14 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                   userRsvp === "going"
                     ? "bg-primary/10 border-primary text-primary font-bold shadow-sm"
                     : "bg-background border-border/80 hover:border-border text-foreground hover:bg-muted/40"
@@ -221,14 +305,14 @@ export function EventDetailDesktop({
                   className={userRsvp === "going" ? "text-primary" : "text-muted-foreground"}
                 />
                 <span className="text-xs mt-1">Eu vou</span>
-                <span className="text-[10px] text-muted-foreground font-mono">{rsvpCounts.going}</span>
+                <span className="text-xs text-muted-foreground font-mono">{rsvpCounts.going}</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => handleToggleRsvp("interested")}
                 disabled={isSubmittingRsvp}
-                className={`flex flex-col items-center justify-center p-3 rounded-lg border text-center transition-all min-h-[58px] ${
+                className={`flex flex-col items-center justify-center p-3 rounded-lg border text-center transition-all min-h-14 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                   userRsvp === "interested"
                     ? "bg-amber-500/10 border-amber-500 text-amber-700 dark:text-amber-400 font-bold shadow-sm"
                     : "bg-background border-border/80 hover:border-border text-foreground hover:bg-muted/40"
@@ -240,14 +324,14 @@ export function EventDetailDesktop({
                   className={userRsvp === "interested" ? "text-amber-500" : "text-muted-foreground"}
                 />
                 <span className="text-xs mt-1">Interesse</span>
-                <span className="text-[10px] text-muted-foreground font-mono">{rsvpCounts.interested}</span>
+                <span className="text-xs text-muted-foreground font-mono">{rsvpCounts.interested}</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => handleToggleRsvp("not_going")}
                 disabled={isSubmittingRsvp}
-                className={`flex flex-col items-center justify-center p-3 rounded-lg border text-center transition-all min-h-[58px] ${
+                className={`flex flex-col items-center justify-center p-3 rounded-lg border text-center transition-all min-h-14 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                   userRsvp === "not_going"
                     ? "bg-rose-500/10 border-rose-500 text-rose-700 dark:text-rose-400 font-bold shadow-sm"
                     : "bg-background border-border/80 hover:border-border text-foreground hover:bg-muted/40"
@@ -259,7 +343,7 @@ export function EventDetailDesktop({
                   className={userRsvp === "not_going" ? "text-rose-500" : "text-muted-foreground"}
                 />
                 <span className="text-xs mt-1">Não vou</span>
-                <span className="text-[10px] text-muted-foreground font-mono">{rsvpCounts.not_going}</span>
+                <span className="text-xs text-muted-foreground font-mono">{rsvpCounts.not_going}</span>
               </button>
             </div>
           </div>
@@ -272,7 +356,7 @@ export function EventDetailDesktop({
                 {event.is_external || event.is_external_ticket ? "Ingressos Oficiais" : "Ingressos Disponíveis"}
               </h2>
               {(event.is_external || event.is_external_ticket) && (
-                <Badge variant="outline" className="text-[10px] font-mono border-amber-500/30 text-amber-600 bg-amber-500/10">
+                <Badge variant="outline" className="text-xs font-mono border-amber-500/30 text-amber-600 bg-amber-500/10">
                   {event.external_source ? `Oficial ${event.external_source}` : "Link Externo"}
                 </Badge>
               )}
@@ -289,13 +373,13 @@ export function EventDetailDesktop({
                   href={event.external_ticket_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full inline-flex items-center justify-center gap-2 h-12 px-6 rounded-lg bg-foreground text-background font-bold text-sm hover:bg-foreground/90 transition-colors"
+                  className="w-full inline-flex items-center justify-center gap-2 h-12 px-6 rounded-lg bg-foreground text-background font-bold text-sm hover:bg-foreground/90 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 >
                   <Ticket size={18} weight="bold" />
                   Comprar na Plataforma Oficial
                   <ArrowSquareOut size={16} weight="bold" />
                 </a>
-                <p className="text-[11px] text-muted-foreground text-center">
+                <p className="text-xs text-muted-foreground text-center">
                   Você será redirecionado com segurança para o site oficial
                 </p>
               </div>
@@ -323,7 +407,7 @@ export function EventDetailDesktop({
                       <div className="flex justify-between items-start mb-3 gap-2">
                         <div>
                           <h3 className="font-bold text-sm md:text-base text-foreground">{lot.name}</h3>
-                          <p className="text-[11px] text-muted-foreground mt-1">
+                          <p className="text-xs text-muted-foreground mt-1">
                             {isSoldOut ? "Esgotado" : `Restam ${available} ingressos`}
                           </p>
                         </div>

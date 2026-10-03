@@ -52,6 +52,7 @@ export const Route = createFileRoute("/_store/evento/$id")({
         event,
         lots: eventData?.lots || [],
         linkedNews: eventData?.linkedNews || null,
+        partners: eventData?.partners || [],
         userRsvp: rsvpRes?.user_status || null,
         isOwner,
       };
@@ -68,6 +69,7 @@ function EventDetailPage() {
   const event = data?.event;
   const lots = data?.lots || [];
   const linkedNews = data?.linkedNews;
+  const partners = data?.partners || [];
   const isOwner = data?.isOwner || false;
   const router = useRouter();
 
@@ -260,6 +262,7 @@ function EventDetailPage() {
           event={event}
           lots={lots}
           linkedNews={linkedNews}
+          partners={partners}
           userRsvp={userRsvp}
           rsvpCounts={rsvpCounts}
           isSubmittingRsvp={isSubmittingRsvp}
@@ -278,6 +281,7 @@ function EventDetailPage() {
         event={event}
         lots={lots}
         linkedNews={linkedNews}
+        partners={partners}
         userRsvp={userRsvp}
         rsvpCounts={rsvpCounts}
         isSubmittingRsvp={isSubmittingRsvp}

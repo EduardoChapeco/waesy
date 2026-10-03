@@ -11,51 +11,17 @@ export interface TravelItineraryTimelineProps {
 }
 
 export function TravelItineraryTimeline({
- title = "Roteiro Dia a Dia Completo",
- subtitle = "Programação sugerida com paradas, passeios culturais e momentos livres",
- days = [
- {
- id: "d1",
- day: 1,
- date: "Dia 1",
- title: "Chegada e Recepção",
- description: "Recepção no aeroporto ou ponto de encontro, transfer até o hotel e check-in. Restante do dia livre para descanso.",
- },
- {
- id: "d2",
- day: 2,
- date: "Dia 2",
- title: "City Tour Histórico e Cultural",
- description: "Visita aos principais marcos históricos da cidade com guia credenciado, paradas para fotos e almoço típico.",
- },
- {
- id: "d3",
- day: 3,
- date: "Dia 3",
- title: "Passeio pelas Praias e Ecoturismo",
- description: "Dia dedicado à natureza, praias paradisíacas e trilhas ecológicas leves com banho de mar ou cachoeira.",
- },
- {
- id: "d4",
- day: 4,
- date: "Dia 4",
- title: "Dia Livre e Compras",
- description: "Aproveite para compras de artesanato, feiras locais e gastronomia típica nos melhores restaurantes.",
- },
- {
- id: "d5",
- day: 5,
- date: "Dia 5",
- title: "Check-out e Retorno",
- description: "Manhã livre, check-out no hotel e transfer para o aeroporto ou terminal de embarque para retorno.",
- },
- ],
+  title = "Roteiro Dia a Dia Completo",
+  subtitle = "Programação sugerida com paradas, passeios culturais e momentos livres",
+  days = [],
 }: TravelItineraryTimelineProps) {
- const [expanded, setExpanded] = useState<Record<number, boolean>>({ 1: true });
+  const [expanded, setExpanded] = useState<Record<number, boolean>>({ 1: true });
 
- const toggle = (dayNum: number) => {
- setExpanded((prev) => ({ ...prev, [dayNum]: !prev[dayNum] }));
- };
+  if (!days || days.length === 0) return null;
+
+  const toggle = (dayNum: number) => {
+    setExpanded((prev) => ({ ...prev, [dayNum]: !prev[dayNum] }));
+  };
 
  return (
  <section className="space-y-6 py-4">
@@ -84,13 +50,21 @@ export function TravelItineraryTimeline({
  return (
  <div
  key={day.id || day.day}
- className="relative group cursor-pointer"
+ role="button"
+ tabIndex={0}
+ onKeyDown={(e) => {
+ if (e.key === "Enter" || e.key === " ") {
+ e.preventDefault();
+ toggle(day.day);
+ }
+ }}
+ className="relative group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-lg"
  onClick={() => toggle(day.day)}
  >
  {/* Marcador Numérico */}
  <div
  className={cn(
- "absolute -left-7 sm:-left-8 top-0.5 size-6 rounded-full border-2 flex items-center justify-center text-[11px] font-bold z-10 transition-colors",
+ "absolute -left-7 sm:-left-8 top-0.5 size-6 rounded-full border-2 flex items-center justify-center text-xs font-bold z-10 transition-colors",
  isExp
  ? "bg-primary border-primary text-primary-foreground"
  : "bg-background border-border text-muted-foreground group-hover:border-primary/60"
@@ -104,7 +78,7 @@ export function TravelItineraryTimeline({
  <div className="flex items-baseline justify-between gap-2">
  <h4 className="text-sm font-bold text-foreground">{day.title}</h4>
  {day.date && (
- <span className="text-[11px] font-mono text-muted-foreground shrink-0">{day.date}</span>
+ <span className="text-xs font-mono text-muted-foreground shrink-0">{day.date}</span>
  )}
  </div>
 
@@ -123,7 +97,7 @@ export function TravelItineraryTimeline({
  </div>
  )}
 
- <div className="flex items-center justify-between pt-1 text-[11px] text-primary font-semibold">
+ <div className="flex items-center justify-between pt-1 text-xs text-primary font-semibold">
  <span>{isExp ? "Ocultar detalhes" : "Ver detalhes deste dia"}</span>
  <ChevronRight className={cn("size-3.5 transition-transform", isExp && "rotate-90")} />
  </div>
