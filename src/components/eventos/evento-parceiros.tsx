@@ -206,7 +206,7 @@ export function EventoParceiros({ eventId }: EventoParceirosProps) {
         <Card className="rounded-lg border border-dashed border-border/80 p-8 text-center bg-card/40">
           <Handshake className="size-8 text-muted-foreground mx-auto mb-2 opacity-50" />
           <p className="text-xs font-bold text-foreground">Nenhum parceiro cadastrado</p>
-          <p className="text-[11px] text-muted-foreground mt-1">
+          <p className="text-xs text-muted-foreground mt-1">
             Cadastre as marcas parceiras para gerar relatórios de exposição e contrapartidas.
           </p>
         </Card>
@@ -231,21 +231,23 @@ export function EventoParceiros({ eventId }: EventoParceirosProps) {
                       </div>
                       <div>
                         <h4 className="text-xs font-bold text-foreground">{p.nome}</h4>
-                        <span className="text-[10px] text-muted-foreground capitalize">{p.tipo}</span>
+                        <span className="text-xs text-muted-foreground capitalize">{p.tipo}</span>
                       </div>
                     </div>
-                    <button
+                    <Button
                       type="button"
+                      variant="ghost"
+                      size="icon"
                       onClick={() => handleDelete(p.id)}
-                      className="text-muted-foreground hover:text-destructive p-1"
+                      className="size-11 sm:size-9 text-muted-foreground hover:text-destructive cursor-pointer"
                       title="Excluir parceiro"
                     >
-                      <Trash2 className="size-3.5" />
-                    </button>
+                      <Trash2 className="size-4" />
+                    </Button>
                   </div>
 
                   <div>
-                    <Badge className={`text-[10px] font-bold border ${nivelObj.badge}`}>
+                    <Badge className={`text-xs font-bold border ${nivelObj.badge}`}>
                       {nivelObj.label}
                     </Badge>
                   </div>
@@ -257,7 +259,7 @@ export function EventoParceiros({ eventId }: EventoParceirosProps) {
                       href={p.site_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-[11px] text-primary hover:underline flex items-center gap-1"
+                      className="text-xs text-primary hover:underline flex items-center gap-1"
                     >
                       <Globe className="size-3" />
                       <span className="truncate">{p.site_url.replace(/^https?:\/\//, "")}</span>

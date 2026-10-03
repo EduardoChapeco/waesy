@@ -240,20 +240,20 @@ function SubPainelEventoPage() {
  variant="outline"
  size="sm"
  onClick={() => setIsTeamSheetOpen(true)}
- className="gap-2"
+ className="gap-2 h-11 sm:h-9 px-4 rounded-lg text-xs font-bold"
  >
  <Users className="size-4" />
  Escalar Equipe
  </Button>
 
- <Button asChild variant="outline" size="sm" className="gap-2">
+ <Button asChild variant="outline" size="sm" className="gap-2 h-11 sm:h-9 px-4 rounded-lg text-xs font-bold">
  <Link to="/workspace/eventos/$id/checkin" params={{ id: event.id }}>
  <QrCode className="size-4" />
  Portaria Fullscreen
  </Link>
  </Button>
 
- <Button asChild variant="ghost" size="sm" className="gap-2">
+ <Button asChild variant="ghost" size="sm" className="gap-2 h-11 sm:h-9 px-4 rounded-lg text-xs font-bold">
  <Link to="/evento/$id" params={{ id: event.id }} target="_blank">
  <ExternalLink className="size-4" />
  Vitrine Pública
@@ -367,13 +367,13 @@ function SubPainelEventoPage() {
  variant="outline"
  size="sm"
  onClick={() => setIsCompModalOpen(true)}
- className="gap-2"
+ className="gap-2 h-11 sm:h-9 px-4 rounded-lg text-xs font-bold"
  disabled={lots.length === 0}
  >
  <Gift className="size-4" />
  Emitir Cortesia
  </Button>
- <Button size="sm" onClick={() => setIsLotModalOpen(true)} className="gap-2">
+ <Button size="sm" onClick={() => setIsLotModalOpen(true)} className="gap-2 h-11 sm:h-9 px-4 rounded-lg text-xs font-bold">
  <Plus className="size-4" />
  Novo Lote
  </Button>
@@ -387,27 +387,38 @@ function SubPainelEventoPage() {
  />
  ) : (
  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
- {lots.map((lot) => (
+ {lots.map((lot) => {
+ const isExhausted = (lot.capacity || 0) > 0 && (lot.sold_count || 0) >= (lot.capacity || 0);
+ const isSoldOut = lot.status === "sold_out" || isExhausted;
+
+ return (
  <div
  key={lot.id}
- className="bg-card rounded-lg p-4 border border-border/60 space-y-3"
+ className="bg-card rounded-lg p-4 border border-border/60 space-y-3 shadow-2xs"
  >
  <div className="flex items-center justify-between">
- <Badge variant="outline" className="text-xs uppercase font-mono">
- {lot.status === "active" ? "Ativo" : "Pausado"}
+ <Badge
+ variant={isSoldOut ? "destructive" : lot.status === "active" ? "outline" : "secondary"}
+ className={`text-xs uppercase font-mono ${
+ !isSoldOut && lot.status === "active" ? "text-emerald-600 border-emerald-500/30" : ""
+ }`}
+ >
+ {isSoldOut ? "Esgotado" : lot.status === "active" ? "Ativo" : "Pausado"}
  </Badge>
  <div className="flex items-center gap-2">
  <span className="text-sm font-bold font-mono text-foreground">
  {formatMoney(lot.price_cents || 0)}
  </span>
  {(lot.sold_count || 0) === 0 && (
- <button
+ <Button
+ variant="ghost"
+ size="icon"
  onClick={() => handleDeleteLot(lot.id)}
- className="text-muted-foreground hover:text-destructive transition-colors"
+ className="size-11 sm:size-9 text-muted-foreground hover:text-destructive cursor-pointer"
  title="Excluir Lote"
  >
- <Trash2 className="size-3.5" />
- </button>
+ <Trash2 className="size-4" />
+ </Button>
  )}
  </div>
  </div>
@@ -424,7 +435,8 @@ function SubPainelEventoPage() {
  <span>Disponíveis: {Math.max(0, (lot.capacity || 0) - (lot.sold_count || 0))}</span>
  </div>
  </div>
- ))}
+ );
+ })}
  </div>
  )}
  </TabsContent>

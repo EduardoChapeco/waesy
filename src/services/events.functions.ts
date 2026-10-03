@@ -301,30 +301,100 @@ async function _issueComplimentaryTicket(params: {
 
  if (error) throw new Error(error.message);
 
- // Increment sold_count in the lot
- try {
- await supabase.rpc("increment_lot_sold_count", { p_lot_id: params.lotId });
- } catch {}
+  // Increment sold_count in the lot and check automatic rollover
+  try {
+    await supabase.rpc("increment_lot_sold_count", { p_lot_id: params.lotId });
+    await checkAndRolloverEventLots(params.eventId, params.lotId);
+  } catch {}
 
- await logAuditAction(identity, "INSERT", "tickets", ticket.id, {
- type: "complimentary",
- recipient: params.recipientName,
- });
+  await logAuditAction(identity, "INSERT", "tickets", ticket.id, {
+    type: "complimentary",
+    recipient: params.recipientName,
+  });
 
- return ticket;
+  return ticket;
 }
 
 export const issueComplimentaryTicket = createServerFn({ method: "POST" })
- .validator(
- z.object({
- eventId: z.string().uuid(),
- lotId: z.string().uuid(),
- recipientName: z.string().min(2),
- recipientEmail: z.string().email().optional(),
- recipientTaxId: z.string().optional(),
- }),
- )
- .handler(async ({ data }) => _issueComplimentaryTicket(data));
+  .validator(
+    z.object({
+      eventId: z.string().uuid(),
+      lotId: z.string().uuid(),
+      recipientName: z.string().min(2),
+      recipientEmail: z.string().email().optional(),
+      recipientTaxId: z.string().optional(),
+    }),
+  )
+  .handler(async ({ data }) => _issueComplimentaryTicket(data));
+
+/**
+ * Verifica e executa a virada automática de lotes quando o lote atual atinge a capacidade máxima.
+ * Se o lote ativo atingiu o teto (sold_count >= capacity), encerra-o (sold_out) e ativa o próximo lote na fila.
+ */
+export async function checkAndRolloverEventLots(eventId: string, currentLotId?: string) {
+  const supabase = getServerClient();
+
+  const { data: lots, error } = await supabase
+    .from("ticket_lots")
+    .select("id, name, price_cents, capacity, sold_count, status")
+    .eq("event_id", eventId)
+    .order("price_cents", { ascending: true });
+
+  if (error || !lots || lots.length <= 1) return { rolledOver: false };
+
+  const targetLot = currentLotId
+    ? lots.find((l) => l.id === currentLotId)
+    : lots.find((l) => l.status === "active");
+
+  if (!targetLot) return { rolledOver: false };
+
+  const isExhausted =
+    targetLot.capacity > 0 && (targetLot.sold_count || 0) >= targetLot.capacity;
+
+  if (isExhausted && targetLot.status === "active") {
+    // 1. Marca lote atual como esgotado
+    await supabase
+      .from("ticket_lots")
+      .update({ status: "sold_out", updated_at: new Date().toISOString() })
+      .eq("id", targetLot.id);
+
+    // 2. Encontra o próximo lote elegível
+    const nextLot = lots.find(
+      (l) => l.id !== targetLot.id && l.status !== "sold_out" && (l.sold_count || 0) < l.capacity
+    );
+
+    if (nextLot) {
+      await supabase
+        .from("ticket_lots")
+        .update({ status: "active", updated_at: new Date().toISOString() })
+        .eq("id", nextLot.id);
+
+      return {
+        rolledOver: true,
+        previousLotId: targetLot.id,
+        previousLotName: targetLot.name,
+        activatedLotId: nextLot.id,
+        activatedLotName: nextLot.name,
+      };
+    }
+
+    return {
+      rolledOver: true,
+      previousLotId: targetLot.id,
+      previousLotName: targetLot.name,
+      allSoldOut: true,
+    };
+  }
+
+  return { rolledOver: false };
+}
+
+export const triggerLotRolloverCheck = createServerFn({ method: "POST" })
+  .validator(z.object({ eventId: z.string().uuid(), lotId: z.string().uuid().optional() }))
+  .handler(async ({ data }) => {
+    return checkAndRolloverEventLots(data.eventId, data.lotId);
+  });
+
 
 // ---------------------------------------------------------------------------
 // TICKETS / CHECK-IN
