@@ -444,7 +444,7 @@ function AdminOrdersPage() {
  size="sm"
  onClick={() => handleQuickApprove(order.id)}
  disabled={isProcessing}
- className="flex-1 rounded-lg font-bold bg-foreground text-background text-xs h-9"
+ className="flex-1 rounded-lg font-bold bg-foreground text-background text-xs h-11 sm:h-9"
  >
  Confirmar Reserva
  </Button>
@@ -453,7 +453,7 @@ function AdminOrdersPage() {
  asChild
  variant="outline"
  size="icon"
- className="size-9 rounded-lg shrink-0"
+ className="size-11 sm:size-9 rounded-lg shrink-0"
  title="WhatsApp do Cliente"
  >
  <a
@@ -469,7 +469,7 @@ function AdminOrdersPage() {
  asChild
  variant="outline"
  size="icon"
- className="size-9 rounded-lg shrink-0"
+ className="size-11 sm:size-9 rounded-lg shrink-0"
  title="Ver Ficha do Passageiro"
  >
  <Link to={`/workspace/pedidos/${order.id}` as never}>
@@ -541,7 +541,7 @@ function AdminOrdersPage() {
  size="sm"
  onClick={() => handleStatusChange(order.id, "ready_for_pickup")}
  disabled={isProcessing}
- className="flex-1 rounded-lg font-bold bg-primary text-primary-foreground text-xs h-9 gap-1"
+ className="flex-1 rounded-lg font-bold bg-primary text-primary-foreground text-xs h-11 sm:h-9 gap-1"
  >
  <span>Liberar Voucher</span>
  <ArrowRight className="size-3.5" />
@@ -550,7 +550,7 @@ function AdminOrdersPage() {
  asChild
  variant="outline"
  size="icon"
- className="size-9 rounded-lg shrink-0"
+ className="size-11 sm:size-9 rounded-lg shrink-0"
  title="Imprimir Contrato"
  >
  <Link to={`/workspace/pedidos/${order.id}/recibo` as never} target="_blank">
@@ -625,7 +625,7 @@ function AdminOrdersPage() {
  asChild
  variant="outline"
  size="icon"
- className="size-9 rounded-lg shrink-0"
+ className="size-11 sm:size-9 rounded-lg shrink-0"
  title="Ver Voucher Digital"
  >
  <Link to={`/workspace/pedidos/${order.id}` as never}>
@@ -753,7 +753,7 @@ function AdminOrdersPage() {
  size="sm"
  onClick={() => handleQuickApprove(order.id)}
  disabled={isProcessing}
- className="flex-1 rounded-lg font-bold bg-foreground text-background text-xs h-9"
+ className="flex-1 rounded-lg font-bold bg-foreground text-background text-xs h-11 sm:h-9"
  >
  Aceitar Pedido
  </Button>
@@ -761,7 +761,7 @@ function AdminOrdersPage() {
  asChild
  variant="outline"
  size="icon"
- className="size-9 rounded-lg shrink-0"
+ className="size-11 sm:size-9 rounded-lg shrink-0"
  title="Ver Comanda"
  >
  <Link to={`/workspace/pedidos/${order.id}/recibo` as never} target="_blank">
@@ -828,7 +828,7 @@ function AdminOrdersPage() {
  )
  }
  disabled={isProcessing}
- className="flex-1 rounded-lg font-bold bg-primary text-primary-foreground text-xs h-9 gap-1"
+ className="flex-1 rounded-lg font-bold bg-primary text-primary-foreground text-xs h-11 sm:h-9 gap-1"
  >
  <span>Pronto p/ Despacho</span>
  <ArrowRight className="size-3.5" />
@@ -837,7 +837,7 @@ function AdminOrdersPage() {
  asChild
  variant="outline"
  size="icon"
- className="size-9 rounded-lg shrink-0"
+ className="size-11 sm:size-9 rounded-lg shrink-0"
  >
  <Link to={`/workspace/pedidos/${order.id}/recibo` as never} target="_blank">
  <Printer className="size-4" />
@@ -922,7 +922,7 @@ function AdminOrdersPage() {
  asChild
  variant="outline"
  size="icon"
- className="size-9 rounded-lg shrink-0"
+ className="size-11 sm:size-9 rounded-lg shrink-0"
  >
  <Link to={`/workspace/pedidos/${order.id}` as never}>
  <Eye className="size-4" />

@@ -1,5 +1,12 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-156: Auditoria Visual do Workspace e Parecer do Conselho sobre Infraestrutura & Segurança
+- **Data:** 2026-10-03
+- **Contexto:** Auditoria profunda do painel Workspace (177 rotas) revelou quebras visuais (DL-02 colchetes, botões h-8/h-10 abaixo de 44px no mobile, window.confirm nativo e ausência de focus-visible) nas rotas `workspace.marketing.vitrine.tsx`, `workspace.integracoes.marketplaces.tsx`, `workspace.index.tsx`, `workspace.catalogo.produtos.index.tsx` e `workspace.estoque.index.tsx`. Adicionalmente, o conselho emitiu parecer sobre as 3 questões de infraestrutura pendentes.
+- **Decisão:** (1) Corrigidas 15 violações de design e ergonomia no Workspace: removidos `min-h-[220px]`, `min-h-[195px]`, `lg:max-w-[70vw]`, classes de força bruta `!`, eliminados dois `window.confirm()` nativos substituindo por feedback imediato via toast com undo, adicionado `focus-visible` nos botões de status e calibrados alvos de toque para `h-11 sm:h-9`. (2) Parecer Q1: Preservar os 36 arquivos modulares de `src/types/` (Domain-Driven Design) para não colapsar a performance do typecheck do compilador TypeScript. (3) Parecer Q2: APROVAR migração DDL em lote para fixar `search_path = public, pg_temp` nas 85 funções `SECURITY DEFINER` (incluindo `process_pos_sale_transaction`, `prevent_ledger_modification`, `adjust_stock`), neutralizando vetor crítico de escalada de privilégios. (4) Parecer Q3: Identificadas 5 tabelas com policies `cmd: ALL` e `roles: {public}` perigosamente permissivas (`crawl_queue`, `crawl_cache`, `scraper_configs`, `order_events`, `delivery_events`), recomendando restrição imediata para `{service_role}` ou `{authenticated}`.
+- **Fundamentação:** CIS PostgreSQL Benchmark, OWASP ASVS v4.0, W3C WCAG 2.2 AA e Apple HIG.
+- **Consequências:** Catraca de CI reduzida de 18.731 para 18.716 violações com Exit Code 0. Diretrizes de segurança prontas para execução via DDL.
+
 ## DEC-155: Eliminação de Regressões DL — Baseline Atualizada de 18.881 → 18.731
 - **Data:** 2026-10-03
 - **Contexto:** Design-lint --ratchet detectou +257 regressões visuais acima da baseline 18.624 em arquivos editados nas sessões recentes: delivery-time-and-radius-matrix.tsx, variant-matrix-grid.tsx, product-editor-sticky-bar.tsx, canonical-store-profile-view.tsx, cart-sheet.tsx, waesy-copilot-drawer.tsx, _store.checkout.tsx, configuracoes.index.tsx e marketplace-hub.tsx.

@@ -492,12 +492,12 @@ function MarketplaceHubPage() {
         />
         <div className="flex items-center gap-2">
           
-          <Button asChild variant="outline" className="h-10 rounded-lg text-xs font-medium">
+          <Button asChild variant="outline" className="h-11 sm:h-9 px-4 rounded-lg text-xs font-medium cursor-pointer">
             <Link to="/workspace/fiscal/nfe">
               Módulo Fiscal (NF-e)
             </Link>
           </Button>
-          <Button asChild className="h-10 rounded-lg text-xs font-semibold bg-foreground text-background">
+          <Button asChild className="h-11 sm:h-9 px-4 rounded-lg text-xs font-semibold bg-primary text-primary-foreground cursor-pointer">
             <Link to="/workspace/pedidos/expedicao">
               Expedição WMS
             </Link>
@@ -656,8 +656,8 @@ function MarketplaceHubPage() {
                 <div
                   key={item.platform}
                   className={cn(
-                    "rounded-lg border p-5 flex flex-col justify-between transition-all bg-card shadow-xs min-h-[195px]",
-                    isConnected ? "border-emerald-500/40 bg-emerald-500/[0.02]" : "border-border/70"
+                    "rounded-lg border p-5 flex flex-col justify-between transition-all bg-card shadow-xs min-h-48",
+                    isConnected ? "border-emerald-500/40 bg-emerald-500/5" : "border-border/70"
                   )}
                 >
                   <div className="space-y-1">
@@ -958,7 +958,7 @@ function MarketplaceHubPage() {
                         <TableCell className="capitalize font-semibold text-foreground">
                           {evt.platform}
                         </TableCell>
-                        <TableCell className="font-mono text-muted-foreground truncate max-w-[140px]">
+                        <TableCell className="font-mono text-muted-foreground truncate max-w-36">
                           {evt.event_id || evt.id.slice(0, 8)}
                         </TableCell>
                         <TableCell className="font-mono text-muted-foreground">

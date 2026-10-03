@@ -601,10 +601,10 @@ function AdminProductsPage() {
  <img
  src={cover}
  alt=""
- className="size-18 object-cover rounded-lg shrink-0 border border-border/40"
+ className="size-16 object-cover rounded-lg shrink-0 border border-border/40"
  />
  ) : (
- <div className="size-18 bg-muted/60 border border-border/40 rounded-lg flex items-center justify-center shrink-0">
+ <div className="size-16 bg-muted/60 border border-border/40 rounded-lg flex items-center justify-center shrink-0">
  <Package className="size-7 text-muted-foreground" aria-hidden />
  </div>
  )}
@@ -744,7 +744,7 @@ function AdminProductsPage() {
  <Switch
  checked={product.status === "published"}
  onCheckedChange={(c) => handleToggleActive(product, c)}
- className="scale-75"
+ className="cursor-pointer"
  aria-label={`Alternar status de ${product.title}`}
  />
  <Badge

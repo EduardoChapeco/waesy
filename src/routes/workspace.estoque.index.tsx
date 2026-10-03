@@ -218,7 +218,7 @@ function AdminStockPage() {
   return (
     <div className="space-y-6 max-w-7xl mx-auto px-0 sm:px-4 md:px-0">
       <PageHeader
-        eyebrow="Estoque"
+        eyebrow="Operações"
         title="Estoque"
       />
 
@@ -463,7 +463,7 @@ function AdminStockPage() {
                           <Button
                             variant="outline"
                             size="sm"
-                            className="text-xs h-8 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/10 cursor-pointer"
+                            className="text-xs h-9 px-3 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/10 cursor-pointer"
                             onClick={() => handleOpenMovementModal(variant, "purchase")}
                           >
                             <Plus className="size-3.5 mr-1" /> Entrada
@@ -471,7 +471,7 @@ function AdminStockPage() {
                           <Button
                             variant="outline"
                             size="sm"
-                            className="text-xs h-8 text-destructive border-destructive/30 hover:bg-destructive/10 cursor-pointer"
+                            className="text-xs h-9 px-3 text-destructive border-destructive/30 hover:bg-destructive/10 cursor-pointer"
                             onClick={() => handleOpenMovementModal(variant, "damage")}
                           >
                             <Minus className="size-3.5 mr-1" /> Avaria

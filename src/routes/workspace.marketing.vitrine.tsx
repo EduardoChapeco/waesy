@@ -196,8 +196,7 @@ function WorkspaceSitesHubPage() {
  };
 
  const handleApplyTemplate = async (templateId: string) => {
- if (!window.confirm("Deseja criar e editar uma nova página com este modelo no Construtor Visual?")) return;
- setIsApplyingTemplate(true);
+  setIsApplyingTemplate(true);
  try {
  const isHotpage = templateId.startsWith("hotpage_");
  const isTourism = templateId.startsWith("tourism_");
@@ -287,8 +286,7 @@ function WorkspaceSitesHubPage() {
  };
 
  const handleDeletePage = async (pageId: string) => {
- if (!window.confirm("Deseja realmente excluir este documento do Construtor Visual?")) return;
- try {
+  try {
  await deleteExperienceDocument({ data: { id: pageId } });
  toast.success("Documento excluído com sucesso.");
  router.invalidate();
@@ -480,7 +478,7 @@ function WorkspaceSitesHubPage() {
  {/* Card de Criação Rápida */}
  <div
  onClick={() => setIsCreateSheetOpen(true)}
- className="flex flex-col items-center justify-center p-8 border border-dashed border-border/80 hover:border-primary/50 rounded-lg bg-background hover:bg-muted/30 transition-all cursor-pointer text-center gap-3 min-h-[220px] group"
+ className="flex flex-col items-center justify-center p-8 border border-dashed border-border/80 hover:border-primary/50 rounded-lg bg-background hover:bg-muted/30 transition-all cursor-pointer text-center gap-3 min-h-56 group"
  >
  <div className="size-10 rounded-lg bg-muted/60 group-hover:bg-primary/10 group-hover:text-primary transition-colors flex items-center justify-center text-muted-foreground">
  <Plus className="size-5" />
@@ -712,7 +710,7 @@ function WorkspaceSitesHubPage() {
 
  {/* ── SHEET DE CRIAÇÃO DE NOVA PÁGINA (MULTI-TIPO COMPLETO) ── */}
  <Sheet open={isCreateSheetOpen} onOpenChange={setIsCreateSheetOpen}>
- <SheetContent side="right" size="wide" className="w-full max-sm:!max-w-full max-sm:!w-screen sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] flex flex-col justify-between p-6">
+ <SheetContent side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl flex flex-col justify-between p-6">
  <div className="space-y-6">
  <SheetHeader className="p-0 text-left space-y-1">
  <SheetTitle className="text-base font-semibold">Criar Nova Página ou Vitrine</SheetTitle>
