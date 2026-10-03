@@ -4,20 +4,23 @@
  */
 
 import React, { useState, useEffect } from "react";
-import { LeadFormDTO, LeadFormFieldDTO, submitPublicLeadForm } from "@/services/lead-forms.functions";
-import { formatPhone } from "@/lib/document-validator";
+import { LeadFormDTO, LeadFormFieldDTO, submitPublicLeadForm, submitCivilInquiryLead } from "@/services/lead-forms.functions";
+import { formatPhone, formatCpf } from "@/lib/document-validator";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Check, Loader2, ArrowRight, MessageSquare, AlertCircle, ShieldCheck } from "lucide-react";
+import { Check, Loader2, ArrowRight, MessageSquare, AlertCircle, ShieldCheck, Bot } from "lucide-react";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 interface LeadFormRendererProps {
   form: LeadFormDTO;
   fields?: LeadFormFieldDTO[];
   classifiedId?: string | null;
   onSuccess?: (res: any) => void;
+  onStartSdrChat?: (payload: { answers: Record<string, any>; name: string; phone: string }) => void;
+  initialProfile?: { full_name?: string | null; phone?: string | null; email?: string | null } | null;
   isStandalone?: boolean;
 }
 
@@ -26,12 +29,22 @@ export function LeadFormRenderer({
   fields = form.fields || [],
   classifiedId,
   onSuccess,
+  onStartSdrChat,
+  initialProfile,
   isStandalone = false,
 }: LeadFormRendererProps) {
-  // Estados de identificação básica
-  const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
-  const [email, setEmail] = useState("");
+  // Estados de identificação básica com preenchimento opcional de perfil
+  const [name, setName] = useState(initialProfile?.full_name || "");
+  const [phone, setPhone] = useState(initialProfile?.phone ? formatPhone(initialProfile.phone) : "");
+  const [email, setEmail] = useState(initialProfile?.email || "");
+
+  useEffect(() => {
+    if (initialProfile) {
+      if (initialProfile.full_name && !name) setName(initialProfile.full_name);
+      if (initialProfile.phone && !phone) setPhone(formatPhone(initialProfile.phone));
+      if (initialProfile.email && !email) setEmail(initialProfile.email);
+    }
+  }, [initialProfile]);
 
   // Respostas dinâmicas mapeadas por field_key
   const [answers, setAnswers] = useState<Record<string, any>>({});
@@ -146,21 +159,35 @@ export function LeadFormRenderer({
         utmContent = urlParams.get("utm_content");
       }
 
-      const res = await submitPublicLeadForm({
-        data: {
-          formSlug: form.slug,
-          classifiedId: classifiedId || null,
-          contactName: name.trim(),
-          contactPhone: phone.trim(),
-          contactEmail: email.trim() || null,
-          answers,
-          utmSource,
-          utmMedium,
-          utmCampaign,
-          utmContent,
-          deviceType: typeof window !== "undefined" && window.innerWidth < 768 ? "mobile" : "desktop",
-        },
-      });
+      let res;
+      if (form.id === "civil-form" && classifiedId) {
+        res = await submitCivilInquiryLead({
+          data: {
+            classifiedId,
+            contactName: name.trim(),
+            contactPhone: phone.trim(),
+            contactEmail: email.trim() || null,
+            answers,
+            deviceType: typeof window !== "undefined" && window.innerWidth < 768 ? "mobile" : "desktop",
+          },
+        });
+      } else {
+        res = await submitPublicLeadForm({
+          data: {
+            formSlug: form.slug,
+            classifiedId: classifiedId || null,
+            contactName: name.trim(),
+            contactPhone: phone.trim(),
+            contactEmail: email.trim() || null,
+            answers,
+            utmSource,
+            utmMedium,
+            utmCampaign,
+            utmContent,
+            deviceType: typeof window !== "undefined" && window.innerWidth < 768 ? "mobile" : "desktop",
+          },
+        });
+      }
 
       setSubmissionResult(res);
       toast.success("Solicitação enviada com sucesso!");
@@ -199,6 +226,23 @@ export function LeadFormRenderer({
         <p className="text-sm text-muted-foreground max-w-md mb-6 leading-relaxed">
           {submissionResult.successMessage}
         </p>
+
+        {/* Ativação SDR IA Imediata */}
+        {(onStartSdrChat || submissionResult.afterSubmitAction === "start_sdr_chat") && (
+          <div className="w-full max-w-sm flex flex-col gap-2 mb-4">
+            <Button
+              type="button"
+              onClick={() => onStartSdrChat?.({ answers, name: name.trim(), phone: phone.trim() })}
+              className="w-full h-12 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-medium text-base gap-2 shadow-sm"
+            >
+              <Bot className="w-5 h-5" />
+              Conversar com o SDR IA Agora
+            </Button>
+            <p className="text-xs text-muted-foreground">
+              O assistente inteligente foi preparado com suas respostas para atendimento imediato.
+            </p>
+          </div>
+        )}
 
         {submissionResult.afterSubmitAction === "whatsapp_redirect" && submissionResult.whatsappUrl && (
           <div className="w-full max-w-sm flex flex-col gap-3">
@@ -365,6 +409,37 @@ export function LeadFormRenderer({
                   <Input
                     id={`field-${field.field_key}`}
                     type="date"
+                    value={answers[field.field_key] || ""}
+                    onChange={(e) => handleFieldChange(field.field_key, e.target.value)}
+                    className={`h-11 rounded-lg text-sm ${hasError ? "border-destructive" : ""}`}
+                  />
+                ) : field.field_type === "cpf" ? (
+                  <Input
+                    id={`field-${field.field_key}`}
+                    type="text"
+                    placeholder={field.placeholder || "000.000.000-00"}
+                    value={answers[field.field_key] || ""}
+                    onChange={(e) => handleFieldChange(field.field_key, formatCpf(e.target.value))}
+                    className={`h-11 rounded-lg text-sm ${hasError ? "border-destructive" : ""}`}
+                  />
+                ) : field.field_type === "cep" ? (
+                  <Input
+                    id={`field-${field.field_key}`}
+                    type="text"
+                    placeholder={field.placeholder || "00000-000"}
+                    value={answers[field.field_key] || ""}
+                    onChange={(e) => {
+                      const digits = e.target.value.replace(/\D/g, "").slice(0, 8);
+                      const formatted = digits.replace(/^(\d{5})(\d)/, "$1-$2");
+                      handleFieldChange(field.field_key, formatted);
+                    }}
+                    className={`h-11 rounded-lg text-sm ${hasError ? "border-destructive" : ""}`}
+                  />
+                ) : field.field_type === "address" ? (
+                  <Input
+                    id={`field-${field.field_key}`}
+                    type="text"
+                    placeholder={field.placeholder || "Rua, número, bairro, cidade"}
                     value={answers[field.field_key] || ""}
                     onChange={(e) => handleFieldChange(field.field_key, e.target.value)}
                     className={`h-11 rounded-lg text-sm ${hasError ? "border-destructive" : ""}`}

@@ -41,7 +41,7 @@ export function NativeMobileHeader({
   transparent = false,
   bordered = true,
   centerTitle = true,
-  mobileOnly = false,
+  mobileOnly = true,
   className,
   searchValue,
   onSearchChange,
@@ -72,7 +72,7 @@ export function NativeMobileHeader({
         "sticky top-0 z-40 w-full select-none transition-colors",
         transparent ? "bg-transparent" : "bg-background/95 backdrop-blur-md",
         bordered && !transparent ? "border-b border-border/40" : "",
-        mobileOnly ? "block md:hidden" : "",
+        mobileOnly ? "md:hidden" : "",
         "pt-[env(safe-area-inset-top,0px)]",
         className
       )}

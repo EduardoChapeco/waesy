@@ -14,29 +14,34 @@ export interface LeadFormFieldDTO {
   id: string;
   form_id: string;
   field_key: string;
-  field_type: "text" | "phone" | "email" | "select" | "radio" | "checkbox" | "currency" | "date" | "number" | "textarea";
+  field_type: "text" | "phone" | "email" | "select" | "radio" | "checkbox" | "currency" | "date" | "number" | "textarea" | "cpf" | "cep" | "address";
   label: string;
   placeholder?: string | null;
   helper_text?: string | null;
   is_required: boolean;
   sort_order: number;
-  options?: Array<{ label: string; value: string }> | null;
+  step_index?: number;
+  skip_to_step?: number | null;
+  options?: Array<{ label: string; value: string; skip_to_step?: number | null; submit_on_select?: boolean }> | null;
   validation_rules?: Record<string, any> | null;
 }
 
 export interface LeadFormDTO {
   id: string;
   store_id: string;
+  author_profile_id?: string | null;
+  classified_id?: string | null;
   title: string;
   slug: string;
   description?: string | null;
   niche_id: string;
   theme_color?: string | null;
   cover_image_url?: string | null;
+  background_image_url?: string | null;
   headline?: string | null;
   subheadline?: string | null;
   submit_button_text: string;
-  after_submit_action: "whatsapp_redirect" | "show_success_message" | "external_redirect";
+  after_submit_action: "start_sdr_chat" | "whatsapp_redirect" | "show_success_message" | "external_redirect";
   whatsapp_target_phone?: string | null;
   whatsapp_message_template?: string | null;
   success_message?: string | null;
@@ -451,10 +456,11 @@ export const upsertLeadForm = createServerFn({ method: "POST" })
       niche_id: z.string().default("geral"),
       theme_color: z.string().default("primary"),
       cover_image_url: z.string().optional().nullable(),
+      background_image_url: z.string().optional().nullable(),
       headline: z.string().optional().nullable(),
       subheadline: z.string().optional().nullable(),
       submit_button_text: z.string().default("Enviar Solicitação"),
-      after_submit_action: z.enum(["whatsapp_redirect", "show_success_message", "external_redirect"]).default("whatsapp_redirect"),
+      after_submit_action: z.enum(["start_sdr_chat", "whatsapp_redirect", "show_success_message", "external_redirect"]).default("whatsapp_redirect"),
       whatsapp_target_phone: z.string().optional().nullable(),
       whatsapp_message_template: z.string().optional().nullable(),
       success_message: z.string().optional().nullable(),
@@ -467,12 +473,14 @@ export const upsertLeadForm = createServerFn({ method: "POST" })
         z.object({
           id: z.string().uuid().optional(),
           field_key: z.string().min(1),
-          field_type: z.enum(["text", "phone", "email", "select", "radio", "checkbox", "currency", "date", "number", "textarea"]),
+          field_type: z.enum(["text", "phone", "email", "select", "radio", "checkbox", "currency", "date", "number", "textarea", "cpf", "cep", "address"]),
           label: z.string().min(1),
           placeholder: z.string().optional().nullable(),
           helper_text: z.string().optional().nullable(),
           is_required: z.boolean().default(false),
           sort_order: z.number().int().default(0),
+          step_index: z.number().int().default(1),
+          skip_to_step: z.number().int().optional().nullable(),
           options: z.any().optional(),
           validation_rules: z.any().optional(),
         }),
@@ -510,6 +518,7 @@ export const upsertLeadForm = createServerFn({ method: "POST" })
           niche_id: data.niche_id,
           theme_color: data.theme_color,
           cover_image_url: data.cover_image_url || null,
+          background_image_url: data.background_image_url || null,
           headline: data.headline || null,
           subheadline: data.subheadline || null,
           submit_button_text: data.submit_button_text,
@@ -543,6 +552,7 @@ export const upsertLeadForm = createServerFn({ method: "POST" })
           niche_id: data.niche_id,
           theme_color: data.theme_color,
           cover_image_url: data.cover_image_url || null,
+          background_image_url: data.background_image_url || null,
           headline: data.headline || null,
           subheadline: data.subheadline || null,
           submit_button_text: data.submit_button_text,
@@ -592,6 +602,8 @@ export const upsertLeadForm = createServerFn({ method: "POST" })
           helper_text: field.helper_text || null,
           is_required: field.is_required,
           sort_order: i,
+          step_index: field.step_index || 1,
+          skip_to_step: field.skip_to_step || null,
           options: field.options || [],
           validation_rules: field.validation_rules || {},
         };
@@ -855,5 +867,101 @@ export const getLeadFormsKpis = createServerFn({ method: "GET" })
       qualifiedCount,
       wonCount,
       lostCount,
+    };
+  });
+
+// ─── 10. Submissão de Formulário de Qualificação para Anúncios Civis ──────────
+
+export const submitCivilInquiryLead = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      classifiedId: z.string().uuid(),
+      contactName: z.string().min(2, "Nome é obrigatório"),
+      contactPhone: z.string().min(8, "Telefone é obrigatório"),
+      contactEmail: z.string().email().optional().nullable(),
+      answers: z.record(z.any()).default({}),
+      utmSource: z.string().optional().nullable(),
+      deviceType: z.string().default("desktop"),
+    }),
+  )
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+
+    // 1. Busca dados do classificado
+    const { data: classified, error: classErr } = await supabase
+      .from("classifieds")
+      .select("id, title, store_id, author_profile_id, price_cents, contact_phone, attributes")
+      .eq("id", data.classifiedId)
+      .single();
+
+    if (classErr || !classified) {
+      throw new Error("Anúncio não encontrado");
+    }
+
+    // 2. Resolve identidade do visitante (se autenticado)
+    let profileId: string | null = null;
+    try {
+      const { data: authData } = await supabase.auth.getUser();
+      if (authData?.user) profileId = authData.user.id;
+    } catch {}
+
+    // 3. Registra na tabela de leads (leads_crm ou lead_form_submissions)
+    const storeId = classified.store_id || "00000000-0000-0000-0000-000000000001";
+    let submissionId = crypto.randomUUID();
+
+    try {
+      const { data: subRow } = await supabase
+        .from("lead_form_submissions")
+        .insert({
+          id: submissionId,
+          form_id: "00000000-0000-0000-0000-000000000000",
+          store_id: storeId,
+          classified_id: classified.id,
+          profile_id: profileId,
+          contact_name: data.contactName.trim(),
+          contact_email: data.contactEmail?.trim() || null,
+          contact_phone: data.contactPhone.trim(),
+          is_new_registered_user: false,
+          utm_source: data.utmSource || null,
+          device_type: data.deviceType,
+          crm_status: "new",
+          raw_answers: data.answers || {},
+        })
+        .select("id")
+        .single();
+      if (subRow?.id) submissionId = subRow.id;
+    } catch (insertErr) {
+      console.warn("[lead-forms] Aviso ao gravar submission civil:", insertErr);
+    }
+
+    // 4. Prepara link do WhatsApp como fallback
+    let whatsappUrl: string | null = null;
+    const targetPhone = classified.contact_phone;
+    if (targetPhone) {
+      const cleanTarget = targetPhone.replace(/\D/g, "");
+      let msg = `Olá! Enviei meus dados com interesse no anúncio *${classified.title}* no Waesy.\n\n👤 *Nome:* ${data.contactName.trim()}\n📱 *Telefone:* ${data.contactPhone.trim()}`;
+      const answerEntries = Object.entries(data.answers || {});
+      if (answerEntries.length > 0) {
+        msg += "\n\n📋 *Respostas de Qualificação:*";
+        for (const [key, val] of answerEntries) {
+          if (val !== undefined && val !== null && val !== "") {
+            msg += `\n• ${key}: ${typeof val === "object" ? JSON.stringify(val) : val}`;
+          }
+        }
+      }
+      const formattedNumber = cleanTarget.startsWith("55") ? cleanTarget : `55${cleanTarget}`;
+      whatsappUrl = `https://wa.me/${formattedNumber}?text=${encodeURIComponent(msg)}`;
+    }
+
+    return {
+      success: true,
+      submissionId,
+      classifiedId: classified.id,
+      sellerProfileId: classified.author_profile_id,
+      storeId: classified.store_id || undefined,
+      startSdrAi: true,
+      whatsappUrl,
+      contactName: data.contactName.trim(),
+      answers: data.answers,
     };
   });

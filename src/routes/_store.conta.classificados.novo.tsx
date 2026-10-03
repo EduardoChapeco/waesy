@@ -12,6 +12,7 @@ import { ConvenienceShowcaseView } from "@/components/classifieds/convenience-sh
 import { uploadClassifiedMedia, uploadClassifiedDocument } from "@/lib/classifieds/upload-classified-media";
 import { CANONICAL_AIRPORTS, CANONICAL_AIRLINES, CANONICAL_TRANSPORT_TYPES, CANONICAL_BUS_CATEGORIES, CANONICAL_GUIDE_SERVICES, CANONICAL_TRANSFER_VEHICLES, DEPARTURE_STATUS_CONFIG, airportLabel, type DepartureOption, type DepartureStatus } from "@/lib/classifieds/canonical-airports";
 import { cn } from "@/lib/utils";
+import { ClassifiedTemplateStyle, ClassifiedDisplayMode, CivilInquiryQuestion, CivilInquiryConfig } from "@/types/unified-ad-engine";
 
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -1129,19 +1130,46 @@ function SpecializedClassifiedEditor({
     enabled: !!effectiveStoreId,
   });
 
-  // Template de Exibição (Auto-Theming Inteligente pelo Nicho - V121)
-  const [templateStyle, setTemplateStyle] = useState<"standard" | "editorial" | "conveniencia">(
-    initialData?.attributes?.template_style === "editorial" || initialData?.attributes?.template_style === "instagram"
-      ? "editorial"
-      : initialData?.attributes?.template_style === "conveniencia"
-      ? "conveniencia"
-      : (niche.id === "viagem" || niche.id === "imovel" || niche.id === "hospedagem")
-      ? "editorial"
-      : (niche.id === "mercado" || niche.id === "gastronomia")
-      ? "conveniencia"
-      : "standard"
+  // Template de Exibição (6 Modelos Canônicos + Auto-Theming Inteligente)
+  const [templateStyle, setTemplateStyle] = useState<ClassifiedTemplateStyle>(
+    (initialData?.attributes?.template_style as ClassifiedTemplateStyle) ||
+    (niche.id === "veiculo"
+      ? "automotivo"
+      : niche.id === "imovel"
+      ? "imobiliario"
+      : niche.id === "viagem" || niche.id === "hospedagem"
+      ? "resort_hotel"
+      : niche.id === "servico"
+      ? "servicos_agenda"
+      : "standard")
+  );
+  const [displayMode, setDisplayMode] = useState<ClassifiedDisplayMode>(
+    (initialData?.attributes?.display_mode as ClassifiedDisplayMode) || "tabs"
   );
   const [isTemplateStyleOpen, setIsTemplateStyleOpen] = useState(false);
+
+  // Qualificação de Leads & SDR IA (Para Anunciantes Civis / Pessoa Física)
+  const [civilInquiryEnabled, setCivilInquiryEnabled] = useState<boolean>(
+    initialData?.attributes?.inquiry_config?.enabled ?? false
+  );
+  const [civilInquiryTitle, setCivilInquiryTitle] = useState<string>(
+    initialData?.attributes?.inquiry_config?.title || "Tenho Interesse neste Anúncio"
+  );
+  const [civilInquirySubtitle, setCivilInquirySubtitle] = useState<string>(
+    initialData?.attributes?.inquiry_config?.subtitle || "Responda algumas perguntas rápidas para receber atendimento ou proposta personalizada."
+  );
+  const [civilInquiryActivateSdr, setCivilInquiryActivateSdr] = useState<boolean>(
+    initialData?.attributes?.inquiry_config?.activate_sdr_ai ?? true
+  );
+  const [civilInquiryQuestions, setCivilInquiryQuestions] = useState<CivilInquiryQuestion[]>(
+    initialData?.attributes?.inquiry_config?.questions || [
+      { id: "q1", label: "Qual seu prazo para fechar negócio?", type: "select", options: ["Imediato / Esta semana", "Próximos 15 a 30 dias", "Apenas pesquisando valores"], required: true },
+      { id: "q2", label: "Possui item ou veículo para entrada / permuta?", type: "select", options: ["Não, pagamento à vista / financiado", "Sim, gostaria de avaliar troca"], required: false },
+      { id: "q3", label: "Mensagem ou proposta personalizada", type: "textarea", placeholder: "Descreva sua proposta ou melhor horário para contato...", required: false }
+    ]
+  );
+  const [newQuestionLabel, setNewQuestionLabel] = useState("");
+  const [newQuestionType, setNewQuestionType] = useState<"text" | "select" | "currency" | "textarea">("text");
 
   // ── Motor de Precificação Dinâmica & Avisos ──
   const [pricingType, setPricingType] = useState<
@@ -2300,6 +2328,14 @@ function SpecializedClassifiedEditor({
         max_installments: acceptsCard ? Number(maxInstallments) || 1 : (acceptsCarne ? Number(maxCarneInstallments) || 1 : (acceptsBoletoInstallments ? Number(maxBoletoInstallments) || 1 : 1)),
         free_shipping_local: niche.id === "desapego" ? freeShippingLocal : false,
         template_style: templateStyle,
+        display_mode: displayMode,
+        inquiry_config: {
+          enabled: civilInquiryEnabled,
+          title: civilInquiryTitle,
+          subtitle: civilInquirySubtitle,
+          activate_sdr_ai: civilInquiryActivateSdr,
+          questions: civilInquiryQuestions,
+        },
         volume: convenienceVolume || undefined,
         temperature: convenienceTemp,
         is_alcoholic: isAlcoholic,
@@ -2984,6 +3020,14 @@ function SpecializedClassifiedEditor({
       attributes: {
         niche: niche.id === "negocio" ? "business" : niche.id,
         template_style: templateStyle,
+        display_mode: displayMode,
+        inquiry_config: {
+          enabled: civilInquiryEnabled,
+          title: civilInquiryTitle,
+          subtitle: civilInquirySubtitle,
+          activate_sdr_ai: civilInquiryActivateSdr,
+          questions: civilInquiryQuestions,
+        },
         volume: convenienceVolume,
         temperature: convenienceTemp,
         is_alcoholic: isAlcoholic,
@@ -8627,14 +8671,183 @@ function SpecializedClassifiedEditor({
                   )}
                 </div>
               ) : (
-                <div className="rounded-lg border border-border/50 bg-muted/20 p-4 space-y-2">
-                  <div className="flex items-center gap-2 text-xs font-bold text-foreground">
-                    <MessageCircle className="size-4 text-primary shrink-0" />
-                    <span>Canal de Contato Direto (Anunciante Comunitário)</span>
+                <div className="rounded-lg border border-border/60 bg-card p-4 sm:p-5 space-y-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
+                        <FileText className="size-4 text-primary shrink-0" />
+                        <span>Qualificação de Leads & SDR IA</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground leading-relaxed">
+                        Capte dados de interessados com perguntas estratégicas e ative o SDR IA antes do contato no WhatsApp.
+                      </p>
+                    </div>
+                    <Switch
+                      checked={civilInquiryEnabled}
+                      onCheckedChange={setCivilInquiryEnabled}
+                      aria-label="Ativar Qualificação de Leads"
+                    />
                   </div>
-                  <p className="text-xs text-muted-foreground leading-relaxed">
-                    Como anunciante pessoa física, seus compradores contatam você diretamente via <strong>WhatsApp</strong>, <strong>Chat no App</strong> e <strong>Propostas Comerciais</strong> salvas em sua conta. Formulários de CRM são reservados a Lojas Oficiais do Workspace.
-                  </p>
+
+                  {civilInquiryEnabled && (
+                    <div className="space-y-4 pt-3 border-t border-border/40">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div className="space-y-1">
+                          <Label className="text-xs font-semibold text-foreground">Título do Formulário</Label>
+                          <Input
+                            value={civilInquiryTitle}
+                            onChange={(e) => setCivilInquiryTitle(e.target.value)}
+                            placeholder="Ex: Tenho Interesse neste Anúncio"
+                            className="h-10 text-xs"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs font-semibold text-foreground">Subtítulo / Orientação</Label>
+                          <Input
+                            value={civilInquirySubtitle}
+                            onChange={(e) => setCivilInquirySubtitle(e.target.value)}
+                            placeholder="Ex: Responda perguntas rápidas para receber proposta."
+                            className="h-10 text-xs"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="p-3 bg-muted/20 border border-border/60 rounded-lg flex items-center justify-between gap-3">
+                        <div className="space-y-0.5">
+                          <div className="flex items-center gap-1.5 text-xs font-bold text-foreground">
+                            <Bot className="size-3.5 text-primary" />
+                            <span>Ativar Bot SDR IA Após o Envio</span>
+                          </div>
+                          <p className="text-[11px] text-muted-foreground">
+                            Exibe botão para abrir chat imediato com a IA alimentada pelas respostas do lead.
+                          </p>
+                        </div>
+                        <Switch
+                          checked={civilInquiryActivateSdr}
+                          onCheckedChange={setCivilInquiryActivateSdr}
+                          aria-label="Ativar SDR IA no Formulário"
+                        />
+                      </div>
+
+                      {/* Lista de Perguntas */}
+                      <div className="space-y-2">
+                        <Label className="text-xs font-semibold text-foreground">Perguntas de Qualificação ({civilInquiryQuestions.length})</Label>
+                        <div className="space-y-2">
+                          {civilInquiryQuestions.map((q, idx) => (
+                            <div key={q.id || idx} className="p-3 rounded-lg border border-border/60 bg-background space-y-2">
+                              <div className="flex items-center justify-between gap-2">
+                                <span className="text-xs font-mono text-muted-foreground">{idx + 1}.</span>
+                                <Input
+                                  value={q.label}
+                                  onChange={(e) => {
+                                    const next = [...civilInquiryQuestions];
+                                    next[idx].label = e.target.value;
+                                    setCivilInquiryQuestions(next);
+                                  }}
+                                  placeholder="Texto da pergunta..."
+                                  className="h-8 text-xs flex-1"
+                                />
+                                <Badge variant="outline" className="text-[10px] uppercase font-mono">
+                                  {q.type}
+                                </Badge>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => setCivilInquiryQuestions(civilInquiryQuestions.filter((_, i) => i !== idx))}
+                                  className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                                >
+                                  <Trash2 className="size-3.5" />
+                                </Button>
+                              </div>
+
+                              {q.type === "select" && (
+                                <div className="space-y-1 pl-4 border-l-2 border-border/40">
+                                  <span className="text-[11px] text-muted-foreground">Opções de resposta:</span>
+                                  <div className="flex flex-wrap gap-1">
+                                    {(q.options || []).map((opt, optIdx) => (
+                                      <Badge key={optIdx} variant="secondary" className="text-xs py-0.5 px-2 gap-1 font-normal">
+                                        <span>{opt}</span>
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            const next = [...civilInquiryQuestions];
+                                            next[idx].options = (next[idx].options || []).filter((_, oi) => oi !== optIdx);
+                                            setCivilInquiryQuestions(next);
+                                          }}
+                                          className="text-muted-foreground hover:text-foreground ml-1"
+                                        >
+                                          ×
+                                        </button>
+                                      </Badge>
+                                    ))}
+                                    <input
+                                      type="text"
+                                      placeholder="+ nova opção (Enter)"
+                                      onKeyDown={(e) => {
+                                        if (e.key === "Enter" && (e.target as HTMLInputElement).value.trim()) {
+                                          e.preventDefault();
+                                          const next = [...civilInquiryQuestions];
+                                          next[idx].options = [...(next[idx].options || []), (e.target as HTMLInputElement).value.trim()];
+                                          setCivilInquiryQuestions(next);
+                                          (e.target as HTMLInputElement).value = "";
+                                        }
+                                      }}
+                                      className="h-6 px-2 text-xs rounded border border-border/60 bg-muted/30 focus:outline-none focus:ring-1 focus:ring-primary"
+                                    />
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Adicionar nova pergunta */}
+                        <div className="flex gap-2 pt-1">
+                          <Input
+                            value={newQuestionLabel}
+                            onChange={(e) => setNewQuestionLabel(e.target.value)}
+                            placeholder="Nova pergunta (ex: Qual sua proposta para pagamento?)"
+                            className="h-9 text-xs flex-1"
+                          />
+                          <Select value={newQuestionType} onValueChange={(v: any) => setNewQuestionType(v)}>
+                            <SelectTrigger className="w-28 h-9 text-xs">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="text">Texto curto</SelectItem>
+                              <SelectItem value="textarea">Texto longo</SelectItem>
+                              <SelectItem value="select">Múltipla escolha</SelectItem>
+                              <SelectItem value="currency">Valor / Moeda</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              if (!newQuestionLabel.trim()) return;
+                              setCivilInquiryQuestions([
+                                ...civilInquiryQuestions,
+                                {
+                                  id: `q_${Date.now()}`,
+                                  label: newQuestionLabel.trim(),
+                                  type: newQuestionType,
+                                  options: newQuestionType === "select" ? ["Opção 1", "Opção 2"] : undefined,
+                                  required: false,
+                                },
+                              ]);
+                              setNewQuestionLabel("");
+                            }}
+                            className="h-9 text-xs font-semibold gap-1 px-3"
+                          >
+                            <Plus className="size-3.5" />
+                            <span>Adicionar</span>
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -8734,8 +8947,8 @@ function SpecializedClassifiedEditor({
                 )}
               </div>
 
-              {/* Seletor Silencioso de Estilo Visual (Auto-Design & Collapsible no Fundo - V121) */}
-              <div className="bg-card rounded-lg p-4 border border-border/60">
+              {/* Seletor de Design Visual & Modo de Exibição */}
+              <div className="bg-card rounded-lg p-4 border border-border/60 space-y-3">
                 <button
                   type="button"
                   onClick={() => setIsTemplateStyleOpen(!isTemplateStyleOpen)}
@@ -8743,69 +8956,77 @@ function SpecializedClassifiedEditor({
                 >
                   <div className="flex items-center gap-2">
                     <Palette className="size-4 text-primary shrink-0" />
-                    <span>Design da Página</span>
+                    <span>Design & Modelo da Página</span>
                     <Badge variant="outline" className="text-xs font-normal uppercase tracking-wider">
-                      {templateStyle === "editorial" ? "Imersiva" : templateStyle === "conveniencia" ? "Mercado" : "Padrão"}
+                      {templateStyle}
                     </Badge>
                   </div>
                   {isTemplateStyleOpen ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}
                 </button>
                 {isTemplateStyleOpen && (
-                  <div className="mt-3 pt-3 border-t border-border/40 space-y-2">
-                    <p className="text-xs text-muted-foreground/75 text-muted-foreground">
-                      O Waesy define o melhor layout automaticamente pelo nicho. Você pode alternar manualmente se preferir.
-                    </p>
-                    <div className="grid grid-cols-3 gap-2 pt-1">
-                      <button
-                        type="button"
-                        onClick={() => setTemplateStyle("standard")}
-                        className={cn(
-                          "p-2 rounded-lg border text-left transition-colors cursor-pointer",
-                          templateStyle === "standard"
-                            ? "border-primary bg-primary/5 ring-1 ring-primary"
-                            : "border-border/60 hover:bg-muted/40"
-                        )}
-                      >
-                        <p className="text-xs font-bold text-foreground">Padrão</p>
-                        <p className="text-xs text-muted-foreground mt-1">Visual limpo</p>
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => setTemplateStyle("editorial")}
-                        className={cn(
-                          "p-2 rounded-lg border text-left transition-colors cursor-pointer",
-                          templateStyle === "editorial" || (templateStyle as string) === "instagram"
-                            ? "border-primary bg-primary/5 ring-1 ring-primary"
-                            : "border-border/60 hover:bg-muted/40"
-                        )}
-                      >
-                        <p className="text-xs font-bold text-foreground flex items-center gap-1">
-                          <span>Imersiva</span>
-                          <span className="size-1.5 rounded-full bg-rose-500 animate-pulse" />
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-1">Roteiro e abas</p>
-                      </button>
-
-                      {/* Caso O02 / Regra R06: Restrição estrita de nicho (Turismo não vê Mercado) */}
-                      {niche.id !== "viagem" && niche.id !== "hospedagem" && (
+                  <div className="mt-3 pt-3 border-t border-border/40 space-y-4">
+                    {/* Modo de Exibição: Abas vs Lista Contínua */}
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-semibold text-foreground">Estrutura de Leitura</Label>
+                      <div className="grid grid-cols-2 gap-2">
                         <button
                           type="button"
-                          onClick={() => setTemplateStyle("conveniencia")}
+                          onClick={() => setDisplayMode("tabs")}
                           className={cn(
-                            "p-2 rounded-lg border text-left transition-colors cursor-pointer",
-                            templateStyle === "conveniencia"
-                              ? "border-primary bg-primary/5 ring-1 ring-primary"
-                              : "border-border/60 hover:bg-muted/40"
+                            "p-2.5 rounded-lg border text-left transition-colors cursor-pointer text-xs",
+                            displayMode === "tabs"
+                              ? "border-primary bg-primary/5 ring-1 ring-primary font-bold text-foreground"
+                              : "border-border/60 hover:bg-muted/40 text-muted-foreground"
                           )}
                         >
-                          <p className="text-xs font-bold text-foreground flex items-center gap-1">
-                            <span>Mercado</span>
-                            <span className="size-1.5 rounded-full bg-emerald-500" />
-                          </p>
-                          <p className="text-xs text-muted-foreground mt-1">Gôndola</p>
+                          <p className="font-semibold text-foreground">Abas de Navegação</p>
+                          <p className="text-[11px] text-muted-foreground mt-0.5">Seções organizadas por abas</p>
                         </button>
-                      )}
+
+                        <button
+                          type="button"
+                          onClick={() => setDisplayMode("continuous_list")}
+                          className={cn(
+                            "p-2.5 rounded-lg border text-left transition-colors cursor-pointer text-xs",
+                            displayMode === "continuous_list"
+                              ? "border-primary bg-primary/5 ring-1 ring-primary font-bold text-foreground"
+                              : "border-border/60 hover:bg-muted/40 text-muted-foreground"
+                          )}
+                        >
+                          <p className="font-semibold text-foreground">Rolagem Contínua</p>
+                          <p className="text-[11px] text-muted-foreground mt-0.5">Fluxo vertical unificado</p>
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Os 6 Templates Canônicos */}
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-semibold text-foreground">Modelo Visual do Anúncio</Label>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                        {[
+                          { id: "standard", label: "Padrão Geral", desc: "Limpo & Universal" },
+                          { id: "editorial", label: "Revista Editorial", desc: "Narrativa Imersiva" },
+                          { id: "automotivo", label: "Automotivo", desc: "Specs & Ficha Técnica" },
+                          { id: "imobiliario", label: "Imobiliário", desc: "Cômodos & Condomínio" },
+                          { id: "resort_hotel", label: "Resort & Hotel", desc: "Diárias & Lazer" },
+                          { id: "servicos_agenda", label: "Serviços & Agenda", desc: "Slots & Reserva" },
+                        ].map((tpl) => (
+                          <button
+                            key={tpl.id}
+                            type="button"
+                            onClick={() => setTemplateStyle(tpl.id as any)}
+                            className={cn(
+                              "p-2 rounded-lg border text-left transition-colors cursor-pointer",
+                              templateStyle === tpl.id
+                                ? "border-primary bg-primary/5 ring-1 ring-primary"
+                                : "border-border/60 hover:bg-muted/40"
+                            )}
+                          >
+                            <p className="text-xs font-bold text-foreground">{tpl.label}</p>
+                            <p className="text-[10px] text-muted-foreground mt-0.5">{tpl.desc}</p>
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 )}

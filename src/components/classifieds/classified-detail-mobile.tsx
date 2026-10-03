@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, Share2, MapPin, Check, ShieldCheck, Tag, Clock, User, ChevronLeft, ChevronRight, Maximize2, X, Phone, MessageCircle, Package, Truck, CreditCard, QrCode, Receipt, FileSpreadsheet, CheckCircle2, Edit3, Smartphone, ExternalLink, ShieldAlert, Coins, TrendingUp, Banknote, FileCheck, Download, AlertCircle, Eye, Building, Car, Hotel, Briefcase, HelpCircle, FileText } from "lucide-react";
+import { ArrowLeft, Share2, MapPin, Check, ShieldCheck, Tag, Clock, User, ChevronLeft, ChevronRight, Maximize2, X, Phone, MessageCircle, Package, Truck, CreditCard, QrCode, Receipt, FileSpreadsheet, CheckCircle2, Edit3, Smartphone, ExternalLink, ShieldAlert, Coins, TrendingUp, Banknote, FileCheck, Download, AlertCircle, Eye, Building, Car, Hotel, Briefcase, HelpCircle, FileText, Landmark, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatMoney } from "@/lib/money";
@@ -50,6 +50,8 @@ export function ClassifiedDetailMobile({
   const [activeImage, setActiveImage] = useState(0);
   const [fullscreenImage, setFullscreenImage] = useState<string | null>(null);
   const [isDescExpanded, setIsDescExpanded] = useState(false);
+  const [activeTab, setActiveTab] = useState<"overview" | "specs" | "payments" | "seller" | "map">("overview");
+  const [simulatedInstallments, setSimulatedInstallments] = useState<number>(12);
   const [isLeadFormModalOpen, setIsLeadFormModalOpen] = useState(false);
   const { refreshCart, setIsCartOpen } = useCartContext();
   const [isStartingChat, setIsStartingChat] = useState(false);
@@ -57,6 +59,9 @@ export function ClassifiedDetailMobile({
 
   const isConversational = useMemo(() => isClassifiedConversational(classified), [classified]);
   const paymentMethodsList = useMemo(() => getClassifiedPaymentMethods(classified), [classified]);
+
+  const displayMode = (classified.attributes?.display_mode as string) || "tabs";
+  const templateStyle = (classified.attributes?.template_style as string) || "standard";
 
   const handleStartNativeChat = async () => {
     setIsStartingChat(true);
@@ -496,28 +501,144 @@ export function ClassifiedDetailMobile({
           </div>
         </div>
 
-        {/* ── Banner de Formulário de Leads (se vinculado a Loja Oficial) ── */}
-        {(classified?.lead_form || classified?.form_id) && (
+        {/* ── Banner de Formulário de Leads (Loja Oficial e Anúncio Civil) ── */}
+        {(classified?.lead_form || classified?.form_id || attrs?.inquiry_config?.enabled) && (
           <div className="rounded-lg border border-primary/30 bg-primary/5 p-3.5 space-y-2">
             <div className="flex items-center gap-2 text-xs font-bold text-primary">
               <FileText className="size-4 shrink-0" />
-              <span>Formulário de Contato & Cotação</span>
+              <span>{attrs?.inquiry_config?.title || "Formulário de Contato & Cotação"}</span>
             </div>
             <p className="text-[11px] text-muted-foreground leading-relaxed">
-              Envie suas preferências diretamente para a equipe oficial deste anúncio.
+              {attrs?.inquiry_config?.subtitle || "Envie suas preferências diretamente para a equipe ou vendedor deste anúncio."}
             </p>
             <Button
               type="button"
               onClick={() => setIsLeadFormModalOpen(true)}
-              className="w-full h-10 rounded-lg text-xs font-bold bg-primary text-primary-foreground shadow-sm active:scale-95 cursor-pointer"
+              className="w-full h-11 rounded-lg text-xs font-bold bg-primary text-primary-foreground shadow-sm active:scale-95 cursor-pointer"
             >
-              Preencher Formulário
+              Tenho Interesse / Preencher
             </Button>
           </div>
         )}
 
+        {/* ── Seletor de Abas Mobile (Modo Tabs) ── */}
+        {displayMode === "tabs" && (
+          <div className="flex items-center gap-1 overflow-x-auto no-scrollbar py-1">
+            {[
+              { id: "overview", label: "Visão Geral" },
+              { id: "specs", label: "Specs" },
+              { id: "payments", label: "Pagamento" },
+              { id: "seller", label: "Vendedor" },
+              ...(!classified.hide_location && !attrs.hide_location && classified.location_lat && classified.location_lng ? [{ id: "map", label: "Mapa" }] : []),
+            ].map((t) => (
+              <button
+                key={t.id}
+                type="button"
+                onClick={() => setActiveTab(t.id as any)}
+                className={cn(
+                  "px-3 py-1.5 text-xs font-semibold rounded-lg shrink-0 transition-colors cursor-pointer",
+                  activeTab === t.id
+                    ? "bg-primary text-primary-foreground font-bold shadow-xs"
+                    : "text-muted-foreground bg-muted/40 hover:bg-muted"
+                )}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* ── Destaque Visual por Modelo Canônico ── */}
+        {(displayMode === "continuous_list" || activeTab === "overview") && (
+          <>
+            {templateStyle === "automotivo" && (
+              <div className="rounded-lg border border-border/60 bg-muted/20 p-3 grid grid-cols-2 gap-2 text-xs">
+                <div>
+                  <span className="text-[10px] uppercase font-bold text-muted-foreground block">Ano/Mod</span>
+                  <span className="font-bold text-foreground">{attrs.year_fab || attrs.year_model ? `${attrs.year_fab || ""}/${attrs.year_model || ""}` : "Consulte"}</span>
+                </div>
+                <div>
+                  <span className="text-[10px] uppercase font-bold text-muted-foreground block">KM</span>
+                  <span className="font-bold text-foreground">{attrs.mileage_km != null ? `${Number(attrs.mileage_km).toLocaleString("pt-BR")} km` : "Consulte"}</span>
+                </div>
+                <div>
+                  <span className="text-[10px] uppercase font-bold text-muted-foreground block">Câmbio</span>
+                  <span className="font-bold text-foreground">{attrs.transmission || "Manual"}</span>
+                </div>
+                <div>
+                  <span className="text-[10px] uppercase font-bold text-muted-foreground block">Combustível</span>
+                  <span className="font-bold text-foreground">{attrs.fuel_type || "Flex"}</span>
+                </div>
+              </div>
+            )}
+
+            {templateStyle === "imobiliario" && (
+              <div className="rounded-lg border border-border/60 bg-muted/20 p-3 grid grid-cols-2 gap-2 text-xs">
+                <div>
+                  <span className="text-[10px] uppercase font-bold text-muted-foreground block">Área Útil</span>
+                  <span className="font-bold text-foreground">{attrs.area_sqm ? `${attrs.area_sqm} m²` : "Consulte"}</span>
+                </div>
+                <div>
+                  <span className="text-[10px] uppercase font-bold text-muted-foreground block">Quartos</span>
+                  <span className="font-bold text-foreground">{attrs.bedrooms || 0} qtos</span>
+                </div>
+                <div>
+                  <span className="text-[10px] uppercase font-bold text-muted-foreground block">Vagas</span>
+                  <span className="font-bold text-foreground">{attrs.parking_spots || 0} vagas</span>
+                </div>
+                <div>
+                  <span className="text-[10px] uppercase font-bold text-muted-foreground block">Condomínio</span>
+                  <span className="font-bold text-foreground">{attrs.condo_cents ? formatMoney(attrs.condo_cents) : "Isento"}</span>
+                </div>
+              </div>
+            )}
+
+            {templateStyle === "resort_hotel" && (
+              <div className="rounded-lg border border-border/60 bg-muted/20 p-3 grid grid-cols-2 gap-2 text-xs">
+                <div>
+                  <span className="text-[10px] uppercase font-bold text-muted-foreground block">Hóspedes</span>
+                  <span className="font-bold text-foreground">{attrs.max_guests || attrs.guests_text || "Consulte"} máx</span>
+                </div>
+                <div>
+                  <span className="text-[10px] uppercase font-bold text-muted-foreground block">Refeição</span>
+                  <span className="font-bold text-foreground">{attrs.meal_plan || "Café Incluso"}</span>
+                </div>
+                <div>
+                  <span className="text-[10px] uppercase font-bold text-muted-foreground block">Check-in</span>
+                  <span className="font-bold text-foreground">{attrs.checkin_time || "14h"}</span>
+                </div>
+                <div>
+                  <span className="text-[10px] uppercase font-bold text-muted-foreground block">Taxa Limpeza</span>
+                  <span className="font-bold text-foreground">{attrs.cleaning_fee_cents ? formatMoney(attrs.cleaning_fee_cents) : "Isenta"}</span>
+                </div>
+              </div>
+            )}
+
+            {templateStyle === "servicos_agenda" && (
+              <div className="rounded-lg border border-border/60 bg-muted/20 p-3 grid grid-cols-2 gap-2 text-xs">
+                <div>
+                  <span className="text-[10px] uppercase font-bold text-muted-foreground block">Duração</span>
+                  <span className="font-bold text-foreground">{attrs.service_duration_minutes ? `${attrs.service_duration_minutes} min` : "Sob demanda"}</span>
+                </div>
+                <div>
+                  <span className="text-[10px] uppercase font-bold text-muted-foreground block">Modalidade</span>
+                  <span className="font-bold text-foreground">{attrs.modality === "remote" ? "Online" : "Presencial"}</span>
+                </div>
+                <div>
+                  <span className="text-[10px] uppercase font-bold text-muted-foreground block">Agenda</span>
+                  <span className="font-bold text-foreground">{attrs.booking_enabled ? "Ativo" : "Sob Consulta"}</span>
+                </div>
+                <div>
+                  <span className="text-[10px] uppercase font-bold text-muted-foreground block">Região</span>
+                  <span className="font-bold text-foreground">{attrs.service_area || "Local"}</span>
+                </div>
+              </div>
+            )}
+          </>
+        )}
+
         {/* ── 4. CARDS DE CARACTERÍSTICAS TÉCNICAS (Bento Grid Mobile) ── */}
-        {featureList.length > 0 && (
+        {(displayMode === "continuous_list" || activeTab === "specs") && featureList.length > 0 && (
           <div className="space-y-2">
             <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
               Especificações
@@ -538,7 +659,7 @@ export function ClassifiedDetailMobile({
         )}
 
         {/* ── 5. DESCRIÇÃO NATIVA COM EXPANSOR ── */}
-        {classified.content && (
+        {(displayMode === "continuous_list" || activeTab === "overview") && classified.content && (
           <div className="space-y-2">
             <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
               Descrição
@@ -560,23 +681,23 @@ export function ClassifiedDetailMobile({
           </div>
         )}
 
-        {/* ── 5.1 FORMAS ACEITAS PELO VENDEDOR (V140 - Design Silencioso Informativo) ── */}
-        {paymentMethodsList.length > 0 && (
-          <div className="space-y-2">
+        {/* ── 5.1 FORMAS ACEITAS & SIMULADOR DE FINANCIAMENTO ── */}
+        {(displayMode === "continuous_list" || activeTab === "payments") && (
+          <div className="space-y-3">
             <div className="flex items-center justify-between">
               <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                Formas Aceitas pelo Vendedor
+                Pagamento & Financiamento
               </h2>
-              <span className="text-[10px] text-muted-foreground font-mono">Informativo</span>
+              <span className="text-[10px] text-muted-foreground font-mono">Condições</span>
             </div>
-            <div className="rounded-lg border border-border/50 bg-card p-3 space-y-2">
-              <div className="flex flex-wrap gap-2">
+            <div className="rounded-lg border border-border/50 bg-card p-4 space-y-3">
+              <div className="flex flex-wrap gap-1.5">
                 {paymentMethodsList.map((pm) => (
                   <span
                     key={pm.id}
-                    className="inline-flex items-center gap-2 px-3 py-1 rounded-lg text-xs font-semibold bg-muted/60 text-foreground border border-border/50"
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-muted/60 text-foreground border border-border/50"
                   >
-                    <pm.icon className="size-3.5 text-primary shrink-0" />
+                    <pm.icon className="size-3 text-primary shrink-0" />
                     <span>{pm.label}</span>
                     {pm.badge && (
                       <span className="text-[10px] font-mono text-muted-foreground">({pm.badge})</span>
@@ -584,15 +705,35 @@ export function ClassifiedDetailMobile({
                   </span>
                 ))}
               </div>
-              <p className="text-[11px] text-muted-foreground leading-relaxed">
-                Valores e condições acertados diretamente entre você e o anunciante.
-              </p>
+
+              {/* Simulador Interativo Mobile */}
+              {priceCents > 0 && acceptsCard && (
+                <div className="pt-2 border-t border-border/40 space-y-2">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-semibold text-foreground">Simular Parcelas</span>
+                    <span className="font-bold text-primary font-mono">{simulatedInstallments}x de {formatMoney(Math.round(priceCents / simulatedInstallments))}</span>
+                  </div>
+                  <input
+                    type="range"
+                    min={1}
+                    max={Math.min(24, Math.max(1, maxInstallments))}
+                    step={1}
+                    value={simulatedInstallments}
+                    onChange={(e) => setSimulatedInstallments(Number(e.target.value))}
+                    className="w-full h-2 rounded-full accent-primary cursor-pointer"
+                  />
+                  <div className="flex justify-between text-[10px] text-muted-foreground font-mono">
+                    <span>1x</span>
+                    <span>{Math.min(24, Math.max(1, maxInstallments))}x</span>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}
 
         {/* ── 6. LOCALIZAÇÃO E MAPA (Se não for oculto e possuir lat/lng) ── */}
-        {!classified.hide_location && !attrs.hide_location && classified.location_lat && classified.location_lng && (
+        {(displayMode === "continuous_list" || activeTab === "map") && !classified.hide_location && !attrs.hide_location && classified.location_lat && classified.location_lng && (
           <div className="space-y-2">
             <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
               Localização Aproximada
@@ -727,16 +868,25 @@ export function ClassifiedDetailMobile({
         </div>
       )}
 
-      {/* ── Modal Universal de Captura de Leads (Lojas Oficiais) ── */}
-      {(classified?.lead_form || classified?.form_id) && (
+      {/* ── Modal Universal de Captura de Leads (Lojas Oficiais e Anúncios Civis) ── */}
+      {(classified?.lead_form || classified?.form_id || attrs?.inquiry_config?.enabled) && (
         <LeadFormModal
           formSlug={classified.lead_form?.slug || null}
           formId={classified.form_id || null}
           initialForm={classified.lead_form || null}
+          civilInquiryConfig={attrs?.inquiry_config || null}
+          currentProfile={currentProfile || null}
           classifiedId={classified.id}
           classifiedTitle={classified.title}
           isOpen={isLeadFormModalOpen}
           onOpenChange={setIsLeadFormModalOpen}
+          onStartSdrChat={() => {
+            if (onOpenCompanion) {
+              onOpenCompanion();
+            } else {
+              handleStartNativeChat();
+            }
+          }}
         />
       )}
     </div>

@@ -6,6 +6,7 @@
 import React, { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { LeadFormDTO, getPublicLeadFormBySlug } from "@/services/lead-forms.functions";
+import { CivilInquiryConfig } from "@/types/unified-ad-engine";
 import { LeadFormRenderer } from "./lead-form-renderer";
 import { Loader2 } from "lucide-react";
 
@@ -13,25 +14,62 @@ interface LeadFormModalProps {
   formSlug?: string | null;
   formId?: string | null;
   initialForm?: LeadFormDTO | null;
+  civilInquiryConfig?: CivilInquiryConfig | null;
+  currentProfile?: { full_name?: string | null; phone?: string | null; email?: string | null } | null;
   classifiedId?: string | null;
   classifiedTitle?: string | null;
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   triggerScrollPct?: number | null; // e.g. 50%
+  onStartSdrChat?: (payload: { answers: Record<string, any>; name: string; phone: string }) => void;
 }
 
 export function LeadFormModal({
   formSlug,
   initialForm,
+  civilInquiryConfig,
+  currentProfile,
   classifiedId,
   classifiedTitle,
   isOpen,
   onOpenChange,
   triggerScrollPct,
+  onStartSdrChat,
 }: LeadFormModalProps) {
   const [form, setForm] = useState<LeadFormDTO | null>(initialForm || null);
   const [loading, setLoading] = useState(false);
   const [hasAutoOpened, setHasAutoOpened] = useState(false);
+
+  // Inicializa a partir de configuração civil quando habilitado
+  useEffect(() => {
+    if (civilInquiryConfig?.enabled) {
+      const virtualForm: LeadFormDTO = {
+        id: "civil-form",
+        store_id: "",
+        title: civilInquiryConfig.title || "Tenho Interesse neste Anúncio",
+        slug: `civil-${classifiedId || "direct"}`,
+        headline: civilInquiryConfig.title || "Tenho Interesse",
+        subheadline: civilInquiryConfig.subtitle || "Responda algumas perguntas rápidas para receber proposta personalizada.",
+        submit_button_text: "Enviar Mensagem",
+        after_submit_action: civilInquiryConfig.activate_sdr_ai ? "start_sdr_chat" : "message",
+        whatsapp_phone: null,
+        success_message: "Seus dados foram enviados diretamente para o vendedor!",
+        is_active: true,
+        fields: (civilInquiryConfig.questions || []).map((q, idx) => ({
+          id: q.id,
+          form_id: "civil-form",
+          field_key: `civil_q_${idx}_${q.id}`,
+          label: q.label,
+          field_type: (q.type === "currency" ? "currency" : q.type === "select" ? "select" : q.type === "textarea" ? "textarea" : "text") as any,
+          placeholder: q.placeholder || "",
+          is_required: q.required ?? true,
+          position: idx,
+          options: q.options || null,
+        })),
+      };
+      setForm(virtualForm);
+    }
+  }, [civilInquiryConfig, classifiedId]);
 
   // Busca o formulário se apenas o slug tiver sido fornecido
   useEffect(() => {
@@ -93,6 +131,11 @@ export function LeadFormModal({
             <LeadFormRenderer
               form={form}
               classifiedId={classifiedId}
+              initialProfile={currentProfile}
+              onStartSdrChat={(payload) => {
+                onOpenChange(false);
+                onStartSdrChat?.(payload);
+              }}
               onSuccess={() => {
                 // Mantém aberto para o usuário ver o botão de WhatsApp ou fechar quando quiser
               }}

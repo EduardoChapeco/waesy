@@ -252,3 +252,32 @@ export interface UniversalClassifiedShowcaseProps {
   isDownloadingDigital?: boolean;
 }
 
+export type ClassifiedTemplateStyle =
+  | "standard"
+  | "editorial"
+  | "automotivo"
+  | "imobiliario"
+  | "resort_hotel"
+  | "servicos_agenda"
+  | "conveniencia"
+  | "instagram_resort";
+
+export type ClassifiedDisplayMode = "tabs" | "continuous_list";
+
+export interface CivilInquiryQuestion {
+  id: string;
+  label: string;
+  type: "text" | "phone" | "select" | "checkbox" | "textarea";
+  required?: boolean;
+  options?: string[];
+}
+
+export interface CivilInquiryConfig {
+  enabled: boolean;
+  title?: string;
+  description?: string;
+  questions: CivilInquiryQuestion[];
+  enable_sdr_ai?: boolean;
+  whatsapp_fallback_phone?: string;
+}
+

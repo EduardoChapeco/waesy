@@ -6,7 +6,7 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
-import { FileText, Plus, TrendingUp, Eye, MessageSquare, Copy, ExternalLink, Pencil, Trash2, Check, Search, Filter, Download, ShieldCheck, Star, Users, CheckCircle2, Clock, ChevronDown, ChevronUp, Loader2, Phone, Mail, Calendar, Layers } from "lucide-react";
+import { FileText, Plus, TrendingUp, Eye, MessageSquare, Copy, ExternalLink, Pencil, Trash2, Check, Search, Filter, Download, ShieldCheck, Star, Users, CheckCircle2, Clock, ChevronDown, ChevronUp, Loader2, Phone, Mail, Calendar, Layers, Bot, Workflow, Image as ImageIcon } from "lucide-react";
 import { PageHeader } from "@/components/commerce/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,6 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { CrudActionsMenu } from "@/components/ui/crud-actions-menu";
 import { Textarea } from "@/components/ui/textarea";
 import { formatPhone } from "@/lib/document-validator";
+import { MediaUploader } from "@/components/ui/media-uploader";
 import { listStoreLeadForms, upsertLeadForm, deleteLeadForm, listLeadSubmissions, updateLeadSubmissionStatus, getLeadFormsKpis, LeadFormDTO, LeadFormFieldDTO, LeadFormSubmissionDTO } from "@/services/lead-forms.functions";
 import { getStoreSettings } from "@/services/store.functions";
 
@@ -93,10 +94,12 @@ function WorkspaceLeadFormsPage() {
   const [builderHeadline, setBuilderHeadline] = useState("");
   const [builderSubheadline, setBuilderSubheadline] = useState("");
   const [builderNiche, setBuilderNiche] = useState("turismo");
+  const [builderCoverImageUrl, setBuilderCoverImageUrl] = useState("");
+  const [builderBackgroundImageUrl, setBuilderBackgroundImageUrl] = useState("");
   const [builderSubmitButtonText, setBuilderSubmitButtonText] = useState("Solicitar Contato");
   const [builderAfterSubmitAction, setBuilderAfterSubmitAction] = useState<
-    "whatsapp_redirect" | "show_success_message" | "external_redirect"
-  >("whatsapp_redirect");
+    "start_sdr_chat" | "whatsapp_redirect" | "show_success_message" | "external_redirect"
+  >("start_sdr_chat");
   const [builderWhatsappPhone, setBuilderWhatsappPhone] = useState(store?.phone || "");
   const [builderWhatsappTemplate, setBuilderWhatsappTemplate] = useState(
     "Olá! Gostaria de mais informações sobre {formulario}."
@@ -108,11 +111,13 @@ function WorkspaceLeadFormsPage() {
     Array<{
       id?: string;
       field_key: string;
-      field_type: "text" | "phone" | "email" | "select" | "currency" | "date" | "number" | "textarea";
+      field_type: "text" | "phone" | "email" | "select" | "currency" | "date" | "number" | "textarea" | "cpf" | "cep" | "address";
       label: string;
       placeholder?: string;
       is_required: boolean;
-      options?: Array<{ label: string; value: string }>;
+      step_index?: number;
+      skip_to_step?: number | null;
+      options?: Array<{ label: string; value: string; skip_to_step?: number | null; submit_on_select?: boolean }>;
     }>
   >([]);
   const [isSaving, setIsSaving] = useState(false);
@@ -142,13 +147,15 @@ function WorkspaceLeadFormsPage() {
     setBuilderHeadline("Solicite uma Cotação Personalizada");
     setBuilderSubheadline("Preencha as informações abaixo para receber o melhor roteiro.");
     setBuilderNiche("turismo");
+    setBuilderCoverImageUrl("");
+    setBuilderBackgroundImageUrl("");
     setBuilderSubmitButtonText("Receber Proposta Grátis");
-    setBuilderAfterSubmitAction("whatsapp_redirect");
+    setBuilderAfterSubmitAction("start_sdr_chat");
     setBuilderWhatsappPhone(store?.phone || "");
     setBuilderWhatsappTemplate("Olá! Gostaria de receber a cotação da viagem {formulario}.");
     setBuilderSuccessMessage("Recebemos sua solicitação! Entraremos em contato via WhatsApp.");
 
-    // Preset padrão de Turismo
+    // Preset padrão de Turismo com multi-etapas
     setBuilderFields([
       {
         field_key: "destino",
@@ -156,18 +163,21 @@ function WorkspaceLeadFormsPage() {
         label: "Destino Desejado",
         placeholder: "Ex: Porto Seguro, Maceió, Cancun",
         is_required: true,
+        step_index: 1,
       },
       {
         field_key: "data_viagem",
         field_type: "date",
         label: "Data Pretendida para Embarque",
         is_required: true,
+        step_index: 1,
       },
       {
         field_key: "num_viajantes",
         field_type: "select",
         label: "Número de Passageiros",
         is_required: true,
+        step_index: 2,
         options: [
           { label: "1 Pessoa (Individual)", value: "1" },
           { label: "2 Pessoas (Casal/Dupla)", value: "2" },
@@ -181,6 +191,7 @@ function WorkspaceLeadFormsPage() {
         label: "Orçamento Máximo Previsto (por pessoa)",
         placeholder: "R$ 0,00",
         is_required: false,
+        step_index: 2,
       },
       {
         field_key: "observacoes",
@@ -188,6 +199,7 @@ function WorkspaceLeadFormsPage() {
         label: "Preferências Especiais / Observações",
         placeholder: "Ex: Preferência por resort all inclusive, voo saindo de Chapecó...",
         is_required: false,
+        step_index: 2,
       },
     ]);
 
@@ -202,8 +214,10 @@ function WorkspaceLeadFormsPage() {
     setBuilderHeadline(form.headline || "");
     setBuilderSubheadline(form.subheadline || "");
     setBuilderNiche(form.niche_id);
+    setBuilderCoverImageUrl(form.cover_image_url || "");
+    setBuilderBackgroundImageUrl(form.background_image_url || "");
     setBuilderSubmitButtonText(form.submit_button_text);
-    setBuilderAfterSubmitAction(form.after_submit_action);
+    setBuilderAfterSubmitAction(form.after_submit_action || "start_sdr_chat");
     setBuilderWhatsappPhone(form.whatsapp_target_phone || store?.phone || "");
     setBuilderWhatsappTemplate(form.whatsapp_message_template || "");
     setBuilderSuccessMessage(form.success_message || "");
@@ -215,6 +229,8 @@ function WorkspaceLeadFormsPage() {
       label: f.label,
       placeholder: f.placeholder || "",
       is_required: f.is_required,
+      step_index: f.step_index || 1,
+      skip_to_step: f.skip_to_step ?? null,
       options: f.options as any,
     }));
     setBuilderFields(mapped);
@@ -318,6 +334,8 @@ function WorkspaceLeadFormsPage() {
           headline: builderHeadline.trim() || null,
           subheadline: builderSubheadline.trim() || null,
           niche_id: builderNiche,
+          cover_image_url: builderCoverImageUrl.trim() || null,
+          background_image_url: builderBackgroundImageUrl.trim() || null,
           submit_button_text: builderSubmitButtonText.trim(),
           after_submit_action: builderAfterSubmitAction,
           whatsapp_target_phone: builderWhatsappPhone.trim() || null,
@@ -331,6 +349,8 @@ function WorkspaceLeadFormsPage() {
             placeholder: f.placeholder?.trim() || null,
             is_required: f.is_required,
             sort_order: idx,
+            step_index: f.step_index || 1,
+            skip_to_step: f.skip_to_step ?? null,
             options: f.options || [],
           })),
         },
@@ -737,33 +757,104 @@ function WorkspaceLeadFormsPage() {
                 />
               </div>
 
+              {/* Capa e Fundo via Bucket com Suporte a Ctrl+V */}
+              <div className="space-y-4 pt-2">
+                <div>
+                  <Label className="text-xs font-semibold text-foreground mb-1 block">
+                    Imagem de Capa (Banner da Landing Page)
+                  </Label>
+                  <p className="text-xs text-muted-foreground mb-2">
+                    Upload via bucket de mídia. Cole com Ctrl+V ou selecione um arquivo.
+                  </p>
+                  <MediaUploader
+                    value={builderCoverImageUrl ? [builderCoverImageUrl] : []}
+                    onChange={(urls) => setBuilderCoverImageUrl(urls[0] || "")}
+                    maxFiles={1}
+                    bucket="post-media"
+                    folder="forms"
+                    aspect={21 / 9}
+                    cropShape="rect"
+                    className="max-w-md"
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-xs font-semibold text-foreground mb-1 block">
+                    Imagem de Fundo (Opcional)
+                  </Label>
+                  <p className="text-xs text-muted-foreground mb-2">
+                    Fundo temático sutil para a experiência imersiva do lead.
+                  </p>
+                  <MediaUploader
+                    value={builderBackgroundImageUrl ? [builderBackgroundImageUrl] : []}
+                    onChange={(urls) => setBuilderBackgroundImageUrl(urls[0] || "")}
+                    maxFiles={1}
+                    bucket="post-media"
+                    folder="forms"
+                    aspect={16 / 9}
+                    cropShape="rect"
+                    className="max-w-md"
+                  />
+                </div>
+              </div>
+
               {/* Automação Pós-Envio */}
               <div className="p-4 rounded-lg border border-border/50 bg-muted/20 space-y-3">
                 <Label className="text-xs font-semibold text-foreground">Automação Pós-Envio</Label>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setBuilderAfterSubmitAction("start_sdr_chat")}
+                    className={`p-3 rounded-lg border text-xs font-medium text-left transition-all flex flex-col justify-between gap-1.5 ${
+                      builderAfterSubmitAction === "start_sdr_chat"
+                        ? "border-primary bg-primary/10 text-primary"
+                        : "border-border/50 text-muted-foreground hover:bg-muted/40"
+                    }`}
+                  >
+                    <div className="flex items-center gap-1.5 font-semibold text-foreground">
+                      <Bot className="w-3.5 h-3.5 text-primary" />
+                      <span>SDR IA</span>
+                    </div>
+                    <span className="text-xs leading-tight text-muted-foreground">Qualificação & Chat Direto</span>
+                  </button>
                   <button
                     type="button"
                     onClick={() => setBuilderAfterSubmitAction("whatsapp_redirect")}
-                    className={`p-3 rounded-lg border text-xs font-medium text-left transition-all ${
+                    className={`p-3 rounded-lg border text-xs font-medium text-left transition-all flex flex-col justify-between gap-1.5 ${
                       builderAfterSubmitAction === "whatsapp_redirect"
                         ? "border-primary bg-primary/10 text-primary"
-                        : "border-border/50 text-muted-foreground"
+                        : "border-border/50 text-muted-foreground hover:bg-muted/40"
                     }`}
                   >
-                    Abrir WhatsApp
+                    <div className="flex items-center gap-1.5 font-semibold text-foreground">
+                      <Phone className="w-3.5 h-3.5 text-emerald-600" />
+                      <span>WhatsApp</span>
+                    </div>
+                    <span className="text-xs leading-tight text-muted-foreground">Redirecionar Direto</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => setBuilderAfterSubmitAction("show_success_message")}
-                    className={`p-3 rounded-lg border text-xs font-medium text-left transition-all ${
+                    className={`p-3 rounded-lg border text-xs font-medium text-left transition-all flex flex-col justify-between gap-1.5 ${
                       builderAfterSubmitAction === "show_success_message"
                         ? "border-primary bg-primary/10 text-primary"
-                        : "border-border/50 text-muted-foreground"
+                        : "border-border/50 text-muted-foreground hover:bg-muted/40"
                     }`}
                   >
-                    Mensagem de Sucesso
+                    <div className="flex items-center gap-1.5 font-semibold text-foreground">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-blue-500" />
+                      <span>Mensagem</span>
+                    </div>
+                    <span className="text-xs leading-tight text-muted-foreground">Sucesso na Tela</span>
                   </button>
                 </div>
+
+                {builderAfterSubmitAction === "start_sdr_chat" && (
+                  <div className="p-3 rounded-lg bg-primary/5 border border-primary/20 text-xs text-muted-foreground">
+                    <p className="font-medium text-foreground text-xs mb-1">Assistente SDR Autônomo Ativado</p>
+                    Após preencher as perguntas do formulário, o lead será convidado com 1 clique a interagir diretamente com o SDR IA treinado no catálogo e nos dados da empresa para fechar negócio.
+                  </div>
+                )}
 
                 {builderAfterSubmitAction === "whatsapp_redirect" && (
                   <div className="space-y-2 pt-2">
@@ -823,7 +914,7 @@ function WorkspaceLeadFormsPage() {
                 </Button>
               </div>
 
-              <div className="space-y-3 max-h-[480px] overflow-y-auto pr-1">
+              <div className="space-y-3 max-h-[520px] overflow-y-auto pr-1">
                 {builderFields.map((field, idx) => (
                   <div
                     key={idx}
@@ -852,6 +943,11 @@ function WorkspaceLeadFormsPage() {
                         className="h-9 px-2 text-xs rounded-lg border border-input bg-background"
                       >
                         <option value="text">Texto Curto</option>
+                        <option value="phone">Telefone / WhatsApp</option>
+                        <option value="email">E-mail</option>
+                        <option value="cpf">CPF (Meta Lead Ads)</option>
+                        <option value="cep">CEP (Auto Preenchimento)</option>
+                        <option value="address">Endereço Completo</option>
                         <option value="select">Seleção / Dropdown</option>
                         <option value="currency">Moeda (R$)</option>
                         <option value="date">Data</option>
@@ -864,10 +960,111 @@ function WorkspaceLeadFormsPage() {
                           setBuilderFields((prev) => prev.filter((_, i) => i !== idx));
                         }}
                         className="p-2 text-muted-foreground hover:text-destructive transition-colors"
+                        title="Remover pergunta"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
+
+                    {/* Controles de Etapa e Ramificação Condicional */}
+                    <div className="grid grid-cols-2 gap-2 pt-1 border-t border-border/30">
+                      <div>
+                        <Label className="text-[11px] text-muted-foreground">Etapa do Assistente (Step)</Label>
+                        <select
+                          value={field.step_index || 1}
+                          onChange={(e) => {
+                            const val = parseInt(e.target.value, 10);
+                            setBuilderFields((prev) =>
+                              prev.map((f, i) => (i === idx ? { ...f, step_index: val } : f))
+                            );
+                          }}
+                          className="w-full h-8 px-2 text-xs rounded-lg border border-input bg-background mt-1"
+                        >
+                          <option value={1}>Etapa 1 (Início)</option>
+                          <option value={2}>Etapa 2</option>
+                          <option value={3}>Etapa 3</option>
+                          <option value={4}>Etapa 4</option>
+                          <option value={5}>Etapa 5 (Final)</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <Label className="text-[11px] text-muted-foreground">Pular para Etapa (Opcional)</Label>
+                        <select
+                          value={field.skip_to_step ?? ""}
+                          onChange={(e) => {
+                            const val = e.target.value ? parseInt(e.target.value, 10) : null;
+                            setBuilderFields((prev) =>
+                              prev.map((f, i) => (i === idx ? { ...f, skip_to_step: val } : f))
+                            );
+                          }}
+                          className="w-full h-8 px-2 text-xs rounded-lg border border-input bg-background mt-1"
+                        >
+                          <option value="">Fluxo Sequencial Padrão</option>
+                          <option value={2}>Ir para Etapa 2</option>
+                          <option value={3}>Ir para Etapa 3</option>
+                          <option value={4}>Ir para Etapa 4</option>
+                          <option value={5}>Ir para Etapa 5</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    {/* Editor de Opções para Campos de Seleção */}
+                    {field.field_type === "select" && (
+                      <div className="p-2.5 rounded-lg bg-muted/20 border border-border/40 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[11px] font-semibold text-foreground">Opções de Escolha</span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const currentOpts = field.options || [];
+                              const newOpts = [
+                                ...currentOpts,
+                                { label: `Opção ${currentOpts.length + 1}`, value: `opt_${Date.now()}` },
+                              ];
+                              setBuilderFields((prev) =>
+                                prev.map((f, i) => (i === idx ? { ...f, options: newOpts } : f))
+                              );
+                            }}
+                            className="text-[11px] text-primary hover:underline font-medium"
+                          >
+                            + Adicionar Opção
+                          </button>
+                        </div>
+                        <div className="space-y-1.5 max-h-[140px] overflow-y-auto">
+                          {(field.options || []).map((opt, optIdx) => (
+                            <div key={optIdx} className="flex items-center gap-1.5">
+                              <Input
+                                value={opt.label}
+                                onChange={(e) => {
+                                  const val = e.target.value;
+                                  const updatedOpts = (field.options || []).map((o, oi) =>
+                                    oi === optIdx ? { ...o, label: val, value: val.toLowerCase().replace(/\s+/g, "_") } : o
+                                  );
+                                  setBuilderFields((prev) =>
+                                    prev.map((f, i) => (i === idx ? { ...f, options: updatedOpts } : f))
+                                  );
+                                }}
+                                placeholder="Texto da opção..."
+                                className="h-7 text-xs rounded-md flex-1"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const updatedOpts = (field.options || []).filter((_, oi) => oi !== optIdx);
+                                  setBuilderFields((prev) =>
+                                    prev.map((f, i) => (i === idx ? { ...f, options: updatedOpts } : f))
+                                  );
+                                }}
+                                className="p-1 text-muted-foreground hover:text-destructive"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
 
                     <div className="flex items-center justify-between text-xs text-muted-foreground pt-1">
                       <label className="flex items-center gap-2 cursor-pointer">
