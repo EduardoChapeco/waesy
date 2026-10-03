@@ -11,6 +11,7 @@ import {
   getAiConversationThread,
   createAiConversationThread,
   sendAiConversationMessage,
+  executeAiCopilotPipeline,
   resolveAiPipelineSteps,
 } from "@/services/ai-conversations.functions";
 import { getUserSession } from "@/services/auth.functions";
@@ -129,7 +130,7 @@ function CopilotPage() {
           setMessages(updated.messages as any);
         }
       } else {
-        const execution = resolveAiPipelineSteps(text, {});
+        const execution = await executeAiCopilotPipeline(text, {}, { userId: session?.id });
         const aiMessageItem: ChatMessageItem = {
           id: `ai-${Date.now()}`,
           threadId: activeThreadId,
@@ -189,7 +190,7 @@ function CopilotPage() {
   };
 
   return (
-    <div className="h-[calc(100vh-4rem)] w-full flex flex-col bg-background">
+    <div className="h-full flex-1 w-full flex flex-col bg-background">
       <AIChatShell
         threads={threads}
         activeThreadId={activeThreadId}

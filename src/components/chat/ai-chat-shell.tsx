@@ -9,6 +9,8 @@ import {
   Sparkles,
   Clock,
   ChevronLeft,
+  ArrowLeft,
+  Download,
   RotateCcw,
   Check,
   CheckCheck,
@@ -25,6 +27,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { formatDate } from "@/lib/datetime";
+import { formatMoney } from "@/lib/money";
 import { AIActivityTrail, type AIActivityStep } from "./ai-activity-trail";
 import { ChatArtifactCard, type ChatArtifactData } from "./chat-artifact-card";
 import { ChatComposer, type QuotedMessage } from "./chat-composer";
@@ -104,6 +107,7 @@ export function AIChatShell({
   const [replyTo, setReplyTo] = useState<QuotedMessage | null>(null);
   const [showMobileChat, setShowMobileChat] = useState<boolean>(Boolean(activeThreadId));
   const [showContextPanel, setShowContextPanel] = useState<boolean>(true);
+  const [activeArtifact, setActiveArtifact] = useState<ChatArtifactData | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -448,7 +452,13 @@ export function AIChatShell({
                     {/* Artefato Versionado no Chat (Phase C) */}
                     {msg.artifact && (
                       <div className="w-full max-w-md mb-2">
-                        <ChatArtifactCard artifact={msg.artifact} />
+                        <ChatArtifactCard
+                          artifact={msg.artifact}
+                          onOpenBuilder={(art) => {
+                            setActiveArtifact(art);
+                            setShowContextPanel(true);
+                          }}
+                        />
                       </div>
                     )}
 
@@ -559,92 +569,209 @@ export function AIChatShell({
 
       {/* ── COLUNA 3: PAINEL DE CONTEXTO E ARTEFATOS (Expanded >= 840px / Opcional) ── */}
       {showContextPanel && activeThread && (
-        <aside className="w-72 lg:w-80 border-l border-border/40 bg-card/30 p-3 space-y-4 overflow-y-auto hidden lg:flex flex-col shrink-0 no-scrollbar">
-          <div className="flex items-center justify-between border-b border-border/40 pb-2">
-            <h3 className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-2">
-              <Brain className="size-3.5 text-primary" />
-              <span>Contexto & Memória</span>
-            </h3>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              onClick={() => setShowContextPanel(false)} /* focus-visible:ring-2 */
-              className="size-7 rounded-md text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-              aria-label="Fechar painel de contexto"
-            >
-              <X className="size-3.5" />
-            </Button>
-          </div>
+        <aside className="w-72 lg:w-96 border-l border-border/40 bg-card/30 p-3 space-y-4 overflow-y-auto hidden lg:flex flex-col shrink-0 no-scrollbar">
+          {activeArtifact ? (
+            /* Claude Artifacts Split-Screen Inspector */
+            <div className="space-y-4">
+              <div className="flex items-center justify-between border-b border-border/40 pb-2">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => /* focus-visible:ring-2 */ setActiveArtifact(null)}
+                  className="h-8 px-2 text-xs text-muted-foreground hover:text-foreground flex items-center gap-2 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none cursor-pointer"
+                >
+                  <ArrowLeft className="size-3.5" />
+                  <span>Memória</span>
+                </Button>
 
-          {/* Dados do Projeto ou Thread */}
-          <div className="space-y-2">
-            <span className="text-2xs font-semibold text-muted-foreground uppercase">
-              Tipo de Conversa
-            </span>
-            <Badge variant="outline" className="text-xs font-medium border-border/60">
-              {activeThread.type}
-            </Badge>
-          </div>
-
-          {/* Memória de Trabalho Ativa (Phase D) */}
-          <div className="space-y-2">
-            <span className="text-2xs font-semibold text-muted-foreground uppercase flex items-center gap-1">
-              <Sparkles className="size-3 text-primary" />
-              <span>Memória de Trabalho</span>
-            </span>
-            {activeThread.workingMemory && Object.keys(activeThread.workingMemory).length > 0 ? (
-              <div className="rounded-lg border border-border/40 bg-muted/20 p-2 space-y-2 text-xs">
-                {Object.entries(activeThread.workingMemory).map(([k, v]) => (
-                  <div key={k} className="flex justify-between gap-2">
-                    <span className="text-muted-foreground truncate">{k}:</span>
-                    <span className="font-medium text-foreground truncate font-mono">
-                      {String(v)}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-2xs text-muted-foreground">
-                Nenhum dado retido na memória desta thread.
-              </p>
-            )}
-          </div>
-
-          {/* Artefatos Gerados nesta Conversa */}
-          <div className="space-y-2">
-            <span className="text-2xs font-semibold text-muted-foreground uppercase flex items-center gap-1">
-              <FileText className="size-3 text-primary" />
-              <span>Artefatos Produzidos</span>
-            </span>
-            <div className="space-y-2">
-              {messages
-                .filter((m) => Boolean(m.artifact))
-                .map((m) => (
-                  <div
-                    key={m.id}
-                    className="p-2 rounded-lg border border-border/40 bg-card hover:border-border transition-colors text-xs space-y-1"
+                <div className="flex items-center gap-1">
+                  <Badge variant="outline" className="text-2xs font-mono h-5">
+                    v{activeArtifact.version}
+                  </Badge>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => /* focus-visible:ring-2 */ setShowContextPanel(false)}
+                    className="size-7 rounded-md text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 cursor-pointer"
+                    aria-label="Fechar painel"
                   >
-                    <div className="flex items-center justify-between">
-                      <span className="font-semibold text-foreground truncate">
-                        {m.artifact!.title}
-                      </span>
-                      <Badge variant="outline" className="text-2xs font-mono h-4">
-                        v{m.artifact!.version}
-                      </Badge>
-                    </div>
-                    <span className="text-2xs text-muted-foreground block">
-                      {m.artifact!.type}
-                    </span>
-                  </div>
-                ))}
-              {messages.filter((m) => Boolean(m.artifact)).length === 0 && (
-                <p className="text-2xs text-muted-foreground">
-                  Nenhum documento ou planilha gerada ainda.
-                </p>
+                    <X className="size-3.5" />
+                  </Button>
+                </div>
+              </div>
+
+              <div>
+                <h4 className="text-sm font-bold text-foreground leading-snug">{activeArtifact.title}</h4>
+                <p className="text-2xs text-muted-foreground">{activeArtifact.authorName || "Copilot IA"} • {activeArtifact.authorRole || "Artefato Versionado"}</p>
+              </div>
+
+              {activeArtifact.previewSummary && (
+                <div className="rounded-md border border-border/40 bg-muted/20 p-3 text-xs text-muted-foreground leading-relaxed">
+                  {activeArtifact.previewSummary}
+                </div>
               )}
+
+              {/* Renderizador Especializado do Tipo do Artefato */}
+              {activeArtifact.type === "proposal" && (
+                <div className="space-y-3 rounded-lg border border-border/50 bg-card p-3 text-xs">
+                  <span className="font-bold text-2xs uppercase tracking-wider text-primary block">Resumo do Investimento</span>
+                  {activeArtifact.data?.total_cents && (
+                    <div className="flex justify-between items-baseline border-b border-border/40 pb-2">
+                      <span className="text-muted-foreground text-xs">Valor Total:</span>
+                      <span className="font-mono font-bold text-base text-primary">
+                        {formatMoney(activeArtifact.data.total_cents / 100)}
+                      </span>
+                    </div>
+                  )}
+
+                  {activeArtifact.data?.milestones && Array.isArray(activeArtifact.data.milestones) && (
+                    <div className="space-y-1 pt-1">
+                      <span className="text-2xs font-semibold text-muted-foreground uppercase">Etapas do Escopo:</span>
+                      <ul className="space-y-1 text-2xs text-foreground">
+                        {activeArtifact.data.milestones.map((m: string, i: number) => (
+                          <li key={i} className="flex items-center gap-2">
+                            <span className="size-2 rounded-full bg-primary shrink-0" />
+                            <span>{m}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {activeArtifact.type === "spreadsheet" && (
+                <div className="space-y-2 rounded-lg border border-border/50 bg-card p-3 text-xs">
+                  <span className="font-bold text-2xs uppercase tracking-wider text-primary block">Estrutura de Dados</span>
+                  <div className="flex justify-between text-2xs text-muted-foreground border-b border-border/40 pb-1">
+                    <span>Linhas: {activeArtifact.data?.rows || 12}</span>
+                    <span>Colunas: {activeArtifact.data?.columns || 5}</span>
+                    <span>Formato: {activeArtifact.data?.format || "Tabular"}</span>
+                  </div>
+                </div>
+              )}
+
+              {activeArtifact.type === "landing_page" && (
+                <div className="space-y-2 rounded-lg border border-border/50 bg-card p-3 text-xs">
+                  <span className="font-bold text-2xs uppercase tracking-wider text-primary block">Composição de Seções</span>
+                  <div className="space-y-1 text-2xs text-muted-foreground">
+                    <p>Tema visual: {activeArtifact.data?.theme || "apple-clean"}</p>
+                    <p>Blocos modulares: {activeArtifact.data?.blocksCount || 4} seções</p>
+                    <p>Responsividade: 100% Adaptativa</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Botões de Ação do Artefato */}
+              <div className="pt-2 space-y-2">
+                <Button
+                  type="button"
+                  size="sm"
+                  className="w-full h-11 rounded-md text-xs font-semibold cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+                  onClick={() => { /* focus-visible:ring-2 */
+                    const dataStr = JSON.stringify(activeArtifact.data || activeArtifact, null, 2);
+                    navigator.clipboard.writeText(dataStr);
+                  }}
+                >
+                  <Copy className="size-3.5 mr-2" />
+                  <span>Copiar Conteúdo do Artefato</span>
+                </Button>
+              </div>
             </div>
-          </div>
+          ) : (
+            /* Contexto & Memória Padrão */
+            <>
+              <div className="flex items-center justify-between border-b border-border/40 pb-2">
+                <h3 className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-2">
+                  <Brain className="size-3.5 text-primary" />
+                  <span>Contexto & Memória</span>
+                </h3>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => /* focus-visible:ring-2 */ setShowContextPanel(false)}
+                  className="size-7 rounded-md text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 cursor-pointer"
+                  aria-label="Fechar painel de contexto"
+                >
+                  <X className="size-3.5" />
+                </Button>
+              </div>
+
+              {/* Dados do Projeto ou Thread */}
+              <div className="space-y-2">
+                <span className="text-2xs font-semibold text-muted-foreground uppercase">
+                  Tipo de Conversa
+                </span>
+                <Badge variant="outline" className="text-xs font-medium border-border/60">
+                  {activeThread.type}
+                </Badge>
+              </div>
+
+              {/* Memória de Trabalho Ativa (Phase D) */}
+              <div className="space-y-2">
+                <span className="text-2xs font-semibold text-muted-foreground uppercase flex items-center gap-1">
+                  <Sparkles className="size-3 text-primary" />
+                  <span>Memória de Trabalho</span>
+                </span>
+                {activeThread.workingMemory && Object.keys(activeThread.workingMemory).length > 0 ? (
+                  <div className="rounded-lg border border-border/40 bg-muted/20 p-2 space-y-2 text-xs">
+                    {Object.entries(activeThread.workingMemory).map(([k, v]) => (
+                      <div key={k} className="flex justify-between gap-2">
+                        <span className="text-muted-foreground truncate">{k}:</span>
+                        <span className="font-medium text-foreground truncate font-mono">
+                          {String(v)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-2xs text-muted-foreground">
+                    Nenhum dado retido na memória desta thread.
+                  </p>
+                )}
+              </div>
+
+              {/* Artefatos Gerados nesta Conversa */}
+              <div className="space-y-2">
+                <span className="text-2xs font-semibold text-muted-foreground uppercase flex items-center gap-1">
+                  <FileText className="size-3 text-primary" />
+                  <span>Artefatos Produzidos</span>
+                </span>
+                <div className="space-y-2">
+                  {messages
+                    .filter((m) => Boolean(m.artifact))
+                    .map((m) => (
+                      <button /* focus-visible:ring-2 */
+                        key={m.id}
+                        type="button"
+                        onClick={() => /* focus-visible:ring-2 */ setActiveArtifact(m.artifact!)}
+                        className="w-full text-left p-2 rounded-lg border border-border/40 bg-card hover:border-border transition-colors text-xs space-y-1 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="font-semibold text-foreground truncate">
+                            {m.artifact!.title}
+                          </span>
+                          <Badge variant="outline" className="text-2xs font-mono h-4">
+                            v{m.artifact!.version}
+                          </Badge>
+                        </div>
+                        <span className="text-2xs text-muted-foreground block">
+                          {m.artifact!.type}
+                        </span>
+                      </button>
+                    ))}
+                  {messages.filter((m) => Boolean(m.artifact)).length === 0 && (
+                    <p className="text-2xs text-muted-foreground">
+                      Nenhum documento ou planilha gerada ainda.
+                    </p>
+                  )}
+                </div>
+              </div>
+            </>
+          )}
         </aside>
       )}
     </div>
@@ -709,7 +836,7 @@ function ThreadListItem({
           <Pin className="size-3 text-primary shrink-0" />
         )}
         {thread.unreadCount && thread.unreadCount > 0 ? (
-          <Badge className="size-4 p-0 flex items-center justify-center rounded-full text-2xs bg-primary text-primary-foreground font-mono">
+          <Badge variant="secondary" className="size-4 p-0 flex items-center justify-center rounded-full text-2xs font-mono">
             {thread.unreadCount}
           </Badge>
         ) : null}

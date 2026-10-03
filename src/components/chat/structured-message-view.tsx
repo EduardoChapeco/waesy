@@ -27,6 +27,14 @@ import {
   AlertCircle,
   RotateCcw,
   Check,
+  Car,
+  Bike,
+  Zap,
+  Scale,
+  Plane,
+  Hotel,
+  MessageCircle,
+  Phone,
 } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import {
@@ -60,7 +68,13 @@ export type AIChatBlockType =
   | "event_card"
   | "job_card"
   | "financial_entry"
-  | "summary_card";
+  | "summary_card"
+  | "places_carousel"
+  | "mobility_quote"
+  | "travel_itinerary"
+  | "legal_triage"
+  | "food_modifier_selector"
+  | "creative_ad_preview";
 
 export interface AIChatBlock {
   type: AIChatBlockType;
@@ -81,7 +95,12 @@ export interface AIChatAction {
     | "cast_vote"
     | "rsvp_event"
     | "apply_job"
-    | "reconcile_entry";
+    | "reconcile_entry"
+    | "call_ride"
+    | "open_place"
+    | "request_travel_quote"
+    | "submit_legal_demand"
+    | "publish_ad";
   payload: Record<string, any>;
 }
 
@@ -799,6 +818,646 @@ function SummaryCardBlock({ data }: { data: Record<string, any> }) {
   );
 }
 
+function PlacesCarouselBlock({
+  data,
+  onAction,
+}: {
+  data: Record<string, any>;
+  onAction?: (action: AIChatAction) => void;
+}) {
+  const items: any[] = data.places || data.items || [];
+
+  if (items.length === 0) {
+    return (
+      <div className="rounded-lg border border-border/80 bg-card p-4 text-center max-w-sm w-full space-y-1">
+        <Building2 className="size-6 text-muted-foreground mx-auto" />
+        <p className="text-xs font-semibold text-foreground">Nenhum estabelecimento encontrado</p>
+        <p className="text-2xs text-muted-foreground">Tente buscar por outra categoria ou regiao.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-full max-w-md space-y-2">
+      <div className="flex items-center justify-between">
+        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+          <Building2 className="size-3.5 text-primary" />
+          <span>{data.title || "Estabelecimentos Encontrados"}</span>
+        </p>
+        <span className="text-2xs text-muted-foreground font-mono">{items.length} locais</span>
+      </div>
+
+      <div className="carousel flex gap-3 overflow-x-auto snap-x snap-mandatory no-scrollbar pb-2">
+        {items.map((place, idx) => {
+          const isOpen = place.is_open ?? true;
+          const distanceKm = typeof place.distance_km === "number" ? `${place.distance_km.toFixed(1)} km` : place.distance || null;
+
+          return (
+            <div
+              key={place.id || idx}
+              className="snap-start shrink-0 w-64 rounded-lg border border-border/80 bg-card p-3 space-y-3 shadow-2xs hover:border-border transition-colors flex flex-col justify-between"
+            >
+              <div className="space-y-2">
+                {place.avatar_url || place.banner_url || place.image_url ? (
+                  <img
+                    src={place.avatar_url || place.banner_url || place.image_url}
+                    alt={place.name || place.business_name || "Estabelecimento"}
+                    className="w-full h-28 rounded-md object-cover bg-muted border border-border/40"
+                    loading="lazy"
+                  />
+                ) : (
+                  <div className="w-full h-28 rounded-md bg-muted/60 border border-border/40 flex items-center justify-center text-muted-foreground">
+                    <Building2 className="size-8" />
+                  </div>
+                )}
+
+                <div>
+                  <div className="flex items-start justify-between gap-1">
+                    <h5 className="text-xs font-bold text-foreground line-clamp-1">
+                      {place.name || place.business_name}
+                    </h5>
+                    {place.rating && (
+                      <span className="flex items-center gap-1 text-2xs font-bold text-foreground shrink-0">
+                        <Star className="size-3 fill-current text-primary" />
+                        {Number(place.rating).toFixed(1)}
+                      </span>
+                    )}
+                  </div>
+
+                  <p className="text-2xs text-muted-foreground truncate">{place.category || "Comercio Local"}</p>
+                </div>
+
+                <div className="flex items-center gap-2 flex-wrap text-2xs">
+                  <Badge
+                    variant="outline"
+                    className={cn(
+                      "text-2xs font-semibold px-2 py-1 border",
+                      isOpen
+                        ? "border-emerald-500/40 text-emerald-600 bg-emerald-500/10 dark:text-emerald-400"
+                        : "border-border/60 text-muted-foreground bg-muted/40"
+                    )}
+                  >
+                    {isOpen ? "Aberto Agora" : "Fechado"}
+                  </Badge>
+
+                  {distanceKm && (
+                    <span className="flex items-center gap-1 text-muted-foreground font-mono">
+                      <MapPin className="size-3 text-primary shrink-0" />
+                      {distanceKm}
+                    </span>
+                  )}
+                </div>
+
+                {place.address && (
+                  <p className="text-2xs text-muted-foreground line-clamp-1" title={place.address}>
+                    {place.address}
+                  </p>
+                )}
+              </div>
+
+              <div className="flex items-center gap-2 pt-1 border-t border-border/40">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="flex-1 h-11 rounded-md text-xs font-semibold cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+                  onClick={() => /* focus-visible:ring-2 */
+                    onAction?.({
+                      id: `place-open-${place.id || place.slug || idx}`,
+                      label: "Ver Perfil",
+                      action_type: "open_place",
+                      payload: { placeId: place.id, slug: place.slug, storeId: place.store_id },
+                    })
+                  }
+                >
+                  Ver Perfil
+                </Button>
+
+                {(place.contact_whatsapp || place.phone) && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-11 px-3 rounded-md text-xs font-semibold border border-border/40 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+                    onClick={() => { /* focus-visible:ring-2 */
+                      const num = (place.contact_whatsapp || place.phone || "").replace(/\D/g, "");
+                      if (num) {
+                        window.open(`https://wa.me/55${num}`, "_blank", "noopener,noreferrer");
+                      }
+                    }}
+                    title="Conversar no WhatsApp"
+                    aria-label="Abrir conversa no WhatsApp"
+                  >
+                    <MessageCircle className="size-4 text-emerald-500" />
+                  </Button>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function MobilityQuoteBlock({
+  data,
+  onAction,
+}: {
+  data: Record<string, any>;
+  onAction?: (action: AIChatAction) => void;
+}) {
+  const quotes: any[] = data.quotes || [];
+  const origin = data.origin_address || "Origem";
+  const destination = data.destination_address || "Destino";
+  const distanceKm = data.distance_km || 0;
+  const [selectedType, setSelectedType] = useState<string>(quotes[0]?.service_type || "ride_moto");
+
+  const selectedQuote = quotes.find((q) => q.service_type === selectedType) || quotes[0];
+
+  const getVehicleIcon = (type: string) => {
+    switch (type) {
+      case "ride_moto":
+        return Bike;
+      case "ride_car":
+        return Car;
+      case "delivery_express":
+        return Zap;
+      case "freight_van":
+      case "moving_truck":
+        return Truck;
+      default:
+        return Car;
+    }
+  };
+
+  return (
+    <div className="rounded-lg border border-border/80 bg-card p-4 shadow-2xs max-w-sm w-full space-y-3">
+      {/* Cabecalho da Rota */}
+      <div className="border-b border-border/60 pb-2 space-y-2">
+        <div className="flex items-center justify-between text-2xs uppercase tracking-wider font-semibold text-muted-foreground">
+          <span>Mobilidade & Entregas</span>
+          {distanceKm > 0 && <span className="font-mono">{distanceKm} km</span>}
+        </div>
+
+        <div className="space-y-1 text-xs">
+          <div className="flex items-center gap-2 text-foreground font-medium">
+            <div className="size-2 rounded-full bg-emerald-500 shrink-0" />
+            <span className="truncate">{origin}</span>
+          </div>
+          <div className="flex items-center gap-2 text-foreground font-medium">
+            <div className="size-2 rounded-full bg-primary shrink-0" />
+            <span className="truncate">{destination}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Selecao de Modais */}
+      <div className="space-y-2">
+        {quotes.map((q) => {
+          const isSelected = selectedType === q.service_type;
+          const IconComponent = getVehicleIcon(q.service_type);
+
+          return (
+            <button /* focus-visible:ring-2 */
+              key={q.service_type}
+              type="button"
+              onClick={() => setSelectedType(q.service_type)} /* focus-visible:ring-2 */
+              className={cn(
+                "w-full h-12 px-3 rounded-md border text-left text-xs flex items-center justify-between transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
+                isSelected
+                  ? "border-primary bg-primary/10 text-foreground font-semibold"
+                  : "border-border/60 bg-muted/20 text-muted-foreground hover:bg-muted/40 hover:text-foreground"
+              )}
+            >
+              <div className="flex items-center gap-2 min-w-0">
+                <div className={cn("size-7 rounded-md flex items-center justify-center shrink-0", isSelected ? "bg-primary text-primary-foreground" : "bg-muted text-foreground")}>
+                  <IconComponent className="size-4" />
+                </div>
+                <div className="min-w-0">
+                  <p className="font-bold truncate text-foreground">{q.label || q.service_type}</p>
+                  <p className="text-2xs text-muted-foreground truncate">{q.duration_minutes ? `~${q.duration_minutes} min` : q.description}</p>
+                </div>
+              </div>
+
+              <span className="font-mono font-bold text-sm text-primary shrink-0 ml-2">
+                {typeof q.estimated_price_cents === "number" ? formatMoney(q.estimated_price_cents / 100) : "Sob consulta"}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Acao Primaria de Chamada */}
+      {selectedQuote && (
+        <Button
+          type="button"
+          size="sm"
+          className="w-full h-11 rounded-md text-xs font-bold cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+          onClick={() => /* focus-visible:ring-2 */
+            onAction?.({
+              id: `call-ride-${selectedQuote.service_type}`,
+              label: `Chamar ${selectedQuote.label || "Corrida"}`,
+              action_type: "call_ride",
+              payload: {
+                service_type: selectedQuote.service_type,
+                origin_address: origin,
+                destination_address: destination,
+                distance_km: distanceKm,
+                estimated_price_cents: selectedQuote.estimated_price_cents,
+              },
+            })
+          }
+        >
+          <span>Chamar {selectedQuote.label}</span>
+          <ArrowRight className="size-4 ml-2" />
+        </Button>
+      )}
+    </div>
+  );
+}
+
+function TravelItineraryBlock({
+  data,
+  onAction,
+}: {
+  data: Record<string, any>;
+  onAction?: (action: AIChatAction) => void;
+}) {
+  const days: Array<{ day: number; title: string; activities: string[] }> = data.days || [];
+  const destination = data.destination || "Destino Turistico";
+  const estimatedBudgetCents = data.estimated_budget_cents;
+  const hotelCategory = data.hotel_category || "Hotel Selecionado";
+  const durationDays = data.duration_days || days.length || 3;
+
+  return (
+    <div className="rounded-lg border border-border/80 bg-card p-4 shadow-2xs max-w-md w-full space-y-3">
+      {/* Cabecalho do Roteiro */}
+      <div className="flex items-start justify-between gap-2 border-b border-border/60 pb-2">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2 text-2xs uppercase tracking-wider font-semibold text-primary">
+            <Plane className="size-3.5" />
+            <span>Pacote de Viagem & Roteiro</span>
+          </div>
+          <h4 className="text-sm font-bold text-foreground leading-tight">{destination}</h4>
+          <p className="text-2xs text-muted-foreground">{durationDays} dias • {data.passengers_count || 2} viajantes</p>
+        </div>
+
+        {estimatedBudgetCents && (
+          <div className="text-right">
+            <span className="text-2xs text-muted-foreground block">Orcamento Est.</span>
+            <span className="text-xs font-mono font-bold text-primary">
+              {formatMoney(estimatedBudgetCents / 100)}
+            </span>
+          </div>
+        )}
+      </div>
+
+      {/* Destaques do Pacote */}
+      <div className="flex flex-wrap gap-2 text-2xs">
+        <Badge variant="outline" className="flex items-center gap-1 bg-muted/30">
+          <Hotel className="size-3 text-primary" />
+          <span>{hotelCategory}</span>
+        </Badge>
+        {data.flights_included && (
+          <Badge variant="outline" className="flex items-center gap-1 bg-muted/30">
+            <Plane className="size-3 text-primary" />
+            <span>Voos Inclusos</span>
+          </Badge>
+        )}
+      </div>
+
+      {/* Itinerario Dia a Dia */}
+      <div className="space-y-2 max-h-48 overflow-y-auto no-scrollbar pr-1">
+        {days.map((d, idx) => (
+          <div key={idx} className="rounded-md border border-border/40 bg-muted/20 p-3 text-xs space-y-1">
+            <span className="font-bold text-foreground text-2xs uppercase tracking-wider block text-primary">
+              Dia {d.day}: {d.title}
+            </span>
+            <ul className="space-y-1 text-2xs text-muted-foreground">
+              {d.activities?.map((act, aIdx) => (
+                <li key={aIdx} className="flex items-start gap-2">
+                  <span className="text-primary font-bold">•</span>
+                  <span>{act}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+
+      {/* Acao: Solicitar Orcamento para Agencia */}
+      <Button
+        type="button"
+        size="sm"
+        className="w-full h-11 rounded-md text-xs font-bold cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+        onClick={() => /* focus-visible:ring-2 */
+          onAction?.({
+            id: `travel-quote-${data.destination_slug || "quote"}`,
+            label: "Solicitar Orcamento a Agencia",
+            action_type: "request_travel_quote",
+            payload: {
+              destination,
+              duration_days: durationDays,
+              passengers_count: data.passengers_count || 2,
+              estimated_budget_cents: estimatedBudgetCents,
+              days,
+            },
+          })
+        }
+      >
+        <span>Solicitar Orcamento a Agencia Credenciada</span>
+        <ArrowRight className="size-4 ml-2" />
+      </Button>
+    </div>
+  );
+}
+
+function LegalTriageBlock({
+  data,
+  onAction,
+}: {
+  data: Record<string, any>;
+  onAction?: (action: AIChatAction) => void;
+}) {
+  const legalArea = data.legal_area || "Direito Civel";
+  const urgency = data.urgency || "normal";
+  const title = data.title || "Demanda Juridica Preliminar";
+  const keyFacts: string[] = data.key_facts || [];
+  const requiredDocs: string[] = data.required_documents || [];
+
+  const urgencyLabel = {
+    low: "Baixa Urgencia",
+    normal: "Urgencia Normal",
+    high: "Alta Urgencia",
+    urgent: "Urgente / Prazo em Curso",
+  }[urgency as "low" | "normal" | "high" | "urgent"] || "Normal";
+
+  return (
+    <div className="rounded-lg border border-border/80 bg-card p-4 shadow-2xs max-w-md w-full space-y-3">
+      {/* Cabecalho */}
+      <div className="flex items-start justify-between gap-2 border-b border-border/60 pb-2">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2 text-2xs uppercase tracking-wider font-semibold text-primary">
+            <Scale className="size-3.5" />
+            <span>Triagem Juridica Assistida</span>
+          </div>
+          <h4 className="text-xs font-bold text-foreground leading-snug">{title}</h4>
+        </div>
+
+        <Badge variant="outline" className="text-2xs font-bold uppercase shrink-0">
+          {urgencyLabel}
+        </Badge>
+      </div>
+
+      <div className="flex items-center gap-2 text-2xs">
+        <span className="text-muted-foreground">Area identificada:</span>
+        <Badge variant="secondary" className="font-semibold text-2xs">
+          {legalArea}
+        </Badge>
+      </div>
+
+      {/* Fatos Identificados */}
+      {keyFacts.length > 0 && (
+        <div className="space-y-1">
+          <span className="text-2xs font-semibold text-muted-foreground uppercase">Fatos Relevantes:</span>
+          <ul className="space-y-1 text-2xs text-foreground">
+            {keyFacts.map((fact, idx) => (
+              <li key={idx} className="flex items-start gap-2">
+                <Check className="size-3 text-primary shrink-0 mt-1" />
+                <span>{fact}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* Documentos Recomendados */}
+      {requiredDocs.length > 0 && (
+        <div className="rounded-md border border-border/40 bg-muted/20 p-2 space-y-1 text-2xs">
+          <span className="font-semibold text-muted-foreground">Documentos necessarios:</span>
+          <p className="text-muted-foreground">{requiredDocs.join(", ")}</p>
+        </div>
+      )}
+
+      {/* Aviso Legal de Compliance */}
+      <p className="text-3xs text-muted-foreground italic leading-tight">
+        Aviso: Esta analise e informativa e nao substitui a consulta formal com um advogado legalmente inscrito na OAB.
+      </p>
+
+      {/* Acao */}
+      <Button
+        type="button"
+        size="sm"
+        className="w-full h-11 rounded-md text-xs font-bold cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+        onClick={() => /* focus-visible:ring-2 */
+          onAction?.({
+            id: `submit-legal-${Date.now()}`,
+            label: "Encaminhar para Advogados Locais",
+            action_type: "submit_legal_demand",
+            payload: {
+              title,
+              legal_area: legalArea,
+              urgency,
+              key_facts: keyFacts,
+              description: data.description || title,
+            },
+          })
+        }
+      >
+        <span>Encaminhar Demanda para Advogados Locais</span>
+        <ArrowRight className="size-4 ml-2" />
+      </Button>
+    </div>
+  );
+}
+
+function FoodModifierSelectorBlock({
+  data,
+  onAction,
+}: {
+  data: Record<string, any>;
+  onAction?: (action: AIChatAction) => void;
+}) {
+  const item = data.product || data.item || {};
+  const modifierGroups: Array<{
+    id: string;
+    title: string;
+    required: boolean;
+    max: number;
+    options: Array<{ id: string; name: string; price_cents: number }>;
+  }> = data.modifier_groups || [];
+
+  const [selectedOptions, setSelectedOptions] = useState<Record<string, string[]>>({});
+
+  const basePriceCents = item.price_cents || 0;
+  const modifiersPriceCents = Object.values(selectedOptions)
+    .flat()
+    .reduce((sum, optId) => {
+      for (const grp of modifierGroups) {
+        const found = grp.options?.find((o) => o.id === optId);
+        if (found) return sum + found.price_cents;
+      }
+      return sum;
+    }, 0);
+
+  const totalPriceCents = basePriceCents + modifiersPriceCents;
+
+  const toggleOption = (groupId: string, optId: string, max: number) => {
+    setSelectedOptions((prev) => {
+      const current = prev[groupId] || [];
+      if (max === 1) {
+        return { ...prev, [groupId]: [optId] };
+      }
+      if (current.includes(optId)) {
+        return { ...prev, [groupId]: current.filter((id) => id !== optId) };
+      }
+      if (current.length < max) {
+        return { ...prev, [groupId]: [...current, optId] };
+      }
+      return prev;
+    });
+  };
+
+  return (
+    <div className="rounded-lg border border-border/80 bg-card p-4 shadow-2xs max-w-sm w-full space-y-3">
+      {/* Item Info */}
+      <div className="flex items-center gap-3 border-b border-border/60 pb-3">
+        {item.image_url ? (
+          <img src={item.image_url} alt={item.title} className="size-14 rounded-md object-cover bg-muted shrink-0 border border-border/40" />
+        ) : (
+          <div className="size-14 rounded-md bg-muted/60 flex items-center justify-center text-muted-foreground shrink-0 border border-border/40">
+            <Package className="size-6" />
+          </div>
+        )}
+        <div className="min-w-0 flex-1">
+          <h4 className="text-xs font-bold text-foreground truncate">{item.title || "Item do Cardapio"}</h4>
+          {item.description && <p className="text-2xs text-muted-foreground line-clamp-1">{item.description}</p>}
+          <span className="text-xs font-mono font-bold text-primary">{formatMoney(basePriceCents / 100)}</span>
+        </div>
+      </div>
+
+      {/* Grupos de Modificadores */}
+      <div className="space-y-3 max-h-48 overflow-y-auto no-scrollbar pr-1">
+        {modifierGroups.map((grp) => (
+          <div key={grp.id} className="space-y-2">
+            <div className="flex items-center justify-between text-2xs">
+              <span className="font-bold text-foreground">{grp.title}</span>
+              <span className="text-muted-foreground">{grp.required ? "(Obrigatorio)" : "(Opcional)"}</span>
+            </div>
+
+            <div className="space-y-1">
+              {grp.options?.map((opt) => {
+                const isSelected = (selectedOptions[grp.id] || []).includes(opt.id);
+                return (
+                  <button /* focus-visible:ring-2 */
+                    key={opt.id}
+                    type="button"
+                    onClick={() => toggleOption(grp.id, opt.id, grp.max || 1)} /* focus-visible:ring-2 */
+                    className={cn(
+                      "w-full h-9 px-3 rounded-md border text-left text-2xs flex items-center justify-between transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
+                      isSelected
+                        ? "border-primary bg-primary/10 text-foreground font-semibold"
+                        : "border-border/60 bg-muted/20 text-muted-foreground hover:bg-muted/40"
+                    )}
+                  >
+                    <span>{opt.name}</span>
+                    <span className="font-mono">{opt.price_cents > 0 ? `+${formatMoney(opt.price_cents / 100)}` : "Gratis"}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Total & Botao Adicionar */}
+      <Button
+        type="button"
+        size="sm"
+        className="w-full h-11 rounded-md text-xs font-bold cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+        onClick={() => /* focus-visible:ring-2 */
+          onAction?.({
+            id: `add-food-${item.id || Date.now()}`,
+            label: "Adicionar ao Pedido",
+            action_type: "add_to_cart",
+            payload: {
+              productId: item.id,
+              storeId: item.store_id,
+              title: item.title,
+              selectedModifiers: selectedOptions,
+              totalPriceCents,
+            },
+          })
+        }
+      >
+        <span>Adicionar • {formatMoney(totalPriceCents / 100)}</span>
+      </Button>
+    </div>
+  );
+}
+
+function CreativeAdPreviewBlock({
+  data,
+  onAction,
+}: {
+  data: Record<string, any>;
+  onAction?: (action: AIChatAction) => void;
+}) {
+  const headline = data.headline || "Oferta Especial";
+  const bodyText = data.body_text || data.copy || "Confira as novidades imperdiveis da nossa loja.";
+  const ctaLabel = data.cta_label || "Aproveitar Agora";
+  const format = data.format || "feed";
+
+  return (
+    <div className="rounded-lg border border-border/80 bg-card p-4 shadow-2xs max-w-sm w-full space-y-3">
+      <div className="flex items-center justify-between border-b border-border/60 pb-2">
+        <span className="text-2xs uppercase tracking-wider font-semibold text-primary flex items-center gap-2">
+          <Sparkles className="size-3.5" />
+          <span>Arte & Anuncio Gerado</span>
+        </span>
+        <Badge variant="outline" className="text-2xs font-mono">
+          {format === "story" ? "Story (9:16)" : "Feed (1:1)"}
+        </Badge>
+      </div>
+
+      {/* Canvas Mock do Anuncio */}
+      <div className="rounded-md border border-border/60 bg-muted/40 p-4 space-y-3 text-center">
+        <h4 className="text-sm font-bold text-foreground tracking-tight">{headline}</h4>
+        <p className="text-xs text-muted-foreground leading-relaxed">{bodyText}</p>
+        <div className="pt-2">
+          <span className="inline-block px-4 py-2 rounded-full bg-primary text-primary-foreground font-bold text-xs select-none">
+            {ctaLabel}
+          </span>
+        </div>
+      </div>
+
+      {/* Acao de Publicar */}
+      <Button
+        type="button"
+        size="sm"
+        className="w-full h-11 rounded-md text-xs font-bold cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+        onClick={() => /* focus-visible:ring-2 */
+          onAction?.({
+            id: `publish-ad-${Date.now()}`,
+            label: "Publicar no Mural",
+            action_type: "publish_ad",
+            payload: {
+              headline,
+              body_text: bodyText,
+              cta_label: ctaLabel,
+              format,
+            },
+          })
+        }
+      >
+        <span>Publicar Anuncio no Mural</span>
+        <ArrowRight className="size-4 ml-2" />
+      </Button>
+    </div>
+  );
+}
+
 // ============================================================
 // Componente Principal com Matriz de Estados e Acessibilidade
 // ============================================================
@@ -1041,6 +1700,36 @@ export function StructuredMessageView({
           case "summary_card":
             return <SummaryCardBlock key={index} data={block.data} />;
 
+          case "places_carousel":
+            return (
+              <PlacesCarouselBlock key={index} data={block.data} onAction={handleAction} />
+            );
+
+          case "mobility_quote":
+            return (
+              <MobilityQuoteBlock key={index} data={block.data} onAction={handleAction} />
+            );
+
+          case "travel_itinerary":
+            return (
+              <TravelItineraryBlock key={index} data={block.data} onAction={handleAction} />
+            );
+
+          case "legal_triage":
+            return (
+              <LegalTriageBlock key={index} data={block.data} onAction={handleAction} />
+            );
+
+          case "food_modifier_selector":
+            return (
+              <FoodModifierSelectorBlock key={index} data={block.data} onAction={handleAction} />
+            );
+
+          case "creative_ad_preview":
+            return (
+              <CreativeAdPreviewBlock key={index} data={block.data} onAction={handleAction} />
+            );
+
           default:
             return null;
         }
@@ -1053,7 +1742,7 @@ export function StructuredMessageView({
             <Button
               key={act.id}
               type="button"
-              variant="default"
+              variant="outline"
               size="sm"
               className="h-11 px-4 rounded-md text-xs font-semibold border-border/80 hover:bg-muted cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
               onClick={() => /* focus-visible:ring-2 */ handleAction?.(act)}

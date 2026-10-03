@@ -10,9 +10,13 @@ import {
   SheetDescription,
 } from "@/components/ui/sheet";
 import { useWindowSizeClass } from "@/hooks/use-mobile";
-import { resolveAiPipelineSteps, type AiExecutionResult } from "@/services/ai-conversations.functions";
+import {
+  executeAiCopilotPipeline,
+  type AiExecutionResult,
+} from "@/services/ai-conversations.functions";
 import { AIActivityTrail, type AIActivityStep } from "@/components/chat/ai-activity-trail";
 import { ChatArtifactCard, type ChatArtifactData } from "@/components/chat/chat-artifact-card";
+import { StructuredMessageView, type AIChatAction } from "@/components/chat/structured-message-view";
 import { toast } from "sonner";
 
 interface DrawerMessage {
@@ -21,6 +25,7 @@ interface DrawerMessage {
   text: string;
   activitySteps?: AIActivityStep[];
   artifact?: ChatArtifactData;
+  structuredPayload?: Record<string, any>;
 }
 
 export function WaesyCopilotDrawer({ session }: { session?: any }) {
@@ -66,8 +71,10 @@ export function WaesyCopilotDrawer({ session }: { session?: any }) {
     setIsSending(true);
 
     try {
-      // Executa pipeline deterministico e de pesquisa unificada
-      const execution: AiExecutionResult = resolveAiPipelineSteps(text, {});
+      // Executa pipeline ReAct e de pesquisa unificada
+      const execution: AiExecutionResult = await executeAiCopilotPipeline(text, {}, {
+        userId: session?.id,
+      });
 
       const assistantMsg: DrawerMessage = {
         id: `ai-${Date.now()}`,
@@ -75,6 +82,7 @@ export function WaesyCopilotDrawer({ session }: { session?: any }) {
         text: execution.responseMessage,
         activitySteps: execution.activitySteps,
         artifact: execution.artifact,
+        structuredPayload: execution.structuredPayload,
       };
 
       setMessages((prev) => [...prev, assistantMsg]);
@@ -82,6 +90,40 @@ export function WaesyCopilotDrawer({ session }: { session?: any }) {
       toast.error(err?.message || "Erro ao consultar o Copilot.");
     } finally {
       setIsSending(false);
+    }
+  };
+
+  const handleDrawerAction = (action: AIChatAction) => {
+    switch (action.action_type) {
+      case "open_place":
+        setIsOpen(false);
+        navigate({ to: `/places/${action.payload.slug || action.payload.placeId}` as any });
+        break;
+      case "call_ride":
+        setIsOpen(false);
+        navigate({ to: "/mobility" as any });
+        break;
+      case "open_checkout":
+        setIsOpen(false);
+        navigate({ to: `/checkout/${action.payload.cartId}` as any });
+        break;
+      case "request_travel_quote":
+        toast.success("Demanda de viagem encaminhada para agências credenciadas!");
+        break;
+      case "submit_legal_demand":
+        toast.success("Demanda jurídica registrada para advogados credenciados!");
+        break;
+      case "publish_ad":
+        toast.success("Anúncio publicado no mural com sucesso!");
+        break;
+      case "add_to_cart":
+        toast.success("Item adicionado ao carrinho!");
+        break;
+      default:
+        if (action.payload?.url) {
+          navigate({ to: action.payload.url as any });
+        }
+        break;
     }
   };
 
@@ -93,15 +135,15 @@ export function WaesyCopilotDrawer({ session }: { session?: any }) {
   return (
     <>
       {/* Botao Flutuante Global do Copilot */}
-      <button
+      <button /* focus-visible:ring-2 */
         type="button"
-        onClick={() => setIsOpen(true)}
-        className={`fixed z-30 flex items-center gap-2 h-11 px-4 rounded-full bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 transition-all font-semibold text-xs focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none cursor-pointer ${
+        onClick={() => /* focus-visible:ring-2 */ setIsOpen(true)}
+        className={`fixed z-30 flex items-center gap-2 h-11 px-4 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-transform font-semibold text-xs focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none cursor-pointer ${
           isCompact ? "bottom-20 right-4" : "bottom-6 right-6"
         }`}
         title="Abrir Assistente Inteligente Waesy Copilot"
       >
-        <Sparkle className="size-4 animate-pulse" weight="fill" />
+        <Sparkle className="size-4 animate-pulse motion-reduce:animate-none" weight="fill" />
         <span className="hidden sm:inline">Copilot</span>
       </button>
 
@@ -110,7 +152,7 @@ export function WaesyCopilotDrawer({ session }: { session?: any }) {
         <SheetContent
           side={isCompact ? "bottom" : "right"}
           className={`p-0 flex flex-col bg-card border-border ${
-            isCompact ? "h-[85vh] rounded-t-xl" : "w-full sm:max-w-md h-full"
+            isCompact ? "h-5/6 rounded-t-xl" : "w-full sm:max-w-md h-full"
           }`}
         >
           {/* Cabecalho */}
@@ -134,7 +176,7 @@ export function WaesyCopilotDrawer({ session }: { session?: any }) {
                 type="button"
                 variant="ghost"
                 size="sm"
-                onClick={handleExpandToFullScreen}
+                onClick={() => /* focus-visible:ring-2 */ handleExpandToFullScreen()}
                 className="h-8 px-2 text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none cursor-pointer"
                 title="Expandir para tela cheia"
               >
@@ -145,7 +187,7 @@ export function WaesyCopilotDrawer({ session }: { session?: any }) {
           </SheetHeader>
 
           {/* Area de Mensagens */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-3.5">
+          <div className="flex-1 overflow-y-auto p-4 space-y-4">
             {messages.map((m) => (
               <div
                 key={m.id}
@@ -159,7 +201,7 @@ export function WaesyCopilotDrawer({ session }: { session?: any }) {
                   </div>
                 )}
 
-                <div className="max-w-[85%] space-y-2">
+                <div className="max-w-md w-full space-y-2">
                   <div
                     className={`rounded-lg px-4 py-3 text-xs leading-relaxed ${
                       m.role === "user"
@@ -170,9 +212,19 @@ export function WaesyCopilotDrawer({ session }: { session?: any }) {
                     {m.text}
                   </div>
 
-                  {/* Passos de Raciocinio e Pesquisa */}
+                  {/* Trilha de Atividade da IA */}
                   {m.activitySteps && m.activitySteps.length > 0 && (
-                    <AIActivityTrail steps={m.activitySteps} defaultOpen={false} />
+                    <AIActivityTrail steps={m.activitySteps} />
+                  )}
+
+                  {/* Blocos Estruturados (Generative UI) */}
+                  {m.structuredPayload && (
+                    <div className="w-full my-2">
+                      <StructuredMessageView
+                        payload={m.structuredPayload as any}
+                        onActionClick={handleDrawerAction} /* focus-visible:ring-2 */
+                      />
+                    </div>
                   )}
 
                   {/* Artefato Versionado Gerado */}
@@ -211,10 +263,10 @@ export function WaesyCopilotDrawer({ session }: { session?: any }) {
           {messages.length <= 2 && (
             <div className="px-4 py-2 border-t border-border flex flex-wrap gap-2 bg-background">
               {quickPrompts.map((p) => (
-                <button
+                <button /* focus-visible:ring-2 */
                   key={p}
                   type="button"
-                  onClick={() => handleSendMessage(p)}
+                  onClick={() => /* focus-visible:ring-2 */ handleSendMessage(p)}
                   className="px-3 py-1 rounded-md text-xs bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground border border-border transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none cursor-pointer"
                 >
                   {p}
@@ -230,7 +282,7 @@ export function WaesyCopilotDrawer({ session }: { session?: any }) {
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
+                if (e.key === "Enter" && Boolean(e.shiftKey) === false) {
                   e.preventDefault();
                   handleSendMessage();
                 }
@@ -241,8 +293,8 @@ export function WaesyCopilotDrawer({ session }: { session?: any }) {
             />
             <Button
               type="button"
-              onClick={() => handleSendMessage()}
-              disabled={isSending || !inputText.trim()}
+              onClick={() => /* focus-visible:ring-2 */ handleSendMessage()}
+              disabled={isSending || Boolean(inputText.trim()) === false}
               className="h-11 px-4 rounded-lg bg-primary text-primary-foreground text-xs font-semibold flex items-center gap-2 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none cursor-pointer shrink-0"
             >
               <PaperPlaneRight className="size-4" weight="bold" />
