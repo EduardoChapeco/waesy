@@ -36,6 +36,7 @@ import { Route as StoreConstrucaoRouteImport } from './routes/_store.construcao'
 import { Route as StoreContaRouteImport } from './routes/_store.conta'
 import { Route as StoreContatoRouteImport } from './routes/_store.contato'
 import { Route as StoreConviteRouteImport } from './routes/_store.convite'
+import { Route as StoreCopilotRouteImport } from './routes/_store.copilot'
 import { Route as StoreCriarNegocioRouteImport } from './routes/_store.criar-negocio'
 import { Route as StoreDiretorioRouteImport } from './routes/_store.diretorio'
 import { Route as StoreDoacoesRouteImport } from './routes/_store.doacoes'
@@ -533,6 +534,11 @@ const StoreContatoRoute = StoreContatoRouteImport.update({
 const StoreConviteRoute = StoreConviteRouteImport.update({
   id: '/convite',
   path: '/convite',
+  getParentRoute: () => StoreRoute,
+} as any)
+const StoreCopilotRoute = StoreCopilotRouteImport.update({
+  id: '/copilot',
+  path: '/copilot',
   getParentRoute: () => StoreRoute,
 } as any)
 const StoreCriarNegocioRoute = StoreCriarNegocioRouteImport.update({
@@ -2506,6 +2512,7 @@ export interface FileRoutesByFullPath {
   '/conta': typeof StoreContaRouteWithChildren
   '/contato': typeof StoreContatoRoute
   '/convite': typeof StoreConviteRoute
+  '/copilot': typeof StoreCopilotRoute
   '/criar-negocio': typeof StoreCriarNegocioRouteWithChildren
   '/diretorio': typeof StoreDiretorioRouteWithChildren
   '/doacoes': typeof StoreDoacoesRoute
@@ -2893,6 +2900,7 @@ export interface FileRoutesByTo {
   '/construcao': typeof StoreConstrucaoRoute
   '/contato': typeof StoreContatoRoute
   '/convite': typeof StoreConviteRoute
+  '/copilot': typeof StoreCopilotRoute
   '/criar-negocio': typeof StoreCriarNegocioRouteWithChildren
   '/doacoes': typeof StoreDoacoesRoute
   '/eletronicos': typeof StoreEletronicosRoute
@@ -3282,6 +3290,7 @@ export interface FileRoutesById {
   '/_store/conta': typeof StoreContaRouteWithChildren
   '/_store/contato': typeof StoreContatoRoute
   '/_store/convite': typeof StoreConviteRoute
+  '/_store/copilot': typeof StoreCopilotRoute
   '/_store/criar-negocio': typeof StoreCriarNegocioRouteWithChildren
   '/_store/diretorio': typeof StoreDiretorioRouteWithChildren
   '/_store/doacoes': typeof StoreDoacoesRoute
@@ -3677,6 +3686,7 @@ export interface FileRouteTypes {
     | '/conta'
     | '/contato'
     | '/convite'
+    | '/copilot'
     | '/criar-negocio'
     | '/diretorio'
     | '/doacoes'
@@ -4064,6 +4074,7 @@ export interface FileRouteTypes {
     | '/construcao'
     | '/contato'
     | '/convite'
+    | '/copilot'
     | '/criar-negocio'
     | '/doacoes'
     | '/eletronicos'
@@ -4452,6 +4463,7 @@ export interface FileRouteTypes {
     | '/_store/conta'
     | '/_store/contato'
     | '/_store/convite'
+    | '/_store/copilot'
     | '/_store/criar-negocio'
     | '/_store/diretorio'
     | '/_store/doacoes'
@@ -5052,6 +5064,13 @@ declare module '@tanstack/react-router' {
       path: '/convite'
       fullPath: '/convite'
       preLoaderRoute: typeof StoreConviteRouteImport
+      parentRoute: typeof StoreRoute
+    }
+    '/_store/copilot': {
+      id: '/_store/copilot'
+      path: '/copilot'
+      fullPath: '/copilot'
+      preLoaderRoute: typeof StoreCopilotRouteImport
       parentRoute: typeof StoreRoute
     }
     '/_store/criar-negocio': {
@@ -7791,6 +7810,7 @@ interface StoreRouteChildren {
   StoreContaRoute: typeof StoreContaRouteWithChildren
   StoreContatoRoute: typeof StoreContatoRoute
   StoreConviteRoute: typeof StoreConviteRoute
+  StoreCopilotRoute: typeof StoreCopilotRoute
   StoreCriarNegocioRoute: typeof StoreCriarNegocioRouteWithChildren
   StoreDiretorioRoute: typeof StoreDiretorioRouteWithChildren
   StoreDoacoesRoute: typeof StoreDoacoesRoute
@@ -7884,6 +7904,7 @@ const StoreRouteChildren: StoreRouteChildren = {
   StoreContaRoute: StoreContaRouteWithChildren,
   StoreContatoRoute: StoreContatoRoute,
   StoreConviteRoute: StoreConviteRoute,
+  StoreCopilotRoute: StoreCopilotRoute,
   StoreCriarNegocioRoute: StoreCriarNegocioRouteWithChildren,
   StoreDiretorioRoute: StoreDiretorioRouteWithChildren,
   StoreDoacoesRoute: StoreDoacoesRoute,

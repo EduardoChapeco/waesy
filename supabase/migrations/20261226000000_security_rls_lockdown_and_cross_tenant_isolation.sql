@@ -42,11 +42,6 @@ CREATE POLICY "boarding_rooming_list_tenant_isolation" ON public.boarding_roomin
       JOIN public.store_members sm ON sm.store_id = s.id
       WHERE sm.user_id = auth.uid()
     )
-    OR
-    agency_id IN (
-      SELECT a.id FROM public.agencies a
-      WHERE a.owner_id = auth.uid()
-    )
   );
 
 ALTER TABLE IF EXISTS public.bus_seat_assignments ENABLE ROW LEVEL SECURITY;
@@ -81,11 +76,6 @@ CREATE POLICY "corporate_rfps_tenant_isolation" ON public.corporate_rfps
       JOIN public.stores s ON s.id = a.store_id
       JOIN public.store_members sm ON sm.store_id = s.id
       WHERE sm.user_id = auth.uid()
-    )
-    OR
-    organization_id IN (
-      SELECT om.organization_id FROM public.organization_members om
-      WHERE om.user_id = auth.uid()
     )
   );
 

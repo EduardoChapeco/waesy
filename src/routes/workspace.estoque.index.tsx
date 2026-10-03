@@ -218,7 +218,7 @@ function AdminStockPage() {
   return (
     <div className="space-y-6 max-w-7xl mx-auto px-0 sm:px-4 md:px-0">
       <PageHeader
-        eyebrow="Operações"
+        eyebrow="Operaï¿½ï¿½es"
         title="Estoque"
       />
 
