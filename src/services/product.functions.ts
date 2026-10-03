@@ -18,6 +18,27 @@ import type {
  ProductMediaDTO,
 } from "@/types/catalog";
 
+const PUBLIC_SPEC_ALLOWLIST = new Set([
+  "brand", "marca", "model", "modelo", "version", "versao", "condition", "condicao",
+  "year", "ano_fabricacao", "ano_modelo", "mileage", "quilometragem", "km",
+  "transmission", "cambio", "fuel_type", "combustivel", "fuel", "color", "cor", "doors", "portas", "license_plate_end", "final_placa",
+  "usable_area", "area_util", "area_privativa", "total_area", "area_total", "bedrooms", "quartos", "suites", "suites_count", "bathrooms", "banheiros", "parking_spaces", "vagas", "garage_spots",
+  "service_duration", "duracao_estimada", "duracao", "service_modality", "regime_atendimento", "modalidade", "service_warranty", "garantia_servico", "warranty", "garantia",
+  "servings", "rendimento", "serve_pessoas", "prep_time", "tempo_preparo",
+  "weight_kg", "peso_kg", "weight", "peso", "dimensions", "dimensoes", "width_cm", "height_cm", "length_cm", "material", "composicao", "voltage", "voltagem", "tensao", "power", "potencia",
+]);
+
+function sanitizePublicProductAttributes(raw: Record<string, any> | null | undefined): Record<string, any> {
+  if (!raw || typeof raw !== "object") return {};
+  const clean: Record<string, any> = {};
+  for (const [key, value] of Object.entries(raw)) {
+    if (PUBLIC_SPEC_ALLOWLIST.has(key.toLowerCase()) && typeof value !== "object" && value !== null && value !== undefined) {
+      clean[key] = value;
+    }
+  }
+  return clean;
+}
+
 async function _getProductBySlug(slug: string): Promise<ProductDetailDTO> {
  try {
  const db = getAnonServerClient();
@@ -300,7 +321,7 @@ async function _getProductBySlug(slug: string): Promise<ProductDetailDTO> {
  .map((pc: any) => pc.categories)
  .filter(Boolean),
  showStockPublicly: (product.show_stock_publicly as boolean | null) ?? false,
- attributes: (product as any).attributes || {},
+    attributes: sanitizePublicProductAttributes((product as any).attributes),
  };
  }
 

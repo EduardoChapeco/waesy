@@ -12,107 +12,138 @@ import {
   Package,
   Calendar,
   ShieldCheck,
-  CheckCircle2,
   Users,
   Info,
+  Zap,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-/**
- * Chaves estritamente privadas e internas que NUNCA devem ser exibidas ao público.
- */
-const PRIVATE_INTERNAL_KEYS = new Set([
-  "cost_cents",
-  "cost",
-  "margin",
-  "markup",
-  "commission",
-  "comissao",
-  "supplier",
-  "supplier_id",
-  "fornecedor",
-  "ncm",
-  "cest",
-  "cfop",
-  "icms",
-  "aliquota",
-  "origem_fiscal",
-  "internal_notes",
-  "observacoes_internas",
-  "lead_form",
-  "form_id",
-  "inquiry_config",
-  "feed_media",
-  "feed_images",
-  "template_style",
-  "display_mode",
-  "raw_answers",
-  "travel_bullets",
-  "payment_rules",
-  "payment_methods",
-  "accepts_pix",
-  "accepts_card",
-  "accepts_boleto",
-  "accepts_cash",
-  "accepts_carne",
-  "accepts_trade",
-  "accepts_financing",
-  "pix_discount_percent",
-  "max_installments",
-  "card_interest_free",
-  "boleto_due_days",
-]);
-
-interface SpecItem {
-  key: string;
+export interface SpecDisplayItem {
+  key?: string;
   label: string;
   value: string;
   icon?: any;
+  highlight?: boolean;
 }
 
 export interface NicheSpecificationsDisplayProps {
   attributes?: Record<string, any> | null;
+  items?: SpecDisplayItem[] | Array<{ label: string; value: string; icon?: any; highlight?: boolean }> | null;
   nicheId?: string | null;
   className?: string;
   title?: string;
 }
 
 /**
- * NicheSpecificationsDisplay — Exibição Canônica de Especificações em Cards Sutis & Minimalistas
- * Padrão Apple HIG / Linear | Zero Emojis | Tipografia Refinada com Unidades em Mono
+ * NicheSpecificationsDisplay — Exibição Canônica de Especificações Públicas Comerciais
+ * 
+ * Regra Arquitetural Absoluta:
+ * - Apenas atributos técnicos orientados ao consumidor final (Marca, Modelo, Ano, Quilometragem,
+ *   Combustível, Câmbio, Dimensões, Peso, Potência, Garantia, etc.) são permitidos.
+ * - Utiliza estritamente ALLOWLIST FECHADA. Proibido expressamente qualquer blacklist,
+ *   iteração sobre chaves desconhecidas ou exibição de dados fiscais/internos/custos.
  */
 export function NicheSpecificationsDisplay({
   attributes,
+  items: preResolvedItems,
   nicheId,
   className,
   title = "Especificações",
 }: NicheSpecificationsDisplayProps) {
+  // Se já foram fornecidos itens pré-resolvidos pelo resolvedor canônico de nicho:
+  if (Array.isArray(preResolvedItems) && preResolvedItems.length > 0) {
+    return (
+      <div className={cn("space-y-3", className)}>
+        <div className="flex items-center justify-between">
+          <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+            {title}
+          </h2>
+          <span className="text-[10px] text-muted-foreground font-mono">
+            {preResolvedItems.length} item(ns)
+          </span>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5">
+          {preResolvedItems.map((item, idx) => {
+            const IconComponent = item.icon || Info;
+            return (
+              <div
+                key={`resolved-${idx}`}
+                className={cn(
+                  "p-3 rounded-lg border border-border/60 bg-card hover:border-primary/40 transition-colors flex flex-col justify-between gap-1 shadow-2xs",
+                  item.highlight && "ring-1 ring-primary/20 bg-primary/5"
+                )}
+              >
+                <div className="flex items-center gap-1.5 text-muted-foreground">
+                  <IconComponent className="size-3.5 text-primary shrink-0" />
+                  <span className="text-[11px] font-medium truncate">{item.label}</span>
+                </div>
+                <p className="text-xs font-semibold text-foreground font-mono truncate pt-0.5">
+                  {item.value}
+                </p>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
   if (!attributes || typeof attributes !== "object") return null;
 
-  const items: SpecItem[] = [];
+  // ── ALLOWLIST ESTRITA DE ESPECIFICAÇÕES PÚBLICAS ──
+  const displayItems: SpecDisplayItem[] = [];
 
-  // 1. Veículos
+  // 1. Identificação Comercial Básica
   if (attributes.brand || attributes.marca) {
-    items.push({
+    displayItems.push({
       key: "brand",
       label: "Marca",
       value: String(attributes.brand || attributes.marca),
-      icon: Car,
+      icon: Layers,
     });
   }
   if (attributes.model || attributes.modelo) {
-    items.push({
+    displayItems.push({
       key: "model",
       label: "Modelo",
       value: String(attributes.model || attributes.modelo),
-      icon: Car,
+      icon: Info,
     });
   }
+  if (attributes.version || attributes.versao) {
+    displayItems.push({
+      key: "version",
+      label: "Versão",
+      value: String(attributes.version || attributes.versao),
+      icon: Info,
+    });
+  }
+  if (attributes.condition || attributes.condicao) {
+    const rawCond = String(attributes.condition || attributes.condicao).toLowerCase();
+    const condMap: Record<string, string> = {
+      new: "Novo",
+      novo: "Novo",
+      used: "Usado",
+      usado: "Usado",
+      seminovo: "Seminovo",
+      refurbished: "Recondicionado",
+    };
+    displayItems.push({
+      key: "condition",
+      label: "Condição",
+      value: condMap[rawCond] || String(attributes.condition || attributes.condicao),
+      icon: ShieldCheck,
+      highlight: true,
+    });
+  }
+
+  // 2. Veículos & Automotivo
   if (attributes.year || attributes.ano_fabricacao || attributes.ano_modelo) {
     const yearText = attributes.ano_fabricacao && attributes.ano_modelo
       ? `${attributes.ano_fabricacao}/${attributes.ano_modelo}`
       : String(attributes.year || attributes.ano_modelo || attributes.ano_fabricacao);
-    items.push({
+    displayItems.push({
       key: "year",
       label: "Ano",
       value: yearText,
@@ -122,7 +153,7 @@ export function NicheSpecificationsDisplay({
   if (attributes.mileage !== undefined || attributes.quilometragem !== undefined || attributes.km !== undefined) {
     const kmVal = Number(attributes.mileage ?? attributes.quilometragem ?? attributes.km);
     if (!isNaN(kmVal)) {
-      items.push({
+      displayItems.push({
         key: "mileage",
         label: "Quilometragem",
         value: `${kmVal.toLocaleString("pt-BR")} km`,
@@ -131,22 +162,22 @@ export function NicheSpecificationsDisplay({
     }
   }
   if (attributes.transmission || attributes.cambio) {
-    const rawCambio = String(attributes.transmission || attributes.cambio);
+    const rawCambio = String(attributes.transmission || attributes.cambio).toLowerCase();
     const cambioMap: Record<string, string> = {
       automatic: "Automático",
       manual: "Manual",
       cvt: "CVT",
       semi_automatic: "Automatizado",
     };
-    items.push({
+    displayItems.push({
       key: "transmission",
       label: "Câmbio",
-      value: cambioMap[rawCambio.toLowerCase()] || rawCambio,
+      value: cambioMap[rawCambio] || String(attributes.transmission || attributes.cambio),
       icon: Layers,
     });
   }
-  if (attributes.fuel_type || attributes.combustivel) {
-    const rawFuel = String(attributes.fuel_type || attributes.combustivel);
+  if (attributes.fuel_type || attributes.combustivel || attributes.fuel) {
+    const rawFuel = String(attributes.fuel_type || attributes.combustivel || attributes.fuel).toLowerCase();
     const fuelMap: Record<string, string> = {
       flex: "Flex (Álcool/Gasolina)",
       gasolina: "Gasolina",
@@ -155,15 +186,15 @@ export function NicheSpecificationsDisplay({
       hybrid: "Híbrido",
       electric: "Elétrico",
     };
-    items.push({
+    displayItems.push({
       key: "fuel",
       label: "Combustível",
-      value: fuelMap[rawFuel.toLowerCase()] || rawFuel,
+      value: fuelMap[rawFuel] || String(attributes.fuel_type || attributes.combustivel || attributes.fuel),
       icon: Fuel,
     });
   }
   if (attributes.color || attributes.cor) {
-    items.push({
+    displayItems.push({
       key: "color",
       label: "Cor",
       value: String(attributes.color || attributes.cor),
@@ -171,7 +202,7 @@ export function NicheSpecificationsDisplay({
     });
   }
   if (attributes.doors || attributes.portas) {
-    items.push({
+    displayItems.push({
       key: "doors",
       label: "Portas",
       value: `${attributes.doors || attributes.portas} portas`,
@@ -179,7 +210,7 @@ export function NicheSpecificationsDisplay({
     });
   }
   if (attributes.license_plate_end || attributes.final_placa) {
-    items.push({
+    displayItems.push({
       key: "plate_end",
       label: "Final da Placa",
       value: String(attributes.license_plate_end || attributes.final_placa),
@@ -187,10 +218,10 @@ export function NicheSpecificationsDisplay({
     });
   }
 
-  // 2. Imóveis
+  // 3. Imóveis & Construção
   if (attributes.usable_area || attributes.area_util || attributes.area_privativa) {
     const area = attributes.usable_area || attributes.area_util || attributes.area_privativa;
-    items.push({
+    displayItems.push({
       key: "usable_area",
       label: "Área Útil",
       value: `${area} m²`,
@@ -199,7 +230,7 @@ export function NicheSpecificationsDisplay({
   }
   if (attributes.total_area || attributes.area_total) {
     const totalArea = attributes.total_area || attributes.area_total;
-    items.push({
+    displayItems.push({
       key: "total_area",
       label: "Área Total",
       value: `${totalArea} m²`,
@@ -207,7 +238,7 @@ export function NicheSpecificationsDisplay({
     });
   }
   if (attributes.bedrooms || attributes.quartos) {
-    items.push({
+    displayItems.push({
       key: "bedrooms",
       label: "Quartos",
       value: String(attributes.bedrooms || attributes.quartos),
@@ -215,7 +246,7 @@ export function NicheSpecificationsDisplay({
     });
   }
   if (attributes.suites || attributes.suites_count) {
-    items.push({
+    displayItems.push({
       key: "suites",
       label: "Suítes",
       value: String(attributes.suites || attributes.suites_count),
@@ -223,60 +254,60 @@ export function NicheSpecificationsDisplay({
     });
   }
   if (attributes.bathrooms || attributes.banheiros) {
-    items.push({
+    displayItems.push({
       key: "bathrooms",
       label: "Banheiros",
       value: String(attributes.bathrooms || attributes.banheiros),
       icon: HomeIcon,
     });
   }
-  if (attributes.parking_spaces || attributes.vagas) {
-    items.push({
+  if (attributes.parking_spaces || attributes.vagas || attributes.garage_spots) {
+    displayItems.push({
       key: "parking",
       label: "Vagas de Garagem",
-      value: String(attributes.parking_spaces || attributes.vagas),
+      value: String(attributes.parking_spaces || attributes.vagas || attributes.garage_spots),
       icon: Car,
     });
   }
 
-  // 3. Serviços
-  if (attributes.service_duration || attributes.duracao_estimada) {
-    const dur = attributes.service_duration || attributes.duracao_estimada;
-    items.push({
+  // 4. Serviços Locais & Atendimento
+  if (attributes.service_duration || attributes.duracao_estimada || attributes.duracao) {
+    const dur = attributes.service_duration || attributes.duracao_estimada || attributes.duracao;
+    displayItems.push({
       key: "duration",
       label: "Duração Estimada",
       value: isNaN(Number(dur)) ? String(dur) : `${dur} min`,
       icon: Clock,
     });
   }
-  if (attributes.service_modality || attributes.regime_atendimento) {
-    const rawMod = String(attributes.service_modality || attributes.regime_atendimento);
+  if (attributes.service_modality || attributes.regime_atendimento || attributes.modalidade) {
+    const rawMod = String(attributes.service_modality || attributes.regime_atendimento || attributes.modalidade).toLowerCase();
     const modMap: Record<string, string> = {
       presencial: "Presencial no Estabelecimento",
       domicilio: "Atendimento no Local do Cliente",
       remoto: "Online / Remoto",
       both: "Presencial ou Remoto",
     };
-    items.push({
+    displayItems.push({
       key: "modality",
       label: "Atendimento",
-      value: modMap[rawMod.toLowerCase()] || rawMod,
+      value: modMap[rawMod] || String(attributes.service_modality || attributes.regime_atendimento),
       icon: Wrench,
     });
   }
-  if (attributes.service_warranty || attributes.garantia_servico) {
-    items.push({
+  if (attributes.service_warranty || attributes.garantia_servico || attributes.warranty || attributes.garantia) {
+    displayItems.push({
       key: "warranty",
       label: "Garantia",
-      value: String(attributes.service_warranty || attributes.garantia_servico),
+      value: String(attributes.service_warranty || attributes.garantia_servico || attributes.warranty || attributes.garantia),
       icon: ShieldCheck,
     });
   }
 
-  // 4. Gastronomia
+  // 5. Gastronomia
   if (attributes.servings || attributes.rendimento || attributes.serve_pessoas) {
     const s = attributes.servings || attributes.rendimento || attributes.serve_pessoas;
-    items.push({
+    displayItems.push({
       key: "servings",
       label: "Rendimento",
       value: `Serve ${s} pessoa(s)`,
@@ -284,7 +315,7 @@ export function NicheSpecificationsDisplay({
     });
   }
   if (attributes.prep_time || attributes.tempo_preparo) {
-    items.push({
+    displayItems.push({
       key: "prep_time",
       label: "Preparo",
       value: String(attributes.prep_time || attributes.tempo_preparo),
@@ -292,61 +323,50 @@ export function NicheSpecificationsDisplay({
     });
   }
 
-  // 5. Dimensões & Físicos (Produtos do Workspace e Varejo)
-  if (attributes.weight_kg || attributes.peso_kg) {
-    items.push({
+  // 6. Produtos Físicos, Dimensões e Especificações do Fabricante
+  if (attributes.weight_kg || attributes.peso_kg || attributes.peso) {
+    displayItems.push({
       key: "weight",
       label: "Peso",
-      value: `${attributes.weight_kg || attributes.peso_kg} kg`,
+      value: `${attributes.weight_kg || attributes.peso_kg || attributes.peso} kg`,
       icon: Scale,
     });
   }
-  if (attributes.dimensions || (attributes.width_cm && attributes.height_cm)) {
-    const dims = attributes.dimensions || `${attributes.height_cm} x ${attributes.width_cm} x ${attributes.depth_cm || 0} cm`;
-    items.push({
+  if (attributes.dimensions || attributes.dimensoes || (attributes.width_cm && attributes.height_cm)) {
+    const dims = attributes.dimensions || attributes.dimensoes || `${attributes.height_cm} x ${attributes.width_cm} x ${attributes.length_cm || attributes.depth_cm || 0} cm`;
+    displayItems.push({
       key: "dimensions",
       label: "Dimensões",
       value: String(dims),
       icon: Package,
     });
   }
-  if (attributes.material) {
-    items.push({
+  if (attributes.material || attributes.composicao) {
+    displayItems.push({
       key: "material",
       label: "Material",
-      value: String(attributes.material),
+      value: String(attributes.material || attributes.composicao),
       icon: Layers,
     });
   }
+  if (attributes.voltage || attributes.voltagem || attributes.tensao) {
+    displayItems.push({
+      key: "voltage",
+      label: "Voltagem",
+      value: String(attributes.voltage || attributes.voltagem || attributes.tensao),
+      icon: Zap,
+    });
+  }
+  if (attributes.power || attributes.potencia) {
+    displayItems.push({
+      key: "power",
+      label: "Potência",
+      value: String(attributes.power || attributes.potencia),
+      icon: Zap,
+    });
+  }
 
-  // 6. Chaves Dinâmicas Não Específicas (Filtro Anti-Vazamento de Dados Internos)
-  const registeredKeys = new Set(items.map((i) => i.key));
-  Object.entries(attributes).forEach(([k, v]) => {
-    if (
-      !PRIVATE_INTERNAL_KEYS.has(k.toLowerCase()) &&
-      !registeredKeys.has(k) &&
-      typeof v !== "object" &&
-      v !== null &&
-      v !== undefined &&
-      String(v).trim().length > 0 &&
-      !k.startsWith("_") &&
-      !k.startsWith("admin_")
-    ) {
-      // Normalização de label (ex: "ano_fabricacao" -> "Ano Fabricação")
-      const formattedLabel = k
-        .replace(/_/g, " ")
-        .replace(/\b\w/g, (char) => char.toUpperCase());
-
-      items.push({
-        key: k,
-        label: formattedLabel,
-        value: typeof v === "boolean" ? (v ? "Sim" : "Não") : String(v),
-        icon: Info,
-      });
-    }
-  });
-
-  if (items.length === 0) return null;
+  if (displayItems.length === 0) return null;
 
   return (
     <div className={cn("space-y-3", className)}>
@@ -355,17 +375,20 @@ export function NicheSpecificationsDisplay({
           {title}
         </h2>
         <span className="text-[10px] text-muted-foreground font-mono">
-          {items.length} item(ns)
+          {displayItems.length} item(ns)
         </span>
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5">
-        {items.map((item) => {
+        {displayItems.map((item) => {
           const IconComponent = item.icon || Info;
           return (
             <div
               key={item.key}
-              className="p-3 rounded-lg border border-border/60 bg-card hover:border-primary/40 transition-colors flex flex-col justify-between gap-1 shadow-2xs"
+              className={cn(
+                "p-3 rounded-lg border border-border/60 bg-card hover:border-primary/40 transition-colors flex flex-col justify-between gap-1 shadow-2xs",
+                item.highlight && "ring-1 ring-primary/20 bg-primary/5"
+              )}
             >
               <div className="flex items-center gap-1.5 text-muted-foreground">
                 <IconComponent className="size-3.5 text-primary shrink-0" />

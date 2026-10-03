@@ -570,33 +570,9 @@ export function ClassifiedDetailDesktop({
           {(displayMode === "continuous_list" || activeTab === "specs") && (
             <div className="space-y-4">
               <NicheSpecificationsDisplay
-                attributes={{
-                  ...(classified.attributes || {}),
-                  brand: classified.brand || classified.attributes?.brand,
-                  model: classified.model || classified.attributes?.model,
-                  condition: classified.condition || classified.attributes?.condition,
-                }}
+                items={featureList}
                 title="Especificações"
               />
-
-              {/* Destaques Complementares Resolvidos se não houver atributos estruturados */}
-              {featureList.length > 0 && (!classified.attributes || Object.keys(classified.attributes).length === 0) && (
-                <div className="space-y-3">
-                  <h2 className="text-sm font-bold text-foreground">Especificações em Destaque</h2>
-                  <div className="grid grid-cols-3 gap-3">
-                    {featureList.map((item, idx) => (
-                      <div key={idx} className="rounded-lg border border-border/50 bg-card p-3 space-y-1">
-                        <span className="text-[11px] text-muted-foreground uppercase font-medium block">
-                          {item.label}
-                        </span>
-                        <span className="text-sm font-bold text-foreground truncate block">
-                          {item.value}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
           )}
 
