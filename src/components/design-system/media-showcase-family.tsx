@@ -37,7 +37,7 @@ export function MediaShowcaseFamily({ mode }: ComponentStateProps) {
           <StateCard title="Mídia Ativa" state="ready">
             <div className="flex flex-col gap-3">
               <CanonicalMediaFrame
-                src="https://images.unsplash.com/photo-1571896349842-33c89424de2d?q=80&w=400&auto=format&fit=crop"
+                src="/brand-logo.png"
                 alt="Destino Turístico Canela"
                 aspectRatio="video"
               />

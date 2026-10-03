@@ -42,7 +42,7 @@ export const GLOBAL_MASTER_PRODUCTS_CATALOG: MasterProductRecord[] = [
     cbs_rate: 0.0,
     tax_tribute_group: "isento_cesta_basica",
     net_weight_kg: 5.0,
-    image_urls: ["https://images.unsplash.com/photo-1586201375761-83865001e31c?auto=format&fit=crop&w=600&q=80"],
+    image_urls: [],
     tags: ["arroz", "cesta básica", "tio joão", "alimento", "grãos"],
   },
   {
@@ -61,7 +61,7 @@ export const GLOBAL_MASTER_PRODUCTS_CATALOG: MasterProductRecord[] = [
     cbs_rate: 0.0,
     tax_tribute_group: "isento_cesta_basica",
     net_weight_kg: 1.0,
-    image_urls: ["https://images.unsplash.com/photo-1551462147-ff29053bfc14?auto=format&fit=crop&w=600&q=80"],
+    image_urls: [],
     tags: ["feijão", "camil", "cesta básica", "feijão preto"],
   },
   {
@@ -80,7 +80,7 @@ export const GLOBAL_MASTER_PRODUCTS_CATALOG: MasterProductRecord[] = [
     cbs_rate: 0.0,
     tax_tribute_group: "isento_cesta_basica",
     net_weight_kg: 0.5,
-    image_urls: ["https://images.unsplash.com/photo-1559056199-641a0ac8b55e?auto=format&fit=crop&w=600&q=80"],
+    image_urls: [],
     tags: ["café", "pilão", "café moído", "matinal", "vácuo"],
   },
   {
@@ -99,7 +99,7 @@ export const GLOBAL_MASTER_PRODUCTS_CATALOG: MasterProductRecord[] = [
     cbs_rate: 0.0,
     tax_tribute_group: "isento_cesta_basica",
     net_weight_kg: 1.0,
-    image_urls: ["https://images.unsplash.com/photo-1587735243615-c03f25aaff15?auto=format&fit=crop&w=600&q=80"],
+    image_urls: [],
     tags: ["açúcar", "união", "refinado", "confeitaria", "cesta básica"],
   },
   {
@@ -118,7 +118,7 @@ export const GLOBAL_MASTER_PRODUCTS_CATALOG: MasterProductRecord[] = [
     cbs_rate: 0.0,
     tax_tribute_group: "isento_cesta_basica",
     net_weight_kg: 0.81,
-    image_urls: ["https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?auto=format&fit=crop&w=600&q=80"],
+    image_urls: [],
     tags: ["óleo", "liza", "soja", "fritura", "culinária"],
   },
   {
@@ -137,7 +137,7 @@ export const GLOBAL_MASTER_PRODUCTS_CATALOG: MasterProductRecord[] = [
     cbs_rate: 0.0,
     tax_tribute_group: "isento_cesta_basica",
     net_weight_kg: 1.03,
-    image_urls: ["https://images.unsplash.com/photo-1550583724-b2692b85b150?auto=format&fit=crop&w=600&q=80"],
+    image_urls: [],
     tags: ["leite", "piracanjuba", "integral", "uht", "laticínio"],
   },
 
@@ -158,7 +158,7 @@ export const GLOBAL_MASTER_PRODUCTS_CATALOG: MasterProductRecord[] = [
     cbs_rate: 8.8,
     tax_tribute_group: "substituicao_tributaria",
     net_weight_kg: 2.0,
-    image_urls: ["https://images.unsplash.com/photo-1622483767028-3f66f32aef97?auto=format&fit=crop&w=600&q=80"],
+    image_urls: [],
     tags: ["coca-cola", "refrigerante", "2l", "bebida"],
   },
   {
@@ -177,7 +177,7 @@ export const GLOBAL_MASTER_PRODUCTS_CATALOG: MasterProductRecord[] = [
     cbs_rate: 9.0,
     tax_tribute_group: "imposto_seletivo",
     net_weight_kg: 0.37,
-    image_urls: ["https://images.unsplash.com/photo-1618886614638-80e3c103d31a?auto=format&fit=crop&w=600&q=80"],
+    image_urls: [],
     tags: ["cerveja", "heineken", "puro malte", "lata", "alcoólico"],
   },
   {
@@ -196,7 +196,7 @@ export const GLOBAL_MASTER_PRODUCTS_CATALOG: MasterProductRecord[] = [
     cbs_rate: 8.8,
     tax_tribute_group: "substituicao_tributaria",
     net_weight_kg: 2.0,
-    image_urls: ["https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&w=600&q=80"],
+    image_urls: [],
     tags: ["guaraná", "antarctica", "refrigerante", "bebida"],
   },
   {
@@ -215,7 +215,7 @@ export const GLOBAL_MASTER_PRODUCTS_CATALOG: MasterProductRecord[] = [
     cbs_rate: 9.0,
     tax_tribute_group: "imposto_seletivo",
     net_weight_kg: 1.25,
-    image_urls: ["https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?auto=format&fit=crop&w=600&q=80"],
+    image_urls: [],
     tags: ["vinho", "casillero del diablo", "cabernet", "chile", "tinto"],
   },
 
@@ -236,7 +236,7 @@ export const GLOBAL_MASTER_PRODUCTS_CATALOG: MasterProductRecord[] = [
     cbs_rate: 8.8,
     tax_tribute_group: "substituicao_tributaria",
     net_weight_kg: 1.6,
-    image_urls: ["https://images.unsplash.com/photo-1583947215259-38e31be8751f?auto=format&fit=crop&w=600&q=80"],
+    image_urls: [],
     tags: ["omo", "sabão em pó", "lavagem perfeita", "lavanderia", "limpeza"],
   },
   {
@@ -255,7 +255,7 @@ export const GLOBAL_MASTER_PRODUCTS_CATALOG: MasterProductRecord[] = [
     cbs_rate: 8.8,
     tax_tribute_group: "substituicao_tributaria",
     net_weight_kg: 0.52,
-    image_urls: ["https://images.unsplash.com/photo-1622560480605-d83c853bc5c3?auto=format&fit=crop&w=600&q=80"],
+    image_urls: [],
     tags: ["ypê", "detergente", "louça", "cozinha", "limpeza"],
   },
   {
@@ -274,7 +274,7 @@ export const GLOBAL_MASTER_PRODUCTS_CATALOG: MasterProductRecord[] = [
     cbs_rate: 8.8,
     tax_tribute_group: "substituicao_tributaria",
     net_weight_kg: 0.95,
-    image_urls: ["https://images.unsplash.com/photo-1584556812952-905ffd0c611a?auto=format&fit=crop&w=600&q=80"],
+    image_urls: [],
     tags: ["neve", "papel higiênico", "folha dupla", "banheiro", "higiene"],
   },
 
@@ -295,7 +295,7 @@ export const GLOBAL_MASTER_PRODUCTS_CATALOG: MasterProductRecord[] = [
     cbs_rate: 8.8,
     tax_tribute_group: "substituicao_tributaria",
     net_weight_kg: 0.1,
-    image_urls: ["https://images.unsplash.com/photo-1559591937-e1032c524021?auto=format&fit=crop&w=600&q=80"],
+    image_urls: [],
     tags: ["colgate", "creme dental", "pasta de dente", "bucal", "higiene"],
   },
   {
@@ -314,7 +314,7 @@ export const GLOBAL_MASTER_PRODUCTS_CATALOG: MasterProductRecord[] = [
     cbs_rate: 8.8,
     tax_tribute_group: "substituicao_tributaria",
     net_weight_kg: 0.09,
-    image_urls: ["https://images.unsplash.com/photo-1607006314141-86d7e00a3598?auto=format&fit=crop&w=600&q=80"],
+    image_urls: [],
     tags: ["dove", "sabonete", "hidratante", "banho", "pele"],
   },
 
@@ -335,7 +335,7 @@ export const GLOBAL_MASTER_PRODUCTS_CATALOG: MasterProductRecord[] = [
     cbs_rate: 8.8,
     tax_tribute_group: "tributado_integralmente",
     net_weight_kg: 2.3,
-    image_urls: ["https://images.unsplash.com/photo-1586075010923-2dd4570fb338?auto=format&fit=crop&w=600&q=80"],
+    image_urls: [],
     tags: ["chamex", "sulfite", "a4", "papel", "impressão", "escritório"],
   },
   {
@@ -354,7 +354,7 @@ export const GLOBAL_MASTER_PRODUCTS_CATALOG: MasterProductRecord[] = [
     cbs_rate: 8.8,
     tax_tribute_group: "tributado_integralmente",
     net_weight_kg: 0.35,
-    image_urls: ["https://images.unsplash.com/photo-1585336261026-78939c3dcfe9?auto=format&fit=crop&w=600&q=80"],
+    image_urls: [],
     tags: ["bic", "caneta", "cristal", "azul", "escritório", "escola"],
   },
 
@@ -375,7 +375,7 @@ export const GLOBAL_MASTER_PRODUCTS_CATALOG: MasterProductRecord[] = [
     cbs_rate: 8.8,
     tax_tribute_group: "substituicao_tributaria",
     net_weight_kg: 0.05,
-    image_urls: ["https://images.unsplash.com/photo-1541689592655-f5f52825a3b8?auto=format&fit=crop&w=600&q=80"],
+    image_urls: [],
     tags: ["apple", "cabo", "lightning", "usb-c", "iphone", "carregador"],
   },
   {
@@ -394,7 +394,7 @@ export const GLOBAL_MASTER_PRODUCTS_CATALOG: MasterProductRecord[] = [
     cbs_rate: 8.8,
     tax_tribute_group: "tributado_integralmente",
     net_weight_kg: 0.16,
-    image_urls: ["https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=600&q=80"],
+    image_urls: [],
     tags: ["jbl", "fone bluetooth", "tune 510bt", "áudio", "sem fio"],
   },
   {
@@ -413,7 +413,7 @@ export const GLOBAL_MASTER_PRODUCTS_CATALOG: MasterProductRecord[] = [
     cbs_rate: 8.8,
     tax_tribute_group: "tributado_integralmente",
     net_weight_kg: 0.08,
-    image_urls: ["https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?auto=format&fit=crop&w=600&q=80"],
+    image_urls: [],
     tags: ["logitech", "mouse", "sem fio", "m170", "informática"],
   },
   {
@@ -432,7 +432,7 @@ export const GLOBAL_MASTER_PRODUCTS_CATALOG: MasterProductRecord[] = [
     cbs_rate: 8.8,
     tax_tribute_group: "tributado_integralmente",
     net_weight_kg: 3.9,
-    image_urls: ["https://images.unsplash.com/photo-1585670149967-b4f4da88cc9f?auto=format&fit=crop&w=600&q=80"],
+    image_urls: [],
     tags: ["mondial", "air fryer", "fritadeira", "eletrodomésticos"],
   },
   {
@@ -451,7 +451,7 @@ export const GLOBAL_MASTER_PRODUCTS_CATALOG: MasterProductRecord[] = [
     cbs_rate: 3.5,
     tax_tribute_group: "tributado_integralmente",
     net_weight_kg: 0.5,
-    image_urls: ["https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?auto=format&fit=crop&w=600&q=80"],
+    image_urls: [],
     tags: ["azeite", "andorinha", "extra virgem", "portugal", "mercearia"],
   },
   {
@@ -470,7 +470,7 @@ export const GLOBAL_MASTER_PRODUCTS_CATALOG: MasterProductRecord[] = [
     cbs_rate: 0.0,
     tax_tribute_group: "isento_cesta_basica",
     net_weight_kg: 0.5,
-    image_urls: ["https://images.unsplash.com/photo-1559056199-641a0ac8b55e?auto=format&fit=crop&w=600&q=80"],
+    image_urls: [],
     tags: ["café", "pilão", "tradicional", "vácuo", "cesta básica"],
   },
   {
@@ -489,7 +489,7 @@ export const GLOBAL_MASTER_PRODUCTS_CATALOG: MasterProductRecord[] = [
     cbs_rate: 0.0,
     tax_tribute_group: "isento_cesta_basica",
     net_weight_kg: 1.0,
-    image_urls: ["https://images.unsplash.com/photo-1581441363689-1f3c3c414635?auto=format&fit=crop&w=600&q=80"],
+    image_urls: [],
     tags: ["açúcar", "união", "refinado", "cesta básica", "confeitaria"],
   },
   {
@@ -508,7 +508,7 @@ export const GLOBAL_MASTER_PRODUCTS_CATALOG: MasterProductRecord[] = [
     cbs_rate: 3.5,
     tax_tribute_group: "tributado_integralmente",
     net_weight_kg: 0.395,
-    image_urls: ["https://images.unsplash.com/photo-1563729784474-d77dbb933a9e?auto=format&fit=crop&w=600&q=80"],
+    image_urls: [],
     tags: ["leite condensado", "moça", "nestlé", "lata", "doces"],
   },
   {
@@ -527,7 +527,7 @@ export const GLOBAL_MASTER_PRODUCTS_CATALOG: MasterProductRecord[] = [
     cbs_rate: 8.8,
     tax_tribute_group: "imposto_seletivo", // Sujeito ao Imposto Seletivo na Reforma
     net_weight_kg: 0.33,
-    image_urls: ["https://images.unsplash.com/photo-1618886614638-80e3c103d31a?auto=format&fit=crop&w=600&q=80"],
+    image_urls: [],
     tags: ["cerveja", "heineken", "long neck", "puro malte", "imposto seletivo"],
   },
   {
@@ -546,7 +546,7 @@ export const GLOBAL_MASTER_PRODUCTS_CATALOG: MasterProductRecord[] = [
     cbs_rate: 8.8,
     tax_tribute_group: "tributado_integralmente",
     net_weight_kg: 0.09,
-    image_urls: ["https://images.unsplash.com/photo-1559591937-e10c7db27d81?auto=format&fit=crop&w=600&q=80"],
+    image_urls: [],
     tags: ["colgate", "creme dental", "pasta de dente", "total 12", "higiene bucal"],
   },
   {
@@ -565,7 +565,7 @@ export const GLOBAL_MASTER_PRODUCTS_CATALOG: MasterProductRecord[] = [
     cbs_rate: 8.8,
     tax_tribute_group: "tributado_integralmente",
     net_weight_kg: 0.09,
-    image_urls: ["https://images.unsplash.com/photo-1607006314647-75c1a7003058?auto=format&fit=crop&w=600&q=80"],
+    image_urls: [],
     tags: ["dove", "sabonete", "original", "hidratante", "banho"],
   },
   {
@@ -584,7 +584,7 @@ export const GLOBAL_MASTER_PRODUCTS_CATALOG: MasterProductRecord[] = [
     cbs_rate: 8.8,
     tax_tribute_group: "tributado_integralmente",
     net_weight_kg: 0.2,
-    image_urls: ["https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?auto=format&fit=crop&w=600&q=80"],
+    image_urls: [],
     tags: ["sundown", "protetor solar", "fps 50", "praia", "verão"],
   },
   {
@@ -603,7 +603,7 @@ export const GLOBAL_MASTER_PRODUCTS_CATALOG: MasterProductRecord[] = [
     cbs_rate: 3.5,
     tax_tribute_group: "tributado_integralmente",
     net_weight_kg: 1.8,
-    image_urls: ["https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?auto=format&fit=crop&w=600&q=80"],
+    image_urls: [],
     tags: ["fralda", "pampers", "confort sec", "tamanho g", "bebê"],
   },
   {
@@ -622,7 +622,7 @@ export const GLOBAL_MASTER_PRODUCTS_CATALOG: MasterProductRecord[] = [
     cbs_rate: 3.5,
     tax_tribute_group: "tributado_integralmente",
     net_weight_kg: 0.05,
-    image_urls: ["https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&w=600&q=80"],
+    image_urls: [],
     tags: ["dipirona", "medley", "remédio", "genérico", "gotas"],
   },
   {
@@ -641,7 +641,7 @@ export const GLOBAL_MASTER_PRODUCTS_CATALOG: MasterProductRecord[] = [
     cbs_rate: 8.8,
     tax_tribute_group: "substituicao_tributaria",
     net_weight_kg: 50.0,
-    image_urls: ["https://images.unsplash.com/photo-1589939705384-5185137a7f0f?auto=format&fit=crop&w=600&q=80"],
+    image_urls: [],
     tags: ["cimento", "votoran", "cp2", "construção", "50kg"],
   },
   {
@@ -660,7 +660,7 @@ export const GLOBAL_MASTER_PRODUCTS_CATALOG: MasterProductRecord[] = [
     cbs_rate: 8.8,
     tax_tribute_group: "substituicao_tributaria",
     net_weight_kg: 24.0,
-    image_urls: ["https://images.unsplash.com/photo-1589939705384-5185137a7f0f?auto=format&fit=crop&w=600&q=80"],
+    image_urls: [],
     tags: ["tinta", "coral", "rende muito", "branco neve", "18 litros"],
   },
   {
@@ -679,7 +679,7 @@ export const GLOBAL_MASTER_PRODUCTS_CATALOG: MasterProductRecord[] = [
     cbs_rate: 8.8,
     tax_tribute_group: "tributado_integralmente",
     net_weight_kg: 1.8,
-    image_urls: ["https://images.unsplash.com/photo-1504148455328-c376907d081c?auto=format&fit=crop&w=600&q=80"],
+    image_urls: [],
     tags: ["furadeira", "bosch", "gsb 13 re", "impacto", "ferramenta"],
   },
   {
@@ -698,7 +698,7 @@ export const GLOBAL_MASTER_PRODUCTS_CATALOG: MasterProductRecord[] = [
     cbs_rate: 8.8,
     tax_tribute_group: "tributado_integralmente",
     net_weight_kg: 0.199,
-    image_urls: ["https://images.unsplash.com/photo-1510557880182-3d4d3cba35a5?auto=format&fit=crop&w=600&q=80"],
+    image_urls: [],
     tags: ["apple", "iphone 16 pro", "titânio", "smartphone", "ios"],
   },
   {
@@ -717,7 +717,7 @@ export const GLOBAL_MASTER_PRODUCTS_CATALOG: MasterProductRecord[] = [
     cbs_rate: 8.8,
     tax_tribute_group: "tributado_integralmente",
     net_weight_kg: 0.232,
-    image_urls: ["https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?auto=format&fit=crop&w=600&q=80"],
+    image_urls: [],
     tags: ["samsung", "galaxy s24 ultra", "s-pen", "galaxy ai", "smartphone"],
   },
   {
@@ -736,7 +736,7 @@ export const GLOBAL_MASTER_PRODUCTS_CATALOG: MasterProductRecord[] = [
     cbs_rate: 8.8,
     tax_tribute_group: "tributado_integralmente",
     net_weight_kg: 14.2,
-    image_urls: ["https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?auto=format&fit=crop&w=600&q=80"],
+    image_urls: [],
     tags: ["smart tv", "samsung", "crystal uhd", "4k", "55 polegadas"],
   },
 
@@ -757,7 +757,7 @@ export const GLOBAL_MASTER_PRODUCTS_CATALOG: MasterProductRecord[] = [
     cbs_rate: 8.8,
     tax_tribute_group: "imposto_seletivo",
     net_weight_kg: 0.58,
-    image_urls: ["https://images.unsplash.com/photo-1608270586620-248524c67de9?auto=format&fit=crop&w=600&q=80"],
+    image_urls: [],
     tags: ["cerveja", "heineken", "long neck", "puro malte", "bebida alcoólica"],
   },
   {
@@ -776,7 +776,7 @@ export const GLOBAL_MASTER_PRODUCTS_CATALOG: MasterProductRecord[] = [
     cbs_rate: 8.8,
     tax_tribute_group: "imposto_seletivo",
     net_weight_kg: 0.58,
-    image_urls: ["https://images.unsplash.com/photo-1584225064785-c62a8b43d148?auto=format&fit=crop&w=600&q=80"],
+    image_urls: [],
     tags: ["cerveja", "corona", "long neck", "premium", "bebidas"],
   },
   {
@@ -795,7 +795,7 @@ export const GLOBAL_MASTER_PRODUCTS_CATALOG: MasterProductRecord[] = [
     cbs_rate: 8.8,
     tax_tribute_group: "imposto_seletivo",
     net_weight_kg: 2.05,
-    image_urls: ["https://images.unsplash.com/photo-1622483767028-3f66f32aef97?auto=format&fit=crop&w=600&q=80"],
+    image_urls: [],
     tags: ["coca-cola", "refrigerante", "2 litros", "bebida"],
   },
   {
@@ -814,7 +814,7 @@ export const GLOBAL_MASTER_PRODUCTS_CATALOG: MasterProductRecord[] = [
     cbs_rate: 8.8,
     tax_tribute_group: "imposto_seletivo",
     net_weight_kg: 1.25,
-    image_urls: ["https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?auto=format&fit=crop&w=600&q=80"],
+    image_urls: [],
     tags: ["vinho", "cabernet sauvignon", "tinto", "chileno", "casillero del diablo"],
   },
   {
@@ -833,7 +833,7 @@ export const GLOBAL_MASTER_PRODUCTS_CATALOG: MasterProductRecord[] = [
     cbs_rate: 8.8,
     tax_tribute_group: "imposto_seletivo",
     net_weight_kg: 0.28,
-    image_urls: ["https://images.unsplash.com/photo-1551024709-8f23befc6f87?auto=format&fit=crop&w=600&q=80"],
+    image_urls: [],
     tags: ["red bull", "energético", "lata", "foco", "bebida funcional"],
   },
 
@@ -853,7 +853,7 @@ export const GLOBAL_MASTER_PRODUCTS_CATALOG: MasterProductRecord[] = [
     cbs_rate: 5.2,
     tax_tribute_group: "tributado_integralmente",
     net_weight_kg: 0.85,
-    image_urls: ["https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=600&q=80"],
+    image_urls: [],
     tags: ["pizza", "calabresa", "delivery", "jantar", "artesanal"],
   },
   {
@@ -871,7 +871,7 @@ export const GLOBAL_MASTER_PRODUCTS_CATALOG: MasterProductRecord[] = [
     cbs_rate: 5.2,
     tax_tribute_group: "tributado_integralmente",
     net_weight_kg: 0.35,
-    image_urls: ["https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=600&q=80"],
+    image_urls: [],
     tags: ["burger", "hambúrguer", "smash burger", "angus", "bacon", "delivery"],
   },
   {
@@ -889,7 +889,7 @@ export const GLOBAL_MASTER_PRODUCTS_CATALOG: MasterProductRecord[] = [
     cbs_rate: 5.2,
     tax_tribute_group: "tributado_integralmente",
     net_weight_kg: 0.55,
-    image_urls: ["https://images.unsplash.com/photo-1579871494447-9811cf80d66c?auto=format&fit=crop&w=600&q=80"],
+    image_urls: [],
     tags: ["sushi", "salmão", "sashimi", "comida japonesa", "oriental"],
   },
   {
@@ -907,7 +907,7 @@ export const GLOBAL_MASTER_PRODUCTS_CATALOG: MasterProductRecord[] = [
     cbs_rate: 5.2,
     tax_tribute_group: "tributado_integralmente",
     net_weight_kg: 0.35,
-    image_urls: ["https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=600&q=80"],
+    image_urls: [],
     tags: ["marmita fit", "saudável", "refeição pronta", "frango grelhado", "almoço"],
   },
 
@@ -927,7 +927,7 @@ export const GLOBAL_MASTER_PRODUCTS_CATALOG: MasterProductRecord[] = [
     cbs_rate: 8.8,
     tax_tribute_group: "tributado_integralmente",
     net_weight_kg: 68.0,
-    image_urls: ["https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=600&q=80"],
+    image_urls: [],
     tags: ["sofá", "retrátil", "reclinável", "sala", "móveis", "conforto"],
   },
   {
@@ -945,7 +945,7 @@ export const GLOBAL_MASTER_PRODUCTS_CATALOG: MasterProductRecord[] = [
     cbs_rate: 8.8,
     tax_tribute_group: "tributado_integralmente",
     net_weight_kg: 16.5,
-    image_urls: ["https://images.unsplash.com/photo-1580481077195-c3a82105e3f5?auto=format&fit=crop&w=600&q=80"],
+    image_urls: [],
     tags: ["cadeira ergonômica", "home office", "escritório", "mesh", "nr17"],
   },
   {
@@ -963,7 +963,7 @@ export const GLOBAL_MASTER_PRODUCTS_CATALOG: MasterProductRecord[] = [
     cbs_rate: 8.8,
     tax_tribute_group: "tributado_integralmente",
     net_weight_kg: 42.0,
-    image_urls: ["https://images.unsplash.com/photo-1615066390971-03e4e1c36ddf?auto=format&fit=crop&w=600&q=80"],
+    image_urls: [],
     tags: ["mesa de jantar", "madeira maciça", "sala de jantar", "6 lugares"],
   },
 
@@ -984,7 +984,7 @@ export const GLOBAL_MASTER_PRODUCTS_CATALOG: MasterProductRecord[] = [
     cbs_rate: 8.8,
     tax_tribute_group: "tributado_integralmente",
     net_weight_kg: 58.0,
-    image_urls: ["https://images.unsplash.com/photo-1571175443880-49e1d25b2bc5?auto=format&fit=crop&w=600&q=80"],
+    image_urls: [],
     tags: ["geladeira", "refrigerador", "frost free", "brastemp", "inox", "linha branca"],
   },
   {
@@ -1003,7 +1003,7 @@ export const GLOBAL_MASTER_PRODUCTS_CATALOG: MasterProductRecord[] = [
     cbs_rate: 8.8,
     tax_tribute_group: "tributado_integralmente",
     net_weight_kg: 4.2,
-    image_urls: ["https://images.unsplash.com/photo-1585515320310-259814833e62?auto=format&fit=crop&w=600&q=80"],
+    image_urls: [],
     tags: ["air fryer", "fritadeira sem óleo", "mondial", "eletroportáteis", "cozinha"],
   },
   {
@@ -1022,7 +1022,7 @@ export const GLOBAL_MASTER_PRODUCTS_CATALOG: MasterProductRecord[] = [
     cbs_rate: 8.8,
     tax_tribute_group: "tributado_integralmente",
     net_weight_kg: 40.0,
-    image_urls: ["https://images.unsplash.com/photo-1626806787461-102c1bfaaea1?auto=format&fit=crop&w=600&q=80"],
+    image_urls: [],
     tags: ["lavadora", "máquina de lavar", "electrolux", "13kg", "lavanderia"],
   },
 
@@ -1043,7 +1043,7 @@ export const GLOBAL_MASTER_PRODUCTS_CATALOG: MasterProductRecord[] = [
     cbs_rate: 8.8,
     tax_tribute_group: "substituicao_tributaria",
     net_weight_kg: 0.95,
-    image_urls: ["https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?auto=format&fit=crop&w=600&q=80"],
+    image_urls: [],
     tags: ["óleo motor", "mobil", "5w30", "sintético", "automotivo", "troca de óleo"],
   },
   {
@@ -1062,7 +1062,7 @@ export const GLOBAL_MASTER_PRODUCTS_CATALOG: MasterProductRecord[] = [
     cbs_rate: 8.8,
     tax_tribute_group: "substituicao_tributaria",
     net_weight_kg: 8.5,
-    image_urls: ["https://images.unsplash.com/photo-1578844251758-2f71da64c96f?auto=format&fit=crop&w=600&q=80"],
+    image_urls: [],
     tags: ["pneu", "pirelli", "aro 16", "205/55r16", "cinturato", "automotivo"],
   },
   {
@@ -1081,7 +1081,7 @@ export const GLOBAL_MASTER_PRODUCTS_CATALOG: MasterProductRecord[] = [
     cbs_rate: 8.8,
     tax_tribute_group: "substituicao_tributaria",
     net_weight_kg: 14.5,
-    image_urls: ["https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&w=600&q=80"],
+    image_urls: [],
     tags: ["bateria", "moura", "60ah", "12v", "bateria automotiva", "peças carro"],
   },
 ];

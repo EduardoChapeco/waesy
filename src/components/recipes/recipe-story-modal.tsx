@@ -108,7 +108,7 @@ export function RecipeStoryModal({ recipe, isOpen, onClose }: RecipeStoryModalPr
               <img
                 src={
                   recipe.cover_image_url ||
-                  "https://images.unsplash.com/photo-1495521821757-a1efb6729352?auto=format&fit=crop&w=600&q=80"
+                  "/brand-logo.png"
                 }
                 alt={recipe.title}
                 crossOrigin="anonymous"

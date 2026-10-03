@@ -25,7 +25,7 @@ export function SocialStudioModal({
   product = {
     title: "Produto Destaque da Loja",
     priceCents: 12990,
-    imageUrl: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800",
+    imageUrl: "/brand-logo.png",
     category: "Lançamento",
     description: "Confira este produto incrível com entrega rápida pela nossa loja.",
   },
@@ -34,7 +34,7 @@ export function SocialStudioModal({
   const [aspectRatio, setAspectRatio] = useState<"9:16" | "1:1" | "16:9">("9:16");
   const [copiedCaption, setCopiedCaption] = useState(false);
 
-  const captionText = `🔥 ${product.title}\n\nPor apenas ${formatMoney(product.priceCents)}!\n\n📍 ${storeName}\n💬 Peça agora no WhatsApp ou compre pelo link da bio!\n\n#usewaesy #${storeName.toLowerCase().replace(/\s+/g, "")} #oferta`;
+  const captionText = `${product.title}\n\nPor apenas ${formatMoney(product.priceCents)}!\n\n📍 ${storeName}\n💬 Peça agora no WhatsApp ou compre pelo link da bio!\n\n#usewaesy #${storeName.toLowerCase().replace(/\s+/g, "")} #oferta`;
 
   const handleCopyCaption = () => {
     navigator.clipboard.writeText(captionText);
@@ -105,7 +105,7 @@ export function SocialStudioModal({
               {/* Center Image */}
               <div className="absolute inset-0 z-0 opacity-40">
                 <img
-                  src={product.imageUrl || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800"}
+                  src={product.imageUrl || "/brand-logo.png"}
                   alt={product.title}
                   className="w-full h-full object-cover"
                 />

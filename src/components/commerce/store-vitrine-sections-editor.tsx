@@ -47,7 +47,7 @@ export const DEFAULT_STORE_VITRINE_SECTIONS: VitrineSectionConfig[] = [
         subtitle: "Fale diretamente com nossa equipe pelo WhatsApp",
         tag: "Destaque",
         linkUrl: "whatsapp",
-        imageUrl: "https://images.unsplash.com/photo-1556742049-0a67c5574f73?w=600&auto=format&fit=crop&q=80",
+        imageUrl: "/brand-logo.png",
       },
       {
         id: "card_2",
@@ -55,7 +55,7 @@ export const DEFAULT_STORE_VITRINE_SECTIONS: VitrineSectionConfig[] = [
         subtitle: "Confira as novidades e produtos em alta",
         tag: "Tendência",
         linkUrl: "#catalogo",
-        imageUrl: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600&auto=format&fit=crop&q=80",
+        imageUrl: "/brand-logo.png",
       },
     ],
   },

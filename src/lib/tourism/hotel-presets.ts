@@ -44,8 +44,8 @@ export const FAMOUS_HOTEL_PRESETS: HotelPreset[] = [
  regime_options: ["Meia Pensão", "Café da Manhã"],
  description:
  "Um dos resorts de luxo mais exclusivos da América do Sul. Localizado na praia protegida de Muro Alto, conta com bangalôs com piscinas privativas sobre espelhos d'água e o refinado Spa L'Occitane.",
- cover_photo_url: "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=1600&q=80",
- photos: ["https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=1200&q=80","https://images.unsplash.com/photo-1571896349842-33c89424de2d?auto=format&fit=crop&w=1200&q=80","https://images.unsplash.com/photo-1582719508461-905c673771fd?auto=format&fit=crop&w=1200&q=80"],
+ cover_photo_url: "",
+ photos: [],
  website: "https://www.nannai.com.br",
  phone: "(81) 3552-0100",
  internal_rating: 4.9,
@@ -54,9 +54,9 @@ export const FAMOUS_HOTEL_PRESETS: HotelPreset[] = [
  google_maps_url: "https://maps.google.com/?q=Nannai+Muro+Alto+Resort",
  badges: ["Luxo Exclusivo", "Pé na Areia", "Spa L'Occitane", "Bangalôs Privativos"],
  bio_bullets: [
- "🌴 Bangalôs exclusivos sobre piscinas naturais protegidas por arrecifes",
- "☕ Meia Pensão com gastronomia internacional de autor e café da manhã premiado",
- "💆 Spa L'Occitane com terapias holísticas de relaxamento profundo",
+ " Bangalôs exclusivos sobre piscinas naturais protegidas por arrecifes",
+ " Meia Pensão com gastronomia internacional de autor e café da manhã premiado",
+ " Spa L'Occitane com terapias holísticas de relaxamento profundo",
  ],
  amenities: ["Pé na Areia", "Piscina com Borda Infinita", "Spa & Massagem", "Restaurante Gourmet", "Wi-Fi Alta Velocidade", "Serviço de Quarto 24h"],
  room_categories: [
@@ -71,7 +71,7 @@ export const FAMOUS_HOTEL_PRESETS: HotelPreset[] = [
  size_m2: 120,
  daily_rate_reference_cents: 385000,
  amenities: ["Piscina Privativa", "Vista Frente Mar", "Banheira de Hidro", "Cafeteira Nespresso", "Smart TV 65", "Adega de Vinhos", "Amenities L'Occitane"],
- cover_photo_url: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=1200&q=80",
+ cover_photo_url: "",
  },
  {
  id: "rc_nannai_bangalo_premium",
@@ -84,7 +84,7 @@ export const FAMOUS_HOTEL_PRESETS: HotelPreset[] = [
  size_m2: 64,
  daily_rate_reference_cents: 245000,
  amenities: ["Piscina Privativa", "Deck Panorâmico", "Ar-condicionado Split", "Frigobar Completo", "Varanda com Rede"],
- cover_photo_url: "https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=1200&q=80",
+ cover_photo_url: "",
  },
  {
  id: "rc_nannai_apto_luxo",
@@ -97,7 +97,7 @@ export const FAMOUS_HOTEL_PRESETS: HotelPreset[] = [
  size_m2: 45,
  daily_rate_reference_cents: 165000,
  amenities: ["Varanda com Rede", "Smart TV 55", "Wi-Fi 500Mbps", "Cofre Digital", "Secador de Cabelo Profissional"],
- cover_photo_url: "https://images.unsplash.com/photo-1618773928121-c32242e63f39?auto=format&fit=crop&w=1200&q=80",
+ cover_photo_url: "",
  },
  ],
  policies: {
@@ -137,8 +137,8 @@ export const FAMOUS_HOTEL_PRESETS: HotelPreset[] = [
  regime_options: ["All Inclusive"],
  description:
  "Eleito repetidamente um dos melhores resorts All Inclusive do mundo. Estrutura completa de frente para o mar cortada pelo Rio Maragogi, com gastronomia e bebidas premium 24 horas por dia.",
- cover_photo_url: "https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?auto=format&fit=crop&w=1600&q=80",
- photos: ["https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?auto=format&fit=crop&w=1200&q=80","https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?auto=format&fit=crop&w=1200&q=80","https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80"],
+ cover_photo_url: "",
+ photos: [],
  website: "https://www.salinas.com.br/maragogi",
  phone: "(82) 3296-3000",
  internal_rating: 4.9,
@@ -147,9 +147,9 @@ export const FAMOUS_HOTEL_PRESETS: HotelPreset[] = [
  google_maps_url: "https://maps.google.com/?q=Salinas+Maragogi+All+Inclusive",
  badges: ["All Inclusive 24h", "Pé na Areia", "Familiar", "Complexo Aquático"],
  bio_bullets: [
- "🍹 All Inclusive 24 horas com chopes artesanais, coquetéis e petiscos ilimitados",
- "🧒 Recreação infantil Clubinho do Siri com monitores especializados dia e noite",
- "🚣 Passeios de caiaque e stand up paddle no calmo Rio Maragogi inclusos",
+ " All Inclusive 24 horas com chopes artesanais, coquetéis e petiscos ilimitados",
+ " Recreação infantil Clubinho do Siri com monitores especializados dia e noite",
+ " Passeios de caiaque e stand up paddle no calmo Rio Maragogi inclusos",
  ],
  amenities: ["All Inclusive 24h", "Pé na Areia", "Parque Aquático Infantil", "Kids Club", "Esportes Náuticos", "Bar Molhado"],
  room_categories: [
@@ -164,7 +164,7 @@ export const FAMOUS_HOTEL_PRESETS: HotelPreset[] = [
  size_m2: 37,
  daily_rate_reference_cents: 220000,
  amenities: ["Vista Frente Mar", "Ar Split", "Smart TV", "Frigobar Reposto Diariamente", "Varanda com Rede"],
- cover_photo_url: "https://images.unsplash.com/photo-1566665797739-1674de7a421a?auto=format&fit=crop&w=1200&q=80",
+ cover_photo_url: "",
  },
  {
  id: "rc_salinas_standard",
@@ -177,7 +177,7 @@ export const FAMOUS_HOTEL_PRESETS: HotelPreset[] = [
  size_m2: 29,
  daily_rate_reference_cents: 175000,
  amenities: ["Ar Condicionado", "Frigobar Incluso", "Wi-Fi Grátis", "Cofre", "Varanda"],
- cover_photo_url: "https://images.unsplash.com/photo-1595576508898-0ad5c879a061?auto=format&fit=crop&w=1200&q=80",
+ cover_photo_url: "",
  },
  ],
  policies: {
@@ -218,8 +218,8 @@ export const FAMOUS_HOTEL_PRESETS: HotelPreset[] = [
  regime_options: ["All Inclusive"],
  description:
  "Resort pé na areia na paradisíaca praia de Pratagy, rodeado pela Mata Atlântica e pelo Rio Meirim. Possui o Pratagy Acqua Park, um dos maiores parques aquáticos integrados da região.",
- cover_photo_url: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1600&q=80",
- photos: ["https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80","https://images.unsplash.com/photo-1561501900-3701fa6a0864?auto=format&fit=crop&w=1200&q=80"],
+ cover_photo_url: "",
+ photos: [],
  website: "https://www.pratagy.com.br",
  phone: "(82) 4009-7400",
  internal_rating: 4.7,
@@ -228,9 +228,9 @@ export const FAMOUS_HOTEL_PRESETS: HotelPreset[] = [
  google_maps_url: "https://maps.google.com/?q=Pratagy+Beach+Resort+Maceio",
  badges: ["Parque Aquático", "All Inclusive", "Pé na Areia", "Mata Atlântica"],
  bio_bullets: [
- "🛝 Acesso ilimitado ao Pratagy Acqua Park com toboáguas e rio lento",
- "🏖️ Praia semiprivativa de águas calmas e mornas com serviços de praia",
- "🍹 Restaurante panorâmico com noites temáticas regionais e frutos do mar",
+ " Acesso ilimitado ao Pratagy Acqua Park com toboáguas e rio lento",
+ "️ Praia semiprivativa de águas calmas e mornas com serviços de praia",
+ " Restaurante panorâmico com noites temáticas regionais e frutos do mar",
  ],
  amenities: ["All Inclusive", "Parque Aquático Integrado", "Pé na Areia", "Espaço Kids", "Bar de Praia", "Academia"],
  room_categories: [
@@ -245,7 +245,7 @@ export const FAMOUS_HOTEL_PRESETS: HotelPreset[] = [
  size_m2: 32,
  daily_rate_reference_cents: 145000,
  amenities: ["Ar Split", "Smart TV", "Frigobar Completo", "Varanda", "Wi-Fi"],
- cover_photo_url: "https://images.unsplash.com/photo-1591088398332-8a7791972843?auto=format&fit=crop&w=1200&q=80",
+ cover_photo_url: "",
  },
  ],
  policies: {
@@ -283,8 +283,8 @@ export const FAMOUS_HOTEL_PRESETS: HotelPreset[] = [
  regime_options: ["Café da Manhã"],
  description:
  "Eleito o Melhor Hotel do Mundo pelo TripAdvisor Travellers' Choice. Uma verdadeira viagem à França imperial com arquitetura clássica, lustres de cristal, móveis talhados à mão e atendimento impecável.",
- cover_photo_url: "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1600&q=80",
- photos: ["https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1200&q=80","https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?auto=format&fit=crop&w=1200&q=80"],
+ cover_photo_url: "",
+ photos: [],
  website: "https://collinedefrance.com.br",
  phone: "(54) 3286-4404",
  internal_rating: 5.0,
@@ -293,9 +293,9 @@ export const FAMOUS_HOTEL_PRESETS: HotelPreset[] = [
  google_maps_url: "https://maps.google.com/?q=Hotel+Colline+de+France+Gramado",
  badges: ["Melhor do Mundo", "Castelo Francês", "Spa & Bem-Estar", "Café Colonial"],
  bio_bullets: [
- "👑 Decoração imperial francesa com roupas de cama de algodão egípcio 300 fios",
- "🥐 Café da manhã gourmet com pâtisserie clássica e espumantes gaúchos",
- "💆 Spa com tratamentos relaxantes exclusivos e amenities L'Occitane",
+ " Decoração imperial francesa com roupas de cama de algodão egípcio 300 fios",
+ " Café da manhã gourmet com pâtisserie clássica e espumantes gaúchos",
+ " Spa com tratamentos relaxantes exclusivos e amenities L'Occitane",
  ],
  amenities: ["Piscina Térmica Coberta", "Spa L'Occitane", "Café Colonial de Autor", "Wi-Fi 500MB", "Estacionamento com Manobrista", "Concierge Exclusivo"],
  room_categories: [
@@ -310,7 +310,7 @@ export const FAMOUS_HOTEL_PRESETS: HotelPreset[] = [
  size_m2: 50,
  daily_rate_reference_cents: 290000,
  amenities: ["Lareira Ecológica", "Banheira Vitoriana", "Piso Térmico no Banheiro", "Cafeteira Nespresso", "Smart TV 65"],
- cover_photo_url: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=1200&q=80",
+ cover_photo_url: "",
  },
  ],
  policies: {
@@ -347,8 +347,8 @@ export const FAMOUS_HOTEL_PRESETS: HotelPreset[] = [
  regime_options: ["Café da Manhã", "Meia Pensão"],
  description:
  "O único hotel localizado dentro do Parque Nacional do Iguaçu. Hospedar-se aqui garante acesso exclusivo às cataratas em horários silenciosos, antes da abertura e após o fechamento do parque.",
- cover_photo_url: "https://images.unsplash.com/photo-1589556264800-08ae9e129a8c?auto=format&fit=crop&w=1600&q=80",
- photos: ["https://images.unsplash.com/photo-1589556264800-08ae9e129a8c?auto=format&fit=crop&w=1200&q=80","https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1200&q=80"],
+ cover_photo_url: "",
+ photos: [],
  website: "https://www.belmond.com/hotel-das-cataratas",
  phone: "(45) 2102-7000",
  internal_rating: 4.9,
@@ -357,9 +357,9 @@ export const FAMOUS_HOTEL_PRESETS: HotelPreset[] = [
  google_maps_url: "https://maps.google.com/?q=Hotel+das+Cataratas+Belmond",
  badges: ["Dentro do Parque", "Acesso Exclusivo", "Patrimônio Mundial", "Alta Gastronomia"],
  bio_bullets: [
- "🌊 Acesso exclusivo às Cataratas do Iguaçu ao amanhecer e pôr do sol sem multidões",
- "🌿 Mansão colonial portuguesa emoldurada pela exuberante floresta tropical",
- "🍽️ Restaurante Itaipu com alta gastronomia brasileira e carta de vinhos nobres",
+ " Acesso exclusivo às Cataratas do Iguaçu ao amanhecer e pôr do sol sem multidões",
+ " Mansão colonial portuguesa emoldurada pela exuberante floresta tropical",
+ "️ Restaurante Itaipu com alta gastronomia brasileira e carta de vinhos nobres",
  ],
  amenities: ["Piscina Aquecida ao Ar Livre", "Spa das Cataratas", "Acesso VIP ao Parque", "Quadra de Tênis", "Concierge Belmond", "Bar Tarobá"],
  room_categories: [
@@ -374,7 +374,7 @@ export const FAMOUS_HOTEL_PRESETS: HotelPreset[] = [
  size_m2: 38,
  daily_rate_reference_cents: 320000,
  amenities: ["Acesso Exclusivo ao Parque", "Pinturas Murais", "Banheiro em Mármore", "Amenities Granado Brasil"],
- cover_photo_url: "https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=1200&q=80",
+ cover_photo_url: "",
  },
  ],
  policies: {
@@ -413,8 +413,8 @@ export const FAMOUS_HOTEL_PRESETS: HotelPreset[] = [
  regime_options: ["All Inclusive"],
  description:
  "Resort 5 estrelas All Inclusive situado no litoral norte baiano. Conta com complexo aquático com piscinas de borda infinita, campo de golfe profissional e projeto de proteção às tartarugas marinhas.",
- cover_photo_url: "https://images.unsplash.com/photo-1584132967334-10e028bd69f7?auto=format&fit=crop&w=1600&q=80",
- photos: ["https://images.unsplash.com/photo-1584132967334-10e028bd69f7?auto=format&fit=crop&w=1200&q=80","https://images.unsplash.com/photo-1571896349842-33c89424de2d?auto=format&fit=crop&w=1200&q=80"],
+ cover_photo_url: "",
+ photos: [],
  website: "https://www.iberostar.com",
  phone: "(71) 3676-4300",
  internal_rating: 4.8,
@@ -423,9 +423,9 @@ export const FAMOUS_HOTEL_PRESETS: HotelPreset[] = [
  google_maps_url: "https://maps.google.com/?q=Iberostar+Selection+Praia+do+Forte",
  badges: ["All Inclusive Premium", "Campo de Golfe", "Pé na Areia", "Sustentabilidade"],
  bio_bullets: [
- "🍹 5 restaurantes à la carte temáticos (Oriental, Francês, Baiano e Carnes) inclusos",
- "⛳ Campo de Golfe profissional de 18 buracos desenhado por P.B. Dye",
- "🐢 Localizado ao lado do Projeto Tamar com desova preservada de tartarugas marinhas",
+ " 5 restaurantes à la carte temáticos (Oriental, Francês, Baiano e Carnes) inclusos",
+ " Campo de Golfe profissional de 18 buracos desenhado por P.B. Dye",
+ " Localizado ao lado do Projeto Tamar com desova preservada de tartarugas marinhas",
  ],
  amenities: ["All Inclusive Premium", "Complexo de 6 Piscinas", "Campo de Golfe", "Spa Sensations", "Teatro com Shows Noturnos", "Kids Club"],
  room_categories: [
@@ -440,7 +440,7 @@ export const FAMOUS_HOTEL_PRESETS: HotelPreset[] = [
  size_m2: 46,
  daily_rate_reference_cents: 210000,
  amenities: ["Vista Frente Mar", "Room Service", "Minibar Reposto Diariamente", "Smart TV", "Banheira"],
- cover_photo_url: "https://images.unsplash.com/photo-1618773928121-c32242e63f39?auto=format&fit=crop&w=1200&q=80",
+ cover_photo_url: "",
  },
  ],
  policies: {
@@ -481,8 +481,8 @@ export const FAMOUS_HOTEL_PRESETS: HotelPreset[] = [
  regime_options: ["All Inclusive"],
  description:
  "Resort 5 estrelas caribenho com experiência Rock Star completa. Possui praias privativas com enseadas naturais para mergulho com snorkel, parque aquático Rockaway Bay e spa de renome mundial.",
- cover_photo_url: "https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?auto=format&fit=crop&w=1600&q=80",
- photos: ["https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?auto=format&fit=crop&w=1200&q=80","https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?auto=format&fit=crop&w=1200&q=80"],
+ cover_photo_url: "",
+ photos: [],
  website: "https://www.hardrockhotelrivieramaya.com",
  phone: "+52 984 875 1100",
  internal_rating: 4.8,
@@ -491,9 +491,9 @@ export const FAMOUS_HOTEL_PRESETS: HotelPreset[] = [
  google_maps_url: "https://maps.google.com/?q=Hard+Rock+Hotel+Riviera+Maya",
  badges: ["All Inclusive Rock Star", "Caribe Mexicano", "Lagoa Privada", "Parque Aquático"],
  bio_bullets: [
- "🎸 Instrumentos Fender entregues no quarto e playlists personalizadas",
- "🏖️ Lagoas caribenhas protegidas ideais para snorkel, caiaque e stand up paddle",
- "🛝 Parque Aquático Rockaway Bay com toboáguas de alta velocidade inclusos",
+ " Instrumentos Fender entregues no quarto e playlists personalizadas",
+ "️ Lagoas caribenhas protegidas ideais para snorkel, caiaque e stand up paddle",
+ " Parque Aquático Rockaway Bay com toboáguas de alta velocidade inclusos",
  ],
  amenities: ["All Inclusive 24h", "Parque Aquático", "Rock Spa", "Lagoa para Snorkel", "Discoteca Club Heaven", "9 Restaurantes Temáticos"],
  room_categories: [
@@ -508,7 +508,7 @@ export const FAMOUS_HOTEL_PRESETS: HotelPreset[] = [
  size_m2: 45,
  daily_rate_reference_cents: 260000,
  amenities: ["Banheira de Hidro Dupla", "Varanda com Rede", "Dispenser de Bebidas Premium", "Smart TV 55"],
- cover_photo_url: "https://images.unsplash.com/photo-1566665797739-1674de7a421a?auto=format&fit=crop&w=1200&q=80",
+ cover_photo_url: "",
  },
  ],
  policies: {
@@ -549,8 +549,8 @@ export const FAMOUS_HOTEL_PRESETS: HotelPreset[] = [
  regime_options: ["Café da Manhã"],
  description:
  "Pousada ícone de Fernando de Noronha, situada sob a imponência do Morro do Pico. Conhecida mundialmente pelo seu Festival Gastronômico, piscina de borda infinita e integração com o meio ambiente.",
- cover_photo_url: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1600&q=80",
- photos: ["https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80","https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80"],
+ cover_photo_url: "",
+ photos: [],
  website: "https://www.pousadazemaria.com.br",
  phone: "(81) 3619-1258",
  internal_rating: 4.9,
@@ -559,9 +559,9 @@ export const FAMOUS_HOTEL_PRESETS: HotelPreset[] = [
  google_maps_url: "https://maps.google.com/?q=Pousada+Ze+Maria+Noronha",
  badges: ["Ícone de Noronha", "Morro do Pico", "Festival Gastronômico", "Eco-Chique"],
  bio_bullets: [
- "🌅 Vista inesquecível para o Morro do Pico e pôr do sol na piscina de borda infinita",
- "🐟 O lendário Festival Gastronômico do Zé Maria com dezenas de pratos de frutos do mar frescos",
- "🌿 Compromisso rigoroso de preservação da biosfera marítima de Fernando de Noronha",
+ " Vista inesquecível para o Morro do Pico e pôr do sol na piscina de borda infinita",
+ " O lendário Festival Gastronômico do Zé Maria com dezenas de pratos de frutos do mar frescos",
+ " Compromisso rigoroso de preservação da biosfera marítima de Fernando de Noronha",
  ],
  amenities: ["Piscina de Borda Infinita", "Festival Gastronômico Semanal", "Deck Panorâmico", "Academia", "Atendimento VIP", "Passeios Ecológicos"],
  room_categories: [
@@ -576,7 +576,7 @@ export const FAMOUS_HOTEL_PRESETS: HotelPreset[] = [
  size_m2: 52,
  daily_rate_reference_cents: 340000,
  amenities: ["Hidromassagem Externa no Deck", "Vista Morro do Pico", "Ar Split", "Smart TV", "Cafeteira"],
- cover_photo_url: "https://images.unsplash.com/photo-1595576508898-0ad5c879a061?auto=format&fit=crop&w=1200&q=80",
+ cover_photo_url: "",
  },
  ],
  policies: {

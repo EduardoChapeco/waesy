@@ -12,20 +12,20 @@ export interface HotpagesRailProps {
 }
 
 const CURATED_HOTPAGE_COVERS: Record<string, string> = {
-  shows: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&w=800&q=80",
-  musica: "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&w=800&q=80",
-  teatro: "https://images.unsplash.com/photo-1507676184212-d03ab07a01bf?auto=format&fit=crop&w=800&q=80",
-  cultura: "https://images.unsplash.com/photo-1469488865564-c2de10f69f96?auto=format&fit=crop&w=800&q=80",
-  artes: "https://images.unsplash.com/photo-1518834107812-67b0b7c58434?auto=format&fit=crop&w=800&q=80",
-  esportes: "https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=800&q=80",
-  torneios: "https://images.unsplash.com/photo-1517649763962-0c623266ddc0?auto=format&fit=crop&w=800&q=80",
-  lazer: "https://images.unsplash.com/photo-1533105079780-92b9be482077?auto=format&fit=crop&w=800&q=80",
-  networking: "https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=800&q=80",
-  negocios: "https://images.unsplash.com/photo-1528605248644-14dd04022da1?auto=format&fit=crop&w=800&q=80",
-  feiras: "https://images.unsplash.com/photo-1513151233558-d860c5398176?auto=format&fit=crop&w=800&q=80",
-  gastronomia: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=800&q=80",
-  turismo: "https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=800&q=80",
-  default: "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=800&q=80",
+  shows: "/brand-logo.png",
+  musica: "/brand-logo.png",
+  teatro: "/brand-logo.png",
+  cultura: "/brand-logo.png",
+  artes: "/brand-logo.png",
+  esportes: "/brand-logo.png",
+  torneios: "/brand-logo.png",
+  lazer: "/brand-logo.png",
+  networking: "/brand-logo.png",
+  negocios: "/brand-logo.png",
+  feiras: "/brand-logo.png",
+  gastronomia: "/brand-logo.png",
+  turismo: "/brand-logo.png",
+  default: "/brand-logo.png",
 };
 
 function getCuratedHotpageCover(slug?: string, title?: string, module?: string): string {

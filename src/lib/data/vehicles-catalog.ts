@@ -16,7 +16,7 @@ export interface VehicleModelRecord {
   fipe_code_prefix?: string;
   doors: number;
   popular_features: string[];
-  image_url: string;
+  image_url?: string | null;
 }
 
 export const GLOBAL_VEHICLES_CATALOG: VehicleModelRecord[] = [
@@ -34,7 +34,7 @@ export const GLOBAL_VEHICLES_CATALOG: VehicleModelRecord[] = [
     fipe_code_prefix: "002",
     doors: 4,
     popular_features: ["Toyota Safety Sense", "Painel Digital 12.3 pol", "Bancos em Couro", "Piloto Automático Adaptativo"],
-    image_url: "https://images.unsplash.com/photo-1621007947382-bb3c3994e3fb?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
   {
     id: "toyota-hilux",
@@ -49,7 +49,7 @@ export const GLOBAL_VEHICLES_CATALOG: VehicleModelRecord[] = [
     fipe_code_prefix: "002",
     doors: 4,
     popular_features: ["Tração 4x4 com Reduzida", "Bloqueio de Diferencial", "Capacidade de Carga 1 Tonelada", "Engate e Estribo"],
-    image_url: "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
   {
     id: "toyota-corolla-cross",
@@ -63,7 +63,7 @@ export const GLOBAL_VEHICLES_CATALOG: VehicleModelRecord[] = [
     average_market_value_cents: 17500000,
     doors: 4,
     popular_features: ["Teto Solar", "Alerta de Ponto Cego", "Porta-Malas Elétrico", "Faróis Full LED"],
-    image_url: "https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
   {
     id: "toyota-yaris",
@@ -77,7 +77,7 @@ export const GLOBAL_VEHICLES_CATALOG: VehicleModelRecord[] = [
     average_market_value_cents: 8990000,
     doors: 4,
     popular_features: ["7 Airbags", "Câmera de Ré", "Central Multimídia Apple CarPlay / Android Auto", "Chave Presencial"],
-    image_url: "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
 
   // ── VOLKSWAGEN ──
@@ -93,7 +93,7 @@ export const GLOBAL_VEHICLES_CATALOG: VehicleModelRecord[] = [
     average_market_value_cents: 8850000,
     doors: 4,
     popular_features: ["Painel VW Digital Cockpit", "Multimídia VW Play 10.1", "Volante Multifuncional", "Controle Eletrônico de Estabilidade"],
-    image_url: "https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
   {
     id: "vw-tcross",
@@ -107,7 +107,7 @@ export const GLOBAL_VEHICLES_CATALOG: VehicleModelRecord[] = [
     average_market_value_cents: 13990000,
     doors: 4,
     popular_features: ["Frenagem Autônoma de Emergência (AEB)", "Detector de Fadiga", "Teto Solar Panorâmico", "Bancos em Couro Bicolor"],
-    image_url: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
   {
     id: "vw-nivus",
@@ -121,7 +121,7 @@ export const GLOBAL_VEHICLES_CATALOG: VehicleModelRecord[] = [
     average_market_value_cents: 12800000,
     doors: 4,
     popular_features: ["Linha Coupé Esportiva", "Faróis Full LED", "ACC - Controle de Cruzeiro Adaptativo", "Porta-Malas 415 Litros"],
-    image_url: "https://images.unsplash.com/photo-1542362567-b07e54358753?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
   {
     id: "vw-saveiro",
@@ -135,7 +135,7 @@ export const GLOBAL_VEHICLES_CATALOG: VehicleModelRecord[] = [
     average_market_value_cents: 7490000,
     doors: 2,
     popular_features: ["Caçamba com Protetor", "Freio a Disco nas 4 Rodas", "Assistente de Partida em Rampa", "Capota Marítima"],
-    image_url: "https://images.unsplash.com/photo-1559416523-140ddc3d238c?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
   {
     id: "vw-amarok",
@@ -149,7 +149,7 @@ export const GLOBAL_VEHICLES_CATALOG: VehicleModelRecord[] = [
     average_market_value_cents: 24900000,
     doors: 4,
     popular_features: ["Tração Integral Permanente 4Motion", "Câmbio ZF de 8 Marchas", "Bancos ErgoComfort", "Maior Aceleração da Categoria"],
-    image_url: "https://images.unsplash.com/photo-1563720223185-11003d516935?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
 
   // ── CHEVROLET / GM ──
@@ -165,7 +165,7 @@ export const GLOBAL_VEHICLES_CATALOG: VehicleModelRecord[] = [
     average_market_value_cents: 8490000,
     doors: 4,
     popular_features: ["Wi-Fi Nativo a Bordo", "OnStar", "6 Airbags de Série", "Carregador Sem Fio por Indução"],
-    image_url: "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
   {
     id: "gm-tracker",
@@ -179,7 +179,7 @@ export const GLOBAL_VEHICLES_CATALOG: VehicleModelRecord[] = [
     average_market_value_cents: 13500000,
     doors: 4,
     popular_features: ["Teto Solar Panorâmico", "Alerta de Colisão Frontal com Frenagem", "Estacionamento Automático Easy Park"],
-    image_url: "https://images.unsplash.com/photo-1511919884226-fd3cad34687c?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
   {
     id: "gm-s10",
@@ -193,7 +193,7 @@ export const GLOBAL_VEHICLES_CATALOG: VehicleModelRecord[] = [
     average_market_value_cents: 23900000,
     doors: 4,
     popular_features: ["Tração 4x4", "Alerta de Saída de Faixa", "Capacidade de Reboque 3.5 Toneladas", "Novo Interior Virtual Cockpit"],
-    image_url: "https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
   {
     id: "gm-montana",
@@ -207,7 +207,7 @@ export const GLOBAL_VEHICLES_CATALOG: VehicleModelRecord[] = [
     average_market_value_cents: 12500000,
     doors: 4,
     popular_features: ["Caçamba Multi-Board Vedada Contra Água", "Conforto de SUV", "Faróis Full LED", "6 Airbags"],
-    image_url: "https://images.unsplash.com/photo-1583121274602-3e2820c69888?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
 
   // ── FIAT ──
@@ -223,7 +223,7 @@ export const GLOBAL_VEHICLES_CATALOG: VehicleModelRecord[] = [
     average_market_value_cents: 9980000,
     doors: 4,
     popular_features: ["Veículo Mais Vendido do Brasil", "4 Portas com 5 Lugares", "Direção Elétrica", "Excelente Valor de Revenda"],
-    image_url: "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
   {
     id: "fiat-toro",
@@ -237,7 +237,7 @@ export const GLOBAL_VEHICLES_CATALOG: VehicleModelRecord[] = [
     average_market_value_cents: 14500000,
     doors: 4,
     popular_features: ["Central Multimídia Vertical 10.1 pol", "Tração 4x4 com Reduzida (Diesel)", "Porta da Caçamba Dupla"],
-    image_url: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
   {
     id: "fiat-fastback",
@@ -251,7 +251,7 @@ export const GLOBAL_VEHICLES_CATALOG: VehicleModelRecord[] = [
     average_market_value_cents: 13200000,
     doors: 4,
     popular_features: ["Porta-Malas Gigante de 600 Litros", "Design SUV Coupé", "Freio de Mão Eletrônico com Auto Hold"],
-    image_url: "https://images.unsplash.com/photo-1542362567-b07e54358753?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
 
   // ── HYUNDAI ──
@@ -267,7 +267,7 @@ export const GLOBAL_VEHICLES_CATALOG: VehicleModelRecord[] = [
     average_market_value_cents: 8290000,
     doors: 4,
     popular_features: ["Pacote SmartSense (Frenagem Autônoma)", "Bluelink com Partida Remota", "5 Anos de Garantia de Fábrica"],
-    image_url: "https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
   {
     id: "hyundai-creta",
@@ -281,7 +281,7 @@ export const GLOBAL_VEHICLES_CATALOG: VehicleModelRecord[] = [
     average_market_value_cents: 14200000,
     doors: 4,
     popular_features: ["Câmeras 360 Graus", "Ventilação no Banco do Motorista", "Teto Solar Panorâmico", "Painel Digital"],
-    image_url: "https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
 
   // ── JEEP ──
@@ -297,7 +297,7 @@ export const GLOBAL_VEHICLES_CATALOG: VehicleModelRecord[] = [
     average_market_value_cents: 16900000,
     doors: 4,
     popular_features: ["Líder dos SUVs Médios", "Som Premium Beats / Alpine", "Direção Autônoma Nível 2", "Tração 4x4 Jeep Active Drive"],
-    image_url: "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
   {
     id: "jeep-renegade",
@@ -311,7 +311,7 @@ export const GLOBAL_VEHICLES_CATALOG: VehicleModelRecord[] = [
     average_market_value_cents: 11500000,
     doors: 4,
     popular_features: ["Motor Turbo Mais Potente da Categoria", "Suspensão Independente nas 4 Rodas", "Tração 4x4 Opcional"],
-    image_url: "https://images.unsplash.com/photo-1511919884226-fd3cad34687c?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
 
   // ── HONDA ──
@@ -327,7 +327,7 @@ export const GLOBAL_VEHICLES_CATALOG: VehicleModelRecord[] = [
     average_market_value_cents: 16200000,
     doors: 4,
     popular_features: ["Honda SENSING em Todas as Versões", "Sistema Magic Seat de Bancos Modulares", "Câmera Lateral LaneWatch"],
-    image_url: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
   {
     id: "honda-civic",
@@ -341,7 +341,7 @@ export const GLOBAL_VEHICLES_CATALOG: VehicleModelRecord[] = [
     average_market_value_cents: 22000000,
     doors: 4,
     popular_features: ["Consumo de até 18.3 km/l", "Sistema de Som Bose de 12 Alto-Falantes", "Interior Sofisticado"],
-    image_url: "https://images.unsplash.com/photo-1621007947382-bb3c3994e3fb?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
 
   // ── BYD & ELÉTRICOS ──
@@ -357,7 +357,7 @@ export const GLOBAL_VEHICLES_CATALOG: VehicleModelRecord[] = [
     average_market_value_cents: 11500000,
     doors: 4,
     popular_features: ["Bateria Blade Indestrutível", "Tela Giratória de 12.8 pol", "Custo por km rodado reduzido", "Autonomia até 330km Inmetro"],
-    image_url: "https://images.unsplash.com/photo-1563720223185-11003d516935?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
   {
     id: "byd-song-plus",
@@ -371,7 +371,7 @@ export const GLOBAL_VEHICLES_CATALOG: VehicleModelRecord[] = [
     average_market_value_cents: 23900000,
     doors: 4,
     popular_features: ["Autonomia Combinada de Mais de 1.100 km", "Acabamento Premium em Couro", "Teto Panorâmico", "Câmeras 360 HD"],
-    image_url: "https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
   {
     id: "gwm-haval-h6",
@@ -385,7 +385,7 @@ export const GLOBAL_VEHICLES_CATALOG: VehicleModelRecord[] = [
     average_market_value_cents: 22800000,
     doors: 4,
     popular_features: ["0 a 100 km/h em 4.9s (PHEV)", "Head-Up Display", "Comandos por Voz em Português", "Garantia de 8 Anos na Bateria"],
-    image_url: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
 
   // ── PREMIUM (BMW & MERCEDES) ──
@@ -401,7 +401,7 @@ export const GLOBAL_VEHICLES_CATALOG: VehicleModelRecord[] = [
     average_market_value_cents: 31900000,
     doors: 4,
     popular_features: ["Tração Traseira", "BMW Live Cockpit Professional Curvo", "Faróis Full LED Adaptativos", "Câmbio Steptronic 8M"],
-    image_url: "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
 
   // ── UTILITÁRIOS COMERCIAIS & CARGA ──
@@ -418,7 +418,7 @@ export const GLOBAL_VEHICLES_CATALOG: VehicleModelRecord[] = [
     fipe_code_prefix: "001",
     doors: 3,
     popular_features: ["Capacidade 650kg de Carga", "Controle de Estabilidade (ESC)", "Assistente de Partida em Rampa", "Portas Traseiras 180 Graus"],
-    image_url: "https://images.unsplash.com/photo-1559297434-fae8a1916a79?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
   {
     id: "renault-master",
@@ -433,7 +433,7 @@ export const GLOBAL_VEHICLES_CATALOG: VehicleModelRecord[] = [
     fipe_code_prefix: "025",
     doors: 4,
     popular_features: ["Volume de Carga 10.8m³", "Direção Eletro-Hidráulica", "Assistente de Vento Lateral", "Freios a Disco nas 4 Rodas"],
-    image_url: "https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
   {
     id: "mercedes-sprinter",
@@ -448,7 +448,7 @@ export const GLOBAL_VEHICLES_CATALOG: VehicleModelRecord[] = [
     fipe_code_prefix: "021",
     doors: 4,
     popular_features: ["Keyless Start", "Câmera de Ré com Display no Retrovisor", "Assistente Ativo de Frenagem (ABA)", "Direção Elétrica"],
-    image_url: "https://images.unsplash.com/photo-1616422285623-13ff0162193c?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
   {
     id: "hyundai-hr",
@@ -463,7 +463,7 @@ export const GLOBAL_VEHICLES_CATALOG: VehicleModelRecord[] = [
     fipe_code_prefix: "015",
     doors: 2,
     popular_features: ["Livre Acesso em Zonas de Restrição Urbana (VUC)", "Capacidade de Carga 1.800kg", "Ar-Condicionado", "Vidros Elétricos"],
-    image_url: "https://images.unsplash.com/photo-1586191582056-a6021f1d136f?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
 
   // ── MOTOCICLETAS (DELIVERY, CIDADE & ESTRADA) ──
@@ -480,7 +480,7 @@ export const GLOBAL_VEHICLES_CATALOG: VehicleModelRecord[] = [
     fipe_code_prefix: "811",
     doors: 0,
     popular_features: ["Freios CBS Combinados", "Painel 100% Digital Blackout", "Consumo Médio 40 km/l", "Tanque 16.1 Litros"],
-    image_url: "https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
   {
     id: "honda-biz-125",
@@ -495,7 +495,7 @@ export const GLOBAL_VEHICLES_CATALOG: VehicleModelRecord[] = [
     fipe_code_prefix: "811",
     doors: 0,
     popular_features: ["Câmbio Semi-Automático sem Embreagem", "Porta-Capacete sob o Banco", "Tomada 12V / USB", "Partida Elétrica"],
-    image_url: "https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
   {
     id: "honda-bros-160",
@@ -510,7 +510,7 @@ export const GLOBAL_VEHICLES_CATALOG: VehicleModelRecord[] = [
     fipe_code_prefix: "811",
     doors: 0,
     popular_features: ["Freios a Disco Dianteiro e Traseiro CBS", "Suspensão de Longo Curso", "Posição de Pilotagem Ergonômica Alta", "Farol com Lente de Policarbonato"],
-    image_url: "https://images.unsplash.com/photo-1599819811279-d5ad9cccf838?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
   {
     id: "yamaha-fazer-250",
@@ -525,7 +525,7 @@ export const GLOBAL_VEHICLES_CATALOG: VehicleModelRecord[] = [
     fipe_code_prefix: "827",
     doors: 0,
     popular_features: ["Freios ABS nas Duas Rodas de Série", "Farol Projetor Full LED", "Conectividade Bluetooth Yamaha Connect", "Garantia de 4 Anos"],
-    image_url: "https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
   {
     id: "bmw-r1250-gs",
@@ -540,7 +540,7 @@ export const GLOBAL_VEHICLES_CATALOG: VehicleModelRecord[] = [
     fipe_code_prefix: "803",
     doors: 0,
     popular_features: ["Tanque 30 Litros Autonomia 500km+", "Suspensão Eletrônica Dinâmica ESA", "Modos de Pilotagem Pro", "Painel TFT 6.5 pol com Conectividade"],
-    image_url: "https://images.unsplash.com/photo-1558980394-4c7c9299fe96?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
 
   // ── POPULARES & PICAPES ADICIONAIS ──
@@ -557,7 +557,7 @@ export const GLOBAL_VEHICLES_CATALOG: VehicleModelRecord[] = [
     fipe_code_prefix: "015",
     doors: 4,
     popular_features: ["Hyundai SmartSense (Frenagem Autônoma e Ponto Cego)", "Carregador por Indução", "Bancos em Couro", "Bluelink"],
-    image_url: "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
   {
     id: "chevrolet-tracker",
@@ -572,7 +572,7 @@ export const GLOBAL_VEHICLES_CATALOG: VehicleModelRecord[] = [
     fipe_code_prefix: "004",
     doors: 4,
     popular_features: ["Teto Solar Panorâmico", "Wi-Fi Nativo a Bordo", "Estacionamento Automático Easy Park", "Alerta de Colisão Frontal"],
-    image_url: "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
   {
     id: "ford-ranger",
@@ -587,6 +587,6 @@ export const GLOBAL_VEHICLES_CATALOG: VehicleModelRecord[] = [
     fipe_code_prefix: "003",
     doors: 4,
     popular_features: ["Câmbio de 10 Marchas", "Tela Vertical SYNC 4 de 12 Pol", "Tração 4x4 com Reduzida e Bloqueio Eletrônico", "Capacidade de Reboque 3.500kg"],
-    image_url: "https://images.unsplash.com/photo-1559416523-140ddc3d238c?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
 ];

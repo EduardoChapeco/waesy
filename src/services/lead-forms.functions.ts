@@ -5,8 +5,24 @@
 
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { getRequest } from "@tanstack/start-server-core";
 import { getServerClient, getAnonServerClient } from "@/lib/supabase";
 import { getServerIdentity, assertStoreAccess, STAFF_ROLES } from "@/lib/server-access";
+import { captureRequestTelemetry } from "@/lib/network-telemetry.server";
+
+function resolveDeviceFingerprint(clientProvidedFingerprint?: string | null, ip?: string, userAgent?: string): string {
+  if (clientProvidedFingerprint && clientProvidedFingerprint.trim().length >= 8) {
+    return clientProvidedFingerprint.trim().slice(0, 128);
+  }
+  const raw = `${ip || "127.0.0.1"}::${userAgent || "unknown"}`;
+  let hash = 0;
+  for (let i = 0; i < raw.length; i++) {
+    const char = raw.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash |= 0;
+  }
+  return "fp_" + Math.abs(hash).toString(16).padStart(8, "0");
+}
 
 // ─── Tipagens e Interfaces ───────────────────────────────────────────────────
 
@@ -194,10 +210,42 @@ export const submitPublicLeadForm = createServerFn({ method: "POST" })
       utmCampaign: z.string().optional().nullable(),
       utmContent: z.string().optional().nullable(),
       deviceType: z.string().default("mobile"),
+      deviceFingerprint: z.string().optional().nullable(),
     }),
   )
   .handler(async ({ data }) => {
     const supabase = getServerClient();
+
+    // 0. Extração de Telemetria de Borda Cloudflare & Fingerprint Anti-Spam
+    let req: Request | null = null;
+    try {
+      req = getRequest();
+    } catch {}
+
+    const telemetry = captureRequestTelemetry(req);
+    const fingerprint = resolveDeviceFingerprint(data.deviceFingerprint, telemetry.ip, telemetry.userAgent);
+
+    // Verificação de Limite de Taxa / Anti-Spam
+    const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+    let isSpam = telemetry.threatScore >= 60;
+    try {
+      const { count: recentSubmissionsCount } = await supabase
+        .from("lead_form_submissions")
+        .select("id", { count: "exact", head: true })
+        .or(`ip_address.eq.${telemetry.ip},device_fingerprint.eq.${fingerprint}`)
+        .gte("created_at", tenMinutesAgo);
+
+      if ((recentSubmissionsCount || 0) >= 8) {
+        isSpam = true;
+      }
+      if ((recentSubmissionsCount || 0) >= 20) {
+        throw new Error("Muitas tentativas detectadas. Por favor aguarde alguns minutos.");
+      }
+    } catch (spamCheckErr: any) {
+      if (spamCheckErr?.message?.includes("Muitas tentativas")) {
+        throw spamCheckErr;
+      }
+    }
 
     // 1. Localiza o formulário e a loja
     const { data: formRow, error: formError } = await supabase
@@ -270,7 +318,7 @@ export const submitPublicLeadForm = createServerFn({ method: "POST" })
       }
     }
 
-    // 3. Salva a submissão
+    // 3. Salva a submissão com Telemetria Completa de Borda Cloudflare
     const { data: submissionRow, error: submissionError } = await supabase
       .from("lead_form_submissions")
       .insert({
@@ -287,6 +335,23 @@ export const submitPublicLeadForm = createServerFn({ method: "POST" })
         utm_campaign: data.utmCampaign || null,
         utm_content: data.utmContent || null,
         device_type: data.deviceType,
+        ip_address: telemetry.ip,
+        device_fingerprint: fingerprint,
+        geo_city: telemetry.geo.city,
+        geo_state: telemetry.geo.state,
+        geo_country: telemetry.geo.country,
+        threat_score: telemetry.threatScore,
+        cf_ray: telemetry.cfRay,
+        is_flagged_spam: isSpam,
+        telemetry: {
+          deviceName: telemetry.deviceName,
+          deviceType: telemetry.deviceType,
+          userAgent: telemetry.userAgent,
+          geoSource: telemetry.geo.source,
+          isDatacenterOrVpn: telemetry.isDatacenterOrVpn,
+          threatScore: telemetry.threatScore,
+          cfRay: telemetry.cfRay,
+        },
         crm_status: "new",
         raw_answers: data.answers || {},
       })
@@ -882,10 +947,42 @@ export const submitCivilInquiryLead = createServerFn({ method: "POST" })
       answers: z.record(z.any()).default({}),
       utmSource: z.string().optional().nullable(),
       deviceType: z.string().default("desktop"),
+      deviceFingerprint: z.string().optional().nullable(),
     }),
   )
   .handler(async ({ data }) => {
     const supabase = getServerClient();
+
+    // 0. Extração de Telemetria de Borda Cloudflare & Fingerprint Anti-Spam
+    let req: Request | null = null;
+    try {
+      req = getRequest();
+    } catch {}
+
+    const telemetry = captureRequestTelemetry(req);
+    const fingerprint = resolveDeviceFingerprint(data.deviceFingerprint, telemetry.ip, telemetry.userAgent);
+
+    // Verificação de Limite de Taxa / Anti-Spam
+    const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+    let isSpam = telemetry.threatScore >= 60;
+    try {
+      const { count: recentSubmissionsCount } = await supabase
+        .from("lead_form_submissions")
+        .select("id", { count: "exact", head: true })
+        .or(`ip_address.eq.${telemetry.ip},device_fingerprint.eq.${fingerprint}`)
+        .gte("created_at", tenMinutesAgo);
+
+      if ((recentSubmissionsCount || 0) >= 8) {
+        isSpam = true;
+      }
+      if ((recentSubmissionsCount || 0) >= 20) {
+        throw new Error("Muitas tentativas detectadas. Por favor aguarde alguns minutos.");
+      }
+    } catch (spamCheckErr: any) {
+      if (spamCheckErr?.message?.includes("Muitas tentativas")) {
+        throw spamCheckErr;
+      }
+    }
 
     // 1. Busca dados do classificado
     const { data: classified, error: classErr } = await supabase
@@ -905,7 +1002,7 @@ export const submitCivilInquiryLead = createServerFn({ method: "POST" })
       if (authData?.user) profileId = authData.user.id;
     } catch {}
 
-    // 3. Registra na tabela de leads (lead_form_submissions)
+    // 3. Registra na tabela de leads (lead_form_submissions) com Telemetria Completa
     let submissionId = crypto.randomUUID();
 
     try {
@@ -924,6 +1021,23 @@ export const submitCivilInquiryLead = createServerFn({ method: "POST" })
           is_new_registered_user: false,
           utm_source: data.utmSource || null,
           device_type: data.deviceType,
+          ip_address: telemetry.ip,
+          device_fingerprint: fingerprint,
+          geo_city: telemetry.geo.city,
+          geo_state: telemetry.geo.state,
+          geo_country: telemetry.geo.country,
+          threat_score: telemetry.threatScore,
+          cf_ray: telemetry.cfRay,
+          is_flagged_spam: isSpam,
+          telemetry: {
+            deviceName: telemetry.deviceName,
+            deviceType: telemetry.deviceType,
+            userAgent: telemetry.userAgent,
+            geoSource: telemetry.geo.source,
+            isDatacenterOrVpn: telemetry.isDatacenterOrVpn,
+            threatScore: telemetry.threatScore,
+            cfRay: telemetry.cfRay,
+          },
           crm_status: "new",
           raw_answers: data.answers || {},
         })

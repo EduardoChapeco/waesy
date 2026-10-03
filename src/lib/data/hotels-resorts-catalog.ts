@@ -72,11 +72,11 @@ export const GLOBAL_HOTELS_RESORTS_CATALOG: HotelRecord[] = [
     airport_distance: "125 km do Aeroporto de Maceió (MCZ) / 130 km do Recife (REC)",
     website: "https://www.salinas.com.br/maragogi",
     internal_rating: 4.9,
-    cover_photo_url: "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=1200&q=80",
+    cover_photo_url: "",
     photos: [
-      "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1571896349842-33c89424de2d?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=800&q=80",
+      "",
+      "",
+      "",
     ],
     room_categories: [
       {
@@ -140,10 +140,10 @@ export const GLOBAL_HOTELS_RESORTS_CATALOG: HotelRecord[] = [
     airport_distance: "42 km do Aeroporto de Florianópolis (FLN)",
     website: "https://www.costao.com.br",
     internal_rating: 4.8,
-    cover_photo_url: "https://images.unsplash.com/photo-1582719508461-905c673771fd?auto=format&fit=crop&w=1200&q=80",
+    cover_photo_url: "",
     photos: [
-      "https://images.unsplash.com/photo-1582719508461-905c673771fd?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?auto=format&fit=crop&w=800&q=80",
+      "",
+      "",
     ],
     room_categories: [
       {
@@ -195,9 +195,9 @@ export const GLOBAL_HOTELS_RESORTS_CATALOG: HotelRecord[] = [
     airport_distance: "26 km do Aeroporto de Fortaleza (FOR)",
     website: "https://www.beachpark.com.br",
     internal_rating: 4.8,
-    cover_photo_url: "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1200&q=80",
+    cover_photo_url: "",
     photos: [
-      "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=800&q=80",
+      "",
     ],
     room_categories: [
       {
@@ -249,9 +249,9 @@ export const GLOBAL_HOTELS_RESORTS_CATALOG: HotelRecord[] = [
     airport_distance: "27 km do Aeroporto de Caldas Novas (CAL) / 170 km de Goiânia (GYN)",
     website: "https://www.rioquente.com.br",
     internal_rating: 4.7,
-    cover_photo_url: "https://images.unsplash.com/photo-1571896349842-33c89424de2d?auto=format&fit=crop&w=1200&q=80",
+    cover_photo_url: "",
     photos: [
-      "https://images.unsplash.com/photo-1571896349842-33c89424de2d?auto=format&fit=crop&w=800&q=80",
+      "",
     ],
     room_categories: [
       {
@@ -303,9 +303,9 @@ export const GLOBAL_HOTELS_RESORTS_CATALOG: HotelRecord[] = [
     airport_distance: "6 km do Aeroporto Internacional de Foz do Iguaçu (IGU)",
     website: "https://www.wishhotels.com.br/wish-foz-do-iguacu",
     internal_rating: 4.8,
-    cover_photo_url: "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1200&q=80",
+    cover_photo_url: "",
     photos: [
-      "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=800&q=80",
+      "",
     ],
     room_categories: [
       {
@@ -358,10 +358,10 @@ export const GLOBAL_HOTELS_RESORTS_CATALOG: HotelRecord[] = [
     airport_distance: "55 km do Aeroporto Internacional do Recife (REC)",
     website: "https://www.nannai.com.br",
     internal_rating: 5.0,
-    cover_photo_url: "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=1200&q=80",
+    cover_photo_url: "",
     photos: [
-      "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1571896349842-33c89424de2d?auto=format&fit=crop&w=800&q=80",
+      "",
+      "",
     ],
     room_categories: [
       {
@@ -414,9 +414,9 @@ export const GLOBAL_HOTELS_RESORTS_CATALOG: HotelRecord[] = [
     airport_distance: "57 km do Aeroporto Internacional de Salvador (SSA)",
     website: "https://www.tivolihotels.com",
     internal_rating: 4.9,
-    cover_photo_url: "https://images.unsplash.com/photo-1582719508461-905c673771fd?auto=format&fit=crop&w=1200&q=80",
+    cover_photo_url: "",
     photos: [
-      "https://images.unsplash.com/photo-1582719508461-905c673771fd?auto=format&fit=crop&w=800&q=80",
+      "",
     ],
     room_categories: [
       {
@@ -469,9 +469,9 @@ export const GLOBAL_HOTELS_RESORTS_CATALOG: HotelRecord[] = [
     airport_distance: "Aeroporto de Comandatuba (aeroporto privativo a 10 min de balsa)",
     website: "https://www.transamericacomandatuba.com.br",
     internal_rating: 4.8,
-    cover_photo_url: "https://images.unsplash.com/photo-1571896349842-33c89424de2d?auto=format&fit=crop&w=1200&q=80",
+    cover_photo_url: "",
     photos: [
-      "https://images.unsplash.com/photo-1571896349842-33c89424de2d?auto=format&fit=crop&w=800&q=80",
+      "",
     ],
     room_categories: [
       {
@@ -524,9 +524,9 @@ export const GLOBAL_HOTELS_RESORTS_CATALOG: HotelRecord[] = [
     airport_distance: "40 km do Aeroporto de Navegantes (NVT)",
     website: "https://www.fazzenda.com.br",
     internal_rating: 4.9,
-    cover_photo_url: "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1200&q=80",
+    cover_photo_url: "",
     photos: [
-      "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=800&q=80",
+      "",
     ],
     room_categories: [
       {
@@ -579,9 +579,9 @@ export const GLOBAL_HOTELS_RESORTS_CATALOG: HotelRecord[] = [
     airport_distance: "42 km do Aeroporto Internacional de Florianópolis (FLN)",
     website: "https://www.costao.com.br",
     internal_rating: 4.9,
-    cover_photo_url: "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=1200&q=80",
+    cover_photo_url: "",
     photos: [
-      "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80",
+      "",
     ],
     room_categories: [
       {
@@ -634,9 +634,9 @@ export const GLOBAL_HOTELS_RESORTS_CATALOG: HotelRecord[] = [
     airport_distance: "60 km do Aeroporto Internacional de Florianópolis (FLN)",
     website: "https://www.pontadosganchos.com.br",
     internal_rating: 5.0,
-    cover_photo_url: "https://images.unsplash.com/photo-1571896349842-33c89424de2d?auto=format&fit=crop&w=1200&q=80",
+    cover_photo_url: "",
     photos: [
-      "https://images.unsplash.com/photo-1571896349842-33c89424de2d?auto=format&fit=crop&w=800&q=80",
+      "",
     ],
     room_categories: [
       {
@@ -689,9 +689,9 @@ export const GLOBAL_HOTELS_RESORTS_CATALOG: HotelRecord[] = [
     airport_distance: "75 km do Aeroporto Internacional de Fortaleza (FOR)",
     website: "https://www.carmelresorts.com.br",
     internal_rating: 4.9,
-    cover_photo_url: "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?auto=format&fit=crop&w=1200&q=80",
+    cover_photo_url: "",
     photos: [
-      "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?auto=format&fit=crop&w=800&q=80",
+      "",
     ],
     room_categories: [
       {
@@ -744,9 +744,9 @@ export const GLOBAL_HOTELS_RESORTS_CATALOG: HotelRecord[] = [
     airport_distance: "115 km do Aeroporto Internacional de Porto Alegre (POA) / 70 km de Caxias (CXJ)",
     website: "https://www.wishhotels.com",
     internal_rating: 4.8,
-    cover_photo_url: "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1200&q=80",
+    cover_photo_url: "",
     photos: [
-      "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=800&q=80",
+      "",
     ],
     room_categories: [
       {

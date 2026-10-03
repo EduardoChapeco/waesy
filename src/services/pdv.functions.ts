@@ -403,6 +403,57 @@ export const processPosMultiPayment = createServerFn({ method: "POST" })
             note: `Venda PDV Balcão - Pedido #${data.orderId.slice(0, 8)}`,
             created_at: new Date().toISOString(),
           });
+
+          // ── Consumo Automático de Ficha Técnica / BOM (Insumos e Embalagens) ──
+          if (variant.product_id) {
+            try {
+              const { data: parentProduct } = await supabase
+                .from("products")
+                .select("attributes")
+                .eq("id", variant.product_id)
+                .maybeSingle();
+
+              const bomList = (parentProduct?.attributes as any)?.bill_of_materials;
+              if (Array.isArray(bomList) && bomList.length > 0) {
+                for (const bomItem of bomList) {
+                  const consumedQty = (Number(bomItem.quantity) || 1) * soldQty;
+                  const { data: ingProduct } = await supabase
+                    .from("products")
+                    .select("id, product_variants(id, stock_on_hand)")
+                    .eq("store_id", identity.store_id)
+                    .ilike("title", `%${bomItem.name}%`)
+                    .limit(1)
+                    .maybeSingle();
+
+                  const firstVariant = (ingProduct?.product_variants as any[])?.[0];
+                  if (firstVariant?.id) {
+                    const prevIngStock = firstVariant.stock_on_hand || 0;
+                    const newIngStock = Math.max(0, prevIngStock - consumedQty);
+
+                    await supabase
+                      .from("product_variants")
+                      .update({ stock_on_hand: newIngStock, updated_at: new Date().toISOString() })
+                      .eq("id", firstVariant.id);
+
+                    await supabase.from("stock_movements").insert({
+                      store_id: identity.store_id,
+                      variant_id: firstVariant.id,
+                      location_id: activeLocationId,
+                      movement_type: "loss",
+                      qty: -consumedQty,
+                      reference_type: "bom_consumption",
+                      reference_id: data.orderId,
+                      channel_origin: "pdv",
+                      note: `Consumo de insumo (${bomItem.name} - ${bomItem.quantity}${bomItem.unit || ""}) no Pedido #${data.orderId.slice(0, 8)}`,
+                      created_at: new Date().toISOString(),
+                    });
+                  }
+                }
+              }
+            } catch (bomErr) {
+              console.warn("[pdv] Erro ao consumir insumos de ficha técnica:", bomErr);
+            }
+          }
         }
       }
     }

@@ -88,7 +88,7 @@ export function TravelPromoFlyerModal({
     ? propPriceCents
     : (initialData?.priceCents || 249000);
   const resolvedInitialInstallments = propInstallments || initialData?.maxInstallments || 12;
-  const resolvedInitialBg = propBackgroundImageUrl || initialData?.backgroundImageUrl || "https://images.unsplash.com/photo-1590523741831-ab7e8b8f9c7f?q=80&w=1600&auto=format&fit=crop";
+  const resolvedInitialBg = propBackgroundImageUrl || initialData?.backgroundImageUrl || "/brand-logo.png";
   const resolvedStoreName = propStoreName || initialData?.storeName || "Waesy Turismo";
 
   // Estados de edição do Flyer
@@ -902,7 +902,7 @@ export function TravelPromoFlyerModal({
                         <Input
                           value={bgImageUrl}
                           onChange={(e) => setBgImageUrl(e.target.value)}
-                          placeholder="https://images.unsplash.com/..."
+                          placeholder="https://exemplo.com/foto.jpg"
                           className="h-8 text-xs font-mono flex-1"
                         />
                         <Button

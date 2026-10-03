@@ -159,6 +159,14 @@ export function LeadFormRenderer({
         utmContent = urlParams.get("utm_content");
       }
 
+      let deviceFingerprint: string | null = null;
+      if (typeof window !== "undefined") {
+        try {
+          const rawFp = `${window.navigator.userAgent}-${window.screen.width}x${window.screen.height}-${window.navigator.language}-${window.navigator.hardwareConcurrency || 2}`;
+          deviceFingerprint = "fp_client_" + btoa(rawFp).replace(/[^a-zA-Z0-9]/g, "").slice(0, 32);
+        } catch {}
+      }
+
       let res;
       if (form.id === "civil-form" && classifiedId) {
         res = await submitCivilInquiryLead({
@@ -169,6 +177,7 @@ export function LeadFormRenderer({
             contactEmail: email.trim() || null,
             answers,
             deviceType: typeof window !== "undefined" && window.innerWidth < 768 ? "mobile" : "desktop",
+            deviceFingerprint,
           },
         });
       } else {
@@ -185,6 +194,7 @@ export function LeadFormRenderer({
             utmCampaign,
             utmContent,
             deviceType: typeof window !== "undefined" && window.innerWidth < 768 ? "mobile" : "desktop",
+            deviceFingerprint,
           },
         });
       }

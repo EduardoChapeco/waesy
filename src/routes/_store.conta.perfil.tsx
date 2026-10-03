@@ -372,90 +372,46 @@ function ProfileCivilPage() {
           ══════════════════════════════════════════════════════════════ */}
           <TabsContent value="dados" className="space-y-5">
             {/* Card 1: Fotos Pessoais (Avatar 1:1 e Capa 3:1) */}
+            {/* Card 1: Identidade Visual Canônica: Foto 1:1 Squircle ao lado da Capa 21:9 */}
             <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60">
-              <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground pb-3 border-b border-border/40">
-                <Camera className="size-4 text-primary shrink-0" />
-                <span>Fotos</span>
+              <div className="flex items-center justify-between pb-3 border-b border-border/40">
+                <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
+                  <Camera className="size-4 text-primary shrink-0" />
+                  <span>Identidade Visual</span>
+                </div>
+                <Badge variant="outline" className="text-[10px] font-mono border-primary/30 text-primary">
+                  1:1 Squircle + 21:9 Panorâmica
+                </Badge>
               </div>
 
-              {/* Capa Panorâmica (Proporção 3:1 Canônica e Responsiva) */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label className="text-xs font-semibold text-foreground">
-                    Foto de Capa Pessoal (Panorâmica 3:1)
-                  </Label>
-                  {formData.coverUrl && (
-                    <button
-                      type="button"
-                      onClick={() => set("coverUrl", "")}
-                      className="text-[11px] text-destructive hover:underline cursor-pointer"
-                    >
-                      Remover Capa
-                    </button>
-                  )}
-                </div>
-                <div className="w-full aspect-[3/1] max-h-52 rounded-lg bg-muted/30 overflow-hidden flex items-center justify-center border border-border/40 relative group">
-                  {formData.coverUrl ? (
-                    <img
-                      src={formData.coverUrl}
-                      alt="Capa do Perfil"
-                      className="size-full object-cover select-none"
-                    />
-                  ) : (
-                    <div className="size-full bg-gradient-to-r from-primary/10 via-muted/40 to-primary/15 flex flex-col items-center justify-center gap-2 p-4 text-center">
-                      <ImageIcon className="size-6 text-primary/40" />
-                      <span className="text-xs text-muted-foreground font-medium">
-                        Nenhuma capa adicionada (Formato Panorâmico 3:1 — 1200x400)
-                      </span>
-                    </div>
-                  )}
-
-                  <input
-                    ref={coverInputRef}
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={(e) => handleFileSelected(e, "cover")}
-                  />
-
-                  <div className="absolute inset-0 bg-black/35 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center p-3 pointer-events-none group-hover:pointer-events-auto">
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="secondary"
-                      className="rounded-lg text-xs font-bold gap-2 bg-background/95 backdrop-blur-md hover:bg-background cursor-pointer min-h-11"
-                      onClick={() => coverInputRef.current?.click()}
-                      disabled={isUploadingMedia}
-                    >
-                      <Camera className="size-4" />
-                      <span>{formData.coverUrl ? "Alterar Capa" : "Carregar Capa"}</span>
-                    </Button>
-                  </div>
-
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="secondary"
-                    className="absolute bottom-2.5 right-2.5 sm:hidden rounded-lg text-xs font-bold gap-2 bg-background/90 backdrop-blur-md min-h-10"
-                    onClick={() => coverInputRef.current?.click()}
-                    disabled={isUploadingMedia}
-                  >
-                    <Camera className="size-3.5" />
-                    <span>{formData.coverUrl ? "Alterar" : "Adicionar"}</span>
-                  </Button>
-                </div>
-              </div>
-
-              {/* Avatar Circular 1:1 */}
-              <div className="flex items-center gap-4 pt-2 border-t border-border/40">
-                <div className="relative">
-                  <div className="size-20 sm:size-24 rounded-lg overflow-hidden bg-muted flex items-center justify-center border border-border/50">
+              {/* Linha Canônica: Avatar Squircle 1:1 ao lado da Capa 21:9 */}
+              <div className="flex items-center gap-3 sm:gap-5 w-full">
+                {/* Avatar Squircle 1:1 */}
+                <div className="relative group shrink-0">
+                  <div className="size-20 sm:size-28 md:size-32 rounded-lg bg-card border-2 border-border/60 overflow-hidden flex items-center justify-center shadow-xs">
                     {formData.avatarUrl ? (
-                      <img src={formData.avatarUrl} alt="Avatar" className="size-full object-cover" />
+                      <img
+                        src={formData.avatarUrl}
+                        alt="Foto de Perfil"
+                        className="size-full object-cover select-none"
+                      />
                     ) : (
-                      <User className="size-8 text-muted-foreground/50" />
+                      <div className="size-full bg-muted flex items-center justify-center text-xl sm:text-3xl font-black text-primary">
+                        {formData.fullName ? formData.fullName.charAt(0).toUpperCase() : "U"}
+                      </div>
                     )}
                   </div>
+
+                  <button
+                    type="button"
+                    onClick={() => avatarInputRef.current?.click()}
+                    disabled={isUploadingMedia}
+                    className="absolute inset-0 bg-black/40 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-xs font-semibold gap-1 cursor-pointer"
+                    title="Alterar Foto de Perfil (1:1)"
+                  >
+                    <Camera className="size-4 sm:size-5" />
+                    <span className="text-[10px]">Alterar</span>
+                  </button>
                   <input
                     ref={avatarInputRef}
                     type="file"
@@ -465,23 +421,51 @@ function ProfileCivilPage() {
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label className="text-xs font-semibold text-foreground">Foto de Perfil (1:1)</Label>
-                  <div>
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="outline"
-                      className="rounded-lg text-xs font-bold gap-2 border-border min-h-11"
-                      onClick={() => avatarInputRef.current?.click()}
-                      disabled={isUploadingMedia}
-                    >
-                      <Camera className="size-3.5" />
-                      <span>{formData.avatarUrl ? "Trocar Foto" : "Enviar Foto"}</span>
-                    </Button>
-                  </div>
+                {/* Capa Panorâmica Canônica 21:9 ao lado */}
+                <div className="flex-1 min-w-0 aspect-[21/9] rounded-lg bg-muted/20 relative overflow-hidden flex items-center group border border-border/40">
+                  {formData.coverUrl ? (
+                    <img
+                      src={formData.coverUrl}
+                      alt="Capa do Perfil"
+                      className="size-full object-cover select-none"
+                    />
+                  ) : (
+                    <div className="size-full bg-gradient-to-r from-primary/10 via-muted/40 to-primary/15 flex items-center justify-center text-muted-foreground p-3 text-center">
+                      <span className="text-xs font-medium">Sem imagem de capa (Proporção 21:9)</span>
+                    </div>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={() => coverInputRef.current?.click()}
+                    disabled={isUploadingMedia}
+                    className="absolute top-2.5 right-2.5 sm:top-3 sm:right-3 bg-background/85 hover:bg-background backdrop-blur-md border border-border/80 text-foreground px-3 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-xs transition-transform active:scale-95"
+                    title="Alterar Capa (21:9)"
+                  >
+                    <Camera className="size-3.5" />
+                    <span className="hidden sm:inline">Alterar Capa (21:9)</span>
+                  </button>
+                  <input
+                    ref={coverInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => handleFileSelected(e, "cover")}
+                  />
                 </div>
               </div>
+
+              {formData.coverUrl && (
+                <div className="flex justify-end pt-1">
+                  <button
+                    type="button"
+                    onClick={() => set("coverUrl", "")}
+                    className="text-[11px] text-destructive hover:underline cursor-pointer"
+                  >
+                    Remover Imagem de Capa
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Card 2: Dados Básicos & Documentos Civis (CPF, Nome, Nascimento) */}
@@ -895,7 +879,7 @@ function ProfileCivilPage() {
         </div>
       </form>
 
-      {/* Modal de Recorte de Imagem (1:1 Avatar, 3:1 Capa) */}
+      {/* Modal de Recorte de Imagem (1:1 Avatar, 21:9 Capa) */}
       {cropperSrc && (
         <ImageCropperDialog
           open={cropperOpen}
@@ -903,13 +887,13 @@ function ProfileCivilPage() {
             if (!v) setCropperOpen(false);
           }}
           imageSrc={cropperSrc}
-          aspect={cropperType === "avatar" ? 1 : 3 / 1}
-          cropShape={cropperType === "avatar" ? "round" : "rect"}
+          aspect={cropperType === "avatar" ? 1 : 21 / 9}
+          cropShape="rect"
           lockAspect={true}
           title={
             cropperType === "avatar"
               ? "Recortar Foto de Perfil Civil (1:1)"
-              : "Recortar Capa do Perfil Civil (Panorâmica 3:1)"
+              : "Recortar Capa do Perfil Civil (Panorâmica 21:9)"
           }
           onCropComplete={handleCropComplete}
         />
