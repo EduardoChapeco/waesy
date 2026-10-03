@@ -161,5 +161,19 @@ describe("V144 Omni-Integration Compliance & Resilient Synchronization Suite", (
       expect(questionPayload.text).toBe("Tem pronta entrega tamanho M na cor preta?");
       expect(questionPayload.item_id).toBe("MLB987654321");
     });
+
+    it("handles answering Mercado Livre question safely when unconfigured", async () => {
+      const { answerMercadoLivreQuestion } = await import("./marketplace-hub.functions");
+      const res = await answerMercadoLivreQuestion({
+        storeId: "00000000-0000-0000-0000-000000000000",
+        questionId: "1234567890",
+        answerText: "Temos sim pronta entrega! Postamos hoje mesmo.",
+      });
+
+      expect(res.success).toBe(false);
+      expect(res.status).toBe("unconfigured");
+      expect(res.message).toContain("Mercado Livre");
+    });
   });
 });
+

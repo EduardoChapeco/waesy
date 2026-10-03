@@ -1831,3 +1831,108 @@ export const syncProductStockAndPriceToChannels = createServerFn({ method: "POST
     return _syncStockToMarketplacesInternal(targetStoreId, input.productId, input.stockQty);
   });
 
+/**
+ * Despacha resposta de pergunta pré-venda diretamente para a API do Mercado Livre (POST /answers)
+ * Conforme SPEC-V144 REQ-04. Suporta chamada direta e como Server Action.
+ */
+export async function answerMercadoLivreQuestion(
+  input:
+    | { storeId: string; questionId: string; answerText: string }
+    | { data: { storeId: string; questionId: string; answerText: string } }
+): Promise<{ success: boolean; status?: string; message?: string; data?: any }> {
+  const params = "data" in input ? input.data : input;
+  const supabase = getServerClient();
+
+  // 1. Busca credenciais ativas do Mercado Livre
+  const { data: connector } = await supabase
+    .from("marketplace_connectors")
+    .select("id, settings, sync_status")
+    .eq("store_id", params.storeId)
+    .eq("platform", "mercadolivre")
+    .maybeSingle();
+
+  const { data: creds } = await supabase
+    .from("channel_vault_credentials")
+    .select("token_payload, is_active")
+    .eq("store_id", params.storeId)
+    .eq("platform", "mercadolivre")
+    .maybeSingle();
+
+  const settings = (connector?.settings || {}) as Record<string, any>;
+  const rawToken = settings.access_token || (creds?.token_payload as any)?.access_token;
+
+  let token = "";
+  if (rawToken) {
+    try {
+      token = decryptSecret(rawToken);
+    } catch {
+      token = rawToken;
+    }
+  }
+
+  if (!token) {
+    console.warn(`[marketplace-hub] Resposta de pergunta ML #${params.questionId} sem credencial configurada.`);
+    return {
+      success: false,
+      status: "unconfigured",
+      message: "Canal Mercado Livre não configurado para envio de resposta via API.",
+    };
+  }
+
+  // 2. Dispara POST https://api.mercadolibre.com/answers com Exponential Backoff
+  try {
+    const response = await fetchWithExponentialBackoff(
+      "https://api.mercadolibre.com/answers",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          question_id: Number(params.questionId) || params.questionId,
+          text: params.answerText,
+        }),
+      },
+      { maxRetries: 3, baseDelayMs: 500 }
+    );
+
+    const resBody = await response.json().catch(() => ({}));
+
+    // 3. Trilha de auditoria no log de sincronização
+    await supabase.from("marketplace_sync_logs").insert({
+      store_id: params.storeId,
+      platform: "mercadolivre",
+      sync_type: "questions",
+      status: response.ok ? "completed" : "failed",
+      items_count: 1,
+      message: response.ok
+        ? `Resposta à pergunta #${params.questionId} enviada com sucesso ao Mercado Livre.`
+        : `Falha ao responder pergunta #${params.questionId} no Mercado Livre: ${resBody.message || response.statusText}`,
+      created_at: new Date().toISOString(),
+    });
+
+    if (!response.ok) {
+      return {
+        success: false,
+        status: "error",
+        message: resBody.message || `Erro HTTP ${response.status} ao responder pergunta no Mercado Livre.`,
+      };
+    }
+
+    return {
+      success: true,
+      status: "completed",
+      data: resBody,
+    };
+  } catch (err: any) {
+    console.error("[marketplace-hub] Erro ao enviar resposta para Mercado Livre:", err);
+    return {
+      success: false,
+      status: "error",
+      message: err.message || "Erro desconhecido ao despachar resposta ao Mercado Livre.",
+    };
+  }
+}
+
+
