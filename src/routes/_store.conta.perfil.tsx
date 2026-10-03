@@ -15,7 +15,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { User, Camera, ExternalLink, Loader2, Image as ImageIcon, Trash2, Check, Briefcase, Link as LinkIcon, ShieldCheck, Eye, EyeOff, Building2, ShieldAlert, Phone, Calendar, Lock } from "lucide-react";
+import { User, Camera, ExternalLink, Loader2, Image as ImageIcon, Trash2, Check, Briefcase, Link as LinkIcon, ShieldCheck, Eye, EyeOff, Building2, ShieldAlert, Phone, Calendar, Lock, Plus } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { ProfessionalResumeEditor, ResumeDataDTO } from "@/components/profile/professional-resume-editor";
 
@@ -60,6 +60,8 @@ function ProfileCivilPage() {
       ? "profissional"
       : search?.tab === "privacidade"
       ? "privacidade"
+      : search?.tab === "links" || search?.tab === "comercial"
+      ? "links"
       : "dados";
   const [activeTab, setActiveTab] = useState<string>(defaultTab);
 
@@ -132,6 +134,50 @@ function ProfileCivilPage() {
     causes: Array.isArray(initialResume?.causes) ? initialResume.causes : [],
     languages: Array.isArray(initialResume?.languages) ? initialResume.languages : [],
   });
+
+  // Biolinks / Links Externos Públicos (Exibidos no Perfil Público)
+  const [biolinks, setBiolinks] = useState<
+    Array<{
+      id: string;
+      label: string;
+      title?: string;
+      url: string;
+      imageUrl?: string;
+      isHighlight?: boolean;
+    }>
+  >(Array.isArray(profile?.biolinks) ? profile.biolinks : []);
+
+  const [newLinkLabel, setNewLinkLabel] = useState("");
+  const [newLinkUrl, setNewLinkUrl] = useState("");
+  const [newLinkImage, setNewLinkImage] = useState("");
+
+  const handleAddBiolink = () => {
+    if (!newLinkLabel.trim() || !newLinkUrl.trim()) {
+      toast.error("Informe o título e o endereço (URL) do link.");
+      return;
+    }
+    let url = newLinkUrl.trim();
+    if (!/^https?:\/\//i.test(url)) {
+      url = `https://${url}`;
+    }
+    const newEntry = {
+      id: `bio_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+      label: newLinkLabel.trim(),
+      title: newLinkLabel.trim(),
+      url,
+      imageUrl: newLinkImage.trim() || undefined,
+      isHighlight: false,
+    };
+    setBiolinks((prev) => [...prev, newEntry]);
+    setNewLinkLabel("");
+    setNewLinkUrl("");
+    setNewLinkImage("");
+    toast.success("Link adicionado à lista. Salve as alterações para persistir.");
+  };
+
+  const handleRemoveBiolink = (id: string) => {
+    setBiolinks((prev) => prev.filter((b) => b.id !== id));
+  };
 
   const set = <K extends keyof typeof formData>(key: K, value: (typeof formData)[K]) =>
     setFormData((prev) => ({ ...prev, [key]: value }));
@@ -218,6 +264,14 @@ function ProfileCivilPage() {
           isAnonymous: formData.isAnonymous,
           privacyMode: formData.isAnonymous ? "unlisted" : "public",
           hideLocation: formData.hideLocation,
+          biolinks: biolinks.map((b) => ({
+            id: b.id,
+            label: b.label.trim(),
+            title: b.title?.trim() || b.label.trim(),
+            url: b.url.trim(),
+            imageUrl: b.imageUrl?.trim() || undefined,
+            isHighlight: Boolean(b.isHighlight),
+          })),
           resumeData: {
             ...resumeData,
             headline: resumeData.headline?.trim() || undefined,
@@ -356,6 +410,13 @@ function ProfileCivilPage() {
               >
                 <Briefcase className="size-3.5" strokeWidth={1.75} />
                 <span>Currículo</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="links"
+                className="h-9 px-4 rounded-full text-xs font-semibold gap-2 data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:border-primary/20 border border-transparent text-muted-foreground hover:text-foreground cursor-pointer"
+              >
+                <LinkIcon className="size-3.5" strokeWidth={1.75} />
+                <span>Links</span>
               </TabsTrigger>
               <TabsTrigger
                 value="privacidade"
@@ -672,7 +733,217 @@ function ProfileCivilPage() {
           </TabsContent>
 
           {/* ══════════════════════════════════════════════════════════════
-              ABA 3: PRIVACIDADE, SEGURANÇA & LGPD
+              ABA 3: LINKS EXTERNOS & BIOLINKS PÚBLICOS
+          ══════════════════════════════════════════════════════════════ */}
+          <TabsContent value="links" className="space-y-5">
+            {/* Callout Informativo */}
+            <div className="p-4 rounded-lg bg-muted/30 border border-border/60 flex items-start gap-3 text-xs text-foreground">
+              <LinkIcon className="size-4 text-primary shrink-0 mt-1" />
+              <div className="space-y-1">
+                <p className="font-semibold text-foreground">Biolinks e Botões Públicos</p>
+                <p className="text-[11px] text-muted-foreground">
+                  Links rápidos e banners visuais exibidos diretamente no cabeçalho do seu perfil público de membro.
+                </p>
+              </div>
+            </div>
+
+            {/* Formulário para Adicionar Novo Link */}
+            <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60">
+              <div className="flex items-center justify-between pb-3 border-b border-border/40">
+                <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
+                  <Plus className="size-4 text-primary shrink-0" />
+                  <span>Novo Link</span>
+                </div>
+                <Badge variant="outline" className="text-[10px] font-mono border-primary/30 text-primary">
+                  Botão ou Banner 16:9
+                </Badge>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-xs font-semibold text-foreground">Título do Botão *</Label>
+                  <Input
+                    value={newLinkLabel}
+                    onChange={(e) => setNewLinkLabel(e.target.value)}
+                    placeholder="Ex: Meu Portfólio, WhatsApp, Canal"
+                    className="h-11 rounded-lg text-base sm:text-xs bg-background"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-xs font-semibold text-foreground">Endereço (URL) *</Label>
+                  <Input
+                    value={newLinkUrl}
+                    onChange={(e) => setNewLinkUrl(e.target.value)}
+                    placeholder="https://..."
+                    className="h-11 rounded-lg text-base sm:text-xs bg-background font-mono"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-xs font-semibold text-foreground">URL da Imagem de Fundo (Opcional - Proporção 16:9)</Label>
+                <Input
+                  value={newLinkImage}
+                  onChange={(e) => setNewLinkImage(e.target.value)}
+                  placeholder="https://... (deixe em branco para botão minimalista padrão)"
+                  className="h-11 rounded-lg text-base sm:text-xs bg-background font-mono"
+                />
+                <p className="text-[10px] text-muted-foreground">
+                  Se preenchida, o link será exibido como um mini-banner gráfico no topo do perfil público.
+                </p>
+              </div>
+
+              <div className="flex justify-end pt-2">
+                <Button
+                  type="button"
+                  onClick={handleAddBiolink}
+                  className="rounded-lg h-11 px-5 text-xs font-bold bg-primary text-primary-foreground gap-2 cursor-pointer shadow-xs active:scale-98"
+                >
+                  <Plus className="size-4" />
+                  <span>Adicionar à Lista</span>
+                </Button>
+              </div>
+            </div>
+
+            {/* Lista de Links Cadastrados */}
+            <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60">
+              <div className="flex items-center justify-between pb-3 border-b border-border/40">
+                <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
+                  <LinkIcon className="size-4 text-primary shrink-0" />
+                  <span>Links Salvos</span>
+                </div>
+                <Badge variant="outline" className="text-[10px] font-mono">
+                  {biolinks.length} {biolinks.length === 1 ? "link" : "links"}
+                </Badge>
+              </div>
+
+              {biolinks.length === 0 ? (
+                <div className="py-8 text-center text-muted-foreground space-y-2">
+                  <LinkIcon className="size-8 mx-auto text-muted-foreground/40" />
+                  <p className="text-xs">Nenhum link adicionado ainda.</p>
+                  <p className="text-[10px] text-muted-foreground/75">
+                    Utilize o formulário acima para adicionar links externos ou redes personalizadas.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {biolinks.map((link, idx) => (
+                    <div
+                      key={link.id || idx}
+                      className="flex items-center justify-between gap-3 p-3 rounded-lg border border-border/50 bg-background/50 hover:bg-muted/20 transition-colors"
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        {link.imageUrl ? (
+                          <div className="size-10 rounded-md overflow-hidden bg-muted border border-border/60 shrink-0">
+                            <img
+                              src={link.imageUrl}
+                              alt={link.label}
+                              className="size-full object-cover"
+                            />
+                          </div>
+                        ) : (
+                          <div className="size-10 rounded-md bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                            <ExternalLink className="size-4" />
+                          </div>
+                        )}
+                        <div className="min-w-0 space-y-0.5">
+                          <p className="text-xs font-semibold text-foreground truncate">
+                            {link.label || link.title}
+                          </p>
+                          <p className="text-[11px] text-muted-foreground font-mono truncate">
+                            {link.url}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-1 shrink-0">
+                        <Button
+                          asChild
+                          variant="ghost"
+                          size="sm"
+                          className="size-9 p-0 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
+                        >
+                          <a href={link.url} target="_blank" rel="noopener noreferrer" title="Testar Link">
+                            <ExternalLink className="size-3.5" />
+                          </a>
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleRemoveBiolink(link.id)}
+                          className="size-9 p-0 rounded-lg text-destructive hover:bg-destructive/10 cursor-pointer"
+                          title="Remover Link"
+                        >
+                          <Trash2 className="size-3.5" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Prévia Fiel ao Perfil Público */}
+            {biolinks.length > 0 && (
+              <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60">
+                <div className="flex items-center justify-between pb-3 border-b border-border/40">
+                  <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
+                    <Eye className="size-4 text-primary shrink-0" />
+                    <span>Prévia</span>
+                  </div>
+                  <Badge variant="outline" className="text-[10px] font-mono border-primary/30 text-primary">
+                    Visualização Pública
+                  </Badge>
+                </div>
+
+                <div className="p-4 rounded-lg bg-muted/20 border border-border/40 space-y-3">
+                  {/* Banners 16:9 */}
+                  {biolinks.some((b) => !!b.imageUrl) && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {biolinks.filter((b) => !!b.imageUrl).map((link, idx) => (
+                        <div
+                          key={link.id || idx}
+                          className="block w-full aspect-video rounded-lg overflow-hidden border border-border/60 relative select-none"
+                        >
+                          <img
+                            src={link.imageUrl}
+                            alt={link.label}
+                            className="size-full object-cover"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent flex flex-col justify-end p-3">
+                            <span className="text-xs font-bold text-white truncate flex items-center justify-between gap-1">
+                              <span>{link.label || link.title}</span>
+                              <ExternalLink className="size-3 text-white/80 shrink-0" />
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Botões Minimalistas */}
+                  {biolinks.some((b) => !b.imageUrl) && (
+                    <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1 max-w-full sm:flex-wrap">
+                      {biolinks.filter((b) => !b.imageUrl).map((link, idx) => (
+                        <div
+                          key={link.id || idx}
+                          className="inline-flex items-center gap-2 h-8 px-3 rounded-lg text-xs font-semibold shrink-0 bg-transparent text-foreground border border-border/50"
+                        >
+                          <span>{link.label || link.title}</span>
+                          <ExternalLink className="size-3 text-muted-foreground" />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </TabsContent>
+
+          {/* ══════════════════════════════════════════════════════════════
+              ABA 4: PRIVACIDADE, SEGURANÇA & LGPD
           ══════════════════════════════════════════════════════════════ */}
           <TabsContent value="privacidade" className="space-y-5">
             {/* Card 1: Visibilidade & Anonimato */}

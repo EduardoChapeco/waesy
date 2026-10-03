@@ -480,7 +480,7 @@ export function MemberPublicProfileView({
                     : "text-muted-foreground hover:text-foreground"
                 )}
               >
-                Vitrine e Parcerias
+                Vitrine
               </Link>
               <Link
                 to="/membro/$id"
@@ -566,7 +566,7 @@ export function MemberPublicProfileView({
               >
                 <Link to="/conta/perfil" search={{ tab: "criador" }}>
                   <Layers className="size-3.5 text-primary" />
-                  <span>Editar Vitrine da Marca</span>
+                  <span>Editar Vitrine</span>
                 </Link>
               </Button>
             ) : (
