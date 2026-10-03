@@ -12,6 +12,7 @@ import {
   Boxes,
   Zap,
   Loader2,
+  ShieldCheck,
 } from "lucide-react";
 import { MasterCatalogSearchDialog } from "@/components/admin/catalog/master-catalog-search-dialog";
 import { TravelPackageForm } from "@/components/commerce/travel/travel-package-form";
@@ -20,6 +21,7 @@ import { ProductModifiersCard } from "@/components/admin/catalog/product-modifie
 import { ProductUpsellCard } from "@/components/admin/catalog/product-upsell-card";
 import { ProductBomCard } from "@/components/admin/catalog/product-bom-card";
 import { ProductFoodSpecsCard } from "@/components/admin/catalog/product-food-specs-card";
+import { ProductFiscalTab } from "@/components/admin/catalog/product-editor/product-fiscal-tab";
 import { ProductEditorStickyBar } from "@/components/admin/product-editor/product-editor-sticky-bar";
 import { PageHeader } from "@/components/commerce/page-header";
 import { Button } from "@/components/ui/button";
@@ -171,6 +173,7 @@ function EditProductPage() {
             { id: "opcoes", label: "Adicionais", icon: <SlidersHorizontal className="size-4" /> },
             { id: "ofertas", label: "Ofertas", icon: <Zap className="size-4" /> },
             { id: "ficha-tecnica", label: "Insumos", icon: <Boxes className="size-4" /> },
+            { id: "fiscal", label: "Fiscal", icon: <ShieldCheck className="size-4" /> },
           ]}
         >
           {edit.isTourismStore && (
@@ -326,6 +329,16 @@ function EditProductPage() {
               productPriceCents={edit.livePriceCents}
               onApplyCostToProduct={edit.handleApplyCostToProduct}
               onItemsChange={edit.handleBomItemsChange}
+            />
+          </div>
+
+          <div id="fiscal" className="scroll-mt-32 pt-12 border-t">
+            <ProductFiscalTab
+              fiscalData={edit.fiscalData}
+              onFiscalDataChange={edit.handleFiscalDataChange}
+              onOpenMasterCatalog={() => edit.setIsMasterCatalogOpen(true)}
+              nicheId={store?.segment || store?.type}
+              isTourism={nicheCtx.isTourismBusiness}
             />
           </div>
         </ProductEditorLayout>

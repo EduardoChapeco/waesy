@@ -7,6 +7,7 @@ import type { BomItem } from "@/components/admin/catalog/product-bom-card";
 import type { FoodSpecsData } from "@/components/admin/catalog/product-food-specs-card";
 import type { RawVariant } from "@/types/catalog";
 import type { NicheAttributesData } from "./product-specs-tab";
+import type { FiscalData } from "./product-fiscal-tab";
 import { updateProduct, batchUpsertVariantMatrix } from "@/services/admin-catalog.functions";
 
 export function useProductEdit(
@@ -127,6 +128,41 @@ export function useProductEdit(
       toast.success("Especificações atualizadas com sucesso!");
     } catch {
       toast.error("Erro ao salvar especificações.");
+    }
+  };
+
+  const initialFiscalData: FiscalData = useMemo(() => {
+    const attrs = (product?.attributes as any) || {};
+    const fiscal = attrs.fiscal || {};
+    return {
+      ncm_code: fiscal.ncm_code || "",
+      cest_code: fiscal.cest_code || "",
+      ibs_rate: fiscal.ibs_rate || 0,
+      cbs_rate: fiscal.cbs_rate || 0,
+      cfop_default: fiscal.cfop_default || "5.102",
+      tax_regime: fiscal.tax_regime || "simples_nacional",
+      cadastur_code: fiscal.cadastur_code || "",
+      service_code: fiscal.service_code || "",
+    };
+  }, [product]);
+
+  const [fiscalData, setFiscalData] = useState<FiscalData>(initialFiscalData);
+
+  const handleFiscalDataChange = async (newFiscal: FiscalData) => {
+    setFiscalData(newFiscal);
+    try {
+      await updateProduct({
+        data: {
+          id: product.id,
+          attributes: {
+            ...(product.attributes || {}),
+            fiscal: newFiscal,
+          },
+        },
+      });
+      toast.success("Dados fiscais atualizados com sucesso!");
+    } catch {
+      toast.error("Erro ao salvar dados fiscais.");
     }
   };
 
@@ -380,6 +416,9 @@ export function useProductEdit(
     handleFoodSpecsChange,
     nicheAttributes,
     handleNicheAttributesChange,
+    fiscalData,
+    setFiscalData,
+    handleFiscalDataChange,
     isMasterCatalogOpen,
     setIsMasterCatalogOpen,
     handleSelectMasterProduct,

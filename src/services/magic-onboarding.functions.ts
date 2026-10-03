@@ -166,6 +166,7 @@ export const executeMagicOnboarding = createServerFn({ method: "POST" })
           category: consolidated.category,
           products_created_count: createdProductsCount,
           archetype: consolidated.brand_dna.archetype,
+          consolidated,
         });
 
         return {
@@ -257,3 +258,25 @@ export const getOnboardingJobStatus = createServerFn({ method: "GET" })
 
     return job;
   });
+
+/**
+ * Persiste briefing, BrandKit, BrandDNA e catálogo para uma loja recém-criada
+ * com base no job de onboarding executado previamente.
+ */
+export async function persistOnboardingForJob(storeId: string, jobId: string) {
+  const supabase = getServerClient();
+  const { data: job } = await supabase
+    .from("ai_async_jobs")
+    .select("id, payload, result")
+    .eq("id", jobId)
+    .maybeSingle();
+
+  const consolidated = (job?.result as any)?.consolidated || (job?.payload as any)?.consolidated;
+  const sourceUrl = (job?.payload as any)?.url || "";
+
+  if (consolidated && consolidated.brand_dna) {
+    const { persistOnboardingResults } = await import("./onboarding-pipeline.server");
+    return await persistOnboardingResults(storeId, consolidated, sourceUrl, jobId);
+  }
+  return null;
+}

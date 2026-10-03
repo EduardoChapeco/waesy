@@ -25,6 +25,7 @@ export const FastRegisterCompanySchema = z.object({
   website: z.string().optional(),
   instagram: z.string().optional(),
   cnpj: z.string().optional(),
+  onboardingJobId: z.string().optional(),
 });
 
 export const fastRegisterCompany = createServerFn({ method: "POST" })
@@ -182,6 +183,16 @@ export const fastRegisterCompany = createServerFn({ method: "POST" })
       await db.rpc("elevate_to_store_owner", { p_user_id: userId });
     } catch (e: any) {
       console.warn("[fastRegisterCompany] Aviso profile elevate store_owner:", e?.message);
+    }
+
+    // 6.1 Persistir Inteligência de Marca e Catálogo (se minerados no onboarding)
+    if (data.onboardingJobId) {
+      try {
+        const { persistOnboardingForJob } = await import("./magic-onboarding.functions");
+        await persistOnboardingForJob(store.id, data.onboardingJobId);
+      } catch (e: any) {
+        console.warn("[fastRegisterCompany] Aviso ao persistir IA do onboarding:", e?.message);
+      }
     }
 
     // 7. Definir Cookies de Tenant e Contexto Canônico (Zero Desconexão)

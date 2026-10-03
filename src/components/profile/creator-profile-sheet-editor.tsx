@@ -271,32 +271,32 @@ export function CreatorProfileSheetEditor({
                 className="flex-1 sm:flex-initial h-9 rounded-lg text-xs font-bold gap-2"
               >
                 <User className="size-3.5" />
-                <span>Identidade e Visual</span>
+                <span>Identidade</span>
               </TabsTrigger>
               <TabsTrigger
                 value="redes"
                 className="flex-1 sm:flex-initial h-9 rounded-lg text-xs font-bold gap-2"
               >
                 <Share2 className="size-3.5" />
-                <span>Redes e Canais</span>
+                <span>Redes</span>
               </TabsTrigger>
               <TabsTrigger
                 value="avancado"
                 className="flex-1 sm:flex-initial h-9 rounded-lg text-xs font-bold gap-2"
               >
                 <SlidersHorizontal className="size-3.5" />
-                <span>Opções Avançadas</span>
+                <span>Avançado</span>
               </TabsTrigger>
             </TabsList>
 
-            {/* ─── TAB 1: IDENTIDADE & VISUAL ─── */}
+            {/* ─── TAB 1: IDENTIDADE ─── */}
             <TabsContent value="dados" className="space-y-5 mt-0">
               {/* Card 1: Fotos com Ferramenta de Recorte e Zoom (Padrão _store.conta.perfil.tsx) */}
               <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60 shadow-2xs">
                 <div className="flex items-center justify-between pb-3 border-b border-border/40">
                   <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
                     <Camera className="size-4 text-primary shrink-0" />
-                    <span>1. Fotos de Identidade Visual da Marca</span>
+                    <span>Identidade Visual</span>
                   </div>
                   <Badge variant="outline" className="text-[10px] font-mono border-primary/30 text-primary">
                     1:1 Squircle + 21:9 Panorâmica

@@ -569,26 +569,20 @@ export default function WorkspaceConfiguracoesPage() {
  </p>
  </div>
 
- {/* Banner / Capa */}
- <div className="space-y-2">
- <Label className="text-xs font-bold text-foreground">Capa de Cabeçalho (Banner)</Label>
- <ImageUpload
- value={bannerUrl}
- onChange={(url) => setBannerUrl(url)}
- onRemove={() => setBannerUrl("")}
- bucket="cms-media"
- aspectPreset="banner"
- className="w-full"
- helperText="Formato panorâmico (21:9 / 16:9). Arraste ou dê zoom para enquadrar perfeitamente a vitrine."
- />
+ {/* Topo Canônico: Logotipo 1:1 Squircle ao lado da Capa 21:9 Panorâmica */}
+ <div className="space-y-3 pb-4 border-b border-border/40">
+ <div className="flex items-center justify-between">
+ <Label className="text-xs font-bold text-foreground">Identidade do Perfil (1:1 Squircle + Capa 21:9)</Label>
+ <Badge variant="outline" className="text-[10px] font-mono border-primary/30 text-primary">
+ Padrão Canônico
+ </Badge>
  </div>
 
- {/* Grid de Identidade (Logotipo & Favicon) */}
- <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
- {/* Logotipo */}
- <div className="space-y-2">
- <Label className="text-xs font-bold text-foreground">Logotipo Oficial</Label>
- <div className="flex items-center gap-4">
+ <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full">
+ {/* Logotipo 1:1 Squircle */}
+ <div className="w-full sm:w-auto shrink-0 space-y-1.5">
+ <span className="text-[11px] font-medium text-muted-foreground block">Logotipo (1:1)</span>
+ <div className="size-24 sm:size-28">
  <ImageUpload
  value={logoUrl}
  onChange={(url) => setLogoUrl(url)}
@@ -596,19 +590,31 @@ export default function WorkspaceConfiguracoesPage() {
  bucket="cms-media"
  aspectPreset="square"
  variant="avatar"
- className="w-20 h-20 shrink-0"
+ className="size-full"
  />
- <div className="flex-1 space-y-1">
- <p className="text-xs font-semibold text-foreground">Formato Quadrado (1:1)</p>
- <p className="text-xs text-muted-foreground">
- Exibido no cabeçalho da loja, sacola de compras e recibos.
- </p>
+ </div>
+ </div>
+
+ {/* Capa Panorâmica 21:9 ao lado */}
+ <div className="flex-1 min-w-0 w-full space-y-1.5">
+ <span className="text-[11px] font-medium text-muted-foreground block">Capa Panorâmica (21:9)</span>
+ <div className="w-full aspect-[21/9] rounded-lg overflow-hidden">
+ <ImageUpload
+ value={bannerUrl}
+ onChange={(url) => setBannerUrl(url)}
+ onRemove={() => setBannerUrl("")}
+ bucket="cms-media"
+ aspectPreset="banner"
+ className="w-full h-full"
+ helperText="Formato panorâmico (21:9). Arraste ou ajuste para enquadrar o perfil da loja."
+ />
+ </div>
  </div>
  </div>
  </div>
 
  {/* Favicon */}
- <div className="space-y-2">
+ <div className="space-y-2 pt-2">
  <Label className="text-xs font-bold text-foreground">Favicon (Ícone de Aba)</Label>
  <div className="flex items-center gap-4">
  <ImageUpload
@@ -625,7 +631,6 @@ export default function WorkspaceConfiguracoesPage() {
  <p className="text-xs text-muted-foreground">
  Identifica sua loja na aba do navegador e no app móvel.
  </p>
- </div>
  </div>
  </div>
  </div>

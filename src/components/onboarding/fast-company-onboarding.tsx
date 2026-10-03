@@ -31,6 +31,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { fastRegisterCompany } from "@/services/company-mvp.functions";
 import { ImageUpload } from "@/components/ui/image-upload";
 import { AddressField, type AddressData } from "@/components/ui/address-field";
+import { CityCombobox } from "@/components/ui/city-combobox";
 import { generateSlug } from "@/lib/slug-utils";
 import { useMasterLocation } from "@/components/location/location-master-pill";
 import { executeMagicOnboarding, type MagicOnboardingResult } from "@/services/magic-onboarding.functions";
@@ -79,6 +80,7 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
   const [aiUrlInput, setAiUrlInput] = useState("");
   const [isExtractingAi, setIsExtractingAi] = useState(false);
   const [aiResult, setAiResult] = useState<MagicOnboardingResult | null>(null);
+  const [aiJobId, setAiJobId] = useState<string | null>(null);
   const [showAiDisplay, setShowAiDisplay] = useState(false);
 
   // Disparo do Motor de Extração com IA (Firecrawl + Steel + Concílio)
@@ -111,6 +113,9 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
 
       if (res?.result) {
         setAiResult(res.result);
+        if (res.result.job_id) {
+          setAiJobId(res.result.job_id);
+        }
         toast.success("Dados minerados com sucesso! Revise os campos mapeados.", { id: "ai-extract" });
       }
     } catch (err: any) {
@@ -186,6 +191,7 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
           bannerUrl: bannerUrl.trim() || undefined,
           website: website.trim() || undefined,
           instagram: instagram.trim() || undefined,
+          onboardingJobId: aiJobId || undefined,
         },
       });
 
@@ -342,6 +348,26 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
                 required
               />
             </div>
+          </div>
+
+          {/* Cidade e Estado Canônicos do Banco Local */}
+          <div className="space-y-2 pt-1 border-t border-border/40">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                <MapPin className="size-3.5 text-primary" />
+                <span>Cidade de Atuação *</span>
+              </label>
+              <Badge variant="outline" className="text-[10px] font-mono bg-muted/30">
+                Banco Próprio Waesy
+              </Badge>
+            </div>
+            <CityCombobox
+              value={city && state ? `${city} - ${state}` : city}
+              onChange={(formatted, structured) => {
+                if (structured?.city) setCity(structured.city);
+                if (structured?.state) setState(structured.state);
+              }}
+            />
           </div>
 
           {/* Endereço e Localização Interativa com CEP e Banco Próprio */}
