@@ -4,7 +4,35 @@ import { Link, useLocation } from "@tanstack/react-router";
 import { type ContextConfig } from "@/lib/navigation-registry";
 import { PublishSheet } from "@/components/commerce/publish-sheet";
 import { PlacesHighlightBadge } from "@/components/shell/places-highlight-badge";
-import { House, CalendarDots, Briefcase, Compass, Scissors, BookmarkSimple, ChatCircleDots, Package, Ticket, ArrowSquareOut, Gear, UserCircle, Storefront, Sparkle } from "@phosphor-icons/react";
+import {
+  House,
+  CalendarDots,
+  Briefcase,
+  Compass,
+  Scissors,
+  BookmarkSimple,
+  ChatCircleDots,
+  Package,
+  Ticket,
+  ArrowSquareOut,
+  Gear,
+  UserCircle,
+  Storefront,
+  Sparkle,
+  CaretDown,
+  CaretRight,
+  ForkKnife,
+  ShoppingBag,
+  Heartbeat,
+  BeerBottle,
+  Flame,
+  TShirt,
+  Bone,
+  Laptop,
+  Armchair,
+  Hammer,
+  Buildings,
+} from "@phosphor-icons/react";
 import { useWindowSizeClass } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 
@@ -16,7 +44,7 @@ export interface ContextSidebarProps {
 // ── 1. Módulos Principais Comunitários (Rótulos Diretos, Sem Títulos Compostos) ──
 const MAIN_EXPLORER_ITEMS = [
   { to: "/", label: "Início", icon: House, exact: true },
-  { to: "/marketplace", label: "Marketplace", icon: Storefront, exact: true },
+  { to: "/marketplace", label: "Marketplace", icon: Storefront, exact: true, isMarketplace: true },
   { to: "/diretorio", label: "Places", isPlacesBadge: true, icon: Compass, exact: true },
   { to: "/classificados", label: "Classificados", icon: Tag, exact: true, isLucide: true },
   { to: "/copilot", label: "Copilot", icon: Sparkle, exact: true },
@@ -28,7 +56,25 @@ const MAIN_EXPLORER_ITEMS = [
   { to: "/afiliados", label: "Afiliados", icon: Target, exact: true, isLucide: true },
 ];
 
-// ── 2. Painel Pessoal & Social (Rótulos de 1 Palavra) ──
+// ── 2. Sub-Marketplaces Verticais / Subnichos (14 Vitrines Canônicas) ──
+const SUB_MARKETPLACES = [
+  { to: "/gastronomia", label: "Comida", icon: ForkKnife },
+  { to: "/mercado", label: "Mercado", icon: ShoppingBag },
+  { to: "/farmacia", label: "Farmácia", icon: Heartbeat },
+  { to: "/bebidas", label: "Bebidas", icon: BeerBottle },
+  { to: "/acougue", label: "Carnes", icon: Flame },
+  { to: "/moda", label: "Moda", icon: TShirt },
+  { to: "/pet", label: "Pet", icon: Bone },
+  { to: "/eletronicos", label: "Tech", icon: Laptop },
+  { to: "/casa", label: "Casa", icon: Armchair },
+  { to: "/construcao", label: "Construção", icon: Hammer },
+  { to: "/servicos", label: "Serviços", icon: Briefcase },
+  { to: "/imoveis", label: "Imóveis", icon: Buildings },
+  { to: "/beleza", label: "Beleza", icon: Scissors },
+  { to: "/ofertas", label: "Ofertas", icon: Flame },
+];
+
+// ── 3. Painel Pessoal & Social (Rótulos de 1 Palavra) ──
 const USER_NAV_ITEMS = [
   { to: "/conta", label: "Conta", icon: UserCircle, exact: true },
   { to: "/conta/conversas", label: "Conversas", icon: ChatCircleDots, exact: true },
@@ -48,6 +94,13 @@ export function ContextSidebar({ config, session }: ContextSidebarProps) {
   const hasStore = Boolean(session?.user?.store_id || session?.user?.user_metadata?.store_id);
 
   const { isCompact, isExpanded } = useWindowSizeClass();
+
+  const isInsideMarketplace = React.useMemo(() => {
+    if (currentPath === "/marketplace") return true;
+    return SUB_MARKETPLACES.some((sub) => currentPath.startsWith(sub.to));
+  }, [currentPath]);
+
+  const [isMarketplacesOpen, setIsMarketplacesOpen] = React.useState(isInsideMarketplace);
 
   if (isCompact) {
     return null;
@@ -87,6 +140,88 @@ export function ContextSidebar({ config, session }: ContextSidebarProps) {
               const Icon = item.icon as any;
               const active = isCurrentActive(item);
               const isPlacesBadge = (item as any).isPlacesBadge;
+              const isMarketplace = (item as any).isMarketplace;
+
+              if (isMarketplace) {
+                return (
+                  <div key={item.to} className="space-y-1">
+                    <div
+                      className={cn(
+                        "flex items-center h-10 rounded-lg text-xs transition-colors group",
+                        isExpanded ? "justify-between px-3" : "justify-center px-0",
+                        active || isInsideMarketplace
+                          ? "bg-primary/10 text-primary font-bold"
+                          : "text-muted-foreground hover:text-foreground hover:bg-muted/60 font-medium"
+                      )}
+                    >
+                      <Link
+                        to="/marketplace"
+                        title="Marketplace"
+                        aria-label="Marketplace"
+                        className={cn(
+                          "flex items-center gap-3 min-w-0 flex-1 h-full cursor-pointer",
+                          isExpanded ? "justify-start" : "justify-center"
+                        )}
+                      >
+                        <Storefront
+                          size={isExpanded ? 16 : 18}
+                          weight={active || isInsideMarketplace ? "fill" : "regular"}
+                          className={cn(
+                            "shrink-0 transition-colors",
+                            active || isInsideMarketplace
+                              ? "text-primary"
+                              : "text-muted-foreground group-hover:text-foreground"
+                          )}
+                        />
+                        <span className={cn("truncate", isExpanded ? "block" : "hidden")}>Marketplace</span>
+                      </Link>
+
+                      {isExpanded && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setIsMarketplacesOpen((prev) => !prev);
+                          }}
+                          title={isMarketplacesOpen ? "Recolher subnichos" : "Expandir subnichos"}
+                          aria-label={isMarketplacesOpen ? "Recolher subnichos" : "Expandir subnichos"}
+                          className="flex items-center gap-1 px-1.5 py-0.5 rounded-md text-2xs font-mono font-bold bg-muted/80 hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
+                        >
+                          <span>14</span>
+                          {isMarketplacesOpen ? <CaretDown size={11} /> : <CaretRight size={11} />}
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Sub-Marketplaces Colapsáveis em Grid Compacto de 2 Colunas */}
+                    {isExpanded && isMarketplacesOpen && (
+                      <div className="grid grid-cols-2 gap-1 p-1.5 rounded-xl bg-muted/40 border border-border/40 animate-in fade-in slide-in-from-top-1 duration-150">
+                        {SUB_MARKETPLACES.map((sub) => {
+                          const SubIcon = sub.icon;
+                          const isSubActive = currentPath.startsWith(sub.to);
+
+                          return (
+                            <Link
+                              key={sub.to}
+                              to={sub.to as any}
+                              className={cn(
+                                "flex items-center gap-1.5 h-7 px-2 rounded-lg text-2xs font-medium transition-colors cursor-pointer",
+                                isSubActive
+                                  ? "bg-foreground text-background font-bold shadow-2xs"
+                                  : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
+                              )}
+                            >
+                              <SubIcon size={12} weight={isSubActive ? "fill" : "regular"} className="shrink-0" />
+                              <span className="truncate">{sub.label}</span>
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              }
 
               return (
                 <Link

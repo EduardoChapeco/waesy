@@ -198,7 +198,19 @@ export const getModularSurfaceFeed = createServerFn({ method: "GET" })
  surfaceQuery = surfaceQuery.eq("store_id", storeId);
  }
 
- const { data: surface } = await surfaceQuery.maybeSingle();
+ let { data: surface } = await surfaceQuery.maybeSingle();
+
+ if (!surface && (surfaceSlug === "marketplace" || surfaceSlug === "todos" || surfaceSlug === "home")) {
+ const { data: fallbackSurf } = await supabase
+ .from("marketplace_surfaces")
+ .select("id, slug, title")
+ .in("slug", ["marketplace", "home_mercado", "home", "global"])
+ .order("is_global", { ascending: false })
+ .limit(1)
+ .maybeSingle();
+ surface = fallbackSurf;
+ }
+
  if (!surface) {
  return { sections: [], allProducts: [] };
  }

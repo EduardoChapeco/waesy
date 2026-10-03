@@ -230,51 +230,61 @@ export const listUnifiedListings = createServerFn({ method: "GET" })
     const limit = data.limit || 24;
     const offset = data.offset || 0;
 
-    // 1. Buscar produtos do catálogo Workspace Pro
-    let productsQuery = db
-      .from("products")
-      .select(`
-        id, title, slug, description, short_description, price_cents, compare_at_cents,
-        status, store_id, attributes, is_physical, created_at, updated_at,
-        stores (id, name, slug, settings),
-        product_media (url, sort_order)
-      `)
-      .in("status", ["published", "active"])
-      .order("created_at", { ascending: false })
-      .range(offset, offset + limit - 1);
+    const shouldFetchProducts = !data.origin || data.origin === "workspace";
+    const shouldFetchClassifieds = !data.origin || data.origin === "classified";
 
-    if (data.q && data.q.trim()) {
+    // 1. Buscar produtos do catálogo Workspace Pro
+    let productsQuery = shouldFetchProducts
+      ? db
+          .from("products")
+          .select(`
+            id, title, slug, description, short_description, price_cents, compare_at_cents,
+            status, store_id, attributes, is_physical, created_at, updated_at,
+            stores (id, name, slug, settings),
+            product_media (url, sort_order)
+          `)
+          .in("status", ["published", "active"])
+          .order("created_at", { ascending: false })
+          .range(offset, offset + limit - 1)
+      : null;
+
+    if (productsQuery && data.q && data.q.trim()) {
       const term = `%${data.q.trim()}%`;
       productsQuery = productsQuery.or(`title.ilike.${term},description.ilike.${term}`);
     }
 
     // 2. Buscar classificados ativos
-    let classifiedsQuery = db
-      .from("classifieds")
-      .select(`
-        id, title, content, price_cents, status, attributes, images, created_at, updated_at,
-        store_id, contact_name,
-        stores (id, name, slug, settings)
-      `)
-      .eq("status", "active")
-      .order("created_at", { ascending: false })
-      .range(offset, offset + limit - 1);
+    let classifiedsQuery = shouldFetchClassifieds
+      ? db
+          .from("classifieds")
+          .select(`
+            id, title, content, price_cents, status, attributes, images, created_at, updated_at,
+            store_id, contact_name,
+            stores (id, name, slug, settings)
+          `)
+          .eq("status", "active")
+          .order("created_at", { ascending: false })
+          .range(offset, offset + limit - 1)
+      : null;
 
-    if (data.q && data.q.trim()) {
+    if (classifiedsQuery && data.q && data.q.trim()) {
       const term = `%${data.q.trim()}%`;
       classifiedsQuery = classifiedsQuery.or(`title.ilike.${term},content.ilike.${term}`);
     }
 
     if (data.min_price_cents !== undefined) {
-      productsQuery = productsQuery.gte("price_cents", data.min_price_cents);
-      classifiedsQuery = classifiedsQuery.gte("price_cents", data.min_price_cents);
+      if (productsQuery) productsQuery = productsQuery.gte("price_cents", data.min_price_cents);
+      if (classifiedsQuery) classifiedsQuery = classifiedsQuery.gte("price_cents", data.min_price_cents);
     }
     if (data.max_price_cents !== undefined) {
-      productsQuery = productsQuery.lte("price_cents", data.max_price_cents);
-      classifiedsQuery = classifiedsQuery.lte("price_cents", data.max_price_cents);
+      if (productsQuery) productsQuery = productsQuery.lte("price_cents", data.max_price_cents);
+      if (classifiedsQuery) classifiedsQuery = classifiedsQuery.lte("price_cents", data.max_price_cents);
     }
 
-    const [prodRes, classRes] = await Promise.all([productsQuery, classifiedsQuery]);
+    const [prodRes, classRes] = await Promise.all([
+      productsQuery ? productsQuery : Promise.resolve({ data: [] }),
+      classifiedsQuery ? classifiedsQuery : Promise.resolve({ data: [] }),
+    ]);
 
     const productRows = prodRes.data || [];
     const classifiedRows = classRes.data || [];
