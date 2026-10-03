@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { formatBRL } from "@/lib/formatters";
+import { formatMoney } from "@/lib/money";
 import {
   listUpsellRules,
   createUpsellRule,
@@ -253,7 +253,7 @@ export function ProductUpsellCard({ productId, productTitle }: ProductUpsellCard
               >
                 {availableProducts.map((p) => (
                   <option key={p.id} value={p.id}>
-                    {p.title} ({formatBRL(p.price_cents ?? 0)})
+                    {p.title} ({formatMoney(p.price_cents ?? 0)})
                   </option>
                 ))}
               </select>
@@ -347,11 +347,11 @@ export function ProductUpsellCard({ productId, productTitle }: ProductUpsellCard
                     </p>
                     <div className="flex items-baseline gap-2 mt-1">
                       <span className="text-xs font-extrabold text-primary">
-                        {formatBRL(discountedPriceCents)}
+                        {formatMoney(discountedPriceCents)}
                       </span>
                       {discountPercentage > 0 && (
                         <span className="text-[11px] text-muted-foreground line-through">
-                          {formatBRL(originalPriceCents)}
+                          {formatMoney(originalPriceCents)}
                         </span>
                       )}
                     </div>

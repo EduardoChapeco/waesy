@@ -28,6 +28,8 @@ export function formatCurrency(
   }
 }
 
+export const formatBRL = formatCurrency;
+
 export function formatDate(date: string | Date | null | undefined): string {
   if (!date) return "";
   try {
