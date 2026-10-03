@@ -34,6 +34,7 @@ export function useProductEdit(
       attributes: v.attributes || {},
       stock: v.stock_on_hand ?? v.stock ?? 0,
       price_override_cents: v.price_override_cents,
+      wholesale_price_cents: v.wholesale_price_cents || null,
       cost_cents: v.cost_cents,
       weight_kg: v.weight_kg,
       image_url: v.image_url,
@@ -338,5 +339,12 @@ export function useProductEdit(
     travelData,
     handleTravelDataChange,
     mediaUrls,
+    isWholesaleEnabled: Boolean(
+      store?.wholesale_enabled ||
+      store?.settings?.wholesale_enabled ||
+      store?.settings?.wholesale_mode ||
+      store?.settings?.b2b_enabled ||
+      (Array.isArray(store?.settings?.enabled_modules) && store.settings.enabled_modules.includes("wholesale"))
+    ),
   };
 }

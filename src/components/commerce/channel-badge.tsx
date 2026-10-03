@@ -20,6 +20,7 @@ export type ChannelSource =
   | "pdv"
   | "balcao"
   | "manual"
+  | "variant_matrix"
   | string;
 
 export interface ChannelInfo {
@@ -30,6 +31,14 @@ export interface ChannelInfo {
 
 export function getChannelInfo(source?: string | null): ChannelInfo {
   const norm = (source || "").toLowerCase().replace(/[\s-]/g, "_");
+
+  if (norm.includes("variant_matrix") || norm.includes("matriz")) {
+    return {
+      id: "variant_matrix",
+      label: "Matriz 2D",
+      badgeClass: "text-primary dark:text-primary font-semibold",
+    };
+  }
 
   if (norm.includes("mercadolivre") || norm.includes("mercado_livre") || norm === "ml") {
     return {

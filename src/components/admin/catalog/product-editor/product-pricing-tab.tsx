@@ -23,6 +23,7 @@ export interface ProductPricingTabProps {
   selectedOptionGroupIds: string[];
   onSelectedGroupIdsChange: (ids: string[]) => void;
   onOptionGroupsChange: (groups: any[]) => void;
+  wholesaleEnabled?: boolean;
 }
 
 export function ProductPricingTab({
@@ -38,6 +39,7 @@ export function ProductPricingTab({
   selectedOptionGroupIds,
   onSelectedGroupIdsChange,
   onOptionGroupsChange,
+  wholesaleEnabled = false,
 }: ProductPricingTabProps) {
   return (
     <div className="space-y-4">
@@ -185,6 +187,7 @@ export function ProductPricingTab({
               variants={variantsMatrix}
               onChange={onVariantsMatrixChange}
               basePriceCents={formValues.price_cents || 0}
+              wholesaleEnabled={wholesaleEnabled}
             />
           </div>
         ) : (

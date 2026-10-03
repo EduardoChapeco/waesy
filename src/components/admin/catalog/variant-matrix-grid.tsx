@@ -16,9 +16,15 @@ interface VariantMatrixGridProps {
   variants: RawVariant[];
   onChange: (variants: RawVariant[]) => void;
   basePriceCents: number;
+  wholesaleEnabled?: boolean;
 }
 
-export function VariantMatrixGrid({ variants, onChange, basePriceCents }: VariantMatrixGridProps) {
+export function VariantMatrixGrid({
+  variants,
+  onChange,
+  basePriceCents,
+  wholesaleEnabled = false,
+}: VariantMatrixGridProps) {
   const [advancedEditIndex, setAdvancedEditIndex] = React.useState<number | null>(null);
   const [isAddDimensionOpen, setIsAddDimensionOpen] = React.useState(false);
   const [newDimensionName, setNewDimensionName] = React.useState("");
@@ -224,6 +230,7 @@ export function VariantMatrixGrid({ variants, onChange, basePriceCents }: Varian
               <th className="px-4 py-3 text-center">Estoque</th>
               <th className="px-4 py-3">SKU</th>
               <th className="px-4 py-3">Preço Exceção</th>
+              {wholesaleEnabled && <th className="px-4 py-3">Preço Atacado (B2B)</th>}
               <th className="px-4 py-3 text-right">Ações</th>
             </tr>
           </thead>
@@ -361,6 +368,22 @@ export function VariantMatrixGrid({ variants, onChange, basePriceCents }: Varian
                         />
                       </td>
 
+                      {/* Preco Atacado / B2B */}
+                      {wholesaleEnabled && (
+                        <td className="px-4 py-2 w-40 align-middle">
+                          <PriceInput
+                            valueCents={variant.wholesale_price_cents ?? null}
+                            basePriceCents={variant.price_override_cents ?? basePriceCents}
+                            placeholder="Preço B2B"
+                            onChange={(newPrice) => {
+                              const newVariants = [...variants];
+                              newVariants[globalIdx] = { ...variant, wholesale_price_cents: newPrice };
+                              onChange(newVariants);
+                            }}
+                          />
+                        </td>
+                      )}
+
                       {/* Acoes Livres */}
                       <td className="px-4 py-2 w-28 align-middle text-right">
                         <div className="flex items-center justify-end gap-1">
@@ -402,7 +425,7 @@ export function VariantMatrixGrid({ variants, onChange, basePriceCents }: Varian
                 {/* Rodape do Grupo */}
                 <tr>
                   <td
-                    colSpan={5}
+                    colSpan={wholesaleEnabled ? 6 : 5}
                     className="px-4 py-3 bg-muted/10 border-t-0 rounded-bl-xl rounded-br-xl"
                   >
                     <Button
@@ -528,6 +551,22 @@ export function VariantMatrixGrid({ variants, onChange, basePriceCents }: Varian
                         </div>
                       </div>
 
+                      {wholesaleEnabled && (
+                        <div>
+                          <span className="text-xs font-semibold text-muted-foreground uppercase">Preço Atacado (B2B)</span>
+                          <PriceInput
+                            valueCents={variant.wholesale_price_cents ?? null}
+                            basePriceCents={variant.price_override_cents ?? basePriceCents}
+                            placeholder="Preço B2B"
+                            onChange={(newPrice) => {
+                              const newVariants = [...variants];
+                              newVariants[globalIdx] = { ...variant, wholesale_price_cents: newPrice };
+                              onChange(newVariants);
+                            }}
+                          />
+                        </div>
+                      )}
+
                       <div>
                         <span className="text-xs font-semibold text-muted-foreground uppercase">SKU</span>
                         <Input
@@ -636,10 +675,12 @@ function PriceInput({
   valueCents,
   basePriceCents,
   onChange,
+  placeholder,
 }: {
   valueCents: number | null;
   basePriceCents: number;
   onChange: (v: number | null) => void;
+  placeholder?: string;
 }) {
   return (
     <CurrencyField
@@ -647,7 +688,7 @@ function PriceInput({
       currencySymbol="R$"
       allowZero={true}
       value={valueCents}
-      placeholder={`Base: ${formatMoney(basePriceCents)}`}
+      placeholder={placeholder || `Base: ${formatMoney(basePriceCents)}`}
       onChange={(cents) => {
         onChange(cents === undefined ? null : cents);
       }}

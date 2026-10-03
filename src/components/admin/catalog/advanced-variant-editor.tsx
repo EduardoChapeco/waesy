@@ -82,6 +82,20 @@ export function AdvancedVariantEditor({
  </div>
 
  <div className="space-y-2">
+ <Label>Preço de Atacado / B2B</Label>
+ <CurrencyField
+ value={formData.wholesale_price_cents}
+ onChange={(cents) => handleChange("wholesale_price_cents", cents ?? null)}
+ placeholder="0,00"
+ allowZero={true}
+ className="h-10 rounded-lg"
+ />
+ <p className="text-xs text-muted-foreground">
+ Preço especial para pedidos corporativos e atacado.
+ </p>
+ </div>
+
+ <div className="space-y-2">
  <Label>Preço de Custo (Margem)</Label>
  <CurrencyField
  value={formData.cost_cents}

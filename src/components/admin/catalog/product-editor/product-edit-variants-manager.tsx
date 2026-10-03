@@ -14,6 +14,7 @@ interface ProductEditVariantsManagerProps {
   onVariantsChange?: (variants: RawVariant[]) => void;
   onSave?: () => Promise<boolean | void>;
   isSaving?: boolean;
+  wholesaleEnabled?: boolean;
 }
 
 export function ProductEditVariantsManager({
@@ -22,6 +23,7 @@ export function ProductEditVariantsManager({
   onVariantsChange,
   onSave,
   isSaving: propIsSaving,
+  wholesaleEnabled = false,
 }: ProductEditVariantsManagerProps) {
   const router = useRouter();
   const [internalIsSubmitting, setInternalIsSubmitting] = useState(false);
@@ -33,6 +35,7 @@ export function ProductEditVariantsManager({
       attributes: v.attributes || {},
       stock: v.stock_on_hand ?? v.stock ?? 0,
       price_override_cents: v.price_override_cents,
+      wholesale_price_cents: v.wholesale_price_cents || null,
       cost_cents: v.cost_cents,
       weight_kg: v.weight_kg,
       image_url: v.image_url,
@@ -117,6 +120,7 @@ export function ProductEditVariantsManager({
             variants={variants}
             onChange={setVariants}
             basePriceCents={product.price_cents || 0}
+            wholesaleEnabled={wholesaleEnabled}
           />
         </div>
 

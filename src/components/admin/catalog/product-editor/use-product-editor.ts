@@ -270,6 +270,7 @@ export function useProductEditor(initialCategories: any[], initialOptionGroups: 
             attributes: (v.attributes || {}) as Record<string, unknown>,
             stock: Number(v.stock ?? 10),
             price_override_cents: v.price_override_cents != null && Number(v.price_override_cents) > 0 ? Number(v.price_override_cents) : null,
+            wholesale_price_cents: v.wholesale_price_cents != null && Number(v.wholesale_price_cents) > 0 ? Number(v.wholesale_price_cents) : null,
             image_url: v.image_url || null,
           }))
         : [{ sku: String(data.sku || `${generatedSlug}-default`), attributes: {}, stock: Number(data.stock || 10), price_override_cents: null, image_url: images[0] || null }];
@@ -399,5 +400,12 @@ export function useProductEditor(initialCategories: any[], initialOptionGroups: 
     handleAddDimensionSubmit,
     onSaveDraft,
     onSubmit,
+    isWholesaleEnabled: Boolean(
+      store?.wholesale_enabled ||
+      store?.settings?.wholesale_enabled ||
+      store?.settings?.wholesale_mode ||
+      store?.settings?.b2b_enabled ||
+      (Array.isArray(store?.settings?.enabled_modules) && store.settings.enabled_modules.includes("wholesale"))
+    ),
   };
 }

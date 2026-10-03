@@ -274,6 +274,7 @@ function EditProductPage() {
               onVariantsChange={edit.setVariants}
               onSave={edit.saveVariants}
               isSaving={edit.isSavingVariants}
+              wholesaleEnabled={edit.isWholesaleEnabled}
             />
           </div>
 

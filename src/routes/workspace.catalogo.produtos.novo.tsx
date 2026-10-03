@@ -1,5 +1,6 @@
+import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { ShoppingBag, Package, Plane } from "lucide-react";
+import { ShoppingBag, Package, Plane, Maximize2, Minimize2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -57,9 +58,10 @@ export function UnifiedNewProductPage() {
   const nicheCtx = getNicheCatalogContext(store);
 
   const editor = useProductEditor(categories, optionGroupsList, store, nicheCtx, semantics);
+  const [isWideMode, setIsWideMode] = useState(false);
 
   return (
-    <CanonicalPage maxWidth="2xl">
+    <CanonicalPage maxWidth={isWideMode ? "full" : "2xl"}>
       <ProductEditorHeader
         entityName={nicheCtx.entityName}
         isSubmitting={editor.isSubmitting}
@@ -156,34 +158,47 @@ export function UnifiedNewProductPage() {
         </div>
       </div>
 
-      {/* Split Canônico: Abas do Formulário (Esquerda) e Preview em Tempo Real (Direita) */}
+      {/* Split Canônico: Abas do Formulário (Esquerda) e Preview em Tempo Real (Direita) com Modo Amplo */}
       <div className="mt-6">
-        <CanonicalSplit
-          ratio="60-40"
-          leftPane={
+        {(() => {
+          const tabsContent = (
             <Tabs value={editor.activeTab} onValueChange={editor.setActiveTab} className="w-full space-y-4">
-              <TabsList className="w-full justify-start overflow-x-auto bg-muted p-1 rounded-lg h-auto flex flex-nowrap gap-1">
-                <TabsTrigger value="basico" className="rounded-md text-xs font-bold whitespace-nowrap shrink-0 px-3 h-9">
-                  Básico
-                </TabsTrigger>
-                <TabsTrigger value="preco" className="rounded-md text-xs font-bold whitespace-nowrap shrink-0 px-3 h-9">
-                  Preço
-                </TabsTrigger>
-                <TabsTrigger value="fiscal" className="rounded-md text-xs font-bold whitespace-nowrap shrink-0 px-3 h-9">
-                  Fiscal
-                </TabsTrigger>
-                {nicheCtx.isFoodBusiness && (
-                  <TabsTrigger value="cardapio" className="rounded-md text-xs font-bold whitespace-nowrap shrink-0 px-3 h-9">
-                    Cardápio
+              <div className="flex items-center justify-between gap-2 overflow-x-auto pb-1">
+                <TabsList className="justify-start overflow-x-auto bg-muted p-1 rounded-lg h-auto flex flex-nowrap gap-1">
+                  <TabsTrigger value="basico" className="rounded-md text-xs font-bold whitespace-nowrap shrink-0 px-3 h-9">
+                    Básico
                   </TabsTrigger>
-                )}
-                <TabsTrigger value="midias" className="rounded-md text-xs font-bold whitespace-nowrap shrink-0 px-3 h-9">
-                  Fotos
-                </TabsTrigger>
-                <TabsTrigger value="insumos" className="rounded-md text-xs font-bold whitespace-nowrap shrink-0 px-3 h-9">
-                  Composição / Insumos
-                </TabsTrigger>
-              </TabsList>
+                  <TabsTrigger value="preco" className="rounded-md text-xs font-bold whitespace-nowrap shrink-0 px-3 h-9">
+                    Preço & Grade 2D
+                  </TabsTrigger>
+                  <TabsTrigger value="fiscal" className="rounded-md text-xs font-bold whitespace-nowrap shrink-0 px-3 h-9">
+                    Fiscal
+                  </TabsTrigger>
+                  {nicheCtx.isFoodBusiness && (
+                    <TabsTrigger value="cardapio" className="rounded-md text-xs font-bold whitespace-nowrap shrink-0 px-3 h-9">
+                      Cardápio
+                    </TabsTrigger>
+                  )}
+                  <TabsTrigger value="midias" className="rounded-md text-xs font-bold whitespace-nowrap shrink-0 px-3 h-9">
+                    Fotos
+                  </TabsTrigger>
+                  <TabsTrigger value="insumos" className="rounded-md text-xs font-bold whitespace-nowrap shrink-0 px-3 h-9">
+                    Composição / Insumos
+                  </TabsTrigger>
+                </TabsList>
+
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsWideMode((prev) => !prev)}
+                  className="h-9 px-3 text-xs font-semibold gap-1.5 text-primary hover:bg-primary/10 rounded-lg focus-visible:ring-2 focus-visible:ring-ring shrink-0 cursor-pointer"
+                  title={isWideMode ? "Restaurar layout dividido com preview" : "Expandir para tela cheia (Modo Amplo focado na grade)"}
+                >
+                  {isWideMode ? <Minimize2 className="size-3.5" /> : <Maximize2 className="size-3.5" />}
+                  <span className="hidden sm:inline">{isWideMode ? "Modo Dividido" : "Modo Amplo"}</span>
+                </Button>
+              </div>
 
               <TabsContent value="basico" className="space-y-4 m-0">
                 <ProductBasicTab
@@ -215,6 +230,7 @@ export function UnifiedNewProductPage() {
                   selectedOptionGroupIds={editor.selectedOptionGroupIds}
                   onSelectedGroupIdsChange={editor.setSelectedOptionGroupIds}
                   onOptionGroupsChange={editor.setOptionGroups}
+                  wholesaleEnabled={editor.isWholesaleEnabled}
                 />
               </TabsContent>
 
@@ -248,20 +264,35 @@ export function UnifiedNewProductPage() {
                 />
               </TabsContent>
             </Tabs>
+          );
+
+          if (isWideMode) {
+            return (
+              <div className="w-full animate-in fade-in duration-200">
+                {tabsContent}
+              </div>
+            );
           }
-          rightPane={
-            <ProductPreviewPane
-              isTravelPackageMode={editor.isTravelPackageMode}
-              isGroceryMode={editor.isGroceryMode}
-              travelData={editor.travelData}
-              formValues={editor.formValues}
-              images={editor.images}
-              activePreviewImage={editor.activePreviewImage}
-              setActivePreviewImage={editor.setActivePreviewImage}
-              store={store}
+
+          return (
+            <CanonicalSplit
+              ratio="60-40"
+              leftPane={tabsContent}
+              rightPane={
+                <ProductPreviewPane
+                  isTravelPackageMode={editor.isTravelPackageMode}
+                  isGroceryMode={editor.isGroceryMode}
+                  travelData={editor.travelData}
+                  formValues={editor.formValues}
+                  images={editor.images}
+                  activePreviewImage={editor.activePreviewImage}
+                  setActivePreviewImage={editor.setActivePreviewImage}
+                  store={store}
+                />
+              }
             />
-          }
-        />
+          );
+        })()}
       </div>
 
       <ProductEditorStickyBar

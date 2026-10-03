@@ -371,13 +371,12 @@ export async function _createProduct(input: {
  option_group_id: groupId,
  sort_order: idx,
  }));
- await db.from("product_option_groups").insert(optRows);
- } catch (err) {
- console.warn("[admin-catalog] Erro ao associar option_groups:", err);
- }
- }
+		await db.from("product_option_groups").insert(optRows);
+	} catch (err) {
+		console.warn("[admin-catalog] Erro ao associar option_groups:", err);
+	}
 
- // Insere variantes ou variante default (Integridade Canônica de Schema: stock_on_hand)
+	// Insere variantes ou variante default (Integridade Canônica de Schema: stock_on_hand)
 	if (input.variants && input.variants.length > 0) {
 		try {
 			const variantRows = input.variants.map((v) => ({
@@ -389,24 +388,61 @@ export async function _createProduct(input: {
 				stock_on_hand: v.stock || 0,
 				image_url: v.image_url || null,
 			}));
-			const { error: varErr } = await db.from("product_variants").insert(variantRows);
+			const { data: insertedVariants, error: varErr } = await db
+				.from("product_variants")
+				.insert(variantRows)
+				.select("id, stock_on_hand, sku");
 			if (varErr) {
 				console.error("[admin-catalog] Erro ao inserir variantes de produto:", varErr);
+			} else if (insertedVariants && insertedVariants.length > 0) {
+				const initialMovements = insertedVariants
+					.filter((iv: any) => (iv.stock_on_hand || 0) > 0)
+					.map((iv: any) => ({
+						store_id: effectiveStoreId,
+						variant_id: iv.id,
+						movement_type: "adjustment",
+						qty: iv.stock_on_hand,
+						reference_type: "variant_matrix",
+						note: `Saldo inicial no cadastro rápido (${iv.sku || "variação"})`,
+						actor_id: (identity as any)?.id || null,
+					}));
+
+				if (initialMovements.length > 0) {
+					await db.from("stock_movements").insert(initialMovements).catch((err: any) => {
+						console.warn("[admin-catalog] Falha não impeditiva ao registrar stock_movements inicial:", err);
+					});
+				}
 			}
 		} catch (err) {
 			console.error("[admin-catalog] Exceção ao processar variantes:", err);
 		}
 	} else {
 		try {
-			const { error: defaultVarErr } = await db.from("product_variants").insert({
-				product_id: productId,
-				sku: `${input.slug}-default`,
-				attributes: {},
-				stock_on_hand: 10,
-				price_override_cents: null,
-			});
+			const { data: defaultVar, error: defaultVarErr } = await db
+				.from("product_variants")
+				.insert({
+					product_id: productId,
+					sku: `${input.slug}-default`,
+					attributes: {},
+					stock_on_hand: 10,
+					price_override_cents: null,
+				})
+				.select("id, stock_on_hand, sku")
+				.single();
 			if (defaultVarErr) {
 				console.error("[admin-catalog] Erro ao inserir variante default:", defaultVarErr);
+			} else if (defaultVar) {
+				await db.from("stock_movements").insert({
+					store_id: effectiveStoreId,
+					variant_id: defaultVar.id,
+					movement_type: "adjustment",
+					qty: 10,
+					reference_type: "variant_matrix",
+					note: `Saldo padrão inicial (${defaultVar.sku})`,
+					actor_id: (identity as any)?.id || null,
+				}).catch((err: any) => {
+					console.warn("[admin-catalog] Falha não impeditiva ao registrar stock_movement default:", err);
+				});
 			}
 		} catch (err) {
 			console.error("[admin-catalog] Exceção ao inserir variante default:", err);

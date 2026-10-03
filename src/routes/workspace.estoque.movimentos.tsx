@@ -170,11 +170,13 @@ function MovementsPage() {
             <TableBody>
               {movements.map((mov: any) => {
                 const inferredChannel =
-                  mov.channel_source ||
-                  mov.channel_origin ||
-                  mov.metadata?.channel_source ||
-                  mov.metadata?.channel ||
-                  (mov.reference_type === "order" ? "online_store" : "pos");
+                  mov.reference_type === "variant_matrix"
+                    ? "variant_matrix"
+                    : mov.channel_source ||
+                      mov.channel_origin ||
+                      mov.metadata?.channel_source ||
+                      mov.metadata?.channel ||
+                      (mov.reference_type === "order" ? "online_store" : "pos");
 
                 return (
                   <TableRow key={mov.id}>
