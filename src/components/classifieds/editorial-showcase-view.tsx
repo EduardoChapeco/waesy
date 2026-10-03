@@ -471,7 +471,7 @@ export function EditorialShowcaseView({
       } catch {}
     }
 
-    if (classified?.lead_form || classified?.form_id) {
+    if (classified?.lead_form || classified?.form_id || classified?.attributes?.inquiry_config?.enabled) {
       setIsLeadFormModalOpen(true);
       return;
     }
@@ -3125,7 +3125,7 @@ export function EditorialShowcaseView({
       />
 
       {/* ── Modal Universal de Captura de Leads / Landing ── */}
-      {(classified?.lead_form || classified?.form_id) && (
+      {(classified?.lead_form || classified?.form_id || classified?.attributes?.inquiry_config?.enabled) && (
         <LeadFormModal
           formSlug={classified.lead_form?.slug || null}
           formId={classified.form_id || null}
@@ -3134,6 +3134,8 @@ export function EditorialShowcaseView({
           classifiedTitle={classified.title}
           isOpen={isLeadFormModalOpen}
           onOpenChange={setIsLeadFormModalOpen}
+          civilInquiryConfig={classified?.attributes?.inquiry_config}
+          onStartSdrChat={onOpenCompanionCard}
           triggerScrollPct={
             classified.lead_form?.trigger_mode === "scroll_50"
               ? (classified.lead_form.scroll_trigger_pct || 50)
