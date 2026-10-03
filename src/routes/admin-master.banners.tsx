@@ -49,7 +49,7 @@ function AdminMasterBannersErrorComponent({ error }: { error: any }) {
         </p>
       </div>
       {error?.message && (
-        <pre className="mt-2 rounded-lg bg-muted/40 border border-border/50 p-3 text-[10px] text-muted-foreground overflow-auto max-h-32 text-left font-mono">
+        <pre className="mt-2 rounded-lg bg-muted/40 border border-border/50 p-3 text-xs text-muted-foreground overflow-auto max-h-32 text-left font-mono">
           {error.message}
         </pre>
       )}
@@ -57,7 +57,7 @@ function AdminMasterBannersErrorComponent({ error }: { error: any }) {
         <Button
           variant="default"
           size="sm"
-          className="rounded-lg text-xs h-10 px-5 font-bold cursor-pointer"
+          className="rounded-lg text-xs h-11 sm:h-10 px-5 font-bold cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           onClick={() => window.location.reload()}
         >
           Recarregar Página
@@ -266,10 +266,10 @@ function AdminMasterBannersPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Deseja realmente remover este banner?")) return;
     try {
       await deleteBanner({ data: { id } });
       toast.success("Banner removido.");
+      setBanners((prev) => prev.filter((b) => b.id !== id));
       refreshBanners();
     } catch (err: any) {
       toast.error(err?.message || "Erro ao remover banner.");
@@ -312,7 +312,7 @@ function AdminMasterBannersPage() {
         <Button
           onClick={() => handleOpenCreate()}
           size="sm"
-          className="rounded-lg font-medium gap-2 h-9 px-4 cursor-pointer"
+          className="rounded-lg font-medium gap-2 h-11 sm:h-9 px-4 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
         >
           <Plus className="size-4" />
           <span>Novo Banner</span>
@@ -334,7 +334,7 @@ function AdminMasterBannersPage() {
                 key={opt.id}
                 onClick={() => setSelectedPlacementTab(opt.id)}
                 className={cn(
-                  "px-3 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-colors flex items-center gap-2 cursor-pointer shrink-0 border",
+                  "px-3 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-colors flex items-center gap-2 cursor-pointer shrink-0 border h-11 sm:h-8 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                   isActive
                     ? "bg-primary text-primary-foreground border-primary shadow-xs"
                     : "bg-card hover:bg-muted/60 text-muted-foreground hover:text-foreground border-border/60"
@@ -343,7 +343,7 @@ function AdminMasterBannersPage() {
                 <span>{opt.label}</span>
                 <span
                   className={cn(
-                    "text-[10px] font-mono",
+                    "text-xs font-mono",
                     isActive ? "text-primary-foreground/80" : "text-muted-foreground"
                   )}
                 >
@@ -363,14 +363,14 @@ function AdminMasterBannersPage() {
             placeholder="Buscar banners..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-9 h-9 rounded-lg bg-card text-xs border-border/60"
+            className="pl-9 h-11 sm:h-9 rounded-lg bg-card text-xs border-border/60"
           />
         </div>
 
         {/* Seletor de Filtro de Cidade na Listagem */}
         <div className="flex items-center gap-2">
           <Select value={selectedCityFilter} onValueChange={setSelectedCityFilter}>
-            <SelectTrigger className="h-9 w-full sm:w-56 rounded-lg bg-card text-xs border-border/60">
+            <SelectTrigger className="h-11 sm:h-9 w-full sm:w-56 rounded-lg bg-card text-xs border-border/60">
               <SelectValue placeholder="Filtrar por Cidade" />
             </SelectTrigger>
             <SelectContent className="max-h-60">
@@ -405,7 +405,7 @@ function AdminMasterBannersPage() {
             onClick={() => handleOpenCreate(selectedPlacementTab)}
             size="sm"
             variant="outline"
-            className="rounded-lg text-xs font-medium gap-2"
+            className="rounded-lg text-xs font-medium gap-2 h-11 sm:h-9 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           >
             <Plus className="size-3.5" /> Adicionar Banner
           </Button>
@@ -418,7 +418,7 @@ function AdminMasterBannersPage() {
               className="group relative rounded-lg bg-card border border-border/60 overflow-hidden flex flex-col hover:border-primary/40 transition-colors shadow-2xs"
             >
               {/* Media Preview com Escala Proporcional Verdadeira */}
-              <div className="relative aspect-[2.35/1] sm:aspect-[2.6/1] md:aspect-21/9 w-full bg-muted overflow-hidden">
+              <div className="relative aspect-video md:aspect-21/9 w-full bg-muted overflow-hidden">
                 {banner.media_type === "video" ? (
                   <video
                     src={banner.media_url}
@@ -446,48 +446,50 @@ function AdminMasterBannersPage() {
 
                 {/* Placement & City Tags */}
                 <div className="absolute top-2 left-2 z-10 flex items-center gap-2 flex-wrap max-w-[85%]">
-                  <span className="bg-black/75 text-white backdrop-blur-md text-[10px] font-mono px-2 py-1 rounded-md border border-white/10">
+                  <span className="bg-black/75 text-white backdrop-blur-md text-xs font-mono px-2 py-0.5 rounded-md border border-white/10">
                     {banner.placement.toUpperCase()}
                   </span>
                   {banner.city_filter ? (
-                    <span className="bg-primary text-primary-foreground backdrop-blur-md text-[9px] font-semibold px-2 py-1 rounded-md flex items-center gap-1 shadow-xs">
+                    <span className="bg-primary text-primary-foreground backdrop-blur-md text-xs font-semibold px-2 py-0.5 rounded-md flex items-center gap-1 shadow-xs">
                       <MapPin className="size-2.5" />
                       {banner.city_filter}
                     </span>
                   ) : (
-                    <span className="bg-zinc-800/80 text-zinc-300 text-[9px] font-medium px-2 py-1 rounded-md border border-white/10">
+                    <span className="bg-zinc-800/80 text-zinc-300 text-xs font-medium px-2 py-0.5 rounded-md border border-white/10">
                       Global
                     </span>
                   )}
                   {banner.show_overlay && (
-                    <span className="bg-emerald-600/90 text-white text-[9px] font-medium px-2 py-1 rounded-md">
+                    <span className="bg-emerald-600/90 text-white text-xs font-medium px-2 py-0.5 rounded-md">
                       Texto Ativo
                     </span>
                   )}
                 </div>
 
-                {/* Delete Button */}
-                <button
+                {/* Delete Button HIG compliant */}
+                <Button
+                  size="icon"
+                  variant="destructive"
                   onClick={() => handleDelete(banner.id)}
-                  className="absolute top-2 right-2 z-10 size-6 rounded-md bg-black/60 hover:bg-destructive text-white flex items-center justify-center transition-colors opacity-0 group-hover:opacity-100 cursor-pointer"
+                  className="absolute top-2 right-2 z-10 size-11 sm:size-8 rounded-md cursor-pointer opacity-90 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive"
                   title="Remover banner"
                 >
-                  <Trash2 className="size-3" />
-                </button>
+                  <Trash2 className="size-4 sm:size-3.5" />
+                </Button>
               </div>
 
               {/* Card Footer */}
               <div className="p-4 flex flex-col justify-between gap-3 text-xs flex-1">
                 <div>
                   <p className="font-semibold text-foreground truncate">{banner.title}</p>
-                  <p className="text-muted-foreground truncate text-[11px] font-mono mt-1">
+                  <p className="text-muted-foreground truncate text-xs font-mono mt-1">
                     {banner.target_url || "/"}
                   </p>
                 </div>
 
                 <div className="flex items-center justify-between pt-2 border-t border-border/40">
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] text-muted-foreground">Texto:</span>
+                    <span className="text-xs text-muted-foreground">Texto:</span>
                     <Switch
                       checked={banner.show_overlay === true}
                       onCheckedChange={(checked) => handleToggleOverlay(banner.id, checked)}
@@ -500,11 +502,11 @@ function AdminMasterBannersPage() {
                         asChild
                         size="sm"
                         variant="ghost"
-                        className="size-7 p-0 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
+                        className="size-11 sm:size-8 p-0 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                         title="Ver destino"
                       >
                         <a href={banner.target_url} target="_blank" rel="noopener noreferrer">
-                          <ExternalLink className="size-3" />
+                          <ExternalLink className="size-4 sm:size-3.5" />
                         </a>
                       </Button>
                     )}
@@ -512,10 +514,10 @@ function AdminMasterBannersPage() {
                       size="sm"
                       variant="ghost"
                       onClick={() => handleOpenEdit(banner)}
-                      className="size-7 p-0 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
+                      className="size-11 sm:size-8 p-0 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                       title="Editar"
                     >
-                      <Pencil className="size-3" />
+                      <Pencil className="size-4 sm:size-3.5" />
                     </Button>
                   </div>
                 </div>
@@ -536,7 +538,7 @@ function AdminMasterBannersPage() {
           <div className="space-y-2">
             <Label className="text-xs font-semibold">Vitrine / Nicho</Label>
             <Select value={placement} onValueChange={(v) => setPlacement(v as BannerPlacement)}>
-              <SelectTrigger className="h-9 rounded-lg bg-card text-xs">
+              <SelectTrigger className="h-11 sm:h-9 rounded-lg bg-card text-xs">
                 <SelectValue placeholder="Selecione o nicho" />
               </SelectTrigger>
               <SelectContent>
@@ -553,7 +555,7 @@ function AdminMasterBannersPage() {
           <div className="space-y-2">
             <Label className="text-xs font-semibold">Localidade / Cidade Alvo</Label>
             <Select value={cityFilter} onValueChange={setCityFilter}>
-              <SelectTrigger className="h-9 rounded-lg bg-card text-xs">
+              <SelectTrigger className="h-11 sm:h-9 rounded-lg bg-card text-xs">
                 <SelectValue placeholder="Selecione a cidade do público" />
               </SelectTrigger>
               <SelectContent className="max-h-60">
@@ -565,7 +567,7 @@ function AdminMasterBannersPage() {
                 ))}
               </SelectContent>
             </Select>
-            <p className="text-[11px] text-muted-foreground">
+            <p className="text-xs text-muted-foreground">
               Banners vinculados a uma cidade são exibidos com prioridade no topo para moradores e visitantes com GPS ou seleção ativa nessa localidade.
             </p>
           </div>
@@ -594,7 +596,7 @@ function AdminMasterBannersPage() {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Ex: Campanha de Primavera"
-              className="h-9 rounded-lg bg-card text-xs"
+              className="h-11 sm:h-9 rounded-lg bg-card text-xs"
             />
           </div>
 
@@ -613,7 +615,7 @@ function AdminMasterBannersPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs font-semibold">Exibir Textos sobre o Banner</p>
-                <p className="text-[11px] text-muted-foreground">Desative para manter a arte 100% limpa.</p>
+                <p className="text-xs text-muted-foreground">Desative para manter a arte 100% limpa.</p>
               </div>
               <Switch checked={showOverlay} onCheckedChange={setShowOverlay} />
             </div>
@@ -621,31 +623,31 @@ function AdminMasterBannersPage() {
             {showOverlay && (
               <div className="space-y-3 pt-2 border-t border-border/40 animate-in fade-in duration-200">
                 <div className="space-y-1">
-                  <Label className="text-[11px]">Subtítulo / Descrição</Label>
+                  <Label className="text-xs">Subtítulo / Descrição</Label>
                   <Input
                     value={subtitle}
                     onChange={(e) => setSubtitle(e.target.value)}
                     placeholder="Descrição complementar..."
-                    className="h-8 rounded-lg bg-card text-xs"
+                    className="h-11 sm:h-8 rounded-lg bg-card text-xs"
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <div className="space-y-1">
-                    <Label className="text-[11px]">Badge</Label>
+                    <Label className="text-xs">Badge</Label>
                     <Input
                       value={badgeText}
                       onChange={(e) => setBadgeText(e.target.value)}
                       placeholder="Destaque"
-                      className="h-8 rounded-lg bg-card text-xs"
+                      className="h-11 sm:h-8 rounded-lg bg-card text-xs"
                     />
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-[11px]">Texto do Botão (CTA)</Label>
+                    <Label className="text-xs">Texto do Botão (CTA)</Label>
                     <Input
                       value={ctaLabel}
                       onChange={(e) => setCtaLabel(e.target.value)}
                       placeholder="Conferir"
-                      className="h-8 rounded-lg bg-card text-xs"
+                      className="h-11 sm:h-8 rounded-lg bg-card text-xs"
                     />
                   </div>
                 </div>
@@ -659,7 +661,7 @@ function AdminMasterBannersPage() {
               variant="outline"
               size="sm"
               onClick={() => setIsModalOpen(false)}
-              className="rounded-lg text-xs"
+              className="rounded-lg text-xs h-11 sm:h-9 px-4"
             >
               Cancelar
             </Button>
@@ -667,7 +669,7 @@ function AdminMasterBannersPage() {
               type="submit"
               size="sm"
               disabled={isSubmitting}
-              className="rounded-lg text-xs font-semibold px-4"
+              className="rounded-lg text-xs font-semibold px-4 h-11 sm:h-9 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
               {isSubmitting ? (
                 <Loader2 className="size-3.5 animate-spin" />
