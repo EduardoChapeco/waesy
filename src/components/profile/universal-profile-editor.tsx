@@ -105,49 +105,59 @@ export const UniversalProfileEditor: React.FC<UniversalProfileEditorProps> = ({
   return (
     <div className={cn("w-full max-w-4xl mx-auto bg-card border border-border/80 rounded-lg overflow-hidden shadow-xs font-sans", className)}>
       
-      {/* ── 1. Capa Panorâmica Canônica (Proporção 3:1) ── */}
-      <div className="relative w-full aspect-[3/1] bg-muted overflow-hidden border-b border-border/60 group">
-        {formData.coverUrl ? (
-          <img src={formData.coverUrl} alt="Capa" className="w-full h-full object-cover" />
-        ) : (
-          <div className="w-full h-full bg-gradient-to-r from-muted to-muted/60 flex items-center justify-center text-muted-foreground">
-            <span className="text-xs font-medium">Sem imagem de capa (Proporção 3:1 recomendada)</span>
-          </div>
-        )}
-
-        {/* Trigger de Upload da Capa */}
-        <label className="absolute top-4 right-4 bg-background/80 hover:bg-background backdrop-blur-md border border-border/80 text-foreground px-4 py-2 rounded-full text-xs font-semibold flex items-center gap-2 cursor-pointer shadow-xs transition-transform active:scale-95">
-          <ImageIcon className="size-3.5" />
-          <span>Alterar Capa</span>
-          <input type="file" accept="image/*" onChange={handleCoverFile} className="hidden" />
-        </label>
-      </div>
-
-      {/* ── 2. Topo do Perfil com Avatar Squircle e Tipo de Persona ── */}
-      <div className="px-6 sm:px-10 pb-6 border-b border-border/40">
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 -mt-12 sm:-mt-14 mb-4">
-          
-          {/* Avatar Squircle Sobreposto */}
-          <div className="relative size-24 sm:size-28 rounded-lg sm:rounded-lg bg-card border-4 border-card shadow-md overflow-hidden group shrink-0">
+      {/* ── 1. Topo Canônico do Perfil: Foto 1:1 Squircle ao lado da Capa 21:9 na mesma linha ── */}
+      <div className="p-4 sm:p-6 border-b border-border/60 bg-card space-y-4">
+        <div className="flex items-center gap-3 sm:gap-5 w-full">
+          {/* Avatar Squircle 1:1 */}
+          <div className="relative size-20 sm:size-28 md:size-32 rounded-lg bg-card border-2 border-border/60 overflow-hidden group shrink-0 shadow-2xs">
             {formData.avatarUrl ? (
-              <img src={formData.avatarUrl} alt={formData.name} className="size-full object-cover" />
+              <img src={formData.avatarUrl} alt={formData.name} className="size-full object-cover select-none" />
             ) : (
-              <div className="size-full bg-muted flex items-center justify-center text-2xl font-black text-primary">
-                {formData.name.charAt(0).toUpperCase()}
+              <div className="size-full bg-muted flex items-center justify-center text-xl sm:text-2xl font-black text-primary">
+                {formData.name ? formData.name.charAt(0).toUpperCase() : "U"}
               </div>
             )}
 
-            {/* Overlay com Ícone de Câmera */}
+            {/* Overlay de Câmera */}
             <label className="absolute inset-0 bg-black/40 text-white flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
-              <Camera className="size-6" />
-              <span className="text-[10px] font-bold mt-1">Trocar</span>
+              <Camera className="size-5" />
+              <span className="text-[10px] font-bold mt-1">Alterar</span>
               <input type="file" accept="image/*" onChange={handleAvatarFile} className="hidden" />
             </label>
           </div>
 
-          {/* Badge de Persona & Ação Salvar Rápida */}
-          <div className="flex items-center gap-3">
-            <div className={cn("inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold border", personaBadge.color)}>
+          {/* Capa Panorâmica Canônica 21:9 ao lado */}
+          <div className="flex-1 min-w-0 aspect-[21/9] rounded-lg bg-muted/20 relative overflow-hidden flex items-center group border border-border/40">
+            {formData.coverUrl ? (
+              <img src={formData.coverUrl} alt="Capa" className="size-full object-cover select-none" />
+            ) : (
+              <div className="size-full bg-gradient-to-r from-muted to-muted/60 flex items-center justify-center text-muted-foreground p-3 text-center">
+                <span className="text-xs font-medium">Sem imagem de capa (Proporção 21:9)</span>
+              </div>
+            )}
+
+            {/* Trigger de Alteração da Capa */}
+            <label className="absolute top-2.5 right-2.5 sm:top-3 sm:right-3 bg-background/85 hover:bg-background backdrop-blur-md border border-border/80 text-foreground px-3 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-xs transition-transform active:scale-95">
+              <ImageIcon className="size-3.5" />
+              <span className="hidden sm:inline">Alterar Capa</span>
+              <input type="file" accept="image/*" onChange={handleCoverFile} className="hidden" />
+            </label>
+          </div>
+        </div>
+
+        {/* Linha de Identidade e Ações */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-border/40">
+          <div className="min-w-0">
+            <h2 className="text-lg sm:text-2xl font-black text-foreground tracking-tight truncate">
+              {formData.name || "Seu Nome"}
+            </h2>
+            <p className="text-xs text-muted-foreground font-mono">
+              @{formData.handle || "usuario"}
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2.5 shrink-0">
+            <div className={cn("inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border", personaBadge.color)}>
               <personaBadge.icon className="size-3.5" />
               <span>{personaBadge.label}</span>
             </div>
@@ -157,33 +167,24 @@ export const UniversalProfileEditor: React.FC<UniversalProfileEditorProps> = ({
               onClick={handleSubmit}
               disabled={isSaving}
               size="sm"
-              className="h-9 px-5 rounded-lg font-bold text-xs bg-primary text-primary-foreground hover:bg-primary/90 shadow-2xs active:scale-95"
+              className="h-11 sm:h-9 px-4 sm:px-5 rounded-lg font-bold text-xs bg-primary text-primary-foreground hover:bg-primary/90 shadow-2xs active:scale-95 cursor-pointer"
             >
               {isSaving ? <Loader2 className="size-3.5 animate-spin" /> : <Check className="size-3.5 mr-1" />}
-              <span>Salvar Alterações</span>
+              <span>Salvar</span>
             </Button>
           </div>
         </div>
-
-        <div>
-          <h2 className="text-xl sm:text-2xl font-black text-foreground tracking-tight">
-            {formData.name || "Seu Nome"}
-          </h2>
-          <p className="text-xs text-muted-foreground font-mono">
-            @{formData.handle || "usuario"}
-          </p>
-        </div>
       </div>
 
-      {/* ── 3. Tabs Contextuais por Persona ── */}
+      {/* ── 2. Tabs Contextuais por Persona (Rótulos Simples e Não Compostos) ── */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <div className="px-6 sm:px-10 pt-4 border-b border-border/40">
+        <div className="px-4 sm:px-8 pt-3 border-b border-border/40">
           <TabsList className="bg-transparent h-10 p-0 gap-6">
             <TabsTrigger
               value="identity"
               className="data-[state=active]:border-primary data-[state=active]:text-foreground text-muted-foreground border-b-2 border-transparent rounded-none px-1 pb-2 text-xs font-bold"
             >
-              Identidade Básica
+              Identidade
             </TabsTrigger>
 
             {formData.personaType === "company" && (
@@ -191,7 +192,7 @@ export const UniversalProfileEditor: React.FC<UniversalProfileEditorProps> = ({
                 value="company_details"
                 className="data-[state=active]:border-primary data-[state=active]:text-foreground text-muted-foreground border-b-2 border-transparent rounded-none px-1 pb-2 text-xs font-bold"
               >
-                Dados da Empresa e Loja
+                Empresa
               </TabsTrigger>
             )}
 
@@ -200,7 +201,7 @@ export const UniversalProfileEditor: React.FC<UniversalProfileEditorProps> = ({
                 value="creator_details"
                 className="data-[state=active]:border-primary data-[state=active]:text-foreground text-muted-foreground border-b-2 border-transparent rounded-none px-1 pb-2 text-xs font-bold"
               >
-                Mídia Kit e Redes
+                Mídia Kit
               </TabsTrigger>
             )}
 
@@ -208,7 +209,7 @@ export const UniversalProfileEditor: React.FC<UniversalProfileEditorProps> = ({
               value="links"
               className="data-[state=active]:border-primary data-[state=active]:text-foreground text-muted-foreground border-b-2 border-transparent rounded-none px-1 pb-2 text-xs font-bold"
             >
-              Links e Contato
+              Contato
             </TabsTrigger>
           </TabsList>
         </div>

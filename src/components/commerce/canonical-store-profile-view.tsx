@@ -696,78 +696,19 @@ function cleanAddressSegment(text: string): string {
         }}
       />
 
-      {/* ── 2. CABEÇALHO DO PERFIL: CAPA PANORÂMICA 21:9 HERO + LOGO 1:1 + AÇÕES INTEGRADAS ── */}
+      {/* ── 2. CABEÇALHO DO PERFIL: FOTO 1:1 AO LADO DA CAPA PANORÂMICA 21:9 HERO COM SCROLL INTERNO ── */}
+      {/* CONTRATO DE DESIGN CANÔNICO: FOTO 1:1 AO LADO DA CAPA 21:9 NA MESMA LINHA — PROIBIDO ALTERAR ESTA ESTRUTURA */}
       <div className="rounded-lg bg-card border border-border/40 p-4 sm:p-6 space-y-4">
-        {/* Capa Panorâmica Canônica 21:9 com Scroll Interno de Banners Promocionais */}
-        <div className="w-full aspect-[21/9] rounded-lg sm:rounded-lg bg-muted/20 relative overflow-hidden flex items-center group border border-border/40">
-          <div 
-            tabIndex={0}
-            aria-label="Galeria de banners da empresa"
-            className="size-full overflow-x-auto overflow-y-hidden no-scrollbar scroll-smooth flex items-center snap-x snap-mandatory"
-          >
-            {storeBannersList.length > 0 ? (
-              storeBannersList.map((banner, idx) => (
-                <div
-                  key={idx}
-                  className="size-full min-w-full rounded-lg sm:rounded-lg overflow-hidden relative shrink-0 snap-center bg-muted/30"
-                >
-                  <img
-                    src={banner.imageUrl}
-                    alt={banner.title || "Capa da empresa"}
-                    className="size-full object-cover select-none"
-                  />
-                  {banner.link && (
-                    <a
-                      href={banner.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="absolute inset-0 z-10"
-                      aria-label="Abrir link do banner"
-                    />
-                  )}
-                </div>
-              ))
-            ) : (
-              <div className="size-full bg-gradient-to-r from-primary/10 via-muted/30 to-primary/10 flex items-center justify-center">
-                <Store className="size-10 sm:size-16 text-primary/30" />
-              </div>
-            )}
-          </div>
-
-          {isOwner && (
-            <div className="absolute top-2.5 right-2.5 sm:top-3 sm:right-3 flex items-center gap-2 z-20">
-              <button
-                type="button"
-                onClick={() => setIsEditCompanyModalOpen(true)}
-                className="bg-background/85 hover:bg-background text-foreground backdrop-blur-md px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 cursor-pointer transition-colors shadow-2xs"
-                title="Alterar Capa (21:9)"
-              >
-                <Camera className="size-3.5" />
-                <span className="hidden sm:inline">Alterar Capa</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setIsSectionsEditorOpen(true)}
-                className="bg-background/85 hover:bg-background text-foreground backdrop-blur-md px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 cursor-pointer transition-colors shadow-2xs"
-                title="Personalizar Vitrine"
-              >
-                <SlidersHorizontal className="size-3.5" />
-                <span className="hidden sm:inline">Personalizar</span>
-              </button>
-            </div>
-          )}
-        </div>
-
-        {/* Faixa do Avatar 1:1 e Contadores (Com sobreposição elegante da capa) */}
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 sm:gap-4 px-1 -mt-8 sm:-mt-12 relative z-10">
+        {/* Linha Superior Canônica: Foto 1:1 Squircle + Capa 21:9 com Scroll Interno de Banners ao Lado */}
+        <div className="flex items-center gap-3 sm:gap-5 w-full">
           {/* Foto da Empresa em Squircle 1:1 */}
           <div className="relative group shrink-0">
-            <div className="size-20 sm:size-28 rounded-lg bg-card border-4 border-card ring-1 ring-border/50 overflow-hidden flex items-center justify-center shadow-md">
+            <div className="size-20 sm:size-28 md:size-32 rounded-lg bg-card border-2 border-border/50 ring-1 ring-border/20 overflow-hidden flex items-center justify-center shadow-xs">
               {logoUrl ? (
                 <img
                   src={logoUrl}
                   alt={store.name || store.business_name}
-                  className="size-full object-cover"
+                  className="size-full object-cover select-none"
                 />
               ) : (
                 <span className="text-xl sm:text-3xl font-extrabold bg-muted text-foreground font-mono">
@@ -783,13 +724,74 @@ function cleanAddressSegment(text: string): string {
                 title="Alterar Logo da Marca"
               >
                 <Camera className="size-4 sm:size-5" />
-                <span className="text-xs sm:text-xs">Alterar</span>
+                <span className="text-[10px]">Alterar</span>
               </button>
             )}
           </div>
 
-          {/* Contadores Superiores Exclusivos para Seguidores / Seguindo / Curtidas */}
-          <div className="flex items-center gap-6 sm:gap-8 pb-1">
+          {/* Capa Panorâmica Canônica 21:9 ao lado com Scroll Interno de Banners Promocionais */}
+          <div className="flex-1 min-w-0 aspect-[21/9] rounded-lg bg-muted/20 relative overflow-hidden flex items-center group border border-border/40">
+            <div 
+              tabIndex={0}
+              aria-label="Galeria de banners da empresa"
+              className="size-full overflow-x-auto overflow-y-hidden no-scrollbar scroll-smooth flex items-center snap-x snap-mandatory"
+            >
+              {storeBannersList.length > 0 ? (
+                storeBannersList.map((banner, idx) => (
+                  <div
+                    key={idx}
+                    className="size-full min-w-full rounded-lg overflow-hidden relative shrink-0 snap-center bg-muted/30"
+                  >
+                    <img
+                      src={banner.imageUrl}
+                      alt={banner.title || "Capa da empresa"}
+                      className="size-full object-cover select-none"
+                    />
+                    {banner.link && (
+                      <a
+                        href={banner.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="absolute inset-0 z-10"
+                        aria-label="Abrir link do banner"
+                      />
+                    )}
+                  </div>
+                ))
+              ) : (
+                <div className="size-full bg-gradient-to-r from-primary/10 via-muted/30 to-primary/10 flex items-center justify-center">
+                  <Store className="size-8 sm:size-12 text-primary/30" />
+                </div>
+              )}
+            </div>
+
+            {isOwner && (
+              <div className="absolute top-2 right-2 flex items-center gap-1.5 z-20">
+                <button
+                  type="button"
+                  onClick={() => setIsEditCompanyModalOpen(true)}
+                  className="bg-background/85 hover:bg-background text-foreground backdrop-blur-md px-2.5 py-1.5 rounded-lg text-[11px] font-semibold flex items-center gap-1.5 cursor-pointer transition-colors shadow-2xs"
+                  title="Alterar Capa (21:9)"
+                >
+                  <Camera className="size-3.5" />
+                  <span className="hidden sm:inline">Capa</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsSectionsEditorOpen(true)}
+                  className="bg-background/85 hover:bg-background text-foreground backdrop-blur-md px-2.5 py-1.5 rounded-lg text-[11px] font-semibold flex items-center gap-1.5 cursor-pointer transition-colors shadow-2xs"
+                  title="Personalizar Vitrine"
+                >
+                  <SlidersHorizontal className="size-3.5" />
+                  <span className="hidden sm:inline">Vitrine</span>
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Faixa de Contadores (Seguidores / Seguindo / Curtidas) */}
+        <div className="flex items-center justify-between sm:justify-start gap-6 sm:gap-8 pt-1">
           <div className="text-left">
             <span className="block text-sm sm:text-base font-bold text-foreground font-mono">
               {store.followers_count || store.followersCount || 0}
@@ -809,7 +811,6 @@ function cleanAddressSegment(text: string): string {
             <span className="text-xs text-muted-foreground">Curtidas</span>
           </div>
         </div>
-      </div>
 
         {/* Linha de Identidade Compacta, Tipografia Fluida & Avaliação Real reposicionada abaixo do Nome */}
         <div className="pt-2 border-t border-border/30 flex flex-col gap-2">

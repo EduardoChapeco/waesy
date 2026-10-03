@@ -32,7 +32,11 @@ import { fastRegisterCompany } from "@/services/company-mvp.functions";
 import { ImageUpload } from "@/components/ui/image-upload";
 import { AddressField, type AddressData } from "@/components/ui/address-field";
 import { generateSlug } from "@/lib/slug-utils";
+import { useMasterLocation } from "@/components/location/location-master-pill";
+import { executeMagicOnboarding, type MagicOnboardingResult } from "@/services/magic-onboarding.functions";
+import { AiLiveExtractionDisplay } from "@/components/onboarding/ai-live-extraction-display";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 export const QUICK_CATEGORIES = [
   { id: "turismo", label: "Viagens e Turismo", icon: Plane },
@@ -54,11 +58,15 @@ export interface FastCompanyOnboardingProps {
 export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardingProps = {}) {
   const navigate = useNavigate();
 
+  const { location: masterLoc } = useMasterLocation();
+  const detectedCity = masterLoc?.city && masterLoc.city.toLowerCase() !== "global" ? masterLoc.city : "";
+  const detectedState = masterLoc?.state || "SC";
+
   const [name, setName] = useState("");
-  const [category, setCategory] = useState("turismo");
+  const [category, setCategory] = useState("servicos");
   const [phone, setPhone] = useState("");
-  const [city, setCity] = useState("São Miguel do Oeste");
-  const [state, setState] = useState("SC");
+  const [city, setCity] = useState(detectedCity);
+  const [state, setState] = useState(detectedState);
   const [address, setAddress] = useState("");
   const [bio, setBio] = useState("");
   const [logoUrl, setLogoUrl] = useState("");
@@ -66,45 +74,80 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
   const [website, setWebsite] = useState("");
   const [instagram, setInstagram] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isGeneratingAi, setIsGeneratingAi] = useState(false);
 
-  // Auto-preenchimento e geração inteligente com IA
-  const handleAiAutoFill = async () => {
-    if (!name.trim()) {
-      toast.error("Informe o nome da sua empresa primeiro para gerar com IA.");
+  // Estados de IA e Extração ao Vivo (Terminal Real dos 5 Squads)
+  const [aiUrlInput, setAiUrlInput] = useState("");
+  const [isExtractingAi, setIsExtractingAi] = useState(false);
+  const [aiResult, setAiResult] = useState<MagicOnboardingResult | null>(null);
+  const [showAiDisplay, setShowAiDisplay] = useState(false);
+
+  // Disparo do Motor de Extração com IA (Firecrawl + Steel + Concílio)
+  const handleStartAiExtraction = async (targetUrlOverride?: string) => {
+    const rawTarget = (targetUrlOverride || aiUrlInput || website || instagram || "").trim();
+    if (!rawTarget) {
+      toast.error("Informe a URL do seu site ou perfil do Instagram/Facebook para extrair.");
       return;
     }
 
-    setIsGeneratingAi(true);
-    try {
-      const selectedCat = QUICK_CATEGORIES.find((c) => c.id === category) || QUICK_CATEGORIES[0];
-      const cleanHandle = generateSlug(name);
-
-      // Gera bio comercial altamente persuasiva e adaptada ao nicho local
-      const bioTemplates: Record<string, string> = {
-        turismo: `Especialistas em experiências de viagem inesquecíveis, passagens aéreas e roteiros turísticos personalizados com saída de ${city || "Santa Catarina"}. Atendimento humanizado e suporte completo para suas férias.`,
-        gastronomia: `O melhor da gastronomia local em ${city || "sua cidade"}. Ingredientes selecionados, pratos especiais da casa e atendimento caloroso para você e sua família. Pedidos pelo WhatsApp e salão.`,
-        servicos: `Soluções ágeis, confiáveis e de alto padrão em prestação de serviços para ${city || "sua região"}. Pontualidade, profissionais qualificados e garantia em cada atendimento.`,
-        hospedagem: `Conforto, tranquilidade e excelente localização em ${city || "nossa cidade"}. Quartos equipados, café da manhã especial e estrutura completa para estadias de lazer ou a negócios.`,
-        comercio: `Produtos de qualidade, novidades constantes e os melhores preços de ${city || "sua cidade"}. Venha conferir nossa loja física ou faça seu pedido diretamente pelo WhatsApp.`,
-        saude: `Cuidado integral, acolhimento e bem-estar para você em ${city || "sua região"}. Tratamentos especializados com equipamentos modernos e equipe dedicada à sua saúde.`,
-        automotivo: `Revisão, manutenção preventiva e serviços especializados para veículos em ${city || "nossa região"}. Diagnóstico preciso e transparência garantida em cada serviço.`,
-        equipamentos: `Locação completa de equipamentos modernos e sonorização para eventos e celebrações inesquecíveis em ${city || "sua região"}.`,
-        outros: `Empresa referência em atendimento de excelência e produtos selecionados para toda a comunidade de ${city || "Santa Catarina"}.`,
-      };
-
-      const generatedBio = bioTemplates[category] || bioTemplates.outros;
-
-      setBio(generatedBio);
-      if (!instagram.trim()) {
-        setInstagram(`@${cleanHandle}`);
-      }
-      toast.success("Apresentação e dados gerados com sucesso pela IA!");
-    } catch {
-      toast.error("Erro ao gerar dados com IA.");
-    } finally {
-      setIsGeneratingAi(false);
+    let formattedUrl = rawTarget;
+    if (formattedUrl.startsWith("@")) {
+      formattedUrl = `https://instagram.com/${formattedUrl.slice(1)}`;
+    } else if (!formattedUrl.startsWith("http://") && !formattedUrl.startsWith("https://")) {
+      formattedUrl = `https://${formattedUrl}`;
     }
+
+    setAiUrlInput(formattedUrl);
+    setShowAiDisplay(true);
+    setIsExtractingAi(true);
+    setAiResult(null);
+
+    try {
+      toast.loading("Iniciando concílio de squads e mineração de dados...", { id: "ai-extract" });
+      const res = await executeMagicOnboarding({
+        data: {
+          url: formattedUrl,
+        },
+      });
+
+      if (res?.result) {
+        setAiResult(res.result);
+        toast.success("Dados minerados com sucesso! Revise os campos mapeados.", { id: "ai-extract" });
+      }
+    } catch (err: any) {
+      toast.error(err?.message || "Falha na extração de dados por IA.", { id: "ai-extract" });
+    } finally {
+      setIsExtractingAi(false);
+    }
+  };
+
+  const handleApplyAiResult = (extracted: MagicOnboardingResult) => {
+    if (extracted.company_name) setName(extracted.company_name);
+    if (extracted.bio) setBio(extracted.bio);
+    if (extracted.contact?.whatsapp || extracted.contact?.phone) {
+      setPhone(extracted.contact.whatsapp || extracted.contact.phone || phone);
+    }
+    if (extracted.contact?.city) setCity(extracted.contact.city);
+    if (extracted.contact?.state) setState(extracted.contact.state);
+    if (extracted.contact?.address) setAddress(extracted.contact.address);
+
+    if (extracted.category) {
+      const match = QUICK_CATEGORIES.find(
+        (c) => c.id === extracted.category || c.label.toLowerCase().includes(extracted.category.toLowerCase())
+      );
+      if (match) setCategory(match.id);
+    }
+
+    if (aiUrlInput) {
+      if (aiUrlInput.includes("instagram.com")) {
+        const handle = aiUrlInput.split("instagram.com/")[1]?.split("/")[0]?.split("?")[0];
+        if (handle) setInstagram(`@${handle}`);
+      } else {
+        setWebsite(aiUrlInput);
+      }
+    }
+
+    setShowAiDisplay(false);
+    toast.success("Formulário preenchido com sucesso a partir da inteligência minerada!");
   };
 
   const handleAddressChange = (val: AddressData) => {
@@ -147,12 +190,17 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
       });
 
       if (res?.success) {
-        toast.success("Empresa cadastrada com sucesso! Diretório.");
-        const resolvedStoreId = res.store?.id || (res as any).storeId;
+        toast.success("Empresa cadastrada no Diretório e Classificados!");
+        const resolvedStore = res.store;
+        const resolvedSlug = resolvedStore?.slug || (res as any).slug;
+        const resolvedStoreId = resolvedStore?.id || (res as any).storeId;
+
         if (onSuccess && resolvedStoreId) {
           onSuccess(resolvedStoreId);
+        } else if (resolvedSlug) {
+          navigate({ to: `/@${resolvedSlug}` as any });
         } else {
-          navigate({ to: "/workspace" });
+          navigate({ to: `/empresa/${resolvedStoreId}` as any });
         }
       }
     } catch (err: any) {
@@ -183,31 +231,71 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 rounded-lg bg-card border border-border/60 shadow-sm space-y-5">
-          {/* Nome da Empresa & Botão IA */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <label className="text-xs font-bold text-foreground flex items-center gap-2">
-                <Building2 className="size-3.5 text-primary" />
-                <span>Nome Fantasia da Empresa *</span>
-              </label>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={handleAiAutoFill}
-                disabled={isGeneratingAi || !name.trim()}
-                className="h-7 px-3 rounded-lg text-[11px] font-semibold text-primary hover:bg-primary/10 gap-1 cursor-pointer"
-                title="Auto-preencher bio e apresentação com IA"
-              >
-                {isGeneratingAi ? (
-                  <Loader2 className="size-3 animate-spin" />
-                ) : (
-                  <Sparkles className="size-3" />
-                )}
-                <span>Gerar com IA</span>
-              </Button>
+        {/* ── Box de Autopreenchimento Inteligente com IA (Website / Instagram) ── */}
+        <div className="p-4 sm:p-5 rounded-lg bg-card border border-border/80 shadow-xs space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Sparkles className="size-4 text-primary" />
+              <span className="text-xs font-bold text-foreground">Preencher com IA via Link</span>
             </div>
+            <Badge variant="outline" className="text-[10px] font-mono bg-background text-muted-foreground">
+              Automação Soberana
+            </Badge>
+          </div>
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            Informe o site, Instagram ou página da sua empresa. A inteligência artificial varre os dados reais, minera a identidade visual e preenche o formulário.
+          </p>
+
+          <div className="flex flex-col sm:flex-row items-center gap-2">
+            <div className="relative w-full">
+              <Globe className="size-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                value={aiUrlInput}
+                onChange={(e) => setAiUrlInput(e.target.value)}
+                placeholder="https://seusite.com.br ou @seuinstagram"
+                className="h-11 pl-9 rounded-lg text-xs"
+                disabled={isExtractingAi}
+              />
+            </div>
+            <Button
+              type="button"
+              onClick={() => handleStartAiExtraction()}
+              disabled={isExtractingAi || !aiUrlInput.trim()}
+              className="w-full sm:w-auto h-11 px-5 rounded-lg text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 shadow-2xs shrink-0 cursor-pointer gap-1.5"
+            >
+              {isExtractingAi ? (
+                <>
+                  <Loader2 className="size-3.5 animate-spin" />
+                  <span>Minerando...</span>
+                </>
+              ) : (
+                <>
+                  <Sparkles className="size-3.5" />
+                  <span>Extrair com IA</span>
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
+
+        {/* ── Terminal ao Vivo de Execução da IA (se ativo) ── */}
+        {showAiDisplay && (
+          <AiLiveExtractionDisplay
+            url={aiUrlInput}
+            isProcessing={isExtractingAi}
+            result={aiResult}
+            onApplyResult={handleApplyAiResult}
+            onCancel={() => setShowAiDisplay(false)}
+          />
+        )}
+
+        <form onSubmit={handleSubmit} className="p-6 rounded-lg bg-card border border-border/60 shadow-sm space-y-5">
+          {/* Nome da Empresa */}
+          <div className="space-y-2">
+            <label className="text-xs font-bold text-foreground flex items-center gap-2">
+              <Building2 className="size-3.5 text-primary" />
+              <span>Nome Fantasia da Empresa *</span>
+            </label>
             <Input
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -256,7 +344,7 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
             </div>
           </div>
 
-          {/* Endereço e Localização Interativa com CEP e Mapa */}
+          {/* Endereço e Localização Interativa com CEP e Banco Próprio */}
           <div className="space-y-2 pt-1 border-t border-border/40">
             <label className="text-xs font-bold text-foreground flex items-center gap-2">
               <MapPin className="size-3.5 text-primary" />
@@ -323,7 +411,7 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
                   value={website}
                   onChange={(e) => setWebsite(e.target.value)}
                   placeholder="https://suaempresa.com.br"
-                  className="h-9 rounded-lg text-xs"
+                  className="h-11 rounded-lg text-xs"
                 />
               </div>
 
@@ -336,7 +424,7 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
                   value={instagram}
                   onChange={(e) => setInstagram(e.target.value)}
                   placeholder="@suaempresa"
-                  className="h-9 rounded-lg text-xs"
+                  className="h-11 rounded-lg text-xs"
                 />
               </div>
             </div>
@@ -355,7 +443,7 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
                 </>
               ) : (
                 <>
-                  <span>Concluir Cadastro e Abrir Painel</span>
+                  <span>Concluir Cadastro</span>
                   <ArrowRight className="size-4" />
                 </>
               )}
@@ -376,71 +464,67 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
           </Badge>
         </div>
 
-        {/* Card do Perfil Público (Fiel à CanonicalStoreProfileView) */}
-        <div className="rounded-lg border border-border/60 bg-card overflow-hidden shadow-sm space-y-0">
-          {/* Capa Panorâmica Canônica 21:9 */}
-          <div className="relative aspect-[21/9] w-full bg-muted overflow-hidden flex items-center justify-center">
-            {bannerUrl ? (
-              <img src={bannerUrl} alt="Capa da empresa" className="size-full object-cover" />
-            ) : (
-              <div className="size-full bg-gradient-to-r from-primary/10 via-muted/40 to-primary/15 flex items-center justify-center">
-                <Store className="size-10 text-primary/30" />
-              </div>
-            )}
-            <div className="absolute top-2.5 left-2.5">
-              <Badge className="bg-black/75 backdrop-blur-md text-white border-white/20 text-[10px] font-bold gap-1">
-                <CatIcon className="size-3" />
-                <span>{selectedCat.label}</span>
-              </Badge>
-            </div>
-          </div>
-
-          {/* Foto de Perfil 1:1 com Sobreposição Elegante + Stats */}
-          <div className="p-4 sm:p-5 pt-0 relative space-y-3">
-            <div className="flex items-end justify-between -mt-8 sm:-mt-10 mb-1">
-              <div className="size-16 sm:size-20 rounded-lg border-4 border-card bg-background overflow-hidden flex items-center justify-center shadow-md shrink-0">
+        {/* Card do Perfil Público Canônico (Fiel à CanonicalStoreProfileView: Foto 1:1 Squircle ao lado da Capa 21:9) */}
+        <div className="rounded-lg border border-border/60 bg-card overflow-hidden shadow-2xs space-y-0">
+          {/* Topo Canônico: Foto 1:1 Squircle + Capa 21:9 ao lado */}
+          <div className="p-4 bg-card border-b border-border/40">
+            <div className="flex items-center gap-3 w-full">
+              {/* Logo Squircle 1:1 */}
+              <div className="size-16 sm:size-20 rounded-lg border-2 border-border/60 bg-background overflow-hidden flex items-center justify-center shadow-2xs shrink-0">
                 {logoUrl ? (
-                  <img src={logoUrl} alt={name || "Logo"} className="size-full object-cover" />
+                  <img src={logoUrl} alt={name || "Logo"} className="size-full object-cover select-none" />
                 ) : (
-                  <div className="size-full bg-foreground text-background flex items-center justify-center font-black text-xl">
+                  <div className="size-full bg-foreground text-background flex items-center justify-center font-black text-xl select-none">
                     {name ? name.charAt(0).toUpperCase() : "E"}
                   </div>
                 )}
               </div>
 
-              <div className="flex items-center gap-4 text-right">
-                <div>
-                  <span className="block text-xs font-mono font-bold text-foreground">0</span>
-                  <span className="text-[10px] text-muted-foreground">Seguidores</span>
+              {/* Capa Panorâmica Canônica 21:9 ao lado */}
+              <div className="flex-1 min-w-0 aspect-[21/9] rounded-lg bg-muted relative overflow-hidden flex items-center border border-border/40">
+                {bannerUrl ? (
+                  <img src={bannerUrl} alt="Capa da empresa" className="size-full object-cover select-none" />
+                ) : (
+                  <div className="size-full bg-gradient-to-r from-primary/10 via-muted/40 to-primary/15 flex items-center justify-center p-2 text-center">
+                    <Store className="size-6 text-primary/30" />
+                  </div>
+                )}
+                <div className="absolute bottom-2 left-2">
+                  <Badge className="bg-black/75 backdrop-blur-md text-white border-white/20 text-[9px] font-bold gap-1">
+                    <CatIcon className="size-2.5" />
+                    <span>{selectedCat.label}</span>
+                  </Badge>
                 </div>
-                <div>
-                  <span className="block text-xs font-mono font-bold text-foreground">0</span>
-                  <span className="text-[10px] text-muted-foreground">Curtidas</span>
-                </div>
-                <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 text-[10px] font-bold gap-1">
-                  <ShieldCheck className="size-3" />
-                  <span>Ativo</span>
-                </Badge>
               </div>
             </div>
+          </div>
 
-            {/* Identidade: Nome, @slug limpo, Endereço */}
-            <div className="space-y-1">
-              <div className="flex items-center gap-2 flex-wrap">
-                <h3 className="font-black text-base text-foreground tracking-tight truncate">
-                  {name || "Nome da Sua Empresa"}
-                </h3>
-                <ShieldCheck className="size-3.5 text-primary" />
-                <span className="text-[11px] font-mono text-muted-foreground">
+          {/* Dados da Loja */}
+          <div className="p-4 space-y-3">
+            <div className="flex items-center justify-between gap-2">
+              <div className="space-y-0.5 min-w-0">
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <h3 className="font-black text-base text-foreground tracking-tight truncate">
+                    {name || "Nome da Sua Empresa"}
+                  </h3>
+                  <ShieldCheck className="size-3.5 text-primary" />
+                </div>
+                <span className="text-[11px] font-mono text-muted-foreground block truncate">
                   @{cleanSlug}
                 </span>
               </div>
-              <p className="text-xs text-muted-foreground flex items-center gap-1">
-                <MapPin className="size-3 text-primary shrink-0" />
-                <span>{city}, {state}</span>
-                {address && <span className="truncate">• {address}</span>}
-              </p>
+
+              <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 text-[10px] font-bold gap-1 shrink-0">
+                <ShieldCheck className="size-3" />
+                <span>Ativo</span>
+              </Badge>
             </div>
+
+            <p className="text-xs text-muted-foreground flex items-center gap-1">
+              <MapPin className="size-3 text-primary shrink-0" />
+              <span>{city || "Cidade"}, {state}</span>
+              {address && <span className="truncate">• {address}</span>}
+            </p>
 
             {/* Bio formatada */}
             <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
@@ -452,12 +536,12 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
               <span className="text-[11px] font-mono text-muted-foreground">
                 {phone || "(49) 99999-9999"}
               </span>
-              <div className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-bold shadow-xs">
-                Falar no WhatsApp
+              <div className="px-3.5 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-bold shadow-xs">
+                WhatsApp
               </div>
             </div>
 
-            {/* Abas Simuladas da Canonical View */}
+            {/* Abas da Vitrine Canônica */}
             <div className="pt-1 flex items-center gap-4 text-[11px] font-semibold text-muted-foreground border-t border-border/30">
               <span className="text-foreground border-b-2 border-primary pb-1">Vitrine</span>
               <span className="pb-1">Sobre</span>
@@ -474,7 +558,7 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
             <span>Perfil Oficial no Diretório e Guia</span>
           </p>
           <p className="text-[11.5px] leading-relaxed">
-            Assim que você concluir, sua empresa aparecerá na vitrine com URL própria (<code className="text-foreground font-mono">waesy.com.br/perfil-da-loja?slug={cleanSlug}</code>) e integração ao WhatsApp comercial.
+            Assim que você concluir, sua empresa aparecerá na vitrine pública com link oficial (<code className="text-foreground font-mono">waesy.com.br/@{cleanSlug}</code>) e integração direta com o WhatsApp comercial.
           </p>
         </div>
       </div>

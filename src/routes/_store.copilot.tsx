@@ -16,6 +16,13 @@ import {
 import { getUserSession } from "@/services/auth.functions";
 import { toast } from "sonner";
 
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+function isUuid(str: string): boolean {
+  return UUID_REGEX.test(str);
+}
+
+const DEFAULT_GUEST_THREAD_ID = "00000000-0000-0000-0000-000000000001";
+
 export const Route = createFileRoute("/_store/copilot")({
   head: () => ({
     meta: [
@@ -23,7 +30,7 @@ export const Route = createFileRoute("/_store/copilot")({
       {
         name: "description",
         content:
-          "Assistente inteligente para consultas locais, planejamento de viagens, recomendacao de produtos e criacao de propostas.",
+          "Assistente inteligente para consultas locais, planejamento de viagens, recomendação de produtos e criação de propostas.",
       },
     ],
   }),
@@ -33,7 +40,30 @@ export const Route = createFileRoute("/_store/copilot")({
         getUserSession().catch(() => null),
         listAiConversationThreads().catch(() => []),
       ]);
-      return { session, initialThreads: threads };
+
+      let resolvedThreads = threads || [];
+      const effectiveUserId = session?.id || session?.user?.id || null;
+
+      // Se o usuário está logado e não possui nenhuma thread, cria a primeira thread oficial no Supabase
+      if (effectiveUserId && resolvedThreads.length === 0) {
+        try {
+          const newThread = await createAiConversationThread({
+            data: {
+              type: "ai_assistant",
+              title: "Copilot Geral",
+              metadata: {},
+              workingMemory: {},
+            },
+          });
+          if (newThread?.id) {
+            resolvedThreads = [newThread];
+          }
+        } catch (e) {
+          console.warn("[_store.copilot] Falha ao criar thread inicial:", e);
+        }
+      }
+
+      return { session, initialThreads: resolvedThreads };
     } catch {
       return { session: null, initialThreads: [] };
     }
@@ -43,6 +73,7 @@ export const Route = createFileRoute("/_store/copilot")({
 
 function CopilotPage() {
   const { session, initialThreads } = Route.useLoaderData();
+  const effectiveUserId = session?.id || session?.user?.id || null;
   const [userCoords, setUserCoords] = useState<{ lat?: number; lng?: number }>({});
 
   useEffect(() => {
@@ -61,11 +92,11 @@ function CopilotPage() {
     if (!initialThreads || initialThreads.length === 0) {
       return [
         {
-          id: "default-assistant-thread",
+          id: DEFAULT_GUEST_THREAD_ID,
           type: "ai_assistant",
           title: "Copilot Geral",
           isPinned: true,
-          lastMessageSnippet: "Como posso ajudar com produtos, viagens ou servicos?",
+          lastMessageSnippet: "Como posso ajudar com produtos, viagens ou serviços?",
           workingMemory: {},
         },
       ];
@@ -73,16 +104,16 @@ function CopilotPage() {
     return initialThreads.map((t: any) => ({
       id: t.id,
       type: t.type || "ai_assistant",
-      title: t.title,
-      isPinned: t.is_pinned,
-      metadata: t.metadata,
-      workingMemory: t.working_memory,
+      title: t.title || t.subject || "Conversa",
+      isPinned: t.is_pinned || false,
+      metadata: t.metadata || {},
+      workingMemory: t.working_memory || {},
       updatedAt: t.updated_at,
     }));
   });
 
   const [activeThreadId, setActiveThreadId] = useState<string>(
-    threads[0]?.id || "default-assistant-thread"
+    threads[0]?.id || DEFAULT_GUEST_THREAD_ID
   );
 
   const [messages, setMessages] = useState<ChatMessageItem[]>([
@@ -91,7 +122,7 @@ function CopilotPage() {
       threadId: activeThreadId,
       senderName: "Waesy Copilot",
       isStaffOrAI: true,
-      text: "Ola! Sou o Copilot inteligente da plataforma Waesy. Posso te ajudar a encontrar estabelecimentos no Places, pacotes no Turismo, ofertas no Marketplace ou estruturar propostas comerciais para o seu negocio. Como posso te apoiar hoje?",
+      text: "Olá! Sou o Copilot inteligente da plataforma Waesy. Posso te ajudar a encontrar estabelecimentos no Places, pacotes no Turismo, ofertas no Marketplace ou estruturar propostas comerciais para o seu negócio. Como posso te apoiar hoje?",
       createdAt: new Date().toISOString(),
       status: "delivered",
     },
@@ -100,7 +131,7 @@ function CopilotPage() {
   const [isSending, setIsSending] = useState(false);
 
   useEffect(() => {
-    if (activeThreadId && activeThreadId !== "default-assistant-thread") {
+    if (activeThreadId && isUuid(activeThreadId) && activeThreadId !== DEFAULT_GUEST_THREAD_ID) {
       getAiConversationThread({ data: { threadId: activeThreadId } })
         .then((res) => {
           if (res?.messages && res.messages.length > 0) {
@@ -117,7 +148,7 @@ function CopilotPage() {
     const userMessageItem: ChatMessageItem = {
       id: `usr-${Date.now()}`,
       threadId: activeThreadId,
-      senderName: (session as any)?.user?.user_metadata?.full_name || (session as any)?.user_metadata?.full_name || "Voce",
+      senderName: (session as any)?.user?.user_metadata?.full_name || (session as any)?.user_metadata?.full_name || "Você",
       isStaffOrAI: false,
       text,
       createdAt: new Date().toISOString(),
@@ -129,7 +160,7 @@ function CopilotPage() {
     setIsSending(true);
 
     try {
-      if (session?.id && activeThreadId !== "default-assistant-thread") {
+      if (effectiveUserId && isUuid(activeThreadId) && activeThreadId !== DEFAULT_GUEST_THREAD_ID) {
         await sendAiConversationMessage({
           data: {
             threadId: activeThreadId,
@@ -149,7 +180,7 @@ function CopilotPage() {
           text,
           {},
           {
-            userId: session?.id,
+            userId: effectiveUserId || undefined,
             userLat: userCoords.lat,
             userLng: userCoords.lng,
           }
@@ -177,7 +208,7 @@ function CopilotPage() {
 
   const handleCreateThread = async (type: ThreadType, title: string) => {
     try {
-      if (session?.id) {
+      if (effectiveUserId) {
         const created = await createAiConversationThread({
           data: {
             type,
@@ -196,7 +227,7 @@ function CopilotPage() {
         setActiveThreadId(created.id);
         setMessages([]);
       } else {
-        const localId = `local-${Date.now()}`;
+        const localId = typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `00000000-0000-0000-0000-${Date.now().toString().slice(-12).padStart(12, "0")}`;
         const newThreadItem: ChatThreadItem = {
           id: localId,
           type,
@@ -222,7 +253,7 @@ function CopilotPage() {
         onSendMessage={handleSendMessage}
         onCreateThread={handleCreateThread}
         isSending={isSending}
-        currentUserProfileId={session?.id}
+        currentUserProfileId={effectiveUserId || undefined}
         className="h-full border-none rounded-none"
       />
     </div>

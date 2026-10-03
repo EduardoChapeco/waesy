@@ -797,12 +797,9 @@ export const saveBrandKit = createServerFn({ method: "POST" })
       brandKitResult = created as BrandKitDTO;
     }
 
-    // Sincroniza imediatamente com a tabela stores para refletir na vitrine canônica
+    // Sincroniza logo com a loja e capa estritamente com o card do Places (directory_listings)
     if (data.logos && typeof data.logos === "object") {
       const storeUpdates: Record<string, any> = {};
-      if (data.logos.cover_url) {
-        storeUpdates.banner_url = data.logos.cover_url;
-      }
       if (data.logos.main_url) {
         storeUpdates.logo_url = data.logos.main_url;
       }
@@ -815,17 +812,19 @@ export const saveBrandKit = createServerFn({ method: "POST" })
 
       const mergedSettings = {
         ...(currentStore?.settings || {}),
-        ...(data.logos.cover_url ? { cover_url: data.logos.cover_url, banner_url: data.logos.cover_url } : {}),
+        ...(data.logos.cover_url ? { places_cover_url: data.logos.cover_url } : {}),
         ...(data.logos.main_url ? { logo_url: data.logos.main_url } : {}),
       };
       storeUpdates.settings = mergedSettings;
 
-      await supabase
-        .from("stores")
-        .update(storeUpdates)
-        .eq("id", identity.store_id);
+      if (Object.keys(storeUpdates).length > 0) {
+        await supabase
+          .from("stores")
+          .update(storeUpdates)
+          .eq("id", identity.store_id);
+      }
 
-      // Sincroniza atomicamente com o card da empresa no Places (directory_listings)
+      // Sincroniza atomicamente e exclusivamente com o card da empresa no Places (directory_listings)
       if (data.logos.cover_url) {
         await supabase
           .from("directory_listings")

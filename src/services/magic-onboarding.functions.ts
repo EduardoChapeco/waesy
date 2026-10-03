@@ -79,31 +79,31 @@ export const executeMagicOnboarding = createServerFn({ method: "POST" })
   .handler(async ({ data: input }): Promise<{ success: boolean; result: MagicOnboardingResult; message: string }> => {
     const supabase = getServerClient();
     const identity = await getServerIdentity();
-    const storeId = input.store_id || identity.store_id;
-
-    if (!storeId) {
-      throw new Error("Nenhuma loja selecionada para aplicar o Onboarding Guiado por IA.");
-    }
+    const storeId = input.store_id || identity.store_id || null;
 
     const safeUrl = assertSafeUrl(input.url);
     const domain = safeUrl.hostname.replace(/^www\./, "");
 
     // 1. Cria o registro de Job Assíncrono para rastreamento no banco
+    const jobPayload: any = {
+      task: "onboarding_ai_extraction",
+      user_id: identity.id || null,
+      status: "processing",
+      progress_percent: 5,
+      payload: {
+        url: input.url,
+        domain,
+        store_id: storeId,
+        initiated_by: identity.email || null,
+      },
+    };
+    if (storeId) {
+      jobPayload.store_id = storeId;
+    }
+
     const { data: jobRow, error: jobErr } = await supabase
       .from("ai_async_jobs")
-      .insert({
-        task: "onboarding_ai_extraction",
-        store_id: storeId,
-        user_id: identity.id,
-        status: "processing",
-        progress_percent: 5,
-        payload: {
-          url: input.url,
-          domain,
-          store_id: storeId,
-          initiated_by: identity.email,
-        },
-      })
+      .insert(jobPayload)
       .select("id")
       .single();
 
@@ -117,10 +117,10 @@ export const executeMagicOnboarding = createServerFn({ method: "POST" })
     const processFullOnboardingPipeline = async (): Promise<MagicOnboardingResult> => {
       try {
         // A. Visita e captura com Firecrawl e Steel.dev (Screenshot + Scraping)
-        const evidence = await captureWebEvidence(input.url, storeId, jobId);
+        const evidence = await captureWebEvidence(input.url, storeId || "", jobId);
 
         // B. Verificação Google Meu Negócio / Places
-        const gmbEvidence = await fetchGoogleBusinessEvidence(storeId, evidence.domain);
+        const gmbEvidence = await fetchGoogleBusinessEvidence(storeId || "", evidence.domain);
         evidence.googleBusiness = gmbEvidence;
 
         await updateJobProgress(jobId, 45, "processing");
@@ -148,13 +148,17 @@ export const executeMagicOnboarding = createServerFn({ method: "POST" })
 
         await updateJobProgress(jobId, 90, "processing");
 
-        // E. Persistência E2E Atômica (stores, brand_kits, brand_dna_profiles, briefings, products)
-        const { createdProductsCount } = await persistOnboardingResults(
-          storeId,
-          consolidated,
-          input.url,
-          jobId
-        );
+        // E. Persistência E2E Atômica (apenas se loja já existir)
+        let createdProductsCount = 0;
+        if (storeId) {
+          const persistRes = await persistOnboardingResults(
+            storeId,
+            consolidated,
+            input.url,
+            jobId
+          );
+          createdProductsCount = persistRes.createdProductsCount;
+        }
 
         // F. Finalização do Job
         await updateJobProgress(jobId, 100, "completed", undefined, {
@@ -197,27 +201,37 @@ export const executeMagicOnboarding = createServerFn({ method: "POST" })
       }
     };
 
-    // 3. Interceptador de Cobrança com Lock ACID e Auto-Refund (20.000 Tokens da Plataforma)
-    const { result, tollboothReceipt } = await requireTokensOrTollbooth({
-      storeId,
-      tokens: ONBOARDING_AI_COST,
-      actionType: "burn_magic_onboarding",
-      serviceCategory: "magic_onboarding",
-      description: `Onboarding Guiado por IA: ${domain}`,
-      timeSavedMinutes: ONBOARDING_AI_TIME_SAVED_MINUTES,
-      metadata: {
-        target_url: input.url,
-        domain,
-        job_id: jobId,
-      },
-      executeAction: processFullOnboardingPipeline,
-    });
+    if (storeId) {
+      // 3. Interceptador de Cobrança com Lock ACID e Auto-Refund (20.000 Tokens da Plataforma)
+      const { result, tollboothReceipt } = await requireTokensOrTollbooth({
+        storeId,
+        tokens: ONBOARDING_AI_COST,
+        actionType: "burn_magic_onboarding",
+        serviceCategory: "magic_onboarding",
+        description: `Onboarding Guiado por IA: ${domain}`,
+        timeSavedMinutes: ONBOARDING_AI_TIME_SAVED_MINUTES,
+        metadata: {
+          target_url: input.url,
+          domain,
+          job_id: jobId,
+        },
+        executeAction: processFullOnboardingPipeline,
+      });
 
-    return {
-      success: true,
-      result,
-      message: `Onboarding concluído com sucesso (${tollboothReceipt.tokensDeducted.toLocaleString("pt-BR")} Tokens debitados).`,
-    };
+      return {
+        success: true,
+        result,
+        message: `Onboarding concluído com sucesso (${tollboothReceipt.tokensDeducted.toLocaleString("pt-BR")} Tokens debitados).`,
+      };
+    } else {
+      // Extração em pré-onboarding para preenchimento ágil do cadastro
+      const result = await processFullOnboardingPipeline();
+      return {
+        success: true,
+        result,
+        message: "Dados da empresa minerados e estruturados com sucesso pela IA.",
+      };
+    }
   });
 
 /**

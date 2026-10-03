@@ -132,7 +132,7 @@ function dbToForm(bk: Record<string, any>, store?: any): BrandKitForm {
     logo_dark_url: logos.dark_url || "",
     logo_icon_url: logos.icon_url || (store as any)?.settings?.favicon_url || "",
     logo_light_url: logos.light_url || "",
-    cover_url: logos.cover_url || (store as any)?.banner_url || (store as any)?.settings?.cover_url || (store as any)?.settings?.banner_url || "",
+    cover_url: logos.cover_url || (store as any)?.settings?.places_cover_url || "",
     border_radius_scale: voice.border_radius_scale || EMPTY_FORM.border_radius_scale,
     shadow_style: voice.shadow_style || EMPTY_FORM.shadow_style,
     animation_style: voice.animation_style || EMPTY_FORM.animation_style,
@@ -721,17 +721,17 @@ export function BrandKitPage() {
         {/* ABA: LOGOS & CAPA */}
         {activeTab === "logos" && (
           <div className="space-y-6">
-            {/* Capa do Anúncio / Card da Empresa no Places (16:10 Canônico) */}
+            {/* Capa do Card da Empresa no Places (Guia & Diretório Local) */}
             <div className="bg-card border border-border/50 rounded-lg overflow-hidden">
               <div className="px-5 py-4 border-b border-border/30 flex items-center justify-between">
                 <div>
-                  <Label className="text-sm font-semibold">Capa Panorâmica da Loja (Perfil e Vitrines)</Label>
+                  <Label className="text-sm font-semibold">Capa do Card no Places</Label>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Banner oficial exibido no cabeçalho do perfil público da loja e nos destaques do ecossistema Waesy
+                    Imagem exibida no cartão da sua empresa no Places e diretório local. Não altera a capa ou banners do cabeçalho da sua vitrine.
                   </p>
                 </div>
                 <Badge variant="outline" className="text-xs font-mono">
-                  3:1 Panorâmica (1200×400px)
+                  16:9 ou 3:1 (Places)
                 </Badge>
               </div>
               <div className="p-5">
@@ -741,7 +741,7 @@ export function BrandKitPage() {
                   onRemove={() => update({ cover_url: "" })}
                   bucket="store-assets"
                   aspectPreset="cover"
-                  helperText="Clique ou arraste para carregar a capa oficial com máscara 3:1 (1200×400px). Sincronizada atomicamente com o banner do perfil público da sua loja."
+                  helperText="Clique ou arraste para carregar a capa do card da sua empresa no Places. Sincronizada exclusivamente com o guia e diretório de empresas."
                 />
               </div>
             </div>

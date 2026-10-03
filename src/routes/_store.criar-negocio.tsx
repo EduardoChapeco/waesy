@@ -1174,42 +1174,45 @@ function CriarNegocioPage() {
  </Badge>
  </div>
 
- {/* Capa Panorâmica da Loja */}
- <div className="relative aspect-[21/9] sm:aspect-[16/7] w-full bg-muted overflow-hidden">
+ {/* ── Topo Canônico da Prévia: Foto 1:1 Squircle ao lado da Capa 21:9 ── */}
+ <div className="p-4 bg-card border-b border-border/60">
+ <div className="flex items-center gap-3 w-full">
+ {/* Logotipo Squircle 1:1 */}
+ <div className="size-16 sm:size-20 rounded-lg overflow-hidden border-2 border-border/60 bg-background flex items-center justify-center shrink-0 shadow-2xs">
+ {logoUrl ? (
+ <img src={logoUrl} alt={name || "Logo"} className="size-full object-cover select-none" />
+ ) : (
+ <div className={cn("size-full flex items-center justify-center font-black text-xl text-white", selectedSegment.gradient)}>
+ {name ? name.charAt(0).toUpperCase() : <Store className="size-7 text-white/80" />}
+ </div>
+ )}
+ </div>
+
+ {/* Capa Panorâmica 21:9 ao lado */}
+ <div className="flex-1 min-w-0 aspect-[21/9] rounded-lg bg-muted relative overflow-hidden flex items-center border border-border/40">
  {bannerUrl ? (
- <img src={bannerUrl} alt="Capa da Loja" className="size-full object-cover" />
+ <img src={bannerUrl} alt="Capa da Loja" className="size-full object-cover select-none" />
  ) : (
  <img
  src={selectedSegment.coverImage}
  alt={selectedSegment.title}
- className="size-full object-cover opacity-80"
+ className="size-full object-cover opacity-80 select-none"
  />
  )}
- <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-
- {/* Badge de Nicho sobre a Foto */}
- <div className="absolute top-3 left-3">
- <Badge className="bg-black/60 backdrop-blur-md text-white border-white/20 text-[10px] font-bold gap-1">
- <selectedSegment.icon className="size-3" />
+ <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+ <div className="absolute bottom-2 left-2">
+ <Badge className="bg-black/60 backdrop-blur-md text-white border-white/20 text-[9px] font-bold gap-1">
+ <selectedSegment.icon className="size-2.5" />
  <span>{selectedSegment.badge}</span>
  </Badge>
  </div>
  </div>
-
- {/* Corpo da Loja com Logo Sobreposto */}
- <div className="p-5 pt-0 relative space-y-4">
- <div className="flex items-end justify-between -mt-8 mb-2">
- {/* Logotipo Redondo/Squircle */}
- <div className="size-16 sm:size-20 rounded-lg overflow-hidden border-[3px] border-card bg-background flex items-center justify-center shrink-0">
- {logoUrl ? (
- <img src={logoUrl} alt={name || "Logo"} className="size-full object-cover" />
- ) : (
- <div className={cn("size-full flex items-center justify-center font-black text-xl text-white", selectedSegment.gradient)}>
- {name ? name.charAt(0).toUpperCase() : <Store className="size-8 text-white/80" />}
  </div>
- )}
  </div>
 
+ {/* Corpo da Loja */}
+ <div className="p-4 space-y-4">
+ <div className="flex items-center justify-between">
  <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 text-[10px] font-bold gap-1">
  <ShieldCheck className="size-3" />
  <span>Verificado</span>
