@@ -1664,58 +1664,6 @@ export const calculateAndApplyChannelPricing = createServerFn({ method: "POST" }
   });
 
 /**
- * Envia uma resposta para uma pergunta de cliente no Mercado Livre (POST /answers).
- */
-export async function answerMercadoLivreQuestion(params: {
-  storeId: string;
-  questionId: string;
-  answerText: string;
-}): Promise<{ success: boolean; message: string }> {
-  const supabase = getServerClient();
-  const { data: connector } = await supabase
-    .from("marketplace_connectors")
-    .select("access_token, settings")
-    .eq("store_id", params.storeId)
-    .eq("platform", "mercadolivre")
-    .eq("status", "connected")
-    .maybeSingle();
-
-  if (!connector?.access_token) {
-    return { success: false, message: "Conector Mercado Livre inativo ou sem token." };
-  }
-
-  let token = "";
-  try {
-    token = decryptSecret(connector.access_token);
-  } catch {
-    token = connector.access_token;
-  }
-
-  const res = await fetchWithExponentialBackoff(
-    "https://api.mercadolibre.com/answers",
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        question_id: parseInt(params.questionId, 10) || params.questionId,
-        text: params.answerText,
-      }),
-    },
-    { maxRetries: 3, baseDelayMs: 500 }
-  );
-
-  return {
-    success: res.ok,
-    message: res.ok
-      ? "Resposta enviada com sucesso ao Mercado Livre."
-      : `Erro ML: HTTP ${res.status} (${res.statusText})`,
-  };
-}
-
-/**
  * Despacha um pedido do Waesy para o Bling ERP v3 (POST /pedidos/vendas).
  * Automatiza a integração fiscal e faturamento de ponta a ponta.
  */
@@ -1897,7 +1845,7 @@ export async function answerMercadoLivreQuestion(
       { maxRetries: 3, baseDelayMs: 500 }
     );
 
-    const resBody = await response.json().catch(() => ({}));
+    const resBody = (response.data || {}) as Record<string, any>;
 
     // 3. Trilha de auditoria no log de sincronização
     await supabase.from("marketplace_sync_logs").insert({

@@ -537,6 +537,8 @@ export const upsertSurfaceSection = createServerFn({ method: "POST" })
  ]),
  layout_variant: z.enum([
  "rail_standard",
+ "rail_feature_card",
+ "rail_lead_banner",
  "rail_compact",
  "grid_2col",
  "grid_4col",

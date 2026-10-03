@@ -10,6 +10,7 @@ import {
   Download,
   History,
   Layers,
+  Compass,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -58,6 +59,16 @@ const ARTIFACT_TYPE_CONFIG: Record<
     label: "Imagem Gerada",
     icon: Image,
     defaultExport: "png",
+  },
+  itinerary: {
+    label: "Roteiro",
+    icon: Compass,
+    defaultExport: "pdf",
+  },
+  travel_itinerary: {
+    label: "Roteiro de Viagem",
+    icon: Compass,
+    defaultExport: "pdf",
   },
 };
 

@@ -88,6 +88,11 @@ export function AiSdrChat({ classifiedId, storeId, sellerProfileId, storeName, s
       console.error("[sdr-chat] Erro:", e?.message);
       toast.error("Assistente indisponível no momento. Tente novamente.");
       setMessages((prev) => prev.slice(0, -1));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleEscalateToHuman = async () => {
     setIsEscalating(true);
     try {

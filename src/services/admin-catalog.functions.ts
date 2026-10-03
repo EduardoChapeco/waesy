@@ -49,7 +49,8 @@ export async function _createProductType(input: {
 }) {
  const db = getServerClient();
  const { getServerIdentity } = await import("@/lib/server-access");
- const { store_id } = await getServerIdentity();
+ const identity = await getServerIdentity();
+	const store_id = identity.store_id;
  if (!store_id) throw new Error("Nenhuma loja ativa selecionada.");
 
  const { data: storeData } = await db
@@ -265,8 +266,8 @@ export async function _createProduct(input: {
 }) {
  const db = getServerClient();
  const { getServerIdentity } = await import("@/lib/server-access");
- const { store_id } = await getServerIdentity();
- const effectiveStoreId = store_id;
+ const identity = await getServerIdentity();
+ const effectiveStoreId = identity.store_id;
  if (!effectiveStoreId) throw new Error("Nenhuma loja ativa selecionada.");
 
  // 1. Tenta RPC atômico primeiro se existir
@@ -375,6 +376,7 @@ export async function _createProduct(input: {
 	} catch (err) {
 		console.warn("[admin-catalog] Erro ao associar option_groups:", err);
 	}
+	}
 
 	// Insere variantes ou variante default (Integridade Canônica de Schema: stock_on_hand)
 	if (input.variants && input.variants.length > 0) {
@@ -408,9 +410,11 @@ export async function _createProduct(input: {
 					}));
 
 				if (initialMovements.length > 0) {
-					await db.from("stock_movements").insert(initialMovements).catch((err: any) => {
+					try {
+						await db.from("stock_movements").insert(initialMovements);
+					} catch (err: any) {
 						console.warn("[admin-catalog] Falha não impeditiva ao registrar stock_movements inicial:", err);
-					});
+					}
 				}
 			}
 		} catch (err) {
@@ -432,17 +436,19 @@ export async function _createProduct(input: {
 			if (defaultVarErr) {
 				console.error("[admin-catalog] Erro ao inserir variante default:", defaultVarErr);
 			} else if (defaultVar) {
-				await db.from("stock_movements").insert({
-					store_id: effectiveStoreId,
-					variant_id: defaultVar.id,
-					movement_type: "adjustment",
-					qty: 10,
-					reference_type: "variant_matrix",
-					note: `Saldo padrão inicial (${defaultVar.sku})`,
-					actor_id: (identity as any)?.id || null,
-				}).catch((err: any) => {
+				try {
+					await db.from("stock_movements").insert({
+						store_id: effectiveStoreId,
+						variant_id: defaultVar.id,
+						movement_type: "adjustment",
+						qty: 10,
+						reference_type: "variant_matrix",
+						note: `Saldo padrão inicial (${defaultVar.sku})`,
+						actor_id: (identity as any)?.id || null,
+					});
+				} catch (err: any) {
 					console.warn("[admin-catalog] Falha não impeditiva ao registrar stock_movement default:", err);
-				});
+				}
 			}
 		} catch (err) {
 			console.error("[admin-catalog] Exceção ao inserir variante default:", err);

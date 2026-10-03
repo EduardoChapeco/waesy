@@ -184,8 +184,14 @@ export interface StorePropertyItemDTO {
 export const listStoreProperties = createServerFn({ method: "GET" })
   .handler(async () => {
     const supabase = getServerClient();
-    const identity = await getCurrentIdentity();
-    if (!identity.store_id && !identity.customer_id) {
+    const { getServerIdentity } = await import("@/lib/server-access");
+    const serverIdentity = await getServerIdentity().catch(() => null);
+    const cartIdentity = await getCurrentIdentity().catch(() => null);
+
+    const storeId = serverIdentity?.store_id;
+    const customerId = serverIdentity?.user_id || cartIdentity?.customer_id;
+
+    if (!storeId && !customerId) {
       return [];
     }
 
@@ -196,10 +202,10 @@ export const listStoreProperties = createServerFn({ method: "GET" })
       .order("created_at", { ascending: false })
       .limit(50);
 
-    if (identity.store_id) {
-      query = query.eq("store_id", identity.store_id);
-    } else {
-      query = query.eq("author_profile_id", identity.customer_id);
+    if (storeId) {
+      query = query.eq("store_id", storeId);
+    } else if (customerId) {
+      query = query.eq("author_profile_id", customerId);
     }
 
     const { data: rows, error } = await query;

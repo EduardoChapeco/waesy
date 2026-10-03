@@ -84,9 +84,6 @@ export const createQuickOrder = createServerFn({ method: "POST" })
         if (storeBySlug?.id) resolvedStoreId = storeBySlug.id;
       }
 
-      if (!resolvedStoreId && input.classifiedId) {
-        const { data: classified } = await db
-          .from("classifieds")
       let classifiedAuthorId: string | null = null;
       if (!resolvedStoreId && input.classifiedId) {
         const { data: classified } = await db

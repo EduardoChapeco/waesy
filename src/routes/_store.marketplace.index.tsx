@@ -72,10 +72,10 @@ const NICHE_FILTER_CHIPS: FilterChipOption[] = MARKETPLACE_NICHES.map((n) => ({
 }));
 
 const SearchSchema = z.object({
-  niche: z.string().optional().default("todos"),
+  niche: z.string().optional(),
   q: z.string().optional(),
-  view: z.enum(["feed", "grid", "list"]).optional().default("feed"),
-  sort: z.enum(["newest", "price_asc", "price_desc"]).optional().default("newest"),
+  view: z.enum(["feed", "grid", "list"]).optional(),
+  sort: z.enum(["newest", "price_asc", "price_desc"]).optional(),
   city: z.string().optional(),
 });
 
@@ -255,30 +255,30 @@ function AdvancedMarketplacePage() {
   const handleNicheChange = (nicheId: string) => {
     setActiveNiche(nicheId);
     navigate({
-      search: (prev) => ({
+      search: ((prev: any) => ({
         ...prev,
         niche: nicheId === "todos" ? undefined : nicheId,
-      }),
+      })) as any,
     });
   };
 
   const handleSearchChange = (q: string) => {
     setSearchTerm(q);
     navigate({
-      search: (prev) => ({
+      search: ((prev: any) => ({
         ...prev,
         q: q ? q : undefined,
-      }),
+      })) as any,
     });
   };
 
   const handleViewModeChange = (mode: ViewModeType) => {
     setViewMode(mode);
     navigate({
-      search: (prev) => ({
+      search: ((prev: any) => ({
         ...prev,
         view: mode,
-      }),
+      })) as any,
     });
   };
 

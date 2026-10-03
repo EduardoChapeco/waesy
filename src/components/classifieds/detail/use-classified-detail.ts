@@ -111,6 +111,8 @@ export function useClassifiedDetail({
   const [isBooking, setIsBooking] = useState(false);
   const [isBuyingDirect, setIsBuyingDirect] = useState(false);
 
+  const niche = useMemo(() => (classified ? resolveClassifiedNiche(classified) : ({} as any)), [classified]);
+
   // Service Appointment State
   const isService = Boolean(
     classified?.category === "service" ||
@@ -429,8 +431,6 @@ export function useClassifiedDetail({
       search: { editId: classified?.id } as any,
     });
   };
-
-  const niche = useMemo(() => (classified ? resolveClassifiedNiche(classified) : ({} as any)), [classified]);
 
   const isConvenienceProduct = Boolean(
     classified?.attributes?.template_style === "conveniencia" ||

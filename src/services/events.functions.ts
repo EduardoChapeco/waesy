@@ -509,8 +509,10 @@ async function _getEventWithLots(eventId: string) {
           .select("*")
           .eq("evento_id", eventId)
           .order("ordem", { ascending: true })
-          .then((res) => res)
-          .catch(() => ({ data: [] })),
+          .then(
+            (res) => res,
+            () => ({ data: [] })
+          ),
       ]);
 
       const linkedNews = relations?.[0]?.news_articles || null;
