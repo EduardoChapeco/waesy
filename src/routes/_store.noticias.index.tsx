@@ -50,12 +50,12 @@ export const Route = createFileRoute("/_store/noticias/")({
 
 const CATEGORIES = [
   { id: "todas", label: "Todas", icon: Tag },
-  { id: "urgente", label: "Plant?o", icon: Lightning },
+  { id: "urgente", label: "Plantão", icon: Lightning },
   { id: "cidade", label: "Cidade", icon: Buildings },
   { id: "cultura", label: "Cultura", icon: CalendarDots },
   { id: "economia", label: "Economia", icon: Briefcase },
   { id: "esportes", label: "Esportes", icon: Trophy },
-  { id: "politica", label: "Pol?tica", icon: NewspaperClipping },
+  { id: "politica", label: "Política", icon: NewspaperClipping },
   { id: "tecnologia", label: "Tecnologia", icon: Lightbulb },
 ];
 
@@ -104,8 +104,10 @@ export function NoticiasFeedPage() {
   const breakingNews = articles.filter(
     (a) => (a as any).is_breaking || a.category === "urgente" || a.kicker?.toLowerCase().includes("urgente"),
   );
-  const cultureArticles = articles.filter((a) => a.category === "cultura");
+  const cityArticles = articles.filter((a) => a.category === "cidade");
   const economyArticles = articles.filter((a) => a.category === "economia");
+  const sportsArticles = articles.filter((a) => a.category === "esportes");
+  const cultureArticles = articles.filter((a) => a.category === "cultura");
   const gridArticles = articles.slice(1);
 
   return (
@@ -149,7 +151,7 @@ export function NoticiasFeedPage() {
                 type="button"
                 onClick={() => handleFilterCategory(cat.id)}
                 className={cn(
-                  "h-11 px-4 rounded-lg border text-xs sm:text-sm font-semibold shrink-0 flex items-center gap-2 transition-all cursor-pointer select-none active:scale-98 shadow-2xs",
+                  "h-11 px-4 rounded-lg border text-xs sm:text-sm font-semibold shrink-0 flex items-center gap-2 transition-all cursor-pointer select-none active:scale-98 shadow-2xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                   isSelected
                     ? "bg-foreground text-background border-foreground font-bold shadow-xs"
                     : "bg-card hover:bg-muted/50 text-muted-foreground hover:text-foreground border-border/70"
@@ -257,7 +259,30 @@ export function NoticiasFeedPage() {
         </section>
       )}
 
-      {/* ── 6. Carrossel Editorial de Economia & Negócios ── */}
+      {/* ── 6. Carrossel de Cotidiano & Cidade ── */}
+      {cityArticles.length > 0 && !searchQuery && (
+        <section aria-label="Cotidiano & Cidade" className="space-y-3">
+          <HorizontalRail
+            title="Cidade"
+            hideHeader={true}
+            leadCard={
+              <HitsLeadCard
+                actionTo="/noticias"
+                gradient="from-blue-600 via-sky-600 to-cyan-700"
+                ariaLabel="Cotidiano & Cidade"
+              />
+            }
+          >
+            {cityArticles.map((article) => (
+              <div key={article.id} className="shrink-0">
+                <NewsCard article={article} compact={true} />
+              </div>
+            ))}
+          </HorizontalRail>
+        </section>
+      )}
+
+      {/* ── 6.5. Carrossel Editorial de Economia & Negócios ── */}
       {economyArticles.length > 0 && !searchQuery && (
         <section aria-label="Economia & Negócios" className="space-y-3">
           <HorizontalRail
@@ -295,6 +320,29 @@ export function NoticiasFeedPage() {
             }
           >
             {cultureArticles.map((article) => (
+              <div key={article.id} className="shrink-0">
+                <NewsCard article={article} compact={true} />
+              </div>
+            ))}
+          </HorizontalRail>
+        </section>
+      )}
+
+      {/* ── 7.5. Carrossel de Esportes & Regional ── */}
+      {sportsArticles.length > 0 && !searchQuery && (
+        <section aria-label="Esportes & Regional" className="space-y-3">
+          <HorizontalRail
+            title="Esportes"
+            hideHeader={true}
+            leadCard={
+              <HitsLeadCard
+                actionTo="/noticias"
+                gradient="from-emerald-700 via-green-600 to-teal-700"
+                ariaLabel="Esportes & Regional"
+              />
+            }
+          >
+            {sportsArticles.map((article) => (
               <div key={article.id} className="shrink-0">
                 <NewsCard article={article} compact={true} />
               </div>

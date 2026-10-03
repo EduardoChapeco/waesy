@@ -1,5 +1,14 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-165: Portal de Notícias: Feed Editorial Dinâmico em 5 Trilhos Temáticos, Saneamento de Mojibake e HIG
+- **Data:** 2026-10-03
+- **Contexto:** Execução da Onda 7 do Plano Diretor (`docs/MASTER_PLAN_AUDIT.md`, Itens 7 e 2): (1) O portal de notícias (`/_store/noticias`) carecia da completude dos trilhos editoriais dinâmicos horizontais previstos para Cotidiano & Cidade e Esportes & Regional. (2) O array de categorias continha caracteres corrompidos por encoding (`"Plant?o"` e `"Pol?tica"`). (3) O componente de cartão de matéria (`news-card.tsx`) continha múltiplas ocorrências de classes arbitrárias com colchetes (`text-[9px]`, `text-[10px]`, `text-[11px]`, `max-w-[360px]`, `h-[145px] sm:h-[155px]`) violando a regra DL-02, além de botão de compartilhamento com altura sub-ergonômica sem anel de foco visível (DL-14 e DL-15).
+- **Decisão:** (1) **Cinco Trilhos Editoriais Temáticos:** Implementados carrosséis dedicados para (a) Plantão & Última Hora, (b) Cotidiano & Cidade, (c) Economia & Negócios, (d) Cultura, Noite & Lazer e (e) Esportes & Regional com Lead Cards temáticos e gradientes visuais suaves. (2) **Erradicação do Mojibake:** Corrigidas as categorias para "Plantão" e "Política" em UTF-8 limpo, com adição de anel de foco `:focus-visible:ring-2` nos seletores. (3) **Saneamento e Ergonomia no NewsCard:** Convertidas todas as classes de texto com colchetes para o token canônico `text-xs`, normalizadas as dimensões de altura para `h-36 sm:h-40 max-w-sm`, e calibrado o botão de compartilhamento para `size-11 sm:size-9` com anel de foco e suporte tátil.
+- **Fundamentação:** Apple HIG, Invariantes M01 (Zero Mocks), AGENTS.md B.4/B.8 (Eliminação de DL-02, DL-14 e DL-15) e WCAG 2.2 AA.
+- **Consequências:** Portal editorial dinâmico, rico e livre de quebras visuais ou caracteres corrompidos, com experiência de leitura ergonômica em smartphones e tablets.
+
+
+
 ## DEC-164: Gestão de Eventos: Virada Automática de Lotes de Ingressos, Expositor de Patrocinadores e HIG
 - **Data:** 2026-10-03
 - **Contexto:** Execução da Onda 6 do Plano Diretor (`docs/MASTER_PLAN_AUDIT.md`, Item 4): (1) O módulo de ingressos de eventos carecia de virada automática de lotes quando o lote atual atinge a capacidade máxima (`sold_count >= capacity`), paralisando as vendas online até intervenção manual do organizador. (2) O componente de gestão de patrocinadores (`evento-parceiros.tsx`) continha classes arbitrárias com colchetes (`text-[11px]`, `text-[10px]`) violando a regra DL-02 e botões de exclusão sem dimensão mínima de toque nem anel de foco (DL-14 e DL-15). (3) O painel de gestão do evento (`/workspace/eventos/$id`) possuía botões no cabeçalho e nos lotes com alturas sub-ergonômicas no mobile (`size="sm"`), sem indicação visual explícita de lotes esgotados.

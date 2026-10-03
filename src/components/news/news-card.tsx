@@ -27,13 +27,13 @@ export function NewsCard({ article, compact = false }: NewsCardProps) {
     : "Recente";
 
   // ── Modo Compacto: Projetado especificamente para trilhos horizontais ──
-  // Altura h-[145px] sm:h-[155px] sincronizada perfeitamente com HitsLeadCard
+  // Altura sincronizada perfeitamente com HitsLeadCard
   if (compact) {
     return (
       <Link
         to="/noticias/$slug"
         params={{ slug: article.slug }}
-        className="group relative flex items-center gap-4 p-3 rounded-lg bg-card border border-border/60 hover-elevate transition-colors w-full content-auto-card min-w-72 sm:min-w-80 max-w-[360px] h-[145px] sm:h-[155px] shrink-0 select-none overflow-hidden"
+        className="group relative flex items-center gap-4 p-3 rounded-lg bg-card border border-border/60 hover-elevate transition-colors w-full content-auto-card min-w-72 sm:min-w-80 max-w-sm h-36 sm:h-40 shrink-0 select-none overflow-hidden"
       >
         {/* Thumbnail Quadrada com cantos arredondados contínuos */}
         <div className="size-24 sm:size-28 rounded-lg overflow-hidden bg-muted shrink-0 relative aspect-square">
@@ -51,7 +51,7 @@ export function NewsCard({ article, compact = false }: NewsCardProps) {
           )}
 
           {article.reading_time_minutes && (
-            <span className="absolute bottom-1 right-1 px-2 py-1 rounded-md bg-black/85 text-[9px] font-mono text-white">
+            <span className="absolute bottom-1 right-1 px-2 py-0.5 rounded-md bg-black/85 text-xs font-mono text-white">
               {article.reading_time_minutes}m
             </span>
           )}
@@ -61,7 +61,7 @@ export function NewsCard({ article, compact = false }: NewsCardProps) {
         <div className="flex-1 min-w-0 flex flex-col justify-between h-full py-1 space-y-1">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <span className="text-[9px] font-black uppercase text-primary tracking-wider truncate">
+              <span className="text-xs font-black uppercase text-primary tracking-wider truncate">
                 {article.kicker || article.category || "Notícia"}
               </span>
             </div>
@@ -70,8 +70,8 @@ export function NewsCard({ article, compact = false }: NewsCardProps) {
             </h4>
           </div>
 
-          <div className="flex items-center justify-between text-[10px] text-muted-foreground pt-1 border-t border-border/40">
-            <span className="truncate max-w-[110px] font-medium text-foreground/80">
+          <div className="flex items-center justify-between text-xs text-muted-foreground pt-1 border-t border-border/40">
+            <span className="truncate max-w-28 font-medium text-foreground/80">
               {article.store_name || "Redação"}
             </span>
             <span className="font-mono">{formattedDate}</span>
@@ -117,7 +117,7 @@ export function NewsCard({ article, compact = false }: NewsCardProps) {
         {/* Badges Flutuantes sobre a Imagem */}
         <div className="absolute top-3 left-3 right-3 flex items-center justify-between pointer-events-none">
           {article.kicker ? (
-            <span className="px-3 py-1 rounded-md text-[10px] font-black uppercase tracking-wider bg-black/85 text-white border border-white/10">
+            <span className="px-3 py-1 rounded-md text-xs font-black uppercase tracking-wider bg-black/85 text-white border border-white/10">
               {article.kicker}
             </span>
           ) : (
@@ -125,7 +125,7 @@ export function NewsCard({ article, compact = false }: NewsCardProps) {
           )}
 
           <div className="flex items-center gap-2 pointer-events-auto">
-            <span className="px-3 py-1 rounded-md bg-black/85 text-[10px] font-mono text-white flex items-center gap-1 border border-white/10">
+            <span className="px-3 py-1 rounded-md bg-black/85 text-xs font-mono text-white flex items-center gap-1 border border-white/10">
               <Clock className="size-3" />
               {article.reading_time_minutes || 3} min
             </span>
@@ -134,7 +134,7 @@ export function NewsCard({ article, compact = false }: NewsCardProps) {
             <button
               type="button"
               onClick={handleShare}
-              className="size-9 rounded-full bg-black/85 text-white hover:bg-black/90 border border-white/10 flex items-center justify-center cursor-pointer transition-colors active:scale-95 touch-manipulation"
+              className="size-11 sm:size-9 rounded-full bg-black/85 text-white hover:bg-black/90 border border-white/10 flex items-center justify-center cursor-pointer transition-colors active:scale-95 touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               title="Compartilhar notícia"
               aria-label="Compartilhar notícia"
             >
@@ -148,7 +148,7 @@ export function NewsCard({ article, compact = false }: NewsCardProps) {
       <div className="p-4 sm:p-5 space-y-3 flex-1 flex flex-col justify-between">
         <div className="space-y-2">
           {/* Autor & Data */}
-          <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
             {article.store_avatar && (
               <img
                 src={article.store_avatar}
@@ -184,7 +184,7 @@ export function NewsCard({ article, compact = false }: NewsCardProps) {
 
         {/* ── 3. Rodapé com Touch Target de 44px ── */}
         <div className="pt-3 border-t border-border/40 flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2 text-[11px] text-muted-foreground font-medium">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground font-medium">
             <Eye className="size-3.5 opacity-60" />
             <span>{article.views_count || 0} leituras</span>
           </div>
