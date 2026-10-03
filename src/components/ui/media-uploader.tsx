@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { UploadCloud, X, Loader2, Image as ImageIcon, Film, AlertCircle, Crop } from "lucide-react";
+import { UploadCloud, X, Loader2, Image as ImageIcon, Film, AlertCircle, Crop, ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { uploadMediaUniversal } from "@/services/storage.functions";
 import { getBrowserClient } from "@/lib/supabase";
@@ -7,6 +7,8 @@ import { toast } from "sonner";
 import { ImageCropperDialog } from "@/components/ui/image-cropper-dialog";
 import { compressImage } from "@/lib/image-compression";
 import { extractMediaFromClipboard } from "@/lib/clipboard-media";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 export interface MediaData {
  id: string;
@@ -32,6 +34,7 @@ export interface MediaUploaderProps {
  cropShape?: "rect" | "round";
  lockAspect?: boolean;
  enableCrop?: boolean;
+  showExternalUrlOption?: boolean;
 }
 
 export const MediaUploader: React.FC<MediaUploaderProps> = ({
@@ -43,6 +46,7 @@ export const MediaUploader: React.FC<MediaUploaderProps> = ({
  maxFiles = 8,
  bucket = "post-media",
  folder = "classifieds",
+ showExternalUrlOption = true,
  className,
  label,
  accept = "all",
@@ -59,6 +63,8 @@ export const MediaUploader: React.FC<MediaUploaderProps> = ({
  const [uploading, setUploading] = useState(false);
  const [uploadProgress, setUploadProgress] = useState<string | null>(null);
  const fileInputRef = useRef<HTMLInputElement>(null);
+ const [showUrlInput, setShowUrlInput] = useState(false);
+ const [externalUrl, setExternalUrl] = useState("");
 
  // Compute smart aspect based on bucket/folder if not explicitly provided (1:1 com a renderização)
  const computedAspect =
@@ -111,6 +117,35 @@ export const MediaUploader: React.FC<MediaUploaderProps> = ({
  onUploadComplete?.(newList);
  };
 
+ const handleAddExternalUrl = (urlToApply?: string) => {
+ const rawUrl = (urlToApply || externalUrl).trim();
+ if (!rawUrl) return;
+
+ if (!/^https?:\/\//i.test(rawUrl)) {
+ toast.error("Insira uma URL válida iniciando com http:// ou https://");
+ return;
+ }
+
+ if (mediaList.length >= maxFiles && maxFiles > 1) {
+ toast.error(`Você pode adicionar no máximo ${maxFiles} itens.`);
+ return;
+ }
+
+ const isVid = Boolean(rawUrl.match(/\.(mp4|webm|mov|ogg)(\?.*)?$/i));
+ const newMediaItem: MediaData = {
+ id: `media-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+ url: rawUrl,
+ path: rawUrl,
+ type: isVid ? "video" : "image",
+ };
+
+ const updatedList: MediaData[] = maxFiles === 1 ? [newMediaItem] : [...mediaList, newMediaItem];
+ notifyChange(updatedList);
+ setExternalUrl("");
+ setShowUrlInput(false);
+ toast.success("Mídia vinculada por URL com sucesso!");
+ };
+
  const handleFiles = async (files: File[]) => {
  if (!files.length) return;
 
@@ -120,7 +155,7 @@ export const MediaUploader: React.FC<MediaUploaderProps> = ({
  }
 
  // Se for apenas 1 imagem e o recorte estiver habilitado, abre o modal de corte direto
- if (files.length === 1 && files[0].type.startsWith("image/") && enableCrop && !files[0].type.includes("gif")) {
+ if (files.length === 1 && files[0].type.startsWith("image/") && enableCrop && (!files[0].type.includes("gif"))) {
  const file = files[0];
  setCurrentCropFile(file);
  setEditingMediaIndex(null);
@@ -148,7 +183,7 @@ export const MediaUploader: React.FC<MediaUploaderProps> = ({
  const isImage = file.type.startsWith("image/");
  const isVideo = file.type.startsWith("video/");
 
- if (!isImage && !isVideo) {
+ if (!isImage && (!isVideo)) {
  toast.error(`Arquivo ${file.name} não é uma imagem ou vídeo válido.`);
  failCount++;
  continue;
@@ -260,6 +295,13 @@ export const MediaUploader: React.FC<MediaUploaderProps> = ({
  const files = items.map((i) => i.file);
  toast.info(`Processando ${files.length} mídia(s) colada(s)...`);
  await handleFiles(files);
+ return;
+ }
+
+ const pastedText = e.clipboardData?.getData("text/plain")?.trim();
+ if (pastedText && /^https?:\/\//i.test(pastedText)) {
+ e.preventDefault();
+ handleAddExternalUrl(pastedText);
  }
  };
 
@@ -353,7 +395,53 @@ export const MediaUploader: React.FC<MediaUploaderProps> = ({
  tabIndex={0}
  className={cn("space-y-3 outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40 rounded-lg", className)}
  >
+ {/* Cabeçalho com label e toggle de URL */}
+ <div className="flex items-center justify-between">
  {label && <label className="text-xs font-semibold text-foreground">{label}</label>}
+ {showExternalUrlOption && mediaList.length < maxFiles && (
+ <Button type="button" variant="ghost" onClick={() => setShowUrlInput(!showUrlInput)}
+ className="min-h-11 px-2 text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2 cursor-pointer rounded-lg focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+ >
+ <ExternalLink className="size-4" />
+ <span>{showUrlInput ? "Cancelar URL" : "Inserir URL Externa"}</span>
+ </Button>
+ )}
+ </div>
+
+ {/* Gaveta de Entrada de URL Externa */}
+ {showUrlInput && (
+ <div className="space-y-2 rounded-lg border border-dashed border-border bg-muted/20 p-3">
+ <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground">
+ <span>Informe o link público da mídia (HTTPS)</span>
+ <Button type="button" variant="ghost" size="icon" onClick={() => setShowUrlInput(false)}
+ className="size-11 flex items-center justify-center text-muted-foreground hover:text-foreground rounded-lg focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none cursor-pointer"
+ aria-label="Fechar entrada de URL"
+ >
+ <X className="size-4" />
+ </Button>
+ </div>
+ <div className="flex flex-col sm:flex-row gap-2">
+ <Input
+ type="url"
+ value={externalUrl}
+ onChange={(e) => setExternalUrl(e.target.value)}
+ placeholder="https://exemplo.com/imagem.jpg ou video.mp4"
+ className="h-11 text-xs rounded-lg flex-1 bg-background"
+ onKeyDown={(e) => {
+ if (e.key === "Enter") {
+ e.preventDefault();
+ handleAddExternalUrl();
+ }
+ }}
+ />
+ <Button type="button" onClick={() => handleAddExternalUrl()}
+ className="h-11 px-4 text-xs font-bold rounded-lg shrink-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+ >
+ Adicionar Mídia
+ </Button>
+ </div>
+ </div>
+ )}
 
  {/* Grid de previews existentes */}
  {mediaList.length > 0 && (
@@ -364,14 +452,14 @@ export const MediaUploader: React.FC<MediaUploaderProps> = ({
  className={cn(
  "group relative rounded-lg overflow-hidden border border-border bg-card shadow-xs transition-all hover:border-primary/50",
  idx === 0 && "ring-2 ring-primary/60 border-primary",
- computedAspect === 1 ? "aspect-square" : computedAspect === 4 / 3 ? "aspect-[4/3]" : "aspect-video"
+ computedAspect === 1 ? "aspect-square" : computedAspect === 4 / 3 ? "aspect-4/3" : "aspect-video"
  )}
  >
  {item.type === "video" ? (
- <div className="relative w-full h-full bg-black flex items-center justify-center">
+ <div className="relative w-full h-full bg-neutral-950 flex items-center justify-center">
  <video src={item.url} className="w-full h-full object-cover" controls={false} />
- <div className="absolute inset-0 bg-black/30 flex items-center justify-center pointer-events-none">
- <Film className="size-6 text-white/80" />
+ <div className="absolute inset-0 bg-neutral-950/30 flex items-center justify-center pointer-events-none">
+ <Film className="size-6 text-background/80" />
  </div>
  </div>
  ) : (
@@ -381,29 +469,25 @@ export const MediaUploader: React.FC<MediaUploaderProps> = ({
  {/* Botões de Ação sobre o Card */}
  <div className="absolute top-1.5 right-1.5 flex items-center gap-2 opacity-90 sm:opacity-0 group-hover:opacity-100 transition-opacity">
  {item.type === "image" && enableCrop && (
- <button
- type="button"
- onClick={() => handleOpenRecrop(idx)}
+ <Button type="button" variant="secondary" size="icon" onClick={() => handleOpenRecrop(idx)}
  title="Ajustar e Recortar"
- className="size-8 sm:size-7 flex items-center justify-center rounded-lg bg-black/75 backdrop-blur-xs text-white hover:bg-primary hover:text-white transition-colors cursor-pointer shadow-xs"
+ className="size-11 sm:size-8 flex items-center justify-center rounded-lg bg-foreground/80 backdrop-blur-xs text-background hover:bg-primary hover:text-primary-foreground transition-colors cursor-pointer shadow-xs focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
  aria-label="Ajustar e Recortar Imagem"
  >
  <Crop className="size-4" />
- </button>
+ </Button>
  )}
- <button
- type="button"
- onClick={() => removeMedia(idx)}
+ <Button type="button" variant="destructive" size="icon" onClick={() => removeMedia(idx)}
  title="Remover"
- className="size-8 sm:size-7 flex items-center justify-center rounded-lg bg-black/75 backdrop-blur-xs text-white hover:bg-destructive hover:text-white transition-colors cursor-pointer shadow-xs"
+ className="size-11 sm:size-8 flex items-center justify-center rounded-lg bg-foreground/80 backdrop-blur-xs text-background hover:bg-destructive hover:text-destructive-foreground transition-colors cursor-pointer shadow-xs focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
  aria-label="Remover Mídia"
  >
  <X className="size-4" />
- </button>
+ </Button>
  </div>
 
  {idx === 0 && (
- <span className="absolute bottom-1.5 left-1.5 text-[9px] font-bold bg-primary text-primary-foreground px-2 py-1 rounded-md shadow-xs">
+ <span className="absolute bottom-1.5 left-1.5 text-xs font-bold bg-primary text-primary-foreground px-2 py-1 rounded-md shadow-xs">
  Capa
  </span>
  )}
@@ -415,7 +499,15 @@ export const MediaUploader: React.FC<MediaUploaderProps> = ({
  {/* Área de Dropzone se não atingiu o limite */}
  {mediaList.length < maxFiles && (
  <div
- onClick={() => fileInputRef.current?.click()}
+ role="button"
+ tabIndex={0}
+ onClick={() => fileInputRef.current?.click()} // focus-visible:ring-2 focus-visible:outline-none
+ onKeyDown={(e) => {
+ if (e.key === "Enter" || e.key === " ") {
+ e.preventDefault();
+ fileInputRef.current?.click();
+ }
+ }}
  onPaste={handlePaste}
  onDragOver={(e) => {
  e.preventDefault();
@@ -430,13 +522,13 @@ export const MediaUploader: React.FC<MediaUploaderProps> = ({
  }}
  className={cn(
  "relative flex flex-col items-center justify-center p-6 border-2 border-dashed rounded-lg cursor-pointer transition-all",
- "border-border/80 hover:border-primary/70 bg-card hover:bg-muted/30",
+ "border-border/80 hover:border-primary/70 bg-card hover:bg-muted/30 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
  uploading && "pointer-events-none opacity-60",
  )}
  >
  {uploading ? (
  <div className="flex flex-col items-center gap-2 text-primary">
- <Loader2 className="size-6 animate-spin" />
+ <Loader2 className="size-6 animate-spin motion-reduce:animate-none" />
  <span className="text-xs font-semibold text-foreground">
  {uploadProgress || "Processando upload..."}
  </span>
@@ -449,7 +541,7 @@ export const MediaUploader: React.FC<MediaUploaderProps> = ({
  <p className="text-xs font-semibold text-foreground">
  Clique, arraste ou cole fotos e vídeos aqui
  </p>
- <p className="text-[11px] text-muted-foreground">
+ <p className="text-xs text-muted-foreground">
  JPG, PNG, WEBP ou MP4 até {maxFiles} arquivo{maxFiles > 1 ? "s" : ""} ({mediaList.length}/{maxFiles} adicionados) • Cole com Ctrl+V
  </p>
  </div>

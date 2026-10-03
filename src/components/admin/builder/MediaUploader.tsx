@@ -36,7 +36,12 @@ export function MediaUploader({
  const [isUploading, setIsUploading] = useState(false);
  const [activeMode, setActiveMode] = useState<"upload" | "url">("upload");
  const [showPresets, setShowPresets] = useState(false);
+ const [hasImageError, setHasImageError] = useState(false);
  const fileInputRef = useRef<HTMLInputElement>(null);
+
+ React.useEffect(() => {
+ setHasImageError(false);
+ }, [value]);
 
   const computedAspect =
     aspect !== undefined
@@ -170,14 +175,18 @@ export function MediaUploader({
  <div className="h-32 w-full flex items-center justify-center p-1 bg-[radial-gradient(#00000010_1px,transparent_1px)] dark:bg-[radial-gradient(#ffffff10_1px,transparent_1px)] [background-size:12px_12px]">
  {isVideo ? (
  <video src={value} className="w-full h-full object-cover rounded-lg" muted />
+ ) : hasImageError ? (
+ <div className="flex flex-col items-center justify-center gap-1.5 p-4 text-center select-none" role="status">
+ <ImageIcon className="size-8 stroke-1 text-muted-foreground/60" />
+ <span className="text-xs font-medium text-muted-foreground">Imagem indisponível</span>
+ </div>
  ) : (
  <img
  src={value}
  alt="Media preview"
  className="max-h-30 w-auto max-w-full object-contain rounded-lg shadow-2xs"
- onError={(e) => {
- (e.currentTarget as HTMLImageElement).src =
- "https://placehold.co/600x400/18181b/ffffff?text=Imagem+Indispon%C3%ADvel";
+ onError={() => {
+ setHasImageError(true);
  }}
  />
  )}

@@ -6,7 +6,7 @@ import { useAgency } from "@/lib/agency-context";
 import { getAgencyMarkup, calculateMarkup } from "@/utils/pricing";
 import { Trash2, Plus, Search } from "lucide-react";
 import { useState, useEffect } from "react";
-import { StudioUnsplashPicker } from "@/components/studio/StudioUnsplashPicker";
+import { StudioAssetPicker } from "@/components/tourism/studio/StudioUnsplashPicker";
 import { infotravelSearchHotels } from "@/services/infotravel";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -42,7 +42,7 @@ const MEAL_PLANS = [
 export function SectionHotels({ draft, save }: Props) {
   const { agency } = useAgency();
   const hotels = draft.hotels ?? [];
-  const [unsplashOpenIndex, setUnsplashOpenIndex] = useState<number | null>(null);
+  const [assetPickerIndex, setAssetPickerIndex] = useState<number | null>(null);
 
   // Infotravel States
   const [infotravelOpen, setInfotravelOpen] = useState(false);
@@ -228,41 +228,40 @@ export function SectionHotels({ draft, save }: Props) {
             onChange={(imgs: string[]) => upd(i, { images: imgs })}
           />
 
-          {/* Unsplash picker */}
+          {/* Asset picker */}
           <div className="mt-2">
-            {unsplashOpenIndex === i ? (
+            {assetPickerIndex === i ? (
               <div className="rounded-lg border border-border bg-surface p-3 mt-1">
                 <div className="flex items-center justify-between mb-2">
                   <span className="ds-meta uppercase tracking-wide font-semibold">
-                    Buscar imagem
+                    Adicionar foto do hotel
                   </span>
                   <Button
                     type="button"
-                    onClick={() => setUnsplashOpenIndex(null)}
-                    className="text-xs text-muted-foreground hover:text-foreground"
+                    onClick={() => setAssetPickerIndex(null)} /* focus-visible:ring-2 */
+                    className="text-xs text-muted-foreground hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     Fechar
                   </Button>
                 </div>
-                <StudioUnsplashPicker
+                <StudioAssetPicker
                   agencyId={agency?.id ?? ""}
                   proposalId={draft.id}
                   slot="hotel"
                   itemId={h.id || String(i)}
-                  defaultQuery={h.name || h.city || "hotel"}
                   onImageSelected={(url) => {
                     upd(i, { images: [...(h.images ?? []), url] });
-                    setUnsplashOpenIndex(null);
+                    setAssetPickerIndex(null);
                   }}
                 />
               </div>
             ) : (
               <Button
                 type="button"
-                onClick={() => setUnsplashOpenIndex(i)}
-                className="flex w-full items-center justify-center gap-2 rounded-full border border-dashed border-border py-2 ds-meta text-muted-foreground hover:bg-surface-alt transition-colors mt-1"
+                onClick={() => setAssetPickerIndex(i)} /* focus-visible:ring-2 */
+                className="flex w-full items-center justify-center gap-2 rounded-full border border-dashed border-border py-2 ds-meta text-muted-foreground hover:bg-surface-alt transition-colors mt-1 focus-visible:ring-2 focus-visible:ring-ring"
               >
-                <Search className="h-3 w-3" /> Buscar foto do hotel no Unsplash
+                <Plus className="h-3 w-3" /> Adicionar imagem ou URL
               </Button>
             )}
           </div>

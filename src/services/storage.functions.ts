@@ -46,6 +46,8 @@ export const getSignedUploadUrl = createServerFn({ method: "POST" })
       "payment-proofs",
       "rma-proofs",
       "classifieds",
+      "classified-media",
+      "covers",
       "avatars",
       "banners",
       "post-media",
@@ -538,7 +540,12 @@ export const uploadProfileMediaDirect = createServerFn({ method: "POST" })
       if (!identity.id) throw new Error("Faça login para atualizar a mídia do seu perfil.");
 
       const supabase = getServerClient();
-      const bucket = "post-media";
+      const bucket =
+        target === "avatar" || target === "creator_avatar"
+          ? "avatars"
+          : target === "cover" || target === "creator_cover"
+          ? "covers"
+          : "post-media";
       const ext = fileName.split(".").pop() || "png";
       const uniqueName = `profiles/${identity.id}/${target}_${Date.now()}.${ext}`;
 

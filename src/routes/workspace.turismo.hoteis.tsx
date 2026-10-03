@@ -1581,7 +1581,7 @@ function WorkspaceHotelsPage() {
  value={newPhotoUrl}
  onChange={(e) => setNewPhotoUrl(e.target.value)}
  onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleAddPhoto())}
- placeholder="Cole a URL da foto (Unsplash ou CDN) ou envie abaixo..."
+ placeholder="Cole a URL direta da imagem (HTTPS) ou envie abaixo..."
  className="h-9 rounded-lg text-xs bg-background flex-1"
  />
  <Button type="button" size="sm" variant="outline" onClick={handleAddPhoto} className="rounded-lg h-9">

@@ -4,7 +4,7 @@ import { uploadMediaUniversal } from "@/services/storage.functions";
 /**
  * uploadClassifiedMedia
  * Realiza a compressão client-side de uma imagem e envia via Server Function
- * para o Supabase Storage (bucket 'post-media', pasta 'classifieds/{folder}'),
+ * para o Supabase Storage (bucket 'classifieds', pasta 'classifieds/{folder}'),
  * retornando a URL pública definitiva e permanente (sem URLs temporárias 'blob:').
  */
 export async function uploadClassifiedMedia(
@@ -48,7 +48,7 @@ export async function uploadClassifiedMedia(
       base64Data,
       fileName: cleanName,
       fileType: fileToUpload.type || "image/jpeg",
-      bucket: "post-media",
+      bucket: "classifieds",
       folder: `classifieds/${folder}`,
     },
   });
@@ -63,7 +63,7 @@ export async function uploadClassifiedMedia(
 /**
  * uploadClassifiedDocument
  * Envia documentos restritos e sigilosos (PDF, XLSX, DOCX, CSV) via Server Function
- * para o Supabase Storage (bucket 'post-media', pasta 'classifieds/documents').
+ * para o Supabase Storage isolado (bucket privado 'legal-documents', pasta 'classifieds/documents').
  */
 export async function uploadClassifiedDocument(
   file: File,
@@ -86,7 +86,7 @@ export async function uploadClassifiedDocument(
       base64Data,
       fileName: cleanName,
       fileType: file.type || "application/pdf",
-      bucket: "post-media",
+      bucket: "legal-documents",
       folder: `classifieds/${folder}`,
     },
   });

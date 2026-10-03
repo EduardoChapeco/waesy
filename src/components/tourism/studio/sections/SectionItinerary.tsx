@@ -3,9 +3,9 @@ import { type Proposal, type ItineraryDay } from "@/services/proposals";
 import { Accordion, Card, AddBtn, L, Inp } from "@/components/proposals/ProposalFormFields";
 import { replaceAt, SMALL_INPUT } from "@/components/proposals/ProposalFormFields";
 import { uploadMediaUniversal } from "@/services/storage.functions";
-import { StudioUnsplashPicker } from "@/components/studio/StudioUnsplashPicker";
+import { StudioAssetPicker } from "@/components/tourism/studio/StudioUnsplashPicker";
 
-import { MapPin, Loader2, Search } from "lucide-react";
+import { MapPin, Loader2, Search, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { refineItineraryText } from "@/services/proposals";
 import { Button } from "@/components/ui/button";
@@ -24,7 +24,7 @@ export function SectionItinerary({ draft, save }: Props) {
   const itinerary = draft.itinerary ?? [];
   const [refining, setRefining] = useState<number | null>(null);
   const [uploadingImage, setUploadingImage] = useState<number | null>(null);
-  const [showUnsplash, setShowUnsplash] = useState<number | null>(null);
+  const [showAssetPicker, setShowAssetPicker] = useState<number | null>(null);
 
   async function handleImageUpload(i: number, file: File) {
     try {
@@ -165,11 +165,11 @@ export function SectionItinerary({ draft, save }: Props) {
               <div className="flex gap-2">
                 <Button
                   type="button"
-                  onClick={() => setShowUnsplash(showUnsplash === i ? null : i)}
-                  className="flex h-6 items-center justify-center rounded border border-border/60 bg-surface px-2 ds-meta hover:bg-surface-alt transition-colors"
-                  title="Buscar no Unsplash"
+                  onClick={() => setShowAssetPicker(showAssetPicker === i ? null : i)} /* focus-visible:ring-2 */
+                  className="flex h-6 items-center justify-center rounded border border-border/60 bg-surface px-2 ds-meta hover:bg-surface-alt transition-colors focus-visible:ring-2 focus-visible:ring-ring"
+                  title="Mídia da Agência"
                 >
-                  <Search className="h-3 w-3 mr-1" /> Buscar
+                  <Plus className="h-3 w-3 mr-1" /> Adicionar
                 </Button>
                 <label className="flex h-6 cursor-pointer items-center justify-center rounded bg-brand/10 px-2 ds-meta font-bold text-brand hover:bg-brand/20 transition-colors">
                   {uploadingImage === i ? "Enviando..." : "+ Fazer Upload"}
@@ -187,28 +187,28 @@ export function SectionItinerary({ draft, save }: Props) {
               </div>
             </div>
 
-            {showUnsplash === i && (
+            {showAssetPicker === i && (
               <div className="rounded-lg border border-border bg-surface p-3 mb-2">
                 <div className="flex items-center justify-between mb-2">
                   <span className="ds-meta uppercase tracking-wide font-semibold">
-                    Buscar imagem para o dia
+                    Adicionar mídia para o dia
                   </span>
                   <Button
-                    onClick={() => setShowUnsplash(null)}
-                    className="text-muted-foreground hover:text-foreground ds-meta"
+                    type="button"
+                    onClick={() => setShowAssetPicker(null)} /* focus-visible:ring-2 */
+                    className="text-muted-foreground hover:text-foreground ds-meta focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     Fechar
                   </Button>
                 </div>
-                <StudioUnsplashPicker
+                <StudioAssetPicker
                   agencyId={draft.agency_id}
                   proposalId={draft.id}
                   slot={`itinerary-${i}`}
-                  defaultQuery={d.city || draft.destination || "travel destination"}
                   onImageSelected={(url) => {
                     const newImages = [...(d.images || []), url];
                     upd(i, { images: newImages });
-                    setShowUnsplash(null);
+                    setShowAssetPicker(null);
                   }}
                 />
               </div>

@@ -1,130 +1,159 @@
-import { useState, useEffect, useCallback } from "react";
-import { Search, Loader2, Check } from "lucide-react";
-import { searchUnsplash, type UnsplashPhoto } from "@/services/proposals";
-import { saveUnsplashImageToStorage } from "@/services/proposal-storage";
+import { useState, useRef, useCallback } from "react";
+import { Upload, Globe, Loader2, Image as ImageIcon } from "lucide-react";
+import { uploadMediaUniversal } from "@/services/storage.functions";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
 
 type Props = {
   agencyId: string;
   proposalId: string;
   slot: string;
-  itemId?: string; // used if it's a specific hotel or tour
+  itemId?: string;
   onImageSelected: (url: string) => void;
   defaultQuery?: string;
 };
 
-export function StudioUnsplashPicker({
+export function StudioAssetPicker({
   agencyId,
   proposalId,
   slot,
-  itemId,
   onImageSelected,
-  defaultQuery = "travel destination",
 }: Props) {
-  const [query, setQuery] = useState(defaultQuery);
-  const [photos, setPhotos] = useState<UnsplashPhoto[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [savingId, setSavingId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<"upload" | "url">("upload");
+  const [externalUrl, setExternalUrl] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleSearch = useCallback(async () => {
-    if (!query) return;
-    setLoading(true);
-    try {
-      const results = await searchUnsplash(query);
-      setPhotos(results);
-    } catch (e) {
-      toast.error("Erro ao buscar imagens.");
-    } finally {
-      setLoading(false);
+  const processFile = useCallback(async (file: File) => {
+    if (!file.type.startsWith("image/")) {
+      toast.error("Por favor, selecione um arquivo de imagem.");
+      return;
     }
-  }, [query]);
-
-  useEffect(() => {
-    handleSearch();
-  }, [handleSearch]);
-
-  async function handleSelect(photo: UnsplashPhoto) {
-    setSavingId(photo.id);
+    setUploading(true);
     try {
-      const savedUrl = await saveUnsplashImageToStorage(
-        agencyId,
-        proposalId,
-        slot,
-        photo.url_full,
-        itemId,
-      );
-      onImageSelected(savedUrl);
-      toast.success("Imagem aplicada com sucesso!");
-    } catch (error) {
-      toast.error("Erro ao salvar imagem do Unsplash.");
+      const base64Data = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+      const res = await uploadMediaUniversal({
+        data: {
+          fileName: file.name,
+          fileType: file.type,
+          base64Data,
+          bucket: "public_media",
+          folder: `proposals/${agencyId || "general"}/${proposalId || "assets"}/${slot}`,
+        },
+      });
+      if (res?.url) {
+        onImageSelected(res.url);
+        toast.success("Imagem enviada com sucesso!");
+      }
+    } catch (err: any) {
+      toast.error(`Falha no upload: ${err?.message || "Erro desconhecido"}`);
     } finally {
-      setSavingId(null);
+      setUploading(false);
     }
+  }, [agencyId, proposalId, slot, onImageSelected]);
+
+  const handlePaste = useCallback((e: React.ClipboardEvent) => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].type.indexOf("image") !== -1) {
+        const file = items[i].getAsFile();
+        if (file) {
+          e.preventDefault();
+          processFile(file);
+          return;
+        }
+      }
+    }
+    const pastedText = e.clipboardData?.getData("text/plain")?.trim();
+    if (pastedText && /^https?:\/\//i.test(pastedText)) {
+      e.preventDefault();
+      onImageSelected(pastedText);
+      toast.success("URL de mídia aplicada!");
+    }
+  }, [processFile, onImageSelected]);
+
+  function handleApplyUrl() {
+    const trimmed = externalUrl.trim();
+    if (!trimmed.startsWith("http://") && (!trimmed.startsWith("https://"))) {
+      toast.error("Insira uma URL válida iniciando com https://");
+      return;
+    }
+    onImageSelected(trimmed);
+    setExternalUrl("");
+    toast.success("URL de mídia aplicada!");
   }
 
   return (
-    <div className="flex flex-col gap-4 h-[400px]">
-      <div className="flex gap-2">
-        <Input
-          placeholder="Buscar no Unsplash..."
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-          className="bg-surface/50"
-        />
-        <Button onClick={handleSearch} disabled={loading} size="icon" variant="secondary">
-          {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+    <div className="flex flex-col gap-3 p-1 outline-hidden" onPaste={handlePaste} tabIndex={0}>
+      <div className="flex gap-1 border-b border-border/60 pb-2">
+        <Button type="button" size="sm" variant={activeTab === "upload" ? "default" : "ghost"} onClick={() => setActiveTab("upload")}
+          className="text-xs h-11 sm:h-9 gap-2 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+        >
+          <Upload className="size-4" /> Enviar Arquivo
+        </Button>
+        <Button type="button" size="sm" variant={activeTab === "url" ? "default" : "ghost"} onClick={() => setActiveTab("url")}
+          className="text-xs h-11 sm:h-9 gap-2 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+        >
+          <Globe className="size-4" /> URL Direta
         </Button>
       </div>
 
-      <ScrollArea className="flex-1 -mx-2 px-2">
-        {loading && photos.length === 0 ? (
-          <div className="flex justify-center py-8 text-muted-foreground">
-            <Loader2 className="h-6 w-6 animate-spin" />
-          </div>
-        ) : photos.length === 0 ? (
-          <div className="text-center py-8 text-sm text-muted-foreground">
-            Nenhuma imagem encontrada.
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 pb-4">
-            {photos.map((photo) => (
-              <div
-                key={photo.id}
-                className="group relative aspect-video cursor-pointer overflow-hidden rounded-full bg-muted"
-                onClick={() => !savingId && handleSelect(photo)}
-              >
-                <img
-                  src={photo.url_thumb}
-                  alt={photo.alt}
-                  className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                />
-
-                {/* Overlay on hover */}
-                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-between p-2">
-                  <div className="flex justify-end">
-                    <span className="text-[9px] text-white/80 font-medium">
-                      📸 {photo.photographer}
-                    </span>
-                  </div>
-                  <span className="ds-meta font-medium text-white flex items-center justify-center h-6 w-full bg-primary/90 rounded-full scale-95 opacity-0 group-hover:opacity-100 group-hover:scale-100 transition-all">
-                    Usar Imagem
-                  </span>
-                </div>
-
-                {savingId === photo.id && (
-                  <div className="absolute inset-0 bg-background/80 flex items-center justify-center backdrop-blur-[2px]">
-                    <Loader2 className="h-5 w-5 animate-spin text-white" />
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
-      </ScrollArea>
+      {activeTab === "upload" ? (
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={() => fileInputRef.current?.click()} // focus-visible:ring-2
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              fileInputRef.current?.click();
+            }
+          }}
+          className="h-32 rounded-lg border border-dashed border-border flex flex-col items-center justify-center gap-2 bg-muted/20 hover:bg-muted/40 cursor-pointer transition-colors p-4 text-center focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+        >
+          {uploading ? (
+            <Loader2 className="size-6 animate-spin motion-reduce:animate-none text-primary" />
+          ) : (
+            <>
+              <ImageIcon className="size-6 text-muted-foreground" />
+              <p className="text-xs font-medium text-foreground">Clique para enviar ou cole (Ctrl+V)</p>
+              <p className="text-xs text-muted-foreground">PNG, JPG ou WEBP até 10MB</p>
+            </>
+          )}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) processFile(file);
+            }}
+          />
+        </div>
+      ) : (
+        <div className="flex gap-2 pt-2">
+          <Input
+            placeholder="https://exemplo.com/imagem.jpg"
+            value={externalUrl}
+            onChange={(e) => setExternalUrl(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleApplyUrl()}
+            className="text-xs h-11 bg-background flex-1"
+          />
+          <Button type="button" onClick={() => handleApplyUrl()} className="h-11 px-4 text-xs font-bold shrink-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none">
+            Aplicar
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
+
+export { StudioAssetPicker as StudioUnsplashPicker };

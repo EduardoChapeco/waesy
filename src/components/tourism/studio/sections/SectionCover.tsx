@@ -5,7 +5,7 @@ import { uploadMediaUniversal } from "@/services/storage.functions";
 import { generateProposalCoverAI } from "@/services/travel-proposal.functions";
 import { toast } from "sonner";
 import { useState } from "react";
-import { StudioUnsplashPicker } from "@/components/studio/StudioUnsplashPicker";
+import { StudioAssetPicker } from "@/components/tourism/studio/StudioUnsplashPicker";
 import { Button } from "@/components/ui/button";
 import { FormInput as Input } from "@/components/ui/input";
 import { FormTextarea as Textarea } from "@/components/ui/textarea";
@@ -18,7 +18,7 @@ interface SectionCoverProps {
 export function SectionCover({ draft, save }: SectionCoverProps) {
   const [uploadingCover, setUploadingCover] = useState(false);
   const [uploadingAgent, setUploadingAgent] = useState(false);
-  const [showUnsplashCover, setShowUnsplashCover] = useState(false);
+  const [showAssetPicker, setShowAssetPicker] = useState(false);
   const [showAiPrompt, setShowAiPrompt] = useState(false);
   const [aiPrompt, setAiPrompt] = useState("");
   const [generatingCover, setGeneratingCover] = useState(false);
@@ -104,12 +104,12 @@ export function SectionCover({ draft, save }: SectionCoverProps) {
               </label>
               <Button
                 type="button"
-                title="Buscar no Unsplash"
-                onClick={() => {
-                  setShowUnsplashCover(true);
+                title="Mídia da Agência"
+                onClick={() => { /* focus-visible:ring-2 */
+                  setShowAssetPicker(true);
                   setShowAiPrompt(false);
                 }}
-                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-border/60 bg-surface text-xs hover:bg-surface-alt transition-colors"
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-border/60 bg-surface text-xs hover:bg-surface-alt transition-colors focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <Search className="h-3.5 w-3.5" />
               </Button>
@@ -118,7 +118,7 @@ export function SectionCover({ draft, save }: SectionCoverProps) {
                 title="Gerar com IA"
                 onClick={() => {
                   setShowAiPrompt(!showAiPrompt);
-                  setShowUnsplashCover(false);
+                  setShowAssetPicker(false);
                   if (!aiPrompt && draft.destination) {
                     setAiPrompt(
                       `foto cinematográfica estilo drone de ${draft.destination}, pôr do sol, turismo de luxo, 8k, alta fidelidade`,
@@ -192,33 +192,33 @@ export function SectionCover({ draft, save }: SectionCoverProps) {
               </div>
             )}
 
-            {showUnsplashCover && (
+            {showAssetPicker && (
               <div className="mt-2 rounded-lg border border-border bg-surface p-3">
                 <div className="flex items-center justify-between mb-2">
                   <span className="ds-meta uppercase tracking-wide font-semibold">
-                    Buscar imagem
+                    Selecionar Mídia
                   </span>
                   <Button
-                    onClick={() => setShowUnsplashCover(false)}
-                    className="text-muted-foreground hover:text-foreground text-xs"
+                    type="button"
+                    onClick={() => setShowAssetPicker(false)} /* focus-visible:ring-2 */
+                    className="text-muted-foreground hover:text-foreground text-xs focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     Fechar
                   </Button>
                 </div>
-                <StudioUnsplashPicker
+                <StudioAssetPicker
                   agencyId={draft.agency_id}
                   proposalId={draft.id}
                   slot="cover"
-                  defaultQuery={draft.destination || "travel destination"}
                   onImageSelected={(url) => {
                     save({ cover_image_url: url });
-                    setShowUnsplashCover(false);
+                    setShowAssetPicker(false);
                   }}
                 />
               </div>
             )}
 
-            {draft.cover_image_url && !showUnsplashCover && (
+            {draft.cover_image_url && (!showAssetPicker) && (
               <div className="relative mt-2 h-20 w-full overflow-hidden rounded-lg border border-border">
                 <img
                   src={draft.cover_image_url}

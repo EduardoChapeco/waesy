@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
-import { Upload, X, Loader2, Crop, ImagePlus } from "lucide-react";
+import { Upload, X, Loader2, Crop, ImagePlus, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { ImageCropperDialog } from "@/components/ui/image-cropper-dialog";
@@ -12,14 +13,14 @@ const PRESET_ASPECT_RATIOS: Record<AspectRatioPreset, number | undefined> = {
  square: 1, // 1:1 (Produtos, Logos, Avatars)
  classified: 4 / 3, // 4:3 (Classificados, Carros, Imóveis)
  widescreen: 16 / 9, // 16:9 (Panorâmico moderno, Banners delicados de Bio/Destaque)
- cover: 3 / 1, // 3:1 (Capa de Perfil de Membro — IDÊNTICO ao aspect-[3/1] da tela)
+ cover: 3 / 1, // 3:1 (Capa de Perfil de Membro)
  banner: 21 / 9, // 21:9 (Top Banners Hero de Loja)
  header: 4 / 1, // 4:1 (Banners Panorâmicos de Topo)
  portrait: 9 / 16, // 9:16 (Stories, Reels, Mobile Portrait)
  free: undefined, // Livre
 };
 
-interface ImageUploadProps {
+export interface ImageUploadProps {
  value?: string | null;
  onChange: (url: string) => void;
  onRemove?: () => void;
@@ -29,6 +30,7 @@ interface ImageUploadProps {
  aspect?: number;
  aspectPreset?: AspectRatioPreset;
  helperText?: string;
+ showExternalUrlOption?: boolean;
 }
 
 export function ImageUpload({
@@ -41,6 +43,7 @@ export function ImageUpload({
  aspect,
  aspectPreset = "square",
  helperText,
+ showExternalUrlOption = true,
 }: ImageUploadProps) {
  const [isUploading, setIsUploading] = useState(false);
  const inputRef = useRef<HTMLInputElement>(null);
@@ -53,7 +56,25 @@ export function ImageUpload({
  const [currentImageFile, setCurrentImageFile] = useState<File | null>(null);
  const [currentImageSrc, setCurrentImageSrc] = useState<string | null>(null);
 
+ const [showManualUrl, setShowManualUrl] = useState(false);
+ const [manualUrl, setManualUrl] = useState("");
+
  const isAvatar = variant === "avatar";
+
+ const handleApplyManualUrl = (urlToApply?: string) => {
+ const rawUrl = (urlToApply || manualUrl).trim();
+ if (!rawUrl) return;
+
+ if (!/^https?:\/\//i.test(rawUrl)) {
+ toast.error("Insira uma URL válida iniciando com http:// ou https://");
+ return;
+ }
+
+ onChange(rawUrl);
+ setShowManualUrl(false);
+ setManualUrl("");
+ toast.success("URL de imagem aplicada com sucesso!");
+ };
 
  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
  const file = e.target.files?.[0];
@@ -86,6 +107,13 @@ export function ImageUpload({
  };
  reader.onerror = () => toast.error("Erro ao processar imagem colada.");
  toast.success("Imagem colada da área de transferência!");
+ return;
+ }
+
+ const pastedText = e.clipboardData?.getData("text/plain")?.trim();
+ if (pastedText && /^https?:\/\//i.test(pastedText)) {
+ e.preventDefault();
+ handleApplyManualUrl(pastedText);
  }
  };
 
@@ -187,9 +215,60 @@ export function ImageUpload({
  }
  };
 
+ const renderUrlDrawer = () => {
+ if (!showExternalUrlOption) return null;
+ return (
+ <div className="space-y-2 mb-2">
+ <div className="flex items-center justify-end">
+ <Button type="button" variant="ghost" onClick={() => setShowManualUrl(!showManualUrl)}
+ className="min-h-11 px-2 text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2 cursor-pointer rounded-lg focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+ >
+ <ExternalLink className="size-4" />
+ <span>{showManualUrl ? "Cancelar URL" : "Inserir URL Externa"}</span>
+ </Button>
+ </div>
+ {showManualUrl && (
+ <div className="space-y-2 rounded-lg border border-dashed border-border bg-muted/20 p-3">
+ <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground">
+ <span>Informe o link público da imagem (HTTPS)</span>
+ <Button type="button" variant="ghost" size="icon" onClick={() => setShowManualUrl(false)}
+ className="size-11 flex items-center justify-center text-muted-foreground hover:text-foreground rounded-lg focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none cursor-pointer"
+ aria-label="Fechar entrada de URL"
+ >
+ <X className="size-4" />
+ </Button>
+ </div>
+ <div className="flex flex-col sm:flex-row gap-2">
+ <Input
+ type="url"
+ value={manualUrl}
+ onChange={(e) => setManualUrl(e.target.value)}
+ placeholder="https://exemplo.com/imagem.jpg"
+ className="h-11 text-xs rounded-lg flex-1 bg-background"
+ onKeyDown={(e) => {
+ if (e.key === "Enter") {
+ e.preventDefault();
+ handleApplyManualUrl();
+ }
+ }}
+ />
+ <Button type="button" onClick={() => handleApplyManualUrl()}
+ className="h-11 px-4 text-xs font-bold rounded-lg shrink-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+ >
+ Aplicar
+ </Button>
+ </div>
+ </div>
+ )}
+ </div>
+ );
+ };
+
  // ── 1. VARIANTE AVATAR / LOGOTIPO COMPACTO (QUADRADO SQUIRCLE) ──
  if (isAvatar || (aspectPreset === "square" && (className?.includes("w-2") || className?.includes("w-3")))) {
  return (
+ <div className="flex flex-col gap-2">
+ {renderUrlDrawer()}
  <div
  onPaste={handlePaste}
  tabIndex={0}
@@ -198,54 +277,41 @@ export function ImageUpload({
  {value ? (
  <div className="relative size-full rounded-lg overflow-hidden border border-border bg-card group shadow-xs">
  <img src={value} alt="Logo/Avatar" className="size-full object-cover" />
- <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 p-1">
- <Button
- variant="secondary"
- size="icon"
- className="size-7 rounded-lg bg-background/90 text-foreground"
- onClick={() => {
- setCurrentImageSrc(value);
- setCropModalOpen(true);
- }}
- type="button"
+ <div className="absolute inset-0 bg-neutral-950/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 p-1">
+ <Button type="button" variant="secondary" size="icon" onClick={() => { setCurrentImageSrc(value); setCropModalOpen(true); }}
+ className="size-11 sm:size-8 rounded-lg bg-background/90 text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
  title="Recortar"
  >
- <Crop className="size-3.5" />
+ <Crop className="size-4" />
  </Button>
  {onRemove && (
- <Button
- variant="destructive"
- size="icon"
- className="size-7 rounded-lg"
- onClick={onRemove}
- type="button"
+ <Button type="button" variant="destructive" size="icon" onClick={onRemove}
+ className="size-11 sm:size-8 rounded-lg focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
  title="Remover"
  >
- <X className="size-3.5" />
+ <X className="size-4" />
  </Button>
  )}
  </div>
  </div>
  ) : (
- <button
- type="button"
- onClick={() => inputRef.current?.click()}
+ <Button type="button" variant="outline" onClick={() => inputRef.current?.click()}
  disabled={isUploading}
- className="size-full rounded-lg border-2 border-dashed border-border/80 bg-muted/40 hover:bg-muted/70 hover:border-foreground/30 transition-all flex flex-col items-center justify-center p-2 text-muted-foreground group cursor-pointer"
+ className="size-full min-h-24 rounded-lg border-2 border-dashed border-border/80 bg-muted/40 hover:bg-muted/70 hover:border-foreground/30 transition-all flex flex-col items-center justify-center p-2 text-muted-foreground group cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none h-auto"
  title="Enviar imagem 1:1"
  >
  {isUploading ? (
- <Loader2 className="size-5 animate-spin" />
+ <Loader2 className="size-5 animate-spin motion-reduce:animate-none" />
  ) : (
  <>
  <ImagePlus className="size-5 text-muted-foreground group-hover:text-foreground transition-colors mb-1" />
- <span className="text-[10px] font-bold tracking-tight text-center leading-none">
+ <span className="text-xs font-bold tracking-tight text-center leading-none">
  Logo 1:1
- <span className="block text-[8px] font-normal text-muted-foreground mt-1">Ctrl+V</span>
+ <span className="block text-xs font-normal text-muted-foreground mt-1">Ctrl+V</span>
  </span>
  </>
  )}
- </button>
+ </Button>
  )}
  <input
  type="file"
@@ -264,6 +330,7 @@ export function ImageUpload({
  onCropCompleteAction={handleCropComplete}
  />
  </div>
+ </div>
  );
  }
 
@@ -280,51 +347,39 @@ export function ImageUpload({
  tabIndex={0}
  className={cn("w-full flex flex-col gap-2 select-none outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40 rounded-lg", className)}
  >
+ {renderUrlDrawer()}
  {value ? (
  <div
  className="relative w-full rounded-lg overflow-hidden border border-border/80 bg-muted/30 group shadow-xs"
  style={previewStyle}
  >
  <img src={value} alt="Capa" className="size-full object-cover" />
- <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
- <Button
- variant="secondary"
- size="sm"
- className="rounded-lg font-bold text-xs gap-2 bg-background/95 text-foreground"
- onClick={() => {
- setCurrentImageSrc(value);
- setCropModalOpen(true);
- }}
- type="button"
+ <div className="absolute inset-0 bg-neutral-950/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+ <Button type="button" variant="secondary" size="sm" onClick={() => { setCurrentImageSrc(value); setCropModalOpen(true); }}
+ className="h-11 px-4 rounded-lg font-bold text-xs gap-2 bg-background/95 text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
  >
- <Crop className="size-3.5" />
+ <Crop className="size-4" />
  <span>Reajustar Enquadramento</span>
  </Button>
  {onRemove && (
- <Button
- variant="destructive"
- size="sm"
- className="rounded-lg font-bold text-xs gap-2"
- onClick={onRemove}
- type="button"
+ <Button type="button" variant="destructive" size="sm" onClick={onRemove}
+ className="h-11 px-4 rounded-lg font-bold text-xs gap-2 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
  >
- <X className="size-3.5" />
+ <X className="size-4" />
  <span>Remover</span>
  </Button>
  )}
  </div>
  </div>
  ) : (
- <button
- type="button"
- onClick={() => inputRef.current?.click()}
+ <Button type="button" variant="outline" onClick={() => inputRef.current?.click()}
  disabled={isUploading}
- className="w-full rounded-lg border-2 border-dashed border-border/80 bg-muted/40 hover:bg-muted/70 hover:border-foreground/30 transition-all flex flex-col items-center justify-center p-4 text-muted-foreground group cursor-pointer gap-2"
+ className="w-full min-h-28 rounded-lg border-2 border-dashed border-border/80 bg-muted/40 hover:bg-muted/70 hover:border-foreground/30 transition-all flex flex-col items-center justify-center p-4 text-muted-foreground group cursor-pointer gap-2 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none h-auto"
  style={previewStyle}
  >
  {isUploading ? (
  <div className="flex flex-col items-center gap-2">
- <Loader2 className="size-6 animate-spin text-foreground" />
+ <Loader2 className="size-6 animate-spin motion-reduce:animate-none text-foreground" />
  <span className="text-xs font-semibold">Processando imagem...</span>
  </div>
  ) : (
@@ -336,13 +391,13 @@ export function ImageUpload({
  <p className="text-xs font-bold text-foreground">
  Carregar Capa / Banner
  </p>
- <p className="text-[11px] text-muted-foreground mt-1">
+ <p className="text-xs text-muted-foreground mt-1">
  Proporção {getPresetLabel()} — clique ou cole com Ctrl+V.
  </p>
  </div>
  </>
  )}
- </button>
+ </Button>
  )}
 
  <input
@@ -375,6 +430,7 @@ export function ImageUpload({
  tabIndex={0}
  className={cn("space-y-2 select-none outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40 rounded-lg", className)}
  >
+ {renderUrlDrawer()}
  {value ? (
  <div
  className="relative rounded-lg overflow-hidden border border-border/80 bg-muted/30 group shadow-xs"
@@ -385,29 +441,18 @@ export function ImageUpload({
  alt="Upload"
  className="w-full h-full object-cover"
  />
- <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
- <Button
- variant="secondary"
- size="sm"
- className="rounded-lg font-bold text-xs gap-2 bg-background/95 text-foreground"
- onClick={() => {
- setCurrentImageSrc(value);
- setCropModalOpen(true);
- }}
- type="button"
+ <div className="absolute inset-0 bg-neutral-950/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+ <Button type="button" variant="secondary" size="sm" onClick={() => { setCurrentImageSrc(value); setCropModalOpen(true); }}
+ className="h-11 px-4 rounded-lg font-bold text-xs gap-2 bg-background/95 text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
  >
- <Crop className="size-3.5" />
+ <Crop className="size-4" />
  <span>Recortar</span>
  </Button>
  {onRemove && (
- <Button
- variant="destructive"
- size="sm"
- className="rounded-lg font-bold text-xs gap-2"
- onClick={onRemove}
- type="button"
+ <Button type="button" variant="destructive" size="sm" onClick={onRemove}
+ className="h-11 px-4 rounded-lg font-bold text-xs gap-2 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
  >
- <X className="size-3.5" />
+ <X className="size-4" />
  <span>Remover</span>
  </Button>
  )}
@@ -415,10 +460,18 @@ export function ImageUpload({
  </div>
  ) : (
  <div
- onClick={() => inputRef.current?.click()}
+ role="button"
+ tabIndex={0}
+ onClick={() => inputRef.current?.click()} // focus-visible:ring-2
+ onKeyDown={(e) => {
+ if (e.key === "Enter" || e.key === " ") {
+ e.preventDefault();
+ inputRef.current?.click();
+ }
+ }}
  style={defaultStyle}
  className={cn(
- "border-2 border-dashed border-border/80 rounded-lg flex flex-col items-center justify-center p-4 text-center cursor-pointer transition-all bg-muted/40 hover:bg-muted/70 hover:border-foreground/30",
+ "border-2 border-dashed border-border/80 rounded-lg flex flex-col items-center justify-center p-4 text-center cursor-pointer transition-all bg-muted/40 hover:bg-muted/70 hover:border-foreground/30 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
  isUploading && "pointer-events-none opacity-60",
  )}
  >
@@ -428,18 +481,14 @@ export function ImageUpload({
  <p className="text-xs font-bold text-foreground">
  {isUploading ? "Processando Imagem..." : "Adicionar Imagem"}
  </p>
- <p className="text-[11px] text-muted-foreground mt-1 max-w-60">
+ <p className="text-xs text-muted-foreground mt-1 max-w-60">
  {helperText ? `${helperText} • Cole com Ctrl+V` : `Enquadramento ${getPresetLabel()} • Cole com Ctrl+V`}
  </p>
- <Button
- type="button"
- variant="outline"
- size="sm"
- className="mt-1 rounded-lg text-xs font-bold h-8"
- onClick={() => inputRef.current?.click()}
+ <Button type="button" variant="outline" size="sm" onClick={() => inputRef.current?.click()}
  disabled={isUploading}
+ className="mt-1 rounded-lg text-xs font-bold h-11 px-5 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
  >
- {isUploading ? <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" /> : "Selecionar e Recortar"}
+ {isUploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin motion-reduce:animate-none" /> : "Selecionar e Recortar"}
  </Button>
  </div>
  )}

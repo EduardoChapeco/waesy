@@ -45,28 +45,3 @@ export async function uploadProposalMedia(
   }
 }
 
-/**
- * Salva uma imagem do Unsplash no storage da agência ou retorna a URL direta
- */
-export async function saveUnsplashImageToStorage(
-  _agencyId: string,
-  _proposalId: string,
-  slotOrUrl: string,
-  imageUrl?: string,
-  _itemId?: string
-): Promise<string> {
-  const actualUrl = (imageUrl || slotOrUrl) || "";
-  if (actualUrl.includes("unsplash.com")) {
-    try {
-      const urlObj = new URL(actualUrl);
-      urlObj.searchParams.set("auto", "format");
-      urlObj.searchParams.set("fit", "crop");
-      urlObj.searchParams.set("w", "1600");
-      urlObj.searchParams.set("q", "80");
-      return urlObj.toString();
-    } catch {
-      return actualUrl;
-    }
-  }
-  return actualUrl;
-}

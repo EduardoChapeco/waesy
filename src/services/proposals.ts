@@ -136,65 +136,6 @@ export type Proposal = {
   agency_brand_color?: string;
 };
 
-export type UnsplashPhoto = {
-  id: string;
-  urls: {
-    regular: string;
-    small: string;
-    thumb: string;
-  };
-  alt_description?: string | null;
-  description?: string | null;
-  user: {
-    name: string;
-    username: string;
-  };
-  url_full?: string;
-  url_thumb?: string;
-  alt?: string;
-  photographer?: string;
-};
-
-/**
- * Busca fotos no Unsplash com cache e fallback para imagens de alta resolução
- */
-export async function searchUnsplash(query: string): Promise<UnsplashPhoto[]> {
-  const clean = encodeURIComponent(query.trim());
-  try {
-    const res = await fetch(`https://api.unsplash.com/search/photos?query=${clean}&per_page=16&orientation=landscape`, {
-      headers: {
-        Authorization: "Client-ID vK-9626D2bE9m4eE40eK47nU89X9Q_v88jX2o4wU07E",
-      },
-    });
-    if (res.ok) {
-      const data = await res.json();
-      if (Array.isArray(data.results) && data.results.length > 0) {
-        return data.results.map((r: any) => ({
-          id: r.id,
-          urls: {
-            regular: r.urls.regular,
-            small: r.urls.small,
-            thumb: r.urls.thumb,
-          },
-          url_full: r.urls.regular,
-          url_thumb: r.urls.thumb,
-          alt: r.alt_description || r.description || "Foto de viagem",
-          photographer: r.user?.name || "Unsplash Creator",
-          alt_description: r.alt_description,
-          description: r.description,
-          user: {
-            name: r.user?.name || "Unsplash Creator",
-            username: r.user?.username || "creator",
-          },
-        }));
-      }
-    }
-  } catch (err) {
-    console.warn("[searchUnsplash] Falha na busca de fotos externas:", err);
-  }
-
-  return [];
-}
 
 /**
  * Busca histórico de alterações da proposta
