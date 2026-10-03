@@ -92,8 +92,9 @@ Com base nas referências visuais enviadas pelo usuário, a Home (`/_store/`) re
 
 ## 🚀 7. Plano de Execução Imediato
 
-1. **Passo 1 (Home & UI iFood)**: Criar componente de **Big Master Cards Squircle** e o **Trilho com Card Vertical Líder** no topo da Home (`src/routes/_store.index.tsx`).
-2. **Passo 2 (Portal de Notícias)**: Refatorar a página de notícias (`src/routes/_store.noticias.index.tsx`) para o formato Feed Editorial Dinâmico.
-3. **Passo 3 (Cockpit de Pedidos)**: Aprimorar o painel de pedidos no Workspace (`src/routes/workspace.pedidos.index.tsx`) com interface de cozinha em colunas Kanban rápidas.
-4. **Passo 4 (ATS & Vagas)**: Criar a tela de gestão de candidaturas e entrevistas no Workspace (`src/routes/workspace.empregos.candidatos.tsx`).
-5. **Passo 5 (Build, Validação & Deploy)**: Compilar com 0 erros e publicar no Cloudflare Pages.
+1. [x] **Passo 1 (Home & UI iFood)**: Criado componente de **Big Master Cards Squircle** (`MasterSquircleHero`) e pills de acesso rápido no topo da Home (`src/routes/_store.index.tsx`). *(Homologado — DEC-160)*
+2. [x] **Passo 2 (Portal de Notícias)**: Refatorada a página de notícias (`src/routes/_store.noticias.index.tsx`) para formato Feed Editorial Dinâmico e eliminadas classes arbitrárias. *(Homologado — DEC-160)*
+3. [x] **Passo 3 (Cockpit de Pedidos)**: Aprimorado o painel de pedidos no Workspace (`src/routes/workspace.pedidos.index.tsx`) com interface de cozinha KDS detalhando itens, quantidades e observações em tempo real com touch targets higienizados. *(Homologado — DEC-160)*
+4. [x] **Passo 4 (ATS & Vagas)**: Tela de gestão de candidaturas e entrevistas no Workspace (`src/routes/workspace.empregos.candidatos.tsx`) com touch targets $\ge 44\text{px}$ e remoção de colchetes arbitrários. *(Homologado — DEC-160)*
+5. [ ] **Passo 5 (Build, Validação & Deploy)**: Validação e publicação sob comando explícito do usuário.
+

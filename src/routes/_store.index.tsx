@@ -2,6 +2,7 @@ import React, { useState, useMemo } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Tag, Newspaper, Briefcase, CalendarDots, MapPin, Clock, WhatsappLogo, Buildings, Star, CheckCircle, Storefront, ArrowRight, Ticket, UserCircle, Target, Rss, ChatCircleDots, Globe, CookingPot, Airplane, Trophy, ShieldCheck } from "@phosphor-icons/react";
 import { BannerHeroCarousel } from "@/components/commerce/banner-hero-carousel";
+import { MasterSquircleHero } from "@/components/commerce/master-squircle-hero";
 import { HorizontalRail } from "@/components/commerce/horizontal-rail";
 import { PlacesHighlightBadge } from "@/components/shell/places-highlight-badge";
 import { NewsCard } from "@/components/news/news-card";
@@ -517,6 +518,9 @@ function CommunityMarketplaceView({ data }: { data: any }) {
 
   return (
     <div className="w-full space-y-4 sm:space-y-4 pb-14">
+      {/* ── 0. HERO SQUIRCLE MASTER BANNERS & QUICK ACCESS PILLS (iFood Style) ── */}
+      <MasterSquircleHero />
+
       {/* ── 1. CARDS COM IMAGENS DO TOPO (Categorias Master com Separação Rigorosa de Breakpoint) ── */}
       <section aria-label="Categorias Principais">
         <HorizontalRail title="Categorias Principais" hideHeader={true}>

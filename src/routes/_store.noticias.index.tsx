@@ -228,7 +228,7 @@ export function NoticiasFeedPage() {
                 <Badge variant="secondary">
                   {featuredArticle.kicker || "Manchete Principal"}
                 </Badge>
-                <span className="text-[11px] text-muted-foreground font-mono">
+                <span className="text-xs text-muted-foreground font-mono">
                   {featuredArticle.reading_time_minutes} min de leitura
                 </span>
               </div>

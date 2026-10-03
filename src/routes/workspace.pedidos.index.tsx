@@ -616,7 +616,7 @@ function AdminOrdersPage() {
  variant="outline"
  onClick={() => handleStatusChange(order.id, "delivered")}
  disabled={isProcessing}
- className="flex-1 rounded-lg font-bold text-xs h-9 border-success/40 text-success hover:bg-success/10"
+ className="flex-1 rounded-lg font-bold text-xs h-11 sm:h-9 border-success/40 text-success hover:bg-success/10"
  >
  <CheckCircle2 className="size-3.5 mr-1" />
  Concluir Viagem
@@ -748,6 +748,30 @@ function AdminOrdersPage() {
  </div>
  </div>
 
+ {Array.isArray(order.items_snapshot) && order.items_snapshot.length > 0 && (
+ <div className="space-y-1.5 py-2 border-y border-border/40 text-xs">
+ {order.items_snapshot.map((item: any, idx: number) => (
+ <div key={idx} className="flex items-start justify-between gap-2">
+ <div className="flex items-start gap-1.5">
+ <span className="font-bold text-foreground bg-muted px-1.5 py-0.5 rounded text-xs">
+ {item.quantity || 1}x
+ </span>
+ <div>
+ <p className="font-medium text-foreground leading-tight">
+ {item.title || item.product_name || item.name || "Item"}
+ </p>
+ {item.notes && (
+ <p className="text-xs text-amber-600 dark:text-amber-400 font-mono">
+ Obs: {item.notes}
+ </p>
+ )}
+ </div>
+ </div>
+ </div>
+ ))}
+ </div>
+ )}
+
  <div className="flex items-center gap-2 pt-2 border-t border-border/40">
  <Button
  size="sm"
@@ -818,6 +842,30 @@ function AdminOrdersPage() {
  </span>
  </div>
 
+ {Array.isArray(order.items_snapshot) && order.items_snapshot.length > 0 && (
+ <div className="space-y-1.5 py-2 border-y border-border/40 text-xs">
+ {order.items_snapshot.map((item: any, idx: number) => (
+ <div key={idx} className="flex items-start justify-between gap-2">
+ <div className="flex items-start gap-1.5">
+ <span className="font-bold text-foreground bg-muted px-1.5 py-0.5 rounded text-xs">
+ {item.quantity || 1}x
+ </span>
+ <div>
+ <p className="font-medium text-foreground leading-tight">
+ {item.title || item.product_name || item.name || "Item"}
+ </p>
+ {item.notes && (
+ <p className="text-xs text-amber-600 dark:text-amber-400 font-mono">
+ Obs: {item.notes}
+ </p>
+ )}
+ </div>
+ </div>
+ </div>
+ ))}
+ </div>
+ )}
+
  <div className="flex items-center gap-2 pt-2 border-t border-border/40">
  <Button
  size="sm"
@@ -848,7 +896,7 @@ function AdminOrdersPage() {
  asChild
  variant="outline"
  size="icon"
- className="size-9 rounded-lg shrink-0 text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/10"
+ className="size-11 sm:size-9 rounded-lg shrink-0 text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/10"
  title="Baixar DANFE (PDF da Nota Fiscal)"
  >
  <a href={(order as any).danfe_pdf_url} target="_blank" rel="noopener noreferrer">
@@ -908,13 +956,37 @@ function AdminOrdersPage() {
  </span>
  </div>
 
+ {Array.isArray(order.items_snapshot) && order.items_snapshot.length > 0 && (
+ <div className="space-y-1.5 py-2 border-y border-border/40 text-xs">
+ {order.items_snapshot.map((item: any, idx: number) => (
+ <div key={idx} className="flex items-start justify-between gap-2">
+ <div className="flex items-start gap-1.5">
+ <span className="font-bold text-foreground bg-muted px-1.5 py-0.5 rounded text-xs">
+ {item.quantity || 1}x
+ </span>
+ <div>
+ <p className="font-medium text-foreground leading-tight">
+ {item.title || item.product_name || item.name || "Item"}
+ </p>
+ {item.notes && (
+ <p className="text-xs text-amber-600 dark:text-amber-400 font-mono">
+ Obs: {item.notes}
+ </p>
+ )}
+ </div>
+ </div>
+ </div>
+ ))}
+ </div>
+ )}
+
  <div className="flex items-center gap-2 pt-2 border-t border-border/40">
  <Button
  size="sm"
  variant="outline"
  onClick={() => handleStatusChange(order.id, "delivered")}
  disabled={isProcessing}
- className="flex-1 rounded-lg font-bold text-xs h-9 border-success/40 text-success hover:bg-success/10"
+ className="flex-1 rounded-lg font-bold text-xs h-11 sm:h-9 border-success/40 text-success hover:bg-success/10"
  >
  Confirmar Entrega
  </Button>

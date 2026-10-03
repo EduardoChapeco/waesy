@@ -406,14 +406,14 @@ function WorkspaceCandidatesPage() {
               variant="outline"
               size="sm"
               onClick={() => setIsPaywallOpen(true)}
-              className="h-8 rounded-lg text-xs font-semibold gap-2 border-border text-foreground hover:bg-muted cursor-pointer"
+              className="h-11 sm:h-9 rounded-lg text-xs font-semibold gap-2 border-border text-foreground hover:bg-muted cursor-pointer"
             >
               <Lock className="size-3" />
               <span>Assinar PRO</span>
             </Button>
           )}
 
-          <Button asChild variant="outline" size="sm" className="h-8 rounded-lg text-xs font-semibold">
+          <Button asChild variant="outline" size="sm" className="h-11 sm:h-9 rounded-lg text-xs font-semibold">
             <Link to="/workspace">Voltar</Link>
           </Button>
         </div>
@@ -449,7 +449,7 @@ function WorkspaceCandidatesPage() {
               size="sm"
               variant="default"
               onClick={() => setIsPaywallOpen(true)}
-              className="rounded-lg text-xs font-semibold h-8 min-h-9 sm:min-h-0"
+              className="rounded-lg text-xs font-semibold h-11 sm:h-9"
             >
               <Lock className="size-3 mr-1" /> Desbloquear Acesso
             </Button>
@@ -466,13 +466,13 @@ function WorkspaceCandidatesPage() {
                 value={hunterSearchQuery}
                 onChange={(e) => setHunterSearchQuery(e.target.value)}
                 placeholder="Cargo ou competência..."
-                className="h-8 text-xs rounded-lg w-48 sm:w-60 bg-background"
+                className="h-11 sm:h-9 text-xs rounded-lg w-full sm:w-60 bg-background"
               />
               <Button
                 type="submit"
                 size="sm"
                 disabled={isSearchingHunter}
-                className="rounded-lg h-8 text-xs font-semibold gap-1 shrink-0"
+                className="rounded-lg h-11 sm:h-9 text-xs font-semibold gap-1 shrink-0"
               >
                 {isSearchingHunter ? <Loader2 className="size-3 animate-spin" /> : <Search className="size-3" />}
                 <span>Buscar</span>
@@ -574,7 +574,7 @@ function WorkspaceCandidatesPage() {
                   </div>
 
                   <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
-                    <Button asChild variant="outline" size="sm" className="h-8 px-3 rounded-lg text-xs font-semibold">
+                    <Button asChild variant="outline" size="sm" className="h-11 sm:h-9 px-3 rounded-lg text-xs font-semibold">
                       <Link to={"/u/" + candidate.username} target="_blank">
                         <ExternalLink className="size-3 mr-1" /> Perfil
                       </Link>
@@ -823,7 +823,7 @@ function WorkspaceCandidatesPage() {
 
       {/* ── 5. BOTTOM SHEET DO CANDIDATO (100dvh MOBILE & DRAWER) ── */}
       <Sheet open={isDossierOpen} onOpenChange={setIsDossierOpen}>
-        <SheetContent side="bottom" className="p-5 space-y-4 max-h-[92dvh] overflow-y-auto">
+        <SheetContent side="bottom" className="p-5 space-y-4 max-h-screen overflow-y-auto">
           {dossierCandidate && (
             <>
               <SheetHeader className="text-left pb-2 border-b border-border/40">
@@ -924,13 +924,13 @@ function WorkspaceCandidatesPage() {
                   value={internalNoteDraft}
                   onChange={(e) => setInternalNoteDraft(e.target.value)}
                   placeholder="Observações sobre perfil, expectativas salariais, postura..."
-                  className="text-xs rounded-lg min-h-[70px] bg-background"
+                  className="text-xs rounded-lg min-h-20 bg-background"
                 />
                 <Button
                   size="sm"
                   variant="outline"
                   onClick={() => handleSaveInternalNote(dossierCandidate.id)}
-                  className="h-8 rounded-lg text-xs font-semibold"
+                  className="h-11 sm:h-9 rounded-lg text-xs font-semibold"
                 >
                   Salvar Nota
                 </Button>
