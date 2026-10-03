@@ -2515,13 +2515,23 @@ export function CheckoutPage() {
  )}
 
  {/* 3. Pagamento na Entrega / Manual (se configurado pela loja) */}
- {paymentMethods && paymentMethods.length > 0 && (
+ {(() => {
+ const deduplicatedManualMethods = (paymentMethods || []).filter((pm: any) => {
+ const norm = (pm.name || "").toLowerCase().trim();
+ if (norm === "pix") return false;
+ if ((norm === "cartão de crédito" || norm === "cartao de credito" || norm === "cartão online") && (isGatewayConfigured || storeProfile?.settings?.payment_processing_mode !== "direct_store")) return false;
+ return true;
+ });
+
+ if (deduplicatedManualMethods.length === 0) return null;
+
+ return (
  <div className="space-y-2 pt-2">
  <Label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
  Outras Opções da Loja
  </Label>
  <div className="grid gap-2">
- {paymentMethods.map((pm: any) => {
+ {deduplicatedManualMethods.map((pm: any) => {
  const isSelected = formData.paymentMethod === "manual" && formData.paymentMethodId === pm.id;
  return (
  <button
@@ -2552,7 +2562,8 @@ export function CheckoutPage() {
  })}
  </div>
  </div>
- )}
+ );
+ })()}
  </div>
 
  <div className="pt-3 grid grid-cols-2 sm:flex sm:items-center sm:justify-between gap-3">

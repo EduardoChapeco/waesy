@@ -820,27 +820,29 @@ export function ClassifiedDetailDesktop({
                 </div>
               )}
 
-              {/* Formas de Pagamento Rápidas */}
-              <div className="flex flex-wrap gap-2 pt-2">
-                {acceptsPix && (
-                  <span className="inline-flex items-center gap-1 px-3 py-1 rounded-md text-[11px] font-semibold bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
-                    <QrCode className="size-3.5 text-emerald-600" />
-                    PIX {pixDiscountPercent > 0 ? `(${pixDiscountPercent}% off)` : "à vista"}
-                  </span>
-                )}
-                {acceptsCard && (
-                  <span className="inline-flex items-center gap-1 px-3 py-1 rounded-md text-[11px] font-semibold bg-blue-500/10 text-blue-700 dark:text-blue-300">
-                    <CreditCard className="size-3.5 text-blue-600" />
-                    Cartão até {maxInstallments}x
-                  </span>
-                )}
-                {acceptsBoleto && (
-                  <span className="inline-flex items-center gap-1 px-3 py-1 rounded-md text-[11px] font-semibold bg-muted text-foreground">
-                    <Receipt className="size-3.5 text-muted-foreground" />
-                    Boleto
-                  </span>
-                )}
-              </div>
+              {/* Formas de Pagamento Rápidas (Exibidas apenas em modo de abas quando a aba de pagamentos não está visível) */}
+              {displayMode === "tabs" && activeTab !== "payments" && (
+                <div className="flex flex-wrap gap-2 pt-2">
+                  {acceptsPix && (
+                    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-md text-xs font-semibold bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
+                      <QrCode className="size-3.5 text-emerald-600" />
+                      PIX {pixDiscountPercent > 0 ? `(${pixDiscountPercent}% off)` : "à vista"}
+                    </span>
+                  )}
+                  {acceptsCard && (
+                    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-md text-xs font-semibold bg-blue-500/10 text-blue-700 dark:text-blue-300">
+                      <CreditCard className="size-3.5 text-blue-600" />
+                      Cartão até {maxInstallments}x
+                    </span>
+                  )}
+                  {acceptsBoleto && (
+                    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-md text-xs font-semibold bg-muted text-foreground">
+                      <Receipt className="size-3.5 text-muted-foreground" />
+                      Boleto
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* CTAs de Conversão Direta */}

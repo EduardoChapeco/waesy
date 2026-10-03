@@ -960,8 +960,11 @@ export const submitCivilInquiryLead = createServerFn({ method: "POST" })
       sellerProfileId: classified.author_profile_id,
       storeId: classified.store_id || undefined,
       startSdrAi: true,
+      afterSubmitAction: "start_sdr_chat",
+      successMessage: "Suas respostas foram enviadas para o vendedor! O SDR IA foi ativado para atendimento imediato.",
       whatsappUrl,
       contactName: data.contactName.trim(),
       answers: data.answers,
+      isNewRegisteredUser: false,
     };
   });

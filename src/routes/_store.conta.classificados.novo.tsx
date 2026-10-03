@@ -9339,12 +9339,6 @@ function SpecializedClassifiedEditor({
  ? "Usado - Bom Estado"
  : "Usado - Com Marcas"}
  </Badge>
- {acceptsPix && (
- <Badge variant="secondary" className="text-xs font-medium gap-1">
- <QrCode className="size-3 text-emerald-600" />
- <span>PIX</span>
- </Badge>
- )}
  {acceptsTrade && (
  <Badge variant="secondary" className="text-xs font-medium gap-1">
  <RefreshCw className="size-3 text-amber-600" />
