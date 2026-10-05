@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { 
-  Sparkles, Search, SlidersHorizontal, CheckCircle2, XCircle, 
+  Zap, Search, SlidersHorizontal, CheckCircle2, XCircle, 
   FileText, Receipt, UserCheck, ShieldAlert, Compass, Home, 
   Megaphone, Bot, Eye, TrendingUp, ArrowRight, Play, Loader2, Info
 } from "lucide-react";
@@ -31,7 +31,7 @@ const SKILL_ICONS: Record<string, any> = {
   Bot,
   Eye,
   TrendingUp,
-  Sparkles,
+  Zap,
 };
 
 const CATEGORIES = [
@@ -148,7 +148,7 @@ function SkillsCatalogPage() {
         </div>
       ) : skills.length === 0 ? (
         <div className="py-16 text-center bg-card border border-border/60 rounded-lg p-8 space-y-3">
-          <Sparkles className="size-8 mx-auto text-muted-foreground/40" />
+          <Zap className="size-8 mx-auto text-muted-foreground/40" />
           <p className="text-sm font-semibold text-foreground">Nenhuma skill encontrada</p>
           <p className="text-xs text-muted-foreground max-w-sm mx-auto">
             Tente buscar por outro termo ou selecione uma categoria diferente.
@@ -157,7 +157,7 @@ function SkillsCatalogPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {skills.map((skill) => {
-            const IconComp = SKILL_ICONS[skill.icon] || Sparkles;
+            const IconComp = SKILL_ICONS[skill.icon] || Zap;
             return (
               <div
                 key={skill.id}
@@ -228,7 +228,7 @@ function SkillsCatalogPage() {
         <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto rounded-lg">
           <DialogHeader>
             <DialogTitle className="text-base font-bold flex items-center gap-2">
-              <Sparkles className="size-4 text-primary" />
+              <Zap className="size-4 text-primary" />
               {selectedSkill?.name}
             </DialogTitle>
             <DialogDescription className="text-xs">

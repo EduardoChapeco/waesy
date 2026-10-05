@@ -1,4 +1,4 @@
-import { CheckCircle2, Eye, Loader2, Sparkles } from "lucide-react";
+import { CheckCircle2, Eye, Loader2 } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";

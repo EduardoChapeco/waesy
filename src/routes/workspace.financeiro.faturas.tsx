@@ -6,7 +6,7 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Receipt, QrCode, UploadCloud, CheckCircle2, Clock, AlertTriangle, FileText, Copy, ExternalLink, ShieldCheck, DollarSign, Building2, HelpCircle, Eye, Calculator, Sparkles, Scale, RefreshCw } from "lucide-react";
+import { Receipt, QrCode, UploadCloud, CheckCircle2, Clock, AlertTriangle, FileText, Copy, ExternalLink, ShieldCheck, DollarSign, Building2, HelpCircle, Eye, Calculator, Scale, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { formatMoney } from "@/lib/money";
 import { formatDate } from "@/lib/datetime";

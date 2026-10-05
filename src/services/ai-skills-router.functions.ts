@@ -251,7 +251,7 @@ export const listSkillsCatalog = createServerFn({ method: "GET" })
       when_not_to_use: s.when_not_to_use || undefined,
       category: s.category,
       niche: s.niche || undefined,
-      icon: s.icon || "Sparkles",
+      icon: s.icon || "Zap",
       estimated_cost_usd: Number(s.estimated_cost_usd || 0.0005),
       is_enabled: workspaceSettingsMap.has(s.id) ? workspaceSettingsMap.get(s.id)! : true,
       priority: 1,

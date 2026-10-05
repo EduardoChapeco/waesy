@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "@tanstack/react-router";
-import { Grid, Sparkles, Building2, Calendar, Compass, ArrowLeft, Share2, CheckCircle2, Plane, MapPin, MessageCircle, Maximize2, Edit3, Settings, CreditCard, QrCode, Truck, ShieldCheck, Star, Award, HeartHandshake, ImagePlus, Clock, Utensils, Car, Home as HomeIcon, Briefcase, Wrench, FileArchive, Tag, BadgePercent, Check, Info, ExternalLink, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Handshake, Landmark, Coins, Receipt, FileSpreadsheet, BookOpenCheck, ShieldAlert, Bus, Ship, Train, Navigation, Route as RouteIcon, X, Users, Phone, Mail, MessageSquare, Send, Store as StoreIcon, User, Download, Loader2, FileText, Smartphone, Laptop, Tv, Gamepad2, Armchair, Shirt, GraduationCap, Crown, Bed, Play } from "lucide-react";
+import { Grid, Building2, Calendar, Compass, ArrowLeft, Share2, CheckCircle2, Plane, MapPin, MessageCircle, Maximize2, Edit3, Settings, CreditCard, QrCode, Truck, ShieldCheck, Star, Award, HeartHandshake, ImagePlus, Clock, Utensils, Car, Home as HomeIcon, Briefcase, Wrench, FileArchive, Tag, BadgePercent, Check, Info, ExternalLink, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Handshake, Landmark, Coins, Receipt, FileSpreadsheet, BookOpenCheck, ShieldAlert, Bus, Ship, Train, Navigation, Route as RouteIcon, X, Users, Phone, Mail, MessageSquare, Send, Store as StoreIcon, User, Download, Loader2, FileText, Smartphone, Laptop, Tv, Gamepad2, Armchair, Shirt, GraduationCap, Crown, Bed, Play } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -1067,7 +1067,7 @@ export function EditorialShowcaseView({
               ) : (
                 <div className="py-10 px-4 rounded-lg bg-muted/20 border border-border/40 text-center space-y-2">
                   <div className="size-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center mx-auto">
-                    <Sparkles className="size-5" />
+                    <ImagePlus className="size-5" />
                   </div>
                   <h4 className="text-xs font-bold text-foreground">Carrossel de Destaques</h4>
                   <p className="text-xs text-muted-foreground max-w-sm mx-auto leading-relaxed">

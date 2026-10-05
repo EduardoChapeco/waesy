@@ -9,7 +9,7 @@
 
 import React, { useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { Globe, ArrowRight, CheckCircle2, Loader2, Sparkles, AlertCircle, RefreshCw, Palette, LayoutGrid, Compass, Flame } from "lucide-react";
+import { Globe, ArrowRight, CheckCircle2, Loader2, Zap, AlertCircle, RefreshCw, Palette, LayoutGrid, Compass, Flame } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -78,7 +78,7 @@ export function MagicOnboardingCard({ storeId, onSuccess }: MagicOnboardingCardP
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <div className="p-2 rounded-lg bg-primary/10 text-primary">
-            <Sparkles className="size-4" />
+            <Zap className="size-4" />
           </div>
           <div>
             <h3 className="text-sm font-semibold text-foreground line-clamp-1">Onboarding por IA</h3>

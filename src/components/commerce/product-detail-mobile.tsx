@@ -117,11 +117,19 @@ export function ProductDetailMobile({
               className="size-full object-contain bg-black"
             />
           ) : (
-            <img
-              src={activeMedia.url}
-              alt={activeMedia.alt || product.title}
-              className="size-full object-cover"
-            />
+            <div className="relative size-full overflow-hidden flex items-center justify-center">
+              <img
+                src={activeMedia.url}
+                alt=""
+                aria-hidden="true"
+                className="absolute inset-0 size-full object-cover blur-2xl opacity-35 scale-110 pointer-events-none select-none"
+              />
+              <img
+                src={activeMedia.url}
+                alt={activeMedia.alt || product.title}
+                className="relative size-full object-contain select-none"
+              />
+            </div>
           )
         ) : (
           <div className="size-full flex flex-col items-center justify-center text-muted-foreground gap-2">

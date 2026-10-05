@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Cpu, Key, ShieldCheck, Plus, Lock, Loader2, CheckCircle2, AlertTriangle, Layers, Bot, Globe, Eye, Sliders, Trash2, Sparkles, Zap, ArrowUpRight } from 'lucide-react';
+import { Cpu, Key, ShieldCheck, Plus, Lock, Loader2, CheckCircle2, AlertTriangle, Layers, Bot, Globe, Eye, Sliders, Trash2, Zap, ArrowUpRight } from 'lucide-react';
 import { toast } from "sonner";
 
 import { getAiTelemetryMetrics } from "@/services/ai-core-gateway.functions";
@@ -232,7 +232,7 @@ function AIConfigurationPage() {
  </span>
  {quota?.planTier === "WAESY_MAX" ? (
  <Badge variant="default" className="text-xs font-mono gap-1">
- <Sparkles className="size-3" />
+ <Zap className="size-3" />
  Waesy Max
  </Badge>
  ) : (

@@ -9,7 +9,7 @@ import {
   ExternalLink,
   Layers,
   Share2,
-  Sparkles,
+  Play,
   Download,
   BarChart3,
   ShieldCheck,
@@ -426,7 +426,7 @@ function PwaOmniBuilderPage() {
             {/* Bloco 3: Animação de Abertura (Splash) */}
             <div className="bg-card border border-border/70 p-5 rounded-lg space-y-4 shadow-xs">
               <h3 className="font-bold text-sm text-foreground flex items-center gap-2">
-                <Sparkles className="size-4 text-primary" />
+                <Play className="size-4 text-primary" />
                 <span>Animação de Abertura do App</span>
               </h3>
 

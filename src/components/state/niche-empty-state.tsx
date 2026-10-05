@@ -1,5 +1,5 @@
 import React from "react";
-import { Inbox, Calendar, Users, ShoppingBag, Building2, UtensilsCrossed, Stethoscope, Sparkles, Plus } from "lucide-react";
+import { Inbox, Calendar, Users, ShoppingBag, Building2, UtensilsCrossed, Stethoscope, Camera, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useNicheTaxonomy } from "@/hooks/use-niche-taxonomy";
@@ -38,7 +38,7 @@ export function NicheEmptyState({
   } else if (entity === "catalog") {
     if (nicheId === "gastronomy") Icon = UtensilsCrossed;
     else if (nicheId === "real_estate") Icon = Building2;
-    else if (nicheId === "creators") Icon = Sparkles;
+    else if (nicheId === "creators") Icon = Camera;
     else Icon = ShoppingBag;
   } else if (entity === "clients") {
     Icon = Users;

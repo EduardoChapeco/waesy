@@ -53,12 +53,20 @@ export function ClassifiedItemCard({ item, variant = "grid" }: ClassifiedItemCar
           className="absolute inset-y-0 left-0 w-32 sm:w-48 overflow-hidden rounded-l-2xl bg-muted/40 flex items-center justify-center cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           {img ? (
-            <img
-              src={img}
-              alt={item.title}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-              loading="lazy"
-            />
+            <div className="relative size-full overflow-hidden">
+              <img
+                src={img}
+                alt=""
+                aria-hidden="true"
+                className="absolute inset-0 size-full object-cover blur-xl opacity-35 scale-110 pointer-events-none select-none"
+              />
+              <img
+                src={img}
+                alt={item.title}
+                className="relative size-full object-contain group-hover:scale-105 transition-transform duration-300"
+                loading="lazy"
+              />
+            </div>
           ) : (
             <div className="w-full h-full bg-muted/40 flex items-center justify-center">
               <Tag className="size-7 text-muted-foreground/30" />
@@ -161,12 +169,20 @@ export function ClassifiedItemCard({ item, variant = "grid" }: ClassifiedItemCar
           >
             <div className="relative aspect-video w-full overflow-hidden bg-muted/40 flex items-center justify-center shrink-0">
               {img ? (
-                <img
-                  src={img}
-                  alt={item.title}
-                  className="size-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  loading="lazy"
-                />
+                <div className="relative size-full overflow-hidden">
+                  <img
+                    src={img}
+                    alt=""
+                    aria-hidden="true"
+                    className="absolute inset-0 size-full object-cover blur-xl opacity-35 scale-110 pointer-events-none select-none"
+                  />
+                  <img
+                    src={img}
+                    alt={item.title}
+                    className="relative size-full object-contain group-hover:scale-105 transition-transform duration-300"
+                    loading="lazy"
+                  />
+                </div>
               ) : (
                 <div className="size-full bg-muted/40 flex items-center justify-center">
                   <Tag className="size-7 text-muted-foreground/30" />
@@ -253,12 +269,20 @@ export function ClassifiedItemCard({ item, variant = "grid" }: ClassifiedItemCar
       >
         <div className="relative aspect-video w-full overflow-hidden bg-muted/40 flex items-center justify-center shrink-0">
           {img ? (
-            <img
-              src={img}
-              alt={item.title}
-              className="size-full object-cover group-hover:scale-105 transition-transform duration-300"
-              loading="lazy"
-            />
+            <div className="relative size-full overflow-hidden">
+              <img
+                src={img}
+                alt=""
+                aria-hidden="true"
+                className="absolute inset-0 size-full object-cover blur-xl opacity-35 scale-110 pointer-events-none select-none"
+              />
+              <img
+                src={img}
+                alt={item.title}
+                className="relative size-full object-contain group-hover:scale-105 transition-transform duration-300"
+                loading="lazy"
+              />
+            </div>
           ) : (
             <div className="size-full bg-muted/40 flex items-center justify-center">
               <Tag className="size-7 text-muted-foreground/30" />

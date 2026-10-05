@@ -117,15 +117,16 @@ export interface HotpageDTO {
  hero_stat_badge?: string | null;
  hero_secondary_badge?: string | null;
  hero_floating_render_url?: string | null;
- featured_rail_title?: string | null;
+  featured_rail_title?: string | null;
   show_shadow?: boolean;
   text_color?: string | null;
   starts_at?: string | null;
   ends_at?: string | null;
   auto_archive_at?: string | null;
+  city_filter?: string | null;
 }
 
-export function isCampaignActive(item: { starts_at?: string | null; ends_at?: string | null; is_active: boolean }): boolean {
+export function isCampaignActive(item: { starts_at?: string | null; ends_at?: string | null; auto_archive_at?: string | null; is_active: boolean }): boolean {
   if (!item.is_active) return false;
   const now = Date.now();
   if (item.starts_at) {
@@ -135,6 +136,10 @@ export function isCampaignActive(item: { starts_at?: string | null; ends_at?: st
   if (item.ends_at) {
     const e = new Date(item.ends_at).getTime();
     if (!isNaN(e) && e < now) return false;
+  }
+  if (item.auto_archive_at) {
+    const a = new Date(item.auto_archive_at).getTime();
+    if (!isNaN(a) && a < now) return false;
   }
   return true;
 }
@@ -153,6 +158,7 @@ export function mapHotpageDTO(row: any): HotpageDTO {
     starts_at: row.starts_at || null,
     ends_at: row.ends_at || null,
     auto_archive_at: row.auto_archive_at || null,
+    city_filter: row.city_filter || null,
     target_route: targetRoute,
     show_title: row.show_title !== false,
     show_description: row.show_description !== false,
@@ -192,6 +198,7 @@ export const listHotpages = createServerFn({ method: "GET" })
  .object({
  module: HotpageModuleSchema.optional(),
  template_type: z.string().optional(),
+        city: z.string().optional(),
  })
  .optional(),
  )
@@ -223,6 +230,19 @@ export const listHotpages = createServerFn({ method: "GET" })
       } else {
         query = query.eq("module", reqModule);
       }
+    }
+
+    const cleanCity =
+      data?.city &&
+      data.city !== "Global" &&
+      data.city !== "all" &&
+      data.city !== "Todas" &&
+      data.city !== "Todas as Cidades"
+        ? data.city.trim()
+        : null;
+
+    if (cleanCity) {
+      query = query.or(`city_filter.eq."${cleanCity}",city_filter.is.null,city_filter.eq.all`);
     }
 
     const { data: records, error } = await query.order("sort_order", { ascending: true });
@@ -463,6 +483,7 @@ export const createHotpage = createServerFn({ method: "POST" })
       starts_at: z.string().nullable().optional(),
       ends_at: z.string().nullable().optional(),
       auto_archive_at: z.string().nullable().optional(),
+      city_filter: z.string().nullable().optional(),
  }),
  )
  .handler(async ({ data }) => {
@@ -498,6 +519,7 @@ export const createHotpage = createServerFn({ method: "POST" })
       starts_at: data.starts_at || null,
       ends_at: data.ends_at || null,
       auto_archive_at: data.auto_archive_at || null,
+      city_filter: data.city_filter || null,
       is_active: true,
     });
 
@@ -568,6 +590,7 @@ export const updateHotpage = createServerFn({ method: "POST" })
       starts_at: z.string().nullable().optional(),
       ends_at: z.string().nullable().optional(),
       auto_archive_at: z.string().nullable().optional(),
+      city_filter: z.string().nullable().optional(),
     }),
   )
   .handler(async ({ data: { id, ...patch } }) => {
@@ -649,6 +672,10 @@ export const saveHotpage = createServerFn({ method: "POST" })
  show_shadow: z.boolean().optional(),
  show_badge: z.boolean().default(true),
  text_color: z.string().nullable().optional(),
+ starts_at: z.string().nullable().optional(),
+ ends_at: z.string().nullable().optional(),
+ auto_archive_at: z.string().nullable().optional(),
+ city_filter: z.string().nullable().optional(),
  is_active: z.boolean().default(true),
  }),
  )

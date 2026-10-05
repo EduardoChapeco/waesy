@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { CheckCircle2, XCircle, Plus, Trash2, Sparkles } from "lucide-react";
+import { CheckCircle2, XCircle, Plus, Trash2, Zap } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -101,7 +101,7 @@ export function ListingScopeSection({
         {/* Sugestões Rápidas de Nicho */}
         <div className="space-y-2">
           <Label className="text-2xs text-muted-foreground flex items-center gap-1">
-            <Sparkles className="size-3 text-primary" />
+            <Zap className="size-3 text-primary" />
             <span>Sugestões rápidas:</span>
           </Label>
           <div className="flex flex-wrap gap-2">
@@ -198,7 +198,7 @@ export function ListingScopeSection({
         {/* Sugestões Rápidas de Exclusão */}
         <div className="space-y-2">
           <Label className="text-2xs text-muted-foreground flex items-center gap-1">
-            <Sparkles className="size-3 text-primary" />
+            <Zap className="size-3 text-primary" />
             <span>Sugestões rápidas:</span>
           </Label>
           <div className="flex flex-wrap gap-2">

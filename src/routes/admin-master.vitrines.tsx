@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { listAllSurfaces, listSurfaceSections, upsertSurfaceSection, deleteSurfaceSection, reorderSurfaceSections, type SurfaceSectionDTO, type SurfaceSectionType, type SurfaceDataSource, type SurfaceRankingStrategy, type SurfaceLayoutVariant, type MarketplaceSurfaceDTO } from "@/services/surface-cms.functions";
+import { CANONICAL_CITIES } from "@/lib/constants/cities";
 
 const SearchSchema = z.object({
   surface: z.string().optional(),
@@ -92,6 +93,10 @@ function AdminMasterVitrinesPage() {
   const [layoutVariant, setLayoutVariant] = useState<SurfaceLayoutVariant>("rail_standard");
   const [itemLimit, setItemLimit] = useState(12);
   const [isActive, setIsActive] = useState(true);
+  const [cityFilter, setCityFilter] = useState("all");
+  const [startsAt, setStartsAt] = useState("");
+  const [endsAt, setEndsAt] = useState("");
+  const [autoArchiveAt, setAutoArchiveAt] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Carrega seções da superfície selecionada
@@ -131,6 +136,10 @@ function AdminMasterVitrinesPage() {
     setLayoutVariant("rail_standard");
     setItemLimit(12);
     setIsActive(true);
+    setCityFilter("all");
+    setStartsAt("");
+    setEndsAt("");
+    setAutoArchiveAt("");
     setIsDialogOpen(true);
   };
 
@@ -145,6 +154,10 @@ function AdminMasterVitrinesPage() {
     setLayoutVariant(sec.layout_variant);
     setItemLimit(sec.item_limit || 12);
     setIsActive(sec.is_active);
+    setCityFilter(sec.city_filter || "all");
+    setStartsAt(sec.starts_at ? sec.starts_at.slice(0, 16) : "");
+    setEndsAt(sec.ends_at ? sec.ends_at.slice(0, 16) : "");
+    setAutoArchiveAt(sec.auto_archive_at ? sec.auto_archive_at.slice(0, 16) : "");
     setIsDialogOpen(true);
   };
 
@@ -171,6 +184,10 @@ function AdminMasterVitrinesPage() {
           item_limit: itemLimit,
           sort_order: editingSection ? editingSection.sort_order : sections.length + 1,
           is_active: isActive,
+          city_filter: cityFilter === "all" ? null : cityFilter,
+          starts_at: startsAt ? new Date(startsAt).toISOString() : null,
+          ends_at: endsAt ? new Date(endsAt).toISOString() : null,
+          auto_archive_at: autoArchiveAt ? new Date(autoArchiveAt).toISOString() : null,
         },
       });
 
@@ -594,6 +611,64 @@ function AdminMasterVitrinesPage() {
                   onChange={(e) => setItemLimit(Number(e.target.value))}
                   className="h-11 sm:h-9 text-xs rounded-lg"
                 />
+              </div>
+            </div>
+
+            {/* Seletor de Cidade / Localidade Alvo */}
+            <div className="space-y-2">
+              <Label className="text-xs font-bold">Localidade / Cidade Alvo</Label>
+              <Select value={cityFilter} onValueChange={setCityFilter}>
+                <SelectTrigger className="h-11 sm:h-9 text-xs rounded-lg">
+                  <SelectValue placeholder="Selecione a cidade do público" />
+                </SelectTrigger>
+                <SelectContent className="max-h-60">
+                  <SelectItem value="all">Todas as Cidades (Global)</SelectItem>
+                  {CANONICAL_CITIES.map((c) => (
+                    <SelectItem key={c.id} value={c.name} className="text-xs">
+                      {c.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                Seções vinculadas a uma cidade só são renderizadas para clientes daquela localidade.
+              </p>
+            </div>
+
+            {/* Agendamento Temporal & Auto-Arquivamento */}
+            <div className="rounded-lg border border-border/60 bg-muted/20 p-4 space-y-3">
+              <div>
+                <p className="text-xs font-semibold">Agendamento & Programação Temporal</p>
+                <p className="text-xs text-muted-foreground">Defina a janela de veiculação e auto-arquivamento desta seção.</p>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                <div className="space-y-1">
+                  <Label className="text-xs">Início</Label>
+                  <Input
+                    type="datetime-local"
+                    value={startsAt}
+                    onChange={(e) => setStartsAt(e.target.value)}
+                    className="h-11 sm:h-9 text-xs rounded-lg"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">Fim</Label>
+                  <Input
+                    type="datetime-local"
+                    value={endsAt}
+                    onChange={(e) => setEndsAt(e.target.value)}
+                    className="h-11 sm:h-9 text-xs rounded-lg"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">Auto-Arquivar</Label>
+                  <Input
+                    type="datetime-local"
+                    value={autoArchiveAt}
+                    onChange={(e) => setAutoArchiveAt(e.target.value)}
+                    className="h-11 sm:h-9 text-xs rounded-lg"
+                  />
+                </div>
               </div>
             </div>
 

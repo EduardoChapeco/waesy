@@ -14,7 +14,7 @@ import {
   Plane,
   Utensils,
   Wrench,
-  Sparkles,
+  Package,
   Hotel,
   ShoppingBag,
   HeartPulse,
@@ -43,7 +43,7 @@ export const QUICK_CATEGORIES = [
   { id: "turismo", label: "Viagens e Turismo", icon: Plane },
   { id: "gastronomia", label: "Restaurantes e Gastronomia", icon: Utensils },
   { id: "servicos", label: "Prestação de Serviços", icon: Wrench },
-  { id: "equipamentos", label: "Aluguel de Equipamentos e Eventos", icon: Sparkles },
+  { id: "equipamentos", label: "Aluguel de Equipamentos e Eventos", icon: Package },
   { id: "hospedagem", label: "Pousadas e Hospedagem", icon: Hotel },
   { id: "comercio", label: "Comércio e Varejo", icon: ShoppingBag },
   { id: "saude", label: "Saúde e Beleza", icon: HeartPulse },
@@ -241,7 +241,7 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
         <div className="p-4 sm:p-5 rounded-lg bg-card border border-border/80 shadow-xs space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Sparkles className="size-4 text-primary" />
+              <Zap className="size-4 text-primary" />
               <span className="text-xs font-bold text-foreground">Preencher com IA via Link</span>
             </div>
             <Badge variant="outline" className="text-[10px] font-mono bg-background text-muted-foreground">
@@ -276,7 +276,7 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
                 </>
               ) : (
                 <>
-                  <Sparkles className="size-3.5" />
+                  <Zap className="size-3.5" />
                   <span>Extrair com IA</span>
                 </>
               )}

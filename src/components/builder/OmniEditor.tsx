@@ -39,7 +39,6 @@ import {
   Palette,
   LayoutTemplate,
   Layers,
-  Sparkles,
   ArrowLeft,
   X,
   Send,
@@ -64,7 +63,7 @@ export type { WixBlockCategory } from "./registry";
 
 const BLOCK_ICONS: Record<string, any> = {
   hero_minimal_split: LayoutTemplate,
-  hero_interactive_carousel: Sparkles,
+  hero_interactive_carousel: Image,
   bento_asymmetric_4: Layers,
   media_gallery_mosaic: Image,
   pricing_three_tiers: Tag,
@@ -589,7 +588,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
           )}
 
           <div className="flex items-center gap-2 px-3 py-1 rounded-lg bg-primary/10 text-primary border border-primary/20 text-xs font-bold tracking-tight shrink-0">
-            <Sparkles className="size-3.5" />
+            <Layers className="size-3.5" />
             <span>Waesy Builder</span>
           </div>
 

@@ -7,7 +7,7 @@ import {
   AlertTriangle,
   Plus,
   Trash2,
-  Sparkles,
+  Zap,
   Save,
   CheckCircle2,
   ArrowUpRight,
@@ -347,7 +347,7 @@ export function SwotMatrixPage() {
                 disabled={isGenerating}
                 className="h-11 px-4 rounded-lg text-xs font-medium gap-2"
               >
-                <Sparkles className={`w-3.5 h-3.5 ${isGenerating ? "animate-spin" : ""}`} />
+                <Zap className={`w-3.5 h-3.5 ${isGenerating ? "animate-spin" : ""}`} />
                 {isGenerating ? "Analisando Empresa..." : "Gerar com IA"}
               </Button>
 

@@ -128,8 +128,14 @@ export function OfferCard({
         <div className="relative w-28 sm:w-36 h-full bg-muted overflow-hidden shrink-0">
           <img
             src={cover_image || "/banner-placeholder.png"}
+            alt=""
+            aria-hidden="true"
+            className="absolute inset-0 size-full object-cover blur-xl opacity-35 scale-110 pointer-events-none select-none"
+          />
+          <img
+            src={cover_image || "/banner-placeholder.png"}
             alt={title}
-            className="size-full object-cover group-hover:scale-105 transition-transform duration-300 motion-reduce:transition-none"
+            className="relative size-full object-contain group-hover:scale-105 transition-transform duration-300 motion-reduce:transition-none"
             loading="lazy"
           />
           {discountVal > 0 && (
@@ -208,12 +214,18 @@ export function OfferCard({
         className,
       )}
     >
-      {/* ── IMAGEM NO TOPO (ASPECT-[4/3] FULL BLEED) ── */}
+      {/* ── IMAGEM NO TOPO (ASPECT-[4/3] FULL BLEED COM ESCALA PROPORCIONAL) ── */}
       <div className="relative aspect-[4/3] w-full bg-muted overflow-hidden shrink-0">
         <img
           src={cover_image || "/banner-placeholder.png"}
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 size-full object-cover blur-xl opacity-35 scale-110 pointer-events-none select-none"
+        />
+        <img
+          src={cover_image || "/banner-placeholder.png"}
           alt={title}
-          className="size-full object-cover group-hover:scale-105 transition-transform duration-300 motion-reduce:transition-none"
+          className="relative size-full object-contain group-hover:scale-105 transition-transform duration-300 motion-reduce:transition-none"
           loading="lazy"
         />
 

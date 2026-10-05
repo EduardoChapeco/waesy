@@ -53,6 +53,7 @@ export interface BannerDTO {
   city_filter?: string | null;
   starts_at: string;
   ends_at?: string | null;
+  auto_archive_at?: string | null;
   is_active: boolean;
   sort_order: number;
   show_title?: boolean;
@@ -155,14 +156,31 @@ export const listActiveBanners = createServerFn({ method: "GET" })
       return [];
     }
 
-    const active = data.map((b: any) => ({
-      ...b,
-      show_title: b.show_title === true,
-      show_description: b.show_description === true,
-      show_overlay: b.show_overlay === true,
-      show_badge: b.show_badge === true,
-      show_cta: b.show_cta === true,
-    })) as BannerDTO[];
+    const now = Date.now();
+    const active = data
+      .filter((b: any) => {
+        if (b.starts_at) {
+          const s = new Date(b.starts_at).getTime();
+          if (!isNaN(s) && s > now) return false;
+        }
+        if (b.ends_at) {
+          const e = new Date(b.ends_at).getTime();
+          if (!isNaN(e) && e < now) return false;
+        }
+        if (b.auto_archive_at) {
+          const a = new Date(b.auto_archive_at).getTime();
+          if (!isNaN(a) && a < now) return false;
+        }
+        return true;
+      })
+      .map((b: any) => ({
+        ...b,
+        show_title: b.show_title === true,
+        show_description: b.show_description === true,
+        show_overlay: b.show_overlay === true,
+        show_badge: b.show_badge === true,
+        show_cta: b.show_cta === true,
+      })) as BannerDTO[];
 
     // Priorização de localidade: se o usuário está numa cidade específica, anúncios direcionados àquela cidade vêm primeiro
     if (cleanCity) {
@@ -196,6 +214,7 @@ export const createBanner = createServerFn({ method: "POST" })
       city_filter: z.string().nullable().optional(),
       starts_at: z.string().optional(),
       ends_at: z.string().optional(),
+      auto_archive_at: z.string().nullable().optional(),
       is_active: z.boolean().optional(),
       sort_order: z.number().int().default(0),
       show_title: z.boolean().optional(),
@@ -264,6 +283,7 @@ export const updateBanner = createServerFn({ method: "POST" })
       city_filter: z.string().optional().nullable(),
       starts_at: z.string().optional(),
       ends_at: z.string().optional().nullable(),
+      auto_archive_at: z.string().optional().nullable(),
       is_active: z.boolean().optional(),
       sort_order: z.number().int().optional(),
       show_title: z.boolean().optional(),

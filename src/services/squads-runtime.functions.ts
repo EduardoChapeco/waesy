@@ -219,7 +219,7 @@ export const CANONICAL_SQUAD_TEMPLATES: CanonicalSquadTemplateDefinition[] = [
     description:
       "Planejamento e execução de campanhas, criativos, copywriting e aquisição contínua de clientes com alta conversão e presença digital.",
     department: "marketing",
-    icon_name: "Sparkles",
+    icon_name: "Megaphone",
     badge_label: "Marketing & Growth",
     agents: [
       { agent_id: "ag-mkt-1", task_order: 1, role_label: "Chief Marketing Strategist" },
@@ -622,7 +622,7 @@ export async function listStoreSquads(storeId: string): Promise<SquadWithDetails
         name: canonicalDef?.name || template.name || "Squad Especializado",
         description: canonicalDef?.description || template.description || "",
         department: (canonicalDef?.department || template.department || "marketing") as any,
-        icon_name: canonicalDef?.icon_name || template.icon_name || "Sparkles",
+        icon_name: canonicalDef?.icon_name || template.icon_name || "Bot",
         badge_label: canonicalDef?.badge_label || template.badge_label || "Enterprise",
       },
       agents: agentsList.sort((a, b) => (a.task_order || 0) - (b.task_order || 0)),

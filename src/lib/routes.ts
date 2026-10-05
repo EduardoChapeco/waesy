@@ -2778,7 +2778,7 @@ export const WORKSPACE_ROUTES: RouteEntry[] = [
     roles: ["owner", "admin", "manager"],
     phase: 5,
     navGroup: "Inteligência & IA",
-    navIcon: "Sparkles",
+    navIcon: "Zap",
   },
   {
     path: "/workspace/suporte",

@@ -13,7 +13,7 @@ import {
   Calendar, Clock, Users, CheckCircle2, AlertTriangle, ArrowUpRight, 
   TrendingUp, TrendingDown, DollarSign, FileText, Building2, ShoppingBag, 
   ChefHat, Package, Flame, QrCode, Phone, MessageSquare, ChevronRight,
-  Boxes, Sparkles, UserCheck, Stethoscope, Car
+  Boxes, UserCheck, Stethoscope, Car
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";

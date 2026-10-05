@@ -41,12 +41,20 @@ export function HitsLeadCard({
       )}
     >
       {coverImage ? (
-        <img
-          src={coverImage}
-          alt={ariaLabel}
-          className="size-full object-cover group-hover:scale-105 transition-transform duration-300 motion-reduce:transition-none"
-          loading="lazy"
-        />
+        <div className="relative size-full overflow-hidden bg-muted">
+          <img
+            src={coverImage}
+            alt=""
+            aria-hidden="true"
+            className="absolute inset-0 size-full object-cover blur-xl opacity-35 scale-110 pointer-events-none select-none"
+          />
+          <img
+            src={coverImage}
+            alt={ariaLabel}
+            className="relative size-full object-contain group-hover:scale-105 transition-transform duration-300 motion-reduce:transition-none"
+            loading="lazy"
+          />
+        </div>
       ) : (
         <div className={`size-full bg-linear-to-br ${gradient} flex flex-col justify-between p-4 text-white`}>
           {badge ? (

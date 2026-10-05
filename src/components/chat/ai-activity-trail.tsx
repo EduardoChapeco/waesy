@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import {
-  Sparkles,
+  Zap,
   Wrench,
   Search,
   Database,
@@ -30,7 +30,7 @@ export interface AIActivityTrailProps {
 }
 
 const STEP_ICONS: Record<AIActivityStepType, React.ElementType> = {
-  skill: Sparkles,
+  skill: Zap,
   tool: Wrench,
   search: Search,
   database: Database,
@@ -169,7 +169,7 @@ export function AIActivityTrail({
       {isExpanded && (
         <div className="border-t border-border/40 divide-y divide-border/20 bg-background/50 px-3 py-2 space-y-2">
           {steps.map((step, idx) => {
-            const Icon = STEP_ICONS[step.type] || Sparkles;
+            const Icon = STEP_ICONS[step.type] || Zap;
 
             return (
               <div

@@ -13,7 +13,7 @@ import {
   Scale,
   Utensils,
   Compass,
-  Sparkles,
+  Camera,
   Building2,
   HeartPulse,
   Square,
@@ -89,7 +89,7 @@ const TEMPLATE_OPTIONS = [
     if (t.niche === "legal") icon = Scale;
     if (t.niche === "gastronomy") icon = Utensils;
     if (t.niche === "tourism") icon = Compass;
-    if (t.niche === "creators") icon = Sparkles;
+    if (t.niche === "creators") icon = Camera;
     if (t.niche === "real_estate") icon = Building2;
     if (t.niche === "services") icon = HeartPulse;
     return {

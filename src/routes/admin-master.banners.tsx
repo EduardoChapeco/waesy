@@ -133,6 +133,11 @@ function AdminMasterBannersPage() {
   const [showBadge, setShowBadge] = useState(false);
   const [showCta, setShowCta] = useState(false);
 
+  // Scheduling states
+  const [startsAt, setStartsAt] = useState("");
+  const [endsAt, setEndsAt] = useState("");
+  const [autoArchiveAt, setAutoArchiveAt] = useState("");
+
   const refreshBanners = async () => {
     const updated = await listActiveBanners({ data: { placement: "all" } }).catch(() => []);
     setBanners(updated);
@@ -159,6 +164,9 @@ function AdminMasterBannersPage() {
     setShowDescription(false);
     setShowBadge(false);
     setShowCta(false);
+    setStartsAt("");
+    setEndsAt("");
+    setAutoArchiveAt("");
     setIsModalOpen(true);
   };
 
@@ -179,6 +187,9 @@ function AdminMasterBannersPage() {
     setShowDescription(banner.show_description === true);
     setShowBadge(banner.show_badge === true);
     setShowCta(banner.show_cta === true);
+    setStartsAt(banner.starts_at ? banner.starts_at.slice(0, 16) : "");
+    setEndsAt(banner.ends_at ? banner.ends_at.slice(0, 16) : "");
+    setAutoArchiveAt((banner as any).auto_archive_at ? (banner as any).auto_archive_at.slice(0, 16) : "");
     setIsModalOpen(true);
   };
 
@@ -229,6 +240,9 @@ function AdminMasterBannersPage() {
             show_overlay: showOverlay,
             show_badge: showBadge,
             show_cta: showCta,
+            starts_at: startsAt ? new Date(startsAt).toISOString() : undefined,
+            ends_at: endsAt ? new Date(endsAt).toISOString() : null,
+            auto_archive_at: autoArchiveAt ? new Date(autoArchiveAt).toISOString() : null,
           },
         });
         toast.success("Banner atualizado.");
@@ -250,6 +264,9 @@ function AdminMasterBannersPage() {
             show_overlay: showOverlay,
             show_badge: showBadge,
             show_cta: showCta,
+            starts_at: startsAt ? new Date(startsAt).toISOString() : undefined,
+            ends_at: endsAt ? new Date(endsAt).toISOString() : undefined,
+            auto_archive_at: autoArchiveAt ? new Date(autoArchiveAt).toISOString() : undefined,
             is_active: true,
           },
         });
@@ -653,6 +670,43 @@ function AdminMasterBannersPage() {
                 </div>
               </div>
             )}
+          </div>
+
+          {/* Agendamento Temporal & Auto-Arquivamento */}
+          <div className="rounded-lg border border-border/60 bg-muted/20 p-4 space-y-3">
+            <div>
+              <p className="text-xs font-semibold">Agendamento & Programação Temporal</p>
+              <p className="text-xs text-muted-foreground">Defina a janela de veiculação e o auto-arquivamento desta campanha.</p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              <div className="space-y-1">
+                <Label className="text-xs">Início da Veiculação</Label>
+                <Input
+                  type="datetime-local"
+                  value={startsAt}
+                  onChange={(e) => setStartsAt(e.target.value)}
+                  className="h-11 sm:h-9 rounded-lg bg-card text-xs"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Fim da Veiculação</Label>
+                <Input
+                  type="datetime-local"
+                  value={endsAt}
+                  onChange={(e) => setEndsAt(e.target.value)}
+                  className="h-11 sm:h-9 rounded-lg bg-card text-xs"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Auto-Arquivamento</Label>
+                <Input
+                  type="datetime-local"
+                  value={autoArchiveAt}
+                  onChange={(e) => setAutoArchiveAt(e.target.value)}
+                  className="h-11 sm:h-9 rounded-lg bg-card text-xs"
+                />
+              </div>
+            </div>
           </div>
 
           <div className="flex items-center justify-end gap-2 pt-3 border-t border-border/40">

@@ -18,7 +18,7 @@ import { getProfile } from "@/services/auth.functions";
 import { getUserAddresses, validateDeliveryLocationGPS } from "@/services/addresses.functions";
 import { DeliveryLocationPolicySheet } from "@/components/commerce/delivery-location-policy-sheet";
 import { GpsMismatchModal } from "@/components/commerce/gps-mismatch-modal";
-import { Check, CheckCircle2, Ticket, User, Truck, CreditCard, ShoppingBag, AlertCircle, MapPin, Loader2, Gift, QrCode, Clock, Store, ChevronRight, ArrowLeft, Navigation, Layers, Plus, ShieldCheck, Building2, ShieldAlert, Plane, Users, Calendar, Sparkles, FileText, Trash2, Package } from 'lucide-react';
+import { Check, CheckCircle2, Ticket, User, Truck, CreditCard, ShoppingBag, AlertCircle, MapPin, Loader2, Gift, QrCode, Clock, Store, ChevronRight, ArrowLeft, Navigation, Layers, Plus, ShieldCheck, Building2, ShieldAlert, Plane, Users, Calendar, Zap, FileText, Trash2, Package } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
@@ -1351,7 +1351,7 @@ export function CheckoutPage() {
                 </div>
               </div>
               <Badge variant="outline" className="font-mono text-xs text-emerald-600 dark:text-emerald-400 border-emerald-500/30 gap-2 w-fit">
-                <Sparkles size={12} /> Frete Isento (Voucher Digital)
+                <Ticket size={12} /> Frete Isento (Voucher Digital)
               </Badge>
             </div>
 
@@ -1617,7 +1617,7 @@ export function CheckoutPage() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-border/60">
               <div className="flex items-center gap-3">
                 <div className="size-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                  <Sparkles size={20} />
+                  <Zap size={20} />
                 </div>
                 <div>
                   <h3 className="text-sm sm:text-base font-bold text-foreground">Envio Digital Instantâneo</h3>
@@ -2628,7 +2628,7 @@ export function CheckoutPage() {
                   <div className="p-4 rounded-lg bg-muted/20 border border-border/40 space-y-2 text-xs">
                     <div className="flex items-center justify-between">
                       <span className="font-bold text-foreground flex items-center gap-2">
-                        <Sparkles size={14} className="text-primary" /> Envio Digital Instantâneo
+                        <Zap size={14} className="text-primary" /> Envio Digital Instantâneo
                       </span>
                       <button
                         type="button"

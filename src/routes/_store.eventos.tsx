@@ -1,5 +1,5 @@
 import { resolveActiveCity } from "@/lib/city-helper";
-import { Tag as LucideTag, X as LucideX, Calendar as CalendarIcon, ChevronDown as LucideChevronDown, Ticket as LucideTicket, Music as LucideMusic, Sparkles as LucideSparkles, PartyPopper as LucidePartyPopper, Utensils as LucideUtensils, Theater as LucideTheater, ShoppingBag as LucideShoppingBag, GraduationCap as LucideGraduationCap, Smile as LucideSmile } from "lucide-react";
+import { Tag as LucideTag, X as LucideX, Calendar as CalendarIcon, ChevronDown as LucideChevronDown, Ticket as LucideTicket, Music as LucideMusic, Flame as LucideFlame, PartyPopper as LucidePartyPopper, Utensils as LucideUtensils, Theater as LucideTheater, ShoppingBag as LucideShoppingBag, GraduationCap as LucideGraduationCap, Smile as LucideSmile } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
@@ -29,7 +29,7 @@ const SearchSchema = z.object({
 const EVENT_SUBCATEGORIES_BUTTONS = [
   { id: "todos", label: "Todos os Eventos", icon: LucideTicket },
   { id: "shows", label: "Shows de Rock e Pop", icon: LucideMusic },
-  { id: "sertanejo", label: "Sertanejo e Baladas", icon: LucideSparkles },
+  { id: "sertanejo", label: "Sertanejo e Baladas", icon: LucideFlame },
   { id: "pagode", label: "Samba e Pagode", icon: LucidePartyPopper },
   { id: "gastronomico", label: "Gastronomia e Feiras", icon: LucideUtensils },
   { id: "teatro", label: "Teatro e Stand-up", icon: LucideTheater },

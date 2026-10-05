@@ -311,12 +311,12 @@ export function getSiteBlockById(id: string): SiteBuilderBlockDefinition {
   return found || SITE_BUILDER_BLOCKS[0];
 }
 
-import { Sparkles, LayoutTemplate, Layers, Tag, MessageSquare } from "lucide-react";
+import { LayoutGrid, LayoutTemplate, Layers, Tag, MessageSquare } from "lucide-react";
 
 export type WixBlockCategory = "all" | "basic" | "layout" | "sections" | "interactive";
 
 export const WIX_CATEGORY_CONFIG: { id: WixBlockCategory; label: string; icon: any }[] = [
-  { id: "all", label: "Todos", icon: Sparkles },
+  { id: "all", label: "Todos", icon: LayoutGrid },
   { id: "basic", label: "Básico", icon: LayoutTemplate },
   { id: "layout", label: "Layout", icon: Layers },
   { id: "sections", label: "Seções", icon: Tag },

@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useEffect, useRef } from "react";
-import { CheckCircle2, Package, ArrowRight, Copy, Info, MessageCircle, ShieldCheck, Clock, ChefHat, Bike, Truck, Plane, Users, Calendar, Sparkles, Key, Download, ExternalLink } from "lucide-react";
+import { CheckCircle2, Package, ArrowRight, Copy, Info, MessageCircle, ShieldCheck, Clock, ChefHat, Bike, Truck, Plane, Users, Calendar, Zap, Key, Download, ExternalLink } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/commerce/page-header";
@@ -567,7 +567,7 @@ function ConfirmationPage() {
             <div className="flex items-center justify-between pb-3 border-b border-border/60">
               <div className="flex items-center gap-3">
                 <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
-                  <Sparkles size={16} />
+                  <Zap size={16} />
                 </div>
                 <div>
                   <h4 className="text-sm font-bold text-foreground">Liberação Digital Instantânea</h4>

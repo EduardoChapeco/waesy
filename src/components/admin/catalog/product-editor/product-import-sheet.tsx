@@ -17,7 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Globe, Loader2, ShieldCheck, Sparkles } from "lucide-react";
+import { Globe, Loader2, ShieldCheck, Zap } from "lucide-react";
 
 export interface ProductImportSheetProps {
   open: boolean;
@@ -53,7 +53,7 @@ export function ProductImportSheet({
       >
         <SheetHeader className="p-6 pb-4 border-b border-border bg-muted/20">
           <SheetTitle className="text-base font-bold flex items-center gap-2">
-            <Sparkles className="size-4 text-primary" />
+            <Zap className="size-4 text-primary" />
             <span>Importar {entityName} com IA</span>
           </SheetTitle>
           <SheetDescription className="text-xs text-muted-foreground mt-1">

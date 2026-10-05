@@ -16,6 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { DynamicMediaChip } from "@/components/commerce/dynamic-media-chip";
+import { CANONICAL_CITIES } from "@/lib/constants/cities";
 
 type MainSectionTab = "hero_module" | "category_hub" | "editorial_card";
 
@@ -113,6 +114,7 @@ function AdminMasterHotpagesPage() {
   const [startsAt, setStartsAt] = useState("");
   const [endsAt, setEndsAt] = useState("");
   const [autoArchiveAt, setAutoArchiveAt] = useState("");
+  const [cityFilter, setCityFilter] = useState("all");
 
  // Filtra hotpages de acordo com a aba ativa
  const filteredItems = useMemo(() => {
@@ -174,6 +176,7 @@ function AdminMasterHotpagesPage() {
     setStartsAt("");
     setEndsAt("");
     setAutoArchiveAt("");
+    setCityFilter("all");
  };
 
  const handleOpenCreate = () => {
@@ -207,6 +210,7 @@ function AdminMasterHotpagesPage() {
     setStartsAt(item.starts_at ? item.starts_at.slice(0, 16) : "");
     setEndsAt(item.ends_at ? item.ends_at.slice(0, 16) : "");
     setAutoArchiveAt(item.auto_archive_at ? item.auto_archive_at.slice(0, 16) : "");
+    setCityFilter((item as any).city_filter || "all");
  setIsSheetOpen(true);
  };
 
@@ -247,6 +251,7 @@ function AdminMasterHotpagesPage() {
         starts_at: startsAt ? new Date(startsAt).toISOString() : null,
         ends_at: endsAt ? new Date(endsAt).toISOString() : null,
         auto_archive_at: autoArchiveAt ? new Date(autoArchiveAt).toISOString() : null,
+        city_filter: cityFilter === "all" ? null : cityFilter,
  },
  });
 
@@ -303,6 +308,10 @@ function AdminMasterHotpagesPage() {
  bg_overlay_opacity: bgOverlayOpacity,
  bg_color: bgColor || undefined,
  text_color: textColor || undefined,
+ starts_at: startsAt ? new Date(startsAt).toISOString() : undefined,
+ ends_at: endsAt ? new Date(endsAt).toISOString() : undefined,
+ auto_archive_at: autoArchiveAt ? new Date(autoArchiveAt).toISOString() : undefined,
+ city_filter: cityFilter === "all" ? null : cityFilter,
  },
  });
 
@@ -321,7 +330,6 @@ function AdminMasterHotpagesPage() {
  };
 
  const handleDelete = async (id: string) => {
- if (!confirm("Tem certeza que deseja remover este item?")) return;
  try {
  await deleteHotpage({ data: { id } });
  setHotpages((prev) => prev.filter((h) => h.id !== id));
@@ -846,6 +854,26 @@ function AdminMasterHotpagesPage() {
  </SelectItem>
  </SelectContent>
  </Select>
+ </div>
+
+ <div className="space-y-2">
+ <Label className="text-xs font-bold">Localidade / Cidade Alvo</Label>
+ <Select value={cityFilter} onValueChange={setCityFilter}>
+ <SelectTrigger className="h-10 rounded-lg bg-card text-xs">
+ <SelectValue placeholder="Selecione a cidade do público" />
+ </SelectTrigger>
+ <SelectContent className="max-h-60 rounded-lg">
+ <SelectItem value="all" className="text-xs">Todas as Cidades (Global)</SelectItem>
+ {CANONICAL_CITIES.map((c) => (
+ <SelectItem key={c.id} value={c.name} className="text-xs">
+ {c.label}
+ </SelectItem>
+ ))}
+ </SelectContent>
+ </Select>
+ <p className="text-xs text-muted-foreground">
+ Vincule o card ou botão a uma cidade específica para direcionamento local.
+ </p>
  </div>
 
  <div className="space-y-2">

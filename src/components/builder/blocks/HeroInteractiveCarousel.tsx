@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { HeroCarouselBlockData, OmniBlockStyling } from "../types";
 import { getSectionStyle } from "../utils";
-import { ArrowRight, ChevronLeft, ChevronRight, Sparkles, Star } from "lucide-react";
+import { ArrowRight, ChevronLeft, ChevronRight, Tag, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export interface HeroInteractiveCarouselProps {
@@ -75,7 +75,7 @@ export const HeroInteractiveCarousel: React.FC<HeroInteractiveCarouselProps> = (
             {/* Badge de Contexto do Slide */}
             {currentSlide.badgeText && (
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-muted/60 border border-border/80 text-xs font-semibold tracking-wider uppercase text-muted-foreground mb-4 sm:mb-6 shadow-xs">
-                <Sparkles className="size-3.5 text-primary" />
+                <Tag className="size-3.5 text-primary" />
                 <span>{currentSlide.badgeText}</span>
               </div>
             )}
@@ -133,7 +133,7 @@ export const HeroInteractiveCarousel: React.FC<HeroInteractiveCarouselProps> = (
                 />
               ) : (
                 <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center bg-gradient-to-tr from-muted/50 to-card">
-                  <Sparkles className="size-12 text-primary/40 mb-3" />
+                  <Tag className="size-12 text-primary/40 mb-3" />
                   <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                     {currentSlide.highlightTag || "Destaque Principal"}
                   </span>

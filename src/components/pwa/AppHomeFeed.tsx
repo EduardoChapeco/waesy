@@ -1,5 +1,5 @@
 import React from "react";
-import { Sparkles, ShoppingBag, ArrowRight, Star } from "lucide-react";
+import { ShoppingBag, ArrowRight, Star } from "lucide-react";
 import { formatMoney } from "@/lib/money";
 
 export interface AppHomeFeedProduct {
@@ -75,7 +75,7 @@ export const AppHomeFeed: React.FC<AppHomeFeedProps> = ({
       >
         <div className="flex items-center gap-2">
           <span className="text-xs font-bold uppercase tracking-wider px-2 py-1 rounded-full bg-white/20 text-white backdrop-blur-sm flex items-center gap-1">
-            <Sparkles className="size-3" />
+            <Star className="size-3 fill-current" />
             <span>Exclusivo App</span>
           </span>
         </div>

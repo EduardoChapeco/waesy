@@ -286,12 +286,20 @@ export function ClassifiedDetailMobile({
                       className="size-full object-contain bg-black"
                     />
                   ) : (
-                    <img
-                      src={imgUrl}
-                      alt={`${classified.title} - foto ${idx + 1}`}
-                      className="size-full object-cover cursor-pointer"
-                      onClick={() => setFullscreenImage(imgUrl)}
-                    />
+                    <div className="relative size-full overflow-hidden flex items-center justify-center">
+                      <img
+                        src={imgUrl}
+                        alt=""
+                        aria-hidden="true"
+                        className="absolute inset-0 size-full object-cover blur-2xl opacity-35 scale-110 pointer-events-none select-none"
+                      />
+                      <img
+                        src={imgUrl}
+                        alt={`${classified.title} - foto ${idx + 1}`}
+                        className="relative size-full object-contain cursor-pointer select-none"
+                        onClick={() => setFullscreenImage(imgUrl)}
+                      />
+                    </div>
                   )}
                 </div>
               ))}

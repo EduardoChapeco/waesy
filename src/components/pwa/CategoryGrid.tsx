@@ -1,5 +1,5 @@
 import React from "react";
-import { Tag, Utensils, Shirt, Laptop, HeartPulse, Sparkles, Car, Home } from "lucide-react";
+import { Tag, Utensils, Shirt, Laptop, HeartPulse, Car, Home } from "lucide-react";
 
 export interface CategoryGridItem {
   id: string;

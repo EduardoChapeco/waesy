@@ -55,7 +55,7 @@ export function HeroCarousel({
       ? "aspect-square"
       : heightMode === "natural"
       ? ""
-      : "aspect-[2/1] @md:aspect-[21/9] lg:aspect-[3/1] w-full h-auto"; // Escala proporcional sem cortes no mobile
+      : "aspect-[16/9] sm:aspect-[2.4/1] @md:aspect-[21/9] lg:aspect-[3/1] w-full h-auto"; // Escala proporcional sem cortes no mobile
 
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true });
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -112,7 +112,7 @@ export function HeroCarousel({
             return (
               <div
                 key={index}
-                className={`relative min-w-0 flex-full shrink-0 grow-0 basis-full bg-[#111] overflow-hidden ${heightClass}`}
+                className={`relative min-w-0 flex-full shrink-0 grow-0 basis-full bg-muted overflow-hidden ${heightClass}`}
               >
                 {/* Background Image com Camada Ambiente Desfocada para Preenchimento Limpo */}
                 {bg_url ? (

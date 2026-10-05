@@ -5,7 +5,7 @@ import { OmniPageRenderer } from "./OmniPageRenderer";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Monitor, Smartphone, Sparkles, X, Check, Eye } from "lucide-react";
+import { Monitor, Smartphone, X, Check, Eye } from "lucide-react";
 
 export interface LiveTemplatePreviewModalProps {
   template: NicheTemplateDefinition | null;
@@ -102,7 +102,7 @@ export const LiveTemplatePreviewModal: React.FC<LiveTemplatePreviewModalProps> =
               }}
               className="h-9 px-4 rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground hover:bg-primary/90 shadow-xs cursor-pointer"
             >
-              <Sparkles className="size-3.5" />
+              <Check className="size-3.5" />
               <span>Usar este Modelo</span>
             </Button>
           </div>

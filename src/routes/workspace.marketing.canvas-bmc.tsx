@@ -2,7 +2,8 @@ import React, { useState, useEffect } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import {
   LayoutGrid,
-  Sparkles,
+  Target,
+  Zap,
   Save,
   Plus,
   Trash2,
@@ -96,7 +97,7 @@ const BLOCKS_META: Record<BmcKey, BlockMeta> = {
     key: "value_propositions",
     title: "Propostas de Valor",
     subtitle: "Problemas reais que solucionamos",
-    icon: Sparkles,
+    icon: Target,
   },
   customer_relationships: {
     key: "customer_relationships",
@@ -361,7 +362,7 @@ export function BusinessModelCanvasPage() {
                 disabled={isGenerating}
                 className="h-11 px-4 rounded-lg text-xs font-medium gap-2"
               >
-                <Sparkles className={`w-3.5 h-3.5 ${isGenerating ? "animate-spin" : ""}`} />
+                <Zap className={`w-3.5 h-3.5 ${isGenerating ? "animate-spin" : ""}`} />
                 {isGenerating ? "Analisando Empresa..." : "Preencher com IA"}
               </Button>
 

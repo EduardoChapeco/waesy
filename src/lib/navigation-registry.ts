@@ -1,4 +1,4 @@
-import { Home, MapPin, ShoppingBag, Tag, Calendar, Compass, User, LayoutDashboard, Bookmark, Handshake, Package, MessageSquare, Coins, Gift, CreditCard, RefreshCcw, Sliders, Flame, Clock, Heart, Plus, Search, SlidersHorizontal, Store, Layers, Utensils, Music, Shirt, HelpCircle, ShieldCheck, Building, Car, Truck, Laptop, Briefcase, Ticket, Mountain, Newspaper, Target, Trophy, Sparkles } from 'lucide-react';
+import { Home, MapPin, ShoppingBag, Tag, Calendar, Compass, User, LayoutDashboard, Bookmark, Handshake, Package, MessageSquare, Coins, Gift, CreditCard, RefreshCcw, Sliders, Flame, Clock, Heart, Plus, Search, SlidersHorizontal, Store, Layers, Utensils, Music, Shirt, HelpCircle, ShieldCheck, Building, Car, Truck, Laptop, Briefcase, Ticket, Mountain, Newspaper, Target, Trophy, Bot } from 'lucide-react';
 
 export type ContentWidthMode =
  "social-feed" | "catalog" | "reading" | "workspace" | "full" | "media-detail";
@@ -43,7 +43,7 @@ export const GLOBAL_DESTINATIONS: NavigationItem[] = [
   { to: "/marketplace", label: "Marketplace", icon: ShoppingBag },
   { to: "/diretorio", label: "Places", icon: Compass },
   { to: "/classificados", label: "Classificados", icon: Tag },
-  { to: "/copilot", label: "Copilot", icon: Sparkles },
+  { to: "/copilot", label: "Copilot", icon: Bot },
   { to: "/feed", label: "Feed", icon: MessageSquare },
   { to: "/noticias", label: "Notícias", icon: Newspaper },
   { to: "/empregos", label: "Empregos", icon: Briefcase },

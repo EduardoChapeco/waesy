@@ -33,17 +33,23 @@ export function ProductCard({
         className,
       )}
     >
-      {/* Image Container */}
+      {/* Image Container — Proporção canônica com preenchimento limpo e zero corte */}
       <div className="relative aspect-4/5 overflow-hidden rounded-lg bg-secondary">
         {product.coverUrl ? (
           <>
+            <img
+              src={product.coverUrl}
+              alt=""
+              aria-hidden="true"
+              className="absolute inset-0 size-full object-cover blur-xl opacity-35 scale-110 pointer-events-none select-none"
+            />
             <img
               src={product.coverUrl}
               alt={product.coverAlt ?? product.title}
               loading="lazy"
               decoding="async"
               className={cn(
-                "absolute inset-0 size-full object-cover transition-opacity duration-300",
+                "relative size-full object-contain transition-opacity duration-300",
                 product.hoverUrl ? "group-hover:opacity-0" : "group-hover:scale-105",
               )}
             />
@@ -53,7 +59,7 @@ export function ProductCard({
                 alt={product.coverAlt ?? product.title}
                 loading="lazy"
                 decoding="async"
-                className="absolute inset-0 size-full object-cover opacity-0 transition-opacity duration-300 group-hover:opacity-100 group-hover:scale-105"
+                className="absolute inset-0 size-full object-contain opacity-0 transition-opacity duration-300 group-hover:opacity-100 group-hover:scale-105"
               />
             )}
           </>
@@ -148,6 +154,14 @@ export function ProductCard({
               : ""}
           </p>
         )}
+      </div>
+
+      {/* CTA Primário Proeminente (Piso 44px - Regras B.22 e B.28) */}
+      <div className="pt-1 mt-auto">
+        <div className="w-full h-11 min-h-11 rounded-lg bg-primary text-primary-foreground font-bold text-xs flex items-center justify-center gap-2 group-hover:bg-primary/90 transition-colors">
+          <ShoppingBag className="size-4 shrink-0" />
+          <span>{product.isBackorderAvailable ? "Encomendar" : "Ver Detalhes"}</span>
+        </div>
       </div>
     </Link>
   );

@@ -122,8 +122,8 @@ export function BannerHeroCarousel({
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
-      {/* ── Responsive Proportional Aspect Ratio: 2:1 mobile, 2.4:1 tablet, 21:9 desktop ── */}
-      <div className="relative w-full aspect-[2/1] sm:aspect-[2.4/1] md:aspect-[21/9] overflow-hidden bg-muted">
+      {/* ── Responsive Proportional Aspect Ratio: 16:9 mobile, 2.4:1 tablet, 21:9 desktop ── */}
+      <div className="relative w-full aspect-[16/9] sm:aspect-[2.4/1] md:aspect-[21/9] overflow-hidden bg-muted">
         {/* Render Actual Image / Video */}
         {renderMedia(currentBanner)}
 

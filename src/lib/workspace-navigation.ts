@@ -1,4 +1,4 @@
-import { Package, Tags, Tag, Store, LayoutDashboard, Settings, Calendar, Users, ShoppingBag, Truck, Boxes, Banknote, FileText, LayoutTemplate, Link2, Image as ImageIcon, ClipboardList, ShieldAlert, Megaphone, Share2, Star, Bell, Flame, Kanban, Newspaper, Plus, Sliders, DollarSign, Ticket, ArrowRightLeft, Building2, ShieldCheck, UtensilsCrossed, ChefHat, Coins, Zap, MessageSquare, Scale, Wrench, MapPin, Palette, Target, LayoutGrid, Navigation, Briefcase, Plane, ShoppingCart, Eye, Receipt, AlertTriangle, ArrowDownUp, Clock, Car, Smartphone, Layers, HeartPulse, GraduationCap, Dog, CarFront, PenTool, Layers2, FileSpreadsheet, Gift, Globe, Bus, Award, Bot, LifeBuoy, Compass, UserCheck, Lock, HandHeart, Database, Calculator, Sparkles } from "lucide-react";
+import { Package, Tags, Tag, Store, LayoutDashboard, Settings, Calendar, Users, ShoppingBag, Truck, Boxes, Banknote, FileText, LayoutTemplate, Link2, Image as ImageIcon, ClipboardList, ShieldAlert, Megaphone, Share2, Star, Bell, Flame, Kanban, Newspaper, Plus, Sliders, DollarSign, Ticket, ArrowRightLeft, Building2, ShieldCheck, UtensilsCrossed, ChefHat, Coins, Zap, MessageSquare, Scale, Wrench, MapPin, Palette, Target, LayoutGrid, Navigation, Briefcase, Plane, ShoppingCart, Eye, Receipt, AlertTriangle, ArrowDownUp, Clock, Car, Smartphone, Layers, HeartPulse, GraduationCap, Dog, CarFront, PenTool, Layers2, FileSpreadsheet, Gift, Globe, Bus, Award, Bot, LifeBuoy, Compass, UserCheck, Lock, HandHeart, Database, Calculator } from "lucide-react";
 
 export type NavItem = {
   path: string;
@@ -49,7 +49,7 @@ const GROUP_AGENTIC_INTELLIGENCE: NavGroup = {
   section: "master",
   items: [
     { path: "/workspace/squads", label: "Squads", icon: Bot },
-    { path: "/workspace/skills", label: "Skills", icon: Sparkles },
+    { path: "/workspace/skills", label: "Skills", icon: Zap },
     { path: "/workspace/marketing/brand-kit", label: "Brand Kit", icon: Palette },
     { path: "/workspace/marketing/canvas-bmc", label: "Modelo BMC", icon: LayoutGrid },
     { path: "/workspace/marketing/swot", label: "Matriz SWOT", icon: Compass },

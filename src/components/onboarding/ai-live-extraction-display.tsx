@@ -4,7 +4,7 @@ import {
   Terminal,
   Cpu,
   Layers,
-  Sparkles,
+  FileText,
   CheckCircle2,
   Loader2,
   ShieldCheck,
@@ -31,7 +31,7 @@ export interface AiLiveExtractionDisplayProps {
 const SQUADS = [
   { id: "crawl", label: "Varredura & Scraper", desc: "Firecrawl & Steel.dev", icon: Globe },
   { id: "design", label: "Squad Design", desc: "Cores & Identidade", icon: Layers },
-  { id: "copy", label: "Squad Copywriter", desc: "Bio, Voz & Tagline", icon: Sparkles },
+  { id: "copy", label: "Squad Copywriter", desc: "Bio, Voz & Tagline", icon: FileText },
   { id: "pr", label: "Squad PR & Reputação", desc: "Posicionamento & UVP", icon: ShieldCheck },
   { id: "biz", label: "Squad Estratégia", desc: "Modelo & Mercado", icon: Cpu },
 ];

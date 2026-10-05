@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { 
   Users, Bot, ArrowRight, Play, CheckCircle2, ShieldCheck, 
-  Coins, Clock, Sparkles, Layers, ChevronRight, AlertCircle, Loader2
+  Coins, Clock, Layers, ChevronRight, AlertCircle, Loader2
 } from "lucide-react";
 import { toast } from "sonner";
 
