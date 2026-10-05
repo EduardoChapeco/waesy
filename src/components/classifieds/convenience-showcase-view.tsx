@@ -94,6 +94,7 @@ export function ConvenienceShowcaseView({
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
   const [isSubmittingOrder, setIsSubmittingOrder] = useState(false);
+  const [previewNotice, setPreviewNotice] = useState("");
 
   // Carregar dados prévios do comprador para ergonomia de 3 toques
   useEffect(() => {
@@ -412,7 +413,8 @@ export function ConvenienceShowcaseView({
 
   const handleDirectWhatsApp = () => {
     if (isPreview) {
-      toast.info("Esta é uma prévia ao vivo do checkout.");
+      setPreviewNotice("Prévia do checkout aberta sem criar pedido.");
+      setIsOrderModalOpen(true);
       return;
     }
     if (!cleanPhone) {
@@ -424,7 +426,7 @@ export function ConvenienceShowcaseView({
 
   const handleConfirmOrder = async () => {
     if (isPreview) {
-      toast.info("Esta é uma prévia ao vivo do checkout. Pedido simulado com sucesso!");
+      setPreviewNotice("Prévia encerrada sem criar pedido.");
       setIsOrderModalOpen(false);
       return;
     }
@@ -924,6 +926,9 @@ export function ConvenienceShowcaseView({
 
   return (
     <div className="w-full bg-background text-foreground antialiased pb-28 sm:pb-16">
+      <span className="sr-only" aria-live="polite">
+        {previewNotice}
+      </span>
       {/* Top Header com Botão de Voltar, Compartilhar e Botão Leve de Editar (Sem faixa amarela invasiva!) */}
       <header className="sticky top-0 z-30 bg-background/85 backdrop-blur-md border-b border-border/40 px-3 sm:px-6 h-12 flex items-center justify-between">
         <div className="flex items-center gap-2 min-w-0">

@@ -61,14 +61,14 @@ allAppFiles.forEach((file) => {
   const relPath = path.relative(projectRoot, file).replace(/\\/g, '/');
   const content = fs.readFileSync(file, "utf8");
 
-  // Procura por handlers inline do tipo: onClick={() => toast.success("...")}
-  const inlineToastMatches = [...content.matchAll(/onClick=\{(?:\(\)\s*=>\s*toast\.(?:success|info)\(["'][^"']*?["']\))\}/g)];
+  // Procura por handlers inline do tipo: onClick={() => toast.success("...")} apenas quando o texto promete ação futura/falsa.
+  const inlineToastMatches = [...content.matchAll(/onClick=\{(?:\(\)\s*=>\s*toast\.(?:success|info)\(["']([^"']*?(?:em breve|não implementad|funcionalidade futura|pedido simulado|sem backend|ao ativar|após a publicação|modo de prévia)[^"']*?)["']\))\}/gi)];
   inlineToastMatches.forEach(m => {
     suspiciousToastActions.push({ file: relPath, pattern: m[0], type: 'inline-fake-toast' });
   });
 
-  // Procura por "em breve", "não implementado", "funcionalidade futura"
-  const emBreveMatches = [...content.matchAll(/toast\.(?:info|error|success)\(["']([^"']*?(?:em breve|não implementad|futura|simula|mock)[^"']*?)["']\)/gi)];
+  // Procura por promessas falsas explícitas sem confundir o domínio real SimLab/simulação ou mockups gerados.
+  const emBreveMatches = [...content.matchAll(/toast\.(?:info|error|success)\(["']([^"']*?(?:em breve|não implementad|funcionalidade futura|pedido simulado|sem backend|ao ativar|após a publicação|modo de prévia)[^"']*?)["']\)/gi)];
   emBreveMatches.forEach(m => {
     suspiciousToastActions.push({ file: relPath, text: m[1], type: 'em-breve-toast' });
   });

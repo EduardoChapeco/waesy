@@ -83,6 +83,7 @@ function PwaOmniBuilderPage() {
   const [phoneActiveTab, setPhoneActiveTab] = useState("home");
   const [phoneDeviceType, setPhoneDeviceType] = useState<"iphone" | "android">("iphone");
   const [phonePreviewScreen, setPhonePreviewScreen] = useState<"app" | "splash">("app");
+  const [phonePreviewNotice, setPhonePreviewNotice] = useState("");
 
   // Termos Legais
   const [legalAccepted, setLegalAccepted] = useState(true);
@@ -531,7 +532,7 @@ function PwaOmniBuilderPage() {
                       <div className="flex items-center gap-2">
                         <button
                           type="button"
-                          onClick={() => toast.info("Simulador PWA: a busca é habilitada no app instalado do cliente.")}
+                          onClick={() => setPhonePreviewNotice("Busca disponível no app instalado.")}
                           className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring p-1 rounded-lg hover:bg-muted text-muted-foreground cursor-pointer"
                           title="Buscar no App"
                         >
@@ -539,13 +540,16 @@ function PwaOmniBuilderPage() {
                         </button>
                         <button
                           type="button"
-                          onClick={() => toast.info("Simulador PWA: notificações push configuradas em tempo real.")}
+                          onClick={() => setPhonePreviewNotice("Notificações push configuradas no app instalado.")}
                           className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring p-1 rounded-lg hover:bg-muted text-muted-foreground relative cursor-pointer"
                           title="Notificações Push"
                         >
                           <Bell className="size-4" />
                           <span className="size-1.5 rounded-full bg-destructive absolute top-1 right-1" />
                         </button>
+                        <span className="sr-only" aria-live="polite">
+                          {phonePreviewNotice}
+                        </span>
                       </div>
                     </div>
 

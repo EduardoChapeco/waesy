@@ -2439,3 +2439,15 @@
 - **Fundamentação**: AGENTS.md B.1 a B.12, Deploy Verifier, WCAG 2.2 AA e Cloudflare Pages Runtime Contracts.
 - **Consequências**: Sistema em produção operacional com SSR, rotas estáticas otimizadas e comunicação com Supabase ativa.
 
+## 2026-10-05 — DEC-188 — Auditoria Semântica Recursiva de Botões e Ações
+
+- **Contexto**: A correção anterior de botões mortos eliminou inércia sintática, mas não provava completude semântica de CTAs, previews e handlers com toast.
+- **Decisão**:
+  1. Criada a especificação `SPEC-ACTION-COMPLETENESS-AUDIT` com matriz canônica de intenções: navegação, submit, mutação, fluxo modal, copy/share, preview-only e disabled-with-reason.
+  2. Reescrito `scripts/audit/audit-interactive-buttons.mjs` para emitir contrato JSON com `totalControls`, `summaryBySeverity`, `summaryByIntent` e issues com evidência e correção esperada.
+  3. Adicionada suíte `audit-interactive-buttons.test.mjs` cobrindo botão morto, submit, asChild, tab, toast falso, preview-only, aninhamento inválido e mutação real.
+  4. Removidos handlers vazios do design-system e substituídos previews baseados em toast por estado local acessível ou controles desabilitados com razão explícita.
+  5. Integrado `npm run audit:buttons` ao `check:canonical`.
+- **Fundamentação**: AGENTS.md B.1 a B.12, DESIGN-LINT DL-14/DL-15, WCAG 2.2 AA e contrato Zero-Dead-Buttons.
+- **Consequências**: Auditoria semântica aprovada em 6.145 controles com 0 P0, 0 P1 e 0 P2; auditorias forenses legadas reportam 0 fake buttons, 0 empty handlers, 0 orphan buttons e 0 silent catch mutations.
+

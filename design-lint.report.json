@@ -1,6 +1,6 @@
 {
   "version": "2.0.0",
-  "timestamp": "2026-10-05T17:31:57.260Z",
+  "timestamp": "2026-10-05T19:39:53.966Z",
   "inspectedFiles": 1854,
   "totalViolations": 14284,
   "summary": {
@@ -1834,7 +1834,7 @@
       "rule": "DL-02",
       "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-docked-rail.tsx",
       "module": "components/app",
-      "line": 97,
+      "line": 98,
       "column": 87,
       "severity": "P1",
       "match": "text-[10px]",
@@ -1845,7 +1845,7 @@
       "rule": "DL-07",
       "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-docked-rail.tsx",
       "module": "components/app",
-      "line": 97,
+      "line": 98,
       "column": 205,
       "severity": "P2",
       "match": "shadow-md",

@@ -1,5 +1,4 @@
 import * as React from "react";
-import { toast } from "sonner";
 import { Plus, Layers, FileText, Palette, Database, Sliders, Settings, HelpCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -16,6 +15,7 @@ export function BuilderDockedRail({
  onTogglePanel,
  nodesCount = 0,
 }: BuilderDockedRailProps) {
+ const [showShortcutHint, setShowShortcutHint] = React.useState(false);
  const tools = [
  {
  id: "add" as const,
@@ -88,9 +88,10 @@ export function BuilderDockedRail({
  <div className="flex flex-col items-center gap-2 w-full px-2 pt-3 border-t border-border/50">
  <button
  type="button"
- onClick={() => toast.info("Atalhos do Construtor: Ctrl+Z para desfazer, Ctrl+Y para refazer, Esc para fechar painéis laterais.")}
+ onClick={() => setShowShortcutHint((visible) => !visible)}
  title="Atalhos do Construtor"
  aria-label="Atalhos do Construtor"
+ aria-pressed={showShortcutHint}
  className="size-11 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer group relative"
  >
  <HelpCircle className="size-4" />
@@ -98,6 +99,11 @@ export function BuilderDockedRail({
  Atalhos (Ctrl+Z / Ctrl+Y)
  </span>
  </button>
+ {showShortcutHint && (
+ <div className="sr-only" aria-live="polite">
+ Atalhos do Construtor: Ctrl+Z para desfazer, Ctrl+Y para refazer, Esc para fechar painéis laterais.
+ </div>
+ )}
  </div>
  </aside>
  );

@@ -205,7 +205,10 @@ function CustomerTripsPage() {
  ) : (
  <Button
  variant="outline"
- onClick={() => toast.info("Seu voucher está sendo processado pela agência e será liberado para embarque em instantes.")}
+ disabled
+ data-action-intent="disabled-with-reason"
+ data-action-reason="Voucher em processamento pela agência."
+ title="Voucher em processamento pela agência."
  className="flex-1 md:flex-initial rounded-lg font-bold text-xs gap-2 h-11 min-h-11 cursor-pointer"
  >
  <Clock size={16} className="text-amber-500" />

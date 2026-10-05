@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   CanonicalMediaFrame,
   CanonicalAvatarCluster,
@@ -10,6 +11,7 @@ import type { ComponentStateProps } from "./design-system-types";
 import { Upload } from "lucide-react";
 
 export function MediaShowcaseFamily({ mode }: ComponentStateProps) {
+  const [uploadIntent, setUploadIntent] = useState("Nenhum upload solicitado");
   const showReady = mode === "all" || mode === "ready";
   const showLoading = mode === "all" || mode === "loading";
   const showEmpty = mode === "all" || mode === "empty";
@@ -86,12 +88,15 @@ export function MediaShowcaseFamily({ mode }: ComponentStateProps) {
                 alt="Sem mídia"
                 aspectRatio="video"
                 emptyAction={
-                  <Button type="button" size="sm" className="h-11 gap-1 text-xs focus-visible:ring-2" onClick={() => {}}>
+                  <Button type="button" size="sm" className="h-11 gap-1 text-xs focus-visible:ring-2" onClick={() => setUploadIntent("Upload solicitado")}>
                     <Upload className="h-3.5 w-3.5" />
                     Enviar Foto
                   </Button>
                 }
               />
+              <p className="text-xs text-muted-foreground" aria-live="polite">
+                {uploadIntent}
+              </p>
 
               <div className="rounded-lg border border-border p-4 bg-card text-center">
                 <p className="text-xs text-muted-foreground">Nenhum membro vinculado</p>

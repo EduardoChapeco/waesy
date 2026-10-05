@@ -16,6 +16,7 @@ export function OverlaysFamily({ mode }: ComponentStateProps) {
   const [modalOpen, setModalOpen] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [authAttempts, setAuthAttempts] = useState(0);
 
   const showReady = mode === "all" || mode === "ready";
   const showLoading = mode === "all" || mode === "loading";
@@ -154,12 +155,15 @@ export function OverlaysFamily({ mode }: ComponentStateProps) {
                 type="button"
                 variant="outline"
                 size="sm"
-                onClick={() => {}}
+                onClick={() => setAuthAttempts((count) => count + 1)}
                 className="h-11 w-full gap-2 border-destructive/30 text-destructive hover:bg-destructive/10"
               >
                 <RefreshCw className="h-3.5 w-3.5" />
                 Reautenticar operador
               </Button>
+              <p className="text-xs text-muted-foreground" aria-live="polite">
+                Tentativas: {authAttempts}
+              </p>
             </div>
           </StateCard>
         )}

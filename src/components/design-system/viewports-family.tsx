@@ -14,6 +14,7 @@ import { Smartphone, Tablet, Monitor, CheckCircle, ArrowRight } from "lucide-rea
 
 export function ViewportsFamily({ mode }: ComponentStateProps) {
   const [activeViewport, setActiveViewport] = useState<CanonicalViewportKey>("mobileModern");
+  const [operationConfirmed, setOperationConfirmed] = useState(false);
   const showReady = mode === "all" || mode === "ready";
   const showLoading = mode === "all" || mode === "loading";
   const showEmpty = mode === "all" || mode === "empty";
@@ -84,10 +85,10 @@ export function ViewportsFamily({ mode }: ComponentStateProps) {
                 <Button
                   type="button"
                   variant="default"
-                  onClick={() => {}}
+                  onClick={() => setOperationConfirmed((confirmed) => !confirmed)}
                   className="h-11 px-4 text-xs font-medium focus-visible:ring-2 focus-visible:ring-ring"
                 >
-                  Confirmar Operação
+                  {operationConfirmed ? "Operação Confirmada" : "Confirmar Operação"}
                   <ArrowRight className="h-4 w-4 ml-1" />
                 </Button>
               </CanonicalHooberThumbZone>

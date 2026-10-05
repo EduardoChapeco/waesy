@@ -105,10 +105,10 @@ function EventDetailPage() {
         <p className="text-sm text-muted-foreground max-w-md mx-auto">
           O evento que você procura não existe ou foi cancelado pelo organizador.
         </p>
-        <Button asChild className="rounded-lg font-bold" variant="outline">
-          <Link to="/agenda">
+        <Button asChild className="h-11 min-h-11 px-4 rounded-lg font-bold" variant="outline">
+          <Link to="/eventos">
             <ArrowLeft size={16} weight="bold" className="mr-2" />
-            Voltar para Agenda
+            Voltar para Eventos
           </Link>
         </Button>
       </div>

@@ -40,3 +40,532 @@ BLOCO 0 — BASELINE AUDITADA (prefixo fixo, colar junto do PROTOCOLO 00) Estes 
 BLOCO 0 — BASELINE AUDITADA (prefixo fixo, colar junto do PROTOCOLO 00) Estes fatos foram verificados no código. Não os re-descubra: use-os como ponto de partida e audite apenas o que mudou desde o último selo do ledger. STACK E ESCALA src/: 1461 arquivos, 909 .tsx, 381 rotas em src/routes, 400 migrations em supabase/migrations. Dinheiro/tokens/limites já existem em banco; não criar paralelo. NÚCLEO DE IA (já existe, precisa ser auditado e completado, não recriado) src/services/api-orchestrator.functions.ts (1346 linhas): pools de chave, failover, prompts master. src/services/secret-vault.functions.ts: cofre de segredos por provedor. Provedores no enum: openrouter, groq, gemini, openai, anthropic, firecrawl, steel, google_maps, resend, asaas. src/lib/ai/openrouter.ts: pool do banco -> env var -> erro; cascade de fallback; sanitizeForAI por regex. src/services/ai-providers.functions.ts: tenant_ai_providers com api_key_masked, monthly_token_limit, status untested/active/error. Tabelas existentes: ai_master_prompts, ai_brain_settings, ai_capability_bindings, ai_persona_profiles, ai_squads, agent_registry, squad_templates, squad_template_agents, store_squads, store_squad_runs, curation_squad_registry, squad_generated_posts, synthetic_agent_memories, sdr_chat_sessions, tenant_ai_providers, user_ai_usage_limits, api_key_pools. Billing de IA já existe: store_token_wallets, store_token_billing_invoices, user_token_wallets, user_token_transactions, token_ledger_transactions. CHAT (hoje é atendimento, não conversa) supabase/migrations/0016_chat_team.sql:42 — chat_messages = (thread_id, sender_id, is_staff_reply, message TEXT, created_at). Sem bloco estruturado, sem ação, sem anexo, sem estado de streaming: bloqueia chat como aplicativo. chat_threads = store_id, customer_id, guest_email, status open/closed/archived. src/components/chat/ tem 5 arquivos (chat-list-item, customer-360-sidebar, order-message-card, rma-message-card, rma-ticket-modal). src/services/chat.functions.ts (929 linhas). MCP / WEBMCP (cobertura mínima) src/services/mcp-server.functions.ts (1024 linhas) expõe 13 tools escritas à mão: search_catalog_products, get_store_directory_info, check_delivery_coverage, query_master_catalog, simlab_run_survey, generate_marketing_post, generate_ad_campaign_proposal, analyze_competitor_dna, update_product_stock, wms_list_pending_orders, fiscal_get_invoice_status, marketplaces_get_sync_health, pos_get_cash_status. Rotas de exposição: src/routes/api.mcp.v1.tools.call.ts (87), api.webmcp[.]json.ts (63), api.openapi[.]json.ts (357). 13 de 381 rotas: cobertura aproximada de 3%. DESIGN SYSTEM src/styles.css @theme inline: escala de raio estilo squircle Apple HIG, --shadow-*: none (flat), Inter, --global-rail-width 68px, --context-sidebar-width 256px, --utility-cluster-height 48px, larguras de conteúdo (reading 760, feed 680, catalog 1400, workspace 1440, media 1200). Import global de maplibre-gl CSS. DÍVIDA DE LAYOUT MEDIDA (contagens reais no código) 464 grid-cols-3, 214 grid-cols-4, 24 grid-cols-5, 76 hidden md:, 53 md:hidden, 264 overflow-x-auto, 36 fixed bottom, 5 sticky bottom, 1351 transition-all, 409 backdrop-blur, 502 hex literais em .tsx, 4 !important. framer-motion está em package.json e tem 0 uso. src/hooks/use-mobile.tsx: MOBILE_BREAKPOINT = 768; docs/DESIGN.md princípio 6 fixa Compact < 600 e Expanded >= 840: existe drift de breakpoint no código. scripts/design-lint.mjs implementa 10 dos DL-01..DL-30 (01,02,04,05,14,15,18,23,26,27). Piores arquivos por valor arbitrário: _store.conta.classificados.novo.tsx, classifieds/editorial-showcase-view.tsx, tourism/proposals/templates/TemplateVerticalPremium.tsx, mining/mining-dashboard.tsx, workspace.turismo.viagens.$id.tsx, commerce/travel/travel-package-detail-view.tsx. SKILLS E BUILDERS .agents/ tem 38 SKILL.md (skills do IDE, não executáveis no runtime do app); skills-lock.json registra 2 skills. src/components/builder/ tem registry.ts, templates.ts, OmniEditor, OmniPageRenderer e 8 blocos; html2canvas, jspdf e react-easy-crop já instalados; src/lib/canvas existe. PROMPT 31 — NATIVIZAÇÃO E DEDUPLICAÇÃO DE ATIVOS ENTRE PROJETOS PRÉ-CONDIÇÃO: Prompt 20 (registry único) e Prompt 25. Existem referências a projetos irmãos em docs (Wider, BigTech) e legado em legacy_quarantine/ e scratch/. OBJETIVO: absorver o que é útil de outros projetos do ecossistema para dentro do app, como código nativo, sem duplicar nada e sem trazer dependência morta. FASE A — INVENTÁRIO Listar o que existe em cada projeto irmão e no legado: design system com elementos prontos, chat com elementos de prompt, builders avançados, hooks, CRUDs, sheets, modais, ações e tabelas. FASE B — TRIAGEM Para cada item: já existe equivalente no app (usar o do app) | existe parcial (adicionar variante) | não existe (nativizar). Provar com busca, nunca por semelhança visual. FASE C — NATIVIZAÇÃO Importar como componente do registry, com contrato, variantes de janela, estados e testes. Proibido copiar código com estilo literal, proibido criar segunda versão de algo existente, proibido manter pasta morta depois de absorvida. FASE D — REGISTRO Todo item absorvido entra no catálogo canônico no mesmo passo, com origem e dono declarados. Legado absorvido é marcado para remoção em passo separado. FASE E — PROVA Build e typecheck limpos; nenhum componente duplicado detectado pelo lint; design-lint sem P0 e P1 nos arquivos tocados. REGRAS DURAS: proibida duplicação; proibido trazer dependência sem uso provado; legado não entra no app só porque existe; toda absorção com teste. DoD: itens triados com decisão registrada; absorvidos no registry; legado marcado; nenhuma duplicidade nova. RELATÓRIO: itens por projeto, absorvidos, descartados com motivo, duplicidades evitadas, dependências removidas.
 Precisamos mapear os ultimos prompts enviados, planos feitos, precisamos identificar se algo ficou pendente, se temos que corirgir algo, se temos que prosseguir com execução de fases que ficaram apenas planejadas, todas as fases planejadas tem que ser executadas completamente, seguindo oque estou pedindo, execução completa, de agents, completude maxima. Revise tudo, melhore e audite completamente tudo conforme as melhores praticas, vamos executar completamente as proximas fases, garantir que tudo funcione, que tudo seja propagado, que tudo seja melhorado recursivamente, continue executando as revisões, auditorias do que estamos fazendo para garantir que tudo seja completo, end to end, com tabelas, schemas, colunas completas. Temos que continuar incrementando tudo seguindo as regras de completude, seguindo as regras criadas nos arquivos .md (agents/design etc...) temos diversas regras que orientam como devemos prosseguir as implementações e melhorias para não sair fora do padrão. Nós temos que identificar completamente as melhorias como são feitas, onde são feitas, oque podemos melhorar e como podemos melhorar. Tudo que fizermos deve ser bom, completo, funcional. Revise e audite completamente tudo, identificando completamente as melhorias que temos a fazer recursivamente. Identifique pontos de melhorias completas. Vamos continuar incrementando tudo. Eu preciso identificar completamente cada seção, cada pagina, cada bloco, cada item conforme as regras, silencio visual, sem titulos compostos (tem que ser titulos diretos, simples), sem cards conversassionais, sem cards neon/piscantes etc... sempre tudo minimalista, sempre tudo muito minimalista, silencioso, seguindo as regras de design que estipulamos até agora, tudo precisa ser criado conforme conversamos com agents, skills, completamente. Identifique completamente tudo, continue incrementando tudo, conforme as regras, completude maxima, tudo fucional, tudo sincronizado, anda mock, nada fake, nada simulado, proibido fallbacks encenados, tudo deve ser real e funcional completamente. Identifique os pontos de melhorias que temos que fazer. Identifique como tudo deve ser feito. Como tudo deve ser completo e funcional, revise completamente tudo, identique melhorias continuas e completas. Não podemos fazer nada parcial, nada pode ser basico, nada pode ser genrico, audite completamente tudo identifique os gfaps, quebrtas e vamos continuar as proximas fases completamente. Também precisamos identificar quais outros gaps existem, se tem desvinculações, oque temos que alinhar, onde precisamos reduzir o ruido visual (ex. excesso de cards conversassionais, explicativos, titulos compostos (proibido) Cards ambar ou neon... que é proibido também etc...), Eu preciso identificar também se tem modulos que precisamos melhorar as integrações entre modulos,integrações entre schemas, tabelas, colunas, para que tudo se comunique e converse. Quero identificar melhorias em grids/layouts visuais de paginas que precisamos fazer... Eu enviei muitos solicitações para você, eu preciso identificar completamente tudo que temos que fazer, a muita coisa que ficamos de fazer, incrementar, temos que auditar completamente tudo, minuciosamente, identificar como tudo foi feito, se foi feito conforme planejado. Oque ficou parcial, oque não foi feito, temos que auditar completamente tudo isso para identificar os gaps, quebras, revisar se tudo foi propagado completamente, se tudo foi propagado conforme esperado, revise completamente e audite completamente se tudo funciona, como funciona, se é bom, se o codigo é leve, porque nosso codigo precisa ser otimizado, funcional completamente, identifique completamente se o codigo é limpo. Bom, eu preciso que o conselho assuma essa revisão, o objetivo é garantir que tudo foi feito seguindo as melhores tecnicas de design, ux, usabildiade, pois precisamos identificar quebras, revisar gaps vsuais, informações que são cortadas, ou quebram a experecia, oque é pesado visualmente, se rotas foram publicadas, roteadas, registradas. Se os menus/sidebars estão atualizados com todas as features conforme esperado, revise isso completamente se tudo foi feito, nada pode ser perdido, ocultado, a experiencia deve ser completa, deve ser funcional, e tudoq eu eu pedi até agora deve estar feito, funcionando, tudo deve se ser completo, funcional, ponta a ponta, muitas coisas novas foram feitas e precisamos ter certeza que tudo foi incrementado completamente, identifique pontos de melhorias completas. Identifique como tudo sera melhorado completamente. Como nosso sistema está em produção, tudo que fizermos deve manter tudo sempre compativel, nada pode quebrar, desconectar, desvincular entende. Precisamos identificar completamente oque existe, como existe para continuar propagando as melhorias de forma continua e completa, sem quebrar a experiência. Por isso tudo deve ser sempe compativel. Identifique esses pontos completos, vamos continuar melhorando, auditando tudo, completamente. Identifique pontos de melhorias que temos que fazer, continuar incrementando. Nada pode ser simplificado no quesite retirar funções, simplificar um modulo avançado. A simplfiicação é apenas no design visual, sempre, a simplificação no design visual o objetivo é que a experiência fique mais clara, fluida sem textos pesados, tem cards excessivos (conversassionais explicativos). Entende, é isso que eu quero, uma experiência legal, fluida, seguindo os melhores padrões de ux como apple hig e whatsapp list minimalist design, sem cores pesadas, sem cards glassmorphi na ui entende. Telas limpas com botões minimalistas, botões grandes, eu gosto de uma experiencia que consiga ser fluida e funcional. De facil entendimento seguindo os melhores padrões existentes. Não podemos quebrar nada, não podemos perder a experiência visual os modulos devem avançados, completos, mas não podemos simplificar modulos entende. Revise isso completamente. Identifique se algo foi simplificado em relação a funcionalidades. Tudo precisa continuar rico. Experiência limpa e funcional.
 Eu preciso que você analise completamente as ultimas/proximas fases planejadas. Precisamos continuar implementando tudo completamente. Eu preciso que tudo que for feito de melhorias, refinamentos seja feito com completude, identifique completamente tudo, pense em como você pode fazer as fases planejadas end to end, para garantir integração completa, sincronização completa de tudo, garantindo completude de tudo. Eu preciso identificar completamente cada pagina, modulo, seção. Depois faça uma revisão completa de tudo, identifique pontos de melhorias baseado nos planos que foram planejados e ja execute, para melhorar integração, typagem, sincronização, vinculação, integração entre módulos. Vamos auditar completamente tudo. Faça uma auditoria completa e recursiva. Eu preciso que identifique pontos no design que nao ficaram como esperado, tudo que for feito deve seguir as regras de agents.md design.md design sistem, nós temos diversas regras para garantir que tudo que seja feito seja padronizado. O design deve ser silencioso, limpo, minimalista conforme padrão estipulado. Temos que continuar incrementando tudo completamente dentro dos padrões, nada pode ser fake, nada pode ser simulado. Tudo precisa estar funcional conectado e iuntegrado a tabelas. schemas, coluns, os contratos bff precisam estar compatibilizados com ui/frontend, precisam estar atualizados, sicronizados com functions e actions, temos que auditar completamente tudo isso. Identificar pontos de melhorias, identificar pontos em que algo ficou parcial e melhorar, por isso a auditoria, revisão completa. Ao mesmo tempo que continuamos as proximas fases, incrementações, revisamos se tudo esta sendo feito conforme esperado. Precisamos identificar gaps visuais, limpar tudo, identifique esses pontos de melhorias que podem ser feitas para limpar tudo. Eu preciso fazer uma revisão profunda e completa de tudo. audite e verifique oque foi feito, como foi feito e se tudo que foi planjeado foi executado, completamente. Nao podemos ter nada parcial, nada incompleto. Precisamos que tudo funcione de forma completa. audite tudo completamente e continue incrementando de onde parou. Não podemos quebrar nada, tudo precisa, ser executado completamente. Revise as fases planejadas e oque era esperado e vamos executar e completude, seguindo as regras de desnevolvimento estipuladas. Também temos que auditar a segurança, rls, rotas e seguranças de forma como o sistema precisa, porque temos varios niveis, temos gerentes, proprietarios, o sistema precisa estar modulado para isso ja, pois cada um acessara somente oque for da sua competencia, não podemos ter vazamneot de dados, nem acesso indevidado a modulos precisamos auditar completamente se tudo que eu pedi no plano abaixo foi corrigido, melhorado, refinado, não podemos ter quebras, as telas precisam funcionar, precisam seguir os padrões de design, as correções relatadas precisam ser feitas, os refinamentos e refatorações também precisam todos serem feitos conforme planejado. O conselho, agents e precisam fazer uma auditopria completa.
+
+BLOCO V — CÂNON VISUAL E ANATOMIA CANÔNICA (prefixo fixo das sessões de design)
+Colar junto do PROTOCOLO 00. Vale como lei. Em conflito com qualquer doc anterior, esta vence.
+
+LEIS: as 18 acima. Decore-as como restrição, não como inspiração.
+CHEIRO DE IA PROIBIDO: gradiente decorativo, glassmorphism, card dentro de card, grade dentro de grade,
+sombra difusa, emoji, texto explicando a própria tela, mais de uma ação primária, ícone solto sem tile,
+raios misturados, parágrafo dentro de card.
+
+ANATOMIA CANÔNICA DE TELA (toda tela do produto é uma destas, sem invenção)
+ T1 Home/feed: topbar de 1 linha (local + notificação) | saudação curta | tile grid 3-4 colunas |
+    banner 16:9 | seção com cabeçalho + carrossel com peek | lista de itens | barra inferior.
+ T2 Lista/resultado: topbar | barra de busca | chips de filtro em 1 linha | linhas de 64-72px com
+    mídia 1:1 de 48-56px, título 1 linha, apoio 1 linha, preço alinhado à direita | paginação por cursor.
+ T3 Detalhe: mídia 4:3 ou 1:1 travada | título 2 linhas | preço | atributos em pares rótulo/valor |
+    descrição em bloco de leitura com largura máxima | CTA fixo em bloco cheio.
+ T4 Formulário/CMS: rótulo acima, campo 44-48px, ajuda 1 linha, erro no campo, agrupamento por seção,
+    uma ação primária, rascunho automático.
+ T5 Painel de dados: master-detail no desktop, lista com drilldown no mobile; linha 36-40px; números tabulares.
+ T6 Conversa: lista edge-to-edge, agrupamento por autor e tempo, composer fixo, bloco estruturado.
+ T7 Sheet/modal: arrastável no mobile, centralizado no desktop, altura cheia menos a safe-area, 1 ação primária.
+REGRA DE OURO: a tela é montada de blocos do registry. Bloco novo só com finalidade realmente nova, e registrado.
+
+ESCALA E JANELAS
+ Compact < 600 | Medium 600-839 | Expanded >= 840. Um só lugar decide a janela.
+ Alvos: gutter 16/24/32, container máximo por tipo de conteúdo (leitura 720-760, feed 640-680,
+ catálogo 1400, painel 1440), ritmo 4/8, altura de toque >= 44, área segura respeitada.
+MOVIMENTO: 120-200ms, uma curva, interrompível, redução de movimento respeitada.
+DADO: nada de string, cor, lista, preço ou imagem no componente. Tudo vem de token, schema ou CMS.
+
+PROMPT 33 — AUDITORIA DE ERGONOMIA: ONDE A TELA COMPRIME, ANINHA E SUJA
+PRÉ-CONDIÇÃO: PROTOCOLO 00, BLOCO 0 e BLOCO V colados. Sessão de diagnóstico: proibido corrigir.
+OBJETIVO: provar com evidência onde a ergonomia quebra e transformar "está feio" em defeito nomeado e localizável.
+
+FASE A — CATÁLOGO DE DEFEITOS DE ERGONOMIA (nomear antes de medir)
+Numerar cada defeito, com definição operacional e como detectar por código:
+E01 aninhamento de superfície (card dentro de card), E02 aninhamento de grade (grade dentro de grade),
+E03 compressão (conteúdo cortado, espremido, texto truncado indevidamente, altura forçada),
+E04 raio fora da família, E05 espaçamento fora do ritmo 4/8 (aresta de 6, 10, 14, 18, 22),
+E06 grade fixa sem guarda de janela, E07 texto acima do limite por contexto, E08 mídia sem proporção travada,
+E09 altura fixa em viewport móvel, E10 elemento quadrado/pontudo fora do padrão arredondado,
+E11 mais de uma ação primária, E12 sombra/gradiente decorativo, E13 badge sem significado,
+E14 estado ausente (vazio, carregando, erro), E15 alvo de toque abaixo de 44px,
+E16 valor literal (cor, espaçamento, tamanho) fora de token, E17 conteúdo hardcoded,
+E18 dado simulado, E19 rótulo explicando a própria tela, E20 cabeçalho de seção composto ou com subtítulo inútil.
+
+FASE B — VARREDURA E CONTAGEM
+Medir cada defeito no repositório inteiro, com comando e saída registrados. Comece pelos sinais conhecidos:
+cards aninhados (busca por container com borda/fundo dentro de outro container com borda/fundo),
+grades aninhadas, valores arbitrários entre colchetes, raio fora da escala, altura fixa,
+~276 "mock", ~768 "TODO", ~119 "setTimeout(", ~502 hex literais, ~4 "!important".
+
+FASE C — AS 20 TELAS MAIS DOENTES
+Ranquear por densidade de defeito. Para cada tela: captura em 390x844, 834x1112 e 1280x800,
+e a lista de defeitos com arquivo:linha.
+
+FASE D — MATRIZ DE CAUSALIDADE
+Para cada defeito: causa raiz no código, padrão que o produziu e o que deveria existir no lugar
+(bloco do registry, token, dado de CMS, primitiva com variante de janela).
+
+FASE E — ÍNDICE DE ERGONOMIA
+Nota por módulo, com fórmula declarada, e fila de correção ordenada por gravidade x alcance.
+
+REGRAS: nenhuma correção nesta sessão; todo item com arquivo:linha ou captura; sem opinião estética sem regra citada.
+SAÍDAS: ia/33-defeitos.md, ia/33-mapa.md, ia/33-ledger.json.
+DoD: catálogo nomeado; contagem por defeito; 20 telas reproduzidas; fila de correção pronta.
+
+PROMPT 34 — MOTOR DE LAYOUT CANÔNICO: GRADE, RITMO E MOTOR ANTI-COMPRESSÃO
+PRÉ-CONDIÇÃO: Prompt 33 executado. ia/33-defeitos.md é a lista de trabalho.
+OBJETIVO: nenhum elemento perde proporção, nenhuma superfície aninha, nenhuma tela comprime — por construção, não por ajuste.
+
+FASE A — TOKENS DE LAYOUT
+Publicar de uma vez: ritmo de espaço (0,4,8,12,16,24,32,48,64), família única de raio,
+escala tipográfica (11,12,13,15,17,22,28) com pesos, gutter por janela, largura máxima por tipo de conteúdo,
+altura de linha, alturas canônicas de linha de lista (48,56,64,72) e de toque (44 mínimo).
+Nenhum valor fora disso existe no componente.
+
+FASE B — MOTOR ANTI-COMPRESSÃO
+Regra mecânica, aplicada por primitiva: mídia sempre dentro de contêiner de proporção travada;
+texto sempre com limite de linhas e reticências; grades com colunas derivadas da janela (nunca fixas);
+nada de altura fixa em viewport móvel (usar unidade de viewport dinâmica e área segura);
+conteúdo dentro de `min-width: 0` para não estourar o flex; uso de container queries para o layout
+responder ao contêiner, não só à viewport; scroll horizontal só onde for intencional e com peek.
+
+FASE C — REGRA DE ANINHAMENTO PROIBIDO
+Um único nível de superfície por região. Se um card precisa de separação interna, usar divisor hairline
+ou espaçamento — nunca outro card. Grade dentro de grade só se o contêiner externo não for grade.
+Implementar essa regra como parte do lint (Prompt 39) e refatorar tudo que ela reprova.
+
+FASE D — PRIMITIVAS COM VARIANTE DE JANELA
+Cada primitiva (linha de lista, tile, card, carrossel, chip, sheet, barra inferior, toolbar, cabeçalho de seção)
+ganha variante Compact/Medium/Expanded no próprio componente, com contrato declarado.
+Nenhuma tela monta layout solto: ela compõe primitivas.
+
+FASE E — MIGRAÇÃO E PROVA
+Migrar as telas por ordem de gravidade, uma por vez, com captura antes e depois nas três janelas,
+e com o índice de ergonomia recalculado. Telas que ainda não migraram ficam listadas, não esquecidas.
+
+REGRAS DURAS: proibido valor fora de token; proibido card dentro de card; proibido grade dentro de grade;
+proibida altura fixa em viewport móvel; proibido esconder conteúdo para caber; proibida redução de capacidade.
+SAÍDAS: tokens de layout, primitivas com variante, telas migradas, ia/34-relatorio.md.
+DoD: motor anti-compressão em vigor; aninhamento zerado nas telas migradas; nenhuma tela comprimindo nas três janelas.
+
+PROMPT 35 — ERRADICAÇÃO DE HARDCODE E MOCK: TUDO VIRA DADO EDITÁVEL
+PRÉ-CONDIÇÃO: Prompts 33 e 34. Sinais medidos: ~276 "mock", ~768 "TODO", strings e listas fixas em componentes.
+OBJETIVO: nenhum conteúdo, cor, texto, preço, lista ou imagem vive no componente. Tudo é token, schema ou conteúdo de CMS editável sem deploy.
+
+FASE A — INVENTÁRIO DO QUE ESTÁ CRAVADO
+Classificar cada ocorrência: texto de interface (deve ser rótulo semântico), lista fixa (deve ser dado),
+preço/número (deve vir do domínio), imagem (deve vir de mídia), cor/espaço (deve ser token),
+regra de negócio (deve ser serviço), dado simulado (deve ser dado real ou estado vazio honesto).
+
+FASE B — CAMADA DE CONTEÚDO EDITÁVEL
+Modelar e implementar conteúdo administrável: páginas, seções, blocos, campos, rótulos, banners,
+templates por nicho, textos legais, mensagens de estado e textos de e-mail/notificação.
+Com CRUD completo, versionamento, rascunho e publicação — porque o pedido é operar sem deploy.
+
+FASE C — FORMULÁRIOS E CMS FUNCIONAIS
+Todo formulário com validação compartilhada por schema, erro no campo, rascunho automático,
+estado de envio e confirmação; todo formulário precisa de leitura administrativa correspondente.
+Nenhum campo sem persistência, nenhuma coluna sem uso, nenhum tipo divergente entre cliente e banco.
+
+FASE D — MOCK ZERO
+Remover todo dado fictício do caminho real. Onde não há dado, mostrar estado vazio com ação,
+nunca conteúdo inventado, nunca fallback silencioso, nunca "5D/4N" de exemplo.
+
+FASE E — PROVA BILATERAL
+Para cada conteúdo: editar no painel, publicar, ver refletir no público, versionar e reverter.
+Provar em três módulos distintos, com registro.
+
+REGRAS DURAS: proibido texto de interface fixo no componente; proibido dado simulado em produção;
+proibida cor ou espaçamento literal; proibido campo de CMS sem leitura pública ou administrativa;
+toda remoção de mock vem acompanhada de estado vazio verdadeiro.
+SAÍDAS: modelo de conteúdo, CRUDs, telas migradas, ia/35-relatorio.md.
+DoD: zero mock no caminho real; conteúdo editável ponta a ponta; prova bilateral em três módulos.
+
+PROMPT 36 — METAMORFOSE POR NICHO (mesma espinha, experiência própria)
+PRÉ-CONDIÇÃO: Prompts 34 e 35. Existe biblioteca semântica por nicho no repositório: auditar, completar, unificar.
+OBJETIVO: o mesmo sistema atende turismo, delivery, serviços, comércio, imóveis, jurídico e evento
+com experiência própria, sem duplicar tela e sem espalhar `if` de nicho pelo componente.
+
+FASE A — NICHO COMO DADO, NUNCA COMO CÓDIGO
+Contrato de nicho: identidade (cor, tipografia opcional, raio, ícone), vocabulário semântico
+(o que é "item", "reserva", "profissional", "imóvel", "prazo"), arquétipo de home, blocos habilitados,
+ordem de seções, atributos por entidade, métricas de destaque, tom de voz e regras de busca e filtro.
+Proibido `if (nicho === ...)` em componente: nicho resolve por configuração.
+
+FASE B — ARQUÉTIPOS DE HOME POR NICHO
+Definir de 5 a 7 arquétipos (delivery e comércio local, marketplace de serviços, turismo e viagem,
+imóveis, jurídico e consultivo, evento e ingressos, classificados). Cada arquétipo define ordem de seções,
+tipo de card, tipo de CTA e densidade. A home é composta, não escrita.
+
+FASE C — TAXONOMIA E ATRIBUTOS
+Atributos por vertical com tipo, obrigatoriedade e filtro; variação por categoria sem criar tabela nova
+quando o atributo é o mesmo; taxonomia administrável pelo painel.
+
+FASE D — SEMÂNTICA E BUSCA
+Vocabulário por nicho alimentando rótulos, placeholders, estados vazios, ordenações e mensagens.
+Busca e filtro funcionando por atributo real do nicho, com relevância e paginação por cursor.
+
+FASE E — PROVA EM TRÊS NICHOS REAIS
+Escolher três nichos distintos, rodar o fluxo completo em cada um (home, busca, detalhe, carrinho ou reserva,
+pós-venda) e provar que a experiência muda e nada quebra nas três janelas. Registrar o que ainda é genérico.
+
+REGRAS DURAS: nenhuma tela duplicada por nicho; nenhum `if` de nicho em componente; nenhum atributo fixo na UI;
+nenhum texto genérico quando o nicho tem vocabulário próprio.
+SAÍDAS: contrato de nicho, arquétipos, taxonomia, prova em três nichos, ia/36-relatorio.md.
+DoD: três nichos completos sem código duplicado; nicho trocável por dado; nenhuma quebra nas três janelas.
+
+PROMPT 37 — PWA NATIVO: SENSação DE APLICATIVO, NÃO DE SITE
+PRÉ-CONDIÇÃO: Prompts 34 a 36. Objetivo declarado: no celular e no tablet parece app instalado; no desktop parece sistema.
+OBJETIVO: interação, movimento e comportamento de sistema nativo na web, sem quebrar em nenhum aparelho.
+
+FASE A — CHASSI NATIVO
+Barra inferior com área segura e altura de toque garantida, topbar de uma linha, transição entre rotas
+sem flash branco, restauração de posição de rolagem, back do sistema tratado, pull-to-refresh onde fizer sentido,
+sheet arrastável com física e cancelamento, teclado sem cobrir o campo ativo.
+
+FASE B — PWA DE VERDADE
+Manifesto, ícones, splash, instalação, cache com versão, atualização sem travar a sessão,
+funcionamento parcial offline com fila de escrita, e aviso honesto quando offline.
+Publicar como app instalável, não como aba.
+
+FASE C — MOVIMENTO COMO SISTEMA
+Tokens de movimento (duração 120-200ms, curva única, distância), transição de página, entrada de lista,
+abertura de sheet, feedback de toque, mudança de estado, streaming de dados.
+Proibido movimento decorativo; redução de movimento respeitada; nada bloqueando entrada acima de 100ms.
+
+FASE D — DESEMPENHO PERCEBIDO
+Skeleton com a geometria do conteúdo, imagem com proporção reservada, prefetch da próxima tela provável,
+lista longa virtualizada, animação apenas em propriedade composta, sem trabalho de layout por digitação.
+
+FASE E — PROVA
+Em aparelho real médio e em emulação: nenhum corte, nenhuma barra cobrindo conteúdo, nenhum salto de layout,
+nenhuma tela quadrada ou pontuda fora do padrão, INP dentro do alvo. Registrar vídeo ou captura sequencial.
+
+REGRAS DURAS: nenhuma tela pode quebrar no celular, alvo prioritário; proibida animação bloqueante;
+proibido elemento fora da família de raio; proibido conteúdo sob barra fixa.
+SAÍDAS: chassi, PWA, tokens de movimento, prova, ia/37-relatorio.md.
+DoD: instalável; navegação sem flash; gestos funcionando; nenhuma quebra nas três janelas; INP dentro do alvo.
+
+PROMPT 38 — REWRITE DE LEGADO E ERRADICAÇÃO DE DÍVIDA TÉCNICA
+PRÉ-CONDIÇÃO: Prompts 33 a 37. Existe legado em legacy_quarantine/, scratch/, reparo/, melhoria/,
+scripts de remendo na raiz e dois lockfiles.
+OBJETIVO: o que está em uso fica limpo e correto; o que não está, sai. Sem reescrever por gosto.
+
+FASE A — INVENTÁRIO DE LEGADO
+Para cada arquivo fora do caminho ativo: está importado por algo vivo? tem equivalente canônico no registry?
+tem dado ou lógica que ainda é usada? Classificar: absorver, reescrever, remover.
+
+FASE B — ORÇAMENTO POR ARQUIVO
+Cada item com justificativa, dependências, risco de quebra, plano aditivo (cria o novo, migra,
+desativa o antigo em passo separado) e prova exigida.
+
+FASE C — REESCRITA DE VERDADE
+Reescrever significa: consumir tokens, consumir primitivas com variante de janela, sem literal,
+sem mock, estados completos, um nível de superfície, teste cobrindo o comportamento antigo.
+Proibido copiar e colar com estilo trocado.
+
+FASE D — DÍVIDA ZERO
+Encerrar os ~768 TODO (corrigir, virar item com dono e prazo, ou apagar), remover dependência sem uso,
+unificar lockfile, remover script de remendo e arquivo de log solto, marcar legado absorvido para remoção.
+
+FASE E — PROVA
+Build e verificação de tipos limpos; nenhuma funcionalidade perdida; nenhuma duplicata detectada pelo lint;
+nenhum arquivo morto restante; índice de ergonomia subindo por módulo.
+
+REGRAS DURAS: proibido reduzir capacidade; proibido remover sem prova de que nada importa o arquivo;
+proibida segunda versão do que já existe; toda remoção em passo separado da criação.
+SAÍDAS: ia/38-legado.md, reescritas, remoções, ia/38-relatorio.md.
+DoD: nenhuma duplicidade; legado com destino declarado; dívida catalogada e atribuída; build limpo.
+
+PROMPT 39 — GATE CONTÍNUO: LINT DE ERGONOMIA, TESTE VISUAL E AUDITORIA POR MÓDULO
+PRÉ-CONDIÇÃO: Prompts 33 a 38. Este é o prompt recorrente: uma sessão por módulo, para sempre.
+OBJETIVO: nenhuma regressão visual entra, e cada ciclo eleva um módulo ao padrão do BLOCO V.
+
+FASE A — LINT DE ERGONOMIA (determinístico)
+Implementar detector para cada defeito E01 a E20 do Prompt 33, com teste por regra:
+aninhamento de superfície e de grade, compressão, raio fora da família, espaçamento fora do ritmo,
+grade fixa sem guarda de janela, texto acima do limite, mídia sem proporção, altura fixa em viewport móvel,
+mais de uma ação primária, sombra e gradiente decorativo, alvo de toque, literal de cor e espaço,
+hardcode e mock, estado ausente. Cada violação com arquivo:linha e severidade.
+
+FASE B — TESTE VISUAL POR JANELA
+Captura automatizada das telas-chave em 390x844, 834x1112 e 1280x800, com comparação contra a linha de base
+aprovada. Diferença não aprovada falha. Isso é o que impede a quebra silenciosa no celular.
+
+FASE C — CATRACA
+Congelar a contagem atual por regra e por módulo. O número só pode cair; aumento falha a entrega.
+
+FASE D — CICLO POR MÓDULO (repetível)
+Para o módulo escolhido: selo de entrada com contagem e captura antes; leitura cirúrgica apenas dos arquivos
+da rota e seus componentes (teto de três níveis); auditoria por defeito; correção de um item por vez com captura
+depois; selo de saída com contagem, hash e handoff de 12 linhas; próximo módulo declarado.
+
+FASE E — PAINEL
+Nota de ergonomia por módulo ao longo do tempo, defeitos mais frequentes, tempo médio por correção
+e lista de módulos ainda não selados.
+
+REGRAS DURAS: um módulo por sessão; proibida correção sem reprodução; proibida regressão em módulo selado;
+toda alegação de responsividade exige captura na janela declarada; nenhuma exceção silenciosa.
+SAÍDAS: detector, suíte visual, painel, ia/39-<modulo>.md, ledger atualizado.
+DoD: lint e teste visual rodando no fluxo de verificação; catraca ativa; módulo selado com contagem caindo.
+
+BLOCO T — CONTRATO DO VERTICAL DE TURISMO (prefixo fixo destas sessões)
+Colar junto do PROTOCOLO 00, BLOCO 0, BLOCO V e BLOCO T.
+
+FONTE DE VERDADE: os repositórios travelagencias e turisagencias são a especificação funcional de
+referência. Código deles NÃO é copiado em bloco: capacidades são reimplementadas como módulos nativos
+do Waesy, adaptadas ao domínio multi-tenant e ao sistema de design atual.
+LEI DO DONO ÚNICO: cada entidade tem exatamente um dono. Existe uma tabela/camada por conceito, não várias.
+LEI DA LISTA DE MORTE: criar o novo e migrar é metade. A outra metade é desativar e remover o perdedor,
+em passo separado, com prova de que nada mais o referencia. Sem isso não há Definition of Done.
+LEI DA CONVERGÊNCIA: nenhuma capacidade é declarada pronta sem paridade verificada contra a referência,
+com checklist item a item.
+PROIBIDO: declarar tipo/interface sem implementação (tipo em arquivo de teste não é módulo);
+criar tabela nova quando já existe equivalente; corrigir um dos dois lados de uma duplicação;
+mover código sem portar comportamento; mock, dado simulado, texto hardcoded.
+MÓDULOS-GÊMEOS a convergir (medidos hoje, a confirmar na fase de inventário):
+ kanban: workspace_tasks + workspace_task_columns, kanban_stage_configs, travel_departures_kanban
+ orçamento: travel_quotes, quotes, quote_items, quote_messages, travel_proposals, proposals,
+           proposal_items, jus_proposals
+ ticket: tickets, ticket_messages, support_tickets, store_support_tickets, operator_support_tickets,
+         tourism_incident_tickets
+ crm: customers_crm, leads_crm, lead_activities, lead_meetings, lead_forms, lead_form_submissions,
+      launch_leads, whatsapp_lead_conversions, crm_clinical_records
+ viagem: tourism_trips, trips, travel_group_tours, trip_passengers, trip_roommate/rooming, boarding_tickets
+
+
+ PROMPT 40 — DIAGNÓSTICO DE CONVERGÊNCIA DO VERTICAL DE TURISMO
+PRÉ-CONDIÇÃO: PROTOCOLO 00, BLOCO 0, BLOCO V, BLOCO T. Sessão de diagnóstico: proibido alterar código.
+OBJETIVO: dizer com precisão qual é o estado real do turismo no Waesy, o que a referência entrega e
+exatamente onde os dois divergem, sem opinião.
+
+FASE A — INVENTÁRIO DO WAESY
+Mapear a superfície real do turismo: 24 rotas workspace.turismo.*, componentes em src/components/tourism
+(19 subdiretórios), serviços travel-*.functions.ts, componentes commerce/travel, hooks de lead,
+e todas as tabelas que tocam turismo. Para cada item: existe, está ligado a qual rota, a qual serviço,
+a qual tabela, e está acessível a qual papel.
+
+FASE B — MAPA DE DUPLICIDADE E CONFLITO
+Para cada conceito (lead, cliente, kanban, cotação, proposta, viagem, grupo, embarque, voucher,
+contrato, visto, tarefa, ticket, fornecedor): listar todos os donos concorrentes, qual está em uso
+por qual rota, qual tem dado real e qual está morto. Produzir a matriz de conflito com arquivo:linha.
+
+FASE C — EXTRAÇÃO DA REFERÊNCIA
+Ler os repositórios travelagencias e turisagencias e extrair, em formato de especificação funcional:
+hooks e fluxos de CRM e kanban, modelo de dados de lead e cliente, motor de cotação e precificação,
+estrutura do card, tarefas, suporte e inbox, portal do cliente, grupos e embarques, voucher e contrato.
+Extrair também a história de execução deles (os diretórios de auditoria e recuperação) para recuperar
+decisões já tomadas e evitar repetir erro. Saída é especificação, não código.
+
+FASE D — DIFF DE CAPACIDADE
+Tabela de paridade: capacidade | existe na referência | existe no Waesy | parcial | ausente |
+qual dono no Waesy | evidência. Ordenar por valor para a agência (o que vende, o que evita erro,
+o que reduz trabalho manual).
+
+FASE E — VEREDITO E FILA
+Lista de donos a manter, donos a matar e capacidades a construir, com justificativa e risco.
+Saída: ia/40-paridade.md, ia/40-conflitos.md, ia/40-especificacao-referencia.md, ia/40-ledger.json.
+
+REGRAS: nenhuma alteração de código; toda linha com arquivo:linha; proibido propor "novo módulo"
+antes de provar que não existe equivalente.
+DoD: superfície mapeada; conflitos listados; paridade medida; fila aprovada.
+
+
+PROMPT 41 — ESPINHA ÚNICA DO TURISMO: MODELO, PROPRIEDADE E LISTA DE MORTE
+PRÉ-CONDIÇÃO: Prompt 40. ia/40-conflitos.md é a lista de entrada.
+OBJETIVO: existir um dono por conceito. Sem isso, todo o resto continua voltando a divergir.
+
+FASE A — MODELO CANÔNICO
+Definir o modelo do vertical: organização/agência, cliente, contato, lead, jornada do lead (o cliente
+pode voltar como lead várias vezes), oportunidade/card, cotação, versão de cotação, item de cotação,
+passageiro, proposta, aceite, viagem, grupo, embarque, fornecedor, documento, assinatura, tarefa,
+interação, tag, consentimento. Cada entidade com dono, chave, estado, invariantes e relação.
+
+FASE B — DECISÃO DE DONO E DEPRECIAÇÃO
+Para cada conceito duplicado: eleger a tabela/camada canônica (a que melhor cobre o domínio, não a
+mais nova), marcar as concorrentes como descontinuadas, definir o caminho de dados existentes
+(migrar retroativamente quando houver dado real; descartar quando morto).
+
+FASE C — MIGRAÇÃO ADITIVA
+Criar o que falta, adicionar colunas em tabelas em uso, criar as chaves de ligação
+(card <-> cliente <-> jornada <-> cotação <-> viagem), e só depois migrar dado.
+Idempotente e reversível. Nada de renomear ou recriar em uso.
+
+FASE D — ISOLAMENTO E LGPD
+RLS por organização e por papel em cada tabela nova e alterada; consentimento e base legal por cliente;
+retenção; trilha de auditoria append-only para toda mudança sensível; nenhuma política permissiva
+em dado pessoal; teste de isolamento entre duas organizações.
+
+FASE E — LISTA DE MORTE EXECUTADA
+Desativar rotas, componentes e serviços perdedores, remover o que nada mais referencia, e provar por
+busca que não há consumidor restante. Passo separado da criação, com prova de build limpo.
+
+REGRAS DURAS: um dono por conceito; proibido manter dois caminhos vivos para o mesmo dado;
+proibida migração destrutiva; nenhuma tabela nova sem política; nenhuma política permissiva em dado pessoal.
+DoD: modelo publicado; donos definidos; migração aplicada com dado preservado; lista de morte executada;
+paridade do Prompt 40 revertida para "sem conflito" nos conceitos tratados.
+RELATÓRIO: conceitos resolvidos, tabelas canônicas, tabelas descontinuadas, dado migrado, pendências.
+
+PROMPT 42 — KANBAN COMERCIAL AVANÇADO: O CARD É O ATENDIMENTO INTEIRO
+PRÉ-CONDIÇÃO: Prompts 40 e 41. Referência: CrmKanbanBoard + use-crm-kanban do travelagencias e
+o card com seções (Dados, Notas, Checklist, Rastreio, Vínculos) do turisagencias.
+OBJETIVO: todo o atendimento do cliente vive dentro do card, e o card vive ligado ao cliente.
+
+FASE A — QUADRO E COLUNAS COMO DADO
+Colunas configuráveis por organização (nome, ordem, visibilidade, cor semântica, critério de saída),
+WIP opcional por coluna, filtro por responsável, tag, origem, destino, valor e temperatura;
+visão de quadro, lista, calendário e timeline sobre o mesmo dado. Uma única noção de kanban no sistema.
+
+FASE B — CARD COMPLETO
+Dentro do card: dados do cliente e vínculo com a ficha 360; histórico de jornadas anteriores
+(o mesmo cliente pode ter sido lead várias vezes); cotações criadas dentro do card e orçamentos
+vinculados; observações com autoria e tempo; tags; origem e canal; valor potencial;
+checklist de qualificação; documentos e anexos; consentimento LGPD e base legal;
+controle de contato e opt-out; histórico de atendimento unificado (mensagem, e-mail, ligação, reunião);
+SLA e tempo em cada coluna; próxima ação com data; motivo de perda obrigatório.
+
+FASE C — COTAÇÃO E ORÇAMENTO NO CARD
+Criar cotação a partir do card e vincular; múltiplas versões; comparação de cenários;
+precificação vinda do motor único (Prompt 44); gerar proposta a partir da cotação sem redigitar nada;
+registrar orçamentos enviados, aceitos e recusados dentro do histórico do card.
+
+FASE D — FORMULÁRIOS E ACEITE
+Formulário público de interesse com campos por nicho, preenchimento pelo cliente e gravação no card;
+termos com aceite registrado (quem, quando, versão do texto, IP permitido por lei);
+formulário de aceite de reunião; agendamento de reunião dentro do card com confirmação e lembrete.
+
+FASE E — AUTOMAÇÃO E PROVA
+Regras: mover por inatividade, escalonar por SLA, notificar responsável, criar tarefa a partir do card,
+converter lead em cliente e cliente em viagem, tudo registrado. Provar o ciclo completo com dado real:
+entrada de lead, qualificação, cotação, proposta, aceite, venda, e o histórico consolidado na ficha do cliente.
+
+REGRAS DURAS: um só kanban no sistema; card sempre vinculado a cliente ou contato, nunca solto;
+nenhum dado do cliente fora da ficha 360; aceite com trilha legal; nada hardcoded no card.
+DoD: quadro configurável; card completo com todas as seções; cotação criada e vinculada no card;
+formulários e aceite gravando; automações rodando; prova do ciclo end-to-end.
+
+
+PROMPT 43 — CRM 360 DO CLIENTE DE TURISMO
+PRÉ-CONDIÇÃO: Prompts 41 e 42.
+OBJETIVO: uma ficha que conta a vida de viagem do cliente, e que serve de base para a IA recomendar.
+
+FASE A — FICHA CANÔNICA
+Identidade e contatos, documentos e validade, preferências (assentos, refeição, hotel, orçamento
+por viagem), restrições (mobilidade, alimentar, saúde declarada), companhias e programas de fidelidade,
+cartões e emissor, endereço, contatos de emergência, consentimento e canal preferido.
+
+FASE B — HISTÓRICO COMPLETO
+Todas as jornadas como lead, todas as cotações e propostas (aceitas e recusadas, com motivo),
+todas as viagens realizadas e futuras, vouchers, contratos, pagamentos e pendências,
+incidentes e reacomodações, e a linha do tempo única de atendimento com autoria.
+
+FASE C — VÍNCULOS
+Card <-> cliente <-> cotação <-> proposta <-> viagem <-> grupo <-> passageiro, com navagegação
+nos dois sentidos e prova de que o vínculo sobrevive a conversão e a cancelamento.
+
+FASE D — DOCUMENTOS E ASSINATURA
+Contrato, termo, visto, seguro, documento de passageiro, com estados, validade, alerta de vencimento
+e assinatura registrada. Nada de documento solto sem vínculo.
+
+FASE E — INTELIGÊNCIA E PRIVACIDADE
+A IA lê a ficha e o histórico para sugerir destino, faixa de preço, época e oferta, citando a origem
+interna consultada. Consentimento, opt-out, retenção e exclusão a pedido, com trilha de quem acessou o quê.
+
+REGRAS DURAS: uma ficha por cliente, sem duplicidade de pessoa; histórico não pode ser apagável
+por edição de cadastro; dado sensível só com consentimento explícito; nada simulado.
+DoD: ficha completa; histórico com todas as jornadas; vínculos navegáveis nos dois sentidos;
+documentos com validade e assinatura; IA usando a ficha com citação de origem; LGPD provada.
+
+PROMPT 44 — MOTOR ÚNICO DE COTAÇÃO, ORÇAMENTO E PROPOSTA
+PRÉ-CONDIÇÃO: Prompts 41 a 43. Hoje existem oito conceitos competindo por esse espaço.
+OBJETIVO: um motor só, da busca de preço até a venda confirmada, com versão e trilha.
+
+FASE A — CONCEITOS DEFINIDOS SEM AMBIGUIDADE
+Cotação (busca e comparação de preço), orçamento (composição para o cliente), proposta (documento
+apresentável), aceite, venda, viagem. Cada um com dono, estado e transição. Proibido usar os termos
+como sinônimos no código ou na interface.
+
+FASE B — MOTOR DE PREÇO
+Composição de item (aéreo, hotel, transfer, passeio, seguro, taxa, serviço), markup e comissão,
+câmbio com data de referência, condição de pagamento e parcelamento, promoção e cupom,
+regras por fornecedor e por política da agência. Todo cálculo no servidor, em centavos,
+com trilha de como o preço foi formado. Preço nunca vem do cliente.
+
+FASE C — VERSÃO, CENÁRIO E COMPARAÇÃO
+Múltiplas versões de cotação, cenários alternativos, snapshot do que foi enviado ao cliente,
+comparação lado a lado e registro de qual versão foi aceita.
+
+FASE D — CONVERSÃO SEM REDIGITAÇÃO
+Cotação -> orçamento -> proposta -> aceite -> venda -> viagem, herdando passageiros, valores e condições,
+com idempotência e transação. Nada redigitado, nada duplicado, nada perdido na conversão.
+
+FASE E — SAÍDA E PROVA
+Proposta apresentável (PDF e arte pelo builder) com identidade da agência; link público com validade;
+aceite no portal e no link; pagamento e parcelamento; e prova do ciclo completo com dado real,
+incluindo recusa, expiração e remarcação.
+
+REGRAS DURAS: um motor só; preço sempre calculado no servidor; toda versão guardada;
+conversão idempotente; nada de valor hardcoded; nenhuma proposta sem vínculo com cliente e card.
+DoD: conceitos sem ambiguidade; motor de preço com trilha; versões e cenários; conversão completa provada;
+proposta exportável e link público funcionando.
+
+PROMPT 45 — TAREFAS, SUPORTE E ATENDIMENTO UNIFICADOS
+PRÉ-CONDIÇÃO: Prompt 41. Hoje existem quatro noções de kanban de tarefa e seis tabelas de ticket.
+OBJETIVO: uma noção de tarefa e uma de ticket no sistema, servindo todos os nichos.
+
+FASE A — UMA TAREFA
+Modelo único com projeto, espaço, responsável, observadores, checklist, dependências, comentários,
+etiquetas, prazo, prioridade, tempo gasto, anexo e trilha de atividade. Kanban de tarefa é uma visão
+dessa mesma entidade, nunca outra tabela.
+
+FASE B — UM TICKET E UM INBOX
+Ticket único com canal (portal, chat, e-mail, WhatsApp, presencial), categoria, prioridade, SLA,
+responsável, mensagens, anexos, timeline e histórico; inbox com fila, atribuição, resposta rápida,
+painel de IA e indicador de espera. Suporte de loja, operador e turismo são visões do mesmo ticket.
+
+FASE C — LIGAÇÃO COM O NEGÓCIO
+Ticket e tarefa ligados a cliente, card, cotação, viagem e pedido; criar tarefa a partir de qualquer
+registro; escalonar por SLA; digest diário com dado real.
+
+FASE D — IA DE TRIAGEM E PRODUTIVIDADE
+Classificação por categoria e urgência, roteamento por regra e habilidade, resposta sugerida com
+citação de origem, resumo de thread, e priorização por impacto. Toda sugestão registrada com origem e confiança.
+
+FASE E — PROVA
+Ciclo completo: cliente abre pelo portal, entra no inbox, é roteado, gera tarefa, gera cotação no card,
+recebe resposta, tudo com trilha única e SLA medido. Provar também o isolamento por organização.
+
+REGRAS DURAS: uma tabela por conceito; nenhuma segunda lista de tarefa; SLA não pode ser ignorado
+em silêncio; nenhuma resposta automática sem revisão quando houver consequência comercial ou legal.
+DoD: tarefa única com todas as visões; ticket único com todos os canais; vínculos com negócio;
+IA de triagem medida; prova de ciclo completo e de isolamento.
+
+PROMPT 46 — MIGRAÇÃO, PARIDADE E GATE CONTÍNUO DO VERTICAL
+PRÉ-CONDIÇÃO: Prompts 40 a 45. Este é o prompt de fechamento e o que você repete por módulo.
+OBJETIVO: provar que o Waesy alcançou a referência, que o concorrente morreu e que não volta.
+
+FASE A — CHECKLIST DE PARIDADE POR CAPACIDADE
+Para cada linha do ia/40-paridade.md: estado final (alcançado, parcial, fora de escopo com justificativa),
+arquivo do dono canônico, rota de acesso e prova de uso com dado real.
+
+FASE B — PROVA POR PAPEL
+Executar o fluxo em cada papel: agente de vendas, operador, financeiro, gestor da agência e cliente.
+Ninguém pode ver o que não lhe pertence; nenhum papel encontra beco sem saída; nenhum fluxo exige
+sair do módulo para concluir.
+
+FASE C — KILL LIST VERIFICADA
+Provar por busca que nenhum arquivo, rota, serviço, hook ou tabela descontinuada tem consumidor;
+provar build, verificação de tipos e suíte de testes limpos depois da remoção; nenhuma duplicata nova
+detectada pelo lint de ergonomia do Prompt 39.
+
+FASE D — GATE DE CONVERGÊNCIA
+Automatizar um teste que falha quando aparece um segundo dono para o mesmo conceito
+(duas tabelas de kanban, duas de cotação, duas de ticket, dois componentes de card equivalentes)
+e que falha quando uma rota de turismo não resolve para um serviço canônico. É isso que impede
+o sistema de voltar a se bifurcar depois de você ir embora da sessão.
+
+FASE E — SELO
+Registrar selo com hash: paridade alcançada, kill list executada, gate ativo, provas por papel,
+design conforme o BLOCO V nas três janelas, e handoff de 12 linhas declarando o próximo módulo.
+
+REGRAS DURAS: paridade sem prova de uso real não conta; remoção em passo separado da criação;
+proibido declarar pronto com gate de convergência desligado; proibido manter rota órfã.
+DoD: paridade provada; concorrentes removidos; gate ativo e falhando em teste de bifurcação;
+fluxo completo por papel; selo registrado.
+
+

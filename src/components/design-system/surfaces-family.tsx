@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { StateCard } from "./state-card";
 import type { ComponentStateProps } from "./design-system-types";
 import { DollarSign, Plus } from "lucide-react";
+import { useState } from "react";
 
 interface TransactionItem {
   id: string;
@@ -66,6 +67,7 @@ const tableColumns: DataTableColumn<TransactionItem>[] = [
 ];
 
 export function SurfacesFamily({ mode }: ComponentStateProps) {
+  const [ledgerDrafts, setLedgerDrafts] = useState(0);
   const showReady = mode === "all" || mode === "ready";
   const showLoading = mode === "all" || mode === "loading";
   const showEmpty = mode === "all" || mode === "empty";
@@ -155,12 +157,15 @@ export function SurfacesFamily({ mode }: ComponentStateProps) {
                 emptyTitle="Nenhum lançamento no período"
                 emptyDescription="Nenhuma transação contábil ou venda foi registrada nesta data."
                 emptyAction={
-                  <Button type="button" size="sm" className="h-11 gap-1 text-xs focus-visible:ring-2" onClick={() => {}}>
+                  <Button type="button" size="sm" className="h-11 gap-1 text-xs focus-visible:ring-2" onClick={() => setLedgerDrafts((count) => count + 1)}>
                     <Plus className="h-3.5 w-3.5" />
                     Registrar Lançamento
                   </Button>
                 }
               />
+              <p className="text-xs text-muted-foreground" aria-live="polite">
+                Rascunhos: {ledgerDrafts}
+              </p>
             </div>
           </StateCard>
         )}

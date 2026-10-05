@@ -22,6 +22,8 @@ import {
 
 export function NavigationFamily({ mode }: ComponentStateProps) {
   const [activeTab, setActiveTab] = useState("home");
+  const [createdCount, setCreatedCount] = useState(0);
+  const [contextReloads, setContextReloads] = useState(0);
 
   const showReady = mode === "all" || mode === "ready";
   const showLoading = mode === "all" || mode === "loading";
@@ -53,7 +55,12 @@ export function NavigationFamily({ mode }: ComponentStateProps) {
                   title="Gestão Comercial"
                   badge={<Badge variant="secondary">Pro</Badge>}
                   actions={
-                    <Button type="button" size="sm" className="h-11 gap-1 text-xs focus-visible:ring-2" onClick={() => {}}>
+                    <Button
+                      type="button"
+                      size="sm"
+                      className="h-11 gap-1 text-xs focus-visible:ring-2"
+                      onClick={() => setCreatedCount((count) => count + 1)}
+                    >
                       <Plus className="h-3.5 w-3.5" />
                       Novo
                     </Button>
@@ -86,6 +93,9 @@ export function NavigationFamily({ mode }: ComponentStateProps) {
                   ))}
                 </div>
               </div>
+              <p className="text-xs text-muted-foreground" aria-live="polite">
+                Novos itens: {createdCount}
+              </p>
             </div>
           </StateCard>
         )}
@@ -145,12 +155,15 @@ export function NavigationFamily({ mode }: ComponentStateProps) {
                 type="button"
                 variant="outline"
                 size="sm"
-                onClick={() => {}}
+                onClick={() => setContextReloads((count) => count + 1)}
                 className="h-11 w-full gap-2 border-destructive/30 text-destructive hover:bg-destructive/10"
               >
                 <RefreshCw className="h-3.5 w-3.5" />
                 Recarregar contexto
               </Button>
+              <p className="text-xs text-muted-foreground" aria-live="polite">
+                Tentativas: {contextReloads}
+              </p>
             </div>
           </StateCard>
         )}

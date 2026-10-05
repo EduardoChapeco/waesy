@@ -30,8 +30,6 @@ export function ActionAuthGuardModal({
     returnUrl ||
     (typeof window !== "undefined" ? window.location.pathname + window.location.search : "/");
 
-  const loginTarget = `/entrar?returnUrl=${encodeURIComponent(currentPath)}`;
-
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md rounded-lg p-6 space-y-4">
@@ -68,9 +66,9 @@ export function ActionAuthGuardModal({
           </Button>
           <Button
             asChild
-            className="w-full sm:w-auto rounded-lg text-xs h-11 min-h-11 px-4 gap-2 font-bold focus-visible:ring-2 focus-visible:ring-primary"
+            className="w-full sm:w-auto rounded-lg text-xs h-11 min-h-11 px-4 gap-2 font-bold focus-visible:ring-2 focus-visible:ring-primary cursor-pointer"
           >
-            <Link to={loginTarget as any}>
+            <Link to="/entrar" search={{ returnUrl: currentPath }}>
               <LogIn className="size-4" />
               <span>Entrar ou Cadastrar</span>
               <ArrowRight className="size-4" />

@@ -26,6 +26,7 @@ export function FormsFamily({ mode }: ComponentStateProps) {
   const [val, setVal] = useState("Empresa Modelo Ltda");
   const [city, setCity] = useState("sp");
   const [wizardStep, setWizardStep] = useState(0);
+  const [validationAttempt, setValidationAttempt] = useState(0);
 
   const showReady = mode === "all" || mode === "ready";
   const showLoading = mode === "all" || mode === "loading";
@@ -177,12 +178,15 @@ export function FormsFamily({ mode }: ComponentStateProps) {
                 type="button"
                 variant="outline"
                 size="sm"
-                onClick={() => {}}
+                onClick={() => setValidationAttempt((count) => count + 1)}
                 className="h-11 w-full gap-2 border-destructive/30 text-destructive hover:bg-destructive/10"
               >
                 <RefreshCw className="h-3.5 w-3.5" />
                 Validar novamente
               </Button>
+              <p className="text-xs text-muted-foreground" aria-live="polite">
+                Tentativas: {validationAttempt}
+              </p>
             </div>
           </StateCard>
         )}

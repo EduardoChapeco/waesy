@@ -1,22 +1,25 @@
 {
-  "timestamp": "2026-10-05T15:07:22.924Z",
+  "timestamp": "2026-10-05T19:33:41.589Z",
   "totalFilesScanned": 1024,
-  "totalButtonsScanned": 5078,
-  "totalIssues": 1,
+  "totalButtonsScanned": 6145,
+  "totalControls": 6145,
+  "totalIssues": 0,
   "summary": {
     "deadButtons": 0,
     "fakeOrStubActions": 0,
     "invalidNesting": 0,
-    "staticDisabled": 1
+    "staticDisabled": 0
   },
-  "issues": [
-    {
-      "type": "STATIC_DISABLED_BUTTON",
-      "severity": "P2",
-      "file": "src/components/ui/button.tsx",
-      "line": 74,
-      "snippet": "<button\r",
-      "detail": "Botão desabilitado de forma permanente (disabled={true} estático sem binding)."
-    }
-  ]
+  "summaryBySeverity": {},
+  "summaryByIntent": {
+    "navigate": 1636,
+    "local-state": 3874,
+    "mutate": 124,
+    "submit": 241,
+    "open-modal-with-continuation": 153,
+    "copy-share": 105,
+    "preview-only": 10,
+    "disabled-with-reason": 2
+  },
+  "issues": []
 }

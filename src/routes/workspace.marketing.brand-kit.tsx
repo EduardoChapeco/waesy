@@ -248,6 +248,7 @@ export function BrandKitPage() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [activeTab, setActiveTab] = useState<"cores" | "tipografia" | "logos" | "estetica" | "preview">("cores");
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const [previewNotice, setPreviewNotice] = useState("");
 
   useEffect(() => {
     if (initialBrandKit || store) {
@@ -947,7 +948,7 @@ export function BrandKitPage() {
                     <div className="flex gap-2">
                       <button
                         type="button"
-                        onClick={() => toast.info("Prévia visual do Brand Kit: demonstração de cor e raio da sua marca.")}
+                        onClick={() => setPreviewNotice("Prévia visual atualizada.")}
                         className="bk-btn-primary px-4 py-2 text-sm font-semibold transition-opacity hover:opacity-90 cursor-pointer"
                         style={{
                           backgroundColor: form.color_primary,
@@ -967,6 +968,9 @@ export function BrandKitPage() {
                         CTA Principal
                       </button>
                     </div>
+                    <span className="sr-only" aria-live="polite">
+                      {previewNotice}
+                    </span>
                   </div>
 
                   {/* Título destaque */}

@@ -1033,6 +1033,7 @@ function SpecializedClassifiedEditor({
   const [isCustomCommercialOpen, setIsCustomCommercialOpen] = useState(false);
   const [draftInfo, setDraftInfo] = useState<{ step: number; savedAt: string } | null>(null);
   const [mobileTab, setMobileTab] = useState<"edit" | "preview">("edit");
+  const [previewActionNotice, setPreviewActionNotice] = useState("");
  const [jobWorkSchedule, setJobWorkSchedule] = useState("integral_44h");
  const [jobAcceptedMethods, setJobAcceptedMethods] = useState<string[]>([
  "perfil_waesy",
@@ -3545,6 +3546,9 @@ function SpecializedClassifiedEditor({
                   : "max-w-5xl"
               )}
             >
+              <span className="sr-only" aria-live="polite">
+                {previewActionNotice}
+              </span>
               {niche.id === "mercado" || templateStyle === "conveniencia" ? (
                 <ConvenienceShowcaseView
                   classified={livePreviewClassified}
@@ -3613,8 +3617,8 @@ function SpecializedClassifiedEditor({
                 <EditorialShowcaseView
                   classified={livePreviewClassified}
                   isOwner={true}
-                  onOpenBookingModal={() => toast.info("Modo de Pré-visualização: As reservas estarão ativas após a publicação do anúncio.")}
-                  onOpenProposalModal={() => toast.info("Modo de Pré-visualização: O envio de propostas estará ativo após a publicação do anúncio.")}
+                  onOpenBookingModal={() => setPreviewActionNotice("Reservas disponíveis somente após a publicação do anúncio.")}
+                  onOpenProposalModal={() => setPreviewActionNotice("Propostas disponíveis somente após a publicação do anúncio.")}
                   onEditClassified={() => setCurrentStep(2)}
                 />
               ) : (
@@ -3622,8 +3626,8 @@ function SpecializedClassifiedEditor({
                   classified={livePreviewClassified}
                   isOwner={true}
                   canManage={true}
-                  onOpenBookingModal={() => toast.info("Modo de Pré-visualização: As reservas estarão ativas após a publicação do anúncio.")}
-                  onOpenProposalModal={() => toast.info("Modo de Pré-visualização: O envio de propostas estará ativo após a publicação do anúncio.")}
+                  onOpenBookingModal={() => setPreviewActionNotice("Reservas disponíveis somente após a publicação do anúncio.")}
+                  onOpenProposalModal={() => setPreviewActionNotice("Propostas disponíveis somente após a publicação do anúncio.")}
                   onEdit={() => setCurrentStep(2)}
                 />
               )}
@@ -9530,7 +9534,10 @@ function SpecializedClassifiedEditor({
  <div className="pt-2">
  <Button
  type="button"
- onClick={() => toast.info("Modo de prévia: ao publicar seu anúncio, este botão iniciará a conversa com o comprador.")}
+ disabled
+ data-action-intent="preview-only"
+ data-action-reason="Contato disponível somente após publicar o anúncio."
+ title="Contato disponível somente após publicar o anúncio."
  className="w-full rounded-lg bg-foreground text-background font-bold text-xs gap-2 h-11 cursor-pointer"
  >
  <Phone className="size-4" />

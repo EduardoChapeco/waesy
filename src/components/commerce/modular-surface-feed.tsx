@@ -14,6 +14,37 @@ export interface ModularSurfaceFeedProps {
   onAddToCart?: (variantId: string) => void;
 }
 
+function SurfaceLink({
+  href,
+  className,
+  children,
+}: {
+  href: string;
+  className?: string;
+  children: React.ReactNode;
+}) {
+  const isExternal =
+    href.startsWith("http://") ||
+    href.startsWith("https://") ||
+    href.startsWith("//") ||
+    href.startsWith("mailto:") ||
+    href.startsWith("tel:");
+
+  if (isExternal) {
+    return (
+      <a href={href} target="_blank" rel="noopener noreferrer" className={className}>
+        {children}
+      </a>
+    );
+  }
+
+  return (
+    <Link to={href as any} className={className}>
+      {children}
+    </Link>
+  );
+}
+
 export function ModularSurfaceFeed({ sections, className = "", onAddToCart }: ModularSurfaceFeedProps) {
   if (!sections || sections.length === 0) return null;
 
@@ -29,8 +60,8 @@ export function ModularSurfaceFeed({ sections, className = "", onAddToCart }: Mo
 
           return (
             <section key={section.id} aria-label={section.title} className="w-full">
-              <Link
-                to={banner.link_url || "/"}
+              <SurfaceLink
+                href={banner.link_url || "/"}
                 className="group relative block w-full aspect-21/9 rounded-lg overflow-hidden bg-muted/40 border border-border/60 shadow-xs active:scale-95 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
                 {banner.image_url ? (
@@ -60,7 +91,7 @@ export function ModularSurfaceFeed({ sections, className = "", onAddToCart }: Mo
                     <p className="text-xs text-white/80 line-clamp-1">{section.subtitle}</p>
                   )}
                 </div>
-              </Link>
+              </SurfaceLink>
             </section>
           );
         }
@@ -84,9 +115,9 @@ export function ModularSurfaceFeed({ sections, className = "", onAddToCart }: Mo
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 {banners.map((b: any, idx: number) => (
-                  <Link
+                  <SurfaceLink
                     key={b.id || idx}
-                    to={b.link_url || "/"}
+                    href={b.link_url || "/"}
                     className="group relative block w-full aspect-16/9 rounded-lg overflow-hidden bg-muted/40 border border-border/60 shadow-xs active:scale-95 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                   >
                     {b.image_url ? (
@@ -108,7 +139,7 @@ export function ModularSurfaceFeed({ sections, className = "", onAddToCart }: Mo
                         {b.title || section.title}
                       </p>
                     </div>
-                  </Link>
+                  </SurfaceLink>
                 ))}
               </div>
             </section>
@@ -137,9 +168,9 @@ export function ModularSurfaceFeed({ sections, className = "", onAddToCart }: Mo
 
               <div className="flex items-center gap-3 overflow-x-auto no-scrollbar pb-1">
                 {section.items.map((btn: any) => (
-                  <Link
+                  <SurfaceLink
                     key={btn.id}
-                    to={btn.route || btn.link_url || "/"}
+                    href={btn.route || btn.link_url || "/"}
                     className="inline-flex items-center gap-3 px-4 h-11 rounded-lg bg-card border border-border/80 text-foreground hover:bg-muted/60 hover:border-primary/40 transition-all shrink-0 active:scale-95 shadow-xs cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                   >
                     {btn.icon_url ? (
@@ -153,7 +184,7 @@ export function ModularSurfaceFeed({ sections, className = "", onAddToCart }: Mo
                         {btn.badge}
                       </span>
                     )}
-                  </Link>
+                  </SurfaceLink>
                 ))}
               </div>
             </section>
