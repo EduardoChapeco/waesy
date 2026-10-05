@@ -45,3 +45,17 @@ O extractor `createListingWithAI` foi ampliado para retornar, além de título/d
 O fallback heurístico agora possui o mesmo contrato rico. Também foi corrigida uma falha real em que a regex interpretava o número de modelos como preço (`PS5` era capturado como `R$ 5`). A extração agora prioriza valores monetários explícitos e só aceita números isolados.
 
 Validação específica: 13 testes passaram; typecheck mantém 136 erros baseline; nenhum erro novo nos arquivos alterados.
+
+## 19. Submit end-to-end do editor de classificados — checkpoint 2026-10-05
+
+A auditoria do formulário mostrou que a IA já retornava campos ricos, mas alguns não chegavam aos estados do editor porque os aliases esperados eram diferentes. Foi corrigido o contrato para propagar:
+
+- `city`, `state`, `neighborhood` e `location_name`;
+- `delivery_mode` e `shipping_mode`;
+- `stock_limit` e `stock_quantity`;
+- `condition`;
+- `payment_rules`, `accepted_payment_methods`, `installments_available`, `pix_discount_percent` e `max_installments`.
+
+A hidratação do editor agora aplica a condição detectada também ao fluxo de desapego. O submit existente continua sendo o único caminho de persistência (`upsertClassified`), evitando duplicação de criação.
+
+Validação: 11 testes passaram; typecheck mantém 136 erros baseline; nenhum erro novo nos arquivos alterados.
