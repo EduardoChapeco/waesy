@@ -59,7 +59,7 @@ function StorePasswordGatePage() {
   };
 
   return (
-    <div className="min-h-[80vh] flex items-center justify-center px-4 py-16">
+    <div className="min-h-screen flex items-center justify-center px-4 py-16">
       <div className="w-full max-w-sm mx-auto space-y-6 text-center">
         {/* Ícone Minimalista de Cadeado */}
         <div className="size-16 rounded-lg bg-muted/60 border border-border/80 flex items-center justify-center mx-auto text-foreground shadow-xs">
@@ -96,7 +96,7 @@ function StorePasswordGatePage() {
           <Button
             type="submit"
             disabled={isPending}
-            className="w-full h-11 rounded-lg font-bold text-xs bg-foreground text-background hover:bg-foreground/90 transition-all gap-2 cursor-pointer shadow-xs"
+            className="w-full h-11 rounded-lg font-bold text-xs bg-foreground text-background hover:bg-foreground/90 transition-colors motion-reduce:transition-none gap-2 cursor-pointer shadow-xs"
           >
             {isPending ? (
               <span>Validando...</span>

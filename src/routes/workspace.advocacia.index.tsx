@@ -815,14 +815,17 @@ function WorkspaceAdvocaciaPage() {
 
  {/* Botão Ver Detalhes */}
  <TableCell className="text-right">
- <Button
- variant="ghost"
- size="icon"
- className="size-8 rounded-lg text-muted-foreground hover:text-foreground"
- >
- <Eye className="size-4" />
- </Button>
- </TableCell>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setSelectedLawsuit(lawsuit)}
+                      className="size-11 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+                      title="Ver Detalhes do Processo"
+                    >
+                      <Eye className="size-4" />
+                    </Button>
+                  </TableCell>
  </TableRow>
  ))}
  </TableBody>

@@ -2,7 +2,7 @@ async function testDataJud() {
   console.log("=== TESTANDO CONEXÃO DIRETA COM API PÚBLICA DATAJUD (CNJ) ===");
 
   const courts = ["tjsc", "tjsp", "trf4"];
-  const apiKey = "cDZHYUpZa0JadVREZDJCendQbXY6SkJlTkxScEZTRENwbVZkaUp4clBqUQ==";
+  const apiKey = "cDZHYzlZa0JadVREZDJCendQbXY6SkJlTzNjLV9TRENyQk1RdnFKZGRQdw==";
 
   for (const court of courts) {
     const url = `https://api-publica.datajud.cnj.jus.br/api_publica_${court}/_search`;

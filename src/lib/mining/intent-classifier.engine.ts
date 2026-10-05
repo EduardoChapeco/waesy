@@ -42,7 +42,7 @@ const PATH_RULES: Array<{ type: MinedEntityType; pattern: RegExp; weight: number
   // Produtos / Varejo / E-commerce
   { type: "product", pattern: /(produto|produtos|item|itens|catalogo|comprar|loja-online|carrinho|checkout|preco|departamento|mercadoria)/i, weight: 0.8 },
   // Empresas / Negócios Locais
-  { type: "business", pattern: /(empresa|empresas|loja|lojas|quem-somos|sobre-nos|institucional|contato|onde-estamos|fornecedores|guia-comercial)/i, weight: 0.75 },
+  { type: "business", pattern: /(empresa|empresas|loja|lojas|quem-somos|sobre-nos|institucional|contato|onde-estamos|fornecedores|guia-comercial)/i, weight: 0.85 },
   // Notícias / Editorial
   { type: "news", pattern: /(noticia|noticias|artigo|artigos|post|posts|materia|materias|blog|jornal|editorial|coluna|plantao|fato)/i, weight: 0.8 },
 ];

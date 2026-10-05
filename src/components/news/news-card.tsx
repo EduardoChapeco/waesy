@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Clock, Eye, ArrowRight, Share2, Newspaper } from "lucide-react";
+import { Clock, Eye, ArrowRight, Share2, Newspaper, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { type NewsArticleDTO } from "@/services/news.functions";
 import { toast } from "sonner";
@@ -51,7 +51,7 @@ export function NewsCard({ article, compact = false }: NewsCardProps) {
           )}
 
           {article.reading_time_minutes && (
-            <span className="absolute bottom-1 right-1 px-2 py-0.5 rounded-md bg-black/85 text-xs font-mono text-white">
+            <span className="absolute bottom-1 right-1 px-2 py-1 rounded-md bg-black/85 text-xs font-mono text-white">
               {article.reading_time_minutes}m
             </span>
           )}
@@ -65,6 +65,12 @@ export function NewsCard({ article, compact = false }: NewsCardProps) {
                 {article.kicker || article.category || "Notícia"}
               </span>
             </div>
+              {article.city && (
+                <span className="inline-flex items-center gap-1 text-xs font-semibold text-muted-foreground truncate">
+                  <MapPin className="size-3 shrink-0 text-primary" />
+                  <span>{article.city}</span>
+                </span>
+              )}
             <h4 className="text-xs sm:text-sm font-bold text-foreground leading-snug line-clamp-2 group-hover:text-primary transition-colors">
               {article.title}
             </h4>
@@ -74,6 +80,11 @@ export function NewsCard({ article, compact = false }: NewsCardProps) {
             <span className="truncate max-w-28 font-medium text-foreground/80">
               {article.store_name || "Redação"}
             </span>
+              {((article as any).source_type === "crawler" || (article as any).source_url) && (
+                <span className="px-2 py-1 rounded text-xs bg-muted text-muted-foreground border border-border/40 shrink-0">
+                  Minerada
+                </span>
+              )}
             <span className="font-mono">{formattedDate}</span>
           </div>
         </div>
@@ -116,13 +127,24 @@ export function NewsCard({ article, compact = false }: NewsCardProps) {
 
         {/* Badges Flutuantes sobre a Imagem */}
         <div className="absolute top-3 left-3 right-3 flex items-center justify-between pointer-events-none">
-          {article.kicker ? (
-            <span className="px-3 py-1 rounded-md text-xs font-black uppercase tracking-wider bg-black/85 text-white border border-white/10">
-              {article.kicker}
-            </span>
-          ) : (
-            <span />
-          )}
+          <div className="flex items-center gap-2 flex-wrap">
+            {article.kicker ? (
+              <span className="px-3 py-1 rounded-md text-xs font-black uppercase tracking-wider bg-black/85 text-white border border-white/10">
+                {article.kicker}
+              </span>
+            ) : null}
+            {article.city ? (
+              <span className="px-3 py-1 rounded-md text-xs font-semibold bg-background/90 text-foreground border border-border/80 flex items-center gap-1">
+                <MapPin className="size-3 shrink-0 text-primary" />
+                <span>{article.city}{article.state ? ` · ${article.state}` : ""}</span>
+              </span>
+            ) : null}
+            {((article as any).source_type === "crawler" || (article as any).source_url) ? (
+              <span className="px-2 py-1 rounded-md text-xs font-medium bg-background/90 text-foreground border border-border/80">
+                Fonte Regional
+              </span>
+            ) : null}
+          </div>
 
           <div className="flex items-center gap-2 pointer-events-auto">
             <span className="px-3 py-1 rounded-md bg-black/85 text-xs font-mono text-white flex items-center gap-1 border border-white/10">
@@ -134,7 +156,7 @@ export function NewsCard({ article, compact = false }: NewsCardProps) {
             <button
               type="button"
               onClick={handleShare}
-              className="size-11 sm:size-9 rounded-full bg-black/85 text-white hover:bg-black/90 border border-white/10 flex items-center justify-center cursor-pointer transition-colors active:scale-95 touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="size-11 rounded-full bg-black/85 text-white hover:bg-black/90 border border-white/10 flex items-center justify-center cursor-pointer transition-colors active:scale-95 touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               title="Compartilhar notícia"
               aria-label="Compartilhar notícia"
             >
@@ -161,6 +183,20 @@ export function NewsCard({ article, compact = false }: NewsCardProps) {
             </span>
             <span>•</span>
             <span>{formattedDate}</span>
+            {article.city && (
+              <>
+                <span>•</span>
+                <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                  <MapPin className="size-3 shrink-0 text-primary" />
+                  <span>{article.city}{article.state ? ` · ${article.state}` : ""}</span>
+                </span>
+              </>
+            )}
+            {((article as any).source_type === "crawler" || (article as any).source_url) && (
+              <span className="px-2 py-1 rounded text-xs bg-muted text-muted-foreground border border-border/40">
+                Minerada
+              </span>
+            )}
           </div>
 
           {/* Título Principal */}

@@ -1,12 +1,12 @@
 {
   "C01": {
-    "count": 1680,
+    "count": 1802,
     "violations": [
+      "src/components/ad-engine/preview/canonical-listing-preview-frame.tsx:181",
+      "src/components/ad-engine/preview/canonical-listing-preview-frame.tsx:194",
+      "src/components/ad-engine/preview/canonical-listing-preview-frame.tsx:196",
       "src/components/admin/builder/builder-add-panel-3col.tsx:217",
-      "src/components/admin/builder/builder-global-theme-panel.tsx:28",
-      "src/components/admin/builder/builder-global-theme-panel.tsx:29",
-      "src/components/admin/builder/builder-global-theme-panel.tsx:30",
-      "src/components/admin/builder/builder-global-theme-panel.tsx:31"
+      "src/components/admin/builder/builder-global-theme-panel.tsx:28"
     ]
   },
   "C02": {
@@ -28,27 +28,27 @@
     "violations": []
   },
   "C06": {
-    "count": 756,
+    "count": 525,
     "violations": [
+      "src/components/ad-engine/editor/editor.test.ts:27",
+      "src/components/ad-engine/editor/editor.test.ts:69",
+      "src/components/ad-engine/editor/editor.test.ts:70",
       "src/components/admin/builder/animation-inspector-phase7.test.ts:11",
-      "src/components/admin/builder/animation-inspector-phase7.test.ts:15",
-      "src/components/admin/builder/animation-inspector-phase7.test.ts:40",
-      "src/components/admin/builder/builder-add-panel-3col.tsx:264",
-      "src/components/admin/builder/builder-cms-panel.tsx:79"
+      "src/components/admin/builder/animation-inspector-phase7.test.ts:15"
     ]
   },
   "C07": {
-    "count": 393,
+    "count": 396,
     "violations": [
+      "src/components/ad-engine/public/canonical-listing-view.tsx:186",
       "src/components/admin/builder/builder-floating-action-bar.tsx:35",
       "src/components/admin/builder/builder-layout-switcher-modal.tsx:73",
       "src/components/admin/builder/guided-section-picker.tsx:48",
-      "src/components/admin/builder/MediaUploader.tsx:187",
-      "src/components/admin/product-editor/product-editor-layout.tsx:91"
+      "src/components/admin/builder/MediaUploader.tsx:196"
     ]
   },
   "C08": {
-    "count": 355,
+    "count": 303,
     "violations": [
       "src/components/classifieds/travel-booking-dossier-modal.tsx:123",
       "src/components/classifieds/travel-booking-dossier-modal.tsx:126",
@@ -58,13 +58,13 @@
     ]
   },
   "C09": {
-    "count": 237,
+    "count": 238,
     "violations": [
+      "src/components/ad-engine/preview/canonical-listing-preview-frame.tsx:186",
       "src/components/admin/builder/animation-inspector-phase7.test.ts:21",
       "src/components/admin/builder/animation-inspector-phase7.test.ts:23",
       "src/components/admin/builder/animation-inspector-phase7.test.ts:54",
-      "src/components/admin/builder/builder-add-panel-3col.tsx:264",
-      "src/components/admin/builder/builder-add-panel-3col.tsx:266"
+      "src/components/admin/builder/builder-add-panel-3col.tsx:264"
     ]
   },
   "C10": {
@@ -100,13 +100,13 @@
     "violations": []
   },
   "C18": {
-    "count": 22,
+    "count": 38,
     "violations": [
-      "src/components/builder/LiveTemplatePreviewModal.tsx:35",
+      "src/components/ad-engine/editor/unified-listing-editor.tsx:305",
+      "src/components/ad-engine/editor/unified-listing-editor.tsx:331",
+      "src/components/ad-engine/public/canonical-listing-view.tsx:117",
       "src/components/builder/OmniEditor.tsx:575",
-      "src/components/builder/OmniPageRenderer.tsx:33",
-      "src/components/chat/ai-chat-shell.tsx:192",
-      "src/components/landing/founder-signup-sheet.tsx:122"
+      "src/components/builder/OmniPageRenderer.tsx:33"
     ]
   },
   "C19": {
@@ -122,23 +122,23 @@
     "violations": []
   },
   "C22": {
-    "count": 19,
+    "count": 21,
     "violations": [
+      "src/components/ad-engine/preview/canonical-listing-preview-frame.tsx:201",
+      "src/components/chat/structured-message-view.tsx:1423",
       "src/components/commerce/dynamic-sections/product-carousel.tsx:32",
       "src/components/commerce/dynamic-sections/social-grid.tsx:22",
-      "src/components/notifications/lead-push-notification-prompt.tsx:37",
-      "src/components/notifications/lead-push-notification-prompt.tsx:38",
-      "src/lib/bigtech-lifecycle.ts:300"
+      "src/components/notifications/lead-push-notification-prompt.tsx:37"
     ]
   },
   "C23": {
-    "count": 5679,
+    "count": 5941,
     "violations": [
-      "src/components/admin/admin-shell.tsx:235",
-      "src/components/admin/admin-shell.tsx:291",
-      "src/components/admin/builder/ArrayBuilder.tsx:17",
-      "src/components/admin/builder/ArrayBuilder.tsx:18",
-      "src/components/admin/builder/ArrayBuilder.tsx:29"
+      "src/components/ad-engine/editor/listing-full-editor.tsx:229",
+      "src/components/ad-engine/editor/listing-full-editor.tsx:231",
+      "src/components/ad-engine/editor/listing-full-editor.tsx:240",
+      "src/components/ad-engine/editor/sections/listing-fiscal-section.tsx:151",
+      "src/components/ad-engine/public/canonical-listing-view.tsx:37"
     ]
   },
   "C24": {
@@ -202,13 +202,13 @@
     "violations": []
   },
   "C37": {
-    "count": 82,
+    "count": 86,
     "violations": [
+      "src/components/ad-engine/editor/unified-listing-editor.tsx:85",
       "src/components/admin/admin-shell.tsx:248",
       "src/components/admin/builder/builder-inspector.tsx:86",
       "src/components/admin/catalog/master-catalog-search-dialog.tsx:49",
-      "src/components/admin/professions/profession-search-dialog.tsx:45",
-      "src/components/admin/services/service-search-dialog.tsx:43"
+      "src/components/admin/professions/profession-search-dialog.tsx:45"
     ]
   },
   "C38": {

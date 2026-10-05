@@ -18,6 +18,10 @@ export interface DirectoryListingDTO {
  description: string;
  specialties: string[];
  address: string;
+  city?: string | null;
+  state?: string | null;
+  is_crawled?: boolean | null;
+  source?: string | null;
  latitude?: number | null;
  longitude?: number | null;
  contact_phone?: string | null;
@@ -41,6 +45,7 @@ export const getPublicDirectory = createServerFn({ method: "GET" })
         limit: z.number().int().min(1).max(100).optional(),
         category: z.string().optional(),
         search: z.string().optional(),
+        city: z.string().optional(),
       })
       .optional(),
   )
@@ -58,6 +63,10 @@ export const getPublicDirectory = createServerFn({ method: "GET" })
 
     if (data?.category && data.category !== "todos") {
       query = query.eq("category", data.category);
+    }
+
+    if (data?.city && data.city !== "todos" && data.city !== "Todas" && data.city !== "Global" && data.city !== "all" && data.city !== "Todas as Cidades") {
+      query = query.ilike("city", `%${data.city.trim()}%`);
     }
 
     if (data?.search && data.search.trim()) {
@@ -96,6 +105,10 @@ export const getPublicDirectory = createServerFn({ method: "GET" })
           description: row.description || "",
           specialties: row.specialties || [],
           address: row.address || "Regional",
+          city: row.city || null,
+          state: row.state || null,
+          is_crawled: !!row.is_crawled,
+          source: row.source || null,
           latitude: row.latitude,
           longitude: row.longitude,
           contact_phone: row.contact_phone,

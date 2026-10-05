@@ -94,12 +94,12 @@ export function StudioAssetPicker({
     <div className="flex flex-col gap-3 p-1 outline-hidden" onPaste={handlePaste} tabIndex={0}>
       <div className="flex gap-1 border-b border-border/60 pb-2">
         <Button type="button" size="sm" variant={activeTab === "upload" ? "default" : "ghost"} onClick={() => setActiveTab("upload")}
-          className="text-xs h-11 sm:h-9 gap-2 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+          className="text-xs h-11 min-h-11 gap-2 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
         >
           <Upload className="size-4" /> Enviar Arquivo
         </Button>
         <Button type="button" size="sm" variant={activeTab === "url" ? "default" : "ghost"} onClick={() => setActiveTab("url")}
-          className="text-xs h-11 sm:h-9 gap-2 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+          className="text-xs h-11 min-h-11 gap-2 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
         >
           <Globe className="size-4" /> URL Direta
         </Button>

@@ -34,7 +34,7 @@ export function TopBar({ session, brandSettings }: TopBarProps) {
 
   return (
     <header className="sticky top-0 z-30 w-full bg-background select-none border-b border-border/40 pt-[env(safe-area-inset-top,0px)]">
-      <div className="px-3 sm:px-6 flex items-center justify-between gap-2 sm:gap-4 h-12 sm:h-14 w-full">
+      <div className="px-3 sm:px-6 flex items-center justify-between gap-2 sm:gap-4 h-14 sm:h-16 w-full">
         {/* Lado Esquerdo: Logo + Selo Beta Silencioso + Localização */}
         <div className="flex items-center gap-2 sm:gap-3 shrink-0 min-w-0">
           <Link
@@ -74,7 +74,7 @@ export function TopBar({ session, brandSettings }: TopBarProps) {
         <div className="hidden md:flex flex-1 max-w-xl mx-4">
           <Link
             to="/buscar"
-            className="w-full flex items-center justify-between px-4 py-2 rounded-lg bg-muted/40 hover:bg-muted/70 text-muted-foreground hover:text-foreground text-xs font-normal transition-all group border border-border/40 hover:border-border/70"
+            className="w-full flex items-center justify-between px-4 h-11 min-h-11 rounded-lg bg-muted/40 hover:bg-muted/70 text-muted-foreground hover:text-foreground text-xs font-normal transition-all group border border-border/40 hover:border-border/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           >
             <div className="flex items-center gap-3 min-w-0">
               <MagnifyingGlass
@@ -95,11 +95,11 @@ export function TopBar({ session, brandSettings }: TopBarProps) {
           {/* Ação de Busca Rápida Mobile (Touch Target 44px ergonômico) */}
           <Link
             to="/buscar"
-            className="md:hidden flex items-center justify-center size-9 sm:size-10 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors"
+            className="md:hidden flex items-center justify-center size-11 min-h-11 min-w-11 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             aria-label="Abrir busca"
             title="Buscar"
           >
-            <MagnifyingGlass size={18} weight="bold" />
+            <MagnifyingGlass size={20} weight="bold" />
           </Link>
 
           <UtilityCluster session={session} embedded={true} />

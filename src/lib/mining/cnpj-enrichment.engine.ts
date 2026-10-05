@@ -5,6 +5,7 @@
  */
 
 import { fetchWithRetry, calculateDataQualityScore, validators } from './scraper-utils';
+import { globalCrawlerCircuitBreaker } from './crawler-circuit-breaker';
 import type { CNPJEnrichedData } from '@/types/mining';
 
 export async function fetchBrasilApiCnpj(cleanedCnpj: string): Promise<CNPJEnrichedData | null> {
@@ -15,7 +16,7 @@ export async function fetchBrasilApiCnpj(cleanedCnpj: string): Promise<CNPJEnric
       headers: { 'Accept': 'application/json' },
     });
 
-    if (!response.ok) {
+    if (response.ok === false) {
       return null;
     }
 
@@ -101,17 +102,29 @@ export async function fetchBrasilApiCnpj(cleanedCnpj: string): Promise<CNPJEnric
 
 export async function enrichCnpj(rawCnpj: string): Promise<CNPJEnrichedData | null> {
   const cleaned = rawCnpj.replace(/\D/g, '');
-  if (!validators.isCNPJ(cleaned)) {
+  if (validators.isCNPJ(cleaned) === false) {
     throw new Error(`CNPJ ${rawCnpj} é inválido.`);
   }
 
-  // Fonte primária e livre de taxa: BrasilAPI
-  const result = await fetchBrasilApiCnpj(cleaned);
-  if (result) return result;
-
-  // Fallback: ReceitaWS pública
+  // Fonte primária e livre de taxa: BrasilAPI protegida por Circuit Breaker
   try {
-    const res = await fetchWithRetry(`https://www.receitaws.com.br/v1/cnpj/${cleaned}`);
+    const result = await globalCrawlerCircuitBreaker.execute(
+      () => fetchBrasilApiCnpj(cleaned),
+      'brasilapi.com.br'
+    );
+    if (result !== null) {
+      return result;
+    }
+  } catch (err) {
+    console.warn(`[CNPJEnrichment] BrasilAPI Circuit Breaker / Falha para ${cleaned}:`, err);
+  }
+
+  // Fallback: ReceitaWS pública protegida por Circuit Breaker
+  try {
+    const res = await globalCrawlerCircuitBreaker.execute(
+      () => fetchWithRetry(`https://www.receitaws.com.br/v1/cnpj/${cleaned}`),
+      'receitaws.com.br'
+    );
     if (res.ok) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const data: any = await res.json();

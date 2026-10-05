@@ -11,7 +11,8 @@ import {
   getAiConversationThread,
   createAiConversationThread,
   sendAiConversationMessage,
-  executeAiCopilotPipeline,
+  executeGuestCopilotMessage,
+  deleteAiConversationThread,
 } from "@/services/ai-conversations.functions";
 import { getUserSession } from "@/services/auth.functions";
 import { toast } from "sonner";
@@ -56,7 +57,7 @@ export const Route = createFileRoute("/_store/copilot")({
             },
           });
           if (newThread?.id) {
-            resolvedThreads = [newThread];
+            resolvedThreads = [newThread as any];
           }
         } catch (e) {
           console.warn("[_store.copilot] Falha ao criar thread inicial:", e);
@@ -176,15 +177,13 @@ function CopilotPage() {
           setMessages(updated.messages as any);
         }
       } else {
-        const execution = await executeAiCopilotPipeline(
-          text,
-          {},
-          {
-            userId: effectiveUserId || undefined,
+        const execution = await executeGuestCopilotMessage({
+          data: {
+            message: text,
             userLat: userCoords.lat,
             userLng: userCoords.lng,
-          }
-        );
+          },
+        });
         const aiMessageItem: ChatMessageItem = {
           id: `ai-${Date.now()}`,
           threadId: activeThreadId,
@@ -192,7 +191,9 @@ function CopilotPage() {
           isStaffOrAI: true,
           text: execution.responseMessage,
           createdAt: new Date().toISOString(),
-          status: "delivered",
+          status: execution.fsmPhase === "FAILED_RETRYABLE" || execution.fsmPhase === "FAILED_FINAL" ? "failed" : "delivered",
+          fsmPhase: execution.fsmPhase,
+          fsmState: execution.fsmState,
           activitySteps: execution.activitySteps,
           artifact: execution.artifact,
           structuredPayload: execution.structuredPayload,
@@ -243,6 +244,23 @@ function CopilotPage() {
     }
   };
 
+  const handleDeleteThread = async (threadId: string) => {
+    try {
+      if (effectiveUserId && isUuid(threadId) && threadId !== DEFAULT_GUEST_THREAD_ID) {
+        await deleteAiConversationThread({ data: { threadId } });
+      }
+      setThreads((prev) => prev.filter((t) => t.id !== threadId));
+      if (activeThreadId === threadId) {
+        const remaining = threads.filter((t) => t.id !== threadId);
+        setActiveThreadId(remaining[0]?.id || DEFAULT_GUEST_THREAD_ID);
+        setMessages([]);
+      }
+      toast.success("Conversa excluída.");
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao excluir conversa.");
+    }
+  };
+
   return (
     <div className="h-full flex-1 w-full flex flex-col bg-background">
       <AIChatShell
@@ -252,6 +270,7 @@ function CopilotPage() {
         onSelectThread={(id) => setActiveThreadId(id)}
         onSendMessage={handleSendMessage}
         onCreateThread={handleCreateThread}
+        onDeleteThread={handleDeleteThread}
         isSending={isSending}
         currentUserProfileId={effectiveUserId || undefined}
         className="h-full border-none rounded-none"

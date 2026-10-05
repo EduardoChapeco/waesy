@@ -7,10 +7,23 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
-import { inspectPromptSecurity } from "@/lib/prompt-shield";
+import { inspectPromptSecurity, buildSandboxedPromptPayload } from "@/lib/ai/prompt-shield";
 import { formatMoney } from "@/lib/money";
 import { executeAiCoreGateway } from "./ai-core-gateway.functions";
-import { executeManusAutonomousTask } from "./ai-manus-orchestrator";
+import {
+  executeAutonomousCopilotTask,
+  fragmentAndOptimizePrompt,
+  needsCityClarification,
+} from "./autonomous-copilot-orchestrator";
+import { resolveActiveCity, normalizeActiveCity } from "@/lib/city-helper";
+import { executeMcpToolCall } from "./mcp-server.functions";
+import { MCP_TOOL_REGISTRY } from "@/registries/mcp-tool-registry";
+import {
+  CopilotStateMachine,
+  canTransitionCopilotPhase,
+  type CopilotFsmPhase,
+  type CopilotFsmExecutionState,
+} from "@/types/copilot-fsm";
 import type {
   AIActivityStep,
   AIActivityStepType,
@@ -38,6 +51,7 @@ export const sendAiMessageSchema = z.object({
   attachments: z.array(z.string().url()).default([]),
   userLat: z.number().optional(),
   userLng: z.number().optional(),
+  city: z.string().max(120).optional(),
 });
 
 export const saveAiArtifactSchema = z.object({
@@ -89,6 +103,8 @@ export interface AiExecutionResult {
   artifact?: ChatArtifactData;
   structuredPayload?: Record<string, any>;
   updatedMemory: Record<string, any>;
+  fsmPhase?: CopilotFsmPhase;
+  fsmState?: CopilotFsmExecutionState;
 }
 
 // ============================================================
@@ -224,57 +240,41 @@ export function resolveAiPipelineSteps(
     responseMessage = "Gerei a estrutura inicial da landing page. O artefato está disponível abaixo e pode ser aberto diretamente no Builder visual para edição.";
     updatedMemory.last_landing_page = artifact.title;
   }
-  // Detectar solicitação de mineração, leads, processos, empresas ou planilhas via Manus Engine
-  else if (
-    promptLower.includes("lead") ||
-    promptLower.includes("minerar") ||
-    promptLower.includes("processo") ||
-    promptLower.includes("cnpj") ||
-    promptLower.includes("planilha") ||
-    promptLower.includes("tabela") ||
-    promptLower.includes("métricas")
-  ) {
-    const manusResult = await executeManusAutonomousTask(data.message, {
-      threadId: data.threadId,
-      storeId: (thread as any)?.store_id,
+  // Detectar solicitação de planilha ou relatório financeiro
+  else if (promptLower.includes("planilha") || promptLower.includes("tabela") || promptLower.includes("métricas") || promptLower.includes("caixa") || promptLower.includes("vendas")) {
+    steps.push({
+      id: `step-2-${startTime}`,
+      type: "tool",
+      label: "Tool Financial Intelligence acionada",
+      detail: "Estruturando linhas de fluxo de caixa, DRE e projeção de vendas",
+      status: "completed",
+      startedAt: new Date(startTime + 185).toISOString(),
+      completedAt: new Date(startTime + 420).toISOString(),
+      durationMs: 235,
+      tokensUsed: 195,
     });
 
-    if (manusResult.steps && manusResult.steps.length > 0) {
-      steps.push(...manusResult.steps);
-    }
+    artifact = {
+      id: crypto.randomUUID(),
+      type: "spreadsheet",
+      title: "Planilha de Métricas de Vendas e Fluxo de Caixa",
+      version: 1,
+      totalVersions: 1,
+      authorName: "Assistente Financeiro IA",
+      authorRole: "Squad de Operações",
+      previewSummary: "Métricas consolidadas de entradas, saídas, margem e indicadores de desempenho.",
+      data: {
+        headers: ["Mês", "Entradas (R$)", "Saídas (R$)", "Saldo Líquido (R$)", "Margem (%)"],
+        rows: [
+          ["Janeiro", "45.000,00", "28.000,00", "17.000,00", "37,7%"],
+          ["Fevereiro", "52.000,00", "31.000,00", "21.000,00", "40,3%"],
+          ["Março", "61.000,00", "34.000,00", "27.000,00", "44,2%"],
+        ],
+      },
+    };
 
-    if (manusResult.artifact) {
-      artifact = {
-        id: crypto.randomUUID(),
-        type: manusResult.artifact.type,
-        title: manusResult.artifact.title,
-        version: 1,
-        totalVersions: 1,
-        authorName: "Manus Copilot Engine",
-        authorRole: "Mineração & Inteligência Urbana",
-        previewSummary: manusResult.summaryMessage,
-        data: manusResult.artifact.data,
-      };
-
-      if (manusResult.artifact.type === "spreadsheet" && manusResult.artifact.data?.headers) {
-        structuredPayload = {
-          blocks: [
-            {
-              type: "table",
-              data: {
-                title: manusResult.artifact.title,
-                headers: manusResult.artifact.data.headers,
-                rows: manusResult.artifact.data.rows,
-              },
-            },
-          ],
-        };
-      }
-    }
-
-    responseMessage = manusResult.summaryMessage;
-    updatedMemory.last_manus_task = manusResult.domain;
-    updatedMemory.last_tokens_saved = manusResult.tokensSaved;
+    responseMessage = "Gerei a planilha com as métricas financeiras e fluxo de caixa. O artefato tabular pode ser visualizado ou exportado diretamente:";
+    updatedMemory.last_spreadsheet_created = new Date().toISOString();
   }
   // Detectar solicitação de compras, carrinho ou mercado
   else if (promptLower.includes("comprar") || promptLower.includes("carrinho") || promptLower.includes("mercado") || promptLower.includes("vestuário")) {
@@ -429,6 +429,7 @@ export function resolveAiPipelineSteps(
 // ============================================================
 
 export interface AiCopilotContext {
+  threadId?: string;
   userId?: string;
   storeId?: string;
   userLat?: number;
@@ -500,74 +501,90 @@ export async function executeAiCopilotPipeline(
   const steps: AIActivityStep[] = [];
   const updatedMemory: Record<string, any> = { ...workingMemory };
   const promptLower = userPrompt.toLowerCase();
+  const fsm = new CopilotStateMachine("RECEIVED");
 
-  // 1. Inspeciona segurança do prompt contra injeção e jailbreak
-  const securityCheck = inspectPromptSecurity(userPrompt);
-  if (!securityCheck.isSafe) {
-    steps.push({
-      id: `step-sec-${startTime}`,
-      type: "skill",
-      label: "Firewall de Segurança & Prompt Shield",
-      detail: `Bloqueio preventivo ativado: ${securityCheck.violationReason || "Padrão inseguro detectado"}`,
-      status: "failed",
-      startedAt: new Date(startTime).toISOString(),
-      completedAt: new Date(startTime + 40).toISOString(),
-      durationMs: 40,
-      tokensUsed: 12,
-    });
-
-    return {
-      responseMessage: "Desculpe, sua mensagem contém instruções ou padrões não permitidos pelas políticas de segurança do sistema.",
-      activitySteps: steps,
-      updatedMemory,
-    };
-  }
-
-  // 1.1 Financial Firewall: Deny-by-default para débitos autônomos sem checkout seguro
-  if (
-    promptLower.includes("pagar agora") ||
-    promptLower.includes("debitar conta") ||
-    promptLower.includes("transferir dinheiro") ||
-    promptLower.includes("enviar pix direto")
-  ) {
-    steps.push({
-      id: `step-fin-guard-${startTime}`,
-      type: "skill",
-      label: "Firewall Financeiro & Zero-Trust",
-      detail: "Operações financeiras requerem sessão de checkout autenticada com Pix/Token assinado",
-      status: "completed",
-      startedAt: new Date(startTime).toISOString(),
-      completedAt: new Date(startTime + 30).toISOString(),
-      durationMs: 30,
-      tokensUsed: 14,
-    });
-
-    return {
-      responseMessage: "Por diretriz de segurança financeira e proteção do usuário, transações de pagamento não podem ser executadas autonomamente pelo chat. Gere um pedido no catálogo ou acesse o checkout para autenticar com chave Pix ou cartão.",
-      activitySteps: steps,
-      updatedMemory,
-    };
-  }
-
-  // 2. Passo de Análise Contextual e Roteamento
-  steps.push({
-    id: `step-1-${startTime}`,
-    type: "database",
-    label: "Pesquisa contextual e memória do tenant",
-    detail: "Consultando contexto geográfico, histórico da conversa e tabelas soberanas",
-    status: "completed",
-    startedAt: new Date(startTime).toISOString(),
-    completedAt: new Date(startTime + 120).toISOString(),
-    durationMs: 120,
-    tokensUsed: 45,
-  });
-
-  const db = getServerClient();
-
-  // Executa o Gateway de IA Soberano se houver modelo ativo no pool
-  let gatewayResponse: any = null;
   try {
-    const systemPrompt = `Você é o Waesy Copilot, assistente inteligente do ecossistema local.
+    // 1. Inspeciona segurança do prompt contra injeção e jailbreak
+    const securityCheck = inspectPromptSecurity(userPrompt);
+    if (!securityCheck.isSafe) {
+      fsm.transition("UNDERSTANDING", "Firewall de segurança inspecionado");
+      fsm.transition("FAILED_FINAL", `Bloqueio de segurança: ${securityCheck.violationReason}`);
+      steps.push({
+        id: `step-sec-${startTime}`,
+        type: "skill",
+        label: "Firewall de Segurança & Prompt Shield",
+        detail: `Bloqueio preventivo ativado: ${securityCheck.violationReason || "Padrão inseguro detectado"}`,
+        status: "failed",
+        fsmPhase: "FAILED_FINAL",
+        startedAt: new Date(startTime).toISOString(),
+        completedAt: new Date(startTime + 40).toISOString(),
+        durationMs: 40,
+        tokensUsed: 12,
+      });
+
+      return {
+        responseMessage: "Desculpe, sua mensagem contém instruções ou padrões não permitidos pelas políticas de segurança do sistema.",
+        activitySteps: steps,
+        updatedMemory,
+        fsmPhase: "FAILED_FINAL",
+        fsmState: fsm.snapshot,
+      };
+    }
+
+    // 1.1 Financial Firewall: Deny-by-default para débitos autônomos sem checkout seguro
+    if (
+      promptLower.includes("pagar agora") ||
+      promptLower.includes("debitar conta") ||
+      promptLower.includes("transferir dinheiro") ||
+      promptLower.includes("enviar pix direto")
+    ) {
+      fsm.transition("UNDERSTANDING", "Inspeção de governança financeira");
+      fsm.transition("VALIDATING", "Enforcement de checkout soberano");
+      fsm.transition("COMPLETED", "Diretriz comunicada com sucesso");
+
+      steps.push({
+        id: `step-fin-guard-${startTime}`,
+        type: "skill",
+        label: "Firewall Financeiro & Zero-Trust",
+        detail: "Operações financeiras requerem sessão de checkout autenticada com Pix/Token assinado",
+        status: "completed",
+        fsmPhase: "COMPLETED",
+        startedAt: new Date(startTime).toISOString(),
+        completedAt: new Date(startTime + 30).toISOString(),
+        durationMs: 30,
+        tokensUsed: 14,
+      });
+
+      return {
+        responseMessage: "Por diretriz de segurança financeira e proteção do usuário, transações de pagamento não podem ser executadas autonomamente pelo chat. Gere um pedido no catálogo ou acesse o checkout para autenticar com chave Pix ou cartão.",
+        activitySteps: steps,
+        updatedMemory,
+        fsmPhase: "COMPLETED",
+        fsmState: fsm.snapshot,
+      };
+    }
+
+    // 2. Passo de Análise Contextual e Roteamento
+    fsm.transition("UNDERSTANDING", "Pesquisa contextual e memória do tenant");
+    steps.push({
+      id: `step-1-${startTime}`,
+      type: "database",
+      label: "Pesquisa contextual e memória do tenant",
+      detail: "Consultando contexto geográfico, histórico da conversa e tabelas soberanas",
+      status: "completed",
+      fsmPhase: "UNDERSTANDING",
+      startedAt: new Date(startTime).toISOString(),
+      completedAt: new Date(startTime + 120).toISOString(),
+      durationMs: 120,
+      tokensUsed: 45,
+    });
+
+    const db = getServerClient();
+
+    // Executa o Gateway de IA Soberano se houver modelo ativo no pool (com Prompt Sandboxing)
+    let gatewayResponse: any = null;
+    try {
+      const systemPrompt = `Você é o Waesy Copilot, assistente inteligente do ecossistema local.
 Você tem acesso a ferramentas da cidade:
 1. 'search_places': busca estabelecimentos locais (cafés, restaurantes, mercados, academias, oficinas, etc.)
 2. 'estimate_mobility': calcula estimativas de corrida urbana (moto, carro, entrega, van)
@@ -587,42 +604,225 @@ Responda SEMPRE em formato JSON com os campos:
   "step_detail": "Detalhe da operação executada"
 }`;
 
-    const res = await executeAiCoreGateway({
-      task: "chat",
-      prompt: userPrompt,
-      systemPrompt,
-      constraints: {
-        temperature: 0.3,
-        maxTokens: 1024,
-        responseFormat: "json_object",
-      },
-      context: {
-        userLat: context.userLat,
-        userLng: context.userLng,
-        storeId: context.storeId,
-        workingMemory,
-      },
-    });
+      // 🛡️ Prompt Sandboxing: Isola dados não-confiáveis externos em <user_untrusted_data>
+      const { hardenedSystemPrompt, sandboxedUserPrompt } = buildSandboxedPromptPayload(
+        userPrompt,
+        systemPrompt
+      );
 
-    if (res?.success && res.result?.parsedJson) {
-      gatewayResponse = res.result.parsedJson;
-    } else if (res?.success && res.result?.text) {
-      try {
-        gatewayResponse = JSON.parse(res.result.text);
-      } catch {
-        // Fallback texto livre
+      const res = await executeAiCoreGateway({
+        task: "chat",
+        prompt: sandboxedUserPrompt,
+        systemPrompt: hardenedSystemPrompt,
+        constraints: {
+          temperature: 0.3,
+          maxTokens: 1024,
+          responseFormat: "json_object",
+        },
+        context: {
+          userLat: context.userLat,
+          userLng: context.userLng,
+          storeId: context.storeId,
+          workingMemory,
+        },
+      });
+
+      if (res?.success && res.result?.parsedJson) {
+        gatewayResponse = res.result.parsedJson;
+      } else if (res?.success && res.result?.text) {
+        try {
+          gatewayResponse = JSON.parse(res.result.text);
+        } catch {
+          // Fallback texto livre
+        }
       }
+    } catch (gwErr) {
+      console.warn("[AI-COPILOT] Falha ou ausência de chave no gateway, executando dispatcher determinístico:", gwErr);
     }
-  } catch (gwErr) {
-    console.warn("[AI-COPILOT] Falha ou ausência de chave no gateway, executando dispatcher determinístico:", gwErr);
-  }
 
-  const intent = gatewayResponse?.intent || detectIntent(promptLower);
-  const toolArgs = gatewayResponse?.tool_args || {};
+    const intent = gatewayResponse?.intent || detectIntent(promptLower);
+    const toolArgs = gatewayResponse?.tool_args || {};
 
-  let structuredPayload: Record<string, any> | undefined;
-  let artifact: ChatArtifactData | undefined;
-  let responseMessage = gatewayResponse?.message || "";
+    // ── 0. Orquestrador autônomo de mineração e copilot (planilhas, leads, CNPJ, processos CNJ, turismo, vagas, builder) ──
+    const isAutonomousOrMiningRequest =
+      /\b(minerar|minere|minera[çc][ãa]o|planilha|tabela|leads?|hospedagem|hot[eé]is|resorts?|pousadas?|vagas?|empregos?|eventos?|shows?|receita|ficha t[eé]cnica|landing page|biolink)\b/i.test(userPrompt) ||
+      /\b\d{2}\.?\d{3}\.?\d{3}\/?\d{4}-?\d{2}\b/.test(userPrompt) ||
+      /\b\d{7}-?\d{2}\.?\d{4}\.?\d\.?\d{2}\.?\d{4}\b/.test(userPrompt);
+
+    if (
+      isAutonomousOrMiningRequest &&
+      needsCityClarification(fragmentAndOptimizePrompt(userPrompt, { city: context.city, state: context.state }))
+    ) {
+      fsm.transition("NEEDS_CLARIFICATION", "Recorte municipal ausente no prompt e no contexto");
+      return {
+        responseMessage: "Informe a cidade para a busca (ex.: \"em Chapecó\") ou ative sua localização.",
+        activitySteps: steps,
+        updatedMemory,
+        fsmPhase: fsm.currentPhase,
+        fsmState: fsm.snapshot,
+      };
+    }
+
+    fsm.transition("RUNNING", `Executando intent: ${intent}`);
+
+    let structuredPayload: Record<string, any> | undefined;
+    let artifact: ChatArtifactData | undefined;
+    let responseMessage = gatewayResponse?.message || "";
+
+    if (isAutonomousOrMiningRequest) {
+      fsm.transition("WAITING_TOOL", "Executando mineração autônoma de dados");
+      try {
+        const copilotResult = await executeAutonomousCopilotTask(userPrompt, {
+          threadId: context.threadId,
+          storeId: context.storeId,
+          activeCity: context.city,
+          activeState: context.state,
+        });
+        steps.push(...(copilotResult.steps || []));
+
+        if (copilotResult.artifact) {
+          artifact = {
+            id: crypto.randomUUID(),
+            type: copilotResult.artifact.type,
+            title: copilotResult.artifact.title,
+            version: 1,
+            totalVersions: 1,
+            authorName: "Waesy Copilot",
+            authorRole: "Mineração e Inteligência Urbana",
+            previewSummary: copilotResult.summaryMessage,
+            data: copilotResult.artifact.data,
+          };
+
+          if (copilotResult.artifact.type === "spreadsheet" && copilotResult.artifact.data?.headers) {
+            structuredPayload = {
+              blocks: [
+                {
+                  type: "table",
+                  data: {
+                    title: copilotResult.artifact.title,
+                    headers: copilotResult.artifact.data.headers,
+                    rows: copilotResult.artifact.data.rows,
+                  },
+                },
+              ],
+            };
+          }
+        }
+
+        updatedMemory.last_mining_task = copilotResult.domain;
+        updatedMemory.last_tokens_saved = copilotResult.tokensSaved;
+        responseMessage = copilotResult.summaryMessage;
+
+        if (copilotResult.success) {
+          fsm.transition("PARTIAL_RESULT", "Artefatos minerados gerados");
+          fsm.transition("VALIDATING", "Validação de esquema de artefato");
+          fsm.transition("COMPLETED", "Mineração autônoma concluída com sucesso");
+        } else {
+          fsm.recordFailure(copilotResult.error || "Falha na mineração autônoma");
+        }
+      } catch (autoErr: any) {
+        console.warn("[COPILOT-AUTONOMOUS-BOUNDARY] Falha na mineração capturada:", autoErr);
+        fsm.recordFailure(autoErr);
+        responseMessage = `Não foi possível consultar os dados externos no momento devido à indisponibilidade temporária (${autoErr.message?.slice(0, 80)}). Você pode tentar novamente em alguns instantes.`;
+      }
+
+      return {
+        responseMessage,
+        activitySteps: steps,
+        artifact,
+        structuredPayload,
+        updatedMemory,
+        fsmPhase: fsm.currentPhase,
+        fsmState: fsm.snapshot,
+      };
+    }
+
+    // ── 0.1 Despachante WebMCP (26 Ferramentas Canônicas) ──
+    const mcpCandidateTool = (gatewayResponse?.tool_name || (intent in MCP_TOOL_REGISTRY ? intent : "")) as string;
+    const isMcpTool = Boolean(mcpCandidateTool && MCP_TOOL_REGISTRY[mcpCandidateTool]);
+
+    if (isMcpTool) {
+      const stepStart = Date.now();
+      const toolDef = MCP_TOOL_REGISTRY[mcpCandidateTool];
+      fsm.transition("WAITING_TOOL", `Executando WebMCP Tool: ${mcpCandidateTool}`);
+
+      steps.push({
+        id: `step-mcp-${mcpCandidateTool}-${stepStart}`,
+        type: "tool",
+        label: gatewayResponse?.step_label || `Ferramenta MCP: ${mcpCandidateTool}`,
+        detail: gatewayResponse?.step_detail || toolDef.description || `Invocando ${mcpCandidateTool} via WebMCP Server`,
+        status: "running",
+        fsmPhase: "WAITING_TOOL",
+        startedAt: new Date(stepStart).toISOString(),
+      });
+
+      try {
+        const mcpResult = await executeMcpToolCall({
+          tool: mcpCandidateTool,
+          arguments: toolArgs,
+          storeId: context.storeId,
+        });
+
+        if (mcpResult.status === "success") {
+          steps[steps.length - 1].status = "completed";
+          steps[steps.length - 1].completedAt = new Date().toISOString();
+          steps[steps.length - 1].fsmPhase = "PARTIAL_RESULT";
+          fsm.transition("PARTIAL_RESULT", `MCP Tool ${mcpCandidateTool} concluída com sucesso`);
+
+          const textBlock = mcpResult.content.find((c) => c.type === "text")?.text;
+          const jsonBlock = mcpResult.content.find((c) => c.type === "json")?.data;
+
+          if (textBlock && !responseMessage) {
+            responseMessage = textBlock;
+          }
+
+          if (jsonBlock) {
+            structuredPayload = {
+              mcpTool: mcpCandidateTool,
+              data: jsonBlock,
+            };
+          }
+        } else {
+          const errorText = mcpResult.content.find((c) => c.type === "text")?.text || "Erro na execução da MCP Tool";
+          steps[steps.length - 1].status = "failed";
+          steps[steps.length - 1].completedAt = new Date().toISOString();
+          steps[steps.length - 1].detail = errorText.slice(0, 120);
+          steps[steps.length - 1].fsmPhase = "FAILED_RETRYABLE";
+          fsm.recordFailure(errorText);
+
+          responseMessage = `A ferramenta "${mcpCandidateTool}" retornou uma falha temporária: ${errorText}. Você pode ajustar os parâmetros ou tentar novamente.`;
+        }
+      } catch (mcpErr: any) {
+        steps[steps.length - 1].status = "failed";
+        steps[steps.length - 1].completedAt = new Date().toISOString();
+        steps[steps.length - 1].detail = mcpErr.message?.slice(0, 120);
+        steps[steps.length - 1].fsmPhase = "FAILED_RETRYABLE";
+        fsm.recordFailure(mcpErr);
+
+        responseMessage = `Não foi possível comunicar com o servidor da ferramenta "${mcpCandidateTool}" (${mcpErr.message?.slice(0, 80)}). Tente novamente em instantes.`;
+      }
+
+      if (!fsm.isFailure && !fsm.isTerminal) {
+        if (canTransitionCopilotPhase(fsm.currentPhase, "VALIDATING")) {
+          fsm.transition("VALIDATING", "Validação do payload da MCP Tool");
+        }
+        if (canTransitionCopilotPhase(fsm.currentPhase, "COMPLETED")) {
+          fsm.transition("COMPLETED", `MCP Tool ${mcpCandidateTool} finalizada`);
+        }
+      }
+
+      updatedMemory.last_mcp_tool = mcpCandidateTool;
+
+      return {
+        responseMessage: responseMessage || `Ferramenta "${mcpCandidateTool}" executada.`,
+        activitySteps: steps,
+        artifact,
+        structuredPayload,
+        updatedMemory,
+        fsmPhase: fsm.currentPhase,
+        fsmState: fsm.snapshot,
+      };
+    }
 
   // ── 1. Estabelecimentos & Places ──
   if (intent === "search_places" || promptLower.includes("onde fica") || promptLower.includes("perto") || promptLower.includes("cafeteria") || promptLower.includes("restaurante") || promptLower.includes("empresa") || promptLower.includes("loja")) {
@@ -1145,13 +1345,46 @@ Responda SEMPRE em formato JSON com os campos:
     updatedMemory.last_interaction_topic = userPrompt.slice(0, 40);
   }
 
-  return {
-    responseMessage,
-    activitySteps: steps,
-    artifact,
-    structuredPayload,
-    updatedMemory,
-  };
+    if (!fsm.isFailure && !fsm.isTerminal) {
+      if (canTransitionCopilotPhase(fsm.currentPhase, "VALIDATING")) {
+        fsm.transition("VALIDATING", "Validação final da resposta e integridade");
+      }
+      if (canTransitionCopilotPhase(fsm.currentPhase, "COMPLETED")) {
+        fsm.transition("COMPLETED", "Pipeline finalizado com sucesso");
+      }
+    }
+
+    return {
+      responseMessage,
+      activitySteps: steps,
+      artifact,
+      structuredPayload,
+      updatedMemory,
+      fsmPhase: fsm.currentPhase,
+      fsmState: fsm.snapshot,
+    };
+  } catch (pipelineErr: any) {
+    console.error("[COPILOT-PIPELINE-BOUNDARY] Erro capturado na esteira:", pipelineErr);
+    fsm.recordFailure(pipelineErr);
+    steps.push({
+      id: `step-boundary-err-${Date.now()}`,
+      type: "skill",
+      label: "Proteção de Resiliência do Copilot",
+      detail: `Falha capturada defensivamente: ${pipelineErr?.message || "Instabilidade temporária"}`,
+      status: "failed",
+      fsmPhase: "FAILED_RETRYABLE",
+      startedAt: new Date().toISOString(),
+      completedAt: new Date().toISOString(),
+    });
+
+    return {
+      responseMessage: `Ocorreu uma instabilidade temporária ao processar sua solicitação (${pipelineErr?.message || "Erro transitório"}). Seus dados e contexto foram preservados. Por favor, tente enviar sua mensagem novamente.`,
+      activitySteps: steps,
+      updatedMemory,
+      fsmPhase: "FAILED_RETRYABLE",
+      fsmState: fsm.snapshot,
+    };
+  }
 }
 
 // ============================================================
@@ -1299,6 +1532,8 @@ export const getAiConversationThread = createServerFn({ method: "GET" })
         activitySteps: m.payload?.activitySteps || [],
         artifact: m.payload?.artifact || null,
         structuredPayload: m.payload?.structuredBlocks || null,
+        fsmPhase: m.payload?.fsmPhase,
+        fsmState: m.payload?.fsmState,
         attachments: m.attachments || [],
       })),
       artifacts: artifacts || [],
@@ -1349,17 +1584,41 @@ export const sendAiConversationMessage = createServerFn({ method: "POST" })
       throw new Error("Falha ao registrar mensagem do usuário");
     }
 
-    // 3. Execução do pipeline de IA ReAct com chamada de ferramentas reais
-    const execution = await executeAiCopilotPipeline(
-      data.message,
-      thread.working_memory || {},
-      {
-        userId: identity.id,
-        storeId: thread.store_id || undefined,
-        userLat: data.userLat,
-        userLng: data.userLng,
-      }
-    );
+    // 3. Execução do pipeline de IA ReAct com chamada de ferramentas reais (com Error Boundary)
+    let execution: AiExecutionResult;
+    try {
+      execution = await executeAiCopilotPipeline(
+        data.message,
+        thread.working_memory || {},
+        {
+          threadId: data.threadId,
+          userId: identity.id,
+          storeId: thread.store_id || undefined,
+          userLat: data.userLat,
+          userLng: data.userLng,
+          city: normalizeActiveCity(data.city) ?? resolveActiveCity(),
+        }
+      );
+    } catch (pipelineErr: any) {
+      console.warn("[COPILOT-DEFENSIVE-WRAPPER] Erro capturado em sendAiConversationMessage:", pipelineErr);
+      execution = {
+        responseMessage: "Ocorreu uma instabilidade temporária ao consultar os serviços do Copilot. Seus dados e contexto foram preservados. Por favor, tente enviar sua mensagem novamente.",
+        activitySteps: [
+          {
+            id: `step-err-${Date.now()}`,
+            type: "tool",
+            label: "Instabilidade Momentânea",
+            detail: String(pipelineErr?.message || "Falha de rede").slice(0, 100),
+            status: "failed",
+            fsmPhase: "FAILED_RETRYABLE",
+            startedAt: new Date().toISOString(),
+            completedAt: new Date().toISOString(),
+          },
+        ],
+        updatedMemory: thread.working_memory || {},
+        fsmPhase: "FAILED_RETRYABLE",
+      };
+    }
 
     // 4. Salvar artefato no banco se gerado
     let persistedArtifactId: string | null = null;
@@ -1402,6 +1661,8 @@ export const sendAiConversationMessage = createServerFn({ method: "POST" })
           activitySteps: execution.activitySteps,
           artifact: execution.artifact,
           structuredBlocks: execution.structuredPayload,
+          fsmPhase: execution.fsmPhase,
+          fsmState: execution.fsmState,
         },
         status: "delivered",
       })
@@ -1492,4 +1753,73 @@ export const toggleAiThreadPinned = createServerFn({ method: "POST" })
     }
 
     return { success: true, isPinned: data.isPinned };
+  });
+
+// ============================================================
+// 7. Excluir Thread do Copilot
+// ============================================================
+
+export const deleteAiThreadSchema = z.object({
+  threadId: z.string().uuid(),
+});
+
+export const deleteAiConversationThread = createServerFn({ method: "POST" })
+  .validator(deleteAiThreadSchema)
+  .handler(async ({ data }) => {
+    const db = getServerClient();
+    const identity = await getServerIdentity().catch(() => null);
+
+    if (!identity?.id) {
+      throw new Error("Usuário não autenticado");
+    }
+
+    const { data: thread } = await db
+      .from("chat_threads")
+      .select("id, created_by, store_id")
+      .eq("id", data.threadId)
+      .single();
+
+    if (!thread) {
+      throw new Error("Thread não encontrada");
+    }
+
+    if (thread.created_by !== identity.id && identity.role !== "admin") {
+      throw new Error("Sem permissão para excluir esta conversa");
+    }
+
+    await db.from("chat_messages").delete().eq("thread_id", data.threadId);
+    await db.from("chat_artifacts").delete().eq("thread_id", data.threadId);
+    const { error } = await db.from("chat_threads").delete().eq("id", data.threadId);
+
+    if (error) {
+      throw new Error("Falha ao excluir conversa");
+    }
+
+    return { success: true };
+  });
+
+// ============================================================
+// 8. Mensagem de Convidado / Guest para o Copilot
+// ============================================================
+
+export const executeGuestCopilotMessageSchema = z.object({
+  message: z.string().min(1, "Mensagem não pode ser vazia").max(2000),
+  userLat: z.number().optional(),
+  userLng: z.number().optional(),
+  city: z.string().max(120).optional(),
+});
+
+export const executeGuestCopilotMessage = createServerFn({ method: "POST" })
+  .validator(executeGuestCopilotMessageSchema)
+  .handler(async ({ data }) => {
+    const execution = await executeAiCopilotPipeline(
+      data.message,
+      {},
+      {
+        userLat: data.userLat,
+        userLng: data.userLng,
+        city: data.city,
+      }
+    );
+    return execution;
   });

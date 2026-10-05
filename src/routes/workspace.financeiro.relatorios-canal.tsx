@@ -344,11 +344,11 @@ function ChannelDREPage() {
           title="Nenhum canal no período"
           description="Nenhum pedido ou transação foi registrado para os canais selecionados. Conecte marketplaces em Integrações para acompanhar."
           action={
-            <Link to="/workspace/integracoes/marketplaces">
-              <Button size="sm" className="rounded-lg text-xs font-bold">
+            <Button asChild size="sm" className="rounded-lg text-xs font-bold h-11 px-4 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary">
+              <Link to="/workspace/integracoes/marketplaces">
                 Ver Integrações
-              </Button>
-            </Link>
+              </Link>
+            </Button>
           }
         />
       ) : (

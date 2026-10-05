@@ -75,11 +75,12 @@ export function extractRecipeFromJsonLd(html: string, sourceUrl: string): Extrac
         const candidate = item["@graph"] ? item["@graph"] : [item];
         for (const node of candidate) {
           const type = node["@type"];
-          const isRecipe = type === "Recipe" || (Array.isArray(type) && type.includes("Recipe"));
+          const typeStr = Array.isArray(type) ? type.join(" ") : String(type || "");
+          const isRecipe = /recipe/i.test(typeStr);
 
           if (isRecipe) {
             const title = node.name || node.headline;
-            if (!title) continue;
+            if (title == null || String(title).trim().length === 0) continue;
 
             // Ingredientes
             const rawIngredients = node.recipeIngredient || node.ingredients || [];
@@ -178,11 +179,12 @@ export function extractEventFromJsonLd(html: string, sourceUrl: string): Extract
         const candidate = item["@graph"] ? item["@graph"] : [item];
         for (const node of candidate) {
           const type = node["@type"];
-          const isEvent = type === "Event" || (Array.isArray(type) && type.includes("Event")) || (typeof type === "string" && type.endsWith("Event"));
+          const typeStr = Array.isArray(type) ? type.join(" ") : String(type || "");
+          const isEvent = /event/i.test(typeStr);
 
           if (isEvent) {
             const title = node.name || node.headline;
-            if (!title) continue;
+            if (title == null || String(title).trim().length === 0) continue;
 
             const startDate = node.startDate || new Date().toISOString();
             const endDate = node.endDate;
@@ -408,7 +410,7 @@ export function extractJobFromJsonLd(html: string, sourceUrl: string): Extracted
                 salaryUnit = val.unitText;
                 if (val.minValue !== undefined) salaryMinCents = Math.round(Number(val.minValue) * 100);
                 if (val.maxValue !== undefined) salaryMaxCents = Math.round(Number(val.maxValue) * 100);
-                if (val.value !== undefined && !salaryMinCents) salaryMinCents = Math.round(Number(val.value) * 100);
+                if (val.value !== undefined && salaryMinCents == null) salaryMinCents = Math.round(Number(val.value) * 100);
               }
             }
 
@@ -630,7 +632,7 @@ export function linkRecipeIngredientsToInventory(
       .replace(/[\u0300-\u036f]/g, "")
       .replace(/[^a-z0-9\s]/g, " ")
       .split(/\s+/)
-      .filter((t) => t.length > 2 && !STOPWORDS.has(t));
+      .filter((t) => t.length > 2 && STOPWORDS.has(t) === false);
   }
 
   function extractQuantityAndUnit(raw: string): { qty: number; unit: string } {
@@ -640,7 +642,7 @@ export function linkRecipeIngredientsToInventory(
       const qStr = qtyMatch[1];
       if (qStr.includes("/")) {
         const [num, den] = qStr.split("/").map(Number);
-        if (den) qty = num / den;
+        if (den != null && den !== 0) qty = num / den;
       } else {
         qty = parseFloat(qStr.replace(",", ".")) || 1;
       }

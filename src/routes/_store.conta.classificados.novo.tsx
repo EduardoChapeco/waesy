@@ -90,10 +90,10 @@ function ContaClassificadoNovoErrorComponent({ error }: { error: any }) {
         </Button>
         <Button
           variant="default"
-          className="rounded-lg text-xs h-11 px-5 font-bold cursor-pointer"
+          className="rounded-lg text-xs h-11 px-5 font-bold cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           onClick={() => window.location.reload()}
         >
-          <RefreshCw className="size-3.5 mr-2" />
+          <RefreshCw className="size-4 mr-2" />
           <span>Tentar Novamente</span>
         </Button>
       </div>
@@ -458,7 +458,7 @@ function NovoClassificadoPage() {
     return (
       <div className="max-w-4xl mx-auto p-4 sm:p-6 space-y-6 animate-in fade-in duration-200">
         <div className="space-y-2">
-          <Skeleton className="h-8 w-64 rounded-lg" />
+          <Skeleton className="h-11 min-h-11 w-64 rounded-lg" />
           <Skeleton className="h-4 w-96 rounded-lg" />
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -667,7 +667,7 @@ function CreateTypePicker({
             {NICHE_CARDS.length} Formatos
           </Badge>
         </div>
-        <Button asChild size="sm" variant="outline" className="rounded-lg text-xs font-semibold h-8 px-4 cursor-pointer border-border/70">
+        <Button asChild size="sm" variant="outline" className="rounded-lg text-xs font-semibold h-11 min-h-11 px-4 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary border-border/70">
           <Link to="/conta/classificados">Meus Anúncios</Link>
         </Button>
       </div>
@@ -678,7 +678,7 @@ function CreateTypePicker({
           type="button"
           onClick={() => setScopeTab("all")}
           className={cn(
-            "flex-1 py-2 px-3 rounded-lg text-xs font-semibold transition-colors cursor-pointer",
+            "flex-1 py-2 px-3 rounded-lg text-xs font-semibold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
             scopeTab === "all"
               ? "bg-background text-foreground  border border-border/70"
               : "text-muted-foreground hover:text-foreground border border-transparent"
@@ -690,7 +690,7 @@ function CreateTypePicker({
           type="button"
           onClick={() => setScopeTab("personal")}
           className={cn(
-            "flex-1 py-2 px-3 rounded-lg text-xs font-semibold transition-colors cursor-pointer",
+            "flex-1 py-2 px-3 rounded-lg text-xs font-semibold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
             scopeTab === "personal"
               ? "bg-background text-foreground  border border-border/70"
               : "text-muted-foreground hover:text-foreground border border-transparent"
@@ -702,7 +702,7 @@ function CreateTypePicker({
           type="button"
           onClick={() => setScopeTab("business")}
           className={cn(
-            "flex-1 py-2 px-3 rounded-lg text-xs font-semibold transition-colors cursor-pointer",
+            "flex-1 py-2 px-3 rounded-lg text-xs font-semibold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
             scopeTab === "business"
               ? "bg-background text-foreground  border border-border/70"
               : "text-muted-foreground hover:text-foreground border border-transparent"
@@ -739,7 +739,7 @@ function CreateTypePicker({
                 setSearchFilter("");
                 setAiPrompt("");
               }}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground hover:text-foreground cursor-pointer px-2 py-1"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary px-2 py-1"
             >
               Limpar
             </button>
@@ -750,10 +750,10 @@ function CreateTypePicker({
           disabled={isAiGenerating}
           onClick={handleGenerateWithAi}
           variant="outline"
-          className="h-11 px-4 rounded-lg font-semibold text-xs border border-border/80 text-foreground hover:bg-muted/40 transition-colors cursor-pointer shrink-0"
+          className="h-11 px-4 rounded-lg font-semibold text-xs border border-border/80 text-foreground hover:bg-muted/40 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary shrink-0"
         >
           {isAiGenerating ? (
-            <Loader2 className="size-4 mr-2 animate-spin" />
+            <Loader2 className="size-4 mr-2 animate-spin motion-reduce:animate-none" />
           ) : (
             <Wand2 className="size-4 mr-2 text-primary" />
           )}
@@ -777,7 +777,7 @@ function CreateTypePicker({
               <button
                 key={niche.id}
                 onClick={() => onSelect(niche.id)}
-                className="w-full flex items-center justify-between p-4 hover:bg-muted/30 active:bg-muted/50 transition-colors text-left cursor-pointer min-h-14"
+                className="w-full flex items-center justify-between p-4 hover:bg-muted/30 active:bg-muted/50 transition-colors text-left cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary min-h-14"
               >
                 <div className="flex items-center gap-4 min-w-0">
                   <div className="size-11 rounded-full border border-border/60 flex items-center justify-center shrink-0 text-foreground bg-background">
@@ -817,7 +817,7 @@ function CreateTypePicker({
                 <button
                   type="button"
                   onClick={() => handleScroll("left")}
-                  className="size-8 rounded-lg border border-border/70 bg-card hover:bg-muted flex items-center justify-center text-foreground transition-colors cursor-pointer"
+                  className="size-11 min-h-11 min-w-11 rounded-lg border border-border/70 bg-card hover:bg-muted flex items-center justify-center text-foreground transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                   title="Rolar para a esquerda"
                   aria-label="Rolar para esquerda"
                 >
@@ -826,7 +826,7 @@ function CreateTypePicker({
                 <button
                   type="button"
                   onClick={() => handleScroll("right")}
-                  className="size-8 rounded-lg border border-border/70 bg-card hover:bg-muted flex items-center justify-center text-foreground transition-colors cursor-pointer"
+                  className="size-11 min-h-11 min-w-11 rounded-lg border border-border/70 bg-card hover:bg-muted flex items-center justify-center text-foreground transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                   title="Rolar para a direita"
                   aria-label="Rolar para direita"
                 >
@@ -838,7 +838,7 @@ function CreateTypePicker({
             <div className="relative group/rail">
               <div
                 ref={scrollContainerRef}
-                className="flex flex-row gap-4 overflow-x-auto snap-x snap-mandatory no-scrollbar py-1 px-1 scroll-smooth"
+                className="flex flex-row gap-4 overflow-x-auto carousel snap-x snap-mandatory no-scrollbar py-1 px-1 scroll-smooth"
               >
                 {personalNiches.map((niche) => {
                   const Icon = niche.icon;
@@ -846,7 +846,7 @@ function CreateTypePicker({
                     <button
                       key={niche.id}
                       onClick={() => onSelect(niche.id)}
-                      className="w-68 min-w-68 h-96 shrink-0 snap-start text-left relative rounded-lg border border-border/60 bg-card hover:border-foreground/40 hover: transition-colors duration-200 p-5 flex flex-col justify-between overflow-hidden group cursor-pointer"
+                      className="w-68 min-w-68 h-11 min-h-116 shrink-0 snap-start text-left relative rounded-lg border border-border/60 bg-card hover:border-foreground/40 hover: transition-colors duration-200 p-5 flex flex-col justify-between overflow-hidden group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                     >
                       <div className="flex items-start justify-between gap-2">
                         <div className="size-12 rounded-lg bg-muted/40 border border-border/70 flex items-center justify-center text-foreground group-hover:scale-105 transition-colors">
@@ -888,14 +888,14 @@ function CreateTypePicker({
               Para o Seu Negócio (Varejo e Serviços)
             </span>
 
-            <div className="flex flex-row gap-4 overflow-x-auto snap-x snap-mandatory no-scrollbar py-1 px-1 scroll-smooth">
+            <div className="flex flex-row gap-4 overflow-x-auto carousel snap-x snap-mandatory no-scrollbar py-1 px-1 scroll-smooth">
               {businessNiches.map((niche) => {
                 const Icon = niche.icon;
                 return (
                   <button
                     key={niche.id}
                     onClick={() => onSelect(niche.id)}
-                    className="w-68 min-w-68 h-96 shrink-0 snap-start text-left relative rounded-lg border border-border/60 bg-card hover:border-foreground/40 hover: transition-colors duration-200 p-5 flex flex-col justify-between overflow-hidden group cursor-pointer"
+                    className="w-68 min-w-68 h-11 min-h-116 shrink-0 snap-start text-left relative rounded-lg border border-border/60 bg-card hover:border-foreground/40 hover: transition-colors duration-200 p-5 flex flex-col justify-between overflow-hidden group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="size-12 rounded-lg bg-muted/40 border border-border/70 flex items-center justify-center text-foreground group-hover:scale-105 transition-colors">
@@ -941,7 +941,7 @@ function CreateTypePicker({
               key={cat.id}
               variant="outline"
               onClick={() => onSelect("desapego", cat.id)}
-              className="text-xs py-2 px-3 rounded-lg gap-2 cursor-pointer hover:bg-primary/10 hover:text-primary hover:border-primary/30 transition-colors"
+              className="text-xs py-2 px-3 rounded-lg gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary hover:bg-primary/10 hover:text-primary hover:border-primary/30 transition-colors"
             >
               <span>{cat.label}</span>
             </Badge>
@@ -959,7 +959,7 @@ function CreateTypePicker({
               <button
                 key={item.id}
                 onClick={() => onSelect("desapego", item.id)}
-                className="flex items-center gap-3 p-4 rounded-lg border border-border/60 bg-card hover:bg-muted/40 text-left transition-colors cursor-pointer"
+                className="flex items-center gap-3 p-4 rounded-lg border border-border/60 bg-card hover:bg-muted/40 text-left transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
                 <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
                   <Tag className="size-4" />
@@ -3336,7 +3336,7 @@ function SpecializedClassifiedEditor({
             variant="ghost"
             size="icon"
             onClick={onBack}
-            className="rounded-lg size-11 sm:size-9 font-bold text-muted-foreground hover:text-foreground shrink-0 cursor-pointer"
+            className="rounded-lg size-11 min-size-11 font-bold text-muted-foreground hover:text-foreground shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             aria-label="Voltar"
           >
             <ArrowLeft className="size-5 sm:size-4" />
@@ -3345,7 +3345,7 @@ function SpecializedClassifiedEditor({
           <div className="hidden sm:flex items-center gap-2">
             <span className="text-muted-foreground text-xs">/</span>
             <Badge variant="outline" className="text-xs font-semibold gap-2">
-              <niche.icon className="size-3.5 text-primary" />
+              <niche.icon className="size-4 text-primary" />
               <span>{niche.title}</span>
             </Badge>
           </div>
@@ -3357,7 +3357,7 @@ function SpecializedClassifiedEditor({
             <button
               type="button"
               onClick={() => setMobileTab("edit")}
-              className={`px-3 py-2 rounded-lg transition-colors ${
+              className={`px-3 py-2 rounded-lg min-h-11 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                 mobileTab === "edit"
                   ? "bg-card text-foreground font-bold "
                   : "text-muted-foreground"
@@ -3368,7 +3368,7 @@ function SpecializedClassifiedEditor({
             <button
               type="button"
               onClick={() => setMobileTab("preview")}
-              className={`px-3 py-2 rounded-lg transition-colors ${
+              className={`px-3 py-2 rounded-lg min-h-11 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                 mobileTab === "preview"
                   ? "bg-card text-foreground font-bold "
                   : "text-muted-foreground"
@@ -3382,11 +3382,11 @@ function SpecializedClassifiedEditor({
             onClick={handlePublish}
             disabled={isSubmitting || isUploadingMedia}
             size="sm"
-            className="rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground h-9 px-4"
+            className="rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground h-11 min-h-11 px-4"
           >
             {isSubmitting ? (
               <>
-                <Loader2 className="size-4 animate-spin" />
+                <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
                 <span>{editId ? "Salvando..." : "Publicando..."}</span>
               </>
             ) : (
@@ -3401,7 +3401,7 @@ function SpecializedClassifiedEditor({
 
       {/* ── 5-Step Adaptive Stepper Tracker (Media-First & Snap-X V121) ── */}
       <div className="w-full bg-card rounded-lg border border-border/60 p-2 sm:p-2">
-        <div className="flex overflow-x-auto snap-x snap-mandatory scrollbar-none gap-1 sm:grid sm:grid-cols-5 sm:gap-2">
+        <div className="flex overflow-x-auto carousel snap-x snap-mandatory scrollbar-none gap-1 sm:grid sm:grid-cols-2 sm:grid-cols-5 sm:gap-2">
           {[
             { step: 1, label: "Nicho", short: "Nicho" },
             { step: 2, label: "Fotos e Mídia", short: "Mídia" },
@@ -3420,7 +3420,7 @@ function SpecializedClassifiedEditor({
                   else setCurrentStep(s.step as any);
                 }}
                 className={cn(
-                  "flex items-center justify-center gap-2 py-2 px-3 sm:px-2 rounded-lg text-xs font-semibold transition-colors cursor-pointer text-center shrink-0 snap-center min-w-20 sm:min-w-0",
+                  "flex items-center justify-center gap-2 py-2 px-3 sm:px-2 rounded-lg text-xs font-semibold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary text-center shrink-0 snap-center min-w-20 sm:min-w-0",
                   isCurrent
                     ? "bg-primary text-primary-foreground font-bold"
                     : isPast
@@ -3458,7 +3458,7 @@ function SpecializedClassifiedEditor({
             <button
               type="button"
               onClick={handleRestoreDraft}
-              className="font-bold text-primary hover:underline cursor-pointer"
+              className="font-bold text-primary hover:underline cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
               Restaurar
             </button>
@@ -3466,7 +3466,7 @@ function SpecializedClassifiedEditor({
             <button
               type="button"
               onClick={handleDiscardDraft}
-              className="text-muted-foreground hover:text-foreground cursor-pointer"
+              className="text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
               Descartar
             </button>
@@ -3483,7 +3483,7 @@ function SpecializedClassifiedEditor({
           <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden max-w-xs">
             <div
               className={cn(
-                "h-full rounded-full transition-colors duration-500",
+                "h-full rounded-full transition-colors duration-300",
                 qualityScore >= 80 ? "bg-emerald-500" : qualityScore >= 50 ? "bg-amber-500" : "bg-primary"
               )}
               style={{ width: `${qualityScore}%` }}
@@ -3512,7 +3512,7 @@ function SpecializedClassifiedEditor({
                 type="button"
                 onClick={() => setPreviewDevice("mobile")}
                 className={cn(
-                  "px-3 py-2 rounded-lg transition-colors cursor-pointer",
+                  "px-3 py-2 rounded-lg transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                   previewDevice === "mobile"
                     ? "bg-card text-foreground font-bold "
                     : "text-muted-foreground hover:text-foreground"
@@ -3524,7 +3524,7 @@ function SpecializedClassifiedEditor({
                 type="button"
                 onClick={() => setPreviewDevice("desktop")}
                 className={cn(
-                  "px-3 py-2 rounded-lg transition-colors cursor-pointer",
+                  "px-3 py-2 rounded-lg transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                   previewDevice === "desktop"
                     ? "bg-card text-foreground font-bold "
                     : "text-muted-foreground hover:text-foreground"
@@ -3636,7 +3636,7 @@ function SpecializedClassifiedEditor({
               type="button"
               variant="outline"
               onClick={() => setCurrentStep(4)}
-              className="rounded-lg h-11 px-4 text-xs font-semibold gap-2 cursor-pointer"
+              className="rounded-lg h-11 px-4 text-xs font-semibold gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
               <ArrowLeft className="size-4" />
               <span>Ajustar Condições</span>
@@ -3648,7 +3648,7 @@ function SpecializedClassifiedEditor({
                 variant="ghost"
                 onClick={handleSaveDraft}
                 disabled={isSubmitting}
-                className="rounded-lg h-11 px-3 text-xs font-medium text-muted-foreground hover:text-foreground cursor-pointer"
+                className="rounded-lg h-11 px-3 text-xs font-medium text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
                 Salvar Rascunho
               </Button>
@@ -3657,11 +3657,11 @@ function SpecializedClassifiedEditor({
                 type="button"
                 onClick={handlePublish}
                 disabled={isSubmitting || isUploadingMedia}
-                className="rounded-lg h-11 px-6 text-sm font-bold bg-primary text-primary-foreground active:scale-98 transition-colors gap-2 cursor-pointer"
+                className="rounded-lg h-11 px-6 text-sm font-bold bg-primary text-primary-foreground active:scale-98 transition-colors gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
                 {isSubmitting ? (
                   <>
-                    <Loader2 className="size-4 animate-spin" />
+                    <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
                     <span>Publicando...</span>
                   </>
                 ) : (
@@ -3784,7 +3784,7 @@ function SpecializedClassifiedEditor({
                   size="sm"
                   disabled={isRefiningDescription}
                   onClick={handleRefineDescriptionWithAI}
-                  className="h-6 px-2 text-xs text-muted-foreground/75 font-semibold text-primary hover:text-primary hover:bg-primary/10 gap-1 rounded-lg"
+                  className="h-11 min-h-11 px-3 text-xs text-muted-foreground/75 font-semibold text-primary hover:text-primary hover:bg-primary/10 gap-1 rounded-lg"
                 >
                   <Star className="size-3" />
                   {isRefiningDescription ? "Aprimorando..." : "Refinar com IA"}
@@ -3843,7 +3843,7 @@ function SpecializedClassifiedEditor({
                   </div>
                   <div className="space-y-2 flex items-end">
                     <div
-                      className="flex items-center gap-2 h-11 px-3 rounded-lg bg-background border border-border/60 hover:bg-muted/30 transition-colors cursor-pointer w-full"
+                      className="flex items-center gap-2 h-11 px-3 rounded-lg bg-background border border-border/60 hover:bg-muted/30 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary w-full"
                       onClick={() => setNegotiable(!negotiable)}
                     >
                       <Checkbox
@@ -3853,7 +3853,7 @@ function SpecializedClassifiedEditor({
                       />
                       <Label
                         htmlFor="neg-check"
-                        className="text-xs text-foreground cursor-pointer font-medium select-none"
+                        className="text-xs text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary font-medium select-none"
                       >
                         Aceita Propostas / Negociável
                       </Label>
@@ -3875,7 +3875,7 @@ function SpecializedClassifiedEditor({
                         key={days}
                         type="button"
                         onClick={() => setValidityDays(days)}
-                        className={`px-3 py-1 text-xs text-muted-foreground/75 font-bold rounded-md transition-colors ${
+                        className={`px-3 py-2 text-xs text-muted-foreground/75 font-bold rounded-md min-h-11 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                           validityDays === days
                             ? "bg-primary text-primary-foreground shadow-xs"
                             : "text-muted-foreground hover:text-foreground"
@@ -3898,7 +3898,7 @@ function SpecializedClassifiedEditor({
                       placeholder="Ex: 5 pedidos"
                       value={offerLimit}
                       onChange={(e) => setOfferLimit(e.target.value)}
-                      className="h-9 rounded-lg text-xs bg-background"
+                      className="h-11 min-h-11 rounded-lg text-xs bg-background"
                     />
                   </div>
                   <div className="space-y-2">
@@ -3911,7 +3911,7 @@ function SpecializedClassifiedEditor({
                       placeholder="Ex: 10 unidades"
                       value={stockLimit}
                       onChange={(e) => setStockLimit(e.target.value)}
-                      className="h-9 rounded-lg text-xs bg-background"
+                      className="h-11 min-h-11 rounded-lg text-xs bg-background"
                     />
                   </div>
                 </div>
@@ -3933,7 +3933,7 @@ function SpecializedClassifiedEditor({
                   </div>
                   <div className="space-y-2 flex items-end">
                     <div
-                      className="flex items-center gap-2 h-11 px-3 rounded-lg bg-background border border-border/60 hover:bg-muted/30 transition-colors cursor-pointer w-full"
+                      className="flex items-center gap-2 h-11 px-3 rounded-lg bg-background border border-border/60 hover:bg-muted/30 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary w-full"
                       onClick={() => setNegotiable(!negotiable)}
                     >
                       <Checkbox
@@ -3943,7 +3943,7 @@ function SpecializedClassifiedEditor({
                       />
                       <Label
                         htmlFor="neg-check-start"
-                        className="text-xs text-foreground cursor-pointer font-medium select-none"
+                        className="text-xs text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary font-medium select-none"
                       >
                         Sujeito a orçamento final
                       </Label>
@@ -4037,7 +4037,7 @@ function SpecializedClassifiedEditor({
                     value={customDisclaimer}
                     onChange={(e) => setCustomDisclaimer(e.target.value)}
                     placeholder="Escreva o aviso que aparecerá na vitrine pública..."
-                    className="h-10 rounded-lg text-xs bg-background mt-2"
+                    className="h-11 min-h-11 rounded-lg text-xs bg-background mt-2"
                   />
                 )}
               </div>
@@ -4152,7 +4152,7 @@ function SpecializedClassifiedEditor({
                   {/* Seletor de Modo */}
                   <div className="flex items-center justify-between">
                     <p className="text-xs text-muted-foreground/75 font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                      <RouteIcon className="size-3.5 text-primary" />
+                      <RouteIcon className="size-4 text-primary" />
                       Logística de Transporte
                     </p>
                     <Badge variant="outline" className="text-xs font-mono text-primary bg-primary/10 border-primary/30">
@@ -4168,7 +4168,7 @@ function SpecializedClassifiedEditor({
                         type="button"
                         onClick={() => setTravelTransportType(t.id)}
                         className={cn(
-                          "px-3 py-2 rounded-lg border text-xs text-muted-foreground/75 font-semibold transition-colors cursor-pointer select-none",
+                          "px-3 py-2 rounded-lg border text-xs text-muted-foreground/75 font-semibold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary select-none",
                           travelTransportType === t.id
                             ? "bg-primary text-primary-foreground border-primary "
                             : "bg-background border-border/50 text-muted-foreground hover:border-primary/50 hover:text-primary"
@@ -4183,7 +4183,7 @@ function SpecializedClassifiedEditor({
                   {travelTransportType === "airplane" && (
                     <div className="rounded-lg border border-border/50 bg-muted/20 p-4 space-y-3">
                       <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
-                        <Plane className="size-3.5" /> Detalhes do Voo
+                        <Plane className="size-4" /> Detalhes do Voo
                       </p>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div className="space-y-2">
@@ -4263,7 +4263,7 @@ function SpecializedClassifiedEditor({
                   {travelTransportType === "bus" && (
                     <div className="rounded-lg border border-border/50 bg-muted/20 p-4 space-y-3">
                       <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
-                        <Bus className="size-3.5" /> Excursão Rodoviária
+                        <Bus className="size-4" /> Excursão Rodoviária
                       </p>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div className="space-y-2">
@@ -4364,7 +4364,7 @@ function SpecializedClassifiedEditor({
                       {/* Embarques na Rota (Gateways) */}
                       <div className="space-y-2">
                         <Label className="text-xs font-medium flex items-center gap-2">
-                          <Navigation className="size-3.5 text-primary" />
+                          <Navigation className="size-4 text-primary" />
                           Pontos de Embarque na Rota
                         </Label>
                         <p className="text-xs text-muted-foreground">Cidades ou paradas onde passageiros embarcam ao longo da rota (em ordem).</p>
@@ -4374,9 +4374,9 @@ function SpecializedClassifiedEditor({
                             onChange={(e) => setTravelBoardingGatewayInput(e.target.value)}
                             onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleAddGateway(); } }}
                             placeholder="Ex: Xaxim, Xanxerê, Joaçaba..."
-                            className="h-9 rounded-lg text-xs bg-background flex-1"
+                            className="h-11 min-h-11 rounded-lg text-xs bg-background flex-1"
                           />
-                          <Button type="button" variant="outline" size="sm" onClick={handleAddGateway} className="h-9 px-3 rounded-lg text-xs font-semibold border-primary/30 text-primary hover:bg-primary/5 cursor-pointer">
+                          <Button type="button" variant="outline" size="sm" onClick={handleAddGateway} className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold border-primary/30 text-primary hover:bg-primary/5 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
                             + Adicionar
                           </Button>
                         </div>
@@ -4386,7 +4386,7 @@ function SpecializedClassifiedEditor({
                               <span key={gw} className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-xs text-muted-foreground/75 font-medium text-primary">
                                 <Navigation className="size-2.5" />
                                 {gw}
-                                <button type="button" onClick={() => handleRemoveGateway(gw)} className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring size-3.5 hover:bg-destructive/20 rounded-full flex items-center justify-center ml-1">
+                                <button type="button" onClick={() => handleRemoveGateway(gw)} className="size-11 min-h-11 min-w-11 hover:bg-destructive/20 rounded-full flex items-center justify-center ml-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
                                   <X className="size-2.5" />
                                 </button>
                               </span>
@@ -4417,7 +4417,7 @@ function SpecializedClassifiedEditor({
                       {/* Leg 1: Voo */}
                       <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 space-y-3">
                         <p className="text-xs font-bold uppercase tracking-wider text-primary flex items-center gap-1">
-                          <Plane className="size-3.5" /> Trecho 1 — Voo
+                          <Plane className="size-4" /> Trecho 1 — Voo
                         </p>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                           <div className="space-y-2">
@@ -4468,7 +4468,7 @@ function SpecializedClassifiedEditor({
                       {/* Leg 2: Transfer */}
                       <div className="rounded-lg border border-amber-200/60 bg-amber-50/30 dark:bg-amber-950/10 p-4 space-y-3">
                         <p className="text-xs font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400 flex items-center gap-1">
-                          <RouteIcon className="size-3.5" /> Trecho 2 — Transfer Terrestre / Marítimo
+                          <RouteIcon className="size-4" /> Trecho 2 — Transfer Terrestre / Marítimo
                         </p>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                           <div className="space-y-2">
@@ -4526,7 +4526,7 @@ function SpecializedClassifiedEditor({
                   {travelTransportType === "cruise" && (
                     <div className="rounded-lg border border-border/50 bg-muted/20 p-4 space-y-3">
                       <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
-                        <Ship className="size-3.5" /> Detalhes do Cruzeiro
+                        <Ship className="size-4" /> Detalhes do Cruzeiro
                       </p>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div className="space-y-2">
@@ -4561,7 +4561,7 @@ function SpecializedClassifiedEditor({
                   {travelTransportType === "train" && (
                     <div className="rounded-lg border border-border/50 bg-muted/20 p-4 space-y-3">
                       <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
-                        <Train className="size-3.5" /> Detalhes do Trem
+                        <Train className="size-4" /> Detalhes do Trem
                       </p>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div className="space-y-2">
@@ -4603,7 +4603,7 @@ function SpecializedClassifiedEditor({
                   <div className="space-y-2 pt-1">
                     <div className="flex items-center justify-between">
                       <p className="text-xs text-muted-foreground/75 font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                        <Calendar className="size-3.5 text-primary" />
+                        <Calendar className="size-4 text-primary" />
                         Saídas Confirmadas
                       </p>
                       <Button
@@ -4611,9 +4611,9 @@ function SpecializedClassifiedEditor({
                         variant="outline"
                         size="sm"
                         onClick={handleAddDeparture}
-                        className="h-7 text-xs font-semibold rounded-lg gap-1 border-primary/30 text-primary hover:bg-primary/5 cursor-pointer"
+                        className="h-11 min-h-11 text-xs font-semibold rounded-lg gap-1 border-primary/30 text-primary hover:bg-primary/5 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                       >
-                        <Plus className="size-3.5" /> Adicionar Saída
+                        <Plus className="size-4" /> Adicionar Saída
                       </Button>
                     </div>
                     <p className="text-xs text-muted-foreground">Cadastre múltiplas datas de saída. O cliente verá todas as opções disponíveis no anúncio.</p>
@@ -4629,44 +4629,44 @@ function SpecializedClassifiedEditor({
                         <div key={opt.id} className="rounded-lg border border-border/50 bg-card p-3 space-y-2">
                           <div className="flex items-center justify-between">
                             <span className="text-xs text-muted-foreground/75 font-bold text-foreground">Saída {idx + 1}</span>
-                            <button type="button" onClick={() => handleRemoveDeparture(opt.id)} className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring size-6 rounded-lg text-destructive hover:bg-destructive/10 flex items-center justify-center">
-                              <X className="size-3.5" />
+                            <button type="button" onClick={() => handleRemoveDeparture(opt.id)} className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring size-11 min-h-11 min-w-11 rounded-lg text-destructive hover:bg-destructive/10 flex items-center justify-center">
+                              <X className="size-4" />
                             </button>
                           </div>
                           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                             <div className="space-y-1">
                               <label className="text-xs font-medium text-muted-foreground">Label (Opcional)</label>
-                              <input type="text" value={opt.label || ""} onChange={(e) => handleUpdateDeparture(opt.id, { label: e.target.value })} placeholder="Ex: Carnaval 2026" className="w-full h-8 px-2 rounded-lg border border-border/60 bg-background text-xs focus:outline-none focus:ring-1 focus:ring-primary" />
+                              <input type="text" value={opt.label || ""} onChange={(e) => handleUpdateDeparture(opt.id, { label: e.target.value })} placeholder="Ex: Carnaval 2026" className="w-full h-11 min-h-11 px-2 rounded-lg border border-border/60 bg-background text-xs focus:outline-none focus:ring-1 focus:ring-primary" />
                             </div>
                             <div className="space-y-1">
                               <label className="text-xs font-medium text-muted-foreground">Data de Saída</label>
-                              <input type="date" value={opt.departure_date} onChange={(e) => handleUpdateDeparture(opt.id, { departure_date: e.target.value })} className="w-full h-8 px-2 rounded-lg border border-border/60 bg-background text-xs focus:outline-none focus:ring-1 focus:ring-primary" />
+                              <input type="date" value={opt.departure_date} onChange={(e) => handleUpdateDeparture(opt.id, { departure_date: e.target.value })} className="w-full h-11 min-h-11 px-2 rounded-lg border border-border/60 bg-background text-xs focus:outline-none focus:ring-1 focus:ring-primary" />
                             </div>
                             <div className="space-y-1">
                               <label className="text-xs font-medium text-muted-foreground">Data de Retorno</label>
-                              <input type="date" value={opt.return_date} onChange={(e) => handleUpdateDeparture(opt.id, { return_date: e.target.value })} className="w-full h-8 px-2 rounded-lg border border-border/60 bg-background text-xs focus:outline-none focus:ring-1 focus:ring-primary" />
+                              <input type="date" value={opt.return_date} onChange={(e) => handleUpdateDeparture(opt.id, { return_date: e.target.value })} className="w-full h-11 min-h-11 px-2 rounded-lg border border-border/60 bg-background text-xs focus:outline-none focus:ring-1 focus:ring-primary" />
                             </div>
                             <div className="space-y-1">
                               <label className="text-xs font-medium text-muted-foreground">Status</label>
-                              <select value={opt.status} onChange={(e) => handleUpdateDeparture(opt.id, { status: e.target.value as DepartureStatus })} className="w-full h-8 px-2 rounded-lg border border-border/60 bg-background text-xs text-muted-foreground/75 focus:outline-none focus:ring-1 focus:ring-primary">
+                              <select value={opt.status} onChange={(e) => handleUpdateDeparture(opt.id, { status: e.target.value as DepartureStatus })} className="w-full h-11 min-h-11 px-2 rounded-lg border border-border/60 bg-background text-xs text-muted-foreground/75 focus:outline-none focus:ring-1 focus:ring-primary">
                                 {(Object.keys(DEPARTURE_STATUS_CONFIG) as DepartureStatus[]).map((s) => (
                                   <option key={s} value={s}>{DEPARTURE_STATUS_CONFIG[s].icon} {DEPARTURE_STATUS_CONFIG[s].label}</option>
                                 ))}
                               </select>
                             </div>
                           </div>
-                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                          <div className="grid grid-cols-2 sm:grid-cols-1 sm:grid-cols-3 gap-2">
                             <div className="space-y-1">
                               <label className="text-xs font-medium text-muted-foreground">Horário Embarque</label>
-                              <input type="time" value={opt.departure_time || ""} onChange={(e) => handleUpdateDeparture(opt.id, { departure_time: e.target.value })} className="w-full h-8 px-2 rounded-lg border border-border/60 bg-background text-xs font-mono focus:outline-none focus:ring-1 focus:ring-primary" />
+                              <input type="time" value={opt.departure_time || ""} onChange={(e) => handleUpdateDeparture(opt.id, { departure_time: e.target.value })} className="w-full h-11 min-h-11 px-2 rounded-lg border border-border/60 bg-background text-xs font-mono focus:outline-none focus:ring-1 focus:ring-primary" />
                             </div>
                             <div className="space-y-1">
                               <label className="text-xs font-medium text-muted-foreground">Vagas Disponíveis</label>
-                              <input type="number" min={0} value={opt.available_seats ?? ""} onChange={(e) => handleUpdateDeparture(opt.id, { available_seats: e.target.value ? Number(e.target.value) : undefined })} placeholder="Ex: 42" className="w-full h-8 px-2 rounded-lg border border-border/60 bg-background text-xs focus:outline-none focus:ring-1 focus:ring-primary" />
+                              <input type="number" min={0} value={opt.available_seats ?? ""} onChange={(e) => handleUpdateDeparture(opt.id, { available_seats: e.target.value ? Number(e.target.value) : undefined })} placeholder="Ex: 42" className="w-full h-11 min-h-11 px-2 rounded-lg border border-border/60 bg-background text-xs focus:outline-none focus:ring-1 focus:ring-primary" />
                             </div>
                             <div className="space-y-1">
                               <label className="text-xs font-medium text-muted-foreground">Observação</label>
-                              <input type="text" value={opt.notes || ""} onChange={(e) => handleUpdateDeparture(opt.id, { notes: e.target.value })} placeholder="Ex: Pacote diferenciado" className="w-full h-8 px-2 rounded-lg border border-border/60 bg-background text-xs focus:outline-none focus:ring-1 focus:ring-primary" />
+                              <input type="text" value={opt.notes || ""} onChange={(e) => handleUpdateDeparture(opt.id, { notes: e.target.value })} placeholder="Ex: Pacote diferenciado" className="w-full h-11 min-h-11 px-2 rounded-lg border border-border/60 bg-background text-xs focus:outline-none focus:ring-1 focus:ring-primary" />
                             </div>
                           </div>
                         </div>
@@ -4692,9 +4692,9 @@ function SpecializedClassifiedEditor({
                       variant="outline"
                       size="sm"
                       onClick={handleAddTravelBullet}
-                      className="h-7 text-xs font-semibold rounded-lg gap-1 border-primary/30 text-primary hover:bg-primary/5 cursor-pointer"
+                      className="h-11 min-h-11 text-xs font-semibold rounded-lg gap-1 border-primary/30 text-primary hover:bg-primary/5 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                     >
-                      <Plus className="size-3.5" />
+                      <Plus className="size-4" />
                       <span>Adicionar</span>
                     </Button>
                   </div>
@@ -4710,7 +4710,7 @@ function SpecializedClassifiedEditor({
                           value={bullet}
                           onChange={(e) => handleUpdateTravelBullet(idx, e.target.value)}
                           placeholder={`Diferencial ${idx + 1} (ex: All Inclusive, Voo Incluso, Pé na Areia, Vista Panorâmica...)`}
-                          className="h-9 rounded-lg text-xs bg-background flex-1"
+                          className="h-11 min-h-11 rounded-lg text-xs bg-background flex-1"
                         />
                         <div className="flex items-center gap-1 shrink-0">
                           {travelBioBullets.length > 1 && (
@@ -4721,7 +4721,7 @@ function SpecializedClassifiedEditor({
                                 size="sm"
                                 disabled={idx === 0}
                                 onClick={() => handleMoveTravelBullet(idx, "up")}
-                                className="h-8 w-7 p-0 rounded-lg text-muted-foreground hover:text-foreground disabled:opacity-30 cursor-pointer"
+                                className="h-11 min-h-11 w-7 p-0 rounded-lg text-muted-foreground hover:text-foreground disabled:opacity-30 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                                 title="Mover para cima"
                                 aria-label="Mover para cima"
                               >
@@ -4733,7 +4733,7 @@ function SpecializedClassifiedEditor({
                                 size="sm"
                                 disabled={idx === travelBioBullets.length - 1}
                                 onClick={() => handleMoveTravelBullet(idx, "down")}
-                                className="h-8 w-7 p-0 rounded-lg text-muted-foreground hover:text-foreground disabled:opacity-30 cursor-pointer"
+                                className="h-11 min-h-11 w-7 p-0 rounded-lg text-muted-foreground hover:text-foreground disabled:opacity-30 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                                 title="Mover para baixo"
                                 aria-label="Mover para baixo"
                               >
@@ -4746,11 +4746,11 @@ function SpecializedClassifiedEditor({
                             variant="ghost"
                             size="sm"
                             onClick={() => handleRemoveTravelBullet(idx)}
-                            className="h-8 w-7 p-0 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer"
+                            className="h-11 min-h-11 w-7 p-0 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                             title={travelBioBullets.length === 1 ? "Limpar campo" : "Remover diferencial"}
                             aria-label="Remover diferencial"
                           >
-                            <Trash2 className="size-3.5" />
+                            <Trash2 className="size-4" />
                           </Button>
                         </div>
                       </div>
@@ -4761,9 +4761,9 @@ function SpecializedClassifiedEditor({
                       variant="outline"
                       size="sm"
                       onClick={handleAddTravelBullet}
-                      className="w-full h-8 text-xs font-medium border-dashed border-border/70 hover:border-primary/50 hover:bg-primary/5 text-muted-foreground hover:text-primary rounded-lg gap-2 cursor-pointer mt-1"
+                      className="w-full h-11 min-h-11 text-xs font-medium border-dashed border-border/70 hover:border-primary/50 hover:bg-primary/5 text-muted-foreground hover:text-primary rounded-lg gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary mt-1"
                     >
-                      <Plus className="size-3.5" />
+                      <Plus className="size-4" />
                       <span>Adicionar outro diferencial</span>
                     </Button>
                   </div>
@@ -4796,7 +4796,7 @@ function SpecializedClassifiedEditor({
                             return [...prev, sug];
                           });
                         }}
-                        className="text-xs px-2 py-1 rounded-lg border border-border/60 bg-muted/40 hover:bg-primary/10 hover:text-primary hover:border-primary/30 transition-colors cursor-pointer text-muted-foreground"
+                        className="text-xs px-2 py-1 rounded-lg border border-border/60 bg-muted/40 hover:bg-primary/10 hover:text-primary hover:border-primary/30 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary text-muted-foreground"
                       >
                         + {sug}
                       </button>
@@ -4808,7 +4808,7 @@ function SpecializedClassifiedEditor({
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <Label className="text-xs text-foreground font-medium flex items-center gap-2">
-                      <CreditCard className="size-3.5 text-primary" />
+                      <CreditCard className="size-4 text-primary" />
                       <span>Máximo de Parcelas</span>
                     </Label>
                     <span className="text-xs font-black text-primary font-mono">{travelMaxInstallments}x</span>
@@ -4820,7 +4820,7 @@ function SpecializedClassifiedEditor({
                     step={1}
                     value={travelMaxInstallments}
                     onChange={(e) => setTravelMaxInstallments(Number(e.target.value))}
-                    className="w-full h-2 rounded-full accent-primary cursor-pointer"
+                    className="w-full h-2 rounded-full accent-primary cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                     aria-label="Máximo de parcelas"
                   />
                   <div className="flex justify-between text-xs text-muted-foreground font-mono">
@@ -4835,7 +4835,7 @@ function SpecializedClassifiedEditor({
                 {/* 2.6 — Story Highlights */}
                 <div className="space-y-2">
                   <p className="text-xs text-muted-foreground/75 font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                    <ImagePlus className="size-3.5 text-primary" />
+                    <ImagePlus className="size-4 text-primary" />
                     <span>Destaques Visuais</span>
                   </p>
                   <StoryHighlightUploader
@@ -5033,7 +5033,7 @@ function SpecializedClassifiedEditor({
                   <Label className="text-xs font-semibold text-foreground tracking-tight">Comodidades Disponíveis</Label>
                   <span className="text-xs text-muted-foreground font-mono">{hospAmenities.length} selecionada(s)</span>
                 </div>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-1 sm:grid-cols-3 gap-2">
                   {Array.from(
                     new Set([
                       "Wi-Fi Alta Velocidade",
@@ -5056,7 +5056,7 @@ function SpecializedClassifiedEditor({
                       <div
                         key={amenity}
                         onClick={() => toggleItem(hospAmenities, setHospAmenities, amenity)}
-                        className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-xs cursor-pointer transition-colors min-h-11 ${
+                        className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-xs cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-colors min-h-11 ${
                           active
                             ? "border-primary bg-primary/10 text-primary font-medium"
                             : "border-border/50 bg-background text-foreground/80 hover:text-foreground hover:bg-muted/30"
@@ -5082,7 +5082,7 @@ function SpecializedClassifiedEditor({
                       }
                     }}
                     placeholder="Adicionar outra comodidade ou diferencial..."
-                    className="h-9 rounded-lg text-xs bg-background flex-1"
+                    className="h-11 min-h-11 rounded-lg text-xs bg-background flex-1"
                   />
                   <Button
                     type="button"
@@ -5094,7 +5094,7 @@ function SpecializedClassifiedEditor({
                         setCustomHospAmenity("");
                       }
                     }}
-                    className="h-9 rounded-lg text-xs font-semibold cursor-pointer"
+                    className="h-11 min-h-11 rounded-lg text-xs font-semibold cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                   >
                     + Adicionar
                   </Button>
@@ -5119,7 +5119,7 @@ function SpecializedClassifiedEditor({
                       <div
                         key={rule}
                         onClick={() => toggleItem(hospRules, setHospRules, rule)}
-                        className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-xs cursor-pointer transition-colors min-h-11 ${
+                        className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-xs cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-colors min-h-11 ${
                           active
                             ? "border-primary bg-primary/10 text-primary font-medium"
                             : "border-border/50 bg-background text-foreground/80 hover:text-foreground hover:bg-muted/30"
@@ -5226,7 +5226,7 @@ function SpecializedClassifiedEditor({
  <Label className="text-xs font-semibold text-foreground tracking-tight">Comodidades e Infraestrutura do Imóvel</Label>
  <span className="text-xs text-muted-foreground font-mono">{reAmenities.length} selecionada(s)</span>
  </div>
- <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+ <div className="grid grid-cols-2 sm:grid-cols-1 sm:grid-cols-3 gap-2">
  {Array.from(
  new Set([
  "Varanda Gourmet / Churrasqueira",
@@ -5249,7 +5249,7 @@ function SpecializedClassifiedEditor({
  <div
  key={amenity}
  onClick={() => toggleItem(reAmenities, setReAmenities, amenity)}
- className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-xs cursor-pointer transition-colors min-h-11 ${
+ className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-xs cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-colors min-h-11 ${
  active
  ? "border-primary bg-primary/10 text-primary font-medium"
  : "border-border/50 bg-background text-foreground/80 hover:text-foreground hover:bg-muted/30"
@@ -5275,7 +5275,7 @@ function SpecializedClassifiedEditor({
  }
  }}
  placeholder="Adicionar diferencial do imóvel..."
- className="h-9 rounded-lg text-xs bg-background flex-1"
+ className="h-11 min-h-11 rounded-lg text-xs bg-background flex-1"
  />
  <Button
  type="button"
@@ -5287,7 +5287,7 @@ function SpecializedClassifiedEditor({
  setCustomReAmenity("");
  }
  }}
- className="h-9 rounded-lg text-xs font-semibold cursor-pointer"
+ className="h-11 min-h-11 rounded-lg text-xs font-semibold cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
  >
  + Adicionar
  </Button>
@@ -5392,7 +5392,7 @@ function SpecializedClassifiedEditor({
  <Label className="text-xs font-semibold text-foreground tracking-tight">Opcionais e Diferenciais do Veículo</Label>
  <span className="text-xs text-muted-foreground font-mono">{vehicleFeatures.length} selecionado(s)</span>
  </div>
- <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+ <div className="grid grid-cols-2 sm:grid-cols-1 sm:grid-cols-3 gap-2">
  {Array.from(
  new Set([
  ...CANONICAL_VEHICLE_OPTIONS,
@@ -5404,7 +5404,7 @@ function SpecializedClassifiedEditor({
  <div
  key={opt}
  onClick={() => toggleItem(vehicleFeatures, setVehicleFeatures, opt)}
- className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-xs cursor-pointer transition-colors min-h-11 ${
+ className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-xs cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-colors min-h-11 ${
  active
  ? "border-primary bg-primary/10 text-primary font-medium"
  : "border-border/50 bg-background text-foreground/80 hover:text-foreground hover:bg-muted/30"
@@ -5430,7 +5430,7 @@ function SpecializedClassifiedEditor({
  }
  }}
  placeholder="Adicionar outro opcional do veículo (ex: Engate, Vitrificação)..."
-                        className="h-9 rounded-lg text-xs bg-background flex-1"
+                        className="h-11 min-h-11 rounded-lg text-xs bg-background flex-1"
                       />
                       <Button
                         type="button"
@@ -5442,7 +5442,7 @@ function SpecializedClassifiedEditor({
                             setCustomVehicleOption("");
                           }
                         }}
-                        className="h-9 rounded-lg text-xs font-semibold cursor-pointer"
+                        className="h-11 min-h-11 rounded-lg text-xs font-semibold cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                       >
                         + Adicionar
                       </Button>
@@ -5455,14 +5455,14 @@ function SpecializedClassifiedEditor({
                       <Label className="text-xs font-semibold text-foreground tracking-tight">Procedência e Histórico</Label>
                       <span className="text-xs text-muted-foreground font-mono">{vehicleProvenance.length} selecionado(s)</span>
                     </div>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    <div className="grid grid-cols-2 sm:grid-cols-1 sm:grid-cols-3 gap-2">
                       {CANONICAL_VEHICLE_PROVENANCE.map((prov) => {
                         const active = vehicleProvenance.includes(prov);
                         return (
                           <div
                             key={prov}
                             onClick={() => toggleItem(vehicleProvenance, setVehicleProvenance, prov)}
-                            className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-xs cursor-pointer transition-colors min-h-11 ${
+                            className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-xs cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-colors min-h-11 ${
                               active
                                 ? "border-primary bg-primary/10 text-primary font-medium"
                                 : "border-border/50 bg-background text-foreground/80 hover:text-foreground hover:bg-muted/30"
@@ -5503,7 +5503,7 @@ function SpecializedClassifiedEditor({
                               }
                             }}
                             className={cn(
-                              "h-8 px-3 rounded-lg text-xs font-medium cursor-pointer transition-colors active:scale-95 border flex items-center gap-2",
+                              "h-11 min-h-11 px-3 rounded-lg text-xs font-medium cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-colors active:scale-95 border flex items-center gap-2",
                               isSelected
                                 ? "bg-primary text-primary-foreground border-primary font-bold "
                                 : "bg-background text-muted-foreground border-border/70 hover:text-foreground hover:bg-muted/40"
@@ -5525,7 +5525,7 @@ function SpecializedClassifiedEditor({
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 rounded-lg bg-muted/20 border border-border/60">
                         <div className="space-y-2">
                           <Label className="text-xs text-foreground font-medium flex items-center gap-2">
-                            <ShieldCheck className="size-3.5 text-primary" />
+                            <ShieldCheck className="size-4 text-primary" />
                             <span>{matchedSub.councilFieldLabel}</span>
                           </Label>
                           <Input
@@ -5610,7 +5610,7 @@ function SpecializedClassifiedEditor({
                       <Label className="text-xs font-semibold text-foreground tracking-tight">Diferenciais do Profissional</Label>
                       <span className="text-xs text-muted-foreground font-mono">{reAmenities.length} selecionado(s)</span>
                     </div>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    <div className="grid grid-cols-2 sm:grid-cols-1 sm:grid-cols-3 gap-2">
                       {Array.from(
                         new Set([
                           "Orçamento Gratuito",
@@ -5629,7 +5629,7 @@ function SpecializedClassifiedEditor({
                           <div
                             key={diff}
                             onClick={() => toggleItem(reAmenities, setReAmenities, diff)}
-                            className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-xs cursor-pointer transition-colors min-h-11 ${
+                            className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-xs cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-colors min-h-11 ${
                               active
                                 ? "border-primary bg-primary/10 text-primary font-medium"
                                 : "border-border/50 bg-background text-foreground/80 hover:text-foreground hover:bg-muted/30"
@@ -5655,7 +5655,7 @@ function SpecializedClassifiedEditor({
                           }
                         }}
                         placeholder="Adicionar outro diferencial profissional..."
-                        className="h-9 rounded-lg text-xs bg-background flex-1"
+                        className="h-11 min-h-11 rounded-lg text-xs bg-background flex-1"
                       />
                       <Button
                         type="button"
@@ -5667,7 +5667,7 @@ function SpecializedClassifiedEditor({
                             setCustomReAmenity("");
                           }
                         }}
-                        className="h-9 rounded-lg text-xs font-semibold cursor-pointer"
+                        className="h-11 min-h-11 rounded-lg text-xs font-semibold cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                       >
                         + Adicionar
                       </Button>
@@ -5706,7 +5706,7 @@ function SpecializedClassifiedEditor({
                               }
                             }}
                             className={cn(
-                              "h-8 px-3 rounded-lg text-xs font-medium cursor-pointer transition-colors active:scale-95 border flex items-center gap-2",
+                              "h-11 min-h-11 px-3 rounded-lg text-xs font-medium cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-colors active:scale-95 border flex items-center gap-2",
                               isSelected
                                 ? "bg-primary text-primary-foreground border-primary font-bold "
                                 : "bg-background text-muted-foreground border-border/70 hover:text-foreground hover:bg-muted/40"
@@ -5756,7 +5756,7 @@ function SpecializedClassifiedEditor({
                               }
                             }}
                             className={cn(
-                              "flex items-center gap-2 px-3 py-2 rounded-lg border text-xs cursor-pointer transition-colors min-h-11",
+                              "flex items-center gap-2 px-3 py-2 rounded-lg border text-xs cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-colors min-h-11",
                               active
                                 ? "border-primary bg-primary/10 text-primary font-medium"
                                 : "border-border/50 bg-background text-foreground/80 hover:bg-muted/30"
@@ -5816,7 +5816,7 @@ function SpecializedClassifiedEditor({
                           type="button"
                           onClick={() => setConvenienceVolume(v)}
                           className={cn(
-                            "h-7 px-3 rounded-lg text-xs font-medium cursor-pointer transition-colors border",
+                            "h-11 min-h-11 px-4 rounded-lg text-xs font-medium cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-colors border",
                             convenienceVolume === v
                               ? "bg-primary text-primary-foreground border-primary"
                               : "bg-muted/40 hover:bg-muted text-muted-foreground border-border/60"
@@ -5830,7 +5830,7 @@ function SpecializedClassifiedEditor({
                       value={convenienceVolume}
                       onChange={(e) => setConvenienceVolume(e.target.value)}
                       placeholder="Ou digite o volume/tamanho (ex: Garrafa 1 Litro)"
-                      className="h-10 rounded-lg text-xs bg-background"
+                      className="h-11 min-h-11 rounded-lg text-xs bg-background"
                     />
                   </div>
 
@@ -5849,7 +5849,7 @@ function SpecializedClassifiedEditor({
                           type="button"
                           onClick={() => setConvenienceTemp(t.id as any)}
                           className={cn(
-                            "p-2 rounded-lg border text-left cursor-pointer transition-colors",
+                            "p-2 rounded-lg border text-left cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-colors",
                             convenienceTemp === t.id
                               ? "bg-primary/10 border-primary text-foreground ring-1 ring-primary/30"
                               : "bg-background border-border/60 text-muted-foreground hover:bg-muted/30"
@@ -5865,7 +5865,7 @@ function SpecializedClassifiedEditor({
                   {/* Restrição Alcoólica / 18+ */}
                   <div className="p-4 rounded-lg border border-border/60 bg-muted/20 flex items-center justify-between">
                     <div className="space-y-1">
-                      <Label htmlFor="conv-alcoholic" className="text-xs font-semibold text-foreground cursor-pointer flex items-center gap-2">
+                      <Label htmlFor="conv-alcoholic" className="text-xs font-semibold text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary flex items-center gap-2">
                         <span>Contém Álcool (Bebida Alcoólica +18)</span>
                       </Label>
                       <p className="text-xs text-muted-foreground/75 text-muted-foreground">
@@ -5887,7 +5887,7 @@ function SpecializedClassifiedEditor({
                         value={convenienceBrand}
                         onChange={(e) => setConvenienceBrand(e.target.value)}
                         placeholder="Ex: Mansão Maromba, Ambev, Coca-Cola..."
-                        className="h-10 rounded-lg text-xs bg-background"
+                        className="h-11 min-h-11 rounded-lg text-xs bg-background"
                       />
                     </div>
                     <div className="space-y-1">
@@ -5896,7 +5896,7 @@ function SpecializedClassifiedEditor({
                         value={deliveryEstimateText}
                         onChange={(e) => setDeliveryEstimateText(e.target.value)}
                         placeholder="Ex: 35-50 min (MotoLink Express)"
-                        className="h-10 rounded-lg text-xs bg-background font-mono"
+                        className="h-11 min-h-11 rounded-lg text-xs bg-background font-mono"
                       />
                     </div>
                   </div>
@@ -5922,7 +5922,7 @@ function SpecializedClassifiedEditor({
                       <span>Departamento do Produto *</span>
                       <span className="text-xs text-muted-foreground font-normal">Selecione para ajustar atributos</span>
                     </Label>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                    <div className="grid grid-cols-2 sm:grid-cols-1 sm:grid-cols-3 md:grid-cols-4 gap-2">
                       {CANONICAL_GROCERY_DEPARTMENTS.map((dept) => {
                         const isSelected = groceryDepartment === dept.id;
                         return (
@@ -5939,7 +5939,7 @@ function SpecializedClassifiedEditor({
                               }
                             }}
                             className={cn(
-                              "p-2 rounded-lg text-xs font-medium text-left border cursor-pointer transition-colors flex flex-col gap-1",
+                              "p-2 rounded-lg text-xs font-medium text-left border cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-colors flex flex-col gap-1",
                               isSelected
                                 ? "bg-primary text-primary-foreground border-primary font-bold "
                                 : "bg-background text-foreground/80 border-border/70 hover:bg-muted/30"
@@ -5973,7 +5973,7 @@ function SpecializedClassifiedEditor({
                                 type="button"
                                 onClick={() => setGrocerySubCategory(sub)}
                                 className={cn(
-                                  "px-3 py-1 rounded-lg text-xs font-medium border cursor-pointer transition-colors",
+                                  "px-3 py-1 rounded-lg text-xs font-medium border cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-colors",
                                   isSelected
                                     ? "bg-primary/15 border-primary text-primary font-bold"
                                     : "bg-background border-border/60 text-foreground/80 hover:bg-muted/40"
@@ -6001,7 +6001,7 @@ function SpecializedClassifiedEditor({
                               type="button"
                               onClick={() => setGroceryUnitType(u.id)}
                               className={cn(
-                                "px-2 py-1 rounded-lg text-xs font-medium border cursor-pointer transition-colors",
+                                "px-2 py-1 rounded-lg text-xs font-medium border cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-colors",
                                 isSelected
                                   ? "bg-primary text-primary-foreground border-primary font-bold"
                                   : "bg-background text-foreground/80 border-border/60 hover:bg-muted/40"
@@ -6055,7 +6055,7 @@ function SpecializedClassifiedEditor({
                                 }
                               }}
                               className={cn(
-                                "px-3 py-2 rounded-lg text-xs font-medium border cursor-pointer transition-colors",
+                                "px-3 py-2 rounded-lg text-xs font-medium border cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-colors",
                                 isSelected
                                   ? "bg-primary text-primary-foreground border-primary font-bold "
                                   : "bg-background text-muted-foreground border-border/60 hover:text-foreground hover:bg-muted/40"
@@ -6105,7 +6105,7 @@ function SpecializedClassifiedEditor({
                             type="button"
                             onClick={() => setGroceryTemperature(temp.id)}
                             className={cn(
-                              "p-2 rounded-lg border text-center transition-colors cursor-pointer text-xs flex items-center justify-center gap-2 min-h-11",
+                              "p-2 rounded-lg border text-center transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary text-xs flex items-center justify-center gap-2 min-h-11",
                               isSelected
                                 ? "border-primary bg-primary/10 text-primary font-bold"
                                 : "border-border/60 bg-background text-muted-foreground hover:text-foreground"
@@ -6128,7 +6128,7 @@ function SpecializedClassifiedEditor({
                       <div
                         onClick={() => setGroceryIsAlcoholic(!groceryIsAlcoholic)}
                         className={cn(
-                          "flex items-center gap-2 p-2 rounded-lg border text-xs cursor-pointer min-h-11",
+                          "flex items-center gap-2 p-2 rounded-lg border text-xs cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary min-h-11",
                           groceryIsAlcoholic ? "border-rose-500 bg-rose-500/10 text-rose-700 dark:text-rose-300 font-bold" : "border-border/60 bg-background text-muted-foreground"
                         )}
                       >
@@ -6139,7 +6139,7 @@ function SpecializedClassifiedEditor({
                       <div
                         onClick={() => setGroceryContainsGluten(groceryContainsGluten === false ? true : false)}
                         className={cn(
-                          "flex items-center gap-2 p-2 rounded-lg border text-xs cursor-pointer min-h-11",
+                          "flex items-center gap-2 p-2 rounded-lg border text-xs cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary min-h-11",
                           groceryContainsGluten === false ? "border-emerald-500 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-bold" : "border-border/60 bg-background text-muted-foreground"
                         )}
                       >
@@ -6150,7 +6150,7 @@ function SpecializedClassifiedEditor({
                       <div
                         onClick={() => setGroceryContainsLactose(groceryContainsLactose === false ? true : false)}
                         className={cn(
-                          "flex items-center gap-2 p-2 rounded-lg border text-xs cursor-pointer min-h-11",
+                          "flex items-center gap-2 p-2 rounded-lg border text-xs cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary min-h-11",
                           groceryContainsLactose === false ? "border-emerald-500 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-bold" : "border-border/60 bg-background text-muted-foreground"
                         )}
                       >
@@ -6161,7 +6161,7 @@ function SpecializedClassifiedEditor({
                       <div
                         onClick={() => setGroceryIsOrganic(!groceryIsOrganic)}
                         className={cn(
-                          "flex items-center gap-2 p-2 rounded-lg border text-xs cursor-pointer min-h-11",
+                          "flex items-center gap-2 p-2 rounded-lg border text-xs cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary min-h-11",
                           groceryIsOrganic ? "border-emerald-500 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-bold" : "border-border/60 bg-background text-muted-foreground"
                         )}
                       >
@@ -6274,7 +6274,7 @@ function SpecializedClassifiedEditor({
                             />
                           </div>
                           {groceryRipenessEnabled && (
-                            <div className="grid grid-cols-3 gap-2 pt-1 text-center text-xs">
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1 text-center text-xs">
                               <div className="p-2 rounded-lg border border-border/50 bg-muted/20">
                                 <p className="font-bold text-foreground">Menos maduro</p>
                                 <p className="text-xs text-muted-foreground">Mais firme / consumo na semana</p>
@@ -6328,7 +6328,7 @@ function SpecializedClassifiedEditor({
                                   updated[idx] = { ...updated[idx], min_quantity: val };
                                   setGroceryDiscountTiers(updated);
                                 }}
-                                className="h-9 rounded-lg text-xs bg-muted/20 font-mono"
+                                className="h-11 min-h-11 rounded-lg text-xs bg-muted/20 font-mono"
                               />
                             </div>
 
@@ -6342,7 +6342,7 @@ function SpecializedClassifiedEditor({
                                   setGroceryDiscountTiers(updated);
                                 }}
                               >
-                                <SelectTrigger className="h-9 rounded-lg text-xs bg-muted/20">
+                                <SelectTrigger className="h-11 min-h-11 rounded-lg text-xs bg-muted/20">
                                   <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -6369,7 +6369,7 @@ function SpecializedClassifiedEditor({
                                     setGroceryDiscountTiers(updated);
                                   }}
                                   placeholder="10"
-                                  className="h-9 rounded-lg text-xs bg-muted/20 font-mono"
+                                  className="h-11 min-h-11 rounded-lg text-xs bg-muted/20 font-mono"
                                 />
                               ) : (
                                 <CurrencyField
@@ -6379,7 +6379,7 @@ function SpecializedClassifiedEditor({
                                     updated[idx] = { ...updated[idx], discount_value: val ?? 0 };
                                     setGroceryDiscountTiers(updated);
                                   }}
-                                  className="h-9 rounded-lg text-xs bg-muted/20 font-mono"
+                                  className="h-11 min-h-11 rounded-lg text-xs bg-muted/20 font-mono"
                                 />
                               )}
                             </div>
@@ -6391,10 +6391,10 @@ function SpecializedClassifiedEditor({
                               onClick={() => {
                                 setGroceryDiscountTiers(groceryDiscountTiers.filter((_, i) => i !== idx));
                               }}
-                              className="size-8 rounded-lg text-muted-foreground hover:text-destructive shrink-0 mt-3"
+                              className="size-11 min-h-11 min-w-11 rounded-lg text-muted-foreground hover:text-destructive shrink-0 mt-3"
                               title="Remover faixa"
                             >
-                              <Trash2 className="size-3.5" />
+                              <Trash2 className="size-4" />
                             </Button>
                           </div>
                         ))}
@@ -6412,9 +6412,9 @@ function SpecializedClassifiedEditor({
                                 { min_quantity: nextMin, discount_type: "percentage", discount_value: 15 },
                               ]);
                             }}
-                            className="w-full h-8 rounded-lg text-xs font-semibold gap-2 border-dashed cursor-pointer"
+                            className="w-full h-11 min-h-11 rounded-lg text-xs font-semibold gap-2 border-dashed cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                           >
-                            <Plus className="size-3.5" />
+                            <Plus className="size-4" />
                             <span>Adicionar Nova Faixa de Desconto</span>
                           </Button>
                         )}
@@ -6507,7 +6507,7 @@ function SpecializedClassifiedEditor({
                     <div className="flex items-center justify-between">
                       <div className="space-y-1">
                         <Label className="text-xs font-bold text-foreground flex items-center gap-2">
-                          <Building className="size-3.5 text-primary" />
+                          <Building className="size-4 text-primary" />
                           <span>Buscar Dados Oficiais da Empresa por CNPJ (Opcional)</span>
                         </Label>
                         <p className="text-xs text-muted-foreground/75 text-muted-foreground">
@@ -6522,7 +6522,7 @@ function SpecializedClassifiedEditor({
                           value={companyCnpj}
                           onChange={(e) => setCompanyCnpj(e.target.value)}
                           placeholder="00.000.000/0000-00"
-                          className="h-10 sm:h-11 rounded-lg text-xs bg-background font-mono"
+                          className="h-11 min-h-11 sm:h-11 rounded-lg text-xs bg-background font-mono"
                           maxLength={18}
                         />
                       </div>
@@ -6531,16 +6531,16 @@ function SpecializedClassifiedEditor({
                         variant="outline"
                         onClick={handleLookupAndAuditCnpj}
                         disabled={isSearchingCnpj || !companyCnpj.trim()}
-                        className="h-10 sm:h-11 px-4 rounded-lg text-xs font-bold shrink-0 gap-2 cursor-pointer"
+                        className="h-11 min-h-11 sm:h-11 px-4 rounded-lg text-xs font-bold shrink-0 gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                       >
                         {isSearchingCnpj ? (
                           <>
-                            <Loader2 className="size-3.5 animate-spin text-primary" />
+                            <Loader2 className="size-4 animate-spin motion-reduce:animate-none text-primary" />
                             <span>Auditando...</span>
                           </>
                         ) : (
                           <>
-                            <Search className="size-3.5 text-primary" />
+                            <Search className="size-4 text-primary" />
                             <span>Consultar CNPJ</span>
                           </>
                         )}
@@ -6589,7 +6589,7 @@ function SpecializedClassifiedEditor({
                             type="button"
                             onClick={() => setBusinessType(type.id)}
                             className={cn(
-                              "h-8 px-3 rounded-lg text-xs font-medium cursor-pointer transition-colors active:scale-95 border flex items-center gap-2",
+                              "h-11 min-h-11 px-3 rounded-lg text-xs font-medium cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-colors active:scale-95 border flex items-center gap-2",
                               isSelected
                                 ? "bg-primary text-primary-foreground border-primary font-bold "
                                 : "bg-background text-muted-foreground border-border/70 hover:text-foreground hover:bg-muted/40"
@@ -6705,7 +6705,7 @@ function SpecializedClassifiedEditor({
                                   );
                                 }}
                                 className={cn(
-                                  "h-8 px-3 rounded-lg text-xs font-medium cursor-pointer transition-colors active:scale-95 border",
+                                  "h-11 min-h-11 px-3 rounded-lg text-xs font-medium cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-colors active:scale-95 border",
                                   isSelected
                                     ? "bg-primary text-primary-foreground border-primary font-bold "
                                     : "bg-background text-muted-foreground border-border hover:text-foreground"
@@ -6896,8 +6896,8 @@ function SpecializedClassifiedEditor({
                   <div className="p-4 rounded-lg bg-amber-500/5 border border-amber-500/20 space-y-3">
                     <div className="flex items-center justify-between gap-3">
                       <div className="space-y-1">
-                        <Label htmlFor="nda-switch" className="text-xs font-bold text-foreground cursor-pointer flex items-center gap-2">
-                          <Lock className="size-3.5 text-amber-600 dark:text-amber-400" />
+                        <Label htmlFor="nda-switch" className="text-xs font-bold text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary flex items-center gap-2">
+                          <Lock className="size-4 text-amber-600 dark:text-amber-400" />
                           Exigir Assinatura de NDA Digital
                         </Label>
                         <p className="text-xs text-muted-foreground/75 text-muted-foreground leading-snug">
@@ -6913,8 +6913,8 @@ function SpecializedClassifiedEditor({
 
                     <div className="flex items-center justify-between gap-3 pt-2 border-t border-amber-500/15">
                       <div className="space-y-1">
-                        <Label htmlFor="advisor-switch" className="text-xs font-bold text-foreground cursor-pointer flex items-center gap-2">
-                          <ShieldCheck className="size-3.5 text-primary" />
+                        <Label htmlFor="advisor-switch" className="text-xs font-bold text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary flex items-center gap-2">
+                          <ShieldCheck className="size-4 text-primary" />
                           Operação Assessorada por Consultor M&A
                         </Label>
                         <p className="text-xs text-muted-foreground/75 text-muted-foreground leading-snug">
@@ -6933,14 +6933,14 @@ function SpecializedClassifiedEditor({
                       <div className="flex items-center justify-between">
                         <div className="space-y-1">
                           <Label className="text-xs font-bold text-foreground flex items-center gap-2">
-                            <FileSpreadsheet className="size-3.5 text-amber-600 dark:text-amber-400" />
+                            <FileSpreadsheet className="size-4 text-amber-600 dark:text-amber-400" />
                             Documentos Confidenciais e DRE (Acesso Restrito via NDA)
                           </Label>
                           <p className="text-xs text-muted-foreground/75 text-muted-foreground leading-snug">
                             Anexe DRE, balanços, inventário ou contratos em PDF, XLSX ou CSV. Os arquivos só poderão ser baixados por investidores após assinatura digital do termo de sigilo.
                           </p>
                         </div>
-                        <label className="cursor-pointer">
+                        <label className="cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
                           <input
                             type="file"
                             accept=".pdf,.xlsx,.xls,.csv,.doc,.docx"
@@ -6962,15 +6962,15 @@ function SpecializedClassifiedEditor({
                               }
                             }}
                           />
-                          <span className="inline-flex items-center gap-2 h-8 px-3 rounded-lg text-xs font-semibold bg-amber-500/15 hover:bg-amber-500/25 text-amber-900 dark:text-amber-200 border border-amber-500/30 transition-colors">
+                          <span className="inline-flex items-center gap-2 h-11 min-h-11 px-3 rounded-lg text-xs font-semibold bg-amber-500/15 hover:bg-amber-500/25 text-amber-900 dark:text-amber-200 border border-amber-500/30 transition-colors">
                             {isUploadingRestrictedDoc ? (
                               <>
-                                <Loader2 className="size-3.5 animate-spin" />
+                                <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
                                 Enviando...
                               </>
                             ) : (
                               <>
-                                <Plus className="size-3.5" />
+                                <Plus className="size-4" />
                                 Anexar Documento
                               </>
                             )}
@@ -7000,10 +7000,10 @@ function SpecializedClassifiedEditor({
                                   setBusinessRestrictedDocuments((prev) => prev.filter((_, i) => i !== idx));
                                   toast.info("Documento removido.");
                                 }}
-                                className="text-muted-foreground hover:text-destructive p-1 rounded transition-colors cursor-pointer"
+                                className="text-muted-foreground hover:text-destructive p-1 rounded transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                                 aria-label="Remover documento"
                               >
-                                <Trash2 className="size-3.5" />
+                                <Trash2 className="size-4" />
                               </button>
                             </div>
                           ))}
@@ -7025,16 +7025,16 @@ function SpecializedClassifiedEditor({
                         variant="outline"
                         onClick={handleAnalyzeCommercialPoint}
                         disabled={isAnalyzingTelemetry}
-                        className="h-8 px-3 text-xs font-semibold rounded-lg border-primary/30 text-primary hover:bg-primary/10 cursor-pointer shrink-0"
+                        className="h-11 min-h-11 px-3 text-xs font-semibold rounded-lg border-primary/30 text-primary hover:bg-primary/10 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary shrink-0"
                       >
                         {isAnalyzingTelemetry ? (
                           <>
-                            <Loader2 className="size-3.5 mr-2 animate-spin" />
+                            <Loader2 className="size-4 mr-2 animate-spin motion-reduce:animate-none" />
                             Calculando com SimLabs...
                           </>
                         ) : (
                           <>
-                            <Zap className="size-3.5 mr-2" />
+                            <Zap className="size-4 mr-2" />
                             Sugerir Telemetria com SimLabs IA
                           </>
                         )}
@@ -7046,7 +7046,7 @@ function SpecializedClassifiedEditor({
 
                     {telemetryResult && (
                       <div className="mt-3 p-4 rounded-lg bg-background border border-border/70 space-y-2 animate-in fade-in">
-                        <div className="grid grid-cols-3 gap-2 text-center">
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-center">
                           <div className="p-2 rounded-lg bg-muted/30">
                             <span className="text-xs text-muted-foreground uppercase font-bold block">Score</span>
                             <span className="text-sm font-bold text-primary font-mono">{telemetryResult.viabilityScore}/100</span>
@@ -7244,7 +7244,7 @@ function SpecializedClassifiedEditor({
  isSelected ? prev.filter((x) => x !== item) : [...prev, item]
  );
  }}
- className={`px-3 py-1 rounded-lg text-xs font-medium border transition-colors cursor-pointer ${
+ className={`px-3 py-1 rounded-lg text-xs font-medium border transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
  isSelected
  ? "bg-primary/10 border-primary text-primary"
  : "bg-background border-border text-muted-foreground hover:text-foreground"
@@ -7425,7 +7425,7 @@ function SpecializedClassifiedEditor({
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
  <div className="space-y-2">
  <div className="flex items-center gap-2">
- <GraduationCap className="size-3.5 text-primary" />
+ <GraduationCap className="size-4 text-primary" />
  <Label className="text-xs text-foreground font-medium">Escolaridade Mínima Exigida *</Label>
  </div>
  <Select value={jobMinEducation} onValueChange={setJobMinEducation}>
@@ -7444,7 +7444,7 @@ function SpecializedClassifiedEditor({
 
  <div className="space-y-2">
  <div className="flex items-center gap-2">
- <Award className="size-3.5 text-primary" />
+ <Award className="size-4 text-primary" />
  <Label className="text-xs text-foreground font-medium">Experiência Profissional Mínima *</Label>
  </div>
  <Select value={jobExperienceLevel} onValueChange={setJobExperienceLevel}>
@@ -7548,7 +7548,7 @@ function SpecializedClassifiedEditor({
  active ? prev.filter((b) => b !== ben) : [...prev, ben]
  );
  }}
- className={`px-3 py-1 rounded-lg text-xs font-medium border transition-colors cursor-pointer ${
+ className={`px-3 py-1 rounded-lg text-xs font-medium border transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
  active
  ? "bg-primary/15 border-primary text-primary font-semibold"
  : "bg-background border-border text-muted-foreground hover:text-foreground"
@@ -7581,7 +7581,7 @@ function SpecializedClassifiedEditor({
  <button
  type="button"
  onClick={() => setJobSkills((prev) => prev.filter((s) => s !== sk))}
- className="hover:text-destructive text-primary/70 transition-colors cursor-pointer"
+ className="hover:text-destructive text-primary/70 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
  >
  ×
  </button>
@@ -7616,7 +7616,7 @@ function SpecializedClassifiedEditor({
  setCustomSkillInput("");
  }
  }}
- className="h-9 px-3 rounded-lg text-xs"
+ className="h-11 min-h-11 px-3 rounded-lg text-xs"
  >
  Adicionar
  </Button>
@@ -7631,7 +7631,7 @@ function SpecializedClassifiedEditor({
  key={sug}
  type="button"
  onClick={() => setJobSkills((prev) => [...prev, sug])}
- className="px-2 py-1 rounded-md text-xs border border-dashed border-border/80 text-muted-foreground hover:text-foreground hover:border-primary/50 transition-colors"
+ className="px-3 py-2 min-h-11 rounded-md text-xs border border-dashed border-border/80 text-muted-foreground hover:text-foreground hover:border-primary/50 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
  >
  + {sug}
  </button>
@@ -7658,7 +7658,7 @@ function SpecializedClassifiedEditor({
  selected ? (prev.length > 1 ? prev.filter((m) => m !== method.id) : prev) : [...prev, method.id]
  );
  }}
- className={`p-2 rounded-lg border transition-colors cursor-pointer flex flex-col justify-between ${
+ className={`p-2 rounded-lg border transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary flex flex-col justify-between ${
  selected
  ? "bg-primary/5 border-primary text-foreground"
  : "bg-background border-border text-muted-foreground"
@@ -7804,7 +7804,7 @@ function SpecializedClassifiedEditor({
  checked={freeShippingLocal}
  onCheckedChange={(c) => setFreeShippingLocal(!!c)}
  />
- <Label htmlFor="free-shipping" className="text-xs text-foreground font-medium cursor-pointer">
+ <Label htmlFor="free-shipping" className="text-xs text-foreground font-medium cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
  Oferecer frete grátis para entrega local na minha cidade
  </Label>
  </div>
@@ -7889,7 +7889,7 @@ function SpecializedClassifiedEditor({
                         type="button"
                         size="sm"
                         variant="outline"
-                        className="rounded-lg text-xs h-10 px-3"
+                        className="rounded-lg text-xs h-11 min-h-11 px-3"
                         onClick={() => {
                           if (newFeatureInput.trim()) {
                             setRecurringFeatures([...recurringFeatures, newFeatureInput.trim()]);
@@ -7912,7 +7912,7 @@ function SpecializedClassifiedEditor({
                           <button
                             type="button"
                             onClick={() => setRecurringFeatures(recurringFeatures.filter((_, i) => i !== idx))}
-                            className="hover:text-destructive text-primary/70 ml-1"
+                            className="size-11 min-h-11 min-w-11 hover:text-destructive text-primary/70 ml-1 inline-flex items-center justify-center cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                           >
                             ×
                           </button>
@@ -7946,9 +7946,9 @@ function SpecializedClassifiedEditor({
                         variant="outline"
                         size="sm"
                         onClick={handleAddTravelBullet}
-                        className="h-7 text-xs font-semibold rounded-lg gap-1 border-primary/30 text-primary hover:bg-primary/5 cursor-pointer"
+                        className="h-11 min-h-11 text-xs font-semibold rounded-lg gap-1 border-primary/30 text-primary hover:bg-primary/5 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                       >
-                        <Plus className="size-3.5" />
+                        <Plus className="size-4" />
                         <span>Adicionar</span>
                       </Button>
                     </div>
@@ -7971,7 +7971,7 @@ function SpecializedClassifiedEditor({
                                 ? "Equipamento Revisado, Cabos Inclusos..."
                                 : "Original, Nota Fiscal, Impecável..."
                             })`}
-                            className="h-9 rounded-lg text-xs bg-background flex-1"
+                            className="h-11 min-h-11 rounded-lg text-xs bg-background flex-1"
                           />
                           <div className="flex items-center gap-1 shrink-0">
                             {travelBioBullets.length > 1 && (
@@ -7982,7 +7982,7 @@ function SpecializedClassifiedEditor({
                                   size="sm"
                                   disabled={idx === 0}
                                   onClick={() => handleMoveTravelBullet(idx, "up")}
-                                  className="h-8 w-7 p-0 rounded-lg text-muted-foreground hover:text-foreground disabled:opacity-30 cursor-pointer"
+                                  className="h-11 min-h-11 w-7 p-0 rounded-lg text-muted-foreground hover:text-foreground disabled:opacity-30 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                                   title="Mover para cima"
                                   aria-label="Mover para cima"
                                 >
@@ -7994,7 +7994,7 @@ function SpecializedClassifiedEditor({
                                   size="sm"
                                   disabled={idx === travelBioBullets.length - 1}
                                   onClick={() => handleMoveTravelBullet(idx, "down")}
-                                  className="h-8 w-7 p-0 rounded-lg text-muted-foreground hover:text-foreground disabled:opacity-30 cursor-pointer"
+                                  className="h-11 min-h-11 w-7 p-0 rounded-lg text-muted-foreground hover:text-foreground disabled:opacity-30 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                                   title="Mover para baixo"
                                   aria-label="Mover para baixo"
                                 >
@@ -8007,11 +8007,11 @@ function SpecializedClassifiedEditor({
                               variant="ghost"
                               size="sm"
                               onClick={() => handleRemoveTravelBullet(idx)}
-                              className="h-8 w-7 p-0 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer"
+                              className="h-11 min-h-11 w-7 p-0 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                               title={travelBioBullets.length === 1 ? "Limpar campo" : "Remover diferencial"}
                               aria-label="Remover diferencial"
                             >
-                              <Trash2 className="size-3.5" />
+                              <Trash2 className="size-4" />
                             </Button>
                           </div>
                         </div>
@@ -8069,7 +8069,7 @@ function SpecializedClassifiedEditor({
                       <div className="pt-2 border-t border-border/40 space-y-2">
                         <div className="flex items-center justify-between">
                           <Label className="text-xs font-semibold text-foreground flex items-center gap-2">
-                            <BadgePercent className="size-3.5 text-emerald-600" />
+                            <BadgePercent className="size-4 text-emerald-600" />
                             <span>Desconto no Pix à Vista</span>
                           </Label>
                           <span className="text-xs font-black text-emerald-600 dark:text-emerald-400 font-mono bg-emerald-500/10 px-2 py-1 rounded-md">
@@ -8083,7 +8083,7 @@ function SpecializedClassifiedEditor({
                           step={1}
                           value={pixDiscountPercent}
                           onChange={(e) => setPixDiscountPercent(Math.min(30, Math.max(0, Number(e.target.value) || 0)))}
-                          className="w-full h-2 rounded-full accent-emerald-600 cursor-pointer"
+                          className="w-full h-2 rounded-full accent-emerald-600 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                           aria-label="Desconto no Pix"
                         />
                         <div className="flex justify-between text-xs text-muted-foreground font-mono">
@@ -8137,7 +8137,7 @@ function SpecializedClassifiedEditor({
                       <div className="pt-2 border-t border-border/40 space-y-3">
                         <div className="flex items-center justify-between">
                           <Label className="text-xs text-foreground font-semibold flex items-center gap-2">
-                            <CreditCard className="size-3.5 text-primary" />
+                            <CreditCard className="size-4 text-primary" />
                             <span>Parcelamento Máximo</span>
                           </Label>
                           <span className="text-xs font-black text-primary font-mono bg-primary/10 px-2 py-1 rounded-md">
@@ -8151,7 +8151,7 @@ function SpecializedClassifiedEditor({
                           step={1}
                           value={maxInstallments}
                           onChange={(e) => setMaxInstallments(Number(e.target.value) || 1)}
-                          className="w-full h-2 rounded-full accent-primary cursor-pointer"
+                          className="w-full h-2 rounded-full accent-primary cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                           aria-label="Parcelas no Cartão"
                         />
                         <div className="flex justify-between text-xs text-muted-foreground font-mono">
@@ -8171,7 +8171,7 @@ function SpecializedClassifiedEditor({
                                 onCheckedChange={setCardInterestFree}
                                 id="card-interest-free"
                               />
-                              <Label htmlFor="card-interest-free" className="text-xs font-medium cursor-pointer">
+                              <Label htmlFor="card-interest-free" className="text-xs font-medium cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
                                 Sem juros para o comprador
                               </Label>
                             </div>
@@ -8200,7 +8200,7 @@ function SpecializedClassifiedEditor({
                         placeholder="https://mpago.la/... ou link da sua maquininha"
                         value={paymentLink}
                         onChange={(e) => setPaymentLink(e.target.value)}
-                        className="h-9 rounded-lg text-xs bg-background font-mono"
+                        className="h-11 min-h-11 rounded-lg text-xs bg-background font-mono"
                       />
                       <p className="text-xs text-muted-foreground">
                         Se preenchido, os clientes poderão clicar e pagar com cartão diretamente no seu anúncio.
@@ -8272,7 +8272,7 @@ function SpecializedClassifiedEditor({
                           <Label className="text-xs font-semibold text-foreground">Prazo de Vencimento</Label>
                           <span className="text-xs font-mono font-bold text-primary">{boletoDueDays} dias úteis</span>
                         </div>
-                        <div className="grid grid-cols-5 gap-2">
+                        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
                           {[1, 2, 3, 5, 7].map((days) => (
                             <Button
                               key={days}
@@ -8280,7 +8280,7 @@ function SpecializedClassifiedEditor({
                               variant={boletoDueDays === days ? "default" : "outline"}
                               size="sm"
                               onClick={() => setBoletoDueDays(days)}
-                              className="h-8 text-xs font-semibold rounded-lg cursor-pointer"
+                              className="h-11 min-h-11 text-xs font-semibold rounded-lg cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                             >
                               {days}d
                             </Button>
@@ -8332,7 +8332,7 @@ function SpecializedClassifiedEditor({
                           step={1}
                           value={maxBoletoInstallments}
                           onChange={(e) => setMaxBoletoInstallments(Number(e.target.value) || 2)}
-                          className="w-full h-2 rounded-full accent-primary cursor-pointer"
+                          className="w-full h-2 rounded-full accent-primary cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                         />
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
                           <div className="space-y-1">
@@ -8341,7 +8341,7 @@ function SpecializedClassifiedEditor({
                               value={boletoMinDownPaymentCents}
                               onChange={setBoletoMinDownPaymentCents}
                               placeholder="0,00"
-                              className="h-9 text-xs"
+                              className="h-11 min-h-11 text-xs"
                             />
                           </div>
                           <div className="space-y-1">
@@ -8350,7 +8350,7 @@ function SpecializedClassifiedEditor({
                               value={boletoNotes}
                               onChange={(e) => setBoletoNotes(e.target.value)}
                               placeholder="Ex: Análise cadastral"
-                              className="h-9 text-xs"
+                              className="h-11 min-h-11 text-xs"
                             />
                           </div>
                         </div>
@@ -8400,12 +8400,12 @@ function SpecializedClassifiedEditor({
                           step={1}
                           value={maxCarneInstallments}
                           onChange={(e) => setMaxCarneInstallments(Number(e.target.value) || 2)}
-                          className="w-full h-2 rounded-full accent-primary cursor-pointer"
+                          className="w-full h-2 rounded-full accent-primary cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                         />
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
                           <div className="space-y-1">
                             <Label className="text-xs font-medium text-foreground">1º Vencimento</Label>
-                            <div className="grid grid-cols-3 gap-1">
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-1">
                               {[30, 45, 60].map((days) => (
                                 <Button
                                   key={days}
@@ -8413,7 +8413,7 @@ function SpecializedClassifiedEditor({
                                   variant={carneGraceDays === days ? "default" : "outline"}
                                   size="sm"
                                   onClick={() => setCarneGraceDays(days)}
-                                  className="h-8 text-xs font-semibold rounded-lg"
+                                  className="h-11 min-h-11 text-xs font-semibold rounded-lg"
                                 >
                                   {days}d
                                 </Button>
@@ -8426,7 +8426,7 @@ function SpecializedClassifiedEditor({
                               value={carneMinDownPaymentCents}
                               onChange={setCarneMinDownPaymentCents}
                               placeholder="0,00"
-                              className="h-8 text-xs"
+                              className="h-11 min-h-11 text-xs"
                             />
                           </div>
                         </div>
@@ -8470,7 +8470,7 @@ function SpecializedClassifiedEditor({
                           value={tradeNotes}
                           onChange={(e) => setTradeNotes(e.target.value)}
                           placeholder="Ex: Veículo, moto, eletrônicos ou itens sob avaliação"
-                          className="h-9 text-xs"
+                          className="h-11 min-h-11 text-xs"
                         />
                       </div>
                     )}
@@ -8512,7 +8512,7 @@ function SpecializedClassifiedEditor({
                           value={financingNotes}
                           onChange={(e) => setFinancingNotes(e.target.value)}
                           placeholder="Ex: Financiamento bancário ou consórcio contemplado"
-                          className="h-9 text-xs"
+                          className="h-11 min-h-11 text-xs"
                         />
                       </div>
                     )}
@@ -8557,8 +8557,8 @@ function SpecializedClassifiedEditor({
             <div className="p-4 bg-muted/20 border border-border/70 rounded-lg space-y-2">
               <div className="flex items-center justify-between gap-3">
                 <div className="space-y-1 min-w-0">
-                  <Label htmlFor="hide-location-toggle" className="text-xs font-bold text-foreground cursor-pointer flex items-center gap-2">
-                    <ShieldCheck className="size-3.5 text-primary" />
+                  <Label htmlFor="hide-location-toggle" className="text-xs font-bold text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary flex items-center gap-2">
+                    <ShieldCheck className="size-4 text-primary" />
                     Ocultar endereço completamente
                   </Label>
                   <p className="text-xs text-muted-foreground/75 text-muted-foreground leading-snug">
@@ -8587,7 +8587,7 @@ function SpecializedClassifiedEditor({
 									value={whatsapp}
 									onChange={(val) => setWhatsapp(val || "")}
 									placeholder="(49) 99999-9999"
-									className="h-10 rounded-lg text-xs bg-background"
+									className="h-11 min-h-11 rounded-lg text-xs bg-background"
 								/>
  </div>
  </div>
@@ -8698,7 +8698,7 @@ function SpecializedClassifiedEditor({
                             value={civilInquiryTitle}
                             onChange={(e) => setCivilInquiryTitle(e.target.value)}
                             placeholder="Ex: Tenho Interesse neste Anúncio"
-                            className="h-10 text-xs"
+                            className="h-11 min-h-11 text-xs"
                           />
                         </div>
                         <div className="space-y-1">
@@ -8707,18 +8707,18 @@ function SpecializedClassifiedEditor({
                             value={civilInquirySubtitle}
                             onChange={(e) => setCivilInquirySubtitle(e.target.value)}
                             placeholder="Ex: Responda perguntas rápidas para receber proposta."
-                            className="h-10 text-xs"
+                            className="h-11 min-h-11 text-xs"
                           />
                         </div>
                       </div>
 
                       <div className="p-3 bg-muted/20 border border-border/60 rounded-lg flex items-center justify-between gap-3">
-                        <div className="space-y-0.5">
-                          <div className="flex items-center gap-1.5 text-xs font-bold text-foreground">
-                            <Bot className="size-3.5 text-primary" />
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2 text-xs font-bold text-foreground">
+                            <Bot className="size-4 text-primary" />
                             <span>Ativar Bot SDR IA Após o Envio</span>
                           </div>
-                          <p className="text-[11px] text-muted-foreground">
+                          <p className="text-xs text-muted-foreground">
                             Exibe botão para abrir chat imediato com a IA alimentada pelas respostas do lead.
                           </p>
                         </div>
@@ -8745,9 +8745,9 @@ function SpecializedClassifiedEditor({
                                     setCivilInquiryQuestions(next);
                                   }}
                                   placeholder="Texto da pergunta..."
-                                  className="h-8 text-xs flex-1"
+                                  className="h-11 min-h-11 text-xs flex-1"
                                 />
-                                <Badge variant="outline" className="text-[10px] uppercase font-mono">
+                                <Badge variant="outline" className="text-xs uppercase font-mono">
                                   {q.type}
                                 </Badge>
                                 <Button
@@ -8755,18 +8755,18 @@ function SpecializedClassifiedEditor({
                                   variant="ghost"
                                   size="sm"
                                   onClick={() => setCivilInquiryQuestions(civilInquiryQuestions.filter((_, i) => i !== idx))}
-                                  className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                                  className="h-11 min-h-11 w-8 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
                                 >
-                                  <Trash2 className="size-3.5" />
+                                  <Trash2 className="size-4" />
                                 </Button>
                               </div>
 
                               {q.type === "select" && (
                                 <div className="space-y-1 pl-4 border-l-2 border-border/40">
-                                  <span className="text-[11px] text-muted-foreground">Opções de resposta:</span>
+                                  <span className="text-xs text-muted-foreground">Opções de resposta:</span>
                                   <div className="flex flex-wrap gap-1">
                                     {(q.options || []).map((opt, optIdx) => (
-                                      <Badge key={optIdx} variant="secondary" className="text-xs py-0.5 px-2 gap-1 font-normal">
+                                      <Badge key={optIdx} variant="secondary" className="text-xs py-1 px-2 gap-1 font-normal">
                                         <span>{opt}</span>
                                         <button
                                           type="button"
@@ -8775,7 +8775,7 @@ function SpecializedClassifiedEditor({
                                             next[idx].options = (next[idx].options || []).filter((_, oi) => oi !== optIdx);
                                             setCivilInquiryQuestions(next);
                                           }}
-                                          className="text-muted-foreground hover:text-foreground ml-1"
+                                          className="size-11 min-h-11 min-w-11 text-muted-foreground hover:text-foreground ml-1 inline-flex items-center justify-center cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                                         >
                                           ×
                                         </button>
@@ -8793,7 +8793,7 @@ function SpecializedClassifiedEditor({
                                           (e.target as HTMLInputElement).value = "";
                                         }
                                       }}
-                                      className="h-6 px-2 text-xs rounded border border-border/60 bg-muted/30 focus:outline-none focus:ring-1 focus:ring-primary"
+                                      className="h-11 min-h-11 px-3 text-xs rounded border border-border/60 bg-muted/30 focus:outline-none focus:ring-1 focus:ring-primary"
                                     />
                                   </div>
                                 </div>
@@ -8808,10 +8808,10 @@ function SpecializedClassifiedEditor({
                             value={newQuestionLabel}
                             onChange={(e) => setNewQuestionLabel(e.target.value)}
                             placeholder="Nova pergunta (ex: Qual sua proposta para pagamento?)"
-                            className="h-9 text-xs flex-1"
+                            className="h-11 min-h-11 text-xs flex-1"
                           />
                           <Select value={newQuestionType} onValueChange={(v: any) => setNewQuestionType(v)}>
-                            <SelectTrigger className="w-28 h-9 text-xs">
+                            <SelectTrigger className="w-28 h-11 min-h-11 text-xs">
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -8832,16 +8832,16 @@ function SpecializedClassifiedEditor({
                                 {
                                   id: `q_${Date.now()}`,
                                   label: newQuestionLabel.trim(),
-                                  type: newQuestionType,
+                                  type: newQuestionType as any,
                                   options: newQuestionType === "select" ? ["Opção 1", "Opção 2"] : undefined,
                                   required: false,
                                 },
                               ]);
                               setNewQuestionLabel("");
                             }}
-                            className="h-9 text-xs font-semibold gap-1 px-3"
+                            className="h-11 min-h-11 text-xs font-semibold gap-1 px-3"
                           >
-                            <Plus className="size-3.5" />
+                            <Plus className="size-4" />
                             <span>Adicionar</span>
                           </Button>
                         </div>
@@ -8862,10 +8862,10 @@ function SpecializedClassifiedEditor({
                     <button
                       type="button"
                       onClick={() => {/* info modal via toast */ toast.info("O Agente SDR é um assistente IA que atende compradores em tempo real, responde dúvidas sobre o produto e ajuda a negociar dentro dos limites que você definir.", { duration: 8000 })}}
-                      className="size-6 flex items-center justify-center rounded-full hover:bg-muted transition-colors text-muted-foreground"
+                      className="size-11 min-h-11 min-w-11 flex items-center justify-center rounded-full hover:bg-muted transition-colors text-muted-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                       aria-label="Saiba mais sobre o Agente SDR"
                     >
-                      <Info className="size-3.5" />
+                      <Info className="size-4" />
                     </button>
                     <Switch
                       id="ai-agent-enabled"
@@ -8910,7 +8910,7 @@ function SpecializedClassifiedEditor({
                     <div className="space-y-2 p-4 bg-background rounded-lg border border-border/60">
                       <div className="flex items-center justify-between">
                         <Label className="text-xs font-medium text-foreground flex items-center gap-2">
-                          <BadgePercent className="size-3.5 text-primary" />
+                          <BadgePercent className="size-4 text-primary" />
                           Desconto Máximo Permitido
                         </Label>
                         <span className="text-xs font-bold text-foreground tabular-nums font-mono">
@@ -8924,7 +8924,7 @@ function SpecializedClassifiedEditor({
                         step={1}
                         value={maxDiscountPct}
                         onChange={(e) => setMaxDiscountPct(Number(e.target.value))}
-                        className="w-full h-2 rounded-full accent-primary cursor-pointer"
+                        className="w-full h-2 rounded-full accent-primary cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                         aria-label="Desconto máximo para o agente SDR"
                       />
                       <div className="flex justify-between text-xs text-muted-foreground font-mono">
@@ -8952,7 +8952,7 @@ function SpecializedClassifiedEditor({
                 <button
                   type="button"
                   onClick={() => setIsTemplateStyleOpen(!isTemplateStyleOpen)}
-                  className="w-full flex items-center justify-between text-xs font-semibold text-foreground hover:text-primary transition-colors cursor-pointer"
+                  className="w-full flex items-center justify-between text-xs font-semibold text-foreground hover:text-primary transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 >
                   <div className="flex items-center gap-2">
                     <Palette className="size-4 text-primary shrink-0" />
@@ -8966,43 +8966,43 @@ function SpecializedClassifiedEditor({
                 {isTemplateStyleOpen && (
                   <div className="mt-3 pt-3 border-t border-border/40 space-y-4">
                     {/* Modo de Exibição: Abas vs Lista Contínua */}
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <Label className="text-xs font-semibold text-foreground">Estrutura de Leitura</Label>
                       <div className="grid grid-cols-2 gap-2">
                         <button
                           type="button"
                           onClick={() => setDisplayMode("tabs")}
                           className={cn(
-                            "p-2.5 rounded-lg border text-left transition-colors cursor-pointer text-xs",
+                            "p-3 rounded-lg border text-left transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary text-xs",
                             displayMode === "tabs"
                               ? "border-primary bg-primary/5 ring-1 ring-primary font-bold text-foreground"
                               : "border-border/60 hover:bg-muted/40 text-muted-foreground"
                           )}
                         >
                           <p className="font-semibold text-foreground">Abas de Navegação</p>
-                          <p className="text-[11px] text-muted-foreground mt-0.5">Seções organizadas por abas</p>
+                          <p className="text-xs text-muted-foreground mt-1">Seções organizadas por abas</p>
                         </button>
 
                         <button
                           type="button"
                           onClick={() => setDisplayMode("continuous_list")}
                           className={cn(
-                            "p-2.5 rounded-lg border text-left transition-colors cursor-pointer text-xs",
+                            "p-3 rounded-lg border text-left transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary text-xs",
                             displayMode === "continuous_list"
                               ? "border-primary bg-primary/5 ring-1 ring-primary font-bold text-foreground"
                               : "border-border/60 hover:bg-muted/40 text-muted-foreground"
                           )}
                         >
                           <p className="font-semibold text-foreground">Rolagem Contínua</p>
-                          <p className="text-[11px] text-muted-foreground mt-0.5">Fluxo vertical unificado</p>
+                          <p className="text-xs text-muted-foreground mt-1">Fluxo vertical unificado</p>
                         </button>
                       </div>
                     </div>
 
                     {/* Os 6 Templates Canônicos */}
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <Label className="text-xs font-semibold text-foreground">Modelo Visual do Anúncio</Label>
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                      <div className="grid grid-cols-2 sm:grid-cols-1 sm:grid-cols-3 gap-2">
                         {[
                           { id: "standard", label: "Padrão Geral", desc: "Limpo & Universal" },
                           { id: "editorial", label: "Revista Editorial", desc: "Narrativa Imersiva" },
@@ -9016,14 +9016,14 @@ function SpecializedClassifiedEditor({
                             type="button"
                             onClick={() => setTemplateStyle(tpl.id as any)}
                             className={cn(
-                              "p-2 rounded-lg border text-left transition-colors cursor-pointer",
+                              "p-2 rounded-lg border text-left transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                               templateStyle === tpl.id
                                 ? "border-primary bg-primary/5 ring-1 ring-primary"
                                 : "border-border/60 hover:bg-muted/40"
                             )}
                           >
                             <p className="text-xs font-bold text-foreground">{tpl.label}</p>
-                            <p className="text-[10px] text-muted-foreground mt-0.5">{tpl.desc}</p>
+                            <p className="text-xs text-muted-foreground mt-1">{tpl.desc}</p>
                           </button>
                         ))}
                       </div>
@@ -9043,7 +9043,7 @@ function SpecializedClassifiedEditor({
           <div className="bg-card rounded-lg overflow-hidden border border-border/60">
             <div className="bg-muted/40 px-4 py-2 flex items-center justify-between text-xs border-b border-border/40">
               <span className="font-semibold flex items-center gap-2 text-muted-foreground">
-                <Eye className="size-3.5 text-primary" />
+                <Eye className="size-4 text-primary" />
                 Prévia ao vivo
               </span>
             </div>
@@ -9058,7 +9058,7 @@ function SpecializedClassifiedEditor({
           <div className="bg-card rounded-lg overflow-hidden border border-border/60">
             <div className="bg-muted/40 px-4 py-2 flex items-center justify-between text-xs border-b border-border/40">
               <span className="font-semibold flex items-center gap-2 text-muted-foreground">
-                <Eye className="size-3.5 text-primary" />
+                <Eye className="size-4 text-primary" />
                 Prévia ao vivo · Mercado & Perecíveis
               </span>
             </div>
@@ -9127,7 +9127,7 @@ function SpecializedClassifiedEditor({
             {/* Header da Prévia */}
             <div className="bg-muted/40 px-4 py-2 flex items-center justify-between text-xs border-b border-border/40">
               <span className="font-semibold flex items-center gap-2 text-muted-foreground">
-                <Eye className="size-3.5 text-primary" />
+                <Eye className="size-4 text-primary" />
                 Prévia ao vivo
               </span>
             </div>
@@ -9153,13 +9153,13 @@ function SpecializedClassifiedEditor({
  </div>
 
  {images.length > 1 && (
- <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+ <div className="flex gap-2 overflow-x-auto carousel no-scrollbar pb-1">
  {images.map((img, idx) => (
  <button
  key={idx}
  type="button"
  onClick={() => setActivePreviewImage(idx)}
- className={`size-14 rounded-lg overflow-hidden border shrink-0 transition-colors ${
+ className={`size-14 min-h-11 min-w-11 rounded-lg overflow-hidden border shrink-0 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
  activePreviewImage === idx
  ? "border-primary ring-2 ring-primary/20"
  : "border-border opacity-70"
@@ -9385,7 +9385,7 @@ function SpecializedClassifiedEditor({
  <Truck className="size-4 text-primary" />
  <span>Simulação de Frete</span>
  </div>
- <Badge variant="default" className="text-xs font-mono bg-primary text-primary-foreground">
+ <Badge className="text-xs font-mono bg-primary text-primary-foreground">
  Waesy Express
  </Badge>
  </div>
@@ -9393,8 +9393,8 @@ function SpecializedClassifiedEditor({
  <div className="space-y-2 text-xs pt-1">
  <div className="flex items-center justify-between p-2 rounded-lg bg-background">
  <div className="flex items-center gap-2">
- <div className="size-6 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
- <Truck className="size-3.5" />
+ <div className="size-11 min-h-11 min-w-11 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+ <Truck className="size-4" />
  </div>
  <div>
  <p className="font-semibold text-xs text-foreground">Entrega Expressa Motoboy</p>
@@ -9408,8 +9408,8 @@ function SpecializedClassifiedEditor({
 
  <div className="flex items-center justify-between p-2 rounded-lg bg-background">
  <div className="flex items-center gap-2">
- <div className="size-6 rounded-lg bg-muted flex items-center justify-center text-foreground">
- <Package className="size-3.5" />
+ <div className="size-11 min-h-11 min-w-11 rounded-lg bg-muted flex items-center justify-center text-foreground">
+ <Package className="size-4" />
  </div>
  <div>
  <p className="font-semibold text-xs text-foreground">Ponto PUDO / Locker Waesy</p>
@@ -9428,7 +9428,7 @@ function SpecializedClassifiedEditor({
  {niche.id === "hospedagem" && (
  <div className="rounded-lg p-4 bg-muted/20 space-y-3">
  <h3 className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-2">
- <Key className="size-3.5 text-primary" />
+ <Key className="size-4 text-primary" />
  <span>Regras da Estadia</span>
  </h3>
  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs pt-1">

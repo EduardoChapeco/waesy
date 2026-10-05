@@ -129,6 +129,143 @@ export function parseInlineExemptions(lines) {
 }
 
 /**
+ * Analisa o código fonte e extrai blocos de tags JSX de abertura com seus atributos e escopo multi-linha.
+ */
+export function parseJsxTags(content) {
+  const tags = [];
+  const len = content.length;
+  let pos = 0;
+  let line = 1;
+  let col = 1;
+
+  while (pos < len) {
+    const ch = content[pos];
+
+    if (ch === '\n') {
+      line++;
+      col = 1;
+      pos++;
+      continue;
+    }
+
+    // Ignora comentários de linha única
+    if (ch === '/' && content[pos + 1] === '/') {
+      while (pos < len && content[pos] !== '\n') {
+        pos++;
+      }
+      continue;
+    }
+
+    // Ignora comentários multi-linha
+    if (ch === '/' && content[pos + 1] === '*') {
+      pos += 2;
+      col += 2;
+      while (pos < len && !(content[pos] === '*' && content[pos + 1] === '/')) {
+        if (content[pos] === '\n') {
+          line++;
+          col = 1;
+        } else {
+          col++;
+        }
+        pos++;
+      }
+      pos += 2;
+      col += 2;
+      continue;
+    }
+
+    // Ignora strings literais fora do JSX (aspas simples e duplas)
+    if (ch === '"' || ch === "'") {
+      const quote = ch;
+      pos++;
+      col++;
+      while (pos < len && content[pos] !== quote) {
+        if (content[pos] === '\\') {
+          pos += 2;
+          col += 2;
+          continue;
+        }
+        if (content[pos] === '\n') {
+          line++;
+          col = 1;
+        } else {
+          col++;
+        }
+        pos++;
+      }
+      pos++;
+      col++;
+      continue;
+    }
+
+    // Detecta abertura de tag JSX `<TagName`
+    if (ch === '<' && /[a-zA-Z]/.test(content[pos + 1])) {
+      const tagStartLine = line;
+      const tagStartCol = col;
+      pos++;
+      col++;
+
+      let tagName = '';
+      while (pos < len && /[a-zA-Z0-9_.-]/.test(content[pos])) {
+        tagName += content[pos];
+        pos++;
+        col++;
+      }
+
+      let tagContent = '';
+      let braceDepth = 0;
+      let inQuote = null;
+
+      while (pos < len) {
+        const c = content[pos];
+        tagContent += c;
+
+        if (c === '\n') {
+          line++;
+          col = 1;
+          pos++;
+          continue;
+        }
+
+        if (inQuote) {
+          if (c === inQuote && content[pos - 1] !== '\\') {
+            inQuote = null;
+          }
+        } else {
+          if (c === '"' || c === "'" || c === '`') {
+            inQuote = c;
+          } else if (c === '{') {
+            braceDepth++;
+          } else if (c === '}') {
+            if (braceDepth > 0) braceDepth--;
+          } else if (c === '>' && braceDepth === 0) {
+            pos++;
+            col++;
+            break;
+          }
+        }
+
+        pos++;
+        col++;
+      }
+
+      tags.push({
+        tagName,
+        tagContent,
+        line: tagStartLine,
+        col: tagStartCol
+      });
+      continue;
+    }
+
+    pos++;
+    col++;
+  }
+
+  return tags;
+}
+
+/**
  * Linta uma string de código fonte e retorna todas as violações encontradas.
  */
 export function lintSource(content, filePath, customConfig = null) {
@@ -196,7 +333,9 @@ export function lintSource(content, filePath, customConfig = null) {
   const non4pxSpacingRegex = /\b(?:p[xytblr]?|m[xytblr]?|gap(?:-[xy])?|space-[xy])-(?:0\.5|1\.5|2\.5|3\.5)\b/g;
 
   // DL-04: !important ou modificadores de força bruta
-  const importantRegex = /!important|(?:^|[\s"'`])!(?:[a-zA-Z0-9_-]+)/g;
+  const cssBangRegex = /!important|(?:^|[\s"'`])!(?:[a-zA-Z0-9_-]+)/g;
+  const tailwindBangRegex = /(?:^|[\s"'`])!(?:(?:[a-zA-Z0-9_-]+:)*)(?:p[xytblr]?|m[xytblr]?|bg|text|border|h|w|min-[wh]|max-[wh]|flex|grid|gap|space|rounded|shadow|opacity|z|overflow|font|leading|tracking|items|justify|content|self|place|top|bottom|left|right|inset|col|row|cursor|pointer|transition|duration|animate|rotate|scale|translate|aspect|ring|outline)-[a-zA-Z0-9_[\]/.#%-]+/g;
+  const tailwindKeywordBangRegex = /(?:^|[\s"'`])!(?:block|inline|hidden|flex|grid|table|static|relative|absolute|fixed|sticky)\b/g;
 
   // DL-05: Inline style com estilos visuais arbitrários
   const inlineStyleRegex = /style\s*=\s*\{\{\s*[^}]*(?:color|background|padding|margin|width|height)[^}]*\}\}/gi;
@@ -319,20 +458,67 @@ export function lintSource(content, filePath, customConfig = null) {
 
     // DL-04: !important ou modificadores de força bruta
     if (isRuleActive('DL-04') && !isCommentLine && !isExempt('DL-04', lineNum)) {
-      let m;
-      importantRegex.lastIndex = 0;
-      while ((m = importantRegex.exec(line)) !== null) {
+      if (line.includes('!important')) {
         violations.push({
           id: 'DL-04',
           rule: 'DL-04',
           file: relFile,
           module: fileModule,
           line: lineNum,
-          column: m.index + 1,
+          column: line.indexOf('!important') + 1,
           severity: getSeverity('DL-04'),
-          match: m[0],
-          message: `Uso proibido de especificidade forçada "${m[0]}".`
+          match: '!important',
+          message: `Uso proibido de especificidade forçada "!important".`
         });
+      } else if (isCss) {
+        let m;
+        cssBangRegex.lastIndex = 0;
+        while ((m = cssBangRegex.exec(line)) !== null) {
+          violations.push({
+            id: 'DL-04',
+            rule: 'DL-04',
+            file: relFile,
+            module: fileModule,
+            line: lineNum,
+            column: m.index + 1,
+            severity: getSeverity('DL-04'),
+            match: m[0].trim(),
+            message: `Uso proibido de especificidade forçada "${m[0].trim()}".`
+          });
+        }
+      } else {
+        const hasClassOrString = /className|class|cn\(|cva\(|clsx\(|["'`]/.test(line);
+        if (hasClassOrString) {
+          let m;
+          tailwindBangRegex.lastIndex = 0;
+          while ((m = tailwindBangRegex.exec(line)) !== null) {
+            violations.push({
+              id: 'DL-04',
+              rule: 'DL-04',
+              file: relFile,
+              module: fileModule,
+              line: lineNum,
+              column: m.index + 1,
+              severity: getSeverity('DL-04'),
+              match: m[0].trim(),
+              message: `Uso proibido de especificidade forçada "${m[0].trim()}".`
+            });
+          }
+          tailwindKeywordBangRegex.lastIndex = 0;
+          while ((m = tailwindKeywordBangRegex.exec(line)) !== null) {
+            violations.push({
+              id: 'DL-04',
+              rule: 'DL-04',
+              file: relFile,
+              module: fileModule,
+              line: lineNum,
+              column: m.index + 1,
+              severity: getSeverity('DL-04'),
+              match: m[0].trim(),
+              message: `Uso proibido de especificidade forçada "${m[0].trim()}".`
+            });
+          }
+        }
       }
     }
 
@@ -434,43 +620,8 @@ export function lintSource(content, filePath, customConfig = null) {
       }
     }
 
-    // DL-14: Alvo de toque < 44px
-    if (isRuleActive('DL-14') && !isCommentLine && !isExempt('DL-14', lineNum)) {
-      if (line.includes('onClick') || line.includes('<button') || line.includes('<Button') || line.includes('<a ') || line.includes('<Link')) {
-        let m;
-        smallTargetRegex.lastIndex = 0;
-        while ((m = smallTargetRegex.exec(line)) !== null) {
-          violations.push({
-            id: 'DL-14',
-            rule: 'DL-14',
-            file: relFile,
-            module: fileModule,
-            line: lineNum,
-            column: m.index + 1,
-            severity: getSeverity('DL-14'),
-            match: m[0],
-            message: `Alvo de toque com altura/dimensão inferior a 44px ("${m[0]}"). Exige min-h-11 (44px).`
-          });
-        }
-      }
-    }
+    // DL-14: Alvo de toque < 44px delegado para análise multi-linha de blocos JSX (parseJsxTags)
 
-    // DL-15: Interativo sem focus-visible
-    if (isRuleActive('DL-15') && !isCommentLine && !isExempt('DL-15', lineNum)) {
-      if ((line.includes('onClick') || line.includes('<button')) && !line.includes('focus-visible:') && !line.includes('<Button')) {
-        violations.push({
-          id: 'DL-15',
-          rule: 'DL-15',
-          file: relFile,
-          module: fileModule,
-          line: lineNum,
-          column: 1,
-          severity: getSeverity('DL-15'),
-          match: 'onClick/button sem focus-visible',
-          message: `Elemento interativo sem anel de foco teclado (:focus-visible).`
-        });
-      }
-    }
 
     // DL-18: Texto ou fundo branco/preto literal
     if (isRuleActive('DL-18') && !isCommentLine && !isExempt('DL-18', lineNum)) {
@@ -651,6 +802,67 @@ export function lintSource(content, filePath, customConfig = null) {
       }
     }
   });
+
+  // DL-14 e DL-15: Análise de blocos JSX multi-linha para elementos interativos
+  if (!isCss && (isRuleActive('DL-14') || isRuleActive('DL-15'))) {
+    const jsxTags = parseJsxTags(content);
+    for (const tag of jsxTags) {
+      const isNativeButton = tag.tagName.toLowerCase() === 'button';
+      const isDsButton = tag.tagName === 'Button' || tag.tagName.endsWith('Button');
+      const isLink = (tag.tagName.toLowerCase() === 'a' || tag.tagName === 'Link' || tag.tagName === 'NavLink') && tag.tagName !== 'ExternalLink';
+      const hasOnClick = /\bonClick\s*=/.test(tag.tagContent);
+      const isInteractive = isNativeButton || isDsButton || isLink || hasOnClick;
+
+      // DL-14: Alvo de toque < 44px (inspeção de tags JSX multilinhas)
+      if (isRuleActive('DL-14') && isInteractive) {
+        smallTargetRegex.lastIndex = 0;
+        let m;
+        while ((m = smallTargetRegex.exec(tag.tagContent)) !== null) {
+          const textBefore = tag.tagContent.slice(0, m.index);
+          const lineOffset = (textBefore.match(/\n/g) || []).length;
+          const matchLine = tag.line + lineOffset;
+          const lastNewlinePos = textBefore.lastIndexOf('\n');
+          const matchCol = lastNewlinePos === -1 ? tag.col + m.index : (m.index - lastNewlinePos);
+
+          const lineOfMatch = lines[matchLine - 1] || '';
+          if (lineOfMatch.trim().startsWith('//') || lineOfMatch.trim().startsWith('*') || lineOfMatch.trim().startsWith('/*')) continue;
+          if (isExempt('DL-14', matchLine) || isExempt('DL-14', tag.line)) continue;
+
+          violations.push({
+            id: 'DL-14',
+            rule: 'DL-14',
+            file: relFile,
+            module: fileModule,
+            line: matchLine,
+            column: matchCol,
+            severity: getSeverity('DL-14'),
+            match: m[0],
+            message: `Alvo de toque com altura/dimensão inferior a 44px ("${m[0]}"). Exige min-h-11 (44px).`
+          });
+        }
+      }
+
+      // DL-15: Interativo sem focus-visible
+      if (isRuleActive('DL-15')) {
+        if (isExempt('DL-15', tag.line)) continue;
+        const hasFocusVisible = tag.tagContent.includes('focus-visible:');
+
+        if ((isNativeButton || hasOnClick) && !isDsButton && !hasFocusVisible) {
+          violations.push({
+            id: 'DL-15',
+            rule: 'DL-15',
+            file: relFile,
+            module: fileModule,
+            line: tag.line,
+            column: tag.col,
+            severity: getSeverity('DL-15'),
+            match: isNativeButton ? '<button sem focus-visible' : 'onClick sem focus-visible',
+            message: `Elemento interativo sem anel de foco teclado (:focus-visible).`
+          });
+        }
+      }
+    }
+  }
 
   // --- REGRAS EM NÍVEL DE ARQUIVO (FILE-LEVEL CHECKS) ---
 

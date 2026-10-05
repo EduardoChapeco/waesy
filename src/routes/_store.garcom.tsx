@@ -10,8 +10,30 @@ import { listRestaurantTables, updateRestaurantTableStatus, listKdsActiveOrders 
 
 export const Route = createFileRoute("/_store/garcom")({
  head: () => ({ meta: [{ title: "App do Garçom | Terminal Móvel" }] }),
+ errorComponent: GarcomErrorComponent,
  component: GarcomTerminalPage,
 });
+
+function GarcomErrorComponent({ error, reset }: { error: any; reset: () => void }) {
+  return (
+    <div className="mx-auto max-w-xl px-4 py-16 text-center space-y-4">
+      <div className="inline-flex size-14 items-center justify-center rounded-lg bg-destructive/10 text-destructive mb-2">
+        <Utensils className="size-7" />
+      </div>
+      <h2 className="text-xl font-bold text-foreground">Instabilidade no Terminal do Garçom</h2>
+      <p className="text-xs text-muted-foreground max-w-md mx-auto leading-relaxed">
+        {error?.message || "Não foi possível sincronizar o status das mesas e comandas no PDV."}
+      </p>
+      <Button
+        type="button"
+        onClick={reset}
+        className="rounded-lg font-bold text-xs h-11 sm:h-9 px-4 focus-visible:ring-2 focus-visible:ring-primary"
+      >
+        Tentar Novamente
+      </Button>
+    </div>
+  );
+}
 
 function GarcomTerminalPage() {
  const queryClient = useQueryClient();
@@ -21,7 +43,7 @@ function GarcomTerminalPage() {
  const [newItemName, setNewItemName] = useState("");
  const [newItemNotes, setNewItemNotes] = useState("");
 
- const { data: tables = [], isLoading } = useQuery({
+ const { data: tables = [], isLoading, isError, refetch } = useQuery({
  queryKey: ["garcom-tables"],
  queryFn: () => listRestaurantTables(),
  refetchInterval: 5000,
@@ -50,16 +72,16 @@ function GarcomTerminalPage() {
  };
 
  return (
- <div className="min-h-[100dvh] bg-background text-foreground pb-20">
+ <div className="min-h-screen bg-background text-foreground pb-20">
  {/* Header Fixo Mobile-First */}
  <div className="sticky top-0 z-30 bg-background/80 backdrop-blur-xl border-b border-border px-4 py-4 flex items-center justify-between">
  <div className="flex items-center gap-3">
- <div className="h-9 w-9 rounded-lg bg-orange-500 text-white flex items-center justify-center font-bold">
+ <div className="size-9 rounded-lg bg-primary text-primary-foreground flex items-center justify-center font-bold">
  <Utensils className="h-4 w-4" />
  </div>
  <div>
  <h1 className="font-bold text-sm leading-tight">Comandas</h1>
- <p className="text-[11px] text-muted-foreground">Terminal do Garçom</p>
+ <p className="text-2xs text-muted-foreground">Terminal do Garçom</p>
  </div>
  </div>
 
@@ -86,6 +108,13 @@ function GarcomTerminalPage() {
 
  {isLoading ? (
  <div className="p-8 text-center text-muted-foreground text-sm">Carregando mapa de mesas...</div>
+ ) : isError ? (
+ <div className="bg-card border border-destructive/30 p-8 rounded-lg text-center space-y-3">
+   <p className="text-sm font-semibold text-destructive">Falha ao carregar mesas do salão.</p>
+   <Button type="button" size="sm" variant="outline" onClick={() => refetch()} className="h-11 sm:h-9 text-xs font-bold">
+     Tentar Novamente
+   </Button>
+ </div>
  ) : tables.length === 0 ? (
  <div className="bg-card border border-border p-8 rounded-lg text-center text-sm text-muted-foreground">
  Nenhuma mesa cadastrada no sistema de PDV.
@@ -101,7 +130,7 @@ function GarcomTerminalPage() {
  <button
  key={table.id}
  onClick={() => setSelectedTable(table)}
- className={`p-4 rounded-lg border text-left transition-all min-h-[110px] flex flex-col justify-between ${
+ className={`p-4 rounded-lg border text-left transition-all min-h-28 flex flex-col justify-between ${
  isOccupied 
  ? "bg-amber-500/10 border-amber-500/30 text-amber-600 dark:text-amber-400" 
  : isBilling 
@@ -111,7 +140,7 @@ function GarcomTerminalPage() {
  >
  <div className="flex items-center justify-between">
  <span className="font-black text-lg">Mesa {table.table_number}</span>
- <Badge variant="outline" className="text-[10px] uppercase font-bold py-1 px-2 rounded-md">
+ <Badge variant="outline" className="text-3xs uppercase font-bold py-1 px-2 rounded-md">
  {table.status}
  </Badge>
  </div>
@@ -172,7 +201,7 @@ function GarcomTerminalPage() {
  placeholder="Observações (ex: sem cebola, gelo e limão)"
  value={newItemNotes}
  onChange={(e) => setNewItemNotes(e.target.value)}
- className="min-h-10 rounded-lg text-xs"
+ className="min-h-11 sm:min-h-9 rounded-lg text-xs"
  />
  </div>
 
@@ -184,13 +213,13 @@ function GarcomTerminalPage() {
  <div key={idx} className="flex items-center justify-between p-3 rounded-lg bg-card border border-border">
  <div>
  <div className="font-bold text-sm">{item.name}</div>
- {item.notes && <div className="text-[11px] text-muted-foreground">Obs: {item.notes}</div>}
+ {item.notes && <div className="text-2xs text-muted-foreground">Obs: {item.notes}</div>}
  </div>
  <Button
  variant="ghost"
  size="sm"
  onClick={() => setCartItems(cartItems.filter((_, i) => i !== idx))}
- className="text-rose-500 h-8 w-8 p-0"
+ className="text-destructive size-9 p-0"
  >
  <Trash2 className="h-4 w-4" />
  </Button>
@@ -202,7 +231,7 @@ function GarcomTerminalPage() {
  toast.success("Itens enviados com sucesso para o KDS da Cozinha!");
  setCartItems([]);
  }}
- className="w-full min-h-12 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold"
+ className="w-full min-h-12 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-bold"
  >
  <Send className="h-4 w-4 mr-2" /> Enviar {cartItems.length} Itens para a Cozinha (KDS)
  </Button>

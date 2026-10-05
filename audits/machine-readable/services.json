@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "services": [
+    {
+      "name": "TanStack Start Web & API Server",
+      "type": "ssr_and_bff",
+      "runtime": "Nitro v3 on Cloudflare Pages / Workers",
+      "entrypoint": "scripts/wrap-worker.js",
+      "protocols": ["HTTP/2", "HTTPS", "WebSocket"]
+    },
+    {
+      "name": "Supabase PostgreSQL Database",
+      "type": "database",
+      "project_id": "jfuebqmltksyznovhlwa",
+      "extensions": ["pg_cron", "pg_net", "pgvector", "postgis", "uuid-ossp"],
+      "port": 5432,
+      "pooling_port": 6543
+    },
+    {
+      "name": "Mining Batch Engine",
+      "type": "background_worker",
+      "entrypoint": "src/services/mining/crawler-batch-engine.ts",
+      "schedule": "Every 5 minutes via pg_cron + /api/cron/mining-worker",
+      "queue": "public.crawl_queue"
+    },
+    {
+      "name": "Autonomous Copilot & MCP Tools Server",
+      "type": "agent_orchestrator",
+      "entrypoint": "src/services/autonomous-copilot-orchestrator.ts",
+      "endpoint": "/api/mcp/v1/tools/call"
+    },
+    {
+      "name": "AI Model Gateway",
+      "type": "model_router",
+      "entrypoint": "src/services/ai-core-gateway.functions.ts",
+      "providers": ["OpenRouter", "Groq", "Firecrawl", "SteelDev"]
+    },
+    {
+      "name": "Supabase Storage Service",
+      "type": "object_storage",
+      "buckets": ["media", "news", "products", "avatars", "assets", "documents"]
+    }
+  ]
+}

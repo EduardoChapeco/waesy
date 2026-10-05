@@ -22,29 +22,46 @@ export const OmniPageRenderer: React.FC<OmniPageRendererProps> = ({
   }
 
   const pageThemeStyle: React.CSSProperties = {
-    backgroundColor: document.theme?.backgroundColor || "#ffffff",
-    color: document.theme?.textColor || "#09090b",
-    fontFamily: document.theme?.fontFamily || "Inter, sans-serif",
+    backgroundColor: document.theme?.backgroundColor,
+    color: document.theme?.textColor,
+    fontFamily: document.theme?.fontFamily,
+  };
+
+  const getAnimationClass = (anim?: string) => {
+    switch (anim) {
+      case "fade":
+        return "motion-safe:animate-in motion-safe:fade-in motion-safe:duration-300";
+      case "slide-up":
+        return "motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-8 motion-safe:duration-300";
+      case "zoom-in":
+        return "motion-safe:animate-in motion-safe:fade-in motion-safe:zoom-in-95 motion-safe:duration-300";
+      case "stagger":
+        return "motion-safe:animate-in motion-safe:fade-in motion-safe:duration-300";
+      default:
+        return "";
+    }
   };
 
   return (
     <div
       style={pageThemeStyle}
-      className={`min-h-screen w-full flex flex-col overflow-x-hidden ${className}`}
+      className={`min-h-dvh w-full flex flex-col overflow-x-hidden bg-background text-foreground ${className}`}
     >
       {document.blocks.map((block) => {
         if (block.isHidden) return null;
 
         const def = getSiteBlockById(block.type);
         const Component = def.component;
+        const animClass = getAnimationClass(block.styling?.scrollAnimation);
 
         return (
-          <Component
-            key={block.id}
-            id={block.id}
-            data={block.config}
-            styling={block.styling}
-          />
+          <div key={block.id} className={animClass ? `w-full ${animClass}` : "w-full"}>
+            <Component
+              id={block.id}
+              data={block.config}
+              styling={block.styling}
+            />
+          </div>
         );
       })}
     </div>

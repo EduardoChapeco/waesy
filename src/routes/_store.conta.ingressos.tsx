@@ -1,10 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
-import { Ticket, Calendar, MapPin, QrCode, CheckCircle2, Clock, XCircle, ChevronRight, Share2, Download, Search } from "lucide-react";
+import { Ticket, Calendar, MapPin, QrCode, CheckCircle2, Clock, XCircle, ChevronRight, Share2, Search } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { NativeMobileHeader } from "@/components/navigation";
 import { Input } from "@/components/ui/input";
+import { EmptyState } from "@/components/ui/empty-state";
 import { formatMoney } from "@/lib/money";
 import { formatDate } from "@/lib/datetime";
 import { listCustomerEventTickets, type CustomerEventTicketDTO } from "@/services/events.functions";
@@ -45,10 +46,10 @@ function CustomerTicketsErrorComponent({ error, reset }: { error: any; reset: ()
         {error?.message || "Não foi possível carregar seus ingressos no momento."}
       </p>
       <div className="flex items-center justify-center gap-3">
-        <Button onClick={reset} className="rounded-lg font-bold">
+        <Button onClick={reset} size="default" className="h-11 min-h-11 px-6 rounded-lg font-bold focus-visible:ring-2 focus-visible:ring-primary">
           Tentar Novamente
         </Button>
-        <Button asChild variant="outline" className="rounded-lg font-bold">
+        <Button asChild variant="outline" size="default" className="h-11 min-h-11 px-6 rounded-lg font-bold focus-visible:ring-2 focus-visible:ring-primary">
           <Link to="/conta">Voltar para Conta</Link>
         </Button>
       </div>
@@ -62,14 +63,14 @@ function QrDisplay({ code }: { code: string }) {
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&margin=10&data=${encodeURIComponent(code)}`;
 
   return (
-    <div className="inline-flex flex-col items-center p-3 bg-white border border-border/40 rounded-lg shadow-xs">
+    <div className="inline-flex flex-col items-center p-3 bg-card border border-border/40 rounded-lg shadow-xs">
       <img
         src={qrUrl}
         alt={`QR Code para validação do ingresso ${code}`}
         className="size-28 sm:size-32 object-contain rounded-lg"
         loading="lazy"
       />
-      <p className="text-center text-[10px] font-mono font-bold text-neutral-900 mt-2 tracking-widest uppercase">
+      <p className="text-center text-xs font-mono font-bold text-foreground mt-2 tracking-widest uppercase">
         {code}
       </p>
     </div>
@@ -97,7 +98,7 @@ function TicketCard({ ticket }: { ticket: CustomerEventTicketDTO }) {
 
   return (
     <div
-      className={`bg-card border rounded-lg overflow-hidden transition-all ${
+      className={`bg-card border rounded-lg overflow-hidden transition-colors ${
         ticket.isUsed
           ? "border-border/30 opacity-70"
           : isCancelled
@@ -107,7 +108,7 @@ function TicketCard({ ticket }: { ticket: CustomerEventTicketDTO }) {
     >
       {/* Capa do evento se houver */}
       {ticket.coverUrl && (
-        <div className="aspect-[3/1] overflow-hidden">
+        <div className="aspect-video max-h-36 overflow-hidden">
           <img
             src={ticket.coverUrl}
             alt={ticket.eventTitle}
@@ -128,37 +129,37 @@ function TicketCard({ ticket }: { ticket: CustomerEventTicketDTO }) {
                 : "bg-muted/40 text-muted-foreground/60"
             }`}
           >
-            <Ticket className="size-4.5" strokeWidth={1.75} />
+            <Ticket className="size-5" strokeWidth={1.75} />
           </div>
           <div className="min-w-0 flex-1">
-            <h4 className="text-[13px] font-bold text-foreground leading-snug line-clamp-2">
+            <h4 className="text-sm font-bold text-foreground leading-snug line-clamp-2">
               {ticket.eventTitle}
             </h4>
             {ticket.lotName && (
-              <p className="text-[10px] text-muted-foreground mt-1">{ticket.lotName}</p>
+              <p className="text-xs text-muted-foreground mt-1">{ticket.lotName}</p>
             )}
           </div>
         </div>
 
         {/* Status badge */}
         {ticket.isUsed ? (
-          <Badge variant="secondary" className="text-[10px] shrink-0 rounded-md px-2 h-5">
-            <CheckCircle2 className="size-2.5 mr-1" />
+          <Badge variant="secondary" className="text-xs shrink-0 rounded-md px-2 h-6">
+            <CheckCircle2 className="size-3 mr-1" />
             Utilizado
           </Badge>
         ) : isCancelled ? (
-          <Badge variant="destructive" className="text-[10px] shrink-0 rounded-md px-2 h-5">
-            <XCircle className="size-2.5 mr-1" />
+          <Badge variant="destructive" className="text-xs shrink-0 rounded-md px-2 h-6">
+            <XCircle className="size-3 mr-1" />
             Cancelado
           </Badge>
         ) : isValid ? (
-          <Badge variant="success" className="text-[10px] shrink-0 rounded-md px-2 h-5">
-            <CheckCircle2 className="size-2.5 mr-1" />
+          <Badge variant="default" className="text-xs shrink-0 rounded-md px-2 h-6">
+            <CheckCircle2 className="size-3 mr-1" />
             Válido
           </Badge>
         ) : (
-          <Badge variant="warning" className="text-[10px] shrink-0 rounded-md px-2 h-5">
-            <Clock className="size-2.5 mr-1" />
+          <Badge variant="secondary" className="text-xs shrink-0 rounded-md px-2 h-6">
+            <Clock className="size-3 mr-1" />
             Pendente
           </Badge>
         )}
@@ -168,21 +169,21 @@ function TicketCard({ ticket }: { ticket: CustomerEventTicketDTO }) {
       <div className="px-4 py-3 border-b border-border/30 space-y-2">
         {ticket.eventDate && (
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <Calendar className="size-3.5 shrink-0" strokeWidth={1.75} />
+            <Calendar className="size-4 shrink-0" strokeWidth={1.75} />
             <span>{formatDate(ticket.eventDate)}</span>
           </div>
         )}
         {ticket.eventLocation && (
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <MapPin className="size-3.5 shrink-0" strokeWidth={1.75} />
+            <MapPin className="size-4 shrink-0" strokeWidth={1.75} />
             <span className="truncate">{ticket.eventLocation}</span>
           </div>
         )}
         <div className="flex items-center justify-between">
-          <span className="text-[11px] text-muted-foreground">
+          <span className="text-xs text-muted-foreground">
             {ticket.quantity > 1 ? `${ticket.quantity}× ingressos` : "1 ingresso"}
           </span>
-          <span className="text-[13px] font-bold text-foreground font-mono">
+          <span className="text-sm font-bold text-foreground font-mono">
             {formatMoney(ticket.priceCents)}
           </span>
         </div>
@@ -195,19 +196,19 @@ function TicketCard({ ticket }: { ticket: CustomerEventTicketDTO }) {
             type="button"
             id={`qr-toggle-${ticket.id}`}
             onClick={() => setShowQr(!showQr)}
-            className="w-full flex items-center justify-between text-xs font-semibold text-foreground cursor-pointer py-1"
+            className="w-full flex items-center justify-between text-xs font-semibold text-foreground cursor-pointer py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded"
           >
             <div className="flex items-center gap-2">
-              <QrCode className="size-3.5 text-muted-foreground" strokeWidth={1.75} />
+              <QrCode className="size-4 text-muted-foreground" strokeWidth={1.75} />
               <span>Código de Acesso</span>
             </div>
-            <span className="text-muted-foreground text-[10px]">{showQr ? "Ocultar" : "Exibir QR"}</span>
+            <span className="text-muted-foreground text-xs">{showQr ? "Ocultar" : "Exibir QR"}</span>
           </button>
 
           {showQr && (
             <div className="flex flex-col items-center gap-2 pt-3 animate-in fade-in duration-200">
               <QrDisplay code={ticket.qrHash} />
-              <p className="text-[10px] text-muted-foreground text-center max-w-52">
+              <p className="text-xs text-muted-foreground text-center max-w-52">
                 Mostre este QR Code na entrada do evento
               </p>
             </div>
@@ -219,25 +220,25 @@ function TicketCard({ ticket }: { ticket: CustomerEventTicketDTO }) {
       <div className="px-4 py-3 flex items-center gap-2">
         <Button
           asChild
-          size="sm"
+          size="default"
           variant="outline"
-          className="flex-1 rounded-lg text-xs font-semibold h-9 cursor-pointer"
+          className="flex-1 rounded-lg text-xs font-semibold h-11 min-h-11 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
         >
           <Link to="/conta/pedidos/$id" params={{ id: ticket.orderId }}>
-            <ChevronRight className="size-3.5 mr-1" strokeWidth={2} />
-            Comprovante
+            <ChevronRight className="size-4 mr-1" strokeWidth={2} />
+            <span>Comprovante</span>
           </Link>
         </Button>
         {isValid && (
           <Button
             type="button"
-            size="sm"
+            size="default"
             variant="outline"
             onClick={handleShare}
-            className="h-9 w-9 rounded-lg cursor-pointer p-0 shrink-0"
+            className="size-11 min-h-11 min-w-11 rounded-lg cursor-pointer p-0 shrink-0 focus-visible:ring-2 focus-visible:ring-primary"
             aria-label="Compartilhar ingresso"
           >
-            <Share2 className="size-3.5" strokeWidth={1.75} />
+            <Share2 className="size-4" strokeWidth={1.75} />
           </Button>
         )}
       </div>
@@ -287,9 +288,15 @@ function CustomerTicketsPage() {
     [tickets]
   );
 
+  const navActionBtn = (
+    <Button asChild size="default" variant="outline" className="rounded-lg text-xs font-semibold h-11 min-h-11 px-4 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary">
+      <Link to="/agenda">Agenda</Link>
+    </Button>
+  );
+
   return (
-    <div className="w-full max-w-2xl mx-auto pb-24 px-0 sm:px-0 animate-in fade-in duration-200">
-      {/* ── 1. Canonical Navigation Header ── */}
+    <div className="w-full max-w-2xl mx-auto pb-24 px-4 sm:px-6">
+      {/* ── 1. Native Mobile Header (Apple HIG / PWA Nativo) ── */}
       <NativeMobileHeader
         title="Ingressos"
         fallbackHref="/conta"
@@ -300,79 +307,81 @@ function CustomerTicketsPage() {
             </Badge>
           ) : null
         }
-        rightActions={
-          <Button asChild size="sm" variant="outline" className="rounded-lg text-xs font-semibold h-8.5 px-3 cursor-pointer">
-            <Link to="/agenda">Agenda</Link>
-          </Button>
-        }
+        rightActions={navActionBtn}
       />
+
+      {/* ── 2. Desktop Inpage Header (Bento Grid & Apple HIG) ── */}
+      <div className="hidden md:flex items-center justify-between pb-4 pt-2 border-b border-border/40">
+        <div>
+          <h1 className="text-xl font-bold tracking-tight text-foreground">Ingressos</h1>
+          <p className="text-xs text-muted-foreground mt-1">Acesse seus ingressos digitais com QR Code e histórico de compras</p>
+        </div>
+        {navActionBtn}
+      </div>
 
       {tickets.length === 0 ? (
         /* ── Empty State ── */
-        <div className="flex flex-col items-center justify-center py-20 px-6 text-center gap-3">
-          <Ticket className="size-10 stroke-[1.5] text-muted-foreground/40 mb-1" />
-          <div>
-            <h2 className="text-base font-bold text-foreground">Nenhum ingresso encontrado</h2>
-            <p className="text-xs text-muted-foreground mt-1 max-w-xs mx-auto leading-relaxed">
-              Seus ingressos para shows, festivais e eventos culturais aparecerão aqui com QR Code de acesso digital.
-            </p>
-          </div>
-          <Button asChild className="rounded-lg h-10 px-6 text-xs font-bold mt-2">
-            <Link to="/agenda">Explorar</Link>
-          </Button>
-        </div>
+        <EmptyState
+          icon={Ticket}
+          title="Nenhum ingresso encontrado"
+          description="Seus ingressos para shows, festivais e eventos culturais aparecerão aqui com QR Code de acesso digital."
+          action={
+            <Button asChild size="default" className="rounded-lg h-11 min-h-11 px-6 text-xs font-bold mt-2 focus-visible:ring-2 focus-visible:ring-primary">
+              <Link to="/agenda">Explorar Agenda</Link>
+            </Button>
+          }
+          className="my-8"
+        />
       ) : (
         <>
-          {/* ── 2. Busca ── */}
-          <div className="px-2 sm:px-0 pt-3 pb-1">
+          {/* ── 3. Busca ── */}
+          <div className="pt-3 pb-1">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" strokeWidth={2} />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" strokeWidth={2} />
               <Input
                 id="tickets-search"
                 type="text"
                 placeholder="Buscar por evento ou local..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="pl-8.5 h-10 text-xs rounded-lg border-border/60 bg-muted/30 focus:bg-background transition-colors"
+                className="pl-9 h-11 min-h-11 text-xs rounded-lg border-border/60 bg-muted/30 focus:bg-background transition-colors"
               />
             </div>
           </div>
 
-          {/* ── 3. Chips de filtro ── */}
-          <div className="overflow-x-auto scrollbar-none px-2 sm:px-0 py-2">
-            <div className="flex items-center gap-2 min-w-max">
-              {FILTER_CHIPS.map((chip) => {
-                const count = counts[chip.id as keyof typeof counts] || 0;
-                const isActive = activeFilter === chip.id;
-                if (count === 0 && chip.id !== "todos") return null;
-                return (
-                  <button
-                    key={chip.id}
-                    id={`ticket-filter-${chip.id}`}
-                    type="button"
-                    onClick={() => setActiveFilter(chip.id)}
-                    className={`flex items-center gap-2 h-8 px-3 rounded-lg text-xs font-semibold whitespace-nowrap transition-all border cursor-pointer ${
-                      isActive
-                        ? "bg-primary text-primary-foreground border-primary"
-                        : "bg-background text-muted-foreground border-border/60 hover:border-border hover:text-foreground"
-                    }`}
-                  >
-                    {chip.label}
-                    <span className={`text-[10px] font-mono ${isActive ? "opacity-80" : "text-muted-foreground"}`}>
-                      {count}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
+          {/* ── 4. Chips de filtro ── */}
+          <div className="flex flex-wrap items-center gap-2 py-2">
+            {FILTER_CHIPS.map((chip) => {
+              const count = counts[chip.id as keyof typeof counts] || 0;
+              const isActive = activeFilter === chip.id;
+              if (count === 0 && chip.id !== "todos") return null;
+              return (
+                <button
+                  key={chip.id}
+                  id={`ticket-filter-${chip.id}`}
+                  type="button"
+                  onClick={() => setActiveFilter(chip.id)}
+                  className={`flex items-center gap-2 h-11 min-h-11 px-4 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors border cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                    isActive
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "bg-background text-muted-foreground border-border/60 hover:border-border hover:text-foreground"
+                  }`}
+                >
+                  <span>{chip.label}</span>
+                  <span className={`text-xs font-mono ${isActive ? "opacity-80" : "text-muted-foreground"}`}>
+                    {count}
+                  </span>
+                </button>
+              );
+            })}
           </div>
 
-          {/* ── 4. Grid de Ingressos ── */}
-          <div className="px-2 sm:px-0 grid grid-cols-1 sm:grid-cols-2 gap-3 mt-1">
+          {/* ── 5. Grid de Ingressos ── */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-1">
             {filtered.length === 0 ? (
               <div className="col-span-full flex flex-col items-center justify-center py-12 text-center gap-2">
                 <p className="text-sm font-semibold text-foreground">Nenhum ingresso encontrado</p>
-                <p className="text-xs text-muted-foreground">Tente outro filtro.</p>
+                <p className="text-xs text-muted-foreground">Tente outro filtro ou limpe a busca.</p>
               </div>
             ) : (
               filtered.map((ticket) => <TicketCard key={ticket.id} ticket={ticket} />)
@@ -384,3 +393,4 @@ function CustomerTicketsPage() {
   );
 }
 
+export default CustomerTicketsPage;

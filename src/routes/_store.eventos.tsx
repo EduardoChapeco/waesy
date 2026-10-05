@@ -1,5 +1,5 @@
 import { resolveActiveCity } from "@/lib/city-helper";
-import { Tag as LucideTag, X as LucideX, Calendar as CalendarIcon, ChevronDown as LucideChevronDown } from "lucide-react";
+import { Tag as LucideTag, X as LucideX, Calendar as CalendarIcon, ChevronDown as LucideChevronDown, Ticket as LucideTicket, Music as LucideMusic, Sparkles as LucideSparkles, PartyPopper as LucidePartyPopper, Utensils as LucideUtensils, Theater as LucideTheater, ShoppingBag as LucideShoppingBag, GraduationCap as LucideGraduationCap, Smile as LucideSmile } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
@@ -27,24 +27,24 @@ const SearchSchema = z.object({
 });
 
 const EVENT_SUBCATEGORIES_BUTTONS = [
-  { id: "todos", label: "Todos os Eventos", icon: "🎟️" },
-  { id: "shows", label: "Shows de Rock e Pop", icon: "🎸" },
-  { id: "sertanejo", label: "Sertanejo e Baladas", icon: "🤠" },
-  { id: "pagode", label: "Samba e Pagode", icon: "🥁" },
-  { id: "gastronomico", label: "Gastronomia e Feiras", icon: "🍔" },
-  { id: "teatro", label: "Teatro e Stand-up", icon: "🎭" },
-  { id: "feiras", label: "Bazaares e Pets", icon: "🛍️" },
-  { id: "workshops", label: "Cursos e Workshops", icon: "🎓" },
-  { id: "infantil", label: "Infantil e Família", icon: "🎈" },
-  { id: "gratis", label: "Entrada Gratuita", icon: "🏷️" },
+  { id: "todos", label: "Todos os Eventos", icon: LucideTicket },
+  { id: "shows", label: "Shows de Rock e Pop", icon: LucideMusic },
+  { id: "sertanejo", label: "Sertanejo e Baladas", icon: LucideSparkles },
+  { id: "pagode", label: "Samba e Pagode", icon: LucidePartyPopper },
+  { id: "gastronomico", label: "Gastronomia e Feiras", icon: LucideUtensils },
+  { id: "teatro", label: "Teatro e Stand-up", icon: LucideTheater },
+  { id: "feiras", label: "Bazaares e Pets", icon: LucideShoppingBag },
+  { id: "workshops", label: "Cursos e Workshops", icon: LucideGraduationCap },
+  { id: "infantil", label: "Infantil e Família", icon: LucideSmile },
+  { id: "gratis", label: "Entrada Gratuita", icon: LucideTag },
 ];
 
 const EVENT_CATEGORIES: FilterChipOption[] = [
-  { id: "todos", label: "Todas Categorias", emoji: "🎟️", icon: LucideTag },
-  { id: "shows", label: "Shows e Festivais", emoji: "🎸", icon: Ticket },
-  { id: "gastronomico", label: "Gastronomia e Feiras", emoji: "🍔", icon: ForkKnife },
-  { id: "feiras", label: "Bazaares e Pets", emoji: "🛍️", icon: LucideTag },
-  { id: "workshops", label: "Cursos e Workshops", emoji: "🎓", icon: GraduationCap },
+  { id: "todos", label: "Todas Categorias", icon: LucideTag },
+  { id: "shows", label: "Shows e Festivais", icon: Ticket },
+  { id: "gastronomico", label: "Gastronomia e Feiras", icon: ForkKnife },
+  { id: "feiras", label: "Bazaares e Pets", icon: LucideShoppingBag },
+  { id: "workshops", label: "Cursos e Workshops", icon: GraduationCap },
 ];
 
 const PRESET_DATE_FILTERS = [
@@ -103,6 +103,7 @@ export const Route = createFileRoute("/_store/eventos")({
       return {
         banners: banners || [],
         hotpages: hotpages || [],
+        activeCity,
       };
     } catch (err) {
       console.warn("[loader:_store.eventos] Loader fallback acionado:", err);
@@ -137,6 +138,7 @@ function EventosPage() {
 
   const rawBanners = loaderData?.banners;
   const rawHotpages = loaderData?.hotpages;
+  const activeCity = loaderData?.activeCity || "";
 
   const displayBanners: BannerDTO[] = Array.isArray(rawBanners) ? rawBanners : [];
   const displayHotpages: HotpageDTO[] = Array.isArray(rawHotpages) ? rawHotpages : [];
@@ -162,12 +164,13 @@ function EventosPage() {
     isLoading,
     isError,
   } = useQuery({
-    queryKey: ["public-events-marketplace"],
+    queryKey: ["public-events-marketplace", activeCity],
     queryFn: async () => {
       try {
         const res = await getPublicEvents({
           data: {
             limit: 150,
+            city: activeCity || undefined,
           },
         });
         return res || [];
@@ -593,7 +596,7 @@ function EventosPage() {
             <button
               type="button"
               onClick={() => setSelectedCategory("todos")}
-              className="text-xs font-medium text-primary hover:underline cursor-pointer"
+              className="min-h-11 inline-flex items-center py-2 px-3 text-xs font-medium text-primary hover:underline cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
             >
               Limpar filtro de categoria
             </button>
@@ -601,7 +604,7 @@ function EventosPage() {
         )}
 
         {/* Trilho de Botões Ergonômicos com Contadores */}
-        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 snap-x snap-mandatory">
+        <div role="tablist" aria-label="Categorias" className="flex items-center gap-2 overflow-x-auto tab-list no-scrollbar pb-1 snap-x snap-mandatory">
           {EVENT_SUBCATEGORIES_BUTTONS.map((sub) => {
             const isSelected = selectedCategory === sub.id;
             const count = eventsCountBySubcategory[sub.id] || 0;
@@ -611,17 +614,17 @@ function EventosPage() {
                 key={sub.id}
                 type="button"
                 onClick={() => setSelectedCategory(isSelected && sub.id !== "todos" ? "todos" : sub.id)}
-                className={`h-10 px-4 rounded-lg text-xs font-semibold flex items-center gap-2 shrink-0 transition-all cursor-pointer select-none snap-start whitespace-nowrap ${
+                className={`h-11 px-4 rounded-lg text-xs font-semibold flex items-center gap-2 shrink-0 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer select-none snap-start whitespace-nowrap ${
                   isSelected
-                    ? "bg-foreground text-background font-bold shadow-sm scale-102"
+                    ? "bg-foreground text-background font-bold"
                     : "bg-card border border-border/70 text-muted-foreground hover:text-foreground hover:bg-muted/60 hover:border-foreground/20"
                 }`}
               >
-                <span>{sub.icon}</span>
+                <sub.icon className="size-4 shrink-0" />
                 <span>{sub.label}</span>
                 {count > 0 && (
                   <span
-                    className={`text-[10px] font-mono px-2 py-1 rounded-md ${
+                    className={`text-xs font-mono px-2 py-1 rounded-md ${
                       isSelected
                         ? "bg-background/20 text-background font-bold"
                         : "bg-muted text-muted-foreground"
@@ -638,13 +641,13 @@ function EventosPage() {
 
       {/* ── 4. Filtro de Data & Calendário Canônico (Apple / Airbnb HIG) ── */}
       <section aria-label="Programação por Data" className="space-y-2 pt-1">
-        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 snap-x snap-mandatory">
+        <div role="tablist" aria-label="Filtro de Data" className="flex items-center gap-2 overflow-x-auto tab-list no-scrollbar pb-1 snap-x snap-mandatory">
           {/* Popover com Calendário Interativo */}
           <Popover>
             <PopoverTrigger asChild>
               <button
                 type="button"
-                className={`h-9 px-4 rounded-lg text-xs font-semibold flex items-center gap-2 border transition-all cursor-pointer select-none shrink-0 snap-start whitespace-nowrap ${
+                className={`h-11 px-4 rounded-lg text-xs font-semibold flex items-center gap-2 border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer select-none shrink-0 snap-start whitespace-nowrap ${
                   selectedDateFilter !== "all" && selectedDateFilter.includes("-")
                     ? "bg-foreground text-background border-foreground font-bold shadow-xs"
                     : "bg-card border-border/80 text-foreground hover:bg-muted/60"
@@ -690,7 +693,7 @@ function EventosPage() {
                 key={pill.id}
                 type="button"
                 onClick={() => setSelectedDateFilter(pill.id)}
-                className={`h-9 px-3 rounded-lg text-xs font-semibold transition-all cursor-pointer shrink-0 snap-start whitespace-nowrap ${
+                className={`h-11 px-3 rounded-lg text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer shrink-0 snap-start whitespace-nowrap ${
                   isSelected
                     ? "bg-foreground text-background font-bold shadow-xs"
                     : "bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -706,7 +709,7 @@ function EventosPage() {
             <button
               type="button"
               onClick={() => setSelectedDateFilter("all")}
-              className="h-9 px-3 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/60 flex items-center gap-1 transition-colors cursor-pointer"
+              className="h-11 px-3 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/60 flex items-center gap-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
             >
               <LucideX className="size-3.5" />
               <span>Limpar</span>
@@ -714,7 +717,7 @@ function EventosPage() {
           )}
 
           {/* Badge sutil com total de eventos filtrados */}
-          <span className="text-[11px] font-mono text-muted-foreground ml-auto pr-1">
+          <span className="text-xs font-mono text-muted-foreground ml-auto pr-1">
             {filteredEvents.length} {filteredEvents.length === 1 ? "evento" : "eventos"}
           </span>
         </div>
@@ -736,7 +739,7 @@ function EventosPage() {
       {/* ── 6. Estados de Carregamento, Erro e Vazio ── */}
       {isLoading && (
         <div className="flex justify-center py-24">
-          <CircleNotch size={32} className="animate-spin text-muted-foreground" />
+          <CircleNotch size={32} className="animate-spin motion-reduce:animate-none text-muted-foreground" />
         </div>
       )}
 
@@ -765,7 +768,7 @@ function EventosPage() {
                 setSelectedCategory("todos");
                 setSearchQuery("");
               }}
-              className="rounded-lg text-xs font-bold"
+              className="rounded-lg text-xs font-bold h-11 px-4"
             >
               Ver Todos os Eventos
             </Button>
@@ -793,28 +796,26 @@ function EventosPage() {
                   key={event.id}
                   to="/evento/$id"
                   params={{ id: event.id }}
-                  className="min-w-[290px] sm:min-w-80 max-w-[340px] rounded-lg bg-card border border-border/60 overflow-hidden hover:border-foreground/30 transition-all flex flex-col justify-between shrink-0 group select-none block shadow-xs"
+                  className="w-72 sm:w-80 rounded-lg bg-card border border-border/60 overflow-hidden hover:border-foreground/30 transition-colors duration-200 flex flex-col justify-between shrink-0 group select-none block shadow-xs"
                 >
                   <div className="space-y-3 block">
                     <div className="aspect-16/10 relative overflow-hidden bg-muted">
                       <img
                         src={getEventCover(event)}
                         alt={event.title}
-                        className="absolute inset-0 size-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        className="absolute inset-0 size-full object-cover group-hover:scale-105 transition-transform duration-200"
                         onError={(e) => {
                           e.currentTarget.src = FALLBACK_EVENT_COVER;
                         }}
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
-
                       <div className="absolute top-3 left-3 flex items-center gap-2">
-                        <span className="bg-black/60 backdrop-blur-md text-white text-[10px] font-mono font-bold px-3 py-1 rounded-lg border border-white/20">
+                        <span className="bg-foreground text-background text-xs font-mono font-bold px-3 py-1 rounded-lg border border-border/40">
                           {formatDate(event.event_date)}
                         </span>
                       </div>
 
                       <div className="absolute bottom-3 left-3 right-3">
-                        <h3 className="text-sm font-bold text-white leading-tight line-clamp-2">
+                        <h3 className="text-sm font-bold text-foreground leading-tight line-clamp-2 bg-background/80 backdrop-blur-md px-3 py-1 rounded-md">
                           {event.title}
                         </h3>
                       </div>
@@ -827,7 +828,7 @@ function EventosPage() {
                           <span className="truncate">{event.location}</span>
                         </div>
                       )}
-                      <p className="text-muted-foreground line-clamp-2 text-[11px] leading-relaxed">
+                      <p className="text-muted-foreground line-clamp-2 text-xs leading-relaxed">
                         {event.description || "Evento oficial da comunidade."}
                       </p>
                     </div>
@@ -837,7 +838,7 @@ function EventosPage() {
                     <span className="text-xs font-bold text-primary">
                       {(event as any).price_cents ? `R$ ${((event as any).price_cents / 100).toFixed(2)}` : "Entrada Gratuita"}
                     </span>
-                    <span className="text-[11px] font-semibold text-foreground flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
+                    <span className="text-xs font-semibold text-foreground flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
                       Ver ingressos <CaretRight size={12} weight="bold" />
                     </span>
                   </div>
@@ -864,26 +865,25 @@ function EventosPage() {
               key={event.id}
               to="/evento/$id"
               params={{ id: event.id }}
-              className="rounded-lg border border-border/60 bg-card overflow-hidden hover:border-foreground/30 transition-all flex flex-col justify-between group shadow-xs"
+              className="rounded-lg border border-border/60 bg-card overflow-hidden hover:border-foreground/30 transition-colors duration-200 flex flex-col justify-between group shadow-xs"
             >
               <div className="space-y-3">
                 <div className="aspect-16/10 relative overflow-hidden bg-muted">
                   <img
                     src={getEventCover(event)}
                     alt={event.title}
-                    className="absolute inset-0 size-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    className="absolute inset-0 size-full object-cover group-hover:scale-105 transition-transform duration-200"
                     onError={(e) => {
                       e.currentTarget.src = FALLBACK_EVENT_COVER;
                     }}
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                   <div className="absolute top-3 left-3">
-                    <span className="bg-black/60 backdrop-blur-md text-white text-[10px] font-mono font-bold px-3 py-1 rounded-lg border border-white/20">
+                    <span className="bg-foreground text-background text-xs font-mono font-bold px-3 py-1 rounded-lg border border-border/40">
                       {formatDate(event.event_date)}
                     </span>
                   </div>
                   <div className="absolute bottom-3 left-3 right-3">
-                    <h3 className="text-sm font-bold text-white leading-tight line-clamp-2">
+                    <h3 className="text-sm font-bold text-foreground leading-tight line-clamp-2 bg-background/80 backdrop-blur-md px-3 py-1 rounded-md">
                       {event.title}
                     </h3>
                   </div>
@@ -896,7 +896,7 @@ function EventosPage() {
                       <span className="truncate">{event.location}</span>
                     </div>
                   )}
-                  <p className="text-muted-foreground line-clamp-2 text-[11px] leading-relaxed">
+                  <p className="text-muted-foreground line-clamp-2 text-xs leading-relaxed">
                     {event.description || "Evento oficial da comunidade."}
                   </p>
                 </div>
@@ -906,7 +906,7 @@ function EventosPage() {
                 <span className="text-xs font-bold text-primary">
                   {(event as any).price_cents ? `R$ ${((event as any).price_cents / 100).toFixed(2)}` : "Entrada Gratuita"}
                 </span>
-                <span className="text-[11px] font-semibold text-foreground flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
+                <span className="text-xs font-semibold text-foreground flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
                   Detalhes <CaretRight size={12} weight="bold" />
                 </span>
               </div>
@@ -923,13 +923,13 @@ function EventosPage() {
               key={event.id}
               to="/evento/$id"
               params={{ id: event.id }}
-              className="group relative overflow-hidden rounded-lg border border-border/60 bg-card hover:border-foreground/30 transition-all min-h-[136px] pl-32 sm:pl-44 pr-4 py-4 flex items-center justify-between gap-3 cursor-pointer w-full"
+              className="group relative overflow-hidden rounded-lg border border-border/60 bg-card hover:border-foreground/30 transition-colors duration-200 min-h-36 pl-32 sm:pl-44 pr-4 py-4 flex items-center justify-between gap-3 cursor-pointer w-full"
             >
               <div className="absolute inset-y-0 left-0 w-32 sm:w-44 rounded-l-lg overflow-hidden bg-muted">
                 <img
                   src={getEventCover(event)}
                   alt={event.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
                   onError={(e) => {
                     e.currentTarget.src = FALLBACK_EVENT_COVER;
                   }}
@@ -938,7 +938,7 @@ function EventosPage() {
 
               <div className="space-y-1 min-w-0 flex-1 pl-2">
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-mono font-bold text-primary uppercase">
+                  <span className="text-xs font-mono font-bold text-primary uppercase">
                     {formatDate(event.event_date)}
                   </span>
                 </div>
@@ -957,7 +957,7 @@ function EventosPage() {
                 <span className="text-xs sm:text-sm font-bold text-primary font-mono">
                   {(event as any).price_cents ? `R$ ${((event as any).price_cents / 100).toFixed(2)}` : "Gratuito"}
                 </span>
-                <Button size="sm" variant="outline" className="h-8 sm:h-9 px-3 sm:px-4 rounded-lg text-xs font-semibold gap-1 cursor-pointer">
+                <Button size="sm" variant="outline" className="h-11 px-4 rounded-lg text-xs font-semibold gap-1 cursor-pointer">
                   <span>Ingressos</span>
                   <CaretRight size={12} weight="bold" />
                 </Button>

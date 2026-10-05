@@ -2,13 +2,18 @@
  * @fileoverview Tipos canônicos para o Shell de Conversa AI-First, Trilha de Atividade e Artefatos (Waesy BigTech).
  */
 
+import type { CopilotFsmPhase, CopilotFsmExecutionState } from "./copilot-fsm";
+
+export type { CopilotFsmPhase, CopilotFsmExecutionState };
+
 export type AIActivityStepType =
   | "skill"
   | "tool"
   | "search"
   | "database"
   | "squad"
-  | "model";
+  | "model"
+  | "thought";
 
 export type AIActivityStepStatus =
   | "running"
@@ -22,6 +27,7 @@ export interface AIActivityStep {
   label: string;
   detail?: string;
   status: AIActivityStepStatus;
+  fsmPhase?: CopilotFsmPhase;
   startedAt: string;
   completedAt?: string;
   durationMs?: number;

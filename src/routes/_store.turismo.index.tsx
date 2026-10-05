@@ -156,6 +156,15 @@ function TourismMasterPage() {
           searchPlaceholder="Buscar destinos ou roteiros..."
         />
       </div>
+      {/* ── Cabeçalho Inpage Desktop (Apple HIG) ── */}
+      <div className="hidden md:flex items-center justify-between pt-2 pb-4 border-b border-border/40">
+        <div>
+          <h1 className="text-xl font-bold tracking-tight text-foreground">Turismo & Viagens</h1>
+          <p className="text-xs text-muted-foreground mt-1">
+            Pacotes de viagens, hospedagens, passeios e experiências na sua região
+          </p>
+        </div>
+      </div>
       {/* Banners */}
       {banners && banners.length > 0 && (
         <BannerHeroCarousel banners={banners} className="w-full" />
@@ -209,7 +218,7 @@ function TourismMasterPage() {
               type="button"
               onClick={() => setSelectedAirport(air.id)}
               className={cn(
-                "h-10 sm:h-11 px-4 sm:px-4 rounded-lg border text-xs sm:text-sm font-semibold whitespace-nowrap shrink-0 cursor-pointer shadow-2xs transition-all select-none active:scale-98 snap-start",
+                "h-11 min-h-11 px-4 rounded-lg border text-xs sm:text-sm font-semibold whitespace-nowrap shrink-0 cursor-pointer shadow-2xs transition-all select-none active:scale-98 snap-start",
                 isActive
                   ? "bg-foreground text-background border-foreground font-bold shadow-xs"
                   : "bg-card text-muted-foreground hover:text-foreground border-border/70 hover:bg-muted/50"

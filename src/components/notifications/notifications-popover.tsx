@@ -112,7 +112,7 @@ export function NotificationsPopover({ session }: NotificationsPopoverProps) {
  type="button"
  onClick={handleTriggerClick}
  aria-label="Abrir Notificações"
- className="relative size-10 rounded-full flex items-center justify-center text-foreground hover:bg-muted/80 active:scale-95 transition-all cursor-pointer focus:outline-none"
+ className="relative size-11 min-h-11 min-w-11 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/80 active:scale-95 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
  >
  <Bell className="size-5" />
  {unreadCount > 0 && (

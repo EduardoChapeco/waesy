@@ -50,7 +50,7 @@ function WorkspaceAnunciosNovoErrorComponent({ error }: { error: any }) {
         </pre>
       )}
       <div className="pt-2 flex items-center justify-center gap-3">
-        <Button asChild variant="outline" size="sm" className="rounded-lg text-xs h-10 px-5 font-semibold">
+        <Button asChild variant="outline" size="sm" className="rounded-lg text-xs h-11 min-h-11 px-5 font-semibold">
           <Link to="/workspace/marketing/anuncios">Voltar às Campanhas</Link>
         </Button>
       </div>
@@ -240,7 +240,7 @@ function NovoAnuncioPage() {
  {/* Topbar Silenciosa */}
  <div className="flex items-center justify-between pb-4 border-b border-border/40">
  <div className="flex items-center gap-3">
- <Button asChild variant="ghost" size="icon" className="rounded-lg size-9">
+ <Button asChild variant="ghost" size="icon" className="rounded-lg size-11 min-size-11">
  <Link to="/workspace/marketing/anuncios">
  <ArrowLeft className="size-4" />
  </Link>
@@ -258,7 +258,7 @@ function NovoAnuncioPage() {
  <div className="bg-card rounded-lg p-5 space-y-4 border border-border/40">
  <div className="flex items-center justify-between pb-2 border-b border-border/40">
  <Label className="text-xs font-semibold flex items-center gap-2">
- <ImageIcon className="size-3.5 text-primary" />
+ <ImageIcon className="size-4 text-primary" />
  <span>Mídia da Campanha</span>
  </Label>
  <span className="text-xs text-muted-foreground font-mono">
@@ -281,7 +281,7 @@ function NovoAnuncioPage() {
  {/* Omni-Extractor: Preenchimento Rápido com IA */}
  <div className="pt-2 border-t border-border/40 space-y-2">
  <div className="flex items-center gap-2 text-xs font-semibold text-foreground">
- <Bot className="size-3.5 text-primary" />
+ <Bot className="size-4 text-primary" />
  <span>Preenchimento Inteligente</span>
  </div>
  <div className="flex gap-2">
@@ -304,7 +304,7 @@ function NovoAnuncioPage() {
  disabled={isAiExtracting}
  className="h-10 rounded-lg text-xs font-semibold px-4 cursor-pointer shrink-0"
  >
- {isAiExtracting ? <Loader2 className="size-3.5 animate-spin" /> : "Estruturar"}
+ {isAiExtracting ? <Loader2 className="size-4 animate-spin" /> : "Estruturar"}
  </Button>
  </div>
  </div>
@@ -429,7 +429,7 @@ function NovoAnuncioPage() {
  htmlFor="ad-location"
  className="text-xs font-semibold flex items-center gap-2"
  >
- <MapPin className="size-3.5 text-primary" />
+ <MapPin className="size-4 text-primary" />
  Localização Alvo e Raio de Alcance
  </Label>
  <Input
@@ -591,7 +591,7 @@ function NovoAnuncioPage() {
  <div className="bg-card rounded-lg overflow-hidden border border-border/40 space-y-3 p-4">
  <div className="flex items-center justify-between pb-2 border-b border-border/40">
  <span className="text-xs font-bold text-foreground flex items-center gap-2">
- <Eye className="size-3.5 text-primary" />
+ <Eye className="size-4 text-primary" />
  Prévia da Vitrine
  </span>
  <Badge variant="secondary" className="text-xs font-mono">
@@ -651,23 +651,23 @@ function NovoAnuncioPage() {
  type="button"
  variant="outline"
  size="sm"
- className="w-full rounded-lg text-xs font-bold gap-2 h-9"
+ className="w-full rounded-lg text-xs font-bold gap-2 h-11 min-h-11"
  >
  {objective === "whatsapp_leads" && (
  <>
- <MessageCircle className="size-3.5 text-emerald-500" />
+ <MessageCircle className="size-4 text-emerald-500" />
  <span>Conversar no WhatsApp</span>
  </>
  )}
  {objective === "direct_sales" && (
  <>
- <ShoppingBag className="size-3.5 text-primary" />
+ <ShoppingBag className="size-4 text-primary" />
  <span>Comprar {selectedProduct ? `• ${formatMoney(selectedProduct.price_cents || 0)}` : ""}</span>
  </>
  )}
  {objective === "brand_awareness" && (
  <>
- <ExternalLink className="size-3.5" />
+ <ExternalLink className="size-4" />
  <span>Visitar Vitrine</span>
  </>
  )}

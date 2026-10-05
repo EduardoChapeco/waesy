@@ -110,6 +110,9 @@ function AdminMasterHotpagesPage() {
  const [bgColor, setBgColor] = useState("#000000");
  const [textColor, setTextColor] = useState("");
  const [isActive, setIsActive] = useState(true);
+  const [startsAt, setStartsAt] = useState("");
+  const [endsAt, setEndsAt] = useState("");
+  const [autoArchiveAt, setAutoArchiveAt] = useState("");
 
  // Filtra hotpages de acordo com a aba ativa
  const filteredItems = useMemo(() => {
@@ -168,6 +171,9 @@ function AdminMasterHotpagesPage() {
  setShowBadge(true);
  }
  setIsActive(true);
+    setStartsAt("");
+    setEndsAt("");
+    setAutoArchiveAt("");
  };
 
  const handleOpenCreate = () => {
@@ -198,6 +204,9 @@ function AdminMasterHotpagesPage() {
  setBgColor(item.bg_color || "#000000");
  setTextColor((item as any).text_color || "");
  setIsActive(item.is_active !== false);
+    setStartsAt(item.starts_at ? item.starts_at.slice(0, 16) : "");
+    setEndsAt(item.ends_at ? item.ends_at.slice(0, 16) : "");
+    setAutoArchiveAt(item.auto_archive_at ? item.auto_archive_at.slice(0, 16) : "");
  setIsSheetOpen(true);
  };
 
@@ -235,6 +244,9 @@ function AdminMasterHotpagesPage() {
  bg_color: bgColor || null,
  text_color: textColor || null,
  is_active: isActive,
+        starts_at: startsAt ? new Date(startsAt).toISOString() : null,
+        ends_at: endsAt ? new Date(endsAt).toISOString() : null,
+        auto_archive_at: autoArchiveAt ? new Date(autoArchiveAt).toISOString() : null,
  },
  });
 
@@ -260,6 +272,9 @@ function AdminMasterHotpagesPage() {
  bg_overlay_opacity: bgOverlayOpacity,
  bg_color: bgColor,
  is_active: isActive,
+        starts_at: startsAt ? new Date(startsAt).toISOString() : null,
+        ends_at: endsAt ? new Date(endsAt).toISOString() : null,
+        auto_archive_at: autoArchiveAt ? new Date(autoArchiveAt).toISOString() : null,
  }
  : h
  )
@@ -357,7 +372,7 @@ function AdminMasterHotpagesPage() {
  variant="outline"
  className="h-11 px-4 rounded-lg font-semibold text-xs gap-2 shrink-0 border-border/80 bg-card hover:bg-muted shadow-xs"
  >
- <Sliders className="size-3.5 text-primary" />
+ <Sliders className="size-4 text-primary" />
  <span>Restaurar Padrões</span>
  </Button>
 
@@ -546,7 +561,7 @@ function AdminMasterHotpagesPage() {
 
  {/* Rota Tag */}
  <div className="absolute bottom-2 left-2 z-20">
- <span className="text-[10px] font-mono font-bold bg-black/75 text-white/90 px-2 py-1 rounded-lg border border-white/10 backdrop-blur-xs">
+ <span className="text-xs font-mono font-bold bg-black/75 text-white/90 px-2 py-1 rounded-lg border border-white/10 backdrop-blur-xs">
  {item.target_route || `/${item.slug.replace(/^home-/, "")}`}
  </span>
  </div>
@@ -599,7 +614,7 @@ function AdminMasterHotpagesPage() {
  </div>
  <div className="min-w-0">
  <p className="text-xs font-bold text-foreground truncate">{item.title}</p>
- <p className="text-[10px] font-mono text-muted-foreground truncate">
+ <p className="text-xs font-mono text-muted-foreground truncate">
  {item.target_route || `/${item.slug.replace(/^chip-/, "")}`}
  </p>
  </div>
@@ -757,7 +772,7 @@ function AdminMasterHotpagesPage() {
  </div>
  <div>
  <p className="text-xs font-bold text-foreground">{title || "Nome da Categoria"}</p>
- <p className="text-[10px] font-mono text-muted-foreground">{targetRoute || `/${slug || "rota"}`}</p>
+ <p className="text-xs font-mono text-muted-foreground">{targetRoute || `/${slug || "rota"}`}</p>
  </div>
  </div>
  ) : (
@@ -865,7 +880,7 @@ function AdminMasterHotpagesPage() {
  <div className="space-y-2 pt-1">
  <Label className="text-xs font-bold flex items-center justify-between">
  <span>Foto de Capa do Card (16:9) *</span>
- <span className="text-[10px] text-primary font-bold">16:9 Panorâmica</span>
+ <span className="text-xs text-primary font-bold">16:9 Panorâmica</span>
  </Label>
  <MediaUploader
  value={coverImageUrl ? [coverImageUrl] : []}
@@ -886,7 +901,7 @@ function AdminMasterHotpagesPage() {
  <div className="space-y-2 pt-1">
  <Label className="text-xs font-bold flex items-center justify-between">
  <span>Ícone Personalizado Transparente (1:1)</span>
- <span className="text-[10px] text-muted-foreground">PNG Transparente / SVG</span>
+ <span className="text-xs text-muted-foreground">PNG Transparente / SVG</span>
  </Label>
  <MediaUploader
  value={customIconUrl ? [customIconUrl] : []}
@@ -968,7 +983,7 @@ function AdminMasterHotpagesPage() {
  <div className="flex items-center justify-between">
  <div>
  <p className="text-xs font-bold text-foreground">Exibir Título no Card</p>
- <p className="text-[10px] text-muted-foreground">Mostra o nome sobre a imagem</p>
+ <p className="text-xs text-muted-foreground">Mostra o nome sobre a imagem</p>
  </div>
  <Switch checked={showTitle} onCheckedChange={setShowTitle} />
  </div>
@@ -977,7 +992,7 @@ function AdminMasterHotpagesPage() {
  <div className="flex items-center justify-between border-t border-border/40 pt-2">
  <div>
  <p className="text-xs font-bold text-foreground">Sombra Externa do Card</p>
- <p className="text-[10px] text-muted-foreground">Box shadow elevada — desativada por padrão</p>
+ <p className="text-xs text-muted-foreground">Box shadow elevada — desativada por padrão</p>
  </div>
  <Switch checked={showShadow} onCheckedChange={setShowShadow} />
  </div>
@@ -986,7 +1001,7 @@ function AdminMasterHotpagesPage() {
  <div className="flex items-center justify-between border-t border-border/40 pt-2">
  <div>
  <p className="text-xs font-bold text-foreground">Overlay sobre a Imagem</p>
- <p className="text-[10px] text-muted-foreground">Degradê de contraste — desativado por padrão</p>
+ <p className="text-xs text-muted-foreground">Degradê de contraste — desativado por padrão</p>
  </div>
  <Switch checked={showOverlay} onCheckedChange={setShowOverlay} />
  </div>
@@ -1058,7 +1073,7 @@ function AdminMasterHotpagesPage() {
                         <button
                           type="button"
                           onClick={() => setTextColor("")}
-                          className="text-[10px] text-muted-foreground hover:text-destructive transition-colors cursor-pointer"
+                          className="text-xs text-muted-foreground hover:text-destructive transition-colors cursor-pointer"
                         >
                           Restaurar Padrão
                         </button>
@@ -1095,10 +1110,53 @@ function AdminMasterHotpagesPage() {
                   </div>
                 )}
 
+                
+                {/* ── PROGRAMAÇÃO DE CAMPANHA & AUTO-ARQUIVAMENTO ── */}
+                <div className="space-y-3 border-t border-border/40 pt-3">
+                  <div className="flex items-center gap-2">
+                    <SlidersHorizontal className="size-3.5 text-primary" />
+                    <p className="text-xs font-bold text-foreground">Programação de Campanha & Validade</p>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Defina datas para veiculação programada. Fora do período, o item é ocultado automaticamente da vitrine.
+                  </p>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <Label className="text-xs font-bold text-muted-foreground">Início da Veiculação</Label>
+                      <Input
+                        type="datetime-local"
+                        value={startsAt}
+                        onChange={(e) => setStartsAt(e.target.value)}
+                        className="h-9 rounded-lg bg-card text-xs font-mono"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs font-bold text-muted-foreground">Término da Campanha</Label>
+                      <Input
+                        type="datetime-local"
+                        value={endsAt}
+                        onChange={(e) => setEndsAt(e.target.value)}
+                        className="h-9 rounded-lg bg-card text-xs font-mono"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <Label className="text-xs font-bold text-muted-foreground">Data de Auto-Arquivamento (Opcional)</Label>
+                    <Input
+                      type="datetime-local"
+                      value={autoArchiveAt}
+                      onChange={(e) => setAutoArchiveAt(e.target.value)}
+                      className="h-9 rounded-lg bg-card text-xs font-mono"
+                    />
+                  </div>
+                </div>
+
                 <div className="flex items-center justify-between border-t border-border/40 pt-2">
                   <div>
                     <p className="text-xs font-bold text-foreground">Item Ativo</p>
-                    <p className="text-[10px] text-muted-foreground">Visível para usuários</p>
+                    <p className="text-xs text-muted-foreground">Visível para usuários</p>
                   </div>
                   <Switch checked={isActive} onCheckedChange={setIsActive} />
                 </div>

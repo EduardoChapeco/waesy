@@ -174,21 +174,40 @@ function AddressesPage() {
             <Button
               size="sm"
               onClick={() => setIsAdding(true)}
-              className="rounded-lg h-8.5 px-4 text-xs font-bold gap-2 bg-foreground text-background hover:bg-foreground/90 shrink-0 shadow-2xs cursor-pointer"
+              className="rounded-lg h-11 min-h-11 px-4 text-xs font-bold gap-2 bg-foreground text-background hover:bg-foreground/90 shrink-0 shadow-2xs cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
             >
-              <Plus className="size-3.5" />
+              <Plus className="size-4" />
               <span>Novo</span>
             </Button>
           ) : undefined
         }
       />
 
+      {/* ── Cabeçalho Inpage Desktop (Apple HIG) ── */}
+      <div className="hidden md:flex items-center justify-between pb-4 border-b border-border/40">
+        <div>
+          <h1 className="text-xl font-bold tracking-tight text-foreground">Meus Endereços</h1>
+          <p className="text-xs text-muted-foreground mt-1">
+            Gerencie seus endereços para entrega, serviços e faturamento
+          </p>
+        </div>
+        {!isAdding && (
+          <Button
+            onClick={() => setIsAdding(true)}
+            className="rounded-lg h-11 min-h-11 px-4 text-xs font-bold gap-2 bg-foreground text-background hover:bg-foreground/90 shrink-0 shadow-2xs cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+          >
+            <Plus className="size-4" />
+            <span>Novo Endereço</span>
+          </Button>
+        )}
+      </div>
+
       {/* ── 2. Formulário Apple HIG Inset-Grouped: Novo Endereço ── */}
       {isAdding && (
         <div className="bg-card rounded-none sm:rounded-lg border-y sm:border border-border/80 shadow-xs overflow-hidden transition-all animate-in fade-in-50 duration-200">
           <div className="px-4 sm:px-5 py-4 bg-muted/20 border-b border-border/40 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <MapPin className="size-4.5 text-primary" strokeWidth={2} />
+              <MapPin className="size-5 text-primary" strokeWidth={2} />
               <h2 className="text-sm font-bold text-foreground">Novo Endereço</h2>
             </div>
             <Button
@@ -196,7 +215,7 @@ function AddressesPage() {
               variant="ghost"
               size="icon"
               onClick={() => setIsAdding(false)}
-              className="size-8 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
+              className="size-11 min-h-11 min-w-11 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
             >
               <X className="size-4" />
             </Button>

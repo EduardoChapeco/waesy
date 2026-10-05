@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { formatDateTime } from "@/lib/datetime";
 
 import { ErrorState } from "@/components/state/states";
+import { EmptyState } from "@/components/ui/empty-state";
 
 export const Route = createFileRoute("/admin-master/kyc")({
  head: () => ({ meta: [{ title: "Verificação Facial e KYC | Admin Waesy" }] }),
@@ -132,14 +133,12 @@ function AdminKycPage() {
  </div>
 
  {filteredList.length === 0 ? (
- <div className="border-0 rounded-lg p-12 text-center">
- <ShieldCheck className="size-12 text-muted-foreground mx-auto mb-3 opacity-40" />
- <h3 className="text-base font-bold text-foreground">Nenhuma verificação na fila</h3>
- <p className="text-xs text-muted-foreground mt-1">
- Todas as solicitações de verificação de identidade foram revisadas.
- </p>
- </div>
- ) : (
+        <EmptyState
+          icon={ShieldCheck}
+          title="Nenhuma verificação na fila"
+          description="Todas as solicitações de verificação de identidade foram revisadas."
+        />
+      ) : (
  <div className="grid grid-cols-1 gap-6">
  {filteredList.map((k: any) => (
  <div
@@ -158,7 +157,7 @@ function AdminKycPage() {
  }
  >
  {k.status === "approved"
- ? "✓ Verificado"
+ ? "Verificado"
  : k.status === "pending"
  ? "Pendente de Aprovação"
  : "Recusado"}
@@ -174,7 +173,7 @@ function AdminKycPage() {
 
  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
  <div>
- <span className="text-[11px] font-bold uppercase text-muted-foreground block mb-2">
+ <span className="text-xs font-bold uppercase text-muted-foreground block mb-2">
  Selfie / Prova de Vida
  </span>
  <div className="aspect-square rounded-lg overflow-hidden bg-muted/20">
@@ -187,7 +186,7 @@ function AdminKycPage() {
  </div>
 
  <div>
- <span className="text-[11px] font-bold uppercase text-muted-foreground block mb-2">
+ <span className="text-xs font-bold uppercase text-muted-foreground block mb-2">
  Documento Oficial (Frente)
  </span>
  <div className="aspect-square rounded-lg overflow-hidden bg-muted/20">
@@ -201,7 +200,7 @@ function AdminKycPage() {
 
  {k.document_back_url && (
  <div>
- <span className="text-[11px] font-bold uppercase text-muted-foreground block mb-2">
+ <span className="text-xs font-bold uppercase text-muted-foreground block mb-2">
  Documento Oficial (Verso)
  </span>
  <div className="aspect-square rounded-lg overflow-hidden bg-muted/20">
@@ -229,7 +228,7 @@ function AdminKycPage() {
  className="text-xs text-destructive border-destructive/30"
  onClick={() => handleOpenReview(k, "rejected")}
  >
- <XCircle className="size-3.5 mr-1" />
+ <XCircle className="size-4 mr-1" />
  Recusar
  </Button>
  <Button
@@ -238,7 +237,7 @@ function AdminKycPage() {
  className="text-xs bg-info hover:bg-info font-bold"
  onClick={() => handleOpenReview(k, "approved")}
  >
- <CheckCircle2 className="size-3.5 mr-1" />
+ <CheckCircle2 className="size-4 mr-1" />
  Aprovar e Conceder Selo
  </Button>
  </div>
@@ -303,7 +302,7 @@ function AdminKycPage() {
  >
  {isSubmitting ? (
  <>
- <Loader2 className="size-4 animate-spin mr-2" /> Processando...
+ <Loader2 className="size-4 animate-spin motion-reduce:animate-none mr-2" /> Processando...
  </>
  ) : reviewAction === "approved" ? (
  "Confirmar Aprovação"

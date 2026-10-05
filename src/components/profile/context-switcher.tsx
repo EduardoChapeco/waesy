@@ -10,8 +10,8 @@
  */
 
 import React, { useState } from "react";
-import { useNavigate } from "@tanstack/react-router";
-import { User, Building2, Star, Check, Plus, ChevronDown, ShieldCheck, Store, Layers, ArrowRight } from "lucide-react";
+import { useNavigate, useRouter } from "@tanstack/react-router";
+import { User, Building2, Star, Check, Plus, ChevronDown, ShieldCheck, Store, Layers, ArrowRight, Bike, Navigation } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -36,7 +36,7 @@ export interface CreatorPersona {
   isPrimary?: boolean;
 }
 
-export type ActiveContextType = "civil" | "store" | "creator";
+export type ActiveContextType = "civil" | "store" | "creator" | "courier";
 
 export interface ActiveContextState {
   type: ActiveContextType;
@@ -61,6 +61,8 @@ export interface ContextSwitcherProps {
   stores?: ContextMembership[];
   hasCreatorProfile?: boolean;
   creatorHandle?: string | null;
+  hasCourierProfile?: boolean;
+  courierVehicle?: string | null;
   onContextChange?: (context: ActiveContextState) => void;
   className?: string;
   triggerVariant?: "minimal" | "pill" | "avatar";
@@ -75,11 +77,14 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
   stores = [],
   hasCreatorProfile = false,
   creatorHandle,
+  hasCourierProfile = false,
+  courierVehicle,
   onContextChange,
   className = "",
   triggerVariant = "pill",
 }) => {
   const navigate = useNavigate();
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
 
   // Deriva personas unificadas (se houver creatorHandle mas personas vazio)
@@ -126,7 +131,9 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
     onContextChange?.(state);
     toast.success(`Contexto ativo: ${civilUser.name} (Conta Civil)`);
     setIsOpen(false);
-    navigate({ to: "/conta" });
+    void router.invalidate().then(() => {
+      navigate({ to: "/conta" });
+    });
   };
 
   // ── 2. Alternar para uma Persona de Criador ──
@@ -148,7 +155,9 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
     onContextChange?.(state);
     toast.success(`Contexto ativo: ${persona.name} (@${persona.handle})`);
     setIsOpen(false);
-    navigate({ to: "/conta/criadores" });
+    void router.invalidate().then(() => {
+      navigate({ to: "/conta/criadores" });
+    });
   };
 
   // ── 3. Alternar para uma Empresa / Workspace ──
@@ -169,12 +178,39 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
     onContextChange?.(state);
     toast.success(`Workspace ativo: ${store.name}`);
     setIsOpen(false);
-    navigate({ to: "/workspace" });
+    void router.invalidate().then(() => {
+      navigate({ to: "/workspace" });
+    });
+  };
+
+  // ── 4. Alternar para o Modo Condutor / Waesy Go ──
+  const handleSwitchToCourier = () => {
+    if (typeof window !== "undefined") {
+      window.document.cookie = "waesy_active_context=courier; path=/; max-age=31536000; SameSite=Lax";
+      window.document.cookie = "waesy_active_tenant=; path=/; max-age=0; SameSite=Lax";
+      window.document.cookie = "waesy_active_creator=; path=/; max-age=0; SameSite=Lax";
+    }
+
+    const state: ActiveContextState = {
+      type: "courier",
+      id: civilUser.id || "courier_root",
+      name: `${civilUser.name.split(" ")[0]} (Waesy Go)`,
+      avatarUrl: civilUser.avatarUrl,
+    };
+
+    onContextChange?.(state);
+    toast.success("Modo Condutor (Waesy Go) ativado");
+    setIsOpen(false);
+    void router.invalidate().then(() => {
+      navigate({ to: "/conta/entregador" });
+    });
   };
 
   // ── Rótulo & Ícone Ativo no Gatilho ──
   const triggerLabel =
-    currentContextType === "store" && activeStore
+    currentContextType === "courier"
+      ? "Waesy Go"
+      : currentContextType === "store" && activeStore
       ? activeStore.name
       : currentContextType === "creator" && activePersona
       ? activePersona.name
@@ -194,7 +230,7 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
           <button
             type="button"
             className={cn(
-              "inline-flex items-center gap-2 p-1 rounded-full hover:bg-muted/60 transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/20",
+              "inline-flex items-center gap-2 p-1 rounded-full hover:bg-muted/60 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
               className
             )}
             title="Alternar Perfil ou Empresa"
@@ -202,6 +238,8 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
             <div className="size-8 rounded-full bg-muted border border-border/80 overflow-hidden flex items-center justify-center shrink-0">
               {triggerAvatar ? (
                 <img src={triggerAvatar} alt={triggerLabel} className="size-full object-cover" />
+              ) : currentContextType === "courier" ? (
+                <Bike className="size-4 text-emerald-600" />
               ) : currentContextType === "store" ? (
                 <Building2 className="size-4 text-primary" />
               ) : currentContextType === "creator" ? (
@@ -217,19 +255,21 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
             variant="outline"
             size="sm"
             className={cn(
-              "h-9 px-3 rounded-full border-border/80 bg-background hover:bg-muted/40 text-xs font-semibold flex items-center gap-2 max-w-[210px] cursor-pointer shadow-2xs",
+              "h-11 min-h-11 px-3 rounded-full border-border/80 bg-background hover:bg-muted/40 text-xs font-semibold flex items-center gap-2 max-w-56 cursor-pointer shadow-2xs focus-visible:ring-2 focus-visible:ring-primary",
               className
             )}
           >
-            <div className="size-5 rounded-full bg-muted overflow-hidden shrink-0 flex items-center justify-center border border-border/40">
+            <div className="size-6 rounded-full bg-muted overflow-hidden shrink-0 flex items-center justify-center border border-border/40">
               {triggerAvatar ? (
                 <img src={triggerAvatar} alt={triggerLabel} className="size-full object-cover" />
+              ) : currentContextType === "courier" ? (
+                <Bike className="size-4 text-emerald-600" />
               ) : currentContextType === "store" ? (
-                <Building2 className="size-3 text-primary" />
+                <Building2 className="size-4 text-primary" />
               ) : currentContextType === "creator" ? (
-                <Star className="size-3 text-amber-500" />
+                <Star className="size-4 text-amber-500" />
               ) : (
-                <User className="size-3 text-foreground" />
+                <User className="size-4 text-foreground" />
               )}
             </div>
             <span className="truncate text-foreground font-bold">{triggerLabel}</span>
@@ -251,6 +291,8 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
               ? "Civil / Compras"
               : currentContextType === "creator"
               ? "Criador / Parcerias"
+              : currentContextType === "courier"
+              ? "Waesy Go / Condutor"
               : "Empresa / Workspace"}
           </Badge>
         </div>
@@ -409,6 +451,54 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
           </div>
         )}
 
+        {/* ══════════════════════════════════════════════════════════════
+            4. WAESY GO (ENTREGADOR, MOTORISTA & FRETES)
+        ══════════════════════════════════════════════════════════════ */}
+        <div className="mt-2 space-y-1">
+          <span className="px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">
+            Waesy Go • Logística & Mobilidade
+          </span>
+
+          <DropdownMenuItem
+            onClick={handleSwitchToCourier}
+            className={cn(
+              "p-3 rounded-lg cursor-pointer flex items-center justify-between gap-3 transition-colors",
+              currentContextType === "courier"
+                ? "bg-emerald-500/10 text-emerald-600 font-bold border border-emerald-500/20"
+                : "hover:bg-muted/60 text-foreground"
+            )}
+          >
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="size-9 rounded-lg bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 flex items-center justify-center shrink-0">
+                <Bike className="size-4" />
+              </div>
+              <div className="min-w-0 space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold truncate text-foreground">
+                    {hasCourierProfile ? "Painel do Condutor" : "Seja um Condutor"}
+                  </span>
+                  <Badge
+                    variant="outline"
+                    className="text-[9px] px-1 py-0 font-medium text-emerald-600 border-emerald-500/30"
+                  >
+                    Waesy Go
+                  </Badge>
+                </div>
+                <p className="text-[10px] text-muted-foreground truncate">
+                  {hasCourierProfile
+                    ? (courierVehicle ? `${courierVehicle} • Taxa Fixa R$ 0,99` : "Entregas, Corridas & Fretes")
+                    : "Cadastre sua moto, carro ou caminhão (0% comissão)"}
+                </p>
+              </div>
+            </div>
+            {currentContextType === "courier" ? (
+              <Check className="size-4 text-emerald-600 shrink-0 stroke-[2.5]" />
+            ) : (
+              <ArrowRight className="size-4 text-muted-foreground shrink-0" />
+            )}
+          </DropdownMenuItem>
+        </div>
+
         <DropdownMenuSeparator className="my-2" />
 
         {/* ══════════════════════════════════════════════════════════════
@@ -422,7 +512,7 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
             }}
             className="p-2 rounded-lg text-xs font-semibold text-primary hover:bg-primary/10 cursor-pointer flex items-center gap-2"
           >
-            <Plus className="size-3.5" />
+            <Plus className="size-4" />
             <span>+ Criar Nova Empresa ou Loja</span>
           </DropdownMenuItem>
 
@@ -433,7 +523,7 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
             }}
             className="p-2 rounded-lg text-xs font-semibold text-muted-foreground hover:bg-muted/60 cursor-pointer flex items-center gap-2"
           >
-            <Star className="size-3.5 text-amber-500" />
+            <Star className="size-4 text-amber-500" />
             <span>+ Criar Nova Persona de Criador</span>
           </DropdownMenuItem>
         </div>

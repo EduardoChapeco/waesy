@@ -48,9 +48,9 @@ export function ActionAuthGuardModal({
         </DialogHeader>
 
         {actionContext && (
-          <div className="p-3.5 rounded-lg bg-muted/40 border border-border/60 text-xs space-y-1">
-            <span className="font-semibold text-foreground flex items-center gap-1.5">
-              <Lock className="size-3.5 text-muted-foreground" />
+          <div className="p-4 rounded-lg bg-muted/40 border border-border/60 text-xs space-y-1">
+            <span className="font-semibold text-foreground flex items-center gap-2">
+              <Lock className="size-4 text-muted-foreground" />
               Ação Solicitada:
             </span>
             <p className="text-muted-foreground">{actionContext}</p>
@@ -62,18 +62,18 @@ export function ActionAuthGuardModal({
             type="button"
             variant="outline"
             onClick={() => onOpenChange(false)}
-            className="w-full sm:w-auto rounded-lg text-xs h-11 sm:h-9 px-4 focus-visible:ring-2 focus-visible:ring-primary"
+            className="w-full sm:w-auto rounded-lg text-xs h-11 min-h-11 px-4 focus-visible:ring-2 focus-visible:ring-primary"
           >
             Continuar navegando
           </Button>
           <Button
             asChild
-            className="w-full sm:w-auto rounded-lg text-xs h-11 sm:h-9 px-4 gap-2 font-bold focus-visible:ring-2 focus-visible:ring-primary"
+            className="w-full sm:w-auto rounded-lg text-xs h-11 min-h-11 px-4 gap-2 font-bold focus-visible:ring-2 focus-visible:ring-primary"
           >
             <Link to={loginTarget as any}>
               <LogIn className="size-4" />
               <span>Entrar ou Cadastrar</span>
-              <ArrowRight className="size-3.5" />
+              <ArrowRight className="size-4" />
             </Link>
           </Button>
         </DialogFooter>

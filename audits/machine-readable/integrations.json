@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "integrations": [
+    { "name": "PNCP", "category": "civic_procurement", "auth": "none", "status": "active" },
+    { "name": "Banco Central do Brasil", "category": "financial_indicators", "auth": "none", "status": "active" },
+    { "name": "OpenStreetMap Overpass", "category": "geographic_places", "auth": "none", "status": "active" },
+    { "name": "DataJud CNJ", "category": "legal_records", "auth": "public_api_key", "status": "active" },
+    { "name": "BrasilAPI", "category": "business_registry", "auth": "none", "status": "active" },
+    { "name": "OpenRouter", "category": "ai_llm_pool", "auth": "bearer_secret", "status": "active" },
+    { "name": "Groq", "category": "ai_fast_inference", "auth": "bearer_secret", "status": "active" },
+    { "name": "Firecrawl", "category": "web_scraping", "auth": "bearer_secret", "status": "active" },
+    { "name": "Mercado Pago", "category": "payments", "auth": "access_token", "status": "active" },
+    { "name": "WhatsApp Cloud API", "category": "messaging", "auth": "graph_token", "status": "active" }
+  ]
+}

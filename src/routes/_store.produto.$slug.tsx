@@ -308,6 +308,12 @@ function ProductPage() {
       product.attributes?.travel ||
       (product as any)?.metadata?.travel ||
       (product as any)?.metadata?.travel_package ||
+      (product as any)?.product_type?.slug === "pacote-viagem" ||
+      (product as any)?.product_type?.slug === "turismo" ||
+      (product as any)?.store?.segment === "tourism" ||
+      (product as any)?.store?.segment === "tourism_agency" ||
+      (product as any)?.store?.type === "tourism_agency" ||
+      (product as any)?.store?.settings?.segment === "tourism_agency" ||
       product.title?.toLowerCase().includes("resort") ||
       product.title?.toLowerCase().includes("viagem") ||
       product.title?.toLowerCase().includes("pacote") ||
@@ -315,6 +321,9 @@ function ProductPage() {
       product.title?.toLowerCase().includes("ilhéus") ||
       product.title?.toLowerCase().includes("ilheus") ||
       product.title?.toLowerCase().includes("excurs") ||
+      product.categories?.some((c: any) =>
+        c.slug?.includes("viagem") || c.slug?.includes("turismo") || c.name?.toLowerCase().includes("pacote")
+      ) ||
       (product as any).category?.slug?.includes("turismo") ||
       (product as any).category?.slug?.includes("viag") ||
       (product as any).category?.name?.toLowerCase().includes("turismo") ||
@@ -323,7 +332,11 @@ function ProductPage() {
   );
 
   if (isTravelPackage) {
-    const travelData = product.attributes?.travel;
+    const travelData =
+      (product as any)?.attributes?.travel ||
+      (product as any)?.metadata?.travel_package ||
+      (product as any)?.metadata?.travel ||
+      {};
     const currentThumbnailUrl =
       product.media?.find((m: any) => m.mediaType === "image")?.url ||
       product.media?.[0]?.url ||
@@ -368,6 +381,19 @@ function ProductPage() {
 
     return (
       <div className="relative">
+        <ProductTelemetry
+          storeId={product.store_id || (product as any)?.storeId || (product as any)?.store?.id}
+          productId={product.id}
+          title={product.title}
+          description={product.description || (product as any)?.summary}
+          priceCents={product.priceCents || 0}
+          currency="BRL"
+          imageUrl={currentThumbnailUrl || product.media?.[0]?.url}
+          brandName={(product as any)?.store?.name || "Waesy"}
+          categoryName="Turismo"
+          sku={(product as any).sku || product.id}
+          inStock={true}
+        />
         <TravelPackageDetailView
           packageData={travelData}
           productTitle={product.title}
@@ -808,94 +834,14 @@ function ProductContent({
 
  const currentThumbnailUrl = activeMedia?.url || coverImage?.url || null;
 
-  const storeSettings = (product as any)?.store?.settings || {};
-  const storeSemantics = getNicheSemantics((product as any)?.store);
-  const isTourismStore =
-    storeSemantics.nicheId === "tourism" ||
-    storeSettings.niche === "tourism" ||
-    storeSettings.segment === "tourism" ||
-    storeSettings.type === "tourism" ||
-    (product as any)?.store?.segment === "tourism" ||
-    (product as any)?.store?.niche === "tourism";
 
- const isTravelProduct = Boolean(
- isTourismStore ||
- (product as any)?.attributes?.travel ||
- (product as any)?.metadata?.travel ||
- (product as any)?.metadata?.travel_package ||
- (product as any)?.product_type?.slug === "pacote-viagem" ||
- (product as any)?.product_type?.slug === "turismo" ||
- (product as any)?.store?.segment === "tourism" ||
- (product as any)?.store?.segment === "tourism_agency" ||
- (product as any)?.store?.type === "tourism_agency" ||
- (product as any)?.store?.settings?.segment === "tourism_agency" ||
- product.title?.toLowerCase().includes("ilhéus") ||
- product.title?.toLowerCase().includes("ilheus") ||
- product.categories?.some((c: any) =>
- c.slug?.includes("viagem") || c.slug?.includes("turismo") || c.name?.toLowerCase().includes("pacote")
- )
- );
 
- if (isTravelProduct) {
- const travelData =
- (product as any)?.attributes?.travel ||
- (product as any)?.metadata?.travel_package ||
- (product as any)?.metadata?.travel ||
- {};
- const mediaUrls = product.media?.map((m: any) => m.url) || [];
 
- return (
- <div className="w-full">
-      {/* Omni-telemetria para Meta Pixel + CAPI + Google Ads + Schema.org */}
-      <ProductTelemetry
-        storeId={product.store_id || (product as any)?.storeId || (product as any)?.store?.id}
-        productId={product.id}
-        title={product.title}
-        description={product.description || (product as any)?.summary}
-        priceCents={product.priceCents || 0}
-        currency="BRL"
-        imageUrl={currentThumbnailUrl || product.media?.[0]?.url}
-        brandName={(product as any)?.store?.name || "Waesy"}
-        categoryName="Turismo"
-        sku={(product as any).sku || product.id}
-        inStock={true}
-      />
- {/* Breadcrumb */}
- <nav
- aria-label="Navegação estrutural"
- className="mb-4 flex items-center gap-2 text-xs text-muted-foreground font-medium px-4"
- >
- <Link to="/" className="hover:text-foreground">
- Início
- </Link>
- <ChevronRight className="size-3" aria-hidden />
- <Link to="/mercado" className="hover:text-foreground">
- Turismo
- </Link>
- <ChevronRight className="size-3" aria-hidden />
- <span className="text-foreground font-bold truncate max-w-[250px]">{product.title}</span>
- </nav>
 
- 				<TravelPackageDetailView
-					packageData={travelData}
-					productTitle={product.title}
-					priceCents={product.priceCents || 0}
-					compareAtCents={product.compareAtCents}
-					coverImageUrl={currentThumbnailUrl}
-					mediaUrls={mediaUrls}
-					storeName={(product as any)?.store?.name}
-					storePhone={storePhone}
-					isOwner={isOwner}
-					onEditClick={() =>
-						router.navigate({
-							to: "/workspace/catalogo/produtos/$id",
-							params: { id: product.id },
-						})
-					}
-				/>
- </div>
- );
- }
+
+
+
+
 
   const isDesktop = useIsDesktop(1024);
 

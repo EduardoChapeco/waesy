@@ -295,38 +295,18 @@ function AdvancedMarketplacePage() {
       />
 
       <div className="px-4 sm:px-6 space-y-6 pt-3 sm:pt-5">
-        {/* ── 1. Banner Canônico de Segurança e Garantia B2C ── */}
-        <section aria-label="Garantia Waesy Marketplace" className="bg-card border border-border/80 rounded-xl p-4 sm:p-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4 shadow-2xs">
-          <div className="flex items-start gap-3.5">
-            <div className="size-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-0.5">
-              <ShieldCheck size={22} weight="fill" />
-            </div>
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <span className="text-xs sm:text-sm font-bold text-foreground">
-                  Marketplace 100% Verificado
-                </span>
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-primary/10 text-primary border border-primary/20">
-                  <CheckCircle size={11} weight="fill" />
-                  Garantia B2C
-                </span>
-              </div>
-              <p className="text-xs text-muted-foreground leading-relaxed max-w-2xl">
-                Apenas empresas e lojas ativas credenciadas com nota fiscal e estoque real. Todos os pedidos contam com proteção ao comprador e atendimento direto.
-              </p>
-            </div>
-          </div>
-
-          {activeNiche !== "todos" && activeNicheConfig.targetRoute && (
+        {activeNiche !== "todos" && activeNicheConfig.targetRoute && (
+          <div className="flex items-center justify-between p-3 rounded-xl bg-card border border-border/80">
+            <span className="text-xs font-medium text-muted-foreground">Vitrine especializada disponível</span>
             <Link
               to={activeNicheConfig.targetRoute as any}
-              className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary font-bold text-xs transition-colors shrink-0 cursor-pointer"
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-primary hover:underline cursor-pointer"
             >
-              <span>Ver Vitrine {activeNicheConfig.label}</span>
-              <ArrowSquareOut size={14} weight="bold" />
+              <span>Acessar vitrine {activeNicheConfig.label}</span>
+              <ArrowSquareOut size={13} weight="bold" />
             </Link>
-          )}
-        </section>
+          </div>
+        )}
 
         {/* ── 2. Banners Herói Dinâmicos (Admin Master / Banners) ── */}
         {banners && banners.length > 0 && (

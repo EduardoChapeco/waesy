@@ -17,12 +17,19 @@ import {
 import { AIActivityTrail, type AIActivityStep } from "@/components/chat/ai-activity-trail";
 import { ChatArtifactCard, type ChatArtifactData } from "@/components/chat/chat-artifact-card";
 import { StructuredMessageView, type AIChatAction } from "@/components/chat/structured-message-view";
+import type { CopilotFsmPhase } from "@/types/copilot-fsm";
 import { toast } from "sonner";
+import { addToCart } from "@/services/cart.functions";
+import { useCartContext } from "@/lib/cart-context";
+import { requestTravelQuote } from "@/services/tourism.functions";
+import { createJusDemand } from "@/services/jus.functions";
+import { upsertClassified } from "@/services/classifieds.functions";
 
 interface DrawerMessage {
   id: string;
   role: "assistant" | "user";
   text: string;
+  fsmPhase?: CopilotFsmPhase;
   activitySteps?: AIActivityStep[];
   artifact?: ChatArtifactData;
   structuredPayload?: Record<string, any>;
@@ -32,6 +39,7 @@ export function WaesyCopilotDrawer({ session }: { session?: any }) {
   const location = useLocation();
   const navigate = useNavigate();
   const { isCompact } = useWindowSizeClass();
+  const { refreshCart, setIsCartOpen: setIsGlobalCartOpen } = useCartContext();
   const [isOpen, setIsOpen] = useState(false);
   const [inputText, setInputText] = useState("");
   const [isSending, setIsSending] = useState(false);
@@ -99,6 +107,7 @@ export function WaesyCopilotDrawer({ session }: { session?: any }) {
         id: `ai-${Date.now()}`,
         role: "assistant",
         text: execution.responseMessage,
+        fsmPhase: execution.fsmPhase,
         activitySteps: execution.activitySteps,
         artifact: execution.artifact,
         structuredPayload: execution.structuredPayload,
@@ -112,7 +121,7 @@ export function WaesyCopilotDrawer({ session }: { session?: any }) {
     }
   };
 
-  const handleDrawerAction = (action: AIChatAction) => {
+  const handleDrawerAction = async (action: AIChatAction) => {
     switch (action.action_type) {
       case "open_place":
         setIsOpen(false);
@@ -120,24 +129,144 @@ export function WaesyCopilotDrawer({ session }: { session?: any }) {
         break;
       case "call_ride":
         setIsOpen(false);
-        navigate({ to: "/mobility" as any });
+        navigate({ to: "/mobilidade" as any });
         break;
       case "open_checkout":
         setIsOpen(false);
-        navigate({ to: `/checkout/${action.payload.cartId}` as any });
+        navigate({ to: "/checkout" as any });
         break;
-      case "request_travel_quote":
-        toast.success("Demanda de viagem encaminhada para agências credenciadas!");
+      case "request_travel_quote": {
+        const destination = action.payload?.destination || "Destino Turístico";
+        const contactName = session?.user?.user_metadata?.name || session?.user?.name || "Viajante Waesy";
+        const contactWhatsapp = session?.user?.user_metadata?.phone || "49999999999";
+        const contactEmail = session?.user?.email;
+
+        try {
+          const res = await requestTravelQuote({
+            data: {
+              origin_city: "Chapecó",
+              destination_city: destination,
+              rooms_count: 1,
+              adults_count: action.payload?.passengers_count || 2,
+              children_count: 0,
+              children_ages: [],
+              trip_type: "air_package",
+              flexible_dates: true,
+              contact_name: contactName,
+              contact_whatsapp: contactWhatsapp,
+              contact_email: contactEmail,
+              special_notes: `Solicitação via Copilot: ${action.payload?.duration_days || 3} dias. Orçamento estimado: R$ ${(Number(action.payload?.estimated_budget_cents || 0) / 100).toFixed(2)}`,
+            },
+          });
+          if ((res as any)?.status === "success" || (res as any)?.success) {
+            toast.success(`Cotação para ${destination} registrada com sucesso!`);
+            setIsOpen(false);
+            navigate({ to: "/turismo" as any });
+          } else {
+            toast.info(`Redirecionando para o portal de turismo para detalhar o roteiro em ${destination}...`);
+            setIsOpen(false);
+            navigate({ to: "/turismo" as any });
+          }
+        } catch {
+          toast.info(`Encaminhando para o canal de turismo para ${destination}...`);
+          setIsOpen(false);
+          navigate({ to: "/turismo" as any });
+        }
         break;
-      case "submit_legal_demand":
-        toast.success("Demanda jurídica registrada para advogados credenciados!");
+      }
+      case "submit_legal_demand": {
+        const title = action.payload?.title || "Demanda Jurídica Preliminar";
+        const legalArea = action.payload?.legal_area || "Direito Cível";
+        const description =
+          action.payload?.description ||
+          (action.payload?.key_facts ? action.payload.key_facts.join(". ") : title);
+        const urgency = ["low", "normal", "high", "urgent"].includes(action.payload?.urgency)
+          ? action.payload.urgency
+          : "normal";
+
+        try {
+          const demand = await createJusDemand({
+            data: {
+              title,
+              legal_area: legalArea,
+              description: description.length >= 10 ? description : `${description} (Intake via Copilot)`,
+              urgency,
+              city: "Chapecó",
+              state: "SC",
+              documents: [],
+              is_anonymous: false,
+            },
+          });
+          if (demand?.id) {
+            toast.success("Demanda jurídica registrada no Painel JUS com sucesso!");
+            setIsOpen(false);
+            navigate({ to: "/workspace/advocacia" as any });
+          } else {
+            toast.info("Acesse o Painel Jurídico para formalizar a demanda.");
+            setIsOpen(false);
+            navigate({ to: "/workspace/advocacia" as any });
+          }
+        } catch {
+          toast.info("Acesse o Painel Jurídico para conectar-se aos advogados credenciados.");
+          setIsOpen(false);
+          navigate({ to: "/workspace/advocacia" as any });
+        }
         break;
-      case "publish_ad":
-        toast.success("Anúncio publicado no mural com sucesso!");
+      }
+      case "publish_ad": {
+        const headline = action.payload?.headline || "Anúncio do Mural";
+        const bodyText = action.payload?.body_text || "Divulgação de produto ou serviço local via Waesy Copilot.";
+
+        try {
+          const res = await upsertClassified({
+            data: {
+              title: headline.length >= 3 ? headline : "Anúncio Oficial",
+              category: "sale",
+              content: bodyText.length >= 10 ? bodyText : "Divulgação de produto ou serviço local via Waesy Copilot.",
+              price_cents: 0,
+            },
+          });
+          if (res?.id) {
+            toast.success("Anúncio publicado com sucesso!");
+            setIsOpen(false);
+            navigate({ to: "/classificados" as any });
+          } else {
+            toast.info("Redirecionando para o editor de classificados para concluir publicação...");
+            setIsOpen(false);
+            navigate({ to: "/conta/classificados/novo" as any });
+          }
+        } catch {
+          toast.info("Redirecionando para o editor de classificados...");
+          setIsOpen(false);
+          navigate({ to: "/conta/classificados/novo" as any });
+        }
         break;
-      case "add_to_cart":
-        toast.success("Item adicionado ao carrinho!");
+      }
+      case "add_to_cart": {
+        const productId = action.payload?.productId || action.payload?.product_id || action.payload?.id;
+        if (!productId) {
+          toast.error("Produto não identificado para inclusão no carrinho.");
+          break;
+        }
+        try {
+          const res = await addToCart({
+            data: {
+              productId,
+              quantity: action.payload?.quantity || 1,
+            },
+          });
+          if (res?.status === "success" || (res as any)?.success) {
+            await refreshCart();
+            setIsGlobalCartOpen(true);
+            toast.success(res?.message || "Item adicionado ao carrinho!");
+          } else {
+            toast.error(res?.message || "Não foi possível adicionar o item ao carrinho.");
+          }
+        } catch (err: any) {
+          toast.error(err?.message || "Erro ao adicionar item ao carrinho.");
+        }
         break;
+      }
       default:
         if (action.payload?.url) {
           navigate({ to: action.payload.url as any });
@@ -196,10 +325,10 @@ export function WaesyCopilotDrawer({ session }: { session?: any }) {
                 variant="ghost"
                 size="sm"
                 onClick={() => /* focus-visible:ring-2 */ handleExpandToFullScreen()}
-                className="h-8 px-2 text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none cursor-pointer"
+                className="h-11 min-h-11 px-3 text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none cursor-pointer"
                 title="Expandir para tela cheia"
               >
-                <ArrowSquareOut className="size-3.5" />
+                <ArrowSquareOut className="size-4" />
                 <span className="hidden sm:inline">Expandir</span>
               </Button>
             </div>
@@ -207,7 +336,12 @@ export function WaesyCopilotDrawer({ session }: { session?: any }) {
 
           {/* Area de Mensagens */}
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
-            {messages.map((m) => (
+            {messages.length === 0 ? (
+              <div className="text-center text-xs text-muted-foreground py-12">
+                Nenhuma mensagem enviada. Como posso ajudar você hoje?
+              </div>
+            ) : (
+              messages.map((m) => (
               <div
                 key={m.id}
                 className={`flex gap-3 ${
@@ -264,7 +398,7 @@ export function WaesyCopilotDrawer({ session }: { session?: any }) {
                   </div>
                 )}
               </div>
-            ))}
+            )))}
 
             {isSending && (
               <div className="flex gap-3 justify-start">

@@ -204,9 +204,9 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
         if (onSuccess && resolvedStoreId) {
           onSuccess(resolvedStoreId);
         } else if (resolvedSlug) {
-          navigate({ to: `/@${resolvedSlug}` as any });
+          navigate({ to: `/loja/${resolvedSlug}` as any });
         } else {
-          navigate({ to: `/empresa/${resolvedStoreId}` as any });
+          navigate({ to: `/loja/${resolvedStoreId}` as any });
         }
       }
     } catch (err: any) {
@@ -583,8 +583,8 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
             <CheckCircle2 className="size-3.5 text-emerald-500" />
             <span>Perfil Oficial no Diretório e Guia</span>
           </p>
-          <p className="text-[11.5px] leading-relaxed">
-            Assim que você concluir, sua empresa aparecerá na vitrine pública com link oficial (<code className="text-foreground font-mono">waesy.com.br/@{cleanSlug}</code>) e integração direta com o WhatsApp comercial.
+          <p className="text-2xs leading-relaxed">
+            Assim que você concluir, sua empresa aparecerá na vitrine pública com link oficial (<code className="text-foreground font-mono">waesy.com.br/loja/{cleanSlug}</code>) e integração direta com o WhatsApp comercial.
           </p>
         </div>
       </div>

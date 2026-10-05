@@ -1,71 +1,104 @@
 /**
  * Market Data Miner Engine - Brazilian Economic Indicators
- * Ported with 100% fidelity from proprietary market-data-miner v1.0
- * Sources: Banco Central do Brasil SGS API (Free, Public, Live)
+ * Sources: Banco Central do Brasil Olinda OData API (Free, Public, Live) & SGS
  */
 
 import { fetchWithRetry } from './scraper-utils';
 import type { EconomicIndicator } from '@/types/mining';
 
 export const BCB_SERIES = {
-  IPCA: { code: 433, name: 'IPCA - Variação Mensal', unit: '%', type: 'economic' as const },
-  IPCA_12M: { code: 13522, name: 'IPCA Acumulado 12 Meses', unit: '%', type: 'economic' as const },
-  IGP_M: { code: 189, name: 'IGP-M - Variação Mensal', unit: '%', type: 'economic' as const },
-  SELIC_META: { code: 432, name: 'Taxa SELIC Meta', unit: '% a.a.', type: 'financial' as const },
-  SELIC_OVER: { code: 11, name: 'Taxa SELIC Efetiva', unit: '% a.a.', type: 'financial' as const },
-  CDI: { code: 12, name: 'Taxa CDI', unit: '% a.a.', type: 'financial' as const },
-  DOLAR_PTAX: { code: 1, name: 'Dólar Comercial PTAX Venda', unit: 'R$', type: 'financial' as const },
-  EURO_PTAX: { code: 21619, name: 'Euro PTAX Venda', unit: 'R$', type: 'financial' as const },
-  DESEMPREGO: { code: 24369, name: 'Taxa de Desemprego (PNAD Contínua)', unit: '%', type: 'social' as const },
-  PIB_IBC_BR: { code: 4380, name: 'Índice de Atividade Econômica (IBC-Br)', unit: 'pts', type: 'economic' as const },
+  DOLAR_PTAX: { code: 1, name: 'Dólar Comercial PTAX', unit: 'R$', type: 'financial' as const },
+  EURO_PTAX: { code: 21619, name: 'Euro Comercial PTAX', unit: 'R$', type: 'financial' as const },
+  SELIC_META: { code: 432, name: 'Taxa SELIC (Meta Mercado)', unit: '% a.a.', type: 'financial' as const },
+  IPCA: { code: 433, name: 'IPCA (Inflação Oficial)', unit: '%', type: 'economic' as const },
+  IGP_M: { code: 189, name: 'IGP-M (Inflação Aluguel)', unit: '%', type: 'economic' as const },
 };
 
-export async function fetchBcbSeries(
-  seriesCode: number,
-  limit = 12
-): Promise<Array<{ date: string; value: number }>> {
-  const url = `https://api.bcb.gov.br/dados/serie/bcdata.sgs.${seriesCode}/dados/ultimos/${limit}?formato=json`;
+async function fetchPtaxCurrency(currency: string): Promise<Array<{ date: string; value: number }>> {
+  const today = new Date();
+  const past = new Date();
+  past.setDate(today.getDate() - 15);
 
-  try {
-    const response = await fetchWithRetry(url, {
-      headers: {
-        'Accept': 'application/json',
-      },
-    });
+  const formatBcbDate = (d: Date) => {
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    const yyyy = d.getFullYear();
+    return `${mm}-${dd}-${yyyy}`;
+  };
 
-    if (!response.ok) {
-      throw new Error(`BCB SGS API retornou status HTTP ${response.status}`);
+  const dStart = formatBcbDate(past);
+  const dEnd = formatBcbDate(today);
+
+  const url = currency === 'USD'
+    ? `https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/CotacaoDolarPeriodo(dataInicial=@dataInicial,dataFinalCotacao=@dataFinalCotacao)?@dataInicial='${dStart}'&@dataFinalCotacao='${dEnd}'&$orderby=dataHoraCotacao%20desc&$format=json`
+    : `https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/CotacaoMoedaPeriodo(moeda=@moeda,dataInicial=@dataInicial,dataFinalCotacao=@dataFinalCotacao)?@moeda='${currency}'&@dataInicial='${dStart}'&@dataFinalCotacao='${dEnd}'&$orderby=dataHoraCotacao%20desc&$format=json`;
+
+  const res = await fetchWithRetry(url, { signal: AbortSignal.timeout(10000) });
+  if (!res.ok) throw new Error(`Olinda PTAX HTTP ${res.status}`);
+  const json = await res.json();
+  const rawList = (json as any)?.value || [];
+
+  const byDate = new Map<string, number>();
+  for (const item of rawList) {
+    const isoDate = String(item.dataHoraCotacao || '').slice(0, 10);
+    const venda = Number(item.cotacaoVenda);
+    if (!byDate.has(isoDate) && venda > 0) {
+      byDate.set(isoDate, venda);
     }
-
-    const data = await response.json();
-    if (!Array.isArray(data)) {
-      return [];
-    }
-
-    return data.map((item: { data: string; valor: string }) => {
-      // Normalização do formato brasileiro "DD/MM/AAAA" para ISO
-      const [day, month, year] = item.data.split('/');
-      const isoDate = `${year}-${month}-${day}`;
-      const numValue = parseFloat(item.valor.replace(',', '.'));
-
-      return {
-        date: isoDate,
-        value: isNaN(numValue) ? 0 : numValue,
-      };
-    });
-  } catch (error) {
-    console.error(`[MarketDataMiner] Erro ao consultar série ${seriesCode} do BCB:`, error);
-    return [];
   }
+
+  return Array.from(byDate.entries())
+    .map(([date, value]) => ({ date, value }))
+    .sort((a, b) => a.date.localeCompare(b.date));
+}
+
+async function fetchFocusExpectations(indicador: string): Promise<Array<{ date: string; value: number }>> {
+  const url = `https://olinda.bcb.gov.br/olinda/servico/Expectativas/versao/v1/odata/ExpectativaMercadoMensais?$filter=Indicador%20eq%20'${encodeURIComponent(indicador)}'%20and%20baseCalculo%20eq%200&$orderby=Data%20desc&$top=20&$format=json`;
+  const res = await fetchWithRetry(url, { signal: AbortSignal.timeout(10000) });
+  if (!res.ok) throw new Error(`Olinda Expectativas HTTP ${res.status}`);
+  const json = await res.json();
+  const rawList = (json as any)?.value || [];
+
+  return rawList
+    .slice(0, 12)
+    .map((item: any) => ({
+      date: String(item.Data),
+      value: Number(item.Mediana || item.Media || 0),
+    }))
+    .reverse();
+}
+
+async function fetchFocusSelic(): Promise<Array<{ date: string; value: number }>> {
+  const url = `https://olinda.bcb.gov.br/olinda/servico/Expectativas/versao/v1/odata/ExpectativasMercadoSelic?$filter=baseCalculo%20eq%200&$orderby=Data%20desc&$top=20&$format=json`;
+  const res = await fetchWithRetry(url, { signal: AbortSignal.timeout(10000) });
+  if (!res.ok) throw new Error(`Olinda Selic HTTP ${res.status}`);
+  const json = await res.json();
+  const rawList = (json as any)?.value || [];
+
+  return rawList
+    .slice(0, 12)
+    .map((item: any) => ({
+      date: String(item.Data),
+      value: Number(item.Mediana || item.Media || 0),
+    }))
+    .reverse();
 }
 
 export async function fetchAllMarketIndicators(): Promise<EconomicIndicator[]> {
-  const entries = Object.entries(BCB_SERIES);
+  const targets = [
+    { code: 1, name: 'Dólar Comercial PTAX', unit: 'R$', type: 'financial' as const, fetcher: () => fetchPtaxCurrency('USD') },
+    { code: 21619, name: 'Euro Comercial PTAX', unit: 'R$', type: 'financial' as const, fetcher: () => fetchPtaxCurrency('EUR') },
+    { code: 432, name: 'Taxa SELIC (Meta Mercado)', unit: '% a.a.', type: 'financial' as const, fetcher: () => fetchFocusSelic() },
+    { code: 433, name: 'IPCA (Inflação Oficial)', unit: '%', type: 'economic' as const, fetcher: () => fetchFocusExpectations('IPCA') },
+    { code: 189, name: 'IGP-M (Inflação Aluguel)', unit: '%', type: 'economic' as const, fetcher: () => fetchFocusExpectations('IGP-M') },
+  ];
 
-  const results = await Promise.allSettled(
-    entries.map(async ([, config]) => {
-      const timeSeries = await fetchBcbSeries(config.code, 12);
-      if (timeSeries.length === 0) return null;
+  const results: EconomicIndicator[] = [];
+
+  for (const t of targets) {
+    try {
+      const timeSeries = await t.fetcher();
+      if (!timeSeries || timeSeries.length === 0) continue;
 
       const latest = timeSeries[timeSeries.length - 1];
       const previous = timeSeries.length > 1 ? timeSeries[timeSeries.length - 2] : undefined;
@@ -75,24 +108,21 @@ export async function fetchAllMarketIndicators(): Promise<EconomicIndicator[]> {
         variationPercent = parseFloat((((latest.value - previous.value) / Math.abs(previous.value)) * 100).toFixed(2));
       }
 
-      const indicator: EconomicIndicator = {
-        code: config.code,
-        name: config.name,
-        type: config.type,
-        unit: config.unit,
+      results.push({
+        code: t.code,
+        name: t.name,
+        type: t.type,
+        unit: t.unit,
         currentValue: latest.value,
         previousValue: previous?.value,
         variationPercent,
         referenceDate: latest.date,
         timeSeries,
-      };
+      });
+    } catch (err) {
+      console.warn(`[MarketDataMiner] Falha ao consultar indicador ${t.name}:`, err);
+    }
+  }
 
-      return indicator;
-    })
-  );
-
-  return results
-    .filter((r): r is PromiseFulfilledResult<EconomicIndicator | null> => r.status === 'fulfilled')
-    .map((r) => r.value)
-    .filter((v): v is EconomicIndicator => v !== null);
+  return results;
 }

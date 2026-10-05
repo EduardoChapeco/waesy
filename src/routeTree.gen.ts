@@ -142,6 +142,7 @@ import { Route as StoreColecaoSlugRouteImport } from './routes/_store.colecao.$s
 import { Route as StoreConcursoIdRouteImport } from './routes/_store.concurso.$id'
 import { Route as StoreContaIndexRouteImport } from './routes/_store.conta.index'
 import { Route as StoreContaAgendamentosRouteImport } from './routes/_store.conta.agendamentos'
+import { Route as StoreContaAtividadeRouteImport } from './routes/_store.conta.atividade'
 import { Route as StoreContaAvaliacoesRouteImport } from './routes/_store.conta.avaliacoes'
 import { Route as StoreContaCandidaturasRouteImport } from './routes/_store.conta.candidaturas'
 import { Route as StoreContaCarnesRouteImport } from './routes/_store.conta.carnes'
@@ -154,6 +155,7 @@ import { Route as StoreContaCriadoresRouteImport } from './routes/_store.conta.c
 import { Route as StoreContaCurriculoRouteImport } from './routes/_store.conta.curriculo'
 import { Route as StoreContaEmpresaRouteImport } from './routes/_store.conta.empresa'
 import { Route as StoreContaEnderecosRouteImport } from './routes/_store.conta.enderecos'
+import { Route as StoreContaEntregadorRouteImport } from './routes/_store.conta.entregador'
 import { Route as StoreContaFinancasRouteImport } from './routes/_store.conta.financas'
 import { Route as StoreContaGiftCardsRouteImport } from './routes/_store.conta.gift-cards'
 import { Route as StoreContaIngressosRouteImport } from './routes/_store.conta.ingressos'
@@ -214,6 +216,7 @@ import { Route as AdminMasterSegurancaCertificadosRouteImport } from './routes/a
 import { Route as AdminMasterSegurancaTelemetriaRouteImport } from './routes/admin-master.seguranca.telemetria'
 import { Route as ApiAuthCallbackRouteImport } from './routes/api.auth.callback'
 import { Route as ApiAuthConfirmRouteImport } from './routes/api.auth.confirm'
+import { Route as ApiCronMiningWorkerRouteImport } from './routes/api.cron.mining-worker'
 import { Route as ApiFeedMetaDotcsvRouteImport } from './routes/api.feed.meta[.]csv'
 import { Route as ApiFeedXmlRouteImport } from './routes/api.feed.xml'
 import { Route as ApiMiningWorkerRouteImport } from './routes/api.mining.worker'
@@ -1069,6 +1072,11 @@ const StoreContaAgendamentosRoute = StoreContaAgendamentosRouteImport.update({
   path: '/agendamentos',
   getParentRoute: () => StoreContaRoute,
 } as any)
+const StoreContaAtividadeRoute = StoreContaAtividadeRouteImport.update({
+  id: '/atividade',
+  path: '/atividade',
+  getParentRoute: () => StoreContaRoute,
+} as any)
 const StoreContaAvaliacoesRoute = StoreContaAvaliacoesRouteImport.update({
   id: '/avaliacoes',
   path: '/avaliacoes',
@@ -1127,6 +1135,11 @@ const StoreContaEmpresaRoute = StoreContaEmpresaRouteImport.update({
 const StoreContaEnderecosRoute = StoreContaEnderecosRouteImport.update({
   id: '/enderecos',
   path: '/enderecos',
+  getParentRoute: () => StoreContaRoute,
+} as any)
+const StoreContaEntregadorRoute = StoreContaEntregadorRouteImport.update({
+  id: '/entregador',
+  path: '/entregador',
   getParentRoute: () => StoreContaRoute,
 } as any)
 const StoreContaFinancasRoute = StoreContaFinancasRouteImport.update({
@@ -1434,6 +1447,11 @@ const ApiAuthCallbackRoute = ApiAuthCallbackRouteImport.update({
 const ApiAuthConfirmRoute = ApiAuthConfirmRouteImport.update({
   id: '/api/auth/confirm',
   path: '/api/auth/confirm',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiCronMiningWorkerRoute = ApiCronMiningWorkerRouteImport.update({
+  id: '/api/cron/mining-worker',
+  path: '/api/cron/mining-worker',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiFeedMetaDotcsvRoute = ApiFeedMetaDotcsvRouteImport.update({
@@ -2615,6 +2633,7 @@ export interface FileRoutesByFullPath {
   '/colecao/$slug': typeof StoreColecaoSlugRoute
   '/concurso/$id': typeof StoreConcursoIdRoute
   '/conta/agendamentos': typeof StoreContaAgendamentosRoute
+  '/conta/atividade': typeof StoreContaAtividadeRoute
   '/conta/avaliacoes': typeof StoreContaAvaliacoesRoute
   '/conta/candidaturas': typeof StoreContaCandidaturasRoute
   '/conta/carnes': typeof StoreContaCarnesRoute
@@ -2627,6 +2646,7 @@ export interface FileRoutesByFullPath {
   '/conta/curriculo': typeof StoreContaCurriculoRoute
   '/conta/empresa': typeof StoreContaEmpresaRoute
   '/conta/enderecos': typeof StoreContaEnderecosRoute
+  '/conta/entregador': typeof StoreContaEntregadorRoute
   '/conta/financas': typeof StoreContaFinancasRoute
   '/conta/gift-cards': typeof StoreContaGiftCardsRoute
   '/conta/ingressos': typeof StoreContaIngressosRoute
@@ -2679,6 +2699,7 @@ export interface FileRoutesByFullPath {
   '/admin-master/seguranca/telemetria': typeof AdminMasterSegurancaTelemetriaRoute
   '/api/auth/callback': typeof ApiAuthCallbackRoute
   '/api/auth/confirm': typeof ApiAuthConfirmRoute
+  '/api/cron/mining-worker': typeof ApiCronMiningWorkerRoute
   '/api/feed/meta.csv': typeof ApiFeedMetaDotcsvRoute
   '/api/feed/xml': typeof ApiFeedXmlRoute
   '/api/mining/worker': typeof ApiMiningWorkerRoute
@@ -3000,6 +3021,7 @@ export interface FileRoutesByTo {
   '/colecao/$slug': typeof StoreColecaoSlugRoute
   '/concurso/$id': typeof StoreConcursoIdRoute
   '/conta/agendamentos': typeof StoreContaAgendamentosRoute
+  '/conta/atividade': typeof StoreContaAtividadeRoute
   '/conta/avaliacoes': typeof StoreContaAvaliacoesRoute
   '/conta/candidaturas': typeof StoreContaCandidaturasRoute
   '/conta/carnes': typeof StoreContaCarnesRoute
@@ -3012,6 +3034,7 @@ export interface FileRoutesByTo {
   '/conta/curriculo': typeof StoreContaCurriculoRoute
   '/conta/empresa': typeof StoreContaEmpresaRoute
   '/conta/enderecos': typeof StoreContaEnderecosRoute
+  '/conta/entregador': typeof StoreContaEntregadorRoute
   '/conta/financas': typeof StoreContaFinancasRoute
   '/conta/gift-cards': typeof StoreContaGiftCardsRoute
   '/conta/ingressos': typeof StoreContaIngressosRoute
@@ -3064,6 +3087,7 @@ export interface FileRoutesByTo {
   '/admin-master/seguranca/telemetria': typeof AdminMasterSegurancaTelemetriaRoute
   '/api/auth/callback': typeof ApiAuthCallbackRoute
   '/api/auth/confirm': typeof ApiAuthConfirmRoute
+  '/api/cron/mining-worker': typeof ApiCronMiningWorkerRoute
   '/api/feed/meta.csv': typeof ApiFeedMetaDotcsvRoute
   '/api/feed/xml': typeof ApiFeedXmlRoute
   '/api/mining/worker': typeof ApiMiningWorkerRoute
@@ -3394,6 +3418,7 @@ export interface FileRoutesById {
   '/_store/colecao/$slug': typeof StoreColecaoSlugRoute
   '/_store/concurso/$id': typeof StoreConcursoIdRoute
   '/_store/conta/agendamentos': typeof StoreContaAgendamentosRoute
+  '/_store/conta/atividade': typeof StoreContaAtividadeRoute
   '/_store/conta/avaliacoes': typeof StoreContaAvaliacoesRoute
   '/_store/conta/candidaturas': typeof StoreContaCandidaturasRoute
   '/_store/conta/carnes': typeof StoreContaCarnesRoute
@@ -3406,6 +3431,7 @@ export interface FileRoutesById {
   '/_store/conta/curriculo': typeof StoreContaCurriculoRoute
   '/_store/conta/empresa': typeof StoreContaEmpresaRoute
   '/_store/conta/enderecos': typeof StoreContaEnderecosRoute
+  '/_store/conta/entregador': typeof StoreContaEntregadorRoute
   '/_store/conta/financas': typeof StoreContaFinancasRoute
   '/_store/conta/gift-cards': typeof StoreContaGiftCardsRoute
   '/_store/conta/ingressos': typeof StoreContaIngressosRoute
@@ -3458,6 +3484,7 @@ export interface FileRoutesById {
   '/admin-master/seguranca/telemetria': typeof AdminMasterSegurancaTelemetriaRoute
   '/api/auth/callback': typeof ApiAuthCallbackRoute
   '/api/auth/confirm': typeof ApiAuthConfirmRoute
+  '/api/cron/mining-worker': typeof ApiCronMiningWorkerRoute
   '/api/feed/meta.csv': typeof ApiFeedMetaDotcsvRoute
   '/api/feed/xml': typeof ApiFeedXmlRoute
   '/api/mining/worker': typeof ApiMiningWorkerRoute
@@ -3789,6 +3816,7 @@ export interface FileRouteTypes {
     | '/colecao/$slug'
     | '/concurso/$id'
     | '/conta/agendamentos'
+    | '/conta/atividade'
     | '/conta/avaliacoes'
     | '/conta/candidaturas'
     | '/conta/carnes'
@@ -3801,6 +3829,7 @@ export interface FileRouteTypes {
     | '/conta/curriculo'
     | '/conta/empresa'
     | '/conta/enderecos'
+    | '/conta/entregador'
     | '/conta/financas'
     | '/conta/gift-cards'
     | '/conta/ingressos'
@@ -3853,6 +3882,7 @@ export interface FileRouteTypes {
     | '/admin-master/seguranca/telemetria'
     | '/api/auth/callback'
     | '/api/auth/confirm'
+    | '/api/cron/mining-worker'
     | '/api/feed/meta.csv'
     | '/api/feed/xml'
     | '/api/mining/worker'
@@ -4174,6 +4204,7 @@ export interface FileRouteTypes {
     | '/colecao/$slug'
     | '/concurso/$id'
     | '/conta/agendamentos'
+    | '/conta/atividade'
     | '/conta/avaliacoes'
     | '/conta/candidaturas'
     | '/conta/carnes'
@@ -4186,6 +4217,7 @@ export interface FileRouteTypes {
     | '/conta/curriculo'
     | '/conta/empresa'
     | '/conta/enderecos'
+    | '/conta/entregador'
     | '/conta/financas'
     | '/conta/gift-cards'
     | '/conta/ingressos'
@@ -4238,6 +4270,7 @@ export interface FileRouteTypes {
     | '/admin-master/seguranca/telemetria'
     | '/api/auth/callback'
     | '/api/auth/confirm'
+    | '/api/cron/mining-worker'
     | '/api/feed/meta.csv'
     | '/api/feed/xml'
     | '/api/mining/worker'
@@ -4567,6 +4600,7 @@ export interface FileRouteTypes {
     | '/_store/colecao/$slug'
     | '/_store/concurso/$id'
     | '/_store/conta/agendamentos'
+    | '/_store/conta/atividade'
     | '/_store/conta/avaliacoes'
     | '/_store/conta/candidaturas'
     | '/_store/conta/carnes'
@@ -4579,6 +4613,7 @@ export interface FileRouteTypes {
     | '/_store/conta/curriculo'
     | '/_store/conta/empresa'
     | '/_store/conta/enderecos'
+    | '/_store/conta/entregador'
     | '/_store/conta/financas'
     | '/_store/conta/gift-cards'
     | '/_store/conta/ingressos'
@@ -4631,6 +4666,7 @@ export interface FileRouteTypes {
     | '/admin-master/seguranca/telemetria'
     | '/api/auth/callback'
     | '/api/auth/confirm'
+    | '/api/cron/mining-worker'
     | '/api/feed/meta.csv'
     | '/api/feed/xml'
     | '/api/mining/worker'
@@ -4852,6 +4888,7 @@ export interface RootRouteChildren {
   ViajanteCarteiraRoute: typeof ViajanteCarteiraRoute
   ApiAuthCallbackRoute: typeof ApiAuthCallbackRoute
   ApiAuthConfirmRoute: typeof ApiAuthConfirmRoute
+  ApiCronMiningWorkerRoute: typeof ApiCronMiningWorkerRoute
   ApiFeedMetaDotcsvRoute: typeof ApiFeedMetaDotcsvRoute
   ApiFeedXmlRoute: typeof ApiFeedXmlRoute
   ApiMiningWorkerRoute: typeof ApiMiningWorkerRoute
@@ -5808,6 +5845,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StoreContaAgendamentosRouteImport
       parentRoute: typeof StoreContaRoute
     }
+    '/_store/conta/atividade': {
+      id: '/_store/conta/atividade'
+      path: '/atividade'
+      fullPath: '/conta/atividade'
+      preLoaderRoute: typeof StoreContaAtividadeRouteImport
+      parentRoute: typeof StoreContaRoute
+    }
     '/_store/conta/avaliacoes': {
       id: '/_store/conta/avaliacoes'
       path: '/avaliacoes'
@@ -5890,6 +5934,13 @@ declare module '@tanstack/react-router' {
       path: '/enderecos'
       fullPath: '/conta/enderecos'
       preLoaderRoute: typeof StoreContaEnderecosRouteImport
+      parentRoute: typeof StoreContaRoute
+    }
+    '/_store/conta/entregador': {
+      id: '/_store/conta/entregador'
+      path: '/entregador'
+      fullPath: '/conta/entregador'
+      preLoaderRoute: typeof StoreContaEntregadorRouteImport
       parentRoute: typeof StoreContaRoute
     }
     '/_store/conta/financas': {
@@ -6310,6 +6361,13 @@ declare module '@tanstack/react-router' {
       path: '/api/auth/confirm'
       fullPath: '/api/auth/confirm'
       preLoaderRoute: typeof ApiAuthConfirmRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/cron/mining-worker': {
+      id: '/api/cron/mining-worker'
+      path: '/api/cron/mining-worker'
+      fullPath: '/api/cron/mining-worker'
+      preLoaderRoute: typeof ApiCronMiningWorkerRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/feed/meta.csv': {
@@ -7640,6 +7698,7 @@ const StoreAgendarRouteWithChildren = StoreAgendarRoute._addFileChildren(
 
 interface StoreContaRouteChildren {
   StoreContaAgendamentosRoute: typeof StoreContaAgendamentosRoute
+  StoreContaAtividadeRoute: typeof StoreContaAtividadeRoute
   StoreContaAvaliacoesRoute: typeof StoreContaAvaliacoesRoute
   StoreContaCandidaturasRoute: typeof StoreContaCandidaturasRoute
   StoreContaCarnesRoute: typeof StoreContaCarnesRoute
@@ -7652,6 +7711,7 @@ interface StoreContaRouteChildren {
   StoreContaCurriculoRoute: typeof StoreContaCurriculoRoute
   StoreContaEmpresaRoute: typeof StoreContaEmpresaRoute
   StoreContaEnderecosRoute: typeof StoreContaEnderecosRoute
+  StoreContaEntregadorRoute: typeof StoreContaEntregadorRoute
   StoreContaFinancasRoute: typeof StoreContaFinancasRoute
   StoreContaGiftCardsRoute: typeof StoreContaGiftCardsRoute
   StoreContaIngressosRoute: typeof StoreContaIngressosRoute
@@ -7682,6 +7742,7 @@ interface StoreContaRouteChildren {
 
 const StoreContaRouteChildren: StoreContaRouteChildren = {
   StoreContaAgendamentosRoute: StoreContaAgendamentosRoute,
+  StoreContaAtividadeRoute: StoreContaAtividadeRoute,
   StoreContaAvaliacoesRoute: StoreContaAvaliacoesRoute,
   StoreContaCandidaturasRoute: StoreContaCandidaturasRoute,
   StoreContaCarnesRoute: StoreContaCarnesRoute,
@@ -7694,6 +7755,7 @@ const StoreContaRouteChildren: StoreContaRouteChildren = {
   StoreContaCurriculoRoute: StoreContaCurriculoRoute,
   StoreContaEmpresaRoute: StoreContaEmpresaRoute,
   StoreContaEnderecosRoute: StoreContaEnderecosRoute,
+  StoreContaEntregadorRoute: StoreContaEntregadorRoute,
   StoreContaFinancasRoute: StoreContaFinancasRoute,
   StoreContaGiftCardsRoute: StoreContaGiftCardsRoute,
   StoreContaIngressosRoute: StoreContaIngressosRoute,
@@ -8532,6 +8594,7 @@ const rootRouteChildren: RootRouteChildren = {
   ViajanteCarteiraRoute: ViajanteCarteiraRoute,
   ApiAuthCallbackRoute: ApiAuthCallbackRoute,
   ApiAuthConfirmRoute: ApiAuthConfirmRoute,
+  ApiCronMiningWorkerRoute: ApiCronMiningWorkerRoute,
   ApiFeedMetaDotcsvRoute: ApiFeedMetaDotcsvRoute,
   ApiFeedXmlRoute: ApiFeedXmlRoute,
   ApiMiningWorkerRoute: ApiMiningWorkerRoute,

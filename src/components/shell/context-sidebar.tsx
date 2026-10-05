@@ -120,7 +120,7 @@ export function ContextSidebar({ config, session }: ContextSidebarProps) {
   return (
     <aside
       className={cn(
-        "flex flex-col shrink-0 h-full py-3 bg-background justify-between select-none overflow-y-auto no-scrollbar z-20 border-r border-border/40 transition-[width] duration-200",
+        "flex flex-col shrink-0 h-full py-3 bg-background justify-between select-none overflow-y-auto no-scrollbar z-20 border-r border-border/40 transition duration-200 motion-reduce:transition-none",
         isExpanded ? "w-56 px-3" : "w-16 px-2"
       )}
     >
@@ -147,7 +147,7 @@ export function ContextSidebar({ config, session }: ContextSidebarProps) {
                   <div key={item.to} className="space-y-1">
                     <div
                       className={cn(
-                        "flex items-center h-10 rounded-lg text-xs transition-colors group",
+                        "flex items-center h-11 min-h-11 rounded-lg text-xs transition-colors group",
                         isExpanded ? "justify-between px-3" : "justify-center px-0",
                         active || isInsideMarketplace
                           ? "bg-primary/10 text-primary font-bold"
@@ -186,7 +186,7 @@ export function ContextSidebar({ config, session }: ContextSidebarProps) {
                           }}
                           title={isMarketplacesOpen ? "Recolher subnichos" : "Expandir subnichos"}
                           aria-label={isMarketplacesOpen ? "Recolher subnichos" : "Expandir subnichos"}
-                          className="flex items-center gap-1 px-1.5 py-0.5 rounded-md text-2xs font-mono font-bold bg-muted/80 hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
+                          className="flex items-center gap-1 px-2 py-1 rounded-md text-2xs font-mono font-bold bg-muted/80 hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                         >
                           <span>14</span>
                           {isMarketplacesOpen ? <CaretDown size={11} /> : <CaretRight size={11} />}
@@ -194,9 +194,9 @@ export function ContextSidebar({ config, session }: ContextSidebarProps) {
                       )}
                     </div>
 
-                    {/* Sub-Marketplaces Colapsáveis em Grid Compacto de 2 Colunas */}
+                    {/* Sub-Marketplaces Colapsáveis em Lista Vertical */}
                     {isExpanded && isMarketplacesOpen && (
-                      <div className="grid grid-cols-2 gap-1 p-1.5 rounded-xl bg-muted/40 border border-border/40 animate-in fade-in slide-in-from-top-1 duration-150">
+                      <div className="flex flex-col space-y-1 p-1 rounded-lg bg-muted/40 border border-border/40 animate-in fade-in slide-in-from-top-1 duration-150 motion-reduce:animate-none">
                         {SUB_MARKETPLACES.map((sub) => {
                           const SubIcon = sub.icon;
                           const isSubActive = currentPath.startsWith(sub.to);
@@ -206,13 +206,13 @@ export function ContextSidebar({ config, session }: ContextSidebarProps) {
                               key={sub.to}
                               to={sub.to as any}
                               className={cn(
-                                "flex items-center gap-1.5 h-7 px-2 rounded-lg text-2xs font-medium transition-colors cursor-pointer",
+                                "flex items-center gap-2 h-11 min-h-11 px-3 rounded-lg text-xs font-medium transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                                 isSubActive
                                   ? "bg-foreground text-background font-bold shadow-2xs"
                                   : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
                               )}
                             >
-                              <SubIcon size={12} weight={isSubActive ? "fill" : "regular"} className="shrink-0" />
+                              <SubIcon size={16} weight={isSubActive ? "fill" : "regular"} className="shrink-0" />
                               <span className="truncate">{sub.label}</span>
                             </Link>
                           );
@@ -230,7 +230,7 @@ export function ContextSidebar({ config, session }: ContextSidebarProps) {
                   title={item.label}
                   aria-label={item.label}
                   className={cn(
-                    "flex items-center h-10 rounded-lg text-xs transition-colors cursor-pointer group",
+                    "flex items-center h-11 min-h-11 rounded-lg text-xs transition-colors cursor-pointer group",
                     isExpanded ? "justify-between px-3" : "justify-center px-0",
                     active
                       ? "bg-primary/10 text-primary font-bold"
@@ -293,7 +293,7 @@ export function ContextSidebar({ config, session }: ContextSidebarProps) {
                   title="Workspace"
                   aria-label="Workspace"
                   className={cn(
-                    "flex items-center h-10 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 font-bold text-xs transition-colors group cursor-pointer",
+                    "flex items-center h-11 min-h-11 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 font-bold text-xs transition-colors group cursor-pointer",
                     isExpanded ? "justify-between px-3" : "justify-center px-0"
                   )}
                 >
@@ -324,7 +324,7 @@ export function ContextSidebar({ config, session }: ContextSidebarProps) {
                     title={item.label}
                     aria-label={item.label}
                     className={cn(
-                      "flex items-center h-10 rounded-lg text-xs transition-colors cursor-pointer group",
+                      "flex items-center h-11 min-h-11 rounded-lg text-xs transition-colors cursor-pointer group",
                       isExpanded ? "justify-start px-3 gap-3" : "justify-center px-0",
                       active
                         ? "bg-primary/10 text-primary font-bold"

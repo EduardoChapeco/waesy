@@ -68,7 +68,7 @@ function ResetPasswordPage() {
         title="Redefinir Senha"
         fallbackHref="/entrar"
       />
-      <div className="min-h-[80vh] flex items-center justify-center px-4 py-8 md:py-12">
+      <div className="min-h-screen flex items-center justify-center px-4 py-8 md:py-12">
  <div className="w-full max-w-md bg-card border border-border/60 rounded-lg p-6 sm:p-8 shadow-xs">
  {success ? (
  <div className="text-center space-y-4 py-2">
@@ -110,7 +110,7 @@ function ResetPasswordPage() {
  <Button
  asChild
  variant="ghost"
- className="w-full h-10 rounded-lg text-xs font-semibold text-muted-foreground hover:text-foreground"
+ className="w-full h-11 rounded-lg text-xs font-semibold text-muted-foreground hover:text-foreground"
  >
  <Link to="/entrar">Voltar ao Login</Link>
  </Button>

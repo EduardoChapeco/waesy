@@ -6,6 +6,7 @@ import {
   Database,
   Users,
   Cpu,
+  Brain,
   CheckCircle2,
   AlertCircle,
   Loader2,
@@ -35,6 +36,7 @@ const STEP_ICONS: Record<AIActivityStepType, React.ElementType> = {
   database: Database,
   squad: Users,
   model: Cpu,
+  thought: Brain,
 };
 
 const STEP_LABELS: Record<AIActivityStepType, string> = {
@@ -44,6 +46,7 @@ const STEP_LABELS: Record<AIActivityStepType, string> = {
   database: "Banco de Dados",
   squad: "Esquadrão",
   model: "Modelo",
+  thought: "Raciocínio",
 };
 
 export function AIActivityTrail({

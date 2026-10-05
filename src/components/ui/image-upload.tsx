@@ -279,14 +279,14 @@ export function ImageUpload({
  <img src={value} alt="Logo/Avatar" className="size-full object-cover" />
  <div className="absolute inset-0 bg-neutral-950/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 p-1">
  <Button type="button" variant="secondary" size="icon" onClick={() => { setCurrentImageSrc(value); setCropModalOpen(true); }}
- className="size-11 sm:size-8 rounded-lg bg-background/90 text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+ className="h-11 w-11 min-h-11 min-w-11 rounded-lg bg-background/90 text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
  title="Recortar"
  >
  <Crop className="size-4" />
  </Button>
  {onRemove && (
  <Button type="button" variant="destructive" size="icon" onClick={onRemove}
- className="size-11 sm:size-8 rounded-lg focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+ className="h-11 w-11 min-h-11 min-w-11 rounded-lg focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
  title="Remover"
  >
  <X className="size-4" />

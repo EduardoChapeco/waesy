@@ -300,7 +300,7 @@ function PersonalFinancePage() {
   return (
     <div className="w-full max-w-5xl mx-auto space-y-4 sm:space-y-6 pb-20 px-0 sm:px-4 md:px-0">
       {/* ── 1. Clean Minimalist Header ── */}
-      <NativeMobileHeader title="Finanças" fallbackHref="/conta" mobileOnly rightActions={<Button size="sm" onClick={() => setIsNewEntryOpen(true)} className="rounded-lg h-8 px-3 text-xs font-semibold gap-1 bg-foreground text-background shrink-0"><Plus className="size-3.5" /><span>Lançar</span></Button>} />
+      <NativeMobileHeader title="Finanças" fallbackHref="/conta" mobileOnly rightActions={<Button size="sm" onClick={() => setIsNewEntryOpen(true)} className="rounded-lg h-11 min-h-11 px-3 text-xs font-semibold gap-1 bg-foreground text-background shrink-0 focus-visible:ring-2 focus-visible:ring-primary"><Plus className="size-4" /><span>Lançar</span></Button>} />
       <div className="hidden sm:flex items-center justify-between gap-4 border-b border-border/40 pb-4 pt-1">
         <div className="flex items-center gap-3">
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
@@ -311,9 +311,9 @@ function PersonalFinancePage() {
         <Button
           size="sm"
           onClick={() => setIsNewEntryOpen(true)}
-          className="rounded-lg h-8 px-4 text-xs font-semibold gap-2 bg-foreground text-background hover:bg-foreground/90 shrink-0 shadow-xs cursor-pointer"
+          className="rounded-lg h-11 min-h-11 px-4 text-xs font-semibold gap-2 bg-foreground text-background hover:bg-foreground/90 shrink-0 shadow-xs cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
         >
-          <Plus className="size-3.5" />
+          <Plus className="size-4" />
           <span>Lançar</span>
         </Button>
       </div>
@@ -324,7 +324,7 @@ function PersonalFinancePage() {
             type="button"
             onClick={handlePrevMonth}
             disabled={isLoadingPeriod}
-            className="h-10 w-10 inline-flex items-center justify-center rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
+            className="size-11 min-h-11 min-w-11 inline-flex items-center justify-center rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
             aria-label="Mês Anterior"
           >
             <ChevronLeft className="h-5 w-5" />
@@ -341,7 +341,7 @@ function PersonalFinancePage() {
             type="button"
             onClick={handleNextMonth}
             disabled={isLoadingPeriod}
-            className="h-10 w-10 inline-flex items-center justify-center rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
+            className="size-11 min-h-11 min-w-11 inline-flex items-center justify-center rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
             aria-label="Próximo Mês"
           >
             <ChevronRight className="h-5 w-5" />
@@ -380,7 +380,7 @@ function PersonalFinancePage() {
             <div className="flex items-center justify-between text-muted-foreground mb-2">
               <span className="text-xs uppercase tracking-wider font-semibold">Receitas</span>
               <div className="h-6 w-6 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
-                <ArrowDownLeft className="h-3.5 w-3.5" />
+                <ArrowDownLeft className="size-4" />
               </div>
             </div>
             <div className="text-2xl sm:text-3xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400">
@@ -394,7 +394,7 @@ function PersonalFinancePage() {
             <div className="flex items-center justify-between text-muted-foreground mb-2">
               <span className="text-xs uppercase tracking-wider font-semibold">Despesas</span>
               <div className="h-6 w-6 rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center justify-center">
-                <ArrowUpRight className="h-3.5 w-3.5" />
+                <ArrowUpRight className="size-4" />
               </div>
             </div>
             <div className="text-2xl sm:text-3xl font-bold tracking-tight text-rose-600 dark:text-rose-400">
@@ -467,8 +467,8 @@ function PersonalFinancePage() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2 text-[11px] text-muted-foreground bg-muted/20 px-3 py-2 rounded-lg border border-border/30">
-            <Lock className="h-3.5 w-3.5 shrink-0 text-primary" />
+          <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/20 px-3 py-2 rounded-lg border border-border/30">
+            <Lock className="size-4 shrink-0 text-primary" />
             <span>
               <strong>Proteção da Carteira:</strong> Seus tokens são vinculados ao seu CPF com rastreabilidade e proteção.
             </span>
@@ -745,7 +745,7 @@ function PersonalFinancePage() {
                   Valor (R$)
                 </label>
                 <div className="relative">
-                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground font-semibold text-lg">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground font-semibold text-lg">
                     R$
                   </span>
                   <Input

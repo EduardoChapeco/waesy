@@ -45,6 +45,8 @@ export const OmniBlockStylingSchema = z.object({
   maxWidth: z.enum(["sm", "md", "lg", "xl", "7xl", "full"]).optional(),
   border: z.boolean().optional(),
   shadow: z.enum(["none", "sm", "md", "lg"]).optional(),
+  scrollAnimation: z.enum(["none", "fade", "slide-up", "zoom-in", "stagger"]).optional(),
+  animationDelayMs: z.number().int().min(0).max(2000).optional(),
 });
 
 export type OmniBlockStyling = z.infer<typeof OmniBlockStylingSchema>;

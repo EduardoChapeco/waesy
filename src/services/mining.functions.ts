@@ -1,6 +1,12 @@
 import { executeAutomatedNewsHarvest } from "./mining/automated-harvest";
 import { harvestAndPersistDataJudProcess } from "./mining/datajud-harvester";
 import { harvestAndPersistPlaces } from "./mining/places-harvester";
+import { syncAndPersistEconomicIndicators } from "./mining/economic-indicators-persister";
+import { extractAndPersistJobOpportunity } from "./mining/job-opportunity-extractor";
+import { harvestAndPersistPncpTenders } from "./mining/pncp-harvester";
+import { executeCrawlQueueBatchDirect } from "./mining/crawler-batch-engine";
+import { crossEnrichListingsWithCnpj } from "./mining/places-cnpj-cross-enricher";
+import { scrapeUrl } from "@/lib/mining/firecrawl-client";
 /**
  * mining.functions.ts — BFF Server Functions para o Mining Hub & Crawlers
  * Extração de Notícias, Feeds RSS, Scrapers de Domínio, Curadoria IA e Fila de Descoberta.
@@ -87,7 +93,7 @@ export async function autoPromoteMinedArticle(supabase: any, article: any) {
       .filter(
         (p) =>
           p.length > 40 &&
-          !p.includes("Esta matéria foi apurada originalmente pela equipe de jornalismo")
+          p.includes("Esta matéria foi apurada originalmente pela equipe de jornalismo") === false
       );
 
     if (paragraphs.length < 3) {
@@ -145,6 +151,8 @@ export async function autoPromoteMinedArticle(supabase: any, article: any) {
         source_url: article.source_url || null,
         source_type: "crawler",
         author_name: article.source_domain || "Redação Regional",
+        city: article.city || article.metadata?.city || article.metadata?.region || article.region || null,
+        state: article.state || article.metadata?.state || article.metadata?.uf || "SC",
         quality_score: Math.max(85, Number(article.quality_score || 88)),
         curation_status: "approved",
         status: "published",
@@ -285,7 +293,7 @@ export const getMiningStats = createServerFn({ method: "GET" }).handler(async ()
  },
  scrapers: {
  total: scraperData.length,
- active: scraperData.filter((s) => s.is_active && !s.is_blocked).length,
+ active: scraperData.filter((s) => s.is_active && s.is_blocked === false).length,
  blocked: scraperData.filter((s) => s.is_blocked).length,
  total_scraped: scraperData.reduce((s, c) => s + (c.total_scraped || 0), 0),
  },
@@ -943,7 +951,7 @@ export const aiRewriteMinedArticle = createServerFn({ method: "POST" })
  .eq("id", input.mined_article_id)
  .single();
 
- if (fetchErr || !mined) throw new Error("Artigo minerado não encontrado.");
+ if (fetchErr != null || mined == null) throw new Error("Artigo minerado não encontrado.");
 
  // Validador Pré-Voo de Saldo para Reescrita Editorial
 	if (input.consume_tokens && input.store_id) {
@@ -1180,8 +1188,8 @@ export const triggerRssFeedFetch = createServerFn({ method: "POST" })
  .eq("id", feed_id)
  .single();
 
- if (feedErr || !feed) throw new Error("Feed não encontrado.");
- if (!feed.is_active) throw new Error("Feed inativo — ative-o antes de fazer fetch.");
+ if (feedErr != null || feed == null) throw new Error("Feed não encontrado.");
+ if (feed.is_active === false) throw new Error("Feed inativo — ative-o antes de fazer fetch.");
 
  // Faz fetch do XML RSS
  let feedXml = "";
@@ -1221,7 +1229,7 @@ export const triggerRssFeedFetch = createServerFn({ method: "POST" })
  const imgMatch = itemXml.match(/<media:content[^>]+url="([^"]+)"|<enclosure[^>]+url="([^"]+)"/i);
  const image_url = imgMatch ? (imgMatch[1] || imgMatch[2]) : null;
 
- if (!title || !link) continue;
+ if (title == null || title.length === 0 || link == null || link.length === 0) continue;
 
  // Hash para deduplicação
  const hashInput = `${title}|${link}`;
@@ -1273,137 +1281,7 @@ export const processCrawlQueueBatch = createServerFn({ method: "POST" })
     }).optional()
   )
   .handler(async ({ data }) => {
-    const supabase = getServerClient();
-    const batchSize = data?.batchSize || data?.limit || 5;
-
-    // 1. Busca itens pendentes ordenados por prioridade e idade
-    let query = supabase
-      .from("crawl_queue")
-      .select("*")
-      .eq("status", "pending")
-      .order("priority", { ascending: false })
-      .order("created_at", { ascending: true })
-      .limit(batchSize);
-
-    if (data?.storeId) {
-      query = query.eq("store_id", data.storeId);
-    }
-
-    const { data: queueItems, error: fetchErr } = await query;
-    if (fetchErr || !queueItems || queueItems.length === 0) {
-      return { processed: 0, succeeded: 0, failed: 0, items: [], message: "Fila de crawling vazia no momento." };
-    }
-
-    const results: Array<{ id: string; url: string; status: "completed" | "failed"; error?: string; articleId?: string }> = [];
-
-    for (const item of queueItems) {
-      // 2. Marca como processing
-      await supabase
-        .from("crawl_queue")
-        .update({
-          status: "processing",
-          processed_at: new Date().toISOString(),
-          retry_count: (item.retry_count || 0) + 1,
-        })
-        .eq("id", item.id);
-
-      try {
-        // 3. Extração Mecânica (Camadas 1-4)
-        const extraction = await extractContentMechanically(item.url);
-
-        // 4. Validação de Integridade
-        const validation = validateMechanicalCompleteness(extraction);
-        if (!validation.isValid) {
-          throw new Error(validation.reason || "Conteúdo reprovado pelo Integrity Gate");
-        }
-
-        // 5. Curadoria Editorial com IA (Squad de 5 Agentes)
-        const editorial = await curateWithEditorialSquad({
-          rawTitle: extraction.title,
-          rawText: extraction.bodyMarkdown,
-          sourceName: new URL(item.url).hostname,
-          sourceUrl: item.url,
-          city: "Chapecó",
-        });
-
-        // 6. Imagem de Capa e Formatação
-        let coverUrl = extraction.coverImageUrl;
-        if (!coverUrl || !(await isHealthyImageUrl(coverUrl))) {
-          coverUrl = getFallbackThematicImage(editorial?.category || "cidade");
-        }
-
-        // 7. Grava em mined_articles
-        const { data: minedArticle, error: insertErr } = await supabase
-          .from("mined_articles")
-          .insert({
-            source_url: item.url,
-            source_domain: new URL(item.url).hostname,
-            source_type: "crawl",
-            store_id: item.store_id || null,
-            raw_title: extraction.title,
-            ai_structured_title: editorial?.title || extraction.title,
-            ai_structured_subtitle: editorial?.subtitle || extraction.lead || "",
-            ai_suggested_kicker: editorial?.kicker || "Atualidade",
-            ai_suggested_category: editorial?.category || "cidade",
-            ai_suggested_tags: editorial?.tags || ["notícias", "chapecó"],
-            ai_suggested_cover_url: coverUrl,
-            ai_summary: editorial?.key_takeaways?.join(" • ") || extraction.lead || "",
-            quality_score: validation.qualityScore,
-            quality_flags: validation.flags,
-            word_count: extraction.wordCount,
-            paragraph_count: extraction.paragraphCount,
-            has_cover_image: Boolean(coverUrl),
-            is_duplicate: false,
-            status: "pending_review",
-            extracted_markdown: extraction.bodyMarkdown,
-            ai_structured_sections: editorial?.mobile_sections || [],
-            metadata: {
-              crawl_queue_id: item.id,
-              reading_time_minutes: editorial?.reading_time_minutes || 3,
-              urgency_level: editorial?.urgency_level || "normal",
-              source_attribution: editorial?.source_attribution || "",
-            },
-          })
-          .select("id")
-          .single();
-
-        if (insertErr) {
-          throw new Error(`Erro ao salvar artigo minerado: ${insertErr.message}`);
-        }
-
-        // 8. Atualiza fila como concluído
-        await supabase
-          .from("crawl_queue")
-          .update({
-            status: "completed",
-            error_message: null,
-          })
-          .eq("id", item.id);
-
-        results.push({ id: item.id, url: item.url, status: "completed", articleId: minedArticle?.id });
-      } catch (itemErr: any) {
-        const errMsg = itemErr?.message || "Erro desconhecido";
-        await supabase
-          .from("crawl_queue")
-          .update({
-            status: "failed",
-            error_message: errMsg.slice(0, 300),
-          })
-          .eq("id", item.id);
-
-        results.push({ id: item.id, url: item.url, status: "failed", error: errMsg });
-      }
-    }
-
-    const succeeded = results.filter((r) => r.status === "completed").length;
-    const failed = results.filter((r) => r.status === "failed").length;
-
-    return {
-      processed: results.length,
-      succeeded,
-      failed,
-      items: results,
-    };
+    return executeCrawlQueueBatchDirect(data);
   });
 
 // ============================================================
@@ -1786,7 +1664,7 @@ export const crossVerifyAndEnrichArticle = createServerFn({ method: "POST" })
  .eq("id", input.mined_article_id)
  .single();
 
- if (fetchErr || !mined) throw new Error("Artigo minerado não encontrado.");
+ if (fetchErr != null || mined == null) throw new Error("Artigo minerado não encontrado.");
 
 	// Validador Pré-Voo de Saldo para Fact-Checking IA (10.000 tokens)
 	if (input.consume_tokens && input.store_id) {
@@ -2129,7 +2007,7 @@ export const getMiningStatsFn = createServerFn({ method: "GET" }).handler(
     };
 
     const audits = auditRes.data || [];
-    const successfulAudits = audits.filter((a) => a.status === "success" || !a.status).length;
+    const successfulAudits = audits.filter((a) => a.status === "success" || a.status == null).length;
     const successRate = audits.length > 0 ? Math.round((successfulAudits / audits.length) * 100) : 100;
 
     const minedArticles = minedRes.data || [];
@@ -2671,7 +2549,7 @@ export const runScraperFn = createServerFn({ method: "POST" })
             }
 
             // 3. ROTEAMENTO: ESTEIRA EDITORIAL / NOTÍCIAS
-            if (entityType === "news" || (!pageData.extractedProduct && !pageData.extractedBusiness)) {
+            if (entityType === "news" || (pageData.extractedProduct == null && pageData.extractedBusiness == null)) {
               if (pageData.title && pageData.cleanText.length > 50) {
                 const qualityScore = Math.min(
                   100,
@@ -3167,35 +3045,140 @@ export const dispatchScheduledMiningJobFn = createServerFn({ method: "POST" })
     let jobResult: any = null;
 
     if (data.jobType === "market-data") {
-      const indicators = await fetchAllMarketIndicators();
-      jobResult = { count: indicators.length };
+      const syncRes = await syncAndPersistEconomicIndicators();
+      jobResult = syncRes;
       await supabase.from("scraper_audit_log").insert({
-        scraper_name: "market-data",
-        status: "success",
+        scraper_name: "market-data-miner",
+        action: "sync_economic_indicators_cron",
+        target_table: "economic_indicators",
+        status: syncRes.success ? "success" : "failed",
         duration_ms: Date.now() - startTime,
-        items_processed: indicators.length,
-        items_inserted: indicators.length,
-        metadata: { indicators_count: indicators.length, source: "bcb_sgs_cron" },
+        records_affected: syncRes.totalSynced,
+        result_summary: syncRes,
       });
     } else if (data.jobType === "rss-fetcher") {
-      const { data: feeds } = await supabase.from("rss_feeds").select("*").eq("is_active", true).limit(10);
+      const { data: feeds } = await supabase
+        .from("rss_feeds")
+        .select("id, feed_url, name")
+        .eq("is_active", true)
+        .limit(10);
+
       let totalParsed = 0;
+      let totalQueued = 0;
+
       if (feeds && feeds.length > 0) {
         for (const feed of feeds) {
           try {
             const parsed = await parseFeed(feed.feed_url);
             totalParsed += parsed.items.length;
-          } catch {}
+
+            if (parsed.items.length > 0) {
+              const queueInserts = parsed.items.slice(0, 10).map((item) => ({
+                url: item.link,
+                domain: extractDomain(item.link),
+                discovered_via: "rss_cron",
+                entity_type: "news",
+                status: "pending",
+                priority: 7,
+                extracted_data: {
+                  title: item.title,
+                  description: item.description,
+                  publishedAt: item.publishedAt,
+                  imageUrl: item.imageUrl,
+                },
+              }));
+
+              await supabase
+                .from("crawl_queue")
+                .upsert(queueInserts, { onConflict: "url", ignoreDuplicates: true });
+
+              totalQueued += queueInserts.length;
+            }
+          } catch (feedErr) {
+            console.warn(`[MiningCron] Erro ao processar feed ${feed.feed_url}:`, feedErr);
+          }
         }
       }
-      jobResult = { feedsProcessed: feeds?.length || 0, itemsFound: totalParsed };
+
+      jobResult = { feedsProcessed: feeds?.length || 0, itemsFound: totalParsed, itemsQueued: totalQueued };
+
       await supabase.from("scraper_audit_log").insert({
         scraper_name: "rss-fetcher",
+        action: "fetch_and_queue_feeds_cron",
+        target_table: "crawl_queue",
         status: "success",
         duration_ms: Date.now() - startTime,
-        items_processed: feeds?.length || 0,
-        items_inserted: totalParsed,
-        metadata: { source: "rss_ingester_cron" },
+        records_affected: totalQueued,
+        result_summary: jobResult,
+      });
+    } else if (data.jobType === "continuous-crawler") {
+      const batchRes = await executeCrawlQueueBatchDirect({ limit: 5 });
+      jobResult = batchRes;
+
+      await supabase.from("scraper_audit_log").insert({
+        scraper_name: "continuous-crawler",
+        action: "batch_crawl_queue_cron",
+        target_table: "crawl_queue",
+        status: "success",
+        duration_ms: Date.now() - startTime,
+        records_affected: batchRes?.succeeded || 0,
+        result_summary: batchRes,
+      });
+    } else if (data.jobType === "cnpj-enrichment") {
+      const { data: listings } = await supabase
+        .from("directory_listings")
+        .select("id, cnpj, business_name")
+        .not("cnpj", "is", null)
+        .order("last_validated_at", { ascending: true, nullsFirst: true })
+        .limit(5);
+
+      let enrichedCount = 0;
+      if (listings && listings.length > 0) {
+        for (const item of listings) {
+          if (!item.cnpj) continue;
+          try {
+            const enriched: any = await enrichCnpj(item.cnpj);
+            if (enriched) {
+              await supabase
+                .from("directory_listings")
+                .update({
+                  business_name: enriched.nome_fantasia || enriched.razao_social || item.business_name,
+                  cnae: enriched.cnae_principal?.codigo || undefined,
+                  contact_phone: enriched.telefone || undefined,
+                  contact_email: enriched.email || undefined,
+                  address: enriched.logradouro ? `${enriched.logradouro}, ${enriched.numero || "S/N"}` : undefined,
+                  neighborhood: enriched.bairro || undefined,
+                  city: enriched.municipio || "Chapecó",
+                  state: enriched.uf || "SC",
+                  data_quality_score: Math.max(75, enriched.data_quality_score || 75),
+                  last_validated_at: new Date().toISOString(),
+                  metadata: {
+                    socios: enriched.socios,
+                    cnaes_secundarios: enriched.cnaes_secundarios,
+                    natureza_juridica: enriched.natureza_juridica,
+                    capital_social: enriched.capital_social,
+                    enriched_at: new Date().toISOString(),
+                  },
+                })
+                .eq("id", item.id);
+              enrichedCount++;
+            }
+          } catch (cnpjErr) {
+            console.warn(`[MiningCron] Erro ao enriquecer CNPJ ${item.cnpj}:`, cnpjErr);
+          }
+        }
+      }
+
+      jobResult = { inspected: listings?.length || 0, enriched: enrichedCount };
+
+      await supabase.from("scraper_audit_log").insert({
+        scraper_name: "cnpj-enrichment",
+        action: "enrich_directory_listings_cron",
+        target_table: "directory_listings",
+        status: "success",
+        duration_ms: Date.now() - startTime,
+        records_affected: enrichedCount,
+        result_summary: jobResult,
       });
     }
 
@@ -3273,7 +3256,7 @@ export const getGlobalPriceBenchmarkFn = createServerFn({ method: "GET" })
       .order("price_cents", { ascending: true })
       .limit(30);
 
-    if (error || !products || products.length === 0) {
+    if (error != null || products == null || products.length === 0) {
       return {
         query: cleanQuery,
         matchesCount: 0,
@@ -3419,7 +3402,7 @@ export const importMinedProductToStoreFn = createServerFn({ method: "POST" })
       .eq("id", data.minedProductId)
       .single();
 
-    if (minedErr || !mined) {
+    if (minedErr != null || mined == null) {
       throw new Error("Produto minerado não encontrado para importação.");
     }
 
@@ -3463,7 +3446,7 @@ export const importMinedProductToStoreFn = createServerFn({ method: "POST" })
       .select("id, title, slug, price_cents, status")
       .single();
 
-    if (prodErr || !newProduct) {
+    if (prodErr != null || newProduct == null) {
       console.error("[importMinedProductToStoreFn] Erro ao inserir produto oficial:", prodErr);
       throw new Error(`Falha ao criar produto no catálogo: ${prodErr?.message || "Erro desconhecido"}`);
     }
@@ -3807,7 +3790,7 @@ export const getPublicRecipeByIdFn = createServerFn({ method: "GET" })
       .eq("content_type", "receitas")
       .maybeSingle();
 
-    if (error || !row) {
+    if (error != null || row == null) {
       return null;
     }
 
@@ -3935,7 +3918,7 @@ export const updateMinedRecipeFn = createServerFn({ method: "POST" })
       .eq("id", data.id)
       .single();
 
-    if (fetchErr || !current) {
+    if (fetchErr != null || current == null) {
       throw new Error("Receita não encontrada para atualização.");
     }
 
@@ -4013,7 +3996,7 @@ export const duplicateMinedRecipeFn = createServerFn({ method: "POST" })
       .eq("id", data.id)
       .single();
 
-    if (fetchErr || !original) {
+    if (fetchErr != null || original == null) {
       throw new Error("Receita original não encontrada.");
     }
 
@@ -4032,7 +4015,7 @@ export const duplicateMinedRecipeFn = createServerFn({ method: "POST" })
       .select("id")
       .single();
 
-    if (insertErr || !inserted) {
+    if (insertErr != null || inserted == null) {
       console.error("[duplicateMinedRecipeFn] Error:", insertErr);
       throw new Error(`Erro ao duplicar receita: ${insertErr?.message}`);
     }
@@ -4111,7 +4094,7 @@ export const createMinedRecipeFn = createServerFn({ method: "POST" })
       .select("id")
       .single();
 
-    if (insertErr || !inserted) {
+    if (insertErr != null || inserted == null) {
       console.error("[createMinedRecipeFn] Error:", insertErr);
       throw new Error(`Erro ao cadastrar receita: ${insertErr?.message}`);
     }

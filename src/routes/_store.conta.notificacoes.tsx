@@ -1,10 +1,11 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Bell, CheckCheck, Tag, Briefcase, Store, Info, Trash2, ExternalLink, MailOpen, Mail, Calendar } from "lucide-react";
+import { Bell, CheckCheck, Tag, Briefcase, Store, Info, ExternalLink, MailOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { NativeMobileHeader } from "@/components/navigation";
+import { EmptyState } from "@/components/ui/empty-state";
 import { listUserNotifications, markNotificationAsRead, markAllNotificationsAsRead, type NotificationItemDTO, type NotificationType } from "@/services/notifications.functions";
 import { getUserSession } from "@/services/auth.functions";
 import { cn } from "@/lib/utils";
@@ -131,9 +132,22 @@ function NotificationsPage() {
     }
   };
 
+  const markAllActionBtn = unreadCount > 0 ? (
+    <Button
+      variant="outline"
+      size="default"
+      onClick={() => markAllMutation.mutate()}
+      disabled={markAllMutation.isPending}
+      className="h-11 min-h-11 px-4 rounded-lg border border-border/70 bg-card hover:bg-muted/50 font-semibold text-xs gap-2 cursor-pointer shadow-2xs active:scale-98 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+    >
+      <CheckCheck className="size-4 text-primary" />
+      <span>Lidas</span>
+    </Button>
+  ) : null;
+
   return (
-    <div className="w-full max-w-5xl mx-auto space-y-4 sm:space-y-6 pb-20 px-0 sm:px-4 md:px-0">
-      {/* ── 1. Canonical Navigation Header ── */}
+    <div className="w-full max-w-5xl mx-auto space-y-4 sm:space-y-6 pb-20 px-4 sm:px-6">
+      {/* ── 1. Native Mobile Header (Apple HIG / PWA Nativo) ── */}
       <NativeMobileHeader
         title="Notificações"
         fallbackHref="/conta"
@@ -144,24 +158,27 @@ function NotificationsPage() {
             </Badge>
           ) : null
         }
-        rightActions={
-          unreadCount > 0 ? (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => markAllMutation.mutate()}
-              disabled={markAllMutation.isPending}
-              className="h-8.5 px-3 rounded-lg border border-border/70 bg-card hover:bg-muted/50 font-semibold text-xs gap-2 cursor-pointer shadow-2xs active:scale-98"
-            >
-              <CheckCheck className="size-3.5 text-primary" />
-              <span>Lidas</span>
-            </Button>
-          ) : null
-        }
+        rightActions={markAllActionBtn}
       />
 
-      {/* ── 2. Tabs / Filtros Horizontais (Padrão Botão Grande) ── */}
-      <div className="flex items-center gap-2 sm:gap-2 overflow-x-auto pb-1 no-scrollbar">
+      {/* ── 2. Desktop Inpage Header (Bento Grid & Apple HIG) ── */}
+      <div className="hidden md:flex items-center justify-between pb-4 pt-2 border-b border-border/40">
+        <div className="flex items-center gap-3">
+          <div>
+            <h1 className="text-xl font-bold tracking-tight text-foreground">Notificações</h1>
+            <p className="text-xs text-muted-foreground mt-1">Central de avisos, interações, oportunidades e novidades da plataforma</p>
+          </div>
+          {unreadCount > 0 && (
+            <Badge variant="secondary" className="text-xs font-mono font-bold px-2 py-1 rounded-full">
+              {unreadCount} novas
+            </Badge>
+          )}
+        </div>
+        {markAllActionBtn}
+      </div>
+
+      {/* ── 3. Tabs / Filtros Horizontais (Padrão Botão Grande) ── */}
+      <div className="flex flex-wrap items-center gap-2 pb-1">
         {CATEGORY_TABS.map((tab) => {
           const isActive = activeCategory === tab.id;
           return (
@@ -170,7 +187,7 @@ function NotificationsPage() {
               type="button"
               onClick={() => setActiveCategory(tab.id)}
               className={cn(
-                "h-10 sm:h-11 px-4 sm:px-4 rounded-lg border text-xs sm:text-sm font-semibold whitespace-nowrap transition-all cursor-pointer inline-flex items-center select-none active:scale-98 shadow-2xs",
+                "h-11 min-h-11 px-4 rounded-lg border text-xs sm:text-sm font-semibold whitespace-nowrap transition-colors cursor-pointer inline-flex items-center select-none active:scale-98 shadow-2xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                 isActive
                   ? "bg-foreground text-background border-foreground font-bold shadow-xs"
                   : "bg-card hover:bg-muted/50 text-muted-foreground hover:text-foreground border-border/70"
@@ -182,25 +199,32 @@ function NotificationsPage() {
         })}
       </div>
 
-      {/* ── 3. Layout Responsivo: Lista no Mobile vs Split 2 Colunas no Desktop ── */}
+      {/* ── 4. Layout Responsivo: Lista no Mobile vs Split 2 Colunas no Desktop ── */}
       {notifications.length > 0 ? (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           {/* Coluna Esquerda: Lista de Notificações (5 colunas no Desktop) */}
-          <div className="lg:col-span-5 space-y-2 lg:max-h-[calc(100dvh-220px)] lg:overflow-y-auto lg:pr-1 no-scrollbar">
+          <div className="lg:col-span-5 space-y-2 lg:max-h-160 lg:overflow-y-auto lg:pr-1 no-scrollbar">
             {notifications.map((item) => {
               const isSelected = activeNotification?.id === item.id;
               return (
                 <div
                   key={item.id}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      handleNotificationSelect(item);
+                    }
+                  }}
                   onClick={() => {
                     handleNotificationSelect(item);
                     // No mobile, se tiver link direto, aciona navegação direta
-                    if (window.innerWidth < 1024 && item.linkUrl) {
+                    if (typeof window !== "undefined" && window.innerWidth < 1024 && item.linkUrl) {
                       handleNotificationAction(item);
                     }
                   }}
                   className={cn(
-                    "p-4 sm:p-4 rounded-lg bg-card border flex items-start gap-4 transition-all duration-200 cursor-pointer hover:border-foreground/30",
+                    "p-4 rounded-lg bg-card border flex items-start gap-4 transition-colors duration-200 cursor-pointer hover:border-foreground/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                     isSelected ? "border-primary ring-1 ring-primary bg-primary/5" : "border-border/60",
                     !item.isRead && !isSelected && "bg-muted/30 border-primary/40 font-medium"
                   )}
@@ -220,7 +244,7 @@ function NotificationsPage() {
                       <h3 className={cn("text-xs sm:text-sm font-bold text-foreground truncate", !item.isRead && "text-primary")}>
                         {item.title}
                       </h3>
-                      <span className="text-[10px] sm:text-[11px] font-mono text-muted-foreground shrink-0">
+                      <span className="text-xs font-mono text-muted-foreground shrink-0">
                         {getRelativeTime(item.createdAt)}
                       </span>
                     </div>
@@ -230,7 +254,7 @@ function NotificationsPage() {
                     </p>
 
                     {item.authorName && (
-                      <span className="text-[10px] font-semibold text-foreground/80 block pt-1 truncate">
+                      <span className="text-xs font-semibold text-foreground/80 block pt-1 truncate">
                         {item.authorName}
                       </span>
                     )}
@@ -265,12 +289,12 @@ function NotificationsPage() {
                           {activeNotification.authorName || "Sistema Waesy"}
                         </span>
                         {!activeNotification.isRead ? (
-                          <Badge variant="outline" className="text-[10px] border-primary/40 text-primary">
+                          <Badge variant="outline" className="text-xs border-primary/40 text-primary">
                             Não Lida
                           </Badge>
                         ) : (
-                          <span className="text-[10px] text-muted-foreground flex items-center gap-1">
-                            <MailOpen className="size-3" /> Lida
+                          <span className="text-xs text-muted-foreground flex items-center gap-1">
+                            <MailOpen className="size-4" /> Lida
                           </span>
                         )}
                       </div>
@@ -284,7 +308,7 @@ function NotificationsPage() {
                     <span className="text-xs font-mono text-muted-foreground block">
                       {getRelativeTime(activeNotification.createdAt)}
                     </span>
-                    <span className="text-[11px] text-muted-foreground/80 block mt-1">
+                    <span className="text-xs text-muted-foreground/80 block mt-1">
                       {getFullFormattedDate(activeNotification.createdAt)}
                     </span>
                   </div>
@@ -304,16 +328,17 @@ function NotificationsPage() {
                       <Button
                         type="button"
                         onClick={() => handleNotificationAction(activeNotification)}
-                        className="rounded-lg font-bold text-xs gap-2 h-10 px-5 cursor-pointer"
+                        size="default"
+                        className="rounded-lg font-bold text-xs gap-2 h-11 min-h-11 px-5 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
                       >
                         <span>Abrir Conteúdo</span>
-                        <ExternalLink className="size-3.5" />
+                        <ExternalLink className="size-4" />
                       </Button>
                     )}
                   </div>
 
-                  <span className="text-[11px] text-muted-foreground">
-                    ID: <code className="font-mono text-[10px]">{activeNotification.id.slice(0, 8)}</code>
+                  <span className="text-xs text-muted-foreground font-mono">
+                    ID: <code>{activeNotification.id.slice(0, 8)}</code>
                   </span>
                 </div>
               </div>
@@ -327,14 +352,15 @@ function NotificationsPage() {
           </div>
         </div>
       ) : (
-        <div className="py-20 text-center space-y-3 bg-muted/10 rounded-lg border-0 p-8">
-          <Bell className="size-10 text-muted-foreground/40 mx-auto" />
-          <h3 className="text-sm font-bold text-foreground">Nenhuma notificação encontrada</h3>
-          <p className="text-xs text-muted-foreground max-w-sm mx-auto">
-            Você está em dia com todos os seus alertas e novidades da comunidade.
-          </p>
-        </div>
+        <EmptyState
+          icon={Bell}
+          title="Nenhuma notificação encontrada"
+          description="Você está em dia com todos os seus alertas e novidades da comunidade."
+          className="my-8"
+        />
       )}
     </div>
   );
 }
+
+export default NotificationsPage;

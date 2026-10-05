@@ -234,7 +234,7 @@ function PainelEmpresaPage() {
 
   if (!store) {
     return (
-      <div className="min-h-[100dvh] bg-background py-10 sm:py-16 px-0 sm:px-4 md:px-0 animate-in fade-in duration-200">
+      <div className="min-h-dvh bg-background py-10 sm:py-16 px-0 sm:px-4 md:px-0 animate-in fade-in duration-200">
         <div className="max-w-md mx-auto text-center space-y-4">
           <div className="size-16 rounded-lg bg-primary/10 text-primary flex items-center justify-center mx-auto">
             <Store className="size-8" />
@@ -260,18 +260,19 @@ function PainelEmpresaPage() {
   const pendingCount = leads.filter((l: any) => l.status === "pending" || l.status === "contacted").length;
 
   return (
-    <div className="min-h-[100dvh] bg-background pb-20">
+    <div className="min-h-dvh bg-background pb-20">
             {/* Top Bar Operacional Nativa */}
       <NativeMobileHeader
         fallbackHref="/conta"
         title={store.name}
         subtitle={`${store.settings?.category || "Comércio"} • ${store.city || "Chapecó"}, ${store.state || "SC"}`}
+        mobileOnly
         rightActions={
           <div className="flex items-center gap-2 sm:gap-2">
             <CompanyNotificationsBell />
-            <Button asChild size="sm" className="h-8.5 px-3 rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground">
+            <Button asChild size="sm" className="h-11 px-3 rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground">
               <Link to="/workspace">
-                <Store className="size-3.5" />
+                <Store className="size-4" />
                 <span className="hidden xs:inline">Workspace</span>
               </Link>
             </Button>
@@ -279,26 +280,49 @@ function PainelEmpresaPage() {
         }
       />
 
-      <div className="max-w-6xl mx-auto px-0 sm:px-4 md:px-0 py-6 space-y-6 animate-in fade-in duration-200">
+      <div className="max-w-6xl mx-auto px-0 sm:px-4 md:px-0 py-6 space-y-6 animate-in fade-in duration-200 motion-reduce:animate-none">
+        {/* Desktop Inpage Header (Apple HIG / Linear) */}
+        <div className="hidden md:flex items-center justify-between pb-4 border-b border-border/40">
+          <div>
+            <div className="flex items-center gap-3">
+              <h1 className="text-2xl font-bold tracking-tight text-foreground">{store.name}</h1>
+              <Badge variant="outline" className="text-xs font-medium">
+                {store.settings?.category || "Comércio"}
+              </Badge>
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              {store.city || "Chapecó"}, {store.state || "SC"} • Painel de Gestão da Empresa
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <CompanyNotificationsBell />
+            <Button asChild size="sm" className="h-11 px-4 rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground focus-visible:ring-2 focus-visible:ring-primary">
+              <Link to="/workspace">
+                <Store className="size-4" />
+                <span>Workspace</span>
+              </Link>
+            </Button>
+          </div>
+        </div>
         {/* Barra de Ações Rápidas da Empresa */}
-        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
-          <Button asChild variant="outline" size="sm" className="h-9 px-3 rounded-lg text-xs gap-2 border-border/80 hover:bg-muted/50 shrink-0">
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1 table-wrapper">
+          <Button asChild variant="outline" size="sm" className="h-11 px-3 rounded-lg text-xs gap-2 border-border/80 hover:bg-muted/50 shrink-0">
             <Link to="/perfil-da-loja" search={{ storeId: store.id }} target="_blank">
               <span>Ver Perfil Público</span>
-              <ArrowUpRight className="size-3.5" />
+              <ArrowUpRight className="size-4" />
             </Link>
           </Button>
 
-          <Button asChild variant="outline" size="sm" className="h-9 px-3 rounded-lg text-xs gap-2 border-border/80 hover:bg-muted/50 shrink-0">
+          <Button asChild variant="outline" size="sm" className="h-11 px-3 rounded-lg text-xs gap-2 border-border/80 hover:bg-muted/50 shrink-0">
             <Link to="/workspace/marketing/brand-kit">
-              <Edit className="size-3.5 text-primary" />
+              <Edit className="size-4 text-primary" />
               <span>Editar Perfil e Marca</span>
             </Link>
           </Button>
 
-          <Button asChild size="sm" variant="outline" className="h-9 px-3 rounded-lg text-xs font-semibold gap-2 border-primary/30 text-primary hover:bg-primary/5 shrink-0">
+          <Button asChild size="sm" variant="outline" className="h-11 px-3 rounded-lg text-xs font-semibold gap-2 border-primary/30 text-primary hover:bg-primary/5 shrink-0">
             <Link to="/portal-completo">
-              <Layers className="size-3.5" />
+              <Layers className="size-4" />
               <span>Gestão Pro</span>
             </Link>
           </Button>
@@ -310,9 +334,9 @@ function PainelEmpresaPage() {
               setCustomFields(initialFormSettings?.fields || []);
               setIsCustomFormModalOpen(true);
             }}
-            className="h-9 px-3 rounded-lg text-xs font-bold gap-2 border-border/80 hover:bg-muted/50 shrink-0"
+            className="h-11 px-3 rounded-lg text-xs font-bold gap-2 border-border/80 hover:bg-muted/50 shrink-0"
           >
-            <FileText className="size-3.5 text-primary" />
+            <FileText className="size-4 text-primary" />
             <span>Campos da Proposta</span>
           </Button>
 
@@ -320,9 +344,9 @@ function PainelEmpresaPage() {
             variant="outline"
             size="sm"
             onClick={() => setIsDeliveryModalOpen(true)}
-            className="h-9 px-3 rounded-lg text-xs font-bold gap-2 border-border/80 hover:bg-muted/50 shrink-0"
+            className="h-11 px-3 rounded-lg text-xs font-bold gap-2 border-border/80 hover:bg-muted/50 shrink-0"
           >
-            <Bike className="size-3.5 text-primary" />
+            <Bike className="size-4 text-primary" />
             <span>Configurar Entregas</span>
           </Button>
         </div>
@@ -348,12 +372,12 @@ function PainelEmpresaPage() {
 
         {/* Navegação entre Abas com Scroll Horizontal */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between border-b border-border/60 pb-2 gap-2">
-          <div className="flex items-center gap-2 sm:gap-2 overflow-x-auto no-scrollbar py-1 flex-1">
+          <div className="flex items-center gap-2 sm:gap-2 overflow-x-auto no-scrollbar py-1 flex-1 table-wrapper">
             <button
               type="button"
               onClick={() => setActiveTab("leads")}
               className={cn(
-                "h-10 sm:h-11 px-4 sm:px-4 rounded-lg border text-xs sm:text-sm font-semibold whitespace-nowrap shrink-0 cursor-pointer shadow-2xs transition-all select-none active:scale-98",
+                "h-11 px-4 rounded-lg border text-xs sm:text-sm font-semibold whitespace-nowrap shrink-0 cursor-pointer shadow-2xs transition-colors motion-reduce:transition-none select-none active:scale-98 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                 activeTab === "leads"
                   ? "bg-foreground text-background border-foreground font-bold shadow-xs"
                   : "bg-card text-muted-foreground hover:text-foreground border-border/70 hover:bg-muted/50"
@@ -365,7 +389,7 @@ function PainelEmpresaPage() {
               type="button"
               onClick={() => setActiveTab("catalog")}
               className={cn(
-                "h-10 sm:h-11 px-4 sm:px-4 rounded-lg border text-xs sm:text-sm font-semibold whitespace-nowrap shrink-0 cursor-pointer shadow-2xs transition-all select-none active:scale-98",
+                "h-11 px-4 rounded-lg border text-xs sm:text-sm font-semibold whitespace-nowrap shrink-0 cursor-pointer shadow-2xs transition-colors motion-reduce:transition-none select-none active:scale-98 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                 activeTab === "catalog"
                   ? "bg-foreground text-background border-foreground font-bold shadow-xs"
                   : "bg-card text-muted-foreground hover:text-foreground border-border/70 hover:bg-muted/50"
@@ -377,7 +401,7 @@ function PainelEmpresaPage() {
               type="button"
               onClick={() => setActiveTab("jobs")}
               className={cn(
-                "h-10 sm:h-11 px-4 sm:px-4 rounded-lg border text-xs sm:text-sm font-semibold whitespace-nowrap flex items-center gap-2 shrink-0 cursor-pointer shadow-2xs transition-all select-none active:scale-98",
+                "h-11 px-4 rounded-lg border text-xs sm:text-sm font-semibold whitespace-nowrap flex items-center gap-2 shrink-0 cursor-pointer shadow-2xs transition-colors motion-reduce:transition-none select-none active:scale-98 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                 activeTab === "jobs"
                   ? "bg-foreground text-background border-foreground font-bold shadow-xs"
                   : "bg-card text-muted-foreground hover:text-foreground border-border/70 hover:bg-muted/50"
@@ -390,7 +414,7 @@ function PainelEmpresaPage() {
               type="button"
               onClick={() => setActiveTab("reviews")}
               className={cn(
-                "h-10 sm:h-11 px-4 sm:px-4 rounded-lg border text-xs sm:text-sm font-semibold whitespace-nowrap flex items-center gap-2 shrink-0 cursor-pointer shadow-2xs transition-all select-none active:scale-98",
+                "h-11 px-4 rounded-lg border text-xs sm:text-sm font-semibold whitespace-nowrap flex items-center gap-2 shrink-0 cursor-pointer shadow-2xs transition-colors motion-reduce:transition-none select-none active:scale-98 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                 activeTab === "reviews"
                   ? "bg-foreground text-background border-foreground font-bold shadow-xs"
                   : "bg-card text-muted-foreground hover:text-foreground border-border/70 hover:bg-muted/50"
@@ -402,9 +426,9 @@ function PainelEmpresaPage() {
           </div>
 
           {activeTab === "catalog" && (
-            <Button asChild size="sm" className="h-8 rounded-lg text-xs font-bold gap-2">
+            <Button asChild size="sm" className="h-11 rounded-lg text-xs font-bold gap-2">
               <Link to="/conta/classificados/novo" search={{ storeId: store.id }}>
-                <Plus className="size-3.5" />
+                <Plus className="size-4" />
                 <span>Adicionar ao Catálogo</span>
               </Link>
             </Button>
@@ -448,7 +472,7 @@ function PainelEmpresaPage() {
                     >
                       <div className="space-y-2 flex-1">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <Badge variant="outline" className={`text-[10px] font-semibold ${statusColors[lead.status] || ""}`}>
+                          <Badge variant="outline" className={`text-xs font-semibold ${statusColors[lead.status] || ""}`}>
                             {statusLabels[lead.status] || lead.status}
                           </Badge>
                           <span className="text-xs font-bold text-foreground">{lead.customer_name}</span>
@@ -485,14 +509,14 @@ function PainelEmpresaPage() {
                             asChild
                             variant="outline"
                             size="sm"
-                            className="h-9 rounded-lg text-xs gap-2 text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/5"
+                            className="h-11 rounded-lg text-xs gap-2 text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/5"
                           >
                             <a
                               href={`https://wa.me/55${lead.customer_phone.replace(/\D/g, "")}?text=${encodeURIComponent(`Olá ${lead.customer_name}, vi seu interesse em "${lead.classified_title || "nosso serviço"}". Como posso te ajudar?`)}`}
                               target="_blank"
                               rel="noreferrer"
                             >
-                              <Phone className="size-3.5" />
+                              <Phone className="size-4" />
                               <span>WhatsApp</span>
                             </a>
                           </Button>
@@ -504,9 +528,9 @@ function PainelEmpresaPage() {
                             size="sm"
                             onClick={() => updateStatusMutation.mutate({ leadId: lead.id, status: "completed" })}
                             disabled={updateStatusMutation.isPending}
-                            className="h-9 rounded-lg text-xs font-bold gap-1 bg-primary hover:bg-primary/90 text-primary-foreground"
+                            className="h-11 rounded-lg text-xs font-bold gap-1 bg-primary hover:bg-primary/90 text-primary-foreground"
                           >
-                            <Check className="size-3.5" />
+                            <Check className="size-4" />
                             <span>Concluir</span>
                           </Button>
                         ) : (
@@ -514,7 +538,7 @@ function PainelEmpresaPage() {
                             variant="outline"
                             size="sm"
                             onClick={() => updateStatusMutation.mutate({ leadId: lead.id, status: "pending" })}
-                            className="h-9 rounded-lg text-xs gap-1"
+                            className="h-11 rounded-lg text-xs gap-1"
                           >
                             <span>Reabrir</span>
                           </Button>
@@ -525,12 +549,12 @@ function PainelEmpresaPage() {
                           size="sm"
                           onClick={() => handleOpenReceipt(lead.id)}
                           disabled={loadingReceiptId === lead.id}
-                          className="h-9 rounded-lg text-xs gap-2"
+                          className="h-11 rounded-lg text-xs gap-2"
                         >
                           {loadingReceiptId === lead.id ? (
-                            <Loader2 className="size-3.5 animate-spin" />
+                            <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
                           ) : (
-                            <FileText className="size-3.5" />
+                            <FileText className="size-4" />
                           )}
                           <span>Recibo</span>
                         </Button>
@@ -540,9 +564,9 @@ function PainelEmpresaPage() {
                           variant="outline"
                           size="sm"
                           onClick={() => setDispatchModalLead(lead)}
-                          className="h-9 rounded-lg text-xs gap-2 border-primary/30 text-primary hover:bg-primary/5"
+                          className="h-11 rounded-lg text-xs gap-2 border-primary/30 text-primary hover:bg-primary/5"
                         >
-                          <Bike className="size-3.5" />
+                          <Bike className="size-4" />
                           <span>Despachar</span>
                         </Button>
 
@@ -557,10 +581,10 @@ function PainelEmpresaPage() {
                                 title: lead.classified_title || "Negociação Concluída",
                               })
                             }
-                            className="h-9 rounded-lg text-xs gap-2 border-amber-500/30 text-amber-600 hover:bg-amber-500/10"
+                            className="h-11 rounded-lg text-xs gap-2 border-amber-500/30 text-amber-600 hover:bg-amber-500/10"
                             title="Registrar avaliação auditada"
                           >
-                            <Star className="size-3.5 fill-amber-400 text-amber-500" />
+                            <Star className="size-4 fill-amber-400 text-amber-500" />
                             <span>Avaliar</span>
                           </Button>
                         )}
@@ -584,7 +608,7 @@ function PainelEmpresaPage() {
                   Publique anúncios de produtos, viagens, equipamentos, serviços ou desapegos. Eles aparecerão tanto nos classificados municipais quanto no catálogo público da sua empresa.
                 </p>
                 <div className="pt-2">
-                  <Button asChild size="sm" className="h-10 rounded-lg text-xs font-bold gap-2">
+                  <Button asChild size="sm" className="h-11 rounded-lg text-xs font-bold gap-2">
                     <Link to="/conta/classificados/novo" search={{ storeId: store.id }}>
                       <Plus className="size-4" />
                       Cadastrar Primeiro Anúncio
@@ -614,12 +638,12 @@ function PainelEmpresaPage() {
                         <div className="absolute top-2 left-2">
                           <Badge
                             variant="secondary"
-                            className={`text-[10px] font-bold ${
+                            className={`text-xs font-bold ${
                               isSold
-                                ? "bg-rose-500 text-white"
+                                ? "bg-rose-500 text-primary-foreground"
                                 : isPaused
                                 ? "bg-muted text-muted-foreground"
-                                : "bg-emerald-600 text-white"
+                                : "bg-emerald-600 text-primary-foreground"
                             }`}
                           >
                             {isSold ? "Vendido" : isPaused ? "Pausado" : "Ativo"}
@@ -632,7 +656,7 @@ function PainelEmpresaPage() {
                         <p className="text-sm font-bold text-primary">
                           {item.price_cents ? formatMoney(item.price_cents) : "Sob Consulta"}
                         </p>
-                        <p className="text-[11px] text-muted-foreground line-clamp-2">
+                        <p className="text-xs text-muted-foreground line-clamp-2">
                           {item.content}
                         </p>
                       </div>
@@ -642,7 +666,7 @@ function PainelEmpresaPage() {
                           value={item.status || "active"}
                           onValueChange={(val) => toggleCatalogMutation.mutate({ classifiedId: item.id, status: val })}
                         >
-                          <SelectTrigger className="h-8 rounded-lg text-[11px] bg-background">
+                          <SelectTrigger className="h-11 rounded-lg text-xs bg-background">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -652,9 +676,9 @@ function PainelEmpresaPage() {
                           </SelectContent>
                         </Select>
 
-                        <Button asChild variant="outline" size="sm" className="h-8 rounded-lg text-[11px] px-3">
+                        <Button asChild variant="outline" size="sm" className="h-11 rounded-lg text-xs px-3">
                           <Link to="/classificados/$id" params={{ id: item.id }} target="_blank">
-                            <Eye className="size-3" />
+                            <Eye className="size-4" />
                           </Link>
                         </Button>
                       </div>
@@ -673,9 +697,9 @@ function PainelEmpresaPage() {
               <p className="text-xs text-muted-foreground">
                 Candidatos que se inscreveram nas vagas de emprego da sua empresa.
               </p>
-              <Button asChild size="sm" className="h-8 rounded-lg text-xs font-bold gap-2">
+              <Button asChild size="sm" className="h-11 rounded-lg text-xs font-bold gap-2">
                 <Link to="/conta/classificados/novo" search={{ storeId: store.id, tipo: "vaga" }}>
-                  <Plus className="size-3.5" />
+                  <Plus className="size-4" />
                   <span>Publicar Nova Vaga</span>
                 </Link>
               </Button>
@@ -689,7 +713,7 @@ function PainelEmpresaPage() {
                   Publique vagas nos classificados com requisitos, benefícios e escolaridade. Os currículos recebidos aparecerão diretamente aqui com contato direto via WhatsApp.
                 </p>
                 <div className="pt-2">
-                  <Button asChild size="sm" className="h-10 rounded-lg text-xs font-bold gap-2">
+                  <Button asChild size="sm" className="h-11 rounded-lg text-xs font-bold gap-2">
                     <Link to="/conta/classificados/novo" search={{ storeId: store.id, tipo: "vaga" }}>
                       <Plus className="size-4" />
                       Publicar Vaga de Emprego
@@ -723,7 +747,7 @@ function PainelEmpresaPage() {
                         <div>
                           <div className="flex items-center gap-2">
                             <h3 className="text-sm font-bold text-foreground">{app.candidate_name}</h3>
-                            <Badge variant="outline" className={`text-[10px] font-bold ${currentStatus.color}`}>
+                            <Badge variant="outline" className={`text-xs font-bold ${currentStatus.color}`}>
                               {currentStatus.label}
                             </Badge>
                           </div>
@@ -742,7 +766,7 @@ function PainelEmpresaPage() {
                               })
                             }
                           >
-                            <SelectTrigger className="h-8 text-xs rounded-lg w-36 bg-background">
+                            <SelectTrigger className="h-11 text-xs rounded-lg w-36 bg-background">
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -758,10 +782,10 @@ function PainelEmpresaPage() {
                             <Button
                               asChild
                               size="sm"
-                              className="h-8 rounded-lg text-xs font-bold gap-2 bg-primary hover:bg-primary/90 text-primary-foreground shadow-2xs"
+                              className="h-11 rounded-lg text-xs font-bold gap-2 bg-primary hover:bg-primary/90 text-primary-foreground shadow-2xs"
                             >
                               <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
-                                <MessageCircle className="size-3.5" />
+                                <MessageCircle className="size-4" />
                                 <span>Chamar no WhatsApp</span>
                               </a>
                             </Button>
@@ -772,19 +796,19 @@ function PainelEmpresaPage() {
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
                         {app.candidate_phone && (
                           <div className="flex items-center gap-2 text-muted-foreground">
-                            <Phone className="size-3.5 text-primary shrink-0" />
+                            <Phone className="size-4 text-primary shrink-0" />
                             <span>{app.candidate_phone}</span>
                           </div>
                         )}
                         {app.candidate_email && (
                           <div className="flex items-center gap-2 text-muted-foreground">
-                            <FileText className="size-3.5 text-primary shrink-0" />
+                            <FileText className="size-4 text-primary shrink-0" />
                             <span className="truncate">{app.candidate_email}</span>
                           </div>
                         )}
                         {app.education_level && (
                           <div className="flex items-center gap-2 text-muted-foreground">
-                            <GraduationCap className="size-3.5 text-primary shrink-0" />
+                            <GraduationCap className="size-4 text-primary shrink-0" />
                             <span>{app.education_level}</span>
                           </div>
                         )}
@@ -792,7 +816,7 @@ function PainelEmpresaPage() {
 
                       {app.cover_letter && (
                         <div className="p-3 rounded-lg bg-muted/20 border border-border/50 text-xs space-y-1">
-                          <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">
+                          <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">
                             Apresentação do Candidato:
                           </span>
                           <p className="text-muted-foreground leading-relaxed italic">
@@ -807,10 +831,10 @@ function PainelEmpresaPage() {
                             asChild
                             variant="outline"
                             size="sm"
-                            className="h-8 rounded-lg text-xs font-semibold gap-2 text-primary border-primary/30 hover:bg-primary/5"
+                            className="h-11 rounded-lg text-xs font-semibold gap-2 text-primary border-primary/30 hover:bg-primary/5"
                           >
                             <a href={app.resume_url} target="_blank" rel="noopener noreferrer">
-                              <ExternalLink className="size-3.5" />
+                              <ExternalLink className="size-4" />
                               <span>Visualizar Currículo Anexo</span>
                             </a>
                           </Button>
@@ -883,7 +907,7 @@ function PainelEmpresaPage() {
               {/* Dados do Cliente e Item */}
               <div className="space-y-3 text-xs">
                 <div className="bg-muted/30 p-3 rounded-lg space-y-1">
-                  <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Cliente</span>
+                  <span className="text-xs text-muted-foreground uppercase font-bold tracking-wider">Cliente</span>
                   <p className="font-bold text-foreground">{selectedReceipt.customerName}</p>
                   {selectedReceipt.customerPhone && (
                     <p className="font-mono text-muted-foreground">{selectedReceipt.customerPhone}</p>
@@ -891,7 +915,7 @@ function PainelEmpresaPage() {
                 </div>
 
                 <div className="bg-muted/30 p-3 rounded-lg space-y-1">
-                  <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Item / Serviço</span>
+                  <span className="text-xs text-muted-foreground uppercase font-bold tracking-wider">Item / Serviço</span>
                   <p className="font-bold text-foreground">{selectedReceipt.itemTitle}</p>
                 </div>
 
@@ -905,13 +929,13 @@ function PainelEmpresaPage() {
 
               {/* Rodapé de Autenticidade */}
               <div className="pt-4 border-t border-dashed border-border/60 text-center space-y-1">
-                <p className="text-[10px] text-muted-foreground">
+                <p className="text-xs text-muted-foreground">
                   Código de Autenticação Digital:
                 </p>
-                <p className="text-[11px] font-mono text-foreground font-bold tracking-wider">
+                <p className="text-xs font-mono text-foreground font-bold tracking-wider">
                   {selectedReceipt.authCode}
                 </p>
-                <p className="text-[9px] text-muted-foreground">
+                <p className="text-xs text-muted-foreground">
                   Emitido via Waesy • Sistema Operacional Comunitário
                 </p>
               </div>
@@ -924,20 +948,19 @@ function PainelEmpresaPage() {
               variant="outline"
               size="sm"
               onClick={handlePrint}
-              className="rounded-lg text-xs gap-2 h-10"
+              className="rounded-lg text-xs gap-2 h-11"
             >
-              <Printer className="size-3.5" />
+              <Printer className="size-4" />
               <span>Imprimir Recibo</span>
             </Button>
 
             <Button
               type="button"
-              variant="default"
               size="sm"
               onClick={() => handleShareWhatsApp(selectedReceipt)}
-              className="rounded-lg text-xs font-bold gap-2 h-10 bg-primary hover:bg-primary/90 text-primary-foreground"
+              className="rounded-lg text-xs font-bold gap-2 h-11 bg-foreground text-background hover:bg-foreground/90"
             >
-              <Share2 className="size-3.5" />
+              <Share2 className="size-4" />
               <span>Enviar via WhatsApp</span>
             </Button>
           </DialogFooter>
@@ -993,17 +1016,17 @@ function PainelEmpresaPage() {
                   >
                     <div>
                       <p className="font-semibold text-foreground">{field.label}</p>
-                      <p className="text-[10px] text-muted-foreground">
+                      <p className="text-xs text-muted-foreground">
                         Tipo: {field.type === "text" ? "Texto" : field.type === "textarea" ? "Área de Texto" : "Caixa de Seleção"}
                       </p>
                     </div>
                     <button
                       type="button"
                       onClick={() => setCustomFields(customFields.filter((_, i) => i !== idx))}
-                      className="text-muted-foreground hover:text-destructive p-1 transition-colors"
+                      className="text-muted-foreground hover:text-destructive p-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded"
                       title="Remover pergunta"
                     >
-                      <Trash2 className="size-3.5" />
+                      <Trash2 className="size-4" />
                     </button>
                   </div>
                 ))
@@ -1012,16 +1035,16 @@ function PainelEmpresaPage() {
 
             {/* Adicionar nova pergunta */}
             <div className="p-4 rounded-lg border border-border/60 bg-muted/10 space-y-3">
-              <Label className="text-[11px] font-bold text-foreground">Adicionar Pergunta:</Label>
+              <Label className="text-xs font-bold text-foreground">Adicionar Pergunta:</Label>
               <Input
                 placeholder="Ex: Data preferida para atendimento, Modelo do carro atual..."
                 value={newFieldLabel}
                 onChange={(e) => setNewFieldLabel(e.target.value)}
-                className="h-8 text-xs rounded-lg bg-background"
+                className="h-11 text-xs rounded-lg bg-background"
               />
               <div className="grid grid-cols-2 gap-2">
                 <Select value={newFieldType} onValueChange={(val: any) => setNewFieldType(val)}>
-                  <SelectTrigger className="h-8 text-xs rounded-lg bg-background">
+                  <SelectTrigger className="h-11 text-xs rounded-lg bg-background">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -1047,9 +1070,9 @@ function PainelEmpresaPage() {
                       setNewFieldLabel("");
                     }
                   }}
-                  className="h-8 text-xs rounded-lg font-bold gap-1 cursor-pointer"
+                  className="h-11 text-xs rounded-lg font-bold gap-1 cursor-pointer"
                 >
-                  <Plus className="size-3.5" />
+                  <Plus className="size-4" />
                   <span>Adicionar</span>
                 </Button>
               </div>

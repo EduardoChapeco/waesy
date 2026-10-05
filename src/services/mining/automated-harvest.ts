@@ -15,11 +15,13 @@ import { extractContentMechanically, type MechanicalExtractionResult } from "./m
 import { validateMechanicalCompleteness, generateTitleHash, isHealthyImageUrl } from "./integrity-gate";
 import { curateWithEditorialSquad } from "./editorial-squad";
 import { parseFeed } from "@/lib/mining/rss-ingester.engine";
-import { getDefaultCity } from "@/lib/brand.config";
+import { getDefaultCity, getDefaultState } from "@/lib/brand.config";
+import { resolveCityAndState, normalizeStateUf } from "@/lib/mining/geo-resolver";
 
 export interface AutomatedHarvestOptions {
   storeId?: string;
   city?: string;
+  state?: string;
   maxItems?: number;
   feedUrls?: string[];
   forceRefresh?: boolean;
@@ -83,7 +85,9 @@ export async function executeAutomatedNewsHarvest(
   const startTime = Date.now();
   const supabase = getServerClient();
   const maxItems = options.maxItems || 10;
-  const targetCity = options.city || getDefaultCity();
+  const geo = resolveCityAndState(options.city, options.state);
+  const targetCity = geo.city || options.city || getDefaultCity();
+  const targetState = geo.state || normalizeStateUf(options.state) || getDefaultState();
   const feedsToScrape = options.feedUrls && options.feedUrls.length > 0 ? options.feedUrls : CANONICAL_NEWS_FEEDS;
 
   const report: AutomatedHarvestReport = {
@@ -174,8 +178,8 @@ export async function executeAutomatedNewsHarvest(
 
       // 4. Portão de Integridade e Completude Mecânica
       const completeness = validateMechanicalCompleteness(extraction);
-      if (!completeness.isComplete) {
-        console.warn(`[automated-harvest] Matéria rejeitada por incompletude (${candidate.url}):`, completeness.reasons);
+      if (!completeness.isValid) {
+        console.warn(`[automated-harvest] Matéria rejeitada por incompletude (${candidate.url}):`, completeness.reason);
         continue;
       }
 
@@ -194,7 +198,7 @@ export async function executeAutomatedNewsHarvest(
           cover_image_url: extraction.coverImageUrl,
           gallery_images: extraction.galleryImages,
           city: targetCity,
-          state: "SC",
+          state: targetState,
           word_count: extraction.wordCount,
           paragraph_count: extraction.paragraphCount,
           extraction_method: extraction.method,
@@ -208,9 +212,12 @@ export async function executeAutomatedNewsHarvest(
       // 6. Curadoria pelo Squad Editorial com Diretrizes Jornalísticas Rígidas
       let curatedArticle;
       try {
-        curatedArticle = await curateWithEditorialSquad(extraction, {
+        curatedArticle = await curateWithEditorialSquad({
+          rawTitle: extraction.title,
+          rawText: extraction.bodyText,
+          sourceName: extraction.author || candidate.feedSource,
+          sourceUrl: candidate.url,
           city: targetCity,
-          storeId: options.storeId,
         });
       } catch (curateErr) {
         console.warn(`[automated-harvest] Falha na curadoria editorial de ${candidate.url}:`, curateErr);
@@ -220,10 +227,10 @@ export async function executeAutomatedNewsHarvest(
       report.totalCurated++;
 
       // 7. Publicação em news_articles
-      const slug = `${curatedArticle.slug || curatedArticle.title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${Date.now().toString().slice(-6)}`;
-      const coverMediaUrl = isHealthyImageUrl(curatedArticle.cover_media_url)
-        ? curatedArticle.cover_media_url
-        : extraction.coverImageUrl || null;
+      const slug = `${curatedArticle.title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${Date.now().toString().slice(-6)}`;
+      const coverMediaUrl = isHealthyImageUrl(extraction.coverImageUrl)
+        ? extraction.coverImageUrl
+        : null;
 
       const { data: publishedArticle, error: pubError } = await supabase
         .from("news_articles")
@@ -233,11 +240,13 @@ export async function executeAutomatedNewsHarvest(
           slug,
           kicker: curatedArticle.kicker,
           subtitle: curatedArticle.subtitle,
-          content_sections: curatedArticle.content_sections,
+          content_sections: curatedArticle.mobile_sections,
           cover_media_url: coverMediaUrl,
           cover_media_type: "image",
           category: curatedArticle.category,
           tags: curatedArticle.tags,
+          city: targetCity,
+          state: targetState,
           reading_time_minutes: curatedArticle.reading_time_minutes || 3,
           source_url: candidate.url,
           author_name: extraction.author || candidate.feedSource,
@@ -275,16 +284,20 @@ export async function executeAutomatedNewsHarvest(
       processedCount++;
     }
 
-    // 8. Registro de Telemetria e FinOps em scraper_audit_log
-    await supabase.from("scraper_audit_log").insert({
-      crawler_name: "automated_news_harvester_v2",
-      total_items_discovered: report.totalDiscovered,
-      total_items_extracted: report.totalExtracted,
-      total_duplicates_skipped: report.totalSkippedDuplicate,
-      tokens_saved_estimate: report.tokensSavedEstimate,
-      execution_duration_ms: Date.now() - startTime,
+    // 8. Registro de Telemetria e FinOps em scraper_audit_log (schema real)
+    const { error: auditErr } = await supabase.from("scraper_audit_log").insert({
+      scraper_name: "automated_news_harvester_v2",
+      action: "news_harvest",
       status: "success",
-    }).catch(() => {});
+      items_found: report.totalDiscovered,
+      items_extracted: report.totalExtracted,
+      items_processed: report.totalDiscovered,
+      items_inserted: report.totalPublished,
+      tokens_saved: report.tokensSavedEstimate,
+      duration_ms: Date.now() - startTime,
+      metadata: { skipped_duplicates: report.totalSkippedDuplicate },
+    });
+    if (auditErr) console.warn("[automated-harvest] Falha ao gravar auditoria:", auditErr.message);
 
   } catch (err: any) {
     console.error("[automated-harvest] Erro geral na esteira de mineração:", err);

@@ -13,6 +13,7 @@
 import { getServerClient, getAnonServerClient } from "@/lib/supabase";
 import { getNextActiveKey, markKeyError } from "../api-orchestrator.functions";
 import { sleep, isDomainInCooldown, setDomainCooldown } from "@/lib/mining/scraper-utils";
+import { globalCrawlerCircuitBreaker } from "@/lib/mining/crawler-circuit-breaker";
 
 export interface ParsedCnj {
   clean: string;
@@ -188,7 +189,7 @@ export async function queryDataJud(cnj: ParsedCnj): Promise<MinedLawsuitData | n
   const MAX_KEY_ATTEMPTS = 3;
   for (let attempt = 1; attempt <= MAX_KEY_ATTEMPTS; attempt++) {
     let keyRecord: { id: string; rawKey: string } | null = null;
-    let apiKey = "cDZHYUp ExponentiallyRotatedKey";
+    let apiKey = "cDZHYzlZa0JadVREZDJCendQbXY6SkJlTzNjLV9TRENyQk1RdnFKZGRQdw==";
 
     try {
       keyRecord = await getNextActiveKey("datajud" as any);
@@ -354,62 +355,7 @@ function mapDataJudHitToLawsuit(source: any, cnj: ParsedCnj): MinedLawsuitData {
 }
 
 /**
- * Cria dados sintéticos verossímeis de processo quando a API DataJud pública
- * estiver sob rotação de chaves ou timeout, garantindo integridade e zero telas quebradas
- */
-export function buildFallbackLawsuit(cnj: ParsedCnj): MinedLawsuitData {
-  const now = new Date().toISOString();
-  return {
-    processNumber: cnj.formatted,
-    processNumberClean: cnj.clean,
-    courtCode: cnj.tribunalAcronym.toUpperCase(),
-    courtName: cnj.tribunalName,
-    className: "Procedimento do Juizado Especial Cível",
-    subjectName: "Indenização por Dano Moral / Responsabilidade do Fornecedor",
-    status: "Em Andamento (Aguardando Audiência)",
-    priority: "Normal",
-    value: 15000,
-    distributionDate: `${cnj.year}-03-15T14:30:00.000Z`,
-    lastMovementDate: now,
-    lastMovementText: "Conclusos para despacho do magistrado",
-    organName: `${cnj.tribunalName} - Foro Regional (${cnj.originUnit})`,
-    originCourt: cnj.tribunalAcronym.toUpperCase(),
-    originUnit: cnj.originUnit,
-    originState: cnj.state,
-    judgeName: "Juiz de Direito Titular",
-    degree: "G1",
-    parties: [
-      { name: "Consumidor Requerente", role: "Autor", type: "Pessoa Física" },
-      { name: "Empresa Requerida S/A", role: "Réu", type: "Pessoa Jurídica" },
-    ],
-    lawyers: [
-      { name: "Dra. Especialista em Direito Cível", oab: "48200", uf: cnj.state },
-    ],
-    movements: [
-      {
-        movementDate: now,
-        description: "Conclusos para despacho do magistrado",
-        movementType: "Andamento",
-      },
-      {
-        movementDate: `${cnj.year}-04-02T10:00:00.000Z`,
-        description: "Juntada de Petição de Contestação",
-        movementType: "Juntada",
-      },
-      {
-        movementDate: `${cnj.year}-03-15T14:30:00.000Z`,
-        description: "Distribuição por Sorteio",
-        movementType: "Distribuição",
-      },
-    ],
-    source: "datajud_cnj",
-    sourceUrl: "https://jurisprudencia.cnj.jus.br/",
-  };
-}
-
-/**
- * Harvester principal: Extrai do DataJud, persiste em mined_lawsuits,
- * registra lawsuit_movements e cruza com lawsuit_monitors
+ * Coleta, persiste e audita um processo judicial via DataJud CNJ
  */
 export async function harvestAndPersistDataJudProcess(params: {
   processNumber: string;
@@ -417,25 +363,17 @@ export async function harvestAndPersistDataJudProcess(params: {
   profileId?: string;
 }): Promise<{ success: boolean; lawsuit: any; isNew: boolean; error?: string }> {
   const startTime = Date.now();
-  let cnj: ParsedCnj;
+  const cnj = parseCnjNumber(params.processNumber);
+  const mined = await queryDataJud(cnj);
 
-  try {
-    cnj = parseCnjNumber(params.processNumber);
-  } catch (err: unknown) {
+  // 2. Se a API pública do CNJ não retornou (bloqueio de chave ou tribunal fora do ar), não forja dados sintéticos
+  if (mined === null) {
     return {
       success: false,
       lawsuit: null,
       isNew: false,
-      error: err instanceof Error ? err.message : String(err),
+      error: `Processo ${cnj.formatted} não localizado ou API do tribunal ${cnj.tribunalAcronym.toUpperCase()} temporariamente indisponível. Cooldown ativo.`,
     };
-  }
-
-  // 1. Tentar buscar da API DataJud
-  let mined = await queryDataJud(cnj);
-
-  // 2. Se a API pública do CNJ não retornou (bloqueio de chave ou tribunal fora do ar), usa fallback legal
-  if (!mined) {
-    mined = buildFallbackLawsuit(cnj);
   }
 
   const supabase = getServerClient();

@@ -5,6 +5,7 @@
 
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import crypto from "node:crypto";
 import { getServerClient, getAnonServerClient } from "@/lib/supabase";
 import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
 
@@ -104,6 +105,18 @@ export interface CourierProfileDTO {
  is_available: boolean;
  rating: number;
  total_rides: number;
+ work_mode?: string | null;
+ passenger_preference?: string | null;
+ condo_entry_fee_cents?: number;
+ apartment_floor_fee_cents?: number;
+ vehicle_capacity_kg?: number;
+ vehicle_capacity_m3?: number;
+ serviced_neighborhoods?: string[];
+ serviced_cities?: string[];
+ working_hours_start?: string | null;
+ working_hours_end?: string | null;
+ platform_fixed_fee_cents?: number;
+ vehicle_photo_url?: string | null;
 }
 
 // ============================================================
@@ -296,6 +309,22 @@ export const createMobilityRequest = createServerFn({ method: "POST" })
  const supabase = getServerClient();
  const identity = await getServerIdentity().catch(() => null);
 
+  // Zero-Trust Barreira por Inadimplência no CPF / Conta
+  if (identity?.id) {
+    const { data: debts } = await supabase
+      .from("customer_debt_ledger")
+      .select("id, amount_cents, reason")
+      .eq("customer_id", identity.id)
+      .eq("status", "pending");
+
+    if (debts && debts.length > 0) {
+      const totalDebt = debts.reduce((s, d) => s + (d.amount_cents || 0), 0);
+      throw new Error(
+        `Bloqueio de Inadimplência: Você possui pendências no Waesy Go no valor de R$ ${(totalDebt / 100).toFixed(2)}. Regularize seus débitos antes de solicitar novas corridas ou fretes.`
+      );
+    }
+  }
+
  let assignedCourierProfileId: string | null = null;
 
  if (data.direct_driver_slug) {
@@ -333,7 +362,7 @@ export const createMobilityRequest = createServerFn({ method: "POST" })
  payment_method: data.payment_method,
  payment_status: "pending",
  courier_profile_id: assignedCourierProfileId,
- magic_token: `req_${Math.random().toString(36).substring(2, 10)}`,
+ magic_token: `req_${crypto.randomUUID().replace(/-/g, "").substring(0, 8)}`,
  };
 
  // Usa orders como tabela canônica com origin_type = 'mobility'
@@ -1177,3 +1206,682 @@ export const getMyCourierEarnings = createServerFn({ method: "GET" }).handler(
     };
   },
 );
+
+// ============================================================
+// 18. WAESY GO: PERFIL DO ENTREGADOR / CONDUTOR AUTENTICADO
+// ============================================================
+export const getMyCourierProfile = createServerFn({ method: "GET" }).handler(
+  async (): Promise<CourierProfileDTO | null> => {
+    const identity = await getServerIdentity().catch(() => null);
+    if (!identity?.id) return null;
+
+    const db = getServerClient();
+    const { data, error } = await db
+      .from("courier_profiles")
+      .select("*")
+      .eq("user_id", identity.id)
+      .maybeSingle();
+
+    if (error || !data) return null;
+    return data as CourierProfileDTO;
+  },
+);
+
+// ============================================================
+// 19. WAESY GO: ATUALIZAR PREFERÊNCIAS & TARIFAS DO CONDUTOR
+// ============================================================
+export const updateMyCourierPreferences = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      is_available: z.boolean().optional(),
+      work_mode: z.enum(["mixed", "delivery_only", "rides_only", "commercial_only", "moving_only"]).optional(),
+      passenger_preference: z.enum(["all", "women_only"]).optional(),
+      condo_entry_fee_cents: z.number().int().min(0).max(3000).optional(),
+      apartment_floor_fee_cents: z.number().int().min(0).max(5000).optional(),
+      vehicle_capacity_kg: z.number().min(0).optional(),
+      vehicle_capacity_m3: z.number().min(0).optional(),
+      serviced_neighborhoods: z.array(z.string()).optional(),
+      serviced_cities: z.array(z.string()).optional(),
+      working_hours_start: z.string().optional(),
+      working_hours_end: z.string().optional(),
+      vehicle_photo_url: z.string().url().optional().nullable(),
+      custom_km_rate_cents: z.number().int().min(150).max(2000).optional(),
+      custom_base_fee_cents: z.number().int().min(400).max(5000).optional(),
+    }),
+  )
+  .handler(async ({ data: input }) => {
+    const identity = await getServerIdentity();
+    if (!identity?.id) throw new Error("Acesso não autorizado.");
+
+    const db = getServerClient();
+    const { data: profile } = await db
+      .from("courier_profiles")
+      .select("id")
+      .eq("user_id", identity.id)
+      .maybeSingle();
+
+    if (!profile) throw new Error("Perfil de entregador não encontrado.");
+
+    const updatePayload: Record<string, any> = {
+      updated_at: new Date().toISOString(),
+    };
+
+    if (input.is_available !== undefined) updatePayload.is_available = input.is_available;
+    if (input.work_mode !== undefined) updatePayload.work_mode = input.work_mode;
+    if (input.passenger_preference !== undefined) updatePayload.passenger_preference = input.passenger_preference;
+    if (input.condo_entry_fee_cents !== undefined) updatePayload.condo_entry_fee_cents = input.condo_entry_fee_cents;
+    if (input.apartment_floor_fee_cents !== undefined) updatePayload.apartment_floor_fee_cents = input.apartment_floor_fee_cents;
+    if (input.vehicle_capacity_kg !== undefined) updatePayload.vehicle_capacity_kg = input.vehicle_capacity_kg;
+    if (input.vehicle_capacity_m3 !== undefined) updatePayload.vehicle_capacity_m3 = input.vehicle_capacity_m3;
+    if (input.serviced_neighborhoods !== undefined) updatePayload.serviced_neighborhoods = input.serviced_neighborhoods;
+    if (input.serviced_cities !== undefined) updatePayload.serviced_cities = input.serviced_cities;
+    if (input.working_hours_start !== undefined) updatePayload.working_hours_start = input.working_hours_start;
+    if (input.working_hours_end !== undefined) updatePayload.working_hours_end = input.working_hours_end;
+    if (input.vehicle_photo_url !== undefined) updatePayload.vehicle_photo_url = input.vehicle_photo_url;
+
+    const { data: updated, error } = await db
+      .from("courier_profiles")
+      .update(updatePayload)
+      .eq("id", profile.id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error("[updateMyCourierPreferences] error:", error);
+      throw new Error(`Erro ao salvar preferências: ${error.message}`);
+    }
+
+    if (input.custom_km_rate_cents || input.custom_base_fee_cents) {
+      await db.from("logistics_price_tables").upsert(
+        {
+          courier_profile_id: profile.id,
+          name: "Tarifa Autônoma Padrão",
+          service_type: "ride_car",
+          base_fee_cents: input.custom_base_fee_cents || 600,
+          km_rate_cents: input.custom_km_rate_cents || 250,
+          minute_rate_cents: 30,
+          helper_fee_cents: 5000,
+          min_fare_cents: 1000,
+          is_active: true,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "courier_profile_id" },
+      );
+    }
+
+    return { success: true, profile: updated as CourierProfileDTO };
+  });
+
+// ============================================================
+// 20. WAESY GO: RADAR DE DEMANDAS / CHAMADOS DISPONÍVEIS
+// ============================================================
+export const listAvailableMobilityDemands = createServerFn({ method: "GET" }).handler(
+  async (): Promise<MobilityRequestDTO[]> => {
+    const identity = await getServerIdentity().catch(() => null);
+    if (!identity?.id) return [];
+
+    const db = getServerClient();
+    const { data, error } = await db
+      .from("mobility_requests")
+      .select("*")
+      .eq("status", "searching")
+      .is("courier_profile_id", null)
+      .order("created_at", { ascending: false })
+      .limit(20);
+
+    if (error || !data) return [];
+    return data as MobilityRequestDTO[];
+  },
+);
+
+// ============================================================
+// 21. WAESY GO: ACEITAR CHAMADO NO RADAR
+// ============================================================
+export const acceptMobilityDemand = createServerFn({ method: "POST" })
+  .validator(z.object({ requestId: z.string().uuid() }))
+  .handler(async ({ data: { requestId } }) => {
+    const identity = await getServerIdentity();
+    if (!identity?.id) throw new Error("Acesso não autorizado.");
+
+    const db = getServerClient();
+    const { data: profile } = await db
+      .from("courier_profiles")
+      .select("id, full_name, phone, vehicle_type, vehicle_model, vehicle_plate")
+      .eq("user_id", identity.id)
+      .maybeSingle();
+
+    if (!profile) throw new Error("Perfil de condutor não encontrado.");
+
+    const now = new Date().toISOString();
+    const randomBuffer = new Uint32Array(1);
+    crypto.getRandomValues(randomBuffer);
+    const pin = (1000 + (randomBuffer[0] % 9000)).toString();
+
+    const { data: updated, error } = await db
+      .from("mobility_requests")
+      .update({
+        courier_profile_id: profile.id,
+        status: "accepted",
+        accepted_at: now,
+        notes: `PIN de Embarque: ${pin}`,
+        updated_at: now,
+      })
+      .eq("id", requestId)
+      .eq("status", "searching")
+      .select()
+      .single();
+
+    if (error || !updated) {
+      throw new Error("Corrida já foi aceita por outro motorista ou cancelada.");
+    }
+
+    return { success: true, request: updated, pin };
+  });
+
+// ============================================================
+// 22. WAESY GO: TOLERÂNCIA DE 3 MINUTOS & REGISTRO DE CHEGADA
+// ============================================================
+export const recordArrivalAndStartTimer = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      requestId: z.string().uuid(),
+      latitude: z.number().optional(),
+      longitude: z.number().optional(),
+    }),
+  )
+  .handler(async ({ data: { requestId, latitude, longitude } }) => {
+    const identity = await getServerIdentity();
+    if (!identity?.id) throw new Error("Acesso não autorizado.");
+
+    const db = getServerClient();
+    const now = new Date().toISOString();
+    const gpsInfo =
+      latitude != null && longitude != null
+        ? ` (GPS: ${latitude.toFixed(6)}, ${longitude.toFixed(6)})`
+        : "";
+
+    const { data, error } = await db
+      .from("mobility_requests")
+      .update({
+        notes: `Chegada registrada em ${now}${gpsInfo}. Tolerância oficial de 3 minutos iniciada.`,
+        updated_at: now,
+      })
+      .eq("id", requestId)
+      .select()
+      .single();
+
+    if (error) {
+      throw new Error("Erro ao registrar chegada.");
+    }
+
+    return {
+      success: true,
+      arrived_at: now,
+      tolerance_minutes: 3,
+      latitude: latitude ?? null,
+      longitude: longitude ?? null,
+      request: data,
+    };
+  });
+
+// ============================================================
+// 23. WAESY GO: CANCELAMENTO POR NÃO-COMPARECIMENTO (3 MINUTOS) & DÉBITO NO CPF
+// ============================================================
+export const cancelByCustomerNoShow = createServerFn({ method: "POST" })
+  .validator(z.object({ requestId: z.string().uuid() }))
+  .handler(async ({ data: { requestId } }) => {
+    const identity = await getServerIdentity();
+    if (!identity?.id) throw new Error("Acesso não autorizado.");
+
+    const db = getServerClient();
+    const { data: req } = await db
+      .from("mobility_requests")
+      .select("*")
+      .eq("id", requestId)
+      .single();
+
+    if (!req) throw new Error("Chamado não encontrado.");
+
+    const now = new Date().toISOString();
+    const fareCents = req.estimated_price_cents || req.final_price_cents || 1000;
+
+    await db
+      .from("mobility_requests")
+      .update({
+        status: "cancelled",
+        cancelled_at: now,
+        cancellation_reason: "Cliente não compareceu dentro da tolerância de 3 minutos",
+        updated_at: now,
+      })
+      .eq("id", requestId);
+
+    let customerCpf = "00000000000";
+    if (req.customer_id) {
+      const { data: customerProfile } = await db
+        .from("profiles")
+        .select("cpf")
+        .eq("id", req.customer_id)
+        .maybeSingle();
+      if (customerProfile?.cpf) customerCpf = customerProfile.cpf;
+    }
+
+    await db.from("customer_debt_ledger").insert({
+      customer_id: req.customer_id || null,
+      customer_cpf: customerCpf,
+      customer_name: req.customer_name,
+      request_id: requestId,
+      amount_cents: fareCents,
+      reason: "no_show_3min_tolerance",
+      status: "pending",
+      blocked_services: ["mobility_rides", "food_delivery", "marketplace_shipping"],
+      notes: "Cobrança integral por deslocamento do motorista sem comparecimento do passageiro.",
+    });
+
+    return {
+      success: true,
+      message: "Corrida encerrada por não comparecimento. Débito registrado no CPF do cliente.",
+    };
+  });
+
+// ============================================================
+// 24. WAESY GO: AVALIAÇÃO BILATERAL COM ESTRELAS & TAGS
+// ============================================================
+export const submitMobilityRating = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      requestId: z.string().uuid(),
+      roleReviewed: z.enum(["courier", "customer"]),
+      rating: z.number().int().min(1).max(5),
+      comment: z.string().max(500).optional(),
+      tags: z.array(z.string()).optional(),
+    }),
+  )
+  .handler(async ({ data: input }) => {
+    const identity = await getServerIdentity();
+    if (!identity?.id) throw new Error("Acesso não autorizado.");
+
+    const db = getServerClient();
+    const { data: req } = await db
+      .from("mobility_requests")
+      .select("id, customer_id, courier_profile_id")
+      .eq("id", input.requestId)
+      .single();
+
+    if (!req) throw new Error("Corrida não encontrada.");
+
+    const revieweeId = input.roleReviewed === "courier" ? null : req.customer_id;
+    const courierProfileId = req.courier_profile_id;
+
+    const { data, error } = await db
+      .from("mobility_ratings")
+      .upsert(
+        {
+          request_id: input.requestId,
+          reviewer_id: identity.id,
+          reviewee_id: revieweeId,
+          courier_profile_id: courierProfileId,
+          role_reviewed: input.roleReviewed,
+          rating: input.rating,
+          comment: input.comment || null,
+          tags: input.tags || [],
+          created_at: new Date().toISOString(),
+        },
+        { onConflict: "request_id,reviewer_id" },
+      )
+      .select()
+      .single();
+
+    if (error) {
+      console.error("[submitMobilityRating] error:", error);
+      throw new Error(`Erro ao enviar avaliação: ${error.message}`);
+    }
+
+    if (input.roleReviewed === "courier" && courierProfileId) {
+      const { data: allRatings } = await db
+        .from("mobility_ratings")
+        .select("rating")
+        .eq("courier_profile_id", courierProfileId)
+        .eq("role_reviewed", "courier");
+
+      if (allRatings && allRatings.length > 0) {
+        const sum = allRatings.reduce((acc, curr) => acc + curr.rating, 0);
+        const avg = Number((sum / allRatings.length).toFixed(2));
+        await db
+          .from("courier_profiles")
+          .update({ rating: avg, updated_at: new Date().toISOString() })
+          .eq("id", courierProfileId);
+      }
+    }
+
+    return { success: true, rating: data };
+  });
+
+// ============================================================
+// 25. WAESY GO: LISTAR AVALIAÇÕES DO MOTORISTA
+// ============================================================
+export const listCourierReviews = createServerFn({ method: "GET" })
+  .validator(z.object({ courierProfileId: z.string().uuid() }))
+  .handler(async ({ data: { courierProfileId } }) => {
+    const db = getServerClient();
+    const { data, error } = await db
+      .from("mobility_ratings")
+      .select("id, rating, comment, tags, created_at, role_reviewed")
+      .eq("courier_profile_id", courierProfileId)
+      .eq("role_reviewed", "courier")
+      .order("created_at", { ascending: false })
+      .limit(30);
+
+    if (error || !data) return [];
+    return data;
+  });
+
+// ============================================================
+// 26. WAESY GO: REGISTRAR E LISTAR DESPESAS OPERACIONAIS (COMBUSTÍVEL)
+// ============================================================
+export const logCourierExpense = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      expense_type: z.enum(["fuel", "maintenance", "insurance", "tires", "cleaning", "other"]),
+      amount_cents: z.number().int().min(100),
+      liters: z.number().min(0.1).optional(),
+      fuel_type: z.enum(["gasoline", "ethanol", "diesel", "cng", "electric"]).optional(),
+      odometer_km: z.number().int().min(0).optional(),
+      receipt_url: z.string().url().optional().nullable(),
+      notes: z.string().max(300).optional(),
+    }),
+  )
+  .handler(async ({ data: input }) => {
+    const identity = await getServerIdentity();
+    if (!identity?.id) throw new Error("Acesso não autorizado.");
+
+    const db = getServerClient();
+    const { data: profile } = await db
+      .from("courier_profiles")
+      .select("id")
+      .eq("user_id", identity.id)
+      .single();
+
+    if (!profile) throw new Error("Perfil de condutor não encontrado.");
+
+    const { data, error } = await db
+      .from("courier_expense_logs")
+      .insert({
+        courier_profile_id: profile.id,
+        user_id: identity.id,
+        expense_type: input.expense_type,
+        amount_cents: input.amount_cents,
+        liters: input.liters || null,
+        fuel_type: input.fuel_type || null,
+        odometer_km: input.odometer_km || null,
+        receipt_url: input.receipt_url || null,
+        notes: input.notes || null,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error("[logCourierExpense] error:", error);
+      throw new Error(`Erro ao lançar despesa: ${error.message}`);
+    }
+
+    return { success: true, expense: data };
+  });
+
+export const listCourierExpenses = createServerFn({ method: "GET" }).handler(async () => {
+  const identity = await getServerIdentity().catch(() => null);
+  if (!identity?.id) return { expenses: [], total_expense_cents: 0 };
+
+  const db = getServerClient();
+  const { data, error } = await db
+    .from("courier_expense_logs")
+    .select("*")
+    .eq("user_id", identity.id)
+    .order("created_at", { ascending: false });
+
+  if (error || !data) return { expenses: [], total_expense_cents: 0 };
+
+  const total = data.reduce((acc, curr) => acc + (curr.amount_cents || 0), 0);
+  return { expenses: data, total_expense_cents: total };
+});
+
+// ============================================================
+// 27. WAESY GO: FATURA MENSAL DO CONDUTOR (TAXA R$ 0,99 POR CORRIDA)
+// ============================================================
+export const getCourierMonthlyInvoice = createServerFn({ method: "GET" }).handler(async () => {
+  const identity = await getServerIdentity().catch(() => null);
+  if (!identity?.id) {
+    return {
+      month: new Date().toISOString().slice(0, 7),
+      total_rides: 0,
+      fee_per_ride_cents: 99,
+      total_payable_cents: 0,
+      status: "paid",
+    };
+  }
+
+  const db = getServerClient();
+  const { data: profile } = await db
+    .from("courier_profiles")
+    .select("id")
+    .eq("user_id", identity.id)
+    .maybeSingle();
+
+  if (!profile) {
+    return {
+      month: new Date().toISOString().slice(0, 7),
+      total_rides: 0,
+      fee_per_ride_cents: 99,
+      total_payable_cents: 0,
+      status: "paid",
+    };
+  }
+
+  const currentMonth = new Date().toISOString().slice(0, 7);
+  const { data: rides } = await db
+    .from("mobility_requests")
+    .select("id, created_at, payment_method, status")
+    .eq("courier_profile_id", profile.id)
+    .eq("status", "completed");
+
+  const monthRides = (rides || []).filter((r) => r.created_at.startsWith(currentMonth));
+  const totalRides = monthRides.length;
+  const totalFeeCents = totalRides * 99;
+
+  return {
+    month: currentMonth,
+    total_rides: totalRides,
+    fee_per_ride_cents: 99,
+    total_payable_cents: totalFeeCents,
+    status: totalFeeCents > 0 ? "pending" : "paid",
+  };
+});
+
+// ============================================================
+// 28. WAESY GO: VERIFICADOR DE DÉBITOS DO CLIENTE (ZERO-TRUST)
+// ============================================================
+export const checkCustomerDebtStatus = createServerFn({ method: "GET" }).handler(async () => {
+  const identity = await getServerIdentity().catch(() => null);
+  if (!identity?.id) return { has_debts: false, total_debt_cents: 0, debts: [] };
+
+  const db = getServerClient();
+  const { data, error } = await db
+    .from("customer_debt_ledger")
+    .select("*")
+    .eq("customer_id", identity.id)
+    .eq("status", "pending");
+
+  if (error || !data || data.length === 0) {
+    return { has_debts: false, total_debt_cents: 0, debts: [] };
+  }
+
+  const total = data.reduce((acc, curr) => acc + (curr.amount_cents || 0), 0);
+  return {
+    has_debts: true,
+    total_debt_cents: total,
+    debts: data,
+  };
+});
+
+
+// ============================================================
+// 29. WAESY GO: LIQUIDAÇÃO DE DÉBITO PELO CLIENTE (DESBLOQUEIO)
+// ============================================================
+export const payCustomerDebt = createServerFn({ method: "POST" })
+  .validator(z.object({ debtId: z.string().uuid() }))
+  .handler(async ({ data: { debtId } }) => {
+    const identity = await getServerIdentity();
+    if (!identity?.id) throw new Error("Acesso não autorizado.");
+
+    const db = getServerClient();
+    const { data, error } = await db
+      .from("customer_debt_ledger")
+      .update({
+        status: "paid",
+        paid_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", debtId)
+      .eq("customer_id", identity.id)
+      .select()
+      .single();
+
+    if (error || !data) {
+      throw new Error("Erro ao quitar débito pendente.");
+    }
+    return { success: true, debt: data };
+  });
+
+// ============================================================
+// 30. WAESY GO: ENTREGAS COMERCIAIS & LOJAS PARCEIRAS (B2B/B2C)
+// ============================================================
+export interface CourierCommercialDeliveryDTO {
+  id: string;
+  order_number: string;
+  store_id: string;
+  store_name: string;
+  channel: string;
+  status: string;
+  origin_address: string;
+  destination_address: string;
+  delivery_fee_cents: number;
+  customer_name: string;
+  customer_phone: string;
+  created_at: string;
+}
+
+export const listCourierCommercialDeliveries = createServerFn({ method: "GET" })
+  .validator(
+    z
+      .object({
+        storeId: z.string().uuid().optional(),
+        channel: z.string().optional(),
+      })
+      .optional(),
+  )
+  .handler(async ({ data: filter }) => {
+    const identity = await getServerIdentity().catch(() => null);
+    if (!identity?.id) return [] as CourierCommercialDeliveryDTO[];
+
+    const db = getServerClient();
+    const { data: profile } = await db
+      .from("courier_profiles")
+      .select("id")
+      .eq("user_id", identity.id)
+      .maybeSingle();
+
+    if (!profile) return [] as CourierCommercialDeliveryDTO[];
+
+    let query = db
+      .from("orders")
+      .select("id, order_number, store_id, status, total_cents, shipping_cents, shipping_address, customer_snapshot, custom_fields, created_at, stores:store_id(id, name)")
+      .or(`driver_id.eq.${profile.id},courier_profile_id.eq.${profile.id}`)
+      .order("created_at", { ascending: false });
+
+    if (filter?.storeId) {
+      query = query.eq("store_id", filter.storeId);
+    }
+
+    const { data, error } = await query;
+    if (error || !data) return [] as CourierCommercialDeliveryDTO[];
+
+    let deliveries: CourierCommercialDeliveryDTO[] = data.map((ord: any) => {
+      const channel = ord.custom_fields?.channel || ord.custom_fields?.sales_channel || "Loja Parceira";
+      const customer = ord.customer_snapshot || {};
+      const addr = ord.shipping_address || {};
+      return {
+        id: ord.id,
+        order_number: ord.order_number || ord.id.substring(0, 8),
+        store_id: ord.store_id || "",
+        store_name: ord.stores?.name || "Loja Parceira",
+        channel: channel,
+        status: ord.status,
+        origin_address: ord.stores?.name ? `${ord.stores.name} (Retirada)` : "Loja Parceira",
+        destination_address: addr.street ? `${addr.street}, ${addr.number || ""} - ${addr.neighborhood || ""}` : (addr.destination || "Endereço do Cliente"),
+        delivery_fee_cents: ord.shipping_cents || 800,
+        customer_name: customer.name || "Cliente",
+        customer_phone: customer.phone || "",
+        created_at: ord.created_at,
+      };
+    });
+
+    if (filter?.channel && filter.channel !== "all") {
+      deliveries = deliveries.filter((d) => d.channel.toLowerCase() === filter.channel?.toLowerCase());
+    }
+
+    return deliveries;
+  });
+
+export const listCourierPartnerStores = createServerFn({ method: "GET" }).handler(async () => {
+  const identity = await getServerIdentity().catch(() => null);
+  if (!identity?.id) return [] as Array<{ id: string; name: string }>;
+
+  const db = getServerClient();
+  const { data: profile } = await db
+    .from("courier_profiles")
+    .select("id")
+    .eq("user_id", identity.id)
+    .maybeSingle();
+
+  if (!profile) return [] as Array<{ id: string; name: string }>;
+
+  const { data: orders } = await db
+    .from("orders")
+    .select("store_id, stores:store_id(id, name)")
+    .or(`driver_id.eq.${profile.id},courier_profile_id.eq.${profile.id}`)
+    .not("store_id", "is", null);
+
+  const map = new Map<string, string>();
+  for (const o of orders || []) {
+    if (o.store_id && (o.stores as any)?.name) {
+      map.set(o.store_id, (o.stores as any).name);
+    }
+  }
+
+  return Array.from(map.entries()).map(([id, name]) => ({ id, name }));
+});
+
+export const updateCourierDeliveryStatus = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      orderId: z.string().uuid(),
+      status: z.enum(["in_progress", "delivered", "completed"]),
+    }),
+  )
+  .handler(async ({ data: { orderId, status } }) => {
+    const identity = await getServerIdentity();
+    if (!identity?.id) throw new Error("Acesso não autorizado.");
+
+    const db = getServerClient();
+    const { data, error } = await db
+      .from("orders")
+      .update({
+        status,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", orderId)
+      .select()
+      .single();
+
+    if (error || !data) throw new Error("Erro ao atualizar status da entrega.");
+    return { success: true, order: data };
+  });

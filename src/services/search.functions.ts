@@ -25,8 +25,8 @@ const federatedSearchInput = z.object({
  .array(z.enum(["product", "event", "classified", "store", "recipe"]))
  .optional()
  .default(["product", "event", "classified", "store", "recipe"]),
- limit: z.number().int().min(1).max(50).optional().default(10),
- store_id: z.string().uuid().optional(), // Opcional: filtrar por loja específica
+ limit: z.number().int().min(1).max(50).optional().default(10),  store_id: z.string().uuid().optional(), // Opcional: filtrar por loja específica
+  city: z.string().optional(),
 });
 
 export type FederatedSearchInput = z.infer<typeof federatedSearchInput>;
@@ -115,7 +115,16 @@ export type FederatedSearchResponse = {
 
 async function _federatedSearch(input: FederatedSearchInput): Promise<FederatedSearchResponse> {
  const db = getServerClient();
- const { query, types, limit, store_id } = input;  const trimmed = query.trim();  if (trimmed.length < 2) {    return { products: [], events: [], classifieds: [], stores: [], recipes: [], total: 0 };  }
+ const { query, types, limit, store_id, city } = input;
+  const normalizedCity =
+    city &&
+    city !== "todos" &&
+    city !== "Todas" &&
+    city !== "Global" &&
+    city !== "all" &&
+    city !== "Todas as Cidades"
+      ? city.trim()
+      : undefined;  const trimmed = query.trim();  if (trimmed.length < 2) {    return { products: [], events: [], classifieds: [], stores: [], recipes: [], total: 0 };  }
  // Preparar o termo de busca para FTS e ILIKE
  const ftsTerm = query
  .trim()
@@ -143,11 +152,18 @@ async function _federatedSearch(input: FederatedSearchInput): Promise<FederatedS
  (async () => {
  let q = db
  .from("products")
- .select("id, title, slug, price_cents, status, store_id, product_media(url, is_cover, sort_order)")
- .eq("status", "published")
- .limit(limit);
+ .select(
+            normalizedCity
+              ? "id, title, slug, price_cents, status, store_id, product_media(url, is_cover, sort_order), store:stores!inner(id, name, city, settings)"
+              : "id, title, slug, price_cents, status, store_id, product_media(url, is_cover, sort_order), store:stores(id, name, city, settings)"
+          )
+          .eq("status", "published")
+          .limit(limit);
 
- if (store_id) q = q.eq("store_id", store_id);
+        if (store_id) q = q.eq("store_id", store_id);
+        if (normalizedCity) {
+          q = q.ilike("store.city", `%${normalizedCity}%`);
+        }
 
  const extractCover = (mediaList: any[] = []) => {
  if (!mediaList || mediaList.length === 0) return null;
@@ -209,6 +225,9 @@ async function _federatedSearch(input: FederatedSearchInput): Promise<FederatedS
  .limit(limit);
 
  if (store_id) q = q.eq("store_id", store_id);
+        if (normalizedCity) {
+          q = q.or(`city.ilike.%${normalizedCity}%,location.ilike.%${normalizedCity}%`);
+        }
 
  try {
  const { data, error } = await q.textSearch("search_vector", ftsTerm, {
@@ -255,8 +274,7 @@ async function _federatedSearch(input: FederatedSearchInput): Promise<FederatedS
  if (types.includes("classified")) {
  promises.push(
  (async () => {
- const q = db
- .from("classifieds")
+ let q = db.from("classifieds")
  .select(
  "id, title, content, category, price_cents, location_text, images, condition, negotiable, author_profile_id, status",
  )
@@ -264,6 +282,9 @@ async function _federatedSearch(input: FederatedSearchInput): Promise<FederatedS
  .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
  .order("created_at", { ascending: false })
  .limit(limit);
+        if (normalizedCity) {
+          q = q.or(`city.ilike.%${normalizedCity}%,location_text.ilike.%${normalizedCity}%`);
+        }
 
  try {
  const { data, error } = await q.textSearch("search_vector", ftsTerm, {
@@ -314,11 +335,17 @@ async function _federatedSearch(input: FederatedSearchInput): Promise<FederatedS
  if (types.includes("store")) {
  promises.push(
  (async () => {
- const { data } = await db
- .from("stores")
- .select("id, name, slug, settings")
- .ilike("name", ilikeTerm)
- .limit(limit);
+ let storeQ = db
+          .from("stores")
+          .select("id, name, slug, settings, city")
+          .ilike("name", ilikeTerm)
+          .limit(limit);
+
+        if (normalizedCity) {
+          storeQ = storeQ.ilike("city", `%${normalizedCity}%`);
+        }
+
+        const { data } = await storeQ;
 
  results.stores = (data || []).map((s) => ({
  type: "store" as const,

@@ -152,7 +152,7 @@ function NoticiaDetailPage() {
       {/* Barra de Progresso de Leitura Fixa no Topo */}
       <div className="fixed top-0 left-0 right-0 z-50 h-1 bg-muted/40 pointer-events-none">
         <div
-          className="h-full bg-primary transition-all duration-150"
+          className="h-full bg-primary transition-colors motion-reduce:transition-none duration-150"
           style={{ width: `${scrollProgress}%` }}
         />
       </div>
@@ -211,7 +211,7 @@ function NoticiaDetailPage() {
               <span>•</span>
 
               <span className="inline-flex items-center gap-1 font-mono">
-                <Calendar className="size-3.5" />
+                <Calendar className="size-4" />
                 {formattedDate}
               </span>
 
@@ -242,7 +242,7 @@ function NoticiaDetailPage() {
               variant="outline"
               size="sm"
               onClick={handleShare}
-              className="rounded-lg font-bold text-xs gap-2 h-10 px-3 min-h-11"
+              className="rounded-lg font-bold text-xs gap-2 h-11 px-3 min-h-11"
             >
               <Share2 className="size-3.5" />
               <span>Compartilhar</span>
@@ -476,7 +476,7 @@ function NoticiaDetailPage() {
                   key={rel.id}
                   to="/noticias/$slug"
                   params={{ slug: rel.slug }}
-                  className="flex gap-3 p-3 rounded-lg bg-card hover-elevate transition-all group"
+                  className="flex gap-3 p-3 rounded-lg bg-card hover-elevate transition-colors motion-reduce:transition-none group"
                 >
                   {rel.cover_media_url && (
                     <div className="size-20 rounded-lg overflow-hidden bg-muted shrink-0">
@@ -488,7 +488,7 @@ function NoticiaDetailPage() {
                     </div>
                   )}
                   <div className="space-y-1">
-                    <span className="text-[9px] font-bold uppercase text-primary">
+                    <span className="text-xs font-bold uppercase text-primary">
                       {rel.kicker || rel.category}
                     </span>
                     <h4 className="text-xs font-bold text-foreground group-hover:text-primary transition-colors line-clamp-2">

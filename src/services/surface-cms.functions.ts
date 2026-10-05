@@ -72,8 +72,26 @@ export interface SurfaceSectionDTO {
  sort_order: number;
  is_active: boolean;
 	city_filter?: string | null;
+	starts_at?: string | null;
+	ends_at?: string | null;
+	auto_archive_at?: string | null;
  items?: any[];
  config?: Record<string, any> | null;
+}
+
+
+export function isSectionCampaignActive(item: { starts_at?: string | null; ends_at?: string | null; is_active: boolean }): boolean {
+  if (!item.is_active) return false;
+  const now = Date.now();
+  if (item.starts_at) {
+    const s = new Date(item.starts_at).getTime();
+    if (!isNaN(s) && s > now) return false;
+  }
+  if (item.ends_at) {
+    const e = new Date(item.ends_at).getTime();
+    if (!isNaN(e) && e < now) return false;
+  }
+  return true;
 }
 
 export interface MarketplaceSurfaceDTO {
@@ -225,14 +243,15 @@ export const getModularSurfaceFeed = createServerFn({ method: "GET" })
 			.eq("is_active", true);
 
 		const cleanCity =
-			city && city !== "Global" && city !== "all" && city !== "Todas"
+			city && city !== "Global" && city !== "all" && city !== "Todas" && city !== "Todas as Cidades"
 				? city.trim()
 				: null;
 		if (cleanCity) {
 			secQuery = secQuery.or(`city_filter.eq."${cleanCity}",city_filter.is.null,city_filter.eq.all`);
 		}
 
-		const { data: rawSections } = await secQuery.order("sort_order", { ascending: true });
+		const { data: rawSectionsData } = await secQuery.order("sort_order", { ascending: true });
+		const rawSections = (rawSectionsData || []).filter(isSectionCampaignActive);
 
  if (!rawSections || rawSections.length === 0) {
  return { sections: [], allProducts: [] };
@@ -244,7 +263,7 @@ export const getModularSurfaceFeed = createServerFn({ method: "GET" })
  // Futuro ideal: delegar essa agregação para uma RPC (Stored Procedure) no banco.
  let storesQuery = supabase
  .from("stores")
- .select("id, name, slug, description, settings")
+ .select("id, name, slug, description, settings, city")
  .order("created_at", { ascending: false })
  .limit(storeId ? 1 : 100);
 
@@ -262,17 +281,19 @@ export const getModularSurfaceFeed = createServerFn({ method: "GET" })
  attributes,
  created_at,
  media:product_media(url, alt, sort_order),
- store:stores(id, name, slug, settings)
+ store:stores(id, name, slug, settings, city)
  `,
  )
  .in("status", ["published", "active"])
  .order("created_at", { ascending: false })
  .limit(300);
 
- if (storeId) {
- storesQuery = storesQuery.eq("id", storeId);
- productsQuery = productsQuery.eq("store_id", storeId);
- }
+ 	if (storeId) {
+		storesQuery = storesQuery.eq("id", storeId);
+		productsQuery = productsQuery.eq("store_id", storeId);
+	} else if (cleanCity) {
+		storesQuery = storesQuery.ilike("city", `%${cleanCity}%`);
+	}
 
  const [storesRes, productsRes] = await Promise.all([storesQuery, productsQuery]);
 
@@ -287,11 +308,11 @@ export const getModularSurfaceFeed = createServerFn({ method: "GET" })
  avatar_url: settings.logoUrl || settings.logo_url || undefined,
  banner_url: settings.bannerUrl || settings.banner_url || undefined,
  category,
- rating: 4.9,
- review_count: 120,
- distance_km: 1.2,
- is_open: true,
- delivery_time_min: "Disponível",
+ rating: typeof settings.rating === "number" ? settings.rating : undefined,
+				review_count: typeof settings.review_count === "number" ? settings.review_count : undefined,
+				distance_km: typeof settings.distance_km === "number" ? settings.distance_km : undefined,
+				is_open: typeof settings.is_open === "boolean" ? settings.is_open : undefined,
+				delivery_time_min: typeof settings.delivery_time_min === "string" ? settings.delivery_time_min : undefined,
  };
  });
 
@@ -349,6 +370,16 @@ export const getModularSurfaceFeed = createServerFn({ method: "GET" })
  return nicheKeywords.some((kw) => titleLower.includes(kw));
  });
  }
+
+    if (cleanCity && !storeId) {
+      const matchingCityStoreIds = new Set(allDbStores.map((s) => s.id));
+      allProducts = allProducts.filter((p: any) => {
+        if (matchingCityStoreIds.has(p.store_id)) return true;
+        const stCity = (p.store?.city || p.store?.settings?.city || "").toLowerCase();
+        return stCity.includes(cleanCity.toLowerCase());
+      });
+    }
+
 
  // 3.5 Busca banners ativos da plataforma para seções de banner
  const { data: rawBanners } = await supabase
@@ -553,6 +584,9 @@ export const upsertSurfaceSection = createServerFn({ method: "POST" })
  sort_order: z.number().int().default(0),
  is_active: z.boolean().default(true),
 		city_filter: z.string().optional().nullable(),
+		starts_at: z.string().optional().nullable(),
+		ends_at: z.string().optional().nullable(),
+		auto_archive_at: z.string().optional().nullable(),
  config: z.record(z.any()).optional().nullable(),
  })
  )
@@ -882,11 +916,11 @@ export const getProceduralInfiniteFeedPage = createServerFn({ method: "GET" })
             avatar_url: settings.logoUrl || settings.logo_url || undefined,
             banner_url: settings.bannerUrl || settings.banner_url || undefined,
             category: settings.segment || settings.niche || "Comércio Local",
-            rating: 5.0,
-            review_count: 24,
-            distance_km: 1.1,
-            is_open: true,
-            delivery_time_min: "Disponível",
+            rating: typeof s.rating === "number" ? s.rating : typeof settings.rating === "number" ? settings.rating : undefined,
+            review_count: typeof s.review_count === "number" ? s.review_count : typeof settings.review_count === "number" ? settings.review_count : undefined,
+            distance_km: typeof s.distance_km === "number" ? s.distance_km : undefined,
+            is_open: typeof s.is_open === "boolean" ? s.is_open : undefined,
+            delivery_time_min: typeof settings.delivery_time_min === "string" ? settings.delivery_time_min : undefined,
           };
         });
 

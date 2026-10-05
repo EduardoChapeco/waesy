@@ -31,7 +31,7 @@ export const Route = createFileRoute("/_store/loja/$slug")({
       profile?.logoUrl ||
       "/icons/icon-192x192.png";
     const primaryColor =
-      profile?.settings?.primaryColor || profile?.settings?.primary_color || "#09090b";
+      profile?.settings?.primaryColor || profile?.settings?.primary_color || undefined;
 
     return {
       title: profile?.name
@@ -190,7 +190,7 @@ function StoreSlugCanonicalPage() {
   // Se a loja for privada e ainda não tiver desbloqueado, renderiza aviso com link direto
   if (profile.access_type === "password_protected" && isUnlocked === false) {
     return (
-      <div className="min-h-[60vh] flex items-center justify-center px-4 py-16 text-center">
+      <div className="min-h-96 flex items-center justify-center px-4 py-16 text-center">
         <div className="max-w-sm w-full space-y-4">
           <div className="size-16 rounded-lg bg-muted/60 border border-border/80 flex items-center justify-center mx-auto text-primary">
             <LockKey size={30} weight="duotone" />

@@ -86,7 +86,7 @@ function CategoryPage() {
       {/* Breadcrumb Limpo */}
       <nav
         aria-label="Navegação estrutural"
-        className="flex items-center gap-2 text-xs text-muted-foreground overflow-x-auto no-scrollbar py-1"
+        className="flex items-center gap-2 text-xs text-muted-foreground overflow-x-auto no-scrollbar py-1 table-wrapper"
       >
         <Link to="/" className="hover:text-foreground whitespace-nowrap">
           Início
@@ -101,12 +101,12 @@ function CategoryPage() {
 
       {/* Sibling Categories Chips Rail (1-Tap Fast Navigation) */}
       {categories.length > 0 && (
-        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1 table-wrapper">
           <Button
             asChild
             variant="outline"
             size="sm"
-            className="rounded-full text-xs font-semibold h-8 px-4 border-border/80 text-muted-foreground hover:text-foreground shrink-0"
+            className="rounded-full text-xs font-semibold h-11 px-4 border-border/80 text-muted-foreground hover:text-foreground shrink-0"
           >
             <Link to="/mercado">
               Todas
@@ -120,7 +120,7 @@ function CategoryPage() {
                 asChild
                 variant={isActive ? "default" : "outline"}
                 size="sm"
-                className={`rounded-full text-xs font-semibold h-8 px-4 shrink-0 transition-all ${
+                className={`rounded-full text-xs font-semibold h-11 px-4 shrink-0 transition-colors motion-reduce:transition-none ${
                   isActive
                     ? "shadow-xs font-bold"
                     : "border-border/80 text-muted-foreground hover:text-foreground"

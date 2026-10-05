@@ -1,4 +1,9 @@
+function cleanHtmlText(text: string): string {
+  return text.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+}
+
 import { getDefaultCity, getDefaultState } from "@/lib/brand.config";
+import { resolveCityAndState, normalizeStateUf } from "@/lib/mining/geo-resolver";
 /**
  * pncp-extractor.ts — Extrator Oficial de Editais e Compras Públicas (PNCP / Portal Municipal)
  * 
@@ -13,6 +18,8 @@ export interface PncpSearchOptions {
   query?: string;
   uf?: string;
   municipio?: string;
+  codigoMunicipioIbge?: string;
+  codigoModalidadeContratacao?: number;
   dataInicio?: string;
   dataFim?: string;
   limit?: number;
@@ -38,11 +45,22 @@ const pncpMemoryCache = new Map<string, { timestamp: number; data: PncpItemDTO[]
 const PNCP_CACHE_TTL_MS = 5 * 60 * 1000;
 
 export async function fetchPncpContracts(options: PncpSearchOptions = {}): Promise<PncpItemDTO[]> {
-  const query = options.query || getDefaultCity();
-  const uf = options.uf || "SC";
-  const limit = options.limit || 15;
+  const resolvedGeo = resolveCityAndState(options.query || options.municipio, options.uf);
+  const query = options.query || resolvedGeo.city || getDefaultCity();
+  const uf = resolvedGeo.state || normalizeStateUf(options.uf) || getDefaultState();
+  const limit = Math.max(10, options.limit || 10);
+  const modalidade = options.codigoModalidadeContratacao || 6; // 6 = Pregão Eletrônico, 8 = Dispensa
+  const ibge = options.codigoMunicipioIbge || resolvedGeo.ibgeCode || "4204202";
 
-  const cacheKey = `${query}_${uf}_${limit}_${options.dataInicio || ""}_${options.dataFim || ""}`;
+  // Formatação de datas YYYYMMDD
+  const today = new Date();
+  const past = new Date(today.getTime() - 180 * 24 * 60 * 60 * 1000);
+  const fmtDate = (d: Date) => d.toISOString().slice(0, 10).replace(/-/g, "");
+
+  const dataInicial = options.dataInicio ? options.dataInicio.replace(/-/g, "") : fmtDate(past);
+  const dataFinal = options.dataFim ? options.dataFim.replace(/-/g, "") : fmtDate(today);
+
+  const cacheKey = `${query}_${uf}_${ibge}_${modalidade}_${limit}_${dataInicial}_${dataFinal}`;
   const cached = pncpMemoryCache.get(cacheKey);
 
   // Retorna cache imediato se válido
@@ -51,14 +69,18 @@ export async function fetchPncpContracts(options: PncpSearchOptions = {}): Promi
   }
 
   const params = new URLSearchParams({
-    q: query,
+    dataInicial,
+    dataFinal,
+    codigoModalidadeContratacao: String(modalidade),
     pagina: "1",
     tamanhoPagina: String(Math.min(limit, 30)),
   });
 
-  if (uf) params.set("uf", uf);
-  if (options.dataInicio) params.set("dataInicial", options.dataInicio.replace(/-/g, ""));
-  if (options.dataFim) params.set("dataFinal", options.dataFim.replace(/-/g, ""));
+  if (ibge) {
+    params.set("codigoMunicipioIbge", ibge);
+  } else if (uf) {
+    params.set("uf", uf);
+  }
 
   const pncpUrl = `https://pncp.gov.br/api/consulta/v1/contratacoes/publicacao?${params.toString()}`;
 
@@ -71,7 +93,7 @@ export async function fetchPncpContracts(options: PncpSearchOptions = {}): Promi
       signal: AbortSignal.timeout(15000),
     });
 
-    if (!res.ok) {
+    if (res.ok === false) {
       if (cached?.data?.length) {
         console.info("[pncp-extractor] API PNCP indisponível (HTTP " + res.status + "), servindo dados em cache.");
         return cached.data;
@@ -165,3 +187,55 @@ export function convertPncpToExtractionResult(item: PncpItemDTO, city = getDefau
     },
   };
 }
+
+export interface PncpContractItem {
+  numeroItem: number;
+  descricao: string;
+  quantidade: number;
+  unidadeMedida: string;
+  valorUnitarioEstimado?: number;
+  valorTotalEstimado?: number;
+  situacao?: string;
+}
+
+/**
+ * Consulta os itens e lotes detalhados de um edital do PNCP
+ * Endpoint oficial: /contratacoes/publicacao/{cnpj}/{ano}/{sequencial}/itens
+ */
+export async function fetchPncpContractItems(
+  cnpj: string,
+  ano: number,
+  sequencial: number
+): Promise<PncpContractItem[]> {
+  try {
+    const cleanCnpj = cnpj.replace(/\D/g, "");
+    const url = `https://pncp.gov.br/api/consulta/v1/contratacoes/publicacao/${cleanCnpj}/${ano}/${sequencial}/itens?pagina=1&tamanhoPagina=50`;
+
+    const res = await fetch(url, {
+      headers: {
+        "Accept": "application/json",
+        "User-Agent": "WaesyOmniCrawler/2.0 (+https://usewaesy.com/pncp)",
+      },
+      signal: AbortSignal.timeout(8000),
+    });
+
+    if (res.ok === false) return [];
+
+    const json = await res.json();
+    const rawItems = Array.isArray(json) ? json : json?.data || [];
+
+    return rawItems.map((it: any) => ({
+      numeroItem: it.numeroItem || 1,
+      descricao: cleanHtmlText(it.descricao || it.especificacao || ""),
+      quantidade: Number(it.quantidade) || 1,
+      unidadeMedida: it.unidadeMedida || "UN",
+      valorUnitarioEstimado: it.valorUnitarioEstimado ? Number(it.valorUnitarioEstimado) : undefined,
+      valorTotalEstimado: it.valorTotal ? Number(it.valorTotal) : undefined,
+      situacao: it.situacaoCompraItemNome || "Ativo",
+    }));
+  } catch (err) {
+    console.warn(`[pncp-extractor] Falha ao extrair itens da contratação ${cnpj}/${ano}/${sequencial}:`, err);
+    return [];
+  }
+}
+

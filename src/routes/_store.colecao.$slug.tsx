@@ -79,7 +79,7 @@ function CollectionPage() {
 
       {/* Cover */}
       {collection.cover_url && (
-        <div className="w-full aspect-[21/9] rounded-lg overflow-hidden bg-muted shadow-xs">
+        <div className="w-full aspect-video rounded-lg overflow-hidden bg-muted shadow-xs">
           <img
             src={collection.cover_url}
             alt={collection.name}

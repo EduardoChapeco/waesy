@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "risks": [
+    {
+      "id": "RISK-01",
+      "category": "ai_safety",
+      "description": "Prompt injection em páginas e conteúdos externos coletados",
+      "mitigation": "mechanical-extractor limpa tags ativas e isola conteúdo como dados puros não-executáveis",
+      "severity": "medium",
+      "status": "mitigated"
+    },
+    {
+      "id": "RISK-02",
+      "category": "multi_tenant",
+      "description": "Tentativa de bypass de isolamento entre lojas vizinhas",
+      "mitigation": "RLS PostgreSQL Deny-by-Default + assertStoreAccess server-side",
+      "severity": "high",
+      "status": "mitigated"
+    },
+    {
+      "id": "RISK-03",
+      "category": "crawler_rate_limit",
+      "description": "Bloqueio de IP por excesso de requisições a portais regionais",
+      "mitigation": "Crawler Circuit Breaker por domínio (CLOSED/OPEN/HALF_OPEN) e jitter",
+      "severity": "medium",
+      "status": "mitigated"
+    }
+  ]
+}

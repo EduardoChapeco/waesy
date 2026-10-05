@@ -318,6 +318,31 @@ export const processCheckout = createServerFn({ method: "POST" })
  const identity = await getCurrentIdentity();
  const affiliateId = req ? readCookieFromRequest(req, "waesy_affiliate_id") : null;
 
+  // Zero-Trust Barreira por Inadimplência no CPF / Conta (Waesy Go)
+  if (identity?.customer_id || params.customerDocument) {
+    const cleanDoc = params.customerDocument ? params.customerDocument.replace(/\D/g, "") : null;
+    let debtQuery = db
+      .from("customer_debt_ledger")
+      .select("id, amount_cents")
+      .eq("status", "pending");
+
+    if (identity?.customer_id && cleanDoc) {
+      debtQuery = debtQuery.or(`customer_id.eq.${identity.customer_id},customer_cpf.eq.${cleanDoc}`);
+    } else if (identity?.customer_id) {
+      debtQuery = debtQuery.eq("customer_id", identity.customer_id);
+    } else if (cleanDoc) {
+      debtQuery = debtQuery.eq("customer_cpf", cleanDoc);
+    }
+
+    const { data: debts } = await debtQuery;
+    if (debts && debts.length > 0) {
+      const totalDebt = debts.reduce((s, d) => s + (d.amount_cents || 0), 0);
+      throw new Error(
+        `Bloqueio por Inadimplência: Consta débito pendente no valor de R$ ${(totalDebt / 100).toFixed(2)} vinculado ao seu CPF no Waesy Go. Regularize para concluir novos pedidos de delivery ou compras.`
+      );
+    }
+  }
+
  // Call the atomic RPC v2 — all logic (coupon, stock, order creation, gift cards, surcharges) happens inside a single PostgreSQL transaction
  // Validação de integridade de frete: revalida apenas quando é transportadora automatizada externa com CEP
  const isLocalOrManualShipping =

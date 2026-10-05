@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useRouter } from "@tanstack/react-router";
 import { MapPin, Navigation, Search, X, Check, Loader2, Compass, Maximize2, Minimize2, Crosshair, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -129,7 +130,8 @@ export function syncClientGeoCookie(loc: LocationState) {
 }
 
 export function useMasterLocation() {
- const [location, setLocation] = useState<LocationState>(GLOBAL_DEFAULT_LOCATION);
+  const router = useRouter({ warn: false });
+  const [location, setLocation] = useState<LocationState>(GLOBAL_DEFAULT_LOCATION);
 
  useEffect(() => {
  const stored = getStoredLocation();
@@ -193,13 +195,24 @@ export function useMasterLocation() {
  const handleUpdate = (e: any) => {
  if (e.detail) {
  setLocation(e.detail);
+ if (router) {
+ try {
+ router.invalidate();
+ } catch {}
+ }
  }
  };
 
  const handleStorage = (e: StorageEvent) => {
  if (e.key === "waesy_master_location" && e.newValue) {
  try {
- setLocation(JSON.parse(e.newValue));
+ const parsed = JSON.parse(e.newValue);
+ setLocation(parsed);
+ if (router) {
+ try {
+ router.invalidate();
+ } catch {}
+ }
  } catch {
  // ignore
  }
@@ -213,7 +226,7 @@ export function useMasterLocation() {
  window.removeEventListener("waesy:location-updated", handleUpdate as EventListener);
  window.removeEventListener("storage", handleStorage);
  };
- }, []);
+ }, [router]);
 
   const updateLocation = (newLoc: LocationState) => {
     setLocation(newLoc);
@@ -221,6 +234,23 @@ export function useMasterLocation() {
       localStorage.setItem("waesy_master_location", JSON.stringify(newLoc));
       syncClientGeoCookie(newLoc);
       window.dispatchEvent(new CustomEvent("waesy:location-updated", { detail: newLoc }));
+    }
+    if (router) {
+      try {
+        const currentSearch = (router.state?.location?.search || {}) as Record<string, any>;
+        if ("city" in currentSearch) {
+          router.navigate({
+            search: ((prev: any) => ({
+              ...prev,
+              city: newLoc.city === "Global" ? undefined : newLoc.city,
+            })) as any,
+            replace: true,
+          });
+        }
+      } catch {}
+      try {
+        router.invalidate();
+      } catch {}
     }
   };
 
@@ -334,14 +364,14 @@ export function LocationMasterPill({ className = "" }: { className?: string }) {
  onPointerUp={handlePointerUp}
  onPointerCancel={handlePointerCancel}
  title="Alterar Localização"
- className={`inline-flex items-center gap-2 px-3 sm:px-3 h-8 sm:h-9 rounded-lg text-xs font-bold transition-all border select-none cursor-pointer shrink-0 ${
+ className={`inline-flex items-center gap-2 px-3 h-11 min-h-11 rounded-lg text-xs font-bold transition-colors motion-reduce:transition-none border select-none cursor-pointer shrink-0 ${
  isHolding
  ? "scale-95 bg-primary/20 border-primary text-primary"
  : "bg-muted/60 hover:bg-muted text-foreground border-border/80 hover:border-primary/40"
  } ${className}`}
  >
  {isLocating ? (
- <Loader2 className="size-3.5 animate-spin text-primary shrink-0" />
+ <Loader2 className="size-4 animate-spin motion-reduce:animate-none text-primary shrink-0" />
  ) : isGlobal ? (
  <Globe className="size-3.5 text-primary shrink-0" />
  ) : (
@@ -483,7 +513,7 @@ export function LocationPickerModal({
  return (
  <Dialog open={open} onOpenChange={onOpenChange}>
  <DialogContent
- className={`p-0 overflow-hidden bg-background transition-all duration-300 ${
+ className={`p-0 overflow-hidden bg-background transition-opacity duration-200 motion-reduce:transition-none ${
  isMapFullscreen || activeTab === "map"
  ? "max-w-4xl w-[95vw] h-[85vh] rounded-lg flex flex-col"
  : "max-w-xl rounded-lg"
@@ -501,7 +531,7 @@ export function LocationPickerModal({
  <button
  type="button"
  onClick={() => setActiveTab("quick")}
- className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
+ className={`px-3 py-1 rounded-lg text-xs font-bold transition-colors motion-reduce:transition-none ${
  activeTab === "quick"
  ? "bg-background text-foreground "
  : "text-muted-foreground hover:text-foreground"
@@ -512,7 +542,7 @@ export function LocationPickerModal({
  <button
  type="button"
  onClick={() => setActiveTab("map")}
- className={`flex items-center gap-2 px-3 py-1 rounded-lg text-xs font-bold transition-all ${
+ className={`flex items-center gap-2 px-3 py-1 rounded-lg text-xs font-bold transition-colors motion-reduce:transition-none ${
  activeTab === "map"
  ? "bg-primary text-primary-foreground "
  : "text-muted-foreground hover:text-foreground"
@@ -563,7 +593,7 @@ export function LocationPickerModal({
  disabled={isSearchingCep}
  className="h-11 px-5 rounded-lg font-bold bg-primary text-primary-foreground text-xs"
  >
- {isSearchingCep ? <Loader2 className="size-4 animate-spin" /> : "Buscar"}
+ {isSearchingCep ? <Loader2 className="size-4 animate-spin motion-reduce:animate-none" /> : "Buscar"}
  </Button>
  </div>
  </form>
@@ -591,7 +621,7 @@ export function LocationPickerModal({
  source: c.city === "Global" ? "default" : "manual",
  })
  }
- className={`flex items-center justify-between p-3 rounded-lg border text-xs font-semibold transition-all ${
+ className={`flex items-center justify-between p-3 rounded-lg border text-xs font-semibold transition-colors motion-reduce:transition-none ${
  isSelected
  ? "bg-primary text-primary-foreground border-primary font-bold shadow-xs"
  : "bg-card hover:bg-muted text-foreground border-border/80"
@@ -642,7 +672,7 @@ export function LocationPickerModal({
  {isResolvingPin ? "Localizando..." : "📍 Solte o Pin Aqui"}
  </div>
  <div className="relative flex items-center justify-center">
- <MapPin className="size-10 text-primary fill-primary drop- animate-bounce" />
+ <MapPin className="size-10 text-primary fill-primary animate-bounce motion-reduce:animate-none" />
  </div>
  <div className="size-3 bg-black/40 rounded-full blur-[2px] mt-1" />
  </div>
@@ -696,7 +726,7 @@ export function LocationPickerModal({
  className="flex-1 sm:flex-none rounded-lg font-bold text-xs bg-primary text-primary-foreground px-6 "
  >
  {isResolvingPin ? (
- <Loader2 className="size-3.5 animate-spin mr-2" />
+ <Loader2 className="size-4 animate-spin motion-reduce:animate-none mr-2" />
  ) : (
  <Check className="size-3.5 mr-2" />
  )}

@@ -17,9 +17,9 @@ const STATUS_LABELS: Record<ReviewStatus, string> = {
   rejected: "Recusada",
 };
 
-const STATUS_VARIANTS: Record<ReviewStatus, "default" | "secondary" | "destructive" | "outline" | "success" | "warning"> = {
-  pending: "warning",
-  approved: "success",
+const STATUS_VARIANTS: Record<ReviewStatus, "default" | "secondary" | "destructive" | "outline"> = {
+  pending: "secondary",
+  approved: "default",
   rejected: "destructive",
 };
 
@@ -54,7 +54,7 @@ export const Route = createFileRoute("/_store/conta/avaliacoes")({
 // ─── StarRating ───────────────────────────────────────────────────────────────
 
 function StarRating({ rating, size = "sm" }: { rating: number; size?: "sm" | "md" }) {
-  const sizeClass = size === "sm" ? "size-3.5" : "size-5";
+  const sizeClass = size === "sm" ? "size-4" : "size-5";
   return (
     <div className="flex items-center gap-1" aria-label={`${rating} de 5 estrelas`}>
       {Array.from({ length: 5 }).map((_, i) => (
@@ -63,7 +63,7 @@ function StarRating({ rating, size = "sm" }: { rating: number; size?: "sm" | "md
           className={`${sizeClass} ${
             i < rating ? "fill-amber-400 text-amber-400" : "text-border"
           }`}
-          aria-hidden
+          aria-hidden="true"
         />
       ))}
     </div>
@@ -85,25 +85,25 @@ function ReviewCard({ review }: { review: any }) {
         <div className="flex items-start gap-3 min-w-0 flex-1">
           {/* Ícone de produto */}
           <div className="size-10 rounded-lg bg-muted/50 border border-border/40 flex items-center justify-center shrink-0">
-            <Package className="size-4.5 text-muted-foreground/50" strokeWidth={1.5} />
+            <Package className="size-5 text-muted-foreground/50" strokeWidth={1.5} />
           </div>
           <div className="min-w-0 flex-1">
             {review.productSlug ? (
               <Link
                 to="/produto/$slug"
                 params={{ slug: review.productSlug }}
-                className="text-[13px] font-bold text-foreground hover:text-primary transition-colors truncate block leading-snug"
+                className="text-sm font-semibold text-foreground hover:text-primary transition-colors truncate block leading-snug focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded"
               >
                 {review.productName || "Produto"}
               </Link>
             ) : (
-              <p className="text-[13px] font-bold text-foreground truncate leading-snug">
+              <p className="text-sm font-semibold text-foreground truncate leading-snug">
                 {review.productName || "Produto"}
               </p>
             )}
             <div className="flex items-center gap-2 mt-1">
               <StarRating rating={review.rating} />
-              <span className="text-[11px] text-muted-foreground">
+              <span className="text-xs text-muted-foreground">
                 {formatDate(review.createdAt)}
               </span>
             </div>
@@ -112,10 +112,10 @@ function ReviewCard({ review }: { review: any }) {
 
         {/* Badge de status */}
         <div className="flex items-center gap-2 shrink-0">
-          <StatusIcon className="size-3.5 text-muted-foreground" strokeWidth={1.75} />
+          <StatusIcon className="size-4 text-muted-foreground" strokeWidth={1.75} />
           <Badge
             variant={STATUS_VARIANTS[status] || "secondary"}
-            className="text-[10px] font-semibold rounded-md px-2 h-5"
+            className="text-xs font-semibold rounded-md px-2 h-6"
           >
             {STATUS_LABELS[status] || status}
           </Badge>
@@ -126,7 +126,7 @@ function ReviewCard({ review }: { review: any }) {
       {review.comment && (
         <div className="px-4 py-3">
           <div className="flex items-start gap-2">
-            <MessageSquare className="size-3.5 text-muted-foreground/40 shrink-0 mt-1" strokeWidth={1.5} />
+            <MessageSquare className="size-4 text-muted-foreground/40 shrink-0 mt-1" strokeWidth={1.5} />
             <div className="flex-1 min-w-0">
               <p className={`text-xs text-foreground/80 leading-relaxed ${!expanded && isLong ? "line-clamp-3" : ""}`}>
                 {review.comment}
@@ -135,7 +135,7 @@ function ReviewCard({ review }: { review: any }) {
                 <button
                   type="button"
                   onClick={() => setExpanded(!expanded)}
-                  className="text-[11px] text-primary font-semibold mt-1 cursor-pointer hover:underline"
+                  className="text-xs text-primary font-semibold mt-1 cursor-pointer hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded"
                 >
                   {expanded ? "Ver menos" : "Ver mais"}
                 </button>
@@ -151,10 +151,10 @@ function ReviewCard({ review }: { review: any }) {
           <Link
             to="/produto/$slug"
             params={{ slug: review.productSlug }}
-            className="text-[11px] text-muted-foreground hover:text-primary font-semibold flex items-center gap-1 transition-colors"
+            className="text-xs text-muted-foreground hover:text-primary font-semibold flex items-center gap-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded"
           >
-            Ver produto
-            <ChevronRight className="size-3" strokeWidth={2} />
+            <span>Ver produto</span>
+            <ChevronRight className="size-4" strokeWidth={2} />
           </Link>
         </div>
       )}
@@ -194,7 +194,7 @@ function CustomerReviewsPage() {
       : null;
 
   return (
-    <div className="w-full max-w-2xl mx-auto pb-24 px-0 sm:px-0 animate-in fade-in duration-200">
+    <div className="w-full max-w-2xl mx-auto pb-24 px-4 sm:px-6">
       {/* ── 1. Native Mobile Header (Apple HIG / PWA Nativo) ── */}
       <NativeMobileHeader
         title="Avaliações"
@@ -210,38 +210,54 @@ function CustomerReviewsPage() {
           <Button
             asChild
             variant="outline"
-            size="sm"
-            className="rounded-lg text-xs font-semibold h-8.5 px-4 cursor-pointer shadow-2xs"
+            size="default"
+            className="rounded-lg text-xs font-semibold h-11 min-h-11 px-4 cursor-pointer shadow-2xs focus-visible:ring-2 focus-visible:ring-primary"
           >
             <Link to="/mercado">Explorar</Link>
           </Button>
         }
       />
 
+      {/* ── 2. Desktop Inpage Header (Bento Grid & Apple HIG) ── */}
+      <div className="hidden md:flex items-center justify-between pb-4 pt-2 border-b border-border/40">
+        <div>
+          <h1 className="text-xl font-bold tracking-tight text-foreground">Avaliações</h1>
+          <p className="text-xs text-muted-foreground mt-1">Histórico de comentários e avaliações dos seus pedidos</p>
+        </div>
+        <Button
+          asChild
+          variant="outline"
+          size="default"
+          className="rounded-lg text-xs font-semibold h-11 min-h-11 px-4 cursor-pointer shadow-2xs focus-visible:ring-2 focus-visible:ring-primary"
+        >
+          <Link to="/mercado">Explorar</Link>
+        </Button>
+      </div>
+
       {reviews.length === 0 ? (
         /* ── Empty State Honesto ── */
         <div className="flex flex-col items-center justify-center py-20 px-6 text-center gap-3">
-          <Star className="size-10 stroke-[1.5] text-muted-foreground/40 mb-1" />
+          <Star className="size-10 text-muted-foreground/40 mb-1" strokeWidth={1.5} />
           <div>
             <h2 className="text-base font-bold text-foreground">Nenhuma avaliação enviada</h2>
             <p className="text-xs text-muted-foreground mt-1 max-w-xs mx-auto leading-relaxed">
               Após receber suas compras, compartilhe sua experiência para ajudar outros compradores e apoiar lojistas locais.
             </p>
           </div>
-          <Button asChild className="rounded-lg h-10 px-6 text-xs font-bold mt-2">
+          <Button asChild className="rounded-lg h-11 min-h-11 px-6 text-xs font-bold mt-2 focus-visible:ring-2 focus-visible:ring-primary">
             <Link to="/mercado">Explorar Produtos</Link>
           </Button>
         </div>
       ) : (
         <>
-          {/* ── 2. Indicador de média geral (silencioso) ── */}
+          {/* ── 3. Indicador de média geral (silencioso) ── */}
           {avgRating && (
-            <div className="flex items-center gap-3 px-4 sm:px-0 py-3 border-b border-border/30">
+            <div className="flex items-center gap-3 py-3 border-b border-border/30">
               <div className="flex items-center gap-2">
                 <span className="text-2xl font-black text-foreground font-mono">{avgRating}</span>
                 <div className="flex flex-col">
                   <StarRating rating={Math.round(Number(avgRating))} size="sm" />
-                  <span className="text-[10px] text-muted-foreground mt-1">
+                  <span className="text-xs text-muted-foreground mt-1">
                     {reviews.length} avaliação{reviews.length > 1 ? "ões" : ""}
                   </span>
                 </div>
@@ -254,11 +270,14 @@ function CustomerReviewsPage() {
                     <div key={star} className="flex-1 flex flex-col items-center gap-1">
                       <div className="w-full h-1 rounded-full bg-border/50 overflow-hidden">
                         <div
-                          className="h-full bg-amber-400 rounded-full transition-all"
+                          className="h-full bg-amber-400 rounded-full transition-transform"
                           style={{ width: `${pct}%` }}
                         />
                       </div>
-                      <span className="text-[9px] text-muted-foreground font-mono">{star}★</span>
+                      <span className="text-xs text-muted-foreground font-mono flex items-center gap-1">
+                        {star}
+                        <Star className="size-2.5 fill-muted-foreground text-muted-foreground" />
+                      </span>
                     </div>
                   );
                 })}
@@ -266,39 +285,37 @@ function CustomerReviewsPage() {
             </div>
           )}
 
-          {/* ── 3. Chips de filtro ── */}
-          <div className="overflow-x-auto scrollbar-none px-4 sm:px-0 py-2">
-            <div className="flex items-center gap-2 min-w-max">
-              {FILTER_CHIPS.map((chip) => {
-                const count = counts[chip.id] || 0;
-                const isActive = activeFilter === chip.id;
-                if (count === 0 && chip.id !== "todas") return null;
-                return (
-                  <button
-                    key={chip.id}
-                    id={`review-filter-${chip.id}`}
-                    type="button"
-                    onClick={() => setActiveFilter(chip.id)}
-                    className={`flex items-center gap-2 h-8 px-3 rounded-lg text-xs font-semibold whitespace-nowrap transition-all border cursor-pointer ${
-                      isActive
-                        ? "bg-primary text-primary-foreground border-primary"
-                        : "bg-background text-muted-foreground border-border/60 hover:border-border hover:text-foreground"
-                    }`}
-                  >
-                    {chip.label}
-                    {count > 0 && (
-                      <span className={`text-[10px] font-mono ${isActive ? "opacity-80" : "text-muted-foreground"}`}>
-                        {count}
-                      </span>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
+          {/* ── 4. Chips de filtro ── */}
+          <div className="flex flex-wrap items-center gap-2 py-3">
+            {FILTER_CHIPS.map((chip) => {
+              const count = counts[chip.id] || 0;
+              const isActive = activeFilter === chip.id;
+              if (count === 0 && chip.id !== "todas") return null;
+              return (
+                <button
+                  key={chip.id}
+                  id={`review-filter-${chip.id}`}
+                  type="button"
+                  onClick={() => setActiveFilter(chip.id)}
+                  className={`flex items-center gap-2 h-11 min-h-11 px-4 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors border cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                    isActive
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "bg-background text-muted-foreground border-border/60 hover:border-border hover:text-foreground"
+                  }`}
+                >
+                  <span>{chip.label}</span>
+                  {count > 0 && (
+                    <span className={`text-xs font-mono ${isActive ? "opacity-80" : "text-muted-foreground"}`}>
+                      {count}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
           </div>
 
-          {/* ── 4. Lista de Avaliações ── */}
-          <div className="px-4 sm:px-0 flex flex-col gap-3 mt-1">
+          {/* ── 5. Lista de Avaliações ── */}
+          <div className="flex flex-col gap-3 mt-1">
             {filtered.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-center gap-2">
                 <p className="text-sm font-semibold text-foreground">
@@ -312,20 +329,20 @@ function CustomerReviewsPage() {
             )}
           </div>
 
-          {/* ── 5. CTA para escrever mais avaliações ── */}
-          <div className="mt-6 mx-4 sm:mx-0 flex items-center gap-3 p-4 rounded-lg border border-border/50 bg-card">
+          {/* ── 6. CTA para escrever mais avaliações ── */}
+          <div className="mt-6 flex items-center gap-3 p-4 rounded-lg border border-border/50 bg-card">
             <PenLine className="size-5 text-muted-foreground shrink-0" strokeWidth={1.5} />
             <div className="flex-1 min-w-0">
-              <p className="text-[13px] font-bold text-foreground">Tem mais compras para avaliar?</p>
-              <p className="text-[11px] text-muted-foreground">
+              <p className="text-sm font-semibold text-foreground">Tem mais compras para avaliar?</p>
+              <p className="text-xs text-muted-foreground">
                 Veja seus pedidos entregues e compartilhe sua experiência.
               </p>
             </div>
             <Button
               asChild
-              size="sm"
+              size="default"
               variant="outline"
-              className="rounded-lg text-xs font-semibold h-9 px-4 cursor-pointer shrink-0"
+              className="rounded-lg text-xs font-semibold h-11 min-h-11 px-4 cursor-pointer shrink-0 focus-visible:ring-2 focus-visible:ring-primary"
             >
               <Link to="/conta/pedidos">Ver Pedidos</Link>
             </Button>

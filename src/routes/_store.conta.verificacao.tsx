@@ -70,7 +70,7 @@ function KycVerificationPage() {
   };
 
   return (
-    <div className="min-h-[100dvh] bg-background text-foreground w-full max-w-5xl mx-auto space-y-4 sm:space-y-6 pb-24 px-0 sm:px-4 md:px-0 animate-in fade-in duration-200">
+    <div className="min-h-dvh bg-background text-foreground w-full max-w-5xl mx-auto space-y-4 sm:space-y-6 pb-24 px-0 sm:px-4 md:px-0 animate-in fade-in duration-200 motion-reduce:animate-none">
       {/* ── 1. Clean Minimalist Header (Apple HIG / Native Back) ── */}
       <div className="flex items-center justify-between gap-3 border-b border-border/40 pb-3 pt-1 px-4 sm:px-0">
         <div className="flex items-center gap-3">
@@ -137,7 +137,7 @@ function KycVerificationPage() {
                       key={type.id}
                       type="button"
                       onClick={() => setEntityType(type.id as any)}
-                      className={`min-h-[56px] flex flex-col items-center justify-center gap-2 rounded-lg border p-3 text-center transition-all cursor-pointer ${
+                      className={`min-h-14 flex flex-col items-center justify-center gap-2 rounded-lg border p-3 text-center transition-colors motion-reduce:transition-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                         isSelected
                           ? "border-primary bg-primary/10 text-primary font-semibold"
                           : "border-border/60 bg-background text-muted-foreground hover:border-border hover:text-foreground"
@@ -214,7 +214,7 @@ function KycVerificationPage() {
               <Button
                 type="submit"
                 disabled={isPending}
-                className="h-11 sm:h-10 min-h-11 px-6 rounded-lg font-semibold text-xs gap-2"
+                className="h-11 min-h-11 px-6 rounded-lg font-semibold text-xs gap-2"
               >
                 <ShieldCheck className="h-4 w-4" />
                 {isPending ? "Enviando..." : "Submeter para Verificação"}

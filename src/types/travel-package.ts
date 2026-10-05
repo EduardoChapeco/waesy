@@ -13,6 +13,9 @@ export interface TravelItineraryDay {
  description: string;
  imageUrl?: string;
  highlights?: string[];
+ morning?: string;
+ afternoon?: string;
+ night?: string;
 }
 
 export interface ItineraryDay {

@@ -27,6 +27,7 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
  const [searchOpen, setSearchOpen] = useState(false);
  const [searchQuery, setSearchQuery] = useState("");
  const [isSwitching, setIsSwitching] = useState(false);
+  const [avatarError, setAvatarError] = useState(false);
 
  const memberships = (session?.memberships as any[]) || [];
  const activeStoreId = session?.store_id;
@@ -44,7 +45,7 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
  session?.user?.email?.split("@")[0] ||
  session?.email?.split("@")[0] ||
  "membro";
- const userAvatar = userMeta?.avatar_url || "";
+ const userAvatar = userMeta?.avatar_url || session?.user?.avatar_url || session?.avatar_url || session?.profile?.avatar_url || "";
  const userInitial = userName.charAt(0).toUpperCase();
  const isPlatformAdmin =
  session?.role === "platform_admin" ||
@@ -141,11 +142,11 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
  asChild
  variant="ghost"
  size="icon"
- className="hidden md:inline-flex size-8 rounded-lg relative text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-all active:scale-95 cursor-pointer"
- title="Atendimento & Suporte"
- >
- <Link to="/conta/suporte">
- <MessageSquare className="size-4" />
+ className="hidden md:inline-flex size-11 min-h-11 min-w-11 rounded-lg relative text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-all active:scale-95 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            title="Atendimento & Suporte"
+          >
+            <Link to="/conta/suporte">
+              <MessageSquare className="size-5" />
  </Link>
  </Button>
  )}
@@ -155,10 +156,10 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
  variant="ghost"
  size="icon"
  onClick={() => setIsCartOpen(true)}
- className="hidden md:inline-flex size-8 rounded-lg relative text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-all active:scale-95 cursor-pointer"
- title="Sacola de Compras"
- >
- <ShoppingBag className="size-4" />
+ className="hidden md:inline-flex size-11 min-h-11 min-w-11 rounded-lg relative text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-all active:scale-95 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          title="Sacola de Compras"
+        >
+          <ShoppingBag className="size-5" />
  {totalItemCount > 0 && (
  <span className="absolute -top-1 -right-1 size-4 bg-primary text-primary-foreground text-[9px] font-bold rounded-lg flex items-center justify-center animate-scale-in">
  {totalItemCount}
@@ -170,7 +171,7 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
  <NotificationsPopover session={session} />
 
  {/* 4. Alternador de Tema Dark/Light (Desktop >= 768px) */}
- <ThemeToggle className="hidden md:inline-flex size-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-all active:scale-95 cursor-pointer" />
+ <ThemeToggle className="hidden md:inline-flex size-11 min-h-11 min-w-11 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-all active:scale-95 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary" />
 
  <div className="hidden md:block h-4 w-px bg-border/60 mx-1" />
 
@@ -179,19 +180,25 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
  <div className="inline-flex">
  <DropdownMenu>
  <DropdownMenuTrigger asChild>
- <button
- type="button"
- className="size-8 shrink-0 rounded-lg overflow-hidden focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all hover:scale-105 active:scale-95 cursor-pointer"
- aria-label="Menu de Perfil e Conta"
- >
- <Avatar className="size-full rounded-none">
- <AvatarImage src={userAvatar} alt={userName} />
- <AvatarFallback className="text-[11px] font-bold bg-primary text-primary-foreground">
- {userInitial}
- </AvatarFallback>
- </Avatar>
- </button>
- </DropdownMenuTrigger>
+          <button
+            type="button"
+            className="size-11 min-h-11 min-w-11 shrink-0 rounded-full overflow-hidden border border-border/60 hover:border-primary/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-all hover:scale-105 active:scale-95 cursor-pointer bg-muted flex items-center justify-center p-0"
+            aria-label="Menu de Perfil e Conta"
+          >
+            {userAvatar && !avatarError ? (
+              <img
+                src={userAvatar}
+                alt={userName}
+                className="size-full object-cover"
+                onError={() => setAvatarError(true)}
+              />
+            ) : (
+              <div className="size-full flex items-center justify-center bg-primary text-primary-foreground text-sm font-black">
+                {userInitial}
+              </div>
+            )}
+          </button>
+        </DropdownMenuTrigger>
 
  <DropdownMenuContent
  align="end"

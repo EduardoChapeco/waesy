@@ -1,39 +1,39 @@
 # BASELINE.md — Baseline Mensurável do Sistema (P05)
 
 **Data da Medição:** 2026-10-01  
-**Métrica Global:** 1560 arquivos em `src/` | 579.341 linhas de código | 21.15 MB
+**Métrica Global:** 1845 arquivos em `src/` | 634.620 linhas de código | 23.26 MB
 
 ---
 
 ## 1. Contagem Estrutural
-- **Rotas:** 385
-- **Componentes:** 613
-- **Serviços / BFF:** 351
-- **Hooks:** 16
+- **Rotas:** 406
+- **Componentes:** 718
+- **Serviços / BFF:** 402
+- **Hooks:** 22
 
 ---
 
 ## 2. Top 20 Maiores Arquivos (Alvos Prioritários de Refatoração / Modularização)
 | Arquivo | Linhas | Tamanho (KB) |
 |---|---|---|
-| `src/routes/_store.conta.classificados.novo.tsx` | 9273 | 461.8 KB |
-| `src/routeTree.gen.ts` | 8357 | 345.9 KB |
-| `src/components/classifieds/editorial-showcase-view.tsx` | 3152 | 175.6 KB |
-| `src/services/mining.functions.ts` | 4146 | 148.8 KB |
-| `src/components/commerce/canonical-store-profile-view.tsx` | 2976 | 142.1 KB |
-| `src/routes/_store.membro.$id.tsx` | 3790 | 128.8 KB |
-| `src/components/profile/professional-resume-editor.tsx` | 3136 | 110.0 KB |
-| `src/components/mining/mining-dashboard.tsx` | 2267 | 101.6 KB |
+| `src/routes/_store.conta.classificados.novo.tsx` | 9561 | 478.9 KB |
+| `src/routeTree.gen.ts` | 8591 | 354.9 KB |
+| `src/components/classifieds/editorial-showcase-view.tsx` | 3154 | 175.7 KB |
+| `src/services/mining.functions.ts` | 4104 | 143.7 KB |
+| `src/components/commerce/canonical-store-profile-view.tsx` | 2985 | 142.2 KB |
+| `src/routes/_store.membro.$id.tsx` | 3790 | 128.6 KB |
+| `src/routes/_store.checkout.tsx` | 3011 | 119.8 KB |
+| `src/components/profile/professional-resume-editor.tsx` | 3041 | 107.6 KB |
+| `src/components/mining/mining-dashboard.tsx` | 2267 | 101.5 KB |
 | `src/routes/workspace.turismo.viagens.$id.tsx` | 2077 | 101.1 KB |
-| `src/services/classifieds.functions.ts` | 2679 | 97.2 KB |
-| `src/routes/workspace.comercial.tsx` | 2013 | 96.1 KB |
-| `src/routes/admin-master.mining.tsx` | 2049 | 94.3 KB |
-| `src/lib/routes.ts` | 3466 | 92.3 KB |
-| `src/routes/_store.afiliados.tsx` | 1835 | 91.1 KB |
-| `src/components/classifieds/convenience-showcase-view.tsx` | 1930 | 89.4 KB |
-| `src/routes/workspace.financeiro.recebiveis.tsx` | 1970 | 89.0 KB |
-| `src/services/travel-lifecycle.functions.ts` | 2243 | 83.2 KB |
-| `src/routes/_store.classificados.$id.tsx` | 1830 | 82.6 KB |
+| `src/services/classifieds.functions.ts` | 2746 | 100.2 KB |
+| `src/lib/routes.ts` | 3506 | 96.9 KB |
+| `src/routes/workspace.comercial.tsx` | 2013 | 96.0 KB |
+| `src/routes/admin-master.mining.tsx` | 2049 | 94.2 KB |
+| `src/routes/_store.afiliados.tsx` | 1835 | 90.9 KB |
+| `src/components/classifieds/convenience-showcase-view.tsx` | 1930 | 89.2 KB |
+| `src/routes/workspace.financeiro.recebiveis.tsx` | 1970 | 88.8 KB |
+| `src/services/travel-lifecycle.functions.ts` | 2327 | 88.7 KB |
 | `src/services/social.functions.ts` | 2558 | 81.9 KB |
 | `src/services/builder.functions.ts` | 3103 | 81.5 KB |
 

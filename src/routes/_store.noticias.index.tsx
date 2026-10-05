@@ -6,6 +6,7 @@ import { NewspaperClipping, Flame, MagnifyingGlass, ArrowRight, Lightning, Build
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { listPublicArticles, listPublicNewsSponsors, type NewsArticleDTO, type SponsorDTO } from "@/services/news.functions";
 import { listActiveBanners } from "@/services/banner.functions";
@@ -33,13 +34,13 @@ export const Route = createFileRoute("/_store/noticias/")({
     const activeCity = resolveActiveCity(location?.search);
     try {
       const [articles, banners, hotpages, sponsors, indicators] = await Promise.all([
-        listPublicArticles({ data: { limit: 40 } }).catch(() => []),
+        listPublicArticles({ data: { limit: 40, city: activeCity } }).catch(() => []),
         listActiveBanners({ data: { placement: "noticias", city: activeCity } }).catch(() => []),
         listHotpages({ data: { module: "noticias" } }).catch(() => []),
         listPublicNewsSponsors({ data: { limit: 12 } }).catch(() => []),
         getMarketIndicatorsFn().catch(() => []),
       ]);
-      return { articles, banners, hotpages, sponsors, indicators: indicators || [] };
+      return { articles, banners, hotpages, sponsors, indicators: indicators || [], activeCity };
     } catch (err) {
       console.error("[loader:_store.noticias.index] Unhandled error:", err);
       return { articles: [], banners: [], hotpages: [], sponsors: [], indicators: [] };
@@ -66,38 +67,56 @@ export function NoticiasFeedPage() {
     hotpages = [],
     sponsors = [],
     indicators = [],
+    activeCity = "",
   } = ((Route.useLoaderData?.() as any) || {});
   const [articles, setArticles] = useState<NewsArticleDTO[]>(initialArticles || []);
   const [selectedCategory, setSelectedCategory] = useState("todas");
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
+  const [isError, setIsError] = useState(false);
 
   const handleFilterCategory = async (cat: string) => {
     setSelectedCategory(cat);
     setIsSearching(true);
-    const updated = await listPublicArticles({
-      data: {
-        category: cat === "todas" ? undefined : cat,
-        query: searchQuery || undefined,
-        limit: 40,
-      },
-    }).catch(() => []);
-    setArticles(updated || []);
-    setIsSearching(false);
+    setIsError(false);
+    try {
+      const updated = await listPublicArticles({
+        data: {
+          category: cat === "todas" ? undefined : cat,
+          query: searchQuery || undefined,
+          limit: 40,
+          city: activeCity || undefined,
+        },
+      });
+      setArticles(updated || []);
+    } catch {
+      setIsError(true);
+      setArticles([]);
+    } finally {
+      setIsSearching(false);
+    }
   };
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSearching(true);
-    const updated = await listPublicArticles({
-      data: {
-        category: selectedCategory === "todas" ? undefined : selectedCategory,
-        query: searchQuery || undefined,
-        limit: 40,
-      },
-    }).catch(() => []);
-    setArticles(updated || []);
-    setIsSearching(false);
+    setIsError(false);
+    try {
+      const updated = await listPublicArticles({
+        data: {
+          category: selectedCategory === "todas" ? undefined : selectedCategory,
+          query: searchQuery || undefined,
+          limit: 40,
+          city: activeCity || undefined,
+        },
+      });
+      setArticles(updated || []);
+    } catch {
+      setIsError(true);
+      setArticles([]);
+    } finally {
+      setIsSearching(false);
+    }
   };
 
   const featuredArticle = articles[0];
@@ -141,7 +160,7 @@ export function NoticiasFeedPage() {
       </div>
 
       <section aria-label="Editorias de Notícias" className="space-y-2">
-        <div className="flex items-center gap-2 sm:gap-2 overflow-x-auto no-scrollbar py-1 w-full px-1 focus:outline-none">
+        <div className="flex items-center gap-2 sm:gap-2 overflow-x-auto no-scrollbar py-1 w-full px-1 focus:outline-none tab-list">
           {CATEGORIES.map((cat) => {
             const isSelected = selectedCategory === cat.id;
 
@@ -151,7 +170,7 @@ export function NoticiasFeedPage() {
                 type="button"
                 onClick={() => handleFilterCategory(cat.id)}
                 className={cn(
-                  "h-11 px-4 rounded-lg border text-xs sm:text-sm font-semibold shrink-0 flex items-center gap-2 transition-all cursor-pointer select-none active:scale-98 shadow-2xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                  "h-11 px-4 rounded-lg border text-xs sm:text-sm font-semibold shrink-0 flex items-center gap-2 transition-colors duration-200 cursor-pointer select-none active:scale-98 shadow-2xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                   isSelected
                     ? "bg-foreground text-background border-foreground font-bold shadow-xs"
                     : "bg-card hover:bg-muted/50 text-muted-foreground hover:text-foreground border-border/70"
@@ -185,7 +204,7 @@ export function NoticiasFeedPage() {
       )}
 
       {/* ── 4. Plantão & Notícias de Última Hora (Trilho com Lead Card Sincronizado) ── */}
-      {breakingNews.length > 0 && !searchQuery && (
+      {breakingNews.length > 0 && !searchQuery && !isSearching && (
         <section aria-label="Plantão de Notícias" className="space-y-3">
           <HorizontalRail
             title="Plantão"
@@ -208,19 +227,19 @@ export function NoticiasFeedPage() {
       )}
 
       {/* ── 5. Manchete Principal em Destaque (Layout Vertical Apple HIG sem espremer) ── */}
-      {featuredArticle && !searchQuery && (
-        <section className="relative rounded-lg overflow-hidden bg-card border border-border/60 group hover-elevate transition-all">
+      {featuredArticle && !searchQuery && !isSearching && (
+        <section className="relative rounded-lg overflow-hidden bg-card border border-border/60 group hover-elevate transition-colors duration-200">
           <Link
             to="/noticias/$slug"
             params={{ slug: featuredArticle.slug }}
             className="flex flex-col w-full"
           >
             {featuredArticle.cover_media_url && (
-              <div className="relative aspect-[2.35/1] sm:aspect-[2.6/1] md:aspect-[21/9] w-full overflow-hidden bg-muted">
+              <div className="relative aspect-video w-full overflow-hidden bg-muted">
                 <img
                   src={featuredArticle.cover_media_url}
                   alt={featuredArticle.title}
-                  className="size-full object-cover group-hover:scale-103 transition-transform duration-700"
+                  className="size-full object-cover group-hover:scale-103 transition-transform duration-200"
                 />
               </div>
             )}
@@ -260,7 +279,7 @@ export function NoticiasFeedPage() {
       )}
 
       {/* ── 6. Carrossel de Cotidiano & Cidade ── */}
-      {cityArticles.length > 0 && !searchQuery && (
+      {cityArticles.length > 0 && !searchQuery && !isSearching && (
         <section aria-label="Cotidiano & Cidade" className="space-y-3">
           <HorizontalRail
             title="Cidade"
@@ -283,7 +302,7 @@ export function NoticiasFeedPage() {
       )}
 
       {/* ── 6.5. Carrossel Editorial de Economia & Negócios ── */}
-      {economyArticles.length > 0 && !searchQuery && (
+      {economyArticles.length > 0 && !searchQuery && !isSearching && (
         <section aria-label="Economia & Negócios" className="space-y-3">
           <HorizontalRail
             title="Economia"
@@ -306,7 +325,7 @@ export function NoticiasFeedPage() {
       )}
 
       {/* ── 7. Carrossel de Cultura & Lazer ── */}
-      {cultureArticles.length > 0 && !searchQuery && (
+      {cultureArticles.length > 0 && !searchQuery && !isSearching && (
         <section aria-label="Cultura & Lazer" className="space-y-3">
           <HorizontalRail
             title="Cultura"
@@ -329,7 +348,7 @@ export function NoticiasFeedPage() {
       )}
 
       {/* ── 7.5. Carrossel de Esportes & Regional ── */}
-      {sportsArticles.length > 0 && !searchQuery && (
+      {sportsArticles.length > 0 && !searchQuery && !isSearching && (
         <section aria-label="Esportes & Regional" className="space-y-3">
           <HorizontalRail
             title="Esportes"
@@ -352,7 +371,44 @@ export function NoticiasFeedPage() {
       )}
 
       {/* ── 8. Lista de Notícias Mais Recentes com Injeção Randômica de Anúncios ── */}
-      {articles.length === 0 ? (
+      {isError ? (
+        <div className="py-16 text-center rounded-lg border border-border bg-card space-y-3">
+          <NewspaperClipping className="size-10 text-muted-foreground mx-auto" />
+          <h3 className="text-base font-bold text-foreground">Erro ao carregar notícias</h3>
+          <p className="text-xs text-muted-foreground max-w-sm mx-auto">
+            Não foi possível obter as matérias. Tente novamente mais tarde.
+          </p>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handleFilterCategory(selectedCategory)}
+            className="h-11 px-4 text-xs font-semibold rounded-lg"
+          >
+            Tentar novamente
+          </Button>
+        </div>
+      ) : isSearching ? (
+        <section aria-label="Carregando Notícias" className="space-y-4 w-full">
+          <div className="flex items-center justify-between pb-2">
+            <Skeleton className="h-6 w-32 rounded-lg" />
+            <Skeleton className="h-4 w-20 rounded-lg" />
+          </div>
+          <div className="space-y-4">
+            {Array.from({ length: 4 }).map((_, idx) => (
+              <div key={idx} className="rounded-lg border border-border/60 bg-card p-4 space-y-3">
+                <div className="flex gap-4">
+                  <Skeleton className="size-24 rounded-lg shrink-0" />
+                  <div className="space-y-2 flex-1">
+                    <Skeleton className="h-4 w-24 rounded-md" />
+                    <Skeleton className="h-5 w-3/4 rounded-md" />
+                    <Skeleton className="h-4 w-full rounded-md" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      ) : articles.length === 0 ? (
         <div className="py-16 text-center rounded-lg border bg-card/50 space-y-3">
           <NewspaperClipping className="size-10 text-muted-foreground/40 mx-auto" />
           <h3 className="text-base font-bold text-foreground">Nenhuma notícia encontrada</h3>

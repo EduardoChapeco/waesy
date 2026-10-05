@@ -236,7 +236,7 @@ function LimpezaVerticalPage() {
  <Button
  variant="outline"
  onClick={() => handleDepartmentChange("todos")}
- className="rounded-lg border-border"
+ className="rounded-lg border-border h-11 px-4 focus-visible:ring-2 focus-visible:ring-primary"
  >
  Ver todos os produtos
  </Button>

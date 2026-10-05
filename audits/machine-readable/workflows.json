@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "workflows": [
+    {
+      "name": "crawl_queue_batch_worker",
+      "trigger": "pg_cron / webhook",
+      "entrypoint": "src/services/mining/crawler-batch-engine.ts",
+      "state_management": "postgres_lock",
+      "retry_policy": "max_3_retries_exponential_backoff"
+    },
+    {
+      "name": "autonomous_copilot_pipeline",
+      "trigger": "user_chat_prompt",
+      "entrypoint": "src/services/autonomous-copilot-orchestrator.ts",
+      "state_management": "13_phase_state_machine",
+      "artifact_delivery": "live_artifacts"
+    },
+    {
+      "name": "cross_cnpj_enrichment",
+      "trigger": "directory_listing_created",
+      "entrypoint": "src/services/mining/places-cnpj-cross-enricher.ts",
+      "external_source": "BrasilAPI"
+    }
+  ]
+}

@@ -39,7 +39,7 @@ export const Route = createFileRoute("/_store/perfil-da-loja")({
       profile?.logoUrl ||
       "/icons/icon-192x192.png";
     const primaryColor =
-      profile?.settings?.primaryColor || profile?.settings?.primary_color || "#09090b";
+      profile?.settings?.primaryColor || profile?.settings?.primary_color || undefined;
 
     return {
       title: profile?.name

@@ -15,6 +15,8 @@ import { AdTelemetryBeacon } from "@/components/commerce/ad-telemetry-beacon";
 import { VitrineEngineSelector } from "@/components/commerce/vitrine-engine-selector";
 import type { VitrineEngineMode } from "@/types/marketplace-compliance";
 
+import { resolveActiveCity } from "@/lib/city-helper";
+
 // BFF Functions — 100% Real no Supabase | Zero Mocks
 import { listActiveBanners, type BannerDTO } from "@/services/banner.functions";
 import { listHomeHeroCards, type HotpageDTO } from "@/services/hotpage.functions";
@@ -101,18 +103,7 @@ export const Route = createFileRoute("/_store/explorar")({
   }),
   loader: async ({ location }) => {
     try {
-      let activeCity: string | undefined = (location.search as any)?.city;
-      if (!activeCity && typeof document !== "undefined") {
-        const match = document.cookie.match(/waesy_city=([^;]+)/);
-        if (match) {
-          try {
-            activeCity = decodeURIComponent(match[1]);
-          } catch {
-            // ignore
-          }
-        }
-      }
-      const filteredCity = activeCity && activeCity !== "Global" ? activeCity : undefined;
+      const filteredCity = resolveActiveCity(location.search as any);
 
       const [
         banners,
@@ -131,11 +122,11 @@ export const Route = createFileRoute("/_store/explorar")({
         listActiveBanners({ data: { placement: "home_middle", city: filteredCity } }).catch(() => []),
         listActiveBanners({ data: { placement: "home_footer", city: filteredCity } }).catch(() => []),
         listHomeHeroCards().catch(() => []),
-        getPublicDirectory({ data: { limit: 12 } }).catch(() => []),
-        getPublicClassifieds({ data: { limit: 12 } }).catch(() => []),
-        listPublicJobs({ data: { limit: 8 } }).catch(() => []),
-        getPublicEvents({ limit: 8 } as any).catch(() => []),
-        listPublicArticles({ data: { limit: 6 } }).catch(() => []),
+        getPublicDirectory({ data: { limit: 12, city: filteredCity } }).catch(() => []),
+        getPublicClassifieds({ data: { limit: 12, city: filteredCity } }).catch(() => []),
+        listPublicJobs({ data: { limit: 8, city: filteredCity } }).catch(() => []),
+        getPublicEvents({ data: { limit: 8, city: filteredCity } }).catch(() => []),
+        listPublicArticles({ data: { limit: 6, city: filteredCity } }).catch(() => []),
         getMuralFeed({ data: { limit: 8 } }).catch(() => ({ items: [] })),
         getAllPublicConcursos({ data: { filter: "all" } }).catch(() => []),
       ]);
@@ -152,6 +143,7 @@ export const Route = createFileRoute("/_store/explorar")({
         newsArticles: newsArticles || [],
         feedPosts: (feedResponse as MuralFeedResponse)?.items || [],
         concursos: concursos || [],
+        activeCity: filteredCity,
       };
     } catch (err) {
       console.error("[loader:_store.index] Unhandled loader error:", err);

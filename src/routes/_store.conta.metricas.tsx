@@ -9,17 +9,42 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_store/conta/metricas")({
- head: () => ({ meta: [{ title: "Métricas | Waesy" }] }),
- loader: async (): Promise<{ analytics: MemberAnalyticsDTO | null }> => {
- try {
- const analytics = await getMemberAnalyticsInsights({ data: {} });
- return { analytics };
- } catch {
- return { analytics: null };
- }
- },
- component: MemberMetricsPage,
+  head: () => ({ meta: [{ title: "Métricas | Waesy" }] }),
+  loader: async (): Promise<{ analytics: MemberAnalyticsDTO | null }> => {
+    try {
+      const analytics = await getMemberAnalyticsInsights({ data: {} });
+      return { analytics };
+    } catch (err: any) {
+      console.error("[loader:_store.conta.metricas] Erro ao carregar métricas:", err);
+      return { analytics: null };
+    }
+  },
+  errorComponent: MemberMetricsErrorComponent,
+  component: MemberMetricsPage,
 });
+
+function MemberMetricsErrorComponent({ error, reset }: { error: any; reset: () => void }) {
+  return (
+    <div className="mx-auto max-w-xl px-4 py-16 text-center space-y-4">
+      <div className="inline-flex size-14 items-center justify-center rounded-lg bg-destructive/10 text-destructive mb-2">
+        <Activity className="size-7" />
+      </div>
+      <h2 className="text-xl font-bold text-foreground">Instabilidade nas Métricas</h2>
+      <p className="text-xs text-muted-foreground max-w-md mx-auto leading-relaxed">
+        {error?.message || "Não foi possível carregar as métricas de engajamento do seu perfil no momento."}
+      </p>
+      <div className="flex items-center justify-center gap-3 pt-2">
+        <Button
+          type="button"
+          onClick={reset}
+          className="rounded-lg font-bold text-xs h-11 sm:h-9 px-4 focus-visible:ring-2 focus-visible:ring-primary"
+        >
+          Tentar Novamente
+        </Button>
+      </div>
+    </div>
+  );
+}
 
 function MemberMetricsPage() {
  const { analytics } = ((Route.useLoaderData?.() as any) || {});

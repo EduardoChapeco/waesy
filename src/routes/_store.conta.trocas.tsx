@@ -215,7 +215,7 @@ function CustomerRmaPage() {
     <div className="w-full max-w-4xl mx-auto space-y-6 pb-24 px-0 sm:px-4 md:px-0">
       {/* ── 1. Header Apple HIG Minimalista ── */}
       <NativeMobileHeader title="Trocas" fallbackHref="/conta" mobileOnly />
-      <div className="hidden sm:flex items-center justify-between gap-4 border-b border-border/40 pb-5 pt-2">
+      <div className="hidden md:flex items-center justify-between gap-4 border-b border-border/40 pb-5 pt-2">
         <div className="space-y-1">
           <div className="flex items-center gap-3">
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
@@ -272,7 +272,7 @@ function CustomerRmaPage() {
           {rmas.map((rma: any) => (
             <div
               key={rma.id}
-              className="bg-card rounded-lg border border-border/70 shadow-xs overflow-hidden transition-all hover:border-foreground/20 hover:shadow-sm"
+              className="bg-card rounded-lg border border-border/70 shadow-xs overflow-hidden transition-colors motion-reduce:transition-none hover:border-foreground/20"
             >
               {/* Header do Card Agrupado */}
               <div className="p-4 sm:p-5 flex flex-wrap items-center justify-between gap-3 bg-muted/30 border-b border-border/50">
@@ -308,7 +308,7 @@ function CustomerRmaPage() {
               <div className="p-4 sm:p-5 space-y-4">
                 {rma.notes && (
                   <div className="bg-muted/40 p-4 rounded-lg border border-border/40 space-y-1">
-                    <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                       Motivo / Observação do Cliente
                     </p>
                     <p className="text-xs sm:text-sm text-foreground leading-relaxed">
@@ -366,7 +366,7 @@ function CustomerRmaPage() {
                         <Truck className="size-4 text-primary" />
                         <span>Código de Postagem Reversa ({rma.carrier || "Correios"})</span>
                       </div>
-                      <Badge variant="outline" className="text-[10px] uppercase font-mono">
+                      <Badge variant="outline" className="text-xs uppercase font-mono">
                         Válido por 7 dias
                       </Badge>
                     </div>
@@ -580,7 +580,7 @@ function CustomerRmaPage() {
               >
                 {isSubmitting ? (
                   <>
-                    <Loader2 className="size-4 animate-spin mr-2" />
+                    <Loader2 className="size-4 animate-spin motion-reduce:animate-none mr-2" />
                     Enviando...
                   </>
                 ) : (

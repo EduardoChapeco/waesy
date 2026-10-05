@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "@tanstack/react-router";
-import { Plus, Clock } from "lucide-react";
+import { Plus, Clock, ArrowRight, Loader2 } from "lucide-react";
 import { formatMoney } from "@/lib/money";
 import { Button } from "@/components/ui/button";
 import { addToCart } from "@/services/cart.functions";
@@ -22,13 +22,15 @@ export interface OfferCardProps {
   selling_unit?: string;
   in_stock?: boolean;
   has_flash_offer?: boolean;
+  layoutVariant?: "vertical" | "horizontal";
   className?: string;
 }
 
 /**
- * OfferCard — Card Horizontal Split com Imagem FULL BLEED
- * Lado esquerdo: Imagem encostando 100% nas bordas superior, esquerda e inferior.
- * Lado direito: Informações da loja, título do produto, preço e botão de compra rápida.
+ * OfferCard — Card Canônico de Produto & Oferta Waesy (Padrão Apple HIG & WCAG 2.2 AA)
+ * - Modo Vertical (Padrão Canônico): Imagem aspect-4/3 no topo, tipografia nítida, preço e CTA primário h-11 proeminente.
+ * - Modo Horizontal: Split side-by-side retrocompatível para composições compactas.
+ * - Piso de acessibilidade: CTA tátil h-11 (44px), anéis :focus-visible:ring-2 e zero valores mágicos arbitrários.
  */
 export function OfferCard({
   id,
@@ -44,6 +46,7 @@ export function OfferCard({
   selling_unit = "un",
   in_stock = true,
   has_flash_offer = true,
+  layoutVariant = "vertical",
   className,
 }: OfferCardProps) {
   const { setCartData, setIsCartOpen } = useCartContext();
@@ -111,88 +114,183 @@ export function OfferCard({
       ? Math.round(((original_price_cents - price_cents) / original_price_cents) * 100)
       : 0);
 
+  // ── RENDERIZAÇÃO HORIZONTAL (Legado / Split) ──
+  if (layoutVariant === "horizontal") {
+    return (
+      <Link
+        to="/produto/$slug"
+        params={{ slug }}
+        className={cn(
+          "group relative flex flex-row items-stretch w-full h-36 sm:h-40 rounded-lg bg-card border border-border/70 hover:border-primary/50 transition-colors duration-200 content-auto-card overflow-hidden select-none p-0 shadow-2xs",
+          className,
+        )}
+      >
+        <div className="relative w-28 sm:w-36 h-full bg-muted overflow-hidden shrink-0">
+          <img
+            src={cover_image || "/banner-placeholder.png"}
+            alt={title}
+            className="size-full object-cover group-hover:scale-105 transition-transform duration-300 motion-reduce:transition-none"
+            loading="lazy"
+          />
+          {discountVal > 0 && (
+            <div className="absolute top-2 left-2 z-10">
+              <span className="px-2 py-1 rounded-md text-xs font-black uppercase tracking-wider bg-foreground/90 text-background border border-white/20">
+                {discountVal}% OFF
+              </span>
+            </div>
+          )}
+          {timeLeft && (
+            <div className="absolute bottom-2 inset-x-1.5 flex items-center justify-center z-10">
+              <div className="flex items-center gap-1 px-2 py-1 rounded-md text-xs font-mono font-bold bg-foreground/90 text-background">
+                <Clock className="size-2.5" />
+                <span>{timeLeft}</span>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="flex-1 flex flex-col justify-between h-full min-w-0 p-3 sm:p-4">
+          <div className="space-y-1">
+            {store_name && (
+              <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider line-clamp-1 block">
+                {store_name}
+              </span>
+            )}
+            <h3 className="text-xs sm:text-sm font-bold text-foreground line-clamp-2 group-hover:text-primary transition-colors leading-snug">
+              {title}
+            </h3>
+          </div>
+
+          <div className="flex items-end justify-between gap-2 pt-1">
+            <div className="min-w-0">
+              {original_price_cents > price_cents && (
+                <span className="text-xs text-muted-foreground line-through block font-mono leading-none">
+                  {formatMoney(original_price_cents)}
+                </span>
+              )}
+              <div className="text-xs sm:text-sm font-black text-foreground font-mono leading-tight truncate">
+                {formatMoney(price_cents)}
+                <span className="text-xs text-muted-foreground font-normal ml-1">
+                  /{selling_unit}
+                </span>
+              </div>
+            </div>
+
+            <Button
+              size="sm"
+              onClick={handleQuickAdd}
+              disabled={isAdding || !in_stock}
+              className="h-11 min-h-11 px-4 rounded-lg font-bold text-xs bg-primary text-primary-foreground shrink-0 hover:bg-primary/90 active:scale-95 transition-colors duration-200 motion-reduce:transition-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary gap-2"
+              aria-label={`Ver oferta ou adicionar ${title}`}
+            >
+              {isAdding ? (
+                <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
+              ) : (
+                <>
+                  <Plus className="size-4 shrink-0" />
+                  <span>Ver Oferta</span>
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
+      </Link>
+    );
+  }
+
+  // ── RENDERIZAÇÃO VERTICAL CANÔNICA (Padrão de Vitrines e Classificados) ──
   return (
     <Link
       to="/produto/$slug"
       params={{ slug }}
       className={cn(
-        "group relative flex flex-row items-stretch w-full h-36 sm:h-40 rounded-lg bg-card border border-border/70 hover:border-primary/50 transition-colors duration-200 content-auto-card overflow-hidden select-none p-0 shadow-2xs",
+        "group relative flex flex-col justify-between w-full h-96 min-h-96 rounded-lg bg-card border border-border/70 hover:border-primary/50 transition-colors duration-200 overflow-hidden select-none p-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
         className,
       )}
     >
-      {/* ── LADO ESQUERDO: Imagem FULL BLEED ── */}
-      <div className="relative w-28 sm:w-36 h-full bg-muted overflow-hidden shrink-0">
+      {/* ── IMAGEM NO TOPO (ASPECT-[4/3] FULL BLEED) ── */}
+      <div className="relative aspect-[4/3] w-full bg-muted overflow-hidden shrink-0">
         <img
           src={cover_image || "/banner-placeholder.png"}
           alt={title}
-          className="size-full object-cover group-hover:scale-105 transition-transform duration-500"
+          className="size-full object-cover group-hover:scale-105 transition-transform duration-300 motion-reduce:transition-none"
           loading="lazy"
         />
 
-        {/* Badge de Desconto no Topo da Imagem */}
+        {/* Badge de Desconto */}
         {discountVal > 0 && (
           <div className="absolute top-2 left-2 z-10">
-            <span className="px-2 py-1 rounded-md text-xs font-black uppercase tracking-wider bg-black/90 text-white border border-white/20">
+            <span className="px-2 py-1 rounded-md text-xs font-black uppercase tracking-wider bg-foreground/90 text-background border border-white/20 shadow-xs">
               {discountVal}% OFF
             </span>
           </div>
         )}
 
-        {/* Timer de Oferta Relâmpago no Rodapé da Imagem */}
+        {/* Tag Mecânica (ex: Promoção, Destaque) */}
+        {mechanic_label && discountVal === 0 && (
+          <div className="absolute top-2 left-2 z-10">
+            <span className="px-2 py-1 rounded-md text-xs font-bold uppercase tracking-wider bg-foreground/80 text-background/90 border border-white/20">
+              {mechanic_label}
+            </span>
+          </div>
+        )}
+
+        {/* Timer de Oferta Relâmpago */}
         {timeLeft && (
-          <div className="absolute bottom-2 inset-x-1.5 flex items-center justify-center z-10">
-            <div className="flex items-center gap-1 px-2 py-1 rounded-md text-xs font-mono font-bold bg-black/90 text-white">
-              <Clock className="size-2.5" />
+          <div className="absolute bottom-2 right-2 z-10">
+            <div className="flex items-center gap-1 px-2 py-1 rounded-md text-xs font-mono font-bold bg-foreground/90 text-background border border-white/20">
+              <Clock className="size-3" />
               <span>{timeLeft}</span>
             </div>
           </div>
         )}
       </div>
 
-      {/* ── LADO DIREITO: Informações da Loja, Produto e Preço ──── */}
-      <div className="flex-1 flex flex-col justify-between h-full min-w-0 p-3 sm:p-4">
+      {/* ── CORPO COM INFORMAÇÕES DO PRODUTO ──── */}
+      <div className="p-4 flex-1 flex flex-col justify-between space-y-2 min-h-0">
         <div className="space-y-1">
           {store_name && (
             <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider line-clamp-1 block">
               {store_name}
             </span>
           )}
-          <h3 className="text-xs sm:text-sm font-bold text-foreground line-clamp-2 group-hover:text-primary transition-colors leading-snug">
+          <h3 className="text-sm font-bold text-foreground line-clamp-2 group-hover:text-primary transition-colors leading-snug">
             {title}
           </h3>
         </div>
 
-        {/* Bloco de Preços & Ação Rápida */}
-        <div className="flex items-end justify-between gap-2 pt-1">
-          <div className="min-w-0">
-            {original_price_cents > price_cents && (
-              <span className="text-xs text-muted-foreground line-through block font-mono leading-none">
-                {formatMoney(original_price_cents)}
-              </span>
-            )}
-            <div className="text-xs sm:text-sm font-black text-foreground font-mono leading-tight truncate">
-              {formatMoney(price_cents)}
-              <span className="text-xs text-muted-foreground font-normal ml-1">
-                /{selling_unit}
-              </span>
-            </div>
+        {/* Bloco de Preços */}
+        <div className="pt-1">
+          {original_price_cents > price_cents && (
+            <span className="text-xs text-muted-foreground line-through block font-mono leading-none">
+              {formatMoney(original_price_cents)}
+            </span>
+          )}
+          <div className="text-base font-black text-foreground font-mono leading-tight truncate">
+            {formatMoney(price_cents)}
+            <span className="text-xs text-muted-foreground font-normal ml-1">
+              /{selling_unit}
+            </span>
           </div>
-
-          {/* Botão de Adicionar ao Carrinho (touch target >= 44px) */}
-          <Button
-            size="sm"
-            onClick={handleQuickAdd}
-            disabled={isAdding || !in_stock}
-            className="size-9 rounded-lg p-0 font-bold bg-foreground text-background shrink-0 hover:scale-105 active:scale-95 transition-all cursor-pointer"
-            aria-label={`Adicionar ${title} ao carrinho`}
-          >
-            {isAdding ? (
-              <span className="size-3.5 border-2 border-background border-t-transparent rounded-full animate-spin" />
-            ) : (
-              <Plus className="size-4" />
-            )}
-          </Button>
         </div>
+
+        {/* CTA Primário Proeminente (Piso 44px - Regra B.22) */}
+        <Button
+          size="default"
+          onClick={handleQuickAdd}
+          disabled={isAdding || !in_stock}
+          className="w-full h-11 min-h-11 px-4 rounded-lg font-bold text-xs bg-primary text-primary-foreground hover:bg-primary/90 active:scale-95 transition-colors duration-200 motion-reduce:transition-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary gap-2 mt-auto"
+          aria-label={`Ver oferta ou adicionar ${title}`}
+        >
+          {isAdding ? (
+            <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
+          ) : (
+            <>
+              <span>Ver Oferta</span>
+              <ArrowRight className="size-4 shrink-0" />
+            </>
+          )}
+        </Button>
       </div>
     </Link>
   );

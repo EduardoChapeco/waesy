@@ -812,8 +812,10 @@ export const reviewKycVerification = createServerFn({ method: "POST" })
 
  // Se aprovado, adiciona selo de verificado no perfil
  if (data.status === "approved") {
- await db.from("profiles").update({ is_verified: true }).eq("id", kyc.user_id);
- }
+      await db.from("profiles").update({ is_verified: true }).eq("id", kyc.user_id);
+    } else {
+      await db.from("profiles").update({ is_verified: false }).eq("id", kyc.user_id);
+    }
 
  return { success: true };
  });

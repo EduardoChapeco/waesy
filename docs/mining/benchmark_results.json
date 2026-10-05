@@ -1,0 +1,134 @@
+[
+  {
+    "vertical": "Indicadores Econômicos",
+    "source": "https://olinda.bcb.gov.br (SGS Oficial)",
+    "targetTable": "economic_indicators",
+    "latencyMs": 1768,
+    "status": "SUCCESS",
+    "recordsProcessed": 5,
+    "recordsInsertedOrUpdated": 5,
+    "schemaCompletenessPct": 100,
+    "zeroMocksVerified": true,
+    "sampleRecord": {
+      "code": 1,
+      "name": "Dólar Comercial PTAX",
+      "valor": 5.2238
+    },
+    "gapsIdentified": []
+  },
+  {
+    "vertical": "Licitações Públicas (PNCP)",
+    "source": "https://pncp.gov.br/api/consulta/v1",
+    "targetTable": "mined_tenders",
+    "latencyMs": 448,
+    "status": "SUCCESS",
+    "recordsProcessed": 10,
+    "recordsInsertedOrUpdated": 10,
+    "schemaCompletenessPct": 100,
+    "zeroMocksVerified": true,
+    "sampleRecord": {
+      "pncp_id": "83021808000182-1-000142/2026",
+      "orgao": "MUNICIPIO DE CHAPECO",
+      "valor_cents": 1102167672,
+      "itemsCount": 0
+    },
+    "gapsIdentified": []
+  },
+  {
+    "vertical": "Vagas de Emprego",
+    "source": "vagas.com.br / infojobs.com.br",
+    "targetTable": "jobs",
+    "latencyMs": 1459,
+    "status": "SUCCESS",
+    "recordsProcessed": 1,
+    "recordsInsertedOrUpdated": 1,
+    "schemaCompletenessPct": 88,
+    "zeroMocksVerified": true,
+    "sampleRecord": {
+      "id": "54bd0788-1c46-490a-81eb-63d7c1e5cdbf",
+      "title": "Vagas de Emprego em Chapecó - SC",
+      "category": "tech"
+    },
+    "gapsIdentified": []
+  },
+  {
+    "vertical": "Comércio & Diretório Local",
+    "source": "OpenStreetMap / Overpass Geo Engine",
+    "targetTable": "directory_listings",
+    "latencyMs": 293,
+    "status": "SUCCESS",
+    "recordsProcessed": 1,
+    "recordsInsertedOrUpdated": 1,
+    "schemaCompletenessPct": 100,
+    "zeroMocksVerified": true,
+    "sampleRecord": {
+      "nome": "Farmácia",
+      "lat": -27.1083175,
+      "lng": -52.5973288
+    },
+    "gapsIdentified": []
+  },
+  {
+    "vertical": "Notícias & Artigos Regionais",
+    "source": "G1 SC / ND Mais RSS XML",
+    "targetTable": "news_articles",
+    "latencyMs": 249,
+    "status": "SUCCESS",
+    "recordsProcessed": 100,
+    "recordsInsertedOrUpdated": 10,
+    "schemaCompletenessPct": 71,
+    "zeroMocksVerified": true,
+    "sampleRecord": {
+      "titulo": "Quaest para o Senado em SC, votos válidos: Carol D"
+    },
+    "gapsIdentified": []
+  },
+  {
+    "vertical": "Enriquecimento CNPJ",
+    "source": "https://brasilapi.com.br/api/cnpj/v1",
+    "targetTable": "directory_listings (metadados)",
+    "latencyMs": 203,
+    "status": "SUCCESS",
+    "recordsProcessed": 1,
+    "recordsInsertedOrUpdated": 1,
+    "schemaCompletenessPct": 100,
+    "zeroMocksVerified": true,
+    "sampleRecord": {
+      "razao_social": "MUNICIPIO DE CHAPECO"
+    },
+    "gapsIdentified": []
+  },
+  {
+    "vertical": "Fila Polimórfica (Real Estate & Leilões)",
+    "source": "crawl_queue (Itens Pendentes)",
+    "targetTable": "directory_listings / mined_raw_extractions",
+    "latencyMs": 2900,
+    "status": "SUCCESS",
+    "recordsProcessed": 4,
+    "recordsInsertedOrUpdated": 3,
+    "schemaCompletenessPct": 100,
+    "zeroMocksVerified": true,
+    "sampleRecord": {
+      "url": "https://balcaodeempregos.chapeco.sc.gov.br/",
+      "entity": "jobs_portal",
+      "status": "failed"
+    },
+    "gapsIdentified": []
+  },
+  {
+    "vertical": "Enriquecimento Cruzado (OSM x CNPJ)",
+    "source": "directory_listings + BrasilAPI",
+    "targetTable": "directory_listings",
+    "latencyMs": 109,
+    "status": "SUCCESS",
+    "recordsProcessed": 0,
+    "recordsInsertedOrUpdated": 0,
+    "schemaCompletenessPct": 100,
+    "zeroMocksVerified": true,
+    "sampleRecord": {
+      "inspecionados": 0,
+      "enriquecidos": 0
+    },
+    "gapsIdentified": []
+  }
+]

@@ -10,7 +10,8 @@ import { listUserNotifications } from "@/services/notifications.functions";
 import { getMyCreatorProfilesList } from "@/services/affiliates.functions";
 import { cn } from "@/lib/utils";
 import { ContextSwitcher } from "@/components/profile/context-switcher";
-import { Shield, Store, ArrowRight, Plus, ShoppingBag, Calendar, Ticket, Bookmark, Plane, CreditCard, Coins, Gift, HelpCircle, RotateCcw, Layers, LogOut, User, ChevronRight, Building2, Lock, ShieldCheck, Briefcase, Wallet, FileText, Trophy, Bell, MessageCircle, Handshake, MapPin, Car, Star, RefreshCw, Users } from "lucide-react";
+import { getMyCourierProfile } from "@/services/mobility.functions";
+import { Shield, Store, ArrowRight, Plus, ShoppingBag, Calendar, Ticket, Bookmark, Plane, CreditCard, Coins, Gift, HelpCircle, RotateCcw, Layers, LogOut, User, ChevronRight, Building2, Lock, ShieldCheck, Briefcase, Wallet, FileText, Trophy, Bell, MessageCircle, Handshake, MapPin, Car, Star, RefreshCw, Users, Bike } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_store/conta/")({
@@ -18,12 +19,13 @@ export const Route = createFileRoute("/_store/conta/")({
   loader: async () => {
     try {
       const session = await getUserSession().catch(() => null);
-      const [ordersRes, profileRes, storesRes, notificationsRes, creatorsRes] = await Promise.all([
+      const [ordersRes, profileRes, storesRes, notificationsRes, creatorsRes, courierRes] = await Promise.all([
         listCustomerOrders().catch(() => []),
         getProfile().catch(() => null),
         getMyStoresList().catch(() => []),
         listUserNotifications().catch(() => []),
         getMyCreatorProfilesList().catch(() => []),
+        getMyCourierProfile().catch(() => null),
       ]);
       return {
         orders: ordersRes || [],
@@ -32,6 +34,7 @@ export const Route = createFileRoute("/_store/conta/")({
         stores: storesRes || [],
         notifications: notificationsRes || [],
         creatorProfiles: creatorsRes || [],
+        courierProfile: courierRes || null,
       };
     } catch {
       return {
@@ -41,6 +44,7 @@ export const Route = createFileRoute("/_store/conta/")({
         stores: [],
         notifications: [],
         creatorProfiles: [],
+        courierProfile: null,
       };
     }
   },
@@ -80,6 +84,7 @@ function AccountDashboardPage() {
       : profileMemberships;
 
   const creatorProfiles = (loaderData.creatorProfiles as any[]) || [];
+  const courierProfile = loaderData.courierProfile || null;
 
   const activeContextFromCookie = typeof window !== "undefined"
     ? (document.cookie.match(/waesy_active_context=([^;]+)/)?.[1] as any) || "civil"
@@ -166,6 +171,13 @@ function AccountDashboardPage() {
         { to: "/conta/classificados", label: "Anúncios", icon: Layers },
         { to: "/conta/criadores", label: "Criadores", icon: Star },
         { to: "/conta/comissoes", label: "Afiliados", icon: Coins },
+        {
+          to: "/conta/entregador",
+          label: "Waesy Go",
+          icon: Bike,
+          badge: courierProfile ? "Ativo" : "Condutor",
+          badgeVariant: courierProfile ? "default" : "outline",
+        },
       ],
     },
     {
@@ -238,41 +250,47 @@ function AccountDashboardPage() {
   return (
     <div className="w-full max-w-6xl mx-auto space-y-4 sm:space-y-6 pb-20 px-0 sm:px-4 md:px-0 animate-in fade-in duration-200">
       {/* ── 1. Header do Perfil com Acesso ao Perfil & Master ── */}
-      <div className="relative bg-card rounded-lg border border-border/60 p-4 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        {/* Ação de Logout Minimalista no Top-Right (Não polui o grid central de ações) */}
-        <button
-          type="button"
-          onClick={handleSignOut}
-          disabled={isLoggingOut}
-          className="absolute right-3 top-3 sm:right-4 sm:top-4 p-2 rounded-lg text-muted-foreground/70 hover:text-destructive hover:bg-destructive/10 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          title="Encerrar Sessão"
-        >
-          <LogOut className="size-4" />
-        </button>
-
-        <div className="flex items-center gap-4 min-w-0 pr-8 sm:pr-0">
-          <div className="size-14 rounded-lg bg-muted overflow-hidden shrink-0 flex items-center justify-center border border-border/40">
-            {userAvatar ? (
-              <img src={userAvatar} alt={userName} className="size-full object-cover" />
-            ) : (
-              <span className="text-lg font-black text-primary">{userName.charAt(0).toUpperCase()}</span>
-            )}
-          </div>
-
-          <div className="min-w-0 space-y-1">
-            <div className="flex items-center gap-2">
-              <h1 className="text-base sm:text-lg font-bold text-foreground truncate tracking-tight">{userName}</h1>
-              {isMasterAdmin && (
-                <Badge className="bg-primary/10 text-primary border-primary/20 text-[9px] font-mono">
-                  MASTER ADMIN
-                </Badge>
+      <div className="bg-card rounded-lg border border-border/60 p-4 sm:p-6 flex flex-col gap-4">
+        {/* Linha 1: Avatar, Identidade e Botão Sair perfeitamente alinhado na mesma linha */}
+        <div className="flex items-center justify-between gap-4 w-full">
+          <div className="flex items-center gap-4 min-w-0">
+            <div className="size-14 rounded-lg bg-muted overflow-hidden shrink-0 flex items-center justify-center border border-border/40">
+              {userAvatar ? (
+                <img src={userAvatar} alt={userName} className="size-full object-cover" />
+              ) : (
+                <span className="text-lg font-black text-primary">{userName.charAt(0).toUpperCase()}</span>
               )}
             </div>
-            <p className="text-xs text-muted-foreground font-mono truncate">@{userHandle} • {userEmail}</p>
+
+            <div className="min-w-0 space-y-1">
+              <div className="flex items-center gap-2">
+                <h1 className="text-base sm:text-lg font-bold text-foreground truncate tracking-tight">{userName}</h1>
+                {isMasterAdmin && (
+                  <Badge className="bg-primary/10 text-primary border-primary/20 text-[9px] font-mono">
+                    MASTER ADMIN
+                  </Badge>
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground font-mono truncate">@{userHandle} • {userEmail}</p>
+            </div>
           </div>
+
+          {/* Botão Sair integrado no fluxo sem sobreposição absoluta */}
+          <button
+            type="button"
+            onClick={handleSignOut}
+            disabled={isLoggingOut}
+            className="h-11 min-h-11 px-4 rounded-lg border border-border/70 hover:border-destructive/40 text-xs font-semibold text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors cursor-pointer flex items-center gap-2 shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            title="Encerrar Sessão"
+          >
+            <LogOut className="size-4" />
+            <span className="hidden sm:inline">Sair</span>
+          </button>
         </div>
 
-        <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full sm:w-auto shrink-0">
+        {/* Linha 2: Alternador de Contexto e Atalhos Administrativos */}
+        <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full pt-1 border-t border-border/30">
+
           <ContextSwitcher
             currentContextType={activeContextFromCookie}
             activeProfileId={activeCreatorFromCookie || activeTenantFromCookie}
@@ -299,6 +317,8 @@ function AccountDashboardPage() {
             }))}
             hasCreatorProfile={profile?.is_creator || creatorProfiles.length > 0}
             creatorHandle={profile?.creator_handle || (creatorProfiles[0]?.handle) || userHandle}
+            hasCourierProfile={!!courierProfile}
+            courierVehicle={courierProfile?.vehicle_model || courierProfile?.vehicle_type}
           />
 
           {isMasterAdmin && (

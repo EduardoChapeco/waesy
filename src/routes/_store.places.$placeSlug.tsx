@@ -67,12 +67,43 @@ export const Route = createFileRoute("/_store/places/$placeSlug")({
         data: { slug: params.placeSlug },
       });
       return { place };
-    } catch {
+    } catch (err: any) {
+      console.error("[loader:_store.places.$placeSlug] Erro ao carregar estabelecimento:", err);
       return { place: null };
     }
   },
+  errorComponent: PlaceDetailErrorComponent,
   component: PlaceDetailPage,
 });
+
+function PlaceDetailErrorComponent({ error, reset }: { error: any; reset: () => void }) {
+  return (
+    <div className="mx-auto flex min-h-96 w-full max-w-4xl flex-col items-center justify-center px-4 py-16 text-center space-y-4">
+      <div className="inline-flex size-14 items-center justify-center rounded-lg bg-destructive/10 text-destructive mb-2">
+        <Buildings className="size-7" />
+      </div>
+      <h2 className="text-xl font-bold text-foreground">Instabilidade ao carregar estabelecimento</h2>
+      <p className="text-xs text-muted-foreground max-w-md mx-auto leading-relaxed">
+        {error?.message || "Não foi possível carregar os dados cadastrais deste local no Guia Oficial."}
+      </p>
+      <div className="flex items-center justify-center gap-3 pt-2">
+        <Button
+          type="button"
+          onClick={reset}
+          className="rounded-lg font-bold text-xs h-11 px-4 focus-visible:ring-2 focus-visible:ring-primary"
+        >
+          Tentar Novamente
+        </Button>
+        <Button asChild variant="outline" size="sm" className="h-11 px-4 text-xs font-semibold focus-visible:ring-2">
+          <Link to="/places">
+            <ArrowLeft className="mr-2 size-4" aria-hidden="true" />
+            Voltar ao Guia de Lugares
+          </Link>
+        </Button>
+      </div>
+    </div>
+  );
+}
 
 function PlaceDetailPage() {
   const { place } = Route.useLoaderData();

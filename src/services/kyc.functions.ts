@@ -144,3 +144,20 @@ export const auditKycVerification = createServerFn({ method: "POST" })
  if (error) throw new Error(`Falha ao auditar KYC: ${error.message}`);
  return kyc;
  });
+
+/**
+ * 5. Garante que o usuário possui verificação KYC aprovada antes de transações financeiras ou contratos
+ */
+export async function assertUserKycVerified(userId: string): Promise<boolean> {
+  const supabase = getServerClient();
+  const { data: kyc, error } = await supabase
+    .from("kyc_verifications")
+    .select("status")
+    .eq("profile_id", userId)
+    .maybeSingle();
+
+  if (error || !kyc || kyc.status !== "verified") {
+    return false;
+  }
+  return true;
+}

@@ -4,6 +4,7 @@ import { getServerClient } from "@/lib/supabase";
 import { getIdentity } from "./identity.functions";
 import { executeUnifiedAiCall } from "./api-orchestrator.functions";
 import { interpolateContractVariables, autoPositionSignatureFieldsFromContent } from "@/lib/contracts/contract-semantic-dictionary";
+import { assertUserKycVerified } from "./kyc.functions";
 
 export const ContractCategoryEnum = z.enum([
   "real_estate_rental",
@@ -94,6 +95,13 @@ export const createContract = createServerFn({ method: "POST" })
     const supabase = getServerClient();
     const identity = await getIdentity();
     if (!identity?.id) throw new Error("Não autenticado");
+
+    const isKycVerified = await assertUserKycVerified(identity.id);
+    if (!isKycVerified) {
+      throw new Error(
+        "A criação de contratos digitais exige verificação de identidade (KYC). Complete seu perfil em /conta/verificacao.",
+      );
+    }
 
     const defaultDispatch: DispatchSettingsDTO = {
       signing_order: "parallel",
@@ -462,6 +470,16 @@ export const signContractEnvelope = createServerFn({ method: "POST" })
       .single();
 
     if (envErr || !envelope) throw new Error("Link de assinatura inválido ou expirado.");
+
+    const identity = await getIdentity();
+    if (identity?.id) {
+      const isKycVerified = await assertUserKycVerified(identity.id);
+      if (!isKycVerified) {
+        throw new Error(
+          "A assinatura de contratos digitais na plataforma exige verificação de identidade (KYC). Complete seu perfil em /conta/verificacao.",
+        );
+      }
+    }
 
     if (envelope.status === "signed") {
       return { success: true, message: "Este documento já foi assinado por você." };

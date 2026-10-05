@@ -110,3 +110,37 @@ O agente deve interromper imediatamente o trabalho e devolver a decisão ao huma
 - `file-manager`: Operações seguras (Regra 32: Mandato de Governança de Arquivos, Pastas & Operações em Lote).
 - `theme-factory`: 10 temas canônicos (Regra 33: Mandato da Fábrica de Temas & Estilização de Artefatos).
 - Agentes especializados (`design-system-architect`, `visual-auditor`, `flow-architect`, `platform-splitter`, `component-craftsman`, `content-editor`, `a11y-guardian`, `spec-writer`).
+
+## B.20 Invariante de Bilateralidade do CMS de Vitrines & Personalização Master
+- Todo bloco de destaque, hero, atalho de acesso rápido ou trilho visual apresentado nas vitrines públicas (`_store.*`) DEVE ser 100% configurável pelo painel do Admin Master através das tabelas `marketplace_surfaces`, `marketplace_sections` ou `hotpages`. É expressamente proibido declarar blocos comerciais com textos, imagens, links e badges hardcoded sem espelho de edição no Admin Master.
+
+## B.21 Invariante de Nativização e Desbloqueio de Módulos Verticais (Mobilidade / MotoLink)
+- Rotas públicas de serviços urbanos e utilitários (ex: `_store.mobilidade.tsx`) NÃO DEVEM conter bloqueios artificiais de role no loader que forcem redirecionamento para classificados. Visitantes e usuários civis possuem direito irrestrito de visualizar a interface, simular corridas e estimar fretes. Apenas a confirmação transacional final exige autenticação civil (via `ActionAuthGuardModal`).
+
+## B.22 Invariante de CTAs Táteis e Padronização de Cards de Vitrine
+- Todo card de produto ou oferta em vitrines (`OfferCard`) DEVE conter CTA primário proeminente ("Ver Oferta" ou "Adicionar") com altura mínima de 44px (`h-11 min-h-11`), anel de foco teclado (`:focus-visible`) e área tátil adequada. Todo card de estabelecimento (`StoreCard`) DEVE conter botão explícito ("Ver Loja" ou "Ver Empresa") assegurando affordance clara e conformidade total com o piso WCAG 2.2 AA.
+
+## B.23 Invariante do Modelo Operacional Waesy Go (0% de Comissão Abusiva & Taxa Fixa)
+- O ecossistema Waesy Go opera sob taxa fixa estrita de R$ 0,99 por corrida ou entrega finalizada. É terminantemente proibido cobrar porcentagens sobre o valor das corridas dos profissionais. As tarifas (base, KM, condomínio e escada) são geridas com autonomia pelo condutor, respeitando o piso mínimo de viabilidade econômica (R$ 2,00/km moto e R$ 2,50/km carro).
+
+## B.24 Invariante de Tolerância de 3 Minutos e Inadimplência Vinculada ao CPF
+- A tolerância máxima de espera pelo passageiro após chegada do motorista é de 3 minutos cronometrados com telemetria GPS. Caso o cliente não compareça, o condutor cancela com cobrança integral do valor cotado, registrado no CPF do cliente em `customer_debt_ledger`. Uma barreira Zero-Trust impede novos chamados de corrida, fretes e pedidos de delivery enquanto a dívida não for quitada.
+
+## B.25 Invariante de Integridade de Parâmetros em Server Functions
+- Toda função BFF (`*.functions.ts`) que recebe payload tipado via Zod DEVE desestruturar 100% dos parâmetros utilizados no escopo da função ou referenciar o objeto raiz de dados, incluindo tratamento defensivo para valores opcionais/nulos, acompanhada de testes unitários que exercitem branches com parâmetros presentes e ausentes.
+
+## B.26 Invariante de Altura Canônica de Controles de Cabeçalho (Piso 44px)
+- Todos os controles interativos na barra de topo global (`TopBar`, `UtilityCluster`, `LocationMasterPill`, campo de busca global, botões de ação e gatilho de perfil) DEVEM compartilhar a altura canônica exata de 44px (`h-11 min-h-11`), com área de toque mínima de 44x44px (`size-11`) e anéis de foco `:focus-visible:ring-2`.
+
+## B.27 Invariante de Renderização Direta de Avatar Civil com Fallback Sem Fricção
+- O gatilho de perfil do cabeçalho e superfícies públicas DEVE renderizar a imagem de perfil (`profiles.avatar_url`) diretamente via elemento `<img>` com tratamento defensivo de erro (`onError`), sem depender de máquinas de estado assíncronas externas que fiquem presas na inicial, caindo para a inicial apenas se a imagem não existir ou falhar.
+
+## B.28 Invariante de Padronização Vertical e CTA Proeminente de Cards de Ofertas e Vitrines
+- Cards de marketplace, produtos e classificados em trilhos públicos DEVEM compartilhar proporções verticais canônicas uniformes (`aspect-[4/3]` ou `aspect-square`), com título, preço formatado, localização e CTA primário obrigatório (`h-11 min-h-11`) com texto descritivo claro ("Ver Oferta" / "Ver Anúncio" / "Comprar"). Cards editoriais líderes (`HitsLeadCard`) DEVEM ocupar a altura exata dos cards da fileira sem lacunas.
+
+## B.29 Invariante de Programação Temporal e Auto-Arquivamento de Campanhas CMS
+- Banners, seções de marketplace (`marketplace_sections`) e hotpages (`hotpages`) DEVEM suportar agendamento temporal (`starts_at`, `ends_at`, `auto_archive_at`), onde itens fora do intervalo são automaticamente omitidos pelas queries BFF e seções vazias são completamente ocultadas da interface sem quebrar o layout.
+
+## B.30 Invariante de Integridade Visual do Feed Social em Trilhos de Vitrine
+- Cards do feed social em trilhos de descoberta DEVEM ser renderizados com estrutura completa de post social (autor, avatar com fallback, handle, badge, data relativa, texto formatado, contadores de engajamento e CTA tátil). Imagens inexistentes ou inválidas NUNCA devem renderizar elementos de imagem quebrada (`<img>` vazio/órfão).
+

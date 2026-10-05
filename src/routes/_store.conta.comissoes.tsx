@@ -124,7 +124,7 @@ function AffiliateCommissionsPage() {
 
   if (!session) {
     return (
-      <div className="min-h-[100dvh] bg-background text-foreground flex flex-col items-center justify-center p-6 text-center">
+      <div className="min-h-dvh bg-background text-foreground flex flex-col items-center justify-center p-6 text-center">
         <Wallet className="h-12 w-12 text-muted-foreground mb-4" />
         <h2 className="text-xl font-bold mb-2">Acesso Restrito</h2>
         <p className="text-sm text-muted-foreground max-w-sm mb-6">
@@ -140,7 +140,7 @@ function AffiliateCommissionsPage() {
   // Se o usuário ainda não possui cadastro de afiliado
   if (!profile && !isProfileLoading) {
     return (
-      <div className="min-h-[100dvh] bg-background text-foreground py-6 sm:py-10 px-0 sm:px-4 md:px-0 max-w-2xl mx-auto space-y-6 animate-in fade-in duration-200">
+      <div className="min-h-dvh bg-background text-foreground py-6 sm:py-10 px-0 sm:px-4 md:px-0 max-w-2xl mx-auto space-y-6 animate-in fade-in duration-200">
         <div className="flex items-center gap-2">
           <NativeBackButton fallbackHref="/conta" />
         </div>
@@ -258,25 +258,43 @@ function AffiliateCommissionsPage() {
     });
   };
 
+  const payoutActionBtn = (
+    <Button
+      onClick={handleOpenPayout}
+      disabled={availableBalanceCents < 5000}
+      size="default"
+      className="h-11 min-h-11 px-4 rounded-lg font-semibold bg-foreground text-background cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+    >
+      <Wallet className="size-4 mr-2" /> <span>Sacar</span>
+    </Button>
+  );
+
   return (
-    <div className="min-h-[100dvh] bg-background text-foreground py-6 sm:py-8 px-0 sm:px-4 md:px-0 max-w-4xl mx-auto space-y-6 animate-in fade-in duration-200">
+    <div className="min-h-dvh bg-background text-foreground py-6 sm:py-8 px-0 sm:px-4 md:px-0 max-w-4xl mx-auto space-y-6 animate-in fade-in duration-200">
             {/* ── NativeMobileHeader Canônico ── */}
       <NativeMobileHeader
         fallbackHref="/conta"
         title="Comissões"
-        rightActions={
-          <Button
-            onClick={handleOpenPayout}
-            disabled={availableBalanceCents < 5000}
-            size="sm"
-            className="h-8.5 px-3 rounded-lg font-semibold bg-foreground text-background cursor-pointer"
-          >
-            <Wallet className="h-3.5 w-3.5 mr-1" /> Sacar
-          </Button>
-        }
+        rightActions={payoutActionBtn}
       />
 
-      <div className="space-y-1">
+            {/* ── Desktop Inpage Header (Bento Grid & Apple HIG) ── */}
+      <div className="hidden md:flex items-center justify-between pb-4 pt-2 border-b border-border/40">
+        <div>
+          <h1 className="text-xl font-bold tracking-tight text-foreground">Comissões</h1>
+          <p className="text-xs text-muted-foreground mt-1">Métricas de indicação, conversões e recebimentos via Pix</p>
+        </div>
+        <Button
+          onClick={handleOpenPayout}
+          disabled={availableBalanceCents < 5000}
+          size="default"
+          className="h-11 min-h-11 px-4 rounded-lg font-semibold bg-foreground text-background cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+        >
+          <Wallet className="size-4 mr-2" /> <span>Solicitar Saque</span>
+        </Button>
+      </div>
+
+      <div className="space-y-1 md:hidden">
         <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Comissões</h1>
         <p className="text-sm text-muted-foreground">
           Métricas de indicação, conversões e recebimentos via Pix.
@@ -293,7 +311,7 @@ function AffiliateCommissionsPage() {
           <div className="text-2xl font-bold font-mono tracking-tight text-emerald-600 dark:text-emerald-400">
             {formatMoney(availableBalanceCents)}
           </div>
-          <div className="text-[11px] text-muted-foreground">Disponível para saque imediato</div>
+          <div className="text-xs text-muted-foreground">Disponível para saque imediato</div>
         </div>
 
         <div className="bg-card border border-border/70 rounded-lg p-4 shadow-xs space-y-2">
@@ -304,7 +322,7 @@ function AffiliateCommissionsPage() {
           <div className="text-2xl font-bold font-mono tracking-tight text-foreground">
             {formatMoney(profile?.total_commission_cents || 0)}
           </div>
-          <div className="text-[11px] text-muted-foreground">Comissão acumulada na plataforma</div>
+          <div className="text-xs text-muted-foreground">Comissão acumulada na plataforma</div>
         </div>
 
         <div className="bg-card border border-border/70 rounded-lg p-4 shadow-xs space-y-2">
@@ -315,7 +333,7 @@ function AffiliateCommissionsPage() {
           <div className="text-2xl font-bold font-mono tracking-tight text-foreground">
             {formatMoney(profile?.paid_commission_cents || 0)}
           </div>
-          <div className="text-[11px] text-muted-foreground">Transferido para sua conta bancária</div>
+          <div className="text-xs text-muted-foreground">Transferido para sua conta bancária</div>
         </div>
 
         <div className="bg-card border border-border/70 rounded-lg p-4 shadow-xs space-y-2">
@@ -326,7 +344,7 @@ function AffiliateCommissionsPage() {
           <div className="text-2xl font-bold font-mono tracking-tight text-foreground">
             {profile?.total_clicks || 0} / {profile?.total_orders || 0}
           </div>
-          <div className="text-[11px] text-muted-foreground">Volume de tráfego gerado</div>
+          <div className="text-xs text-muted-foreground">Volume de tráfego gerado</div>
         </div>
       </div>
 
@@ -395,7 +413,7 @@ function AffiliateCommissionsPage() {
             Nenhuma solicitação de saque realizada até o momento.
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto table-wrapper">
             <table className="w-full text-xs text-left">
               <thead className="border-b border-border/60 text-muted-foreground">
                 <tr>
@@ -427,7 +445,7 @@ function AffiliateCommissionsPage() {
                         {req.pix_key} ({req.pix_key_type?.toUpperCase()})
                       </td>
                       <td className="py-3">
-                        <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full border text-[10px] font-semibold ${currentStatus.badge}`}>
+                        <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full border text-xs font-mono font-semibold ${currentStatus.badge}`}>
                           <StatusIcon className="h-3 w-3" /> {currentStatus.label}
                         </span>
                       </td>
@@ -477,7 +495,7 @@ function AffiliateCommissionsPage() {
                   required
                 />
               </div>
-              <p className="text-[11px] text-muted-foreground">
+              <p className="text-xs text-muted-foreground">
                 Disponível para saque: <strong>{formatMoney(availableBalanceCents)}</strong> (Mínimo R$ 50,00)
               </p>
             </div>
@@ -550,7 +568,7 @@ function AffiliateCommissionsPage() {
             <DialogTitle>QR Code de Indicação</DialogTitle>
           </DialogHeader>
           <div className="py-4 flex flex-col items-center justify-center space-y-3">
-            <div className="p-4 bg-white rounded-lg shadow-xs border border-border">
+            <div className="p-4 bg-background rounded-lg border border-border">
               <img
                 src={`https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(affiliateUrl)}`}
                 alt="QR Code de Afiliado"

@@ -3,6 +3,8 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Tag, Newspaper, Briefcase, CalendarDots, MapPin, Clock, WhatsappLogo, Buildings, Star, CheckCircle, Storefront, ArrowRight, Ticket, UserCircle, Target, Rss, ChatCircleDots, Globe, CookingPot, Airplane, Trophy, ShieldCheck } from "@phosphor-icons/react";
 import { BannerHeroCarousel } from "@/components/commerce/banner-hero-carousel";
 import { MasterSquircleHero } from "@/components/commerce/master-squircle-hero";
+import { HotpagesRail } from "@/components/commerce/hotpages-rail";
+import { OfferCard } from "@/components/commerce/offer-card";
 import { HorizontalRail } from "@/components/commerce/horizontal-rail";
 import { HitsLeadCard } from "@/components/commerce/hits-lead-card";
 import { PlacesHighlightBadge } from "@/components/shell/places-highlight-badge";
@@ -17,9 +19,13 @@ import { trackAndOpenWhatsApp } from "@/lib/whatsapp";
 import { ProceduralInfiniteFeed } from "@/components/commerce/procedural-infinite-feed";
 import { AdTelemetryBeacon } from "@/components/commerce/ad-telemetry-beacon";
 
+import { resolveActiveCity } from "@/lib/city-helper";
+import { formatRelativeTime } from "@/lib/datetime";
+
 // BFF Functions — 100% Real no Supabase | Zero Mocks
 import { listActiveBanners, type BannerDTO } from "@/services/banner.functions";
-import { listHomeHeroCards, type HotpageDTO } from "@/services/hotpage.functions";
+import { listHomeHeroCards, listHeroSquircleCards, listEditorialHotpages, type HotpageDTO } from "@/services/hotpage.functions";
+import { getMarketplaceFeed, type FlashOfferDTO } from "@/services/marketplace.functions";
 import { getPublicDirectory, type DirectoryListingDTO } from "@/services/directory.functions";
 import { getPublicClassifieds } from "@/services/classifieds.functions";
 import { listPublicJobs, type JobItemDTO } from "@/services/jobs.functions";
@@ -95,6 +101,7 @@ const CANONICAL_PILLARS = [
 const DISCOVERY_CATEGORIES: FilterChipOption[] = [
   { id: "todos", label: "Todos os Anúncios", icon: Globe },
   { id: "places", label: "Lugares e Negócios", icon: MapPin },
+  { id: "marketplace", label: "Marketplace de Empresas", icon: Storefront },
   { id: "classificados", label: "Classificados", icon: Tag },
   { id: "receitas", label: "Receitas", icon: CookingPot },
   { id: "turismo", label: "Turismo e Roteiros", icon: Airplane },
@@ -120,24 +127,16 @@ export const Route = createFileRoute("/_store/")({
   }),
   loader: async ({ location }) => {
     try {
-      let activeCity: string | undefined = (location.search as any)?.city;
-      if (!activeCity && typeof document !== "undefined") {
-        const match = document.cookie.match(/waesy_city=([^;]+)/);
-        if (match) {
-          try {
-            activeCity = decodeURIComponent(match[1]);
-          } catch {
-            // ignore
-          }
-        }
-      }
-      const filteredCity = activeCity && activeCity !== "Global" ? activeCity : undefined;
+      const filteredCity = resolveActiveCity(location.search as any);
 
       const [
         banners,
         middleBanners,
         footerBanners,
         heroCards,
+        heroSquircleCards,
+        editorialHotpages,
+        marketplaceFeed,
         placesListings,
         classifieds,
         jobs,
@@ -150,11 +149,14 @@ export const Route = createFileRoute("/_store/")({
         listActiveBanners({ data: { placement: "home_middle", city: filteredCity } }).catch(() => []),
         listActiveBanners({ data: { placement: "home_footer", city: filteredCity } }).catch(() => []),
         listHomeHeroCards().catch(() => []),
-        getPublicDirectory({ data: { limit: 12 } }).catch(() => []),
-        getPublicClassifieds({ data: { limit: 12 } }).catch(() => []),
-        listPublicJobs({ data: { limit: 8 } }).catch(() => []),
-        getPublicEvents({ limit: 8 } as any).catch(() => []),
-        listPublicArticles({ data: { limit: 6 } }).catch(() => []),
+        listHeroSquircleCards().catch(() => []),
+        listEditorialHotpages({ data: { module: "home" } }).catch(() => []),
+        getMarketplaceFeed().catch(() => ({ sections: [], allProducts: [] })),
+        getPublicDirectory({ data: { limit: 12, city: filteredCity } }).catch(() => []),
+        getPublicClassifieds({ data: { limit: 12, city: filteredCity } }).catch(() => []),
+        listPublicJobs({ data: { limit: 8, city: filteredCity } }).catch(() => []),
+        getPublicEvents({ data: { limit: 8, city: filteredCity } }).catch(() => []),
+        listPublicArticles({ data: { limit: 6, city: filteredCity } }).catch(() => []),
         getMuralFeed({ data: { limit: 8 } }).catch(() => ({ items: [] })),
         getAllPublicConcursos({ data: { filter: "all" } }).catch(() => []),
       ]);
@@ -164,6 +166,9 @@ export const Route = createFileRoute("/_store/")({
         middleBanners: middleBanners || [],
         footerBanners: footerBanners || [],
         heroCards: heroCards || [],
+        heroSquircleCards: heroSquircleCards || [],
+        editorialHotpages: editorialHotpages || [],
+        marketplaceProducts: (marketplaceFeed?.allProducts as FlashOfferDTO[]) || [],
         placesListings: placesListings || [],
         classifieds: classifieds || [],
         jobs: jobs || [],
@@ -171,6 +176,7 @@ export const Route = createFileRoute("/_store/")({
         newsArticles: newsArticles || [],
         feedPosts: (feedResponse as MuralFeedResponse)?.items || [],
         concursos: concursos || [],
+        activeCity: filteredCity,
       };
     } catch (err) {
       console.error("[loader:_store.index] Unhandled loader error:", err);
@@ -179,6 +185,9 @@ export const Route = createFileRoute("/_store/")({
         middleBanners: [],
         footerBanners: [],
         heroCards: [],
+        heroSquircleCards: [],
+        editorialHotpages: [],
+        marketplaceProducts: [],
         placesListings: [],
         classifieds: [],
         jobs: [],
@@ -203,6 +212,9 @@ function CommunityMarketplaceView({ data }: { data: any }) {
     middleBanners = [],
     footerBanners = [],
     heroCards = [],
+    heroSquircleCards = [],
+    editorialHotpages = [],
+    marketplaceProducts = [],
     placesListings = [],
     classifieds = [],
     jobs = [],
@@ -324,9 +336,19 @@ function CommunityMarketplaceView({ data }: { data: any }) {
     );
   }, [concursos, term]);
 
+  const filteredMarketplaceProducts = useMemo(() => {
+    if (!term) return marketplaceProducts;
+    return marketplaceProducts.filter(
+      (m: any) =>
+        (m.title || "").toLowerCase().includes(term) ||
+        (m.store_name || "").toLowerCase().includes(term)
+    );
+  }, [marketplaceProducts, term]);
+
   // Total de itens combinados
   const totalResults =
     filteredPlaces.length +
+    filteredMarketplaceProducts.length +
     filteredClassifieds.length +
     filteredFeed.length +
     filteredNews.length +
@@ -339,7 +361,7 @@ function CommunityMarketplaceView({ data }: { data: any }) {
   const unifiedItems = useMemo(() => {
     const list: Array<{
       id: string;
-      pillar: "places" | "classifieds" | "feed" | "noticias" | "empregos" | "eventos" | "agenda" | "afiliados" | "concursos";
+      pillar: "places" | "marketplace" | "classifieds" | "feed" | "noticias" | "empregos" | "eventos" | "agenda" | "afiliados" | "concursos";
       badge: string;
       title: string;
       image?: string | null;
@@ -348,6 +370,22 @@ function CommunityMarketplaceView({ data }: { data: any }) {
       location?: string;
       phone?: string;
     }> = [];
+
+    // 0. MARKETPLACE (PRODUTOS DE EMPRESAS VERIFICADAS)
+    if (activeCategory === "todos" || activeCategory === "marketplace") {
+      filteredMarketplaceProducts.forEach((item: any) => {
+        list.push({
+          id: `mkt-${item.id}`,
+          pillar: "marketplace",
+          badge: item.store_name || "Marketplace",
+          title: item.title,
+          image: item.cover_image || null,
+          to: "/marketplace",
+          priceOrDate: item.price_cents ? formatMoney(item.price_cents) : undefined,
+          location: item.store_name || "Empresa Verificada",
+        });
+      });
+    }
 
     // 1. PLACES (LISTA TELEFÔNICA)
     if (activeCategory === "todos" || activeCategory === "places") {
@@ -508,6 +546,7 @@ function CommunityMarketplaceView({ data }: { data: any }) {
     return list;
   }, [
     activeCategory,
+    filteredMarketplaceProducts,
     filteredPlaces,
     filteredClassifieds,
     filteredFeed,
@@ -520,68 +559,77 @@ function CommunityMarketplaceView({ data }: { data: any }) {
   return (
     <div className="w-full space-y-4 sm:space-y-4 pb-14">
       {/* ── 0. HERO SQUIRCLE MASTER BANNERS & QUICK ACCESS PILLS (iFood Style) ── */}
-      <MasterSquircleHero />
+      <MasterSquircleHero cards={heroSquircleCards} />
 
       {/* ── 1. CARDS COM IMAGENS DO TOPO (Categorias Master com Separação Rigorosa de Breakpoint) ── */}
-      <section aria-label="Categorias Principais">
-        <HorizontalRail title="Categorias Principais" hideHeader={true}>
-          {displayHeroCards.map((card) => (
-            <Link
-              key={card.slug}
-              to={card.to as any}
-              className={`min-w-36 sm:min-w-52 md:min-w-60 max-w-64 shrink-0 snap-start group relative flex flex-col justify-end overflow-hidden rounded-lg bg-card aspect-video sm:aspect-video border border-border/60 hover:border-foreground/30 transition-all duration-200 active:active:scale-95 shadow-none`}
-            >
-              {(card as any).coverUrl ? (
-                <img
-                  src={(card as any).coverUrl}
-                  alt={card.title}
-                  className="absolute inset-0 size-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  loading="eager"
-                />
-              ) : (
-                <div className="absolute inset-0 size-full bg-muted/40 border border-border/40 flex items-center justify-center">
-                  <span className="text-xs font-bold text-muted-foreground/60">{card.title}</span>
-                </div>
-              )}
+      {displayHeroCards && displayHeroCards.length > 0 && (
+        <section aria-label="Categorias Principais">
+          <HorizontalRail title="Categorias Principais" hideHeader={true}>
+            {displayHeroCards.map((card) => (
+              <Link
+                key={card.slug}
+                to={card.to as any}
+                className={`min-w-36 sm:min-w-52 md:min-w-60 max-w-64 shrink-0 snap-start group relative flex flex-col justify-end overflow-hidden rounded-lg bg-card aspect-video sm:aspect-video border border-border/60 hover:border-foreground/30 transition-all duration-200 active:active:scale-95 shadow-none`}
+              >
+                {(card as any).coverUrl ? (
+                  <img
+                    src={(card as any).coverUrl}
+                    alt={card.title}
+                    className="absolute inset-0 size-full object-cover group-hover:scale-105 transition-transform duration-300 motion-reduce:transition-none"
+                    loading="eager"
+                  />
+                ) : (
+                  <div className="absolute inset-0 size-full bg-muted/40 border border-border/40 flex items-center justify-center">
+                    <span className="text-xs font-bold text-muted-foreground/60">{card.title}</span>
+                  </div>
+                )}
 
-              {/* Overlay configurável — Zero por padrão, somente se ativado no Admin com opacidade > 0 */}
-              {(card as any).showOverlay && ((card as any).bgOverlayOpacity ?? 30) > 0 && (
-                <div
-                  className="absolute inset-0 bg-gradient-to-t to-transparent pointer-events-none"
-                  style={{
-                    background: `linear-gradient(to top, ${
-                      (card as any).bgColor || "#000000"
-                    }${Math.round(((card as any).bgOverlayOpacity ?? 30) * 2.55).toString(16).padStart(2, "0")} 0%, transparent 60%)`,
-                  }}
-                />
-              )}
+                {/* Overlay configurável — Zero por padrão, somente se ativado no Admin com opacidade > 0 */}
+                {(card as any).showOverlay && ((card as any).bgOverlayOpacity ?? 30) > 0 && (
+                  <div
+                    className="absolute inset-0 bg-gradient-to-t to-transparent pointer-events-none"
+                    style={{
+                      background: `linear-gradient(to top, ${
+                        (card as any).bgColor || "#000000"
+                      }${Math.round(((card as any).bgOverlayOpacity ?? 30) * 2.55).toString(16).padStart(2, "0")} 0%, transparent 60%)`,
+                    }}
+                  />
+                )}
 
-              {/* Identificação do Card — visível somente se show_title não está desativado */}
-              {(card as any).showTitle !== false && (
-                <div className="relative z-10 p-3 sm:p-3 w-full">
-                  {(card as any).isPlacesBadge ? (
-                    <PlacesHighlightBadge
-                      className={`text-xs font-bold drop-shadow-sm ${
-                        (card as any).textColor ? "" : (card as any).showOverlay ? "text-white" : "text-foreground"
-                      }`}
-                      style={(card as any).textColor ? { color: (card as any).textColor } : undefined}
-                    />
-                  ) : (
-                    <h2
-                      className={`text-xs font-bold leading-tight drop-shadow-sm truncate ${
-                        (card as any).textColor ? "" : (card as any).showOverlay ? "text-white" : "text-foreground"
-                      }`}
-                      style={(card as any).textColor ? { color: (card as any).textColor } : undefined}
-                    >
-                      {card.title}
-                    </h2>
-                  )}
-                </div>
-              )}
-            </Link>
-          ))}
-        </HorizontalRail>
-      </section>
+                {/* Identificação do Card — visível somente se show_title não está desativado */}
+                {(card as any).showTitle !== false && (
+                  <div className="relative z-10 p-3 sm:p-3 w-full">
+                    {(card as any).isPlacesBadge ? (
+                      <PlacesHighlightBadge
+                        className={`text-xs font-bold drop-shadow-sm ${
+                          (card as any).textColor ? "" : (card as any).showOverlay ? "text-white" : "text-foreground"
+                        }`}
+                        style={(card as any).textColor ? { color: (card as any).textColor } : undefined}
+                      />
+                    ) : (
+                      <h2
+                        className={`text-xs font-bold leading-tight drop-shadow-sm truncate ${
+                          (card as any).textColor ? "" : (card as any).showOverlay ? "text-white" : "text-foreground"
+                        }`}
+                        style={(card as any).textColor ? { color: (card as any).textColor } : undefined}
+                      >
+                        {card.title}
+                      </h2>
+                    )}
+                  </div>
+                )}
+              </Link>
+            ))}
+          </HorizontalRail>
+        </section>
+      )}
+
+      {/* ── 1.5. MINI CARDS EDITORIAIS / HOTPAGES (Omitido graciosamente se sem registros) ── */}
+      {editorialHotpages && editorialHotpages.length > 0 && (
+        <section aria-label="Destaques e Hotpages">
+          <HotpagesRail hotpages={editorialHotpages} cleanMode={true} />
+        </section>
+      )}
 
       {/* ── 2. CARROSSEL DE BANNERS HERO (Se cadastrados) ── */}
       {banners && banners.length > 0 && (
@@ -598,7 +646,7 @@ function CommunityMarketplaceView({ data }: { data: any }) {
           if (mode === "empresas") {
             setActiveCategory("places");
           } else if (mode === "marketplace") {
-            navigate({ to: "/marketplace" });
+            setActiveCategory("marketplace");
           } else {
             setActiveCategory("classificados");
           }
@@ -660,7 +708,7 @@ function CommunityMarketplaceView({ data }: { data: any }) {
                             <img
                               src={coverImage}
                               alt={item.business_name}
-                              className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
+                              className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300 motion-reduce:transition-none"
                               loading="lazy"
                             />
                           ) : (
@@ -724,6 +772,36 @@ function CommunityMarketplaceView({ data }: { data: any }) {
             </section>
           )}
 
+          {/* MARKETPLACE PRODUTOS & OFERTAS DE EMPRESAS HOMOLOGADAS */}
+          {(activeCategory === "todos" || activeCategory === "marketplace") && filteredMarketplaceProducts.length > 0 && (
+            <section aria-label="Marketplace de Empresas" className="space-y-2">
+              <HorizontalRail
+                title="Marketplace"
+                badge="Empresas Verificadas"
+                actionLabel="Ver vitrine completa"
+                actionTo="/marketplace"
+                leadCard={
+                  <HitsLeadCard
+                    title="Marketplace Local"
+                    subtitle="Produtos e serviços com nota fiscal e garantia de empresas parceiras"
+                    badge="Homologado"
+                    actionLabel="Explorar"
+                    actionTo="/marketplace"
+                    gradient="from-emerald-700 via-teal-700 to-cyan-800"
+                    className="h-80 w-52 sm:w-60"
+                    ariaLabel="Explorar vitrine de produtos e empresas"
+                  />
+                }
+              >
+                {filteredMarketplaceProducts.map((offer: any) => (
+                  <div key={offer.id} className="min-w-64 sm:min-w-72 max-w-xs shrink-0 snap-start">
+                    <OfferCard {...offer} />
+                  </div>
+                ))}
+              </HorizontalRail>
+            </section>
+          )}
+
           {/* CLASSIFICADOS */}
           {(activeCategory === "todos" || activeCategory === "classificados") && filteredClassifieds.length > 0 && (
             <section aria-label="Classificados" className="space-y-2">
@@ -766,7 +844,7 @@ function CommunityMarketplaceView({ data }: { data: any }) {
                           <img
                             src={coverImage}
                             alt={item.title}
-                            className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
+                            className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300 motion-reduce:transition-none"
                             loading="lazy"
                           />
                         ) : (
@@ -810,6 +888,13 @@ function CommunityMarketplaceView({ data }: { data: any }) {
               >
                 {filteredFeed.map((post: any) => {
                   const coverImage = post.media_urls && post.media_urls[0];
+                  const rawText = post.content_text || "Publicação compartilhada no feed da comunidade";
+                  const cleanContent = rawText
+                    .replace(/==([^=]+)==/g, "$1")
+                    .replace(/\*\*([^*]+)\*\*/g, "$1")
+                    .replace(/__([^_]+)__/g, "$1")
+                    .trim();
+
                   return (
                     <Link
                       key={post.id}
@@ -823,6 +908,9 @@ function CommunityMarketplaceView({ data }: { data: any }) {
                               src={post.profiles.avatar_url}
                               alt=""
                               className="size-full object-cover"
+                              onError={(e) => {
+                                (e.currentTarget as HTMLElement).style.display = "none";
+                              }}
                             />
                           ) : (
                             <UserCircle size={18} weight="bold" />
@@ -843,20 +931,23 @@ function CommunityMarketplaceView({ data }: { data: any }) {
                           <img
                             src={coverImage}
                             alt=""
-                            className="size-full object-cover group-hover:scale-105 transition-transform duration-500"
+                            className="size-full object-cover group-hover:scale-105 transition-transform duration-300 motion-reduce:transition-none"
                             loading="lazy"
+                            onError={(e) => {
+                              (e.currentTarget.parentElement as HTMLElement)?.classList.add("hidden");
+                            }}
                           />
                         </div>
                       )}
 
                       <p className="text-xs text-muted-foreground line-clamp-3 leading-relaxed">
-                        {post.content_text || "Publicação compartilhada no feed da comunidade"}
+                        {cleanContent}
                       </p>
 
-                      <div className="pt-2 border-t border-border/30 flex items-center justify-between text-xs text-muted-foreground/75 text-muted-foreground font-medium">
+                      <div className="pt-2 border-t border-border/30 flex items-center justify-between text-xs text-muted-foreground font-medium">
                         <span className="flex items-center gap-1">
                           <Clock size={12} />
-                          <span>Recente</span>
+                          <span>{post.created_at ? formatRelativeTime(post.created_at) : "Recente"}</span>
                         </span>
                         <span className="text-primary font-bold group-hover:underline">Ver no feed</span>
                       </div>
@@ -992,7 +1083,7 @@ function CommunityMarketplaceView({ data }: { data: any }) {
                           <img
                             src={coverImage}
                             alt={ev.title}
-                            className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
+                            className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300 motion-reduce:transition-none"
                             loading="lazy"
                           />
                         ) : (
@@ -1052,7 +1143,7 @@ function CommunityMarketplaceView({ data }: { data: any }) {
                           <img
                             src={coverImage}
                             alt={ev.title}
-                            className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
+                            className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300 motion-reduce:transition-none"
                             loading="lazy"
                           />
                         ) : (
@@ -1107,13 +1198,13 @@ function CommunityMarketplaceView({ data }: { data: any }) {
                         muted
                         loop
                         playsInline
-                        className="size-full object-cover group-hover:scale-102 transition-transform duration-500"
+                        className="size-full object-cover group-hover:scale-102 transition-transform duration-300 motion-reduce:transition-none"
                       />
                     ) : (
                       <img
                         src={middleBanners[0].image_url}
                         alt={middleBanners[0].title || "Destaque"}
-                        className="size-full object-cover group-hover:scale-102 transition-transform duration-500"
+                        className="size-full object-cover group-hover:scale-102 transition-transform duration-300 motion-reduce:transition-none"
                       />
                     )}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
@@ -1195,7 +1286,7 @@ function CommunityMarketplaceView({ data }: { data: any }) {
                         <img
                           src={item.image}
                           alt={item.title}
-                          className="size-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          className="size-full object-cover group-hover:scale-105 transition-transform duration-300 motion-reduce:transition-none"
                           loading="lazy"
                         />
                       ) : (
@@ -1242,7 +1333,7 @@ function CommunityMarketplaceView({ data }: { data: any }) {
                             phone: item.phone || "",
                             message: `Olá! Vi o anúncio "${item.title}" no Waesy.`,
                             storeId: null,
-                            entityType: item.pillar,
+                            entityType: item.pillar as any,
                             entityId: item.id,
                             entityTitle: item.title,
                           })
@@ -1326,7 +1417,7 @@ function CommunityMarketplaceView({ data }: { data: any }) {
                               phone: item.phone || "",
                               message: `Olá! Vi o anúncio "${item.title}" no Waesy.`,
                               storeId: null,
-                              entityType: item.pillar,
+                              entityType: item.pillar as any,
                               entityId: item.id,
                               entityTitle: item.title,
                             });
@@ -1358,7 +1449,7 @@ function CommunityMarketplaceView({ data }: { data: any }) {
                         <img
                           src={item.image}
                           alt={item.title}
-                          className="size-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          className="size-full object-cover group-hover:scale-105 transition-transform duration-300 motion-reduce:transition-none"
                           loading="lazy"
                         />
                       ) : (
@@ -1402,7 +1493,7 @@ function CommunityMarketplaceView({ data }: { data: any }) {
                                   phone: item.phone || "",
                                   message: `Olá! Vi o anúncio "${item.title}" no Waesy.`,
                                   storeId: null,
-                                  entityType: item.pillar,
+                                  entityType: item.pillar as any,
                                   entityId: item.id,
                                   entityTitle: item.title,
                                 })
@@ -1454,13 +1545,13 @@ function CommunityMarketplaceView({ data }: { data: any }) {
                   muted
                   loop
                   playsInline
-                  className="size-full object-cover group-hover:scale-102 transition-transform duration-500"
+                  className="size-full object-cover group-hover:scale-102 transition-transform duration-300 motion-reduce:transition-none"
                 />
               ) : (
                 <img
                   src={footerBanners[0].image_url}
                   alt={footerBanners[0].title || "Divulgue sua empresa"}
-                  className="size-full object-cover group-hover:scale-102 transition-transform duration-500"
+                  className="size-full object-cover group-hover:scale-102 transition-transform duration-300 motion-reduce:transition-none"
                 />
               )}
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent" />

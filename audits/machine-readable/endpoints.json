@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "endpoints": [
+    {
+      "path": "/api/mcp/v1/tools/call",
+      "method": "POST",
+      "auth": "bearer_token",
+      "purpose": "Model Context Protocol Tool Calling for AI Agents",
+      "rate_limited": true,
+      "idempotent": true
+    },
+    {
+      "path": "/api/webmcp.json",
+      "method": "GET",
+      "auth": "public",
+      "purpose": "WebMCP Manifest discovery",
+      "cache": "1h"
+    },
+    {
+      "path": "/api/cron/mining-worker",
+      "method": "POST",
+      "auth": "cron_secret",
+      "purpose": "pg_cron autonomous mining dispatcher",
+      "idempotent": true
+    },
+    {
+      "path": "/api/mining/worker",
+      "method": "POST",
+      "auth": "service_role",
+      "purpose": "Process pending queue batch"
+    },
+    {
+      "path": "/api/webhooks/pix",
+      "method": "POST",
+      "auth": "hmac_signature",
+      "purpose": "Instant PIX settlement webhook"
+    },
+    {
+      "path": "/api/webhooks/whatsapp",
+      "method": "POST",
+      "auth": "meta_token",
+      "purpose": "WhatsApp Cloud API conversation webhook"
+    }
+  ]
+}

@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "database": {
+    "engine": "PostgreSQL 15+",
+    "managed_provider": "Supabase",
+    "project_id": "jfuebqmltksyznovhlwa",
+    "total_tables": 537,
+    "primary_clusters": {
+      "mining_and_crawling": [
+        "crawl_queue",
+        "scraper_audit_log",
+        "mined_articles",
+        "mined_tenders",
+        "economic_indicators",
+        "crawler_sources",
+        "rss_feed_items",
+        "mined_raw_extractions"
+      ],
+      "civic_and_community": [
+        "news_articles",
+        "directory_listings",
+        "jobs",
+        "events",
+        "event_news_relations"
+      ],
+      "commerce_and_logistics": [
+        "stores",
+        "products",
+        "orders",
+        "classifieds",
+        "deals",
+        "couriers",
+        "shipments"
+      ],
+      "ai_and_agents": [
+        "chat_threads",
+        "chat_messages",
+        "chat_artifacts",
+        "ai_agent_definitions",
+        "ai_squad_definitions",
+        "ai_skills",
+        "ai_quality_benchmarks"
+      ]
+    },
+    "key_indexes_added": [
+      "idx_news_articles_city",
+      "idx_news_articles_city_pub",
+      "idx_mined_tenders_city_date",
+      "idx_directory_listings_cat_city",
+      "idx_jobs_status_created",
+      "idx_crawl_queue_status_prio"
+    ]
+  }
+}

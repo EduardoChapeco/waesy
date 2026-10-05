@@ -574,8 +574,8 @@ async function _getPublicEvents(opts: {
       query = query.lte("event_date", opts.dateTo + "T23:59:59");
     }
 
-    if (opts.city) {
-      query = query.ilike("city", `%${opts.city}%`);
+    if (opts.city && opts.city !== "todos" && opts.city !== "Todas" && opts.city !== "Global" && opts.city !== "all" && opts.city !== "Todas as Cidades") {
+      query = query.ilike("city", `%${opts.city.trim()}%`);
     }
 
     if (opts.state) {

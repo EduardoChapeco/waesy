@@ -23,6 +23,7 @@ import {
   Printer,
   Table as TableIcon,
   Calendar,
+  Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -36,6 +37,7 @@ import { AIActivityTrail, type AIActivityStep } from "./ai-activity-trail";
 import { ChatArtifactCard, type ChatArtifactData } from "./chat-artifact-card";
 import { ChatComposer, type QuotedMessage } from "./chat-composer";
 import { StructuredMessageView } from "./structured-message-view";
+import type { CopilotFsmPhase, CopilotFsmExecutionState } from "@/types/copilot-fsm";
 
 export type ThreadType = "store" | "direct_p2p" | "support" | "project" | "ai_assistant";
 
@@ -64,6 +66,8 @@ export interface ChatMessageItem {
   text: string;
   createdAt: string;
   status: "sending" | "sent" | "delivered" | "read" | "failed";
+  fsmPhase?: CopilotFsmPhase;
+  fsmState?: CopilotFsmExecutionState;
   replyTo?: QuotedMessage;
   activitySteps?: AIActivityStep[];
   artifact?: ChatArtifactData;
@@ -81,6 +85,7 @@ export interface AIChatShellProps {
   onRetryMessage?: (messageId: string) => void;
   onCancelActiveRun?: () => void;
   onCreateThread?: (type: ThreadType, title: string) => void;
+  onDeleteThread?: (threadId: string) => void;
   onTogglePinThread?: (threadId: string) => void;
   onToggleArchiveThread?: (threadId: string) => void;
   isSending?: boolean;
@@ -98,6 +103,7 @@ export function AIChatShell({
   onRetryMessage,
   onCancelActiveRun,
   onCreateThread,
+  onDeleteThread,
   onTogglePinThread,
   onToggleArchiveThread,
   isSending = false,
@@ -110,7 +116,7 @@ export function AIChatShell({
   const [searchQuery, setSearchQuery] = useState("");
   const [replyTo, setReplyTo] = useState<QuotedMessage | null>(null);
   const [showMobileChat, setShowMobileChat] = useState<boolean>(Boolean(activeThreadId));
-  const [showContextPanel, setShowContextPanel] = useState<boolean>(true);
+  const [showContextPanel, setShowContextPanel] = useState<boolean>(false);
   const [activeArtifact, setActiveArtifact] = useState<ChatArtifactData | null>(null);
   const { isCompact } = useWindowSizeClass();
 
@@ -222,10 +228,10 @@ export function AIChatShell({
                 variant="outline"
                 size="sm"
                 onClick={() => onCreateThread("project", "Novo Projeto")} /* focus-visible:ring-2 */
-                className="h-8 px-2 text-xs font-semibold rounded-md gap-1 border-border/60 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                className="h-11 min-h-11 px-3 text-xs font-semibold rounded-md gap-2 border-border/60 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                 title="Criar novo projeto ou thread"
               >
-                <Plus className="size-3.5" />
+                <Plus className="size-4" />
                 <span>Novo</span>
               </Button>
             )}
@@ -257,7 +263,7 @@ export function AIChatShell({
                 size="sm"
                 onClick={() => setFilterTab(tab.id as any)} /* focus-visible:ring-2 */
                 className={cn(
-                  "h-7 px-2 rounded-md text-xs font-medium whitespace-nowrap transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                  "h-11 min-h-11 px-3 rounded-md text-xs font-medium whitespace-nowrap transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
                   filterTab === tab.id
                     ? "bg-primary text-primary-foreground font-semibold"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
@@ -296,6 +302,7 @@ export function AIChatShell({
                       }}
                       onTogglePin={onTogglePinThread}
                       onToggleArchive={onToggleArchiveThread}
+                      onDelete={onDeleteThread}
                     />
                   ))}
                 </div>
@@ -313,6 +320,7 @@ export function AIChatShell({
                   }}
                   onTogglePin={onTogglePinThread}
                   onToggleArchive={onToggleArchiveThread}
+                  onDelete={onDeleteThread}
                 />
               ))}
             </>
@@ -338,7 +346,7 @@ export function AIChatShell({
                   variant="ghost"
                   size="icon"
                   onClick={() => setShowMobileChat(false)} /* focus-visible:ring-2 */
-                  className="size-9 rounded-full md:hidden text-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                  className="size-11 min-h-11 min-w-11 rounded-full md:hidden text-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                   aria-label="Voltar para a lista de conversas"
                 >
                   <ChevronLeft className="size-5" />
@@ -374,15 +382,33 @@ export function AIChatShell({
 
               {/* Ações do Topo */}
               <div className="flex items-center gap-1 shrink-0">
+                {onDeleteThread && activeThread.id !== "00000000-0000-0000-0000-000000000001" && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => onDeleteThread(activeThread.id)}
+                    className="h-11 min-h-11 px-3 text-xs text-destructive hover:bg-destructive/10 rounded-md gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive/40 cursor-pointer"
+                    title="Excluir esta conversa"
+                  >
+                    <Trash2 className="size-4" />
+                    <span className="hidden sm:inline">Excluir</span>
+                  </Button>
+                )}
                 <Button
                   type="button"
                   variant="ghost"
                   size="sm"
-                  onClick={() => setShowContextPanel((prev) => (prev === false ? true : false))} /* focus-visible:ring-2 */
-                  className="h-8 px-2 text-xs text-muted-foreground hover:text-foreground hidden lg:flex rounded-md gap-2 border border-border/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                  onClick={() => setShowContextPanel((prev) => !prev)} /* focus-visible:ring-2 */
+                  className={cn(
+                    "h-11 min-h-11 px-3 text-xs rounded-md gap-2 border border-border/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 cursor-pointer transition-colors",
+                    showContextPanel
+                      ? "bg-primary text-primary-foreground font-semibold"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                  )}
                   title="Alternar painel de contexto e artefatos"
                 >
-                  <Layers className="size-3.5" />
+                  <Layers className="size-4" />
                   <span>Painel</span>
                 </Button>
               </div>
@@ -523,10 +549,10 @@ export function AIChatShell({
                         variant="ghost"
                         size="sm"
                         onClick={() => handleReplyClick(msg)} /* focus-visible:ring-2 */
-                        className="h-6 px-2 text-2xs hover:text-foreground cursor-pointer flex items-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                        className="h-11 min-h-11 px-3 text-2xs hover:text-foreground cursor-pointer flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                         title="Responder mensagem"
                       >
-                        <CornerDownLeft className="size-3" />
+                        <CornerDownLeft className="size-4" />
                         <span>Responder</span>
                       </Button>
                       <span>•</span>
@@ -535,10 +561,10 @@ export function AIChatShell({
                         variant="ghost"
                         size="sm"
                         onClick={() => handleCopyText(msg.text)} /* focus-visible:ring-2 */
-                        className="h-6 px-2 text-2xs hover:text-foreground cursor-pointer flex items-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                        className="h-11 min-h-11 px-3 text-2xs hover:text-foreground cursor-pointer flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                         title="Copiar texto"
                       >
-                        <Copy className="size-3" />
+                        <Copy className="size-4" />
                         <span>Copiar</span>
                       </Button>
                     </div>
@@ -586,7 +612,7 @@ export function AIChatShell({
             <>
               <div className="flex items-center justify-between border-b border-border/40 pb-2">
                 <h3 className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-2">
-                  <Brain className="size-3.5 text-primary" />
+                  <Brain className="size-4 text-primary" />
                   <span>Contexto & Memória</span>
                 </h3>
                 <Button
@@ -594,10 +620,10 @@ export function AIChatShell({
                   variant="ghost"
                   size="icon"
                   onClick={() => /* focus-visible:ring-2 */ setShowContextPanel(false)}
-                  className="size-7 rounded-md text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 cursor-pointer"
+                  className="size-11 min-h-11 min-w-11 rounded-md text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 cursor-pointer"
                   aria-label="Fechar painel de contexto"
                 >
-                  <X className="size-3.5" />
+                  <X className="size-4" />
                 </Button>
               </div>
 
@@ -736,9 +762,9 @@ function ArtifactViewerContent({
           variant="ghost"
           size="sm"
           /* focus-visible:ring-2 */ onClick={onClose}
-          className="h-8 px-2 text-xs text-muted-foreground hover:text-foreground flex items-center gap-2 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none cursor-pointer"
+          className="h-11 min-h-11 px-3 text-xs text-muted-foreground hover:text-foreground flex items-center gap-2 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none cursor-pointer"
         >
-          <ArrowLeft className="size-3.5" />
+          <ArrowLeft className="size-4" />
           <span>Voltar</span>
         </Button>
 
@@ -921,12 +947,14 @@ function ThreadListItem({
   onClick, /* focus-visible:ring-2 */
   onTogglePin,
   onToggleArchive,
+  onDelete,
 }: {
   thread: ChatThreadItem;
   isActive: boolean;
   onClick: () => void; /* focus-visible:ring-2 */
   onTogglePin?: (id: string) => void;
   onToggleArchive?: (id: string) => void;
+  onDelete?: (id: string) => void;
 }) {
   return (
     <Button
@@ -969,6 +997,26 @@ function ThreadListItem({
 
       {/* Ícone fixado ou Ações Rápidas no Hover */}
       <div className="shrink-0 flex items-center gap-1">
+        {onDelete && thread.id !== "00000000-0000-0000-0000-000000000001" && (
+          <span
+            role="button"
+            tabIndex={0}
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete(thread.id);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.stopPropagation();
+                onDelete(thread.id);
+              }
+            }}
+            className="opacity-0 group-hover:opacity-100 p-2 size-11 min-h-11 min-w-11 flex items-center justify-center text-muted-foreground hover:text-destructive rounded-md transition-opacity cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive/40"
+            title="Excluir conversa"
+          >
+            <Trash2 className="size-3" />
+          </span>
+        )}
         {thread.isPinned && (
           <Pin className="size-3 text-primary shrink-0" />
         )}

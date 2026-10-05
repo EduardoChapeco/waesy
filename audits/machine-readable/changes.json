@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "audit_version": "2.0.0",
+  "timestamp": "2026-10-04T00:26:20-03:00",
+  "waves_completed": [
+    "Onda 00: Preparação e Limites",
+    "Onda 01: Inventário de Repositório",
+    "Onda 02: Mapa de Runtime",
+    "Onda 03: Auditoria de Banco e Schemas",
+    "Onda 04: Linhagem e Fluxo de Dados",
+    "Onda 05: Auditoria de APIs e Contratos",
+    "Onda 06: Auditoria do Chat",
+    "Onda 07: Contrato de Conversação",
+    "Onda 08: Catálogo de Agentes",
+    "Onda 09: Catálogo de Skills",
+    "Onda 11: Catálogo de Engines e Bibliotecas",
+    "Onda 12: Catálogo de Integrações",
+    "Onda 13: Arquivos e Artefatos",
+    "Onda 14: Filas, Jobs e Workflows",
+    "Onda 15: Cobertura de Testes",
+    "Onda 16: Registro de Duplicações",
+    "Onda 17: Arquitetura Atual",
+    "Onda 18: Arquitetura Alvo",
+    "Onda 19: Backlog de Melhoria",
+    "Onda 20: Plano de Migração",
+    "Onda 21: Plano de Rollback",
+    "Onda 22: Pesquisa de Padrões Públicos",
+    "Onda 40: Auditoria Final"
+  ]
+}

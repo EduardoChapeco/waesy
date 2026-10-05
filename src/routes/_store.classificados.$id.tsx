@@ -15,6 +15,8 @@ import {
   buildClassifiedHead,
   useClassifiedDetail,
 } from "@/components/classifieds/detail";
+import { ActionAuthGuardModal } from "@/components/common/action-auth-guard-modal";
+import { useActionAuthGuard } from "@/hooks/use-action-auth-guard";
 
 export const Route = createFileRoute("/_store/classificados/$id")({
   head: buildClassifiedHead,
@@ -98,6 +100,8 @@ function ClassifiedDetailPage() {
     return <ClassifiedEmptyState status={status} similarAds={similarAds} />;
   }
 
+  const { requireAuth, modalProps } = useActionAuthGuard();
+
   const detail = useClassifiedDetail({
     classified,
     status,
@@ -180,13 +184,24 @@ function ClassifiedDetailPage() {
           classified={classified}
           isOwner={detail.effectiveIsOwner}
           onOpenBookingModal={(dep) => {
-            if (dep) detail.setSelectedDeparture(dep);
-            detail.setBookingOpen(true);
+            requireAuth({
+              actionContext: "Efetuar reserva para este pacote de viagem",
+              onSuccess: () => {
+                if (dep) detail.setSelectedDeparture(dep);
+                detail.setBookingOpen(true);
+              },
+            });
           }}
-          onOpenProposalModal={() => detail.setProposalOpen(true)}
+          onOpenProposalModal={() => {
+            requireAuth({
+              actionContext: "Enviar proposta para este anúncio",
+              onSuccess: () => detail.setProposalOpen(true),
+            });
+          }}
           onEditClassified={detail.handleEdit}
         />
         {dialogs}
+        <ActionAuthGuardModal {...modalProps} />
         {classified?.ai_agent_enabled && (
           <AiSdrChat
             classifiedId={classified.id}
@@ -227,18 +242,43 @@ function ClassifiedDetailPage() {
         viewerContext={viewerContext}
         currentProfile={currentProfile}
         onOpenBookingModal={(payload) => {
-          if (payload) {
-            if (payload.checkIn) detail.setCheckInDate(payload.checkIn);
-            if (payload.checkOut) detail.setCheckOutDate(payload.checkOut);
-            if (payload.guests) detail.setBookingGuests(payload.guests);
-            if (payload.departure_date || payload.id) detail.setSelectedDeparture(payload);
-          }
-          detail.setBookingOpen(true);
+          requireAuth({
+            actionContext: "Efetuar reserva para este anúncio",
+            onSuccess: () => {
+              if (payload) {
+                if (payload.checkIn) detail.setCheckInDate(payload.checkIn);
+                if (payload.checkOut) detail.setCheckOutDate(payload.checkOut);
+                if (payload.guests) detail.setBookingGuests(payload.guests);
+                if (payload.departure_date || payload.id) detail.setSelectedDeparture(payload);
+              }
+              detail.setBookingOpen(true);
+            },
+          });
         }}
-        onOpenProposalModal={() => detail.setProposalOpen(true)}
-        onOpenApplyModal={() => detail.setApplyModalOpen(true)}
-        onDirectBuy={detail.handleDirectBuy}
-        onDownloadDigital={detail.handleDownloadDigitalFile}
+        onOpenProposalModal={() => {
+          requireAuth({
+            actionContext: "Enviar proposta para este anúncio",
+            onSuccess: () => detail.setProposalOpen(true),
+          });
+        }}
+        onOpenApplyModal={() => {
+          requireAuth({
+            actionContext: "Candidatar-se a esta oportunidade",
+            onSuccess: () => detail.setApplyModalOpen(true),
+          });
+        }}
+        onDirectBuy={() => {
+          requireAuth({
+            actionContext: "Comprar produto diretamente",
+            onSuccess: () => detail.handleDirectBuy(),
+          });
+        }}
+        onDownloadDigital={() => {
+          requireAuth({
+            actionContext: "Baixar conteúdo digital exclusivo",
+            onSuccess: () => detail.handleDownloadDigitalFile(),
+          });
+        }}
         onOpenCompanion={() => detail.setCompanionModalOpen(true)}
         onEdit={detail.handleEdit}
         isBooking={detail.isBooking}
@@ -246,6 +286,7 @@ function ClassifiedDetailPage() {
         isDownloadingDigital={detail.isDownloadingDigital}
       />
       {dialogs}
+      <ActionAuthGuardModal {...modalProps} />
       <ClassifiedSimilarAdsGrid similarAds={similarAds} />
       {classified?.ai_agent_enabled && (
         <AiSdrChat

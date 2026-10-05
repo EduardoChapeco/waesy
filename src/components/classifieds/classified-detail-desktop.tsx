@@ -63,7 +63,8 @@ export function ClassifiedDetailDesktop({
   const displayMode = (classified.attributes?.display_mode as string) || "tabs";
   const templateStyle = (classified.attributes?.template_style as string) || "standard";
 
-  const handleStartNativeChat = async (customInitialMessage?: string) => {
+  const handleStartNativeChat = async (customInitialMessage?: string | React.MouseEvent) => {
+    const initialMsg = typeof customInitialMessage === "string" ? customInitialMessage : undefined;
     setIsStartingChat(true);
     try {
       const res = await startCustomerChatThread({
@@ -71,7 +72,7 @@ export function ClassifiedDetailDesktop({
           storeId: classified.store_id || classified.storeId || undefined,
           recipientProfileId: classified.author_profile_id || undefined,
           subject: classified.title,
-          initialMessage: customInitialMessage || `Olá, tenho interesse no anúncio: ${classified.title}`,
+          initialMessage: initialMsg || `Olá, tenho interesse no anúncio: ${classified.title}`,
         },
       });
       if (res?.threadId) {
@@ -141,6 +142,9 @@ export function ClassifiedDetailDesktop({
   const acceptsCard = attrs.accepts_card !== false;
   const cardInterestFree = Boolean(attrs.card_interest_free);
   const acceptsBoleto = Boolean(attrs.accepts_boleto);
+  const acceptsCarne = Boolean(attrs.accepts_carne);
+  const acceptsFinancing = Boolean(attrs.accepts_financing);
+  const acceptsTrade = Boolean(attrs.accepts_trade);
 
   // Vendedor
   const author = classified.profiles as any;

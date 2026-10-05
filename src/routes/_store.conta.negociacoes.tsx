@@ -230,6 +230,18 @@ function NegociacoesPage() {
         }
       />
 
+      {/* ── 1.1 Desktop Inpage Header (Apple HIG) ── */}
+      <div className="hidden md:flex items-center justify-between pb-4 border-b border-border/40">
+        <div className="flex items-center gap-3">
+          <h1 className="text-xl font-bold tracking-tight text-foreground">Minhas Negociações</h1>
+          {deals && deals.length > 0 && (
+            <Badge variant="secondary" className="text-xs font-mono font-bold px-2 py-1 rounded-full">
+              {deals.length}
+            </Badge>
+          )}
+        </div>
+      </div>
+
       {/* ── 2. Toolbar: Abas Rápidas com Física Horizontal Snap ── */}
       <div className="flex items-center gap-2 overflow-x-auto snap-x snap-mandatory scrollbar-hide no-scrollbar py-1 px-4 sm:px-0 w-full">
         <button

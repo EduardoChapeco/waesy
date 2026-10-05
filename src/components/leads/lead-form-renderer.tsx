@@ -208,9 +208,9 @@ export function LeadFormRenderer({
         setTimeout(() => {
           window.open(res.whatsappUrl!, "_blank", "noopener,noreferrer");
         }, 800);
-      } else if (res.afterSubmitAction === "external_redirect" && res.redirectUrl) {
+      } else if (res.afterSubmitAction === "external_redirect" && (res as any).redirectUrl) {
         setTimeout(() => {
-          window.location.href = res.redirectUrl!;
+          window.location.href = (res as any).redirectUrl!;
         }, 1200);
       }
     } catch (err: any) {

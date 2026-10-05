@@ -1,6 +1,6 @@
 # ROUTES.md — Inventário de Rotas, Telas, Shells e Nichos (P04)
 
-**Total de Rotas Analisadas:** 384  
+**Total de Rotas Analisadas:** 405  
 **Status do Check C27 (Rotas Órfãs/Mortas):** 🟢 0 (Todas as rotas mapeadas possuem componentes ativos no sistema TanStack Router)
 
 ---
@@ -8,19 +8,19 @@
 ## 1. Distribuição por Shell de Navegação
 | Shell | Quantidade de Rotas | Proporção |
 |---|---|---|
-| **Storefront Shell (Responsive B2C)** | 145 | 37.8% |
-| **Workspace Shell (Desktop/Mobile Split)** | 176 | 45.8% |
-| **Admin Master Shell** | 37 | 9.6% |
-| **Headless API / MCP** | 17 | 4.4% |
-| **Mobile Native Shell** | 9 | 2.3% |
+| **Storefront Shell (Responsive B2C)** | 162 | 40.0% |
+| **Workspace Shell (Desktop/Mobile Split)** | 178 | 44.0% |
+| **Admin Master Shell** | 38 | 9.4% |
+| **Headless API / MCP** | 18 | 4.4% |
+| **Mobile Native Shell** | 9 | 2.2% |
 
 ---
 
 ## 2. Distribuição por Nicho de Mercado
 | Nicho | Quantidade de Rotas |
 |---|---|
-| **Núcleo Genérico (Cross-Niche)** | 347 |
-| **Turismo & Viagens** | 28 |
+| **Núcleo Genérico (Cross-Niche)** | 367 |
+| **Turismo & Viagens** | 29 |
 | **Eventos & Festas** | 5 |
 | **Gastronomia & Restaurantes** | 4 |
 
@@ -31,6 +31,8 @@
 |---|---|---|---|---|
 | `/-apple-hig-design/test` | `src/routes/-apple-hig-design.test.ts` | Storefront Shell (Responsive B2C) | Núcleo Genérico (Cross-Niche) | Desktop/Geral |
 | `/-workspace/marketing/anuncios/test` | `src/routes/-workspace.marketing.anuncios.test.ts` | Workspace Shell (Desktop/Mobile Split) | Núcleo Genérico (Cross-Niche) | Sim |
+| `/-_store/marketplace/$storeSlug/test` | `src/routes/-_store.marketplace.$storeSlug.test.ts` | Storefront Shell (Responsive B2C) | Núcleo Genérico (Cross-Niche) | Desktop/Geral |
+| `/-_store/places/$placeSlug/test` | `src/routes/-_store.places.$placeSlug.test.ts` | Storefront Shell (Responsive B2C) | Núcleo Genérico (Cross-Niche) | Desktop/Geral |
 | `/admin-master/ads-network` | `src/routes/admin-master.ads-network.tsx` | Admin Master Shell | Núcleo Genérico (Cross-Niche) | Sim |
 | `/admin-master/algoritmo` | `src/routes/admin-master.algoritmo.tsx` | Admin Master Shell | Núcleo Genérico (Cross-Niche) | Sim |
 | `/admin-master/auditoria-forense` | `src/routes/admin-master.auditoria-forense.tsx` | Admin Master Shell | Núcleo Genérico (Cross-Niche) | Sim |
@@ -57,7 +59,5 @@
 | `/admin-master/modulos` | `src/routes/admin-master.modulos.tsx` | Admin Master Shell | Núcleo Genérico (Cross-Niche) | Sim |
 | `/admin-master/onboarding` | `src/routes/admin-master.onboarding.tsx` | Admin Master Shell | Núcleo Genérico (Cross-Niche) | Sim |
 | `/admin-master/portal-completo` | `src/routes/admin-master.portal-completo.tsx` | Admin Master Shell | Núcleo Genérico (Cross-Niche) | Sim |
-| `/admin-master/pre-cadastro` | `src/routes/admin-master.pre-cadastro.tsx` | Admin Master Shell | Núcleo Genérico (Cross-Niche) | Sim |
-| `/admin-master/seguranca/certificados/$id` | `src/routes/admin-master.seguranca.certificados.$id.tsx` | Admin Master Shell | Núcleo Genérico (Cross-Niche) | Sim |
 
-*(Relatório completo disponível em .audit/ROUTES.json com 100% das 384 rotas)*
+*(Relatório completo disponível em .audit/ROUTES.json com 100% das 405 rotas)*

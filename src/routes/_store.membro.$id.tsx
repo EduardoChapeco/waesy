@@ -259,9 +259,9 @@ export function MemberPublicProfileView({
 
  if (!profile) {
  return (
- <div className="min-h-96 flex flex-col items-center justify-center p-8 text-center space-y-4">
+ <div className="min-h-11 min-h-116 flex flex-col items-center justify-center p-8 text-center space-y-4">
  <div className="size-16 rounded-lg bg-muted/40 flex items-center justify-center text-muted-foreground">
- <User className="size-8" />
+ <User className="size-11 min-size-11" />
  </div>
  <h2 className="text-xl font-bold">Perfil não encontrado</h2>
  <p className="text-sm text-muted-foreground max-w-md">
@@ -343,26 +343,26 @@ export function MemberPublicProfileView({
  <div className="w-full max-w-5xl mx-auto space-y-6 pb-6 animate-in fade-in duration-200">
  {/* ── Visualizador Lightbox de Mídias ── */}
  {previewMediaUrl && (
- <div
- className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4"
- onClick={() => setPreviewMediaUrl(null)}
- >
- <button
- type="button"
- className="absolute top-6 right-6 p-3 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
- onClick={() => setPreviewMediaUrl(null)}
- aria-label="Fechar visualizador"
- >
- <X className="size-6" />
- </button>
- <img
- src={previewMediaUrl}
- alt="Mídia ampliada"
- className="max-w-full max-h-screen object-contain rounded-lg"
- onClick={(e) => e.stopPropagation()}
- />
- </div>
- )}
+        <div
+          role="dialog"
+          aria-modal="true"
+          className="fixed inset-0 z-50 bg-card/90 backdrop-blur-md flex items-center justify-center p-4"
+        >
+          <button
+            type="button"
+            className="absolute top-6 right-6 size-11 min-h-11 min-w-11 rounded-full bg-card/10 hover:bg-card/20 text-primary-foreground transition-colors flex items-center justify-center cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            onClick={() => setPreviewMediaUrl(null)}
+            aria-label="Fechar visualizador"
+          >
+            <X className="size-6" />
+          </button>
+          <img
+            src={previewMediaUrl}
+            alt="Mídia ampliada"
+            className="max-w-full max-h-screen object-contain rounded-lg"
+          />
+        </div>
+      )}
 
  {/* ── Media Lightbox Modal com Métricas e Comentários Isolados ── */}
  {selectedLightboxPost && (
@@ -397,70 +397,8 @@ export function MemberPublicProfileView({
       <NativeMobileHeader
         fallbackHref="/explorar"
         centerTitle={true}
-        title={
-          <div className="flex items-center gap-2 font-bold text-sm text-foreground">
-            <span className="font-mono">@{profile.username || "perfil"}</span>
-            {profile.is_verified && (
-              <ShieldCheck className="size-4 text-primary fill-primary/20 shrink-0" />
-            )}
-          </div>
-        }
-        rightActions={
-          <div className="flex items-center gap-1">
-            <Button
-              size="sm"
-              variant="ghost"
-              className="size-9 sm:size-10 p-0 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
-              onClick={handleShare}
-              aria-label="Compartilhar Perfil"
-            >
-              <Share2 className="size-4" />
-            </Button>
-
-            {isOwner && (
-              <Sheet open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
-                <SheetTrigger asChild>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="size-9 sm:size-10 p-0 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
-                    aria-label="Configurações e Atividades"
-                  >
-                    <Settings className="size-4" />
-                  </Button>
-                </SheetTrigger>
-                <SheetContent side="bottom" className="rounded-t-lg p-6 space-y-4 max-h-screen">
-                  <SheetHeader className="text-left pb-2 border-b border-border/40">
-                    <SheetTitle className="text-base font-bold">Configurações e Gestão</SheetTitle>
-                  </SheetHeader>
-                  <div className="grid gap-2 text-sm font-medium">
-                    <Link
-                      to="/conta/perfil"
-                      className="flex items-center gap-3 p-3 rounded-lg bg-muted/40 hover:bg-muted transition-colors"
-                    >
-                      <Edit3 className="size-4 text-primary" />
-                      <span>Editar Dados do Perfil</span>
-                    </Link>
-                    <Link
-                      to="/conta/lojas"
-                      className="flex items-center gap-3 p-3 rounded-lg bg-muted/40 hover:bg-muted transition-colors"
-                    >
-                      <Store className="size-4 text-primary" />
-                      <span>Minhas Lojas e Negócios</span>
-                    </Link>
-                    <Link
-                      to="/conta/pedidos"
-                      className="flex items-center gap-3 p-3 rounded-lg bg-muted/40 hover:bg-muted transition-colors"
-                    >
-                      <Package className="size-4 text-primary" />
-                      <span>Meus Pedidos e Compras</span>
-                    </Link>
-                  </div>
-                </SheetContent>
-              </Sheet>
-            )}
-          </div>
-        }
+        title={profile?.full_name || "Membro"}
+        rightActions={null}
       />
 
       {/* ── 2. Seletor de Tipo de Perfil & Ação Editar (Abaixo do Top Bar) ── */}
@@ -474,7 +412,7 @@ export function MemberPublicProfileView({
                 params={{ id: profile.username || profile.id }}
                 search={{ modo: "comercial" }}
                 className={cn(
-                  "px-4 py-2 rounded-lg transition-colors cursor-pointer",
+                  "px-4 py-2 rounded-lg transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                   activeMode === "comercial"
                     ? "bg-background text-foreground font-bold "
                     : "text-muted-foreground hover:text-foreground"
@@ -487,7 +425,7 @@ export function MemberPublicProfileView({
                 params={{ id: profile.username || profile.id }}
                 search={{ modo: "social" }}
                 className={cn(
-                  "px-4 py-2 rounded-lg transition-colors cursor-pointer",
+                  "px-4 py-2 rounded-lg transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                   activeMode === "social"
                     ? "bg-background text-foreground font-bold "
                     : "text-muted-foreground hover:text-foreground"
@@ -500,7 +438,7 @@ export function MemberPublicProfileView({
                 params={{ id: profile.username || profile.id }}
                 search={{ modo: "profissional" }}
                 className={cn(
-                  "px-4 py-2 rounded-lg transition-colors cursor-pointer",
+                  "px-4 py-2 rounded-lg transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                   activeMode === "profissional"
                     ? "bg-background text-foreground font-bold "
                     : "text-muted-foreground hover:text-foreground"
@@ -516,7 +454,7 @@ export function MemberPublicProfileView({
                 params={{ id: profile.username || profile.id }}
                 search={{ modo: "social" }}
                 className={cn(
-                  "px-4 py-2 rounded-lg transition-colors cursor-pointer",
+                  "px-4 py-2 rounded-lg transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                   activeMode === "social"
                     ? "bg-background text-foreground font-bold "
                     : "text-muted-foreground hover:text-foreground"
@@ -529,7 +467,7 @@ export function MemberPublicProfileView({
                 params={{ id: profile.username || profile.id }}
                 search={{ modo: "profissional" }}
                 className={cn(
-                  "px-4 py-2 rounded-lg transition-colors cursor-pointer",
+                  "px-4 py-2 rounded-lg transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                   activeMode === "profissional"
                     ? "bg-background text-foreground font-bold "
                     : "text-muted-foreground hover:text-foreground"
@@ -542,7 +480,7 @@ export function MemberPublicProfileView({
                 params={{ id: profile.username || profile.id }}
                 search={{ modo: "comercial" }}
                 className={cn(
-                  "px-4 py-2 rounded-lg transition-colors cursor-pointer",
+                  "px-4 py-2 rounded-lg transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                   activeMode === "comercial"
                     ? "bg-background text-foreground font-bold "
                     : "text-muted-foreground hover:text-foreground"
@@ -562,10 +500,10 @@ export function MemberPublicProfileView({
                 asChild
                 size="sm"
                 variant="outline"
-                className="h-9 min-h-11 px-4 rounded-lg text-xs font-semibold gap-2 border-border/70 sm:hidden cursor-pointer"
+                className="h-11 min-h-11 min-h-11 px-4 rounded-lg text-xs font-semibold gap-2 border-border/70 sm:hidden cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
                 <Link to="/conta/perfil" search={{ tab: "criador" }}>
-                  <Layers className="size-3.5 text-primary" />
+                  <Layers className="size-4 text-primary" />
                   <span>Editar Vitrine</span>
                 </Link>
               </Button>
@@ -574,10 +512,10 @@ export function MemberPublicProfileView({
                 asChild
                 size="sm"
                 variant="outline"
-                className="h-9 min-h-11 px-4 rounded-lg text-xs font-semibold gap-2 border-border/70 sm:hidden cursor-pointer"
+                className="h-11 min-h-11 min-h-11 px-4 rounded-lg text-xs font-semibold gap-2 border-border/70 sm:hidden cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
                 <Link to="/conta/perfil" search={{ tab: "dados" }}>
-                  <Edit3 className="size-3.5" />
+                  <Edit3 className="size-4" />
                   <span>Editar Perfil</span>
                 </Link>
               </Button>
@@ -603,7 +541,7 @@ export function MemberPublicProfileView({
                     className="object-cover size-full"
                   />
                 ) : null}
-                <AvatarFallback className="text-xl sm:text-2xl md:text-3xl font-black bg-gradient-to-br from-primary/15 via-muted to-muted/80 text-foreground rounded-lg flex items-center justify-center select-none">
+                <AvatarFallback className="text-xl sm:text-2xl md:text-3xl font-black bg-muted/40 from-primary/15 via-muted to-muted/80 text-foreground rounded-lg flex items-center justify-center select-none">
                   {avatarInitials}
                 </AvatarFallback>
               </Avatar>
@@ -611,7 +549,7 @@ export function MemberPublicProfileView({
                 <Link
                   to="/conta/perfil"
                   search={{ tab: isCreator ? "criador" : "dados" }}
-                  className="absolute inset-0 bg-black/40 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-xs font-semibold gap-1 cursor-pointer"
+                  className="absolute inset-0 bg-card/40 text-primary-foreground rounded-lg opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-xs font-semibold gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                   title="Alterar Foto"
                 >
                   <Camera className="size-4 sm:size-5" />
@@ -625,7 +563,7 @@ export function MemberPublicProfileView({
               <div 
                 tabIndex={0}
                 aria-label="Galeria de banners do perfil"
-                className="size-full overflow-x-auto overflow-y-hidden no-scrollbar scroll-smooth flex items-center gap-2 p-1 snap-x snap-mandatory"
+                className="size-full overflow-x-auto carousel overflow-y-hidden no-scrollbar scroll-smooth flex items-center gap-2 p-1 snap-x snap-mandatory"
               >
                 {bannerList.length > 0 ? (
                   bannerList.map((banner, idx) => (
@@ -650,7 +588,7 @@ export function MemberPublicProfileView({
                     </div>
                   ))
                 ) : (
-                  <div className="size-full bg-gradient-to-r from-primary/10 via-muted/40 to-primary/15 flex items-center justify-center rounded-lg text-muted-foreground/60 gap-2 text-xs font-medium">
+                  <div className="size-full bg-muted/40 from-primary/10 via-muted/40 to-primary/15 flex items-center justify-center rounded-lg text-muted-foreground/60 gap-2 text-xs font-medium">
                     <Layers className="size-5 text-primary/30" />
                     <span>Espaço para banner promocional</span>
                   </div>
@@ -661,7 +599,7 @@ export function MemberPublicProfileView({
                 <Link
                   to="/conta/perfil"
                   search={{ tab: isCreator ? "criador" : "dados" }}
-                  className="absolute top-2 right-2 bg-background/85 hover:bg-background text-foreground backdrop-blur-md px-2 sm:px-3 py-1 rounded-lg border border-border/60 text-xs sm:text-xs font-semibold flex items-center gap-1 cursor-pointer transition-colors z-20"
+                  className="absolute top-2 right-2 bg-background/85 hover:bg-background text-foreground backdrop-blur-md px-2 sm:px-3 py-1 rounded-lg border border-border/60 text-xs sm:text-xs font-semibold flex items-center gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-colors z-20"
                 >
                   <Camera className="size-3" />
                   <span className="hidden sm:inline">Alterar Capa</span>
@@ -672,7 +610,7 @@ export function MemberPublicProfileView({
 
           {/* Stats no Final (Seguidores, Seguindo, Curtidas) */}
           <div className="h-14 sm:h-20 md:h-28 lg:h-32 lg:min-w-60 shrink-0 bg-background/90 backdrop-blur-md rounded-lg border border-border/50 p-2 sm:p-4 flex flex-col justify-center">
-            <div className="grid grid-cols-3 gap-2 text-center w-full">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-center w-full">
               <div>
                 <p className="text-sm sm:text-base md:text-lg font-black text-foreground">{followersCount}</p>
                 <p className="text-xs sm:text-xs text-muted-foreground/75 text-muted-foreground font-medium truncate">Seguidores</p>
@@ -711,7 +649,7 @@ export function MemberPublicProfileView({
   {isEnterpriseOrBrand && (
     realStoreReviewsCount > 0 && realStoreRating !== null ? (
       <span className="inline-flex items-center gap-1 px-3 py-1 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 font-bold text-xs border border-amber-500/20">
-        <Star className="size-3.5 fill-amber-500 text-amber-500" />
+        <Star className="size-4 fill-amber-500 text-amber-500" />
         <span>{realStoreRating.toFixed(1)}</span>
         <span className="text-xs font-medium text-muted-foreground">({realStoreReviewsCount})</span>
       </span>
@@ -733,24 +671,24 @@ export function MemberPublicProfileView({
  </div>
 
           {/* Ações Minimalistas em Linha Compacta (Scroll Horizontal com Snap no Mobile) */}
-          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1 max-w-full sm:flex-wrap snap-x snap-mandatory">
+          <div className="flex items-center gap-2 overflow-x-auto carousel no-scrollbar py-1 max-w-full sm:flex-wrap snap-x snap-mandatory">
             {isOwner ? (
               <>
                 <Button
                   asChild
                   size="sm"
                   variant="outline"
-                  className="h-8 px-3 rounded-lg font-semibold text-xs gap-2 shrink-0 snap-start border-border/50 bg-transparent hover:bg-muted/40 text-foreground cursor-pointer"
+                  className="h-11 min-h-11 px-3 rounded-lg font-semibold text-xs gap-2 shrink-0 snap-start border-border/50 bg-transparent hover:bg-muted/40 text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 >
                   <Link to="/conta/metricas">
-                    <Activity className="size-3.5 text-muted-foreground" />
+                    <Activity className="size-4 text-muted-foreground" />
                     <span>Painel de Insights</span>
                   </Link>
                 </Button>
                 <Button
                   size="sm"
                   variant="outline"
-                  className="h-8 px-3 rounded-lg font-semibold text-xs gap-2 shrink-0 snap-start border-border/50 bg-transparent hover:bg-muted/40 text-foreground cursor-pointer"
+                  className="h-11 min-h-11 px-3 rounded-lg font-semibold text-xs gap-2 shrink-0 snap-start border-border/50 bg-transparent hover:bg-muted/40 text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                   onClick={() => setEditingSection("availability")}
                 >
                   <span>Disponibilidade</span>
@@ -760,10 +698,10 @@ export function MemberPublicProfileView({
                     asChild
                     size="sm"
                     variant="outline"
-                    className="hidden sm:inline-flex h-8 px-3 rounded-lg font-semibold text-xs gap-2 shrink-0 snap-start cursor-pointer"
+                    className="hidden sm:inline-flex h-11 min-h-11 px-3 rounded-lg font-semibold text-xs gap-2 shrink-0 snap-start cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                   >
                     <Link to="/conta/perfil" search={{ tab: "criador" }}>
-                      <Layers className="size-3.5 text-primary" />
+                      <Layers className="size-4 text-primary" />
                       <span>Editar Vitrine</span>
                     </Link>
                   </Button>
@@ -772,10 +710,10 @@ export function MemberPublicProfileView({
                     asChild
                     size="sm"
                     variant="outline"
-                    className="hidden sm:inline-flex h-8 px-3 rounded-lg font-semibold text-xs gap-2 shrink-0 snap-start cursor-pointer"
+                    className="hidden sm:inline-flex h-11 min-h-11 px-3 rounded-lg font-semibold text-xs gap-2 shrink-0 snap-start cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                   >
                     <Link to="/conta/perfil" search={{ tab: "dados" }}>
-                      <Edit3 className="size-3.5" />
+                      <Edit3 className="size-4" />
                       <span>Editar Perfil</span>
                     </Link>
                   </Button>
@@ -786,7 +724,7 @@ export function MemberPublicProfileView({
                 <Button
                   size="sm"
                   className={cn(
-                    "h-8 px-4 rounded-lg font-bold text-xs gap-2 shrink-0 snap-start cursor-pointer transition-all",
+                    "h-11 min-h-11 px-4 rounded-lg font-bold text-xs gap-2 shrink-0 snap-start cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-colors motion-reduce:transition-none",
                     isFollowing ? "bg-transparent border border-border/60 text-muted-foreground hover:bg-muted/40 hover:text-foreground" : "bg-primary text-primary-foreground "
                   )}
                   onClick={handleToggleFollow}
@@ -794,12 +732,12 @@ export function MemberPublicProfileView({
                 >
                   {isFollowing ? (
                     <>
-                      <Check className="size-3.5" />
+                      <Check className="size-4" />
                       <span>Seguindo</span>
                     </>
                   ) : (
                     <>
-                      <Plus className="size-3.5" />
+                      <Plus className="size-4" />
                       <span>Seguir</span>
                     </>
                   )}
@@ -809,14 +747,14 @@ export function MemberPublicProfileView({
                     asChild
                     size="sm"
                     variant="outline"
-                    className="h-8 px-3 rounded-lg font-semibold text-xs gap-2 shrink-0 snap-start border-border/50 bg-transparent hover:bg-muted/40 text-foreground cursor-pointer"
+                    className="h-11 min-h-11 px-3 rounded-lg font-semibold text-xs gap-2 shrink-0 snap-start border-border/50 bg-transparent hover:bg-muted/40 text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                   >
                     <a
                       href={`https://wa.me/${profile.phone.replace(/\D/g, "")}`}
                       target="_blank"
                       rel="noopener noreferrer"
                     >
-                      <MessageCircle className="size-3.5 text-emerald-500" />
+                      <MessageCircle className="size-4 text-emerald-500" />
                       <span>Mensagem</span>
                     </a>
                   </Button>
@@ -824,11 +762,11 @@ export function MemberPublicProfileView({
                 <Button
                   size="sm"
                   variant="outline"
-                  className="h-8 size-8 p-0 rounded-lg shrink-0 text-muted-foreground hover:text-foreground border border-border/50 bg-transparent hover:bg-muted/40 cursor-pointer"
+                  className="h-11 min-h-11 size-11 min-size-11 p-0 rounded-lg shrink-0 text-muted-foreground hover:text-foreground border border-border/50 bg-transparent hover:bg-muted/40 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                   onClick={handleShare}
                   aria-label="Compartilhar Perfil"
                 >
-                  <Share2 className="size-3.5" />
+                  <Share2 className="size-4" />
                 </Button>
               </>
             )}
@@ -850,7 +788,7 @@ export function MemberPublicProfileView({
  <button
  type="button"
  onClick={() => setIsBioExpanded(!isBioExpanded)}
- className="text-xs text-muted-foreground/75 font-bold text-primary hover:underline cursor-pointer inline-flex items-center gap-1"
+ className="text-xs text-muted-foreground/75 font-bold text-primary hover:underline cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary inline-flex items-center gap-1"
  >
  {isBioExpanded ? "Ver menos" : "...mais"}
  </button>
@@ -867,7 +805,7 @@ export function MemberPublicProfileView({
  rel="noopener noreferrer"
  className="inline-flex items-center gap-1 text-primary font-semibold hover:underline"
  >
- <Globe className="size-3.5" />
+ <Globe className="size-4" />
  <span>{profile.website.replace(/^https?:\/\//, "")}</span>
  </a>
  )}
@@ -879,14 +817,14 @@ export function MemberPublicProfileView({
  rel="noopener noreferrer"
  className="inline-flex items-center gap-1 text-foreground/80 font-semibold hover:underline"
  >
- <Instagram className="size-3.5 text-primary" />
+ <Instagram className="size-4 text-primary" />
  <span>@{profile.instagram.replace(/^@/, "")}</span>
  </a>
  )}
 
  {(profile.city || profile.state) && (
  <div className="inline-flex items-center gap-1 text-muted-foreground font-medium">
- <MapPin className="size-3.5 text-primary" />
+ <MapPin className="size-4 text-primary" />
  <span>{[profile.city, profile.state].filter(Boolean).join(", ")}</span>
  </div>
  )}
@@ -905,17 +843,17 @@ export function MemberPublicProfileView({
  href={link.url}
  target="_blank"
  rel="noopener noreferrer"
- className="block w-full aspect-video rounded-lg overflow-hidden border border-border/60 relative group hover:border-border transition-all select-none"
+ className="block w-full aspect-video rounded-lg overflow-hidden border border-border/60 relative group hover:border-border transition-colors motion-reduce:transition-none select-none"
  >
  <img
  src={link.imageUrl}
  alt={link.label || "Banner"}
  className="size-full object-cover group-hover:scale-102 transition-transform duration-300"
  />
- <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent flex flex-col justify-end p-3">
- <span className="text-xs font-bold text-white drop- truncate flex items-center justify-between gap-1">
+ <div className="absolute inset-0 bg-background/80 from-black/75 via-black/25 to-transparent flex flex-col justify-end p-3">
+ <span className="text-xs font-bold text-primary-foreground drop- truncate flex items-center justify-between gap-1">
  <span>{link.label || link.title || "Acessar"}</span>
- <ExternalLink className="size-3 text-white/80 shrink-0" />
+ <ExternalLink className="size-3 text-primary-foreground/80 shrink-0" />
  </span>
  </div>
  </a>
@@ -925,14 +863,14 @@ export function MemberPublicProfileView({
 
   {/* Botões Normais Clean (sem imagem de fundo, minimalistas padrão Apple/Clean) */}
   {profile.biolinks.some((b: any) => !b.imageUrl) && (
-    <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1 max-w-full sm:flex-wrap">
+    <div className="flex items-center gap-2 overflow-x-auto carousel no-scrollbar py-1 max-w-full sm:flex-wrap">
       {profile.biolinks.filter((b: any) => !b.imageUrl).map((link: any, idx: number) => (
         <a
           key={link.id || idx}
           href={link.url}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 h-8 px-3 rounded-lg text-xs font-semibold shrink-0 bg-transparent hover:bg-muted/40 text-foreground border border-border/50 transition-all hover:border-border cursor-pointer"
+          className="inline-flex items-center gap-2 h-11 min-h-11 px-3 rounded-lg text-xs font-semibold shrink-0 bg-transparent hover:bg-muted/40 text-foreground border border-border/50 transition-colors motion-reduce:transition-none hover:border-border cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
         >
           <span>{link.label || link.title || link.url}</span>
           <ExternalLink className="size-3 text-muted-foreground" />
@@ -950,15 +888,15 @@ export function MemberPublicProfileView({
  href={profile.featured_banner_link || "#"}
  target={profile.featured_banner_link ? "_blank" : undefined}
  rel="noopener noreferrer"
- className="block w-full aspect-video rounded-lg overflow-hidden border border-border/60 relative group select-none hover:border-border transition-all"
+ className="block w-full aspect-video rounded-lg overflow-hidden border border-border/60 relative group select-none hover:border-border transition-colors motion-reduce:transition-none"
  >
  <img
  src={profile.featured_banner_url}
  alt="Destaque"
  className="size-full object-cover group-hover:scale-102 transition-transform duration-300"
  />
- <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3">
- <span className="text-xs text-muted-foreground/75 font-bold text-white flex items-center gap-1 drop-">
+ <div className="absolute inset-0 bg-background/80 from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3">
+ <span className="text-xs text-muted-foreground/75 font-bold text-primary-foreground flex items-center gap-1 drop-">
  <span>Acessar</span>
  <ExternalLink className="size-3" />
  </span>
@@ -969,14 +907,14 @@ export function MemberPublicProfileView({
 
  {/* Destaques de Stories Reais (Apenas se o perfil possuir story_highlights reais cadastrados) */}
  {Array.isArray(profile.story_highlights) && profile.story_highlights.length > 0 && (
- <div className="pt-3 pb-1 border-t border-border/20 overflow-x-auto no-scrollbar flex items-center gap-4 sm:gap-6">
+ <div className="pt-3 pb-1 border-t border-border/20 overflow-x-auto carousel no-scrollbar flex items-center gap-4 sm:gap-6">
  {profile.story_highlights.map((hl: any, idx: number) => (
  <div
  key={hl.id || idx}
  onClick={() => hl.cover_url && setPreviewMediaUrl(hl.cover_url)}
- className="flex flex-col items-center gap-2 shrink-0 group cursor-pointer"
+ className="flex flex-col items-center gap-2 shrink-0 group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
  >
- <div className="size-14 sm:size-16 rounded-full p-1 ring-2 ring-primary/40 group-hover:ring-primary group-hover:scale-105 transition-all bg-background overflow-hidden flex items-center justify-center">
+ <div className="size-14 sm:size-16 rounded-full p-1 ring-2 ring-primary/40 group-hover:ring-primary group-hover:scale-105 transition-colors motion-reduce:transition-none bg-background overflow-hidden flex items-center justify-center">
  {hl.cover_url ? (
  <img src={hl.cover_url} alt={hl.title} className="size-full object-cover rounded-full" />
  ) : (
@@ -1004,7 +942,7 @@ export function MemberPublicProfileView({
  <Button
  size="sm"
  variant="ghost"
- className="size-8 p-0 rounded-lg text-muted-foreground hover:text-foreground"
+ className="size-11 min-size-11 p-0 rounded-lg text-muted-foreground hover:text-foreground"
  onClick={() => setEditingSection("about")}
  aria-label="Editar Sobre"
  >
@@ -1020,9 +958,9 @@ export function MemberPublicProfileView({
  <button
  type="button"
  onClick={() => setEditingSection("about")}
- className="text-xs text-muted-foreground hover:text-foreground font-medium py-1 transition-colors flex items-center gap-2"
+ className="text-xs text-muted-foreground hover:text-foreground font-medium py-1 min-h-11 transition-colors flex items-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
  >
- <Plus className="size-3.5" />
+ <Plus className="size-4" />
  <span>Adicionar resumo sobre você</span>
  </button>
  ) : null}
@@ -1037,7 +975,7 @@ export function MemberPublicProfileView({
  <Button
  size="sm"
  variant="ghost"
- className="size-8 p-0 rounded-lg text-muted-foreground hover:text-foreground"
+ className="size-11 min-size-11 p-0 rounded-lg text-muted-foreground hover:text-foreground"
  onClick={() => {
  setActiveEditItem(null);
  setEditingSection("experience");
@@ -1107,14 +1045,14 @@ export function MemberPublicProfileView({
  <Button
  size="sm"
  variant="ghost"
- className="size-7 p-0 rounded-lg text-muted-foreground hover:text-foreground"
+ className="size-11 min-h-11 min-w-11 p-0 rounded-lg text-muted-foreground hover:text-foreground"
  onClick={() => {
  setActiveEditItem(exp);
  setEditingSection("experience");
  }}
  aria-label="Editar Experiência"
  >
- <Edit3 className="size-3.5" />
+ <Edit3 className="size-4" />
  </Button>
  )}
  </div>
@@ -1141,7 +1079,7 @@ export function MemberPublicProfileView({
  {/* Competências Associadas */}
  {exp.skills && exp.skills.length > 0 && (
  <div className="flex flex-wrap items-center gap-2 pl-15 pt-1 text-xs text-muted-foreground">
- <Tag className="size-3.5 text-primary" />
+ <Tag className="size-4 text-primary" />
  <span className="font-semibold text-foreground">Competências:</span>
  <span>{exp.skills.join(" • ")}</span>
  </div>
@@ -1154,7 +1092,7 @@ export function MemberPublicProfileView({
  {experiences.length > 3 && (
  <Button
  variant="ghost"
- className="w-full h-10 rounded-lg text-xs font-bold gap-1 text-muted-foreground hover:text-foreground"
+ className="w-full h-11 min-h-11 rounded-lg text-xs font-bold gap-1 text-muted-foreground hover:text-foreground"
  onClick={() => setShowAllExperiences(!showAllExperiences)}
  >
  <span>{showAllExperiences ? "Recolher experiências" : `Exibir todas as ${experiences.length} experiências `}</span>
@@ -1170,7 +1108,7 @@ export function MemberPublicProfileView({
  <Button
  size="sm"
  variant="ghost"
- className="size-8 p-0 rounded-lg text-muted-foreground hover:text-foreground"
+ className="size-11 min-size-11 p-0 rounded-lg text-muted-foreground hover:text-foreground"
  onClick={() => {
  setActiveEditItem(null);
  setEditingSection("education");
@@ -1211,14 +1149,14 @@ export function MemberPublicProfileView({
  <Button
  size="sm"
  variant="ghost"
- className="size-7 p-0 rounded-lg text-muted-foreground hover:text-foreground"
+ className="size-11 min-h-11 min-w-11 p-0 rounded-lg text-muted-foreground hover:text-foreground"
  onClick={() => {
  setActiveEditItem(edu);
  setEditingSection("education");
  }}
  aria-label="Editar Formação"
  >
- <Edit3 className="size-3.5" />
+ <Edit3 className="size-4" />
  </Button>
  )}
  </div>
@@ -1234,7 +1172,7 @@ export function MemberPublicProfileView({
  {edu.media_urls.map((url: string, mIdx: number) => (
  <div
  key={mIdx}
- className="size-16 rounded-lg overflow-hidden bg-muted/40 cursor-pointer hover:opacity-90 transition-opacity"
+ className="size-16 rounded-lg overflow-hidden bg-muted/40 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary hover:opacity-90 transition-opacity"
  onClick={() => setPreviewMediaUrl(url)}
  >
  <img src={url} alt="Foto de formatura" className="size-full object-cover" />
@@ -1250,7 +1188,7 @@ export function MemberPublicProfileView({
  {educations.length > 3 && (
  <Button
  variant="ghost"
- className="w-full h-10 rounded-lg text-xs font-bold gap-1 text-muted-foreground hover:text-foreground"
+ className="w-full h-11 min-h-11 rounded-lg text-xs font-bold gap-1 text-muted-foreground hover:text-foreground"
  onClick={() => setShowAllEducations(!showAllEducations)}
  >
  <span>{showAllEducations ? "Recolher formações" : `Exibir todas as ${educations.length} formações `}</span>
@@ -1266,7 +1204,7 @@ export function MemberPublicProfileView({
  <Button
  size="sm"
  variant="ghost"
- className="size-8 p-0 rounded-lg text-muted-foreground hover:text-foreground"
+ className="size-11 min-size-11 p-0 rounded-lg text-muted-foreground hover:text-foreground"
  onClick={() => {
  setActiveEditItem(null);
  setEditingSection("certification");
@@ -1305,14 +1243,14 @@ export function MemberPublicProfileView({
  <Button
  size="sm"
  variant="ghost"
- className="size-7 p-0 rounded-lg text-muted-foreground hover:text-foreground"
+ className="size-11 min-h-11 min-w-11 p-0 rounded-lg text-muted-foreground hover:text-foreground"
  onClick={() => {
  setActiveEditItem(cert);
  setEditingSection("certification");
  }}
  aria-label="Editar Certificado"
  >
- <Edit3 className="size-3.5" />
+ <Edit3 className="size-4" />
  </Button>
  )}
  </div>
@@ -1323,11 +1261,11 @@ export function MemberPublicProfileView({
  asChild
  size="sm"
  variant="outline"
- className="h-8 rounded-lg text-xs font-semibold gap-2"
+ className="h-11 min-h-11 rounded-lg text-xs font-semibold gap-2"
  >
  <a href={cert.credential_url} target="_blank" rel="noopener noreferrer">
  <span>Exibir credencial</span>
- <ExternalLink className="size-3.5" />
+ <ExternalLink className="size-4" />
  </a>
  </Button>
  </div>
@@ -1340,7 +1278,7 @@ export function MemberPublicProfileView({
  {certifications.length > 4 && (
  <Button
  variant="ghost"
- className="w-full h-10 rounded-lg text-xs font-bold gap-1 text-muted-foreground hover:text-foreground"
+ className="w-full h-11 min-h-11 rounded-lg text-xs font-bold gap-1 text-muted-foreground hover:text-foreground"
  onClick={() => setShowAllCertifications(!showAllCertifications)}
  >
  <span>{showAllCertifications ? "Recolher certificados" : `Exibir todas as ${certifications.length} licenças `}</span>
@@ -1364,7 +1302,7 @@ export function MemberPublicProfileView({
  <Button
  size="sm"
  variant="ghost"
- className="size-8 p-0 rounded-lg text-muted-foreground hover:text-foreground"
+ className="size-11 min-size-11 p-0 rounded-lg text-muted-foreground hover:text-foreground"
  onClick={() => {
  setActiveEditItem(null);
  setEditingSection("license");
@@ -1432,14 +1370,14 @@ export function MemberPublicProfileView({
  <Button
  size="sm"
  variant="ghost"
- className="size-7 p-0 rounded-lg text-muted-foreground hover:text-foreground shrink-0"
+ className="size-11 min-h-11 min-w-11 p-0 rounded-lg text-muted-foreground hover:text-foreground shrink-0"
  onClick={() => {
  setActiveEditItem(lic);
  setEditingSection("license");
  }}
  aria-label="Editar Registro Profissional"
  >
- <Edit3 className="size-3.5" />
+ <Edit3 className="size-4" />
  </Button>
  )}
  </div>
@@ -1456,7 +1394,7 @@ export function MemberPublicProfileView({
  <Button
  size="sm"
  variant="ghost"
- className="size-8 p-0 rounded-lg text-muted-foreground hover:text-foreground"
+ className="size-11 min-size-11 p-0 rounded-lg text-muted-foreground hover:text-foreground"
  onClick={() => {
  setActiveEditItem(null);
  setEditingSection("project");
@@ -1494,14 +1432,14 @@ export function MemberPublicProfileView({
  <Button
  size="sm"
  variant="ghost"
- className="size-7 p-0 rounded-lg text-muted-foreground hover:text-foreground"
+ className="size-11 min-h-11 min-w-11 p-0 rounded-lg text-muted-foreground hover:text-foreground"
  onClick={() => {
  setActiveEditItem(proj);
  setEditingSection("project");
  }}
  aria-label="Editar Projeto"
  >
- <Edit3 className="size-3.5" />
+ <Edit3 className="size-4" />
  </Button>
  )}
  </div>
@@ -1512,11 +1450,11 @@ export function MemberPublicProfileView({
  asChild
  size="sm"
  variant="outline"
- className="h-8 rounded-lg text-xs font-semibold gap-2"
+ className="h-11 min-h-11 rounded-lg text-xs font-semibold gap-2"
  >
  <a href={proj.project_url} target="_blank" rel="noopener noreferrer">
  <span>Exibir projeto</span>
- <ExternalLink className="size-3.5" />
+ <ExternalLink className="size-4" />
  </a>
  </Button>
  </div>
@@ -1535,7 +1473,7 @@ export function MemberPublicProfileView({
  {projects.length > 3 && (
  <Button
  variant="ghost"
- className="w-full h-10 rounded-lg text-xs font-bold gap-1 text-muted-foreground hover:text-foreground"
+ className="w-full h-11 min-h-11 rounded-lg text-xs font-bold gap-1 text-muted-foreground hover:text-foreground"
  onClick={() => setShowAllProjects(!showAllProjects)}
  >
  <span>{showAllProjects ? "Recolher projetos" : `Exibir todos os ${projects.length} projetos `}</span>
@@ -1551,7 +1489,7 @@ export function MemberPublicProfileView({
  <Button
  size="sm"
  variant="ghost"
- className="size-8 p-0 rounded-lg text-muted-foreground hover:text-foreground"
+ className="size-11 min-size-11 p-0 rounded-lg text-muted-foreground hover:text-foreground"
  onClick={() => {
  setActiveEditItem(null);
  setEditingSection("volunteering");
@@ -1595,14 +1533,14 @@ export function MemberPublicProfileView({
  <Button
  size="sm"
  variant="ghost"
- className="size-7 p-0 rounded-lg text-muted-foreground hover:text-foreground"
+ className="size-11 min-h-11 min-w-11 p-0 rounded-lg text-muted-foreground hover:text-foreground"
  onClick={() => {
  setActiveEditItem(vol);
  setEditingSection("volunteering");
  }}
  aria-label="Editar Voluntariado"
  >
- <Edit3 className="size-3.5" />
+ <Edit3 className="size-4" />
  </Button>
  )}
  </div>
@@ -1626,7 +1564,7 @@ export function MemberPublicProfileView({
  <Button
  size="sm"
  variant="ghost"
- className="size-8 p-0 rounded-lg text-muted-foreground hover:text-foreground"
+ className="size-11 min-size-11 p-0 rounded-lg text-muted-foreground hover:text-foreground"
  onClick={() => setEditingSection("causes")}
  aria-label="Editar Causas"
  >
@@ -1654,7 +1592,7 @@ export function MemberPublicProfileView({
  <Button
  size="sm"
  variant="ghost"
- className="size-8 p-0 rounded-lg text-muted-foreground hover:text-foreground"
+ className="size-11 min-size-11 p-0 rounded-lg text-muted-foreground hover:text-foreground"
  onClick={() => setEditingSection("languages")}
  aria-label="Editar Idiomas"
  >
@@ -1690,14 +1628,14 @@ export function MemberPublicProfileView({
  <div className="space-y-6">
  {/* Navegação de Abas do Perfil Social — Tabs Sublinhadas Minimalistas (Apple HIG) */}
  <div className="flex items-center justify-between border-b border-border/60">
- <div className="flex items-center gap-6 sm:gap-8 overflow-x-auto no-scrollbar">
+ <div className="flex items-center gap-6 sm:gap-8 overflow-x-auto carousel no-scrollbar">
  <button
  type="button"
  onClick={() => setSocialTab("posts")}
  className={cn(
- "pb-3 text-xs sm:text-sm font-bold transition-all relative cursor-pointer whitespace-nowrap",
+ "pb-3 text-xs sm:text-sm font-bold transition-colors motion-reduce:transition-none relative cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary whitespace-nowrap",
  socialTab === "posts"
- ? "text-foreground after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-primary"
+ ? "text-foreground border-b-2 border-primary"
  : "text-muted-foreground hover:text-foreground"
  )}
  >
@@ -1708,9 +1646,9 @@ export function MemberPublicProfileView({
  type="button"
  onClick={() => setSocialTab("media")}
  className={cn(
- "pb-3 text-xs sm:text-sm font-bold transition-all relative cursor-pointer whitespace-nowrap",
+ "pb-3 text-xs sm:text-sm font-bold transition-colors motion-reduce:transition-none relative cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary whitespace-nowrap",
  socialTab === "media"
- ? "text-foreground after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-primary"
+ ? "text-foreground border-b-2 border-primary"
  : "text-muted-foreground hover:text-foreground"
  )}
  >
@@ -1723,9 +1661,9 @@ export function MemberPublicProfileView({
  type="button"
  onClick={() => setSocialTab("saved")}
  className={cn(
- "pb-3 text-xs sm:text-sm font-bold transition-all relative cursor-pointer whitespace-nowrap",
+ "pb-3 text-xs sm:text-sm font-bold transition-colors motion-reduce:transition-none relative cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary whitespace-nowrap",
  socialTab === "saved"
- ? "text-foreground after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-primary"
+ ? "text-foreground border-b-2 border-primary"
  : "text-muted-foreground hover:text-foreground"
  )}
  >
@@ -1736,9 +1674,9 @@ export function MemberPublicProfileView({
  type="button"
  onClick={() => setSocialTab("liked")}
  className={cn(
- "pb-3 text-xs sm:text-sm font-bold transition-all relative cursor-pointer whitespace-nowrap",
+ "pb-3 text-xs sm:text-sm font-bold transition-colors motion-reduce:transition-none relative cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary whitespace-nowrap",
  socialTab === "liked"
- ? "text-foreground after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-primary"
+ ? "text-foreground border-b-2 border-primary"
  : "text-muted-foreground hover:text-foreground"
  )}
  >
@@ -1754,20 +1692,20 @@ export function MemberPublicProfileView({
  <Button
  size="sm"
  variant="ghost"
- className={cn("size-7 p-0 rounded-lg cursor-pointer", postViewMode === "feed" && "bg-background ")}
+ className={cn("size-11 min-h-11 min-w-11 p-0 rounded-lg cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary", postViewMode === "feed" && "bg-background ")}
  onClick={() => setPostViewMode("feed")}
  aria-label="Modo Feed"
  >
- <List className="size-3.5" />
+ <List className="size-4" />
  </Button>
  <Button
  size="sm"
  variant="ghost"
- className={cn("size-7 p-0 rounded-lg cursor-pointer", postViewMode === "grid" && "bg-background ")}
+ className={cn("size-11 min-h-11 min-w-11 p-0 rounded-lg cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary", postViewMode === "grid" && "bg-background ")}
  onClick={() => setPostViewMode("grid")}
  aria-label="Modo Grade"
  >
- <Grid className="size-3.5" />
+ <Grid className="size-4" />
  </Button>
  </div>
  )}
@@ -1782,13 +1720,13 @@ export function MemberPublicProfileView({
  <p className="text-sm font-medium">Nenhuma publicação compartilhada ainda.</p>
  </div>
  ) : postViewMode === "grid" ? (
- <div className="grid grid-cols-3 gap-2 sm:gap-3">
+ <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3">
  {posts.map((p: any) => {
  const media = p.media_urls?.[0] || p.media_url;
  return (
  <div
  key={p.id}
- className="aspect-square rounded-lg sm:rounded-lg bg-muted/30 overflow-hidden relative cursor-pointer group select-none border border-border/40 hover:border-border transition-colors"
+ className="aspect-square rounded-lg sm:rounded-lg bg-muted/30 overflow-hidden relative cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary group select-none border border-border/40 hover:border-border transition-colors"
  onClick={() => {
  if (media) {
  setSelectedLightboxPost(p);
@@ -1803,7 +1741,7 @@ export function MemberPublicProfileView({
  className="size-full object-cover group-hover:scale-105 transition-transform duration-300"
  />
  ) : (
- <div className="size-full p-3 sm:p-4 flex flex-col justify-between bg-gradient-to-br from-muted/40 via-muted/20 to-background">
+ <div className="size-full p-3 sm:p-4 flex flex-col justify-between bg-muted/40 from-muted/40 via-muted/20 to-background">
  <p className="line-clamp-3 sm:line-clamp-4 font-medium leading-relaxed text-xs sm:text-xs text-foreground/90">
  {p.content || p.content_text}
  </p>
@@ -1815,13 +1753,13 @@ export function MemberPublicProfileView({
  )}
 
  {/* Hover Overlay com Curtidas e Comentários (Instagram Style) */}
- <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3 sm:gap-4 text-white font-bold text-xs pointer-events-none">
+ <div className="absolute inset-0 bg-card/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3 sm:gap-4 text-primary-foreground font-bold text-xs pointer-events-none">
  <span className="flex items-center gap-1">
- <Heart className="size-3.5 sm:size-4 fill-white" />
+ <Heart className="size-4 sm:size-4 fill-white" />
  {p.likes_count || 0}
  </span>
  <span className="flex items-center gap-1">
- <MessageCircle className="size-3.5 sm:size-4 fill-white" />
+ <MessageCircle className="size-4 sm:size-4 fill-white" />
  {p.comments_count || 0}
  </span>
  </div>
@@ -1868,11 +1806,11 @@ export function MemberPublicProfileView({
  <p className="text-sm font-medium">Nenhuma foto ou vídeo compartilhado ainda.</p>
  </div>
  ) : (
- <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+ <div className="grid grid-cols-2 sm:grid-cols-1 sm:grid-cols-3 gap-3">
  {posts.filter((p: any) => !!p.media_url).map((p: any) => (
  <div
  key={p.id}
- className="aspect-square rounded-lg bg-muted/40 overflow-hidden relative cursor-pointer group"
+ className="aspect-square rounded-lg bg-muted/40 overflow-hidden relative cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary group"
  onClick={() => setPreviewMediaUrl(p.media_url)}
  >
  <img src={p.media_url} alt="Galeria" className="size-full object-cover group-hover:scale-105 transition-transform" />
@@ -1957,7 +1895,7 @@ export function MemberPublicProfileView({
  alt={creatorProfile.banner_title || "Banner da marca"}
  className="w-full h-full object-cover"
  />
- <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent flex flex-col justify-end p-5 sm:p-6 text-white space-y-1">
+ <div className="absolute inset-0 bg-background/80 from-black/85 via-black/30 to-transparent flex flex-col justify-end p-5 sm:p-6 text-primary-foreground space-y-1">
  <span className="text-xs uppercase tracking-wider font-semibold text-primary-foreground/80">
  Destaque da Marca
  </span>
@@ -1966,10 +1904,10 @@ export function MemberPublicProfileView({
  </h3>
  {creatorProfile.banner_link && (
  <div className="pt-2">
- <Button asChild size="sm" className="h-9 px-4 rounded-lg text-xs font-semibold gap-2 bg-white text-black hover:bg-white/90">
+ <Button asChild size="sm" className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold gap-2 bg-card text-foreground hover:bg-card/90">
  <a href={creatorProfile.banner_link} target="_blank" rel="noopener noreferrer">
  <span>Acessar Destaque</span>
- <ExternalLink className="size-3.5" />
+ <ExternalLink className="size-4" />
  </a>
  </Button>
  </div>
@@ -2029,17 +1967,17 @@ export function MemberPublicProfileView({
  navigator.clipboard.writeText(couponCode);
  toast.success(`Cupom ${couponCode} copiado!`);
  }}
- className="h-8 px-3 rounded-lg text-xs font-semibold gap-1"
+ className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold gap-1"
  >
  <Copy className="size-3" />
  <span>Copiar</span>
  </Button>
  </div>
 
- <Button asChild size="sm" className="w-full h-10 rounded-lg text-xs font-semibold gap-2">
+ <Button asChild size="sm" className="w-full h-11 min-h-11 rounded-lg text-xs font-semibold gap-2">
  <Link to="/c/$storeSlug" params={{ storeSlug: s.slug }} search={{ ref: creatorProfile?.handle || profile.username, coupon: couponCode }}>
  <span>Visitar Loja com Cupom</span>
- <ArrowRight className="size-3.5" />
+ <ArrowRight className="size-4" />
  </Link>
  </Button>
  </div>
@@ -2074,7 +2012,7 @@ export function MemberPublicProfileView({
  to="/produto/$slug"
  params={{ slug: p.slug }}
  search={{ ref: creatorProfile?.handle || profile.username } as any}
- className="group rounded-lg bg-card border border-border/60 hover:border-primary/40 transition-all overflow-hidden flex flex-col justify-between"
+ className="group rounded-lg bg-card border border-border/60 hover:border-primary/40 transition-colors motion-reduce:transition-none overflow-hidden flex flex-col justify-between"
  >
  <div className="space-y-3">
  <div className="aspect-video bg-muted/40 relative overflow-hidden">
@@ -2086,7 +2024,7 @@ export function MemberPublicProfileView({
  />
  ) : (
  <div className="size-full flex items-center justify-center text-muted-foreground">
- <ShoppingBag className="size-8" />
+ <ShoppingBag className="size-11 min-size-11" />
  </div>
  )}
  <div className="absolute top-2 right-2 px-3 py-1 rounded-lg bg-background/90 backdrop-blur-md text-xs font-extrabold text-primary">
@@ -2108,9 +2046,9 @@ export function MemberPublicProfileView({
  </div>
 
  <div className="p-4 pt-0">
- <div className="w-full h-9 rounded-lg bg-muted/40 hover:bg-muted text-xs font-semibold flex items-center justify-center gap-2 text-foreground">
+ <div className="w-full h-11 min-h-11 rounded-lg bg-muted/40 hover:bg-muted text-xs font-semibold flex items-center justify-center gap-2 text-foreground">
  <span>Ver Detalhes do Produto</span>
- <ArrowRight className="size-3.5" />
+ <ArrowRight className="size-4" />
  </div>
  </div>
  </Link>
@@ -2206,7 +2144,7 @@ export function MemberPublicProfileView({
  <h2 className="text-lg font-bold text-foreground tracking-tight">Classificados e Desapegos</h2>
  {classifieds.length === 0 ? (
  <div className="py-12 text-center text-muted-foreground space-y-2">
- <ShoppingBag className="size-8 mx-auto text-muted-foreground/40" />
+ <ShoppingBag className="size-11 min-size-11 mx-auto text-muted-foreground/40" />
  <p className="text-sm">Nenhum anúncio ativo no momento.</p>
  </div>
  ) : (
@@ -2216,7 +2154,7 @@ export function MemberPublicProfileView({
  key={item.id}
  to="/classificados/$id"
  params={{ id: item.id }}
- className="group rounded-lg bg-muted/20 hover:bg-muted/40 transition-all overflow-hidden flex flex-col"
+ className="group rounded-lg bg-muted/20 hover:bg-muted/40 transition-colors motion-reduce:transition-none overflow-hidden flex flex-col"
  >
  <div className="aspect-4/3 bg-muted/40 relative overflow-hidden">
  {item.images?.[0] ? (
@@ -2227,7 +2165,7 @@ export function MemberPublicProfileView({
  />
  ) : (
  <div className="size-full flex items-center justify-center text-muted-foreground/40">
- <ShoppingBag className="size-8" />
+ <ShoppingBag className="size-11 min-size-11" />
  </div>
  )}
  <div className="absolute top-2 right-2 px-3 py-1 rounded-lg bg-background/90 backdrop-blur-md text-xs font-extrabold text-foreground">
@@ -2567,7 +2505,7 @@ function AvailabilityEditModal({
  type="checkbox"
  checked={openToWork}
  onChange={(e) => setOpenToWork(e.target.checked)}
- className="size-5 rounded-lg accent-primary cursor-pointer"
+ className="size-5 rounded-lg accent-primary cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
  />
  </div>
  {openToWork && (
@@ -2577,7 +2515,7 @@ function AvailabilityEditModal({
  value={rolesStr}
  onChange={(e) => setRolesStr(e.target.value)}
  placeholder="Ex: Gerente de Loja, Vendedora, Desenvolvedor"
- className="h-10 rounded-lg"
+ className="h-11 min-h-11 rounded-lg"
  />
  </div>
  )}
@@ -2597,7 +2535,7 @@ function AvailabilityEditModal({
  type="checkbox"
  checked={hiring}
  onChange={(e) => setHiring(e.target.checked)}
- className="size-5 rounded-lg accent-primary cursor-pointer"
+ className="size-5 rounded-lg accent-primary cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
  />
  </div>
  {hiring && (
@@ -2607,7 +2545,7 @@ function AvailabilityEditModal({
  value={hiringRolesStr}
  onChange={(e) => setHiringRolesStr(e.target.value)}
  placeholder="Ex: Barista, Atendente, Entregador"
- className="h-10 rounded-lg"
+ className="h-11 min-h-11 rounded-lg"
  />
  </div>
  )}
@@ -2627,7 +2565,7 @@ function AvailabilityEditModal({
  type="checkbox"
  checked={providingServices}
  onChange={(e) => setProvidingServices(e.target.checked)}
- className="size-5 rounded-lg accent-primary cursor-pointer"
+ className="size-5 rounded-lg accent-primary cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
  />
  </div>
  {providingServices && (
@@ -2637,7 +2575,7 @@ function AvailabilityEditModal({
  value={servicesStr}
  onChange={(e) => setServicesStr(e.target.value)}
  placeholder="Ex: Fotografia, Social Media, Reformas"
- className="h-10 rounded-lg"
+ className="h-11 min-h-11 rounded-lg"
  />
  </div>
  )}
@@ -2656,7 +2594,7 @@ function AvailabilityEditModal({
  type="checkbox"
  checked={volunteering}
  onChange={(e) => setVolunteering(e.target.checked)}
- className="size-5 rounded-lg accent-primary cursor-pointer"
+ className="size-5 rounded-lg accent-primary cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
  />
  </div>
  </div>
@@ -2713,7 +2651,7 @@ function AboutEditModal({
  value={headline}
  onChange={(e) => setHeadline(e.target.value)}
  placeholder="Ex: Gerente Administrativo • Apaixonado por Comunidade"
- className="h-10 rounded-lg"
+ className="h-11 min-h-11 rounded-lg"
  />
  </div>
 
@@ -2864,7 +2802,7 @@ function ExperienceEditModal({
  value={title}
  onChange={(e) => setTitle(e.target.value)}
  placeholder="Ex: Gerente de Atendimento"
- className="h-10 rounded-lg"
+ className="h-11 min-h-11 rounded-lg"
  required
  />
  </div>
@@ -2875,7 +2813,7 @@ function ExperienceEditModal({
  value={company}
  onChange={(e) => handleCompanyChange(e.target.value)}
  placeholder="Digite para buscar empresas no Waesy..."
- className="h-10 rounded-lg"
+ className="h-11 min-h-11 rounded-lg"
  required
  />
  {companySuggestions.length > 0 && (
@@ -2886,7 +2824,7 @@ function ExperienceEditModal({
  {companySuggestions.map((s) => (
  <div
  key={s.id}
- className="flex items-center gap-2 p-2 rounded-lg hover:bg-muted/50 cursor-pointer"
+ className="flex items-center gap-2 p-2 rounded-lg hover:bg-muted/50 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
  onClick={() => handleSelectStore(s)}
  >
  <div className="size-6 rounded-lg bg-muted flex items-center justify-center overflow-hidden flex-shrink-0">
@@ -2906,7 +2844,7 @@ function ExperienceEditModal({
  <div className="space-y-2">
  <Label className="text-xs font-semibold">Tipo de Emprego</Label>
  <Select value={employmentType} onValueChange={setEmploymentType}>
- <SelectTrigger className="h-10 rounded-lg">
+ <SelectTrigger className="h-11 min-h-11 rounded-lg">
  <SelectValue />
  </SelectTrigger>
  <SelectContent className="rounded-lg">
@@ -2923,7 +2861,7 @@ function ExperienceEditModal({
  <div className="space-y-2">
  <Label className="text-xs font-semibold">Modelo de Trabalho</Label>
  <Select value={locationType} onValueChange={setLocationType}>
- <SelectTrigger className="h-10 rounded-lg">
+ <SelectTrigger className="h-11 min-h-11 rounded-lg">
  <SelectValue />
  </SelectTrigger>
  <SelectContent className="rounded-lg">
@@ -2941,7 +2879,7 @@ function ExperienceEditModal({
  value={location}
  onChange={(e) => setLocation(e.target.value)}
  placeholder="Ex: Chapecó, Santa Catarina, Brasil"
- className="h-10 rounded-lg"
+ className="h-11 min-h-11 rounded-lg"
  />
  </div>
 
@@ -2951,9 +2889,9 @@ function ExperienceEditModal({
  id="is_current_exp"
  checked={isCurrent}
  onChange={(e) => setIsCurrent(e.target.checked)}
- className="size-4 rounded accent-primary cursor-pointer"
+ className="size-4 rounded accent-primary cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
  />
- <Label htmlFor="is_current_exp" className="text-xs font-semibold cursor-pointer">
+ <Label htmlFor="is_current_exp" className="text-xs font-semibold cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
  Trabalho atualmente neste cargo
  </Label>
  </div>
@@ -2965,7 +2903,7 @@ function ExperienceEditModal({
  value={startDate}
  onChange={(e) => setStartDate(e.target.value)}
  placeholder="Ex: jan de 2024"
- className="h-10 rounded-lg"
+ className="h-11 min-h-11 rounded-lg"
  />
  </div>
  {!isCurrent && (
@@ -2975,7 +2913,7 @@ function ExperienceEditModal({
  value={endDate}
  onChange={(e) => setEndDate(e.target.value)}
  placeholder="Ex: mai de 2026"
- className="h-10 rounded-lg"
+ className="h-11 min-h-11 rounded-lg"
  />
  </div>
  )}
@@ -2998,7 +2936,7 @@ function ExperienceEditModal({
  value={skillsStr}
  onChange={(e) => setSkillsStr(e.target.value)}
  placeholder="Ex: Vendas, Gestão de Equipe, Atendimento"
- className="h-10 rounded-lg"
+ className="h-11 min-h-11 rounded-lg"
  />
  </div>
 
@@ -3011,14 +2949,14 @@ function ExperienceEditModal({
  <img src={url} className="size-full object-cover" />
  <button
  type="button"
- className="absolute inset-0 bg-black/60 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ className="absolute inset-0 bg-card/60 text-primary-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  onClick={() => setMediaUrls(mediaUrls.filter((_, i) => i !== idx))}
  >
  <Trash2 className="size-4" />
  </button>
  </div>
  ))}
- <label className="size-16 rounded-lg border border-dashed border-border flex flex-col items-center justify-center text-muted-foreground hover:bg-muted/40 cursor-pointer transition-colors">
+ <label className="size-16 rounded-lg border border-dashed border-border flex flex-col items-center justify-center text-muted-foreground hover:bg-muted/40 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-colors">
  <Upload className="size-4" />
  <span className="text-xs font-bold mt-1">Subir Mídia</span>
  <input type="file" multiple accept="image/*,.pdf" className="hidden" onChange={handleFileUpload} disabled={isUploading} />
@@ -3108,7 +3046,7 @@ function EducationEditModal({
  value={school}
  onChange={(e) => setSchool(e.target.value)}
  placeholder="Ex: UFFS - Universidade Federal da Fronteira Sul"
- className="h-10 rounded-lg"
+ className="h-11 min-h-11 rounded-lg"
  required
  />
  </div>
@@ -3119,7 +3057,7 @@ function EducationEditModal({
  value={degree}
  onChange={(e) => setDegree(e.target.value)}
  placeholder="Ex: Bacharelado, Pós-graduação, Técnico"
- className="h-10 rounded-lg"
+ className="h-11 min-h-11 rounded-lg"
  />
  </div>
 
@@ -3129,7 +3067,7 @@ function EducationEditModal({
  value={fieldOfStudy}
  onChange={(e) => setFieldOfStudy(e.target.value)}
  placeholder="Ex: Administração, Ciência da Computação"
- className="h-10 rounded-lg"
+ className="h-11 min-h-11 rounded-lg"
  />
  </div>
 
@@ -3140,7 +3078,7 @@ function EducationEditModal({
  value={startDate}
  onChange={(e) => setStartDate(e.target.value)}
  placeholder="Ex: 2018"
- className="h-10 rounded-lg"
+ className="h-11 min-h-11 rounded-lg"
  />
  </div>
  <div className="space-y-2">
@@ -3149,7 +3087,7 @@ function EducationEditModal({
  value={endDate}
  onChange={(e) => setEndDate(e.target.value)}
  placeholder="Ex: 2022"
- className="h-10 rounded-lg"
+ className="h-11 min-h-11 rounded-lg"
  />
  </div>
  </div>
@@ -3243,7 +3181,7 @@ function CertificationEditModal({
  value={name}
  onChange={(e) => setName(e.target.value)}
  placeholder="Ex: Gestão de RH, UX Design"
- className="h-10 rounded-lg"
+ className="h-11 min-h-11 rounded-lg"
  required
  />
  </div>
@@ -3254,7 +3192,7 @@ function CertificationEditModal({
  value={issuer}
  onChange={(e) => setIssuer(e.target.value)}
  placeholder="Ex: EBAC, SENAC, Google"
- className="h-10 rounded-lg"
+ className="h-11 min-h-11 rounded-lg"
  required
  />
  </div>
@@ -3265,7 +3203,7 @@ function CertificationEditModal({
  value={issueDate}
  onChange={(e) => setIssueDate(e.target.value)}
  placeholder="Ex: fev de 2021"
- className="h-10 rounded-lg"
+ className="h-11 min-h-11 rounded-lg"
  />
  </div>
 
@@ -3275,7 +3213,7 @@ function CertificationEditModal({
  value={credentialUrl}
  onChange={(e) => setCredentialUrl(e.target.value)}
  placeholder="https://..."
- className="h-10 rounded-lg"
+ className="h-11 min-h-11 rounded-lg"
  />
  </div>
  </div>
@@ -3363,7 +3301,7 @@ function ProjectEditModal({
  value={title}
  onChange={(e) => setTitle(e.target.value)}
  placeholder="Ex: Case Ebis"
- className="h-10 rounded-lg"
+ className="h-11 min-h-11 rounded-lg"
  required
  />
  </div>
@@ -3374,7 +3312,7 @@ function ProjectEditModal({
  value={associatedWith}
  onChange={(e) => setAssociatedWith(e.target.value)}
  placeholder="Ex: Decibal Alimentos"
- className="h-10 rounded-lg"
+ className="h-11 min-h-11 rounded-lg"
  />
  </div>
 
@@ -3384,7 +3322,7 @@ function ProjectEditModal({
  value={projectUrl}
  onChange={(e) => setProjectUrl(e.target.value)}
  placeholder="https://..."
- className="h-10 rounded-lg"
+ className="h-11 min-h-11 rounded-lg"
  />
  </div>
 
@@ -3395,7 +3333,7 @@ function ProjectEditModal({
  value={startDate}
  onChange={(e) => setStartDate(e.target.value)}
  placeholder="Ex: mai de 2017"
- className="h-10 rounded-lg"
+ className="h-11 min-h-11 rounded-lg"
  />
  </div>
  {!isCurrent && (
@@ -3405,7 +3343,7 @@ function ProjectEditModal({
  value={endDate}
  onChange={(e) => setEndDate(e.target.value)}
  placeholder="Ex: dez de 2022"
- className="h-10 rounded-lg"
+ className="h-11 min-h-11 rounded-lg"
  />
  </div>
  )}
@@ -3506,7 +3444,7 @@ function VolunteeringEditModal({
  value={role}
  onChange={(e) => setRole(e.target.value)}
  placeholder="Ex: Voluntário de Apoio"
- className="h-10 rounded-lg"
+ className="h-11 min-h-11 rounded-lg"
  required
  />
  </div>
@@ -3517,7 +3455,7 @@ function VolunteeringEditModal({
  value={organization}
  onChange={(e) => setOrganization(e.target.value)}
  placeholder="Ex: ONG Esperança"
- className="h-10 rounded-lg"
+ className="h-11 min-h-11 rounded-lg"
  required
  />
  </div>
@@ -3525,7 +3463,7 @@ function VolunteeringEditModal({
  <div className="space-y-2">
  <Label className="text-xs font-semibold">Causa Social</Label>
  <Select value={cause} onValueChange={setCause}>
- <SelectTrigger className="h-10 rounded-lg">
+ <SelectTrigger className="h-11 min-h-11 rounded-lg">
  <SelectValue />
  </SelectTrigger>
  <SelectContent className="rounded-lg max-h-48 overflow-y-auto no-scrollbar">
@@ -3545,7 +3483,7 @@ function VolunteeringEditModal({
  value={startDate}
  onChange={(e) => setStartDate(e.target.value)}
  placeholder="Ex: out de 2018"
- className="h-10 rounded-lg"
+ className="h-11 min-h-11 rounded-lg"
  />
  </div>
  {!isCurrent && (
@@ -3555,7 +3493,7 @@ function VolunteeringEditModal({
  value={endDate}
  onChange={(e) => setEndDate(e.target.value)}
  placeholder="Ex: dez de 2023"
- className="h-10 rounded-lg"
+ className="h-11 min-h-11 rounded-lg"
  />
  </div>
  )}
@@ -3646,7 +3584,7 @@ function CausesEditModal({
  key={cause}
  onClick={() => toggleCause(cause)}
  className={cn(
- "px-4 py-3 rounded-lg text-xs font-semibold transition-all text-left cursor-pointer",
+ "px-4 py-3 rounded-lg text-xs font-semibold transition-colors motion-reduce:transition-none text-left cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
  isSelected
  ? "bg-primary text-primary-foreground font-bold"
  : "bg-muted/40 text-muted-foreground hover:bg-muted/80 hover:text-foreground"
@@ -3730,7 +3668,7 @@ function LanguagesEditModal({
  <button
  type="button"
  onClick={() => removeLanguage(idx)}
- className="text-muted-foreground hover:text-destructive text-xs cursor-pointer"
+ className="text-muted-foreground hover:text-destructive text-xs cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
  >
  Remover
  </button>
@@ -3741,13 +3679,13 @@ function LanguagesEditModal({
  value={item.language}
  onChange={(e) => updateItem(idx, "language", e.target.value)}
  placeholder="Ex: Inglês, Espanhol"
- className="h-10 rounded-lg text-xs"
+ className="h-11 min-h-11 rounded-lg text-xs"
  />
  <Select
  value={item.proficiency}
  onValueChange={(val) => updateItem(idx, "proficiency", val)}
  >
- <SelectTrigger className="h-10 rounded-lg text-xs">
+ <SelectTrigger className="h-11 min-h-11 rounded-lg text-xs">
  <SelectValue />
  </SelectTrigger>
  <SelectContent className="rounded-lg">
@@ -3769,7 +3707,7 @@ function LanguagesEditModal({
  className="w-full rounded-lg text-xs font-semibold gap-2"
  onClick={addLanguage}
  >
- <Plus className="size-3.5" />
+ <Plus className="size-4" />
  <span>Adicionar outro idioma</span>
  </Button>
  </div>

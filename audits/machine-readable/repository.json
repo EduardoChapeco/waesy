@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "project_name": "usewaesy",
+  "project_root": "C:\\Users\\Eduardo Antônio Ramo\\Documents\\waesy",
+  "branch": "main",
+  "commit": "3792ef29681a79cbcc26e25b70a6c868004e6167",
+  "timestamp": "2026-10-04T00:21:40-03:00",
+  "topology": {
+    "total_source_files": 1837,
+    "directories": {
+      "components": 718,
+      "routes": 406,
+      "services": 397,
+      "lib": 245,
+      "types": 36,
+      "hooks": 17,
+      "registries": 6
+    }
+  },
+  "stacks": {
+    "frontend": ["React 19.2.0", "TanStack Router v1.170", "TanStack Query v5.101", "Tailwind CSS v4", "Radix UI", "Lucide React", "Phosphor Icons", "Framer Motion"],
+    "backend": ["TanStack Start", "Nitro v3 Beta", "Server Functions (createServerFn)", "Zod v3.24.2"],
+    "database": ["Supabase PostgreSQL", "pg_cron", "pg_net", "pgvector", "RLS"],
+    "deployment": ["Cloudflare Pages & Workers", "Wrangler v3"]
+  },
+  "modules": [
+    "commerce",
+    "marketplace",
+    "news",
+    "jobs",
+    "events",
+    "directory",
+    "tenders",
+    "economic_indicators",
+    "mobility",
+    "delivery",
+    "ai_copilot",
+    "mcp_server"
+  ],
+  "engines_count": 8,
+  "skills_count": 44,
+  "agents_count": 8,
+  "migrations_count": 52
+}

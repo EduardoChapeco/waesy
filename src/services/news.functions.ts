@@ -26,6 +26,8 @@ export interface NewsArticleDTO {
  cover_media_type: "image" | "video" | "gif";
  category: string;
  tags: string[];
+  city?: string;
+  state?: string;
  reading_time_minutes: number;
  views_count: number;
  unique_views_count: number;
@@ -74,6 +76,7 @@ export const listPublicArticles = createServerFn({ method: "GET" })
  storeId: z.string().uuid().optional(),
  limit: z.number().int().min(1).max(50).default(20),
  query: z.string().optional(),
+      city: z.string().optional(),
  })
  .optional(),
  )
@@ -88,7 +91,7 @@ export const listPublicArticles = createServerFn({ method: "GET" })
  `
  id, store_id, author_profile_id, author_name, source_url, ai_summary, quality_score,
  title, slug, kicker, subtitle, content_sections,
- cover_media_url, cover_media_type, category, tags, reading_time_minutes,
+ cover_media_url, cover_media_type, category, tags, city, state, reading_time_minutes,
  views_count, unique_views_count, status, published_at, created_at,
  stores ( name, avatar_url ),
  profiles ( full_name )
@@ -106,7 +109,11 @@ export const listPublicArticles = createServerFn({ method: "GET" })
  q = q.eq("store_id", data.storeId);
  }
 
- if (data?.query) {
+ if (data?.city && data.city !== "todas" && data.city !== "Todas" && data.city !== "Global" && data.city !== "all") {
+        q = q.or(`city.ilike.%${data.city}%,tags.cs.{${data.city.toLowerCase()}}`);
+      }
+
+      if (data?.query) {
  q = q.ilike("title", `%${data.query}%`);
  }
 
@@ -140,6 +147,8 @@ export const listPublicArticles = createServerFn({ method: "GET" })
  cover_media_type: a.cover_media_type || "image",
  category: a.category,
  tags: a.tags || [],
+        city: a.city || "Chapecó",
+        state: a.state || "SC",
  reading_time_minutes: a.reading_time_minutes || 3,
  views_count: a.views_count || 0,
  unique_views_count: a.unique_views_count || 0,

@@ -471,7 +471,7 @@ export const MediaUploader: React.FC<MediaUploaderProps> = ({
  {item.type === "image" && enableCrop && (
  <Button type="button" variant="secondary" size="icon" onClick={() => handleOpenRecrop(idx)}
  title="Ajustar e Recortar"
- className="size-11 sm:size-8 flex items-center justify-center rounded-lg bg-foreground/80 backdrop-blur-xs text-background hover:bg-primary hover:text-primary-foreground transition-colors cursor-pointer shadow-xs focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+ className="h-11 w-11 min-h-11 min-w-11 flex items-center justify-center rounded-lg bg-foreground/80 backdrop-blur-xs text-background hover:bg-primary hover:text-primary-foreground transition-colors cursor-pointer shadow-xs focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
  aria-label="Ajustar e Recortar Imagem"
  >
  <Crop className="size-4" />
@@ -479,7 +479,7 @@ export const MediaUploader: React.FC<MediaUploaderProps> = ({
  )}
  <Button type="button" variant="destructive" size="icon" onClick={() => removeMedia(idx)}
  title="Remover"
- className="size-11 sm:size-8 flex items-center justify-center rounded-lg bg-foreground/80 backdrop-blur-xs text-background hover:bg-destructive hover:text-destructive-foreground transition-colors cursor-pointer shadow-xs focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+ className="h-11 w-11 min-h-11 min-w-11 flex items-center justify-center rounded-lg bg-foreground/80 backdrop-blur-xs text-background hover:bg-destructive hover:text-destructive-foreground transition-colors cursor-pointer shadow-xs focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
  aria-label="Remover Mídia"
  >
  <X className="size-4" />

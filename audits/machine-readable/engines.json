@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "engines": [
+    { "name": "html2canvas", "version": "1.4.1", "type": "dom_to_image", "license": "MIT" },
+    { "name": "jspdf", "version": "4.2.1", "type": "pdf_generation", "license": "MIT" },
+    { "name": "maplibre-gl", "version": "6.3.0", "type": "vector_maps", "license": "BSD-3-Clause" },
+    { "name": "recharts", "version": "2.15.4", "type": "data_visualization", "license": "MIT" },
+    { "name": "zod", "version": "3.24.2", "type": "schema_validation", "license": "MIT" },
+    { "name": "framer-motion", "version": "13.4.0", "type": "physics_motion", "license": "MIT" },
+    { "name": "mechanical-extractor", "type": "custom_html_cleaner", "source": "src/services/mining/mechanical-extractor.ts" },
+    { "name": "semantic-deduplicator", "type": "jaccard_similarity", "source": "src/services/mining/semantic-deduplicator.ts" },
+    { "name": "integrity-gate", "type": "quality_evaluator", "source": "src/services/mining/integrity-gate.ts" }
+  ]
+}

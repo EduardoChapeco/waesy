@@ -162,7 +162,7 @@ export function TravelPackageDetailView({
  return (
  <div className="w-full bg-background text-foreground flex flex-col min-h-dvh relative select-none">
  {/* ── 1. Barra Superior de Abas (Estilo App Nativo de Viagem) ── */}
- <header className="sticky top-0 z-30 bg-background/95 backdrop-blur-xl border-b border-border/70 shadow-2xs">
+ <header className="relative md:static z-20 bg-background/95 md:bg-card/40 backdrop-blur-xl md:backdrop-blur-none border-b border-border/70 md:rounded-lg shadow-2xs md:shadow-none mb-3">
  <div className="flex items-center justify-between px-4 h-12 max-w-4xl mx-auto w-full">
  <div className="flex items-center gap-2 truncate">
  <span className="text-xs font-bold uppercase tracking-wider bg-primary/10 text-primary px-2 py-1 rounded-full">
@@ -329,29 +329,40 @@ export function TravelPackageDetailView({
 
  {/* Checklist de Inclusões ("O que inclui") */}
  <section className="px-4 sm:px-6 space-y-3">
- <div className="flex items-center justify-between">
- <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
- <ShieldCheck className="size-4 text-emerald-500" />
- <span>O que está incluso neste pacote</span>
- </h3>
- <span className="text-xs font-mono text-emerald-600 dark:text-emerald-400 font-semibold">
- {inclusions.length} inclusões
- </span>
- </div>
+ {inclusions.length > 0 ? (
+   <>
+     <div className="flex items-center justify-between">
+       <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+         <ShieldCheck className="size-4 text-emerald-500" />
+         <span>O que está incluso neste pacote</span>
+       </h3>
+       <span className="text-xs font-mono text-emerald-600 dark:text-emerald-400 font-semibold">
+         {inclusions.length} {inclusions.length === 1 ? "inclusão" : "inclusões"}
+       </span>
+     </div>
 
- <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
- {inclusions.map((item, idx) => (
- <div
- key={idx}
- className="p-3 rounded-lg bg-card border border-border/70 flex items-center gap-2 shadow-2xs"
- >
- <div className="size-6 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
- <Check className="size-3.5 stroke-[2.5]" />
- </div>
- <span className="text-xs font-semibold text-foreground">{item}</span>
- </div>
- ))}
- </div>
+     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+       {inclusions.map((item, idx) => (
+         <div
+           key={idx}
+           className="p-3 rounded-lg bg-card border border-border/70 flex items-center gap-2 shadow-2xs"
+         >
+           <div className="size-6 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+             <Check className="size-3.5 stroke-[2.5]" />
+           </div>
+           <span className="text-xs font-semibold text-foreground">{item}</span>
+         </div>
+       ))}
+     </div>
+   </>
+ ) : (
+   <div className="p-4 rounded-lg bg-card border border-border/60 flex items-center gap-3 text-xs text-muted-foreground shadow-2xs">
+     <div className="size-7 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+       <ShieldCheck className="size-4 text-primary" />
+     </div>
+     <span>Inclusões e benefícios deste pacote disponíveis sob consulta com os consultores da agência.</span>
+   </div>
+ )}
  </section>
 
  {/* Checklist de Exclusões ("O que NÃO inclui") */}
@@ -683,66 +694,89 @@ export function TravelPackageDetailView({
  </div>
 
  {/* Timeline Vertical Contínua */}
- <div className="relative pl-7 sm:pl-8 space-y-6">
- {/* Linha vertical contínua */}
- <div className="absolute left-3 top-3 bottom-3 w-0.5 bg-border/80 rounded-full" />
+ {itineraryDays.length > 0 ? (
+   <div className="relative pl-7 sm:pl-8 space-y-6">
+     {/* Linha vertical contínua */}
+     <div className="absolute left-3 top-3 bottom-3 w-0.5 bg-border/80 rounded-full" />
 
- {itineraryDays.map((day) => {
- const isExpanded = !!expandedDays[day.day];
+     {itineraryDays.map((day) => {
+       const isExpanded = !!expandedDays[day.day];
 
- return (
- <div key={day.id || day.day} className="relative group cursor-pointer" onClick={() => toggleDay(day.day)}>
- {/* Marcador Circular Numerado */}
- <div
- className={cn(
- "absolute -left-7 sm:-left-8 top-0.5 size-6 rounded-full border-2 flex items-center justify-center text-xs font-bold z-10 transition-colors",
- isExpanded
- ? "bg-primary border-primary text-primary-foreground"
- : "bg-background border-border text-muted-foreground group-hover:border-primary/60"
+       return (
+         <div key={day.id || day.day} className="relative group cursor-pointer" onClick={() => toggleDay(day.day)}>
+           {/* Marcador Circular Numerado */}
+           <div
+             className={cn(
+               "absolute -left-7 sm:-left-8 top-0.5 size-6 rounded-full border-2 flex items-center justify-center text-xs font-bold z-10 transition-colors",
+               isExpanded
+                 ? "bg-primary border-primary text-primary-foreground"
+                 : "bg-background border-border text-muted-foreground group-hover:border-primary/60"
+             )}
+           >
+             {day.day}
+           </div>
+
+           {/* Conteúdo do Card do Dia */}
+           <div className="p-4 sm:p-4 rounded-lg bg-card border border-border/70 hover:border-primary/40 transition-colors space-y-2 shadow-2xs">
+             <div className="flex items-baseline justify-between gap-2">
+               <div className="flex items-center gap-2">
+                 <h4 className="text-xs sm:text-sm font-bold text-foreground">{day.title}</h4>
+                 {day.period && (
+                   <span className="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary font-medium">
+                     {day.period}
+                   </span>
+                 )}
+               </div>
+               {day.date && <span className="text-xs font-mono text-muted-foreground shrink-0">{day.date}</span>}
+             </div>
+
+             <p
+               className={cn(
+                 "text-xs text-muted-foreground leading-relaxed transition-colors",
+                 !isExpanded && "line-clamp-2"
+               )}
+             >
+               {day.description}
+             </p>
+
+             {/* Imagem do dia (se houver e estiver expandido) */}
+             {day.imageUrl && isExpanded && (
+               <div className="w-full h-36 sm:h-44 rounded-lg overflow-hidden mt-2 border border-border/50">
+                 <img src={day.imageUrl} alt={day.title} className="size-full object-cover" />
+               </div>
+             )}
+
+             <div className="flex items-center justify-between pt-1 text-xs text-primary font-semibold">
+               <span>{isExpanded ? "Recolher detalhes" : "Ver programação completa"}</span>
+               <ChevronRight className={cn("size-3.5 transition-transform", isExpanded && "rotate-90")} />
+             </div>
+           </div>
+         </div>
+       );
+     })}
+   </div>
+ ) : (
+   <div className="p-6 rounded-lg bg-card border border-border/60 text-center space-y-3 shadow-2xs">
+     <div className="size-10 rounded-full bg-primary/10 text-primary flex items-center justify-center mx-auto">
+       <Calendar className="size-5 text-primary" />
+     </div>
+     <div className="space-y-1">
+       <h4 className="text-xs font-bold text-foreground">Roteiro Flexível e Personalizável</h4>
+       <p className="text-xs text-muted-foreground max-w-md mx-auto">
+         A programação e os dias deste pacote podem ser ajustados diretamente com a agência de acordo com a sua data de saída.
+       </p>
+     </div>
+     <Button
+       type="button"
+       size="sm"
+       variant="outline"
+       onClick={handleBooking}
+       className="h-11 min-h-11 px-4 text-xs font-semibold rounded-lg cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+     >
+       Consultar Roteiro Detalhado
+     </Button>
+   </div>
  )}
- >
- {day.day}
- </div>
-
- {/* Conteúdo do Card do Dia */}
- <div className="p-4 sm:p-4 rounded-lg bg-card border border-border/70 hover:border-primary/40 transition-colors space-y-2 shadow-2xs">
- <div className="flex items-baseline justify-between gap-2">
- <div className="flex items-center gap-2">
- <h4 className="text-xs sm:text-sm font-bold text-foreground">{day.title}</h4>
- {day.period && (
- <span className="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary font-medium">
- {day.period}
- </span>
- )}
- </div>
- {day.date && <span className="text-xs font-mono text-muted-foreground shrink-0">{day.date}</span>}
- </div>
-
- <p
- className={cn(
- "text-xs text-muted-foreground leading-relaxed transition-colors",
- !isExpanded && "line-clamp-2"
- )}
- >
- {day.description}
- </p>
-
- {/* Imagem do dia (se houver e estiver expandido) */}
- {day.imageUrl && isExpanded && (
- <div className="w-full h-36 sm:h-44 rounded-lg overflow-hidden mt-2 border border-border/50">
- <img src={day.imageUrl} alt={day.title} className="size-full object-cover" />
- </div>
- )}
-
- <div className="flex items-center justify-between pt-1 text-xs text-primary font-semibold">
- <span>{isExpanded ? "Recolher detalhes" : "Ver programação completa"}</span>
- <ChevronRight className={cn("size-3.5 transition-transform", isExpanded && "rotate-90")} />
- </div>
- </div>
- </div>
- );
- })}
- </div>
 
  {/* Recomendações Próximas (Curadoria de Restaurantes e Praias) */}
  {recommendations.length > 0 && (

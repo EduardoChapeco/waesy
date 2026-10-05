@@ -50,7 +50,7 @@ export const Route = createFileRoute("/_store/diretorio/")({
         listActiveBanners({ data: { placement: "diretorio", city: activeCity } }).catch(() => []),
         listHotpages({ data: { module: "diretorio" } }).catch(() => []),
       ]);
-      return { banners: banners || [], hotpages: hotpages || [] };
+      return { banners: banners || [], hotpages: hotpages || [], activeCity };
     } catch (err) {
       console.error("[loader:_store.diretorio.index] Unhandled error:", err);
       return { banners: [], hotpages: [] };
@@ -61,6 +61,7 @@ export const Route = createFileRoute("/_store/diretorio/")({
 
 export function DirectoryPage() {
   const loaderData = ((typeof Route?.useLoaderData === "function" ? Route.useLoaderData() : {}) as any) || {};
+  const activeCity = loaderData?.activeCity || "";
   const banners = loaderData?.banners || [];
   const hotpages = loaderData?.hotpages || [];
   const [selectedCategory, setSelectedCategory] = useState("todos");
@@ -69,12 +70,13 @@ export function DirectoryPage() {
   const navigate = useNavigate();
 
  const { data: listings, isLoading } = useQuery({
- queryKey: ["public-directory", selectedCategory, searchQuery],
+ queryKey: ["public-directory", selectedCategory, searchQuery, activeCity],
  queryFn: () =>
  getPublicDirectory({
  data: {
  limit: 60,
- category: selectedCategory === "todos" ? undefined : selectedCategory,
+ city: activeCity || undefined,
+        category: selectedCategory === "todos" ? undefined : selectedCategory,
  search: searchQuery || undefined,
  },
  }),
@@ -182,7 +184,7 @@ export function DirectoryPage() {
  onAction={() => setViewMode("grid")}
  >
  {topRatedListings.map((item) => (
- <div key={item.id} className="w-[300px] sm:w-80 shrink-0 flex flex-col h-full">
+              <div key={item.id} className="w-72 sm:w-80 shrink-0 flex flex-col h-full">
  <DirectoryBusinessCard item={item} />
  </div>
  ))}
@@ -202,7 +204,7 @@ export function DirectoryPage() {
  }}
  >
  {items.map((item) => (
- <div key={item.id} className="w-[300px] sm:w-80 shrink-0 flex flex-col h-full">
+              <div key={item.id} className="w-72 sm:w-80 shrink-0 flex flex-col h-full">
  <DirectoryBusinessCard item={item} />
  </div>
  ))}
@@ -246,7 +248,7 @@ export function DirectoryPage() {
             setSelectedCategory("todos");
             setSearchQuery("");
           }}
-          className="rounded-lg font-bold text-xs"
+          className="rounded-lg font-bold text-xs h-11 px-4"
         >
           Ver todo o diretório
         </Button>
@@ -332,7 +334,7 @@ function DirectoryMobileWhatsAppItem({ item }: { item: DirectoryListingDTO }) {
               <ShieldCheck size={13} weight="fill" className="text-foreground shrink-0" />
             )}
           </div>
-          <div className="text-[11px] text-muted-foreground truncate flex items-center gap-2">
+          <div className="text-xs text-muted-foreground truncate flex items-center gap-2">
             <span>{categoryLabel}</span>
             {item.address && (
               <>
@@ -342,7 +344,7 @@ function DirectoryMobileWhatsAppItem({ item }: { item: DirectoryListingDTO }) {
             )}
           </div>
           {item.rating && (
-            <div className="flex items-center gap-1 text-[10px] text-muted-foreground font-mono mt-1">
+            <div className="flex items-center gap-1 text-xs text-muted-foreground font-mono mt-1">
               <Star size={10} weight="fill" className="text-amber-500" />
               <span className="font-semibold text-foreground">{Number(item.rating).toFixed(1)}</span>
               {item.reviews_count > 0 && <span>({item.reviews_count})</span>}
@@ -361,13 +363,13 @@ function DirectoryMobileWhatsAppItem({ item }: { item: DirectoryListingDTO }) {
             niche={item.category}
             variant="ghost"
             size="sm"
-            className="size-11 p-0 rounded-full hover:bg-muted/40 text-foreground active:scale-95 transition-all"
+            className="size-11 p-0 rounded-full hover:bg-muted/40 text-foreground active:scale-95 transition-colors"
           />
         )}
         <Link
           to="/diretorio/$id"
           params={{ id: item.id }}
-          className="size-11 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/30 active:scale-95 transition-all"
+          className="size-11 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/30 active:scale-95 transition-colors"
           aria-label="Ver Detalhes do Local"
         >
           <ArrowRight size={18} />
@@ -391,33 +393,33 @@ function DirectoryBusinessCard({
   const whatsappNumber = (item.contact_whatsapp || item.contact_phone || "").replace(/\D/g, "");
 
   return (
-    <div className="group relative flex flex-col justify-between w-full h-full min-h-[440px] max-h-[450px] rounded-lg border border-border/60 bg-card overflow-hidden hover:border-foreground/30 transition-all duration-300 select-none shadow-2xs">
+    <div className="group relative flex flex-col justify-between w-full h-full min-h-96 rounded-lg border border-border/60 bg-card overflow-hidden hover:border-foreground/30 transition-colors duration-200 select-none shadow-2xs">
       <Link
         to="/diretorio/$id"
         params={{ id: item.id }}
         className="focus-visible:outline-none flex-1 flex flex-col min-h-0"
       >
         {/* ── Imagem Full Split Superior (16:9 Rigoroso) ── */}
-        <div className="relative aspect-[16/9] w-full overflow-hidden bg-muted/30 shrink-0">
+        <div className="relative aspect-video w-full overflow-hidden bg-muted/30 shrink-0">
           {coverUrl ? (
             <img
               src={coverUrl}
               alt={item.business_name}
               loading="lazy"
-              className="size-full object-cover group-hover:scale-105 transition-transform duration-500"
+              className="size-full object-cover group-hover:scale-105 transition-transform duration-200"
             />
           ) : (
-            <div className="size-full bg-gradient-to-br from-primary/10 via-muted/40 to-muted flex items-center justify-center">
+            <div className="size-full bg-muted/30 flex items-center justify-center">
               <Briefcase className="size-8 text-primary/30" />
             </div>
           )}
 
           {/* Gradiente de proteção para badges superiores */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/30 pointer-events-none" />
+
 
           {/* Badge de Categoria no Topo Esquerdo */}
           <div className="absolute top-2.5 left-2.5">
-            <Badge className="bg-background/90 text-foreground backdrop-blur-md text-[10px] font-bold px-2 py-1 rounded-lg border border-border/40">
+            <Badge className="bg-background/90 text-foreground backdrop-blur-md text-xs font-bold px-2 py-1 rounded-lg border border-border/40">
               {categoryLabel}
             </Badge>
           </div>
@@ -425,7 +427,7 @@ function DirectoryBusinessCard({
           {/* Badge de Verificado no Topo Direito (Clean Paradigma) */}
           {item.is_verified && (
             <div className="absolute top-2.5 right-2.5">
-              <Badge className="bg-background/90 text-foreground backdrop-blur-md text-[10px] font-bold px-2 py-1 rounded-lg border border-border/40 flex items-center gap-1 shadow-2xs">
+              <Badge className="bg-background/90 text-foreground backdrop-blur-md text-xs font-bold px-2 py-1 rounded-lg border border-border/40 flex items-center gap-1 shadow-2xs">
                 <ShieldCheck size={12} weight="bold" className="text-primary" />
                 <span>Verificado</span>
               </Badge>
@@ -463,18 +465,18 @@ function DirectoryBusinessCard({
                     <>
                       <div className="flex items-center text-amber-500">
                         <Star size={12} weight="fill" />
-                        <span className="font-bold font-mono ml-1 text-foreground text-[11px]">
+                        <span className="font-bold font-mono ml-1 text-foreground text-xs">
                           {Number(item.rating).toFixed(1)}
                         </span>
                       </div>
                       {item.reviews_count > 0 && (
-                        <span className="text-[11px] font-medium text-muted-foreground truncate">
+                        <span className="text-xs font-medium text-muted-foreground truncate">
                           ({item.reviews_count} avaliações)
                         </span>
                       )}
                     </>
                   ) : (
-                    <span className="text-[10px] text-muted-foreground/60 font-mono">Novo no diretório</span>
+                    <span className="text-xs text-muted-foreground/60 font-mono">Novo no diretório</span>
                   )}
                 </div>
               </div>
@@ -492,13 +494,13 @@ function DirectoryBusinessCard({
                 item.specialties.slice(0, 3).map((spec, i) => (
                   <span
                     key={i}
-                    className="text-[10px] font-semibold bg-muted text-muted-foreground px-2 py-1 rounded-md truncate max-w-[110px] shrink-0"
+                    className="text-xs font-semibold bg-muted text-muted-foreground px-2 py-1 rounded-md truncate max-w-28 shrink-0"
                   >
                     {spec}
                   </span>
                 ))
               ) : (
-                <span className="text-[10px] font-medium text-muted-foreground/50 italic truncate">
+                <span className="text-xs font-medium text-muted-foreground/50 italic truncate">
                   Atendimento Comercial Oficial
                 </span>
               )}
@@ -513,7 +515,7 @@ function DirectoryBusinessCard({
       </Link>
 
       {/* ── Barra de Ações Rápidas (Sempre Ancorada no Rodapé com Altura Fixa h-14) ── */}
-      <div className="px-4 pb-4 pt-3 flex items-center justify-between gap-2 border-t border-border/40 mt-auto shrink-0 h-14">
+      <div className="px-4 py-2 flex items-center justify-between gap-2 border-t border-border/40 mt-auto shrink-0 min-h-14">
         {whatsappNumber ? (
           <ProtectedContactButton
             phone={whatsappNumber}
@@ -525,7 +527,7 @@ function DirectoryBusinessCard({
             variant="outline"
             size="sm"
             label="WhatsApp"
-            className="h-10 text-xs px-3 shrink-0"
+            className="h-11 text-xs px-3 shrink-0"
           />
         ) : (
           <div className="hidden" />
@@ -534,7 +536,7 @@ function DirectoryBusinessCard({
         <Button
           asChild
           size="sm"
-          className="rounded-lg font-bold text-xs h-10 px-4 flex-1 bg-foreground text-background hover:bg-foreground/90 transition-all gap-2 cursor-pointer"
+          className="rounded-lg font-bold text-xs h-11 px-4 flex-1 bg-foreground text-background hover:bg-foreground/90 transition-colors gap-2 cursor-pointer"
         >
           <Link to="/diretorio/$id" params={{ id: item.id }}>
             <span>Ver Perfil</span>
@@ -554,7 +556,7 @@ function DirectoryListItem({ item }: { item: DirectoryListingDTO }) {
   const whatsappNumber = (item.contact_whatsapp || item.contact_phone || "").replace(/\D/g, "");
 
   return (
-    <div className="group relative overflow-hidden rounded-lg border border-border/60 bg-card hover:border-foreground/30 transition-all min-h-[140px] pl-32 sm:pl-44 w-full">
+    <div className="group relative overflow-hidden rounded-lg border border-border/60 bg-card hover:border-foreground/30 transition-colors duration-200 min-h-36 pl-32 sm:pl-44 w-full">
       <Link
         to="/diretorio/$id"
         params={{ id: item.id }}
@@ -564,7 +566,7 @@ function DirectoryListItem({ item }: { item: DirectoryListingDTO }) {
           <img
             src={coverUrl}
             alt={item.business_name}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
             loading="lazy"
           />
         ) : (
@@ -574,13 +576,13 @@ function DirectoryListItem({ item }: { item: DirectoryListingDTO }) {
         )}
 
         <div className="absolute top-2.5 left-2.5">
-          <Badge className="bg-background/90 text-foreground backdrop-blur-md text-[9px] font-bold px-2 py-1 rounded-md border border-border/40">
+          <Badge className="bg-background/90 text-foreground backdrop-blur-md text-xs font-bold px-2 py-1 rounded-md border border-border/40">
             {categoryLabel}
           </Badge>
         </div>
       </Link>
 
-      <div className="p-4 sm:p-4 flex flex-col justify-between min-h-[140px] gap-2">
+      <div className="p-4 sm:p-4 flex flex-col justify-between min-h-36 gap-2">
         <Link to="/diretorio/$id" params={{ id: item.id }} className="space-y-1 block min-w-0">
           <div className="flex items-center gap-2">
             <h3 className="font-bold text-sm sm:text-base text-foreground truncate group-hover:text-primary transition-colors">
@@ -621,14 +623,14 @@ function DirectoryListItem({ item }: { item: DirectoryListingDTO }) {
               variant="outline"
               size="sm"
               label="WhatsApp"
-              className="h-8 text-xs px-3 rounded-lg"
+              className="h-11 text-xs px-3 rounded-lg"
             />
           )}
 
           <Button
             asChild
             size="sm"
-            className="h-8 px-3 rounded-lg font-bold text-xs bg-foreground text-background hover:bg-foreground/90 cursor-pointer"
+            className="h-11 px-4 rounded-lg font-bold text-xs bg-foreground text-background hover:bg-foreground/90 cursor-pointer"
           >
             <Link to="/diretorio/$id" params={{ id: item.id }}>
               Ver Perfil

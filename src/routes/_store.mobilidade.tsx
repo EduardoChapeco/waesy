@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { formatMoney } from "@/lib/money";
 import { calculateMobilityQuote, createMobilityRequest, type MobilityServiceType, type MobilityRequestDTO, type MobilityQuoteEstimate } from "@/services/mobility.functions";
 import { MapLibreCanvas, type MapPoint } from "@/components/mobility/maplibre-canvas";
+import { ActionAuthGuardModal } from "@/components/common/action-auth-guard-modal";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_store/mobilidade")({
@@ -25,19 +26,12 @@ export const Route = createFileRoute("/_store/mobilidade")({
   }),
   loader: async () => {
     try {
-    const { getUserSession } = await import("@/services/auth.functions");
-    const session = await getUserSession().catch(() => null);
-    const role = session?.role || session?.user?.user_metadata?.role;
-    const allowedRoles = ["store_owner", "operator", "platform_admin", "master"];
-    if (!role || !allowedRoles.includes(role)) {
-      const { redirect } = await import("@tanstack/react-router");
-      throw redirect({ to: "/classificados" });
-    }
-    return {};
+      const { getUserSession } = await import("@/services/auth.functions");
+      const session = await getUserSession().catch(() => null);
+      return { session };
     } catch (err) {
-      if (isRedirect(err)) throw err;
       console.error("[loader:_store.mobilidade] Unhandled loader error:", err);
-      return null as any;
+      return { session: null };
     }
   },
   component: MobilityPage,
@@ -107,8 +101,10 @@ const PRESET_PLACES = [
 ];
 
 function MobilityPage() {
- const navigate = useNavigate();
- const [selectedService, setSelectedService] = useState<MobilityServiceType>("ride_car");
+  const { session } = (Route.useLoaderData?.() as any) || {};
+  const navigate = useNavigate();
+  const [authGuardOpen, setAuthGuardOpen] = useState(false);
+  const [selectedService, setSelectedService] = useState<MobilityServiceType>("ride_car");
 
  // Route Coordinates
  const [origin, setOrigin] = useState<MapPoint>(DEFAULT_ORIGIN);
@@ -263,6 +259,11 @@ function MobilityPage() {
  const handleSubmitRequest = () => {
  if (!destinationText.trim() && !destination) {
  toast.error("Por favor, digite ou selecione o endereço de destino.");
+ return;
+ }
+
+ if (!session?.user?.id && !session?.id) {
+ setAuthGuardOpen(true);
  return;
  }
 
@@ -756,13 +757,20 @@ function MobilityPage() {
  toast.info("Para instalar no celular, toque em 'Compartilhar' ou no menu do navegador e escolha 'Adicionar à Tela de Início'.");
  }
  }}
- className="w-full h-9 rounded-lg font-bold text-xs bg-foreground text-background hover:bg-foreground/90"
+ className="w-full h-11 min-h-11 rounded-lg font-bold text-xs bg-foreground text-background hover:bg-foreground/90 focus-visible:ring-2 focus-visible:ring-ring"
  >
  Instalar Agora
  </Button>
  </div>
  </div>
  )}
+
+ <ActionAuthGuardModal
+ isOpen={authGuardOpen}
+ onOpenChange={setAuthGuardOpen}
+ actionContext="Confirmar Corrida ou Entrega"
+ returnUrl="/mobilidade"
+ />
  </div>
  );
 }

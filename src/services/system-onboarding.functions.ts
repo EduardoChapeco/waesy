@@ -147,3 +147,30 @@ export const saveSystemOnboardingStep = createServerFn({ method: "POST" })
       return inserted;
     }
   });
+
+/**
+ * Remove um passo de onboarding pelo Admin Master.
+ */
+export const deleteSystemOnboardingStep = createServerFn({ method: "POST" })
+  .validator((d: { id: string }) => d)
+  .handler(async ({ data }) => {
+    const db = getServerClient();
+    const identity = await getServerIdentity();
+
+    const isPlatformAdmin =
+      identity?.role === "platform_admin" ||
+      identity?.role === "master" ||
+      identity?.role === "superadmin";
+
+    if (!isPlatformAdmin) {
+      throw new Error("Apenas administradores master podem remover passos de onboarding.");
+    }
+
+    const { error } = await db
+      .from("system_onboarding_steps")
+      .delete()
+      .eq("id", data.id);
+
+    if (error) throw new Error(`Falha ao remover passo: ${error.message}`);
+    return true;
+  });

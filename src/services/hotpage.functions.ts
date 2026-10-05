@@ -120,6 +120,23 @@ export interface HotpageDTO {
  featured_rail_title?: string | null;
   show_shadow?: boolean;
   text_color?: string | null;
+  starts_at?: string | null;
+  ends_at?: string | null;
+  auto_archive_at?: string | null;
+}
+
+export function isCampaignActive(item: { starts_at?: string | null; ends_at?: string | null; is_active: boolean }): boolean {
+  if (!item.is_active) return false;
+  const now = Date.now();
+  if (item.starts_at) {
+    const s = new Date(item.starts_at).getTime();
+    if (!isNaN(s) && s > now) return false;
+  }
+  if (item.ends_at) {
+    const e = new Date(item.ends_at).getTime();
+    if (!isNaN(e) && e < now) return false;
+  }
+  return true;
 }
 
 export function mapHotpageDTO(row: any): HotpageDTO {
@@ -133,6 +150,9 @@ export function mapHotpageDTO(row: any): HotpageDTO {
 
   return {
     ...row,
+    starts_at: row.starts_at || null,
+    ends_at: row.ends_at || null,
+    auto_archive_at: row.auto_archive_at || null,
     target_route: targetRoute,
     show_title: row.show_title !== false,
     show_description: row.show_description !== false,
@@ -211,7 +231,7 @@ export const listHotpages = createServerFn({ method: "GET" })
       return [];
     }
 
-    return records.map(mapHotpageDTO);
+    return records.filter(isCampaignActive).map(mapHotpageDTO);
   });
 
 export const listActiveHotpages = listHotpages;
@@ -229,7 +249,7 @@ export const listHomeHeroCards = createServerFn({ method: "GET" }).handler(
       .or("template_type.eq.hero_module,and(module.eq.home,template_type.neq.category_hub,template_type.neq.editorial_card)")
       .order("sort_order", { ascending: true });
 
-    return (rows || []).map(mapHotpageDTO);
+    return (rows || []).filter(isCampaignActive).map(mapHotpageDTO);
   }
 );
 
@@ -246,7 +266,7 @@ export const listSubcategoryChips = createServerFn({ method: "GET" }).handler(
  .eq("template_type", "category_hub")
  .order("sort_order", { ascending: true });
 
- return (rows || []) as HotpageDTO[];
+ return (rows || []).filter(isCampaignActive).map(mapHotpageDTO);
  }
 );
 
@@ -258,15 +278,40 @@ export const listEditorialHotpages = createServerFn({ method: "GET" })
  .handler(async ({ data }): Promise<HotpageDTO[]> => {
  const supabase = getAnonServerClient();
  const mod = data?.module || "home";
+ let query = supabase
+ .from("hotpages")
+ .select("*")
+ .eq("is_active", true);
+
+ if (mod && mod !== "all") {
+ query = query.or(`module.eq.${mod},template_type.eq.editorial_card`);
+ } else {
+ query = query.eq("template_type", "editorial_card");
+ }
+
+ const { data: rows } = await query.order("sort_order", { ascending: true });
+    return (rows || []).filter(isCampaignActive).map(mapHotpageDTO);
+ });
+
+/**
+ * Lista exclusivamente os 4 Cards Squircle Hero do Topo da Vitrine Home
+ */
+export const listHeroSquircleCards = createServerFn({ method: "GET" }).handler(
+ async (): Promise<HotpageDTO[]> => {
+ const supabase = getAnonServerClient();
  const { data: rows } = await supabase
  .from("hotpages")
  .select("*")
  .eq("is_active", true)
- .eq("template_type", "editorial_card")
+ .in("template_type", ["hero_squircle", "hero_module"])
  .order("sort_order", { ascending: true });
 
- return (rows || []) as HotpageDTO[];
- });
+ const filtered = (rows || []).filter(
+ (r: any) => r.template_type === "hero_squircle" || r.module === "home"
+ );
+ return filtered.filter(isCampaignActive).map(mapHotpageDTO);
+ }
+);
 
 export const getHotpageBySlug = createServerFn({ method: "GET" })
  .validator(z.object({ slug: z.string() }))
@@ -415,6 +460,9 @@ export const createHotpage = createServerFn({ method: "POST" })
  show_shadow: z.boolean().default(false),
  show_badge: z.boolean().default(true),
  text_color: z.string().nullable().optional(),
+      starts_at: z.string().nullable().optional(),
+      ends_at: z.string().nullable().optional(),
+      auto_archive_at: z.string().nullable().optional(),
  }),
  )
  .handler(async ({ data }) => {
@@ -447,6 +495,9 @@ export const createHotpage = createServerFn({ method: "POST" })
       show_shadow: data.show_shadow,
       show_badge: data.show_badge,
       text_color: data.text_color || null,
+      starts_at: data.starts_at || null,
+      ends_at: data.ends_at || null,
+      auto_archive_at: data.auto_archive_at || null,
       is_active: true,
     });
 
@@ -514,6 +565,9 @@ export const updateHotpage = createServerFn({ method: "POST" })
       show_badge: z.boolean().optional(),
       text_color: z.string().nullable().optional(),
       is_active: z.boolean().optional(),
+      starts_at: z.string().nullable().optional(),
+      ends_at: z.string().nullable().optional(),
+      auto_archive_at: z.string().nullable().optional(),
     }),
   )
   .handler(async ({ data: { id, ...patch } }) => {

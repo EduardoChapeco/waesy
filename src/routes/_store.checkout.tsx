@@ -971,7 +971,7 @@ export function CheckoutPage() {
  Explore as lojas e produtos locais para adicionar itens.
  </p>
  </div>
- <Button asChild className="rounded-lg px-6 h-10 font-bold text-xs">
+ <Button asChild className="rounded-lg px-6 h-11 min-h-11 font-bold text-xs">
  <Link to="/">Explorar Produtos</Link>
  </Button>
  </div>
@@ -985,7 +985,7 @@ export function CheckoutPage() {
  <div className="flex items-center gap-3">
  <Link
  to="/"
- className="size-11 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
+ className="size-11 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
  aria-label="Voltar"
  >
  <ArrowLeft className="size-5" />
@@ -1022,7 +1022,7 @@ export function CheckoutPage() {
                 Cada loja possui frete e pedido independentes
               </span>
             </div>
-            <div className="flex items-center gap-2 overflow-x-auto pb-1">
+            <div className="flex items-center gap-2 overflow-x-auto carousel pb-1">
               {globalCarts.map((c: any) => {
                 const isCurrentStore = c.storeId === ((cart as any)?.storeId || storeProfile?.id);
                 return (
@@ -1044,7 +1044,7 @@ export function CheckoutPage() {
                       </p>
                     </div>
                     {isCurrentStore ? (
-                      <Badge variant="default" className="text-xs text-muted-foreground/75 font-mono h-6 shrink-0">
+                      <Badge variant="outline" className="text-xs text-muted-foreground/75 font-mono h-6 shrink-0">
                         Ativa
                       </Badge>
                     ) : (
@@ -1052,7 +1052,7 @@ export function CheckoutPage() {
                         size="sm"
                         variant="outline"
                         onClick={() => navigate({ to: "/checkout", search: { store: c.storeId } })}
-                        className="h-6 text-xs text-muted-foreground/75 font-bold rounded-lg px-2"
+                        className="h-11 min-h-11 text-xs text-muted-foreground font-bold rounded-lg px-4"
                       >
                         Finalizar
                       </Button>
@@ -1065,7 +1065,7 @@ export function CheckoutPage() {
         )}
 
         {/* ── MENU TABS DE ETAPAS (Ultra-Minimalista: Tipografia & Linha Fina) ── */}
-          <div className="w-full overflow-x-auto no-scrollbar py-1">
+          <div className="w-full overflow-x-auto carousel no-scrollbar py-1">
             <div className="flex items-center gap-6 min-w-max border-b border-border/40 pb-2">
               {steps.map((step) => {
                 const isActive = activeStep === step.number;
@@ -1079,7 +1079,7 @@ export function CheckoutPage() {
                     onClick={() => canNavigate && setActiveStep(step.number)}
                     disabled={!canNavigate}
                     className={cn(
-                      "flex items-center gap-2 pb-1 text-xs transition-colors select-none cursor-pointer border-b-2 -mb-px",
+                      "flex items-center gap-2 pb-1 text-xs transition-colors select-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary border-b-2 -mb-px",
                       isActive
                         ? "border-foreground font-bold text-foreground"
                         : isCompleted
@@ -1103,7 +1103,7 @@ export function CheckoutPage() {
  <div className="lg:col-span-2 space-y-6">
  {/* ── ETAPA 1: IDENTIFICAÇÃO DO CLIENTE ── */}
  {activeStep === 1 && (
- <Surface variant="default" className="p-5 sm:p-6 rounded-lg space-y-5">
+ <Surface className="p-5 sm:p-6 rounded-lg space-y-5">
  {/* Zero-Amnesia: Card de Identificação Confirmada */}
           {userProfile && userProfile.fullName && userProfile.email && !isEditingContact ? (
             <div className="p-4 rounded-lg bg-muted/20 border border-border/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -1128,7 +1128,7 @@ export function CheckoutPage() {
                 variant="outline"
                 size="sm"
                 onClick={() => setIsEditingContact(true)}
-                className="text-xs font-semibold h-8 rounded-lg cursor-pointer self-start sm:self-auto"
+                className="text-xs font-semibold h-11 min-h-11 rounded-lg cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary self-start sm:self-auto"
               >
                 Alterar dados
               </Button>
@@ -1141,7 +1141,7 @@ export function CheckoutPage() {
                   <button
                     type="button"
                     onClick={() => setIsEditingContact(false)}
-                    className="text-xs text-muted-foreground hover:text-foreground cursor-pointer"
+                    className="text-xs text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                   >
                     Cancelar
                   </button>
@@ -1204,7 +1204,7 @@ export function CheckoutPage() {
                             if (userProfile?.cpf && !cpfDocument) setCpfDocument(userProfile.cpf);
                           }}
                           className={cn(
-                            "px-3 py-1 text-xs font-semibold rounded-lg border transition-all cursor-pointer",
+                            "px-3 py-1 text-xs font-semibold rounded-lg border transition-colors motion-reduce:transition-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                             cpfRequested
                               ? "border-foreground text-foreground font-bold"
                               : "border-border/60 text-muted-foreground hover:text-foreground"
@@ -1216,7 +1216,7 @@ export function CheckoutPage() {
                           type="button"
                           onClick={() => setCpfRequested(false)}
                           className={cn(
-                            "px-3 py-1 text-xs font-semibold rounded-lg border transition-all cursor-pointer",
+                            "px-3 py-1 text-xs font-semibold rounded-lg border transition-colors motion-reduce:transition-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                             !cpfRequested
                               ? "border-foreground text-foreground font-bold"
                               : "border-border/60 text-muted-foreground hover:text-foreground"
@@ -1327,7 +1327,7 @@ export function CheckoutPage() {
  <Button
  onClick={handleAdvanceToDelivery}
  disabled={!formData.customerName || !formData.customerEmail || !formData.customerPhone}
- className="rounded-lg px-6 h-11 w-full sm:w-auto font-bold text-xs sm:text-sm cursor-pointer active:scale-98 transition-all"
+ className="rounded-lg px-6 h-11 w-full sm:w-auto font-bold text-xs sm:text-sm cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary active:scale-98 transition-colors motion-reduce:transition-none"
  >
  <span>{isTourismNiche ? "Continuar para Passageiros e Reserva" : isDigitalNiche ? "Continuar para Envio Digital" : isServiceNiche ? "Continuar para Agendamento" : "Continuar para Entrega"}</span>
  <ChevronRight size={15} className="ml-1" />
@@ -1338,7 +1338,7 @@ export function CheckoutPage() {
 
  {/* ── ETAPA 2: RESERVA DE TURISMO & MANIFESTO DE PASSAGEIROS ── */}
         {activeStep === 2 && isTourismNiche && (
-          <Surface variant="default" className="p-5 sm:p-6 rounded-lg space-y-6">
+          <Surface className="p-5 sm:p-6 rounded-lg space-y-6">
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-border/60">
               <div className="flex items-center gap-3">
@@ -1357,8 +1357,8 @@ export function CheckoutPage() {
 
             {/* Pacote Selecionado */}
             <div className="p-4 rounded-lg bg-muted/20 border border-border/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div className="space-y-0.5">
-                <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground block">
+              <div className="space-y-1">
+                <span className="text-xs font-mono uppercase tracking-wider text-muted-foreground block">
                   Pacote / Destino Confirmado
                 </span>
                 <h4 className="text-sm font-bold text-foreground">
@@ -1369,7 +1369,7 @@ export function CheckoutPage() {
                 </p>
               </div>
               <div className="sm:text-right">
-                <span className="text-[10px] font-mono text-muted-foreground block">Total do Pacote</span>
+                <span className="text-xs font-mono text-muted-foreground block">Total do Pacote</span>
                 <span className="text-base font-black font-mono text-foreground">{formatMoney(cart.subtotalCents)}</span>
               </div>
             </div>
@@ -1381,7 +1381,7 @@ export function CheckoutPage() {
               </Label>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div className="space-y-1">
-                  <label className="text-[11px] font-semibold text-muted-foreground">Data de Saída / Check-in *</label>
+                  <label className="text-xs font-semibold text-muted-foreground">Data de Saída / Check-in *</label>
                   <Input
                     type="date"
                     value={travelDepartureDate}
@@ -1391,7 +1391,7 @@ export function CheckoutPage() {
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-[11px] font-semibold text-muted-foreground">Data de Retorno / Check-out</label>
+                  <label className="text-xs font-semibold text-muted-foreground">Data de Retorno / Check-out</label>
                   <Input
                     type="date"
                     value={travelReturnDate}
@@ -1400,7 +1400,7 @@ export function CheckoutPage() {
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-[11px] font-semibold text-muted-foreground">Ponto de Embarque / Saída</label>
+                  <label className="text-xs font-semibold text-muted-foreground">Ponto de Embarque / Saída</label>
                   <Input
                     type="text"
                     placeholder="Ex: Aeroporto, Balcão da Agência, Terminal"
@@ -1419,7 +1419,7 @@ export function CheckoutPage() {
                   <Label className="text-xs font-bold text-foreground flex items-center gap-2">
                     <Users size={14} className="text-primary" /> Manifesto de Passageiros e Viajantes ({passengers.length} {passengers.length === 1 ? "vaga" : "vagas"})
                   </Label>
-                  <p className="text-[11px] text-muted-foreground">
+                  <p className="text-xs text-muted-foreground">
                     Cada passageiro adicionado garante uma vaga confirmada. O valor total se ajusta automaticamente ({passengers.length}x).
                   </p>
                 </div>
@@ -1440,7 +1440,7 @@ export function CheckoutPage() {
                       },
                     ]);
                   }}
-                  className="h-9 px-3 rounded-lg text-xs font-semibold gap-2 cursor-pointer"
+                  className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 >
                   <Plus size={13} /> Adicionar Passageiro
                 </Button>
@@ -1451,7 +1451,7 @@ export function CheckoutPage() {
                   <div key={p.id} className="p-4 rounded-lg bg-card border border-border/70 space-y-3">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-bold text-foreground flex items-center gap-2">
-                        <span className="size-5 rounded-full bg-primary/10 text-primary text-[10px] font-mono font-bold flex items-center justify-center">
+                        <span className="size-5 rounded-full bg-primary/10 text-primary text-xs font-mono font-bold flex items-center justify-center">
                           {idx + 1}
                         </span>
                         {p.isLead ? "Passageiro Titular (Contratante)" : `Acompanhante ${idx}`}
@@ -1460,7 +1460,7 @@ export function CheckoutPage() {
                         <button
                           type="button"
                           onClick={() => setPassengers((prev) => prev.filter((item) => item.id !== p.id))}
-                          className="size-8 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors flex items-center justify-center cursor-pointer"
+                          className="size-11 min-h-11 min-w-11 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors flex items-center justify-center cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                           title="Remover passageiro"
                         >
                           <Trash2 size={14} />
@@ -1470,7 +1470,7 @@ export function CheckoutPage() {
 
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                       <div className="space-y-1">
-                        <label className="text-[11px] font-semibold text-muted-foreground">Nome Completo *</label>
+                        <label className="text-xs font-semibold text-muted-foreground">Nome Completo *</label>
                         <Input
                           placeholder="Nome conforme documento"
                           value={p.name}
@@ -1483,7 +1483,7 @@ export function CheckoutPage() {
                         />
                       </div>
                       <div className="space-y-1">
-                        <label className="text-[11px] font-semibold text-muted-foreground">CPF / Passaporte *</label>
+                        <label className="text-xs font-semibold text-muted-foreground">CPF / Passaporte *</label>
                         <Input
                           placeholder="Documento oficial"
                           value={p.document}
@@ -1496,7 +1496,7 @@ export function CheckoutPage() {
                         />
                       </div>
                       <div className="space-y-1">
-                        <label className="text-[11px] font-semibold text-muted-foreground">Data de Nascimento</label>
+                        <label className="text-xs font-semibold text-muted-foreground">Data de Nascimento</label>
                         <Input
                           type="date"
                           value={p.birthDate}
@@ -1540,7 +1540,7 @@ export function CheckoutPage() {
         {orderBumpOffer && (
           <div
             className={cn(
-              "p-4 rounded-lg border transition-all space-y-3 cursor-pointer select-none",
+              "p-4 rounded-lg border transition-colors motion-reduce:transition-none space-y-3 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary select-none",
               isOrderBumpAccepted
                 ? "bg-emerald-500/10 border-emerald-500 ring-1 ring-emerald-500/30"
                 : "bg-muted/20 border-dashed border-border/80 hover:border-border"
@@ -1553,7 +1553,7 @@ export function CheckoutPage() {
                   type="checkbox"
                   checked={isOrderBumpAccepted}
                   onChange={(e) => setIsOrderBumpAccepted(e.target.checked)}
-                  className="size-5 rounded border-border text-emerald-600 focus:ring-emerald-500 cursor-pointer"
+                  className="w-5 aspect-square rounded border-border text-emerald-600 focus:ring-emerald-500 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                   onClick={(e) => e.stopPropagation()}
                 />
               </div>
@@ -1566,7 +1566,7 @@ export function CheckoutPage() {
               )}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 text-[10px] font-bold">
+                  <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 text-xs font-bold">
                     {orderBumpOffer.discountPercentage > 0 ? `${orderBumpOffer.discountPercentage}% OFF` : "Exclusivo"}
                   </Badge>
                   <span className="text-xs font-bold text-foreground">
@@ -1602,7 +1602,7 @@ export function CheckoutPage() {
               <Button
                 onClick={() => setActiveStep(3)}
                 disabled={!passengers[0]?.name || !passengers[0]?.document}
-                className="rounded-lg px-6 h-11 font-bold text-xs sm:text-sm cursor-pointer active:scale-98 transition-all flex items-center gap-2"
+                className="rounded-lg px-6 h-11 font-bold text-xs sm:text-sm cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary active:scale-98 transition-colors motion-reduce:transition-none flex items-center gap-2"
               >
                 <span>Ir para Pagamento</span>
                 <ChevronRight size={15} />
@@ -1613,7 +1613,7 @@ export function CheckoutPage() {
 
         {/* ── ETAPA 2: ENVIO DIGITAL INSTANTÂNEO ── */}
         {activeStep === 2 && isDigitalNiche && (
-          <Surface variant="default" className="p-5 sm:p-6 rounded-lg space-y-6">
+          <Surface className="p-5 sm:p-6 rounded-lg space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-border/60">
               <div className="flex items-center gap-3">
                 <div className="size-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
@@ -1630,7 +1630,7 @@ export function CheckoutPage() {
             </div>
 
             <div className="p-4 rounded-lg bg-muted/20 border border-border/50 space-y-2">
-              <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground block">
+              <span className="text-xs font-mono uppercase tracking-wider text-muted-foreground block">
                 Destinatário dos Acessos
               </span>
               <p className="text-xs text-foreground font-semibold">
@@ -1664,7 +1664,7 @@ export function CheckoutPage() {
               <Button
                 onClick={() => setActiveStep(3)}
                 disabled={!formData.customerEmail}
-                className="rounded-lg px-6 h-11 font-bold text-xs sm:text-sm cursor-pointer active:scale-98 transition-all flex items-center gap-2"
+                className="rounded-lg px-6 h-11 font-bold text-xs sm:text-sm cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary active:scale-98 transition-colors motion-reduce:transition-none flex items-center gap-2"
               >
                 <span>Ir para Pagamento</span>
                 <ChevronRight size={15} />
@@ -1675,7 +1675,7 @@ export function CheckoutPage() {
 
         {/* ── ETAPA 2: AGENDAMENTO DE SERVIÇO ── */}
         {activeStep === 2 && isServiceNiche && (
-          <Surface variant="default" className="p-5 sm:p-6 rounded-lg space-y-6">
+          <Surface className="p-5 sm:p-6 rounded-lg space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-border/60">
               <div className="flex items-center gap-3">
                 <div className="size-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
@@ -1693,7 +1693,7 @@ export function CheckoutPage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1">
-                <label className="text-[11px] font-semibold text-muted-foreground">Data do Atendimento *</label>
+                <label className="text-xs font-semibold text-muted-foreground">Data do Atendimento *</label>
                 <Input
                   type="date"
                   value={serviceDate}
@@ -1703,7 +1703,7 @@ export function CheckoutPage() {
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-[11px] font-semibold text-muted-foreground">Horário / Turno de Preferência</label>
+                <label className="text-xs font-semibold text-muted-foreground">Horário / Turno de Preferência</label>
                 <Input
                   type="text"
                   placeholder="Ex: 14:00, Manhã, Tarde"
@@ -1721,7 +1721,7 @@ export function CheckoutPage() {
                   type="button"
                   onClick={() => setServiceLocationType("store")}
                   className={cn(
-                    "p-3 rounded-lg border text-left text-xs transition-all cursor-pointer",
+                    "p-3 rounded-lg border text-left text-xs transition-colors motion-reduce:transition-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                     serviceLocationType === "store"
                       ? "bg-foreground text-background border-foreground font-bold"
                       : "bg-card border-border text-foreground hover:bg-muted/40"
@@ -1736,7 +1736,7 @@ export function CheckoutPage() {
                   type="button"
                   onClick={() => setServiceLocationType("home")}
                   className={cn(
-                    "p-3 rounded-lg border text-left text-xs transition-all cursor-pointer",
+                    "p-3 rounded-lg border text-left text-xs transition-colors motion-reduce:transition-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                     serviceLocationType === "home"
                       ? "bg-foreground text-background border-foreground font-bold"
                       : "bg-card border-border text-foreground hover:bg-muted/40"
@@ -1761,7 +1761,7 @@ export function CheckoutPage() {
               <Button
                 onClick={() => setActiveStep(3)}
                 disabled={!serviceDate}
-                className="rounded-lg px-6 h-11 font-bold text-xs sm:text-sm cursor-pointer active:scale-98 transition-all flex items-center gap-2"
+                className="rounded-lg px-6 h-11 font-bold text-xs sm:text-sm cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary active:scale-98 transition-colors motion-reduce:transition-none flex items-center gap-2"
               >
                 <span>Ir para Pagamento</span>
                 <ChevronRight size={15} />
@@ -1772,14 +1772,14 @@ export function CheckoutPage() {
 
         {/* ── ETAPA 2: ENTREGA FÍSICA OU RETIRADA ── */}
         {activeStep === 2 && isPhysicalDelivery && (
- <Surface variant="default" className="p-5 sm:p-6 rounded-lg space-y-5">
+ <Surface className="p-5 sm:p-6 rounded-lg space-y-5">
  {/* Seletor de Modalidade: Entrega vs Retirada */}
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
  <button
  type="button"
  onClick={() => setFormData({ ...formData, shippingMethod: "manual_table" })}
  className={cn(
- "p-4 rounded-lg border text-left flex items-center gap-3 transition-all cursor-pointer",
+ "p-4 rounded-lg border text-left flex items-center gap-3 transition-colors motion-reduce:transition-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
  formData.shippingMethod !== "pickup"
  ? "bg-foreground text-background border-foreground font-bold"
  : "bg-card border-border/80 text-foreground hover:bg-muted/40"
@@ -1798,7 +1798,7 @@ export function CheckoutPage() {
  type="button"
  onClick={handleSelectPickup}
  className={cn(
- "p-4 rounded-lg border text-left flex items-center gap-3 transition-all cursor-pointer",
+ "p-4 rounded-lg border text-left flex items-center gap-3 transition-colors motion-reduce:transition-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
  formData.shippingMethod === "pickup"
  ? "bg-foreground text-background border-foreground font-bold"
  : "bg-card border-border/80 text-foreground hover:bg-muted/40"
@@ -1827,7 +1827,7 @@ export function CheckoutPage() {
  <button
  type="button"
  onClick={() => setShowNewAddressForm(true)}
- className="text-xs text-primary font-bold hover:underline cursor-pointer flex items-center gap-1"
+ className="text-xs text-primary font-bold hover:underline cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary flex items-center gap-1"
  >
  <Plus size={12} /> Outro Endereço
  </button>
@@ -1860,7 +1860,7 @@ export function CheckoutPage() {
  handleCepChange(cleanZip, true);
  }}
  className={cn(
- "p-3 rounded-lg border text-left text-xs transition-all cursor-pointer space-y-1",
+ "p-3 rounded-lg border text-left text-xs transition-colors motion-reduce:transition-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary space-y-1",
  isSelected
  ? "border-primary bg-primary/5 ring-1 ring-primary font-medium"
  : "bg-card border-border/80 hover:bg-muted/40"
@@ -1899,10 +1899,10 @@ export function CheckoutPage() {
  size="sm"
  onClick={handleGPSLocation}
  disabled={isLocatingGPS}
- className="rounded-lg h-7 px-3 text-xs font-bold gap-1 cursor-pointer"
+ className="rounded-lg h-11 min-h-11 px-4 text-xs font-bold gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
  >
  {isLocatingGPS ? (
- <Loader2 size={12} className="animate-spin text-primary" />
+ <Loader2 size={12} className="animate-spin motion-reduce:animate-none text-primary" />
  ) : (
  <Navigation size={12} className="text-primary" />
  )}
@@ -1912,7 +1912,7 @@ export function CheckoutPage() {
  <button
  type="button"
  onClick={() => setShowNewAddressForm(false)}
- className="text-xs text-muted-foreground hover:text-foreground cursor-pointer"
+ className="text-xs text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
  >
  Cancelar
  </button>
@@ -2043,7 +2043,7 @@ export function CheckoutPage() {
  <Label className="text-xs font-bold text-foreground">Opções de Frete Disponíveis</Label>
  {isCalculatingShipping ? (
  <div className="flex items-center gap-2 text-xs text-muted-foreground py-3">
- <Loader2 className="animate-spin size-4 text-primary" />
+ <Loader2 className="animate-spin motion-reduce:animate-none size-4 text-primary" />
  <span>Calculando opções de entrega...</span>
  </div>
  ) : shippingRates.length > 0 ? (
@@ -2058,7 +2058,7 @@ export function CheckoutPage() {
  type="button"
  onClick={() => handleSelectRate({ ...rate, id: rateKey, name: rateName })}
  className={cn(
- "flex items-center justify-between p-4 rounded-lg border text-left transition-all cursor-pointer",
+ "flex items-center justify-between p-4 rounded-lg border text-left transition-colors motion-reduce:transition-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
  isSelected
  ? "border-primary bg-primary/5 ring-1 ring-primary font-medium"
  : "bg-card border-border/80 hover:bg-muted/40"
@@ -2110,7 +2110,7 @@ export function CheckoutPage() {
  type="button"
  onClick={() => setFormData({ ...formData, deliverySlot: slot.id })}
  className={cn(
- "p-3 rounded-lg border text-left transition-all cursor-pointer",
+ "p-3 rounded-lg border text-left transition-colors motion-reduce:transition-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
  isSelected
  ? "border-foreground bg-muted/20 font-bold"
  : "border-border/60 hover:border-foreground/30"
@@ -2141,7 +2141,7 @@ export function CheckoutPage() {
                   <button
                     type="button"
                     onClick={() => setIsPolicySheetOpen(true)}
-                    className="text-xs text-muted-foreground/75 text-primary font-semibold hover:underline cursor-pointer flex items-center gap-1"
+                    className="text-xs text-muted-foreground/75 text-primary font-semibold hover:underline cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary flex items-center gap-1"
                   >
                     <ShieldCheck className="size-3" /> Ver Políticas Pétreas de Entrega
                   </button>
@@ -2150,7 +2150,7 @@ export function CheckoutPage() {
                   type="checkbox"
                   checked={deliveryToDoor}
                   onChange={(e) => setDeliveryToDoor(e.target.checked)}
-                  className="size-5 rounded-md border-border text-primary focus:ring-primary mt-1 cursor-pointer"
+                  className="size-5 rounded-md border-border text-primary focus:ring-primary mt-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 />
               </div>
 
@@ -2163,7 +2163,7 @@ export function CheckoutPage() {
                         placeholder="Ex: Bloco B, Torre 2"
                         value={apartmentDetails.blockTower}
                         onChange={(e) => setApartmentDetails((prev) => ({ ...prev, blockTower: e.target.value }))}
-                        className="h-10 rounded-lg text-xs"
+                        className="h-11 min-h-11 rounded-lg text-xs"
                       />
                     </div>
                     <div className="space-y-1">
@@ -2172,7 +2172,7 @@ export function CheckoutPage() {
                         placeholder="Ex: Interfone 402, Ramal 12"
                         value={apartmentDetails.intercomCode}
                         onChange={(e) => setApartmentDetails((prev) => ({ ...prev, intercomCode: e.target.value }))}
-                        className="h-10 rounded-lg text-xs"
+                        className="h-11 min-h-11 rounded-lg text-xs"
                       />
                     </div>
                   </div>
@@ -2200,7 +2200,7 @@ export function CheckoutPage() {
  type="button"
  onClick={() => setReceiverMode("self")}
  className={cn(
- "px-3 py-2 text-xs font-semibold rounded-lg border transition-all cursor-pointer",
+ "px-3 py-2 text-xs font-semibold rounded-lg border transition-colors motion-reduce:transition-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
  receiverMode === "self"
  ? "border-foreground text-foreground font-bold"
  : "border-border/60 text-muted-foreground hover:text-foreground"
@@ -2212,7 +2212,7 @@ export function CheckoutPage() {
  type="button"
  onClick={() => setReceiverMode("other")}
  className={cn(
- "px-3 py-2 text-xs font-semibold rounded-lg border transition-all cursor-pointer",
+ "px-3 py-2 text-xs font-semibold rounded-lg border transition-colors motion-reduce:transition-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
  receiverMode === "other"
  ? "border-foreground text-foreground font-bold"
  : "border-border/60 text-muted-foreground hover:text-foreground"
@@ -2268,7 +2268,7 @@ export function CheckoutPage() {
  setFormData((prev) => ({ ...prev, substitutionPolicy: pol.id as any }));
  }}
  className={cn(
-                          "p-3 rounded-lg border text-left transition-all cursor-pointer",
+                          "p-3 rounded-lg border text-left transition-colors motion-reduce:transition-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                           isSelected
                             ? "border-emerald-600 bg-emerald-500/5 text-foreground font-semibold"
                             : "border-border/60 text-muted-foreground hover:border-border hover:text-foreground"
@@ -2299,7 +2299,7 @@ export function CheckoutPage() {
                     type="button"
                     onClick={() => setUtensilsRequested(true)}
                     className={cn(
-                      "px-3 py-2 text-xs font-semibold rounded-lg border transition-all cursor-pointer",
+                      "px-3 py-2 text-xs font-semibold rounded-lg border transition-colors motion-reduce:transition-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                       utensilsRequested
                         ? "border-foreground text-foreground font-bold"
                         : "border-border/60 text-muted-foreground hover:text-foreground"
@@ -2311,7 +2311,7 @@ export function CheckoutPage() {
                     type="button"
                     onClick={() => setUtensilsRequested(false)}
                     className={cn(
-                      "px-3 py-2 text-xs font-semibold rounded-lg border transition-all cursor-pointer",
+                      "px-3 py-2 text-xs font-semibold rounded-lg border transition-colors motion-reduce:transition-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                       !utensilsRequested
                         ? "border-foreground text-foreground font-bold"
                         : "border-border/60 text-muted-foreground hover:text-foreground"
@@ -2349,7 +2349,7 @@ export function CheckoutPage() {
  <Button
  onClick={() => setActiveStep(3)}
  disabled={formData.shippingMethod !== "pickup" && !formData.shippingAddress.zipcode}
- className="rounded-lg px-6 h-11 font-bold text-xs sm:text-sm cursor-pointer active:scale-98 transition-all flex items-center gap-2"
+ className="rounded-lg px-6 h-11 font-bold text-xs sm:text-sm cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary active:scale-98 transition-colors motion-reduce:transition-none flex items-center gap-2"
  >
  <span>Ir para Pagamento</span>
  <ChevronRight size={15} />
@@ -2360,7 +2360,7 @@ export function CheckoutPage() {
 
  {/* ── ETAPA 3: FORMA DE PAGAMENTO ── */}
  {activeStep === 3 && (
- <Surface variant="default" className="p-5 sm:p-6 rounded-lg space-y-5">
+ <Surface className="p-5 sm:p-6 rounded-lg space-y-5">
  <Label className="text-xs font-bold text-foreground">Escolha a Forma de Pagamento</Label>
 
  <div className="space-y-3">
@@ -2369,7 +2369,7 @@ export function CheckoutPage() {
  type="button"
  onClick={() => setFormData({ ...formData, paymentMethod: "pix", paymentMethodId: "" })}
  className={cn(
- "w-full p-4 rounded-lg border text-left flex items-center justify-between transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
+ "w-full p-4 rounded-lg border text-left flex items-center justify-between transition-colors motion-reduce:transition-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
  formData.paymentMethod === "pix"
  ? "border-primary bg-primary/5 ring-1 ring-primary font-bold"
  : "bg-card border-border/80 hover:bg-muted/40"
@@ -2426,7 +2426,7 @@ export function CheckoutPage() {
  type="button"
  onClick={() => setFormData({ ...formData, paymentMethod: "credit_card", paymentMethodId: "" })}
  className={cn(
- "w-full p-4 rounded-lg border text-left flex items-center justify-between transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
+ "w-full p-4 rounded-lg border text-left flex items-center justify-between transition-colors motion-reduce:transition-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
  formData.paymentMethod === "credit_card"
  ? "border-primary bg-primary/5 ring-1 ring-primary font-bold"
  : "bg-card border-border/80 hover:bg-muted/40"
@@ -2550,7 +2550,7 @@ export function CheckoutPage() {
  })
  }
  className={cn(
- "w-full p-4 rounded-lg border text-left flex items-center justify-between transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
+ "w-full p-4 rounded-lg border text-left flex items-center justify-between transition-colors motion-reduce:transition-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
  isSelected
  ? "border-primary bg-primary/5 ring-1 ring-primary font-bold"
  : "bg-card border-border/80 hover:bg-muted/40"
@@ -2581,7 +2581,7 @@ export function CheckoutPage() {
  </Button>
  <Button
  onClick={() => setActiveStep(4)}
- className="rounded-lg px-6 h-11 font-bold text-xs sm:text-sm cursor-pointer active:scale-98 transition-all flex items-center gap-2"
+ className="rounded-lg px-6 h-11 font-bold text-xs sm:text-sm cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary active:scale-98 transition-colors motion-reduce:transition-none flex items-center gap-2"
  >
  <span>Revisar Pedido</span>
  <ChevronRight size={15} />
@@ -2592,7 +2592,7 @@ export function CheckoutPage() {
 
  {/* ── ETAPA 4: REVISÃO & CONFIRMAÇÃO ── */}
  {activeStep === 4 && (
- <Surface variant="default" className="p-5 sm:p-6 rounded-lg space-y-5">
+ <Surface className="p-5 sm:p-6 rounded-lg space-y-5">
  <div className="space-y-4">
  {/* Resumo de Entrega / Reserva Metamórfico */}
                 {isTourismNiche ? (
@@ -2604,7 +2604,7 @@ export function CheckoutPage() {
                       <button
                         type="button"
                         onClick={() => setActiveStep(2)}
-                        className="text-xs text-primary font-bold hover:underline cursor-pointer"
+                        className="text-xs text-primary font-bold hover:underline cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                       >
                         Alterar
                       </button>
@@ -2620,7 +2620,7 @@ export function CheckoutPage() {
                         Data de Saída: {travelDepartureDate} {travelReturnDate ? `| Retorno: ${travelReturnDate}` : ""}
                       </p>
                     )}
-                    <Badge variant="outline" className="text-emerald-600 dark:text-emerald-400 border-emerald-500/30 font-mono text-[10px]">
+                    <Badge variant="outline" className="text-emerald-600 dark:text-emerald-400 border-emerald-500/30 font-mono text-xs">
                       Voucher Digital Oficial — Frete Isento
                     </Badge>
                   </div>
@@ -2633,7 +2633,7 @@ export function CheckoutPage() {
                       <button
                         type="button"
                         onClick={() => setActiveStep(2)}
-                        className="text-xs text-primary font-bold hover:underline cursor-pointer"
+                        className="text-xs text-primary font-bold hover:underline cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                       >
                         Alterar
                       </button>
@@ -2651,7 +2651,7 @@ export function CheckoutPage() {
                       <button
                         type="button"
                         onClick={() => setActiveStep(2)}
-                        className="text-xs text-primary font-bold hover:underline cursor-pointer"
+                        className="text-xs text-primary font-bold hover:underline cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                       >
                         Alterar
                       </button>
@@ -2673,7 +2673,7 @@ export function CheckoutPage() {
                       <button
                         type="button"
                         onClick={() => setActiveStep(2)}
-                        className="text-xs text-primary font-bold hover:underline cursor-pointer"
+                        className="text-xs text-primary font-bold hover:underline cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                       >
                         Alterar
                       </button>
@@ -2703,7 +2703,7 @@ export function CheckoutPage() {
  <button
  type="button"
  onClick={() => setActiveStep(3)}
- className="text-xs text-primary font-bold hover:underline cursor-pointer"
+ className="text-xs text-primary font-bold hover:underline cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
  >
  Alterar
  </button>
@@ -2741,11 +2741,11 @@ export function CheckoutPage() {
           <Button
             onClick={handleSubmitOrder}
             disabled={isSubmitting}
-            className="rounded-lg px-4 sm:px-8 h-11 sm:h-12 w-full sm:w-auto bg-primary text-primary-foreground font-bold text-xs sm:text-base cursor-pointer active:scale-98 transition-all flex items-center justify-center gap-2"
+            className="rounded-lg px-4 sm:px-8 h-11 sm:h-12 w-full sm:w-auto bg-primary text-primary-foreground font-bold text-xs sm:text-base cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary active:scale-98 transition-colors motion-reduce:transition-none flex items-center justify-center gap-2"
           >
             {isSubmitting ? (
               <>
-                <Loader2 size={16} className="animate-spin mr-2" />
+                <Loader2 size={16} className="animate-spin motion-reduce:animate-none mr-2" />
                 <span>Processando...</span>
               </>
             ) : (
@@ -2759,7 +2759,7 @@ export function CheckoutPage() {
           <button
             type="button"
             onClick={() => setIsPolicySheetOpen(true)}
-            className="text-primary font-bold hover:underline cursor-pointer inline"
+            className="text-primary font-bold hover:underline cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary inline"
           >
             Políticas Pétreas
           </button>
@@ -2771,7 +2771,7 @@ export function CheckoutPage() {
 
  {/* Coluna da Direita: Resumo da Sacola & Totais */}
  <div className="space-y-4">
- <Surface variant="default" className="p-5 rounded-lg space-y-4">
+ <Surface className="p-5 rounded-lg space-y-4">
  <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
  Resumo do Pedido
  </h3>
@@ -2806,7 +2806,7 @@ export function CheckoutPage() {
          {item.selectedOptionsLabels && item.selectedOptionsLabels.length > 0 && (
            <div className="flex flex-wrap gap-1 mt-1">
              {item.selectedOptionsLabels.map((lbl: string, i: number) => (
-               <span key={i} className="inline-flex items-center text-[10px] px-2 py-1 rounded bg-muted/60 text-muted-foreground">
+               <span key={i} className="inline-flex items-center text-xs px-2 py-1 rounded bg-muted/60 text-muted-foreground">
                  {lbl}
                </span>
              ))}
@@ -2829,7 +2829,7 @@ export function CheckoutPage() {
              <button
                type="button"
                onClick={() => setOpenItemNoteId(item.id)}
-               className="text-xs font-medium text-emerald-600 dark:text-emerald-400 hover:underline cursor-pointer select-none"
+               className="text-xs font-medium text-emerald-600 dark:text-emerald-400 hover:underline cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary select-none"
              >
                + Observação do item
              </button>
@@ -2857,11 +2857,11 @@ export function CheckoutPage() {
      <div className="min-w-0 flex-1">
        <div className="flex items-center gap-2 flex-wrap">
          <span className="font-bold text-foreground truncate">1x {orderBumpOffer.title}</span>
-         <Badge variant="outline" className="text-[9px] px-1 py-0 border-emerald-500/40 text-emerald-600">
+         <Badge variant="outline" className="text-xs px-1 py-0 border-emerald-500/40 text-emerald-600">
            Order Bump
          </Badge>
        </div>
-       <p className="text-[11px] text-muted-foreground">Oferta especial de checkout</p>
+       <p className="text-xs text-muted-foreground">Oferta especial de checkout</p>
      </div>
      <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400 shrink-0">
        {formatMoney(orderBumpOffer.offerPriceCents)}
@@ -2877,16 +2877,16 @@ export function CheckoutPage() {
  placeholder="Cupom ou Vale-presente"
  value={promoCode}
                   onChange={(e) => setPromoCode(e.target.value)}
-                  className="h-10 rounded-lg text-base sm:text-sm"
+                  className="h-11 min-h-11 rounded-lg text-base sm:text-sm"
                 />
                 <Button
                   size="sm"
                   variant="outline"
                   onClick={handleApplyPromo}
                   disabled={isApplyingPromo || !promoCode.trim()}
-                  className="h-10 rounded-lg text-xs font-bold px-4 cursor-pointer"
+                  className="h-11 min-h-11 rounded-lg text-xs font-bold px-4 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
  >
- {isApplyingPromo ? <Loader2 size={12} className="animate-spin" /> : "Aplicar"}
+ {isApplyingPromo ? <Loader2 size={12} className="animate-spin motion-reduce:animate-none" /> : "Aplicar"}
  </Button>
  </div>
 
@@ -2959,12 +2959,12 @@ export function CheckoutPage() {
  {/* ── BARRA FIXA MOBILE NA THUMB ZONE (ETAPA 4) ── */}
  {activeStep === 4 && (
  <div
-   className="fixed bottom-0 left-0 right-0 bg-background border-t border-border/60 z-40 sm:hidden"
-   style={{ paddingBottom: "env(safe-area-inset-bottom, 16px)", padding: "12px 16px" }}
+   className="fixed bottom-0 left-0 right-0 bg-background border-t border-border/60 z-40 sm:hidden p-4 pb-6"
+   
  >
    <div
      className="flex items-center justify-between gap-3 max-w-lg mx-auto"
-     style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
+     
    >
    <div className="flex flex-col">
    <span className="text-xs text-muted-foreground/75 text-muted-foreground uppercase font-bold tracking-wider">Total</span>
@@ -2973,11 +2973,11 @@ export function CheckoutPage() {
    <Button
    onClick={handleSubmitOrder}
    disabled={isSubmitting}
-   className="flex-1 h-11 rounded-lg bg-primary text-primary-foreground font-bold text-xs cursor-pointer active:scale-98 flex items-center justify-center gap-2"
+   className="flex-1 h-11 rounded-lg bg-primary text-primary-foreground font-bold text-xs cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary active:scale-98 flex items-center justify-center gap-2"
    >
    {isSubmitting ? (
    <>
-   <Loader2 size={16} className="animate-spin" />
+   <Loader2 size={16} className="animate-spin motion-reduce:animate-none" />
    <span>Processando...</span>
    </>
    ) : (

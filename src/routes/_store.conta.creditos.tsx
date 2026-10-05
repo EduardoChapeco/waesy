@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Loader2, ArrowDownRight } from "lucide-react";
+import { Loader2, ArrowDownRight, Receipt } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger, DialogFooter, DialogClose } from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/_store/conta/creditos")({
@@ -84,8 +84,8 @@ function Page() {
         <div className="flex items-center gap-2">
           <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>
-              <Button size="sm" className="rounded-lg h-8 px-4 text-xs font-semibold gap-2 bg-foreground text-background hover:bg-foreground/90 shrink-0 shadow-xs cursor-pointer" disabled={maxCents < 100}>
-                <ArrowDownRight className="size-3.5" />
+              <Button size="sm" className="rounded-lg h-11 px-4 text-xs font-semibold gap-2 bg-foreground text-background hover:bg-foreground/90 shrink-0 shadow-xs cursor-pointer" disabled={maxCents < 100}>
+                <ArrowDownRight className="size-4" />
                 <span>Sacar</span>
               </Button>
             </DialogTrigger>
@@ -123,16 +123,23 @@ function Page() {
               </div>
               <DialogFooter className="gap-2 sm:gap-0">
                 <DialogClose asChild>
-                  <Button variant="outline" className="rounded-lg">Cancelar</Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setIsOpen(false)}
+                    className="rounded-lg h-11 px-4 focus-visible:ring-2 focus-visible:ring-primary"
+                  >
+                    Cancelar
+                  </Button>
                 </DialogClose>
-                <Button onClick={handleRedeem} disabled={isSubmitting} className="rounded-lg min-w-[120px]">
-                  {isSubmitting ? <Loader2 className="size-4 animate-spin" /> : "Confirmar Saque"}
+                <Button onClick={handleRedeem} disabled={isSubmitting} className="rounded-lg min-w-32">
+                  {isSubmitting ? <Loader2 className="size-4 animate-spin motion-reduce:animate-none" /> : "Confirmar Saque"}
                 </Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
 
-          <Button asChild size="sm" variant="outline" className="rounded-lg text-xs font-semibold h-8 px-4 cursor-pointer">
+          <Button asChild size="sm" variant="outline" className="rounded-lg text-xs font-semibold h-11 px-4 cursor-pointer">
             <Link to="/mercado">Usar no Mercado</Link>
           </Button>
         </div>
@@ -156,7 +163,7 @@ function Page() {
  <h3 className="text-lg font-semibold pb-2">Histórico de Transações</h3>
  {credits.customer_credit_transactions.length === 0 ? (
  <div className="rounded-lg border border-dashed border-border p-10 text-center flex flex-col items-center gap-4 bg-muted/20">
- <span className="text-4xl opacity-50">🧾</span>
+ <Receipt className="size-10 text-muted-foreground/50" />
  <div className="space-y-1">
  <p className="font-semibold text-base text-foreground">Sem movimentações</p>
  <p className="text-sm text-muted-foreground">

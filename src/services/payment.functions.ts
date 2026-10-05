@@ -16,6 +16,7 @@ import { requireAdmin } from "@/lib/server-access";
 import { withDataPayload } from "./cart-helpers";
 import { recordLedgerEntryCore } from "@/services/immutable-ledger.functions";
 import { enforceRateLimit } from "@/lib/rate-limiter";
+import { assertUserKycVerified } from "@/services/kyc.functions";
 
 // Schema for initiating a payment
 const InitiatePaymentSchema = z.object({
@@ -56,9 +57,17 @@ export const initiatePaymentTransaction = createServerFn({ method: "POST" })
  const token = publicToken || (!isUuid ? orderId : undefined);
 
  if (user) {
- query = query.eq("customer_id", user.id);
+  if (method !== "manual") {
+   const isVerified = await assertUserKycVerified(user.id);
+   if (!isVerified) {
+    throw new Error(
+     "Transações financeiras na plataforma exigem verificação de identidade (KYC). Complete seu perfil em /conta/verificacao.",
+    );
+   }
+  }
+  query = query.eq("customer_id", user.id);
  } else if (token) {
- query = query.eq("public_token", token);
+  query = query.eq("public_token", token);
  }
 
  const { data: order, error: orderError } = await query.single();

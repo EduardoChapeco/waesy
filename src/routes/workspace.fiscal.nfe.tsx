@@ -325,18 +325,18 @@ function FiscalNFePage() {
                         </td>
                         <td className="py-3 px-4 text-right space-x-2">
                           {inv.danfe_pdf_url && (
-                            <a href={inv.danfe_pdf_url} target="_blank" rel="noreferrer">
-                              <Button variant="ghost" size="sm" className="h-7 px-2 text-xs">
-                                <Download className="size-3 mr-1" /> DANFE
-                              </Button>
-                            </a>
+                            <Button asChild variant="ghost" size="sm" className="h-11 min-h-11 px-3 text-xs focus-visible:ring-2 focus-visible:ring-primary">
+                              <a href={inv.danfe_pdf_url} target="_blank" rel="noreferrer">
+                                <Download className="size-4 mr-1" /> DANFE
+                              </a>
+                            </Button>
                           )}
                           {inv.xml_url && (
-                            <a href={inv.xml_url} target="_blank" rel="noreferrer">
-                              <Button variant="ghost" size="sm" className="h-7 px-2 text-xs">
-                                <FileCode className="size-3 mr-1" /> XML
-                              </Button>
-                            </a>
+                            <Button asChild variant="ghost" size="sm" className="h-11 min-h-11 px-3 text-xs focus-visible:ring-2 focus-visible:ring-primary">
+                              <a href={inv.xml_url} target="_blank" rel="noreferrer">
+                                <FileCode className="size-4 mr-1" /> XML
+                              </a>
+                            </Button>
                           )}
                         </td>
                       </tr>

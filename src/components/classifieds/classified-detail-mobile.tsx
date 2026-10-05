@@ -64,7 +64,8 @@ export function ClassifiedDetailMobile({
   const displayMode = (classified.attributes?.display_mode as string) || "tabs";
   const templateStyle = (classified.attributes?.template_style as string) || "standard";
 
-  const handleStartNativeChat = async (customInitialMessage?: string) => {
+  const handleStartNativeChat = async (customInitialMessage?: string | React.MouseEvent) => {
+    const initialMsg = typeof customInitialMessage === "string" ? customInitialMessage : undefined;
     setIsStartingChat(true);
     try {
       const res = await startCustomerChatThread({
@@ -72,7 +73,7 @@ export function ClassifiedDetailMobile({
           storeId: classified.store_id || classified.storeId || undefined,
           recipientProfileId: classified.author_profile_id || undefined,
           subject: classified.title,
-          initialMessage: customInitialMessage || `Olá, tenho interesse no anúncio: ${classified.title}`,
+          initialMessage: initialMsg || `Olá, tenho interesse no anúncio: ${classified.title}`,
         },
       });
       if (res?.threadId) {

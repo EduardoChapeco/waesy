@@ -1,3 +1,4 @@
+/* empty state handled in CanonicalStoreProfileView */
 /**
  * _store.diretorio.$id.tsx — Perfil Comercial da Empresa no Guia & Diretório Local
  * Unificado no Padrão Canônico Apple HIG (Idêntico ao Perfil de Membro com Abas Ricas de Loja, Sobre, Posts, Vagas e Avaliações).

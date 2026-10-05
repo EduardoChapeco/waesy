@@ -47,6 +47,7 @@ export const listPublicJobs = createServerFn({ method: "GET" })
  contract_type: z.string().optional(),
  limit: z.number().int().min(1).max(100).optional(),
 			storeId: z.string().optional(),
+			city: z.string().optional(),
  })
  .optional(),
  )
@@ -74,7 +75,12 @@ export const listPublicJobs = createServerFn({ method: "GET" })
  query = query.eq("contract_type", data.contract_type);
  }
 
- if (data?.search && data.search.trim()) {
+ if (data?.city && data.city !== "todos" && data.city !== "Todas" && data.city !== "Global" && data.city !== "all") {
+      const c = `%${data.city.trim()}%`;
+      query = query.or(`location_city.ilike.${c},location.ilike.${c}`);
+    }
+
+    if (data?.search && data.search.trim()) {
  const q = `%${data.search.trim()}%`;
  query = query.or(`title.ilike.${q},company_name.ilike.${q},location.ilike.${q},description.ilike.${q}`);
  }

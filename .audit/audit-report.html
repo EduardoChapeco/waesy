@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Waesy Platform Audit Report (P06)</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #090a0f; color: #f1f5f9; padding: 2rem; margin: 0; }
+    .container { max-width: 1200px; margin: 0 auto; }
+    h1, h2 { font-weight: 700; letter-spacing: -0.02em; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+    .card { background: #131722; border: 1px solid #1e293b; border-radius: 12px; padding: 1.25rem; }
+    .metric { font-size: 2rem; font-weight: 800; font-family: monospace; }
+    .text-emerald { color: #10b981; }
+    .text-amber { color: #f59e0b; }
+    .text-rose { color: #f43f5e; }
+    table { width: 100%; border-collapse: collapse; margin-top: 1rem; background: #131722; border: 1px solid #1e293b; border-radius: 12px; overflow: hidden; }
+    th, td { padding: 0.75rem 1rem; text-align: left; border-bottom: 1px solid #1e293b; font-size: 0.875rem; }
+    th { background: #1e293b; font-weight: 600; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em; }
+    .badge { display: inline-block; padding: 0.25rem 0.5rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 700; }
+    .badge-green { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .badge-red { background: rgba(244, 63, 94, 0.15); color: #fb7185; border: 1px solid rgba(244, 63, 94, 0.3); }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Waesy Platform Forensic Audit Report</h1>
+    <p style="color: #94a3b8;">Gerado em 04/10/2026, 15:04:40 · Harness de Auditoria P06</p>
+
+    <div class="grid">
+      <div class="card">
+        <div style="font-size: 0.8rem; color: #94a3b8; text-transform: uppercase;">Total de Rotas</div>
+        <div class="metric text-emerald">405</div>
+      </div>
+      <div class="card">
+        <div style="font-size: 0.8rem; color: #94a3b8; text-transform: uppercase;">Linhas de Código</div>
+        <div class="metric">634.620</div>
+      </div>
+      <div class="card">
+        <div style="font-size: 0.8rem; color: #94a3b8; text-transform: uppercase;">Checks Conformes</div>
+        <div class="metric text-emerald">30 / 43</div>
+      </div>
+      <div class="card">
+        <div style="font-size: 0.8rem; color: #94a3b8; text-transform: uppercase;">Checks com Violações</div>
+        <div class="metric text-rose">13 / 43</div>
+      </div>
+    </div>
+
+    <h2>Placar dos Checks C01 a C43</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Check</th>
+          <th>Violações</th>
+          <th>Status</th>
+          <th>Amostra de Evidência</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+          <tr>
+            <td><strong>C01</strong></td>
+            <td><code>1802</code></td>
+            <td>
+              <span class="badge badge-red">ABERTO</span>
+            </td>
+            <td style="font-family: monospace; font-size: 0.8rem; color: #94a3b8;">
+              src/components/ad-engine/preview/canonical-listing-preview-frame.tsx:181
+            </td>
+          </tr>
+        
+          <tr>
+            <td><strong>C02</strong></td>
+            <td><code>1</code></td>
+            <td>
+              <span class="badge badge-red">ABERTO</span>
+            </td>
+            <td style="font-family: monospace; font-size: 0.8rem; color: #94a3b8;">
+              src/services/builder.functions.test.ts:37
+            </td>
+          </tr>
+        
+          <tr>
+            <td><strong>C03</strong></td>
+            <td><code>0</code></td>
+            <td>
+              <span class="badge badge-green">CONFORME</span>
+            </td>
+            <td style="font-family: monospace; font-size: 0.8rem; color: #94a3b8;">
+              Nenhuma violação
+            </td>
+          </tr>
+        
+          <tr>
+            <td><strong>C04</strong></td>
+            <td><code>0</code></td>
+            <td>
+              <span class="badge badge-green">CONFORME</span>
+            </td>
+            <td style="font-family: monospace; font-size: 0.8rem; color: #94a3b8;">
+              Nenhuma violação
+            </td>
+          </tr>
+        
+          <tr>
+            <td><strong>C05</strong></td>
+            <td><code>0</code></td>
+            <td>
+              <span class="badge badge-green">CONFORME</span>
+            </td>
+            <td style="font-family: monospace; font-size: 0.8rem; color: #94a3b8;">
+              Nenhuma violação
+            </td>
+          </tr>
+        
+          <tr>
+            <td><strong>C06</strong></td>
+            <td><code>525</code></td>
+            <td>
+              <span class="badge badge-red">ABERTO</span>
+            </td>
+            <td style="font-family: monospace; font-size: 0.8rem; color: #94a3b8;">
+              src/components/ad-engine/editor/editor.test.ts:27
+            </td>
+          </tr>
+        
+          <tr>
+            <td><strong>C07</strong></td>
+            <td><code>396</code></td>
+            <td>
+              <span class="badge badge-red">ABERTO</span>
+            </td>
+            <td style="font-family: monospace; font-size: 0.8rem; color: #94a3b8;">
+              src/components/ad-engine/public/canonical-listing-view.tsx:186
+            </td>
+          </tr>
+        
+          <tr>
+            <td><strong>C08</strong></td>
+            <td><code>303</code></td>
+            <td>
+              <span class="badge badge-red">ABERTO</span>
+            </td>
+            <td style="font-family: monospace; font-size: 0.8rem; color: #94a3b8;">
+              src/components/classifieds/travel-booking-dossier-modal.tsx:123
+            </td>
+          </tr>
+        
+          <tr>
+            <td><strong>C09</strong></td>
+            <td><code>238</code></td>
+            <td>
+              <span class="badge badge-red">ABERTO</span>
+            </td>
+            <td style="font-family: monospace; font-size: 0.8rem; color: #94a3b8;">
+              src/components/ad-engine/preview/canonical-listing-preview-frame.tsx:186
+            </td>
+          </tr>
+        
+          <tr>
+            <td><strong>C10</strong></td>
+            <td><code>0</code></td>
+            <td>
+              <span class="badge badge-green">CONFORME</span>
+            </td>
+            <td style="font-family: monospace; font-size: 0.8rem; color: #94a3b8;">
+              Nenhuma violação
+            </td>
+          </tr>
+        
+          <tr>
+            <td><strong>C11</strong></td>
+            <td><code>0</code></td>
+            <td>
+              <span class="badge badge-green">CONFORME</span>
+            </td>
+            <td style="font-family: monospace; font-size: 0.8rem; color: #94a3b8;">
+              Nenhuma violação
+            </td>
+          </tr>
+        
+          <tr>
+            <td><strong>C12</strong></td>
+            <td><code>0</code></td>
+            <td>
+              <span class="badge badge-green">CONFORME</span>
+            </td>
+            <td style="font-family: monospace; font-size: 0.8rem; color: #94a3b8;">
+              Nenhuma violação
+            </td>
+          </tr>
+        
+          <tr>
+            <td><strong>C13</strong></td>
+            <td><code>0</code></td>
+            <td>
+              <span class="badge badge-green">CONFORME</span>
+            </td>
+            <td style="font-family: monospace; font-size: 0.8rem; color: #94a3b8;">
+              Nenhuma violação
+            </td>
+          </tr>
+        
+          <tr>
+            <td><strong>C14</strong></td>
+            <td><code>0</code></td>
+            <td>
+              <span class="badge badge-green">CONFORME</span>
+            </td>
+            <td style="font-family: monospace; font-size: 0.8rem; color: #94a3b8;">
+              Nenhuma violação
+            </td>
+          </tr>
+        
+          <tr>
+            <td><strong>C15</strong></td>
+            <td><code>0</code></td>
+            <td>
+              <span class="badge badge-green">CONFORME</span>
+            </td>
+            <td style="font-family: monospace; font-size: 0.8rem; color: #94a3b8;">
+              Nenhuma violação
+            </td>
+          </tr>
+        
+          <tr>
+            <td><strong>C16</strong></td>
+            <td><code>0</code></td>
+            <td>
+              <span class="badge badge-green">CONFORME</span>
+            </td>
+            <td style="font-family: monospace; font-size: 0.8rem; color: #94a3b8;">
+              Nenhuma violação
+            </td>
+          </tr>
+        
+          <tr>
+            <td><strong>C17</strong></td>
+            <td><code>0</code></td>
+            <td>
+              <span class="badge badge-green">CONFORME</span>
+            </td>
+            <td style="font-family: monospace; font-size: 0.8rem; color: #94a3b8;">
+              Nenhuma violação
+            </td>
+          </tr>
+        
+          <tr>
+            <td><strong>C18</strong></td>
+            <td><code>38</code></td>
+            <td>
+              <span class="badge badge-red">ABERTO</span>
+            </td>
+            <td style="font-family: monospace; font-size: 0.8rem; color: #94a3b8;">
+              src/components/ad-engine/editor/unified-listing-editor.tsx:305
+            </td>
+          </tr>
+        
+          <tr>
+            <td><strong>C19</strong></td>
+            <td><code>0</code></td>
+            <td>
+              <span class="badge badge-green">CONFORME</span>
+            </td>
+            <td style="font-family: monospace; font-size: 0.8rem; color: #94a3b8;">
+              Nenhuma violação
+            </td>
+          </tr>
+        
+          <tr>
+            <td><strong>C20</strong></td>
+            <td><code>0</code></td>
+            <td>
+              <span class="badge badge-green">CONFORME</span>
+            </td>
+            <td style="font-family: monospace; font-size: 0.8rem; color: #94a3b8;">
+              Nenhuma violação
+            </td>
+          </tr>
+        
+          <tr>
+            <td><strong>C21</strong></td>
+            <td><code>0</code></td>
+            <td>
+              <span class="badge badge-green">CONFORME</span>
+            </td>
+            <td style="font-family: monospace; font-size: 0.8rem; color: #94a3b8;">
+              Nenhuma violação
+            </td>
+          </tr>
+        
+          <tr>
+            <td><strong>C22</strong></td>
+            <td><code>21</code></td>
+            <td>
+              <span class="badge badge-red">ABERTO</span>
+            </td>
+            <td style="font-family: monospace; font-size: 0.8rem; color: #94a3b8;">
+              src/components/ad-engine/preview/canonical-listing-preview-frame.tsx:201
+            </td>
+          </tr>
+        
+          <tr>
+            <td><strong>C23</strong></td>
+            <td><code>5941</code></td>
+            <td>
+              <span class="badge badge-red">ABERTO</span>
+            </td>
+            <td style="font-family: monospace; font-size: 0.8rem; color: #94a3b8;">
+              src/components/ad-engine/editor/listing-full-editor.tsx:229
+            </td>
+          </tr>
+        
+          <tr>
+            <td><strong>C24</strong></td>
+            <td><code>0</code></td>
+            <td>
+              <span class="badge badge-green">CONFORME</span>
+            </td>
+            <td style="font-family: monospace; font-size: 0.8rem; color: #94a3b8;">
+              Nenhuma violação
+            </td>
+          </tr>
+        
+          <tr>
+            <td><strong>C25</strong></td>
+            <td><code>0</code></td>
+            <td>
+              <span class="badge badge-green">CONFORME</span>
+            </td>
+            <td style="font-family: monospace; font-size: 0.8rem; color: #94a3b8;">
+              Nenhuma violação
+            </td>
+          </tr>
+        
+          <tr>
+            <td><strong>C26</strong></td>
+            <td><code>8</code></td>
+            <td>
+              <span class="badge badge-red">ABERTO</span>
+            </td>
+            <td style="font-family: monospace; font-size: 0.8rem; color: #94a3b8;">
+              kanban: src/components/workspace/full-viewport-kanban.tsx vs src/components/tasks/task-kanban.tsx
+            </td>
+          </tr>
+        
+          <tr>
+            <td><strong>C27</strong></td>
+            <td><code>0</code></td>
+            <td>
+              <span class="badge badge-green">CONFORME</span>
+            </td>
+            <td style="font-family: monospace; font-size: 0.8rem; color: #94a3b8;">
+              Nenhuma violação
+            </td>
+          </tr>
+        
+          <tr>
+            <td><strong>C28</strong></td>
+            <td><code>2</code></td>
+            <td>
+              <span class="badge badge-red">ABERTO</span>
+            </td>
+            <td style="font-family: monospace; font-size: 0.8rem; color: #94a3b8;">
+              src/routes/api.auth.confirm.ts:5
+            </td>
+          </tr>
+        
+          <tr>
+            <td><strong>C29</strong></td>
+            <td><code>0</code></td>
+            <td>
+              <span class="badge badge-green">CONFORME</span>
+            </td>
+            <td style="font-family: monospace; font-size: 0.8rem; color: #94a3b8;">
+              Nenhuma violação
+            </td>
+          </tr>
+        
+          <tr>
+            <td><strong>C30</strong></td>
+            <td><code>0</code></td>
+            <td>
+              <span class="badge badge-green">CONFORME</span>
+            </td>
+            <td style="font-family: monospace; font-size: 0.8rem; color: #94a3b8;">
+              Nenhuma violação
+            </td>
+          </tr>
+        
+          <tr>
+            <td><strong>C31</strong></td>
+            <td><code>0</code></td>
+            <td>
+              <span class="badge badge-green">CONFORME</span>
+            </td>
+            <td style="font-family: monospace; font-size: 0.8rem; color: #94a3b8;">
+              Nenhuma violação
+            </td>
+          </tr>
+        
+          <tr>
+            <td><strong>C32</strong></td>
+            <td><code>0</code></td>
+            <td>
+              <span class="badge badge-green">CONFORME</span>
+            </td>
+            <td style="font-family: monospace; font-size: 0.8rem; color: #94a3b8;">
+              Nenhuma violação
+            </td>
+          </tr>
+        
+          <tr>
+            <td><strong>C33</strong></td>
+            <td><code>0</code></td>
+            <td>
+              <span class="badge badge-green">CONFORME</span>
+            </td>
+            <td style="font-family: monospace; font-size: 0.8rem; color: #94a3b8;">
+              Nenhuma violação
+            </td>
+          </tr>
+        
+          <tr>
+            <td><strong>C34</strong></td>
+            <td><code>0</code></td>
+            <td>
+              <span class="badge badge-green">CONFORME</span>
+            </td>
+            <td style="font-family: monospace; font-size: 0.8rem; color: #94a3b8;">
+              Nenhuma violação
+            </td>
+          </tr>
+        
+          <tr>
+            <td><strong>C35</strong></td>
+            <td><code>0</code></td>
+            <td>
+              <span class="badge badge-green">CONFORME</span>
+            </td>
+            <td style="font-family: monospace; font-size: 0.8rem; color: #94a3b8;">
+              Nenhuma violação
+            </td>
+          </tr>
+        
+          <tr>
+            <td><strong>C36</strong></td>
+            <td><code>0</code></td>
+            <td>
+              <span class="badge badge-green">CONFORME</span>
+            </td>
+            <td style="font-family: monospace; font-size: 0.8rem; color: #94a3b8;">
+              Nenhuma violação
+            </td>
+          </tr>
+        
+          <tr>
+            <td><strong>C37</strong></td>
+            <td><code>86</code></td>
+            <td>
+              <span class="badge badge-red">ABERTO</span>
+            </td>
+            <td style="font-family: monospace; font-size: 0.8rem; color: #94a3b8;">
+              src/components/ad-engine/editor/unified-listing-editor.tsx:85
+            </td>
+          </tr>
+        
+          <tr>
+            <td><strong>C38</strong></td>
+            <td><code>0</code></td>
+            <td>
+              <span class="badge badge-green">CONFORME</span>
+            </td>
+            <td style="font-family: monospace; font-size: 0.8rem; color: #94a3b8;">
+              Nenhuma violação
+            </td>
+          </tr>
+        
+          <tr>
+            <td><strong>C39</strong></td>
+            <td><code>0</code></td>
+            <td>
+              <span class="badge badge-green">CONFORME</span>
+            </td>
+            <td style="font-family: monospace; font-size: 0.8rem; color: #94a3b8;">
+              Nenhuma violação
+            </td>
+          </tr>
+        
+          <tr>
+            <td><strong>C40</strong></td>
+            <td><code>0</code></td>
+            <td>
+              <span class="badge badge-green">CONFORME</span>
+            </td>
+            <td style="font-family: monospace; font-size: 0.8rem; color: #94a3b8;">
+              Nenhuma violação
+            </td>
+          </tr>
+        
+          <tr>
+            <td><strong>C41</strong></td>
+            <td><code>12</code></td>
+            <td>
+              <span class="badge badge-red">ABERTO</span>
+            </td>
+            <td style="font-family: monospace; font-size: 0.8rem; color: #94a3b8;">
+              Nenhuma violação
+            </td>
+          </tr>
+        
+          <tr>
+            <td><strong>C42</strong></td>
+            <td><code>0</code></td>
+            <td>
+              <span class="badge badge-green">CONFORME</span>
+            </td>
+            <td style="font-family: monospace; font-size: 0.8rem; color: #94a3b8;">
+              Nenhuma violação
+            </td>
+          </tr>
+        
+          <tr>
+            <td><strong>C43</strong></td>
+            <td><code>0</code></td>
+            <td>
+              <span class="badge badge-green">CONFORME</span>
+            </td>
+            <td style="font-family: monospace; font-size: 0.8rem; color: #94a3b8;">
+              Nenhuma violação
+            </td>
+          </tr>
+        
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>

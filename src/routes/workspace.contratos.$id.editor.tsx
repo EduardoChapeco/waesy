@@ -265,7 +265,7 @@ function ContractEditorPage() {
               variant="outline"
               size="sm"
               onClick={handleSaveDraft}
-              className="rounded-lg text-xs sm:text-sm font-semibold h-10 px-4"
+              className="rounded-lg text-xs sm:text-sm font-semibold h-11 min-h-11 px-4 focus-visible:ring-2 focus-visible:ring-primary"
             >
               <Save className="size-4 mr-2" />
               Salvar Rascunho
@@ -277,7 +277,7 @@ function ContractEditorPage() {
             <button
               type="button"
               onClick={() => setActiveStep(1)}
-              className={`px-4 py-2 rounded-lg transition-all font-semibold cursor-pointer ${
+              className={`px-4 py-2 min-h-11 inline-flex items-center rounded-lg transition-all font-semibold cursor-pointer focus-visible:ring-2 focus-visible:ring-primary ${
                 activeStep === 1 ? "bg-card text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
               }`}
             >
@@ -286,7 +286,7 @@ function ContractEditorPage() {
             <button
               type="button"
               onClick={() => setActiveStep(2)}
-              className={`px-4 py-2 rounded-lg transition-all font-semibold cursor-pointer ${
+              className={`px-4 py-2 min-h-11 inline-flex items-center rounded-lg transition-all font-semibold cursor-pointer focus-visible:ring-2 focus-visible:ring-primary ${
                 activeStep === 2 ? "bg-card text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
               }`}
             >
@@ -295,7 +295,7 @@ function ContractEditorPage() {
             <button
               type="button"
               onClick={() => setActiveStep(3)}
-              className={`px-4 py-2 rounded-lg transition-all font-semibold cursor-pointer ${
+              className={`px-4 py-2 min-h-11 inline-flex items-center rounded-lg transition-all font-semibold cursor-pointer focus-visible:ring-2 focus-visible:ring-primary ${
                 activeStep === 3 ? "bg-card text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
               }`}
             >

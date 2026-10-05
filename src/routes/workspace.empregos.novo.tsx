@@ -516,7 +516,7 @@ function WorkspaceNewJobPage() {
           <Button
             type="submit"
             disabled={isSubmitting}
-            className="rounded-lg font-bold text-xs h-10 px-6 gap-2 bg-primary text-primary-foreground hover:bg-primary/90 shadow-xs cursor-pointer"
+            className="rounded-lg font-bold text-xs h-11 px-6 gap-2 bg-primary text-primary-foreground hover:bg-primary/90 shadow-xs cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
           >
             <Briefcase className="size-4" />
             <span>{isSubmitting ? "Publicando Vaga..." : "Publicar Vaga de Emprego"}</span>

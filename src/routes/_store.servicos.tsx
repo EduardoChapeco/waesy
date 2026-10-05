@@ -269,6 +269,15 @@ function ServicosVerticalPage() {
         onSearchChange={setSearchTerm}
         searchPlaceholder="Buscar eletricistas, médicos, salões..."
       />
+      {/* ── Cabeçalho Inpage Desktop (Apple HIG) ── */}
+      <div className="hidden md:flex items-center justify-between px-4 sm:px-5 pt-6 pb-4 border-b border-border/40">
+        <div>
+          <h1 className="text-xl font-bold tracking-tight text-foreground">Serviços</h1>
+          <p className="text-xs text-muted-foreground mt-1">
+            Contrate profissionais locais, autônomos, especialistas e prestadores verificados
+          </p>
+        </div>
+      </div>
       <div className="px-4 sm:px-5 space-y-6 pt-2 sm:pt-4">
  {/* ── 1. Banners ── */}
  {banners && banners.length > 0 && (

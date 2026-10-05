@@ -29,11 +29,11 @@ const MONTH_NAMES = [
 ];
 
 const AGENDA_FILTER_CHIPS: FilterChipOption[] = [
-  { id: "todos", label: "Toda a Agenda", emoji: "📅" },
-  { id: "eventos", label: "Eventos e Shows", emoji: "🎟️" },
-  { id: "servicos", label: "Meus Serviços", emoji: "✂️" },
-  { id: "ingressos", label: "Meus Ingressos", emoji: "🎫" },
-  { id: "carnes", label: "Contas e Carnês", emoji: "💳" },
+  { id: "todos", label: "Toda a Agenda", icon: CalendarBlank },
+  { id: "eventos", label: "Eventos e Shows", icon: Ticket },
+  { id: "servicos", label: "Meus Serviços", icon: Scissors },
+  { id: "ingressos", label: "Meus Ingressos", icon: QrCode },
+  { id: "carnes", label: "Contas e Carnês", icon: CreditCard },
 ];
 
 export const Route = createFileRoute("/_store/agenda")({
@@ -54,16 +54,16 @@ export const Route = createFileRoute("/_store/agenda")({
         getUserSession().catch(() => null),
         listActiveBanners({ data: { placement: "agenda", city: activeCity } }).catch(() => []),
       ]);
-      return { session, banners: banners || [] };
+      return { session, banners: banners || [], activeCity };
     } catch {
-      return { session: null, banners: [] };
+      return { session: null, banners: [], activeCity: undefined };
     }
   },
   component: AgendaPadronizadaPage,
 });
 
 function AgendaPadronizadaPage() {
-  const { session, banners = [] } = ((Route.useLoaderData?.() as any) || {});
+  const { session, banners = [], activeCity } = ((Route.useLoaderData?.() as any) || {});
   const isAuthenticated = Boolean(session?.user || session?.id);
 
   const [selectedFilter, setSelectedFilter] = useState("todos");
@@ -73,10 +73,10 @@ function AgendaPadronizadaPage() {
 
   // 1. Busca Eventos Públicos da Comunidade (Disponível para todos os visitantes)
   const { data: publicEvents = [], isLoading: isLoadingEvents } = useQuery({
-    queryKey: ["agenda-public-events"],
+    queryKey: ["agenda-public-events", activeCity],
     queryFn: async () => {
       try {
-        const res = await getPublicEvents({ data: { limit: 60 } });
+        const res = await getPublicEvents({ data: { limit: 60, city: activeCity } });
         return res || [];
       } catch {
         return [];
@@ -380,21 +380,21 @@ function AgendaPadronizadaPage() {
         )}
 
         {/* ── 2. Header Desktop Silencioso Apple HIG ── */}
-        <div className="hidden lg:flex items-center justify-between gap-3 border-b border-border/40 pb-3">
+        <div className="hidden md:flex items-center justify-between gap-3 border-b border-border/40 pb-4 pt-2">
           <h1 className="text-xl font-black tracking-tight text-foreground">
             Agenda
           </h1>
 
           <div className="flex items-center gap-2">
             {!isAuthenticated ? (
-              <Button asChild size="sm" className="h-9 px-4 rounded-lg text-xs font-bold bg-foreground text-background hover:bg-foreground/90">
+              <Button asChild size="default" className="h-11 min-h-11 px-4 rounded-lg text-xs font-bold bg-foreground text-background hover:bg-foreground/90 focus-visible:ring-2 focus-visible:ring-primary">
                 <Link to="/entrar" search={{ returnUrl: "/agenda" }}>
                   <span>Entrar na Conta</span>
                   <ArrowRight size={13} className="ml-2" />
                 </Link>
               </Button>
             ) : (
-              <Button asChild size="sm" className="h-9 px-4 rounded-lg text-xs font-bold bg-foreground text-background hover:bg-foreground/90">
+              <Button asChild size="default" className="h-11 min-h-11 px-4 rounded-lg text-xs font-bold bg-foreground text-background hover:bg-foreground/90 focus-visible:ring-2 focus-visible:ring-primary">
                 <Link to="/servicos">
                   <Plus size={14} weight="bold" className="mr-2" />
                   <span>Agendar Serviço</span>
@@ -413,7 +413,7 @@ function AgendaPadronizadaPage() {
               <button
                 type="button"
                 className={cn(
-                  "h-10 px-4 rounded-lg border flex items-center gap-2 text-xs font-bold transition-all cursor-pointer shadow-xs",
+                  "h-11 min-h-11 px-4 rounded-lg border flex items-center gap-2 text-xs font-bold transition-all cursor-pointer shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                   selectedDate !== "all"
                     ? "bg-primary text-primary-foreground border-primary"
                     : "bg-card border-border/80 text-foreground hover:bg-muted/50"
@@ -425,7 +425,7 @@ function AgendaPadronizadaPage() {
                     ? "Selecionar Data"
                     : formatDate(selectedDate)}
                 </span>
-                <ChevronDown className="size-3.5 opacity-70" />
+                <ChevronDown className="size-4 opacity-70" />
               </button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-3 rounded-lg bg-card border-border/60 shadow-xs" align="start">
@@ -469,7 +469,7 @@ function AgendaPadronizadaPage() {
               type="button"
               onClick={() => setSelectedDate("all")}
               className={cn(
-                "h-9 px-4 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap snap-start",
+                "h-11 min-h-11 px-4 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap snap-start focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                 selectedDate === "all"
                   ? "bg-foreground text-background font-bold shadow-2xs"
                   : "bg-muted/40 text-muted-foreground hover:text-foreground hover:bg-muted/60"
@@ -484,7 +484,7 @@ function AgendaPadronizadaPage() {
                 type="button"
                 onClick={() => setSelectedDate(nextDays[0].dateKey)}
                 className={cn(
-                  "h-9 px-3 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap flex items-center gap-2",
+                  "h-11 min-h-11 px-3 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                   selectedDate === nextDays[0].dateKey
                     ? "bg-foreground text-background font-bold shadow-2xs"
                     : "bg-muted/40 text-muted-foreground hover:text-foreground hover:bg-muted/60"
@@ -503,7 +503,7 @@ function AgendaPadronizadaPage() {
                 type="button"
                 onClick={() => setSelectedDate(nextDays[1].dateKey)}
                 className={cn(
-                  "h-9 px-3 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap flex items-center gap-2",
+                  "h-11 min-h-11 px-3 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                   selectedDate === nextDays[1].dateKey
                     ? "bg-foreground text-background font-bold shadow-2xs"
                     : "bg-muted/40 text-muted-foreground hover:text-foreground hover:bg-muted/60"
@@ -525,7 +525,7 @@ function AgendaPadronizadaPage() {
                   type="button"
                   onClick={() => setSelectedDate(weekendDay.dateKey)}
                   className={cn(
-                    "h-9 px-3 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap flex items-center gap-2",
+                    "h-11 min-h-11 px-3 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                     selectedDate === weekendDay.dateKey
                       ? "bg-foreground text-background font-bold shadow-2xs"
                       : "bg-muted/40 text-muted-foreground hover:text-foreground hover:bg-muted/60"
@@ -544,10 +544,10 @@ function AgendaPadronizadaPage() {
               <button
                 type="button"
                 onClick={() => setSelectedDate("all")}
-                className="h-9 size-9 rounded-lg text-muted-foreground hover:text-foreground bg-muted/30 flex items-center justify-center cursor-pointer transition-colors"
+                className="size-11 min-h-11 min-w-11 rounded-lg text-muted-foreground hover:text-foreground bg-muted/30 flex items-center justify-center cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 title="Limpar data selecionada"
               >
-                <X className="size-3.5" />
+                <X className="size-4" />
               </button>
             )}
           </div>

@@ -331,14 +331,14 @@ function ProfileCivilPage() {
                 asChild
                 size="sm"
                 variant="outline"
-                className="rounded-lg text-xs font-semibold h-8.5 px-3 cursor-pointer shadow-none"
+                className="rounded-lg text-xs font-semibold h-11 px-4 cursor-pointer shadow-none"
               >
                 <Link
                   to="/membro/$id"
                   params={{ id: formData.username || profile.username || profile.id }}
                   target="_blank"
                 >
-                  <ExternalLink className="size-3.5 mr-2 text-primary" />
+                  <ExternalLink className="size-4 mr-2 text-primary" />
                   <span className="hidden sm:inline">Ver Perfil Público</span>
                   <span className="sm:hidden">Público</span>
                 </Link>
@@ -349,7 +349,7 @@ function ProfileCivilPage() {
               type="button"
               variant="outline"
               size="sm"
-              className="rounded-lg text-xs font-semibold h-8.5 px-3 sm:px-3 cursor-pointer shadow-none"
+              className="rounded-lg text-xs font-semibold h-11 px-4 cursor-pointer shadow-none"
               onClick={() => {
                 if (typeof navigator !== "undefined" && navigator.clipboard) {
                   const handle = formData.username || profile.username;
@@ -361,12 +361,35 @@ function ProfileCivilPage() {
                 }
               }}
             >
-              <LinkIcon className="size-3.5 sm:mr-2" />
+              <LinkIcon className="size-4 sm:mr-2" />
               <span className="hidden sm:inline">Copiar Link</span>
             </Button>
           </div>
         }
       />
+
+      {/* ── 1.1 Desktop Inpage Header (Apple HIG) ── */}
+      <div className="hidden md:flex items-center justify-between pb-4 border-b border-border/40">
+        <h1 className="text-xl font-bold tracking-tight text-foreground">Meu Perfil</h1>
+        <div className="flex items-center gap-2">
+          {!formData.isAnonymous && (
+            <Button
+              asChild
+              variant="outline"
+              className="rounded-lg text-xs font-semibold h-11 px-4 cursor-pointer"
+            >
+              <Link
+                to="/membro/$id"
+                params={{ id: formData.username || profile.username || profile.id }}
+                target="_blank"
+              >
+                <ExternalLink className="size-4 mr-2 text-primary" />
+                <span>Ver Perfil Público</span>
+              </Link>
+            </Button>
+          )}
+        </div>
+      </div>
 
       {/* ── 2. Banner de Claridade de Identidade (The Root Entity Callout) ── */}
       <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 sm:p-5 flex items-start gap-4 text-xs text-foreground">

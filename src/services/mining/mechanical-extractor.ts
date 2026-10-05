@@ -10,6 +10,7 @@
  */
 
 import { getRandomUserAgent, cleanHtmlText } from "@/lib/mining/scraper-utils";
+import { globalCrawlerCircuitBreaker } from "@/lib/mining/crawler-circuit-breaker";
 export { cleanHtmlText };
 
 export interface MechanicalExtractionResult {
@@ -60,10 +61,10 @@ export interface MechanicalExtractionResult {
  * Normaliza e valida URLs de imagem, resolvendo links relativos
  */
 export function resolveImageUrl(candidateUrl: string | undefined | null, baseUrl: string): string | undefined {
-  if (!candidateUrl || typeof candidateUrl !== "string") return undefined;
+  if (candidateUrl == null || typeof candidateUrl !== "string") return undefined;
   const trimmed = candidateUrl.trim();
   if (
-    !trimmed ||
+    trimmed.length === 0 ||
     trimmed.startsWith("data:image") ||
     trimmed.startsWith("javascript:") ||
     trimmed.includes("pixel.gif") ||
@@ -123,6 +124,7 @@ export function sanitizeParagraphs(paragraphs: string[]): string[] {
  */
 export async function fetchHtmlWithStealth(url: string, timeoutMs = 20000): Promise<string> {
   const parsedUrl = new URL(url);
+  const domain = parsedUrl.hostname;
   const userAgent = getRandomUserAgent();
 
   const headers: Record<string, string> = {
@@ -146,18 +148,22 @@ export async function fetchHtmlWithStealth(url: string, timeoutMs = 20000): Prom
 
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
-      const response = await fetch(url, {
-        headers,
-        signal: AbortSignal.timeout(timeoutMs),
-        redirect: "follow",
-      });
+      const response = await globalCrawlerCircuitBreaker.execute(
+        () =>
+          fetch(url, {
+            headers,
+            signal: AbortSignal.timeout(timeoutMs),
+            redirect: "follow",
+          }),
+        domain
+      );
 
-      if (!response.ok) {
+      if (response.ok === false) {
         throw new Error(`HTTP ${response.status} (${response.statusText})`);
       }
 
       const html = await response.text();
-      if (!html || html.length < 50) {
+      if (html == null || html.length < 50) {
         throw new Error("Página retornou conteúdo HTML vazio.");
       }
 
@@ -165,7 +171,6 @@ export async function fetchHtmlWithStealth(url: string, timeoutMs = 20000): Prom
     } catch (err: any) {
       lastError = err;
       if (attempt < retries) {
-        // Pausa exponencial entre tentativas
         await new Promise((res) => setTimeout(res, 1000 * (attempt + 1)));
       }
     }
@@ -202,14 +207,14 @@ function extractFromJsonLd(html: string, sourceUrl: string): Partial<MechanicalE
   let bestPartial: Partial<MechanicalExtractionResult> | null = null;
 
   const flattenGraphItems = (node: any): any[] => {
-    if (!node || typeof node !== "object") return [];
+    if (node == null || typeof node !== "object") return [];
     if (Array.isArray(node)) return node.flatMap(flattenGraphItems);
     if (Array.isArray(node["@graph"])) return [node, ...node["@graph"].flatMap(flattenGraphItems)];
     return [node];
   };
 
   const resolveJsonLdImage = (imgField: any): string | undefined => {
-    if (!imgField) return undefined;
+    if (imgField == null) return undefined;
     if (typeof imgField === "string") return imgField;
     if (Array.isArray(imgField)) {
       for (const entry of imgField) {
@@ -309,7 +314,7 @@ function extractFromJsonLd(html: string, sourceUrl: string): Partial<MechanicalE
             if (words >= 120 && paragraphs.length >= 3) {
               return candidate;
             }
-            if (!bestPartial || (candidate.coverImageUrl && !bestPartial.coverImageUrl)) {
+            if (bestPartial == null || (candidate.coverImageUrl != null && bestPartial.coverImageUrl == null)) {
               bestPartial = candidate;
             }
           }

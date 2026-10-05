@@ -657,9 +657,9 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
             variant="outline"
             size="sm"
             onClick={() => setIsPreviewMode(!isPreviewMode)}
-            className="h-8 sm:h-9 px-3 sm:px-3 rounded-lg border-border text-xs font-semibold"
+            className="h-11 min-h-11 px-3 sm:px-3 rounded-lg border-border text-xs font-semibold focus-visible:ring-2 focus-visible:ring-primary"
           >
-            <Eye className="size-3.5 sm:mr-2" />
+            <Eye className="size-4 sm:mr-2" />
             <span className="hidden sm:inline">{isPreviewMode ? "Editar" : "Preview"}</span>
           </Button>
 
@@ -668,9 +668,9 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
             onClick={handleSaveDocument}
             disabled={isSaving || isPublishing}
             variant="outline"
-            className="h-8 sm:h-9 px-3 sm:px-4 rounded-lg border-border font-semibold text-xs transition-transform active:scale-95 shadow-xs"
+            className="h-11 min-h-11 px-3 sm:px-4 rounded-lg border-border font-semibold text-xs transition-transform active:scale-95 shadow-xs focus-visible:ring-2 focus-visible:ring-primary"
           >
-            <Save className="size-3.5 sm:mr-2" />
+            <Save className="size-4 sm:mr-2" />
             <span className="hidden sm:inline">{isSaving ? "Salvando..." : "Salvar"}</span>
           </Button>
 
@@ -679,9 +679,9 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
               size="sm"
               onClick={handlePublishDocument}
               disabled={isPublishing || isSaving}
-              className="h-8 sm:h-9 px-3 sm:px-4 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 font-semibold text-xs transition-transform active:scale-95 shadow-sm"
+              className="h-11 min-h-11 px-3 sm:px-4 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 font-semibold text-xs transition-transform active:scale-95 shadow-sm focus-visible:ring-2 focus-visible:ring-primary"
             >
-              <Send className="size-3.5 sm:mr-2" />
+              <Send className="size-4 sm:mr-2" />
               <span>{isPublishing ? "Publicando..." : "Publicar"}</span>
             </Button>
           )}
@@ -816,7 +816,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
           <div
             className={`transition-all duration-300 ${
               viewport === "mobile"
-                ? "w-[390px] min-h-[844px] shadow-2xl rounded-lg border border-border/80 overflow-hidden bg-background my-auto"
+                ? "w-full max-w-sm min-h-dvh shadow-2xl rounded-lg border border-border/80 overflow-hidden bg-background my-auto"
                 : "w-full max-w-6xl shadow-sm bg-background rounded-lg border border-border/60"
             }`}
           >
@@ -1091,7 +1091,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
 
       {/* ── MOBILE BOTTOM SHEET: ADICIONAR BLOCO (85vh) ── */}
       <Sheet open={isMobileAddOpen} onOpenChange={setIsMobileAddOpen}>
-        <SheetContent side="bottom" className="h-[85vh] rounded-t-lg p-5 flex flex-col">
+        <SheetContent side="bottom" className="h-5/6 rounded-t-lg p-5 flex flex-col">
           <SheetHeader className="mb-2">
             <SheetTitle className="text-sm font-bold tracking-tight">Adicionar Bloco</SheetTitle>
           </SheetHeader>
@@ -1112,7 +1112,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                       : "bg-muted/60 text-muted-foreground"
                   }`}
                 >
-                  <CatIcon className="size-3.5" />
+                  <CatIcon className="size-4" />
                   <span>{cat.label}</span>
                 </button>
               );
@@ -1149,7 +1149,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
 
       {/* ── MOBILE BOTTOM SHEET: EDITAR BLOCO SELECIONADO (85vh - CONTEÚDO & ESTILO) ── */}
       <Sheet open={isMobileSheetOpen} onOpenChange={setIsMobileSheetOpen}>
-        <SheetContent side="bottom" className="h-[85vh] rounded-t-lg p-5 flex flex-col">
+        <SheetContent side="bottom" className="h-5/6 rounded-t-lg p-5 flex flex-col">
           <SheetHeader className="mb-3">
             <SheetTitle className="text-sm font-bold tracking-tight">
               {selectedBlock ? getSiteBlockById(selectedBlock.type).name : "Editar Bloco"}
@@ -1168,7 +1168,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                       : "text-muted-foreground"
                   }`}
                 >
-                  <Settings2 className="size-3.5" />
+                  <Settings2 className="size-4" />
                   Conteúdo
                 </button>
                 <button
@@ -1179,7 +1179,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                       : "text-muted-foreground"
                   }`}
                 >
-                  <Palette className="size-3.5" />
+                  <Palette className="size-4" />
                   Estilo
                 </button>
               </div>
@@ -1267,7 +1267,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
 
       {/* ── MOBILE BOTTOM SHEET: MODELOS PRONTOS (85vh) ── */}
       <Sheet open={isMobileTemplateOpen} onOpenChange={setIsMobileTemplateOpen}>
-        <SheetContent side="bottom" className="h-[85vh] rounded-t-lg p-5 flex flex-col">
+        <SheetContent side="bottom" className="h-5/6 rounded-t-lg p-5 flex flex-col">
           <SheetHeader className="mb-3">
             <SheetTitle className="text-sm font-bold tracking-tight">Modelos de Página</SheetTitle>
           </SheetHeader>
@@ -1320,7 +1320,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
 
       {/* ── MOBILE BOTTOM SHEET: ORDEM & GESTÃO DE BLOCOS (85vh) ── */}
       <Sheet open={isMobileLayersOpen} onOpenChange={setIsMobileLayersOpen}>
-        <SheetContent side="bottom" className="h-[85vh] rounded-t-lg p-5 flex flex-col">
+        <SheetContent side="bottom" className="h-5/6 rounded-t-lg p-5 flex flex-col">
           <SheetHeader className="mb-3">
             <SheetTitle className="text-sm font-bold tracking-tight">
               Estrutura ({document.blocks.length} Blocos)

@@ -36,7 +36,7 @@ export function HitsLeadCard({
       to={actionTo as any}
       aria-label={ariaLabel}
       className={cn(
-        "group relative overflow-hidden rounded-lg bg-card w-36 sm:w-44 h-36 sm:h-40 transition-all duration-200 active:scale-95 select-none block shrink-0 snap-start border border-border/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+        "group relative overflow-hidden rounded-lg bg-card w-56 sm:w-64 h-96 min-h-96 transition-all duration-200 active:scale-95 select-none block shrink-0 snap-start border border-border/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
         className
       )}
     >
@@ -44,11 +44,11 @@ export function HitsLeadCard({
         <img
           src={coverImage}
           alt={ariaLabel}
-          className="size-full object-cover group-hover:scale-105 transition-transform duration-500"
+          className="size-full object-cover group-hover:scale-105 transition-transform duration-300 motion-reduce:transition-none"
           loading="lazy"
         />
       ) : (
-        <div className={`size-full bg-linear-to-br ${gradient} flex flex-col justify-between p-3.5 sm:p-4 text-white`}>
+        <div className={`size-full bg-linear-to-br ${gradient} flex flex-col justify-between p-4 text-white`}>
           {badge ? (
             <span className="self-start px-2 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider bg-white/20 backdrop-blur-md border border-white/25 text-white shadow-xs">
               {badge}
@@ -71,7 +71,7 @@ export function HitsLeadCard({
               )}
               <div className="pt-1 flex items-center gap-1 text-xs font-bold text-white/95 group-hover:translate-x-1 transition-transform">
                 <span>{actionLabel}</span>
-                <ArrowRight className="size-3.5" />
+                <ArrowRight className="size-4" />
               </div>
             </div>
           ) : null}

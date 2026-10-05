@@ -65,7 +65,7 @@ function UserTokensPage() {
   };
 
   return (
-    <div className="min-h-[100dvh] bg-background text-foreground w-full max-w-5xl mx-auto space-y-4 sm:space-y-6 pb-24 px-0 sm:px-4 md:px-0 animate-in fade-in duration-200">
+    <div className="min-h-dvh bg-background text-foreground w-full max-w-5xl mx-auto space-y-4 sm:space-y-6 pb-24 px-0 sm:px-4 md:px-0 animate-in fade-in duration-200 motion-reduce:animate-none">
       {/* ── 1. Clean Minimalist Header (Apple HIG / Native Back) ── */}
       <div className="flex items-center justify-between gap-3 border-b border-border/40 pb-3 pt-1 px-4 sm:px-0">
         <div className="flex items-center gap-3">
@@ -79,7 +79,7 @@ function UserTokensPage() {
           asChild
           size="sm"
           variant="outline"
-          className="rounded-lg text-xs font-semibold h-9 px-4"
+          className="rounded-lg text-xs font-semibold h-11 px-4"
         >
           <Link to="/mercado">Explorar Lojas</Link>
         </Button>
@@ -116,7 +116,7 @@ function UserTokensPage() {
               return (
                 <div
                   key={tx.id}
-                  className="px-4 py-3 min-h-[52px] flex items-center justify-between gap-3 active:bg-muted/30 transition-colors"
+                  className="px-4 py-3 min-h-14 flex items-center justify-between gap-3 active:bg-muted/30 transition-colors"
                 >
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-medium text-foreground truncate">
@@ -206,11 +206,11 @@ function UserTokensPage() {
             <Button
               variant="outline"
               size="sm"
-              className="rounded-lg w-full sm:w-auto h-11 sm:h-9"
+              className="rounded-lg w-full sm:w-auto h-11"
               onClick={loadMore}
               disabled={isLoading}
             >
-              {isLoading && <Loader2 className="mr-2 size-4 animate-spin" />}
+              {isLoading && <Loader2 className="mr-2 size-4 animate-spin motion-reduce:animate-none" />}
               {isLoading ? "Carregando..." : "Carregar mais antigas"}
             </Button>
           </div>

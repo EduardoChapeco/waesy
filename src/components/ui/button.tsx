@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
  // Base: squircle-action por padrão — geometria retangular inflada com cantos suavemente arredondados em todo o sistema
- "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-master text-sm font-semibold transition-all duration-200 cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 disabled:cursor-not-allowed [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 active:scale-[0.98]",
+ "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-master text-sm font-semibold transition-colors duration-200 cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 disabled:cursor-not-allowed [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 active:scale-95",
  {
  variants: {
  variant: {
@@ -21,14 +21,14 @@ const buttonVariants = cva(
  ghost: "hover:bg-muted hover:text-foreground text-muted-foreground",
  link: "text-primary underline-offset-4 hover:underline font-semibold",
  pillow:
- "rounded-lg bg-primary text-primary-foreground font-bold hover:bg-primary/90 active:scale-[0.97]",
+ "rounded-lg bg-primary text-primary-foreground font-bold hover:bg-primary/90 active:scale-95",
  pillowOutline:
- "rounded-lg border border-border bg-background hover:bg-muted text-foreground font-bold active:scale-[0.97]",
+ "rounded-lg border border-border bg-background hover:bg-muted text-foreground font-bold active:scale-95",
  heroAction:
- "rounded-lg bg-primary text-primary-foreground font-black hover:bg-primary/90 active:scale-[0.97]",
+ "rounded-lg bg-primary text-primary-foreground font-black hover:bg-primary/90 active:scale-95",
  },
  size: {
- default: "h-11 px-5.5 py-3", /* 44px — padrão ergonômico Apple Squircle */
+ default: "h-11 px-6 py-3", /* 44px — padrão ergonômico Apple Squircle */
  sm: "h-9 px-4 text-xs rounded-lg", /* 36px — compacto squircle */
  lg: "h-13 px-8 text-base font-bold rounded-lg", /* 52px — destaque */
  icon: "size-10 rounded-lg",
@@ -75,11 +75,11 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
  ref={ref}
  disabled
  aria-busy="true"
- className={cn(buttonVariants({ variant, size }), "pointer-events-none opacity-80", className)}
+ className={cn(buttonVariants({ variant, size }), "pointer-events-none opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", className)}
  {...props}
  >
  <svg
- className="animate-spin size-4 shrink-0"
+ className="animate-spin size-4 shrink-0 motion-reduce:animate-none"
  xmlns="http://www.w3.org/2000/svg"
  fill="none"
  viewBox="0 0 24 24"

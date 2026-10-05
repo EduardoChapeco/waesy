@@ -133,12 +133,31 @@ function CustomerAgendaPage() {
          asChild
          size="sm"
          variant="outline"
-         className="rounded-lg text-xs font-semibold h-8.5 px-4 cursor-pointer"
+         className="rounded-lg text-xs font-semibold h-11 px-4 cursor-pointer"
        >
          <Link to="/agendar">Agendar</Link>
        </Button>
      }
    />
+
+    {/* ── 1.1 Desktop Inpage Header (Apple HIG) ── */}
+    <div className="hidden md:flex items-center justify-between pb-4 border-b border-border/40">
+      <div className="flex items-center gap-3">
+        <h1 className="text-xl font-bold tracking-tight text-foreground">Agendamentos</h1>
+        {apptList.length > 0 && (
+          <Badge variant="secondary" className="text-xs font-mono font-bold px-2 py-1 rounded-full">
+            {apptList.length}
+          </Badge>
+        )}
+      </div>
+      <Button
+        asChild
+        variant="outline"
+        className="rounded-lg text-xs font-semibold h-11 px-4 cursor-pointer"
+      >
+        <Link to="/agendar">Novo Agendamento</Link>
+      </Button>
+    </div>
 
  {/* ── 2. Minimalist Tab Controls (Apple iOS Segments) ── */}
  <div className="flex items-center gap-1 p-1 bg-muted/50 rounded-lg w-fit border border-border/40">

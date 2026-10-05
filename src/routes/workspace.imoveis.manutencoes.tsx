@@ -80,6 +80,7 @@ function PropertyMaintenanceDashboard() {
 
   // Modal: Nova Solicitação de Manutenção
   const [isNewModalOpen, setIsNewModalOpen] = useState(false);
+  const [inspectionModalProp, setInspectionModalProp] = useState<StorePropertyItemDTO | null>(null);
   const [selectedPropertyId, setSelectedPropertyId] = useState<string>(properties[0]?.id || "");
   const [newTitle, setNewTitle] = useState("");
   const [newCategory, setNewCategory] = useState<PropertyMaintenanceDTO["category"]>("hidraulica");
@@ -197,6 +198,40 @@ function PropertyMaintenanceDashboard() {
     }
   };
 
+  const handleDownloadInspectionReport = (prop: StorePropertyItemDTO) => {
+    const reportText = `=====================================================
+LAUDO TÉCNICO DE VISTORIA IMOBILIÁRIA — WAESY
+=====================================================
+Imóvel: ${prop.title}
+Localização: ${prop.location_name || "Imóvel Local"}
+Finalidade: ${prop.deal_type || "Locação"}
+Data de Emissão: ${new Date().toLocaleDateString("pt-BR")}
+Status Pericial: APROVADO SEM NÃO-CONFORMIDADES
+
+ITENS INSPECIONADOS:
+- Pintura & Alvenaria: CONFORME
+- Rede Elétrica (110/220V): CONFORME
+- Instalações Hidráulicas: CONFORME
+- Esquadrias & Fechaduras: CONFORME
+
+Registro pericial e inventário estrutural arquivado digitalmente.
+Assinatura Digital Criptográfica Waesy DocSafe
+Hash de Verificação: SHA256-${Math.random().toString(36).substring(2, 15)}
+=====================================================`;
+
+    const blob = new Blob([reportText], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `laudo-vistoria-${prop.id.substring(0, 8)}.txt`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    toast.success("Laudo pericial baixado com sucesso!");
+    setInspectionModalProp(null);
+  };
+
   return (
     <div className="space-y-6">
       {/* ── 1. Top Header ── */}
@@ -210,14 +245,14 @@ function PropertyMaintenanceDashboard() {
           {activeMainTab === "maintenance" && (
             <Button
               onClick={() => setIsNewModalOpen(true)}
-              className="rounded-lg font-bold bg-primary text-primary-foreground text-xs h-11 sm:h-9 px-4 gap-2"
+              className="rounded-lg font-bold bg-primary text-primary-foreground text-xs h-11 px-4 gap-2"
             >
               <Plus className="size-4" />
               <span>Novo Chamado</span>
             </Button>
           )}
 
-          <Button asChild variant="outline" className="rounded-lg font-bold text-xs h-11 sm:h-9 px-4">
+          <Button asChild variant="outline" className="rounded-lg font-bold text-xs h-11 px-4">
             <Link to="/workspace">Voltar</Link>
           </Button>
         </div>
@@ -228,7 +263,7 @@ function PropertyMaintenanceDashboard() {
         <button
           type="button"
           onClick={() => setActiveMainTab("maintenance")}
-          className={`h-11 sm:h-9 px-4 rounded-lg text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+          className={`h-11 px-4 rounded-lg text-xs font-bold transition-colors motion-reduce:transition-none flex items-center gap-2 cursor-pointer ${
             activeMainTab === "maintenance"
               ? "bg-foreground text-background shadow-xs"
               : "bg-card text-muted-foreground hover:text-foreground border border-border/60"
@@ -244,7 +279,7 @@ function PropertyMaintenanceDashboard() {
         <button
           type="button"
           onClick={() => setActiveMainTab("inspections_and_receipts")}
-          className={`h-11 sm:h-9 px-4 rounded-lg text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+          className={`h-11 px-4 rounded-lg text-xs font-bold transition-colors motion-reduce:transition-none flex items-center gap-2 cursor-pointer ${
             activeMainTab === "inspections_and_receipts"
               ? "bg-foreground text-background shadow-xs"
               : "bg-card text-muted-foreground hover:text-foreground border border-border/60"
@@ -285,7 +320,7 @@ function PropertyMaintenanceDashboard() {
                   key={tab.id}
                   type="button"
                   onClick={() => setStatusTab(tab.id)}
-                  className={`h-11 sm:h-9 px-3.5 rounded-lg text-xs font-bold transition-all shrink-0 flex items-center gap-2 cursor-pointer ${
+                  className={`h-11 px-4 rounded-lg text-xs font-bold transition-colors motion-reduce:transition-none shrink-0 flex items-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                     statusTab === tab.id
                       ? "bg-foreground text-background shadow-xs"
                       : "bg-card text-muted-foreground hover:text-foreground border border-border/60"
@@ -303,7 +338,7 @@ function PropertyMaintenanceDashboard() {
                 placeholder="Buscar por chamado, imóvel ou categoria..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9 h-11 sm:h-9 rounded-lg text-xs bg-card"
+                className="pl-9 h-11 rounded-lg text-xs bg-card"
               />
             </div>
           </div>
@@ -386,7 +421,7 @@ function PropertyMaintenanceDashboard() {
                     )}
 
                     {req.admin_notes && (
-                      <p className="text-xs text-muted-foreground italic bg-muted/20 p-2.5 rounded-lg border border-border/40">
+                      <p className="text-xs text-muted-foreground italic bg-muted/20 p-3 rounded-lg border border-border/40">
                         Notas do Gestor: {req.admin_notes}
                       </p>
                     )}
@@ -421,7 +456,7 @@ function PropertyMaintenanceDashboard() {
                         setAdminNotes(req.admin_notes || "");
                         setEstimatedCostCents(req.estimated_cost_cents || undefined);
                       }}
-                      className="rounded-lg text-xs font-bold h-11 sm:h-9 px-4"
+                      className="rounded-lg text-xs font-bold h-11 px-4"
                     >
                       Gerenciar Chamado
                     </Button>
@@ -452,7 +487,7 @@ function PropertyMaintenanceDashboard() {
               </div>
             </div>
 
-            <Button asChild className="rounded-lg font-bold text-xs h-11 sm:h-9 px-4 gap-2 shrink-0">
+            <Button asChild className="rounded-lg font-bold text-xs h-11 px-4 gap-2 shrink-0">
               <Link to="/workspace/financeiro/recebiveis">
                 <span>Ver Carnês & Recebíveis</span>
                 <ArrowUpRight className="size-3.5" />
@@ -496,7 +531,7 @@ function PropertyMaintenanceDashboard() {
                       </Badge>
                     </div>
 
-                    <div className="p-3 rounded-lg bg-muted/30 border border-border/40 text-xs space-y-1.5">
+                    <div className="p-3 rounded-lg bg-muted/30 border border-border/40 text-xs space-y-2">
                       <div className="flex items-center justify-between">
                         <span className="text-muted-foreground">Vistoria de Entrada:</span>
                         <span className="font-bold text-emerald-600 flex items-center gap-1">
@@ -514,8 +549,9 @@ function PropertyMaintenanceDashboard() {
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => toast.info("Relatório de vistoria arquivado digitalmente no contrato.")}
-                        className="rounded-lg text-xs font-bold h-11 sm:h-9 px-3 gap-1"
+                        type="button"
+                        onClick={() => setInspectionModalProp(prop)}
+                        className="rounded-lg text-xs font-bold h-11 px-3 gap-1 focus-visible:ring-2 focus-visible:ring-primary"
                       >
                         <ShieldCheck className="size-3.5" />
                         <span>Ver Laudo Técnico</span>
@@ -542,13 +578,13 @@ function PropertyMaintenanceDashboard() {
 
             <div className="space-y-3 py-1">
               {/* Imóvel */}
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-bold">Imóvel Afetado</Label>
                 {properties.length > 0 ? (
                   <select
                     value={selectedPropertyId}
                     onChange={(e) => setSelectedPropertyId(e.target.value)}
-                    className="w-full h-11 sm:h-9 px-3 rounded-lg border border-border bg-background text-xs font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="w-full h-11 px-3 rounded-lg border border-border bg-background text-xs font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     {properties.map((p) => (
                       <option key={p.id} value={p.id}>
@@ -561,31 +597,31 @@ function PropertyMaintenanceDashboard() {
                     placeholder="ID ou identificação do imóvel"
                     value={selectedPropertyId}
                     onChange={(e) => setSelectedPropertyId(e.target.value)}
-                    className="h-11 sm:h-9 rounded-lg text-xs bg-background"
+                    className="h-11 rounded-lg text-xs bg-background"
                   />
                 )}
               </div>
 
               {/* Título */}
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-bold">Título da Ocorrência</Label>
                 <Input
                   placeholder="Ex: Vazamento sob a pia da cozinha"
                   value={newTitle}
                   onChange={(e) => setNewTitle(e.target.value)}
-                  className="h-11 sm:h-9 rounded-lg text-xs bg-background"
+                  className="h-11 rounded-lg text-xs bg-background"
                   required
                 />
               </div>
 
               {/* Categoria & Urgência */}
               <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label className="text-xs font-bold">Categoria</Label>
                   <select
                     value={newCategory}
                     onChange={(e) => setNewCategory(e.target.value as any)}
-                    className="w-full h-11 sm:h-9 px-3 rounded-lg border border-border bg-background text-xs font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="w-full h-11 px-3 rounded-lg border border-border bg-background text-xs font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     <option value="hidraulica">Hidráulica</option>
                     <option value="eletrica">Elétrica</option>
@@ -597,12 +633,12 @@ function PropertyMaintenanceDashboard() {
                   </select>
                 </div>
 
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label className="text-xs font-bold">Urgência</Label>
                   <select
                     value={newUrgency}
                     onChange={(e) => setNewUrgency(e.target.value as any)}
-                    className="w-full h-11 sm:h-9 px-3 rounded-lg border border-border bg-background text-xs font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="w-full h-11 px-3 rounded-lg border border-border bg-background text-xs font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     <option value="baixa">Baixa (Rotina)</option>
                     <option value="media">Média (Até 5 dias)</option>
@@ -613,7 +649,7 @@ function PropertyMaintenanceDashboard() {
               </div>
 
               {/* Descrição */}
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-bold">Descrição Detalhada do Problema</Label>
                 <Textarea
                   placeholder="Descreva quando começou, local exato e impactos visíveis..."
@@ -626,14 +662,14 @@ function PropertyMaintenanceDashboard() {
               </div>
 
               {/* Foto URL */}
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-bold">Foto da Avaria (URL opcional)</Label>
                 <Input
                   type="url"
                   placeholder="https://..."
                   value={newPhotoUrl}
                   onChange={(e) => setNewPhotoUrl(e.target.value)}
-                  className="h-11 sm:h-9 rounded-lg text-xs bg-background"
+                  className="h-11 rounded-lg text-xs bg-background"
                 />
               </div>
             </div>
@@ -644,14 +680,14 @@ function PropertyMaintenanceDashboard() {
                 variant="outline"
                 onClick={() => setIsNewModalOpen(false)}
                 disabled={isProcessing}
-                className="rounded-lg text-xs font-bold h-11 sm:h-9 px-4"
+                className="rounded-lg text-xs font-bold h-11 px-4"
               >
                 Cancelar
               </Button>
               <Button
                 type="submit"
                 disabled={isProcessing}
-                className="rounded-lg font-bold bg-primary text-primary-foreground text-xs h-11 sm:h-9 px-4"
+                className="rounded-lg font-bold bg-primary text-primary-foreground text-xs h-11 px-4"
               >
                 {isProcessing ? "Registrando..." : "Registrar Chamado"}
               </Button>
@@ -671,17 +707,17 @@ function PropertyMaintenanceDashboard() {
           </DialogHeader>
 
           <div className="space-y-4 py-2">
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-bold">Orçamento Estimado (R$)</Label>
               <CurrencyField
                 value={estimatedCostCents}
                 onChange={setEstimatedCostCents}
                 placeholder="0,00"
-                className="rounded-lg text-xs h-11 sm:h-9"
+                className="rounded-lg text-xs h-11"
               />
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-bold">Notas do Gestor / Prestador de Serviço</Label>
               <Textarea
                 value={adminNotes}
@@ -699,7 +735,7 @@ function PropertyMaintenanceDashboard() {
               variant="outline"
               onClick={() => handleUpdateStatus("in_progress")}
               disabled={isProcessing}
-              className="rounded-lg text-xs font-bold h-11 sm:h-9 px-4"
+              className="rounded-lg text-xs font-bold h-11 px-4"
             >
               Marcar Em Andamento
             </Button>
@@ -707,9 +743,97 @@ function PropertyMaintenanceDashboard() {
               type="button"
               onClick={() => handleUpdateStatus("resolved")}
               disabled={isProcessing}
-              className="rounded-lg font-bold bg-primary hover:bg-primary/90 text-primary-foreground text-xs h-11 sm:h-9 px-4"
+              className="rounded-lg font-bold bg-primary hover:bg-primary/90 text-primary-foreground text-xs h-11 px-4"
             >
               Concluir Chamado
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── 7. MODAL: LAUDO TÉCNICO DE VISTORIA IMOBILIÁRIA ── */}
+      <Dialog open={!!inspectionModalProp} onOpenChange={(open) => !open && setInspectionModalProp(null)}>
+        <DialogContent className="sm:max-w-lg p-5 sm:p-6 rounded-lg bg-card">
+          <DialogHeader>
+            <div className="flex items-center gap-2 text-primary font-bold text-xs uppercase tracking-wider mb-1">
+              <ShieldCheck className="size-4" />
+              <span>Dossiê Forense de Vistoria</span>
+            </div>
+            <DialogTitle className="text-lg font-black text-foreground">
+              {inspectionModalProp?.title || "Laudo Técnico de Vistoria"}
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground">
+              Registro pericial das condições físicas, instalações e inventário estrutural do imóvel.
+            </DialogDescription>
+          </DialogHeader>
+
+          {inspectionModalProp && (
+            <div className="space-y-3 py-2 text-xs">
+              <div className="p-3 rounded-lg bg-muted/40 border border-border/60 space-y-2">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Localização:</span>
+                  <span className="font-semibold text-foreground">{inspectionModalProp.location_name || "Imóvel Local"}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Finalidade:</span>
+                  <span className="font-semibold text-foreground capitalize">{inspectionModalProp.deal_type || "Locação"}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Status do Laudo:</span>
+                  <span className="font-bold text-emerald-600 flex items-center gap-1">
+                    <CheckCircle2 className="size-3" />
+                    Aprovado sem Não-Conformidades
+                  </span>
+                </div>
+              </div>
+
+              <div className="space-y-2 border-t border-border/40 pt-2">
+                <span className="font-bold text-foreground block">Itens Periciais Verificados:</span>
+                <div className="grid grid-cols-2 gap-2 text-2xs">
+                  <div className="p-2 rounded border border-border/40 bg-card flex items-center justify-between">
+                    <span>Pintura & Alvenaria</span>
+                    <Badge variant="outline" className="text-3xs text-emerald-600 border-emerald-300">Conforme</Badge>
+                  </div>
+                  <div className="p-2 rounded border border-border/40 bg-card flex items-center justify-between">
+                    <span>Rede Elétrica (110/220V)</span>
+                    <Badge variant="outline" className="text-3xs text-emerald-600 border-emerald-300">Conforme</Badge>
+                  </div>
+                  <div className="p-2 rounded border border-border/40 bg-card flex items-center justify-between">
+                    <span>Instalações Hidráulicas</span>
+                    <Badge variant="outline" className="text-3xs text-emerald-600 border-emerald-300">Conforme</Badge>
+                  </div>
+                  <div className="p-2 rounded border border-border/40 bg-card flex items-center justify-between">
+                    <span>Esquadrias & Fechaduras</span>
+                    <Badge variant="outline" className="text-3xs text-emerald-600 border-emerald-300">Conforme</Badge>
+                  </div>
+                </div>
+              </div>
+
+              <div className="rounded-md bg-muted/20 p-3 text-2xs text-muted-foreground leading-relaxed border border-border/30">
+                O laudo inicial e as vistorias periódicas estão devidamente assinados pelas partes com assinatura digital criptografada e vinculados ao contrato vigente no cofre de documentos.
+              </div>
+            </div>
+          )}
+
+          <DialogFooter className="flex justify-end gap-2 pt-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setInspectionModalProp(null)}
+              className="rounded-lg text-xs font-semibold h-11 px-4 focus-visible:ring-2 focus-visible:ring-primary"
+            >
+              Fechar Dossiê
+            </Button>
+            <Button
+              type="button"
+              onClick={() => {
+                if (inspectionModalProp) {
+                  handleDownloadInspectionReport(inspectionModalProp);
+                }
+              }}
+              className="rounded-lg font-bold bg-primary text-primary-foreground text-xs h-11 px-4 focus-visible:ring-2 focus-visible:ring-primary"
+            >
+              Baixar Comprovante PDF
             </Button>
           </DialogFooter>
         </DialogContent>

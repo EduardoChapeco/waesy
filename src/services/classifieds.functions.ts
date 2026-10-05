@@ -49,6 +49,7 @@ export const getPublicClassifieds = createServerFn({ method: "GET" })
  dealType: z.string().optional(),
  search: z.string().optional(),
  storeId: z.string().uuid().optional(),
+        city: z.string().optional(),
  })
  .optional(),
  )
@@ -60,7 +61,7 @@ export const getPublicClassifieds = createServerFn({ method: "GET" })
  let query = supabase
  .from("classifieds")
  .select(
- "id, author_profile_id, store_id, category, deal_type, title, content, price_cents, images, contact_whatsapp, location_name, location_text, expires_at, condition, negotiable, attributes, status, is_sponsored, is_boosted, sponsored_until, boosted_until, created_at, updated_at",
+ "id, author_profile_id, store_id, category, deal_type, title, content, price_cents, images, contact_whatsapp, location_name, location_text, city, state, expires_at, condition, negotiable, attributes, status, is_sponsored, is_boosted, sponsored_until, boosted_until, created_at, updated_at",
  )
  .eq("status", "active")
  .order("created_at", { ascending: false })
@@ -86,6 +87,12 @@ export const getPublicClassifieds = createServerFn({ method: "GET" })
  if (data?.dealType && data.dealType !== "todos") {
  query = query.eq("deal_type", data.dealType);
  }
+
+
+    if (data?.city && data.city !== "todos" && data.city !== "Todas" && data.city !== "Global" && data.city !== "all" && data.city !== "Todas as Cidades") {
+      const cCity = `%${data.city.trim()}%`;
+      query = query.or(`city.ilike.${cCity},location_text.ilike.${cCity}`);
+    }
 
  if (data?.search && data.search.trim()) {
  const q = `%${data.search.trim()}%`;

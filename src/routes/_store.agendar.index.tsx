@@ -232,6 +232,15 @@ function BookingIndexPage() {
           searchPlaceholder="Buscar serviço, clínica ou salão..."
         />
       </div>
+      {/* ── Cabeçalho Inpage Desktop (Apple HIG) ── */}
+      <div className="hidden md:flex items-center justify-between pt-2 pb-4 border-b border-border/40">
+        <div>
+          <h1 className="text-xl font-bold tracking-tight text-foreground">Serviços & Agendamentos</h1>
+          <p className="text-xs text-muted-foreground mt-1">
+            Reserve horários em barbearias, salões, clínicas, estética e bem-estar na sua cidade
+          </p>
+        </div>
+      </div>
       {/* ── Banners Temáticos de Serviços (se configurados) ── */}
       {banners && banners.length > 0 && <BannerHeroCarousel banners={banners} />}
       {hotpages && hotpages.length > 0 && <HotpagesRail hotpages={hotpages} cleanMode={true} />}

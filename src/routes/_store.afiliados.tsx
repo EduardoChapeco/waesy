@@ -400,7 +400,7 @@ function AfiliadosPage() {
   const connectedStoresList = partnerStores.filter((s: any) => connectedStoreIds.includes(s.id));
 
   return (
-    <div className="min-h-[100dvh] bg-background text-foreground pb-28">
+    <div className="min-h-dvh bg-background text-foreground pb-28">
       {/* ─── V117 Universal Header Mobile ─── */}
       <NativeMobileHeader
         title="Parceiros"
@@ -408,9 +408,9 @@ function AfiliadosPage() {
         backTo="/conta"
         rightAction={
           partner ? (
-            <Button asChild variant="outline" size="sm" className="h-8 px-3 rounded-lg text-xs gap-1">
+            <Button asChild variant="outline" size="sm" className="h-11 min-h-11 px-3 rounded-lg text-xs gap-1 focus-visible:ring-2 focus-visible:ring-primary">
               <Link to="/u/$username" params={{ username: referralHandle }}>
-                <Globe className="size-3.5" />
+                <Globe className="size-4" />
                 <span>Vitrine</span>
               </Link>
             </Button>
@@ -419,14 +419,14 @@ function AfiliadosPage() {
       />
 
       {/* ─── Top Bar Desktop Apple HIG (Direta, Comercial e Silenciosa) ─── */}
-      <div className="hidden lg:block border-b border-border/40 bg-card/70 backdrop-blur-md px-6 py-4 sticky top-0 z-20">
+      <div className="hidden md:block border-b border-border/40 bg-card/70 backdrop-blur-md px-6 py-4 sticky top-0 z-20">
         <div className="max-w-5xl mx-auto flex items-center justify-between gap-3">
           <div className="flex items-center gap-2 min-w-0">
             <h1 className="text-base font-bold tracking-tight text-foreground truncate">
               Parceiros
             </h1>
             {partner && (
-              <Badge variant="outline" className="text-[11px] font-mono bg-primary/5 text-primary border-primary/20 shrink-0">
+              <Badge variant="outline" className="text-xs font-mono bg-primary/5 text-primary border-primary/20 shrink-0">
                 @{referralHandle}
               </Badge>
             )}
@@ -434,16 +434,16 @@ function AfiliadosPage() {
 
           {partner && (
             <div className="flex items-center gap-2 shrink-0">
-              <Button asChild variant="outline" size="sm" className="h-9 px-3 rounded-lg text-xs gap-2">
+              <Button asChild variant="outline" size="sm" className="h-11 min-h-11 px-3 rounded-lg text-xs gap-2 focus-visible:ring-2 focus-visible:ring-primary">
                 <Link to="/u/$username" params={{ username: referralHandle }}>
-                  <Globe className="size-3.5" />
+                  <Globe className="size-4" />
                   <span>Minha Vitrine</span>
                 </Link>
               </Button>
 
-              <Button asChild size="sm" className="h-9 px-3 rounded-lg text-xs font-semibold gap-2">
+              <Button asChild size="sm" className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold gap-2">
                 <Link to="/feed">
-                  <PenSquare className="size-3.5" />
+                  <PenSquare className="size-4" />
                   <span>Publicar</span>
                 </Link>
               </Button>
@@ -467,30 +467,30 @@ function AfiliadosPage() {
             {/* Navegação em Tabs (Snap & Fade Physics no Mobile) */}
             <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
               <TabsList
-                className="h-10 sm:h-11 p-1 bg-muted/40 rounded-lg border border-border/40 flex items-center gap-1 overflow-x-auto no-scrollbar snap-x snap-mandatory w-full sm:grid sm:grid-cols-5 pr-6 sm:pr-1"
+                className="h-10 sm:h-11 p-1 bg-muted/40 rounded-lg border border-border/40 flex items-center gap-1 overflow-x-auto no-scrollbar carousel snap-x snap-mandatory w-full sm:grid sm:grid-cols-5 pr-6 sm:pr-1"
                 style={{
                   maskImage: "linear-gradient(to right, black 90%, transparent 100%)",
                   WebkitMaskImage: "linear-gradient(to right, black 90%, transparent 100%)",
                 }}
               >
-                <TabsTrigger value="dashboard" className="h-8 sm:h-9 px-3 text-xs rounded-lg gap-2 font-medium shrink-0 snap-start sm:shrink">
-                  <TrendingUp className="size-3.5" />
+                <TabsTrigger value="dashboard" className="h-11 min-h-11 px-3 text-xs rounded-lg gap-2 font-medium shrink-0 snap-start sm:shrink">
+                  <TrendingUp className="size-4" />
                   <span>Visão Geral</span>
                 </TabsTrigger>
-                <TabsTrigger value="showcase" className="h-8 sm:h-9 px-3 text-xs rounded-lg gap-2 font-medium shrink-0 snap-start sm:shrink">
-                  <Layers className="size-3.5" />
+                <TabsTrigger value="showcase" className="h-11 min-h-11 px-3 text-xs rounded-lg gap-2 font-medium shrink-0 snap-start sm:shrink">
+                  <Layers className="size-4" />
                   <span>Vitrine (Opcional)</span>
                 </TabsTrigger>
-                <TabsTrigger value="stores" className="h-8 sm:h-9 px-3 text-xs rounded-lg gap-2 font-medium shrink-0 snap-start sm:shrink">
-                  <Store className="size-3.5" />
+                <TabsTrigger value="stores" className="h-11 min-h-11 px-3 text-xs rounded-lg gap-2 font-medium shrink-0 snap-start sm:shrink">
+                  <Store className="size-4" />
                   <span>Lojas</span>
                 </TabsTrigger>
-                <TabsTrigger value="referrals" className="h-8 sm:h-9 px-3 text-xs rounded-lg gap-2 font-medium shrink-0 snap-start sm:shrink">
-                  <Coins className="size-3.5" />
+                <TabsTrigger value="referrals" className="h-11 min-h-11 px-3 text-xs rounded-lg gap-2 font-medium shrink-0 snap-start sm:shrink">
+                  <Coins className="size-4" />
                   <span>Ganhos</span>
                 </TabsTrigger>
-                <TabsTrigger value="settings" className="h-8 sm:h-9 px-3 text-xs rounded-lg gap-2 font-medium shrink-0 snap-start sm:shrink">
-                  <SlidersHorizontal className="size-3.5" />
+                <TabsTrigger value="settings" className="h-11 min-h-11 px-3 text-xs rounded-lg gap-2 font-medium shrink-0 snap-start sm:shrink">
+                  <SlidersHorizontal className="size-4" />
                   <span>Configurações</span>
                 </TabsTrigger>
               </TabsList>
@@ -500,43 +500,43 @@ function AfiliadosPage() {
                 {/* 4 Cards de Métricas Comerciais */}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
                   <div className="p-4 sm:p-4 rounded-lg border border-border/60 bg-card space-y-1">
-                    <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
+                    <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                       Cliques no Link
                     </span>
                     <p className="text-xl sm:text-2xl font-bold text-foreground">
                       {(partner.total_clicks || 0).toLocaleString("pt-BR")}
                     </p>
-                    <span className="text-[10px] text-muted-foreground">Acessos à sua vitrine</span>
+                    <span className="text-xs text-muted-foreground">Acessos à sua vitrine</span>
                   </div>
 
                   <div className="p-4 sm:p-4 rounded-lg border border-border/60 bg-card space-y-1">
-                    <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
+                    <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                       Vendas Realizadas
                     </span>
                     <p className="text-xl sm:text-2xl font-bold text-foreground">
                       {partner.total_orders || 0}
                     </p>
-                    <span className="text-[10px] text-emerald-600 font-medium">Pedidos convertidos</span>
+                    <span className="text-xs text-emerald-600 font-medium">Pedidos convertidos</span>
                   </div>
 
                   <div className="p-4 sm:p-4 rounded-lg border border-border/60 bg-card space-y-1">
-                    <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
+                    <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                       Volume Gerado
                     </span>
                     <p className="text-xl sm:text-2xl font-bold text-foreground">
                       {formatMoney(partner.total_gmv_cents || 0)}
                     </p>
-                    <span className="text-[10px] text-muted-foreground">Total faturado em lojas</span>
+                    <span className="text-xs text-muted-foreground">Total faturado em lojas</span>
                   </div>
 
                   <div className="p-4 sm:p-4 rounded-lg border border-primary/30 bg-primary/5 space-y-1">
-                    <span className="text-[11px] font-medium text-primary uppercase tracking-wider flex items-center gap-1">
+                    <span className="text-xs font-medium text-primary uppercase tracking-wider flex items-center gap-1">
                       <Coins className="size-3" /> Saldo de Ganhos
                     </span>
                     <p className="text-xl sm:text-2xl font-bold text-primary">
                       {(wallet?.balance || 0).toLocaleString("pt-BR")}
                     </p>
-                    <span className="text-[10px] text-muted-foreground">
+                    <span className="text-xs text-muted-foreground">
                       +{wallet?.balancePendingMaturity || 0} a liberar
                     </span>
                   </div>
@@ -548,7 +548,7 @@ function AfiliadosPage() {
                     <div>
                       <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
                         <span>Seu Link de Divulgação</span>
-                        <Badge variant="outline" className="text-[10px] bg-muted/40 font-mono">
+                        <Badge variant="outline" className="text-xs bg-muted/40 font-mono">
                           Validade 30 dias
                         </Badge>
                       </h3>
@@ -562,12 +562,12 @@ function AfiliadosPage() {
                         type="button"
                         size="sm"
                         onClick={() => handleCopy(generalAffiliateUrl, "Link de divulgação")}
-                        className="h-9 px-4 rounded-lg text-xs font-semibold gap-2"
+                        className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold gap-2"
                       >
                         {copiedLink === generalAffiliateUrl ? (
-                          <CheckCircle2 className="size-3.5 text-emerald-400" />
+                          <CheckCircle2 className="size-4 text-emerald-400" />
                         ) : (
-                          <Copy className="size-3.5" />
+                          <Copy className="size-4" />
                         )}
                         <span>{copiedLink === generalAffiliateUrl ? "Copiado" : "Copiar"}</span>
                       </Button>
@@ -582,9 +582,9 @@ function AfiliadosPage() {
                             generalAffiliateUrl
                           )
                         }
-                        className="h-9 px-4 rounded-lg text-xs font-semibold gap-2 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-500/10 border-emerald-500/30"
+                        className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold gap-2 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-500/10 border-emerald-500/30"
                       >
-                        <Send className="size-3.5" />
+                        <Send className="size-4" />
                         <span>WhatsApp</span>
                       </Button>
                     </div>
@@ -605,7 +605,7 @@ function AfiliadosPage() {
                         <span>Desempenho de Vendas</span>
                         <Badge
                           variant="outline"
-                          className="text-[10px] font-semibold text-emerald-600 bg-emerald-500/10 border-emerald-500/20"
+                          className="text-xs font-semibold text-emerald-600 bg-emerald-500/10 border-emerald-500/20"
                         >
                           {analytics?.summary?.conversionRate || 0}% conversão
                         </Badge>
@@ -615,9 +615,9 @@ function AfiliadosPage() {
                       </p>
                     </div>
 
-                    <Button asChild variant="outline" size="sm" className="h-8 px-3 rounded-lg text-xs gap-2 self-start sm:self-auto">
+                    <Button asChild variant="outline" size="sm" className="h-11 min-h-11 px-3 rounded-lg text-xs gap-2 self-start sm:self-auto">
                       <Link to="/u/$username" params={{ username: referralHandle }}>
-                        <Globe className="size-3.5" />
+                        <Globe className="size-4" />
                         <span>Abrir Vitrine Pública</span>
                       </Link>
                     </Button>
@@ -639,7 +639,7 @@ function AfiliadosPage() {
                             <div className="flex items-center gap-3">
                               <span className="text-foreground font-semibold">{item.clicks} acesso(s)</span>
                               {item.conversions > 0 && (
-                                <Badge variant="default" className="text-[10px] bg-emerald-600 text-white">
+                                <Badge variant="default" className="text-xs bg-emerald-600 text-primary-foreground">
                                   {item.conversions} venda(s)
                                 </Badge>
                               )}
@@ -658,31 +658,31 @@ function AfiliadosPage() {
                 {/* Resumo Comercial de Formas de Ganho */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-3">
                   <div className="p-4 rounded-lg border border-border/60 bg-card space-y-2">
-                    <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+                    <div className="size-11 min-size-11 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
                       <ShoppingBag className="size-4" />
                     </div>
                     <h4 className="text-xs font-bold text-foreground">Comissões por Venda</h4>
-                    <p className="text-[11px] text-muted-foreground leading-relaxed">
+                    <p className="text-xs text-muted-foreground leading-relaxed">
                       Receba comissão direta das lojas ao divulgar produtos, coleções e cardápios na sua vitrine.
                     </p>
                   </div>
 
                   <div className="p-4 rounded-lg border border-border/60 bg-card space-y-2">
-                    <div className="size-8 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center">
+                    <div className="size-11 min-size-11 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center">
                       <Ticket className="size-4" />
                     </div>
                     <h4 className="text-xs font-bold text-foreground">Cupons de Desconto</h4>
-                    <p className="text-[11px] text-muted-foreground leading-relaxed">
+                    <p className="text-xs text-muted-foreground leading-relaxed">
                       Ofereça vantagens exclusivas nas lojas parceiras com cupons que levam sua assinatura.
                     </p>
                   </div>
 
                   <div className="p-4 rounded-lg border border-border/60 bg-card space-y-2">
-                    <div className="size-8 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center">
+                    <div className="size-11 min-size-11 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center">
                       <Coins className="size-4" />
                     </div>
                     <h4 className="text-xs font-bold text-foreground">Bônus por Indicação</h4>
-                    <p className="text-[11px] text-muted-foreground leading-relaxed">
+                    <p className="text-xs text-muted-foreground leading-relaxed">
                       Ganhe tokens e bônus por novos clientes e empresas indicadas, com resgate via Pix.
                     </p>
                   </div>
@@ -698,7 +698,7 @@ function AfiliadosPage() {
                       <h3 className="text-sm font-bold text-foreground">
                         Editor Visual da Vitrine Pública
                       </h3>
-                      <Badge variant="outline" className="text-[10px] font-mono">
+                      <Badge variant="outline" className="text-xs font-mono">
                         @{referralHandle}
                       </Badge>
                     </div>
@@ -708,9 +708,9 @@ function AfiliadosPage() {
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <Button asChild variant="outline" size="sm" className="h-10 px-4 rounded-lg text-xs gap-2">
+                    <Button asChild variant="outline" size="sm" className="h-11 min-h-11 px-4 rounded-lg text-xs gap-2">
                       <Link to="/u/$username" params={{ username: referralHandle }} target="_blank">
-                        <Globe className="size-3.5" />
+                        <Globe className="size-4" />
                         <span>Pré-visualizar Vitrine</span>
                       </Link>
                     </Button>
@@ -720,13 +720,13 @@ function AfiliadosPage() {
                       size="sm"
                       disabled={isSavingShowcase}
                       onClick={handleSaveShowcase}
-                      className="h-10 px-4 rounded-lg text-xs font-semibold gap-2"
+                      className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold gap-2"
                     >
                       {isSavingShowcase ? (
                         <span>Salvando...</span>
                       ) : (
                         <>
-                          <Check className="size-3.5" />
+                          <Check className="size-4" />
                           <span>Salvar Vitrine</span>
                         </>
                       )}
@@ -739,10 +739,10 @@ function AfiliadosPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <h4 className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-2">
-                        <Layers className="size-3.5 text-primary" />
+                        <Layers className="size-4 text-primary" />
                         <span>Ordem das Camadas na Vitrine Pública</span>
                       </h4>
-                      <p className="text-[11px] text-muted-foreground">
+                      <p className="text-xs text-muted-foreground">
                         Use os botões de subir e descer para definir a prioridade das seções na sua página pública.
                       </p>
                     </div>
@@ -766,12 +766,12 @@ function AfiliadosPage() {
                             <span className="size-6 rounded-full bg-muted flex items-center justify-center text-xs font-mono font-bold text-muted-foreground">
                               {idx + 1}
                             </span>
-                            <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                            <div className="size-11 min-size-11 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
                               <IconComponent className="size-4" />
                             </div>
                             <div>
                               <p className="text-xs font-bold text-foreground">{item.label}</p>
-                              <p className="text-[10px] text-muted-foreground">{item.desc}</p>
+                              <p className="text-xs text-muted-foreground">{item.desc}</p>
                             </div>
                           </div>
 
@@ -782,7 +782,7 @@ function AfiliadosPage() {
                               size="sm"
                               disabled={idx === 0}
                               onClick={() => moveSection(idx, "up")}
-                              className="size-8 p-0 rounded-lg text-muted-foreground hover:text-foreground"
+                              className="size-11 min-size-11 p-0 rounded-lg text-muted-foreground hover:text-foreground"
                               title="Subir camada"
                             >
                               <ArrowUp className="size-4" />
@@ -794,7 +794,7 @@ function AfiliadosPage() {
                               size="sm"
                               disabled={idx === showcaseOrder.length - 1}
                               onClick={() => moveSection(idx, "down")}
-                              className="size-8 p-0 rounded-lg text-muted-foreground hover:text-foreground"
+                              className="size-11 min-size-11 p-0 rounded-lg text-muted-foreground hover:text-foreground"
                               title="Descer camada"
                             >
                               <ArrowDown className="size-4" />
@@ -811,17 +811,17 @@ function AfiliadosPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <h4 className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-2">
-                        <ImageIcon className="size-3.5 text-primary" />
+                        <ImageIcon className="size-4 text-primary" />
                         <span>Banner Promocional da Marca (16:9)</span>
                       </h4>
-                      <p className="text-[11px] text-muted-foreground">
+                      <p className="text-xs text-muted-foreground">
                         Apresente uma foto temática, cupom da semana ou parceria em destaque no topo da sua vitrine.
                       </p>
                     </div>
                   </div>
 
                   {/* Preview Visual em Tempo Real */}
-                  <div className="aspect-video sm:aspect-[21/9] w-full rounded-lg bg-muted/40 border border-border/60 overflow-hidden relative flex flex-col justify-end p-4 sm:p-6">
+                  <div className="aspect-video sm:aspect-video w-full rounded-lg bg-muted/40 border border-border/60 overflow-hidden relative flex flex-col justify-end p-4 sm:p-6">
                     {bannerUrl ? (
                       <img
                         src={bannerUrl}
@@ -829,21 +829,21 @@ function AfiliadosPage() {
                         className="absolute inset-0 w-full h-full object-cover"
                       />
                     ) : (
-                      <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-muted to-background flex items-center justify-center text-muted-foreground text-xs font-medium">
+                      <div className="absolute inset-0 bg-muted/40">
                         Insira a URL de uma imagem abaixo para visualizar o banner em 16:9
                       </div>
                     )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent pointer-events-none" />
+                    <div className="absolute inset-0 bg-background/80" />
 
                     <div className="relative z-10 space-y-1">
-                      <Badge className="text-[10px] bg-primary text-primary-foreground border-none">
+                      <Badge className="text-xs bg-primary text-primary-foreground border-none">
                         Destaque da Semana
                       </Badge>
-                      <h3 className="text-base sm:text-xl font-extrabold text-white line-clamp-1">
+                      <h3 className="text-base sm:text-xl font-extrabold text-primary-foreground line-clamp-1">
                         {bannerTitle || "Seu Título Promocional em Destaque Aqui"}
                       </h3>
                       {bannerLink && (
-                        <span className="text-[11px] text-white/80 font-mono flex items-center gap-1">
+                        <span className="text-xs text-primary-foreground/80 font-mono flex items-center gap-1">
                           <ExternalLink className="size-3" />
                           {bannerLink}
                         </span>
@@ -894,10 +894,10 @@ function AfiliadosPage() {
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <div>
                       <h4 className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-2">
-                        <Store className="size-3.5 text-primary" />
+                        <Store className="size-4 text-primary" />
                         <span>Lojas Parceiras Conectadas ({connectedStoreIds.length})</span>
                       </h4>
-                      <p className="text-[11px] text-muted-foreground">
+                      <p className="text-xs text-muted-foreground">
                         Lojas que aparecem com seus cupons de 10% de desconto na sua vitrine pública.
                       </p>
                     </div>
@@ -906,9 +906,9 @@ function AfiliadosPage() {
                       type="button"
                       size="sm"
                       onClick={() => setIsStorePickerOpen(true)}
-                      className="h-10 px-4 rounded-lg text-xs font-semibold gap-2 self-start sm:self-auto"
+                      className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold gap-2 self-start sm:self-auto"
                     >
-                      <Plus className="size-3.5" />
+                      <Plus className="size-4" />
                       <span>Conectar Nova Loja</span>
                     </Button>
                   </div>
@@ -917,7 +917,7 @@ function AfiliadosPage() {
                     <div className="p-6 text-center rounded-lg bg-muted/20 border border-border/40 space-y-2">
                       <Store className="size-6 text-muted-foreground mx-auto" />
                       <p className="text-xs font-semibold text-foreground">Nenhuma loja conectada ainda</p>
-                      <p className="text-[11px] text-muted-foreground">
+                      <p className="text-xs text-muted-foreground">
                         Clique no botão acima para conectar as lojas parceiras da sua cidade à sua vitrine.
                       </p>
                     </div>
@@ -938,7 +938,7 @@ function AfiliadosPage() {
                             </div>
                             <div className="min-w-0">
                               <h5 className="text-xs font-bold text-foreground truncate">{s.name}</h5>
-                              <p className="text-[10px] text-muted-foreground truncate">
+                              <p className="text-xs text-muted-foreground truncate">
                                 Cupom: <span className="font-mono font-bold text-primary">{s.couponCode}</span> (10% OFF)
                               </p>
                             </div>
@@ -949,7 +949,7 @@ function AfiliadosPage() {
                             variant="ghost"
                             size="sm"
                             onClick={() => handleToggleStoreConnection(s.id)}
-                            className="size-8 p-0 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                            className="size-11 min-size-11 p-0 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10"
                             title="Remover loja da vitrine"
                           >
                             <Trash2 className="size-4" />
@@ -965,10 +965,10 @@ function AfiliadosPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <h4 className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-2">
-                        <ShoppingBag className="size-3.5 text-primary" />
+                        <ShoppingBag className="size-4 text-primary" />
                         <span>Produtos Comissionados do Catálogo ({showcaseProducts.length})</span>
                       </h4>
-                      <p className="text-[11px] text-muted-foreground">
+                      <p className="text-xs text-muted-foreground">
                         Compartilhe itens com links exclusivos para receber comissões automáticas das lojas.
                       </p>
                     </div>
@@ -1000,13 +1000,13 @@ function AfiliadosPage() {
                                     Sem imagem
                                   </div>
                                 )}
-                                <Badge className="absolute top-2 right-2 text-[10px] bg-background/90 text-foreground backdrop-blur-md">
+                                <Badge className="absolute top-2 right-2 text-xs bg-background/90 text-foreground backdrop-blur-md">
                                   ~{formatMoney(p.estimatedCommissionCents)} comissão
                                 </Badge>
                               </div>
 
                               <div>
-                                <span className="text-[9px] text-muted-foreground uppercase font-medium">
+                                <span className="text-xs text-muted-foreground uppercase font-medium">
                                   {p.storeName}
                                 </span>
                                 <h5 className="text-xs font-bold text-foreground line-clamp-1">{p.name}</h5>
@@ -1020,7 +1020,7 @@ function AfiliadosPage() {
                                 variant="outline"
                                 size="sm"
                                 onClick={() => handleCopy(productAffiliateUrl, "Link do produto")}
-                                className="flex-1 h-9 rounded-lg text-[11px] font-semibold gap-1"
+                                className="flex-1 h-11 min-h-11 rounded-lg text-xs font-semibold gap-1"
                               >
                                 {copiedLink === productAffiliateUrl ? (
                                   <Check className="size-3 text-emerald-500" />
@@ -1042,17 +1042,17 @@ function AfiliadosPage() {
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <div>
                       <h4 className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-2">
-                        <Calendar className="size-3.5 text-primary" />
+                        <Calendar className="size-4 text-primary" />
                         <span>Próximos Eventos & Shows da Marca ({creatorEvents.length})</span>
                       </h4>
-                      <p className="text-[11px] text-muted-foreground">
+                      <p className="text-xs text-muted-foreground">
                         Apresentações, workshops e eventos em que você atua ou co-organiza.
                       </p>
                     </div>
 
-                    <Button asChild variant="outline" size="sm" className="h-10 px-4 rounded-lg text-xs gap-2 self-start sm:self-auto">
+                    <Button asChild variant="outline" size="sm" className="h-11 min-h-11 px-4 rounded-lg text-xs gap-2 self-start sm:self-auto">
                       <Link to="/eventos">
-                        <Plus className="size-3.5" />
+                        <Plus className="size-4" />
                         <span>Cadastrar Evento</span>
                       </Link>
                     </Button>
@@ -1062,7 +1062,7 @@ function AfiliadosPage() {
                     <div className="p-6 text-center rounded-lg bg-muted/20 border border-border/40 space-y-2">
                       <Calendar className="size-6 text-muted-foreground mx-auto" />
                       <p className="text-xs font-semibold text-foreground">Nenhum evento agendado</p>
-                      <p className="text-[11px] text-muted-foreground">
+                      <p className="text-xs text-muted-foreground">
                         Cadastre eventos com o identificador @{referralHandle} para exibi-los na sua vitrine.
                       </p>
                     </div>
@@ -1085,10 +1085,10 @@ function AfiliadosPage() {
 
                           <div className="space-y-1 min-w-0">
                             <h5 className="text-xs font-bold text-foreground truncate">{evt.title}</h5>
-                            <p className="text-[10px] text-muted-foreground">
+                            <p className="text-xs text-muted-foreground">
                               {evt.event_date ? formatDate(evt.event_date) : "Data a definir"} • {evt.location || evt.city || "Chapecó"}
                             </p>
-                            <Badge variant="secondary" className="text-[9px]">
+                            <Badge variant="secondary" className="text-xs">
                               {evt.is_free ? "Gratuito" : formatMoney(evt.price_cents || 0)}
                             </Badge>
                           </div>
@@ -1131,7 +1131,7 @@ function AfiliadosPage() {
                           <div className="space-y-1">
                             <div className="flex items-center gap-2">
                               <h4 className="text-sm font-bold text-foreground">{s.name}</h4>
-                              <Badge variant="secondary" className="text-[10px]">
+                              <Badge variant="secondary" className="text-xs">
                                 {s.segment}
                               </Badge>
                             </div>
@@ -1143,12 +1143,12 @@ function AfiliadosPage() {
 
                         <div className="p-3 rounded-lg bg-primary/5 border border-primary/20 flex items-center justify-between">
                           <div>
-                            <span className="text-[10px] text-muted-foreground uppercase font-medium">
+                            <span className="text-xs text-muted-foreground uppercase font-medium">
                               Cupom Exclusivo
                             </span>
                             <p className="text-xs font-mono font-bold text-primary">{couponCode}</p>
                           </div>
-                          <Badge className="bg-primary text-primary-foreground text-[10px] font-bold">
+                          <Badge className="bg-primary text-primary-foreground text-xs font-bold">
                             10% OFF
                           </Badge>
                         </div>
@@ -1159,9 +1159,9 @@ function AfiliadosPage() {
                             variant="outline"
                             size="sm"
                             onClick={() => handleCopy(couponCode, "Cupom")}
-                            className="flex-1 h-10 rounded-lg text-xs font-semibold gap-2"
+                            className="flex-1 h-11 min-h-11 rounded-lg text-xs font-semibold gap-2"
                           >
-                            <Copy className="size-3.5" />
+                            <Copy className="size-4" />
                             <span>Copiar Cupom</span>
                           </Button>
 
@@ -1175,10 +1175,10 @@ function AfiliadosPage() {
                                 storeUrl
                               )
                             }
-                            className="h-10 px-3 rounded-lg text-xs font-semibold text-emerald-600 hover:text-emerald-700 hover:bg-emerald-500/10 border-emerald-500/30"
+                            className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold text-emerald-600 hover:text-emerald-700 hover:bg-emerald-500/10 border-emerald-500/30"
                             title="Enviar no WhatsApp"
                           >
-                            <Send className="size-3.5" />
+                            <Send className="size-4" />
                           </Button>
 
                           <Button
@@ -1186,16 +1186,16 @@ function AfiliadosPage() {
                             size="sm"
                             variant={isConnected ? "secondary" : "default"}
                             onClick={() => handleToggleStoreConnection(s.id)}
-                            className="h-10 px-4 rounded-lg text-xs font-semibold gap-2"
+                            className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold gap-2"
                           >
                             {isConnected ? (
                               <>
-                                <Check className="size-3.5 text-emerald-600" />
+                                <Check className="size-4 text-emerald-600" />
                                 <span>Conectada</span>
                               </>
                             ) : (
                               <>
-                                <Plus className="size-3.5" />
+                                <Plus className="size-4" />
                                 <span>Conectar</span>
                               </>
                             )}
@@ -1212,7 +1212,7 @@ function AfiliadosPage() {
                 {/* Bloco de Saldo e Saques */}
                 <div className="p-4 sm:p-5 rounded-lg border border-primary/30 bg-primary/5 space-y-3">
                   <div className="flex items-center gap-3">
-                    <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                    <div className="size-11 min-size-11 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
                       <ShieldCheck className="size-4" />
                     </div>
                     <div>
@@ -1240,14 +1240,14 @@ function AfiliadosPage() {
                         <div key={r.id} className="p-3 rounded-lg border border-border/60 bg-muted/20 space-y-1">
                           <div className="flex items-center justify-between">
                             <span className="text-xs font-semibold text-foreground">{r.title}</span>
-                            <Badge variant="secondary" className="text-[10px]">
+                            <Badge variant="secondary" className="text-xs">
                               {r.vesting_days}d liberação
                             </Badge>
                           </div>
                           <p className="text-sm sm:text-base font-extrabold text-primary">
                             +{Number(r.tokens_amount).toLocaleString("pt-BR")} tokens
                           </p>
-                          <p className="text-[11px] text-muted-foreground leading-tight">{r.description}</p>
+                          <p className="text-xs text-muted-foreground leading-tight">{r.description}</p>
                         </div>
                       ))}
                     </div>
@@ -1269,7 +1269,7 @@ function AfiliadosPage() {
                             <p className="text-xs font-semibold text-foreground">
                               {ref.referral_type === "store" ? "Loja / Empresa" : "Membro"} indicado
                             </p>
-                            <span className="text-[10px] text-muted-foreground">{formatDate(ref.created_at)}</span>
+                            <span className="text-xs text-muted-foreground">{formatDate(ref.created_at)}</span>
                           </div>
 
                           <div className="text-right space-y-1">
@@ -1278,7 +1278,7 @@ function AfiliadosPage() {
                             </p>
                             <Badge
                               variant={ref.status === "matured" ? "default" : "outline"}
-                              className="text-[10px]"
+                              className="text-xs"
                             >
                               {ref.status === "matured" ? "Liberado" : "Em Liberação"}
                             </Badge>
@@ -1363,7 +1363,7 @@ function AfiliadosPage() {
                       <Button
                         type="submit"
                         disabled={isSavingCreator}
-                        className="w-full h-10 sm:h-11 rounded-lg text-xs font-semibold mt-2"
+                        className="w-full h-11 min-h-11 rounded-lg text-xs font-semibold mt-2"
                       >
                         {isSavingCreator ? "Salvando..." : "Salvar Alterações"}
                       </Button>
@@ -1373,7 +1373,7 @@ function AfiliadosPage() {
                   {/* Privacidade do Perfil */}
                   <div className="p-4 sm:p-6 rounded-lg border border-border/60 bg-card space-y-3 sm:space-y-4">
                     <div className="flex items-center gap-3">
-                      <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+                      <div className="size-11 min-size-11 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
                         <ShieldCheck className="size-4" />
                       </div>
                       <div>
@@ -1389,13 +1389,13 @@ function AfiliadosPage() {
                         <span className="font-medium text-foreground">Visibilidade nas Buscas:</span>
                         <Badge
                           variant={isAnonymous ? "default" : "outline"}
-                          className="text-[10px] font-semibold"
+                          className="text-xs font-semibold"
                         >
                           {isAnonymous ? "Perfil Discreto" : "Visível na Busca"}
                         </Badge>
                       </div>
 
-                      <p className="text-[11px] text-muted-foreground leading-relaxed">
+                      <p className="text-xs text-muted-foreground leading-relaxed">
                         Ao ativar o modo discreto, seu perfil pessoal não aparece nas buscas públicas da comunidade.
                         Suas divulgações e links continuam funcionando normalmente através de <strong className="text-foreground">@{referralHandle}</strong>.
                       </p>
@@ -1405,7 +1405,7 @@ function AfiliadosPage() {
                         variant={isAnonymous ? "outline" : "default"}
                         disabled={isUpdatingPrivacy}
                         onClick={() => handleTogglePrivacy(!isAnonymous, isAnonymous ? "public" : "unlisted")}
-                        className="w-full h-10 sm:h-11 rounded-lg text-xs font-semibold gap-2"
+                        className="w-full h-11 min-h-11 rounded-lg text-xs font-semibold gap-2"
                       >
                         {isAnonymous ? <Eye className="size-4" /> : <EyeOff className="size-4" />}
                         <span>
@@ -1451,7 +1451,7 @@ function AfiliadosPage() {
                             </div>
                             <div className="min-w-0">
                               <h5 className="text-xs font-bold text-foreground truncate">{s.name}</h5>
-                              <p className="text-[10px] text-muted-foreground truncate">
+                              <p className="text-xs text-muted-foreground truncate">
                                 {s.segment} • {s.city}
                               </p>
                             </div>
@@ -1462,7 +1462,7 @@ function AfiliadosPage() {
                             size="sm"
                             variant={isConnected ? "secondary" : "default"}
                             onClick={() => handleToggleStoreConnection(s.id)}
-                            className="h-9 px-3 rounded-lg text-xs font-semibold gap-1 shrink-0"
+                            className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold gap-1 shrink-0"
                           >
                             {isConnected ? (
                               <>
@@ -1505,18 +1505,18 @@ function AfiliadosPage() {
               ].map((step) => (
                 <div key={step.num} className="flex items-center gap-2">
                   <div
-                    className={`size-6 rounded-full flex items-center justify-center text-xs font-bold transition-colors ${
+                    className={`size-6 rounded-full flex items-center justify-center text-xs font-bold transition-colors motion-reduce:transition-none ${
                       onboardingStep === step.num
                         ? "bg-primary text-primary-foreground"
                         : onboardingStep > step.num
-                        ? "bg-emerald-500 text-white"
+                        ? "bg-emerald-500 text-primary-foreground"
                         : "bg-muted text-muted-foreground"
                     }`}
                   >
-                    {onboardingStep > step.num ? <Check className="size-3.5" /> : step.num}
+                    {onboardingStep > step.num ? <Check className="size-4" /> : step.num}
                   </div>
                   <span
-                    className={`text-[11px] font-medium hidden sm:inline ${
+                    className={`text-xs font-medium hidden sm:inline ${
                       onboardingStep === step.num ? "text-foreground font-bold" : "text-muted-foreground"
                     }`}
                   >
@@ -1536,7 +1536,7 @@ function AfiliadosPage() {
                       <Coins className="size-4 text-emerald-600" />
                       <h3 className="text-xs font-bold text-foreground">Ativação Rápida: Apenas Links e Comissões</h3>
                     </div>
-                    <p className="text-[11px] text-muted-foreground leading-relaxed">
+                    <p className="text-xs text-muted-foreground leading-relaxed">
                       Não quer uma vitrine pública de criador? Ative seu link de parceiro agora para divulgar lojas e produtos e receber comissões diretamente no seu CPF via PIX.
                     </p>
                   </div>
@@ -1555,7 +1555,7 @@ function AfiliadosPage() {
                       type="button"
                       disabled={isSubmitting || !onboardingHandle}
                       onClick={handleFastAffiliateActivation}
-                      className="w-full sm:w-auto h-10 px-4 rounded-lg text-xs font-bold bg-emerald-600 text-white hover:bg-emerald-700 cursor-pointer shrink-0"
+                      className="w-full sm:w-auto h-11 min-h-11 px-4 rounded-lg text-xs font-bold bg-emerald-600 text-primary-foreground hover:bg-emerald-700 cursor-pointer shrink-0"
                     >
                       {isSubmitting ? "Ativando..." : "Ativar Links Imediatamente"}
                     </Button>
@@ -1564,7 +1564,7 @@ function AfiliadosPage() {
 
                 <div className="relative flex items-center justify-center my-1">
                   <div className="border-t border-border/60 w-full" />
-                  <span className="bg-card px-3 text-[10px] text-muted-foreground font-semibold uppercase tracking-wider shrink-0">
+                  <span className="bg-card px-3 text-xs text-muted-foreground font-semibold uppercase tracking-wider shrink-0">
                     Ou configure uma vitrine pública de criador
                   </span>
                 </div>
@@ -1588,9 +1588,9 @@ function AfiliadosPage() {
                         toast.info("Nenhum cadastro prévio detectado. Complete as etapas abaixo.");
                       }
                     }}
-                    className="h-8 px-3 rounded-lg text-xs gap-2 shrink-0 self-start sm:self-auto font-medium"
+                    className="h-11 min-h-11 px-3 rounded-lg text-xs gap-2 shrink-0 self-start sm:self-auto font-medium"
                   >
-                    <Star className="size-3.5 text-primary" />
+                    <Star className="size-4 text-primary" />
                     <span>Sincronizar meu perfil</span>
                   </Button>
                 </div>
@@ -1665,7 +1665,7 @@ function AfiliadosPage() {
                   <div className="flex items-center justify-between">
                     <div className="space-y-1">
                       <span className="text-xs font-bold text-foreground">Manter Perfil Civil Discreto</span>
-                      <p className="text-[11px] text-muted-foreground">
+                      <p className="text-xs text-muted-foreground">
                         Seu nome de certidão e histórico de compras não aparecem nas buscas públicas.
                       </p>
                     </div>
@@ -1675,7 +1675,7 @@ function AfiliadosPage() {
                       size="sm"
                       variant={onboardingAnonymize ? "default" : "outline"}
                       onClick={() => setOnboardingAnonymize(!onboardingAnonymize)}
-                      className="h-9 px-3 rounded-lg text-xs font-semibold"
+                      className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold"
                     >
                       {onboardingAnonymize ? "Discreto" : "Público"}
                     </Button>
@@ -1715,36 +1715,36 @@ function AfiliadosPage() {
 
                 <div className="space-y-3">
                   <div className="p-4 rounded-lg border border-border/60 bg-card flex items-start gap-3">
-                    <div className="size-8 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0">
+                    <div className="size-11 min-size-11 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0">
                       <Percent className="size-4" />
                     </div>
                     <div className="space-y-1">
                       <h4 className="text-xs font-bold text-foreground">Vendas Comissionadas das Lojas</h4>
-                      <p className="text-[11px] text-muted-foreground">
+                      <p className="text-xs text-muted-foreground">
                         Lojas cadastradas pagam comissões em dinheiro por cada pedido convertido via seu link.
                       </p>
                     </div>
                   </div>
 
                   <div className="p-4 rounded-lg border border-border/60 bg-card flex items-start gap-3">
-                    <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                    <div className="size-11 min-size-11 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
                       <ShoppingBag className="size-4" />
                     </div>
                     <div className="space-y-1">
                       <h4 className="text-xs font-bold text-foreground">Vitrine Digital Pessoal</h4>
-                      <p className="text-[11px] text-muted-foreground">
+                      <p className="text-xs text-muted-foreground">
                         Cure produtos, banners e cupons favoritos em uma página pública que leva sua marca.
                       </p>
                     </div>
                   </div>
 
                   <div className="p-4 rounded-lg border border-border/60 bg-card flex items-start gap-3">
-                    <div className="size-8 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center shrink-0">
+                    <div className="size-11 min-size-11 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center shrink-0">
                       <Coins className="size-4" />
                     </div>
                     <div className="space-y-1">
                       <h4 className="text-xs font-bold text-foreground">Bônus por Indicação</h4>
-                      <p className="text-[11px] text-muted-foreground">
+                      <p className="text-xs text-muted-foreground">
                         Receba 50.000 tokens por membro e 500.000 tokens por empresa cadastrada pelo seu link.
                       </p>
                     </div>

@@ -34,45 +34,45 @@ export const Route = createFileRoute("/_store/bio/$slug")({
 const THEME_STYLES: Record<string, { bg: string; card: string; text: string; buttonClass: string }> = {
  clean: {
  bg: "bg-zinc-50 dark:bg-zinc-950",
- card: "bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 shadow-xs hover:border-zinc-400 dark:hover:border-zinc-600 text-zinc-900 dark:text-zinc-100",
+ card: "bg-card border border-zinc-200/80 dark:border-zinc-800  hover:border-zinc-400 dark:hover:border-zinc-600 text-zinc-900 dark:text-zinc-100",
  text: "text-zinc-900 dark:text-zinc-100",
  buttonClass: "bg-primary text-primary-foreground hover:bg-primary/90",
  },
  dark: {
- bg: "bg-black",
- card: "bg-zinc-900/90 border border-zinc-800 hover:border-zinc-700 text-white",
- text: "text-white",
- buttonClass: "bg-white text-black hover:bg-zinc-200",
+ bg: "bg-card",
+ card: "bg-zinc-900/90 border border-zinc-800 hover:border-zinc-700 text-primary-foreground",
+ text: "text-primary-foreground",
+ buttonClass: "bg-card text-foreground hover:bg-zinc-200",
  },
  glass: {
  bg: "bg-linear-to-br from-indigo-950 via-slate-900 to-black",
- card: "bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/15 text-white",
- text: "text-white",
+ card: "bg-card/10 backdrop-blur-md border border-white/20 hover:bg-card/15 text-primary-foreground",
+ text: "text-primary-foreground",
  buttonClass: "bg-primary text-primary-foreground hover:bg-primary/90",
  },
  sunset: {
  bg: "bg-linear-to-b from-orange-500 via-rose-600 to-purple-900",
- card: "bg-white/15 backdrop-blur-md border border-white/30 hover:bg-white/25 text-white",
- text: "text-white",
- buttonClass: "bg-white text-rose-900 hover:bg-white/90 font-bold",
+ card: "bg-card/15 backdrop-blur-md border border-white/30 hover:bg-card/25 text-primary-foreground",
+ text: "text-primary-foreground",
+ buttonClass: "bg-card text-rose-900 hover:bg-card/90 font-bold",
  },
  emerald: {
  bg: "bg-linear-to-b from-emerald-950 via-teal-900 to-black",
  card: "bg-emerald-900/40 backdrop-blur-md border border-emerald-700/50 hover:bg-emerald-800/40 text-emerald-100",
- text: "text-white",
- buttonClass: "bg-emerald-500 text-white hover:bg-emerald-600",
+ text: "text-primary-foreground",
+ buttonClass: "bg-emerald-500 text-primary-foreground hover:bg-emerald-600",
  },
  zine: {
- bg: "bg-[#f4efe6]",
- card: "bg-white border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] text-black",
- text: "text-black",
- buttonClass: "bg-black text-white hover:bg-zinc-800 border-2 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]",
- },
+    bg: "bg-muted/40",
+    card: "bg-card border-2 border-border text-foreground hover:translate-x-0.5 hover:translate-y-0.5",
+    text: "text-foreground",
+    buttonClass: "bg-foreground text-background hover:bg-foreground/90 border-2 border-border",
+  },
  tourism_boutique: {
  bg: "bg-linear-to-b from-sky-50 via-blue-50/50 to-slate-100 dark:from-slate-950 dark:via-sky-950/40 dark:to-zinc-950",
- card: "bg-white/95 dark:bg-zinc-900/90 backdrop-blur-sm border border-sky-200/70 dark:border-sky-800/40 shadow-sm hover:border-sky-400 text-slate-900 dark:text-slate-100",
+ card: "bg-card/95 dark:bg-zinc-900/90 backdrop-blur-sm border border-sky-200/70 dark:border-sky-800/40  hover:border-sky-400 text-slate-900 dark:text-slate-100",
  text: "text-slate-900 dark:text-slate-100",
- buttonClass: "bg-sky-600 text-white hover:bg-sky-700 font-bold shadow-sm",
+ buttonClass: "bg-sky-600 text-primary-foreground hover:bg-sky-700 font-bold ",
  },
 };
 
@@ -144,12 +144,12 @@ function BiolinkPage() {
 
  return (
  <main
- className={`w-full min-h-[100dvh] ${theme.bg} ${theme.text} flex flex-col items-center justify-between py-10 px-4 transition-colors duration-300 font-sans`}
+ className={`w-full min-h-screen ${theme.bg} ${theme.text} flex flex-col items-center justify-between py-10 px-4 transition-colors duration-300 font-sans`}
  >
  <div className="w-full max-w-md flex flex-col items-center gap-6">
  {/* ── 1. Top Avatar & Bio com Slogan e Status ── */}
  <div className="flex flex-col items-center gap-3 w-full text-center">
- <div className="size-20 rounded-full bg-white dark:bg-zinc-900 border-2 border-sky-300/40 shadow-sm overflow-hidden flex items-center justify-center p-1">
+ <div className="size-20 rounded-full bg-card border-2 border-sky-300/40  overflow-hidden flex items-center justify-center p-1">
  {bio.avatar_url ? (
  <img src={bio.avatar_url} alt={bio.title} className="size-full object-cover rounded-full" />
  ) : (
@@ -160,7 +160,7 @@ function BiolinkPage() {
  <div className="space-y-2 max-w-sm">
  <h1 className="text-xl font-black tracking-tight text-foreground font-display">{bio.title}</h1>
  {bio.subtitle && (
- <p className="text-[11px] font-bold tracking-widest text-sky-700 dark:text-sky-300 uppercase">
+ <p className="text-xs font-bold tracking-widest text-sky-700 dark:text-sky-300 uppercase">
  {bio.subtitle}
  </p>
  )}
@@ -172,7 +172,7 @@ function BiolinkPage() {
 
  {/* Badge de Horário de Funcionamento em Tempo Real */}
  <div className="pt-1 flex items-center justify-center">
- <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-[11px] font-semibold">
+ <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-xs font-semibold">
  <span className="size-2 rounded-full bg-emerald-500" />
  <span>Aberto agora · 08h às 18h</span>
  </div>
@@ -188,7 +188,7 @@ function BiolinkPage() {
  href={socials.instagram.startsWith("http") ? socials.instagram : `https://instagram.com/${socials.instagram.replace("@", "")}`}
  target="_blank"
  rel="noopener noreferrer"
- className="size-9 rounded-full bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/20 flex items-center justify-center transition-all hover:scale-110"
+ className="size-11 min-h-11 min-w-11 rounded-full bg-card/5 dark:bg-card/10 hover:bg-card/10 dark:hover:bg-card/20 flex items-center justify-center transition-transform hover:scale-105 motion-reduce:transition-none"
  >
  <Instagram className="size-4" />
  </a>
@@ -198,7 +198,7 @@ function BiolinkPage() {
  href={`https://wa.me/${socials.whatsapp.replace(/\D/g, "")}`}
  target="_blank"
  rel="noopener noreferrer"
- className="size-9 rounded-full bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center transition-all hover:scale-110"
+ className="size-11 min-h-11 min-w-11 rounded-full bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center transition-transform hover:scale-105 motion-reduce:transition-none"
  >
  <MessageCircle className="size-4" />
  </a>
@@ -206,7 +206,7 @@ function BiolinkPage() {
  {socials.email && (
  <a
  href={`mailto:${socials.email}`}
- className="size-9 rounded-full bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/20 flex items-center justify-center transition-all hover:scale-110"
+ className="size-11 min-h-11 min-w-11 rounded-full bg-card/5 dark:bg-card/10 hover:bg-card/10 dark:hover:bg-card/20 flex items-center justify-center transition-transform hover:scale-105 motion-reduce:transition-none"
  >
  <Mail className="size-4" />
  </a>
@@ -221,7 +221,7 @@ function BiolinkPage() {
  if (block.type === "header") {
  return (
  <div key={block.id || index} className="pt-4 pb-1 text-center">
- <span className="text-[11px] font-bold uppercase tracking-widest opacity-60">
+ <span className="text-xs font-bold uppercase tracking-widest opacity-60">
  {block.label}
  </span>
  </div>
@@ -233,7 +233,7 @@ function BiolinkPage() {
  return (
  <div
  key={block.id || index}
- className={`w-full p-5 rounded-lg border border-sky-200/80 dark:border-sky-800/60 bg-card shadow-sm space-y-4 text-left`}
+ className={`w-full p-5 rounded-lg border border-sky-200/80 dark:border-sky-800/60 bg-card  space-y-4 text-left`}
  >
  <div className="flex items-center gap-3">
  <div className="size-8 rounded-lg bg-sky-500/10 flex items-center justify-center text-sky-600 shrink-0">
@@ -243,7 +243,7 @@ function BiolinkPage() {
  <h3 className="text-sm font-bold text-foreground">
  {block.label || "Quer que a gente te chame?"}
  </h3>
- <p className="text-[11px] text-muted-foreground">
+ <p className="text-xs text-muted-foreground">
  {block.subtitle || "Deixe seu WhatsApp e um consultor entra em contato."}
  </p>
  </div>
@@ -252,22 +252,22 @@ function BiolinkPage() {
  {leadSubmitted ? (
  <div className="p-4 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-700 dark:text-emerald-400 text-xs font-semibold text-center space-y-1">
  <p> Dados recebidos com sucesso!</p>
- <p className="text-[11px] font-normal opacity-80">Nossa equipe entrará em contato em instantes.</p>
+ <p className="text-xs font-normal opacity-80">Nossa equipe entrará em contato em instantes.</p>
  </div>
  ) : (
  <form onSubmit={handleLeadSubmit} className="space-y-3 pt-1">
  <div className="space-y-1">
- <label className="text-[10px] font-bold text-muted-foreground uppercase">Seu nome</label>
+ <label className="text-xs font-bold text-muted-foreground uppercase">Seu nome</label>
  <Input
  value={leadName}
  onChange={(e) => setLeadName(e.target.value)}
  placeholder="Como devemos te chamar?"
- className="h-9.5 text-xs rounded-lg bg-background"
+ className="h-10 text-xs rounded-lg bg-background"
  required
  />
  </div>
  <div className="space-y-1">
- <label className="text-[10px] font-bold text-muted-foreground uppercase">WhatsApp (com DDD)</label>
+ <label className="text-xs font-bold text-muted-foreground uppercase">WhatsApp (com DDD)</label>
  <Input
  value={leadPhone}
  onChange={(e) => setLeadPhone(e.target.value)}
@@ -279,11 +279,11 @@ function BiolinkPage() {
  <Button
  type="submit"
  disabled={isSubmittingLead}
- className="w-full h-10 rounded-lg text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 shadow-xs cursor-pointer"
+ className="w-full h-11 min-h-11 rounded-lg text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90  cursor-pointer"
  >
  {isSubmittingLead ? "Enviando..." : (block.buttonText || "Quero ser chamado(a)")}
  </Button>
- <p className="text-[9px] text-muted-foreground text-center">
+ <p className="text-xs text-muted-foreground text-center">
  Ao enviar, você concorda em receber contato da equipe via WhatsApp.
  </p>
  </form>
@@ -298,7 +298,7 @@ function BiolinkPage() {
  return (
  <div key={block.id || index} className="w-full space-y-2 text-center pt-2">
  <div className="space-y-1">
- <p className="text-[10px] font-bold uppercase tracking-widest text-sky-600">Nossa Loja</p>
+ <p className="text-xs font-bold uppercase tracking-widest text-sky-600">Nossa Loja</p>
  <h3 className="text-sm font-serif font-bold text-foreground">
  {block.label || "Um espaço pensado para você sonhar"}
  </h3>
@@ -316,7 +316,7 @@ function BiolinkPage() {
  ) : (
  <div className="h-44 rounded-lg border border-dashed border-border/60 flex flex-col items-center justify-center gap-2 text-muted-foreground">
  <span className="text-xs">Nenhuma foto cadastrada</span>
- <span className="text-[10px]">Adicione fotos da loja pelo painel administrativo</span>
+ <span className="text-xs">Adicione fotos da loja pelo painel administrativo</span>
  </div>
  )}
  </div>
@@ -339,7 +339,7 @@ function BiolinkPage() {
  return (
  <div key={block.id || index} className="w-full space-y-3 text-center pt-3">
  <div className="space-y-1">
- <p className="text-[10px] font-bold uppercase tracking-widest text-sky-600">O Que Oferecemos</p>
+ <p className="text-xs font-bold uppercase tracking-widest text-sky-600">O Que Oferecemos</p>
  <h3 className="text-sm font-serif font-bold text-foreground">
  {block.label || "Serviços Especializados"}
  </h3>
@@ -351,13 +351,13 @@ function BiolinkPage() {
  return (
  <div
  key={srvIdx}
- className="p-3 rounded-lg bg-card border border-border/70 hover:border-sky-400 transition-all space-y-1"
+ className="p-3 rounded-lg bg-card border border-border/70 hover:border-sky-400 transition-colors motion-reduce:transition-none space-y-1"
  >
  <div className="size-7 rounded-lg bg-sky-500/10 flex items-center justify-center text-sky-600">
  <IconComp className="size-3.5" />
  </div>
- <p className="text-[11px] font-bold text-foreground leading-tight">{srv.title}</p>
- <p className="text-[10px] text-muted-foreground leading-tight line-clamp-2">{srv.subtitle}</p>
+ <p className="text-xs font-bold text-foreground leading-tight">{srv.title}</p>
+ <p className="text-xs text-muted-foreground leading-tight line-clamp-2">{srv.subtitle}</p>
  </div>
  );
  })}
@@ -371,19 +371,19 @@ function BiolinkPage() {
  return (
  <div
  key={block.id || index}
- className="w-full p-4 rounded-lg bg-slate-900 text-white border border-slate-800 shadow-xs space-y-3 text-left"
+ className="w-full p-4 rounded-lg bg-slate-900 text-primary-foreground border border-slate-800  space-y-3 text-left"
  >
  <div className="flex items-start gap-3">
- <div className="size-7 rounded-lg bg-white/10 flex items-center justify-center text-sky-300 shrink-0">
+ <div className="size-7 rounded-lg bg-card/10 flex items-center justify-center text-sky-300 shrink-0">
  <Clock className="size-3.5" />
  </div>
  <div>
- <p className="text-[10px] font-bold uppercase tracking-wider text-sky-400">Horário de Atendimento</p>
- <p className="text-xs font-bold text-white">{block.hoursText || "Todos os dias — 08h às 18h"}</p>
+ <p className="text-xs font-bold uppercase tracking-wider text-sky-400">Horário de Atendimento</p>
+ <p className="text-xs font-bold text-primary-foreground">{block.hoursText || "Todos os dias — 08h às 18h"}</p>
  </div>
  </div>
  <div className="flex items-center justify-between pt-1 border-t border-white/10 text-xs">
- <span className="flex items-center gap-1 text-slate-300 text-[11px]">
+ <span className="flex items-center gap-1 text-slate-300 text-xs">
  <MapPin className="size-3 text-sky-400" />
  <span>{block.locationText || "São Miguel do Oeste - SC"}</span>
  </span>
@@ -391,7 +391,7 @@ function BiolinkPage() {
  href={block.mapUrl || "https://maps.google.com"}
  target="_blank"
  rel="noopener noreferrer"
- className="text-[11px] font-bold text-sky-300 hover:underline"
+ className="text-xs font-bold text-sky-300 hover:underline"
  >
  Ver no mapa →
  </a>
@@ -418,20 +418,20 @@ function BiolinkPage() {
  href={targetUrl}
  target="_blank"
  rel="noopener noreferrer"
- className="block w-full aspect-[16/9] rounded-lg overflow-hidden border border-border/60 shadow-xs relative group select-none hover:border-border transition-all"
+ className="block w-full aspect-video rounded-lg overflow-hidden border border-border/60  relative group select-none hover:border-border transition-colors motion-reduce:transition-none"
  >
  <img
  src={block.imageUrl}
  alt={block.label || "Banner"}
  className="size-full object-cover group-hover:scale-102 transition-transform duration-300"
  />
- <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent flex flex-col justify-end p-4">
- <span className="text-xs font-bold text-white drop-shadow-sm truncate flex items-center justify-between gap-2">
+ <div className="absolute inset-0 bg-background/80 flex flex-col justify-end p-4">
+ <span className="text-xs font-bold text-primary-foreground drop- truncate flex items-center justify-between gap-2">
  <span>{block.label}</span>
- <ExternalLink className="size-3.5 text-white/80 shrink-0" />
+ <ExternalLink className="size-4 text-primary-foreground/80 shrink-0" />
  </span>
  {block.subtitle && (
- <span className="text-[10px] text-white/80 truncate drop-shadow-sm">
+ <span className="text-xs text-primary-foreground/80 truncate drop-">
  {block.subtitle}
  </span>
  )}
@@ -446,16 +446,16 @@ function BiolinkPage() {
  href={targetUrl}
  target="_blank"
  rel="noopener noreferrer"
- className={`w-full p-4 rounded-lg flex items-center justify-between gap-3 text-sm font-semibold transition-all hover:scale-[1.015] active:scale-[0.99] ${
+ className={`w-full p-4 rounded-lg flex items-center justify-between gap-3 text-sm font-semibold transition-colors motion-reduce:transition-none hover:scale-105 active:scale-95 motion-reduce:hover:scale-100 ${
  isHighlighted
- ? "bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm font-bold border border-emerald-500"
+ ? "bg-emerald-600 hover:bg-emerald-700 text-primary-foreground  font-bold border border-emerald-500"
  : theme.card
  }`}
  >
  <div className="flex items-center gap-3 min-w-0 text-left">
  <div
  className={`size-8 rounded-lg flex items-center justify-center shrink-0 ${
- isHighlighted ? "bg-white/20 text-white" : "bg-sky-500/10 text-sky-600"
+ isHighlighted ? "bg-card/20 text-primary-foreground" : "bg-sky-500/10 text-sky-600"
  }`}
  >
  {isWhatsapp ? (
@@ -467,7 +467,7 @@ function BiolinkPage() {
  <div className="min-w-0">
  <p className="text-xs font-bold truncate leading-tight">{block.label}</p>
  {block.subtitle && (
- <p className={`text-[10px] truncate leading-tight ${isHighlighted ? "text-emerald-100" : "text-muted-foreground"}`}>
+ <p className={`text-xs truncate leading-tight ${isHighlighted ? "text-emerald-100" : "text-muted-foreground"}`}>
  {block.subtitle}
  </p>
  )}
@@ -476,11 +476,11 @@ function BiolinkPage() {
 
  <div className="flex items-center gap-2 shrink-0">
  {block.badge && (
- <span className="px-2 py-1 rounded-md text-[9px] font-mono font-bold bg-amber-500 text-white">
+ <span className="px-2 py-1 rounded-md text-xs font-mono font-bold bg-amber-500 text-primary-foreground">
  {block.badge}
  </span>
  )}
- <ChevronRight className={`size-4 ${isHighlighted ? "text-white" : "text-muted-foreground"}`} />
+ <ChevronRight className={`size-4 ${isHighlighted ? "text-primary-foreground" : "text-muted-foreground"}`} />
  </div>
  </a>
  );
@@ -492,7 +492,7 @@ function BiolinkPage() {
  <footer className="pt-10 pb-4 text-center">
  <a
  href="/"
- className="text-[10px] opacity-40 hover:opacity-100 transition-opacity font-bold uppercase tracking-widest"
+ className="text-xs opacity-40 hover:opacity-100 transition-opacity font-bold uppercase tracking-widest"
  >
  Waesy Community · Turismo
  </a>

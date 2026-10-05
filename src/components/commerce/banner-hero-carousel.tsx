@@ -102,7 +102,7 @@ export function BannerHeroCarousel({
         <img
           src={banner.media_url}
           alt={banner.title}
-          className="relative size-full object-contain transition-transform duration-500 will-change-transform select-none"
+          className="relative size-full object-contain transition-transform duration-300 motion-reduce:transition-none will-change-transform select-none"
           loading="eager"
           onError={(e) => {
             (e.currentTarget as HTMLImageElement).style.display = "none";
@@ -182,14 +182,14 @@ export function BannerHeroCarousel({
             <button
               onClick={handlePrev}
               aria-label="Banner anterior"
-              className="absolute left-3 top-1/2 -translate-y-1/2 size-10 rounded-full bg-black/40 hover:bg-black/70 text-white backdrop-blur-md hidden sm:flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-20 cursor-pointer"
+              className="absolute left-3 top-1/2 -translate-y-1/2 size-11 rounded-full bg-black/40 hover:bg-black/70 text-white backdrop-blur-md hidden sm:flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-20 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
             >
               <ChevronLeft className="size-5" />
             </button>
             <button
               onClick={handleNext}
               aria-label="Próximo banner"
-              className="absolute right-3 top-1/2 -translate-y-1/2 size-10 rounded-full bg-black/40 hover:bg-black/70 text-white backdrop-blur-md hidden sm:flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-20 cursor-pointer"
+              className="absolute right-3 top-1/2 -translate-y-1/2 size-11 rounded-full bg-black/40 hover:bg-black/70 text-white backdrop-blur-md hidden sm:flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-20 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
             >
               <ChevronRight className="size-5" />
             </button>

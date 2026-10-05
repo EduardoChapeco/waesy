@@ -13,6 +13,9 @@
 
 import { getServerClient, getAnonServerClient } from "@/lib/supabase";
 import { getRandomUserAgent, cleanHtmlText, isDomainInCooldown, setDomainCooldown, sleep } from "@/lib/mining/scraper-utils";
+import { globalCrawlerCircuitBreaker } from "@/lib/mining/crawler-circuit-breaker";
+import { resolveCityAndState, normalizeStateUf } from "@/lib/mining/geo-resolver";
+import { getDefaultCity, getDefaultState } from "@/lib/brand.config";
 
 export interface HarvestedPlace {
   businessName: string;
@@ -73,10 +76,101 @@ export function normalizePlaceCategory(rawCategory: string): string {
   return "geral";
 }
 
+const CITY_BBOX_MAP: Record<string, [number, number, number, number]> = {
+  "chapeco": [-27.16, -52.70, -27.04, -52.55],
+  "chapeco-sc": [-27.16, -52.70, -27.04, -52.55],
+  "xanxere": [-26.90, -52.45, -26.83, -52.35],
+  "concordia": [-27.26, -52.05, -27.19, -51.98],
+  "sao-miguel-do-oeste": [-26.75, -53.55, -26.68, -53.48],
+};
+
+/**
+ * Consulta direta à Overpass API do OpenStreetMap por Bounding Box urbana
+ * Alta taxa de sucesso, dados de estabelecimentos comerciais reais e coordenadas exatas.
+ */
+export async function queryOverpassPlaces(
+  query: string,
+  city?: string,
+  state?: string,
+  limit: number = 30
+): Promise<HarvestedPlace[]> {
+  const resolvedGeo = resolveCityAndState(city, state);
+  const targetCity = resolvedGeo.city;
+  if (!targetCity) {
+    return [];
+  }
+  const targetState = resolvedGeo.state || normalizeStateUf(state) || getDefaultState();
+
+  const normCity = targetCity.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, "-");
+  const bbox = CITY_BBOX_MAP[normCity];
+  if (!bbox) {
+    return [];
+  }
+  const [south, west, north, east] = bbox;
+
+  const ql = `[out:json][timeout:20];(node["amenity"](${south},${west},${north},${east});node["shop"](${south},${west},${north},${east}););out body ${limit};`;
+  const url = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(ql)}`;
+
+  try {
+    const response = await globalCrawlerCircuitBreaker.execute(
+      () =>
+        fetch(url, {
+          headers: {
+            "User-Agent": "WaesyPlacesHarvester/2.0 (+https://usewaesy.com; contato@usewaesy.com)",
+          },
+          signal: AbortSignal.timeout(15000),
+        }),
+      "overpass-api.de"
+    );
+
+    if (response.ok === false) {
+      return [];
+    }
+
+    const json = await response.json();
+    const elements = Array.isArray(json?.elements) ? json.elements : [];
+
+    const results: HarvestedPlace[] = [];
+    for (const e of elements) {
+      if (e.tags == null || e.tags.name == null) continue;
+      const tags = e.tags;
+      const street = tags["addr:street"] || tags.street || "";
+      const houseNumber = tags["addr:housenumber"] ? `, ${tags["addr:housenumber"]}` : "";
+      const address = street.length > 0 ? `${street}${houseNumber}` : `${tags.name}, ${city}`;
+      const neighborhood = tags["addr:suburb"] || tags["addr:neighbourhood"] || undefined;
+      const phone = tags.phone || tags["contact:phone"] || undefined;
+      const whatsapp = tags["contact:whatsapp"] || tags.whatsapp || undefined;
+      const website = tags.website || tags["contact:website"] || undefined;
+      const rawCat = tags.amenity || tags.shop || tags.cuisine || query;
+
+      results.push({
+        businessName: String(tags.name).trim(),
+        category: normalizePlaceCategory(rawCat),
+        address,
+        neighborhood,
+        city: targetCity,
+        state: targetState,
+        latitude: Number(e.lat),
+        longitude: Number(e.lon),
+        contactPhone: phone,
+        contactWhatsapp: whatsapp,
+        websiteUrl: website,
+        workingHours: tags.opening_hours ? { raw: tags.opening_hours } : undefined,
+        source: "openstreetmap_overpass",
+      });
+    }
+
+    return results;
+  } catch (err: unknown) {
+    console.warn("[PlacesHarvester] Overpass query falhou, alternando para Nominatim:", err instanceof Error ? err.message : String(err));
+    return [];
+  }
+}
+
 /**
  * Consulta geocodificação e locais via OpenStreetMap Nominatim (Gratuito e público)
  */
-export async function queryNominatimPlaces(query: string, city: string = "Chapecó", state: string = "SC"): Promise<HarvestedPlace[]> {
+export async function queryNominatimPlaces(query: string, city: string = "Chapecó", state?: string): Promise<HarvestedPlace[]> {
   const domain = "nominatim.openstreetmap.org";
   const cooldown = isDomainInCooldown(domain);
   if (cooldown.inCooldown) {
@@ -84,17 +178,27 @@ export async function queryNominatimPlaces(query: string, city: string = "Chapec
     return [];
   }
 
-  const searchQuery = `${query}, ${city}, ${state}, Brasil`;
+  const resolved = resolveCityAndState(city, state);
+  const targetCity = resolved.city || city || getDefaultCity();
+  const targetState = resolved.state || normalizeStateUf(state);
+
+  const searchQuery = targetState
+    ? `${query}, ${targetCity}, ${targetState}, Brasil`
+    : `${query}, ${targetCity}, Brasil`;
   const url = `https://${domain}/search?q=${encodeURIComponent(searchQuery)}&format=json&addressdetails=1&limit=20`;
 
   try {
-    const response = await fetch(url, {
-      headers: {
-        "User-Agent": getRandomUserAgent(),
-        "Accept-Language": "pt-BR,pt;q=0.9",
-      },
-      signal: AbortSignal.timeout(12000),
-    });
+    const response = await globalCrawlerCircuitBreaker.execute(
+      () =>
+        fetch(url, {
+          headers: {
+            "User-Agent": "WaesyLocalEngine/1.0 (+https://usewaesy.com; dev@usewaesy.com)",
+            "Accept-Language": "pt-BR,pt;q=0.9",
+          },
+          signal: AbortSignal.timeout(12000),
+        }),
+      domain
+    );
 
     if (response.status === 429) {
       console.warn(`[PlacesHarvester] Nominatim retornou HTTP 429 (Rate Limit). Ativando cooldown de 60s.`);
@@ -102,13 +206,13 @@ export async function queryNominatimPlaces(query: string, city: string = "Chapec
       return [];
     }
 
-    if (!response.ok) {
+    if (response.ok === false) {
       console.warn(`[PlacesHarvester] Nominatim retornou status ${response.status}`);
       return [];
     }
 
     const data = await response.json();
-    if (!Array.isArray(data)) return [];
+    if (Array.isArray(data) === false) return [];
 
     return data.map((item: any) => {
       const addr = item.address || {};
@@ -116,8 +220,8 @@ export async function queryNominatimPlaces(query: string, city: string = "Chapec
       const houseNumber = addr.house_number ? `, ${addr.house_number}` : "";
       const fullAddress = street ? `${street}${houseNumber}` : item.display_name.split(",")[0];
       const neighborhood = addr.suburb || addr.neighbourhood || addr.city_district || "";
-      const placeCity = addr.city || addr.town || addr.municipality || city;
-      const placeState = addr.state ? addr.state.slice(0, 2).toUpperCase() : state;
+      const placeCity = addr.city || addr.town || addr.municipality || targetCity;
+      const placeState = normalizeStateUf(addr.state) || targetState || "";
 
       return {
         businessName: item.name || item.display_name.split(",")[0],
@@ -128,8 +232,8 @@ export async function queryNominatimPlaces(query: string, city: string = "Chapec
         state: placeState,
         latitude: parseFloat(item.lat),
         longitude: parseFloat(item.lon),
-        rating: 4.5,
-        reviewsCount: 15,
+        rating: item.extratags?.rating ? parseFloat(item.extratags.rating) : undefined,
+        reviewsCount: item.extratags?.reviews ? parseInt(item.extratags.reviews, 10) : 0,
         source: "openstreetmap_nominatim",
       };
     });
@@ -140,57 +244,13 @@ export async function queryNominatimPlaces(query: string, city: string = "Chapec
 }
 
 /**
- * Harvester com geração de locais sintéticos verossímeis de alta qualidade
- * para garantir cobertura urbana e resiliência se houver indisponibilidade externa
+ * Fallback regional: retorna lista vazia quando Nominatim não responde.
+ * M01: Proibido retornar dados sintéticos em produção.
+ * A UI deve exibir empty state honesto e permitir nova tentativa.
  */
-export function generateCuratedLocalPlaces(query: string, city: string = "Chapecó", state: string = "SC"): HarvestedPlace[] {
-  const normalizedCategory = normalizePlaceCategory(query);
-
-  const templates: Record<string, Array<{ name: string; address: string; neighborhood: string; phone: string; rating: number; reviews: number }>> = {
-    gastronomia: [
-      { name: "Churrascaria & Grill Fronteira", address: "Av. Getúlio Vargas, 1200", neighborhood: "Centro", phone: "(49) 3322-1000", rating: 4.8, reviews: 312 },
-      { name: "Pizzaria Bella Itália Artesanal", address: "Rua Marechal Deodoro, 450", neighborhood: "Maria Goretti", phone: "(49) 3323-2400", rating: 4.9, reviews: 245 },
-      { name: "Café Colonial Vila Real", address: "Av. Fernando Machado, 890", neighborhood: "São Cristóvão", phone: "(49) 3328-5500", rating: 4.7, reviews: 189 },
-    ],
-    hospedagem: [
-      { name: "Hotel Plaza Chapecó Executive", address: "Av. Porto Alegre, 500", neighborhood: "Centro", phone: "(49) 3319-3000", rating: 4.6, reviews: 420 },
-      { name: "Pousada Rural Vale dos Vinhedos Oeste", address: "Linha Faxinal dos Rosas, Km 4", neighborhood: "Zona Rural", phone: "(49) 99981-4400", rating: 4.9, reviews: 110 },
-    ],
-    saude_esporte: [
-      { name: "Iron Gym Centro de Treinamento", address: "Rua Uruguai, 330", neighborhood: "Centro", phone: "(49) 3329-8800", rating: 4.8, reviews: 175 },
-      { name: "Clínica Integrada de Fisioterapia & Saúde", address: "Rua Nereu Ramos, 780", neighborhood: "Jardim Itália", phone: "(49) 3324-1122", rating: 5.0, reviews: 94 },
-    ],
-    servicos_profissionais: [
-      { name: "Advocacia Empresarial & Cível Oeste", address: "Av. Getúlio Vargas, 850, Sala 402", neighborhood: "Centro", phone: "(49) 3322-7711", rating: 4.9, reviews: 68 },
-      { name: "Contabilidade & Auditoria Dinâmica", address: "Rua Barão do Rio Branco, 210", neighborhood: "Centro", phone: "(49) 3325-3344", rating: 4.8, reviews: 82 },
-    ],
-  };
-
-  const list = templates[normalizedCategory] || [
-    { name: `${query.charAt(0).toUpperCase() + query.slice(1)} Modelo Regional`, address: "Av. Getúlio Vargas, 600", neighborhood: "Centro", phone: "(49) 3322-0000", rating: 4.7, reviews: 50 },
-  ];
-
-  return list.map((item, idx) => ({
-    businessName: item.name,
-    category: normalizedCategory,
-    address: item.address,
-    neighborhood: item.neighborhood,
-    city,
-    state,
-    latitude: -27.1004 + idx * 0.003,
-    longitude: -52.6152 + idx * 0.003,
-    contactPhone: item.phone,
-    contactWhatsapp: item.phone.replace(/\D/g, ""),
-    websiteUrl: `https://www.google.com/search?q=${encodeURIComponent(item.name + " " + city)}`,
-    rating: item.rating,
-    reviewsCount: item.reviews,
-    workingHours: {
-      seg_sex: "08:00 - 18:30",
-      sab: "08:00 - 12:30",
-      dom: "Fechado",
-    },
-    source: "curated_regional_harvester",
-  }));
+export function generateCuratedLocalPlaces(_query: string, _city?: string, _state?: string): HarvestedPlace[] {
+  console.warn("[PlacesHarvester] Nominatim indisponível. Empty state ativado — nenhum dado sintético será injetado.");
+  return [];
 }
 
 /**
@@ -203,17 +263,15 @@ export async function harvestAndPersistPlaces(params: {
   storeId?: string;
   authorProfileId?: string;
 }): Promise<PlacesHarvestResult> {
-  const city = params.city || "Chapecó";
-  const state = params.state || "SC";
+  const resolvedGeo = resolveCityAndState(params.city, params.state);
+  const city = resolvedGeo.city || params.city || getDefaultCity();
+  const state = resolvedGeo.state || normalizeStateUf(params.state);
   const startTime = Date.now();
 
-  // 1. Tentar coletar de Nominatim / OpenStreetMap
-  let places = await queryNominatimPlaces(params.query, city, state);
-
-  // 2. Se Nominatim retornar poucos itens, complementa com o harvester regional curado
-  if (places.length < 2) {
-    const curated = generateCuratedLocalPlaces(params.query, city, state);
-    places = [...places, ...curated];
+  // 1. Tentar Overpass API (rápido e rico em dados comerciais), com fallback para Nominatim
+  let places = state ? await queryOverpassPlaces(params.query, city, state) : [];
+  if (places.length === 0) {
+    places = await queryNominatimPlaces(params.query, city, state);
   }
 
   const supabase = getServerClient();
@@ -236,7 +294,7 @@ export async function harvestAndPersistPlaces(params: {
         address: place.address,
         neighborhood: place.neighborhood || null,
         city: place.city,
-        state: place.state,
+        state: place.state || state || "",
         latitude: place.latitude,
         longitude: place.longitude,
         contact_phone: place.contactPhone || null,

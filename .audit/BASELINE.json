@@ -1,53 +1,58 @@
 {
-  "timestamp": "2026-10-01T15:14:02.600Z",
+  "timestamp": "2026-10-04T18:04:40.588Z",
   "metrics": {
-    "totalSourceFiles": 1560,
-    "componentsCount": 613,
-    "hooksCount": 16,
-    "routesCount": 385,
-    "servicesCount": 351,
-    "totalLinesOfCode": 579341,
-    "totalSizeBytes": 22175165
+    "totalSourceFiles": 1845,
+    "componentsCount": 718,
+    "hooksCount": 22,
+    "routesCount": 406,
+    "servicesCount": 402,
+    "totalLinesOfCode": 634620,
+    "totalSizeBytes": 24384982
   },
   "top20LargestFiles": [
     {
       "path": "src/routes/_store.conta.classificados.novo.tsx",
-      "sizeBytes": 472913,
-      "lineCount": 9273
+      "sizeBytes": 490385,
+      "lineCount": 9561
     },
     {
       "path": "src/routeTree.gen.ts",
-      "sizeBytes": 354179,
-      "lineCount": 8357
+      "sizeBytes": 363417,
+      "lineCount": 8591
     },
     {
       "path": "src/components/classifieds/editorial-showcase-view.tsx",
-      "sizeBytes": 179824,
-      "lineCount": 3152
+      "sizeBytes": 179952,
+      "lineCount": 3154
     },
     {
       "path": "src/services/mining.functions.ts",
-      "sizeBytes": 152334,
-      "lineCount": 4146
+      "sizeBytes": 147175,
+      "lineCount": 4104
     },
     {
       "path": "src/components/commerce/canonical-store-profile-view.tsx",
-      "sizeBytes": 145494,
-      "lineCount": 2976
+      "sizeBytes": 145616,
+      "lineCount": 2985
     },
     {
       "path": "src/routes/_store.membro.$id.tsx",
-      "sizeBytes": 131874,
+      "sizeBytes": 131654,
       "lineCount": 3790
     },
     {
+      "path": "src/routes/_store.checkout.tsx",
+      "sizeBytes": 122649,
+      "lineCount": 3011
+    },
+    {
       "path": "src/components/profile/professional-resume-editor.tsx",
-      "sizeBytes": 112668,
-      "lineCount": 3136
+      "sizeBytes": 110228,
+      "lineCount": 3041
     },
     {
       "path": "src/components/mining/mining-dashboard.tsx",
-      "sizeBytes": 104012,
+      "sizeBytes": 103954,
       "lineCount": 2267
     },
     {
@@ -57,48 +62,43 @@
     },
     {
       "path": "src/services/classifieds.functions.ts",
-      "sizeBytes": 99548,
-      "lineCount": 2679
+      "sizeBytes": 102604,
+      "lineCount": 2746
+    },
+    {
+      "path": "src/lib/routes.ts",
+      "sizeBytes": 99195,
+      "lineCount": 3506
     },
     {
       "path": "src/routes/workspace.comercial.tsx",
-      "sizeBytes": 98406,
+      "sizeBytes": 98270,
       "lineCount": 2013
     },
     {
       "path": "src/routes/admin-master.mining.tsx",
-      "sizeBytes": 96544,
+      "sizeBytes": 96423,
       "lineCount": 2049
     },
     {
-      "path": "src/lib/routes.ts",
-      "sizeBytes": 94505,
-      "lineCount": 3466
-    },
-    {
       "path": "src/routes/_store.afiliados.tsx",
-      "sizeBytes": 93318,
+      "sizeBytes": 93112,
       "lineCount": 1835
     },
     {
       "path": "src/components/classifieds/convenience-showcase-view.tsx",
-      "sizeBytes": 91497,
+      "sizeBytes": 91317,
       "lineCount": 1930
     },
     {
       "path": "src/routes/workspace.financeiro.recebiveis.tsx",
-      "sizeBytes": 91114,
+      "sizeBytes": 90977,
       "lineCount": 1970
     },
     {
       "path": "src/services/travel-lifecycle.functions.ts",
-      "sizeBytes": 85161,
-      "lineCount": 2243
-    },
-    {
-      "path": "src/routes/_store.classificados.$id.tsx",
-      "sizeBytes": 84584,
-      "lineCount": 1830
+      "sizeBytes": 90800,
+      "lineCount": 2327
     },
     {
       "path": "src/services/social.functions.ts",
@@ -112,15 +112,15 @@
     }
   ],
   "checksSummary": {
-    "C01": 1682,
-    "C02": 43,
-    "C03": 18,
+    "C01": 1802,
+    "C02": 1,
+    "C03": 0,
     "C04": 0,
     "C05": 0,
-    "C06": 758,
-    "C07": 405,
-    "C08": 360,
-    "C09": 243,
+    "C06": 525,
+    "C07": 396,
+    "C08": 303,
+    "C09": 238,
     "C10": 0,
     "C11": 0,
     "C12": 0,
@@ -129,12 +129,12 @@
     "C15": 0,
     "C16": 0,
     "C17": 0,
-    "C18": 25,
+    "C18": 38,
     "C19": 0,
     "C20": 0,
     "C21": 0,
-    "C22": 19,
-    "C23": 5679,
+    "C22": 21,
+    "C23": 5941,
     "C24": 0,
     "C25": 0,
     "C26": 8,
@@ -148,7 +148,7 @@
     "C34": 0,
     "C35": 0,
     "C36": 0,
-    "C37": 82,
+    "C37": 86,
     "C38": 0,
     "C39": 0,
     "C40": 0,

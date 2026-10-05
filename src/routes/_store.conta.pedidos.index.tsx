@@ -302,12 +302,31 @@ function CustomerOrdersPage() {
             asChild
             size="sm"
             variant="outline"
-            className="rounded-lg text-xs font-semibold h-8.5 px-3 cursor-pointer"
+            className="rounded-lg text-xs font-semibold h-11 px-4 cursor-pointer"
           >
             <Link to="/mercado">Explorar</Link>
           </Button>
         }
       />
+
+      {/* ── 1.1 Desktop Inpage Header (Apple HIG) ── */}
+      <div className="hidden md:flex items-center justify-between pb-4 border-b border-border/40 mb-6">
+        <div className="flex items-center gap-3">
+          <h1 className="text-xl font-bold tracking-tight text-foreground">Histórico de Pedidos</h1>
+          {orders.length > 0 && (
+            <Badge variant="secondary" className="text-xs font-mono font-bold px-2 py-1 rounded-md">
+              {orders.length}
+            </Badge>
+          )}
+        </div>
+        <Button
+          asChild
+          variant="outline"
+          className="rounded-lg text-xs font-semibold h-11 px-4 cursor-pointer"
+        >
+          <Link to="/mercado">Explorar Lojas</Link>
+        </Button>
+      </div>
 
       {orders.length === 0 ? (
         /* ── Empty State Honesto ── */

@@ -1,15 +1,15 @@
 {
-  "totalRoutes": 384,
+  "totalRoutes": 405,
   "shellDistribution": {
-    "Storefront Shell (Responsive B2C)": 145,
-    "Workspace Shell (Desktop/Mobile Split)": 176,
-    "Admin Master Shell": 37,
-    "Headless API / MCP": 17,
+    "Storefront Shell (Responsive B2C)": 162,
+    "Workspace Shell (Desktop/Mobile Split)": 178,
+    "Admin Master Shell": 38,
+    "Headless API / MCP": 18,
     "Mobile Native Shell": 9
   },
   "nicheDistribution": {
-    "Núcleo Genérico (Cross-Niche)": 347,
-    "Turismo & Viagens": 28,
+    "Núcleo Genérico (Cross-Niche)": 367,
+    "Turismo & Viagens": 29,
     "Eventos & Festas": 5,
     "Gastronomia & Restaurantes": 4
   },
@@ -30,6 +30,26 @@
       "shell": "Workspace Shell (Desktop/Mobile Split)",
       "niche": "Núcleo Genérico (Cross-Niche)",
       "hasMobileView": true,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "-_store.marketplace.$storeSlug.test.ts",
+      "routePath": "/-_store/marketplace/$storeSlug/test",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": false,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "-_store.places.$placeSlug.test.ts",
+      "routePath": "/-_store/places/$placeSlug/test",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": false,
       "hasLoader": false,
       "hasErrorBoundary": false,
       "status": "ACTIVE"
@@ -395,6 +415,16 @@
       "status": "ACTIVE"
     },
     {
+      "file": "admin-master.vitrines-banners.test.ts",
+      "routePath": "/admin-master/vitrines-banners/test",
+      "shell": "Admin Master Shell",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": false,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
       "file": "admin-master.vitrines.tsx",
       "routePath": "/admin-master/vitrines",
       "shell": "Admin Master Shell",
@@ -447,6 +477,16 @@
     {
       "file": "api.auth.marketplace.callback.ts",
       "routePath": "/api/auth/marketplace/callback",
+      "shell": "Headless API / MCP",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": false,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "api.cron.mining-worker.ts",
+      "routePath": "/api/cron/mining-worker",
       "shell": "Headless API / MCP",
       "niche": "Núcleo Genérico (Cross-Niche)",
       "hasMobileView": false,
@@ -707,6 +747,36 @@
     {
       "file": "sitemap[.]xml.ts",
       "routePath": "/sitemap[/]xml",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": false,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "status.test.ts",
+      "routePath": "/status/test",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": false,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "status.tsx",
+      "routePath": "/status",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "store-route-loaders.test.ts",
+      "routePath": "/store-route-loaders/test",
       "shell": "Storefront Shell (Responsive B2C)",
       "niche": "Núcleo Genérico (Cross-Niche)",
       "hasMobileView": false,
@@ -1285,6 +1355,16 @@
       "status": "ACTIVE"
     },
     {
+      "file": "workspace.design-system.tsx",
+      "routePath": "/workspace/design-system",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": false,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
       "file": "workspace.doacoes.index.tsx",
       "routePath": "/workspace/doacoes",
       "shell": "Workspace Shell (Desktop/Mobile Split)",
@@ -1491,6 +1571,16 @@
       "niche": "Núcleo Genérico (Cross-Niche)",
       "hasMobileView": true,
       "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "workspace.financeiro.index.tsx",
+      "routePath": "/workspace/financeiro",
+      "shell": "Workspace Shell (Desktop/Mobile Split)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": false,
+      "hasLoader": false,
       "hasErrorBoundary": false,
       "status": "ACTIVE"
     },
@@ -2509,7 +2599,7 @@
       "routePath": "/workspace_/pedidos/$id/recibo",
       "shell": "Workspace Shell (Desktop/Mobile Split)",
       "niche": "Núcleo Genérico (Cross-Niche)",
-      "hasMobileView": false,
+      "hasMobileView": true,
       "hasLoader": true,
       "hasErrorBoundary": false,
       "status": "ACTIVE"
@@ -2605,6 +2695,16 @@
       "status": "ACTIVE"
     },
     {
+      "file": "_store.busca.tsx",
+      "routePath": "/busca",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": false,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
       "file": "_store.buscar.tsx",
       "routePath": "/buscar",
       "shell": "Storefront Shell (Responsive B2C)",
@@ -2679,7 +2779,7 @@
       "routePath": "/classificados/$id",
       "shell": "Storefront Shell (Responsive B2C)",
       "niche": "Núcleo Genérico (Cross-Niche)",
-      "hasMobileView": true,
+      "hasMobileView": false,
       "hasLoader": true,
       "hasErrorBoundary": true,
       "status": "ACTIVE"
@@ -2692,6 +2792,16 @@
       "hasMobileView": true,
       "hasLoader": true,
       "hasErrorBoundary": true,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.classificados.test.ts",
+      "routePath": "/classificados/test",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": false,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
       "status": "ACTIVE"
     },
     {
@@ -3165,6 +3275,16 @@
       "status": "ACTIVE"
     },
     {
+      "file": "_store.copilot.tsx",
+      "routePath": "/copilot",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": false,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
       "file": "_store.criar-negocio.avancado.tsx",
       "routePath": "/criar-negocio/avancado",
       "shell": "Storefront Shell (Responsive B2C)",
@@ -3301,6 +3421,16 @@
       "niche": "Núcleo Genérico (Cross-Niche)",
       "hasMobileView": true,
       "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.evento-turismo-detail.test.ts",
+      "routePath": "/evento-turismo-detail/test",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Turismo & Viagens",
+      "hasMobileView": true,
+      "hasLoader": false,
       "hasErrorBoundary": false,
       "status": "ACTIVE"
     },
@@ -3475,6 +3605,46 @@
       "status": "ACTIVE"
     },
     {
+      "file": "_store.marketplace.$storeSlug.tsx",
+      "routePath": "/marketplace/$storeSlug",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.marketplace.checkout.tsx",
+      "routePath": "/marketplace/checkout",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.marketplace.index.test.ts",
+      "routePath": "/marketplace/index/test",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": false,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.marketplace.index.tsx",
+      "routePath": "/marketplace",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": true,
+      "status": "ACTIVE"
+    },
+    {
       "file": "_store.match-time.tsx",
       "routePath": "/match-time",
       "shell": "Storefront Shell (Responsive B2C)",
@@ -3641,6 +3811,46 @@
       "niche": "Núcleo Genérico (Cross-Niche)",
       "hasMobileView": true,
       "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.pillar-isolation.test.ts",
+      "routePath": "/pillar-isolation/test",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": false,
+      "hasLoader": false,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.places.$placeSlug.tsx",
+      "routePath": "/places/$placeSlug",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": true,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.places.index.tsx",
+      "routePath": "/places",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": false,
+      "hasLoader": true,
+      "hasErrorBoundary": false,
+      "status": "ACTIVE"
+    },
+    {
+      "file": "_store.places.test.ts",
+      "routePath": "/places/test",
+      "shell": "Storefront Shell (Responsive B2C)",
+      "niche": "Núcleo Genérico (Cross-Niche)",
+      "hasMobileView": false,
+      "hasLoader": false,
       "hasErrorBoundary": false,
       "status": "ACTIVE"
     },

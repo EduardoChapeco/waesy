@@ -20,6 +20,7 @@ import { WeatherWidget } from "@/components/classifieds/weather-widget";
 import { InstagramTravelView } from "@/components/classifieds/instagram-travel-view";
 import { ActionAuthGuardModal } from "@/components/common/action-auth-guard-modal";
 import { useActionAuthGuard } from "@/hooks/use-action-auth-guard";
+import { TravelItineraryTimeline } from "@/components/commerce/dynamic-sections/travel-itinerary-timeline";
 
 export const Route = createFileRoute("/_store/turismo/$id")({
   head: ({
@@ -71,6 +72,19 @@ function TourismDetailPage() {
   const [message, setMessage] = useState("");
   const [activeImage, setActiveImage] = useState(0);
   const [issuedVoucher, setIssuedVoucher] = useState<{ voucherCode: string; bookingId: string } | null>(null);
+
+  const canonicalItinerary = useMemo(() => {
+    if (!experience?.itinerary || !Array.isArray(experience.itinerary)) return [];
+    return experience.itinerary.map((item: any, idx: number) => ({
+      id: `day-${idx + 1}`,
+      day: item.day || idx + 1,
+      title: item.title || `Dia ${idx + 1}`,
+      description: item.description || "",
+      morning: item.morning || (item.time ? `${item.time} - Atividade da manhã` : undefined),
+      afternoon: item.afternoon,
+      night: item.night,
+    }));
+  }, [experience?.itinerary]);
 
   const handleOpenBooking = () => {
     requireAuth({
@@ -641,33 +655,8 @@ function TourismDetailPage() {
             )}
 
             {/* Roteiro Dia a Dia (Regra 19 — só renderiza se cadastrado) */}
-            {experience.itinerary && experience.itinerary.length > 0 && (
-              <section className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
-                    <CalendarDots size={18} weight="bold" className="text-primary" />
-                    <span>Roteiro Dia a Dia e Atividades</span>
-                  </h3>
-                  <Badge variant="outline" className="text-xs font-mono font-bold">
-                    Programação Oficial
-                  </Badge>
-                </div>
-
-                <div className="space-y-3 relative before:absolute before:left-3.5 before:top-3 before:bottom-3 before:w-0.5 before:bg-border/60">
-                  {experience.itinerary.map((item: any, idx: number) => (
-                    <div key={idx} className="relative pl-8 space-y-1">
-                      <div className="absolute left-2 top-1.5 size-3.5 rounded-full bg-primary ring-4 ring-background -translate-x-1/2" />
-                      <span className="text-xs font-mono font-bold uppercase tracking-wider text-primary block">
-                        Dia {item.day || idx + 1} {item.time ? `• ${item.time}` : ""}
-                      </span>
-                      <p className="text-xs font-bold text-foreground">{item.title}</p>
-                      {item.description && (
-                        <p className="text-xs text-muted-foreground leading-relaxed">{item.description}</p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </section>
+            {canonicalItinerary.length > 0 && (
+              <TravelItineraryTimeline days={canonicalItinerary} />
             )}
 
             {/* O que está incluso */}

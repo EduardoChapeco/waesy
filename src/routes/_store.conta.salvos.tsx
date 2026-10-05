@@ -9,6 +9,7 @@ import { listUserFavorites, toggleFavorite } from "@/services/favorites.function
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { EmptyState } from "@/components/ui/empty-state";
 import { cn } from "@/lib/utils";
 import { formatMoney } from "@/lib/money";
 
@@ -123,7 +124,7 @@ function SavedItemsPage() {
     <div className="w-full max-w-5xl mx-auto space-y-4 sm:space-y-5 pb-24 px-0 sm:px-4 md:px-0">
       {/* ── 1. Top Header Limpo & Direto (Apple HIG) ── */}
       <NativeMobileHeader title="Salvos" fallbackHref="/conta" mobileOnly />
-      <div className="hidden sm:flex items-center justify-between gap-3 border-b border-border/40 pb-3 pt-1">
+      <div className="hidden md:flex items-center justify-between gap-3 border-b border-border/40 pb-3 pt-1">
         <div className="flex items-center gap-3">
           <h1 className="text-xl sm:text-2xl font-black tracking-tight text-foreground">
             Salvos
@@ -139,7 +140,7 @@ function SavedItemsPage() {
           asChild
           size="sm"
           variant="outline"
-          className="rounded-lg h-9 px-4 text-xs font-semibold cursor-pointer hover:bg-muted"
+        className="rounded-lg h-11 px-4 text-xs font-semibold cursor-pointer hover:bg-muted"
         >
           <Link to="/mercado">Explorar</Link>
         </Button>
@@ -148,7 +149,7 @@ function SavedItemsPage() {
       {/* ── 2. Toolbar: Trilho de Categorias com Scroll Horizontal + Busca Expansível Fixa ── */}
       <div className="flex items-center gap-2 w-full">
         {isSearchOpen ? (
-          <div className="flex-1 flex items-center gap-2 bg-card border border-border/80 rounded-full px-3 py-1 animate-in fade-in zoom-in-95 duration-150 shadow-xs">
+          <div className="flex-1 flex items-center gap-2 bg-card border border-border/80 rounded-full px-3 py-1 animate-in fade-in zoom-in-95 duration-150 motion-reduce:animate-none shadow-xs">
             <Search className="size-4 text-muted-foreground shrink-0" />
             <Input
               autoFocus
@@ -162,7 +163,7 @@ function SavedItemsPage() {
               <button
                 type="button"
                 onClick={() => setSearchQuery("")}
-                className="size-5 rounded-full hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground cursor-pointer"
+                className="h-11 w-11 rounded-full hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 title="Limpar texto"
               >
                 <X className="size-3" />
@@ -174,7 +175,7 @@ function SavedItemsPage() {
                 setIsSearchOpen(false);
                 setSearchQuery("");
               }}
-              className="text-[11px] font-bold text-muted-foreground hover:text-foreground px-1 cursor-pointer"
+              className="text-xs font-bold text-muted-foreground hover:text-foreground px-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded"
             >
               Fechar
             </button>
@@ -182,7 +183,7 @@ function SavedItemsPage() {
         ) : (
           <>
             {/* Trilho com scroll horizontal para não empilhar linhas no mobile */}
-            <div className="flex-1 flex items-center gap-2 sm:gap-2 overflow-x-auto no-scrollbar py-1">
+            <div className="flex-1 flex items-center gap-2 sm:gap-2 overflow-x-auto no-scrollbar py-1 table-wrapper">
               {TYPE_TABS.map((tab) => {
                 const isActive = selectedType === tab.id;
                 return (
@@ -191,7 +192,7 @@ function SavedItemsPage() {
                     type="button"
                     onClick={() => setSelectedType(tab.id)}
                     className={cn(
-                      "h-10 sm:h-11 px-4 sm:px-4 rounded-lg border text-xs sm:text-sm font-semibold shrink-0 flex items-center gap-2 transition-all cursor-pointer select-none active:scale-98 shadow-2xs",
+                      "h-11 px-4 rounded-lg border text-xs sm:text-sm font-semibold shrink-0 flex items-center gap-2 transition-colors motion-reduce:transition-none cursor-pointer select-none active:scale-98 shadow-2xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                       isActive
                         ? "bg-foreground text-background border-foreground font-bold shadow-xs"
                         : "bg-card hover:bg-muted/50 text-muted-foreground hover:text-foreground border-border/70"
@@ -211,7 +212,7 @@ function SavedItemsPage() {
               size="icon"
               onClick={() => setIsSearchOpen(true)}
               className={cn(
-                "h-10 sm:h-11 w-10 sm:w-11 rounded-lg shrink-0 border-border/70 bg-card hover:bg-muted/50 cursor-pointer relative shadow-2xs active:scale-95",
+                "h-11 w-11 rounded-lg shrink-0 border-border/70 bg-card hover:bg-muted/50 cursor-pointer relative shadow-2xs active:scale-95",
                 searchQuery ? "border-primary text-primary" : ""
               )}
               title="Buscar em itens salvos"
@@ -228,7 +229,7 @@ function SavedItemsPage() {
       {/* ── 3. Itens Salvos: Universal Dual Design (Mobile WhatsApp/Apple HIG List vs Desktop Grid) ── */}
       {isLoading ? (
         <div className="flex flex-col items-center justify-center py-20 text-muted-foreground gap-3">
-          <Loader2 className="size-6 animate-spin text-primary" />
+          <Loader2 className="size-6 animate-spin motion-reduce:animate-none text-primary" />
           <p className="text-xs font-medium">Carregando itens salvos...</p>
         </div>
       ) : filteredFavorites && filteredFavorites.length > 0 ? (
@@ -289,13 +290,13 @@ function SavedItemsPage() {
                   {/* Informações Centrais */}
                   <div className="flex-1 min-w-0 space-y-1">
                     <div className="flex items-center gap-2">
-                      <Badge variant="outline" className="text-[9px] uppercase font-bold px-2 py-0 rounded-md">
+                      <Badge variant="outline" className="text-xs uppercase font-bold px-2 py-0 rounded-md">
                         {badgeLabel}
                       </Badge>
                       <span className="text-xs font-bold text-foreground truncate">{title}</span>
                     </div>
                     {subtitle && (
-                      <p className="text-[11px] text-muted-foreground line-clamp-1">
+                      <p className="text-xs text-muted-foreground line-clamp-1">
                         {subtitle}
                       </p>
                     )}
@@ -310,7 +311,7 @@ function SavedItemsPage() {
                       asChild
                       size="icon"
                       variant="ghost"
-                      className="size-9 rounded-lg hover:bg-muted cursor-pointer"
+                      className="size-11 rounded-lg hover:bg-muted cursor-pointer"
                       title="Acessar"
                     >
                       <Link to={targetUrl}>
@@ -321,7 +322,7 @@ function SavedItemsPage() {
                       size="icon"
                       variant="ghost"
                       onClick={() => handleRemove(fav.entity_type, fav.entity_id)}
-                      className="size-9 rounded-lg text-destructive hover:bg-destructive/10 cursor-pointer"
+                      className="size-11 rounded-lg text-destructive hover:bg-destructive/10 cursor-pointer"
                       title="Remover"
                     >
                       <Trash2 className="size-4" />
@@ -346,7 +347,7 @@ function SavedItemsPage() {
                 return (
                   <div
                     key={fav.id}
-                    className="bg-card rounded-lg overflow-hidden border border-border/70 shadow-xs hover:border-foreground/20 hover:shadow-sm transition-all flex flex-col justify-between"
+                    className="bg-card rounded-lg overflow-hidden border border-border/70 shadow-xs hover:border-foreground/20 transition-colors motion-reduce:transition-none flex flex-col justify-between"
                   >
                     <div>
                       <div className="relative aspect-video bg-muted overflow-hidden">
@@ -354,10 +355,10 @@ function SavedItemsPage() {
                           <img src={cover} alt={item.title} className="w-full h-full object-cover" />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center text-muted-foreground/60">
-                            <Tag className="size-8 stroke-[1.5]" />
+                            <Tag className="size-8" />
                           </div>
                         )}
-                        <Badge className="absolute top-2.5 left-2.5 text-[10px] uppercase font-bold rounded-full">
+                        <Badge className="absolute top-2.5 left-2.5 text-xs uppercase font-bold rounded-full">
                           Classificado
                         </Badge>
                       </div>
@@ -374,7 +375,7 @@ function SavedItemsPage() {
                             {item.price_cents ? formatMoney(item.price_cents) : "A Combinar"}
                           </span>
                           {item.location_name && (
-                            <span className="text-[11px] text-muted-foreground flex items-center gap-1 truncate max-w-[130px]">
+                            <span className="text-xs text-muted-foreground flex items-center gap-1 truncate max-w-32">
                               <MapPin className="size-3 text-primary shrink-0" />
                               {item.location_name}
                             </span>
@@ -388,10 +389,10 @@ function SavedItemsPage() {
                         asChild
                         size="sm"
                         variant="outline"
-                        className="rounded-lg text-xs h-10 flex-1 font-semibold cursor-pointer"
+                        className="rounded-lg text-xs h-11 flex-1 font-semibold cursor-pointer"
                       >
                         <Link to="/classificados/$id" params={{ id: item.id }}>
-                          <ExternalLink className="size-3.5 mr-2" />
+                          <ExternalLink className="size-4 mr-2" />
                           <span>Ver Anúncio</span>
                         </Link>
                       </Button>
@@ -400,7 +401,7 @@ function SavedItemsPage() {
                         size="icon"
                         variant="ghost"
                         onClick={() => handleRemove(fav.entity_type, fav.entity_id)}
-                        className="rounded-lg size-10 text-destructive hover:bg-destructive/10 cursor-pointer shrink-0"
+                        className="rounded-lg size-11 text-destructive hover:bg-destructive/10 cursor-pointer shrink-0"
                         title="Remover dos salvos"
                       >
                         <Trash2 className="size-4" />
@@ -417,7 +418,7 @@ function SavedItemsPage() {
                 return (
                   <div
                     key={fav.id}
-                    className="bg-card rounded-lg overflow-hidden border border-border/70 shadow-xs hover:border-foreground/20 hover:shadow-sm transition-all flex flex-col justify-between"
+                    className="bg-card rounded-lg overflow-hidden border border-border/70 shadow-xs hover:border-foreground/20 transition-colors motion-reduce:transition-none flex flex-col justify-between"
                   >
                     <div>
                       <div className="relative aspect-video bg-muted overflow-hidden">
@@ -426,15 +427,15 @@ function SavedItemsPage() {
                         ) : (
                           <div className="w-full h-full flex items-center justify-center text-muted-foreground/60">
                             {isService ? (
-                              <Scissors className="size-8 stroke-[1.5]" />
+                              <Scissors className="size-8" />
                             ) : (
-                              <ShoppingBag className="size-8 stroke-[1.5]" />
+                              <ShoppingBag className="size-8" />
                             )}
                           </div>
                         )}
                         <Badge
                           variant={isService ? "default" : "secondary"}
-                          className="absolute top-2.5 left-2.5 text-[10px] uppercase font-bold rounded-full"
+                          className="absolute top-2.5 left-2.5 text-xs uppercase font-bold rounded-full"
                         >
                           {isService ? "Serviço" : "Produto"}
                         </Badge>
@@ -445,7 +446,7 @@ function SavedItemsPage() {
                           {item.name}
                         </h3>
                         {isService && item.duration_minutes && (
-                          <p className="text-[11px] text-muted-foreground flex items-center gap-1 font-medium">
+                          <p className="text-xs text-muted-foreground flex items-center gap-1 font-medium">
                             <Clock className="size-3 text-primary" />
                             {item.duration_minutes} min
                           </p>
@@ -464,10 +465,10 @@ function SavedItemsPage() {
                           asChild
                           size="sm"
                           variant="outline"
-                          className="rounded-lg text-xs h-10 flex-1 font-semibold cursor-pointer"
+                          className="rounded-lg text-xs h-11 flex-1 font-semibold cursor-pointer"
                         >
                           <Link to="/agendar/$id" params={{ id: item.id }}>
-                            <ExternalLink className="size-3.5 mr-2" />
+                            <ExternalLink className="size-4 mr-2" />
                             <span>Agendar Horário</span>
                           </Link>
                         </Button>
@@ -476,10 +477,10 @@ function SavedItemsPage() {
                           asChild
                           size="sm"
                           variant="outline"
-                          className="rounded-lg text-xs h-10 flex-1 font-semibold cursor-pointer"
+                          className="rounded-lg text-xs h-11 flex-1 font-semibold cursor-pointer"
                         >
                           <Link to="/produto/$slug" params={{ slug: item.slug || item.id }}>
-                            <ExternalLink className="size-3.5 mr-2" />
+                            <ExternalLink className="size-4 mr-2" />
                             <span>Ver Produto</span>
                           </Link>
                         </Button>
@@ -489,7 +490,7 @@ function SavedItemsPage() {
                         size="icon"
                         variant="ghost"
                         onClick={() => handleRemove(fav.entity_type, fav.entity_id)}
-                        className="rounded-lg size-10 text-destructive hover:bg-destructive/10 cursor-pointer shrink-0"
+                        className="rounded-lg size-11 text-destructive hover:bg-destructive/10 cursor-pointer shrink-0"
                         title="Remover dos salvos"
                       >
                         <Trash2 className="size-4" />
@@ -503,7 +504,7 @@ function SavedItemsPage() {
                 return (
                   <div
                     key={fav.id}
-                    className="bg-card rounded-lg overflow-hidden border border-border/70 shadow-xs hover:border-foreground/20 hover:shadow-sm transition-all flex flex-col justify-between"
+                    className="bg-card rounded-lg overflow-hidden border border-border/70 shadow-xs hover:border-foreground/20 transition-colors motion-reduce:transition-none flex flex-col justify-between"
                   >
                     <div>
                       <div className="relative aspect-video bg-muted overflow-hidden">
@@ -515,12 +516,12 @@ function SavedItemsPage() {
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center text-muted-foreground/60">
-                            <Calendar className="size-8 stroke-[1.5]" />
+                            <Calendar className="size-8" />
                           </div>
                         )}
                         <Badge
                           variant="outline"
-                          className="absolute top-2.5 left-2.5 text-[10px] uppercase font-bold bg-background rounded-full"
+                          className="absolute top-2.5 left-2.5 text-xs uppercase font-bold bg-background rounded-full"
                         >
                           Evento
                         </Badge>
@@ -538,7 +539,7 @@ function SavedItemsPage() {
                             {new Date(item.event_date).toLocaleDateString("pt-BR")}
                           </span>
                           {item.location_name && (
-                            <span className="text-[11px] text-muted-foreground flex items-center gap-1 truncate max-w-[130px]">
+                            <span className="text-xs text-muted-foreground flex items-center gap-1 truncate max-w-32">
                               <MapPin className="size-3 text-primary shrink-0" />
                               {item.location_name}
                             </span>
@@ -552,10 +553,10 @@ function SavedItemsPage() {
                         asChild
                         size="sm"
                         variant="outline"
-                        className="rounded-lg text-xs h-10 flex-1 font-semibold cursor-pointer"
+                        className="rounded-lg text-xs h-11 flex-1 font-semibold cursor-pointer"
                       >
                         <Link to="/evento/$id" params={{ id: item.id }}>
-                          <ExternalLink className="size-3.5 mr-2" />
+                          <ExternalLink className="size-4 mr-2" />
                           <span>Ver Ingressos</span>
                         </Link>
                       </Button>
@@ -564,7 +565,7 @@ function SavedItemsPage() {
                         size="icon"
                         variant="ghost"
                         onClick={() => handleRemove(fav.entity_type, fav.entity_id)}
-                        className="rounded-lg size-10 text-destructive hover:bg-destructive/10 cursor-pointer shrink-0"
+                        className="rounded-lg size-11 text-destructive hover:bg-destructive/10 cursor-pointer shrink-0"
                         title="Remover dos salvos"
                       >
                         <Trash2 className="size-4" />
@@ -579,36 +580,37 @@ function SavedItemsPage() {
           </div>
         </>
       ) : (
-        <div className="border border-border/70 bg-card rounded-lg p-6 sm:p-12 text-center space-y-4 shadow-xs w-full">
-          <div className="size-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center mx-auto">
-            <Bookmark className="size-6" />
-          </div>
-          <div className="space-y-1">
-            <h2 className="text-base sm:text-lg font-bold text-foreground">
-              {searchQuery ? "Nenhum resultado encontrado" : "Nenhum item salvo"}
-            </h2>
-            <p className="text-xs text-muted-foreground max-w-sm mx-auto">
-              {searchQuery
-                ? `Nenhum item salvo corresponde à busca "${searchQuery}".`
-                : "Salve produtos, anúncios ou eventos favoritos para consultá-los a qualquer momento."}
-            </p>
-          </div>
+        <div className="border border-border/70 bg-card rounded-lg p-6 sm:p-12 shadow-xs w-full">
           {searchQuery ? (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setSearchQuery("")}
-              className="rounded-lg h-10 px-4 text-xs font-bold"
-            >
-              Limpar busca
-            </Button>
+            <EmptyState
+              icon={Bookmark}
+              title="Nenhum resultado encontrado"
+              description={`Nenhum item salvo corresponde à busca "${searchQuery}".`}
+              action={
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setSearchQuery("")}
+                  className="rounded-lg h-11 px-4 text-xs font-bold focus-visible:ring-2 focus-visible:ring-primary"
+                >
+                  Limpar busca
+                </Button>
+              }
+            />
           ) : (
-            <Button asChild size="default" className="rounded-lg h-10 sm:h-11 px-6 text-xs sm:text-sm font-bold gap-2 mt-1 shadow-xs cursor-pointer">
-              <Link to="/mercado">
-                <ShoppingBag className="size-4" />
-                <span>Explorar Mercado</span>
-              </Link>
-            </Button>
+            <EmptyState
+              icon={Bookmark}
+              title="Nenhum item salvo"
+              description="Salve produtos, anúncios ou eventos favoritos para consultá-los a qualquer momento."
+              action={
+                <Button asChild size="default" className="rounded-lg h-11 px-6 text-sm font-bold gap-2 shadow-xs cursor-pointer focus-visible:ring-2 focus-visible:ring-primary">
+                  <Link to="/mercado">
+                    <ShoppingBag className="size-4" />
+                    <span>Explorar Mercado</span>
+                  </Link>
+                </Button>
+              }
+            />
           )}
         </div>
       )}
