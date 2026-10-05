@@ -32,6 +32,16 @@
   --radius-card: 12px;
   --radius-input: 8px;
 
+  /* ── Interaction tokens — MagicAI + Apple HIG ─────────── */
+  --motion-fast: 150ms;
+  --motion-standard: 220ms;
+  --motion-slow: 320ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --focus-ring-width: 2px;
+  --focus-ring-offset: 2px;
+  --surface-elevation-1: 0 1px 2px rgb(15 23 42 / 0.06);
+  --surface-elevation-2: 0 8px 24px rgb(15 23 42 / 0.10);
+
   /* ── Shadows — Reduzidas, design flat focado em linhas ─── */
   --shadow-sm: none;
   --shadow-md: none;
@@ -1116,4 +1126,29 @@
 /* 3. Prevenção de Layout Shift (CLS) */
 img[loading="lazy"] {
   aspect-ratio: auto;
+}
+
+/* ==========================================================================
+ * INTERACTION BASELINE — foco previsível, feedback rápido e motion seguro
+ * ========================================================================== */
+:where(button, a, input, textarea, select, [role="button"]):focus-visible {
+  outline: var(--focus-ring-width) solid var(--ring);
+  outline-offset: var(--focus-ring-offset);
+}
+
+:where(button, a, [role="button"], [data-state]) {
+  transition: color var(--motion-fast) var(--ease-standard),
+    background-color var(--motion-fast) var(--ease-standard),
+    border-color var(--motion-fast) var(--ease-standard),
+    opacity var(--motion-fast) var(--ease-standard),
+    transform var(--motion-fast) var(--ease-standard);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :where(*, *::before, *::after) {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
 }

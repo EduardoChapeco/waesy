@@ -101,6 +101,7 @@ export interface AiConversationThreadDTO {
 export interface AiExecutionResult {
   responseMessage: string;
   activitySteps: AIActivityStep[];
+  executionId?: string;
   toolCalls?: AiToolExecutionRecord[];
   artifact?: ChatArtifactData;
   structuredPayload?: Record<string, any>;
@@ -692,6 +693,7 @@ Responda SEMPRE em formato JSON com os campos:
 
     let structuredPayload: Record<string, any> | undefined;
     let artifact: ChatArtifactData | undefined;
+    let executionId: string | undefined;
     const toolCalls: AiToolExecutionRecord[] = [];
     let responseMessage = gatewayResponse?.message || "";
 
@@ -704,6 +706,7 @@ Responda SEMPRE em formato JSON com os campos:
           activeCity: context.city,
           activeState: context.state,
         });
+        executionId = copilotResult.taskId;
         steps.push(...(copilotResult.steps || []));
 
         if (copilotResult.artifact) {
@@ -1402,6 +1405,7 @@ Responda SEMPRE em formato JSON com os campos:
     return {
       responseMessage,
       activitySteps: steps,
+      executionId,
       artifact,
       structuredPayload,
       updatedMemory,
@@ -1569,6 +1573,7 @@ export const getAiConversationThread = createServerFn({ method: "GET" })
       messages: (messages || []).map((m: any) => ({
         id: m.id,
         threadId: m.thread_id,
+        executionId: m.payload?.executionId,
         senderId: m.sender_id,
         isStaffOrAI: Boolean(m.is_staff_reply),
         text: m.message,
@@ -1703,7 +1708,8 @@ export const sendAiConversationMessage = createServerFn({ method: "POST" })
         is_staff_reply: true,
         message: execution.responseMessage,
         message_type: messageType,
-        payload: {
+      payload: {
+          executionId: execution.executionId,
           activitySteps: execution.activitySteps,
           toolCalls: execution.toolCalls || [],
           artifact: execution.artifact,
@@ -1731,6 +1737,7 @@ export const sendAiConversationMessage = createServerFn({ method: "POST" })
         id: aiMsg?.id || crypto.randomUUID(),
         text: execution.responseMessage,
         activitySteps: execution.activitySteps,
+        executionId: execution.executionId,
         artifact: execution.artifact,
         structuredPayload: execution.structuredPayload,
         createdAt: aiMsg?.created_at || new Date().toISOString(),

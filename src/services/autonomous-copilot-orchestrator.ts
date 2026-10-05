@@ -26,6 +26,12 @@ import { linkRecipeIngredientsToInventory } from "./mining/specialized-extractor
 import type { AIActivityStep, ChatArtifactType } from "@/types/chat";
 import type { CopilotFsmPhase } from "@/types/copilot-fsm";
 
+import {
+  completeCopilotExecution,
+  createPersistedActivitySteps,
+  startCopilotExecution,
+} from "./copilot-execution-persistence";
+
 export type CopilotTaskDomain =
   | "lead_mining"
   | "legal_research"
@@ -390,7 +396,15 @@ export async function executeAutonomousCopilotTask(
   const supabase = getServerClient();
   const identity = await getServerIdentity().catch(() => null);
 
-  const steps: AIActivityStep[] = [];
+  await startCopilotExecution({
+    executionId: taskId,
+    taskId,
+    threadId: context.threadId,
+    storeId: context.storeId,
+    userId: identity?.id ?? undefined,
+    domain: task.domain,
+  }).catch((error) => console.warn("[copilot-execution] execution telemetry unavailable", error));
+  const steps: AIActivityStep[] = createPersistedActivitySteps({ executionId: taskId });
 
   // Passo 1: Otimização e Fragmentação de Prompt
   steps.push({
@@ -936,6 +950,12 @@ export async function executeAutonomousCopilotTask(
   await persistActivitySteps(supabase, taskId, task.domain, context.storeId, steps, finalDuration);
 
   const isSuccess = !toolExecutionError;
+  await completeCopilotExecution(
+    { executionId: taskId },
+    isSuccess ? "completed" : "failed_retryable",
+    { domain: task.domain, stepsCount: steps.length, durationMs: finalDuration, queryHash },
+    toolExecutionError?.message,
+  ).catch((error) => console.warn("[copilot-execution] completion telemetry unavailable", error));
   return {
     success: isSuccess,
     taskId,
