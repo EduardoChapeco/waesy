@@ -98,6 +98,8 @@ const MODEL_PRICING: Record<string, { inPer1M: number; outPer1M: number }> = {
   "gemini:text-embedding-004": { inPer1M: 0.02, outPer1M: 0.00 },
   "openai:gpt-4o-mini": { inPer1M: 0.15, outPer1M: 0.60 },
   "openai:gpt-4o": { inPer1M: 2.50, outPer1M: 10.00 },
+  "anthropic:claude-3-5-sonnet-20241022": { inPer1M: 3.00, outPer1M: 15.00 },
+  "deepseek:deepseek-chat": { inPer1M: 0.27, outPer1M: 1.10 },
   "openai:dall-e-3": { inPer1M: 40.0, outPer1M: 40.0 },
   "openrouter:meta-llama/llama-3.1-70b-instruct:free": { inPer1M: 0.0, outPer1M: 0.0 },
   "openrouter:google/gemma-2-9b-it:free": { inPer1M: 0.0, outPer1M: 0.0 },
@@ -165,6 +167,8 @@ export const CANONICAL_TASK_ROUTES: Record<AITaskType, RouteCandidate[]> = {
   chat: [
     { provider: "groq", model: "llama-3.3-70b-versatile" },
     { provider: "gemini", model: "gemini-2.5-flash" },
+    { provider: "anthropic", model: "claude-3-5-sonnet-20241022" },
+    { provider: "deepseek", model: "deepseek-chat" },
     { provider: "openrouter", model: "google/gemma-2-9b-it:free" },
   ],
   resumo: [
@@ -194,6 +198,8 @@ export const CANONICAL_TASK_ROUTES: Record<AITaskType, RouteCandidate[]> = {
   codigo: [
     { provider: "gemini", model: "gemini-2.5-pro" },
     { provider: "groq", model: "llama-3.3-70b-versatile" },
+    { provider: "deepseek", model: "deepseek-chat" },
+    { provider: "anthropic", model: "claude-3-5-sonnet-20241022" },
     { provider: "openai", model: "gpt-4o" },
   ],
   embedding: [
@@ -339,10 +345,39 @@ async function callProviderLowLevel(
       return { text: content, inputTokens: inTokens, outputTokens: outTokens, rawJson: parsed };
     }
 
-    if (provider === "openrouter" || provider === "openai") {
+    if (provider === "anthropic") {
+      const messages = [
+        ...(systemPrompt ? [] : []),
+        { role: "user", content: prompt },
+      ];
+      const res = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": key,
+          "anthropic-version": "2023-06-01",
+        },
+        body: JSON.stringify({ model, system: systemPrompt, messages, max_tokens: options?.maxTokens || 1024, temperature: options?.temperature ?? 0.7 }),
+        signal: controller.signal,
+      });
+      if (!res.ok) throw new Error(`anthropic error ${res.status}: ${(await res.text()).slice(0, 300)}`);
+      const json = await res.json();
+      const content = json.content?.filter((part: any) => part.type === "text").map((part: any) => part.text || "").join("") || "";
+      const inTokens = json.usage?.input_tokens || Math.ceil((prompt.length + (systemPrompt?.length || 0)) / 4);
+      const outTokens = json.usage?.output_tokens || Math.ceil(content.length / 4);
+      let parsed: any;
+      if (options?.responseFormat === "json_object") {
+        try { parsed = JSON.parse(content); } catch { /* preserve raw text */ }
+      }
+      return { text: content, inputTokens: inTokens, outputTokens: outTokens, rawJson: parsed };
+    }
+
+    if (provider === "deepseek" || provider === "openrouter" || provider === "openai") {
       const endpoint = provider === "openrouter"
         ? "https://openrouter.ai/api/v1/chat/completions"
-        : "https://api.openai.com/v1/chat/completions";
+        : provider === "deepseek"
+          ? "https://api.deepseek.com/v1/chat/completions"
+          : "https://api.openai.com/v1/chat/completions";
 
       const headers: Record<string, string> = {
         "Content-Type": "application/json",
