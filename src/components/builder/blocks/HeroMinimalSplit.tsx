@@ -44,45 +44,58 @@ export const HeroMinimalSplit: React.FC<HeroMinimalSplitProps> = ({ id, data, st
 
             {/* Cluster de Ações Primária e Secundária */}
             <div className="flex flex-wrap items-center gap-4 w-full sm:w-auto">
-              <Button
-                size="lg"
-                className="h-12 px-7 text-base font-semibold rounded-lg bg-foreground text-background hover:bg-foreground/90 transition-transform active:scale-95 group shadow-sm"
-                onClick={(data.primaryCta as any)?.onClick}
-                asChild={!(data.primaryCta as any)?.onClick}
-              >
-                {(data.primaryCta as any)?.onClick ? (
+              {(data.primaryCta as any)?.onClick ? (
+                <Button
+                  type="button"
+                  size="lg"
+                  className="h-12 min-h-11 px-7 text-base font-semibold rounded-lg bg-foreground text-background hover:bg-foreground/90 transition-transform active:scale-95 group  cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  onClick={(data.primaryCta as any)?.onClick}
+                >
                   <span className="flex items-center gap-2">
                     {data.primaryCta.label}
                     <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
                   </span>
-                ) : (
+                </Button>
+              ) : (
+                <Button
+                  asChild
+                  size="lg"
+                  className="h-12 min-h-11 px-7 text-base font-semibold rounded-lg bg-foreground text-background hover:bg-foreground/90 transition-transform active:scale-95 group  cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                >
                   <a href={data.primaryCta.href} className="flex items-center gap-2">
                     {data.primaryCta.label}
                     <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
                   </a>
-                )}
-              </Button>
+                </Button>
+              )}
 
               {data.secondaryCta && (
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="h-12 px-6 text-base font-medium rounded-lg border-border hover:bg-muted/50 transition-colors"
-                  onClick={(data.secondaryCta as any)?.onClick}
-                  asChild={!(data.secondaryCta as any)?.onClick}
-                >
-                  {(data.secondaryCta as any)?.onClick ? (
+                (data.secondaryCta as any)?.onClick ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="lg"
+                    className="h-12 min-h-11 px-6 text-base font-medium rounded-lg border-border hover:bg-muted/50 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    onClick={(data.secondaryCta as any)?.onClick}
+                  >
                     <span className="flex items-center gap-2">
                       <Play className="size-4 fill-current opacity-80" />
                       {data.secondaryCta.label}
                     </span>
-                  ) : (
+                  </Button>
+                ) : (
+                  <Button
+                    asChild
+                    variant="outline"
+                    size="lg"
+                    className="h-12 min-h-11 px-6 text-base font-medium rounded-lg border-border hover:bg-muted/50 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  >
                     <a href={data.secondaryCta.href} className="flex items-center gap-2">
                       <Play className="size-4 fill-current opacity-80" />
                       {data.secondaryCta.label}
                     </a>
-                  )}
-                </Button>
+                  </Button>
+                )
               )}
             </div>
           </div>

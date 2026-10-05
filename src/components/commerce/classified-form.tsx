@@ -32,10 +32,11 @@ type FormValues = z.infer<typeof formSchema>;
 interface ClassifiedFormProps {
  defaultValues?: Partial<Classified>;
  onSubmit: (values: FormValues) => Promise<void>;
+ onCancel?: () => void;
  isSubmitting?: boolean;
 }
 
-export function ClassifiedForm({ defaultValues, onSubmit, isSubmitting }: ClassifiedFormProps) {
+export function ClassifiedForm({ defaultValues, onSubmit, onCancel, isSubmitting }: ClassifiedFormProps) {
  const form = useForm<FormValues>({
  resolver: zodResolver(formSchema as any),
  defaultValues: {
@@ -263,10 +264,15 @@ export function ClassifiedForm({ defaultValues, onSubmit, isSubmitting }: Classi
 
  {/* Ações */}
  <div className="pt-4 flex items-center justify-end gap-4">
- <Button type="button" variant="ghost">
+ <Button
+ type="button"
+ variant="ghost"
+ onClick={() => onCancel ? onCancel() : window.history.back()}
+ className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+ >
  Cancelar
  </Button>
- <Button type="submit" disabled={isSubmitting}>
+ <Button type="submit" disabled={isSubmitting} className="h-11 min-h-11 px-5 rounded-lg text-xs font-bold cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
  {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
  {isSubmitting ? "Salvando..." : "Publicar Anúncio"}
  </Button>

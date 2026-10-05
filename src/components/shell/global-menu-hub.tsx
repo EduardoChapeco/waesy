@@ -9,7 +9,7 @@
 
 import React from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { ShoppingBag, ShoppingCart, MessageCircle, Tag, Bookmark, Handshake, Compass, Briefcase, CalendarDays, Ticket, MapPin, Coins, Gift, Store, LayoutDashboard, Shield, Settings, LogOut, ChevronRight, User } from "lucide-react";
+import { ShoppingBag, ShoppingCart, MessageCircle, Tag, Bookmark, Handshake, Compass, Briefcase, CalendarDays, Ticket, MapPin, Coins, Gift, Store, LayoutDashboard, Shield, Settings, LogOut, ChevronRight, User, Bike, Star, Award } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -70,6 +70,30 @@ export function GlobalMenuHub({
     navigate({ to: to as any, params: params as any });
   };
 
+  const handleSwitchContext = (type: "civil" | "creator" | "courier" | "store", storeId?: string) => {
+    onOpenChange(false);
+    if (typeof window !== "undefined") {
+      window.document.cookie = `waesy_active_context=${type}; path=/; max-age=31536000; SameSite=Lax`;
+      if (type === "store" && storeId) {
+        window.document.cookie = `waesy_active_tenant=${storeId}; path=/; max-age=31536000; SameSite=Lax`;
+      } else if (type !== "store") {
+        window.document.cookie = "waesy_active_tenant=; path=/; max-age=0; SameSite=Lax";
+      }
+      if (type !== "creator") {
+        window.document.cookie = "waesy_active_creator=; path=/; max-age=0; SameSite=Lax";
+      }
+    }
+    if (type === "civil") {
+      window.location.href = "/conta";
+    } else if (type === "courier") {
+      window.location.href = "/conta/entregador";
+    } else if (type === "creator") {
+      window.location.href = "/conta/criadores";
+    } else if (type === "store") {
+      window.location.href = "/workspace";
+    }
+  };
+
   const handleLogout = async () => {
     try {
       await signOut();
@@ -93,6 +117,11 @@ export function GlobalMenuHub({
       icon: ShoppingCart,
       onClick: () => handleNavigate("/carrinho"),
       badge: totalCartItems > 0 ? `${totalCartItems}` : null,
+    },
+    {
+      label: "Waesy Go (Condutor)",
+      icon: Bike,
+      onClick: () => handleSwitchContext("courier"),
     },
     {
       label: "Conversas",
@@ -287,8 +316,8 @@ export function GlobalMenuHub({
             <div className="rounded-lg border border-border/70 bg-card divide-y divide-border/40 overflow-hidden">
               <button
                 type="button"
-                onClick={() => handleNavigate("/workspace")}
-                className="w-full h-11 px-4 flex items-center justify-between hover:bg-muted/40 active:bg-muted/60 transition-colors text-left cursor-pointer"
+                onClick={() => handleSwitchContext("store")}
+                className="w-full h-11 px-4 flex items-center justify-between hover:bg-muted/40 active:bg-muted/60 transition-colors text-left cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
                 <div className="flex items-center gap-3 min-w-0">
                   <LayoutDashboard className="size-4 text-muted-foreground shrink-0" />

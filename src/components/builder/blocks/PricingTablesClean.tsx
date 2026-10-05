@@ -136,16 +136,32 @@ export const PricingTablesClean: React.FC<PricingTablesCleanProps> = ({ id, data
                 </div>
 
                 {/* Botão de Contratação */}
-                <Button
-                  size="lg"
-                  className={`w-full h-12 rounded-lg text-sm font-bold transition-transform active:scale-95 ${
-                    tier.isPopular
-                      ? "bg-background text-foreground hover:bg-background/90 shadow-md"
-                      : "bg-foreground text-background hover:bg-foreground/90"
-                  }`}
-                >
-                  {tier.ctaLabel}
-                </Button>
+                {(tier as any).ctaHref || (tier as any).href ? (
+                  <Button
+                    asChild
+                    size="lg"
+                    className={`w-full h-12 min-h-11 rounded-lg text-sm font-bold transition-transform active:scale-95 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                      tier.isPopular
+                        ? "bg-background text-foreground hover:bg-background/90 "
+                        : "bg-foreground text-background hover:bg-foreground/90"
+                    }`}
+                  >
+                    <a href={(tier as any).ctaHref || (tier as any).href}>{tier.ctaLabel}</a>
+                  </Button>
+                ) : (
+                  <Button
+                    type="button"
+                    size="lg"
+                    onClick={(tier as any).onClick}
+                    className={`w-full h-12 min-h-11 rounded-lg text-sm font-bold transition-transform active:scale-95 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                      tier.isPopular
+                        ? "bg-background text-foreground hover:bg-background/90 "
+                        : "bg-foreground text-background hover:bg-foreground/90"
+                    }`}
+                  >
+                    {tier.ctaLabel}
+                  </Button>
+                )}
               </div>
             );
           })}

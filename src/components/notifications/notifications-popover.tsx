@@ -256,10 +256,9 @@ export function NotificationsPopover({ session }: NotificationsPopoverProps) {
  asChild
  variant="ghost"
  size="sm"
- onClick={() => setOpen(false)}
- className="w-full rounded-lg text-xs font-bold h-9 justify-center gap-2 text-foreground hover:bg-muted/80"
+ className="w-full rounded-lg text-xs font-bold h-11 min-h-11 justify-center gap-2 text-foreground hover:bg-muted/80 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
  >
- <Link to="/conta/notificacoes">
+ <Link to="/conta/notificacoes" onClick={() => setOpen(false)} className="flex items-center justify-center gap-2 size-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
  <span>Ver todas as notificações</span>
  <ArrowRight className="size-3.5" />
  </Link>

@@ -56,6 +56,7 @@ export interface ContextSwitcherProps {
     email: string;
     username?: string;
     avatarUrl?: string | null;
+    role?: string | null;
   };
   personas?: CreatorPersona[];
   stores?: ContextMembership[];
@@ -131,9 +132,7 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
     onContextChange?.(state);
     toast.success(`Contexto ativo: ${civilUser.name} (Conta Civil)`);
     setIsOpen(false);
-    void router.invalidate().then(() => {
-      navigate({ to: "/conta" });
-    });
+    window.location.href = "/conta";
   };
 
   // ── 2. Alternar para uma Persona de Criador ──
@@ -155,9 +154,7 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
     onContextChange?.(state);
     toast.success(`Contexto ativo: ${persona.name} (@${persona.handle})`);
     setIsOpen(false);
-    void router.invalidate().then(() => {
-      navigate({ to: "/conta/criadores" });
-    });
+    window.location.href = "/conta/criadores";
   };
 
   // ── 3. Alternar para uma Empresa / Workspace ──
@@ -178,9 +175,7 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
     onContextChange?.(state);
     toast.success(`Workspace ativo: ${store.name}`);
     setIsOpen(false);
-    void router.invalidate().then(() => {
-      navigate({ to: "/workspace" });
-    });
+    window.location.href = "/workspace";
   };
 
   // ── 4. Alternar para o Modo Condutor / Waesy Go ──
@@ -201,12 +196,14 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
     onContextChange?.(state);
     toast.success("Modo Condutor (Waesy Go) ativado");
     setIsOpen(false);
-    void router.invalidate().then(() => {
-      navigate({ to: "/conta/entregador" });
-    });
+    window.location.href = "/conta/entregador";
   };
 
   // ── Rótulo & Ícone Ativo no Gatilho ──
+  const isPlatformAdmin =
+    (civilUser as any)?.role === "platform_admin" ||
+    (civilUser as any)?.role === "master" ||
+    (civilUser as any)?.role === "admin";
   const triggerLabel =
     currentContextType === "courier"
       ? "Waesy Go"
@@ -296,6 +293,25 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
               : "Empresa / Workspace"}
           </Badge>
         </div>
+
+                {/* Atalho VIP Admin Master */}
+        {isPlatformAdmin && (
+          <div className="mb-2">
+            <DropdownMenuItem
+              onClick={() => {
+                setIsOpen(false);
+                window.location.href = "/admin-master";
+              }}
+              className="p-3 rounded-lg cursor-pointer flex items-center justify-between gap-3 bg-primary/10 text-primary font-bold border border-primary/30 hover:bg-primary/20 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            >
+              <div className="flex items-center gap-3">
+                <ShieldCheck className="size-4" />
+                <span className="text-xs">Admin Master (Painel Global)</span>
+              </div>
+              <ArrowRight className="size-4 shrink-0" />
+            </DropdownMenuItem>
+          </div>
+        )}
 
         {/* ══════════════════════════════════════════════════════════════
             1. CONTA CIVIL (ROOT TRANSACIONAL / COMPRAS)

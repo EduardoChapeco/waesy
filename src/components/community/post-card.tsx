@@ -732,9 +732,9 @@ export function PostCard(props: PostCardProps) {
  )}
  </div>
  </div>
- <Button size="sm" className="h-8 px-3 rounded-lg text-xs font-semibold shrink-0 cursor-pointer">
+ <span className="h-11 min-h-11 px-4 rounded-lg text-xs font-bold inline-flex items-center justify-center shrink-0 bg-primary text-primary-foreground group-hover:bg-primary/90 transition-colors pointer-events-none">
  Comprar
- </Button>
+ </span>
  </Link>
  )}
 
@@ -767,9 +767,9 @@ export function PostCard(props: PostCardProps) {
  {formatMoney(item.reference_data.price_cents)}
  </p>
  </div>
- <Button size="sm" variant="outline" className="h-8 px-3 rounded-lg text-xs font-semibold shrink-0 cursor-pointer bg-card">
+ <span className="h-11 min-h-11 px-4 rounded-lg text-xs font-bold inline-flex items-center justify-center shrink-0 border border-border/80 bg-background text-foreground group-hover:bg-muted/80 transition-colors pointer-events-none">
  Ver Oferta
- </Button>
+ </span>
  </Link>
  )}
 

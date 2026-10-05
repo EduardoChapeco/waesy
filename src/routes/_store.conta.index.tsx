@@ -300,6 +300,7 @@ function AccountDashboardPage() {
               email: userEmail,
               username: userHandle,
               avatarUrl: userAvatar,
+              role: isMasterAdmin ? "platform_admin" : (session?.role || session?.user?.role),
             }}
             personas={creatorProfiles.map((cp: any) => ({
               id: cp.id || cp.handle,
@@ -322,7 +323,7 @@ function AccountDashboardPage() {
           />
 
           {isMasterAdmin && (
-            <Button asChild size="sm" variant="default" className="rounded-lg text-xs h-10 px-4 font-bold bg-primary text-primary-foreground gap-2 cursor-pointer active:scale-98">
+            <Button asChild size="sm" variant="default" className="rounded-lg text-xs h-11 min-h-11 px-4 font-bold bg-primary text-primary-foreground gap-2 cursor-pointer active:scale-98 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
               <Link to="/admin-master">
                 <Shield className="size-3.5" />
                 <span>Master</span>
@@ -330,7 +331,7 @@ function AccountDashboardPage() {
             </Button>
           )}
 
-          <Button asChild variant="outline" size="sm" className="rounded-lg text-xs h-10 px-4 font-semibold border-border/70 bg-card hover:bg-muted/50 cursor-pointer active:scale-98">
+          <Button asChild variant="outline" size="sm" className="rounded-lg text-xs h-11 min-h-11 px-4 font-semibold border-border/70 bg-card hover:bg-muted/50 cursor-pointer active:scale-98 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
             <Link to="/conta/perfil">Editar Perfil</Link>
           </Button>
         </div>

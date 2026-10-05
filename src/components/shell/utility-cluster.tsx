@@ -2,7 +2,7 @@ import { NotificationsPopover } from "@/components/notifications/notifications-p
 import { cn } from "@/lib/utils";
 import React, { useState } from "react";
 import { Link, useRouter } from "@tanstack/react-router";
-import { Search, ShoppingBag, Bell, LogOut, User, Store, Check, Plus, LayoutDashboard, Settings, Package, Tag, Bookmark, Edit3, ArrowUpRight, ShieldAlert, Shield, MessageSquare, Ticket, Calendar, Award } from "lucide-react";
+import { Search, ShoppingBag, Bell, LogOut, User, Store, Check, Plus, LayoutDashboard, Settings, Package, Tag, Bookmark, Edit3, ArrowUpRight, ShieldAlert, Shield, MessageSquare, Ticket, Calendar, Award, Bike, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -14,6 +14,7 @@ import { setTenantContext } from "@/services/identity.functions";
 import { useCartContext } from "@/lib/cart-context";
 import { useQuery } from "@tanstack/react-query";
 import { getMyCreatorProfilesList } from "@/services/affiliates.functions";
+import { GlobalMenuHub } from "@/components/shell/global-menu-hub";
 import { toast } from "sonner";
 
 export interface UtilityClusterProps {
@@ -28,6 +29,33 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
  const [searchQuery, setSearchQuery] = useState("");
  const [isSwitching, setIsSwitching] = useState(false);
   const [avatarError, setAvatarError] = useState(false);
+  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+
+  const handleSwitchCourier = () => {
+    if (typeof window !== "undefined") {
+      window.document.cookie = "waesy_active_context=courier; path=/; max-age=31536000; SameSite=Lax";
+      window.document.cookie = "waesy_active_tenant=; path=/; max-age=0; SameSite=Lax";
+      window.document.cookie = "waesy_active_creator=; path=/; max-age=0; SameSite=Lax";
+    }
+    toast.success("Modo Condutor (Waesy Go) ativado");
+    window.location.href = "/conta/entregador";
+  };
+
+  const handleOpenWorkspace = async (targetStoreId?: string) => {
+    const storeId = targetStoreId || activeStoreId || memberships[0]?.store_id;
+    if (typeof window !== "undefined") {
+      window.document.cookie = "waesy_active_context=store; path=/; max-age=31536000; SameSite=Lax";
+      if (storeId) {
+        window.document.cookie = `waesy_active_tenant=${storeId}; path=/; max-age=31536000; SameSite=Lax`;
+      }
+      window.document.cookie = "waesy_active_creator=; path=/; max-age=0; SameSite=Lax";
+    }
+    if (storeId) {
+      await setTenantContext({ data: { store_id: storeId } }).catch(() => null);
+    }
+    toast.success("Acessando Workspace...");
+    window.location.href = "/workspace";
+  };
 
  const memberships = (session?.memberships as any[]) || [];
  const activeStoreId = session?.store_id;

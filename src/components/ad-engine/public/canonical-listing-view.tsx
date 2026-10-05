@@ -28,6 +28,7 @@ import type { UnifiedListing, UnifiedNiche } from "@/types/unified-ad-engine";
 import { NICHE_TAXONOMY_REGISTRY } from "@/lib/ad-engine/niche-taxonomy-manifest";
 import { formatMoney } from "@/lib/money";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 export interface CanonicalListingViewProps {
   listing: Partial<UnifiedListing>;
@@ -65,6 +66,33 @@ export function CanonicalListingView({
   const pixDiscount = commercial.pix_discount_percent ?? 0;
   const depositPercent = commercial.deposit_percent;
 
+  const [isFavorited, setIsFavorited] = useState(false);
+
+  const handleShareListing = async () => {
+    const url = typeof window !== "undefined" ? window.location.href : "";
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: listing.title || "Anúncio no Waesy",
+          url,
+        });
+        return;
+      } catch {
+        // Fallback below
+      }
+    }
+    if (navigator.clipboard) {
+      await navigator.clipboard.writeText(url);
+      toast.success("Link copiado para a área de transferência!");
+    } else {
+      toast.info("Compartilhe o link do seu navegador.");
+    }
+  };
+
+  const handleToggleFavorite = () => {
+    setIsFavorited(!isFavorited);
+    toast.success(!isFavorited ? "Anúncio adicionado aos salvos!" : "Removido dos salvos.");
+  };
   const isTourism = niche === "tourism";
   const isServices = niche === "services";
 
@@ -154,11 +182,30 @@ export function CanonicalListingView({
           </div>
 
           <div className="flex items-center gap-2">
-            <Button type="button" variant="ghost" size="icon" className="h-11 w-11 rounded-lg cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none">
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={handleShareListing}
+              className="size-11 min-h-11 min-w-11 rounded-lg cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none text-muted-foreground hover:text-foreground hover:bg-muted"
+              title="Compartilhar"
+              aria-label="Compartilhar anúncio"
+            >
               <Share2 className="size-4" />
             </Button>
-            <Button type="button" variant="ghost" size="icon" className="h-11 w-11 rounded-lg cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none">
-              <Heart className="size-4" />
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={handleToggleFavorite}
+              className={cn(
+                "size-11 min-h-11 min-w-11 rounded-lg cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none transition-colors",
+                isFavorited ? "text-destructive bg-destructive/10" : "text-muted-foreground hover:text-foreground hover:bg-muted"
+              )}
+              title={isFavorited ? "Remover dos favoritos" : "Salvar anúncio"}
+              aria-label="Favoritar anúncio"
+            >
+              <Heart className={cn("size-4", isFavorited && "fill-current")} />
             </Button>
           </div>
         </div>

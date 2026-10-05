@@ -181,10 +181,9 @@ export function WorkspaceAccountSwitcher({
  asChild
  variant="outline"
  size="sm"
- className="w-full text-xs font-bold rounded-lg h-8 gap-2 justify-center border-border/60 bg-card hover:bg-muted"
- onClick={() => setOpen(false)}
+ className="w-full text-xs font-bold rounded-lg h-11 min-h-11 gap-2 justify-center border-border/60 bg-card hover:bg-muted cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
  >
- <Link to="/criar-negocio">
+ <Link to="/criar-negocio" onClick={() => setOpen(false)} className="flex items-center justify-center gap-2 size-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
  <Plus className="size-3.5" />
  <span>Criar Negócio</span>
  </Link>
@@ -223,10 +222,9 @@ export function WorkspaceAccountSwitcher({
  <Button
  asChild
  size="sm"
- className="rounded-lg text-xs font-bold h-8"
- onClick={() => setOpen(false)}
+ className="rounded-lg text-xs font-bold h-11 min-h-11 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
  >
- <Link to="/conta">Acessar Minha Conta</Link>
+ <Link to="/conta" onClick={() => setOpen(false)} className="flex items-center justify-center gap-2 size-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">Acessar Minha Conta</Link>
  </Button>
  </div>
  ) : (

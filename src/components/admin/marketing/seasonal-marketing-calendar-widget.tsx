@@ -142,15 +142,16 @@ export function SeasonalMarketingCalendarWidget({
           )}
         </div>
 
-        <Link
-          to="/workspace/marketing/promocoes"
-          className="shrink-0"
+        <Button
+          asChild
+          size="sm"
+          className="h-11 min-h-11 rounded-lg text-xs font-bold px-4 gap-2 bg-primary text-primary-foreground shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
         >
-          <Button size="sm" className="rounded-lg text-xs font-bold min-h-11 sm:min-h-9 sm:h-9 gap-2 bg-primary text-primary-foreground">
+          <Link to="/workspace/marketing/promocoes">
             <Gift className="size-3.5" />
             <span>Ativar Oferta</span>
-          </Button>
-        </Link>
+          </Link>
+        </Button>
       </div>
 
       {/* PRÓXIMAS DATAS NO RADAR */}

@@ -3,6 +3,7 @@ import { cn } from "@/lib/utils";
 import { formatMoney } from "@/lib/money";
 import { Surface } from "@/components/ui/surface";
 import { Button } from "@/components/ui/button";
+import { Link } from "@tanstack/react-router";
 import { Calendar, MapPin } from "lucide-react";
 import { formatDate } from "@/lib/datetime";
 
@@ -110,8 +111,10 @@ export function EventRail({ content, resolvedEvents, isEditing }: any) {
  : "Gratuito"}
  </p>
  </div>
- <Button variant="default" size="sm" className="font-bold">
+ <Button asChild variant="default" size="sm" className="font-bold h-11 min-h-11 px-4 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+ <Link to="/evento/$id" params={{ id: evt.id }}>
  Ingressos
+ </Link>
  </Button>
  </div>
  </div>

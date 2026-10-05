@@ -1,23 +1,23 @@
 {
   "version": "2.0.0",
-  "timestamp": "2026-10-05T13:14:39.501Z",
+  "timestamp": "2026-10-05T14:22:33.480Z",
   "inspectedFiles": 1854,
-  "totalViolations": 14338,
+  "totalViolations": 14326,
   "summary": {
-    "totalViolations": 14338,
+    "totalViolations": 14326,
     "bySeverity": {
-      "P0": 1563,
-      "P1": 10073,
-      "P2": 1334,
+      "P0": 1562,
+      "P1": 10064,
+      "P2": 1332,
       "P3": 1368
     },
     "byRule": {
       "DL-18": 1231,
       "DL-02": 4925,
-      "DL-14": 2291,
+      "DL-14": 2282,
       "DL-28": 295,
-      "DL-15": 1560,
-      "DL-07": 490,
+      "DL-15": 1559,
+      "DL-07": 488,
       "DL-27": 1125,
       "DL-30": 243,
       "DL-26": 93,
@@ -38,17 +38,17 @@
     },
     "byModule": {
       "components/app": {
-        "total": 6214,
-        "P0": 661,
-        "P1": 4329,
+        "total": 6206,
+        "P0": 660,
+        "P1": 4322,
         "P2": 642,
         "P3": 582
       },
       "components/builder": {
-        "total": 138,
+        "total": 136,
         "P0": 42,
         "P1": 58,
-        "P2": 21,
+        "P2": 19,
         "P3": 17
       },
       "components/chat": {
@@ -115,9 +115,9 @@
         "P3": 286
       },
       "routes/store": {
-        "total": 1711,
+        "total": 1709,
         "P0": 161,
-        "P1": 1146,
+        "P1": 1144,
         "P2": 160,
         "P3": 244
       },
@@ -734,7 +734,7 @@
       "rule": "DL-30",
       "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/public/canonical-listing-view.tsx",
       "module": "components/app",
-      "line": 199,
+      "line": 246,
       "column": 55,
       "severity": "P3",
       "match": "overflow-x-auto",
@@ -745,7 +745,7 @@
       "rule": "DL-27",
       "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/public/canonical-listing-view.tsx",
       "module": "components/app",
-      "line": 206,
+      "line": 253,
       "column": 88,
       "severity": "P3",
       "match": "transition-all",
