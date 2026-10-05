@@ -195,7 +195,7 @@ function CustomerTripsPage() {
  {voucherUrl ? (
  <Button
  asChild
- className="flex-1 md:flex-initial rounded-lg font-bold text-xs gap-2 h-10 bg-primary text-primary-foreground hover:bg-primary/90"
+ className="flex-1 md:flex-initial rounded-lg font-bold text-xs gap-2 h-11 min-h-11 bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer"
  >
  <a href={voucherUrl} target="_blank" rel="noopener noreferrer">
  <QrCode size={16} weight="bold" />
@@ -204,10 +204,11 @@ function CustomerTripsPage() {
  </Button>
  ) : (
  <Button
- disabled
  variant="outline"
- className="flex-1 md:flex-initial rounded-lg font-bold text-xs gap-2 h-10"
+ onClick={() => toast.info("Seu voucher está sendo processado pela agência e será liberado para embarque em instantes.")}
+ className="flex-1 md:flex-initial rounded-lg font-bold text-xs gap-2 h-11 min-h-11 cursor-pointer"
  >
+ <Clock size={16} className="text-amber-500" />
  <span>Voucher em Emissão</span>
  </Button>
  )}

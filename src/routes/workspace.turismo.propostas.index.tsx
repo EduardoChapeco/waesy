@@ -253,21 +253,23 @@ function WorkspaceProposalsIndexPage() {
  <div className="space-y-2 pt-2 border-t border-border/40">
  <div className="flex items-center gap-2">
  <Button
- size="sm"
+ asChild
+ size="default"
  variant="outline"
- className="flex-1 rounded-lg text-xs font-bold h-9 cursor-pointer"
+ className="flex-1 rounded-lg text-xs font-bold h-11 min-h-11 cursor-pointer"
  >
  <Link to="/proposta/$token" params={{ token: p.public_token }} target="_blank">
  <ExternalLink className="mr-2 size-3" />
- Ver Online
+ <span>Ver Online</span>
  </Link>
  </Button>
  <Button
- size="sm"
- className="flex-1 rounded-lg text-xs font-bold h-9 bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer"
+ asChild
+ size="default"
+ className="flex-1 rounded-lg text-xs font-bold h-11 min-h-11 bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer"
  >
  <Link to="/workspace/turismo/propostas/$id" params={{ id: p.id }}>
- Abrir Studio
+ <span>Abrir Studio</span>
  </Link>
  </Button>
  </div>

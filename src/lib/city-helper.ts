@@ -3,7 +3,38 @@
  * Suporta parâmetro de URL (?city=), Cookie universal (waesy_city), header Cloudflare (cf-ipcity) e LocalStorage.
  */
 
-import { getCookie, getRequestHeader } from "@tanstack/start-server-core";
+import { createIsomorphicFn } from "@tanstack/react-start";
+import { getCookie, getRequestHeader } from "@tanstack/react-start/server";
+
+/**
+ * DEC-165: Leitura de request isolada em createIsomorphicFn.
+ * O compilador do TanStack Start remove o ramo .server() (e o import de h3)
+ * do bundle do cliente. Import direto de start-server-core em módulo isomórfico
+ * injeta `new AsyncLocalStorage()` no browser e aborta a hidratação inteira.
+ */
+interface ServerCityHints {
+  ssrCookie?: string;
+  rawCookie?: string;
+  cfIpCity?: string;
+}
+
+const readServerCityHints = createIsomorphicFn()
+  .server((): ServerCityHints => {
+    const hints: ServerCityHints = {};
+    try {
+      hints.ssrCookie = getCookie("waesy_city") ?? undefined;
+    } catch {
+      // fora do contexto de request
+    }
+    try {
+      hints.rawCookie = getRequestHeader("cookie") ?? undefined;
+      hints.cfIpCity = getRequestHeader("cf-ipcity") ?? undefined;
+    } catch {
+      // fora do contexto de request
+    }
+    return hints;
+  })
+  .client((): ServerCityHints => ({}));
 
 const EXCLUDED_CITIES = new Set([
   "global",
@@ -103,9 +134,11 @@ export function resolveActiveCity(
       }
     }
 
+    const hints = readServerCityHints();
+
     // 3b. TanStack Start server getCookie
     try {
-      const ssrCookie = getCookie("waesy_city");
+      const ssrCookie = hints.ssrCookie;
       if (ssrCookie) {
         const normalized = normalizeActiveCity(decodeURIComponent(ssrCookie));
         if (normalized) return normalized;
@@ -116,7 +149,7 @@ export function resolveActiveCity(
 
     // 3c. Request header cookie
     try {
-      const rawCookie = getRequestHeader("cookie");
+      const rawCookie = hints.rawCookie;
       if (rawCookie) {
         const match = rawCookie.match(/(?:^|;\s*)waesy_city=([^;]+)/);
         if (match) {
@@ -137,7 +170,7 @@ export function resolveActiveCity(
 
     // 3e. Cloudflare cf-ipcity header
     try {
-      const cfIpCity = getRequestHeader("cf-ipcity");
+      const cfIpCity = hints.cfIpCity;
       if (cfIpCity) {
         const decoded = decodeURIComponent(cfIpCity);
         const normalized = normalizeActiveCity(decoded);

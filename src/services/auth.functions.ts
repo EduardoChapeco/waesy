@@ -296,7 +296,22 @@ export const signInWithPassword = createServerFn({ method: "POST" })
  })();
  }
 
-   return { status: "success" as const };
+   return {
+      status: "success" as const,
+      session: data.session
+        ? {
+            access_token: data.session.access_token,
+            refresh_token: data.session.refresh_token,
+            expires_at: data.session.expires_at,
+          }
+        : null,
+      user: data.user
+        ? {
+            id: data.user.id,
+            email: data.user.email,
+          }
+        : null,
+    };
   } catch (e: unknown) {
  logSystemError({ route: "auth.functions.signInWithPassword", error: e, payload: { email, identifier } });
  const message = e instanceof Error ? e.message : "Erro desconhecido";
@@ -900,15 +915,16 @@ export async function _updateProfile(data: UpdateProfileInput) {
  if (data.privacyMode !== undefined) profileUpdate.privacy_mode = data.privacyMode;
  if (data.hideLocation !== undefined) profileUpdate.hide_location = data.hideLocation;
 
- // Realiza UPSERT no Supabase com onConflict id
- const { error: dbError } = await supabase
+ // Realiza UPSERT no Supabase com adminDb garantindo bypass de RLS após validação de token
+ const adminDb = getServerClient();
+ const { error: dbError } = await adminDb
  .from("profiles")
  .upsert(profileUpdate, { onConflict: "id" });
 
  if (dbError) {
  console.error("[auth] Erro ao gravar perfil em profiles:", dbError);
  // Tentativa de update direto caso upsert tenha restrição de schema
- const { error: fallbackErr } = await supabase
+ const { error: fallbackErr } = await adminDb
  .from("profiles")
  .update(profileUpdate)
  .eq("id", user.id);

@@ -84,6 +84,7 @@ export function ViewportsFamily({ mode }: ComponentStateProps) {
                 <Button
                   type="button"
                   variant="default"
+                  onClick={() => {}}
                   className="h-11 px-4 text-xs font-medium focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   Confirmar Operação

@@ -6,6 +6,26 @@
  * para páginas públicas, eliminando latência de banco em 90%+ das requisições de leitura.
  */
 
+import { createIsomorphicFn } from '@tanstack/react-start';
+import { getRequest } from '@tanstack/react-start/server';
+
+/**
+ * DEC-165: Retorna true somente quando a requisição atual é uma chamada RPC
+ * de Server Function (`/_serverFn/`). Durante SSR, Server Functions executam
+ * dentro da requisição do documento HTML; aplicar cache público ali faz o
+ * navegador reutilizar HTML obsoleto (sessão antiga, hashes de assets antigos).
+ */
+const isServerFnRpcRequest = createIsomorphicFn()
+  .server((): boolean => {
+    try {
+      const url = new URL(getRequest().url);
+      return url.pathname.includes('/_serverFn/');
+    } catch {
+      return false;
+    }
+  })
+  .client((): boolean => false);
+
 export type EdgeCacheProfile =
   | 'PUBLIC_STATIC'
   | 'PUBLIC_DYNAMIC'
@@ -108,7 +128,9 @@ export function applyServerFnEdgeCache(
   tags: string[] = []
 ): void {
   if (typeof setResponseHeaderFn !== 'function') return;
-  const cacheHeaders = buildEdgeCacheHeaders(profile, tags);
+  // Documento HTML (SSR) nunca recebe cache público: força revalidação.
+  const effectiveProfile: EdgeCacheProfile = isServerFnRpcRequest() ? profile : 'PRIVATE_MUTABLE';
+  const cacheHeaders = buildEdgeCacheHeaders(effectiveProfile, tags);
   for (const [key, value] of Object.entries(cacheHeaders)) {
     try {
       setResponseHeaderFn(key, value);

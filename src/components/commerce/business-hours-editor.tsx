@@ -511,7 +511,17 @@ export function BusinessHoursEditor({
  </p>
  </div>
  </div>
- <Button variant="ghost" size="icon" className="size-8 rounded-lg">
+ <Button
+ type="button"
+ variant="ghost"
+ size="icon"
+ onClick={(e) => {
+ e.stopPropagation();
+ setIsHolidaysExpanded(!isHolidaysExpanded);
+ }}
+ aria-label={isHolidaysExpanded ? "Recolher feriados" : "Expandir feriados"}
+ className="size-11 rounded-lg cursor-pointer"
+ >
  {isHolidaysExpanded ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}
  </Button>
  </div>

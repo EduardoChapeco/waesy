@@ -699,7 +699,8 @@ _Valores sujeitos a reajuste tarifário sem aviso prévio. Garanta sua reserva!_
   key={h.id}
   type="button"
   onMouseDown={() => handleSelectHotel(h)}
-  className="w-full px-4 py-3 text-left hover:bg-muted/50 flex items-center justify-between gap-3 transition-colors border-b border-border/40 last:border-0"
+  onClick={() => handleSelectHotel(h)}
+  className="w-full px-4 py-3 min-h-11 text-left hover:bg-muted/50 flex items-center justify-between gap-3 transition-colors border-b border-border/40 last:border-0 focus-visible:outline-none focus-visible:bg-muted/50"
   >
   <div>
   <span className="text-xs font-bold text-foreground block">{h.name}</span>

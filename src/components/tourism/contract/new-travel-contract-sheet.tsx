@@ -434,7 +434,8 @@ export function NewTravelContractSheet({
  <Button
  type="button"
  size="sm"
- className="h-7 px-3 rounded-lg text-[10px] font-bold mt-1"
+ onClick={(e) => { e.stopPropagation(); handleSelectProposal(prop); }}
+ className="h-11 min-h-11 px-4 rounded-lg text-xs font-bold mt-1 cursor-pointer"
  >
  Emitir Contrato
  </Button>
@@ -495,7 +496,17 @@ export function NewTravelContractSheet({
  {c.email}
  </p>
  </div>
- <Button type="button" size="sm" variant="outline" className="h-7 text-xs font-bold shrink-0">
+ <Button
+ type="button"
+ size="sm"
+ variant="outline"
+ onClick={(e) => {
+ e.stopPropagation();
+ handleSelectCustomer(c);
+ setActiveTab("manual");
+ }}
+ className="h-11 min-h-11 px-4 text-xs font-bold shrink-0 cursor-pointer"
+ >
  Selecionar
  </Button>
  </div>

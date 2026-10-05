@@ -96,26 +96,26 @@ export function ProUpgradePaywallModal({
             variant="outline"
             size="sm"
             onClick={onClose}
-            className="w-full sm:w-auto rounded-lg text-xs h-9 cursor-pointer"
+            className="w-full sm:w-auto rounded-lg text-xs h-11 min-h-11 cursor-pointer"
           >
             Continuar no Gratuito
           </Button>
 
-          <Link
-            to="/workspace/financeiro/faturas"
-            search={{ upgrade_plan: "PRO", feature: source }}
-            className="w-full sm:w-auto"
+          <Button
+            asChild
+            size="sm"
+            className="w-full sm:w-auto rounded-lg text-xs h-11 min-h-11 font-bold gap-2 bg-[#0A66C2] hover:bg-[#084e96] text-white shadow-xs cursor-pointer"
           >
-            <Button
-              type="button"
-              size="sm"
-              className="w-full rounded-lg text-xs h-9 font-bold gap-2 bg-[#0A66C2] hover:bg-[#084e96] text-white shadow-xs cursor-pointer"
+            <Link
+              to="/workspace/financeiro/faturas"
+              search={{ upgrade_plan: "PRO", feature: source }}
+              className="inline-flex items-center justify-center"
             >
               <Zap className="size-3.5 fill-current" />
               <span>Assinar Plano PRO</span>
               <ArrowRight className="size-3" />
-            </Button>
-          </Link>
+            </Link>
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

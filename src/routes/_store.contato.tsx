@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { getPublicBrandSettings } from "@/services/master.functions";
 import { MessageSquare, Mail, Phone, Clock, MapPin, Send, CheckCircle2, Layers, ShieldCheck, ArrowLeft } from 'lucide-react';
@@ -127,11 +127,13 @@ function ContatoPage() {
  Iniciar Conversa
  </a>
  </Button>
- ) : (
- <Button size="sm" variant="outline" disabled className="w-full rounded-lg text-xs">
- Canal em Configuração
- </Button>
- )}
+                ) : (
+                  <Button asChild size="default" variant="outline" className="w-full h-11 min-h-11 rounded-lg font-bold text-xs cursor-pointer">
+                    <Link to="/conta/conversas">
+                      Chat no Aplicativo
+                    </Link>
+                  </Button>
+                )}
  </div>
 
  {/* E-mail */}

@@ -202,6 +202,17 @@ function StepByStepAuthPage() {
     });
 
  if (res.status === "success") {
+ if ((res as any).session?.access_token && (res as any).session?.refresh_token) {
+ try {
+ const { getBrowserClient } = await import("@/lib/supabase");
+ await getBrowserClient().auth.setSession({
+ access_token: (res as any).session.access_token,
+ refresh_token: (res as any).session.refresh_token,
+ });
+ } catch (clientErr) {
+ console.warn("[auth] Falha ao sincronizar sessão no cliente:", clientErr);
+ }
+ }
  toast.success("Acesso autorizado.");
  // Portal sempre vai para /workspace
  window.location.replace("/workspace");
@@ -266,6 +277,17 @@ function StepByStepAuthPage() {
       });
 
  if (res.status === "success") {
+ if ((res as any).session?.access_token && (res as any).session?.refresh_token) {
+ try {
+ const { getBrowserClient } = await import("@/lib/supabase");
+ await getBrowserClient().auth.setSession({
+ access_token: (res as any).session.access_token,
+ refresh_token: (res as any).session.refresh_token,
+ });
+ } catch (clientErr) {
+ console.warn("[auth] Falha ao sincronizar sessão no cliente:", clientErr);
+ }
+ }
  toast.success("Sessão iniciada.");
  // Redireciona para home (/) por padrão, ou returnUrl se especificado
  const destination = returnUrl && returnUrl !== "/entrar" ? returnUrl : "/";

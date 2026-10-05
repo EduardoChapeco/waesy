@@ -35,16 +35,16 @@ export function ActionsFamily({ mode }: ComponentStateProps) {
           <StateCard title="Ações Interativas" state="ready">
             <div className="flex flex-col gap-4">
               <div className="flex flex-wrap gap-2">
-                <Button size="sm" className="h-11">
+                <Button type="button" size="sm" className="h-11" onClick={() => {}}>
                   Principal
                 </Button>
-                <Button variant="secondary" size="sm" className="h-11">
+                <Button type="button" variant="secondary" size="sm" className="h-11" onClick={() => {}}>
                   Secundário
                 </Button>
-                <Button variant="outline" size="sm" className="h-11">
+                <Button type="button" variant="outline" size="sm" className="h-11" onClick={() => {}}>
                   Linha
                 </Button>
-                <Button variant="destructive" size="sm" className="h-11">
+                <Button type="button" variant="destructive" size="sm" className="h-11" onClick={() => {}}>
                   Excluir
                 </Button>
               </div>
@@ -142,8 +142,10 @@ export function ActionsFamily({ mode }: ComponentStateProps) {
                 </AlertDescription>
               </Alert>
               <Button
+                type="button"
                 variant="outline"
                 size="sm"
+                onClick={() => {}}
                 className="h-11 w-full gap-2 border-destructive/30 text-destructive hover:bg-destructive/10"
               >
                 <RefreshCw className="h-3.5 w-3.5" />

@@ -201,12 +201,17 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
         const resolvedSlug = resolvedStore?.slug || (res as any).slug;
         const resolvedStoreId = resolvedStore?.id || (res as any).storeId;
 
+        if (typeof window !== "undefined" && resolvedStoreId) {
+          window.document.cookie = "waesy_active_context=store; path=/; max-age=31536000; SameSite=Lax";
+          window.document.cookie = `waesy_active_tenant=${resolvedStoreId}; path=/; max-age=31536000; SameSite=Lax`;
+          window.document.cookie = `waesy_store_id=${resolvedStoreId}; path=/; max-age=31536000; SameSite=Lax`;
+          window.document.cookie = "waesy_active_creator=; path=/; max-age=0; SameSite=Lax";
+        }
+
         if (onSuccess && resolvedStoreId) {
           onSuccess(resolvedStoreId);
-        } else if (resolvedSlug) {
-          navigate({ to: `/loja/${resolvedSlug}` as any });
         } else {
-          navigate({ to: `/loja/${resolvedStoreId}` as any });
+          window.location.href = "/workspace";
         }
       }
     } catch (err: any) {

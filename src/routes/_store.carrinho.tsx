@@ -43,6 +43,20 @@ function StoreCartPage() {
  }
  };
 
+ const handleRemoveOutOfStock = async () => {
+ if (!selectedCart) return;
+ const outOfStock = selectedCart.items.filter((i: any) => i.isOutOfStock);
+ try {
+ for (const item of outOfStock) {
+ await removeFromCart({ data: { itemId: item.id } });
+ }
+ toast.success("Itens esgotados removidos do carrinho.");
+ router.invalidate();
+ } catch {
+ toast.error("Erro ao remover itens esgotados.");
+ }
+ };
+
   const handleUpdateQty = async (variantId: string, delta: number, itemId?: string) => {
     try {
       const res = await updateCartItemQty({ data: { variantId, delta, itemId } });
@@ -276,20 +290,21 @@ function StoreCartPage() {
                   </div>
 
                   {selectedCart.items.some((i: any) => i.isOutOfStock) ? (
-                    <Button size="lg" className="w-full font-bold rounded-lg h-11" disabled>
-                      Remova itens sem estoque
+                    <Button
+                      size="lg"
+                      variant="outline"
+                      className="w-full font-bold rounded-lg h-11 border-destructive text-destructive hover:bg-destructive/10 cursor-pointer text-xs"
+                      onClick={handleRemoveOutOfStock}
+                    >
+                      Remover Itens Esgotados
                     </Button>
                   ) : (
-                    <Link
-                      to="/checkout"
-                      search={{ store: selectedCart.storeId }}
-                      className="w-full block"
-                    >
-                      <Button size="lg" className="w-full font-bold rounded-lg h-11 text-sm">
+                    <Button asChild size="lg" className="w-full font-bold rounded-lg h-11 text-sm">
+                      <Link to="/checkout" search={{ store: selectedCart.storeId }}>
                         <span>Finalizar Compra</span>
                         <ArrowRight className="ml-2 size-4 shrink-0" />
-                      </Button>
-                    </Link>
+                      </Link>
+                    </Button>
                   )}
                 </>
               )}
@@ -312,20 +327,20 @@ function StoreCartPage() {
             </div>
 
             {selectedCart.items.some((i: any) => i.isOutOfStock) ? (
-              <Button className="h-12 px-5 font-bold rounded-lg text-xs" disabled>
-                Itens sem estoque
+              <Button
+                variant="outline"
+                className="h-12 px-4 font-bold rounded-lg text-xs border-destructive text-destructive hover:bg-destructive/10 cursor-pointer"
+                onClick={handleRemoveOutOfStock}
+              >
+                Remover Esgotados
               </Button>
             ) : (
-              <Link
-                to="/checkout"
-                search={{ store: selectedCart.storeId }}
-                className="flex-1 max-w-[220px]"
-              >
-                <Button className="w-full h-12 font-bold rounded-lg text-sm flex items-center justify-center gap-2 bg-primary text-primary-foreground shadow-none active:scale-95 transition-all cursor-pointer">
+              <Button asChild className="flex-1 max-w-[220px] h-12 font-bold rounded-lg text-sm flex items-center justify-center gap-2 bg-primary text-primary-foreground shadow-none active:scale-95 transition-all cursor-pointer">
+                <Link to="/checkout" search={{ store: selectedCart.storeId }}>
                   <span>Finalizar Compra</span>
                   <ArrowRight className="size-4 shrink-0" />
-                </Button>
-              </Link>
+                </Link>
+              </Button>
             )}
           </div>
         </div>

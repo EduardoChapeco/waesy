@@ -290,13 +290,15 @@ function BookingIndexPage() {
                   }}
                 >
                   {items.map((service: any) => (
-                    <Link
+                    <div
                       key={service.id}
-                      to="/agendar/$id"
-                      params={{ id: service.id }}
-                      className="min-w-72 sm:min-w-[310px] max-w-[330px] rounded-lg bg-card border border-border/60 overflow-hidden hover:border-foreground/30 transition-all flex flex-col justify-between shrink-0 group select-none block"
+                      className="min-w-72 sm:min-w-[310px] max-w-[330px] rounded-lg bg-card border border-border/60 overflow-hidden hover:border-foreground/30 transition-all flex flex-col justify-between shrink-0 group select-none"
                     >
-                      <div>
+                      <Link
+                        to="/agendar/$id"
+                        params={{ id: service.id }}
+                        className="block cursor-pointer"
+                      >
                         {/* Imagem do Serviço */}
                         <div className="aspect-[16/10] relative overflow-hidden bg-muted">
                           {service.image_url ? (
@@ -341,7 +343,7 @@ function BookingIndexPage() {
                             </p>
                           )}
                         </div>
-                      </div>
+                      </Link>
 
                       {/* Preço e Botão */}
                       <div className="p-4 pt-2 border-t border-border/40 flex items-center justify-between">
@@ -349,14 +351,14 @@ function BookingIndexPage() {
                           {formatMoney(service.price_cents)}
                         </span>
                         <Button
-                          size="sm"
-                          onClick={(e) => handleOpenBookingSheet(service, e)}
-                          className="h-8 px-3 rounded-lg font-bold text-xs bg-primary text-primary-foreground cursor-pointer shadow-sm hover:opacity-90"
+                          size="default"
+                          onClick={() => handleOpenBookingSheet(service)}
+                          className="h-11 min-h-11 px-3 rounded-lg font-bold text-xs bg-primary text-primary-foreground cursor-pointer shadow-sm hover:opacity-90"
                         >
                           Agendar
                         </Button>
                       </div>
-                    </Link>
+                    </div>
                   ))}
                 </HorizontalRail>
               ))}
@@ -367,13 +369,15 @@ function BookingIndexPage() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                   {services.map((service: any) => (
-                    <Link
+                    <div
                       key={service.id}
-                      to="/agendar/$id"
-                      params={{ id: service.id }}
-                      className="rounded-lg bg-card border border-border/60 overflow-hidden hover:border-foreground/30 transition-all flex flex-col justify-between group block"
+                      className="rounded-lg bg-card border border-border/60 overflow-hidden hover:border-foreground/30 transition-all flex flex-col justify-between group"
                     >
-                      <div>
+                      <Link
+                        to="/agendar/$id"
+                        params={{ id: service.id }}
+                        className="block cursor-pointer"
+                      >
                         <div className="aspect-[16/10] relative overflow-hidden bg-muted">
                           {service.image_url ? (
                             <img
@@ -416,21 +420,21 @@ function BookingIndexPage() {
                             </p>
                           )}
                         </div>
-                      </div>
+                      </Link>
 
                       <div className="p-4 pt-2 border-t border-border/40 flex items-center justify-between">
                         <span className="font-mono font-black text-base text-foreground">
                           {formatMoney(service.price_cents)}
                         </span>
                         <Button
-                          size="sm"
-                          onClick={(e) => handleOpenBookingSheet(service, e)}
-                          className="h-8 px-4 rounded-lg font-bold text-xs bg-primary text-primary-foreground cursor-pointer shadow-sm hover:opacity-90"
+                          size="default"
+                          onClick={() => handleOpenBookingSheet(service)}
+                          className="h-11 min-h-11 px-4 rounded-lg font-bold text-xs bg-primary text-primary-foreground cursor-pointer shadow-sm hover:opacity-90"
                         >
                           Agendar
                         </Button>
                       </div>
-                    </Link>
+                    </div>
                   ))}
                 </div>
               </div>
@@ -441,13 +445,15 @@ function BookingIndexPage() {
           {viewMode === "grid" && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
               {services.map((service: any) => (
-                <Link
+                <div
                   key={service.id}
-                  to="/agendar/$id"
-                  params={{ id: service.id }}
-                  className="rounded-lg bg-card border border-border/60 overflow-hidden hover:border-foreground/30 transition-all flex flex-col justify-between group block shadow-xs"
+                  className="rounded-lg bg-card border border-border/60 overflow-hidden hover:border-foreground/30 transition-all flex flex-col justify-between group shadow-xs"
                 >
-                  <div>
+                  <Link
+                    to="/agendar/$id"
+                    params={{ id: service.id }}
+                    className="block cursor-pointer"
+                  >
                     {/* Imagem */}
                     <div className="aspect-[16/10] relative overflow-hidden bg-muted">
                       {service.image_url ? (
@@ -492,7 +498,7 @@ function BookingIndexPage() {
                         </p>
                       )}
                     </div>
-                  </div>
+                  </Link>
 
                   {/* Rodapé */}
                   <div className="p-4 pt-2 border-t border-border/40 flex items-center justify-between">
@@ -503,14 +509,14 @@ function BookingIndexPage() {
                       </span>
                     </div>
                     <Button
-                      size="sm"
-                      onClick={(e) => handleOpenBookingSheet(service, e)}
-                      className="h-9 px-4 rounded-lg font-bold text-xs bg-primary text-primary-foreground cursor-pointer shadow-sm hover:opacity-90"
+                      size="default"
+                      onClick={() => handleOpenBookingSheet(service)}
+                      className="h-11 min-h-11 px-4 rounded-lg font-bold text-xs bg-primary text-primary-foreground cursor-pointer shadow-sm hover:opacity-90"
                     >
                       Agendar Horário
                     </Button>
                   </div>
-                </Link>
+                </div>
               ))}
             </div>
           )}

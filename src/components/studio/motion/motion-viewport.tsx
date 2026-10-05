@@ -243,11 +243,13 @@ export function MotionStudioViewport({
 
                     {/* CTA Button */}
                     {seq.ctaLabel && (
-                      <div className="pt-2">
+                      <div className="pt-2 pointer-events-auto">
                         <button
                           type="button"
-                          className="w-full py-3 px-4 rounded-lg font-bold text-xs text-black shadow-lg flex items-center justify-center gap-2"
+                          onClick={() => onSelectSequence(seq.id)}
+                          className="w-full h-11 min-h-11 px-4 rounded-lg font-bold text-xs text-black shadow-lg flex items-center justify-center gap-2 active:scale-95 transition-transform touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
                           style={{ backgroundColor: accentColor }}
+                          aria-label={seq.ctaLabel}
                         >
                           <span>{seq.ctaLabel}</span>
                         </button>

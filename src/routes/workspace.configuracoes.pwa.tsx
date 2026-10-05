@@ -529,10 +529,20 @@ function PwaOmniBuilderPage() {
                       </div>
 
                       <div className="flex items-center gap-2">
-                        <button type="button" className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring p-1 rounded-lg hover:bg-muted text-muted-foreground">
+                        <button
+                          type="button"
+                          onClick={() => toast.info("Simulador PWA: a busca é habilitada no app instalado do cliente.")}
+                          className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring p-1 rounded-lg hover:bg-muted text-muted-foreground cursor-pointer"
+                          title="Buscar no App"
+                        >
                           <Search className="size-4" />
                         </button>
-                        <button type="button" className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring p-1 rounded-lg hover:bg-muted text-muted-foreground relative">
+                        <button
+                          type="button"
+                          onClick={() => toast.info("Simulador PWA: notificações push configuradas em tempo real.")}
+                          className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring p-1 rounded-lg hover:bg-muted text-muted-foreground relative cursor-pointer"
+                          title="Notificações Push"
+                        >
                           <Bell className="size-4" />
                           <span className="size-1.5 rounded-full bg-destructive absolute top-1 right-1" />
                         </button>

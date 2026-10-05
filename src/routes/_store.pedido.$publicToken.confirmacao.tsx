@@ -605,23 +605,22 @@ function ConfirmationPage() {
 
             {/* Botão de Acesso / Download */}
             <div className="pt-1 flex flex-col sm:flex-row gap-3">
-              <a
-                href={order.checkout_niche_metadata?.digitalDeliveryUrl || "#"}
-                target={order.checkout_niche_metadata?.digitalDeliveryUrl ? "_blank" : undefined}
-                rel="noreferrer"
-                className="flex-1"
-                onClick={(e) => {
-                  if (!order.checkout_niche_metadata?.digitalDeliveryUrl) {
-                    e.preventDefault();
-                    toast.info("As credenciais completas e link foram enviados ao seu e-mail.");
-                  }
-                }}
-              >
-                <Button className="w-full h-11 rounded-lg font-bold text-xs gap-2 bg-primary text-primary-foreground cursor-pointer">
+              <Button asChild className="flex-1 w-full h-11 rounded-lg font-bold text-xs gap-2 bg-primary text-primary-foreground cursor-pointer">
+                <a
+                  href={order.checkout_niche_metadata?.digitalDeliveryUrl || "#"}
+                  target={order.checkout_niche_metadata?.digitalDeliveryUrl ? "_blank" : undefined}
+                  rel="noreferrer"
+                  onClick={(e) => {
+                    if (!order.checkout_niche_metadata?.digitalDeliveryUrl) {
+                      e.preventDefault();
+                      toast.info("As credenciais completas e link foram enviados ao seu e-mail.");
+                    }
+                  }}
+                >
                   <ExternalLink size={14} />
                   <span>Acessar Conteúdo Digital</span>
-                </Button>
-              </a>
+                </a>
+              </Button>
             </div>
 
             <p className="text-[11px] text-muted-foreground leading-relaxed">

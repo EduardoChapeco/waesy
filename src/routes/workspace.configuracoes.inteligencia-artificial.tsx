@@ -174,13 +174,13 @@ function WorkspaceAiSettingsPage() {
  </p>
  </div>
 
+ <Button asChild variant="outline" size="default" className="h-11 min-h-11 px-4 text-xs font-semibold rounded-lg gap-2 cursor-pointer border-border/70 hover:bg-muted/50">
  <Link to="/workspace/configuracoes/integracoes">
- <Button variant="outline" size="sm" className="h-9 px-4 text-xs font-semibold rounded-lg gap-2 cursor-pointer border-border/70 hover:bg-muted/50">
  <Sliders className="size-3.5 text-primary" />
- Central de Integrações e APIs
+ <span>Central de Integrações e APIs</span>
  <ExternalLink className="size-3 text-muted-foreground" />
- </Button>
  </Link>
+ </Button>
  </div>
 
  {/* ── 2. Grid de Provedores Suportados ── */}

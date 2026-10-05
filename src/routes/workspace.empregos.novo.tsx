@@ -507,11 +507,11 @@ function WorkspaceNewJobPage() {
 
         {/* Rodapé e Botões de Submissão */}
         <div className="flex items-center justify-end gap-3 pt-4 border-t border-border/50">
-          <Link to="/workspace/empregos">
-            <Button type="button" variant="outline" className="rounded-lg text-xs h-10 px-4">
+          <Button asChild variant="outline" className="rounded-lg text-xs h-11 min-h-11 px-4 cursor-pointer">
+            <Link to="/workspace/empregos">
               Cancelar
-            </Button>
-          </Link>
+            </Link>
+          </Button>
 
           <Button
             type="submit"

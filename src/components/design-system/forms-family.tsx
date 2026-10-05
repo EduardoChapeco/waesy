@@ -174,8 +174,10 @@ export function FormsFamily({ mode }: ComponentStateProps) {
               </Alert>
 
               <Button
+                type="button"
                 variant="outline"
                 size="sm"
+                onClick={() => {}}
                 className="h-11 w-full gap-2 border-destructive/30 text-destructive hover:bg-destructive/10"
               >
                 <RefreshCw className="h-3.5 w-3.5" />

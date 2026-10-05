@@ -592,12 +592,13 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
         </div>
 
         <div className="flex items-center gap-2">
-          <Link to="/admin-master/mining">
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-10 px-4 rounded-lg border border-border/50 font-normal gap-2"
-            >
+          <Button
+            asChild
+            variant="outline"
+            size="sm"
+            className="h-11 min-h-11 px-4 rounded-lg border border-border/50 font-normal gap-2"
+          >
+            <Link to="/admin-master/mining">
               <Star className="w-4 h-4 text-muted-foreground" />
               Curadoria
               {stats?.minedArticles && stats?.minedArticles.pendingReview > 0 ? (
@@ -605,8 +606,8 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                   {stats.minedArticles.pendingReview}
                 </span>
               ) : null}
-            </Button>
-          </Link>
+            </Link>
+          </Button>
 
           <Button
             variant="ghost"

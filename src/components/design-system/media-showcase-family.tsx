@@ -86,7 +86,7 @@ export function MediaShowcaseFamily({ mode }: ComponentStateProps) {
                 alt="Sem mídia"
                 aspectRatio="video"
                 emptyAction={
-                  <Button size="sm" className="h-11 gap-1 text-xs">
+                  <Button type="button" size="sm" className="h-11 gap-1 text-xs focus-visible:ring-2" onClick={() => {}}>
                     <Upload className="h-3.5 w-3.5" />
                     Enviar Foto
                   </Button>

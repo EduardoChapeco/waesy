@@ -2,12 +2,11 @@ import { NotificationsPopover } from "@/components/notifications/notifications-p
 import { cn } from "@/lib/utils";
 import React, { useState } from "react";
 import { Link, useRouter } from "@tanstack/react-router";
-import { Search, ShoppingBag, Bell, LogOut, User, Store, Check, Plus, LayoutDashboard, Settings, Package, Tag, Bookmark, Edit3, ArrowUpRight, ShieldAlert, Shield, MessageSquare, Ticket, Calendar, Award, Bike, Star } from "lucide-react";
+import { Search, ShoppingBag, Bell, LogOut, User, Store, Check, Plus, LayoutDashboard, Settings, Package, Tag, Bookmark, Edit3, ArrowUpRight, ShieldAlert, Shield, MessageSquare, Ticket, Calendar, Award, ChevronRight, HelpCircle, Lock, RefreshCw, Layers, Bike } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { signOut } from "@/services/auth.functions";
 import { setTenantContext } from "@/services/identity.functions";
@@ -18,18 +17,18 @@ import { GlobalMenuHub } from "@/components/shell/global-menu-hub";
 import { toast } from "sonner";
 
 export interface UtilityClusterProps {
- session?: any;
- embedded?: boolean;
+  session?: any;
+  embedded?: boolean;
 }
 
 export function UtilityCluster({ session, embedded = false }: UtilityClusterProps) {
- const router = useRouter();
- const { setIsCartOpen, globalCarts } = useCartContext();
- const [searchOpen, setSearchOpen] = useState(false);
- const [searchQuery, setSearchQuery] = useState("");
- const [isSwitching, setIsSwitching] = useState(false);
+  const router = useRouter();
+  const { setIsCartOpen, globalCarts } = useCartContext();
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isSwitching, setIsSwitching] = useState(false);
   const [avatarError, setAvatarError] = useState(false);
-  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+  const [isAccountOpen, setIsAccountOpen] = useState(false);
 
   const handleSwitchCourier = () => {
     if (typeof window !== "undefined") {
@@ -57,503 +56,492 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
     window.location.href = "/workspace";
   };
 
- const memberships = (session?.memberships as any[]) || [];
- const activeStoreId = session?.store_id;
- const totalItemCount = globalCarts.reduce((acc, c) => acc + c.itemCount, 0);
+  const memberships = (session?.memberships as any[]) || [];
+  const activeStoreId = session?.store_id;
+  const totalItemCount = globalCarts.reduce((acc, c) => acc + c.itemCount, 0);
 
- // ── Identity extraction: SEMPRE identidade pessoal do usuário, NUNCA nome da loja
- const userMeta = session?.user?.user_metadata || {};
- const userName =
- userMeta?.full_name ||
- session?.user?.email?.split("@")[0] ||
- session?.email?.split("@")[0] ||
- "Membro Waesy";
- const userHandle =
- userMeta?.username ||
- session?.user?.email?.split("@")[0] ||
- session?.email?.split("@")[0] ||
- "membro";
- const userAvatar = userMeta?.avatar_url || session?.user?.avatar_url || session?.avatar_url || session?.profile?.avatar_url || "";
- const userInitial = userName.charAt(0).toUpperCase();
- const isPlatformAdmin =
- session?.role === "platform_admin" ||
- session?.role === "master" ||
- session?.role === "admin" ||
- session?.user?.role === "platform_admin" ||
- userMeta?.role === "platform_admin" ||
- userMeta?.role === "master" ||
- userMeta?.role === "admin";
+  // ── Identity extraction: SEMPRE identidade pessoal do usuário
+  const userMeta = session?.user?.user_metadata || {};
+  const userName =
+    userMeta?.full_name ||
+    session?.user?.email?.split("@")[0] ||
+    session?.email?.split("@")[0] ||
+    "Membro Waesy";
+  const userHandle =
+    userMeta?.username ||
+    session?.user?.email?.split("@")[0] ||
+    session?.email?.split("@")[0] ||
+    "membro";
+  const userAvatar = userMeta?.avatar_url || session?.user?.avatar_url || session?.avatar_url || session?.profile?.avatar_url || "";
+  const userInitial = userName.charAt(0).toUpperCase();
+  const isPlatformAdmin =
+    session?.role === "platform_admin" ||
+    session?.role === "master" ||
+    session?.role === "admin" ||
+    session?.user?.role === "platform_admin" ||
+    userMeta?.role === "platform_admin" ||
+    userMeta?.role === "master" ||
+    userMeta?.role === "admin";
 
- const handleSearchSubmit = (e: React.FormEvent) => {
- e.preventDefault();
- if (!searchQuery.trim()) return;
- setSearchOpen(false);
- router.navigate({
- to: "/buscar",
- search: { q: searchQuery.trim() },
- });
- };
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!searchQuery.trim()) return;
+    setSearchOpen(false);
+    router.navigate({
+      to: "/buscar",
+      search: { q: searchQuery.trim() },
+    });
+  };
 
- const { data: creatorProfiles = [] } = useQuery({
-   queryKey: ["my-creator-profiles-list"],
-   queryFn: () => getMyCreatorProfilesList(),
-   enabled: Boolean(session),
-   staleTime: 60_000,
- });
+  const { data: creatorProfiles = [] } = useQuery({
+    queryKey: ["my-creator-profiles-list"],
+    queryFn: () => getMyCreatorProfilesList(),
+    enabled: Boolean(session),
+    staleTime: 60_000,
+  });
 
- const activeContext = typeof window !== "undefined"
-   ? (document.cookie.match(/waesy_active_context=([^;]+)/)?.[1] as any) || "civil"
-   : "civil";
- const activeCreatorId = typeof window !== "undefined"
-   ? document.cookie.match(/waesy_active_creator=([^;]+)/)?.[1] || null
-   : null;
+  const activeContext = typeof window !== "undefined"
+    ? (document.cookie.match(/waesy_active_context=([^;]+)/)?.[1] as any) || "civil"
+    : "civil";
+  const activeCreatorId = typeof window !== "undefined"
+    ? document.cookie.match(/waesy_active_creator=([^;]+)/)?.[1] || null
+    : null;
 
- const handleSwitchCreator = (persona: any) => {
-   const handleOrId = persona.id || persona.handle;
-   if (typeof window !== "undefined") {
-     window.document.cookie = "waesy_active_context=creator; path=/; max-age=31536000; SameSite=Lax";
-     window.document.cookie = `waesy_active_creator=${encodeURIComponent(handleOrId)}; path=/; max-age=31536000; SameSite=Lax`;
-     window.document.cookie = "waesy_active_tenant=; path=/; max-age=0; SameSite=Lax";
-   }
-   toast.success(`Contexto ativo: @${persona.handle}`);
-   router.navigate({ to: "/conta/criadores" });
- };
+  const handleSwitchCreator = (persona: any) => {
+    const handleOrId = persona.id || persona.handle;
+    if (typeof window !== "undefined") {
+      window.document.cookie = "waesy_active_context=creator; path=/; max-age=31536000; SameSite=Lax";
+      window.document.cookie = `waesy_active_creator=${encodeURIComponent(handleOrId)}; path=/; max-age=31536000; SameSite=Lax`;
+      window.document.cookie = "waesy_active_tenant=; path=/; max-age=0; SameSite=Lax";
+    }
+    toast.success(`Contexto ativo: @${persona.handle}`);
+    setIsAccountOpen(false);
+    router.navigate({ to: "/conta/criadores" });
+  };
 
- const handleSwitchCivil = () => {
-   if (typeof window !== "undefined") {
-     window.document.cookie = "waesy_active_context=civil; path=/; max-age=31536000; SameSite=Lax";
-     window.document.cookie = "waesy_active_tenant=; path=/; max-age=0; SameSite=Lax";
-     window.document.cookie = "waesy_active_creator=; path=/; max-age=0; SameSite=Lax";
-   }
-   toast.success(`Contexto ativo: ${userName} (Conta Civil)`);
-   router.navigate({ to: "/conta" });
- };
+  const handleSwitchCivil = () => {
+    if (typeof window !== "undefined") {
+      window.document.cookie = "waesy_active_context=civil; path=/; max-age=31536000; SameSite=Lax";
+      window.document.cookie = "waesy_active_tenant=; path=/; max-age=0; SameSite=Lax";
+      window.document.cookie = "waesy_active_creator=; path=/; max-age=0; SameSite=Lax";
+    }
+    toast.success(`Contexto ativo: ${userName} (Conta Civil)`);
+    setIsAccountOpen(false);
+    router.navigate({ to: "/conta" });
+  };
 
- const handleSwitchStore = async (storeId: string) => {
-   if (isSwitching) return;
-   setIsSwitching(true);
-   try {
-     if (typeof window !== "undefined") {
-       window.document.cookie = "waesy_active_context=store; path=/; max-age=31536000; SameSite=Lax";
-       window.document.cookie = `waesy_active_tenant=${storeId}; path=/; max-age=31536000; SameSite=Lax`;
-       window.document.cookie = "waesy_active_creator=; path=/; max-age=0; SameSite=Lax";
-     }
-     await setTenantContext({ data: { store_id: storeId } }).catch(() => null);
-     toast.success("Acessando painel da empresa...");
-     window.location.href = "/workspace";
-   } catch {
-     toast.error("Erro ao alternar loja.");
-     setIsSwitching(false);
-   }
- };
+  const handleSwitchStore = async (storeId: string) => {
+    if (isSwitching) return;
+    setIsSwitching(true);
+    try {
+      if (typeof window !== "undefined") {
+        window.document.cookie = "waesy_active_context=store; path=/; max-age=31536000; SameSite=Lax";
+        window.document.cookie = `waesy_active_tenant=${storeId}; path=/; max-age=31536000; SameSite=Lax`;
+        window.document.cookie = "waesy_active_creator=; path=/; max-age=0; SameSite=Lax";
+      }
+      await setTenantContext({ data: { store_id: storeId } }).catch(() => null);
+      toast.success("Acessando painel da empresa...");
+      setIsAccountOpen(false);
+      window.location.href = "/workspace";
+    } catch {
+      toast.error("Erro ao alternar loja.");
+      setIsSwitching(false);
+    }
+  };
 
- const handleLogout = async () => {
- try {
- await signOut();
- toast.success("Sessão encerrada.");
- window.location.href = "/";
- } catch {
- toast.error("Erro ao sair.");
- }
- };
+  const handleLogout = async () => {
+    try {
+      if (typeof window !== "undefined") {
+        try {
+          const { getBrowserClient } = await import("@/lib/supabase");
+          await getBrowserClient().auth.signOut().catch(() => {});
+        } catch {}
+      }
+      await signOut();
+      toast.success("Sessão encerrada.");
+      window.location.href = "/";
+    } catch {
+      toast.error("Erro ao sair.");
+    }
+  };
 
- return (
- <>
- <div
- className={`flex items-center gap-1 sm:gap-2 shrink-0 ${
- embedded ? "" : "h-10 px-2 rounded-lg bg-card"
- }`}
- >
- {/* 1. Conversas / Chat Direto (Desktop >= 768px) */}
- {session && (
- <Button
- asChild
- variant="ghost"
- size="icon"
- className="hidden md:inline-flex size-11 min-h-11 min-w-11 rounded-lg relative text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-all active:scale-95 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-            title="Atendimento & Suporte"
+  return (
+    <>
+      <div
+        className={`flex items-center gap-1 sm:gap-2 shrink-0 ${
+          embedded ? "" : "h-11 px-2 rounded-lg bg-card"
+        }`}
+      >
+        {/* 1. Conversas / Chat Direto (Desktop >= 768px) */}
+        {session && (
+          <Button
+            asChild
+            variant="ghost"
+            size="icon"
+            className="hidden md:inline-flex size-11 min-h-11 min-w-11 rounded-lg relative text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-all active:scale-95 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            title="Conversas"
           >
-            <Link to="/conta/suporte">
+            <Link to="/conta/conversas">
               <MessageSquare className="size-5" />
- </Link>
- </Button>
- )}
+            </Link>
+          </Button>
+        )}
 
- {/* 2. Sacola de Compras (Desktop >= 768px) */}
- <Button
- variant="ghost"
- size="icon"
- onClick={() => setIsCartOpen(true)}
- className="hidden md:inline-flex size-11 min-h-11 min-w-11 rounded-lg relative text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-all active:scale-95 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+        {/* 2. Sacola de Compras (Desktop >= 768px) */}
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setIsCartOpen(true)}
+          className="hidden md:inline-flex size-11 min-h-11 min-w-11 rounded-lg relative text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-all active:scale-95 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           title="Sacola de Compras"
         >
           <ShoppingBag className="size-5" />
- {totalItemCount > 0 && (
- <span className="absolute -top-1 -right-1 size-4 bg-primary text-primary-foreground text-[9px] font-bold rounded-lg flex items-center justify-center animate-scale-in">
- {totalItemCount}
- </span>
- )}
- </Button>
+          {totalItemCount > 0 && (
+            <span className="absolute -top-1 -right-1 size-4 bg-primary text-primary-foreground text-xs font-bold rounded-lg flex items-center justify-center animate-scale-in">
+              {totalItemCount}
+            </span>
+          )}
+        </Button>
 
- {/* 3. Notificações */}
- <NotificationsPopover session={session} />
+        {/* 3. Notificações */}
+        <NotificationsPopover session={session} />
 
- {/* 4. Alternador de Tema Dark/Light (Desktop >= 768px) */}
- <ThemeToggle className="hidden md:inline-flex size-11 min-h-11 min-w-11 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-all active:scale-95 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary" />
+        {/* 4. Alternador de Tema Dark/Light (Desktop >= 768px) */}
+        <ThemeToggle className="hidden md:inline-flex size-11 min-h-11 min-w-11 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-all active:scale-95 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary" />
 
- <div className="hidden md:block h-4 w-px bg-border/60 mx-1" />
+        <div className="hidden md:block h-4 w-px bg-border/60 mx-1" />
 
- {/* 6. Perfil / Auth Menu (Oculto no mobile pois já existe na MobileNav com suporte a gestos) */}
- {session ? (
- <div className="inline-flex">
- <DropdownMenu>
- <DropdownMenuTrigger asChild>
-          <button
-            type="button"
-            className="size-11 min-h-11 min-w-11 shrink-0 rounded-full overflow-hidden border border-border/60 hover:border-primary/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-all hover:scale-105 active:scale-95 cursor-pointer bg-muted flex items-center justify-center p-0"
-            aria-label="Menu de Perfil e Conta"
+        {/* 6. Perfil / Auth Trigger (Drawer Tátil Universal) */}
+        {session ? (
+          <div className="inline-flex">
+            <button
+              type="button"
+              onClick={() => setIsAccountOpen(true)}
+              className="size-11 min-h-11 min-w-11 shrink-0 rounded-full overflow-hidden border border-border/60 hover:border-primary/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-all hover:scale-105 active:scale-95 cursor-pointer bg-muted flex items-center justify-center p-0"
+              aria-label="Abrir Menu de Perfil e Conta"
+            >
+              {userAvatar && !avatarError ? (
+                <img
+                  src={userAvatar}
+                  alt={userName}
+                  className="size-full object-cover"
+                  onError={() => setAvatarError(true)}
+                />
+              ) : (
+                <div className="size-full flex items-center justify-center bg-primary text-primary-foreground text-sm font-black">
+                  {userInitial}
+                </div>
+              )}
+            </button>
+
+            {/* Sheet / Drawer Tátil Lateral */}
+            <Sheet open={isAccountOpen} onOpenChange={setIsAccountOpen}>
+              <SheetContent side="right" className="w-full sm:max-w-md p-0 flex flex-col h-full bg-background border-l border-border/50">
+                {/* Header — Identidade Pessoal do Usuário */}
+                <div className="p-4 sm:p-5 border-b border-border/50 bg-muted/20 flex items-center gap-3 shrink-0">
+                  <div className="size-12 rounded-lg overflow-hidden bg-muted shrink-0 flex items-center justify-center border border-border/60">
+                    {userAvatar && !avatarError ? (
+                      <img src={userAvatar} alt={userName} className="size-full object-cover" />
+                    ) : (
+                      <span className="text-base font-black text-primary">{userInitial}</span>
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <SheetTitle className="text-base font-bold text-foreground truncate leading-tight">
+                      {userName}
+                    </SheetTitle>
+                    <SheetDescription className="text-xs text-muted-foreground truncate font-mono">
+                      @{userHandle}
+                    </SheetDescription>
+                    {isPlatformAdmin && (
+                      <span className="inline-block mt-1 px-2 py-1 rounded text-xs font-mono font-bold bg-primary/10 text-primary border border-primary/20">
+                        ADMIN MASTER
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Pill de Contexto Ativo */}
+                <div className="p-3 border-b border-border/40 bg-card shrink-0">
+                  <div className="p-2 rounded-lg bg-muted/60 border border-border/60 flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-2 px-1 min-w-0">
+                      {activeContext === "creator" ? (
+                        <Award className="size-4 text-amber-500 shrink-0" />
+                      ) : activeContext === "store" ? (
+                        <Store className="size-4 text-primary shrink-0" />
+                      ) : (
+                        <User className="size-4 text-muted-foreground shrink-0" />
+                      )}
+                      <span className="text-xs font-semibold truncate text-foreground">
+                        {activeContext === "creator"
+                          ? `Criador: @${activeCreatorId || "ativo"}`
+                          : activeContext === "store"
+                          ? "Empresa Ativa"
+                          : "Conta Civil Pessoal"}
+                      </span>
+                    </div>
+                    {activeContext !== "civil" && (
+                      <button
+                        type="button"
+                        onClick={handleSwitchCivil}
+                        className="text-xs font-bold text-primary hover:underline px-2 py-1 rounded cursor-pointer shrink-0"
+                      >
+                        Voltar ao Civil
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Links de Navegação com Alvo de Toque de 44px */}
+                <div className="flex-1 overflow-y-auto p-3 space-y-1">
+                  <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider px-3 py-1">
+                    Minha Conta
+                  </div>
+
+                  <Link
+                    to="/conta"
+                    onClick={() => setIsAccountOpen(false)}
+                    className="w-full h-11 min-h-11 px-3 rounded-lg flex items-center justify-between hover:bg-muted/60 transition-colors text-xs font-bold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  >
+                    <div className="flex items-center gap-3">
+                      <User className="size-4 text-muted-foreground" />
+                      <span>Painel Geral</span>
+                    </div>
+                    <ChevronRight className="size-4 text-muted-foreground/60" />
+                  </Link>
+
+                  <Link
+                    to="/conta/perfil"
+                    onClick={() => setIsAccountOpen(false)}
+                    className="w-full h-11 min-h-11 px-3 rounded-lg flex items-center justify-between hover:bg-muted/60 transition-colors text-xs font-medium text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  >
+                    <div className="flex items-center gap-3">
+                      <Edit3 className="size-4 text-muted-foreground" />
+                      <span>Perfil & Identidade</span>
+                    </div>
+                    <ChevronRight className="size-4 text-muted-foreground/60" />
+                  </Link>
+
+                  <Link
+                    to="/conta/pedidos"
+                    onClick={() => setIsAccountOpen(false)}
+                    className="w-full h-11 min-h-11 px-3 rounded-lg flex items-center justify-between hover:bg-muted/60 transition-colors text-xs font-medium text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  >
+                    <div className="flex items-center gap-3">
+                      <ShoppingBag className="size-4 text-muted-foreground" />
+                      <span>Meus Pedidos</span>
+                    </div>
+                    <ChevronRight className="size-4 text-muted-foreground/60" />
+                  </Link>
+
+                  <Link
+                    to="/conta/ingressos"
+                    onClick={() => setIsAccountOpen(false)}
+                    className="w-full h-11 min-h-11 px-3 rounded-lg flex items-center justify-between hover:bg-muted/60 transition-colors text-xs font-medium text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  >
+                    <div className="flex items-center gap-3">
+                      <Ticket className="size-4 text-muted-foreground" />
+                      <span>Ingressos & Eventos</span>
+                    </div>
+                    <ChevronRight className="size-4 text-muted-foreground/60" />
+                  </Link>
+
+                  <Link
+                    to="/conta/agendamentos"
+                    onClick={() => setIsAccountOpen(false)}
+                    className="w-full h-11 min-h-11 px-3 rounded-lg flex items-center justify-between hover:bg-muted/60 transition-colors text-xs font-medium text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  >
+                    <div className="flex items-center gap-3">
+                      <Calendar className="size-4 text-muted-foreground" />
+                      <span>Agendamentos</span>
+                    </div>
+                    <ChevronRight className="size-4 text-muted-foreground/60" />
+                  </Link>
+
+                  <Link
+                    to="/conta/trocas"
+                    onClick={() => setIsAccountOpen(false)}
+                    className="w-full h-11 min-h-11 px-3 rounded-lg flex items-center justify-between hover:bg-muted/60 transition-colors text-xs font-medium text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  >
+                    <div className="flex items-center gap-3">
+                      <RefreshCw className="size-4 text-muted-foreground" />
+                      <span>Trocas & Negociações</span>
+                    </div>
+                    <ChevronRight className="size-4 text-muted-foreground/60" />
+                  </Link>
+
+                  <Link
+                    to="/conta/classificados"
+                    onClick={() => setIsAccountOpen(false)}
+                    className="w-full h-11 min-h-11 px-3 rounded-lg flex items-center justify-between hover:bg-muted/60 transition-colors text-xs font-medium text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  >
+                    <div className="flex items-center gap-3">
+                      <Layers className="size-4 text-muted-foreground" />
+                      <span>Meus Anúncios</span>
+                    </div>
+                    <ChevronRight className="size-4 text-muted-foreground/60" />
+                  </Link>
+
+                  <Link
+                    to="/conta/salvos"
+                    onClick={() => setIsAccountOpen(false)}
+                    className="w-full h-11 min-h-11 px-3 rounded-lg flex items-center justify-between hover:bg-muted/60 transition-colors text-xs font-medium text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  >
+                    <div className="flex items-center gap-3">
+                      <Bookmark className="size-4 text-muted-foreground" />
+                      <span>Salvos & Favoritos</span>
+                    </div>
+                    <ChevronRight className="size-4 text-muted-foreground/60" />
+                  </Link>
+
+                  <Link
+                    to="/conta/seguranca"
+                    onClick={() => setIsAccountOpen(false)}
+                    className="w-full h-11 min-h-11 px-3 rounded-lg flex items-center justify-between hover:bg-muted/60 transition-colors text-xs font-medium text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  >
+                    <div className="flex items-center gap-3">
+                      <Lock className="size-4 text-muted-foreground" />
+                      <span>Segurança & Acesso</span>
+                    </div>
+                    <ChevronRight className="size-4 text-muted-foreground/60" />
+                  </Link>
+
+                  <Link
+                    to="/conta/suporte"
+                    onClick={() => setIsAccountOpen(false)}
+                    className="w-full h-11 min-h-11 px-3 rounded-lg flex items-center justify-between hover:bg-muted/60 transition-colors text-xs font-medium text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  >
+                    <div className="flex items-center gap-3">
+                      <HelpCircle className="size-4 text-muted-foreground" />
+                      <span>Suporte & Ajuda</span>
+                    </div>
+                    <ChevronRight className="size-4 text-muted-foreground/60" />
+                  </Link>
+
+                  {/* Seção Gestão de Negócios / Lojas */}
+                  <div className="pt-3 border-t border-border/40 mt-2">
+                    <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider px-3 py-1">
+                      Gestão de Negócios
+                    </div>
+
+                    {isPlatformAdmin && (
+                      <Link
+                        to="/admin-master"
+                        onClick={() => setIsAccountOpen(false)}
+                        className="w-full h-11 min-h-11 px-3 rounded-lg flex items-center justify-between bg-primary/10 text-primary hover:bg-primary/20 border border-primary/20 transition-colors text-xs font-bold mb-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      >
+                        <div className="flex items-center gap-3">
+                          <ShieldAlert className="size-4" />
+                          <span>Painel Global Master</span>
+                        </div>
+                        <ArrowUpRight className="size-4" />
+                      </Link>
+                    )}
+
+                    {memberships.length > 0 || isPlatformAdmin ? (
+                      <Link
+                        to="/workspace"
+                        onClick={() => setIsAccountOpen(false)}
+                        className="w-full h-11 min-h-11 px-3 rounded-lg flex items-center justify-between bg-foreground text-background hover:bg-foreground/90 transition-colors text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      >
+                        <div className="flex items-center gap-3">
+                          <LayoutDashboard className="size-4" />
+                          <span>Acessar Workspace</span>
+                        </div>
+                        <ArrowUpRight className="size-4" />
+                      </Link>
+                    ) : (
+                      <Link
+                        to="/criar-negocio"
+                        onClick={() => setIsAccountOpen(false)}
+                        className="w-full h-11 min-h-11 px-3 rounded-lg flex items-center justify-between bg-primary text-primary-foreground hover:bg-primary/90 transition-colors text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      >
+                        <div className="flex items-center gap-3">
+                          <Plus className="size-4" />
+                          <span>Criar Minha Empresa</span>
+                        </div>
+                        <ArrowUpRight className="size-4" />
+                      </Link>
+                    )}
+
+                    {memberships.length > 0 && (
+                      <div className="space-y-1 mt-2">
+                        {memberships.slice(0, 3).map((m: any) => {
+                          const isCurrent = m.store_id === activeStoreId;
+                          return (
+                            <button
+                              key={m.store_id}
+                              type="button"
+                              disabled={isSwitching}
+                              onClick={() => handleSwitchStore(m.store_id)}
+                              className={cn(
+                                "w-full h-11 min-h-11 px-3 rounded-lg flex items-center justify-between transition-colors cursor-pointer text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                                isCurrent
+                                  ? "bg-primary/10 text-primary font-bold"
+                                  : "hover:bg-muted/60 text-foreground font-medium"
+                              )}
+                            >
+                              <div className="flex items-center gap-2 min-w-0">
+                                <Store className="size-4 text-primary shrink-0" />
+                                <span className="truncate">{m.name || "Minha Loja"}</span>
+                              </div>
+                              {isCurrent ? (
+                                <span className="text-xs font-bold text-primary px-2 py-1 rounded bg-primary/20 shrink-0">
+                                  Ativa
+                                </span>
+                              ) : (
+                                <ArrowUpRight className="size-3.5 text-muted-foreground/70 shrink-0" />
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Footer Fixo: Sair */}
+                <div className="p-3 border-t border-border/50 bg-muted/10 shrink-0">
+                  <button
+                    type="button"
+                    onClick={handleLogout}
+                    className="w-full h-11 min-h-11 px-4 rounded-lg flex items-center justify-center gap-2 text-xs font-semibold text-destructive hover:bg-destructive/10 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive"
+                  >
+                    <LogOut className="size-4" />
+                    <span>Encerrar Sessão</span>
+                  </button>
+                </div>
+              </SheetContent>
+            </Sheet>
+          </div>
+        ) : (
+          <Button
+            asChild
+            className="h-11 min-h-11 px-4 rounded-lg text-xs font-bold bg-primary text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary cursor-pointer active:scale-95 shrink-0"
           >
-            {userAvatar && !avatarError ? (
-              <img
-                src={userAvatar}
-                alt={userName}
-                className="size-full object-cover"
-                onError={() => setAvatarError(true)}
-              />
-            ) : (
-              <div className="size-full flex items-center justify-center bg-primary text-primary-foreground text-sm font-black">
-                {userInitial}
-              </div>
-            )}
-          </button>
-        </DropdownMenuTrigger>
+            <Link to="/entrar">Entrar</Link>
+          </Button>
+        )}
+      </div>
 
- <DropdownMenuContent
- align="end"
- className="w-72 rounded-lg p-2 bg-card space-y-1"
- >
- {/* Header — Identidade Pessoal do Usuário */}
- <DropdownMenuLabel className="font-normal p-3 pb-2">
- <div className="flex items-center gap-3">
- <div className="size-10 rounded-lg overflow-hidden bg-muted shrink-0 flex items-center justify-center">
- {userAvatar ? (
- <img src={userAvatar} alt={userName} className="size-full object-cover" />
- ) : (
- <span className="text-sm font-black text-primary">{userInitial}</span>
- )}
- </div>
- <div className="min-w-0 flex-1">
- <p className="text-sm font-bold text-foreground truncate leading-tight">{userName}</p>
- <p className="text-xs text-muted-foreground truncate font-mono">@{userHandle}</p>
- {memberships.length > 0 && (
- <span className="text-[10px] text-muted-foreground/70 font-medium">
- {memberships.length} {memberships.length === 1 ? "loja" : "lojas"} ativas
- </span>
- )}
- </div>
- </div>
- </DropdownMenuLabel>
-
- {/* Pill de Contexto Ativo (Civil, Criador ou Empresa) */}
- <div className="px-2 pb-2">
- <div className="p-2 rounded-lg bg-muted/60 border border-border/60 flex items-center justify-between text-xs">
- <div className="flex items-center gap-2 px-1 min-w-0">
- {activeContext === "creator" ? (
- <Award className="size-3.5 text-amber-500 shrink-0" />
- ) : activeContext === "store" ? (
- <Store className="size-3.5 text-primary shrink-0" />
- ) : (
- <User className="size-3.5 text-muted-foreground shrink-0" />
- )}
- <span className="text-[11px] font-semibold truncate text-foreground">
- {activeContext === "creator"
- ? `Criador: @${activeCreatorId || "ativo"}`
- : activeContext === "store"
- ? "Empresa Ativa"
- : "Conta Pessoal"}
- </span>
- </div>
- {activeContext !== "civil" && (
- <button
- type="button"
- onClick={handleSwitchCivil}
- className="text-[10px] font-bold text-primary hover:underline px-2 py-1 rounded cursor-pointer shrink-0"
- >
- Mudar p/ Civil
- </button>
- )}
- </div>
- </div>
-
- <DropdownMenuSeparator className="my-1" />
-
- {/* Ações da Conta Pessoal (1 Palavra / Rótulo Direto) */}
- <div className="space-y-1">
- <DropdownMenuItem asChild className="rounded-lg cursor-pointer text-xs font-bold text-foreground px-3 py-2 hover:bg-muted/60">
- <Link to="/conta">Conta</Link>
- </DropdownMenuItem>
-
- <DropdownMenuItem asChild className="rounded-lg cursor-pointer text-xs font-medium text-foreground/90 px-3 py-2 hover:bg-muted/60">
- <Link to="/conta/perfil">Perfil</Link>
- </DropdownMenuItem>
-
- <DropdownMenuItem asChild className="rounded-lg cursor-pointer text-xs font-medium text-foreground/90 px-3 py-2 hover:bg-muted/60">
- <Link to="/conta/salvos">Salvos</Link>
- </DropdownMenuItem>
-
- <DropdownMenuItem asChild className="rounded-lg cursor-pointer text-xs font-medium text-foreground/90 px-3 py-2 hover:bg-muted/60">
- <Link to="/conta/pedidos">Pedidos</Link>
- </DropdownMenuItem>
-
- <DropdownMenuItem asChild className="rounded-lg cursor-pointer text-xs font-medium text-foreground/90 px-3 py-2 hover:bg-muted/60">
- <Link to="/conta/ingressos">Ingressos</Link>
- </DropdownMenuItem>
-
- <DropdownMenuItem asChild className="rounded-lg cursor-pointer text-xs font-medium text-foreground/90 px-3 py-2 hover:bg-muted/60">
- <Link to="/conta/agendamentos">Agenda</Link>
- </DropdownMenuItem>
-
- <DropdownMenuItem asChild className="rounded-lg cursor-pointer text-xs font-medium text-foreground/90 px-3 py-2 hover:bg-muted/60">
- <Link to="/conta/classificados">Classificados</Link>
- </DropdownMenuItem>
-
- <DropdownMenuItem asChild className="rounded-lg cursor-pointer text-xs font-medium text-foreground/90 px-3 py-2 hover:bg-muted/60">
- <Link to="/conta/concursos">Sorteios</Link>
- </DropdownMenuItem>
-
- <DropdownMenuItem asChild className="rounded-lg cursor-pointer text-xs font-medium text-foreground/90 px-3 py-2 hover:bg-muted/60">
- <Link to="/convite">Convites</Link>
- </DropdownMenuItem>
-
- <DropdownMenuItem asChild className="rounded-lg cursor-pointer text-xs font-medium text-foreground/90 px-3 py-2 hover:bg-muted/60">
- <Link to="/conta/criadores">Criadores</Link>
- </DropdownMenuItem>
-
- <DropdownMenuItem asChild className="rounded-lg cursor-pointer text-xs font-medium text-foreground/90 px-3 py-2 hover:bg-muted/60">
- <Link to="/conta/seguranca">Ajustes</Link>
- </DropdownMenuItem>
-
- <DropdownMenuItem asChild className="rounded-lg cursor-pointer text-xs font-medium text-foreground/90 px-3 py-2 hover:bg-muted/60">
- <Link to="/conta/suporte">Suporte</Link>
- </DropdownMenuItem>
- </div>
-
- {/* ── Acesso Direto ao Workspace / Gestão da Loja ── */}
- <DropdownMenuSeparator className="my-1" />
- <div className="p-1 space-y-1">
- {isPlatformAdmin && (
- <DropdownMenuItem asChild className="rounded-lg cursor-pointer text-xs font-bold bg-primary/10 text-primary hover:bg-primary/20 px-3 py-2 flex items-center justify-between border border-primary/20">
- <Link to="/admin-master">
- <div className="flex items-center gap-2">
- <Shield className="size-3.5" />
- <span>Admin Master</span>
- </div>
- <ArrowUpRight className="size-3.5" />
- </Link>
- </DropdownMenuItem>
- )}
-
- {memberships.length > 0 || isPlatformAdmin ? (
- <DropdownMenuItem asChild className="rounded-lg cursor-pointer text-xs font-bold bg-foreground text-background hover:bg-foreground/90 px-3 py-2 flex items-center justify-between">
- <Link to="/workspace">
- <div className="flex items-center gap-2">
- <LayoutDashboard className="size-3.5" />
- <span>Workspace</span>
- </div>
- <ArrowUpRight className="size-3.5" />
- </Link>
- </DropdownMenuItem>
- ) : (
- <DropdownMenuItem asChild className="rounded-lg cursor-pointer text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 px-3 py-2 flex items-center justify-between shadow-xs">
- <Link to="/criar-negocio">
- <div className="flex items-center gap-2">
- <Plus className="size-3.5" />
- <span>Nova Loja</span>
- </div>
- <ArrowUpRight className="size-3.5" />
- </Link>
- </DropdownMenuItem>
- )}
- </div>
-
- {/* ── Gestão de Personas de Criador ── */}
- {creatorProfiles.length > 0 && (
- <div className="py-1 border-t border-border/40">
- <div className="px-3 py-2 flex items-center justify-between">
- <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
- Criadores ({creatorProfiles.length})
- </span>
- <Link
- to="/conta/criadores"
- className="text-[10px] font-bold text-primary hover:underline flex items-center gap-1"
- >
- <span>Gerenciar</span>
- <ArrowUpRight className="size-2.5" />
- </Link>
- </div>
-
- <div className="space-y-1 px-1">
- {creatorProfiles.slice(0, 3).map((cp: any) => {
- const isCurrent = activeCreatorId === cp.id || activeCreatorId === cp.handle;
- return (
- <button
- key={cp.id || cp.handle}
- type="button"
- onClick={() => handleSwitchCreator(cp)}
- className={cn(
- "w-full px-3 py-2 rounded-lg text-left flex items-center justify-between transition-colors cursor-pointer",
- isCurrent
- ? "bg-amber-500/10 text-amber-600 font-bold"
- : "hover:bg-muted/60 text-foreground/90 font-medium"
- )}
- >
- <div className="flex items-center gap-2 min-w-0">
- <div className="size-5 rounded-md bg-amber-500/10 text-amber-600 flex items-center justify-center overflow-hidden shrink-0">
- {cp.avatar_url ? (
- <img src={cp.avatar_url} alt={cp.handle} className="size-full object-cover" />
- ) : (
- <Award className="size-3" />
- )}
- </div>
- <p className="text-xs truncate leading-tight">@{cp.handle}</p>
- </div>
- {isCurrent ? (
- <span className="text-[9px] font-bold text-amber-600 px-2 py-1 rounded-md bg-amber-500/20 shrink-0">
- Ativo
- </span>
- ) : (
- <ArrowUpRight className="size-3 text-muted-foreground/70 shrink-0" />
- )}
- </button>
- );
- })}
- </div>
- </div>
- )}
-
- {/* ── Gestão de Negócios & Espaços (Multiloja Transparente) ── */}
- {memberships.length > 0 && (
- <div className="py-1">
- <div className="px-3 py-2 flex items-center justify-between">
- <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
- Minhas Lojas ({memberships.length})
- </span>
- <Link
- to="/conta/lojas"
- className="text-[10px] font-bold text-primary hover:underline flex items-center gap-1"
- >
- <span>Ver Todas</span>
- <ArrowUpRight className="size-2.5" />
- </Link>
- </div>
-
- <div className="space-y-1 px-1">
- {memberships.slice(0, 3).map((m: any) => {
- const isCurrent = m.store_id === activeStoreId;
- return (
- <button
- key={m.store_id}
- type="button"
- disabled={isSwitching}
- onClick={() => handleSwitchStore(m.store_id)}
- className={cn(
- "w-full px-3 py-2 rounded-lg text-left flex items-center justify-between transition-colors cursor-pointer",
- isCurrent
- ? "bg-primary/10 text-primary font-bold"
- : "hover:bg-muted/60 text-foreground/90 font-medium"
- )}
- >
- <div className="flex items-center gap-2 min-w-0">
- <div className="size-5 rounded-md bg-muted flex items-center justify-center overflow-hidden shrink-0">
- {m.logo_url ? (
- <img src={m.logo_url} alt={m.name} className="size-full object-cover" />
- ) : (
- <Store className="size-3 text-primary" />
- )}
- </div>
- <div className="min-w-0">
- <p className="text-xs truncate leading-tight">{m.name || "Minha Loja"}</p>
- </div>
- </div>
- {isCurrent ? (
- <span className="text-[9px] font-bold text-primary px-2 py-1 rounded-md bg-primary/20 shrink-0">
- Ativo
- </span>
- ) : (
- <ArrowUpRight className="size-3 text-muted-foreground/70 shrink-0" />
- )}
- </button>
- );
- })}
-
- <DropdownMenuItem asChild className="rounded-lg cursor-pointer text-xs font-semibold text-muted-foreground hover:text-foreground px-3 py-2 flex items-center gap-2 mt-1">
- <Link to="/criar-negocio">
- <Plus className="size-3.5" />
- <span>Cadastrar Outro Negócio</span>
- </Link>
- </DropdownMenuItem>
- </div>
- </div>
- )}
-
- {/* ── Atalho VIP: Painel Global Master (Super Admin) ── */}
- {isPlatformAdmin && (
- <>
- <DropdownMenuSeparator className="my-1" />
- <div className="p-1">
- <DropdownMenuItem asChild className="rounded-lg cursor-pointer text-xs font-black bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 px-3 py-2 flex items-center justify-between">
- <Link to="/admin-master">
- <div className="flex items-center gap-2">
- <ShieldAlert className="size-3.5" />
- <span>Painel Global Master</span>
- </div>
- <ArrowUpRight className="size-3" />
- </Link>
- </DropdownMenuItem>
- </div>
- </>
- )}
-
- <DropdownMenuSeparator className="my-1" />
-
- <DropdownMenuItem
- onClick={handleLogout}
- className="rounded-lg cursor-pointer text-xs font-semibold text-destructive hover:bg-destructive/10 focus:bg-destructive/10 focus:text-destructive px-3 py-2"
- >
- Encerrar Sessão
- </DropdownMenuItem>
- </DropdownMenuContent>
- </DropdownMenu>
- </div>
- ) : (
- <Button
- asChild
- size="sm"
- className="hidden md:inline-flex h-8 rounded-lg px-3 text-xs font-bold bg-primary text-primary-foreground"
- >
- <Link to="/entrar">Entrar</Link>
- </Button>
- )}
- </div>
-
- {/* Modal de Busca Rápida */}
- <Dialog open={searchOpen} onOpenChange={setSearchOpen}>
- <DialogContent className="sm:max-w-lg sm:rounded-lg p-4 sm:top-[20%] sm:translate-y-0">
- <DialogHeader className="sr-only">
- <DialogTitle>Buscar no Waesy</DialogTitle>
- </DialogHeader>
- <form onSubmit={handleSearchSubmit} className="relative">
- <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
- <Input
- autoFocus
- value={searchQuery}
- onChange={(e) => setSearchQuery(e.target.value)}
- placeholder="Buscar posts, produtos, classificados, eventos ou membros..."
- className="h-12 pl-10 pr-4 text-sm bg-muted/30 rounded-lg border-border focus-visible:ring-primary"
- />
- </form>
- </DialogContent>
- </Dialog>
- </>
- );
+      {/* Modal de Busca Rápida */}
+      <Dialog open={searchOpen} onOpenChange={setSearchOpen}>
+        <DialogContent className="sm:max-w-lg sm:rounded-lg p-4 sm:top-[20%] sm:translate-y-0">
+          <DialogHeader className="sr-only">
+            <DialogTitle>Buscar no Waesy</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleSearchSubmit} className="relative">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+            <Input
+              autoFocus
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Buscar posts, produtos, classificados, eventos ou membros..."
+              className="h-12 pl-10 pr-4 text-sm bg-muted/30 rounded-lg border-border focus-visible:ring-primary"
+            />
+          </form>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
 }

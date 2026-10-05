@@ -126,9 +126,27 @@ function AfiliadosFinanceiroPage() {
  className="w-full pl-9 pr-4 py-2 text-sm bg-background rounded-lg outline-none focus:ring-2 focus:ring-primary/20 transition-colors"
  />
  </div>
- <Button variant="outline" size="sm">
+ <Button
+ variant="outline"
+ size="sm"
+ onClick={() => {
+   if (!filteredPerformance || filteredPerformance.length === 0) return;
+   const header = "Parceiro,Pedidos,Faturamento (R$),Comissão (R$),Pendente (R$)";
+   const rows = filteredPerformance.map((p: any) =>
+     [p.sellerName, p.totalOrders, (p.totalRevenueCents / 100).toFixed(2), (p.totalCommissionCents / 100).toFixed(2), (p.pendingCommissionCents / 100).toFixed(2)].join(",")
+   );
+   const csv = [header, ...rows].join("\n");
+   const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+   const url = URL.createObjectURL(blob);
+   const a = document.createElement("a");
+   a.href = url;
+   a.download = "afiliados.csv";
+   a.click();
+   URL.revokeObjectURL(url);
+ }}
+>
  Exportar CSV
- </Button>
+</Button>
  </div>
 
  {/* Table */}

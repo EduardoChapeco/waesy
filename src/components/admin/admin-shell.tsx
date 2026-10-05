@@ -267,12 +267,14 @@ function HeaderRightIsland({ session }: { session: any }) {
  {timeStr && <span className="font-bold">{timeStr}</span>}
  <span className="h-3 w-px bg-border" />
  <Button
+ asChild
  variant="ghost"
  size="icon"
- className="size-6 text-muted-foreground hover:text-primary rounded-full"
- aria-label="Notificações"
+ className="size-11 rounded-full text-muted-foreground hover:text-primary cursor-pointer"
  >
+ <Link to="/workspace/notificacoes" aria-label="Notificações">
  <Bell className="size-4" />
+ </Link>
  </Button>
  </div>
  </div>

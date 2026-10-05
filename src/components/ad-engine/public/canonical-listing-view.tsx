@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { toast } from "sonner";
 // EmptyState: listagens de embarques e miniaturas vazias prevenidas (empty)
 import {
   Calendar,
@@ -28,7 +29,6 @@ import type { UnifiedListing, UnifiedNiche } from "@/types/unified-ad-engine";
 import { NICHE_TAXONOMY_REGISTRY } from "@/lib/ad-engine/niche-taxonomy-manifest";
 import { formatMoney } from "@/lib/money";
 import { cn } from "@/lib/utils";
-import { toast } from "sonner";
 
 export interface CanonicalListingViewProps {
   listing: Partial<UnifiedListing>;
@@ -147,7 +147,7 @@ export function CanonicalListingView({
       {isOwner && (
         <aside aria-label="Aviso de Modo Proprietário" className="bg-amber-500/10 border-b border-amber-500/20 px-4 py-2 flex items-center justify-between text-xs">
           <div className="flex items-center gap-2 text-amber-800 dark:text-amber-300">
-            <span className="size-2 rounded-full bg-amber-500 animate-pulse shrink-0" />
+            <span className="size-2 rounded-full bg-amber-500 shrink-0" />
             <span>
               <strong>Modo Proprietário:</strong> Você está visualizando seu anúncio publicado.
             </span>
@@ -188,7 +188,7 @@ export function CanonicalListingView({
               size="icon"
               onClick={handleShareListing}
               className="size-11 min-h-11 min-w-11 rounded-lg cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none text-muted-foreground hover:text-foreground hover:bg-muted"
-              title="Compartilhar"
+              title="Compartilhar anúncio"
               aria-label="Compartilhar anúncio"
             >
               <Share2 className="size-4" />

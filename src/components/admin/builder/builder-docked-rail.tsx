@@ -1,4 +1,5 @@
 import * as React from "react";
+import { toast } from "sonner";
 import { Plus, Layers, FileText, Palette, Database, Sliders, Settings, HelpCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -87,8 +88,10 @@ export function BuilderDockedRail({
  <div className="flex flex-col items-center gap-2 w-full px-2 pt-3 border-t border-border/50">
  <button
  type="button"
+ onClick={() => toast.info("Atalhos do Construtor: Ctrl+Z para desfazer, Ctrl+Y para refazer, Esc para fechar painéis laterais.")}
  title="Atalhos do Construtor"
- className="size-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer group relative"
+ aria-label="Atalhos do Construtor"
+ className="size-11 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer group relative"
  >
  <HelpCircle className="size-4" />
  <span className="absolute left-14 px-3 py-1 rounded-lg bg-foreground text-background text-[10px] font-bold whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 shadow-md">

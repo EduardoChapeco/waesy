@@ -19,6 +19,17 @@ export const Route = createFileRoute("/_store/conta/")({
   loader: async () => {
     try {
       const session = await getUserSession().catch(() => null);
+      if (!session || (!session.id && !session.user)) {
+        return {
+          orders: [],
+          profile: null,
+          session: null,
+          stores: [],
+          notifications: [],
+          creatorProfiles: [],
+          courierProfile: null,
+        };
+      }
       const [ordersRes, profileRes, storesRes, notificationsRes, creatorsRes, courierRes] = await Promise.all([
         listCustomerOrders().catch(() => []),
         getProfile().catch(() => null),
@@ -31,7 +42,7 @@ export const Route = createFileRoute("/_store/conta/")({
         orders: ordersRes || [],
         profile: profileRes || null,
         session: session || null,
-        stores: storesRes || [],
+        stores: storesRes && storesRes.length > 0 ? storesRes : (session?.memberships || []),
         notifications: notificationsRes || [],
         creatorProfiles: creatorsRes || [],
         courierProfile: courierRes || null,

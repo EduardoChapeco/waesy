@@ -357,13 +357,9 @@ export function ProductUpsellCard({ productId, productTitle }: ProductUpsellCard
                     </div>
                   </div>
 
-                  <Button
-                    type="button"
-                    size="sm"
-                    className="h-11 px-4 text-xs font-bold rounded-lg shrink-0 pointer-events-none opacity-90"
-                  >
+                  <span className="inline-flex items-center justify-center h-11 px-4 text-xs font-bold rounded-lg shrink-0 bg-primary text-primary-foreground pointer-events-none opacity-90 select-none">
                     Adicionar
-                  </Button>
+                  </span>
                 </div>
               </div>
             </div>

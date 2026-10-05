@@ -9530,8 +9530,8 @@ function SpecializedClassifiedEditor({
  <div className="pt-2">
  <Button
  type="button"
- disabled
- className="w-full rounded-lg bg-foreground text-background font-bold text-xs gap-2 h-11 opacity-90 cursor-not-allowed"
+ onClick={() => toast.info("Modo de prévia: ao publicar seu anúncio, este botão iniciará a conversa com o comprador.")}
+ className="w-full rounded-lg bg-foreground text-background font-bold text-xs gap-2 h-11 cursor-pointer"
  >
  <Phone className="size-4" />
  <span>

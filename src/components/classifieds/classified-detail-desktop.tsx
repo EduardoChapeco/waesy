@@ -63,14 +63,24 @@ export function ClassifiedDetailDesktop({
   const displayMode = (classified.attributes?.display_mode as string) || "tabs";
   const templateStyle = (classified.attributes?.template_style as string) || "standard";
 
+  const isUuid = (str?: any): str is string =>
+    typeof str === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
+
   const handleStartNativeChat = async (customInitialMessage?: string | React.MouseEvent) => {
     const initialMsg = typeof customInitialMessage === "string" ? customInitialMessage : undefined;
     setIsStartingChat(true);
     try {
+      const validStoreId = isUuid(classified.store_id) ? classified.store_id : isUuid(classified.storeId) ? classified.storeId : undefined;
+      const validAuthorId = isUuid(classified.author_profile_id) ? classified.author_profile_id : undefined;
+
+      if (!validStoreId && !validAuthorId) {
+        throw new Error("Anunciante não possui canal de chat ativo. Utilize o WhatsApp.");
+      }
+
       const res = await startCustomerChatThread({
         data: {
-          storeId: classified.store_id || classified.storeId || undefined,
-          recipientProfileId: classified.author_profile_id || undefined,
+          storeId: validStoreId,
+          recipientProfileId: validAuthorId,
           subject: classified.title,
           initialMessage: initialMsg || `Olá, tenho interesse no anúncio: ${classified.title}`,
         },
@@ -82,14 +92,15 @@ export function ClassifiedDetailDesktop({
         throw new Error("Falha ao abrir conversa.");
       }
     } catch (err: any) {
-      if (cleanPhone) {
-        handleWhatsApp();
-      } else {
-        toast.info("Identifique-se para enviar mensagem ao anunciante.");
+      const msg = err?.message || "";
+      if (msg.includes("login") || msg.includes("Faça login") || msg.includes("autenticado") || msg.includes("Identifique-se")) {
+        toast.info("Faça login para conversar no chat.");
         navigate({
           to: "/entrar",
           search: { returnUrl: `/classificados/${classified.id}` },
         });
+      } else {
+        toast.error(msg || "Não foi possível abrir o chat.");
       }
     } finally {
       setIsStartingChat(false);
@@ -876,16 +887,18 @@ export function ClassifiedDetailDesktop({
                 {primaryCta.label}
               </Button>
 
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleStartNativeChat}
-                disabled={isStartingChat}
-                className="h-11 w-full rounded-lg text-xs font-bold border-primary/30 text-primary bg-primary/5 hover:bg-primary/15 flex items-center justify-center gap-2 cursor-pointer"
-              >
-                <MessageCircle className="size-4 text-primary" />
-                <span>{isStartingChat ? "Iniciando Chat..." : "Conversar no App"}</span>
-              </Button>
+              {!isConversational && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleStartNativeChat}
+                  disabled={isStartingChat}
+                  className="h-11 w-full rounded-lg text-xs font-bold border-primary/30 text-primary bg-primary/5 hover:bg-primary/15 flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <MessageCircle className="size-4 text-primary" />
+                  <span>{isStartingChat ? "Iniciando Chat..." : "Conversar no App"}</span>
+                </Button>
+              )}
 
               {onOpenProposalModal && !isDonation && (
                 <Button

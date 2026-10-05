@@ -1543,7 +1543,11 @@ export function NewTravelProposalSheet({
  <Button
  type="button"
  size="sm"
- className="rounded-lg text-xs shrink-0 font-bold group-hover:bg-primary group-hover:text-primary-foreground"
+ onClick={(e) => {
+ e.stopPropagation();
+ handleApplyTemplate(tpl);
+ }}
+ className="rounded-lg text-xs h-11 min-h-11 px-4 shrink-0 font-bold cursor-pointer group-hover:bg-primary group-hover:text-primary-foreground"
  >
  Usar Roteiro
  </Button>

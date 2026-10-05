@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Link } from "@tanstack/react-router";
 import { PricingBlockData, OmniBlockStyling } from "../types";
 import { getSectionStyle } from "../utils";
 import { Check, Star } from "lucide-react";
@@ -9,9 +10,10 @@ export interface PricingTablesCleanProps {
   data: PricingBlockData;
   styling?: OmniBlockStyling;
   className?: string;
+  onSelectTier?: (tier: any) => void;
 }
 
-export const PricingTablesClean: React.FC<PricingTablesCleanProps> = ({ id, data, styling, className = "" }) => {
+export const PricingTablesClean: React.FC<PricingTablesCleanProps> = ({ id, data, styling, className = "", onSelectTier }) => {
   const [isAnnual, setIsAnnual] = useState(false);
   const sectionStyle = getSectionStyle(styling);
 
@@ -136,13 +138,26 @@ export const PricingTablesClean: React.FC<PricingTablesCleanProps> = ({ id, data
                 </div>
 
                 {/* Botão de Contratação */}
-                {(tier as any).ctaHref || (tier as any).href ? (
+                {onSelectTier ? (
+                  <Button
+                    type="button"
+                    size="lg"
+                    onClick={() => onSelectTier(tier)}
+                    className={`w-full h-12 min-h-11 rounded-lg text-sm font-bold transition-transform active:scale-95 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                      tier.isPopular
+                        ? "bg-background text-foreground hover:bg-background/90"
+                        : "bg-foreground text-background hover:bg-foreground/90"
+                    }`}
+                  >
+                    {tier.ctaLabel}
+                  </Button>
+                ) : (tier as any).ctaHref || (tier as any).href ? (
                   <Button
                     asChild
                     size="lg"
                     className={`w-full h-12 min-h-11 rounded-lg text-sm font-bold transition-transform active:scale-95 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                       tier.isPopular
-                        ? "bg-background text-foreground hover:bg-background/90 "
+                        ? "bg-background text-foreground hover:bg-background/90"
                         : "bg-foreground text-background hover:bg-foreground/90"
                     }`}
                   >
@@ -150,16 +165,21 @@ export const PricingTablesClean: React.FC<PricingTablesCleanProps> = ({ id, data
                   </Button>
                 ) : (
                   <Button
-                    type="button"
+                    asChild
                     size="lg"
-                    onClick={(tier as any).onClick}
                     className={`w-full h-12 min-h-11 rounded-lg text-sm font-bold transition-transform active:scale-95 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                       tier.isPopular
-                        ? "bg-background text-foreground hover:bg-background/90 "
+                        ? "bg-background text-foreground hover:bg-background/90"
                         : "bg-foreground text-background hover:bg-foreground/90"
                     }`}
                   >
-                    {tier.ctaLabel}
+                    <Link
+                      to="/workspace/financeiro/faturas"
+                      search={{ upgrade_plan: tier.name }}
+                      className="inline-flex items-center justify-center size-full"
+                    >
+                      {tier.ctaLabel}
+                    </Link>
                   </Button>
                 )}
               </div>

@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
-import { getServerIdentity, assertStoreAccess, STAFF_ROLES } from "@/lib/identity.server";
+import { getServerIdentity, assertStoreAccess, STAFF_ROLES } from "@/lib/server-access";
 import { enforceRateLimit } from "@/lib/rate-limiter";
 import {
   MCP_TOOL_REGISTRY,

@@ -700,13 +700,13 @@ function UnifiedIntegrationsHubPage() {
           <PageHeader title="Integrações" />
         </div>
 
-        <Link to="/workspace/integracoes/marketplaces">
-          <Button variant="outline" size="sm" className="h-9 px-4 gap-2 rounded-lg text-xs font-semibold">
+        <Button asChild variant="outline" size="sm" className="h-9 px-4 gap-2 rounded-lg text-xs font-semibold">
+          <Link to="/workspace/integracoes/marketplaces">
             <Store className="size-4 text-primary" />
             Marketplaces
             <ExternalLink className="size-3 text-muted-foreground" />
-          </Button>
-        </Link>
+          </Link>
+        </Button>
       </div>
 
       {/* TABS NAVEGAÇÃO DO HUB */}
@@ -899,13 +899,13 @@ function UnifiedIntegrationsHubPage() {
             <Badge variant="outline" className="text-xs border-primary/30 text-primary">
               Pool Ativo (Gemini / Groq / OpenAI)
             </Badge>
-            <Link to="/workspace/configuracoes/inteligencia-artificial">
-              <Button variant="outline" size="sm" className="h-8 px-3 text-xs rounded-lg font-medium cursor-pointer gap-2 border-primary/30 text-primary hover:bg-primary/10">
+            <Button asChild variant="outline" size="sm" className="h-8 px-3 text-xs rounded-lg font-medium cursor-pointer gap-2 border-primary/30 text-primary hover:bg-primary/10">
+              <Link to="/workspace/configuracoes/inteligencia-artificial">
                 <Bot className="size-3.5 text-primary" />
                 Modelos de IA
                 <ExternalLink className="size-3 text-muted-foreground" />
-              </Button>
-            </Link>
+              </Link>
+            </Button>
           </div>
 
           <div className="grid lg:grid-cols-2 gap-6">
@@ -999,12 +999,12 @@ function UnifiedIntegrationsHubPage() {
         <TabsContent value="marketplaces" className="space-y-4 outline-none">
           <div className="flex items-center justify-between gap-4 pb-1">
             <h4 className="text-sm font-semibold text-foreground">Canais Integrados</h4>
-            <Link to="/workspace/integracoes/marketplaces">
-              <Button size="sm" variant="outline" className="h-8 rounded-lg text-xs font-semibold gap-2 cursor-pointer">
+            <Button asChild size="sm" variant="outline" className="h-8 rounded-lg text-xs font-semibold gap-2 cursor-pointer">
+              <Link to="/workspace/integracoes/marketplaces">
                 Gerenciar Conexões
                 <ExternalLink className="size-3 text-muted-foreground" />
-              </Button>
-            </Link>
+              </Link>
+            </Button>
           </div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -1045,11 +1045,11 @@ function UnifiedIntegrationsHubPage() {
                         ? `Último sync: ${new Date(conn.last_sync_at).toLocaleDateString("pt-BR")}`
                         : "Sem sincronização"}
                     </span>
-                    <Link to="/workspace/integracoes/marketplaces">
-                      <Button variant="ghost" size="sm" className="h-7 px-2 text-xs font-semibold text-primary">
+                    <Button asChild variant="ghost" size="sm" className="h-7 px-2 text-xs font-semibold text-primary">
+                      <Link to="/workspace/integracoes/marketplaces">
                         Configurar
-                      </Button>
-                    </Link>
+                      </Link>
+                    </Button>
                   </div>
                 </div>
               );

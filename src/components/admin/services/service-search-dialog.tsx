@@ -179,9 +179,14 @@ export function ServiceSearchDialog({
                     </p>
                   </div>
                   <Button
+                    type="button"
                     size="sm"
                     variant="ghost"
-                    className="shrink-0 h-8 px-3 text-xs text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-all"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleSelect(srv);
+                    }}
+                    className="shrink-0 h-11 min-h-11 px-4 text-xs font-bold text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-all cursor-pointer"
                   >
                     Usar
                   </Button>

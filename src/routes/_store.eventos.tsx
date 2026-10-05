@@ -957,10 +957,10 @@ function EventosPage() {
                 <span className="text-xs sm:text-sm font-bold text-primary font-mono">
                   {(event as any).price_cents ? `R$ ${((event as any).price_cents / 100).toFixed(2)}` : "Gratuito"}
                 </span>
-                <Button size="sm" variant="outline" className="h-11 px-4 rounded-lg text-xs font-semibold gap-1 cursor-pointer">
+                <div className="h-11 px-4 rounded-lg text-xs font-semibold gap-1 inline-flex items-center justify-center border border-border bg-card text-foreground group-hover:bg-muted/80 transition-colors select-none">
                   <span>Ingressos</span>
                   <CaretRight size={12} weight="bold" />
-                </Button>
+                </div>
               </div>
             </Link>
           ))}

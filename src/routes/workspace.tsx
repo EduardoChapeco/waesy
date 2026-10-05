@@ -162,6 +162,15 @@ function WorkspaceLayout() {
 
  const isPlatformAdmin = isPlatformAdminUser(session);
 
+  useEffect(() => {
+    if (typeof window !== "undefined" && session?.memberships?.[0]?.store_id) {
+      const activeStoreId = session.store_id || session.memberships[0].store_id;
+      window.document.cookie = "waesy_active_context=store; path=/; max-age=31536000; SameSite=Lax";
+      window.document.cookie = `waesy_active_tenant=${activeStoreId}; path=/; max-age=31536000; SameSite=Lax`;
+      window.document.cookie = `waesy_store_id=${activeStoreId}; path=/; max-age=31536000; SameSite=Lax`;
+    }
+  }, [session]);
+
   const activeMembership = session?.memberships?.[0];
   const effectiveRole = (
     isPlatformAdmin

@@ -309,7 +309,13 @@ export function OperatorVoucherImportSheet({
                         PDFs de reservas, bilhetes aéreos, vouchers, boletos e prints de tela (suporta colar direto da área de transferência)
                       </p>
                     </div>
-                    <Button variant="outline" size="sm" type="button" className="text-xs h-8">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
+                      className="text-xs h-11 min-h-11 px-4 cursor-pointer"
+                    >
                       <Plus className="size-3.5 mr-1" /> Selecionar ou Colar Arquivos
                     </Button>
                   </div>

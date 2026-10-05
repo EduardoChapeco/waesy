@@ -210,17 +210,16 @@ function PublicSponsorReportPage() {
             </p>
           </div>
           {targetUrl && (
-            <a
-              href={targetUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="self-start sm:self-auto"
-            >
-              <Button variant="outline" size="sm" className="rounded-lg font-bold text-xs gap-2 h-10 px-4 min-h-11">
+            <Button asChild variant="outline" size="sm" className="rounded-lg font-bold text-xs gap-2 h-11 min-h-11 px-4 self-start sm:self-auto cursor-pointer">
+              <a
+                href={targetUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 <span>Testar Destino</span>
                 <ExternalLink className="size-3.5" />
-              </Button>
-            </a>
+              </a>
+            </Button>
           )}
         </div>
 

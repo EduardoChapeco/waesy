@@ -2202,7 +2202,11 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
  <Button
  type="button"
  size="sm"
- className="rounded-lg text-xs font-bold h-7 px-3 shrink-0"
+ onClick={(e) => {
+ e.stopPropagation();
+ handleSelectProduct(product, variant);
+ }}
+ className="rounded-lg text-xs font-bold h-11 min-h-11 px-3 shrink-0 cursor-pointer"
  >
  Inserir
  </Button>

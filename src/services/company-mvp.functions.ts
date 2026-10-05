@@ -2,8 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { setCookie } from "@tanstack/start-server-core";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
-import { getSSRClient } from "@/lib/supabase-ssr.server";
-import { getServerIdentity, assertStoreAccess, STAFF_ROLES } from "@/lib/server-access";
+import { getSSRClient, getServerIdentity, assertStoreAccess, STAFF_ROLES } from "@/lib/server-access";
 import { getIdentity } from "./identity.functions";
 import { enrichCnpj } from "@/lib/mining/cnpj-enrichment.engine";
 import { generateSlug, resolveUniqueStoreSlug } from "@/lib/slug-utils";
@@ -46,7 +45,7 @@ export const fastRegisterCompany = createServerFn({ method: "POST" })
 
     if (!userId || Boolean(userEmail) === false) {
       try {
-        const ssr = getSSRClient();
+        const ssr = await getSSRClient();
         const { data: authData } = await ssr.auth.getUser();
         userId = userId || authData?.user?.id || null;
         userEmail = userEmail || authData?.user?.email || null;
@@ -79,10 +78,10 @@ export const fastRegisterCompany = createServerFn({ method: "POST" })
     if (!existingProfile) {
       await db.from("profiles").insert({
         id: userId,
-        role: "store_owner",
+        role: "owner",
       });
-    } else {
-      await db.from("profiles").update({ role: "store_owner" }).eq("id", userId);
+    } else if (existingProfile.role === "customer" || existingProfile.role === "member") {
+      await db.from("profiles").update({ role: "owner" }).eq("id", userId);
     }
 
     // 1. Criar Organização
@@ -177,12 +176,12 @@ export const fastRegisterCompany = createServerFn({ method: "POST" })
       console.warn("[fastRegisterCompany] Aviso directory_listings:", e?.message);
     }
 
-    // 6. Elevar role do profile para store_owner
+    // 6. Elevar role do profile para owner (compatível com constraints SQL e assertStoreAccess)
     try {
-      await db.from("profiles").update({ role: "store_owner" }).eq("id", userId);
-      await db.rpc("elevate_to_store_owner", { p_user_id: userId });
+      await db.from("profiles").update({ role: "owner" }).eq("id", userId);
+      try { await db.rpc("elevate_to_store_owner", { p_user_id: userId }); } catch { /* ignorado */ }
     } catch (e: any) {
-      console.warn("[fastRegisterCompany] Aviso profile elevate store_owner:", e?.message);
+      console.warn("[fastRegisterCompany] Aviso profile elevate owner:", e?.message);
     }
 
     // 6.1 Persistir Inteligência de Marca e Catálogo (se minerados no onboarding)

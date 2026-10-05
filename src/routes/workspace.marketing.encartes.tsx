@@ -898,7 +898,16 @@ export default function WorkspaceMarketingEncartesPage() {
                     </div>
                   </div>
 
-                  <Button size="sm" variant="ghost" className="h-7 text-xs font-bold text-primary shrink-0">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleSelectProductForPin(prod);
+                    }}
+                    className="h-11 min-h-11 px-3 text-xs font-bold text-primary shrink-0 cursor-pointer"
+                  >
                     Selecionar
                   </Button>
                 </div>

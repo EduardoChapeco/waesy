@@ -1501,44 +1501,48 @@ function cleanAddressSegment(text: string): string {
                             const imageUrl = p.images?.[0] || p.image_url || null;
 
                             return (
-                              <Link
+                              <div
                                 key={p.id}
-                                to="/produto/$slug"
-                                params={{ slug: p.slug || p.id }}
-                                className="w-56 shrink-0 rounded-lg border border-border/60 bg-card overflow-hidden hover:border-foreground/30 transition-all flex flex-col justify-between group cursor-pointer"
+                                className="w-56 shrink-0 rounded-lg border border-border/60 bg-card overflow-hidden hover:border-foreground/30 transition-all flex flex-col justify-between group"
                               >
-                                {/* PLACEHOLDER OBRIGATÓRIO — nunca exibe card sem imagem */}
-                                <div className="aspect-square w-full overflow-hidden bg-muted/20 relative">
-                                  {imageUrl ? (
-                                    <img
-                                      src={imageUrl}
-                                      alt={p.title}
-                                      className="size-full object-cover group-hover:scale-105 transition-transform duration-300"
-                                      loading="lazy"
-                                    />
-                                  ) : (
-                                    <div className="size-full flex items-center justify-center">
-                                      <Package className="size-10 text-muted-foreground/30" strokeWidth={1.5} />
-                                    </div>
-                                  )}
-                                </div>
-                                <div className="p-4 space-y-1 min-w-0 flex-1">
-                                  <h4 className="text-xs font-bold text-foreground line-clamp-2 leading-snug">{p.title}</h4>
-                                  <p className="text-sm font-black text-foreground font-mono">
-                                    {formatMoney(priceCents)}
-                                  </p>
-                                </div>
+                                <Link
+                                  to="/produto/$slug"
+                                  params={{ slug: p.slug || p.id }}
+                                  className="block flex-1 group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-t-lg"
+                                >
+                                  {/* PLACEHOLDER OBRIGATÓRIO — nunca exibe card sem imagem */}
+                                  <div className="aspect-square w-full overflow-hidden bg-muted/20 relative">
+                                    {imageUrl ? (
+                                      <img
+                                        src={imageUrl}
+                                        alt={p.title}
+                                        className="size-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                        loading="lazy"
+                                      />
+                                    ) : (
+                                      <div className="size-full flex items-center justify-center">
+                                        <Package className="size-10 text-muted-foreground/30" strokeWidth={1.5} />
+                                      </div>
+                                    )}
+                                  </div>
+                                  <div className="p-4 space-y-1 min-w-0">
+                                    <h4 className="text-xs font-bold text-foreground line-clamp-2 leading-snug group-hover:text-primary transition-colors">{p.title}</h4>
+                                    <p className="text-sm font-black text-foreground font-mono">
+                                      {formatMoney(priceCents)}
+                                    </p>
+                                  </div>
+                                </Link>
                                 <div className="p-4 pt-0">
                                   <Button
                                     size="sm"
-                                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleAddToCart(p); }}
-                                    className="w-full h-9 rounded-lg font-bold text-xs bg-foreground text-background hover:bg-foreground/90 gap-1 cursor-pointer"
+                                    onClick={() => handleAddToCart(p)}
+                                    className="w-full h-11 min-h-11 rounded-lg font-bold text-xs bg-foreground text-background hover:bg-foreground/90 gap-1 cursor-pointer"
                                   >
                                     <Plus className="size-3" />
                                     <span>Adicionar</span>
                                   </Button>
                                 </div>
-                              </Link>
+                              </div>
                             );
                           })}
                         </div>

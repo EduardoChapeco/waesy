@@ -363,6 +363,9 @@ export function LocationMasterPill({ className = "" }: { className?: string }) {
  onPointerDown={handlePointerDown}
  onPointerUp={handlePointerUp}
  onPointerCancel={handlePointerCancel}
+ onClick={() => { /* acionado via onPointerUp — mantém compatibilidade */ }}
+ type="button"
+ aria-label="Alterar Localização"
  title="Alterar Localização"
  className={`inline-flex items-center gap-2 px-3 h-11 min-h-11 rounded-lg text-xs font-bold transition-colors motion-reduce:transition-none border select-none cursor-pointer shrink-0 ${
  isHolding

@@ -296,21 +296,21 @@ function WorkspacePatrocinadoresPage() {
                     </Button>
 
                     {sp.magic_token && (
-                      <Link
-                        to="/patrocinador/$token"
-                        params={{ token: sp.magic_token }}
-                        target="_blank"
-                        className="shrink-0"
+                      <Button
+                        asChild
+                        variant="ghost"
+                        size="icon"
+                        title="Abrir Relatório do Patrocinador"
+                        className="size-11 rounded-lg min-h-11 min-w-[44px] shrink-0 cursor-pointer"
                       >
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          title="Abrir Relatório do Patrocinador"
-                          className="size-11 rounded-lg min-h-11 min-w-[44px]"
+                        <Link
+                          to="/patrocinador/$token"
+                          params={{ token: sp.magic_token }}
+                          target="_blank"
                         >
                           <ExternalLink className="size-4" />
-                        </Button>
-                      </Link>
+                        </Link>
+                      </Button>
                     )}
                   </div>
 

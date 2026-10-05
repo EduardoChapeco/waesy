@@ -818,7 +818,7 @@ function CommunityMarketplaceView({ data }: { data: any }) {
                     actionLabel="Ver ofertas"
                     actionTo="/classificados"
                     gradient="from-amber-600 via-orange-600 to-red-600"
-                    className="h-80 w-52 sm:w-60"
+                    className="h-96 min-h-96 w-52 sm:w-60"
                     ariaLabel="Ver ofertas em Classificados"
                   />
                 }
@@ -837,7 +837,7 @@ function CommunityMarketplaceView({ data }: { data: any }) {
                       key={item.id}
                       to="/classificados/$id"
                       params={{ id: item.id }}
-                      className="min-w-60 sm:min-w-68 max-w-72 shrink-0 group flex flex-col justify-between rounded-lg border border-border/60 bg-card overflow-hidden hover:border-foreground/30 transition-all h-80"
+                      className="min-w-60 sm:min-w-68 max-w-72 shrink-0 group flex flex-col justify-between rounded-lg border border-border/60 bg-card overflow-hidden hover:border-foreground/30 transition-all h-96 min-h-96"
                     >
                       <div className="relative aspect-square w-full overflow-hidden bg-muted/30">
                         {coverImage ? (
@@ -860,13 +860,13 @@ function CommunityMarketplaceView({ data }: { data: any }) {
                       </div>
 
                       <div className="p-3 space-y-1 flex-1 flex flex-col justify-between">
-                        <p className="font-bold text-sm text-foreground line-clamp-1 group-hover:text-primary transition-colors">
+                        <p className="font-bold text-sm text-foreground line-clamp-2 group-hover:text-primary transition-colors">
                           {item.title}
                         </p>
                         <p className="text-xs font-black text-foreground font-mono">
                           {priceDisplay}
                         </p>
-                        <p className="text-xs text-muted-foreground/75 text-muted-foreground truncate">
+                        <p className="text-xs text-muted-foreground truncate">
                           {item.location_name || item.location_text || "Na sua região"}
                         </p>
                       </div>
@@ -887,13 +887,23 @@ function CommunityMarketplaceView({ data }: { data: any }) {
                 actionTo="/feed"
               >
                 {filteredFeed.map((post: any) => {
-                  const coverImage = post.media_urls && post.media_urls[0];
+                  const mediaFirst = post.media_urls && post.media_urls[0];
+                  const isVid = typeof mediaFirst === "string" && (
+                    mediaFirst.endsWith(".mp4") ||
+                    mediaFirst.endsWith(".webm") ||
+                    mediaFirst.endsWith(".mov") ||
+                    mediaFirst.includes("video")
+                  );
+                  const coverImage = isVid ? null : mediaFirst;
                   const rawText = post.content_text || "Publicação compartilhada no feed da comunidade";
                   const cleanContent = rawText
                     .replace(/==([^=]+)==/g, "$1")
                     .replace(/\*\*([^*]+)\*\*/g, "$1")
                     .replace(/__([^_]+)__/g, "$1")
                     .trim();
+
+                  const authorName = post.author?.name || post.profiles?.full_name || post.stores?.name || "Membro local";
+                  const avatarUrl = post.author?.avatar_url || post.profiles?.avatar_url || null;
 
                   return (
                     <Link
@@ -903,9 +913,9 @@ function CommunityMarketplaceView({ data }: { data: any }) {
                     >
                       <div className="flex items-center gap-3">
                         <div className="size-8 rounded-full bg-muted/60 overflow-hidden flex items-center justify-center text-muted-foreground shrink-0 border border-border/40">
-                          {post.profiles?.avatar_url ? (
+                          {avatarUrl ? (
                             <img
-                              src={post.profiles.avatar_url}
+                              src={avatarUrl}
                               alt=""
                               className="size-full object-cover"
                               onError={(e) => {
@@ -918,7 +928,7 @@ function CommunityMarketplaceView({ data }: { data: any }) {
                         </div>
                         <div className="min-w-0 flex-1">
                           <p className="text-xs font-bold text-foreground truncate">
-                            {post.profiles?.full_name || post.stores?.name || "Membro local"}
+                            {authorName}
                           </p>
                           <p className="text-xs text-muted-foreground truncate">
                             {post.location_name || "Na cidade"}
@@ -1371,48 +1381,50 @@ function CommunityMarketplaceView({ data }: { data: any }) {
               {/* ── MOBILE EXCLUSIVO (< 768px): WhatsApp List Pattern ── */}
               <div className="block md:hidden divide-y divide-border/30 rounded-lg border border-border/50 bg-card overflow-hidden">
                 {unifiedItems.map((item) => (
-                  <Link
+                  <div
                     key={item.id}
-                    to={item.to as any}
-                    className="p-3 flex items-center justify-between gap-3 hover:bg-muted/40 transition-colors group cursor-pointer"
+                    className="p-3 flex items-center justify-between gap-3 hover:bg-muted/40 transition-colors group"
                   >
-                    <div className="size-12 rounded-lg bg-muted/30 border border-border/40 shrink-0 overflow-hidden flex items-center justify-center">
-                      {item.image ? (
-                        <img src={item.image} alt={item.title} className="size-full object-cover" loading="lazy" />
-                      ) : (
-                        <Tag size={20} className="text-muted-foreground/40" />
-                      )}
-                    </div>
-
-                    <div className="min-w-0 flex-1 space-y-1">
-                      <div className="flex items-center gap-2">
-                        <Badge variant="outline" className="text-xs font-mono px-1 py-0 h-4 text-muted-foreground border-border/50">
-                          {item.badge}
-                        </Badge>
-                        {item.priceOrDate && (
-                          <span className="font-mono font-bold text-xs text-foreground truncate">
-                            {item.priceOrDate}
-                          </span>
+                    <Link
+                      to={item.to as any}
+                      className="flex items-center gap-3 min-w-0 flex-1 cursor-pointer"
+                    >
+                      <div className="size-12 rounded-lg bg-muted/30 border border-border/40 shrink-0 overflow-hidden flex items-center justify-center">
+                        {item.image ? (
+                          <img src={item.image} alt={item.title} className="size-full object-cover" loading="lazy" />
+                        ) : (
+                          <Tag size={20} className="text-muted-foreground/40" />
                         )}
                       </div>
-                      <p className="font-bold text-xs text-foreground truncate group-hover:text-primary transition-colors">
-                        {item.title}
-                      </p>
-                      {item.location && (
-                        <p className="text-xs text-muted-foreground/75 text-muted-foreground truncate flex items-center gap-1">
-                          <MapPin size={11} className="shrink-0 text-muted-foreground" />
-                          <span className="truncate">{item.location}</span>
+
+                      <div className="min-w-0 flex-1 space-y-1">
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline" className="text-xs font-mono px-1 py-0 h-4 text-muted-foreground border-border/50">
+                            {item.badge}
+                          </Badge>
+                          {item.priceOrDate && (
+                            <span className="font-mono font-bold text-xs text-foreground truncate">
+                              {item.priceOrDate}
+                            </span>
+                          )}
+                        </div>
+                        <p className="font-bold text-xs text-foreground truncate group-hover:text-primary transition-colors">
+                          {item.title}
                         </p>
-                      )}
-                    </div>
+                        {item.location && (
+                          <p className="text-xs text-muted-foreground/75 truncate flex items-center gap-1">
+                            <MapPin size={11} className="shrink-0 text-muted-foreground" />
+                            <span className="truncate">{item.location}</span>
+                          </p>
+                        )}
+                      </div>
+                    </Link>
 
                     <div className="flex items-center gap-1 shrink-0">
                       {item.phone && (
                         <button
                           type="button"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
+                          onClick={() => {
                             trackAndOpenWhatsApp({
                               phone: item.phone || "",
                               message: `Olá! Vi o anúncio "${item.title}" no Waesy.`,
@@ -1428,9 +1440,11 @@ function CommunityMarketplaceView({ data }: { data: any }) {
                           <WhatsappLogo size={18} weight="bold" />
                         </button>
                       )}
-                      <ArrowRight size={16} className="text-muted-foreground/60 group-hover:text-foreground transition-transform group-hover:translate-x-0.5" />
+                      <Link to={item.to as any} className="p-2 text-muted-foreground/60 hover:text-foreground cursor-pointer">
+                        <ArrowRight size={16} className="transition-transform group-hover:translate-x-0.5" />
+                      </Link>
                     </div>
-                  </Link>
+                  </div>
                 ))}
               </div>
 

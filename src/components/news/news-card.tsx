@@ -96,34 +96,36 @@ export function NewsCard({ article, compact = false }: NewsCardProps) {
   return (
     <article className="group relative flex flex-col rounded-lg bg-card border border-border/60 overflow-hidden hover-elevate transition-colors duration-200 content-auto-card">
       {/* ── 1. Imagem / Vídeo Full Bleed ── */}
-      <Link
-        to="/noticias/$slug"
-        params={{ slug: article.slug }}
-        className="relative aspect-16/10 w-full overflow-hidden bg-muted block"
-      >
-        {article.cover_media_url ? (
-          article.cover_media_type === "video" ? (
-            <video
-              src={article.cover_media_url}
-              autoPlay
-              muted
-              loop
-              playsInline
-              className="size-full object-cover"
-            />
+      <div className="relative aspect-16/10 w-full overflow-hidden bg-muted block">
+        <Link
+          to="/noticias/$slug"
+          params={{ slug: article.slug }}
+          className="size-full block group-hover:scale-103 transition-transform duration-500"
+        >
+          {article.cover_media_url ? (
+            article.cover_media_type === "video" ? (
+              <video
+                src={article.cover_media_url}
+                autoPlay
+                muted
+                loop
+                playsInline
+                className="size-full object-cover"
+              />
+            ) : (
+              <img
+                src={article.cover_media_url}
+                alt={article.title}
+                loading="lazy"
+                className="size-full object-cover"
+              />
+            )
           ) : (
-            <img
-              src={article.cover_media_url}
-              alt={article.title}
-              loading="lazy"
-              className="size-full object-cover group-hover:scale-103 transition-transform duration-500"
-            />
-          )
-        ) : (
-          <div className="size-full flex items-center justify-center bg-muted/40 text-muted-foreground">
-            <Newspaper className="size-10 opacity-30" />
-          </div>
-        )}
+            <div className="size-full flex items-center justify-center bg-muted/40 text-muted-foreground">
+              <Newspaper className="size-10 opacity-30" />
+            </div>
+          )}
+        </Link>
 
         {/* Badges Flutuantes sobre a Imagem */}
         <div className="absolute top-3 left-3 right-3 flex items-center justify-between pointer-events-none">
@@ -164,7 +166,7 @@ export function NewsCard({ article, compact = false }: NewsCardProps) {
             </button>
           </div>
         </div>
-      </Link>
+      </div>
 
       {/* ── 2. Conteúdo Editorial Conciso ── */}
       <div className="p-4 sm:p-5 space-y-3 flex-1 flex flex-col justify-between">

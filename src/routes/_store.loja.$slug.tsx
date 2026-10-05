@@ -5,7 +5,7 @@
 
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { LockKey, ArrowLeft } from "@phosphor-icons/react";
+import { LockKey, ArrowLeft, Storefront } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { getPublicStoreProfile, getStorePublicCatalog } from "@/services/catalog.functions";
 import { listPublicJobs } from "@/services/jobs.functions";
@@ -209,30 +209,50 @@ function StoreSlugCanonicalPage() {
     );
   }
 
+  const isOwner = Boolean(
+    data?.identity?.id &&
+    (data.identity.store_id === profile.id ||
+     data.identity.id === profile.owner_id ||
+     data.identity.id === profile.user_id ||
+     data.identity.role === "admin" ||
+     data.identity.role === "platform_admin" ||
+     data.identity.memberships?.some((m: any) => m.store_id === profile.id || m.id === profile.id))
+  );
+
   return (
-    <CanonicalStoreProfileView
-      store={profile}
-      catalog={data.catalog}
-      categories={data.categories}
-      banners={data.banners}
-      flyers={data.flyers}
-      hotpages={data.hotpages}
-      jobs={data.jobs}
-      ads={data.ads}
-      posts={data.posts}
-      reviews={data.reviews}
-      sponsors={data.sponsors}
-      employerStats={data.employerStats}
-      builderTree={data.experienceDoc?.nodes || null}
-      isOwner={Boolean(
-        data.identity?.id &&
-        (data.identity?.store_id === profile.id ||
-         data.identity?.id === profile.owner_id ||
-         data.identity?.id === profile.user_id ||
-         data.identity?.role === "admin" ||
-         data.identity?.role === "platform_admin")
+    <>
+      {isOwner && (
+        <div className="bg-primary/10 border-b border-primary/20 px-4 py-2">
+          <div className="max-w-7xl mx-auto flex items-center justify-between gap-3 text-xs">
+            <span className="font-medium text-foreground">
+              Você é gestor desta empresa.
+            </span>
+            <Button asChild size="default" className="h-11 min-h-11 px-4 rounded-lg font-semibold text-xs gap-2">
+              <Link to="/workspace" search={{ storeId: profile.id }}>
+                <Storefront size={16} weight="bold" />
+                <span>Gerenciar no Workspace</span>
+              </Link>
+            </Button>
+          </div>
+        </div>
       )}
-      source="storefront"
-    />
+      <CanonicalStoreProfileView
+        store={profile}
+        catalog={data.catalog}
+        categories={data.categories}
+        banners={data.banners}
+        flyers={data.flyers}
+        hotpages={data.hotpages}
+        jobs={data.jobs}
+        ads={data.ads}
+        posts={data.posts}
+        reviews={data.reviews}
+        sponsors={data.sponsors}
+        employerStats={data.employerStats}
+        builderTree={data.experienceDoc?.nodes || null}
+        isOwner={isOwner}
+        source="storefront"
+      />
+    </>
   );
 }

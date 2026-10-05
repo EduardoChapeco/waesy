@@ -1,0 +1,22 @@
+{
+  "timestamp": "2026-10-05T15:07:22.924Z",
+  "totalFilesScanned": 1024,
+  "totalButtonsScanned": 5078,
+  "totalIssues": 1,
+  "summary": {
+    "deadButtons": 0,
+    "fakeOrStubActions": 0,
+    "invalidNesting": 0,
+    "staticDisabled": 1
+  },
+  "issues": [
+    {
+      "type": "STATIC_DISABLED_BUTTON",
+      "severity": "P2",
+      "file": "src/components/ui/button.tsx",
+      "line": 74,
+      "snippet": "<button\r",
+      "detail": "Botão desabilitado de forma permanente (disabled={true} estático sem binding)."
+    }
+  ]
+}

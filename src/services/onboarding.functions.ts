@@ -494,7 +494,7 @@ export const getOnboardingStatus = createServerFn({ method: "GET" }).handler(asy
 });
 
 import { z } from "zod";
-import { getSSRClient } from "@/lib/supabase-ssr.server";
+import { getSSRClient } from "@/lib/server-access";
 import { resolveUniqueStoreSlug } from "@/lib/slug-utils";
 
 function generateSlug(text: string) {
@@ -566,7 +566,7 @@ export const provisionBusiness = createServerFn({ method: "POST" })
 
  if (!userId) {
  try {
- const ssrClient = getSSRClient();
+ const ssrClient = await getSSRClient();
  const { data: authData } = await ssrClient.auth.getUser();
  userId = authData?.user?.id || null;
  } catch {

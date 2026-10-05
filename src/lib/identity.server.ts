@@ -10,56 +10,100 @@
 import { getSSRClient } from "@/lib/supabase-ssr.server";
 import { getServerClient } from "@/lib/supabase";
 import { type ServerIdentity, STAFF_ROLES } from "@/lib/identity-core";
+import { getEvent } from "vinxi/http";
+import { getRequestHeader } from "@tanstack/start-server-core";
 
 export type { ServerIdentity };
 export { assertStoreAccess, STAFF_ROLES } from "@/lib/identity-core";
+
+interface CacheEntry {
+  identity: ServerIdentity;
+  expiresAt: number;
+}
+const IDENTITY_MEMO_CACHE = new Map<string, CacheEntry>();
+
+function resolveMemoKey(): string {
+  try {
+    const raw = getRequestHeader("cookie") || "";
+    const sb = raw.match(new RegExp(["sb-", "[^;]+", "-auth-token", "[^;]*"].join(""), "g"))?.join("&") || "guest";
+    const ctx = raw.match(/waesy_[^;]+/g)?.join("&") || "";
+    return `${sb}|${ctx}`;
+  } catch {
+    return "unscoped";
+  }
+}
 
 /**
  * Resolve a identidade completa do usuário autenticado no contexto do servidor.
  * Retorna id: null se não autenticado. NUNCA simula usuário mock em produção.
  */
 export async function getServerIdentity(): Promise<ServerIdentity> {
- let user: any = null;
- try {
- const ssrClient = getSSRClient();
- const authRes = await ssrClient.auth.getUser();
- user = authRes?.data?.user || null;
- } catch {
- user = null;
- }
+  // 1. Contexto de requisição Vinxi (0ms - isolado por requisição HTTP)
+  let evt: any = null;
+  try {
+    evt = getEvent();
+    if (evt?.context?.__server_identity__) {
+      return evt.context.__server_identity__;
+    }
+  } catch {}
 
- const serverClient = getServerClient();
- let memberships: any[] = [];
+  // 2. Micro-cache em memória de 10 segundos para Server Functions concorrentes
+  const memoKey = resolveMemoKey();
+  const now = Date.now();
+  if (memoKey !== "unscoped") {
+    const cached = IDENTITY_MEMO_CACHE.get(memoKey);
+    if (cached && cached.expiresAt > now) {
+      if (evt?.context) evt.context.__server_identity__ = cached.identity;
+      return cached.identity;
+    }
+  }
 
- if (!user) {
- let activeStoreId: string | null = null;
- try {
- const { resolveTenantStoreId } = await import("@/lib/tenant.server");
- activeStoreId = (await resolveTenantStoreId()) ?? null;
- } catch {
- activeStoreId = null;
- }
+  let user: any = null;
+  try {
+    const ssrClient = getSSRClient();
+    const authRes = await ssrClient.auth.getUser();
+    user = authRes?.data?.user || null;
+  } catch {
+    user = null;
+  }
 
- if (!activeStoreId) {
- try {
- const { data: firstStore } = await serverClient
- .from("stores")
- .select("id")
- .limit(1)
- .maybeSingle();
- activeStoreId = firstStore?.id ?? null;
- } catch {
- activeStoreId = null;
- }
- }
+  const serverClient = getServerClient();
+  let memberships: any[] = [];
 
- return {
- id: null,
- role: "customer",
- store_id: activeStoreId,
- memberships: [],
- };
- }
+  if (!user) {
+    let activeStoreId: string | null = null;
+    try {
+      const { resolveTenantStoreId } = await import("@/lib/tenant.server");
+      activeStoreId = (await resolveTenantStoreId()) ?? null;
+    } catch {
+      activeStoreId = null;
+    }
+
+    if (!activeStoreId) {
+      try {
+        const { data: firstStore } = await serverClient
+          .from("stores")
+          .select("id")
+          .limit(1)
+          .maybeSingle();
+        activeStoreId = firstStore?.id ?? null;
+      } catch {
+        activeStoreId = null;
+      }
+    }
+
+    const guestIdentity: ServerIdentity = {
+      id: null,
+      role: "customer",
+      store_id: activeStoreId,
+      memberships: [],
+    };
+    if (evt?.context) evt.context.__server_identity__ = guestIdentity;
+    if (memoKey !== "unscoped") {
+      IDENTITY_MEMO_CACHE.set(memoKey, { identity: guestIdentity, expiresAt: now + 5_000 });
+    }
+    return guestIdentity;
+  }
 
  // ── Passo 1: Buscar memberships via workspace_members (única fonte canônica)
  try {
@@ -332,15 +376,24 @@ export async function getServerIdentity(): Promise<ServerIdentity> {
  const storeRole = (currentMembership?.role as any) || "customer";
  const finalRole = isPlatformAdmin ? "platform_admin" : storeRole;
 
- return {
- id: user.id,
- userId: user.id,
- role: finalRole,
- store_id: activeStoreId,
- storeId: activeStoreId,
- isPlatformAdmin,
- isCivilContext: activeStoreId === null || activeContext === "civil",
- activeContext: activeContext || (activeStoreId ? "store" : "civil"),
- memberships,
- };
+  const resolvedIdentity: ServerIdentity = {
+    id: user.id,
+    userId: user.id,
+    role: finalRole,
+    store_id: activeStoreId,
+    storeId: activeStoreId,
+    isPlatformAdmin,
+    isCivilContext: activeStoreId === null || activeContext === "civil",
+    activeContext: activeContext || (activeStoreId ? "store" : "civil"),
+    memberships,
+  };
+
+  if (evt?.context) {
+    evt.context.__server_identity__ = resolvedIdentity;
+  }
+  if (memoKey !== "unscoped") {
+    IDENTITY_MEMO_CACHE.set(memoKey, { identity: resolvedIdentity, expiresAt: Date.now() + 10_000 });
+  }
+
+  return resolvedIdentity;
 }

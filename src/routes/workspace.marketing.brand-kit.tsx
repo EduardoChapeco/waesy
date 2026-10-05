@@ -946,7 +946,9 @@ export function BrandKitPage() {
                     </div>
                     <div className="flex gap-2">
                       <button
-                        className="bk-btn-primary px-4 py-2 text-sm font-semibold transition-opacity hover:opacity-90"
+                        type="button"
+                        onClick={() => toast.info("Prévia visual do Brand Kit: demonstração de cor e raio da sua marca.")}
+                        className="bk-btn-primary px-4 py-2 text-sm font-semibold transition-opacity hover:opacity-90 cursor-pointer"
                         style={{
                           backgroundColor: form.color_primary,
                           color: "white",

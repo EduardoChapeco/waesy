@@ -30,10 +30,10 @@ const formSchema = classifiedSchema.pick({
 type FormValues = z.infer<typeof formSchema>;
 
 interface ClassifiedFormProps {
- defaultValues?: Partial<Classified>;
- onSubmit: (values: FormValues) => Promise<void>;
- onCancel?: () => void;
- isSubmitting?: boolean;
+  defaultValues?: Partial<Classified>;
+  onSubmit: (values: FormValues) => Promise<void>;
+  onCancel?: () => void;
+  isSubmitting?: boolean;
 }
 
 export function ClassifiedForm({ defaultValues, onSubmit, onCancel, isSubmitting }: ClassifiedFormProps) {

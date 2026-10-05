@@ -651,7 +651,8 @@ function NovoAnuncioPage() {
  type="button"
  variant="outline"
  size="sm"
- className="w-full rounded-lg text-xs font-bold gap-2 h-11 min-h-11"
+ onClick={() => toast.info("Prévia da campanha: ao ativar seu anúncio, este botão acionará o canal de conversão selecionado.")}
+ className="w-full rounded-lg text-xs font-bold gap-2 h-11 min-h-11 cursor-pointer"
  >
  {objective === "whatsapp_leads" && (
  <>
