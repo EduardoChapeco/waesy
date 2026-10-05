@@ -28,3 +28,20 @@ O design system recebeu tokens canônicos de movimento, easing, foco e elevaçã
 O redesign de alto nível permanece incremental e deve continuar por superfícies: primeiro Copilot/timeline, depois workspace shell, builders/editors, classifieds e demais módulos. O objetivo é manter MagicAI como referência estrutural, Apple HIG para interação/acessibilidade e WhatsApp para densidade de conversa/histórico, sem introduzir uma segunda fonte de tokens.
 
 Validação: 26 testes passaram; typecheck em 136 erros baseline; nenhum erro novo nos arquivos alterados; `git diff --check` passou.
+
+## 18. Enriquecimento completo de anúncios por IA — checkpoint 2026-10-05
+
+O extractor `createListingWithAI` foi ampliado para retornar, além de título/descrição/preço/localização textual:
+
+- localização estruturada: cidade, UF, bairro e CEP;
+- modalidade logística e `shipping_mode`;
+- estoque;
+- marca e condição;
+- inclusões e exclusões;
+- política de cancelamento;
+- configuração de pagamentos: Pix, desconto, cartão, parcelamento, dinheiro e troca;
+- aliases compatíveis com estados legados do editor (`payment_rules`, `accepted_payment_methods`, `location_name` e atributos de busca).
+
+O fallback heurístico agora possui o mesmo contrato rico. Também foi corrigida uma falha real em que a regex interpretava o número de modelos como preço (`PS5` era capturado como `R$ 5`). A extração agora prioriza valores monetários explícitos e só aceita números isolados.
+
+Validação específica: 13 testes passaram; typecheck mantém 136 erros baseline; nenhum erro novo nos arquivos alterados.
