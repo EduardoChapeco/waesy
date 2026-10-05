@@ -12,7 +12,7 @@
  * 6. Garantia de Zero Segredos expostos nos metadados ou payload de retorno.
  */
 
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import {
   executeAiCoreGateway,
   calculateCost,
@@ -75,6 +75,17 @@ vi.mock("./api-orchestrator.functions", () => ({
 describe("PROMPT 27 — Núcleo de IA e Pool de Chaves 2.0 (Porta Única, Custo, Circuit Breaker e Telemetria)", () => {
   beforeEach(() => {
     circuitBreakers.clear();
+    vi.stubGlobal("fetch", vi.fn(async () => new Response(JSON.stringify({
+      choices: [{ message: { content: "Resposta determinística de teste" } }],
+      usage: { prompt_tokens: 10, completion_tokens: 5 },
+    }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    })));
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
   });
 
   // ── TESTE 1: ROTEAMENTO CANÔNICO POR TAREFA ──

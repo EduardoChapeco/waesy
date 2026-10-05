@@ -1,4 +1,30 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
+
+vi.mock('@tanstack/react-start', () => ({
+  createIsomorphicFn: vi.fn(() => {
+    const builder: any = {
+      server: vi.fn((fn: any) => {
+        builder._server = fn;
+        return callable;
+      }),
+      client: vi.fn((fn: any) => {
+        builder._client = fn;
+        return callable;
+      }),
+      _server: undefined,
+      _client: undefined,
+    };
+    const callable: any = (...args: any[]) => {
+      const implementation = typeof window === 'undefined' ? builder._server : builder._client;
+      return implementation?.(...args);
+    };
+    return Object.assign(callable, builder);
+  }),
+}));
+
+vi.mock('@tanstack/react-start/server', () => ({
+  getRequest: vi.fn(() => ({ url: 'https://test.local/_serverFn/edge-cache' })),
+}));
 import {
   EDGE_CACHE_PROFILES,
   CACHE_TAGS,
