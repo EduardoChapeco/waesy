@@ -12,7 +12,7 @@ function verifyHmacSignature(
   headers: Headers,
   secret?: string
 ): { isValid: boolean; reason?: string } {
-  if (!secret) return { isValid: true }; // Homologação sem secret configurado
+  if (!secret) return { isValid: false, reason: "Webhook secret is not configured" };
 
   // 1. Mercado Livre Header x-signature: ts=12345678,v1=abcdef...
   const mlSigHeader = headers.get("x-signature");
@@ -55,7 +55,7 @@ function verifyHmacSignature(
     headers.get("x-shopee-signature") ||
     headers.get("x-bling-signature");
 
-  if (!sigHeader) return { isValid: true };
+  if (!sigHeader) return { isValid: false, reason: "Missing webhook signature" };
 
   try {
     const computed = crypto.createHmac("sha256", secret).update(rawText).digest("hex");
@@ -78,7 +78,7 @@ export const Route = createFileRoute("/api/webhooks/marketplaces")({
           const url = new URL(request.url);
           const platformParam = url.searchParams.get("platform") || "mercadolivre";
           const storeIdParam = url.searchParams.get("store_id") || undefined;
-          const secretParam = url.searchParams.get("secret") || process.env.MARKETPLACE_WEBHOOK_SECRET;
+          const secretParam = process.env.MARKETPLACE_WEBHOOK_SECRET;
 
           const rawText = await request.text();
           let rawBody: any = {};
@@ -88,19 +88,16 @@ export const Route = createFileRoute("/api/webhooks/marketplaces")({
             rawBody = {};
           }
 
-          // Valida HMAC e proteção contra replay attack se secret estiver presente
-          if (secretParam) {
-            const verification = verifyHmacSignature(platformParam, rawText, request.headers, secretParam);
-            if (!verification.isValid) {
-              console.warn(`[marketplaces-webhook] Rejeição de segurança (${platformParam}): ${verification.reason}`);
-              return new Response(
-                JSON.stringify({ status: "unauthorized", error: verification.reason || "HMAC signature mismatch" }),
-                {
-                  status: 401,
-                  headers: { "Content-Type": "application/json" },
-                }
-              );
-            }
+          const verification = verifyHmacSignature(platformParam, rawText, request.headers, secretParam);
+          if (!verification.isValid) {
+            console.warn(`[marketplaces-webhook] Rejeição de segurança (${platformParam}): ${verification.reason}`);
+            return new Response(
+              JSON.stringify({ status: "unauthorized", error: verification.reason || "HMAC signature mismatch" }),
+              {
+                status: secretParam ? 401 : 503,
+                headers: { "Content-Type": "application/json" },
+              }
+            );
           }
 
           // Normaliza metadados por provedor
@@ -154,7 +151,7 @@ export const Route = createFileRoute("/api/webhooks/marketplaces")({
           return new Response(
             JSON.stringify({ status: "failed", error: e?.message || "Internal Server Error" }),
             {
-              status: 200,
+              status: 500,
               headers: { "Content-Type": "application/json" },
             }
           );

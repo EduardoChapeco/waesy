@@ -20,7 +20,7 @@ if (fs.existsSync(secretsPath)) {
 }
 
 if (!dbPassword) {
-  dbPassword = "EEaR6399!@#2026";
+  dbPassword = process.env.SUPABASE_DB_PASSWORD || (() => { throw new Error("SUPABASE_DB_PASSWORD is required"); })();
 }
 
 const sqlPath = path.resolve(__dirname, "../supabase/migrations/20261002000000_events_external_ticket_and_creator_analytics.sql");

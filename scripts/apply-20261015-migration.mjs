@@ -1,7 +1,7 @@
 import pg from 'pg';
 import fs from 'fs';
 
-const pool = new pg.Pool({ connectionString: 'postgresql://postgres.jfuebqmltksyznovhlwa:EEaR6399!%40%232026@aws-0-sa-east-1.pooler.supabase.com:6543/postgres' });
+const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL || process.env.SUPABASE_DB_URL || (() => { throw new Error("DATABASE_URL or SUPABASE_DB_URL is required"); })() });
 
 async function run() {
   const sql = fs.readFileSync('supabase/migrations/20261015000000_fix_exchanges_schema_and_rpc.sql', 'utf8');

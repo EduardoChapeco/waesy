@@ -6,7 +6,7 @@ async function run() {
     port: 6543,
     database: 'postgres',
     user: 'postgres.jfuebqmltksyznovhlwa',
-    password: 'EEaR6399!@#2026',
+    password: process.env.SUPABASE_DB_PASSWORD || (() => { throw new Error("SUPABASE_DB_PASSWORD is required"); })(),
     ssl: { rejectUnauthorized: false }
   });
   await client.connect();

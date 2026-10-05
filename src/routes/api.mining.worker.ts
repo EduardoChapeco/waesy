@@ -7,16 +7,18 @@ async function handleWorkerExecution(request: Request) {
     const authHeader = request.headers.get("authorization");
     const workerSecret = process.env.MINING_WORKER_SECRET || process.env.CRON_SECRET;
 
-    // Se MINING_WORKER_SECRET estiver configurado, exige validação Bearer
-    if (workerSecret && authHeader !== `Bearer ${workerSecret}`) {
-      const urlCheck = new URL(request.url);
-      const queryToken = urlCheck.searchParams.get("token");
-      if (queryToken !== workerSecret) {
-        return new Response(JSON.stringify({ error: "Unauthorized" }), {
-          status: 401,
-          headers: { "Content-Type": "application/json" },
-        });
-      }
+    if (!workerSecret) {
+      return new Response(JSON.stringify({ error: "Mining worker is not configured" }), {
+        status: 503,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    if (authHeader !== `Bearer ${workerSecret}`) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     const startTime = Date.now();
@@ -27,7 +29,15 @@ async function handleWorkerExecution(request: Request) {
     const mode = url.searchParams.get("mode") || "all";
     const limit = parseInt(url.searchParams.get("limit") || "10", 10);
 
-    const results: Record<string, any> = {};
+    const results: Record<string, unknown> = {};
+
+    const responseForResults = (payload: Record<string, unknown>, status = 200) => new Response(JSON.stringify(payload), {
+      status,
+      headers: { "Content-Type": "application/json" },
+    });
+
+    const hasFailure = (value: unknown): boolean =>
+      Boolean(value && typeof value === "object" && "success" in value && (value as { success?: unknown }).success === false);
 
     // Despacho agendado via pg_cron (market-data / rss-fetcher / continuous-crawler / cnpj-enrichment)
     if (mode === "cron" && hasTimeRemaining()) {
@@ -35,10 +45,7 @@ async function handleWorkerExecution(request: Request) {
       if (jobType) {
         const cronRes = await dispatchScheduledMiningJobFn({ data: { jobType } });
         results.cron = cronRes;
-        return new Response(JSON.stringify({ success: true, timestamp: new Date().toISOString(), duration_ms: Date.now() - startTime, ...results }), {
-          status: 200,
-          headers: { "Content-Type": "application/json" },
-        });
+        return responseForResults({ success: !hasFailure(cronRes), timestamp: new Date().toISOString(), duration_ms: Date.now() - startTime, ...results }, hasFailure(cronRes) ? 502 : 200);
       }
     }
 
@@ -119,18 +126,14 @@ async function handleWorkerExecution(request: Request) {
       }
     }
 
-    return new Response(
-      JSON.stringify({
-        success: true,
-        timestamp: new Date().toISOString(),
-        duration_ms: Date.now() - startTime,
-        ...results,
-      }),
-      {
-        status: 200,
-        headers: { "Content-Type": "application/json" },
-      }
-    );
+    const failedKeys = Object.entries(results).filter(([, value]) => hasFailure(value)).map(([key]) => key);
+    return responseForResults({
+      success: failedKeys.length === 0,
+      failed: failedKeys,
+      timestamp: new Date().toISOString(),
+      duration_ms: Date.now() - startTime,
+      ...results,
+    }, failedKeys.length > 0 ? 502 : 200);
   } catch (e: any) {
     console.error("[mining-worker-api] Erro:", e);
     return new Response(JSON.stringify({ error: e.message || "Internal Server Error" }), {

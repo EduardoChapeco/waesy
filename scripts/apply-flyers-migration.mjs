@@ -3,7 +3,7 @@ import fs from 'fs';
 import path from 'path';
 
 const pool = new pg.Pool({
-  connectionString: 'postgresql://postgres.jfuebqmltksyznovhlwa:EEaR6399!%40%232026@aws-0-sa-east-1.pooler.supabase.com:6543/postgres'
+  connectionString: process.env.DATABASE_URL || process.env.SUPABASE_DB_URL || (() => { throw new Error("DATABASE_URL or SUPABASE_DB_URL is required"); })()
 });
 
 async function main() {

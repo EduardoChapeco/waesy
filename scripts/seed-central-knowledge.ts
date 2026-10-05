@@ -55,7 +55,7 @@ if (fs.existsSync(secretsPath)) {
 }
 
 if (!dbPassword) {
-  dbPassword = "EEaR6399!@#2026";
+  dbPassword = process.env.SUPABASE_DB_PASSWORD || (() => { throw new Error("SUPABASE_DB_PASSWORD is required"); })();
 }
 
 const sql = postgres({

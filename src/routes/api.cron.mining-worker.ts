@@ -2,8 +2,6 @@ import { createFileRoute } from "@tanstack/react-router";
 import { dispatchScheduledMiningJobFn } from "@/services/mining.functions";
 import { z } from "zod";
 
-const CRON_TOKEN = "waesy_omni_cron_key_v2026";
-
 const cronBodySchema = z.object({
   jobType: z.enum(["market-data", "rss-fetcher", "cnpj-enrichment", "continuous-crawler"]),
   triggeredAt: z.string().optional(),
@@ -12,9 +10,15 @@ const cronBodySchema = z.object({
 
 async function handleCronWorker(request: Request): Promise<Response> {
   try {
-    // Token validation
     const authHeader = request.headers.get("authorization") || "";
-    const envToken = process.env.WAESY_CRON_TOKEN || CRON_TOKEN;
+    const envToken = process.env.WAESY_CRON_TOKEN;
+
+    if (!envToken) {
+      return new Response(JSON.stringify({ error: "Mining cron is not configured" }), {
+        status: 503,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
 
     if (authHeader !== `Bearer ${envToken}`) {
       console.warn("[cron-mining-worker] Unauthorized access attempt from:", request.headers.get("x-forwarded-for") || "unknown");
@@ -54,7 +58,7 @@ async function handleCronWorker(request: Request): Promise<Response> {
         result: result.result,
       }),
       {
-        status: 200,
+        status: result.success ? 200 : 502,
         headers: { "Content-Type": "application/json" },
       }
     );

@@ -7,7 +7,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const secretsPath = path.resolve(__dirname, "../.env.secrets");
-let password = "EEaR6399!@#2026";
+let password = process.env.SUPABASE_DB_PASSWORD || (() => { throw new Error("SUPABASE_DB_PASSWORD is required"); })();
 if (fs.existsSync(secretsPath)) {
   const content = fs.readFileSync(secretsPath, "utf8");
   const match = content.match(/SUPABASE_DB_PASSWORD=(.*)/);

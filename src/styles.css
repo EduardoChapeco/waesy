@@ -48,8 +48,11 @@
   --font-zine: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 
   /* ── App Shell Geometry & Layout Tokens ─────────────────── */
-  --global-rail-width: 68px;
-  --context-sidebar-width: 256px;
+  /* MagicAI compatibility bridge: one source of truth for workspace geometry. */
+  --sidebar-width-collapsed: 64px;
+  --sidebar-width-expanded: 280px;
+  --global-rail-width: var(--sidebar-width-collapsed);
+  --context-sidebar-width: var(--sidebar-width-expanded);
   --utility-cluster-height: 48px;
   --shell-gutter: clamp(1rem, 2vw, 2rem);
   --content-gutter: clamp(1rem, 2.5vw, 2.5rem);
@@ -135,6 +138,10 @@
   --duration-fast: 150ms;
   --duration-base: 250ms;
   --duration-slow: 350ms;
+  --magic-accent-primary: #7c3aed;
+  --magic-accent-hover: #6d28d9;
+  --magic-grid-min: 280px;
+  --magic-transition: 150ms ease;
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
 
@@ -184,8 +191,8 @@
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.12 0 0);
 
-  --primary: oklch(0.12 0 0); /* Ação Primária (Preto suave, Apple-like) */
-  --primary-foreground: oklch(0.99 0 0); /* Texto branco */
+  --primary: var(--magic-accent-primary);
+  --primary-foreground: #ffffff;
 
   --secondary: oklch(0.96 0 0); /* Cinza clarinho para ghosts/outlines */
   --secondary-foreground: oklch(0.2 0 0);
@@ -210,7 +217,7 @@
 
   --border: oklch(0.93 0 0); /* Borda clarinha, clean */
   --input: oklch(0.93 0 0);
-  --ring: oklch(0.12 0 0); /* Anel de foco preto suave */
+  --ring: var(--magic-accent-primary);
 
   /* ── W3C DTCG Canonical Tokens Parity (Fase S23 / tokens.json) ───────── */
   --surface-canvas: var(--background);
@@ -263,8 +270,8 @@
     --popover: oklch(0.16 0 0);
     --popover-foreground: oklch(0.96 0 0);
 
-    --primary: oklch(0.98 0 0); /* Botão claro no dark mode */
-    --primary-foreground: oklch(0.1 0 0); /* Texto muito escuro para forçar contraste */
+    --primary: var(--magic-accent-primary);
+    --primary-foreground: #ffffff;
 
     --secondary: oklch(0.20 0 0);
     --secondary-foreground: oklch(0.96 0 0);
@@ -280,7 +287,7 @@
 
     --border: oklch(0.22 0 0);
     --input: oklch(0.22 0 0);
-    --ring: oklch(0.96 0 0);
+    --ring: #a78bfa;
   }
 }
 
@@ -294,8 +301,8 @@
   --popover: oklch(0.16 0 0);
   --popover-foreground: oklch(0.96 0 0);
 
-  --primary: oklch(0.98 0 0); /* Botão claro no dark mode */
-  --primary-foreground: oklch(0.1 0 0); /* Texto muito escuro para forçar contraste */
+  --primary: var(--magic-accent-primary);
+  --primary-foreground: #ffffff;
 
   --secondary: oklch(0.20 0 0);
   --secondary-foreground: oklch(0.96 0 0);
@@ -311,7 +318,24 @@
 
   --border: oklch(0.25 0 0);
   --input: oklch(0.25 0 0);
-  --ring: oklch(0.96 0 0);
+  --ring: #a78bfa;
+}
+
+/* Theme selector bridge: existing .dark remains supported. */
+[data-theme="dark"] {
+  --background: oklch(0.12 0 0);
+  --foreground: oklch(0.96 0 0);
+  --card: oklch(0.16 0 0);
+  --card-foreground: oklch(0.96 0 0);
+  --popover: oklch(0.16 0 0);
+  --popover-foreground: oklch(0.96 0 0);
+  --primary: var(--magic-accent-primary);
+  --primary-foreground: #ffffff;
+  --muted: oklch(0.20 0 0);
+  --muted-foreground: oklch(0.7 0 0);
+  --border: oklch(0.25 0 0);
+  --input: oklch(0.25 0 0);
+  --ring: #a78bfa;
 }
 
 /* ===========================================================================

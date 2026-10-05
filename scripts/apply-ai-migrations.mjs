@@ -7,7 +7,7 @@ const sql = postgres({
   port: Number(process.env.SUPABASE_DB_PORT) || 6543,
   database: process.env.SUPABASE_DB_NAME || "postgres",
   user: process.env.SUPABASE_DB_USER || "postgres.jfuebqmltksyznovhlwa",
-  password: process.env.SUPABASE_DB_PASSWORD || "EEaR6399!@#2026",
+  password: process.env.SUPABASE_DB_PASSWORD || process.env.SUPABASE_DB_PASSWORD || (() => { throw new Error("SUPABASE_DB_PASSWORD is required"); })(),
   ssl: "require",
   max: 1,
   idle_timeout: 20,
