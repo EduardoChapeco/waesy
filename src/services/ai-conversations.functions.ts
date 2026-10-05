@@ -18,6 +18,7 @@ import {
 import { resolveActiveCity, normalizeActiveCity } from "@/lib/city-helper";
 import { executeMcpToolCall } from "./mcp-server.functions";
 import { MCP_TOOL_REGISTRY } from "@/registries/mcp-tool-registry";
+import { requireTokensOrTollbooth } from "@/lib/token-tollbooth.server";
 import {
   CopilotStateMachine,
   canTransitionCopilotPhase,
@@ -100,11 +101,21 @@ export interface AiConversationThreadDTO {
 export interface AiExecutionResult {
   responseMessage: string;
   activitySteps: AIActivityStep[];
+  toolCalls?: AiToolExecutionRecord[];
   artifact?: ChatArtifactData;
   structuredPayload?: Record<string, any>;
   updatedMemory: Record<string, any>;
   fsmPhase?: CopilotFsmPhase;
   fsmState?: CopilotFsmExecutionState;
+}
+
+export interface AiToolExecutionRecord {
+  tool: string;
+  arguments: Record<string, any>;
+  status: "success" | "error";
+  durationMs: number;
+  resultSummary?: string;
+  executedAt: string;
 }
 
 // ============================================================
@@ -610,14 +621,14 @@ Responda SEMPRE em formato JSON com os campos:
         systemPrompt
       );
 
-      const res = await executeAiCoreGateway({
-        task: "chat",
+      const gatewayRequest = {
+        task: "chat" as const,
         prompt: sandboxedUserPrompt,
         systemPrompt: hardenedSystemPrompt,
         constraints: {
           temperature: 0.3,
           maxTokens: 1024,
-          responseFormat: "json_object",
+          responseFormat: "json_object" as const,
         },
         context: {
           userLat: context.userLat,
@@ -625,7 +636,21 @@ Responda SEMPRE em formato JSON com os campos:
           storeId: context.storeId,
           workingMemory,
         },
-      });
+      };
+      const runGateway = () => executeAiCoreGateway(gatewayRequest);
+      const estimatedTokens = Math.max(1, Math.ceil((sandboxedUserPrompt.length + hardenedSystemPrompt.length) / 4));
+      const res = context.storeId
+        ? (await requireTokensOrTollbooth({
+            storeId: context.storeId,
+            tokens: estimatedTokens,
+            actionType: "burn_ai_agent_chat",
+            serviceCategory: "heavy_ia_llm",
+            description: "Execução do Copilot com roteamento de provider e ferramentas",
+            idempotencyKey: `copilot_${context.threadId}_${startTime}`,
+            metadata: { threadId: context.threadId, task: "chat", estimatedTokens },
+            executeAction: runGateway,
+          })).result
+        : await runGateway();
 
       if (res?.success && res.result?.parsedJson) {
         gatewayResponse = res.result.parsedJson;
@@ -667,6 +692,7 @@ Responda SEMPRE em formato JSON com os campos:
 
     let structuredPayload: Record<string, any> | undefined;
     let artifact: ChatArtifactData | undefined;
+    const toolCalls: AiToolExecutionRecord[] = [];
     let responseMessage = gatewayResponse?.message || "";
 
     if (isAutonomousOrMiningRequest) {
@@ -762,6 +788,16 @@ Responda SEMPRE em formato JSON com os campos:
           arguments: toolArgs,
           storeId: context.storeId,
         });
+        const toolDurationMs = Date.now() - stepStart;
+        const toolText = mcpResult.content.find((content) => content.type === "text")?.text;
+        toolCalls.push({
+          tool: mcpCandidateTool,
+          arguments: toolArgs as Record<string, unknown>,
+          status: mcpResult.status,
+          durationMs: toolDurationMs,
+          resultSummary: toolText?.slice(0, 500),
+          executedAt: new Date().toISOString(),
+        });
 
         if (mcpResult.status === "success") {
           steps[steps.length - 1].status = "completed";
@@ -793,6 +829,14 @@ Responda SEMPRE em formato JSON com os campos:
           responseMessage = `A ferramenta "${mcpCandidateTool}" retornou uma falha temporária: ${errorText}. Você pode ajustar os parâmetros ou tentar novamente.`;
         }
       } catch (mcpErr: any) {
+        toolCalls.push({
+          tool: mcpCandidateTool,
+          arguments: toolArgs as Record<string, unknown>,
+          status: "error",
+          durationMs: Date.now() - stepStart,
+          resultSummary: String(mcpErr?.message || "Falha desconhecida").slice(0, 500),
+          executedAt: new Date().toISOString(),
+        });
         steps[steps.length - 1].status = "failed";
         steps[steps.length - 1].completedAt = new Date().toISOString();
         steps[steps.length - 1].detail = mcpErr.message?.slice(0, 120);
@@ -816,6 +860,7 @@ Responda SEMPRE em formato JSON com os campos:
       return {
         responseMessage: responseMessage || `Ferramenta "${mcpCandidateTool}" executada.`,
         activitySteps: steps,
+        toolCalls,
         artifact,
         structuredPayload,
         updatedMemory,
@@ -1530,6 +1575,7 @@ export const getAiConversationThread = createServerFn({ method: "GET" })
         createdAt: m.created_at,
         status: m.status || "delivered",
         activitySteps: m.payload?.activitySteps || [],
+        toolCalls: m.payload?.toolCalls || [],
         artifact: m.payload?.artifact || null,
         structuredPayload: m.payload?.structuredBlocks || null,
         fsmPhase: m.payload?.fsmPhase,
@@ -1659,6 +1705,7 @@ export const sendAiConversationMessage = createServerFn({ method: "POST" })
         message_type: messageType,
         payload: {
           activitySteps: execution.activitySteps,
+          toolCalls: execution.toolCalls || [],
           artifact: execution.artifact,
           structuredBlocks: execution.structuredPayload,
           fsmPhase: execution.fsmPhase,

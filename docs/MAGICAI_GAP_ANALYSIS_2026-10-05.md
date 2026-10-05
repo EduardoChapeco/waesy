@@ -1,8 +1,8 @@
 
-## 9. SSE do Copilot — checkpoint 2026-10-05
+## 10. Tool-calling persistido e créditos — checkpoint 2026-10-05
 
-Foi adicionado `POST /api/ai/stream`, usando o gateway canônico já existente e o protocolo `src/lib/ai/sse.ts`. A conexão emite eventos tipados `status` (`planning`, `running`, `verifying`), `delta` final, `done` com provider/model/callId e `error` estruturado, com headers anti-buffering para EventSource/fetch streaming. O contrato está pronto para trocar o delta final por deltas nativos dos providers sem quebrar o cliente.
+O pipeline ReAct existente já executava MCP, mas o estado persistido continha apenas passos genéricos. Agora cada execução registra `tool`, argumentos JSON, status, duração, timestamp e resumo sanitizado do resultado em `payload.toolCalls`; o carregamento de threads também devolve esse campo para o frontend e para futuras retomadas/revisões.
 
-Esta entrega **não declara token streaming nativo concluído**: o gateway atual ainda executa a chamada upstream de forma síncrona e transmite o resultado final pelo envelope SSE. O próximo lote deve implementar `stream: true` para OpenAI-compatible, Anthropic e Gemini, além de persistir tool calls e estados de execução.
+A chamada do gateway de chat foi envolvida por `requireTokensOrTollbooth` quando há `storeId`, usando a RPC ACID existente, chave idempotente por thread/execução, categoria `heavy_ia_llm` e estorno automático em falha upstream. Contextos guest sem tenant continuam sem cobrança, pois não existe carteira segura para debitar.
 
-Validação: `vite build --mode development` passou e regenerou `src/routeTree.gen.ts`; 4 testes SSE/registry passaram; `git diff --check` passou; o typecheck voltou a 136 erros, sem erros em `api.ai.stream.ts` ou `src/lib/ai/sse.ts`.
+Validação: 11 testes de chat/gateway passaram; typecheck voltou a 136 erros baseline; não há erro nos arquivos alterados; `git diff --check` passou. Ainda falta persistir uma tabela própria de execuções/steps para retomada após crash — o lote atual usa o payload append-only da mensagem sem introduzir uma tabela duplicada.
