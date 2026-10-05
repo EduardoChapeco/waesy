@@ -922,3 +922,65 @@ export const getAiTelemetryMetrics = createServerFn({ method: "GET" }).handler(
     };
   }
 );
+
+/** Streaming nativo para SSE; usa o pool e a cascata do gateway canônico. */
+export async function executeAiCoreGatewayStream(request: AIGatewayRequest, onDelta: (text: string) => void): Promise<Pick<AIGatewayResponse, "success" | "metadata" | "error">> {
+  const callId = `stream_${Date.now()}_${crypto.randomBytes(4).toString("hex")}`;
+  const start = Date.now();
+  const security = inspectPromptSecurity(request.prompt);
+  const baseMeta = (provider: string, model: string, attemptsCount: number) => ({ callId, provider, model, fallbackUsed: attemptsCount > 1, attemptsCount, latencyMs: Date.now() - start, cacheHit: false, usage: { inputTokens: 0, outputTokens: 0, totalTokens: 0 }, costUsd: 0, promptVersion: request.promptVersion || "v1.0", fingerprint: generateFingerprint(request) });
+  if (!security.isSafe) return { success: false, metadata: baseMeta("shield", "shield-v1", 0), error: { code: "PROMPT_SHIELD_VIOLATION", message: security.violationReason || "Prompt bloqueado." } };
+  const { hardenedSystemPrompt, sandboxedUserPrompt } = buildSandboxedPromptPayload(security.sanitizedPrompt || request.prompt, request.systemPrompt);
+  const candidates: RouteCandidate[] = CANONICAL_TASK_ROUTES[request.task] || CANONICAL_TASK_ROUTES.chat;
+  let attempts = 0;
+  let lastError = "Falha em todos os providers de streaming";
+  for (const candidate of candidates) {
+    attempts++;
+    try {
+      const activeKey = await getNextActiveKey(candidate.provider as any);
+      if (!activeKey?.rawKey) continue;
+      let endpoint: string;
+      let headers: Record<string, string>;
+      let body: Record<string, any>;
+      if (candidate.provider === "anthropic") {
+        endpoint = "https://api.anthropic.com/v1/messages";
+        headers = { "Content-Type": "application/json", "x-api-key": activeKey.rawKey, "anthropic-version": "2023-06-01" };
+        body = { model: candidate.model, system: hardenedSystemPrompt, messages: [{ role: "user", content: sandboxedUserPrompt }], max_tokens: request.constraints?.maxTokens || 1024, temperature: request.constraints?.temperature ?? 0.7, stream: true };
+      } else if (candidate.provider === "gemini") {
+        endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${candidate.model}:streamGenerateContent?alt=sse&key=${activeKey.rawKey}`;
+        headers = { "Content-Type": "application/json" };
+        body = { contents: [{ role: "user", parts: [{ text: sandboxedUserPrompt }] }], systemInstruction: { parts: [{ text: hardenedSystemPrompt }] }, generationConfig: { temperature: request.constraints?.temperature ?? 0.7, maxOutputTokens: request.constraints?.maxTokens || 1024 } };
+      } else {
+        endpoint = candidate.provider === "groq" ? "https://api.groq.com/openai/v1/chat/completions" : candidate.provider === "openrouter" ? "https://openrouter.ai/api/v1/chat/completions" : candidate.provider === "deepseek" ? "https://api.deepseek.com/v1/chat/completions" : "https://api.openai.com/v1/chat/completions";
+        headers = { "Content-Type": "application/json", Authorization: `Bearer ${activeKey.rawKey}` };
+        body = { model: candidate.model, messages: [{ role: "system", content: hardenedSystemPrompt }, { role: "user", content: sandboxedUserPrompt }], temperature: request.constraints?.temperature ?? 0.7, max_tokens: request.constraints?.maxTokens || 1024, stream: true };
+      }
+      const response = await fetch(endpoint, { method: "POST", headers, body: JSON.stringify(body) });
+      if (!response.ok || !response.body) throw new Error(`${candidate.provider} HTTP ${response.status}`);
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+      while (true) {
+        const chunk = await reader.read();
+        if (chunk.done) break;
+        buffer += decoder.decode(chunk.value, { stream: true });
+        const frames = buffer.split(/\n\n|\r\n\r\n/);
+        buffer = frames.pop() || "";
+        for (const frame of frames) {
+          const data = frame.split(/\r?\n/).find((line) => line.startsWith("data:"))?.slice(5).trim();
+          if (!data || data === "[DONE]") continue;
+          try {
+            const json = JSON.parse(data);
+            const delta = candidate.provider === "anthropic" ? (json.type === "content_block_delta" ? json.delta?.text : "") : candidate.provider === "gemini" ? (json.candidates?.[0]?.content?.parts?.map((part: any) => part.text || "").join("") || "") : (json.choices?.[0]?.delta?.content || "");
+            if (delta) onDelta(sanitizeAiOutput(delta));
+          } catch { /* heartbeat ou frame parcial */ }
+        }
+      }
+      return { success: true, metadata: baseMeta(candidate.provider, candidate.model, attempts) };
+    } catch (error) {
+      lastError = error instanceof Error ? error.message : String(error);
+      recordCircuitFailure(candidate.provider);
+    }
+  }
+  return { success: false, metadata: baseMeta("none", "none", attempts), error: { code: "AI_STREAM_FAILED", message: lastError } };
+}
