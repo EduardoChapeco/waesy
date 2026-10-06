@@ -245,6 +245,23 @@ export const applyReviewedTravelDocumentToTrip = createServerFn({ method: "POST"
     if (ingestion.extraction_status === "applied" && ingestion.trip_id === data.tripId) {
       return { success: true, replayed: true, tripId: data.tripId, ingestionId: data.ingestionId };
     }
+    const { data: criticalConflicts, error: conflictReadError } = await (
+      supabase.from("travel_document_conflicts") as any
+    )
+      .select("id, field_path, severity, status")
+      .eq("store_id", identity.store_id)
+      .eq("trip_id", data.tripId)
+      .eq("severity", "critical")
+      .in("status", ["open", "suggested"]);
+    if (conflictReadError)
+      throw new Error(
+        `Não foi possível verificar conflitos críticos: ${conflictReadError.message}`,
+      );
+    if (criticalConflicts?.length) {
+      throw new Error(
+        `Aplicação bloqueada: existem ${criticalConflicts.length} divergência(s) crítica(s) não resolvida(s) para esta viagem.`,
+      );
+    }
     if (ingestion.source_kind === "operator_quote") {
       throw new Error(
         "Cotações devem ser aplicadas como draft de orçamento/proposta, não diretamente como reserva.",

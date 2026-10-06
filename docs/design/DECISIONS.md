@@ -2689,3 +2689,11 @@
 - **Decisão:** Criar `travel-operator-sync.ts` como normalizador puro com aliases de operadoras e provenance; criar registry e runs tenant-scoped; conectar a ingestão OCR ao envelope `travel-operator-v1`; expor configuração sem devolver segredos; sincronizar documentos por chave idempotente e manter `review_required` até aprovação humana.
 - **Fundamentação:** SPEC-20261006-wave3-operator-module-sync; origem documental preservada; adapter anti-alucinação; idempotência por ingestão; AGENTS.md B.5, B.9 e B.11.
 - **Consequências:** A onda não chama APIs externas de operadoras sem credenciais e contrato confirmados. A normalização fica disponível imediatamente para proposta, CRM e revisão; a propagação para reserva/viagem continua dependente de aprovação e dos comandos canônicos existentes.
+
+## DEC-190: Onda 4 — reconciliação documental v2
+
+- **Data:** 2026-10-06
+- **Contexto:** A primeira camada identificava conflitos por caminho textual, mas não tratava ordem variável de itens, equivalência de formatos, precedência específica por campo nem uma execução de reconciliação com projeção auditável.
+- **Decisão:** Adotar `travel-conflicts-v2` com normalização semântica de datas/documentos/telefones/dinheiro, chaves estáveis para passageiros/voos/hotéis, regras explícitas por campo, explicação da sugestão, runs idempotentes e valores reconciliados separados do OCR original.
+- **Segurança:** O BFF server-side é a única porta para registrar resolução; as policies autenticadas dos conflitos tornam-se somente leitura e as RPCs de mutação não são executáveis por `authenticated`.
+- **Consequências:** Conflitos críticos abertos bloqueiam aplicação automática na viagem. Resoluções customizadas não adulteram documentos nem extrações; tornam-se projeções versionadas que podem ser revisadas e reaplicadas.
