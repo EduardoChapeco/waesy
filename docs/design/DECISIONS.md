@@ -2723,3 +2723,12 @@
 - **Decisão Adotada:** As primitivas passaram a usar `waesy-compact-medium-only` e `waesy-expanded-flex`. A toolbar mantém filtros e menus em superfícies compact/medium, ações densas no expandido, faixa de abas com rolagem semântica e controles com 44px/foco visível. A BottomBar mobile oculta somente a partir de 840px.
 - **Fundamentação:** AGENTS.md B.8/B.9/B.11; DESIGN.md C.8/C.10/C.11; Material 3 Window Size Classes; Apple HIG.
 - **Consequências:** A correção propaga-se às rotas que consomem as primitivas. Os nove P2 em `styles.css` permanecem como dívida de compatibilidade explicitamente catalogada para a frente de fundação dos tokens.
+
+
+## DEC-189: Grades Operacionais Adaptativas e Shell Global em 840px
+
+- **Data:** 2026-10-06
+- **Contexto:** O shell global ainda ocultava sidebar em 1.024px e as telas turísticas usavam `md/lg` para grades, criando um intervalo inconsistente entre medium e expanded. Cartões carregados por consulta também não tinham Skeleton estrutural.
+- **Decisão Adotada:** O Shell e o workspace-shell usam utilitários canônicos a partir de 840px. Excursões e Contratos usam `waesy-card-grid` com 1/2/3 colunas em compact/medium/expanded, Skeletons dimensionados e ações de 44px. Barras de progresso usam utilitário próprio com transição de largura.
+- **Fundamentação:** DESIGN.md C.8/C.10/C.11; Material 3 Window Size Classes; Apple HIG; Nielsen CLS/visibilidade de estado.
+- **Consequências:** Tabelas e cartões de novos módulos devem preferir os utilitários semânticos antes de criar grids locais. A dívida de tokens de sombra/duração permanece isolada no CSS-base e não é mascarada.

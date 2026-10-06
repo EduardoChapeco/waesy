@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { FileText, Plus, CheckCircle2, Clock, Send, Copy, Scale, Trash2, ExternalLink, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { WorkspaceCanonicalToolbar } from "@/components/workspace/workspace-canonical-toolbar";
 import { WorkspaceDashboardSheet, type MetricCardItem } from "@/components/workspace/workspace-dashboard-sheet";
 import { toast } from "sonner";
@@ -44,7 +45,7 @@ export default function WorkspaceContractsIndexPage() {
   const [isClausesModalOpen, setIsClausesModalOpen] = useState(false);
   const [isDashboardOpen, setIsDashboardOpen] = useState(false);
 
-  const { data: contracts = [], refetch } = useQuery({
+  const { data: contracts = [], refetch, isLoading } = useQuery({
     queryKey: ["agency-contracts", selectedStatus, search],
     queryFn: () =>
       listAgencyTravelContracts({
@@ -140,7 +141,18 @@ export default function WorkspaceContractsIndexPage() {
         />
 
         {/* ── 2. GRID DE CONTRATOS ── */}
-        {contractsList.length === 0 ? (
+        {isLoading ? (
+          <div className="waesy-card-grid gap-4" aria-label="Carregando contratos">
+            {Array.from({ length: 3 }).map((_, index) => (
+              <Card key={index} className="rounded-lg border border-border/70 p-5 space-y-4">
+                <Skeleton className="h-5 w-3/4" />
+                <Skeleton className="h-4 w-1/2" />
+                <Skeleton className="h-16 w-full" />
+                <Skeleton className="h-11 w-full rounded-lg" />
+              </Card>
+            ))}
+          </div>
+        ) : contractsList.length === 0 ? (
           <div className="py-20 text-center space-y-3 bg-card rounded-lg border border-dashed border-border/70 p-6 sm:p-8">
             <FileText className="size-12 mx-auto text-muted-foreground/40" />
             <h3 className="text-sm font-bold text-foreground">Nenhum contrato encontrado</h3>
@@ -150,20 +162,20 @@ export default function WorkspaceContractsIndexPage() {
             <Button
               size="sm"
               onClick={() => setIsNewModalOpen(true)}
-              className="rounded-lg text-xs font-bold gap-2 h-11 sm:h-9 mt-2 cursor-pointer shadow-xs"
+              className="rounded-lg text-xs font-bold gap-2 h-11 mt-2 cursor-pointer"
             >
               <Plus className="size-4" />
               <span>Emitir Primeiro Contrato</span>
             </Button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="waesy-card-grid gap-4">
             {contractsList.map((c: TravelContractDTO) => {
               const isSigned = c.status === "signed";
               return (
                 <Card
                   key={c.id}
-                  className="rounded-lg border border-border/70 bg-card p-4 sm:p-5 space-y-4 hover:border-foreground/20 transition-all flex flex-col justify-between shadow-2xs"
+                  className="rounded-lg border border-border/70 bg-card p-4 sm:p-5 space-y-4 hover:border-foreground/20 transition-colors flex flex-col justify-between"
                 >
                   <div className="space-y-3">
                     <div className="flex items-start justify-between gap-2">
@@ -226,7 +238,7 @@ export default function WorkspaceContractsIndexPage() {
                       asChild
                       variant="secondary"
                       size="sm"
-                      className="rounded-lg text-xs font-bold gap-2 h-11 sm:h-8 px-3 flex-1 cursor-pointer"
+                      className="rounded-lg text-xs font-bold gap-2 h-11 px-3 flex-1 cursor-pointer"
                     >
                       <a
                         href={`/contrato/${c.public_token}`}

@@ -58,3 +58,12 @@ A arquitetura recomendada é um monorepo incremental com pacotes de `tokens`, `c
 A sidebar/flyout, a toolbar canônica e a BottomBar foram migradas para os utilitários de janela de 840px. O lote removeu `transition-all`, sombras de superfície, classes arbitrárias de dimensão/tipografia, estilo inline de largura e visibilidades `sm/md` que conflitavam com a janela expandida. Controles de aba, filtros, ações secundárias, menus e links receberam alvos mínimos e foco visível; a faixa de abas mantém rolagem horizontal por utilitário semântico, preservando tabelas e superfícies estreitas sem truncamento.
 
 A validação do lote apresentou **0 P0, 0 P1, 0 P2 e 0 P3 nos componentes**, com nove P2 restantes somente em `src/styles.css`. Esses P2 são aliases de compatibilidade (`shadow-sm/md/lg` e classes de duração) que precisam ser revisados como fundação de tokens, não removidos isoladamente sem verificar dependências do projeto.
+
+
+## Lotes F2/F3 concluídos — shell global e operação turística
+
+O `Shell` global e o `workspace-shell` agora usam a fronteira expandida de 840px para sidebar, ações operacionais e identificação do operador. O layout de erro do workspace foi saneado para `min-h-dvh`, ações com 44px e superfície sem sombra decorativa.
+
+As telas de **Excursões** e **Contratos Turísticos** passaram a usar `waesy-card-grid`: uma coluna em compact, duas em medium e três em expanded. Os cartões não usam mais `transition-all` ou `shadow-2xs`; ações permanecem com altura de 44px. Também foram incluídos Skeletons estruturais para carregamento, mantendo as dimensões da grade e evitando CLS. A barra de ocupação usa `waesy-progress-fill`, que anima somente largura em 200ms.
+
+Após o lote, o lint do escopo apresentou **0 P0, 0 P1, 0 P2 e 0 P3** nos componentes e rotas alterados. Os nove P2 restantes pertencem exclusivamente aos aliases históricos do `styles.css` e continuam catalogados para a frente de fundação.

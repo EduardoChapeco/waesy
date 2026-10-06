@@ -29,6 +29,20 @@
   display: none;
 }
 
+.waesy-bottom-nav-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.waesy-card-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.waesy-progress-fill {
+  transition: width 200ms var(--ease-standard);
+}
+
 @media (min-width: 840px) {
   .waesy-compact-medium-only.waesy-compact-medium-only {
     display: none;
@@ -36,6 +50,16 @@
 
   .waesy-expanded-flex.waesy-expanded-flex {
     display: flex;
+  }
+
+  .waesy-card-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 600px) and (max-width: 839px) {
+  .waesy-card-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 

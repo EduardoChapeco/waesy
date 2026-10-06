@@ -108,8 +108,8 @@ function WorkspaceErrorComponent({ error, reset }: { error: unknown; reset: () =
  }, [error, normalizedError.message, normalizedError.stack]);
 
  return (
- <div className="min-h-[100dvh] flex items-center justify-center bg-background p-4 text-center">
- <div className="max-w-md w-full bg-card p-6 sm:p-8 rounded-lg border border-border/80 space-y-4 shadow-sm">
+ <div className="min-h-dvh flex items-center justify-center bg-background p-4 text-center">
+ <div className="max-w-md w-full bg-card p-6 sm:p-8 rounded-lg border border-border/80 space-y-4">
  <div className="size-14 rounded-lg bg-destructive/10 text-destructive flex items-center justify-center mx-auto">
  <AlertTriangle className="size-7" />
  </div>
@@ -133,12 +133,12 @@ function WorkspaceErrorComponent({ error, reset }: { error: unknown; reset: () =
  if (typeof window !== "undefined") window.location.reload();
  reset();
  }}
- className="w-full sm:w-auto rounded-lg text-xs font-bold gap-2"
+ className="w-full sm:w-auto min-h-11 rounded-lg text-xs font-bold gap-2 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
  >
  <RefreshCw className="size-3.5" />
  <span>Recarregar Painel</span>
  </Button>
- <Button asChild variant="outline" className="w-full sm:w-auto rounded-lg text-xs font-bold gap-2">
+ <Button asChild variant="outline" className="w-full sm:w-auto min-h-11 rounded-lg text-xs font-bold gap-2 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
  <Link to="/workspace">
  <ArrowLeft className="size-3.5" />
  <span>Painel Geral</span>

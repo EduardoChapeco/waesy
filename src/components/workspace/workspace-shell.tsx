@@ -553,7 +553,7 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
                   asChild
                   size="sm"
                   variant="outline"
-                  className="h-11 min-h-11 rounded-lg text-xs font-bold gap-2 hidden sm:inline-flex border-border bg-card hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  className="h-11 min-h-11 rounded-lg text-xs font-bold gap-2 hidden waesy-expanded-flex border-border bg-card hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 >
                   <Link
                     to="/perfil-da-loja"
@@ -578,7 +578,7 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
               >
                 <Link to="/admin-master">
                   <ShieldAlert className="size-3.5" />
-                  <span className="hidden sm:inline">Admin Master</span>
+                  <span className="hidden waesy-expanded-flex">Admin Master</span>
                 </Link>
               </Button>
             )}
@@ -594,7 +594,7 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
                   asChild
                   size="sm"
                   variant="outline"
-                  className="h-11 min-h-11 rounded-lg text-xs font-bold gap-2 hidden md:inline-flex border-border bg-card hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  className="h-11 min-h-11 rounded-lg text-xs font-bold gap-2 hidden waesy-expanded-flex border-border bg-card hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 >
                   <Link to={opAction.path as never}>
                     <OpIcon className="size-3.5 text-primary" />
@@ -611,7 +611,7 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
                   type="button"
                   className="flex items-center gap-2 p-1 pl-2 rounded-lg border border-border/60 bg-card hover:bg-muted/80 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 >
-                  <span className="text-xs font-bold text-foreground max-w-28 truncate hidden md:inline-block">
+                  <span className="text-xs font-bold text-foreground max-w-28 truncate hidden waesy-expanded-flex">
                     {userDisplayName}
                   </span>
                   <Avatar className="size-7 rounded-lg">
@@ -701,7 +701,7 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
           return (
             <nav
               aria-label="Navegação operacional móvel"
-              className="waesy-compact-medium-only fixed inset-x-2.5 z-30 max-w-lg mx-auto grid grid-cols-5 items-center p-2 bg-background border border-border rounded-lg select-none"
+              className="waesy-compact-medium-only fixed inset-x-2.5 z-30 max-w-lg mx-auto waesy-bottom-nav-grid items-center p-2 bg-background border border-border rounded-lg select-none"
               style={{ bottom: "max(calc(env(safe-area-inset-bottom) + 6px), 8px)" }}
             >
               <Link

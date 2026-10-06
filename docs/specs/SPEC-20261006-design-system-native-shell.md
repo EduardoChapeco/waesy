@@ -53,3 +53,8 @@ Não alterar rotas de negócio, loaders, services ou contratos de dados nesta fr
 Esta frente autoriza também `src/components/workspace/workspace-sidebar-flyout.tsx`, `src/components/workspace/workspace-canonical-toolbar.tsx` e `src/components/layout/bottom-bar.tsx`. O objetivo é propagar a adaptação para tabelas, filtros e navegação sem corrigir rotas individualmente por substituição cega.
 
 Os componentes devem usar `waesy-compact-medium-only` para ações próprias de compact/medium e `waesy-expanded-flex` para superfícies expandidas. Elementos interativos devem ter foco visível e, no mínimo, 44px quando disponíveis em telas compactas/medium. `transition-all`, sombras em superfícies, cores literais, classes de valores arbitrários e `sm/md/lg` como substituto de 840px devem ser removidos somente quando o comportamento semântico estiver preservado.
+
+
+## Lote F3 — Superfícies operacionais turísticas
+
+O lote seguinte inclui `workspace.turismo.grupos.index.tsx` e `workspace.turismo.contratos.index.tsx`. Grades de cartões devem bifurcar em uma coluna no compacto, duas no medium e três no expandido a partir de 840px, usando utilitário semântico compartilhado. Barras de progresso devem animar somente a propriedade de largura por utilitário próprio, sem `transition-all`. Ações devem manter alvo mínimo de 44px em todas as janelas compactas e medium, sem sombra decorativa em cartões ou botões.
