@@ -28,6 +28,8 @@ CREATE INDEX IF NOT EXISTS idx_copilot_steps_task_id
 -- RLS: Deny-by-default
 ALTER TABLE public.copilot_activity_steps ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "copilot_steps_select_own_store" ON public.copilot_activity_steps;
+
 -- Leitura: plataforma admin, tarefas sem loja ou membros do tenant
 CREATE POLICY "copilot_steps_select_own_store"
   ON public.copilot_activity_steps

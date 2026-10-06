@@ -78,6 +78,10 @@ CREATE INDEX IF NOT EXISTS idx_order_events_type ON public.order_events (event_t
 -- RLS em order_events
 ALTER TABLE public.order_events ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "order_events_customer_read" ON public.order_events;
+DROP POLICY IF EXISTS "order_events_staff_read" ON public.order_events;
+DROP POLICY IF EXISTS "order_events_service_all" ON public.order_events;
+
 -- Clientes podem ver eventos de pedidos vinculados ao seu usuário
 CREATE POLICY "order_events_customer_read"
   ON public.order_events FOR SELECT

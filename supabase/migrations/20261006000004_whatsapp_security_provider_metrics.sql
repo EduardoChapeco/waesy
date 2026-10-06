@@ -89,6 +89,23 @@ DROP POLICY IF EXISTS "chat_threads_staff_all" ON public.chat_threads;
 DROP POLICY IF EXISTS chat_messages_staff_all ON public.chat_messages;
 DROP POLICY IF EXISTS "chat_messages_staff_all" ON public.chat_messages;
 DROP POLICY IF EXISTS p2p_participant_access ON public.chat_threads;
+DROP POLICY IF EXISTS chat_threads_strict_staff_select ON public.chat_threads;
+DROP POLICY IF EXISTS chat_threads_strict_staff_modify ON public.chat_threads;
+DROP POLICY IF EXISTS chat_threads_strict_staff_insert ON public.chat_threads;
+DROP POLICY IF EXISTS chat_threads_strict_customer ON public.chat_threads;
+DROP POLICY IF EXISTS chat_messages_strict_staff_select ON public.chat_messages;
+DROP POLICY IF EXISTS chat_messages_strict_staff_insert ON public.chat_messages;
+DROP POLICY IF EXISTS chat_messages_strict_staff_update ON public.chat_messages;
+DROP POLICY IF EXISTS chat_messages_strict_customer ON public.chat_messages;
+DROP POLICY IF EXISTS chat_conversation_keys_staff_deny ON public.chat_conversation_keys;
+DROP POLICY IF EXISTS provider_events_staff_select ON public.whatsapp_provider_webhook_events;
+DROP POLICY IF EXISTS provider_events_deny_insert ON public.whatsapp_provider_webhook_events;
+DROP POLICY IF EXISTS provider_events_deny_update ON public.whatsapp_provider_webhook_events;
+DROP POLICY IF EXISTS provider_events_deny_delete ON public.whatsapp_provider_webhook_events;
+DROP POLICY IF EXISTS chat_access_audit_staff_select ON public.chat_access_audit_events;
+DROP POLICY IF EXISTS chat_access_audit_deny_insert ON public.chat_access_audit_events;
+DROP POLICY IF EXISTS chat_access_audit_deny_update ON public.chat_access_audit_events;
+DROP POLICY IF EXISTS chat_access_audit_deny_delete ON public.chat_access_audit_events;
 
 CREATE POLICY chat_threads_strict_staff_select ON public.chat_threads FOR SELECT TO authenticated USING (
   store_id IS NOT NULL AND EXISTS (
@@ -141,7 +158,9 @@ CREATE POLICY provider_events_deny_delete ON public.whatsapp_provider_webhook_ev
 CREATE POLICY chat_access_audit_staff_select ON public.chat_access_audit_events FOR SELECT TO authenticated USING (
   EXISTS (SELECT 1 FROM public.workspace_members wm WHERE wm.store_id = chat_access_audit_events.store_id AND wm.profile_id = auth.uid() AND wm.role IN ('owner','admin','manager','platform_admin','master'))
 );
-CREATE POLICY chat_access_audit_deny_write ON public.chat_access_audit_events FOR INSERT, UPDATE, DELETE TO anon, authenticated USING (false) WITH CHECK (false);
+CREATE POLICY chat_access_audit_deny_insert ON public.chat_access_audit_events FOR INSERT TO anon, authenticated WITH CHECK (false);
+CREATE POLICY chat_access_audit_deny_update ON public.chat_access_audit_events FOR UPDATE TO anon, authenticated USING (false) WITH CHECK (false);
+CREATE POLICY chat_access_audit_deny_delete ON public.chat_access_audit_events FOR DELETE TO anon, authenticated USING (false);
 
 -- Métricas reais, sempre limitadas ao store_id autenticado; service_role pode consultar um store explícito.
 CREATE OR REPLACE FUNCTION public.get_whatsapp_operations_metrics(p_store_id UUID DEFAULT NULL)

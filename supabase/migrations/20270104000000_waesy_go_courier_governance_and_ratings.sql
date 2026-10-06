@@ -45,6 +45,9 @@ CREATE INDEX IF NOT EXISTS idx_customer_debt_status ON public.customer_debt_ledg
 
 ALTER TABLE public.customer_debt_ledger ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Users can view their own debts" ON public.customer_debt_ledger;
+DROP POLICY IF EXISTS "Platform admins can manage all debts" ON public.customer_debt_ledger;
+
 CREATE POLICY "Users can view their own debts"
   ON public.customer_debt_ledger FOR SELECT
   USING (customer_id = auth.uid() OR customer_cpf IN (
@@ -79,6 +82,8 @@ CREATE INDEX IF NOT EXISTS idx_courier_expenses_user_id ON public.courier_expens
 
 ALTER TABLE public.courier_expense_logs ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Couriers can manage their own expenses" ON public.courier_expense_logs;
+
 CREATE POLICY "Couriers can manage their own expenses"
   ON public.courier_expense_logs FOR ALL
   USING (user_id = auth.uid())
@@ -106,6 +111,9 @@ CREATE INDEX IF NOT EXISTS idx_mobility_ratings_courier ON public.mobility_ratin
 CREATE INDEX IF NOT EXISTS idx_mobility_ratings_reviewee ON public.mobility_ratings(reviewee_id);
 
 ALTER TABLE public.mobility_ratings ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Public read approved ratings" ON public.mobility_ratings;
+DROP POLICY IF EXISTS "Participants can submit rating" ON public.mobility_ratings;
 
 CREATE POLICY "Public read approved ratings"
   ON public.mobility_ratings FOR SELECT

@@ -4,9 +4,21 @@ begin;
 alter table public.workspace_members
   add column if not exists user_id uuid,
   add column if not exists is_active boolean not null default true;
-update public.workspace_members
-   set user_id = profile_id
- where user_id is null;
+
+do $$
+begin
+  if exists (
+    select 1
+      from pg_attribute
+     where attrelid = 'public.workspace_members'::regclass
+       and attname = 'user_id'
+       and attgenerated = ''
+  ) then
+    update public.workspace_members
+       set user_id = profile_id
+     where user_id is null;
+  end if;
+end $$;
 
 create index if not exists workspace_members_user_id_idx on public.workspace_members(user_id);
 

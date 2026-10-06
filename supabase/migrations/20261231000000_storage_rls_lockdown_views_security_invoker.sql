@@ -81,6 +81,17 @@ DROP POLICY IF EXISTS "Users can upload identity documents" ON storage.objects;
 DROP POLICY IF EXISTS "Admins can read all receipts" ON storage.objects;
 DROP POLICY IF EXISTS "Customers can read own receipts" ON storage.objects;
 DROP POLICY IF EXISTS "Customers can upload receipts" ON storage.objects;
+DROP POLICY IF EXISTS "media_public_read" ON storage.objects;
+DROP POLICY IF EXISTS "media_authenticated_insert" ON storage.objects;
+DROP POLICY IF EXISTS "media_authenticated_update" ON storage.objects;
+DROP POLICY IF EXISTS "media_authenticated_delete" ON storage.objects;
+DROP POLICY IF EXISTS "legal_documents_select" ON storage.objects;
+DROP POLICY IF EXISTS "legal_documents_insert" ON storage.objects;
+DROP POLICY IF EXISTS "legal_documents_delete" ON storage.objects;
+DROP POLICY IF EXISTS "receipts_select" ON storage.objects;
+DROP POLICY IF EXISTS "receipts_insert" ON storage.objects;
+DROP POLICY IF EXISTS "identity_vault_select" ON storage.objects;
+DROP POLICY IF EXISTS "identity_vault_insert" ON storage.objects;
 
 -- ------------------------------------------------------------------------------
 -- FASE 4: POLÍTICAS DE STORAGE RLS CANÔNICAS (PÚBLICAS & AUTENTICADAS)

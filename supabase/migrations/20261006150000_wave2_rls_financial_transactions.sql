@@ -10,6 +10,10 @@ DROP POLICY IF EXISTS "Public read voucher by token" ON public.tourism_vouchers;
 
 -- 2. Reconciliar políticas de staff com USING e WITH CHECK explícitos.
 DROP POLICY IF EXISTS "Agency manage own travel proposals" ON public.travel_proposals;
+DROP POLICY IF EXISTS "travel_proposals_staff_select" ON public.travel_proposals;
+DROP POLICY IF EXISTS "travel_proposals_staff_insert" ON public.travel_proposals;
+DROP POLICY IF EXISTS "travel_proposals_staff_update" ON public.travel_proposals;
+DROP POLICY IF EXISTS "travel_proposals_staff_delete" ON public.travel_proposals;
 CREATE POLICY "travel_proposals_staff_select"
   ON public.travel_proposals FOR SELECT TO authenticated
   USING (is_store_staff(store_id));
@@ -25,6 +29,10 @@ CREATE POLICY "travel_proposals_staff_delete"
   USING (is_store_staff(store_id));
 
 DROP POLICY IF EXISTS "Agency manage own travel contracts" ON public.travel_contracts;
+DROP POLICY IF EXISTS "travel_contracts_staff_select" ON public.travel_contracts;
+DROP POLICY IF EXISTS "travel_contracts_staff_insert" ON public.travel_contracts;
+DROP POLICY IF EXISTS "travel_contracts_staff_update" ON public.travel_contracts;
+DROP POLICY IF EXISTS "travel_contracts_staff_delete" ON public.travel_contracts;
 CREATE POLICY "travel_contracts_staff_select"
   ON public.travel_contracts FOR SELECT TO authenticated
   USING (is_store_staff(store_id));
@@ -40,6 +48,10 @@ CREATE POLICY "travel_contracts_staff_delete"
   USING (is_store_staff(store_id));
 
 DROP POLICY IF EXISTS "Workspace members manage store tourism trips" ON public.tourism_trips;
+DROP POLICY IF EXISTS "tourism_trips_staff_select" ON public.tourism_trips;
+DROP POLICY IF EXISTS "tourism_trips_staff_insert" ON public.tourism_trips;
+DROP POLICY IF EXISTS "tourism_trips_staff_update" ON public.tourism_trips;
+DROP POLICY IF EXISTS "tourism_trips_staff_delete" ON public.tourism_trips;
 CREATE POLICY "tourism_trips_staff_select"
   ON public.tourism_trips FOR SELECT TO authenticated
   USING (is_store_staff(store_id));
@@ -55,6 +67,10 @@ CREATE POLICY "tourism_trips_staff_delete"
   USING (is_store_staff(store_id));
 
 DROP POLICY IF EXISTS "Workspace members manage trip passengers" ON public.trip_passengers;
+DROP POLICY IF EXISTS "trip_passengers_staff_select" ON public.trip_passengers;
+DROP POLICY IF EXISTS "trip_passengers_staff_insert" ON public.trip_passengers;
+DROP POLICY IF EXISTS "trip_passengers_staff_update" ON public.trip_passengers;
+DROP POLICY IF EXISTS "trip_passengers_staff_delete" ON public.trip_passengers;
 CREATE POLICY "trip_passengers_staff_select"
   ON public.trip_passengers FOR SELECT TO authenticated
   USING (is_store_staff(store_id));
@@ -70,6 +86,10 @@ CREATE POLICY "trip_passengers_staff_delete"
   USING (is_store_staff(store_id));
 
 DROP POLICY IF EXISTS "Workspace members manage trip confirmation items" ON public.trip_confirmation_items;
+DROP POLICY IF EXISTS "trip_confirmation_items_staff_select" ON public.trip_confirmation_items;
+DROP POLICY IF EXISTS "trip_confirmation_items_staff_insert" ON public.trip_confirmation_items;
+DROP POLICY IF EXISTS "trip_confirmation_items_staff_update" ON public.trip_confirmation_items;
+DROP POLICY IF EXISTS "trip_confirmation_items_staff_delete" ON public.trip_confirmation_items;
 CREATE POLICY "trip_confirmation_items_staff_select"
   ON public.trip_confirmation_items FOR SELECT TO authenticated
   USING (is_store_staff(store_id));
@@ -85,6 +105,10 @@ CREATE POLICY "trip_confirmation_items_staff_delete"
   USING (is_store_staff(store_id));
 
 DROP POLICY IF EXISTS "Workspace members manage tourism vouchers" ON public.tourism_vouchers;
+DROP POLICY IF EXISTS "tourism_vouchers_staff_select" ON public.tourism_vouchers;
+DROP POLICY IF EXISTS "tourism_vouchers_staff_insert" ON public.tourism_vouchers;
+DROP POLICY IF EXISTS "tourism_vouchers_staff_update" ON public.tourism_vouchers;
+DROP POLICY IF EXISTS "tourism_vouchers_staff_delete" ON public.tourism_vouchers;
 CREATE POLICY "tourism_vouchers_staff_select"
   ON public.tourism_vouchers FOR SELECT TO authenticated
   USING (is_store_staff(store_id));
