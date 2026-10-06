@@ -187,6 +187,7 @@ function CopilotPage() {
         const aiMessageItem: ChatMessageItem = {
           id: `ai-${Date.now()}`,
           threadId: activeThreadId,
+          executionId: execution.executionId,
           senderName: "Waesy Copilot",
           isStaffOrAI: true,
           text: execution.responseMessage,

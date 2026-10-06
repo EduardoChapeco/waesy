@@ -2,6 +2,25 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 // Mock @tanstack/react-start for pure server function execution in Vitest
 vi.mock("@tanstack/react-start", () => ({
+  createIsomorphicFn: vi.fn(() => {
+    const builder: any = {
+      server: vi.fn((fn: any) => {
+        builder._server = fn;
+        return builder;
+      }),
+      client: vi.fn((fn: any) => {
+        builder._client = fn;
+        return builder;
+      }),
+      _server: undefined,
+      _client: undefined,
+    };
+    const callable = (...args: any[]) => {
+      const implementation = typeof window === "undefined" ? builder._server : builder._client;
+      return implementation?.(...args);
+    };
+    return Object.assign(callable, builder);
+  }),
   createServerFn: vi.fn(() => {
     const fnBuilder: any = {
       validator: vi.fn((schema: any) => {
@@ -22,6 +41,10 @@ vi.mock("@tanstack/react-start", () => ({
     };
     return fnBuilder;
   }),
+}));
+
+vi.mock("@tanstack/react-start/server", () => ({
+  getRequest: vi.fn(() => ({ url: "https://test.local/_serverFn/classifieds" })),
 }));
 
 const mockSingleAd = {

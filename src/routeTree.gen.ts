@@ -214,6 +214,7 @@ import { Route as AdminMasterEntregadoresAuditoriaRouteImport } from './routes/a
 import { Route as AdminMasterSegurancaIndexRouteImport } from './routes/admin-master.seguranca.index'
 import { Route as AdminMasterSegurancaCertificadosRouteImport } from './routes/admin-master.seguranca.certificados'
 import { Route as AdminMasterSegurancaTelemetriaRouteImport } from './routes/admin-master.seguranca.telemetria'
+import { Route as ApiAiStreamRouteImport } from './routes/api.ai.stream'
 import { Route as ApiAuthCallbackRouteImport } from './routes/api.auth.callback'
 import { Route as ApiAuthConfirmRouteImport } from './routes/api.auth.confirm'
 import { Route as ApiCronMiningWorkerRouteImport } from './routes/api.cron.mining-worker'
@@ -1439,6 +1440,11 @@ const AdminMasterSegurancaTelemetriaRoute =
     path: '/seguranca/telemetria',
     getParentRoute: () => AdminMasterRoute,
   } as any)
+const ApiAiStreamRoute = ApiAiStreamRouteImport.update({
+  id: '/api/ai/stream',
+  path: '/api/ai/stream',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAuthCallbackRoute = ApiAuthCallbackRouteImport.update({
   id: '/api/auth/callback',
   path: '/api/auth/callback',
@@ -2697,6 +2703,7 @@ export interface FileRoutesByFullPath {
   '/admin-master/entregadores/auditoria': typeof AdminMasterEntregadoresAuditoriaRoute
   '/admin-master/seguranca/certificados': typeof AdminMasterSegurancaCertificadosRouteWithChildren
   '/admin-master/seguranca/telemetria': typeof AdminMasterSegurancaTelemetriaRoute
+  '/api/ai/stream': typeof ApiAiStreamRoute
   '/api/auth/callback': typeof ApiAuthCallbackRoute
   '/api/auth/confirm': typeof ApiAuthConfirmRoute
   '/api/cron/mining-worker': typeof ApiCronMiningWorkerRoute
@@ -3085,6 +3092,7 @@ export interface FileRoutesByTo {
   '/admin-master/entregadores/auditoria': typeof AdminMasterEntregadoresAuditoriaRoute
   '/admin-master/seguranca/certificados': typeof AdminMasterSegurancaCertificadosRouteWithChildren
   '/admin-master/seguranca/telemetria': typeof AdminMasterSegurancaTelemetriaRoute
+  '/api/ai/stream': typeof ApiAiStreamRoute
   '/api/auth/callback': typeof ApiAuthCallbackRoute
   '/api/auth/confirm': typeof ApiAuthConfirmRoute
   '/api/cron/mining-worker': typeof ApiCronMiningWorkerRoute
@@ -3482,6 +3490,7 @@ export interface FileRoutesById {
   '/admin-master/entregadores/auditoria': typeof AdminMasterEntregadoresAuditoriaRoute
   '/admin-master/seguranca/certificados': typeof AdminMasterSegurancaCertificadosRouteWithChildren
   '/admin-master/seguranca/telemetria': typeof AdminMasterSegurancaTelemetriaRoute
+  '/api/ai/stream': typeof ApiAiStreamRoute
   '/api/auth/callback': typeof ApiAuthCallbackRoute
   '/api/auth/confirm': typeof ApiAuthConfirmRoute
   '/api/cron/mining-worker': typeof ApiCronMiningWorkerRoute
@@ -3880,6 +3889,7 @@ export interface FileRouteTypes {
     | '/admin-master/entregadores/auditoria'
     | '/admin-master/seguranca/certificados'
     | '/admin-master/seguranca/telemetria'
+    | '/api/ai/stream'
     | '/api/auth/callback'
     | '/api/auth/confirm'
     | '/api/cron/mining-worker'
@@ -4268,6 +4278,7 @@ export interface FileRouteTypes {
     | '/admin-master/entregadores/auditoria'
     | '/admin-master/seguranca/certificados'
     | '/admin-master/seguranca/telemetria'
+    | '/api/ai/stream'
     | '/api/auth/callback'
     | '/api/auth/confirm'
     | '/api/cron/mining-worker'
@@ -4664,6 +4675,7 @@ export interface FileRouteTypes {
     | '/admin-master/entregadores/auditoria'
     | '/admin-master/seguranca/certificados'
     | '/admin-master/seguranca/telemetria'
+    | '/api/ai/stream'
     | '/api/auth/callback'
     | '/api/auth/confirm'
     | '/api/cron/mining-worker'
@@ -4886,6 +4898,7 @@ export interface RootRouteChildren {
   VerificarSerialRoute: typeof VerificarSerialRoute
   ViajanteTokenRoute: typeof ViajanteTokenRoute
   ViajanteCarteiraRoute: typeof ViajanteCarteiraRoute
+  ApiAiStreamRoute: typeof ApiAiStreamRoute
   ApiAuthCallbackRoute: typeof ApiAuthCallbackRoute
   ApiAuthConfirmRoute: typeof ApiAuthConfirmRoute
   ApiCronMiningWorkerRoute: typeof ApiCronMiningWorkerRoute
@@ -6348,6 +6361,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin-master/seguranca/telemetria'
       preLoaderRoute: typeof AdminMasterSegurancaTelemetriaRouteImport
       parentRoute: typeof AdminMasterRoute
+    }
+    '/api/ai/stream': {
+      id: '/api/ai/stream'
+      path: '/api/ai/stream'
+      fullPath: '/api/ai/stream'
+      preLoaderRoute: typeof ApiAiStreamRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/auth/callback': {
       id: '/api/auth/callback'
@@ -8592,6 +8612,7 @@ const rootRouteChildren: RootRouteChildren = {
   VerificarSerialRoute: VerificarSerialRoute,
   ViajanteTokenRoute: ViajanteTokenRoute,
   ViajanteCarteiraRoute: ViajanteCarteiraRoute,
+  ApiAiStreamRoute: ApiAiStreamRoute,
   ApiAuthCallbackRoute: ApiAuthCallbackRoute,
   ApiAuthConfirmRoute: ApiAuthConfirmRoute,
   ApiCronMiningWorkerRoute: ApiCronMiningWorkerRoute,

@@ -32,7 +32,7 @@ const env = { ...loadEnv(join(root, '.env')), ...loadEnv(join(root, '.env.secret
 const URL = env.VITE_SUPABASE_URL;
 const SERVICE = env.SUPABASE_SERVICE_ROLE_KEY;
 const PROJECT_REF = 'jfuebqmltksyznovhlwa';
-const DB_PASSWORD = env.SUPABASE_DB_PASSWORD || 'EEaR6399!@#2026';
+const DB_PASSWORD = env.SUPABASE_DB_PASSWORD || process.env.SUPABASE_DB_PASSWORD || (() => { throw new Error("SUPABASE_DB_PASSWORD is required"); })();
 
 // Step 1: Check which migration versions are currently registered
 console.log('Step 1: Querying registered migrations via REST API...');

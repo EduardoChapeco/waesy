@@ -29,6 +29,7 @@ interface DrawerMessage {
   id: string;
   role: "assistant" | "user";
   text: string;
+  executionId?: string;
   fsmPhase?: CopilotFsmPhase;
   activitySteps?: AIActivityStep[];
   artifact?: ChatArtifactData;
@@ -107,6 +108,7 @@ export function WaesyCopilotDrawer({ session }: { session?: any }) {
         id: `ai-${Date.now()}`,
         role: "assistant",
         text: execution.responseMessage,
+        executionId: execution.executionId,
         fsmPhase: execution.fsmPhase,
         activitySteps: execution.activitySteps,
         artifact: execution.artifact,
@@ -367,7 +369,7 @@ export function WaesyCopilotDrawer({ session }: { session?: any }) {
 
                   {/* Trilha de Atividade da IA */}
                   {m.activitySteps && m.activitySteps.length > 0 && (
-                    <AIActivityTrail steps={m.activitySteps} />
+                    <AIActivityTrail steps={m.activitySteps} executionId={m.executionId} />
                   )}
 
                   {/* Blocos Estruturados (Generative UI) */}

@@ -2074,6 +2074,7 @@ function SpecializedClassifiedEditor({
 
       // Desapego & Bens Físicos
       if (initialData.attributes.warranty) setItemWarranty(initialData.attributes.warranty);
+      if (initialData.attributes.condition) setItemCondition(initialData.attributes.condition as any);
       if (initialData.attributes.brand) {
         setPhoneBrand(initialData.attributes.brand);
         setComputerBrand(initialData.attributes.brand);

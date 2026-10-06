@@ -1,12 +1,21 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { getServerClient } from "@/lib/supabase";
+import { verifyWebhookSignature } from "@/lib/webhook-signature";
 
 export const Route = createFileRoute("/api/webhooks/pix")({
  server: {
  handlers: {
  POST: async ({ request }) => {
  try {
- const body = await request.json().catch(() => ({}));
+ const rawBody = await request.text();
+ const verification = verifyWebhookSignature(rawBody, request.headers, process.env.PIX_WEBHOOK_SECRET);
+ if (!verification.ok) {
+ return new Response(JSON.stringify({ error: verification.reason }), {
+ status: 401,
+ headers: { "Content-Type": "application/json" },
+ });
+ }
+ const body = JSON.parse(rawBody) as Record<string, any>;
  
  // Compatibilidade com gateways PIX comuns (Pagar.me, Asaas, MercadoPago)
  const transactionId = body.transaction_id || body.id || body.payment_id;

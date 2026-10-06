@@ -86,24 +86,26 @@ export const Route = createFileRoute("/workspace")({
  errorComponent: WorkspaceErrorComponent,
 });
 
-function WorkspaceErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
+function WorkspaceErrorComponent({ error, reset }: { error: unknown; reset: () => void }) {
  if (isRedirect(error)) {
  throw error;
  }
 
+ const normalizedError = error instanceof Error ? error : new Error(String(error));
+
  useEffect(() => {
- if (error && !isRedirect(error)) {
+ if (!isRedirect(error)) {
  logSystemError({
  data: {
  severity: "ERROR",
  subsystem: "workspace_layout",
  route: typeof window !== "undefined" ? window.location.pathname : "/workspace",
- message: error.message || "Unknown workspace error",
- error_payload: { stack: error.stack },
+ message: normalizedError.message || "Unknown workspace error",
+ error_payload: { stack: normalizedError.stack },
  },
  }).catch(() => {});
  }
- }, [error]);
+ }, [error, normalizedError.message, normalizedError.stack]);
 
  return (
  <div className="min-h-[100dvh] flex items-center justify-center bg-background p-4 text-center">
@@ -118,10 +120,10 @@ function WorkspaceErrorComponent({ error, reset }: { error: Error; reset: () => 
  </p>
  </div>
 
- {error?.message && (
+ {normalizedError.message && (
  <div className="p-3 bg-destructive/5 rounded-lg border border-destructive/20 text-left text-xs font-mono text-destructive space-y-1 max-h-40 overflow-y-auto no-scrollbar">
  <span className="font-bold block">Diagnóstico Técnico:</span>
- <span className="break-all">{error.message}</span>
+ <span className="break-all">{normalizedError.message}</span>
  </div>
  )}
 

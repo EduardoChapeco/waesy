@@ -73,11 +73,12 @@ export const Route = createFileRoute("/_store/classificados/$id")({
   errorComponent: ClassifiedDetailError,
 });
 
-function ClassifiedDetailError({ error }: { error: Error }) {
+function ClassifiedDetailError({ error }: { error: unknown }) {
   if (isRedirect(error)) {
     throw error;
   }
-  return <ClassifiedDetailErrorState error={error} />;
+  const normalizedError = error instanceof Error ? error : new Error(String(error));
+  return <ClassifiedDetailErrorState error={normalizedError} />;
 }
 
 function ClassifiedDetailPage() {

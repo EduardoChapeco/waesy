@@ -32,7 +32,37 @@ const AIClassifiedSchema = z.object({
   description: z.string().optional().default("").describe("Descrição alternativa."),
   price_cents: z.number().nullable().optional().default(null).describe("Preço estimado em centavos, ou null se indefinido."),
   location: z.string().optional().default("").describe("Bairro, cidade ou região inferida do anúncio."),
+  location_data: z.object({
+    city: z.string().optional().default(""),
+    state: z.string().length(2).optional(),
+    neighborhood: z.string().optional(),
+    postal_code: z.string().optional(),
+  }).optional().default({}),
   delivery_type: z.enum(["pickup", "shipping", "hand_delivery", "online", "negotiable"]).default("pickup").describe("Modalidade logística inferida."),
+  shipping_mode: z.enum(["pickup", "local_delivery", "shipping", "both", "not_applicable"]).default("both"),
+  stock_quantity: z.number().int().min(0).optional().default(1),
+  brand: z.string().optional().default(""),
+  condition: z.string().optional().default(""),
+  inclusions: z.array(z.string()).default([]),
+  exclusions: z.array(z.string()).default([]),
+  cancellation_policy: z.string().optional().default(""),
+  payment_config: z.object({
+    accepts_pix: z.boolean().default(true),
+    pix_discount_percent: z.number().min(0).max(50).default(0),
+    accepts_card: z.boolean().default(true),
+    max_installments: z.number().int().min(1).max(24).default(12),
+    fee_free_installments: z.number().int().min(1).max(24).default(6),
+    accepts_cash: z.boolean().default(false),
+    accepts_trade: z.boolean().default(false),
+  }).default({
+    accepts_pix: true,
+    pix_discount_percent: 0,
+    accepts_card: true,
+    max_installments: 12,
+    fee_free_installments: 6,
+    accepts_cash: false,
+    accepts_trade: false,
+  }),
   seo_meta_tags: z.array(z.string()).default([]).describe("Tags de indexação e busca SEO."),
   search_tags: z.array(z.string()).default([]).describe("Palavras-chave de busca interna."),
   attributes: z.record(z.any()).optional().default({}).describe("Atributos extras baseados no texto."),
@@ -40,10 +70,41 @@ const AIClassifiedSchema = z.object({
   ...val,
   content: val.content || val.description || "",
   description: val.description || val.content || "",
+  attributes: {
+    ...val.attributes,
+    ...(val.brand ? { brand: val.brand } : {}),
+    ...(val.condition ? { condition: val.condition } : {}),
+    location: val.location_data,
+    city: val.location_data.city,
+    state: val.location_data.state,
+    neighborhood: val.location_data.neighborhood,
+    shipping_mode: val.shipping_mode,
+    delivery_mode: val.shipping_mode,
+    stock_quantity: val.stock_quantity,
+    stock_limit: val.stock_quantity,
+    inclusions: val.inclusions,
+    exclusions: val.exclusions,
+    payment_config: val.payment_config,
+    payment_rules: val.payment_config,
+    pix_discount_percent: val.payment_config.pix_discount_percent,
+    max_installments: val.payment_config.max_installments,
+    accepted_payment_methods: [
+      ...(val.payment_config.accepts_pix ? ["pix"] : []),
+      ...(val.payment_config.accepts_card ? ["cartao_credito"] : []),
+      ...(val.payment_config.accepts_cash ? ["dinheiro"] : []),
+      ...(val.payment_config.accepts_trade ? ["permuta"] : []),
+    ],
+    installments_available: val.payment_config.accepts_card,
+    condition: val.condition,
+    accepts_financing: val.payment_config.accepts_card,
+    location_name: val.location || val.location_data.city || val.location_data.neighborhood || "",
+    seo_meta_tags: val.seo_meta_tags,
+    search_tags: val.search_tags,
+  },
 }));
 
 // ─── Fallback heurístico estruturado (sem IA) ────────────────────────────────
-function parsePromptFallback(rawPrompt: string) {
+export function parsePromptFallback(rawPrompt: string) {
   const prompt = rawPrompt.trim();
   const lower = prompt.toLowerCase();
   let category: "sale" | "vehicle" | "real_estate" | "service" | "job" | "travel" | "equipment" | "donation" = "sale";
@@ -66,7 +127,8 @@ function parsePromptFallback(rawPrompt: string) {
   }
 
   let price_cents: number | null = null;
-  const priceMatch = prompt.match(/(?:r\$\s*|por\s+r\$\s*|valor\s*:?\s*)?(\d{1,3}(?:\.\d{3})*(?:,\d{2})?|\d+(?:,\d{2})?)/i);
+  const priceMatch = prompt.match(/(?:r\$\s*|por\s+r\$\s*|valor\s*:?\s*)(\d{1,3}(?:\.\d{3})*(?:,\d{2})?|\d+(?:,\d{2})?)/i)
+    || prompt.match(/(?<![A-Za-zÀ-ÿ])(\d{1,3}(?:\.\d{3})*(?:,\d{2})?|\d+(?:,\d{2})?)(?![A-Za-zÀ-ÿ])/i);
   if (priceMatch && !/(iphone|ano|\d{4}\b)/i.test(priceMatch[0])) {
     const rawVal = priceMatch[1].replace(/\./g, "").replace(",", ".");
     const parsed = parseFloat(rawVal);
@@ -113,7 +175,24 @@ function parsePromptFallback(rawPrompt: string) {
     description: prompt,
     price_cents,
     location,
+    location_data: { city: location, state: undefined, neighborhood: undefined },
     delivery_type,
+    shipping_mode: delivery_type === "shipping" ? "shipping" : delivery_type === "online" ? "not_applicable" : delivery_type === "hand_delivery" ? "local_delivery" : "pickup",
+    stock_quantity: 1,
+    brand: "",
+    condition: "",
+    inclusions: [],
+    exclusions: [],
+    cancellation_policy: "Negociação direta com o anunciante",
+    payment_config: {
+      accepts_pix: true,
+      pix_discount_percent: 0,
+      accepts_card: true,
+      max_installments: 12,
+      fee_free_installments: 6,
+      accepts_cash: false,
+      accepts_trade: false,
+    },
     seo_meta_tags: search_tags,
     search_tags,
     attributes: {},
@@ -145,7 +224,7 @@ export const createListingWithAI = createServerFn({ method: "POST" })
 
     const systemPrompt = `Você é o Omni-Extractor de IA da plataforma Waesy.
 O usuário enviará uma frase dizendo o que deseja anunciar (ex: "Vendo PS5 semi novo por 3000 reais, moro no centro e entrego em mãos").
-Extraia e infira TODAS as dimensões estruturadas: categoria, nicho, subcategoria, título, descrição, preço em centavos, localização, tipo de entrega, tags de SEO e busca.
+Extraia e infira TODAS as dimensões estruturadas: categoria, nicho, subcategoria, título, descrição, preço em centavos, localização estruturada, logística, estoque, pagamentos, inclusões, exclusões, atributos específicos do nicho e tags de SEO/busca.
 
 Regras de Nicho e Categoria:
 - "niche" DEVE ser OBRIGATORIAMENTE um destes valores canônicos:
@@ -177,7 +256,16 @@ Retorne APENAS UM JSON VÁLIDO:
   "description": "PlayStation 5 semi novo em excelente estado...",
   "price_cents": 300000,
   "location": "Centro",
+  "location_data": { "city": "Chapecó", "state": "SC", "neighborhood": "Centro" },
   "delivery_type": "hand_delivery",
+  "shipping_mode": "local_delivery",
+  "stock_quantity": 1,
+  "brand": "Sony",
+  "condition": "semi_novo",
+  "inclusions": ["Controle original"],
+  "exclusions": [],
+  "cancellation_policy": "A combinar",
+  "payment_config": { "accepts_pix": true, "pix_discount_percent": 0, "accepts_card": true, "max_installments": 12, "fee_free_installments": 6, "accepts_cash": false, "accepts_trade": false },
   "seo_meta_tags": ["ps5", "playstation 5", "games", "sony", "videogame"],
   "search_tags": ["ps5", "console", "seminovo", "videogame"],
   "attributes": {}

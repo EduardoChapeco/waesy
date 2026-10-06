@@ -98,6 +98,8 @@ const MODEL_PRICING: Record<string, { inPer1M: number; outPer1M: number }> = {
   "gemini:text-embedding-004": { inPer1M: 0.02, outPer1M: 0.00 },
   "openai:gpt-4o-mini": { inPer1M: 0.15, outPer1M: 0.60 },
   "openai:gpt-4o": { inPer1M: 2.50, outPer1M: 10.00 },
+  "anthropic:claude-3-5-sonnet-20241022": { inPer1M: 3.00, outPer1M: 15.00 },
+  "deepseek:deepseek-chat": { inPer1M: 0.27, outPer1M: 1.10 },
   "openai:dall-e-3": { inPer1M: 40.0, outPer1M: 40.0 },
   "openrouter:meta-llama/llama-3.1-70b-instruct:free": { inPer1M: 0.0, outPer1M: 0.0 },
   "openrouter:google/gemma-2-9b-it:free": { inPer1M: 0.0, outPer1M: 0.0 },
@@ -165,6 +167,8 @@ export const CANONICAL_TASK_ROUTES: Record<AITaskType, RouteCandidate[]> = {
   chat: [
     { provider: "groq", model: "llama-3.3-70b-versatile" },
     { provider: "gemini", model: "gemini-2.5-flash" },
+    { provider: "anthropic", model: "claude-3-5-sonnet-20241022" },
+    { provider: "deepseek", model: "deepseek-chat" },
     { provider: "openrouter", model: "google/gemma-2-9b-it:free" },
   ],
   resumo: [
@@ -194,6 +198,8 @@ export const CANONICAL_TASK_ROUTES: Record<AITaskType, RouteCandidate[]> = {
   codigo: [
     { provider: "gemini", model: "gemini-2.5-pro" },
     { provider: "groq", model: "llama-3.3-70b-versatile" },
+    { provider: "deepseek", model: "deepseek-chat" },
+    { provider: "anthropic", model: "claude-3-5-sonnet-20241022" },
     { provider: "openai", model: "gpt-4o" },
   ],
   embedding: [
@@ -339,10 +345,39 @@ async function callProviderLowLevel(
       return { text: content, inputTokens: inTokens, outputTokens: outTokens, rawJson: parsed };
     }
 
-    if (provider === "openrouter" || provider === "openai") {
+    if (provider === "anthropic") {
+      const messages = [
+        ...(systemPrompt ? [] : []),
+        { role: "user", content: prompt },
+      ];
+      const res = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": key,
+          "anthropic-version": "2023-06-01",
+        },
+        body: JSON.stringify({ model, system: systemPrompt, messages, max_tokens: options?.maxTokens || 1024, temperature: options?.temperature ?? 0.7 }),
+        signal: controller.signal,
+      });
+      if (!res.ok) throw new Error(`anthropic error ${res.status}: ${(await res.text()).slice(0, 300)}`);
+      const json = await res.json();
+      const content = json.content?.filter((part: any) => part.type === "text").map((part: any) => part.text || "").join("") || "";
+      const inTokens = json.usage?.input_tokens || Math.ceil((prompt.length + (systemPrompt?.length || 0)) / 4);
+      const outTokens = json.usage?.output_tokens || Math.ceil(content.length / 4);
+      let parsed: any;
+      if (options?.responseFormat === "json_object") {
+        try { parsed = JSON.parse(content); } catch { /* preserve raw text */ }
+      }
+      return { text: content, inputTokens: inTokens, outputTokens: outTokens, rawJson: parsed };
+    }
+
+    if (provider === "deepseek" || provider === "openrouter" || provider === "openai") {
       const endpoint = provider === "openrouter"
         ? "https://openrouter.ai/api/v1/chat/completions"
-        : "https://api.openai.com/v1/chat/completions";
+        : provider === "deepseek"
+          ? "https://api.deepseek.com/v1/chat/completions"
+          : "https://api.openai.com/v1/chat/completions";
 
       const headers: Record<string, string> = {
         "Content-Type": "application/json",
@@ -887,3 +922,65 @@ export const getAiTelemetryMetrics = createServerFn({ method: "GET" }).handler(
     };
   }
 );
+
+/** Streaming nativo para SSE; usa o pool e a cascata do gateway canônico. */
+export async function executeAiCoreGatewayStream(request: AIGatewayRequest, onDelta: (text: string) => void): Promise<Pick<AIGatewayResponse, "success" | "metadata" | "error">> {
+  const callId = `stream_${Date.now()}_${crypto.randomBytes(4).toString("hex")}`;
+  const start = Date.now();
+  const security = inspectPromptSecurity(request.prompt);
+  const baseMeta = (provider: string, model: string, attemptsCount: number) => ({ callId, provider, model, fallbackUsed: attemptsCount > 1, attemptsCount, latencyMs: Date.now() - start, cacheHit: false, usage: { inputTokens: 0, outputTokens: 0, totalTokens: 0 }, costUsd: 0, promptVersion: request.promptVersion || "v1.0", fingerprint: generateFingerprint(request) });
+  if (!security.isSafe) return { success: false, metadata: baseMeta("shield", "shield-v1", 0), error: { code: "PROMPT_SHIELD_VIOLATION", message: security.violationReason || "Prompt bloqueado." } };
+  const { hardenedSystemPrompt, sandboxedUserPrompt } = buildSandboxedPromptPayload(security.sanitizedPrompt || request.prompt, request.systemPrompt);
+  const candidates: RouteCandidate[] = CANONICAL_TASK_ROUTES[request.task] || CANONICAL_TASK_ROUTES.chat;
+  let attempts = 0;
+  let lastError = "Falha em todos os providers de streaming";
+  for (const candidate of candidates) {
+    attempts++;
+    try {
+      const activeKey = await getNextActiveKey(candidate.provider as any);
+      if (!activeKey?.rawKey) continue;
+      let endpoint: string;
+      let headers: Record<string, string>;
+      let body: Record<string, any>;
+      if (candidate.provider === "anthropic") {
+        endpoint = "https://api.anthropic.com/v1/messages";
+        headers = { "Content-Type": "application/json", "x-api-key": activeKey.rawKey, "anthropic-version": "2023-06-01" };
+        body = { model: candidate.model, system: hardenedSystemPrompt, messages: [{ role: "user", content: sandboxedUserPrompt }], max_tokens: request.constraints?.maxTokens || 1024, temperature: request.constraints?.temperature ?? 0.7, stream: true };
+      } else if (candidate.provider === "gemini") {
+        endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${candidate.model}:streamGenerateContent?alt=sse&key=${activeKey.rawKey}`;
+        headers = { "Content-Type": "application/json" };
+        body = { contents: [{ role: "user", parts: [{ text: sandboxedUserPrompt }] }], systemInstruction: { parts: [{ text: hardenedSystemPrompt }] }, generationConfig: { temperature: request.constraints?.temperature ?? 0.7, maxOutputTokens: request.constraints?.maxTokens || 1024 } };
+      } else {
+        endpoint = candidate.provider === "groq" ? "https://api.groq.com/openai/v1/chat/completions" : candidate.provider === "openrouter" ? "https://openrouter.ai/api/v1/chat/completions" : candidate.provider === "deepseek" ? "https://api.deepseek.com/v1/chat/completions" : "https://api.openai.com/v1/chat/completions";
+        headers = { "Content-Type": "application/json", Authorization: `Bearer ${activeKey.rawKey}` };
+        body = { model: candidate.model, messages: [{ role: "system", content: hardenedSystemPrompt }, { role: "user", content: sandboxedUserPrompt }], temperature: request.constraints?.temperature ?? 0.7, max_tokens: request.constraints?.maxTokens || 1024, stream: true };
+      }
+      const response = await fetch(endpoint, { method: "POST", headers, body: JSON.stringify(body) });
+      if (!response.ok || !response.body) throw new Error(`${candidate.provider} HTTP ${response.status}`);
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+      while (true) {
+        const chunk = await reader.read();
+        if (chunk.done) break;
+        buffer += decoder.decode(chunk.value, { stream: true });
+        const frames = buffer.split(/\n\n|\r\n\r\n/);
+        buffer = frames.pop() || "";
+        for (const frame of frames) {
+          const data = frame.split(/\r?\n/).find((line) => line.startsWith("data:"))?.slice(5).trim();
+          if (!data || data === "[DONE]") continue;
+          try {
+            const json = JSON.parse(data);
+            const delta = candidate.provider === "anthropic" ? (json.type === "content_block_delta" ? json.delta?.text : "") : candidate.provider === "gemini" ? (json.candidates?.[0]?.content?.parts?.map((part: any) => part.text || "").join("") || "") : (json.choices?.[0]?.delta?.content || "");
+            if (delta) onDelta(sanitizeAiOutput(delta));
+          } catch { /* heartbeat ou frame parcial */ }
+        }
+      }
+      return { success: true, metadata: baseMeta(candidate.provider, candidate.model, attempts) };
+    } catch (error) {
+      lastError = error instanceof Error ? error.message : String(error);
+      recordCircuitFailure(candidate.provider);
+    }
+  }
+  return { success: false, metadata: baseMeta("none", "none", attempts), error: { code: "AI_STREAM_FAILED", message: lastError } };
+}

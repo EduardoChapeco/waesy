@@ -19,7 +19,7 @@ if (fs.existsSync(secretsPath)) {
 }
 
 if (!dbPassword) {
-  dbPassword = "EEaR6399!@#2026";
+  dbPassword = process.env.SUPABASE_DB_PASSWORD || (() => { throw new Error("SUPABASE_DB_PASSWORD is required"); })();
 }
 
 const sqlPath = path.resolve(__dirname, "../supabase/migrations/20261011000000_security_hardening_rls_and_attack_telemetry.sql");

@@ -10,7 +10,7 @@ const path = require('path');
 
 const root = process.cwd();
 const PROJECT_REF = 'jfuebqmltksyznovhlwa';
-const DB_PASSWORD = 'EEaR6399!@#2026';
+const DB_PASSWORD = process.env.SUPABASE_DB_PASSWORD || (() => { throw new Error("SUPABASE_DB_PASSWORD is required"); })();
 
 // Pending migration versions that need repair (duplicate key issues)
 // We'll detect these dynamically by trying push and catching the error

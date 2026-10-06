@@ -1,7 +1,7 @@
 import pg from 'pg';
 import fs from 'fs';
 
-const connectionString = 'postgresql://postgres.jfuebqmltksyznovhlwa:EEaR6399!%40%232026@aws-0-sa-east-1.pooler.supabase.com:6543/postgres';
+const connectionString = process.env.DATABASE_URL || process.env.SUPABASE_DB_URL || (() => { throw new Error("DATABASE_URL or SUPABASE_DB_URL is required"); })();
 const pool = new pg.Pool({ connectionString });
 
 async function run() {

@@ -49,12 +49,13 @@ export const Route = createFileRoute("/_store")({
  errorComponent: StoreRouteError,
 });
 
-function StoreRouteError({ error }: { error: Error }) {
+function StoreRouteError({ error }: { error: unknown }) {
  if (isRedirect(error)) {
  throw error;
  }
 
- const message = error?.message ?? "";
+ const normalizedError = error instanceof Error ? error : new Error(String(error));
+ const message = normalizedError.message;
  const isUnconfigured = message.includes("Supabase not configured");
 
  if (isUnconfigured) {
@@ -78,10 +79,10 @@ function StoreRouteError({ error }: { error: Error }) {
  </div>
 
  {/* Caixa de Diagnóstico Transparente BigTech */}
- {error?.message && (
+ {normalizedError.message && (
  <div className="p-3 rounded-lg bg-destructive/5 border border-destructive/20 text-left text-xs font-mono text-destructive break-all max-h-32 overflow-y-auto">
  <span className="font-bold block mb-1">Diagnóstico Técnico:</span>
- {error.message}
+ {normalizedError.message}
  </div>
  )}
 

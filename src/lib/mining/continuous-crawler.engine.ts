@@ -3,7 +3,7 @@
  * Ported with 100% fidelity from proprietary brain-continuous-crawler v3.3
  */
 
-import { scrapeUrl } from './firecrawl-client';
+import { scrapeUrlWithReact } from '@/services/mining/react-mining-adapter';
 import { cleanHtmlText, extractDomain, normalizeUrl } from './scraper-utils';
 import { classifyMinedEntity, type ClassificationResult } from './intent-classifier.engine';
 
@@ -352,7 +352,7 @@ export async function executeContinuousCrawl(
   const domain = extractDomain(normalized);
   const strategy = selectCrawlStrategy(attempt);
 
-  const scrapeResult = await scrapeUrl(normalized, {
+  const scrapeResult = await scrapeUrlWithReact(normalized, {
     onlyMainContent: strategy === 'focused' || strategy === 'rescue',
     waitFor: strategy === 'extended' ? 4000 : 1500,
   });

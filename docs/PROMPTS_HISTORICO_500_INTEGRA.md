@@ -47993,7 +47993,7 @@ tudo que é seed deve ser excluido permanentemente... anda seed pode ficar;  eu 
 - **Tamanho:** 495 caracteres
 
 `	ext
-bom, é bom que nas proximas migrations não façamos tudo completamente para não perder nada jkkkkk mais, temos que isolar passado do futuro, hoje fizemos essa grande migração, deploy para produçaõ... apartir de agora tudo qeu eu fizer, deve ser incremental, ex. naõ podemos executar tods as migrations de novo, se não vamos ficar no lopp infinito de reset, inseirir seeds de novoe tc... entende... bom usuario admin master (msater glboal) dono da waesy, é meuwaesy@gmail.com senha EEaR6399!@#2026
+bom, é bom que nas proximas migrations não façamos tudo completamente para não perder nada jkkkkk mais, temos que isolar passado do futuro, hoje fizemos essa grande migração, deploy para produçaõ... apartir de agora tudo qeu eu fizer, deve ser incremental, ex. naõ podemos executar tods as migrations de novo, se não vamos ficar no lopp infinito de reset, inseirir seeds de novoe tc... entende... bom usuario admin master (msater glboal) dono da waesy, é meuwaesy@gmail.com senha <redacted-secret>
 `
 
 ---

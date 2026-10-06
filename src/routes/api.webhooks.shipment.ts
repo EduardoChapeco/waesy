@@ -1,12 +1,21 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { getServerClient } from "@/lib/supabase";
+import { verifyWebhookSignature } from "@/lib/webhook-signature";
 
 export const Route = createFileRoute("/api/webhooks/shipment")({
  server: {
  handlers: {
  POST: async ({ request }) => {
  try {
- const body = await request.json().catch(() => ({}));
+ const rawBody = await request.text();
+ const verification = verifyWebhookSignature(rawBody, request.headers, process.env.SHIPMENT_WEBHOOK_SECRET);
+ if (!verification.ok) {
+ return new Response(JSON.stringify({ error: verification.reason }), {
+ status: 401,
+ headers: { "Content-Type": "application/json" },
+ });
+ }
+ const body = JSON.parse(rawBody) as Record<string, any>;
  const {
  order_id,
  tracking_code,

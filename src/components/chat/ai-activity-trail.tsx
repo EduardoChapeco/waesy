@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Zap,
   Wrench,
@@ -20,10 +20,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { AIActivityStepType, AIActivityStepStatus, AIActivityStep } from "@/types/chat";
+import { subscribeToTableChanges } from "@/services/realtime-channel";
 export type { AIActivityStepType, AIActivityStepStatus, AIActivityStep };
 
 export interface AIActivityTrailProps {
   steps: AIActivityStep[];
+  executionId?: string;
   isStreaming?: boolean;
   onCancel?: () => void;
   className?: string;
@@ -51,25 +53,59 @@ const STEP_LABELS: Record<AIActivityStepType, string> = {
 
 export function AIActivityTrail({
   steps,
+  executionId,
   isStreaming = false,
   onCancel,
   className,
 }: AIActivityTrailProps) {
   const [isExpanded, setIsExpanded] = useState<boolean>(isStreaming);
+  const [persistedSteps, setPersistedSteps] = useState<AIActivityStep[]>([]);
 
-  if (!steps || steps.length === 0) {
+  useEffect(() => {
+    setPersistedSteps([]);
+    if (!executionId) return;
+    return subscribeToTableChanges<Record<string, any>>({
+      channelName: `copilot-execution-steps-${executionId}`,
+      table: "copilot_execution_steps",
+      event: "*",
+      filter: `execution_id=eq.${executionId}`,
+      onPayload: ({ new: row, eventType }) => {
+        if (eventType === "DELETE") return;
+        setPersistedSteps((current) => {
+          const next: AIActivityStep = {
+            id: String(row.step_id),
+            type: (row.step_type || "tool") as AIActivityStepType,
+            label: String(row.label || "Etapa do agente"),
+            detail: row.detail || undefined,
+            status: row.status === "running" ? "running" : row.status === "failed" ? "failed" : row.status === "cancelled" ? "cancelled" : "completed",
+            fsmPhase: row.fsm_phase || undefined,
+            startedAt: row.started_at,
+            completedAt: row.completed_at || undefined,
+            durationMs: row.duration_ms || undefined,
+            tokensUsed: row.tokens_used || undefined,
+            costUsd: row.cost_usd ? Number(row.cost_usd) : undefined,
+          };
+          return current.some((step) => step.id === next.id) ? current.map((step) => step.id === next.id ? next : step) : [...current, next];
+        });
+      },
+    });
+  }, [executionId]);
+
+  const visibleSteps = persistedSteps.length > 0 ? persistedSteps : steps;
+
+  if (!visibleSteps || visibleSteps.length === 0) {
     return null;
   }
 
-  const completedCount = steps.filter((s) => s.status === "completed").length;
-  const runningStep = steps.find((s) => s.status === "running");
-  const failedStep = steps.find((s) => s.status === "failed");
+  const completedCount = visibleSteps.filter((s) => s.status === "completed").length;
+  const runningStep = visibleSteps.find((s) => s.status === "running");
+  const failedStep = visibleSteps.find((s) => s.status === "failed");
   const hasError = Boolean(failedStep);
-  const totalDurationMs = steps.reduce(
+  const totalDurationMs = visibleSteps.reduce(
     (acc, curr) => acc + (curr.durationMs || 0),
     0
   );
-  const totalTokens = steps.reduce(
+  const totalTokens = visibleSteps.reduce(
     (acc, curr) => acc + (curr.tokensUsed || 0),
     0
   );
@@ -119,7 +155,7 @@ export function AIActivityTrail({
                   : `${completedCount} etapas concluídas`}
               </span>
               <Badge variant="outline" className="text-2xs font-mono h-4 px-2 border-border/40">
-                {steps.length} {steps.length === 1 ? "passo" : "passos"}
+                {visibleSteps.length} {visibleSteps.length === 1 ? "passo" : "passos"}
               </Badge>
             </div>
             {runningStep && runningStep.detail && (
@@ -168,7 +204,7 @@ export function AIActivityTrail({
       {/* ── Lista Detalhada de Passos Recarregável ── */}
       {isExpanded && (
         <div className="border-t border-border/40 divide-y divide-border/20 bg-background/50 px-3 py-2 space-y-2">
-          {steps.map((step, idx) => {
+          {visibleSteps.map((step, idx) => {
             const Icon = STEP_ICONS[step.type] || Zap;
 
             return (

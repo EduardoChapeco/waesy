@@ -2,7 +2,12 @@ import pg from 'pg';
 import fs from 'fs';
 import path from 'path';
 
-const pool = new pg.Pool({ connectionString: 'postgresql://postgres.jfuebqmltksyznovhlwa:EEaR6399!%40%232026@aws-0-sa-east-1.pooler.supabase.com:6543/postgres' });
+const connectionString = process.env.DATABASE_URL || process.env.SUPABASE_DB_URL;
+if (!connectionString) {
+  throw new Error('DATABASE_URL or SUPABASE_DB_URL must be provided through the environment; no database credential is accepted in source code.');
+}
+
+const pool = new pg.Pool({ connectionString });
 
 async function run() {
   console.log('--- Step 0: Ensuring Compatibility Synonyms & Columns ---');
@@ -68,7 +73,8 @@ async function run() {
       await pool.query(sql);
       console.log(`  ✓ Successfully applied ${base}`);
     } catch (err) {
-      console.warn(`  ! Note on ${base}: ${err.message}`);
+      console.error(`  ! Failed on ${base}: ${err.message}`);
+      throw err;
     }
   }
 

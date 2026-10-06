@@ -17,7 +17,7 @@ if (fs.existsSync(secretsPath)) {
     }
   }
 }
-if (!dbPassword) dbPassword = 'EEaR6399!@#2026';
+if (!dbPassword) dbPassword = process.env.SUPABASE_DB_PASSWORD || (() => { throw new Error("SUPABASE_DB_PASSWORD is required"); })();
 
 const sql = postgres({
   host: 'aws-0-sa-east-1.pooler.supabase.com',

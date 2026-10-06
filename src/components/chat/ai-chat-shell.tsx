@@ -59,6 +59,7 @@ export interface ChatThreadItem {
 export interface ChatMessageItem {
   id: string;
   threadId: string;
+  executionId?: string;
   senderId?: string;
   senderName: string;
   isStaffOrAI: boolean;
@@ -474,6 +475,7 @@ export function AIChatShell({
                       <div className="w-full max-w-md mb-2">
                         <AIActivityTrail
                           steps={msg.activitySteps}
+                          executionId={msg.executionId}
                           isStreaming={isStreaming && idx === messagesWithSeparators.length - 1}
                           onCancel={onCancelActiveRun}
                         />

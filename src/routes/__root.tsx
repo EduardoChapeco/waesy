@@ -29,12 +29,13 @@ function NotFoundComponent() {
  );
 }
 
-function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
+function ErrorComponent({ error, reset }: { error: unknown; reset: () => void }) {
   if (isRedirect(error)) {
     throw error;
   }
 
-  console.error(error);
+  const normalizedError = error instanceof Error ? error : new Error(String(error));
+  console.error(normalizedError);
   const router = useRouter();
 
   return (
@@ -44,10 +45,10 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
         <p className="text-sm text-muted-foreground">
           Não foi possível carregar esta página. Tente novamente ou volte ao início.
         </p>
-        {error?.message && (
+        {normalizedError.message && (
           <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-left overflow-x-auto text-xs font-mono">
             <span className="font-bold block mb-1">Diagnóstico do Erro:</span>
-            {error.message}
+            {normalizedError.message}
           </div>
         )}
         <div className="mt-6 flex flex-wrap justify-center gap-2">
@@ -376,5 +377,4 @@ function RootComponent() {
   </QueryClientProvider>
  );
 }
-
 
