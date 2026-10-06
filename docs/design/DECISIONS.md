@@ -2697,3 +2697,11 @@
 - **Decisão:** Adotar `travel-conflicts-v2` com normalização semântica de datas/documentos/telefones/dinheiro, chaves estáveis para passageiros/voos/hotéis, regras explícitas por campo, explicação da sugestão, runs idempotentes e valores reconciliados separados do OCR original.
 - **Segurança:** O BFF server-side é a única porta para registrar resolução; as policies autenticadas dos conflitos tornam-se somente leitura e as RPCs de mutação não são executáveis por `authenticated`.
 - **Consequências:** Conflitos críticos abertos bloqueiam aplicação automática na viagem. Resoluções customizadas não adulteram documentos nem extrações; tornam-se projeções versionadas que podem ser revisadas e reaplicadas.
+
+## DEC-191: Onda 5 — contract harness E2E do pipeline turístico
+
+- **Data:** 2026-10-06
+- **Contexto:** Os testes existentes cobriam partes isoladas do turismo, OCR, conflitos, idempotência e ledger, mas não provavam a ordem operacional completa nem a interação entre bloqueio, resolução, conversão, voucher e comissão.
+- **Decisão:** Criar uma suíte E2E dedicada com schemas e normalizadores reais, fixtures explícitas de documentos e um repositório em memória determinístico para observar estados e eventos. O comando oficial é `npm run test:e2e:travel`.
+- **Fundamentação:** SPEC-20261006-wave5-travel-pipeline-e2e; B.5, B.7, B.9 e B.11 do AGENTS.md; preservação de testes rápidos, repetíveis e sem dependência de credenciais externas.
+- **Consequências:** A suíte prova contratos e invariantes do pipeline sem fingir que substitui Postgres/Supabase conectado. A próxima camada de ambiente deve executar migrations e cenários contra banco efêmero/preview, preservando esta suíte como gate determinístico de regressão.

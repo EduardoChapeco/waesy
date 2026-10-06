@@ -17,6 +17,7 @@
     "changelog:generate": "node scripts/generate-changelog.mjs",
     "typecheck": "node --max-old-space-size=6144 ./node_modules/typescript/bin/tsc --noEmit",
     "test": "vitest run",
+    "test:e2e:travel": "vitest run src/services/travel-pipeline-e2e.test.ts",
     "audit:all": "node scripts/audit/audit-all.mjs",
     "audit:buttons": "node scripts/audit/audit-interactive-buttons.mjs",
     "audit:buttons:test": "node scripts/audit/audit-interactive-buttons.test.mjs",
