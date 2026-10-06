@@ -17,12 +17,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { getPlatformApiIntegrations, updatePlatformApiIntegrations, type PlatformApiIntegrationsDTO } from "@/services/master.functions";
 import { listApiKeyPools, saveApiKeyToPool, toggleApiKeyStatus, deleteApiKeyFromPool, testPoolKeyConnection, listMasterPrompts, saveMasterPrompt, type ApiKeyPoolDTO, type MasterPromptDTO, type ApiProvider } from "@/services/api-orchestrator.functions";
+import { listMasterWhatsAppInstances, toggleMasterWhatsAppInstance, type WhatsAppChannelInstanceDTO } from "@/services/whatsapp-channel-instances.functions";
 
 export const Route = createFileRoute("/admin-master/integracoes")({
  head: () => ({ meta: [{ title: "APIs, Pools e Orquestrador Global | Waesy Master" }] }),
  loader: async () => {
  try {
- const [integrations, pools, prompts, linkedInCreds] = await Promise.all([
+ const [integrations, pools, prompts, linkedInCreds, whatsappInstances] = await Promise.all([
  getPlatformApiIntegrations().catch(() => ({
  mapbox_token: "",
  stripe_public_key: "",
@@ -55,10 +56,11 @@ export const Route = createFileRoute("/admin-master/integracoes")({
           isActive: true,
           hasSecretConfigured: false,
         })),
+        listMasterWhatsAppInstances().catch(() => []),
  ]);
 
  const gov = await getPublicApiGovernanceSettings().catch(() => DEFAULT_PUBLIC_API_GOVERNANCE);
-      return { integrations, pools, prompts, gov: gov || DEFAULT_PUBLIC_API_GOVERNANCE, linkedInCreds };
+      return { integrations, pools, prompts, gov: gov || DEFAULT_PUBLIC_API_GOVERNANCE, linkedInCreds, whatsappInstances };
  } catch {
  return {
  integrations: {
@@ -86,6 +88,7 @@ export const Route = createFileRoute("/admin-master/integracoes")({
           isActive: true,
           hasSecretConfigured: false,
         },
+        whatsappInstances: [],
       };
  }
  },
@@ -94,8 +97,16 @@ export const Route = createFileRoute("/admin-master/integracoes")({
 
 type TabType = "pools" | "prompts" | "maps" | "payments" | "comms" | "logistics" | "webhooks" | "linkedin";
 
+function MasterWhatsAppInstancesPanel({ instances, onChanged }: { instances: WhatsAppChannelInstanceDTO[]; onChanged: () => void }) {
+ const [busyId, setBusyId] = useState<string | null>(null);
+ return <div className="p-6 rounded-lg bg-card border border-border/70 space-y-4">
+  <div><h3 className="text-sm font-bold">Instâncias WhatsApp — visão global</h3><p className="text-xs text-muted-foreground mt-1">Controle de operação por loja, provedor, modo oficial/não oficial e último estado conhecido. Credenciais nunca são exibidas.</p></div>
+  <div className="space-y-2">{instances.map((instance) => <div key={instance.id} className="rounded-lg border border-border/70 p-3 flex flex-col md:flex-row md:items-center justify-between gap-3"><div><div className="flex items-center gap-2"><span className="text-xs font-semibold">{instance.display_name}</span><Badge variant={instance.is_active ? "default" : "secondary"}>{instance.status}</Badge><Badge variant="outline">{instance.connection_mode === "official" ? "Oficial" : "Não oficial"}</Badge></div><p className="text-[11px] text-muted-foreground mt-1">Loja: {instance.store_id} · {instance.provider} · {instance.display_phone_number || instance.phone_number_id || instance.external_instance_id || "sem identificador"}</p></div><Button size="sm" variant={instance.is_active ? "outline" : "default"} disabled={busyId === instance.id} onClick={async () => { setBusyId(instance.id); try { await toggleMasterWhatsAppInstance({ data: { id: instance.id, storeId: instance.store_id, active: !instance.is_active } }); toast.success("Status da instância atualizado."); onChanged(); } catch (error) { toast.error(error instanceof Error ? error.message : "Erro ao atualizar instância."); } finally { setBusyId(null); } }} className="h-8 text-xs">{instance.is_active ? "Desativar" : "Ativar"}</Button></div>)}{instances.length === 0 && <p className="text-xs text-muted-foreground border border-dashed rounded-lg p-4">Nenhuma instância registrada.</p>}</div>
+ </div>;
+}
+
 function AdminMasterIntegracoesPage() {
- const { integrations: initialData, pools: initialPools, prompts: initialPrompts, gov: initialGov, linkedInCreds: initialLinkedIn } = ((Route.useLoaderData?.() as any) || {});
+ const { integrations: initialData, pools: initialPools, prompts: initialPrompts, gov: initialGov, linkedInCreds: initialLinkedIn, whatsappInstances = [] } = ((Route.useLoaderData?.() as any) || {});
  const router = useRouter();
 
  const [activeTab, setActiveTab] = useState<TabType>("pools");
@@ -1302,6 +1313,8 @@ function AdminMasterIntegracoesPage() {
 
  {/* ── ABA 5: E-MAIL & WHATSAPP ── */}
  {activeTab === "comms" && (
+ <div className="space-y-6">
+ <MasterWhatsAppInstancesPanel instances={whatsappInstances} onChanged={() => router.invalidate()} />
  <form onSubmit={handleSave} className="space-y-6">
  <div className="p-6 rounded-lg bg-card border border-border/70 space-y-6">
  <div>
@@ -1331,6 +1344,7 @@ function AdminMasterIntegracoesPage() {
  </div>
  </div>
  </form>
+ </div>
  )}
 
  {/* ── ABA 6: WEBHOOKS ── */}

@@ -18,17 +18,19 @@ import { listMarketplaceConnectors, type MarketplaceConnectorDTO } from "@/servi
 import { getGmbStatus, connectGmb, syncGmbStoreProfile, type GmbLocationDTO } from "@/services/gmb.functions";
 import { getWorkspaceLinkedInStatus, getLinkedInAuthRedirectUrl, disconnectLinkedInCompanyPage } from "@/services/linkedin-integrations.functions";
 import { Linkedin, Loader2 } from "lucide-react";
+import { listWorkspaceWhatsAppInstances, saveWorkspaceWhatsAppInstance, toggleWorkspaceWhatsAppInstance, type WhatsAppChannelInstanceDTO } from "@/services/whatsapp-channel-instances.functions";
 
 export const Route = createFileRoute("/workspace/configuracoes/integracoes")({
   head: () => ({ meta: [{ title: "Integrações | Workspace Waesy" }] }),
   loader: async () => {
     try {
-      const [integrations, secrets, marketplaceConnectors, gmbStatus, linkedInStatus] = await Promise.all([
+      const [integrations, secrets, marketplaceConnectors, gmbStatus, linkedInStatus, whatsappInstances] = await Promise.all([
         listIntegrationSettings().catch(() => []),
         listConfiguredSecrets().catch(() => []),
         listMarketplaceConnectors().catch(() => []),
         getGmbStatus().catch(() => null),
         getWorkspaceLinkedInStatus().catch(() => null),
+        listWorkspaceWhatsAppInstances().catch(() => []),
       ]);
       return {
         integrations: integrations || [],
@@ -36,10 +38,11 @@ export const Route = createFileRoute("/workspace/configuracoes/integracoes")({
         marketplaceConnectors: marketplaceConnectors || [],
         gmbStatus: gmbStatus || null,
         linkedInStatus: linkedInStatus || null,
+        whatsappInstances: whatsappInstances || [],
       };
     } catch (err) {
       console.error("[loader:workspace.configuracoes.integracoes] Erro no loader:", err);
-      return { integrations: [], secrets: [], marketplaceConnectors: [], gmbStatus: null, linkedInStatus: null };
+      return { integrations: [], secrets: [], marketplaceConnectors: [], gmbStatus: null, linkedInStatus: null, whatsappInstances: [] };
     }
   },
   component: UnifiedIntegrationsHubPage,
@@ -430,6 +433,69 @@ function SecretVaultCard({
   );
 }
 
+function WhatsAppInstancesPanel({
+  initialInstances,
+  onChanged,
+}: {
+  initialInstances: WhatsAppChannelInstanceDTO[];
+  onChanged: () => void;
+}) {
+  const [instances, setInstances] = useState(initialInstances || []);
+  const [saving, setSaving] = useState(false);
+  const [form, setForm] = useState({
+    displayName: "WhatsApp principal",
+    provider: "meta_cloud_api" as "meta_cloud_api" | "evolution_api" | "wasender_api" | "render_bridge" | "custom_webhook",
+    instanceKey: "principal",
+    phoneNumberId: "",
+    businessAccountId: "",
+    displayPhoneNumber: "",
+    externalInstanceId: "",
+    accessToken: "",
+    appSecret: "",
+    verifyToken: "",
+  });
+  const refresh = async () => { const next = await listWorkspaceWhatsAppInstances(); setInstances(next); onChanged(); };
+  const save = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setSaving(true);
+    try {
+      const official = form.provider === "meta_cloud_api";
+      await saveWorkspaceWhatsAppInstance({ data: {
+        displayName: form.displayName,
+        provider: form.provider,
+        connectionMode: official ? "official" : "unofficial",
+        instanceKey: form.instanceKey,
+        isActive: false,
+        isDefault: instances.length === 0,
+        phoneNumberId: official ? form.phoneNumberId || undefined : undefined,
+        businessAccountId: official ? form.businessAccountId || undefined : undefined,
+        displayPhoneNumber: form.displayPhoneNumber || undefined,
+        externalInstanceId: official ? undefined : form.externalInstanceId || undefined,
+        publicConfig: {}, capabilities: {},
+        secretPayload: { ...(form.accessToken ? { access_token: form.accessToken } : {}), ...(form.appSecret ? { app_secret: form.appSecret } : {}), ...(form.verifyToken ? { webhook_verify_token: form.verifyToken } : {}) },
+      }});
+      toast.success("Instância criada como pendente; valide antes de ativar.");
+      await refresh();
+    } catch (error) { toast.error(error instanceof Error ? error.message : "Erro ao salvar instância WhatsApp."); }
+    finally { setSaving(false); }
+  };
+  return <Card className="lg:col-span-2 border-primary/20">
+    <CardHeader><CardTitle className="text-sm flex items-center gap-2"><MessageCircle className="size-4 text-primary" /> Instâncias WhatsApp e canais</CardTitle><CardDescription className="text-xs">Cada número tem credenciais, status e auditoria próprios. Meta oficial e conectores não oficiais permanecem separados.</CardDescription></CardHeader>
+    <CardContent className="space-y-5">
+      <div className="grid gap-3">{instances.map((instance) => <div key={instance.id} className="rounded-lg border border-border/70 p-3 flex flex-col md:flex-row md:items-center justify-between gap-3"><div className="min-w-0"><div className="flex items-center gap-2"><span className="font-semibold text-sm truncate">{instance.display_name}</span><Badge variant={instance.is_active ? "default" : "secondary"}>{instance.status}</Badge><Badge variant="outline">{instance.connection_mode === "official" ? "Oficial" : "Não oficial"}</Badge></div><p className="text-[11px] text-muted-foreground mt-1">{instance.provider} · {instance.display_phone_number || instance.phone_number_id || instance.external_instance_id || "identificador pendente"} · {instance.instance_key}</p></div><Button type="button" size="sm" variant={instance.is_active ? "outline" : "default"} disabled={saving} onClick={async () => { try { await toggleWorkspaceWhatsAppInstance({ data: { id: instance.id, active: !instance.is_active } }); await refresh(); } catch (error) { toast.error(error instanceof Error ? error.message : "Erro ao alterar instância."); } }} className="h-8 text-xs shrink-0">{instance.is_active ? "Desativar" : "Ativar"}</Button></div>)}{instances.length === 0 && <p className="text-xs text-muted-foreground border border-dashed rounded-lg p-4">Nenhuma instância cadastrada.</p>}</div>
+      <form onSubmit={save} className="grid md:grid-cols-2 gap-3 border-t border-border/60 pt-4">
+        <div className="md:col-span-2"><Label className="text-xs">Nome da instância</Label><Input className="h-9 text-xs" value={form.displayName} onChange={(e) => setForm({ ...form, displayName: e.target.value })} /></div>
+        <div><Label className="text-xs">Provedor</Label><select className="w-full h-9 rounded-md border bg-background px-2 text-xs" value={form.provider} onChange={(e) => setForm({ ...form, provider: e.target.value as typeof form.provider })}><option value="meta_cloud_api">Meta Cloud API (oficial)</option><option value="evolution_api">Evolution API</option><option value="wasender_api">WaSenderAPI</option><option value="render_bridge">Render bridge</option><option value="custom_webhook">Webhook customizado</option></select></div>
+        <div><Label className="text-xs">Chave interna</Label><Input className="h-9 text-xs font-mono" value={form.instanceKey} onChange={(e) => setForm({ ...form, instanceKey: e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, "-") })} /></div>
+        <div><Label className="text-xs">Phone Number ID / Instance ID</Label><Input className="h-9 text-xs" value={form.provider === "meta_cloud_api" ? form.phoneNumberId : form.externalInstanceId} onChange={(e) => setForm({ ...form, ...(form.provider === "meta_cloud_api" ? { phoneNumberId: e.target.value } : { externalInstanceId: e.target.value }) })} /></div>
+        <div><Label className="text-xs">Telefone exibido</Label><Input className="h-9 text-xs" value={form.displayPhoneNumber} onChange={(e) => setForm({ ...form, displayPhoneNumber: e.target.value })} /></div>
+        {form.provider === "meta_cloud_api" && <><div><Label className="text-xs">WABA ID</Label><Input className="h-9 text-xs" value={form.businessAccountId} onChange={(e) => setForm({ ...form, businessAccountId: e.target.value })} /></div><div><Label className="text-xs">Access Token</Label><Input type="password" className="h-9 text-xs" value={form.accessToken} onChange={(e) => setForm({ ...form, accessToken: e.target.value })} /></div><div><Label className="text-xs">App Secret</Label><Input type="password" className="h-9 text-xs" value={form.appSecret} onChange={(e) => setForm({ ...form, appSecret: e.target.value })} /></div><div><Label className="text-xs">Verify Token</Label><Input type="password" className="h-9 text-xs" value={form.verifyToken} onChange={(e) => setForm({ ...form, verifyToken: e.target.value })} /></div></>}
+        <div className="md:col-span-2 flex justify-end"><Button type="submit" disabled={saving} size="sm" className="h-8 text-xs">{saving ? "Salvando..." : "Cadastrar instância pendente"}</Button></div>
+      </form>
+    </CardContent>
+  </Card>;
+}
+
 // ============================================================
 // PÁGINA CENTRAL DE INTEGRAÇÕES UNIFICADA
 // ============================================================
@@ -441,6 +507,7 @@ function UnifiedIntegrationsHubPage() {
     marketplaceConnectors = [],
     gmbStatus = null,
     linkedInStatus = null,
+    whatsappInstances = [],
   } = (Route.useLoaderData?.() as any) || {};
 
   const [isConnectingLinkedIn, setIsConnectingLinkedIn] = useState(false);
@@ -1233,6 +1300,7 @@ function UnifiedIntegrationsHubPage() {
         {/* 5. ABA MENSAGERIA & AGENDA */}
         <TabsContent value="messaging" className="space-y-4 outline-none">
           <div className="grid lg:grid-cols-2 gap-6">
+            <WhatsAppInstancesPanel initialInstances={whatsappInstances} onChanged={() => router.invalidate()} />
             <IntegrationCard
               provider="whatsapp_cloud_api"
               title="WhatsApp Cloud API (Oficial Meta)"

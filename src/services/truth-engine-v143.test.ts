@@ -1,7 +1,11 @@
-import { describe, it, expect } from "vitest";
+import { beforeAll, describe, it, expect } from "vitest";
 import { encryptSecret, decryptSecret } from "@/lib/crypto-vault.server";
 
 describe("V143 Truth Engine, Anti-Mock Protocol & AES-256-GCM Integration Vault", () => {
+  beforeAll(() => {
+    process.env.VAULT_MASTER_KEY = "waesy-test-vault-master-key-at-least-32-chars";
+  });
+
   it("FASE 3: encripta e desencripta chaves OAuth/API com AES-256-GCM (iv:tag:ciphertext) e rejeita adulteração", () => {
     const rawOAuthToken = "EAABsbCS1iHgBO_REAL_META_GRAPH_API_KEY_998877";
     const encrypted = encryptSecret(rawOAuthToken);

@@ -29,6 +29,7 @@ import {
 import { playMessageChime } from "@/lib/audio-chimes";
 import { listSdrChatSessions, type SdrChatSessionDTO } from "@/services/ai-sdr.functions";
 import { Link } from "@tanstack/react-router";
+import { WhatsAppOperationsMetricsPanel } from "@/components/chat/whatsapp-operations-metrics-panel";
 
 export const Route = createFileRoute("/workspace/atendimento/")({
   head: () => ({ meta: [{ title: "Atendimento" }] }),
@@ -442,6 +443,10 @@ function WorkspaceAtendimentoPage() {
             </div>
           </div>
         )}
+      </div>
+
+      <div className="shrink-0 bg-muted/10 p-3 sm:p-4">
+        <WhatsAppOperationsMetricsPanel />
       </div>
 
       {/* RENDERIZAÇÃO CONDICIONAL DO HUB: SDR VS CHAT DIRETO */}

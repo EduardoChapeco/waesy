@@ -487,6 +487,14 @@ ALTER TABLE public.chat_threads ADD COLUMN IF NOT EXISTS entity_id TEXT;
 ALTER TABLE public.chat_threads ADD COLUMN IF NOT EXISTS last_message_text TEXT;
 ALTER TABLE public.chat_threads ADD COLUMN IF NOT EXISTS last_message_at TIMESTAMPTZ DEFAULT now();
 
+-- Conversas inbound de canais externos podem ter apenas guest_name no primeiro
+-- evento; não devem inventar um e-mail técnico para satisfazer a constraint.
+ALTER TABLE public.chat_threads DROP CONSTRAINT IF EXISTS customer_or_guest;
+ALTER TABLE public.chat_threads
+  ADD CONSTRAINT customer_or_guest CHECK (
+    customer_id IS NOT NULL OR guest_email IS NOT NULL OR guest_name IS NOT NULL
+  );
+
 ALTER TABLE public.chat_messages ADD COLUMN IF NOT EXISTS attachments JSONB DEFAULT '[]'::jsonb;
 ALTER TABLE public.chat_messages ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'sent';
 

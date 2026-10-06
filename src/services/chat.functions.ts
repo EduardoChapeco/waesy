@@ -7,6 +7,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient, getAnonServerClient, SupabaseUnconfiguredError } from "@/lib/supabase";
 import { getSSRClient, getServerIdentity, assertStoreAccess, STAFF_ROLES } from "@/lib/server-access";
+import { decryptConversationMessage, decryptConversationMessageForThread, encryptConversationMessageForThread, isEncryptedConversationMessage, isConversationMessageV2, rotateConversationKey } from "@/lib/conversation-crypto.server";
 
 // ============================================================
 // Schemas
@@ -70,6 +71,16 @@ export const updateTicketStatusSchema = z.object({
  refund_amount_cents: z.number().int().nonnegative().optional(),
 });
 
+const CHAT_SUPERVISOR_ROLES = ["owner", "admin", "manager", "platform_admin", "master"];
+async function assertStaffThreadAccess(db: ReturnType<typeof getServerClient>, identity: any, threadId: string, operation: "read" | "write") {
+ const { data: thread, error } = await db.from("chat_threads").select("id, store_id, assigned_to_profile_id, customer_id, status").eq("id", threadId).eq("store_id", identity.store_id).maybeSingle();
+ if (error || !thread) throw new Error("Conversa não encontrada ou acesso negado.");
+ const allowed = CHAT_SUPERVISOR_ROLES.includes(identity.role) || thread.assigned_to_profile_id === identity.id;
+ await db.from("chat_access_audit_events").insert({ store_id: thread.store_id, thread_id: thread.id, actor_id: identity.id, action: `conversation.${operation}`, allowed, metadata: { role: identity.role, assigned_to_profile_id: thread.assigned_to_profile_id } });
+ if (!allowed) throw new Error(operation === "write" ? "Conversa não atribuída a este atendente." : "Acesso restrito à conversa atribuída.");
+ return thread;
+}
+
 // ============================================================
 // 1. Staff / Workspace Functions
 // ============================================================
@@ -117,12 +128,8 @@ export const listChatThreads = createServerFn({ method: "GET" })
  query = query.eq("department", data.department);
  }
 
- // Se não for supervisor/gerente, visualiza apenas seu departamento ou atribuídos a ele
- if (!isSupervisor) {
- query = query.or(
- `assigned_to_profile_id.eq.${identity.id},department.eq.geral,department.eq.${identity.role}`,
- );
- }
+ // Em modo estrito, atendente não recebe fila não atribuída nem threads de outro setor.
+ if (!isSupervisor) query = query.eq("assigned_to_profile_id", identity.id);
 
  const { data: rawThreads, error } = await query;
  if (error) {
@@ -155,7 +162,7 @@ export const listChatThreads = createServerFn({ method: "GET" })
  }
 
  // Mapeamento e extração da última mensagem
- const formattedThreads = threadsList.map((thread: any) => {
+ const formattedThreads = await Promise.all(threadsList.map(async (thread: any) => {
  const messages = thread.chat_messages || [];
  messages.sort(
  (a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
@@ -180,12 +187,12 @@ export const listChatThreads = createServerFn({ method: "GET" })
  internal_notes: thread.internal_notes,
  updated_at: thread.updated_at,
  created_at: thread.created_at,
- last_message: lastMsg ? lastMsg.message : "",
+ last_message: lastMsg ? (isConversationMessageV2(lastMsg.message) ? await decryptConversationMessageForThread(thread.store_id, thread.id, lastMsg.message) : isEncryptedConversationMessage(lastMsg.message) ? decryptConversationMessage(lastMsg.message) : lastMsg.message) : "",
  last_message_type: lastMsg ? lastMsg.message_type : "text",
  is_last_reply_staff: lastMsg ? lastMsg.is_staff_reply : false,
  total_messages: messages.length,
  };
- });
+ }));
 
  // Métricas de Governança
  const metrics = {
@@ -219,6 +226,7 @@ export const getChatMessages = createServerFn({ method: "GET" })
  const db = getServerClient();
  const identity = await getServerIdentity();
  assertStoreAccess(identity);
+ await assertStaffThreadAccess(db, identity, threadId, "read");
 
  const { data: thread } = await db
  .from("chat_threads")
@@ -238,7 +246,10 @@ export const getChatMessages = createServerFn({ method: "GET" })
  if (error) throw error;
  return {
  thread,
- messages: messages || [],
+ messages: await Promise.all((messages || []).map(async (message: any) => ({
+   ...message,
+   message: isConversationMessageV2(message.message) ? await decryptConversationMessageForThread(thread.store_id, thread.id, message.message) : isEncryptedConversationMessage(message.message) ? decryptConversationMessage(message.message) : message.message,
+ }))),
  };
  } catch (e: any) {
  if (e instanceof SupabaseUnconfiguredError) throw e;
@@ -257,6 +268,7 @@ export const sendChatMessage = createServerFn({ method: "POST" })
  const db = getServerClient();
  const identity = await getServerIdentity();
  assertStoreAccess(identity);
+ await assertStaffThreadAccess(db, identity, input.threadId, "write");
 
  const { data: thread } = await db
  .from("chat_threads")
@@ -271,7 +283,7 @@ export const sendChatMessage = createServerFn({ method: "POST" })
  .from("chat_messages")
  .insert({
  thread_id: input.threadId,
- message: input.message,
+ message: await encryptConversationMessageForThread(identity.store_id, input.threadId, input.message),
  message_type: input.message_type,
  attachments: input.attachments,
  payload: input.payload,
@@ -287,7 +299,7 @@ export const sendChatMessage = createServerFn({ method: "POST" })
  await db
  .from("chat_threads")
  .update({
- last_message_text: input.message,
+ last_message_text: "[Mensagem protegida]",
  last_message_at: new Date().toISOString(),
  updated_at: new Date().toISOString(),
  })
@@ -318,7 +330,7 @@ export const sendChatMessage = createServerFn({ method: "POST" })
     }
   }
 
- return msg;
+ return msg ? { ...msg, message: input.message } : msg;
  } catch (e: any) {
  console.error("[chat] sendChatMessage error:", e);
  throw new Error(e.message || "Erro ao enviar mensagem.");
@@ -333,6 +345,7 @@ export const assignChatThread = createServerFn({ method: "POST" })
  .handler(async ({ data }) => {
  const identity = await getServerIdentity();
  assertStoreAccess(identity);
+ if (!CHAT_SUPERVISOR_ROLES.includes(identity.role)) throw new Error("Somente supervisores podem atribuir conversas.");
 
  const db = getServerClient();
  const updatePayload: Record<string, any> = {
@@ -355,6 +368,16 @@ export const assignChatThread = createServerFn({ method: "POST" })
 
  if (error) throw new Error(`Falha ao atribuir conversa: ${error.message}`);
  return updated;
+ });
+
+export const rotateChatConversationKey = createServerFn({ method: "POST" })
+ .validator(z.object({ threadId: z.string().uuid() }))
+ .handler(async ({ data }) => {
+  const identity = await getServerIdentity();
+  assertStoreAccess(identity);
+  if (!CHAT_SUPERVISOR_ROLES.includes(identity.role)) throw new Error("Somente supervisores podem rotacionar chaves.");
+  await assertStaffThreadAccess(getServerClient(), identity, data.threadId, "write");
+  return rotateConversationKey(identity.store_id, data.threadId);
  });
 
 /**
@@ -421,7 +444,7 @@ export const getCustomerChatThread = createServerFn({ method: "GET" })
  if (threadErr || !thread) throw new Error("Conversa não encontrada.");
 
  // Valida se a conversa pertence ao usuário
- if (user && thread.customer_id && thread.customer_id !== user.id) {
+ if (!user || !thread.customer_id || thread.customer_id !== user.id) {
  throw new Error("Acesso não autorizado.");
  }
 
@@ -443,15 +466,15 @@ export const getCustomerChatThread = createServerFn({ method: "GET" })
  ...thread,
  store: mappedStore,
  },
- messages: (messagesRes.data || []).map((m: any) => ({
+ messages: await Promise.all((messagesRes.data || []).map(async (m: any) => ({
  id: m.id,
- message: m.message,
+ message: isConversationMessageV2(m.message) ? await decryptConversationMessageForThread(thread.store_id, thread.id, m.message) : isEncryptedConversationMessage(m.message) ? decryptConversationMessage(m.message) : m.message,
  message_type: m.message_type || "text",
  isStaffReply: m.is_staff_reply,
  createdAt: m.created_at,
  attachments: m.attachments || [],
  payload: m.payload || {},
- })),
+ }))),
  tickets: ticketsRes.data || [],
  };
  } catch (e: any) {
@@ -474,12 +497,12 @@ export const sendCustomerChatMessage = createServerFn({ method: "POST" })
 
  const { data: thread } = await db
  .from("chat_threads")
- .select("id, customer_id")
+ .select("id, store_id, customer_id")
  .eq("id", input.threadId)
  .single();
 
  if (!thread) throw new Error("Conversa não encontrada.");
- if (user && thread.customer_id && thread.customer_id !== user.id) {
+ if (!user || !thread.customer_id || thread.customer_id !== user.id) {
  throw new Error("Acesso não autorizado.");
  }
 
@@ -487,7 +510,7 @@ export const sendCustomerChatMessage = createServerFn({ method: "POST" })
  .from("chat_messages")
  .insert({
  thread_id: input.threadId,
- message: input.message,
+  message: await encryptConversationMessageForThread(thread.store_id, input.threadId, input.message),
  message_type: input.message_type,
  attachments: input.attachments,
  payload: input.payload,
@@ -503,7 +526,7 @@ export const sendCustomerChatMessage = createServerFn({ method: "POST" })
  await db
  .from("chat_threads")
  .update({
- last_message_text: input.message,
+  last_message_text: "[Mensagem protegida]",
  last_message_at: new Date().toISOString(),
  updated_at: new Date().toISOString(),
  status: "open",
@@ -951,4 +974,3 @@ export const mutateCustomerChatThreadAction = createServerFn({ method: "POST" })
       return { ok: false, error: err?.message || "Erro na ação da conversa" };
     }
   });
-

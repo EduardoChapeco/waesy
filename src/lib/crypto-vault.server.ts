@@ -27,15 +27,16 @@ const SEPARATOR = ":";
 // ─── Derivação da Chave Mestra ────────────────────────────────────────────────
 
 /**
- * Deriva a chave AES-256 a partir da env var VAULT_MASTER_KEY.
+ * Deriva a chave AES-256 exclusivamente a partir da env var VAULT_MASTER_KEY.
  * Usa SHA-256 para normalizar qualquer comprimento para exatos 32 bytes.
- * Lança erro se a env var não estiver configurada (falha rápida e explícita).
+ * Lança erro se a env var não estiver configurada ou for curta demais.
  */
 function getMasterKey(): Buffer {
-  const rawKey =
-    process.env.VAULT_MASTER_KEY ||
-    process.env.SUPABASE_SERVICE_ROLE_KEY ||
-    "waesy-vault-master-secret-key-32b-fallback";
+  const rawKey = process.env.VAULT_MASTER_KEY?.trim();
+
+  if (!rawKey || rawKey.length < 32) {
+    throw new Error("[crypto-vault] VAULT_MASTER_KEY ausente ou menor que 32 caracteres");
+  }
 
   // SHA-256 para garantir exatos 32 bytes independente do comprimento da env var
   return createHash("sha256").update(rawKey).digest();

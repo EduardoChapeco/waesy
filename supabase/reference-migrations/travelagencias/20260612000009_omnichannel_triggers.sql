@@ -1,29 +1,32 @@
 -- Migration: 20260612000009_omnichannel_triggers.sql
--- Descrição: Gatilhos (Webhooks) para disparar Edge Functions via pg_net
+-- Descrição: Gatilhos legados para Edge Functions via pg_net.
+--
+-- IMPORTANTE: esta migration é histórica/de referência. Não contém tokens.
+-- Se for aplicada, exige configurações server-side:
+--   app.supabase_functions_url (ex.: https://<project>.supabase.co)
+--   app.service_role_key (somente no banco/secret manager)
+-- O desenho canônico do Waesy deve preferir inbox/outbox durável a HTTP em trigger.
 
--- Ativar extensão pg_net
 CREATE EXTENSION IF NOT EXISTS pg_net;
 
--- NOTA: O Supabase recomenda criar Webhooks diretamente pelo painel (Database -> Webhooks)
--- pois ele já gerencia as chaves de API e URLs automaticamente. 
--- No entanto, caso prefira fazer via SQL, a estrutura abaixo faz o mesmo.
--- IMPORTANTE: Substitua 'SUA_URL_DO_SUPABASE' e 'SUA_SERVICE_ROLE_KEY' pelos seus dados reais 
--- encontrados em Project Settings -> API.
-
--- 1. Gatilho: whatsapp-sender (Dispara quando há um INSERT outbound na tabela de mensagens)
 CREATE OR REPLACE FUNCTION public.trigger_whatsapp_sender()
 RETURNS trigger
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = public, pg_temp
 AS $$
+DECLARE
+  v_base_url text := current_setting('app.supabase_functions_url', true);
+  v_service_key text := current_setting('app.service_role_key', true);
 BEGIN
-  -- Apenas processar mensagens do tipo outbound que estejam pendentes
-  IF NEW.direction = 'outbound' AND NEW.status = 'pending' THEN
+  IF NEW.direction = 'outbound' AND NEW.status = 'pending'
+     AND NULLIF(v_base_url, '') IS NOT NULL
+     AND NULLIF(v_service_key, '') IS NOT NULL THEN
     PERFORM net.http_post(
-      url := 'https://esmppoxxnyiscidzsjvy.supabase.co/functions/v1/whatsapp-sender',
+      url := rtrim(v_base_url, '/') || '/functions/v1/whatsapp-sender',
       headers := jsonb_build_object(
         'Content-Type', 'application/json',
-        'Authorization', 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVzbXBwb3h4bnlpc2NpZHpzanZ5Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4MTI1Mzg0OCwiZXhwIjoyMDk2ODI5ODQ4fQ.4fKEXQ_ahfmAPep8sXyyYa5gp9uit39bfOJiwPJ1IkQ'
+        'Authorization', 'Bearer ' || v_service_key
       ),
       body := jsonb_build_object(
         'type', 'INSERT',
@@ -43,21 +46,24 @@ CREATE TRIGGER whatsapp_sender_trigger
   FOR EACH ROW
   EXECUTE FUNCTION public.trigger_whatsapp_sender();
 
-
--- 2. Gatilho: ai-message-processor (Dispara quando o cliente envia uma mensagem inbound)
 CREATE OR REPLACE FUNCTION public.trigger_ai_message_processor()
 RETURNS trigger
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = public, pg_temp
 AS $$
+DECLARE
+  v_base_url text := current_setting('app.supabase_functions_url', true);
+  v_service_key text := current_setting('app.service_role_key', true);
 BEGIN
-  -- Apenas mensagens recebidas (inbound) ativam a IA
-  IF NEW.direction = 'inbound' THEN
+  IF NEW.direction = 'inbound'
+     AND NULLIF(v_base_url, '') IS NOT NULL
+     AND NULLIF(v_service_key, '') IS NOT NULL THEN
     PERFORM net.http_post(
-      url := 'https://esmppoxxnyiscidzsjvy.supabase.co/functions/v1/ai-message-processor',
+      url := rtrim(v_base_url, '/') || '/functions/v1/ai-message-processor',
       headers := jsonb_build_object(
         'Content-Type', 'application/json',
-        'Authorization', 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVzbXBwb3h4bnlpc2NpZHpzanZ5Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4MTI1Mzg0OCwiZXhwIjoyMDk2ODI5ODQ4fQ.4fKEXQ_ahfmAPep8sXyyYa5gp9uit39bfOJiwPJ1IkQ'
+        'Authorization', 'Bearer ' || v_service_key
       ),
       body := jsonb_build_object(
         'type', 'INSERT',
@@ -77,21 +83,25 @@ CREATE TRIGGER ai_message_processor_trigger
   FOR EACH ROW
   EXECUTE FUNCTION public.trigger_ai_message_processor();
 
-
--- 3. Gatilho: meta-capi-sync (Dispara quando uma proposta é aprovada)
 CREATE OR REPLACE FUNCTION public.trigger_meta_capi_sync()
 RETURNS trigger
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = public, pg_temp
 AS $$
+DECLARE
+  v_base_url text := current_setting('app.supabase_functions_url', true);
+  v_service_key text := current_setting('app.service_role_key', true);
 BEGIN
-  -- Se a proposta mudou para 'converted', dispara a Edge Function
-  IF NEW.status = 'converted' AND (OLD.status IS DISTINCT FROM 'converted') THEN
+  IF NEW.status = 'converted'
+     AND OLD.status IS DISTINCT FROM 'converted'
+     AND NULLIF(v_base_url, '') IS NOT NULL
+     AND NULLIF(v_service_key, '') IS NOT NULL THEN
     PERFORM net.http_post(
-      url := 'https://esmppoxxnyiscidzsjvy.supabase.co/functions/v1/meta-capi-sync',
+      url := rtrim(v_base_url, '/') || '/functions/v1/meta-capi-sync',
       headers := jsonb_build_object(
         'Content-Type', 'application/json',
-        'Authorization', 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVzbXBwb3h4bnlpc2NpZHpzanZ5Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4MTI1Mzg0OCwiZXhwIjoyMDk2ODI5ODQ4fQ.4fKEXQ_ahfmAPep8sXyyYa5gp9uit39bfOJiwPJ1IkQ'
+        'Authorization', 'Bearer ' || v_service_key
       ),
       body := jsonb_build_object(
         'type', 'UPDATE',

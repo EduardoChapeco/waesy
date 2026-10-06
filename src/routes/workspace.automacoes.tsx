@@ -1,4 +1,4 @@
-import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Zap, GitBranch, MessageSquare, Mail, Tag, Plus, Play, Trash2, ToggleLeft, ToggleRight, CheckCircle2, ArrowRight, Settings2, Clock, ShoppingCart, UserPlus, TrendingUp, Package, Calendar } from "lucide-react";
@@ -202,13 +202,21 @@ function AutomacoesWorkflowsPage() {
         title="Automações Visuais"
         description="Réguas de relacionamento, disparos e integrações automáticas."
         actions={
-          <Button
-            onClick={() => setIsCreateOpen(true)}
-            className="rounded-lg min-h-11 font-bold gap-2"
-          >
-            <Plus className="h-4 w-4" />
-            Novo Workflow
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button asChild variant="outline" className="rounded-lg min-h-11 font-bold gap-2">
+              <Link to="/workspace/whatsapp/automacoes">
+                <MessageSquare className="h-4 w-4" />
+                WhatsApp
+              </Link>
+            </Button>
+            <Button
+              onClick={() => setIsCreateOpen(true)}
+              className="rounded-lg min-h-11 font-bold gap-2"
+            >
+              <Plus className="h-4 w-4" />
+              Novo Workflow
+            </Button>
+          </div>
         }
       />
 

@@ -4,6 +4,7 @@ import { getServerIdentity } from "@/lib/server-access";
 import { z } from "zod";
 import crypto from "node:crypto";
 import { DEFAULT_BRAND_NAME } from "@/lib/brand";
+import { encryptSecret } from "@/lib/crypto-vault.server";
 
 /**
  * Validates that the current user is a Platform Admin (Master).
@@ -1222,6 +1223,7 @@ export interface PlatformApiIntegrationsDTO {
  meta_app_secret?: string;
  google_client_id?: string;
  google_client_secret?: string;
+ meta_app_secret_encrypted?: string;
  active_services?: Record<string, "active" | "testing" | "unconfigured" | "error">;
 }
 
@@ -1268,7 +1270,7 @@ export const getPlatformApiIntegrations = createServerFn({ method: "GET" }).hand
  focus_nfe_master_token: integrations.focus_nfe_master_token ? "••••••••••••••••" : "",
  nuvem_fiscal_master_token: integrations.nuvem_fiscal_master_token ? "••••••••••••••••" : "",
  meta_app_id: integrations.meta_app_id || "",
- meta_app_secret: integrations.meta_app_secret ? "••••••••••••••••" : "",
+ meta_app_secret: integrations.meta_app_secret_encrypted || integrations.meta_app_secret ? "••••••••••••••••" : "",
  google_client_id: integrations.google_client_id || "",
  google_client_secret: integrations.google_client_secret ? "••••••••••••••••" : "",
  active_services: integrations.active_services || {
@@ -1337,6 +1339,18 @@ export const updatePlatformApiIntegrations = createServerFn({ method: "POST" })
  return newVal.trim();
  };
 
+ const submittedMetaAppSecret = input.meta_app_secret && !input.meta_app_secret.includes("••••")
+   ? input.meta_app_secret.trim()
+   : "";
+ const existingMetaAppSecret = existingIntegrations.meta_app_secret_encrypted || existingIntegrations.meta_app_secret || "";
+ const metaAppSecretEncrypted = submittedMetaAppSecret
+   ? encryptSecret(submittedMetaAppSecret)
+   : existingMetaAppSecret && existingIntegrations.meta_app_secret_encrypted
+     ? existingIntegrations.meta_app_secret_encrypted
+     : existingMetaAppSecret
+       ? encryptSecret(existingMetaAppSecret)
+       : "";
+
  const updatedIntegrations = {
  ...existingIntegrations,
  mapbox_token: cleanValue(input.mapbox_token, existingIntegrations.mapbox_token),
@@ -1360,7 +1374,8 @@ export const updatePlatformApiIntegrations = createServerFn({ method: "POST" })
  focus_nfe_master_token: cleanValue(input.focus_nfe_master_token, existingIntegrations.focus_nfe_master_token),
  nuvem_fiscal_master_token: cleanValue(input.nuvem_fiscal_master_token, existingIntegrations.nuvem_fiscal_master_token),
  meta_app_id: cleanValue(input.meta_app_id, existingIntegrations.meta_app_id),
- meta_app_secret: cleanValue(input.meta_app_secret, existingIntegrations.meta_app_secret),
+ meta_app_secret: "",
+ meta_app_secret_encrypted: metaAppSecretEncrypted,
  google_client_id: cleanValue(input.google_client_id, existingIntegrations.google_client_id),
  google_client_secret: cleanValue(input.google_client_secret, existingIntegrations.google_client_secret),
  active_services: {
@@ -1615,4 +1630,3 @@ export const getPlatformSystemHealth = createServerFn({ method: "GET" }).handler
  },
  };
 });
-

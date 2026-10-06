@@ -220,6 +220,7 @@ import { Route as ApiAuthConfirmRouteImport } from './routes/api.auth.confirm'
 import { Route as ApiCronMiningWorkerRouteImport } from './routes/api.cron.mining-worker'
 import { Route as ApiFeedMetaDotcsvRouteImport } from './routes/api.feed.meta[.]csv'
 import { Route as ApiFeedXmlRouteImport } from './routes/api.feed.xml'
+import { Route as ApiInternalWhatsappOutboxWorkerRouteImport } from './routes/api.internal.whatsapp-outbox-worker'
 import { Route as ApiMiningWorkerRouteImport } from './routes/api.mining.worker'
 import { Route as ApiPwaManifestDotjsonRouteImport } from './routes/api.pwa.manifest[.]json'
 import { Route as ApiWebhooksMarketplacesRouteImport } from './routes/api.webhooks.marketplaces'
@@ -356,6 +357,7 @@ import { Route as WorkspaceTurismoIncidentesRouteImport } from './routes/workspa
 import { Route as WorkspaceTurismoRadarRouteImport } from './routes/workspace.turismo.radar'
 import { Route as WorkspaceTurismoReacomodacaoRouteImport } from './routes/workspace.turismo.reacomodacao'
 import { Route as WorkspaceTurismoVistosRouteImport } from './routes/workspace.turismo.vistos'
+import { Route as WorkspaceWhatsappAutomacoesRouteImport } from './routes/workspace.whatsapp.automacoes'
 import { Route as StoreContaClassificadosIndexRouteImport } from './routes/_store.conta.classificados.index'
 import { Route as StoreContaClassificadosNovoRouteImport } from './routes/_store.conta.classificados.novo'
 import { Route as StoreContaConversasIndexRouteImport } from './routes/_store.conta.conversas.index'
@@ -404,6 +406,8 @@ import { Route as WorkspaceTurismoViagensIdRouteImport } from './routes/workspac
 import { Route as WorkspaceTurismoVouchersIndexRouteImport } from './routes/workspace.turismo.vouchers.index'
 import { Route as WorkspacePedidosIdReciboRouteImport } from './routes/workspace_.pedidos.$id.recibo'
 import { Route as ApiMcpV1ToolsCallRouteImport } from './routes/api.mcp.v1.tools.call'
+import { Route as ApiWebhooksWhatsappEvolutionInstanceRouteImport } from './routes/api.webhooks.whatsapp.evolution.$instance'
+import { Route as ApiWebhooksWhatsappWasenderInstanceRouteImport } from './routes/api.webhooks.whatsapp.wasender.$instance'
 import { Route as WorkspaceTurismoGruposIdEmbarqueRouteImport } from './routes/workspace.turismo.grupos.$id.embarque'
 
 const StoreRoute = StoreRouteImport.update({
@@ -1470,6 +1474,12 @@ const ApiFeedXmlRoute = ApiFeedXmlRouteImport.update({
   path: '/api/feed/xml',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiInternalWhatsappOutboxWorkerRoute =
+  ApiInternalWhatsappOutboxWorkerRouteImport.update({
+    id: '/api/internal/whatsapp-outbox-worker',
+    path: '/api/internal/whatsapp-outbox-worker',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiMiningWorkerRoute = ApiMiningWorkerRouteImport.update({
   id: '/api/mining/worker',
   path: '/api/mining/worker',
@@ -2222,6 +2232,12 @@ const WorkspaceTurismoVistosRoute = WorkspaceTurismoVistosRouteImport.update({
   path: '/turismo/vistos',
   getParentRoute: () => WorkspaceRoute,
 } as any)
+const WorkspaceWhatsappAutomacoesRoute =
+  WorkspaceWhatsappAutomacoesRouteImport.update({
+    id: '/whatsapp/automacoes',
+    path: '/whatsapp/automacoes',
+    getParentRoute: () => WorkspaceRoute,
+  } as any)
 const StoreContaClassificadosIndexRoute =
   StoreContaClassificadosIndexRouteImport.update({
     id: '/classificados/',
@@ -2502,6 +2518,18 @@ const ApiMcpV1ToolsCallRoute = ApiMcpV1ToolsCallRouteImport.update({
   path: '/api/mcp/v1/tools/call',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiWebhooksWhatsappEvolutionInstanceRoute =
+  ApiWebhooksWhatsappEvolutionInstanceRouteImport.update({
+    id: '/evolution/$instance',
+    path: '/evolution/$instance',
+    getParentRoute: () => ApiWebhooksWhatsappRoute,
+  } as any)
+const ApiWebhooksWhatsappWasenderInstanceRoute =
+  ApiWebhooksWhatsappWasenderInstanceRouteImport.update({
+    id: '/wasender/$instance',
+    path: '/wasender/$instance',
+    getParentRoute: () => ApiWebhooksWhatsappRoute,
+  } as any)
 const WorkspaceTurismoGruposIdEmbarqueRoute =
   WorkspaceTurismoGruposIdEmbarqueRouteImport.update({
     id: '/embarque',
@@ -2709,13 +2737,14 @@ export interface FileRoutesByFullPath {
   '/api/cron/mining-worker': typeof ApiCronMiningWorkerRoute
   '/api/feed/meta.csv': typeof ApiFeedMetaDotcsvRoute
   '/api/feed/xml': typeof ApiFeedXmlRoute
+  '/api/internal/whatsapp-outbox-worker': typeof ApiInternalWhatsappOutboxWorkerRoute
   '/api/mining/worker': typeof ApiMiningWorkerRoute
   '/api/pwa/manifest.json': typeof ApiPwaManifestDotjsonRoute
   '/api/webhooks/marketplaces': typeof ApiWebhooksMarketplacesRoute
   '/api/webhooks/meta-ads': typeof ApiWebhooksMetaAdsRoute
   '/api/webhooks/pix': typeof ApiWebhooksPixRoute
   '/api/webhooks/shipment': typeof ApiWebhooksShipmentRoute
-  '/api/webhooks/whatsapp': typeof ApiWebhooksWhatsappRoute
+  '/api/webhooks/whatsapp': typeof ApiWebhooksWhatsappRouteWithChildren
   '/claim/reivindicar/$entityId': typeof ClaimReivindicarEntityIdRoute
   '/claim/reputacao/$entityId': typeof ClaimReputacaoEntityIdRoute
   '/m/excursao/$token': typeof MExcursaoTokenRoute
@@ -2821,6 +2850,7 @@ export interface FileRoutesByFullPath {
   '/workspace/turismo/radar': typeof WorkspaceTurismoRadarRoute
   '/workspace/turismo/reacomodacao': typeof WorkspaceTurismoReacomodacaoRoute
   '/workspace/turismo/vistos': typeof WorkspaceTurismoVistosRoute
+  '/workspace/whatsapp/automacoes': typeof WorkspaceWhatsappAutomacoesRoute
   '/agendar/': typeof StoreAgendarIndexRoute
   '/classificados/': typeof StoreClassificadosIndexRoute
   '/conta/': typeof StoreContaIndexRoute
@@ -2904,6 +2934,8 @@ export interface FileRoutesByFullPath {
   '/workspace/turismo/viagens/': typeof WorkspaceTurismoViagensIndexRoute
   '/workspace/turismo/vouchers/': typeof WorkspaceTurismoVouchersIndexRoute
   '/api/mcp/v1/tools/call': typeof ApiMcpV1ToolsCallRoute
+  '/api/webhooks/whatsapp/evolution/$instance': typeof ApiWebhooksWhatsappEvolutionInstanceRoute
+  '/api/webhooks/whatsapp/wasender/$instance': typeof ApiWebhooksWhatsappWasenderInstanceRoute
   '/workspace/turismo/grupos/$id/embarque': typeof WorkspaceTurismoGruposIdEmbarqueRoute
 }
 export interface FileRoutesByTo {
@@ -3098,13 +3130,14 @@ export interface FileRoutesByTo {
   '/api/cron/mining-worker': typeof ApiCronMiningWorkerRoute
   '/api/feed/meta.csv': typeof ApiFeedMetaDotcsvRoute
   '/api/feed/xml': typeof ApiFeedXmlRoute
+  '/api/internal/whatsapp-outbox-worker': typeof ApiInternalWhatsappOutboxWorkerRoute
   '/api/mining/worker': typeof ApiMiningWorkerRoute
   '/api/pwa/manifest.json': typeof ApiPwaManifestDotjsonRoute
   '/api/webhooks/marketplaces': typeof ApiWebhooksMarketplacesRoute
   '/api/webhooks/meta-ads': typeof ApiWebhooksMetaAdsRoute
   '/api/webhooks/pix': typeof ApiWebhooksPixRoute
   '/api/webhooks/shipment': typeof ApiWebhooksShipmentRoute
-  '/api/webhooks/whatsapp': typeof ApiWebhooksWhatsappRoute
+  '/api/webhooks/whatsapp': typeof ApiWebhooksWhatsappRouteWithChildren
   '/claim/reivindicar/$entityId': typeof ClaimReivindicarEntityIdRoute
   '/claim/reputacao/$entityId': typeof ClaimReputacaoEntityIdRoute
   '/m/excursao/$token': typeof MExcursaoTokenRoute
@@ -3209,6 +3242,7 @@ export interface FileRoutesByTo {
   '/workspace/turismo/radar': typeof WorkspaceTurismoRadarRoute
   '/workspace/turismo/reacomodacao': typeof WorkspaceTurismoReacomodacaoRoute
   '/workspace/turismo/vistos': typeof WorkspaceTurismoVistosRoute
+  '/workspace/whatsapp/automacoes': typeof WorkspaceWhatsappAutomacoesRoute
   '/agendar': typeof StoreAgendarIndexRoute
   '/classificados': typeof StoreClassificadosIndexRoute
   '/conta': typeof StoreContaIndexRoute
@@ -3292,6 +3326,8 @@ export interface FileRoutesByTo {
   '/workspace/turismo/viagens': typeof WorkspaceTurismoViagensIndexRoute
   '/workspace/turismo/vouchers': typeof WorkspaceTurismoVouchersIndexRoute
   '/api/mcp/v1/tools/call': typeof ApiMcpV1ToolsCallRoute
+  '/api/webhooks/whatsapp/evolution/$instance': typeof ApiWebhooksWhatsappEvolutionInstanceRoute
+  '/api/webhooks/whatsapp/wasender/$instance': typeof ApiWebhooksWhatsappWasenderInstanceRoute
   '/workspace/turismo/grupos/$id/embarque': typeof WorkspaceTurismoGruposIdEmbarqueRoute
 }
 export interface FileRoutesById {
@@ -3496,13 +3532,14 @@ export interface FileRoutesById {
   '/api/cron/mining-worker': typeof ApiCronMiningWorkerRoute
   '/api/feed/meta.csv': typeof ApiFeedMetaDotcsvRoute
   '/api/feed/xml': typeof ApiFeedXmlRoute
+  '/api/internal/whatsapp-outbox-worker': typeof ApiInternalWhatsappOutboxWorkerRoute
   '/api/mining/worker': typeof ApiMiningWorkerRoute
   '/api/pwa/manifest.json': typeof ApiPwaManifestDotjsonRoute
   '/api/webhooks/marketplaces': typeof ApiWebhooksMarketplacesRoute
   '/api/webhooks/meta-ads': typeof ApiWebhooksMetaAdsRoute
   '/api/webhooks/pix': typeof ApiWebhooksPixRoute
   '/api/webhooks/shipment': typeof ApiWebhooksShipmentRoute
-  '/api/webhooks/whatsapp': typeof ApiWebhooksWhatsappRoute
+  '/api/webhooks/whatsapp': typeof ApiWebhooksWhatsappRouteWithChildren
   '/claim/reivindicar/$entityId': typeof ClaimReivindicarEntityIdRoute
   '/claim/reputacao/$entityId': typeof ClaimReputacaoEntityIdRoute
   '/m/excursao/$token': typeof MExcursaoTokenRoute
@@ -3608,6 +3645,7 @@ export interface FileRoutesById {
   '/workspace/turismo/radar': typeof WorkspaceTurismoRadarRoute
   '/workspace/turismo/reacomodacao': typeof WorkspaceTurismoReacomodacaoRoute
   '/workspace/turismo/vistos': typeof WorkspaceTurismoVistosRoute
+  '/workspace/whatsapp/automacoes': typeof WorkspaceWhatsappAutomacoesRoute
   '/_store/agendar/': typeof StoreAgendarIndexRoute
   '/_store/classificados/': typeof StoreClassificadosIndexRoute
   '/_store/conta/': typeof StoreContaIndexRoute
@@ -3691,6 +3729,8 @@ export interface FileRoutesById {
   '/workspace/turismo/viagens/': typeof WorkspaceTurismoViagensIndexRoute
   '/workspace/turismo/vouchers/': typeof WorkspaceTurismoVouchersIndexRoute
   '/api/mcp/v1/tools/call': typeof ApiMcpV1ToolsCallRoute
+  '/api/webhooks/whatsapp/evolution/$instance': typeof ApiWebhooksWhatsappEvolutionInstanceRoute
+  '/api/webhooks/whatsapp/wasender/$instance': typeof ApiWebhooksWhatsappWasenderInstanceRoute
   '/workspace/turismo/grupos/$id/embarque': typeof WorkspaceTurismoGruposIdEmbarqueRoute
 }
 export interface FileRouteTypes {
@@ -3895,6 +3935,7 @@ export interface FileRouteTypes {
     | '/api/cron/mining-worker'
     | '/api/feed/meta.csv'
     | '/api/feed/xml'
+    | '/api/internal/whatsapp-outbox-worker'
     | '/api/mining/worker'
     | '/api/pwa/manifest.json'
     | '/api/webhooks/marketplaces'
@@ -4007,6 +4048,7 @@ export interface FileRouteTypes {
     | '/workspace/turismo/radar'
     | '/workspace/turismo/reacomodacao'
     | '/workspace/turismo/vistos'
+    | '/workspace/whatsapp/automacoes'
     | '/agendar/'
     | '/classificados/'
     | '/conta/'
@@ -4090,6 +4132,8 @@ export interface FileRouteTypes {
     | '/workspace/turismo/viagens/'
     | '/workspace/turismo/vouchers/'
     | '/api/mcp/v1/tools/call'
+    | '/api/webhooks/whatsapp/evolution/$instance'
+    | '/api/webhooks/whatsapp/wasender/$instance'
     | '/workspace/turismo/grupos/$id/embarque'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -4284,6 +4328,7 @@ export interface FileRouteTypes {
     | '/api/cron/mining-worker'
     | '/api/feed/meta.csv'
     | '/api/feed/xml'
+    | '/api/internal/whatsapp-outbox-worker'
     | '/api/mining/worker'
     | '/api/pwa/manifest.json'
     | '/api/webhooks/marketplaces'
@@ -4395,6 +4440,7 @@ export interface FileRouteTypes {
     | '/workspace/turismo/radar'
     | '/workspace/turismo/reacomodacao'
     | '/workspace/turismo/vistos'
+    | '/workspace/whatsapp/automacoes'
     | '/agendar'
     | '/classificados'
     | '/conta'
@@ -4478,6 +4524,8 @@ export interface FileRouteTypes {
     | '/workspace/turismo/viagens'
     | '/workspace/turismo/vouchers'
     | '/api/mcp/v1/tools/call'
+    | '/api/webhooks/whatsapp/evolution/$instance'
+    | '/api/webhooks/whatsapp/wasender/$instance'
     | '/workspace/turismo/grupos/$id/embarque'
   id:
     | '__root__'
@@ -4681,6 +4729,7 @@ export interface FileRouteTypes {
     | '/api/cron/mining-worker'
     | '/api/feed/meta.csv'
     | '/api/feed/xml'
+    | '/api/internal/whatsapp-outbox-worker'
     | '/api/mining/worker'
     | '/api/pwa/manifest.json'
     | '/api/webhooks/marketplaces'
@@ -4793,6 +4842,7 @@ export interface FileRouteTypes {
     | '/workspace/turismo/radar'
     | '/workspace/turismo/reacomodacao'
     | '/workspace/turismo/vistos'
+    | '/workspace/whatsapp/automacoes'
     | '/_store/agendar/'
     | '/_store/classificados/'
     | '/_store/conta/'
@@ -4876,6 +4926,8 @@ export interface FileRouteTypes {
     | '/workspace/turismo/viagens/'
     | '/workspace/turismo/vouchers/'
     | '/api/mcp/v1/tools/call'
+    | '/api/webhooks/whatsapp/evolution/$instance'
+    | '/api/webhooks/whatsapp/wasender/$instance'
     | '/workspace/turismo/grupos/$id/embarque'
   fileRoutesById: FileRoutesById
 }
@@ -4904,13 +4956,14 @@ export interface RootRouteChildren {
   ApiCronMiningWorkerRoute: typeof ApiCronMiningWorkerRoute
   ApiFeedMetaDotcsvRoute: typeof ApiFeedMetaDotcsvRoute
   ApiFeedXmlRoute: typeof ApiFeedXmlRoute
+  ApiInternalWhatsappOutboxWorkerRoute: typeof ApiInternalWhatsappOutboxWorkerRoute
   ApiMiningWorkerRoute: typeof ApiMiningWorkerRoute
   ApiPwaManifestDotjsonRoute: typeof ApiPwaManifestDotjsonRoute
   ApiWebhooksMarketplacesRoute: typeof ApiWebhooksMarketplacesRoute
   ApiWebhooksMetaAdsRoute: typeof ApiWebhooksMetaAdsRoute
   ApiWebhooksPixRoute: typeof ApiWebhooksPixRoute
   ApiWebhooksShipmentRoute: typeof ApiWebhooksShipmentRoute
-  ApiWebhooksWhatsappRoute: typeof ApiWebhooksWhatsappRoute
+  ApiWebhooksWhatsappRoute: typeof ApiWebhooksWhatsappRouteWithChildren
   ClaimReivindicarEntityIdRoute: typeof ClaimReivindicarEntityIdRoute
   ClaimReputacaoEntityIdRoute: typeof ClaimReputacaoEntityIdRoute
   MExcursaoTokenRoute: typeof MExcursaoTokenRoute
@@ -6404,6 +6457,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiFeedXmlRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/internal/whatsapp-outbox-worker': {
+      id: '/api/internal/whatsapp-outbox-worker'
+      path: '/api/internal/whatsapp-outbox-worker'
+      fullPath: '/api/internal/whatsapp-outbox-worker'
+      preLoaderRoute: typeof ApiInternalWhatsappOutboxWorkerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/mining/worker': {
       id: '/api/mining/worker'
       path: '/api/mining/worker'
@@ -7356,6 +7416,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WorkspaceTurismoVistosRouteImport
       parentRoute: typeof WorkspaceRoute
     }
+    '/workspace/whatsapp/automacoes': {
+      id: '/workspace/whatsapp/automacoes'
+      path: '/whatsapp/automacoes'
+      fullPath: '/workspace/whatsapp/automacoes'
+      preLoaderRoute: typeof WorkspaceWhatsappAutomacoesRouteImport
+      parentRoute: typeof WorkspaceRoute
+    }
     '/_store/conta/classificados/': {
       id: '/_store/conta/classificados/'
       path: '/classificados'
@@ -7691,6 +7758,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/mcp/v1/tools/call'
       preLoaderRoute: typeof ApiMcpV1ToolsCallRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/api/webhooks/whatsapp/evolution/$instance': {
+      id: '/api/webhooks/whatsapp/evolution/$instance'
+      path: '/evolution/$instance'
+      fullPath: '/api/webhooks/whatsapp/evolution/$instance'
+      preLoaderRoute: typeof ApiWebhooksWhatsappEvolutionInstanceRouteImport
+      parentRoute: typeof ApiWebhooksWhatsappRoute
+    }
+    '/api/webhooks/whatsapp/wasender/$instance': {
+      id: '/api/webhooks/whatsapp/wasender/$instance'
+      path: '/wasender/$instance'
+      fullPath: '/api/webhooks/whatsapp/wasender/$instance'
+      preLoaderRoute: typeof ApiWebhooksWhatsappWasenderInstanceRouteImport
+      parentRoute: typeof ApiWebhooksWhatsappRoute
     }
     '/workspace/turismo/grupos/$id/embarque': {
       id: '/workspace/turismo/grupos/$id/embarque'
@@ -8360,6 +8441,7 @@ interface WorkspaceRouteChildren {
   WorkspaceTurismoRadarRoute: typeof WorkspaceTurismoRadarRoute
   WorkspaceTurismoReacomodacaoRoute: typeof WorkspaceTurismoReacomodacaoRoute
   WorkspaceTurismoVistosRoute: typeof WorkspaceTurismoVistosRoute
+  WorkspaceWhatsappAutomacoesRoute: typeof WorkspaceWhatsappAutomacoesRoute
   WorkspaceAdvocaciaIndexRoute: typeof WorkspaceAdvocaciaIndexRoute
   WorkspaceAgendaIndexRoute: typeof WorkspaceAgendaIndexRoute
   WorkspaceAtendimentoIndexRoute: typeof WorkspaceAtendimentoIndexRoute
@@ -8533,6 +8615,7 @@ const WorkspaceRouteChildren: WorkspaceRouteChildren = {
   WorkspaceTurismoRadarRoute: WorkspaceTurismoRadarRoute,
   WorkspaceTurismoReacomodacaoRoute: WorkspaceTurismoReacomodacaoRoute,
   WorkspaceTurismoVistosRoute: WorkspaceTurismoVistosRoute,
+  WorkspaceWhatsappAutomacoesRoute: WorkspaceWhatsappAutomacoesRoute,
   WorkspaceAdvocaciaIndexRoute: WorkspaceAdvocaciaIndexRoute,
   WorkspaceAgendaIndexRoute: WorkspaceAgendaIndexRoute,
   WorkspaceAtendimentoIndexRoute: WorkspaceAtendimentoIndexRoute,
@@ -8593,6 +8676,21 @@ const WorkspaceRouteWithChildren = WorkspaceRoute._addFileChildren(
   WorkspaceRouteChildren,
 )
 
+interface ApiWebhooksWhatsappRouteChildren {
+  ApiWebhooksWhatsappEvolutionInstanceRoute: typeof ApiWebhooksWhatsappEvolutionInstanceRoute
+  ApiWebhooksWhatsappWasenderInstanceRoute: typeof ApiWebhooksWhatsappWasenderInstanceRoute
+}
+
+const ApiWebhooksWhatsappRouteChildren: ApiWebhooksWhatsappRouteChildren = {
+  ApiWebhooksWhatsappEvolutionInstanceRoute:
+    ApiWebhooksWhatsappEvolutionInstanceRoute,
+  ApiWebhooksWhatsappWasenderInstanceRoute:
+    ApiWebhooksWhatsappWasenderInstanceRoute,
+}
+
+const ApiWebhooksWhatsappRouteWithChildren =
+  ApiWebhooksWhatsappRoute._addFileChildren(ApiWebhooksWhatsappRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   StoreRoute: StoreRouteWithChildren,
   AdminMasterRoute: AdminMasterRouteWithChildren,
@@ -8618,13 +8716,14 @@ const rootRouteChildren: RootRouteChildren = {
   ApiCronMiningWorkerRoute: ApiCronMiningWorkerRoute,
   ApiFeedMetaDotcsvRoute: ApiFeedMetaDotcsvRoute,
   ApiFeedXmlRoute: ApiFeedXmlRoute,
+  ApiInternalWhatsappOutboxWorkerRoute: ApiInternalWhatsappOutboxWorkerRoute,
   ApiMiningWorkerRoute: ApiMiningWorkerRoute,
   ApiPwaManifestDotjsonRoute: ApiPwaManifestDotjsonRoute,
   ApiWebhooksMarketplacesRoute: ApiWebhooksMarketplacesRoute,
   ApiWebhooksMetaAdsRoute: ApiWebhooksMetaAdsRoute,
   ApiWebhooksPixRoute: ApiWebhooksPixRoute,
   ApiWebhooksShipmentRoute: ApiWebhooksShipmentRoute,
-  ApiWebhooksWhatsappRoute: ApiWebhooksWhatsappRoute,
+  ApiWebhooksWhatsappRoute: ApiWebhooksWhatsappRouteWithChildren,
   ClaimReivindicarEntityIdRoute: ClaimReivindicarEntityIdRoute,
   ClaimReputacaoEntityIdRoute: ClaimReputacaoEntityIdRoute,
   MExcursaoTokenRoute: MExcursaoTokenRoute,

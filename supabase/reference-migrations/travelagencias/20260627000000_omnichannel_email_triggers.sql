@@ -37,9 +37,14 @@ DECLARE
   v_agency_name    text;
   v_subject        text;
   v_body           text;
-  v_supabase_url   text := 'https://esmppoxxnyiscidzsjvy.supabase.co';
+  v_supabase_url   text := current_setting('app.supabase_functions_url', true);
   v_service_key    text := current_setting('app.service_role_key', true);
 BEGIN
+  IF NULLIF(v_supabase_url, '') IS NULL OR NULLIF(v_service_key, '') IS NULL THEN
+    RAISE WARNING '[trigger_ticket_message_email_notify] Configuração server-side ausente; envio não executado';
+    RETURN NEW;
+  END IF;
+
   -- Somente processar mensagens enviadas pelo cliente (inbound)
   IF NEW.sender <> 'client' OR NEW.is_internal = true THEN
     RETURN NEW;
@@ -106,7 +111,7 @@ BEGIN
     url     := v_supabase_url || '/functions/v1/gmail-send',
     headers := jsonb_build_object(
       'Content-Type',  'application/json',
-      'Authorization', 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVzbXBwb3h4bnlpc2NpZHpzanZ5Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4MTI1Mzg0OCwiZXhwIjoyMDk2ODI5ODQ4fQ.4fKEXQ_ahfmAPep8sXyyYa5gp9uit39bfOJiwPJ1IkQ'
+      'Authorization', 'Bearer ' || v_service_key
     ),
     body    := jsonb_build_object(
       'ticket_id', v_ticket.id::text,
@@ -154,8 +159,14 @@ DECLARE
   v_client_name  text;
   v_subject      text;
   v_body         text;
-  v_supabase_url text := 'https://esmppoxxnyiscidzsjvy.supabase.co';
+  v_supabase_url text := current_setting('app.supabase_functions_url', true);
+  v_service_key text := current_setting('app.service_role_key', true);
 BEGIN
+  IF NULLIF(v_supabase_url, '') IS NULL OR NULLIF(v_service_key, '') IS NULL THEN
+    RAISE WARNING '[trigger_urgent_ticket_alert] Configuração server-side ausente; envio não executado';
+    RETURN NEW;
+  END IF;
+
   -- Somente disparar para tickets marcados como URGENTES
   IF NEW.priority <> 'urgent' THEN
     RETURN NEW;
@@ -211,7 +222,7 @@ BEGIN
     url     := v_supabase_url || '/functions/v1/gmail-send',
     headers := jsonb_build_object(
       'Content-Type',  'application/json',
-      'Authorization', 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVzbXBwb3h4bnlpc2NpZHpzanZ5Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4MTI1Mzg0OCwiZXhwIjoyMDk2ODI5ODQ4fQ.4fKEXQ_ahfmAPep8sXyyYa5gp9uit39bfOJiwPJ1IkQ'
+      'Authorization', 'Bearer ' || v_service_key
     ),
     body    := jsonb_build_object(
       'ticket_id', NEW.id::text,
@@ -260,8 +271,14 @@ DECLARE
   v_agency_name  text;
   v_subject      text;
   v_body         text;
-  v_supabase_url text := 'https://esmppoxxnyiscidzsjvy.supabase.co';
+  v_supabase_url text := current_setting('app.supabase_functions_url', true);
+  v_service_key text := current_setting('app.service_role_key', true);
 BEGIN
+  IF NULLIF(v_supabase_url, '') IS NULL OR NULLIF(v_service_key, '') IS NULL THEN
+    RAISE WARNING '[trigger_ticket_agency_reply_email] Configuração server-side ausente; envio não executado';
+    RETURN NEW;
+  END IF;
+
   -- Somente mensagens enviadas pela agência (não internas)
   IF NEW.sender <> 'agency' OR NEW.is_internal = true THEN
     RETURN NEW;
@@ -315,7 +332,7 @@ BEGIN
     url     := v_supabase_url || '/functions/v1/gmail-send',
     headers := jsonb_build_object(
       'Content-Type',  'application/json',
-      'Authorization', 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVzbXBwb3h4bnlpc2NpZHpzanZ5Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4MTI1Mzg0OCwiZXhwIjoyMDk2ODI5ODQ4fQ.4fKEXQ_ahfmAPep8sXyyYa5gp9uit39bfOJiwPJ1IkQ'
+      'Authorization', 'Bearer ' || v_service_key
     ),
     body    := jsonb_build_object(
       'ticket_id', v_ticket.id::text,

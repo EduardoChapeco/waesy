@@ -1,6 +1,6 @@
 import crypto from "node:crypto";
 import { describe, expect, it } from "vitest";
-import { verifyWebhookSignature } from "./webhook-signature";
+import { verifyMetaWebhookSignature, verifyWebhookSignature } from "./webhook-signature";
 
 const body = JSON.stringify({ event: "paid", id: "evt-1" });
 const secret = "test-webhook-secret";
@@ -32,5 +32,21 @@ describe("verifyWebhookSignature", () => {
   it("rejeita replay fora da janela", () => {
     const oldTimestamp = Math.floor(Date.now() / 1000) - 301;
     expect(verifyWebhookSignature(body, signedHeaders(oldTimestamp), secret).ok).toBe(false);
+  });
+
+  it("aceita a assinatura X-Hub-Signature-256 da Meta", () => {
+    const signature = crypto.createHmac("sha256", secret).update(body).digest("hex");
+    const headers = new Headers({ "x-hub-signature-256": `sha256=${signature}` });
+
+    expect(verifyMetaWebhookSignature(body, headers, secret)).toEqual({ ok: true });
+  });
+
+  it("rejeita assinatura Meta ausente, adulterada ou sem App Secret", () => {
+    const signature = crypto.createHmac("sha256", secret).update(body).digest("hex");
+    const headers = new Headers({ "x-hub-signature-256": `sha256=${signature}` });
+
+    expect(verifyMetaWebhookSignature(body, new Headers(), secret).ok).toBe(false);
+    expect(verifyMetaWebhookSignature(`${body}!`, headers, secret).ok).toBe(false);
+    expect(verifyMetaWebhookSignature(body, headers, undefined).ok).toBe(false);
   });
 });

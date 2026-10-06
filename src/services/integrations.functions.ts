@@ -2,6 +2,8 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
+import { decryptSecret, encryptSecret } from "@/lib/crypto-vault.server";
+import { randomUUID } from "node:crypto";
 import { logAuditAction } from "./audit.functions";
 
 /**
@@ -12,15 +14,25 @@ import { logAuditAction } from "./audit.functions";
 export async function getActiveIntegrationPayload(storeId: string, provider: string) {
  const supabase = getServerClient();
  const { data, error } = await supabase
- .from("integration_credentials")
- .select("token_payload")
+  .from("integration_credentials")
+  .select("token_payload, public_metadata, secret_payload_encrypted")
  .eq("store_id", storeId)
  .eq("provider", provider)
  .eq("is_active", true)
  .single();
 
  if (error || !data) return null;
- return data.token_payload as Record<string, string>;
+
+ const publicPayload = (data.public_metadata || data.token_payload || {}) as Record<string, string>;
+ if (!data.secret_payload_encrypted) return publicPayload;
+
+ try {
+   const privatePayload = JSON.parse(decryptSecret(data.secret_payload_encrypted)) as Record<string, string>;
+   return { ...publicPayload, ...privatePayload };
+ } catch (vaultError) {
+   console.error("[integrations] Não foi possível descriptografar a credencial:", vaultError);
+   return null;
+ }
 }
 
 /**
@@ -163,13 +175,25 @@ export const saveIntegrationCredential = createServerFn({ method: "POST" })
  }
  }
 
+ const isWhatsAppCloud = provider === "whatsapp_cloud_api";
+ const publicMetadata = isWhatsAppCloud
+   ? Object.fromEntries(
+       Object.entries(tokenPayload).filter(([key]) => ["phone_number_id", "business_account_id", "waba_id"].includes(key)),
+     )
+   : {};
+ const secretPayload = isWhatsAppCloud
+   ? Object.fromEntries(Object.entries(tokenPayload).filter(([key]) => !Object.keys(publicMetadata).includes(key)))
+   : tokenPayload;
+
  const { data: record, error } = await supabase
- .from("integration_credentials")
- .upsert(
- {
+  .from("integration_credentials")
+  .upsert(
+  {
  store_id: identity.store_id,
  provider,
- token_payload: tokenPayload,
+   token_payload: isWhatsAppCloud ? publicMetadata : tokenPayload,
+   public_metadata: isWhatsAppCloud ? publicMetadata : {},
+   secret_payload_encrypted: isWhatsAppCloud ? encryptSecret(JSON.stringify(secretPayload)) : null,
  is_active: isActive,
  updated_at: new Date().toISOString(),
  },
@@ -326,7 +350,7 @@ export const testWhatsAppCloudConnection = createServerFn({ method: "POST" })
 
     try {
       // 1. Validação da conta e número na Meta Graph API
-      const metaUrl = `https://graph.facebook.com/v19.0/${data.phoneNumberId}?fields=id,verified_name,display_phone_number,quality_rating`;
+      const metaUrl = `https://graph.facebook.com/v20.0/${data.phoneNumberId}?fields=id,verified_name,display_phone_number,quality_rating`;
       const verifyRes = await fetch(metaUrl, {
         headers: {
           Authorization: `Bearer ${data.accessToken}`,
@@ -350,7 +374,7 @@ export const testWhatsAppCloudConnection = createServerFn({ method: "POST" })
       let messageSent = false;
       if (data.recipientPhone) {
         const cleanPhone = data.recipientPhone.replace(/\D/g, "");
-        const sendUrl = `https://graph.facebook.com/v19.0/${data.phoneNumberId}/messages`;
+        const sendUrl = `https://graph.facebook.com/v20.0/${data.phoneNumberId}/messages`;
         const sendRes = await fetch(sendUrl, {
           method: "POST",
           headers: {
@@ -508,7 +532,11 @@ export async function sendWhatsAppNotification(params: {
   storeId: string;
   recipientPhone: string;
   messageText: string;
-}): Promise<{ sent: boolean; reason?: string }> {
+  threadId?: string;
+  idempotencyKey?: string;
+}): Promise<{ sent: boolean; reason?: string; externalMessageId?: string }> {
+  const idempotencyKey = params.idempotencyKey?.trim() || randomUUID();
+  let outboxId: string | null = null;
   try {
     const creds = await getActiveIntegrationPayload(params.storeId, "whatsapp_cloud_api");
     if (!creds || !creds.phone_number_id || !creds.access_token) {
@@ -520,7 +548,38 @@ export async function sendWhatsAppNotification(params: {
       return { sent: false, reason: "Número de telefone destinatário inválido." };
     }
 
-    const sendUrl = `https://graph.facebook.com/v19.0/${creds.phone_number_id}/messages`;
+    const db = getServerClient();
+    const { data: existingOutbox, error: existingOutboxError } = await db
+      .from("whatsapp_outbox")
+      .select("id, status, external_message_id")
+      .eq("store_id", params.storeId)
+      .eq("idempotency_key", idempotencyKey)
+      .maybeSingle();
+    if (existingOutboxError) return { sent: false, reason: `Outbox WhatsApp indisponível: ${existingOutboxError.message}` };
+    if (existingOutbox?.status === "sent" || existingOutbox?.status === "accepted") {
+      return { sent: true, externalMessageId: existingOutbox.external_message_id || undefined };
+    }
+
+    const { data: outboxRow, error: outboxError } = await db
+      .from("whatsapp_outbox")
+      .upsert({
+        store_id: params.storeId,
+        thread_id: params.threadId || null,
+        provider: "whatsapp_cloud_api",
+        idempotency_key: idempotencyKey,
+        recipient_phone: cleanPhone,
+        message_type: "text",
+        payload: { text: params.messageText },
+        status: "processing",
+        attempts: 1,
+        updated_at: new Date().toISOString(),
+      }, { onConflict: "store_id,idempotency_key" })
+      .select("id, status, external_message_id")
+      .single();
+    if (outboxError) return { sent: false, reason: `Outbox WhatsApp indisponível: ${outboxError.message}` };
+    outboxId = outboxRow?.id || null;
+
+    const sendUrl = `https://graph.facebook.com/v20.0/${creds.phone_number_id}/messages`;
     const res = await fetch(sendUrl, {
       method: "POST",
       headers: {
@@ -538,11 +597,64 @@ export async function sendWhatsAppNotification(params: {
 
     if (!res.ok) {
       const errJson = await res.json().catch(() => ({}));
+      await getServerClient().from("whatsapp_outbox").update({
+        status: "failed",
+        last_error_code: errJson?.error?.code ? String(errJson.error.code) : `HTTP_${res.status}`,
+        last_error_message: errJson?.error?.message || `HTTP ${res.status}`,
+        updated_at: new Date().toISOString(),
+      }).eq("id", outboxId);
       return { sent: false, reason: errJson?.error?.message || `HTTP ${res.status}` };
     }
 
-    return { sent: true };
+    const responseJson = await res.json().catch(() => ({}));
+    const externalMessageId = responseJson?.messages?.[0]?.id ? String(responseJson.messages[0].id) : undefined;
+    await db.from("whatsapp_outbox").update({
+      status: externalMessageId ? "accepted" : "sent",
+      external_message_id: externalMessageId || null,
+      updated_at: new Date().toISOString(),
+    }).eq("id", outboxId);
+    if (externalMessageId) {
+      await db.from("whatsapp_delivery_events").upsert({
+        store_id: params.storeId,
+        phone_number_id: String(creds.phone_number_id),
+        external_message_id: externalMessageId,
+        delivery_status: "accepted",
+        recipient_phone: cleanPhone,
+        payload: responseJson,
+        occurred_at: new Date().toISOString(),
+      }, { onConflict: "store_id,external_message_id,delivery_status" });
+      if (params.threadId) {
+        await db.from("chat_messages").insert({
+          thread_id: params.threadId,
+          message: params.messageText,
+          message_type: "text",
+          is_staff_reply: true,
+          channel: "whatsapp",
+          external_message_id: externalMessageId,
+          delivery_status: "accepted",
+          sent_at: new Date().toISOString(),
+          payload: {
+            channel: "whatsapp",
+            provider: "whatsapp_cloud_api",
+            to: cleanPhone,
+            message_id: externalMessageId,
+          },
+        });
+      }
+    }
+    return { sent: true, externalMessageId };
   } catch (err: any) {
+    if (outboxId) {
+      try {
+        await getServerClient().from("whatsapp_outbox").update({
+          status: "failed",
+          last_error_message: err?.message || "Erro desconhecido",
+          updated_at: new Date().toISOString(),
+        }).eq("id", outboxId);
+      } catch {
+        // A falha original continua sendo retornada; o erro de auditoria não a mascara.
+      }
+    }
     console.warn("[whatsapp-notification] Falha ao enviar notificação WhatsApp:", err?.message);
     return { sent: false, reason: err?.message || "Erro desconhecido" };
   }
@@ -701,4 +813,3 @@ export const testPaymentGatewayConnection = createServerFn({ method: "POST" })
       };
     }
   });
-

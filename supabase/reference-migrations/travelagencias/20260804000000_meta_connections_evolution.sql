@@ -24,6 +24,23 @@ ALTER TABLE public.whatsapp_connections
   ALTER COLUMN display_phone_number DROP NOT NULL,
   ALTER COLUMN app_id DROP NOT NULL;
 
+-- Reexpor provider na view somente depois que a coluna existir na tabela base.
+CREATE OR REPLACE VIEW public.whatsapp_connections_public AS
+SELECT
+  id,
+  agency_id,
+  waba_id,
+  phone_number_id,
+  display_phone_number,
+  status,
+  provider,
+  created_at,
+  updated_at
+FROM public.whatsapp_connections;
+
+ALTER VIEW public.whatsapp_connections_public SET (security_invoker = true);
+GRANT SELECT ON public.whatsapp_connections_public TO authenticated;
+
 -- 2. Data Subject Requests (Fluxo de Exclusão de Dados)
 CREATE TABLE IF NOT EXISTS public.data_subject_requests (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
