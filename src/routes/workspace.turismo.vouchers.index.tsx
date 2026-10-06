@@ -6,6 +6,7 @@ import { CrudActionsMenu } from "@/components/ui/crud-actions-menu";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Skeleton } from "@/components/ui/skeleton";
 import { WorkspaceCanonicalToolbar } from "@/components/workspace/workspace-canonical-toolbar";
 import { WorkspaceDashboardSheet, type MetricCardItem } from "@/components/workspace/workspace-dashboard-sheet";
 import { VoucherCreationSheet } from "@/components/tourism/vouchers/voucher-creation-sheet";
@@ -225,8 +226,15 @@ export default function WorkspaceVouchersPage() {
 
       {/* ── 2. GRID OPERACIONAL DE VOUCHERS ── */}
       {isLoading ? (
-        <div className="py-12 text-center text-xs text-muted-foreground">
-          Carregando vouchers emitidos...
+        <div className="waesy-card-grid gap-4" aria-label="Carregando vouchers">
+          {Array.from({ length: 3 }).map((_, index) => (
+            <div key={index} className="p-5 rounded-lg border border-border/70 bg-card space-y-4">
+              <Skeleton className="h-4 w-1/3" />
+              <Skeleton className="h-5 w-3/4" />
+              <Skeleton className="h-20 w-full rounded-lg" />
+              <Skeleton className="h-11 w-full rounded-lg" />
+            </div>
+          ))}
         </div>
       ) : filtered.length === 0 ? (
         <div className="p-8 sm:p-12 text-center rounded-lg border border-dashed border-border/70 bg-card space-y-3">
@@ -241,18 +249,18 @@ export default function WorkspaceVouchersPage() {
               setCreationType("flight");
               setIsCreationSheetOpen(true);
             }}
-            className="h-11 sm:h-9 px-5 rounded-lg text-xs font-bold gap-2 cursor-pointer shadow-xs"
+            className="h-11 px-5 rounded-lg text-xs font-bold gap-2 cursor-pointer"
           >
             <Plus className="size-4 sm:size-3.5" />
             <span>Emitir Primeiro Voucher</span>
           </Button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+        <div className="waesy-card-grid gap-4">
           {filtered.map((v) => (
             <div
               key={v.id}
-              className="p-4 sm:p-5 rounded-lg bg-card border border-border/70 hover:border-foreground/20 transition-all shadow-2xs flex flex-col justify-between space-y-4"
+              className="p-4 sm:p-5 rounded-lg bg-card border border-border/70 hover:border-foreground/20 transition-colors flex flex-col justify-between space-y-4"
             >
               <div className="space-y-3">
                 <div className="flex items-start justify-between gap-2">
@@ -317,10 +325,10 @@ export default function WorkspaceVouchersPage() {
                     type="button"
                     variant="outline"
                     onClick={() => setCompanionModalVoucher(v)}
-                    className="h-11 sm:h-8 px-3 rounded-lg text-xs font-bold gap-2 border-primary/30 text-primary hover:bg-primary/5 cursor-pointer"
+                    className="h-11 px-3 rounded-lg text-xs font-bold gap-2 border-primary/30 text-primary hover:bg-primary/5 cursor-pointer"
                     title="Visualizar Cartão"
                   >
-                    <Smartphone className="size-4 sm:size-3.5" />
+                    <Smartphone className="size-4" />
                     <span>Cartão 9:16</span>
                   </Button>
 
@@ -328,10 +336,10 @@ export default function WorkspaceVouchersPage() {
                     type="button"
                     variant="outline"
                     onClick={() => handleDownloadPdf(v)}
-                    className="h-11 sm:h-8 px-3 rounded-lg text-xs font-bold gap-2 border-border/70 cursor-pointer"
+                    className="h-11 px-3 rounded-lg text-xs font-bold gap-2 border-border/70 cursor-pointer"
                     title="Baixar em formato A4 tradicional"
                   >
-                    <Download className="size-4 sm:size-3.5" />
+                    <Download className="size-4" />
                     <span>A4</span>
                   </Button>
                 </div>
@@ -381,7 +389,7 @@ export default function WorkspaceVouchersPage() {
 
       {/* ── 3.2 MODAL DE SCANNER MULTIMODAL OCR (GERADOR 9:16 & WHATSAPP) ── */}
       <Dialog open={isUniversalOcrOpen} onOpenChange={setIsUniversalOcrOpen}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto p-4 sm:p-6 rounded-lg bg-background border border-border shadow-xs">
+        <DialogContent className="max-w-3xl max-h-dvh overflow-y-auto p-4 sm:p-6 rounded-lg bg-background border border-border">
           <DialogHeader>
             <DialogTitle className="text-base font-bold flex items-center gap-2">
               <Smartphone className="size-4 text-primary" />
@@ -417,7 +425,7 @@ export default function WorkspaceVouchersPage() {
           if (!open) setCompanionModalVoucher(null);
         }}
       >
-        <DialogContent className="max-w-4xl max-h-[92vh] overflow-y-auto p-4 sm:p-6 rounded-lg bg-background border border-border shadow-xs">
+        <DialogContent className="max-w-4xl max-h-dvh overflow-y-auto p-4 sm:p-6 rounded-lg bg-background border border-border">
           <DialogHeader className="sr-only">
             <DialogTitle>Visualizador de Voucher e Bilhete</DialogTitle>
           </DialogHeader>
@@ -442,7 +450,7 @@ export default function WorkspaceVouchersPage() {
                     size="sm"
                     variant={previewFormat === "story" ? "default" : "ghost"}
                     onClick={() => setPreviewFormat("story")}
-                    className="h-8 rounded-lg text-xs font-bold gap-1 cursor-pointer"
+                    className="h-11 rounded-lg text-xs font-bold gap-1 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                   >
                     <Smartphone className="size-3.5" />
                     <span>Story 9:16</span>
@@ -452,7 +460,7 @@ export default function WorkspaceVouchersPage() {
                     size="sm"
                     variant={previewFormat === "companion" ? "default" : "ghost"}
                     onClick={() => setPreviewFormat("companion")}
-                    className="h-8 rounded-lg text-xs font-bold gap-1 cursor-pointer"
+                    className="h-11 rounded-lg text-xs font-bold gap-1 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                   >
                     <Layers className="size-3.5" />
                     <span>Interativo</span>
@@ -462,7 +470,7 @@ export default function WorkspaceVouchersPage() {
                     size="sm"
                     variant={previewFormat === "a4" ? "default" : "ghost"}
                     onClick={() => setPreviewFormat("a4")}
-                    className="h-8 rounded-lg text-xs font-bold gap-1 cursor-pointer"
+                    className="h-11 rounded-lg text-xs font-bold gap-1 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                   >
                     <Download className="size-3.5" />
                     <span>Padrão A4</span>
@@ -518,7 +526,7 @@ export default function WorkspaceVouchersPage() {
                       <span>Baixar PDF (A4)</span>
                     </Button>
                   </div>
-                  <div className="w-full overflow-x-auto p-4 bg-muted/30 rounded-lg border border-border/40 flex justify-center">
+                  <div className="waesy-document-preview-strip w-full p-4 bg-muted/30 rounded-lg border border-border/40 flex justify-center">
                     <div className="scale-75 sm:scale-85 md:scale-90 origin-top shadow-xs">
                       <TemplateVoucherA4
                         voucher={companionModalVoucher}
@@ -535,7 +543,7 @@ export default function WorkspaceVouchersPage() {
 
       {/* ── 5. CONTAINER OCULTO PARA GERAR PDF A4 ── */}
       {previewVoucher && (
-        <div className="fixed left-[-9999px] top-0 pointer-events-none">
+        <div className="waesy-offscreen-render">
           <TemplateVoucherA4 voucher={previewVoucher} agencyName={store?.name} />
         </div>
       )}

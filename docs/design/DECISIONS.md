@@ -2732,3 +2732,12 @@
 - **Decisão Adotada:** O Shell e o workspace-shell usam utilitários canônicos a partir de 840px. Excursões e Contratos usam `waesy-card-grid` com 1/2/3 colunas em compact/medium/expanded, Skeletons dimensionados e ações de 44px. Barras de progresso usam utilitário próprio com transição de largura.
 - **Fundamentação:** DESIGN.md C.8/C.10/C.11; Material 3 Window Size Classes; Apple HIG; Nielsen CLS/visibilidade de estado.
 - **Consequências:** Tabelas e cartões de novos módulos devem preferir os utilitários semânticos antes de criar grids locais. A dívida de tokens de sombra/duração permanece isolada no CSS-base e não é mascarada.
+
+
+## DEC-190: Sheets Operacionais e Master-detail de Turismo em 840px
+
+- **Data:** 2026-10-06
+- **Contexto:** Propostas, vouchers e embarques usavam `md/lg` como fronteiras diferentes, controles sub-ergonômicos e superfícies de preview com scroll global. O editor de proposta renderizava elementos de mobile em janelas medium e o PDF de embarque continha cores literais fora da fonte canônica.
+- **Decisão Adotada:** O painel lateral da proposta aparece apenas em expanded >= 840px; compact/medium usam `waesy-sheet-responsive`. Vouchers e listas usam `waesy-card-grid`. Calendário, Kanban e previews usam utilitários semânticos próprios. Células e cards interativos são focáveis por teclado. O PDF usa variáveis CSS vivas (`--background`, `--foreground`, `--border`, `--muted`) para conservar a fonte canônica.
+- **Fundamentação:** DESIGN.md C.8/C.10/C.11, Apple HIG, WCAG 2.2 AA, DL-14, DL-15, DL-28 e DL-30.
+- **Consequências:** Novos Sheets operacionais devem adotar `waesy-sheet-responsive`; visualizações horizontais devem encapsular overflow em utilitário semântico; não se deve reintroduzir `md/lg` para separar plataforma quando o shell do produto usa 840px.

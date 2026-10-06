@@ -67,3 +67,12 @@ O `Shell` global e o `workspace-shell` agora usam a fronteira expandida de 840px
 As telas de **Excursões** e **Contratos Turísticos** passaram a usar `waesy-card-grid`: uma coluna em compact, duas em medium e três em expanded. Os cartões não usam mais `transition-all` ou `shadow-2xs`; ações permanecem com altura de 44px. Também foram incluídos Skeletons estruturais para carregamento, mantendo as dimensões da grade e evitando CLS. A barra de ocupação usa `waesy-progress-fill`, que anima somente largura em 200ms.
 
 Após o lote, o lint do escopo apresentou **0 P0, 0 P1, 0 P2 e 0 P3** nos componentes e rotas alterados. Os nove P2 restantes pertencem exclusivamente aos aliases históricos do `styles.css` e continuam catalogados para a frente de fundação.
+
+
+## Lote F4 concluído — propostas, vouchers e embarques
+
+As telas de lista e detalhe de propostas, vouchers e embarques foram migradas para o shell de 840px. O editor de propostas mantém o painel lateral somente no modo expanded e usa Sheet de tela dinâmica em compact/medium. Seus controles de formato, template, zoom, exportação, contrato e conversão receberam foco visível e alvos de 44px; o canvas permanece em uma única área de scroll.
+
+As listas de propostas e vouchers usam `waesy-card-grid` com Skeleton estrutural, eliminando deslocamento durante carregamento. Os visualizadores e o renderizador A4 usam trilhos de preview sem scroll global. Embarques recebeu grade semântica de calendário, Kanban com trilho horizontal encapsulado, Sheets responsivos, células do calendário e cards navegáveis por teclado, além de PDF de guia alimentado por tokens CSS vivos em vez de cores literais.
+
+O lint determinístico do escopo F4 terminou com **0 P0, 0 P1, 0 P2 e 0 P3** nas rotas alteradas. A compilação direcionada e os testes de janela/anti-jank permaneceram verdes.

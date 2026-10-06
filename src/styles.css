@@ -43,6 +43,46 @@
   transition: width 200ms var(--ease-standard);
 }
 
+.waesy-sheet-responsive {
+  width: 100%;
+  max-width: 42rem;
+  height: 100dvh;
+}
+
+.waesy-document-preview-strip {
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.waesy-document-preview-strip::-webkit-scrollbar {
+  display: none;
+}
+
+.waesy-proposal-editor-pane {
+  width: 460px;
+}
+
+.waesy-offscreen-render {
+  position: fixed;
+  left: -10000px;
+  top: 0;
+  pointer-events: none;
+}
+
+.waesy-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+.waesy-kanban-strip {
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.waesy-kanban-strip::-webkit-scrollbar {
+  display: none;
+}
+
 @media (min-width: 840px) {
   .waesy-compact-medium-only.waesy-compact-medium-only {
     display: none;

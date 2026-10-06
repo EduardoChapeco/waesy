@@ -58,3 +58,8 @@ Os componentes devem usar `waesy-compact-medium-only` para ações próprias de 
 ## Lote F3 — Superfícies operacionais turísticas
 
 O lote seguinte inclui `workspace.turismo.grupos.index.tsx` e `workspace.turismo.contratos.index.tsx`. Grades de cartões devem bifurcar em uma coluna no compacto, duas no medium e três no expandido a partir de 840px, usando utilitário semântico compartilhado. Barras de progresso devem animar somente a propriedade de largura por utilitário próprio, sem `transition-all`. Ações devem manter alvo mínimo de 44px em todas as janelas compactas e medium, sem sombra decorativa em cartões ou botões.
+
+
+## Lote F4 — Propostas, vouchers e embarques
+
+A frente F4 inclui as telas de lista e detalhe de propostas, vouchers e embarques. O editor de propostas deverá separar o painel lateral expandido do editor em Sheet compact/medium a partir de 840px, sem `md/lg` como fronteira. Vouchers e listas de embarque devem usar `waesy-card-grid` e estados estruturais de carregamento. Sheets operacionais devem usar `waesy-sheet-responsive`, com largura total e altura dinâmica em compact/medium, limite confortável no expandido e scroll interno único. Visualizadores documentais devem preservar overflow horizontal sem causar scroll global.

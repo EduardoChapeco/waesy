@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { listAgencyTravelProposals, duplicateTravelProposal, deleteTravelProposal, type TravelProposalDTO } from "@/services/travel-proposal.functions";
 import { convertProposalToTrip } from "@/services/travel-lifecycle.functions";
@@ -60,7 +61,7 @@ function WorkspaceProposalsIndexPage() {
  const [isDashboardOpen, setIsDashboardOpen] = useState(false);
  const [isNewModalOpen, setIsNewModalOpen] = useState(Boolean(searchParams?.new || searchParams?.leadId));
 
- const { data: proposals = [], refetch } = useQuery({
+ const { data: proposals = [], refetch, isLoading } = useQuery({
  queryKey: ["agency-proposals", selectedStatus, search],
  queryFn: () =>
  listAgencyTravelProposals({
@@ -126,7 +127,7 @@ function WorkspaceProposalsIndexPage() {
  toolDescription="O criador de lâminas e propostas interativas foi desenvolvido especificamente para agências de turismo e consultores de viagem apresentarem roteiros visuais aos passageiros."
  store={store}
  >
-      <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 flex flex-col gap-4 animate-in fade-in duration-200 min-h-[calc(100dvh-8.5rem)] overflow-x-hidden">
+      <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 flex flex-col gap-4 animate-in fade-in duration-200 min-h-dvh overflow-x-hidden">
         {/* ── 1. Barra Canônica de Operação Silenciosa ── */}
         <WorkspaceCanonicalToolbar
           tabs={[
@@ -155,7 +156,18 @@ function WorkspaceProposalsIndexPage() {
         />
 
  {/* ── 4. GRID DE PROPOSTAS ── */}
- {proposalsList.length === 0 ? (
+ {isLoading ? (
+ <div className="waesy-card-grid gap-4" aria-label="Carregando propostas">
+ {Array.from({ length: 3 }).map((_, index) => (
+ <Card key={index} className="p-5 rounded-lg border border-border/60 bg-card space-y-4">
+ <Skeleton className="h-5 w-1/3" />
+ <Skeleton className="h-5 w-3/4" />
+ <Skeleton className="h-16 w-full" />
+ <Skeleton className="h-11 w-full rounded-lg" />
+ </Card>
+ ))}
+ </div>
+ ) : proposalsList.length === 0 ? (
  <div className="py-20 text-center space-y-3 bg-card rounded-lg border border-border/60 p-8">
  <FileText className="size-10 mx-auto text-muted-foreground" />
  <h3 className="text-sm font-bold text-foreground">Nenhuma proposta de viagem encontrada</h3>
@@ -173,13 +185,13 @@ function WorkspaceProposalsIndexPage() {
  </div>
  </div>
  ) : (
- <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+ <div className="waesy-card-grid gap-4">
  {proposalsList.map((p: TravelProposalDTO) => {
  const totalCents = p.pricing?.total_price_cents || 0;
  return (
  <Card
  key={p.id}
- className="p-5 rounded-lg border border-border/60 bg-card space-y-4 hover:border-primary/40 transition-all flex flex-col justify-between group"
+ className="p-5 rounded-lg border border-border/60 bg-card space-y-4 hover:border-primary/40 transition-colors flex flex-col justify-between group"
  >
  <div className="space-y-3">
  <div className="flex items-center justify-between">
@@ -281,7 +293,7 @@ function WorkspaceProposalsIndexPage() {
                   size="sm"
                   onClick={() => convertMutation.mutate(p.id)}
                   disabled={convertMutation.isPending}
-                  className="w-full rounded-lg text-xs font-bold h-9 bg-primary hover:bg-primary/90 text-primary-foreground gap-2 cursor-pointer"
+                  className="w-full rounded-lg text-xs font-bold h-11 bg-primary hover:bg-primary/90 text-primary-foreground gap-2 cursor-pointer"
                 >
                   <Plane className="size-3.5" />
                   {convertMutation.isPending ? "Gerando Viagem..." : "Gerar Viagem & Vouchers"}
