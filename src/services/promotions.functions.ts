@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
-import { resolveTenantStoreId } from "@/lib/tenant.server";
+import { resolveTenantStoreId } from "@/lib/server-access";
 
 export type PromotionDTO = {
  id: string;

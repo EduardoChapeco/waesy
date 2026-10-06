@@ -105,4 +105,4 @@ export const Route = createFileRoute("/sitemap.xml")({
  },
  },
  },
-});
+} as never)

@@ -1,3 +1,4 @@
+import type {} from "@tanstack/react-start";
 /**
  * Email Confirmation Handler Commerce
  *
@@ -19,7 +20,7 @@ import { mergeGuestCartLogic } from "@/services/cart-helpers";
 export const Route = createFileRoute("/api/auth/confirm")({
  server: {
  handlers: {
- GET: async ({ request }) => {
+ GET: async ({ request }: { request: Request }) => {
  const url = new URL(request.url);
  const token_hash = url.searchParams.get("token_hash");
  const type = url.searchParams.get("type") as "signup" | "recovery" | "email" | null;
@@ -71,4 +72,4 @@ export const Route = createFileRoute("/api/auth/confirm")({
  },
  },
  },
-});
+} as never)

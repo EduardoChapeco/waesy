@@ -69,17 +69,7 @@ export function MarketplaceCheckoutPage() {
   const formId = useId();
 
   // Itens na sacola (inicializado com item de exemplo ou carrinho real)
-  const [items, setItems] = useState<CheckoutItem[]>([
-    {
-      productId: "550e8400-e29b-41d4-a716-446655440001",
-      storeId: "550e8400-e29b-41d4-a716-446655440002",
-      storeName: "Empresa Parceira Oficial",
-      title: "Produto de Demonstração do Marketplace",
-      priceCents: 4990,
-      quantity: 1,
-    },
-  ]);
-
+  const [items, setItems] = useState<CheckoutItem[]>([]);
   // Stepper: 1 = Itens, 2 = Entrega, 3 = Pagamento, 4 = Concluído
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
 
@@ -88,32 +78,15 @@ export function MarketplaceCheckoutPage() {
   const [customerPhone, setCustomerPhone] = useState("");
   const [customerEmail, setCustomerEmail] = useState("");
 
-  const [cep, setCep] = useState("89801000");
-  const [street, setStreet] = useState("Avenida Getúlio Vargas");
-  const [number, setNumber] = useState("100");
-  const [neighborhood, setNeighborhood] = useState("Centro");
-  const [city, setCity] = useState("Chapecó");
-  const [state, setState] = useState("SC");
+  const [cep, setCep] = useState("");
+  const [street, setStreet] = useState("");
+  const [number, setNumber] = useState("");
+  const [neighborhood, setNeighborhood] = useState("");
+  const [city, setCity] = useState("");
+  const [state, setState] = useState("");
   const [complement, setComplement] = useState("");
 
-  const [shippingOptions, setShippingOptions] = useState<ShippingOptionDTO[]>([
-    {
-      id: "motolink_express",
-      title: "MotoLink Express (Entrega Local)",
-      description: "30 a 60 minutos após preparo",
-      priceCents: 990,
-      estimatedDelivery: "Hoje",
-      isFree: false,
-    },
-    {
-      id: "retirada",
-      title: "Retirada no Estabelecimento",
-      description: "Retire sem custo no endereço do lojista",
-      priceCents: 0,
-      estimatedDelivery: "No mesmo dia",
-      isFree: true,
-    },
-  ]);
+  const [shippingOptions, setShippingOptions] = useState<ShippingOptionDTO[]>([]);
   const [selectedShippingId, setSelectedShippingId] = useState("motolink_express");
   const [paymentMethod, setPaymentMethod] = useState<"pix" | "credit_card" | "cash_on_delivery">("pix");
 
@@ -148,7 +121,7 @@ export function MarketplaceCheckoutPage() {
     try {
       const options = await calculateMarketplaceShippingFn({
         data: {
-          storeId: items[0]?.storeId || "550e8400-e29b-41d4-a716-446655440002",
+          storeId: items[0]?.storeId || (() => { throw new Error("Carrinho sem loja vinculada."); })(),
           cep: cep.replace(/\D/g, ""),
           subtotalCents,
           weightGrams: 500,
@@ -161,7 +134,7 @@ export function MarketplaceCheckoutPage() {
         }
       }
     } catch {
-      // Mantém opções pré-carregadas graciosamente
+      toast.error("Não foi possível calcular o frete com dados reais.");
     }
   };
 
@@ -174,10 +147,10 @@ export function MarketplaceCheckoutPage() {
 
     setIsSubmitting(true);
     try {
-      const idempotencyKey = `chk-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+      const idempotencyKey = `chk-${crypto.randomUUID()}`;
       const result = await createMarketplaceOrderFn({
         data: {
-          storeId: items[0]?.storeId || "550e8400-e29b-41d4-a716-446655440002",
+          storeId: items[0]?.storeId || (() => { throw new Error("Carrinho sem loja vinculada."); })(),
           customer: {
             name: customerName,
             phone: customerPhone,

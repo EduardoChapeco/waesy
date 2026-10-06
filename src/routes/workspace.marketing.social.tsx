@@ -135,11 +135,11 @@ export default function WorkspaceMarketingSocialPage() {
 
   const insertVariable = (variable: string, target: "title" | "description" | "whatsapp") => {
     if (target === "title") {
-      setOgTitleTemplate((prev) => `${prev} ${variable}`);
+      setOgTitleTemplate((prev: any) => `${prev} ${variable}`);
     } else if (target === "description") {
-      setOgDescriptionTemplate((prev) => `${prev} ${variable}`);
+      setOgDescriptionTemplate((prev: any) => `${prev} ${variable}`);
     } else {
-      setWhatsappShareTemplate((prev) => `${prev} ${variable}`);
+      setWhatsappShareTemplate((prev: any) => `${prev} ${variable}`);
     }
   };
 

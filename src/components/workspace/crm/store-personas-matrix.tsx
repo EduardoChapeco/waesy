@@ -4,7 +4,7 @@
  * Arquitetura de Elite (50-Prompt Golden Codex):
  * 1. Bifurcação Perfeita: WhatsApp List no Mobile (<640px) + Bento Grid no Desktop (>1024px).
  * 2. Bottom Sheet no Mobile (100dvh) para inspeção profunda de Persona e Telemetria.
- * 3. Silêncio Visual: zero sparkles, títulos atômicos, tipografia limpa.
+ * 3. Silêncio Visual: zero visual effects, títulos atômicos, tipografia limpa.
  * 4. Dados 100% reais do banco (ai_persona_profiles + search_history).
  */
 

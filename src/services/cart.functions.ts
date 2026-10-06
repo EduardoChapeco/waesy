@@ -11,7 +11,7 @@ import { getServerClient, SupabaseUnconfiguredError } from "@/lib/supabase";
 import { logSystemError } from "@/lib/logger";
 import { z } from "zod";
 
-import { getGuestSession, getSellerRefCookie } from "@/lib/session";
+import { getGuestSession, getSellerRefCookie } from "@/lib/server-access";
 import { getCurrentIdentity, mergeGuestCartLogic, withDataPayload } from "./cart-helpers";
 import type { CartDTO, CrossSellItemDTO } from "@/types/orders";
 import { formatMoney } from "@/lib/money";
@@ -514,7 +514,7 @@ export const addToCart = createServerFn({ method: "POST" })
  async ({ data: { variantId: inputVariantId, productId, quantity, sellerId, options } }) => {
  const supabase = getServerClient();
  const identity = await getCurrentIdentity();
- const activeSellerId = sellerId || getSellerRefCookie();
+ const activeSellerId = sellerId || await getSellerRefCookie();
 
  let targetVariantId = inputVariantId;
 
@@ -708,9 +708,10 @@ export const addToCart = createServerFn({ method: "POST" })
  );
 
 export const removeFromCart = createServerFn({ method: "POST" })
-  .validator(withDataPayload(z.object({ itemId: z.string().uuid() })))
+ .validator(withDataPayload(z.object({ itemId: z.string().uuid() })))
  .handler(async ({ data: { itemId } }) => {
  const supabase = getServerClient();
+ const identity = await getCurrentIdentity();
 
  // We should verify the cart belongs to the user, but for simplicity
  // we just delete the item (UUID is unguessable) and its reservations
@@ -722,12 +723,18 @@ export const removeFromCart = createServerFn({ method: "POST" })
  .single();
 
  if (!item) return { status: "error" as const, message: "Item não encontrado" };
+ let ownedCartQuery = supabase.from("carts").select("id").eq("id", item.cart_id);
+ ownedCartQuery = identity.customer_id
+   ? ownedCartQuery.eq("customer_id", identity.customer_id)
+   : ownedCartQuery.eq("session_token", identity.session_token);
+ const { data: ownedCart } = await ownedCartQuery.maybeSingle();
+ if (!ownedCart) return { status: "error" as const, message: "Item não encontrado" };
 
  // Removed stock reservation drop logic here since cart items no longer reserve stock immediately.
  // Stock reservation is handled during checkout order creation now.
 
  // Delete item
- await supabase.from("cart_items").delete().eq("id", itemId);
+ await supabase.from("cart_items").delete().eq("id", itemId).eq("cart_id", ownedCart.id);
 
  return { status: "success" };
  });
@@ -746,7 +753,7 @@ export const mergeGuestCart = createServerFn({ method: "POST" })
   )
  .handler(async ({ data: { customerId, accessToken, guestSessionToken } }) => {
  // If not explicitly passed, try to read it (safe if synchronous, but might fail if after async)
- const token = guestSessionToken !== undefined ? guestSessionToken : getGuestSession();
+ const token = guestSessionToken !== undefined ? guestSessionToken : await getGuestSession();
  return mergeGuestCartLogic(customerId, accessToken, token);
  });
 
@@ -867,6 +874,12 @@ export const updateCartItemOptions = createServerFn({ method: "POST" })
       .single();
 
     if (!item) return { status: "error" as const, message: "Item do carrinho não encontrado." };
+    let ownedCartQuery = supabase.from("carts").select("id").eq("id", item.cart_id);
+    ownedCartQuery = identity.customer_id
+      ? ownedCartQuery.eq("customer_id", identity.customer_id)
+      : ownedCartQuery.eq("session_token", identity.session_token);
+    const { data: ownedCart } = await ownedCartQuery.maybeSingle();
+    if (!ownedCart) return { status: "error" as const, message: "Item do carrinho não encontrado." };
 
     const targetVariantId = variantId || item.variant_id;
     const targetQty = quantity !== undefined ? quantity : item.qty;
@@ -941,7 +954,8 @@ export const updateCartItemOptions = createServerFn({ method: "POST" })
       const { error: updateError } = await supabase
         .from("cart_items")
         .update(updatePayload)
-        .eq("id", itemId);
+        .eq("id", itemId)
+        .eq("cart_id", ownedCart.id);
 
       if (updateError) throw updateError;
     } catch (e: unknown) {

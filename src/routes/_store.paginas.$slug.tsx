@@ -71,7 +71,7 @@ export const Route = createFileRoute("/_store/paginas/$slug")({
         >
           <AlertCircle className="size-12 text-destructive mx-auto mb-4" />
           <h2 className="font-semibold text-2xl mb-2 text-foreground">Erro no Carregamento</h2>
-          <p className="font-sans text-muted-foreground mb-6">{error.message}</p>
+          <p className="font-sans text-muted-foreground mb-6">{error instanceof Error ? error.message : String(error)}</p>
           <Button asChild className="w-full">
             <Link to="/">Voltar para o Início</Link>
           </Button>

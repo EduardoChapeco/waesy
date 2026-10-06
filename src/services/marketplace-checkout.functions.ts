@@ -13,6 +13,8 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getAnonServerClient, getServerClient, SupabaseUnconfiguredError } from "@/lib/supabase";
 import { publishDomainEvent } from "./domain-events.functions";
+import { getServerIdentity } from "@/lib/server-access";
+import { createGatewayPayment } from "./payment-gateway.server";
 
 // ---------------------------------------------------------------------------
 // Schemas Zod de Entrada e Saída
@@ -66,10 +68,16 @@ export const createMarketplaceOrderInputSchema = z.object({
   shippingOptionId: z.string().min(1),
   shippingCents: z.number().int().min(0),
   paymentMethod: z.enum(["pix", "credit_card", "cash_on_delivery"]),
+  cardToken: z.string().min(8).optional().nullable(),
+  installments: z.number().int().min(1).max(12).optional(),
   items: z.array(marketplaceOrderItemSchema).min(1, "O carrinho não pode estar vazio"),
   idempotencyKey: z.string().min(8, "Chave de idempotência necessária"),
   notes: z.string().optional().nullable(),
 });
+
+function subtotalCentsFor(items: Array<{ priceCents: number; quantity: number }>): number {
+  return items.reduce((acc, item) => acc + item.priceCents * item.quantity, 0);
+}
 
 export interface CreateMarketplaceOrderResult {
   success: boolean;
@@ -92,7 +100,7 @@ export interface CreateMarketplaceOrderResult {
 
 export const calculateMarketplaceShippingFn = createServerFn({ method: "POST" })
   .validator((input: z.infer<typeof calculateShippingInputSchema>) =>
-    calculateShippingInputSchema.parse(input)
+    calculateShippingInputSchema.parse(input),
   )
   .handler(async ({ data }): Promise<ShippingOptionDTO[]> => {
     const { storeId, cep, subtotalCents } = data;
@@ -107,9 +115,13 @@ export const calculateMarketplaceShippingFn = createServerFn({ method: "POST" })
         .eq("id", storeId)
         .maybeSingle();
 
-      const settings = (store?.settings ?? {}) as Record<string, any>;
-      const freeShippingThreshold = settings.freeShippingThresholdCents ?? 15000; // R$ 150 padrão
-      const isEligibleForFreeShipping = subtotalCents >= freeShippingThreshold;
+      if (!store) throw new Error("Loja não encontrada");
+      const settings = (store.settings ?? {}) as Record<string, any>;
+      const rates = (settings.shippingRates ?? {}) as Record<string, unknown>;
+      const estimates = (settings.shippingEstimates ?? {}) as Record<string, unknown>;
+      const freeThreshold = typeof settings.freeShippingThresholdCents === "number"
+        ? settings.freeShippingThresholdCents : null;
+      const isEligibleForFreeShipping = freeThreshold !== null && subtotalCents >= freeThreshold;
 
       const options: ShippingOptionDTO[] = [
         {
@@ -117,50 +129,33 @@ export const calculateMarketplaceShippingFn = createServerFn({ method: "POST" })
           title: "Retirada no Estabelecimento",
           description: store?.address
             ? `Retire em ${store.address}, ${store.city || ""}`
-            : "Retirada balcão durante horário de funcionamento",
+            : "Retirada no endereço informado pela loja",
           priceCents: 0,
-          estimatedDelivery: "Disponível no mesmo dia",
+          estimatedDelivery: String(estimates.retirada ?? "Prazo informado pela loja"),
           isFree: true,
         },
         {
           id: "motolink_express",
-          title: "MotoLink Express (Entrega Local)",
-          description: "Entregador credenciado da cidade parceiro do estabelecimento",
-          priceCents: isEligibleForFreeShipping ? 0 : 990, // R$ 9,90
-          estimatedDelivery: "30 a 60 minutos após preparo",
+          title: String((settings.shippingLabels as Record<string, unknown> | undefined)?.motolink_express ?? "Entrega local"),
+          description: "Tarifa configurada pela loja",
+          priceCents: isEligibleForFreeShipping ? 0 : Number(rates.motolink_express ?? -1),
+          estimatedDelivery: String(estimates.motolink_express ?? "Prazo informado pela loja"),
           isFree: isEligibleForFreeShipping,
         },
         {
           id: "padrao",
-          title: "Entrega Convencional",
+          title: String((settings.shippingLabels as Record<string, unknown> | undefined)?.padrao ?? "Entrega convencional"),
           description: `Envio para CEP ${cep}`,
-          priceCents: isEligibleForFreeShipping ? 0 : 1490, // R$ 14,90
-          estimatedDelivery: "1 a 2 dias úteis",
+          priceCents: isEligibleForFreeShipping ? 0 : Number(rates.padrao ?? -1),
+          estimatedDelivery: String(estimates.padrao ?? "Prazo informado pela loja"),
           isFree: isEligibleForFreeShipping,
         },
       ];
 
-      return options;
+      return options.filter((option) => option.id === "retirada" || option.priceCents >= 0);
     } catch (err: unknown) {
-      console.warn("[marketplace-checkout] Fallback de cálculo de frete:", err);
-      return [
-        {
-          id: "retirada",
-          title: "Retirada no Estabelecimento",
-          description: "Retirada no endereço do lojista",
-          priceCents: 0,
-          estimatedDelivery: "No mesmo dia",
-          isFree: true,
-        },
-        {
-          id: "padrao",
-          title: "Entrega Local",
-          description: `Envio para CEP ${cep}`,
-          priceCents: 990,
-          estimatedDelivery: "1 a 2 dias úteis",
-          isFree: false,
-        },
-      ];
+      console.error("[marketplace-checkout] Falha real no cálculo de frete:", err);
+      throw new Error("Não foi possível calcular o frete com dados reais da loja.");
     }
   });
 
@@ -170,142 +165,94 @@ export const calculateMarketplaceShippingFn = createServerFn({ method: "POST" })
 
 export const createMarketplaceOrderFn = createServerFn({ method: "POST" })
   .validator((input: z.infer<typeof createMarketplaceOrderInputSchema>) =>
-    createMarketplaceOrderInputSchema.parse(input)
+    createMarketplaceOrderInputSchema.parse(input),
   )
   .handler(async ({ data }): Promise<CreateMarketplaceOrderResult> => {
-    const {
-      storeId,
-      customer,
-      shippingAddress,
-      shippingOptionId,
-      shippingCents,
-      paymentMethod,
-      items,
-      idempotencyKey,
-      notes,
-    } = data;
-
+    const identity = await getServerIdentity().catch(() => null);
     const supabase = getServerClient();
+    const { data: atomic, error } = await supabase.rpc("create_marketplace_checkout_atomic", {
+      p_store_id: data.storeId,
+      p_customer_id: identity?.id || null,
+      p_customer_snapshot: data.customer,
+      p_shipping_address: data.shippingAddress,
+      p_shipping_method: data.shippingOptionId === "retirada" ? "pickup" : "delivery",
+      p_shipping_cents: data.shippingCents,
+      p_payment_method: data.paymentMethod === "cash_on_delivery" ? "manual" : data.paymentMethod,
+      p_items: data.items,
+      p_idempotency_key: data.idempotencyKey,
+      p_notes: data.notes || null,
+    });
+    if (error || !atomic) throw new Error("Não foi possível criar o pedido de forma transacional.");
 
-    // 1. Idempotência estrita: verificar se já existe pedido com esta chave de idempotência
-    const { data: existingOrder } = await supabase
-      .from("orders")
-      .select("id, order_number, total_cents, subtotal_cents, shipping_cents, status")
-      .eq("store_id", storeId)
-      .eq("custom_fields->>idempotency_key", idempotencyKey)
-      .maybeSingle();
-
-    if (existingOrder !== null && existingOrder !== undefined) {
+    const orderId = String(atomic.order_id);
+    const paymentId = String(atomic.payment_id);
+    if (atomic.status === "already_created") {
       return {
         success: true,
-        orderId: existingOrder.id,
-        orderNumber: String(existingOrder.order_number || existingOrder.id.slice(0, 8)),
-        totalCents: existingOrder.total_cents,
-        subtotalCents: existingOrder.subtotal_cents,
-        shippingCents: existingOrder.shipping_cents,
-        paymentMethod,
+        orderId,
+        orderNumber: String(atomic.public_token),
+        totalCents: Number(atomic.total_cents),
+        subtotalCents: Number(atomic.subtotal_cents),
+        shippingCents: Number(atomic.shipping_cents),
+        paymentMethod: data.paymentMethod,
         wasAlreadyCreated: true,
       };
     }
 
-    // 2. Calcular subtotal real com base nos centavos inteiros
-    const subtotalCents = items.reduce(
-      (acc, item) => acc + item.priceCents * item.quantity,
-      0
-    );
-    const totalCents = subtotalCents + shippingCents;
-    const generatedOrderNumber = `MKP-${Date.now().toString().slice(-6)}`;
-
-    // 3. Montar payload do pedido
-    const orderPayload = {
-      store_id: storeId,
-      order_number: generatedOrderNumber,
-      status: "pending",
-      subtotal_cents: subtotalCents,
-      shipping_cents: shippingCents,
-      total_cents: totalCents,
-      discount_cents: 0,
-      customer_snapshot: customer,
-      shipping_address: shippingAddress,
-      shipping_method: shippingOptionId,
-      channel_origin: "marketplace",
-      origin_channel: "marketplace",
-      notes: notes ?? null,
-      custom_fields: {
-        pilar: "marketplace",
-        idempotency_key: idempotencyKey,
-        payment_method: paymentMethod,
-      },
-    };
-
-    // 4. Inserir pedido na tabela orders
-    const { data: createdOrder, error: orderErr } = await supabase
-      .from("orders")
-      .insert(orderPayload)
-      .select("id, order_number")
-      .single();
-
-    if (orderErr || createdOrder === null || createdOrder === undefined) {
-      console.error("[marketplace-checkout] Falha ao criar pedido:", orderErr?.message);
-      throw new Error("Não foi possível processar o pedido. Tente novamente.");
+    let gateway: Awaited<ReturnType<typeof createGatewayPayment>> | null = null;
+    try {
+      gateway = data.paymentMethod === "cash_on_delivery" ? null : await createGatewayPayment({
+        orderId,
+        amountCents: Number(atomic.total_cents),
+        method: data.paymentMethod,
+        idempotencyKey: data.idempotencyKey,
+        payer: data.customer,
+        cardToken: data.cardToken,
+        installments: data.installments,
+      });
+    } catch (gatewayError) {
+      if (data.paymentMethod !== "cash_on_delivery") {
+        await supabase.rpc("mark_payment_failed_atomic", {
+          p_payment_id: paymentId,
+          p_reason: gatewayError instanceof Error ? gatewayError.message : "Gateway indisponível",
+        });
+      }
+      throw gatewayError;
     }
 
-    // 5. Inserir itens do pedido em order_items
-    const orderItemsPayload = items.map((item) => ({
-      order_id: createdOrder.id,
-      item_id: item.productId,
-      product_title: item.title,
-      qty: item.quantity,
-      unit_price_cents: item.priceCents,
-      total_cents: item.priceCents * item.quantity,
-      selected_options: item.selectedOptions ?? {},
-    }));
+    const { error: paymentUpdateError } = await supabase.from("payments").update({
+      provider_name: gateway?.provider ?? "manual",
+      provider_ref: gateway?.providerRef ?? null,
+      gateway_payload: gateway?.payload ?? {},
+      status: gateway ? (gateway.status === "paid" ? "processing" : gateway.status) : "pending",
+      updated_at: new Date().toISOString(),
+    }).eq("id", paymentId);
+    if (paymentUpdateError) throw new Error("Pedido criado, mas não foi possível registrar a referência do gateway.");
 
-    const { error: itemsErr } = await supabase
-      .from("order_items")
-      .insert(orderItemsPayload);
-
-    if (itemsErr) {
-      console.warn("[marketplace-checkout] Aviso ao inserir itens:", itemsErr.message);
-    }
-
-    // 6. Emitir evento de domínio order.created
     await publishDomainEvent({
       eventName: "order.created",
       entityType: "order",
-      entityId: createdOrder.id,
-      storeId,
-      title: `Novo pedido #${createdOrder.order_number} no Marketplace`,
-      description: `Pedido de R$ ${(totalCents / 100).toFixed(2)} por ${customer.name}`,
-      metadata: {
-        orderId: createdOrder.id,
-        orderNumber: createdOrder.order_number,
-        totalCents,
-        pilar: "marketplace",
-        itemsCount: items.length,
-      },
-    }).catch((eventErr) => {
-      console.warn("[marketplace-checkout] Evento de domínio falhou (non-blocking):", eventErr?.message);
+      entityId: orderId,
+      storeId: data.storeId,
+      title: `Pagamento iniciado para o pedido ${atomic.public_token}`,
+      description: gateway
+        ? "Pagamento encaminhado ao gateway; confirmação depende de webhook assinado."
+        : "Pedido criado para pagamento na entrega; confirmação será operada pelo estabelecimento.",
+      metadata: { orderId, paymentId, provider: gateway?.provider ?? "manual" },
     });
-
-    // 7. Retorno com payload Pix se for o método escolhido
-    const pixPayload =
-      paymentMethod === "pix"
-        ? {
-            copyPasteCode: `00020126580014br.gov.bcb.pix0136${createdOrder.id}5204000053039865405${(totalCents / 100).toFixed(2)}5802BR5915MarketplaceWaesy6007Chapeco62070503***6304`,
-            qrCodeText: `pix:${createdOrder.id}:${totalCents}`,
-          }
-        : undefined;
 
     return {
       success: true,
-      orderId: createdOrder.id,
-      orderNumber: String(createdOrder.order_number),
-      totalCents,
-      subtotalCents,
-      shippingCents,
-      paymentMethod,
-      pixPayload,
+      orderId,
+      orderNumber: String(atomic.public_token),
+      totalCents: Number(atomic.total_cents),
+      subtotalCents: Number(atomic.subtotal_cents),
+      shippingCents: Number(atomic.shipping_cents),
+      paymentMethod: data.paymentMethod,
+      pixPayload: gateway?.pix?.qrCode ? {
+        copyPasteCode: gateway.pix.qrCode,
+        qrCodeText: gateway.pix.qrCode,
+      } : undefined,
       wasAlreadyCreated: false,
     };
   });

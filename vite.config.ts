@@ -5,6 +5,22 @@
 //     React/TanStack dedupe, error logger plugins, and sandbox detection (port/host/strictPort).
 // You can pass additional config via defineConfig({ vite: { ... }, etc... }) if needed.
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
+import { fileURLToPath } from "node:url";
+
+const clientServerCoreShim = fileURLToPath(
+  new URL("./src/lib/client-start-server-core-shim.ts", import.meta.url),
+);
+
+const clientOnlyServerCoreGuard = {
+  name: "waesy-client-only-server-core-guard",
+  enforce: "pre" as const,
+  resolveId(source: string, _importer: string | undefined, options?: { ssr?: boolean }) {
+    if (source === "@tanstack/start-server-core" && options?.ssr !== true) {
+      return clientServerCoreShim;
+    }
+    return null;
+  },
+};
 
 export default defineConfig({
   tanstackStart: {
@@ -14,6 +30,7 @@ export default defineConfig({
     preset: "cloudflare-pages",
   },
   vite: {
+    plugins: [clientOnlyServerCoreGuard],
     build: {
       rollupOptions: {
         external: ["vinxi/routes"],

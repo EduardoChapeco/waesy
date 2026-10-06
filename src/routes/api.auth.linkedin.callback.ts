@@ -2,10 +2,11 @@ import { createFileRoute } from "@tanstack/react-router";
 import { getServerClient } from "@/lib/supabase";
 import { decryptSecret } from "@/lib/crypto-vault.server";
 
+import type {} from "@tanstack/react-start";
 export const Route = createFileRoute("/api/auth/linkedin/callback")({
   server: {
     handlers: {
-      GET: async ({ request }) => {
+      GET: async ({ request }: { request: Request }) => {
         try {
           const url = new URL(request.url);
           const code = url.searchParams.get("code");
@@ -175,4 +176,4 @@ export const Route = createFileRoute("/api/auth/linkedin/callback")({
       },
     },
   },
-});
+} as never)

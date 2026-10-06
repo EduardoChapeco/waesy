@@ -196,7 +196,7 @@ function ServicosVerticalPage() {
  const handleCategoryChange = (catId: string) => {
  setActiveCategory(catId);
  navigate({
- search: (prev) => ({
+ search: (prev: any) => ({
  ...prev,
  categoria: catId === "todos" ? undefined : catId,
  }),

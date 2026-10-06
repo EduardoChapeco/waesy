@@ -89,7 +89,7 @@ function LimpezaVerticalPage() {
  const handleDepartmentChange = (depId: string) => {
  setActiveDepartment(depId);
  navigate({
- search: (prev) => ({
+ search: (prev: any) => ({
  ...prev,
  categoria: depId === "todos" ? undefined : depId,
  }),
@@ -99,7 +99,7 @@ function LimpezaVerticalPage() {
  const handleViewModeChange = (mode: ViewModeType) => {
  setViewMode(mode);
  navigate({
- search: (prev) => ({
+ search: (prev: any) => ({
  ...prev,
  view: mode === "feed" ? undefined : mode,
  }),
@@ -108,7 +108,7 @@ function LimpezaVerticalPage() {
 
  const handleSearchChange = (q: string) => {
  navigate({
- search: (prev) => ({
+ search: (prev: any) => ({
  ...prev,
  q: q || undefined,
  }),
@@ -161,7 +161,7 @@ function LimpezaVerticalPage() {
  {/* ── 3. Barra Canônica de Controle de Descoberta ── */}
  <DiscoveryControlBar
  search={search.q || ""}
- onSearchChange={(q) => navigate({ search: (prev) => ({ ...prev, q }) })}
+ onSearchChange={(q) => navigate({ search: (prev: any) => ({ ...prev, q }) })}
  searchPlaceholder="Buscar desinfetantes, detergentes, descartáveis..."
  categories={LIMPEZA_DEPARTMENTS}
  activeCategory={activeDepartment}

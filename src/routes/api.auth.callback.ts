@@ -5,10 +5,11 @@ import { getSSRClient } from "@/lib/server-access";
 import { mergeGuestCartLogic } from "@/services/cart-helpers";
 import { getResponseHeaders } from "@tanstack/start-server-core";
 
+import type {} from "@tanstack/react-start";
 export const Route = createFileRoute("/api/auth/callback")({
   server: {
     handlers: {
-      GET: async ({ request }) => {
+      GET: async ({ request }: { request: Request }) => {
         const url = new URL(request.url);
         const code = url.searchParams.get("code");
         const next = normalizeInternalReturnPath(url.searchParams.get("next"), "/");
@@ -55,4 +56,4 @@ export const Route = createFileRoute("/api/auth/callback")({
       },
     },
   },
-});
+} as never)

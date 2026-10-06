@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { handleInboundWebhook, type InboundWebhookPayload } from "@/services/marketplace-webhooks.functions";
 import crypto from "crypto";
 
+import type {} from "@tanstack/react-start";
 /**
  * Validates cryptographic HMAC SHA-256 signature with replay window protection (<= 300s).
  * Supports standard X-Hub-Signature-256, Mercado Livre (ts=...,v1=...), iFood, and Shopee.
@@ -73,7 +74,7 @@ function verifyHmacSignature(
 export const Route = createFileRoute("/api/webhooks/marketplaces")({
   server: {
     handlers: {
-      POST: async ({ request }) => {
+      POST: async ({ request }: { request: Request }) => {
         try {
           const url = new URL(request.url);
           const platformParam = url.searchParams.get("platform") || "mercadolivre";
@@ -186,4 +187,4 @@ export const Route = createFileRoute("/api/webhooks/marketplaces")({
       },
     },
   },
-});
+} as never)

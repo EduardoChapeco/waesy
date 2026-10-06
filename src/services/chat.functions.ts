@@ -90,6 +90,8 @@ export const listChatThreads = createServerFn({ method: "GET" })
  };
  }
 
+ assertStoreAccess(identity, STAFF_ROLES, identity.store_id);
+
  const isSupervisor = ["owner", "admin", "manager", "platform_admin", "master"].includes(
  identity.role,
  );
@@ -420,8 +422,8 @@ export const getCustomerChatThread = createServerFn({ method: "GET" })
 
  if (threadErr || !thread) throw new Error("Conversa não encontrada.");
 
- // Valida se a conversa pertence ao usuário
- if (user && thread.customer_id && thread.customer_id !== user.id) {
+ // Uma thread de cliente nunca pode ser lida por UUID sem sessão autenticada.
+ if (!user || !thread.customer_id || thread.customer_id !== user.id) {
  throw new Error("Acesso não autorizado.");
  }
 
@@ -479,7 +481,7 @@ export const sendCustomerChatMessage = createServerFn({ method: "POST" })
  .single();
 
  if (!thread) throw new Error("Conversa não encontrada.");
- if (user && thread.customer_id && thread.customer_id !== user.id) {
+ if (!user || !thread.customer_id || thread.customer_id !== user.id) {
  throw new Error("Acesso não autorizado.");
  }
 

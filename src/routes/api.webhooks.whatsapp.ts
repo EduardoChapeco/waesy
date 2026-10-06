@@ -1,6 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { getServerClient } from "@/lib/supabase";
+import crypto from "node:crypto";
 
+import type {} from "@tanstack/react-start";
 export const Route = createFileRoute("/api/webhooks/whatsapp")({
   server: {
     handlers: {
@@ -8,7 +10,7 @@ export const Route = createFileRoute("/api/webhooks/whatsapp")({
        * GET Handler: Handshake de validação do Webhook da Meta / WhatsApp Cloud API.
        * A Meta envia: hub.mode, hub.verify_token e hub.challenge.
        */
-      GET: async ({ request }) => {
+      GET: async ({ request }: { request: Request }) => {
         try {
           const url = new URL(request.url);
           const mode = url.searchParams.get("hub.mode");
@@ -66,9 +68,17 @@ export const Route = createFileRoute("/api/webhooks/whatsapp")({
       /**
        * POST Handler: Ingestão de mensagens recebidas e recibos de entrega da Meta.
        */
-      POST: async ({ request }) => {
+      POST: async ({ request }: { request: Request }) => {
         try {
-          const body = await request.json().catch(() => ({}));
+          const rawBody = await request.text();
+          const secret = process.env.WHATSAPP_APP_SECRET?.trim();
+          const provided = request.headers.get("x-hub-signature-256")?.replace(/^sha256=/, "");
+          if (!secret || !provided) return new Response(JSON.stringify({ error: "Webhook não configurado" }), { status: 503 });
+          const expected = crypto.createHmac("sha256", secret).update(rawBody).digest("hex");
+          if (expected.length !== provided.length || !crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(provided))) {
+            return new Response(JSON.stringify({ error: "Assinatura inválida" }), { status: 401 });
+          }
+          const body = JSON.parse(rawBody) as Record<string, any>;
           const entry = body?.entry?.[0];
           const change = entry?.changes?.[0];
           const value = change?.value;
@@ -104,6 +114,14 @@ export const Route = createFileRoute("/api/webhooks/whatsapp")({
           // 2. Processar mensagens recebidas de clientes (inbound)
           if (Array.isArray(messages) && messages.length > 0 && targetStoreId) {
             for (const msg of messages) {
+              if (!msg?.id) continue;
+              const { data: duplicateMessage } = await supabase
+                .from("chat_messages")
+                .select("id")
+                .eq("provider_name", "whatsapp_cloud")
+                .eq("provider_message_id", String(msg.id))
+                .maybeSingle();
+              if (duplicateMessage) continue;
               const senderPhone = String(msg.from || "").replace(/\D/g, "");
               const messageText = msg.text?.body || msg.interactive?.button_reply?.title || "[Mídia/Outro]";
 
@@ -193,6 +211,8 @@ export const Route = createFileRoute("/api/webhooks/whatsapp")({
                 if (threadId) {
                   await supabase.from("chat_messages").insert({
                     thread_id: threadId,
+                    provider_name: "whatsapp_cloud",
+                    provider_message_id: String(msg.id),
                     message: messageText,
                     message_type: "text",
                     is_staff_reply: false,
@@ -232,4 +252,4 @@ export const Route = createFileRoute("/api/webhooks/whatsapp")({
       },
     },
   },
-});
+} as never)

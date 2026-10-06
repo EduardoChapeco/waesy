@@ -322,7 +322,7 @@ function PlaceDetailPage() {
                 Fotos do Local
               </h2>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                {place.galleryImages.map((imgUrl, idx) => (
+                {place.galleryImages.map((imgUrl: any, idx: any) => (
                   <div key={idx} className="relative aspect-video overflow-hidden rounded-lg border border-border bg-muted">
                     <img
                       src={imgUrl}
@@ -351,7 +351,7 @@ function PlaceDetailPage() {
 
             {place.reviews.length > 0 ? (
               <div className="flex flex-col divide-y divide-border">
-                {place.reviews.map((rev) => (
+                {place.reviews.map((rev: any) => (
                   <article key={rev.id} className="flex flex-col gap-2 py-4 first:pt-0 last:pb-0">
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-medium text-foreground">{rev.authorName}</span>

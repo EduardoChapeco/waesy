@@ -259,7 +259,7 @@ export default function WorkspaceNotificationsPage() {
               : "bg-muted/60 text-muted-foreground hover:text-foreground"
           )}
         >
-          Pedidos & Vendas ({notifications.filter((n) => n.type === "order").length})
+          Pedidos & Vendas ({notifications.filter((n: any) => n.type === "order").length})
         </button>
         <button
           type="button"
@@ -271,7 +271,7 @@ export default function WorkspaceNotificationsPage() {
               : "bg-muted/60 text-muted-foreground hover:text-foreground"
           )}
         >
-          Atendimento & Chat ({notifications.filter((n) => n.type === "interaction").length})
+          Atendimento & Chat ({notifications.filter((n: any) => n.type === "interaction").length})
         </button>
         <button
           type="button"
@@ -283,7 +283,7 @@ export default function WorkspaceNotificationsPage() {
               : "bg-muted/60 text-muted-foreground hover:text-foreground"
           )}
         >
-          Avisos do Sistema ({notifications.filter((n) => n.type === "system" || n.type === "opportunity").length})
+          Avisos do Sistema ({notifications.filter((n: any) => n.type === "system" || n.type === "opportunity").length})
         </button>
       </div>
 

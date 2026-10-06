@@ -121,7 +121,7 @@ function GastronomiaVerticalPage() {
  const handleDepartmentChange = (depId: string) => {
  setActiveDepartment(depId);
  navigate({
- search: (prev) => ({
+ search: (prev: any) => ({
  ...prev,
  categoria: depId === "todos" ? undefined : depId,
  }),
@@ -131,7 +131,7 @@ function GastronomiaVerticalPage() {
  const handleViewModeChange = (mode: ViewModeType) => {
  setViewMode(mode);
  navigate({
- search: (prev) => ({
+ search: (prev: any) => ({
  ...prev,
  view: mode === "feed" ? undefined : mode,
  }),
@@ -191,7 +191,7 @@ function GastronomiaVerticalPage() {
       {/* ── 3. Discovery Control Bar ── */}
       <DiscoveryControlBar
         search={search.q || ""}
-        onSearchChange={(q) => navigate({ search: (prev) => ({ ...prev, q }) })}
+        onSearchChange={(q) => navigate({ search: (prev: any) => ({ ...prev, q }) })}
         searchPlaceholder="Buscar pratos, pizzas, burgers, sobremesas..."
         categories={GASTRONOMIA_DEPARTMENTS}
         activeCategory={activeDepartment}
