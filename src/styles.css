@@ -15,6 +15,94 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* Window-size utilities: the product expands at 840px, not Tailwind's lg (1024px). */
+.waesy-expanded-flex.waesy-expanded-flex {
+  display: none;
+}
+
+.waesy-tab-strip {
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.waesy-tab-strip::-webkit-scrollbar {
+  display: none;
+}
+
+.waesy-bottom-nav-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.waesy-card-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.waesy-progress-fill {
+  transition: width 200ms var(--ease-standard);
+}
+
+.waesy-sheet-responsive {
+  width: 100%;
+  max-width: 42rem;
+  height: 100dvh;
+}
+
+.waesy-document-preview-strip {
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.waesy-document-preview-strip::-webkit-scrollbar {
+  display: none;
+}
+
+.waesy-proposal-editor-pane {
+  width: 460px;
+}
+
+.waesy-offscreen-render {
+  position: fixed;
+  left: -10000px;
+  top: 0;
+  pointer-events: none;
+}
+
+.waesy-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+.waesy-kanban-strip {
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.waesy-kanban-strip::-webkit-scrollbar {
+  display: none;
+}
+
+@media (min-width: 840px) {
+  .waesy-compact-medium-only.waesy-compact-medium-only {
+    display: none;
+  }
+
+  .waesy-expanded-flex.waesy-expanded-flex {
+    display: flex;
+  }
+
+  .waesy-card-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 600px) and (max-width: 839px) {
+  .waesy-card-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 @theme inline {
   /* ── Master Niche Chameleon Tokens (MASTER PROMPT V138) ── */
   --radius-master: var(--radius-master, 0.75rem);

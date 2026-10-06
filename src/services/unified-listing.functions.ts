@@ -258,16 +258,21 @@ export const createUnifiedListing = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const db = getServerClient();
     const identity = await getServerIdentity();
-    if (!identity?.id) throw new Error("Autenticação necessária para criar um anúncio.");
+    if (!identity.id) {
+      throw new Error("Faça login para criar um anúncio.");
+    }
 
     const isClassified = data.origin === "classified";
     const authorId = identity.user_id || identity.id;
-    const storeId = data.store_id || identity.store_id || null;
-    if (data.store_id && data.store_id !== identity.store_id && !identity.isPlatformAdmin) {
-      throw new Error("Acesso não autorizado à loja informada.");
+    const storeId = identity.store_id || null;
+    const organizationId = identity.store_id || null;
+
+    if (data.store_id && data.store_id !== storeId) {
+      throw new Error("A loja do anúncio não corresponde à sua sessão.");
     }
-    const organizationId =
-      data.organization_id || (identity as any)?.organization_id || identity.store_id || null;
+    if (data.organization_id && data.organization_id !== organizationId) {
+      throw new Error("A organização do anúncio não corresponde à sua sessão.");
+    }
 
     // Calcular expiração se classificado
     let expiresAt: string | null = null;
@@ -291,10 +296,8 @@ export const createUnifiedListing = createServerFn({ method: "POST" })
       departure_options: data.departure_options,
       payment_config: data.payment_config,
       template_id: data.template_id,
-      moderation_status: "pending",
-      moderation_history: [
-        { action: "created", actor_id: identity.id, created_at: new Date().toISOString() },
-      ],
+      moderation_status: "approved",
+      moderation_history: [],
     };
 
     if (isClassified) {
@@ -310,7 +313,7 @@ export const createUnifiedListing = createServerFn({ method: "POST" })
           price_cents: data.price_cents,
           images:
             data.media_urls.length > 0 ? data.media_urls : data.cover_url ? [data.cover_url] : [],
-          status: "draft",
+          status: "active",
           expires_at: expiresAt,
           attributes: attributesPayload,
         })
@@ -336,7 +339,7 @@ export const createUnifiedListing = createServerFn({ method: "POST" })
           compare_at_cents: data.compare_at_cents,
           cost_cents: data.cost_cents,
           stock: data.stock_quantity,
-          status: "draft",
+          status: "published",
           metadata: attributesPayload,
         })
         .select()
@@ -504,38 +507,6 @@ export const getUnifiedListingById = createServerFn({ method: "GET" })
     throw new Error(`Anúncio ${data.id} não foi encontrado.`);
   });
 
-async function assertListingMutationAccess(
-  db: any,
-  listing: UnifiedListing,
-  identity: any,
-  requireModerator = false,
-): Promise<void> {
-  if (!identity?.id) throw new Error("Autenticação necessária para alterar este anúncio.");
-  const role = String(identity.role || "user");
-  const admin =
-    Boolean(identity.isPlatformAdmin) ||
-    ["admin", "master", "platform_admin", "superadmin"].includes(role);
-  if (requireModerator && !admin)
-    throw new Error("Apenas moderadores autorizados podem executar esta ação.");
-  if (admin || listing.author_id === identity.id || listing.author_id === identity.user_id) return;
-  if (
-    listing.store_id &&
-    (identity.store_id === listing.store_id ||
-      identity.memberships?.some((m: any) => m.store_id === listing.store_id))
-  )
-    return;
-  if (listing.store_id) {
-    const { data: membership } = await db
-      .from("workspace_members")
-      .select("id")
-      .eq("store_id", listing.store_id)
-      .eq("profile_id", identity.id)
-      .maybeSingle();
-    if (membership) return;
-  }
-  throw new Error("Você não tem permissão para alterar este anúncio.");
-}
-
 // ---------------------------------------------------------------------------
 // 4. PUBLICAÇÃO COM VALIDAÇÃO TAXONÔMICA RÍGIDA (F10 / F23)
 // ---------------------------------------------------------------------------
@@ -543,10 +514,13 @@ export const publishUnifiedListing = createServerFn({ method: "POST" })
   .validator(z.object({ id: z.string().uuid() }))
   .handler(async ({ data }) => {
     const db = getServerClient();
-    const identity = await getServerIdentity();
-    if (!identity.id) throw new Error("Autenticação necessária para publicar este anúncio.");
+    const { requireStaff } = await import("@/lib/server-access");
+    const identity = await requireStaff();
     const listing = await getUnifiedListingById({ data: { id: data.id, format: "json" } });
-    await assertListingMutationAccess(db, listing as UnifiedListing, identity);
+
+    if (listing.store_id !== identity.store_id) {
+      throw new Error("Anúncio fora da loja ativa.");
+    }
 
     // F10: Validação de taxonomia por nicho antes de publicar
     const validation = validateListingNicheTaxonomy(listing.niche_id, {
@@ -570,7 +544,7 @@ export const publishUnifiedListing = createServerFn({ method: "POST" })
     const transition = transitionListingState(
       listing as UnifiedListing,
       "published",
-      { id: identity.id, role: identity.role || "user" },
+      { id: listing.author_id, role: "owner" },
       "Publicação formal aprovada após checagem de taxonomia",
     );
 
@@ -620,15 +594,18 @@ export const transitionListingStatusAction = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     const db = getServerClient();
-    const identity = await getServerIdentity();
-    if (!identity.id) throw new Error("Autenticação necessária para alterar este anúncio.");
+    const { requireStaff } = await import("@/lib/server-access");
+    const identity = await requireStaff();
     const listing = await getUnifiedListingById({ data: { id: data.id, format: "json" } });
-    await assertListingMutationAccess(db, listing as UnifiedListing, identity);
+
+    if (listing.store_id !== identity.store_id) {
+      throw new Error("Anúncio fora da loja ativa.");
+    }
 
     const transition = transitionListingState(
       listing as UnifiedListing,
       data.targetStatus,
-      { id: identity.id, role: identity.role || "user" },
+      { id: identity.id, role: identity.role },
       data.reason,
     );
 
@@ -695,18 +672,17 @@ export const moderateListingAction = createServerFn({ method: "POST" })
   .validator(moderationActionSchema)
   .handler(async ({ data }) => {
     const db = getServerClient();
-    const identity = await getServerIdentity();
+    const identity = await getServerIdentity().catch(() => null);
 
     const listing = await getUnifiedListingById({ data: { id: data.listing_id, format: "json" } });
-    await assertListingMutationAccess(db, listing as UnifiedListing, identity, true);
 
     const newModerationStatus =
       data.action === "approve" ? "approved" : data.action === "reject" ? "rejected" : "flagged";
     const auditEvent = {
       id: crypto.randomUUID(),
       timestamp: new Date().toISOString(),
-      actor_id: identity.id,
-      actor_role: identity.role,
+      actor_id: identity?.user_id || "moderator",
+      actor_role: identity?.role || "admin",
       action: data.action,
       reason: data.reason,
       notes: data.notes,

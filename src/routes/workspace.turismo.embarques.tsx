@@ -278,9 +278,9 @@ function WorkspaceBoardingPage() {
       printContainer.style.left = "-9999px";
       printContainer.style.top = "-9999px";
       printContainer.style.width = "800px";
-      printContainer.style.backgroundColor = "#FFFFFF";
+      printContainer.style.backgroundColor = "var(--card)";
       printContainer.style.fontFamily = "sans-serif";
-      printContainer.style.color = "#151515";
+      printContainer.style.color = "var(--foreground)";
       printContainer.style.padding = "40px";
 
       const pnr = detailObj.airline_locator || detailObj.pnr || "PENDENTE";
@@ -288,47 +288,47 @@ function WorkspaceBoardingPage() {
       const retDate = detailObj.return_date ? new Date(detailObj.return_date).toLocaleDateString("pt-BR") : "—";
 
       printContainer.innerHTML = `
-        <div style="border: 1px solid #E8E4DC; padding: 30px; background-color: #FFFFFF; font-family: sans-serif;">
-          <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #000000; padding-bottom: 20px; margin-bottom: 25px;">
+        <div style="border: 1px solid var(--border); padding: 30px; background-color: var(--card); font-family: sans-serif;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid var(--foreground); padding-bottom: 20px; margin-bottom: 25px;">
             <div>
-              <h1 style="font-size: 22px; font-weight: 800; margin: 0; color: #151515; letter-spacing: -0.5px; text-transform: uppercase;">GUIA DE EMBARQUE e ROTEIRO</h1>
-              <p style="font-size: 11px; color: #777168; margin: 5px 0 0 0; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Waesy Turismo e Inteligência Operacional</p>
+              <h1 style="font-size: 22px; font-weight: 800; margin: 0; color: var(--foreground); letter-spacing: -0.5px; text-transform: uppercase;">GUIA DE EMBARQUE e ROTEIRO</h1>
+              <p style="font-size: 11px; color: var(--muted-foreground); margin: 5px 0 0 0; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Waesy Turismo e Inteligência Operacional</p>
             </div>
             <div style="text-align: right;">
-              <span style="font-size: 14px; font-weight: 800; color: #000000; font-family: monospace;">LOCALIZADOR: ${pnr}</span>
-              <p style="font-size: 10px; color: #777168; margin: 4px 0 0 0;">Passageiro: ${detailObj.client_name}</p>
+              <span style="font-size: 14px; font-weight: 800; color: var(--foreground); font-family: monospace;">LOCALIZADOR: ${pnr}</span>
+              <p style="font-size: 10px; color: var(--muted-foreground); margin: 4px 0 0 0;">Passageiro: ${detailObj.client_name}</p>
             </div>
           </div>
 
           <div style="margin-bottom: 20px;">
-            <h2 style="font-size: 11px; font-weight: 700; border-bottom: 1px solid #E8E4DC; padding-bottom: 4px; color: #777168; text-transform: uppercase; margin-bottom: 10px;">Dados do Roteiro</h2>
+            <h2 style="font-size: 11px; font-weight: 700; border-bottom: 1px solid var(--border); padding-bottom: 4px; color: var(--muted-foreground); text-transform: uppercase; margin-bottom: 10px;">Dados do Roteiro</h2>
             <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 15px;">
               <div>
-                <p style="margin: 0; font-size: 14px; font-weight: 700; color: #151515;">${detailObj.destination}</p>
-                <p style="margin: 4px 0 0 0; font-size: 11px; color: #777168;">Passageiros: ${detailObj.passengers_count} pax</p>
+                <p style="margin: 0; font-size: 14px; font-weight: 700; color: var(--foreground);">${detailObj.destination}</p>
+                <p style="margin: 4px 0 0 0; font-size: 11px; color: var(--muted-foreground);">Passageiros: ${detailObj.passengers_count} pax</p>
               </div>
               <div style="text-align: right;">
                 <p style="margin: 0; font-size: 12px; font-weight: 600;">Embarque: ${depDate}</p>
-                <p style="margin: 4px 0 0 0; font-size: 11px; color: #777168;">Retorno: ${retDate}</p>
+                <p style="margin: 4px 0 0 0; font-size: 11px; color: var(--muted-foreground);">Retorno: ${retDate}</p>
               </div>
             </div>
           </div>
 
           ${detailObj.airline_code ? `
-          <div style="margin-bottom: 20px; background-color: #F8F9FA; padding: 12px; border: 1px solid #E9ECEF; border-radius: 6px;">
-            <h2 style="font-size: 11px; font-weight: 700; color: #495057; text-transform: uppercase; margin: 0 0 8px 0;">Voo e Companhia Aérea</h2>
-            <p style="margin: 0; font-size: 12px; font-weight: bold; color: #212529;">${detailObj.airline_code} ${detailObj.flight_number || ""} — Localizador: ${pnr}</p>
+          <div style="margin-bottom: 20px; background-color: var(--muted); padding: 12px; border: 1px solid var(--border); border-radius: 6px;">
+            <h2 style="font-size: 11px; font-weight: 700; color: var(--muted-foreground); text-transform: uppercase; margin: 0 0 8px 0;">Voo e Companhia Aérea</h2>
+            <p style="margin: 0; font-size: 12px; font-weight: bold; color: var(--foreground);">${detailObj.airline_code} ${detailObj.flight_number || ""} — Localizador: ${pnr}</p>
           </div>` : ""}
 
           ${detailObj.hotel_name ? `
-          <div style="margin-bottom: 20px; background-color: #F8F9FA; padding: 12px; border: 1px solid #E9ECEF; border-radius: 6px;">
-            <h2 style="font-size: 11px; font-weight: 700; color: #495057; text-transform: uppercase; margin: 0 0 8px 0;">Hospedagem Confirmada</h2>
-            <p style="margin: 0; font-size: 12px; font-weight: bold; color: #212529;">${detailObj.hotel_name}</p>
+          <div style="margin-bottom: 20px; background-color: var(--muted); padding: 12px; border: 1px solid var(--border); border-radius: 6px;">
+            <h2 style="font-size: 11px; font-weight: 700; color: var(--muted-foreground); text-transform: uppercase; margin: 0 0 8px 0;">Hospedagem Confirmada</h2>
+            <p style="margin: 0; font-size: 12px; font-weight: bold; color: var(--foreground);">${detailObj.hotel_name}</p>
           </div>` : ""}
 
-          <div style="margin-top: 25px; border-top: 1px solid #E8E4DC; padding-top: 15px;">
-            <h2 style="font-size: 11px; font-weight: 700; color: #777168; text-transform: uppercase; margin-bottom: 8px;">Recomendações Importantes de Embarque</h2>
-            <ul style="font-size: 10px; color: #555555; line-height: 1.6; margin: 0; padding-left: 16px;">
+          <div style="margin-top: 25px; border-top: 1px solid var(--border); padding-top: 15px;">
+            <h2 style="font-size: 11px; font-weight: 700; color: var(--muted-foreground); text-transform: uppercase; margin-bottom: 8px;">Recomendações Importantes de Embarque</h2>
+            <ul style="font-size: 10px; color: var(--muted-foreground); line-height: 1.6; margin: 0; padding-left: 16px;">
               <li>Apresente-se com no mínimo 2h de antecedência para voos nacionais e 3h para internacionais.</li>
               <li>Mantenha em mãos documento oficial de identificação com foto e bilhetes de embarque.</li>
               <li>Verifique o limite de peso de bagagem de mão (máx. 10kg) e itens permitidos na cabine.</li>
@@ -516,8 +516,9 @@ function WorkspaceBoardingPage() {
     : null;
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-0 flex flex-col min-h-[100dvh] pb-12 overflow-x-hidden">
+    <div className="w-full max-w-7xl mx-auto px-0 sm:px-4 flex flex-col min-h-dvh pb-12 overflow-x-hidden">
       {/* ── Canonical Toolbar ── */}
+      {/* design-lint-ignore DL-15 reason:"Toolbar canônica encapsula foco e alvos em suas primitivas" expiry:"2026-12-31" */}
       <WorkspaceCanonicalToolbar
         viewModes={[
           { id: 'calendar', label: 'Calendário', icon: Calendar },
@@ -540,7 +541,7 @@ function WorkspaceBoardingPage() {
           onClick: () => setOcrModalOpen(true),
         }}
         filterSlot={
-          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1 max-w-full">
+          <div className="waesy-tab-strip flex items-center gap-2 py-1 max-w-full">
             {[
               { id: 'all', label: 'Todos' },
               { id: 'urgent', label: `Urgentes (${urgentCount})` },
@@ -551,7 +552,7 @@ function WorkspaceBoardingPage() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`h-11 sm:h-9 px-4 sm:px-3 rounded-lg text-xs sm:text-xs text-muted-foreground/75 font-semibold whitespace-nowrap transition-colors cursor-pointer shrink-0 flex items-center justify-center ${
+                className={`h-11 px-4 rounded-lg text-xs text-muted-foreground/75 font-semibold whitespace-nowrap transition-colors cursor-pointer shrink-0 flex items-center justify-center ${
                   activeTab === tab.id
                     ? 'bg-primary text-primary-foreground font-bold '
                     : 'bg-muted text-muted-foreground hover:text-foreground'
@@ -576,7 +577,7 @@ function WorkspaceBoardingPage() {
                   variant="outline"
                   size="sm"
                   aria-label="Mês anterior"
-                  className="size-11 sm:size-8 p-0 rounded-lg cursor-pointer"
+                  className="size-11 p-0 rounded-lg cursor-pointer"
                   onClick={() => {
                     if (calMonth === 0) { setCalMonth(11); setCalYear(y => y - 1); }
                     else setCalMonth(m => m - 1);
@@ -587,7 +588,7 @@ function WorkspaceBoardingPage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="h-11 sm:h-8 px-4 sm:px-3 text-xs font-bold rounded-lg cursor-pointer"
+                  className="h-11 px-4 text-xs font-bold rounded-lg cursor-pointer"
                   onClick={() => { setCalYear(today.getFullYear()); setCalMonth(today.getMonth()); }}
                 >
                   Hoje
@@ -596,7 +597,7 @@ function WorkspaceBoardingPage() {
                   variant="outline"
                   size="sm"
                   aria-label="Próximo mês"
-                  className="size-11 sm:size-8 p-0 rounded-lg cursor-pointer"
+                  className="size-11 p-0 rounded-lg cursor-pointer"
                   onClick={() => {
                     if (calMonth === 11) { setCalMonth(0); setCalYear(y => y + 1); }
                     else setCalMonth(m => m + 1);
@@ -610,14 +611,14 @@ function WorkspaceBoardingPage() {
             {/* Calendar grid */}
             <div className="rounded-lg border border-border overflow-hidden bg-card">
               {/* Day headers */}
-              <div className="grid grid-cols-7 sm:grid-cols-7 border-b border-border/60 bg-muted/30">
+              <div className="waesy-calendar-grid border-b border-border/60 bg-muted/30">
                 {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map(d => (
                   <div key={d} className="text-center text-xs text-muted-foreground/75 font-semibold text-muted-foreground py-2">{d}</div>
                 ))}
               </div>
 
               {/* Calendar days */}
-              <div className="grid grid-cols-7 sm:grid-cols-7">
+              <div className="waesy-calendar-grid">
                 {/* Empty cells */}
                 {Array.from({ length: firstDay }, (_, i) => (
                   <div key={`empty-${i}`} className="min-h-20 sm:min-h-24 border-b border-r border-border/40 bg-muted/10" />
@@ -636,8 +637,16 @@ function WorkspaceBoardingPage() {
                   return (
                     <div
                       key={day}
+                      role="button"
+                      tabIndex={0}
                       onClick={() => setSelectedDay(isSelected ? null : dayDate)}
-                      className={`min-h-20 sm:min-h-24 border-b border-r border-border/40 p-2 cursor-pointer transition-colors ${
+                      onKeyDown={(event) => {
+                        if (event.key === 'Enter' || event.key === ' ') {
+                          event.preventDefault();
+                          setSelectedDay(isSelected ? null : dayDate);
+                        }
+                      }}
+                      className={`min-h-20 sm:min-h-24 border-b border-r border-border/40 p-2 cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                         isSelected ? 'bg-primary/5 border-primary/30' :
                         isWeekend ? 'bg-muted/10' : 'bg-card hover:bg-muted/20'
                       }`}
@@ -660,10 +669,19 @@ function WorkspaceBoardingPage() {
                           return (
                             <div
                               key={card.id}
+                              role="button"
+                              tabIndex={0}
                               onClick={(e) => { e.stopPropagation(); setSelectedDepartureId(card.id); }}
-                              className={`text-xs font-medium px-2 py-1 rounded truncate cursor-pointer ${
+                              onKeyDown={(event) => {
+                                if (event.key === 'Enter' || event.key === ' ') {
+                                  event.preventDefault();
+                                  event.stopPropagation();
+                                  setSelectedDepartureId(card.id);
+                                }
+                              }}
+                              className={`text-xs font-medium px-2 py-1 rounded truncate cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                                 days <= 0 ? 'bg-emerald-500/15 text-emerald-700' :
-                                days <= 2 ? 'bg-red-500/15 text-red-700 animate-pulse' :
+                                days <= 2 ? 'bg-red-500/15 text-red-700' :
                                 days <= 7 ? 'bg-amber-500/15 text-amber-700' :
                                 'bg-primary/10 text-primary'
                               }`}
@@ -688,7 +706,7 @@ function WorkspaceBoardingPage() {
                 <h3 className="text-sm font-bold text-foreground">
                   {selectedDay.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}
                 </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                <div className="waesy-card-grid gap-3">
                   {selectedDayDepartures.map(card => <DepartureCard key={card.id} card={card} onOpen={() => setSelectedDepartureId(card.id)} />)}
                 </div>
               </div>
@@ -698,7 +716,7 @@ function WorkspaceBoardingPage() {
             {!selectedDay && (
               <div className="mt-4 space-y-2">
                 <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Próximos Embarques</p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                <div className="waesy-card-grid gap-3">
                   {cards
                     .filter(c => Math.ceil((new Date(c.departure_date).getTime() - Date.now()) / 86400000) >= -1)
                     .slice(0, 9)
@@ -713,16 +731,16 @@ function WorkspaceBoardingPage() {
         {viewMode === 'kanban' && (
           isLoading ? (
             <div className="flex items-center justify-center py-24 text-sm text-muted-foreground">
-              <Loader2 className="size-4 animate-spin mr-2" />Carregando embarques...
+              <Loader2 className="size-4 animate-spin motion-reduce:animate-none mr-2" />Carregando embarques...
             </div>
           ) : (
-            <div className="flex gap-4 overflow-x-auto pb-4 min-h-96">
+            <div className="flex gap-4 pb-4 min-h-96 waesy-kanban-strip">
               {DEPARTURE_STAGES.map(col => {
                 const colCards = filteredKanban.filter(c => c.stage === col.id);
                 return (
                   <div
                     key={col.id}
-                    className="flex-none w-80 sm:w-80 bg-muted/20 border border-border rounded-lg flex flex-col"
+                    className="flex-none w-80 bg-muted/20 border border-border rounded-lg flex flex-col"
                   >
                     <div className="px-4 py-3 border-b border-border/50 flex items-center justify-between shrink-0">
                       <div>
@@ -764,7 +782,7 @@ function WorkspaceBoardingPage() {
         <SheetContent
           side="right"
           size="wide"
-          className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-2xl xl:max-w-2xl max-sm:h-dvh max-sm:inset-0 max-sm:rounded-none border-l p-0 flex flex-col h-full bg-card overflow-hidden"
+          className="waesy-sheet-responsive border-l p-0 flex flex-col bg-card overflow-hidden"
         >
           <SheetHeader className="px-5 py-4 border-b border-border/60 bg-muted/20 shrink-0">
             <SheetTitle className="text-sm font-bold text-foreground flex items-center gap-2">
@@ -805,7 +823,7 @@ function WorkspaceBoardingPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1 sm:col-span-2">
                   <Label className="text-xs font-semibold">Passageiro Titular *</Label>
-                  <Input value={clientName} onChange={e => setClientName(e.target.value)} placeholder="Nome do passageiro" className="h-10 text-xs rounded-lg" required autoFocus />
+                  <Input value={clientName} onChange={e => setClientName(e.target.value)} placeholder="Nome do passageiro" className="h-11 text-xs rounded-lg" required autoFocus />
                 </div>
 
                 <div className="space-y-1">
@@ -820,7 +838,7 @@ function WorkspaceBoardingPage() {
 
                 <div className="space-y-1 sm:col-span-2">
                   <Label className="text-xs font-semibold">Destino Principal *</Label>
-                  <Input value={destination} onChange={e => setDestination(e.target.value)} placeholder="Ex: Gramado, RS ou Cancún, México" className="h-10 text-xs rounded-lg" required />
+                  <Input value={destination} onChange={e => setDestination(e.target.value)} placeholder="Ex: Gramado, RS ou Cancún, México" className="h-11 text-xs rounded-lg" required />
                 </div>
 
                 <div className="space-y-1">
@@ -838,12 +856,12 @@ function WorkspaceBoardingPage() {
 
                 <div className="space-y-1">
                   <Label className="text-xs font-semibold">Embarque *</Label>
-                  <Input type="date" value={departureDate} onChange={e => setDepartureDate(e.target.value)} className="h-10 text-xs rounded-lg" required />
+                  <Input type="date" value={departureDate} onChange={e => setDepartureDate(e.target.value)} className="h-11 text-xs rounded-lg" required />
                 </div>
 
                 <div className="space-y-1">
                   <Label className="text-xs font-semibold">Retorno</Label>
-                  <Input type="date" value={returnDate} onChange={e => setReturnDate(e.target.value)} className="h-10 text-xs rounded-lg" />
+                  <Input type="date" value={returnDate} onChange={e => setReturnDate(e.target.value)} className="h-11 text-xs rounded-lg" />
                 </div>
 
                 <div className="space-y-1 sm:col-span-2 border-t border-border/60 pt-3">
@@ -877,7 +895,7 @@ function WorkspaceBoardingPage() {
 
                 <div className="space-y-1">
                   <Label className="text-xs font-semibold">Hotel / Pousada</Label>
-                  <Input value={hotelName} onChange={e => setHotelName(e.target.value)} placeholder="Nome do hotel" className="h-10 text-xs rounded-lg" />
+                  <Input value={hotelName} onChange={e => setHotelName(e.target.value)} placeholder="Nome do hotel" className="h-11 text-xs rounded-lg" />
                 </div>
               </div>
 
@@ -888,11 +906,11 @@ function WorkspaceBoardingPage() {
             </div>
 
             <div className="px-5 py-4 border-t border-border/60 bg-muted/20 flex items-center justify-end gap-2 shrink-0">
-              <Button type="button" variant="outline" onClick={() => setNewOpen(false)} className="h-11 sm:h-10 px-4 rounded-lg text-xs font-semibold cursor-pointer">
+              <Button type="button" variant="outline" onClick={() => setNewOpen(false)} className="h-11 px-4 rounded-lg text-xs font-semibold cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
                 Cancelar
               </Button>
-              <Button type="submit" disabled={createMutation.isPending || !clientName.trim() || !destination.trim() || !departureDate} className="h-11 sm:h-10 px-5 rounded-lg text-xs font-bold cursor-pointer ">
-                {createMutation.isPending ? <><Loader2 className="size-3.5 animate-spin mr-2" />Criando...</> : 'Criar Embarque'}
+              <Button type="submit" disabled={createMutation.isPending || !clientName.trim() || !destination.trim() || !departureDate} className="h-11 px-5 rounded-lg text-xs font-bold cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+                {createMutation.isPending ? <><Loader2 className="size-3.5 animate-spin motion-reduce:animate-none mr-2" />Criando...</> : 'Criar Embarque'}
               </Button>
             </div>
           </form>
@@ -908,7 +926,7 @@ function WorkspaceBoardingPage() {
               Cartão Digital de Embarque 9:16 (WhatsApp)
             </DialogTitle>
           </DialogHeader>
-          <div className="p-4 max-h-[90dvh] overflow-y-auto no-scrollbar flex justify-center">
+          <div className="p-4 max-h-dvh overflow-y-auto no-scrollbar flex justify-center">
             {companionCardData && (
               <DigitalCompanionCard {...companionCardData} />
             )}
@@ -925,7 +943,7 @@ function WorkspaceBoardingPage() {
               Scanner Inteligente de Embarque e Bilhetes
             </DialogTitle>
           </DialogHeader>
-          <div className="p-4 max-h-[90dvh] overflow-y-auto no-scrollbar">
+          <div className="p-4 max-h-dvh overflow-y-auto no-scrollbar">
             <MultimodalOcrUploader
               nicheHint="tourism"
               showPreviewModal={false}
@@ -959,8 +977,16 @@ function DepartureCard({
 
   return (
     <div
+      role="button"
+      tabIndex={0}
       onClick={onOpen}
-      className={`p-4 sm:p-4 rounded-lg border cursor-pointer hover:border-primary/40 transition-all ${urgencyClass}`}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          onOpen();
+        }
+      }}
+      className={`p-4 rounded-lg border cursor-pointer hover:border-primary/40 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${urgencyClass}`}
     >
       <div className="flex items-start justify-between gap-1 mb-2">
         <div>
@@ -971,7 +997,7 @@ function DepartureCard({
         </div>
         <span className={`text-xs font-mono font-bold px-2 py-1 rounded shrink-0 ${
           daysUntil <= 0 ? 'bg-emerald-500/20 text-emerald-700' :
-          daysUntil <= 2 ? 'bg-red-500/20 text-red-700 animate-pulse' :
+          daysUntil <= 2 ? 'bg-red-500/20 text-red-700' :
           daysUntil <= 7 ? 'bg-amber-500/20 text-amber-700' :
           'bg-muted text-muted-foreground'
         }`}>

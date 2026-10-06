@@ -5,6 +5,7 @@ import { Bus, Plus, Calendar, Users, MapPin, Clock, CheckCircle2, Trash, Buildin
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { CrudActionsMenu } from "@/components/ui/crud-actions-menu";
 import { WorkspaceCanonicalToolbar } from "@/components/workspace/workspace-canonical-toolbar";
 import { WorkspaceDashboardSheet, type MetricCardItem } from "@/components/workspace/workspace-dashboard-sheet";
@@ -47,7 +48,7 @@ export default function WorkspaceGroupToursIndexPage() {
   const [isNewSheetOpen, setIsNewSheetOpen] = useState(false);
   const [isDashboardOpen, setIsDashboardOpen] = useState(false);
 
-  const { data: tours, refetch } = useQuery({
+  const { data: tours, refetch, isLoading } = useQuery({
     queryKey: ["agency-group-tours", selectedStatus, search],
     queryFn: () =>
       listAgencyGroupTours({
@@ -178,7 +179,18 @@ export default function WorkspaceGroupToursIndexPage() {
         />
 
         {/* ── 2. GRID DE VIAGENS EM GRUPO ── */}
-        {filteredTours.length === 0 ? (
+        {isLoading ? (
+          <div className="waesy-card-grid gap-4" aria-label="Carregando excursões">
+            {Array.from({ length: 3 }).map((_, index) => (
+              <Card key={index} className="rounded-lg border border-border/70 p-5 space-y-4">
+                <Skeleton className="h-36 w-full rounded-lg" />
+                <Skeleton className="h-5 w-3/4" />
+                <Skeleton className="h-4 w-1/2" />
+                <Skeleton className="h-11 w-full rounded-lg" />
+              </Card>
+            ))}
+          </div>
+        ) : filteredTours.length === 0 ? (
           <div className="py-16 sm:py-20 text-center space-y-3 bg-card rounded-lg border border-dashed border-border/70 p-6 sm:p-8">
             <Bus className="size-12 mx-auto text-muted-foreground/40" />
             <h3 className="text-sm font-bold text-foreground">Nenhuma excursão encontrada</h3>
@@ -188,14 +200,14 @@ export default function WorkspaceGroupToursIndexPage() {
             <Button
               size="default"
               onClick={() => setIsNewSheetOpen(true)}
-              className="h-11 sm:h-9 px-5 rounded-lg text-xs font-bold gap-2 mt-2 cursor-pointer shadow-xs"
+              className="h-11 px-5 rounded-lg text-xs font-bold gap-2 mt-2 cursor-pointer"
             >
               <Plus className="size-4" />
               <span>Criar Primeira Excursão</span>
             </Button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="waesy-card-grid gap-4">
             {filteredTours.map((t: GroupTourDTO) => {
               const occupiedSeats = (t.seats || []).filter((s) => s.status === "reserved").length;
               const occupancyPct = Math.round((occupiedSeats / t.total_seats) * 100);
@@ -203,7 +215,7 @@ export default function WorkspaceGroupToursIndexPage() {
               return (
                 <Card
                   key={t.id}
-                  className="rounded-lg border border-border/70 bg-card overflow-hidden hover:border-foreground/20 transition-all flex flex-col justify-between shadow-2xs"
+                  className="rounded-lg border border-border/70 bg-card overflow-hidden hover:border-foreground/20 transition-colors flex flex-col justify-between"
                 >
                   {/* Foto de Capa ou Banner de Destino */}
                   {t.cover_image_url ? (
@@ -276,7 +288,7 @@ export default function WorkspaceGroupToursIndexPage() {
                         </div>
                         <div className="w-full h-2 rounded-full bg-muted overflow-hidden">
                           <div
-                            className={`h-full transition-all duration-300 ${
+                            className={`h-full waesy-progress-fill ${
                               occupancyPct >= 80
                                 ? "bg-emerald-500"
                                 : occupancyPct >= 50
@@ -302,7 +314,7 @@ export default function WorkspaceGroupToursIndexPage() {
                       <Button
                         asChild
                         variant="default"
-                        className="rounded-lg text-xs font-bold gap-2 h-11 sm:h-9 px-4 flex-1 cursor-pointer shadow-xs"
+                        className="rounded-lg text-xs font-bold gap-2 h-11 px-4 flex-1 cursor-pointer"
                       >
                         <Link to={`/workspace/turismo/grupos/${t.id}` as any}>
                           <UserCheck className="size-4 sm:size-3.5" />

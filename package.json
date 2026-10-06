@@ -17,6 +17,7 @@
     "changelog:generate": "node scripts/generate-changelog.mjs",
     "typecheck": "node --max-old-space-size=6144 ./node_modules/typescript/bin/tsc --noEmit",
     "test": "vitest run",
+    "test:e2e:travel": "vitest run src/services/travel-pipeline-e2e.test.ts",
     "audit:all": "node scripts/audit/audit-all.mjs",
     "audit:studio-templates": "node scripts/audit/audit-studio-templates.mjs",
     "audit:buttons": "node scripts/audit/audit-interactive-buttons.mjs",
@@ -30,10 +31,11 @@
     "check:deadcode": "node scripts/dead-code-detector.mjs",
     "check:naming": "node scripts/naming-convention-validator.mjs",
     "check:cycles": "node scripts/check-circular-deps.mjs",
+    "check:schema": "node scripts/check-schema-consolidation.mjs",
     "check:types-ssot": "node scripts/check-type-duplications.mjs",
     "check:route-budget": "node scripts/route-budget-guard.mjs",
     "check:tokens": "node scripts/token-sync.mjs --check",
-    "check:canonical": "npm run audit:buttons:test && npm run lint:design:test && npm run audit:buttons && npm run typecheck && npm test && npm run check:tokens && npm run lint:design && npm run lint && npm run check:size:warn && npm run check:duplication:warn && npm run check:naming && npm run check:cycles && npm run check:types-ssot && npm run check:route-budget"
+    "check:canonical": "npm run audit:buttons:test && npm run lint:design:test && npm run audit:buttons && npm run typecheck && npm test && npm run check:schema && npm run check:tokens && npm run lint:design && npm run lint && npm run check:size:warn && npm run check:duplication:warn && npm run check:naming && npm run check:cycles && npm run check:types-ssot && npm run check:route-budget"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

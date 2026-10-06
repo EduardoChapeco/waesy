@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 
 export interface BottomBarProps extends React.HTMLAttributes<HTMLDivElement> {
   /**
-   * Se true, oculta automaticamente no desktop (>=md).
+   * Se true, oculta automaticamente no layout expandido (>=840px).
    * Padrão: true (ações de polegar nativas móveis).
    */
   mobileOnly?: boolean;
@@ -27,7 +27,7 @@ export const BottomBar = forwardRef<HTMLDivElement, BottomBarProps>(
         ref={ref}
         className={cn(
           "fixed bottom-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-md border-t border-border/80 px-4 py-3 pb-safe transition-colors",
-          mobileOnly && "md:hidden",
+          mobileOnly && "waesy-compact-medium-only",
           className
         )}
         {...props}

@@ -1,13 +1,14 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
 ## DEC-186: Eliminação do Colapso de Hidratação React (Root Cause: AsyncLocalStorage Leak), Correção do Cache SSR e Alinhamento de Vitrines
+
 - **Data:** 2026-10-05
 - **Contexto:** Relato de colapso geral de interatividade após deploys: nenhum botão respondia (nem Copilot, nem drawer de conta, nem clique em mensagens), o browser parecia estático e melhorias de código não refletiam no navegador. Adicionalmente, cards de classificados estavam desalinhados em relação ao card fixo líder (#1), e o Feed social na Home apresentava quebras de autor e imagens de vídeo inválidas.
-- **Causa Raiz Identificada (Forense Headless Playwright):** 
-  1. *Colapso da Hidratação:* O utilitário `city-helper.ts` e services como `mcp-server.functions.ts`, `company-mvp.functions.ts` e `onboarding.functions.ts` possuíam importações estáticas diretas de módulos server-only (`@tanstack/start-server-core`, `@/lib/identity.server`, `@/lib/supabase-ssr.server`). Durante o tree-shaking do Vite/Rolldown, esses imports estáticos puxaram o runtime do `h3` (`esm-D2mxSRM6.js`) para os chunks de inicialização do cliente (`router-*.js` e `index-*.js`). No carregamento da página, o browser executava `new AsyncLocalStorage()`, que não é um construtor suportado no ambiente do navegador, gerando a exceção fatal `TypeError: E.AsyncLocalStorage is not a constructor`. Isso abortava a inicialização do TanStack Router antes do React hidratar, deixando o DOM puramente como HTML estático inerte onde nenhum listener de evento existia.
-  2. *Retenção de Cache de HTML Antigo:* O helper de cache `applyServerFnEdgeCache` injetava `public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800` diretamente nos cabeçalhos de resposta do documento HTML quando invocado dentro de loaders SSR. Como resultado, os navegadores retinham e reutilizavam o HTML pré-compilado antigo e seus hashes obsoletos por até 1 hora mesmo após novo deploy, impedindo o reflexo das correções.
-  3. *Desalinhamento de Cards de Vitrine:* Na trilha de Classificados da Home, os cards individuais possuíam altura de 320px (`h-80`) enquanto o `HitsLeadCard` possuía `min-h-96` (384px), violando a Invariante B.28.
-  4. *Feed Quebrado na Home:* Os posts do feed buscavam propriedades `profiles.full_name` e `profiles.avatar_url`, mas o DTO canônico retornado por `getMuralFeed` mapeia o autor em `post.author.name` e `post.author.avatar_url`. Adicionalmente, posts contendo vídeos eram inseridos em tags `<img>` convencionais gerando erro de renderização.
+- **Causa Raiz Identificada (Forense Headless Playwright):**
+  1. _Colapso da Hidratação:_ O utilitário `city-helper.ts` e services como `mcp-server.functions.ts`, `company-mvp.functions.ts` e `onboarding.functions.ts` possuíam importações estáticas diretas de módulos server-only (`@tanstack/start-server-core`, `@/lib/identity.server`, `@/lib/supabase-ssr.server`). Durante o tree-shaking do Vite/Rolldown, esses imports estáticos puxaram o runtime do `h3` (`esm-D2mxSRM6.js`) para os chunks de inicialização do cliente (`router-*.js` e `index-*.js`). No carregamento da página, o browser executava `new AsyncLocalStorage()`, que não é um construtor suportado no ambiente do navegador, gerando a exceção fatal `TypeError: E.AsyncLocalStorage is not a constructor`. Isso abortava a inicialização do TanStack Router antes do React hidratar, deixando o DOM puramente como HTML estático inerte onde nenhum listener de evento existia.
+  2. _Retenção de Cache de HTML Antigo:_ O helper de cache `applyServerFnEdgeCache` injetava `public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800` diretamente nos cabeçalhos de resposta do documento HTML quando invocado dentro de loaders SSR. Como resultado, os navegadores retinham e reutilizavam o HTML pré-compilado antigo e seus hashes obsoletos por até 1 hora mesmo após novo deploy, impedindo o reflexo das correções.
+  3. _Desalinhamento de Cards de Vitrine:_ Na trilha de Classificados da Home, os cards individuais possuíam altura de 320px (`h-80`) enquanto o `HitsLeadCard` possuía `min-h-96` (384px), violando a Invariante B.28.
+  4. _Feed Quebrado na Home:_ Os posts do feed buscavam propriedades `profiles.full_name` e `profiles.avatar_url`, mas o DTO canônico retornado por `getMuralFeed` mapeia o autor em `post.author.name` e `post.author.avatar_url`. Adicionalmente, posts contendo vídeos eram inseridos em tags `<img>` convencionais gerando erro de renderização.
 - **Decisão Adotada:**
   1. **Isolamento Isomórfico (city-helper.ts):** Acesso a cookies e headers do SSR encapsulado em `createIsomorphicFn().server(...)`, garantindo que o compilador do TanStack Start remova 100% do ramo de servidor e seus imports de runtime (`h3`) do bundle final do browser.
   2. **Substituição de Imports em Services:** `mcp-server.functions.ts`, `company-mvp.functions.ts` e `onboarding.functions.ts` migrados para usar a ponte cliente-segura `@/lib/server-access` com importação dinâmica diferida (`await import(...)`), expurgando referências estáticas a `*.server.ts`.
@@ -18,8 +19,8 @@
 - **Fundamentação:** AGENTS.md B.1, B.9, B.28, B.30; WCAG 2.2 AA; Apple HIG; Cloudflare Pages Deployment Guidelines.
 - **Consequências:** Typecheck com 0 erros (Exit Code 0), Design Lint com 0 regressões (Exit Code 0), build de produção validado pelo sentinela (485 chunks de boot verificados, 0 runtimes de servidor vazados), deploy publicado com sucesso no Cloudflare Pages e verificação empírica via headless Chrome confirmando hidratação ativa (`hydrated: true`) e reatividade instantânea de todos os botões (Copilot, navegação de conversas, filtros e drawer).
 
-
 ## DEC-185: Deploy de Produção no Cloudflare Pages (usewaesy) com Credenciais Supabase Integradas
+
 - **Data:** 2026-10-05
 - **Contexto:** Solicitação de deploy industrial via Wrangler no Cloudflare Pages com variáveis de ambiente completas do Supabase configuradas para o projeto de produção (`jfuebqmltksyznovhlwa`).
 - **Decisão:** (1) **Empacotamento e Compilação:** Executado `npm run build` gerando assets estáticos e `dist/_worker.js` monolítico de borda com credenciais de produção injetadas via `scripts/wrap-worker.js` a partir de `.env.secrets` e `wrangler.toml` (`VITE_SUPABASE_URL`, `SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `VITE_SITE_URL`). (2) **Publicação Wrangler:** Executado deploy para o projeto Cloudflare Pages `usewaesy` com envio de 930 arquivos (24 modificados / 906 em cache), sem erros. (3) **Validação em Produção:** Smoke test HTTP nas URLs pública de preview (`https://29de8c88.usewaesy.pages.dev`) e produção primária (`https://usewaesy.pages.dev`) retornando HTTP 200 OK.
@@ -27,6 +28,7 @@
 - **Consequências:** Aplicação atualizada e operacional em produção de borda na infraestrutura global da Cloudflare com todas as correções de botões, redirecionamentos e contratos de tela ativas.
 
 ## DEC-184: Fase de Reparo DOM — Link-Button Nesting, Chat Link, Banner de Gestor e Catraca Green
+
 - **Data:** 2026-10-05
 - **Contexto:** Continuação do mapeamento forense de botões. Identificados: (1) 6 instâncias de `<Link><Button>` (nesting inválido, produz `<a><button>`) em `_store.carrinho.tsx` (desktop + mobile sticky bar) e `workspace.configuracoes.integracoes.tsx` (4 locais); (2) Botão de chat no `utility-cluster.tsx` apontava para `/conta/suporte` (rota inexistente para chat) em vez de `/conta/conversas`; (3) Erro TypeScript TS2551 em `company-mvp.functions.ts` linha 183 — `.catch()` encadeado em `PostgrestFilterBuilder` que não expõe esse método; (4) Botão "Exportar CSV" em `workspace.financeiro.afiliados.tsx` sem handler (operação morta); (5) Banner de gestor de loja em `_store.loja.$slug.tsx` ajustado para conformidade com a grade de 4px (`py-2`, `gap-2`, `px-4`) e piso tátil canônico (`h-11 min-h-11`).
 - **Decisão:** (1) **DOM Nesting Fix:** Todas as instâncias invertidas para padrão canônico `<Button asChild><Link>`, produzindo elemento `<a>` semântico correto. (2) **Chat Link Corrigido:** `utility-cluster.tsx` aponta agora para `/conta/conversas` com title "Conversas". (3) **TS Fix:** Substituído `.catch(() => null)` por `try { await rpc(...) } catch {}` inline. (4) **CSV Export:** Handler real implementado com `Blob + URL.createObjectURL`, gerando download de `afiliados.csv` a partir dos dados em memória. (5) **Owner Banner:** Banner ajustado com `Storefront` icon e botão `h-11 min-h-11` garantindo zero regressões visuais.
@@ -34,6 +36,7 @@
 - **Consequências:** `npm run typecheck` aprovado com Exit Code 0. Catraca de CI `node scripts/design-lint.mjs --ratchet` aprovada com 0 regressões (14339 violações). Testes unitários de regressão (`onboarding-pipeline`, `auth.functions`, `classifieds-lifecycle-authority`) 100% verdes. Zero instâncias de `<Link><Button>` nas rotas auditadas.
 
 ## DEC-183: Milestone 2 — Camada BFF de Telemetria 360º, Auditoria Forense, Recibo Criptográfico SHA-256 e Governança Master
+
 - **Data:** 2026-10-05
 - **Contexto:** Execução do Marco 2 (BFF Server Functions & Telemetry Ingestion) da Plataforma Unificada de Auditoria Forense e Governança 360º (Requisito R2). Identificou-se: (1) Ausência do módulo centralizado `src/services/admin-360-governance.functions.ts` provendo as 8 Server Functions necessárias para agregação do dossiê do usuário, redefinição de senhas pelo Master Admin, transferência societária de estabelecimentos, bloqueio/desbloqueio de contas e ingestão de telemetria; (2) Necessidade de garantir conformidade absoluta com a Invariante B.25 do AGENTS.md (100% de parâmetros desestruturados e protegidos com coalescência defensiva contra valores nulos/opcionais); (3) Exigência de certificação imutável com cálculo determinístico de hash SHA-256 sobre dados do dossiê e recibos forenses societários utilizando a Web Crypto API nativa (`globalThis.crypto.subtle.digest("SHA-256", ...)`); (4) Guarda autônomo `requirePlatformAdmin` operando de forma desacoplada de `store_id` para permitir supervisão global de plataforma; (5) Ingestão enriquecida de telemetria de rede via `captureRequestTelemetry` (`network-telemetry.server.ts`) capturando IP real, detecção de VPN/datacenter e dados de geo/dispositivo nas submissões de formulários civis e corporativos.
 - **Decisão:** (1) **Criação de `src/services/admin-360-governance.functions.ts`:** Implementadas com sucesso todas as 8 Server Functions do contrato: `getUserFull360Activity` (agrega 7 dimensões: Geral & Acessos, Documentos & KYC, Formulários & Cadastros, Telemetria & Navegação, E-Commerce & Carrinhos, Mobilidade & GPS/Dívida, e Ações como Operador Corporativo com carimbo imutável SHA-256), `adminForceSetUserPassword` (redefinição imediata via Supabase Auth Admin `updateUserById` e gravação em `forensic_audit_events`), `adminTransferStoreOwnership` (transferência atômica de posse da loja em `stores` e `workspace_members` com geração de recibo forense e checksum SHA-256), `adminToggleUserAccess` (bloqueio por banimento no Supabase Auth e inserção em `user_moderation_sanctions` ou desbloqueio e revogação de sanções), `recordFormSubmissionAudit` (ingestão higienizada em `user_form_submissions_log` com remoção de senhas e captura de IP/VPN), `recordCartTelemetryEvent` (event-stream em `user_cart_telemetry` e atualização reativa de LTV/afinidade em `customer_store_affinity`), `recordStaffActionLog` (amarração compulsória da ação em `employee_tenant_audit_logs` ao CPF físico do operador a partir do perfil), e `getMyActivityHistory` (consulta transparente de atividades do cliente civil com categorização cronológica unificada). (2) **Conformidade Estrita com Invariante B.25:** Todos os schemas Zod exportados e 100% dos campos desestruturados com fallbacks defensivos e suporte a aliases (ex.: `blocked` / `block`, `newOwnerUserId` / `newOwnerId`, `category` / `type`). (3) **Suíte de Testes Automatizados com Vitest:** Criado `src/services/admin-360-governance.functions.test.ts` com 24 testes unitários cobrindo todos os contratos, branches, hashing SHA-256, guardas de autorização e casos de borda com 100% de sucesso. (4) **Catraca do Design-Lint:** Executados `node scripts/design-lint.mjs --changed` e `--ratchet` com Exit Code 0 e zero novas violações P0/P1.
@@ -41,6 +44,7 @@
 - **Consequências:** Camada BFF de governança 360º e telemetria plenamente operacional, pronta para consumo pelo painel do Master Admin (Milestone M3) e tela civil Minha Atividade (Milestone M4).
 
 ## DEC-182: Milestone 1 — R1 Inventário Forense, Limpeza de Rotas, Despoluição da RouteTree e Fake Toasts
+
 - **Data:** 2026-10-04
 - **Contexto:** Execução do Marco 1 (R1 Inventário Forense, Limpeza de Rotas & Fake Toasts). A auditoria forense identificou: (1) 12 arquivos de teste unitário `*.test.ts` residindo indevidamente na raiz de `src/routes/`, poluindo a árvore do TanStack Router; (2) Links quebrados e rotas inexistentes em `waesy-copilot-drawer.tsx` (`/mobility` e `/checkout/${cartId}` e redirecionamento de classificados para `/_store/conta/classificados/novo`) e em `fast-company-onboarding.tsx` (`/@${resolvedSlug}`); (3) Toasts simulados sem persistência (fake toasts) para cotações de viagem, demandas jurídicas, publicação de classificados e inclusão no carrinho; (4) Botões inoperantes/órfãos em `workspace.imoveis.manutencoes.tsx` (exportação de laudo de vistoria mockado apenas com toast) e `_store.conta.creditos.tsx` (botão cancelar com classes arbitrárias e emoji literal); (5) Necessidade de garantir matriz completa de 4 estados e error boundaries robustos nas rotas `workspace.mining.tsx`, `_store.cadastroantecipado.tsx`, `_store.conta.metricas.tsx`, `_store.garcom.tsx` e `_store.places.$placeSlug.tsx`.
 - **Decisão:** (1) **Despoluição da Route Tree:** Isolados os 12 arquivos `*.test.ts` dentro de `src/routes/__tests__/`, garantindo que não sejam tratados como páginas executáveis pelo TanStack Router, com 57/57 testes unitários passando (100% verde). (2) **Rotas Canônicas e Copilot Drawer:** Rotas corrigidas para `/mobilidade`, `/checkout` e `/conta/classificados/novo`; sanitizado link de vitrine em `fast-company-onboarding.tsx` para `/loja/${cleanSlug}`; garantida validação de tamanho mínimo de descrição nos classificados do Copilot. (3) **Conexão Real de Fake Toasts:** Acionadas mutações reais BFF (`requestTravelQuote`, `createJusDemand`, `upsertClassified`, `addToCart` com `refreshCart` e abertura de gaveta global de checkout). (4) **Ações Funcionais e Saneamento de Botões:** Em `workspace.imoveis.manutencoes.tsx`, implementada a geração e download real do arquivo pericial de vistoria criptografada (`handleDownloadInspectionReport`) via Blob e `URL.createObjectURL`; em `_store.conta.creditos.tsx`, saneados alvos táteis (`h-11 sm:h-9`), expurgada classe arbitrária `min-w-[120px]` para token `min-w-32` e substituído emoji por ícone `Receipt`. (5) **Error Boundaries & Design Lint:** Confirmados e protegidos os 5 Error Components nas rotas centrais, purgadas classes arbitrárias e cores raw em `_store.garcom.tsx` (`min-h-screen`, `text-2xs`, `size-9`, `text-primary-foreground`), atingindo Exit Code 0 em `node scripts/design-lint.mjs --changed` com redução de dívida técnica.
@@ -48,6 +52,7 @@
 - **Consequências:** Zero links quebrados no assistente Copilot e no onboarding rápido, rotas limpas no TanStack Router sem contaminação por testes, 100% dos testes Vitest da árvore de rotas passando (57/57), e catraca do design lint validada com zero regressões.
 
 ## DEC-181: Saneamento Sistêmico de Bilateralidade, KYC Transacional, Barreira Zero-Trust e Omni-Builder Wix-Level
+
 - **Data:** 2026-10-04
 - **Contexto:** Execução das Ondas 15 a 32 do Plano Diretor de Auditoria e Modernização Sistêmica All-in-One: (1) Necessidade de garantir que transações financeiras na plataforma e assinaturas de contratos exijam verificação de identidade e biometria KYC aprovada no Master Admin, bloqueando usuários não verificados enquanto permite negociações diretas nos classificados; (2) Barreira Zero-Trust nos fluxos de propostas, reservas e compras nos classificados e vitrines com acionamento do modal contextual `ActionAuthGuardModal` preservando `returnUrl`; (3) Saneamento ergonômico de cabeçalhos de tela, adicionando cabeçalhos inpage alinhados ao container no desktop (`>= 768px`) em rotas como `_store.imoveis`, `_store.servicos`, `_store.turismo`, `_store.conta.enderecos` e `_store.conta.financas`; (4) Blindagem de alvos táteis mínimos de 44px (`h-11 min-h-11`) e alinhamento à grade de 4px (eliminação de `size-3.5`, `h-8`, `h-10`, `h-[85vh]` e `w-[390px]`); (5) Integração do OmniEditor com o editor unificado de páginas do CMS (`workspace.builder.$documentId.editor.tsx`).
 - **Decisão:** (1) **Barreira Transacional KYC:** Injetada validação `assertUserKycVerified(userId)` em `initiatePaymentTransaction` (`payment.functions.ts`), `createContract` e `signContractEnvelope` (`contracts.functions.ts`), bloqueando checkouts financeiros e emissão/assinatura de contratos por usuários sem KYC aprovado. (2) **Zero-Trust de Interações:** Conectado `useActionAuthGuard` e `ActionAuthGuardModal` em `_store.classificados.$id.tsx` cobrindo reservas, propostas e compras diretas. (3) **Cabeçalhos Inpage Desktop:** Adicionados cabeçalhos inpage com hierarquia visual Apple HIG em `_store.imoveis.tsx`, `_store.servicos.tsx`, `_store.turismo.index.tsx` e `_store.conta.enderecos.tsx`. (4) **Omni-Builder & Lint Saneado:** Purgadas classes arbitrárias (`h-[85vh]`, `w-[390px]`, `min-h-[844px]`) em `OmniEditor.tsx`, elevadas as dimensões de controles para `h-11 min-h-11` e `size-4`, reduzindo o passivo global do Design Lint de 15.421 para 15.385 violações (1.722 P0 e 10.789 P1). (5) **Suíte de Testes Automatizada:** 43/43 testes passando em 6 arquivos (`token-quota`, `omni-builder`, `booking-resources`, `classifieds-payment-rules`, `wave3-contracts`, `admin-catalog-contracts`).
@@ -55,11 +60,13 @@
 - **Consequências:** Integridade transacional e bilateral preservada, barreira de segurança ativa para visitantes anônimos, ergonomia consistente entre desktop e mobile e zero regressões na esteira de qualidade do repositório.
 
 ### Handoff Fase M5-M6
+
 - **Status da Catraca:** 15.385 violações totais (redução de 36 violações; P0 reduzido de 1729 para 1722; P1 reduzido de 10810 para 10789).
 - **Testes Unitários:** 43/43 aprovados com 100% de sucesso nas suítes modificadas.
 - **Próximos Passos:** Propagação contínua de headers inpage nas 20 rotas de loja remanescentes e expansão de blocos canônicos no OmniPageRenderer.
 
 ## DEC-180: Deploy de Produção Full-Stack — Cloudflare Pages (usewaesy) e Sincronização Supabase (jfuebqmltksyznovhlwa)
+
 - **Data:** 2026-10-04
 - **Contexto:** Necessidade de deploy completo de produção no Cloudflare Pages via Wrangler com injeção de credenciais de produção do Supabase (`.env.secrets`) e sincronização estrita de migrations pendentes no banco de dados Supabase de produção (`jfuebqmltksyznovhlwa`).
 - **Decisão:** (1) **Sincronização de Banco de Dados:** Aplicadas com sucesso via MCP as migrations pendentes no projeto `jfuebqmltksyznovhlwa`: `20270101000000_copilot_activity_steps_telemetry.sql` (telemetria e RLS com funções canônicas `auth_user_store_ids()` e `is_platform_admin()`), `20270102000000_crawler_industrialization_indexes.sql` (índices de alta performance e RLS público) e `20270103000000_news_articles_city_indexation.sql` (colunas territoriais e índices compostos). (2) **Sanitização de Configuração:** Removido bloco não suportado `[triggers]` do `wrangler.toml` para compatibilidade com Cloudflare Pages. (3) **Compilação e Empacotamento:** Executado `npm run build` gerando assets estáticos e `dist/_worker.js` monolítico de borda com credenciais de produção injetadas. (4) **Deploy Wrangler:** Publicados 926 arquivos para o projeto `usewaesy` com zero erros, gerando o preview `https://4f91b2ff.usewaesy.pages.dev` e promovendo aos domínios de produção `https://usewaesy.pages.dev` e `https://waesy.com.br`. (5) **Verificação Live:** Executado teste de fumaça com requisição HTTP confirmando renderização SSR íntegra.
@@ -67,6 +74,7 @@
 - **Consequências:** Aplicação e banco de dados 100% sincronizados em produção, operando em alta performance de borda na infraestrutura global da Cloudflare.
 
 ## DEC-179: Homologação e Fechamento Integrado dos 4 Pilares de Engenharia (R1, R2, R3, R4)
+
 - **Data:** 2026-10-04
 - **Contexto:** Conclusão dos Marcos M1 a M4 da plataforma Waesy cobrindo os 4 pilares estratégicos de engenharia estabelecidos na especificação: (1) R1: Governança e Integridade Visual do Design System (DESIGN.md & AGENTS.md), refinamento do linter determinístico (eliminação de falsos positivos em DL-04 e DL-15), saneamento das 4 rotas de loja (`_store.diretorio`, `_store.empregos`, `_store.eventos`, `_store.noticias`), matriz de 4 estados completa com skeletons e blindagem de primitivas de UI com touch targets >= 44px (`h-11`); (2) R2: Indexação e Filtragem Contextual por Cidade em todos os módulos cívicos e comerciais, resolução isomórfica SSR via `resolveActiveCity` (`city-helper.ts`), reatividade instantânea com `LocationMasterPill` (`router.invalidate()`), paridade estrita de schemas Zod RPC (`city: z.string().optional()`) e propagação de proveniência territorial em dados minerados; (3) R3: Resiliência do Chat Copilot e Protocolo WebMCP com máquina de estados finitos determinística de 13 fases (`CopilotFsmPhase`), error boundaries defensivos com transição determinística para `FAILED_RETRYABLE`, imunidade contra injeção de prompt via Prompt Shield Sandboxing (`<user_untrusted_data>`) e integração canônica com o catálogo de ferramentas do `MCP_TOOL_REGISTRY`; (4) R4: Consolidação dos Motores Industriais de Mineração em 8 verticais sem mocks, criação do resolvedor geográfico canônico nacional (`geo-resolver.ts`), erradicação absoluta de fallbacks cegos de BBOX ou UF ("SC" / "Chapecó"), circuit breakers de 3 estados por domínio (`CrawlerCircuitBreaker`), deduplicação semântica Jaccard 48h e esteira contínua desacoplada com `crawl_queue`.
 - **Decisão:** Homologação técnica definitiva e fechamento integrado dos quatro pilares (R1, R2, R3, R4) após execução e aprovação de todos os gates de qualidade automatizados: (1) **Verificação Empírica das Suítes Vitest (82/82 testes verdes):** Execução genuine de 6 suítes cobrindo mineração, circuit breaker, FSM do copilot, fronteiras do pipeline, orquestrador autônomo e testes desafiadores empíricos (`src/services/mining/` 18/18, `src/lib/mining/circuit-breaker.test.ts` 8/8, `src/services/copilot-fsm.test.ts` 16/16, `src/services/copilot-pipeline-boundaries.test.ts` 7/7, `src/services/autonomous-copilot.test.ts` 15/15, `src/services/m4-challenger-empirical.test.ts` 18/18). Total de 82 testes em 7 arquivos de teste executados com 100% de aprovação e zero falhas; (2) **Homologação do Design-Lint e Catraca de CI:** Execução de `node scripts/design-lint.mjs --ratchet` com Exit Code 0, certificando catraca travada e zero regressões em relação à baseline congelada de 15.417 violações (1.728 P0, 10.818 P1, 1.395 P2, 1.476 P3 em 1.846 arquivos sob inspeção); e execução de `node scripts/design-lint.mjs --changed` em 67 arquivos modificados com Exit Code 0; (3) **Selo de Conformidade Arquitetural e Invariantes:** Validação da Invariante M01 (Zero Mocks — 100% de dados sintéticos e URLs não-autênticas purgados), Invariante M04 (Integridade Geográfica — zero vazamento de BBOX de Chapecó e resolução de estados federativos), Invariante M08 (Integridade Transacional & Multi-Tenant — isolamento perimetral via Zod e sessão SSR); e observância estrita das restrições operacionais (zero execuções de typecheck/build).
@@ -74,6 +82,7 @@
 - **Consequências:** A plataforma Waesy atinge estado de prontidão operacional consolidado em seus 4 pilares fundamentais, com governança de design system ativa, indexação contextual de cidades operante em todas as superfícies, copiloto autônomo resiliente a falhas de rede de terceiros e mineradores industriais operando em escala com dados autênticos e proveniência territorial preservada.
 
 ## DEC-178: Milestone 4 — Consolidação dos Motores Industriais de Mineração, Resolvedor Geográfico Desacoplado (geo-resolver.ts) e Erradicação de Fallbacks Cegos de Território
+
 - **Data:** 2026-10-04
 - **Contexto:** Execução do Marco 4 (Continuous Mining Engines Consolidation). A auditoria forense identificou: (1) O arquivo `places-harvester.ts:96` utilizava `CITY_BBOX_MAP["chapeco"]` como fallback incondicional para qualquer município não catalogado no BBOX, vazando coordenadas de Chapecó e poluindo cadastros de cidades de outros estados com nós de empresas catarinenses; (2) `places-harvester.ts:206` extraía UF cortando os dois primeiros caracteres do campo `addr.state` retornado pelo Nominatim (`addr.state.slice(0, 2)`), corrompendo estados por extenso ("Paraná" -> "PA", "Rio Grande do Sul" -> "RI", "Santa Catarina" -> "SA"); (3) Diversos módulos de colheita e o orquestrador autônomo forçavam strings fixas `state || "SC"` e `"Chapecó"`, ignorando metadados de itens e gerando inconsistência federativa; (4) `job-opportunity-extractor.ts` descartava parâmetros de contexto territorial e atribuía `"Empresa em Chapecó"` e `getDefaultState()` a vagas extraídas heuristicamente; (5) A necessidade de centralizar a resolução de cidades, UFs e códigos IBGE para todo o Brasil em módulo puro e desacoplado de contexto de requisição HTTP (`src/lib/mining/geo-resolver.ts`), preservando a autonomia dos workers de crawling sem depender dos headers TanStack de `city-helper.ts`.
 - **Decisão:** (1) **Criação do Resolvedor Geográfico Canônico (`src/lib/mining/geo-resolver.ts`):** Implementada a função pura `resolveCityAndState` e o normalizador `normalizeStateUf`, consumindo `GLOBAL_BRAZIL_CITIES_CATALOG` e `BRAZILIAN_STATES`. O módulo mapeia nomes por extenso para UFs de 2 letras, resolve capitais e polos regionais em todo o Brasil (Curitiba -> PR, Passo Fundo -> RS, São Paulo -> SP, Florianópolis -> SC) e garante a Invariante de Território: cidades desconhecidas resultam em `state: undefined` (nunca blind "SC"). (2) **Saneamento de `places-harvester.ts`:** Eliminado o fallback de BBOX de Chapecó na Overpass API (retornando `[]` imediatamente para prosseguir honestamente ao Nominatim com a cidade e estado reais); consulta ao Nominatim parametrizada com o estado real; normalização de UF via `normalizeStateUf(addr.state)`. (3) **Saneamento do Orquestrador Copilot (`autonomous-copilot-orchestrator.ts`):** `extractDomainAndTargetQuery` agora resolve dinamicamente o estado a partir da cidade extraída do prompt via `resolveCityAndState`; removidos fallbacks `|| "SC"` em `lead_mining` e `lodging_tourism`. (4) **Consolidação das 8 Verticais Industriais (`crawler-batch-engine.ts` e Harvesters):** Vertical 1 (`jobs`) atualizada com propagação de `city`, `state` e `store_id` em `job-opportunity-extractor.ts`, substituindo texto fixo por `Empresa em ${city}` / `Empresa Confidencial`; Vertical 2 (`places`), Vertical 3 (`mined_tenders`), Vertical 4 (`real_estate`), Vertical 5 (`auctions`), Vertical 6 (`rss`), Vertical 7 (`events`) e Vertical 8 (`news_articles`) devidamente saneadas, com propagação de metadados territoriais e eliminação de UUIDs fixos de loja; fallbacks em `real-estate-harvester.ts`, `auction-harvester.ts`, `event-harvester.ts` e `automated-harvest.ts` migrados para resolução dinâmica. (5) **Expansão de Testes Unitários (`industrial-crawlers.test.ts`):** Adicionados 6 novos testes cobrindo resolução multi-estado, normalização de UFs do Nominatim, zero vazamento de BBOX de Chapecó e preservação de proveniência territorial (18/18 testes passando em `src/services/mining/`). Design lint ratchet aprovado com 0 regressões (15.417 violações).
@@ -81,6 +90,7 @@
 - **Consequências:** Mineração e colheita agora operam em escala nacional com proveniência geográfica autêntica e sem contaminação territorial cruzada entre estados. Zero quebras de tipagem e 100% de conformidade com os testes automatizados da plataforma.
 
 ## DEC-176: Milestone 3 & Milestone 4 — Resiliência do Chat Copilot via Máquina de Estados de 13 Fases, Error Boundaries Defensivos, Sandboxing de Conteúdo Web e Integração WebMCP
+
 - **Data:** 2026-10-04
 - **Contexto:** Execução dos Marcos 3 (R3 Copilot Chat State Machine Resilience) e 4 (R4 Continuous Mining Engines Consolidation). Identificou-se: (1) O contrato normativo canônico `CHAT_CONTRACT.md` previa 13 fases oficiais (`RECEIVED` a `CANCELLED`), porém inexistia tipagem ou máquina formal em runtime em `src/`, deixando o ciclo de vida do chat sem rastreamento de estados determinísticos; (2) Invocação de harvesters e ferramentas externas (`places`, `datajud`, `cnpj`, etc.) em `autonomous-copilot-orchestrator.ts` e `ai-conversations.functions.ts` propagava exceções não tratadas até as rotas do TanStack Router via toasts genéricos, travando o fluxo do chat e deixando a interface sem resposta; (3) O chat utilizava branchings manuais desarticulados do catálogo WebMCP de ferramentas canônicas (`MCP_TOOL_REGISTRY`), redundando código e limitando as capacidades do Copilot; (4) Prompts de usuários eram enviados diretamente ao gateway de IA sem sandboxing de dados não-confiáveis, vulneráveis a injeções indiretas de prompt em dados raspados da web; (5) Necessidade de garantir a integridade e operação contínua das 8 verticais industriais em `src/services/mining/` sem regressões.
 - **Decisão:** (1) **Máquina de Estados Determinística de 13 Fases (`src/types/copilot-fsm.ts`):** Formalizado o tipo `CopilotFsmPhase` com as 13 fases canônicas, metadados semânticos completos (`COPILOT_FSM_PHASE_META`), matriz canônica de transições válidas (`COPILOT_FSM_TRANSITIONS`), validadores estritos (`assertValidCopilotTransition`) e a classe controladora `CopilotStateMachine`. Re-exportado no subsistema de chat e adicionado aos DTOs de mensagem e passos de atividade (`AIActivityStep`). (2) **Error Boundaries Defensivos e Transição para `FAILED_RETRYABLE`:** Envolvidas todas as invocações de harvesters em `autonomous-copilot-orchestrator.ts` e o pipeline de execução em `ai-conversations.functions.ts` com blocos defensivos `try/catch`. Em caso de indisponibilidade de ferramentas externas, o passo ativo transita para `status: "failed"`, a FSM transita deterministicamente para `FAILED_RETRYABLE`, e uma mensagem amigável com opção de retentativa é emitida ao usuário, garantindo zero crashes em rotas TanStack. (3) **Integração com Registro de Ferramentas WebMCP:** Conectado o despachante de ferramentas do Copilot ao catálogo do `MCP_TOOL_REGISTRY` através de `executeMcpToolCall` (`src/services/mcp-server.functions.ts`), com validação Zod, isolamento multi-tenant e tratamento de erro estruturado. (4) **Prompt Sandboxing com Cláusula de Primazia:** Aplicado `buildSandboxedPromptPayload` (`src/lib/ai/prompt-shield.ts`) no envio ao `executeAiCoreGateway`, isolando entradas do usuário e conteúdos web externos dentro de tags `<user_untrusted_data>` com mandato de segurança de Prioridade 0. (5) **Consolidação das 8 Verticais de Mineração:** Validadas as 8 verticais em `crawler-batch-engine.ts`, circuit breaker de 3 estados (`CrawlerCircuitBreaker`), deduplicação semântica Jaccard 48h (`semantic-deduplicator.ts`) e fila assíncrona `crawl_queue`. (6) **Testes e Qualidade:** 51 testes unitários Vitest executados com 100% de sucesso (16 em copilot-fsm, 15 em autonomous-copilot, 12 em mining, 8 em circuit-breaker). Design lint ratchet aprovado com Exit Code 0 e zero regressões em relação à baseline congelada de 15.417 violações.
@@ -88,6 +98,7 @@
 - **Consequências:** Copilot 100% resiliente a falhas de rede de terceiros com máquina de estados de 13 fases auditável, imunidade contra injeção de prompt em dados externos, integração com o ecossistema WebMCP da plataforma e 0 quebras no ambiente operacional.
 
 ## DEC-021: Milestone 1 — Eliminação de Falsos Positivos no Design Lint (DL-04/DL-15), Saneamento das Rotas de Loja e Primitivas de UI
+
 - **Data:** 2026-10-04
 - **Contexto:** Execução do Marco 1 (Governança do Design System e Linting). Identificou-se: (1) O linter `scripts/design-lint.mjs` apresentava falsos positivos massivos em DL-04 ao classificar operadores lógicos booleanos do JavaScript (`!listing`, `!isLoading`) como violações de Tailwind bang e `!important`, inflando o débito em mais de 1.700 ocorrências; (2) DL-15 analisava linhas isoladas sem contexto de tag JSX multilinha, gerando falsos positivos em elementos com `:focus-visible` em linhas subsequentes e ignorando componentes primitivos do Design System (`<Button>`) que já encapsulam anéis de foco nativos; (3) As 4 rotas de loja (`_store.diretorio.index.tsx`, `_store.empregos.index.tsx`, `_store.eventos.tsx`, `_store.noticias.index.tsx`) possuíam violações pontuais de classes arbitrárias, proporções com colchetes, emojis literais, durações excessivas (> 300ms) e ausência de skeletons de carregamento; (4) Primitivas de UI (`button.tsx`, `empty-state.tsx`) continham classes fora da grade de 4px (`px-5.5`), spinners sem `motion-reduce:animate-none` e alturas táteis < 44px (`h-10`).
 - **Decisão:** (1) **Refatoração Cirúrgica do Linter (`scripts/design-lint.mjs`):** Implementado parser determinístico de tags JSX com rastreamento de chaves e aspas (`parseJsxTags`). Regra DL-04 restringida a atributos de classe/estilo e separada entre `!important` e Tailwind bangs canônicos (`!(?:p|m|bg|text|border|h|w|flex|grid)-` e keywords). Regra DL-15 refatorada para avaliar aberturas completas de tags multilinha e reconhecer componentes de Design System. 44 testes normativos aprovados com 100% de sucesso. (2) **Saneamento Completo das 4 Rotas de Loja:** Erradicadas todas as 155 violações residuais: emojis substituídos por ícones Lucide/Phosphor, durações reduzidas para <= 200ms, gradientes decorativos eliminados, proporções arbitrárias migradas para `aspect-video`, alvos táteis elevados para `h-11`/`size-11` (>= 44px), e matriz de 4 estados completa implementada em notícias com `<Skeleton>` para busca e filtros. (3) **Blindagem de Primitivas:** `button.tsx` atualizado com `px-6` (múltiplo de 4px) e `motion-reduce:animate-none` no spinner. `empty-state.tsx` atualizado com tokens `min-h-56`/`min-h-72` e botões com `h-11`. (4) **Validação e Congelamento:** `node scripts/design-lint.mjs --changed` executado com 0 violações P0/P1/P2/P3 em 43 arquivos modificados (Exit Code 0). Baseline atualizada e catraca `--ratchet` validada com Exit Code 0.
@@ -95,6 +106,7 @@
 - **Consequências:** Falsos positivos de DL-04 e DL-15 permanentemente erradicados do repositório sem relaxamento de regras. Rotas de loja 100% aderentes ao Design System. Catraca de CI travada em 13.144 violações totais (redução de mais de 1.740 violações reais e sintéticas).
 
 ## DEC-020: Ondas 4 e 5 — Painel de Qualidade Base44 no ChatArtifactCard, Deadline Guard no Worker de Borda e Conclusão das 6 Ondas
+
 - **Data:** 2026-10-03
 - **Contexto:** Execução das Ondas 4 e 5 do Plano Diretor de Mineração e Copiloto Autônomo. Identificou-se: (1) O componente `ChatArtifactCard` não exibia visualmente a pontuação da rubrica de 5 dimensões (`quality_rubric`), privando o usuário de feedback sobre conformidade dos blocos Base44; (2) Faltavam anotações e classes de anel de foco teclado (:focus-visible) em elementos interativos acionados por clique, gerando violações DL-15; (3) O endpoint de workers de borda `/api/mining/worker` carecia de controle de tempo máximo de execução (deadline budget de 25s) para evitar que operações demoradas causem estouro de timeout no Cloudflare Workers / Pages; (4) Ausência de suporte para colheita agendada de turismo/hospedagem no worker.
 - **Decisão:** (1) **Painel de Qualidade Base44 no ChatArtifactCard:** Implementado `QualityScorePanel` colapsável e `ScoreBar` modular exibindo as 5 dimensões canônicas (Vocabulário, Estrutura, Conformidade, Concisão, Hierarquia), com badges semânticos (Aprovado >= 80, Revisão >= 60, Reprovado < 60) e conformidade estrita com DL-03 (grade de 4px) e DL-15 (:focus-visible). (2) **Deadline Guard no Worker:** Implementada guarda de tempo de execução `hasTimeRemaining = () => Date.now() < executionDeadline` (teto de 25s) antes de cada etapa da esteira (`rss`, `queue`, `harvest`, `places`, `lodging`, `datajud`), evitando crash e garantindo retorno HTTP 200 com duração total calculada. (3) **Modo Lodging no Worker:** Adicionado seletor `mode === "lodging"` para colheita automatizada de hotéis/pousadas/resorts via Overpass. (4) **Qualidade & Lint:** Suíte de 26 testes focados Vitest verde (100%), Design Lint com 0 P0 e 0 P1 em arquivos modificados.
@@ -102,6 +114,7 @@
 - **Consequências:** Cards de artefatos de chat agora exibem métricas forenses e de qualidade diretamente na interface sem prolixidade. O worker de borda opera com proteção estrita de deadline em conformidade com os limites do Cloudflare. Todas as 6 Ondas do Plano Diretor concluídas com sucesso.
 
 ## DEC-019: Onda 3 — Retry Exponencial, Telemetria Persistida e Migração copilot_activity_steps
+
 - **Data:** 2026-10-03
 - **Contexto:** `executeAutonomousCopilotTask` não possuía mecanismo de retry em falhas transitórias de mineração (Nominatim down, DataJud timeout, etc.), e não persistia os passos de execução (`AIActivityStep[]`) no banco, impossibilitando auditoria forense e otimização de tokens por uso histórico.
 - **Decisão:** (1) **`withExponentialRetry<T>`:** Helper exportado com base=800ms, cap=10s, jitter ±25%, maxAttempts=3. Aplicado em `lead_mining:harvestAndPersistPlaces`. (2) **`persistActivitySteps`:** Função interna que insere em `copilot_activity_steps` via service role após cada execução completa. Falha de telemetria nunca propaga ao fluxo principal (try/catch silencioso). (3) **Migração SQL:** `supabase/migrations/20270101000000_copilot_activity_steps_telemetry.sql` — tabela com RLS deny-by-default, índices em `(store_id, created_at DESC)` e `task_id`, comentário de retenção 30 dias. (4) **`finalDuration` extraído:** Variável única usada tanto em `persistActivitySteps` quanto no `return`, eliminando dois `Date.now()` desincronizados. (5) **Lint:** 0 P0, 0 P1 em --changed.
@@ -109,6 +122,7 @@
 - **Consequências:** Orquestrador resiliente a falhas transitórias sem loops infinitos. Dados de telemetria disponíveis para dashboards de uso e economia de tokens. Migração deve ser aplicada em produção via `supabase db push`.
 
 ## DEC-018: Onda 2 — Circuit Breaker em Extratores + Purga M01 Dados Sintéticos
+
 - **Data:** 2026-10-03
 - **Contexto:** `mechanical-extractor.ts` executava fetch de páginas sem isolamento de circuit breaker, expondo o servidor a loops e crashes em domínios lentos ou com anti-bot. `places-harvester.ts` injetava 6+ entidades sintéticas hardcoded (nomes, telefones, coordenadas) quando o Nominatim falhava, violando a Invariante M01 (Zero Mocks). Violações DL-04 residuais em `resolveImageUrl`, `flattenGraphItems`, `resolveJsonLdImage` e linha 317 do mesmo arquivo.
 - **Decisão:** (1) **Circuit Breaker em `fetchHtmlWithStealth`:** Integrado `globalCrawlerCircuitBreaker.execute()` isolado por domínio (`parsedUrl.hostname`) em torno do `fetch()` principal de extração HTML, mantendo o fallback Jina Reader como segundo nível. (2) **Purga M01:** `generateCuratedLocalPlaces` substituída por `return []` honesto com `console.warn` explícito; removida a ramificação que injetava dados sintéticos em `harvestAndPersistPlaces`. (3) **DL-04 Erradicado (4 ocorrências):** `!candidateUrl` → `candidateUrl == null`, `!trimmed` → `trimmed.length === 0`, `!node` → `node == null`, `!imgField` → `imgField == null`, `!bestPartial` → `bestPartial == null`. (4) **Testes:** 19/19 verdes (8 circuit-breaker + 11 copilot). Design Lint --changed: 0 P0, 0 P1.
@@ -116,6 +130,7 @@
 - **Consequências:** `mechanical-extractor.ts` agora resiliente a domínios instáveis com isolamento por hostname. `places-harvester.ts` exibe empty state honesto quando Nominatim está indisponível — a UI downstream deve tratar `totalInserted === 0` com componente de estado vazio.
 
 ## DEC-017: Rebranding Canônico do Orquestrador Autônomo, Purga de Nomes Terceiros, Ponte Omni Builder e Esteira Multidomínio
+
 - **Data:** 2026-10-03
 - **Contexto:** Auditoria forense e determinação do usuário exigindo erradicação absoluta de nomenclaturas de terceiros ("Manus") no código interno, nos testes e na documentação, padronizando a arquitetura no ecossistema canônico (`autonomous-copilot-orchestrator.ts`). Além disso: (1) O gerador de landing pages e blocos Base44 pelo chat não persistia os artefatos na tabela `experience_documents`, impossibilitando a abertura direta no editor visual Omni-Builder (`/workspace/builder?doc=:id`). (2) O card de artefatos de chat (`chat-artifact-card.tsx`) não resolvia dinamicamente `experience_document_id`. (3) O endpoint de workers em background (`/api/mining/worker`) carecia de suporte aos modos específicos de colheita `places` (OpenStreetMap / Overpass) e `datajud` (processos judiciais). (4) Violações da regra DL-04 nos arquivos de teste recém-criados.
 - **Decisão:** (1) **Rebranding Integral:** Renomeado `ai-manus-orchestrator.ts` para `autonomous-copilot-orchestrator.ts`, atualizadas as tipagens para `CopilotTaskDomain`, `FragmentedPromptTask` e `AutonomousCopilotResult`, e renomeada a suíte de testes para `autonomous-copilot.test.ts`. Expurgada qualquer menção comercial externa do repositório. (2) **Ponte Canônica para o Omni Builder:** Integrada a chamada de composição visual à persistência em `public.experience_documents` (com cálculo e gravação da rubrica de qualidade de 5 dimensões), repassando `experience_document_id` no payload do artefato. Atualizado `chat-artifact-card.tsx` para direcionar o botão "Abrir no Builder" imediatamente para a URL de edição do documento correspondente. (3) **Worker Multidomínio de Borda:** Implementados os seletores `mode === "places"` e `mode === "datajud"` na rota de worker Cloudflare (`api.mining.worker.ts`), permitindo sincronização em lote desacoplada. (4) **Qualidade e Design Lint:** Erradicadas as negações unárias em testes para zerar as violações P0/P1 do Design Lint (0 P0, 0 P1). 45 testes executados com 100% de sucesso.
@@ -123,6 +138,7 @@
 - **Consequências:** Orquestrador autônomo perfeitamente integrado ao editor visual e às tabelas nativas de persistência, esteira de mineração operando em alta velocidade com economia radical de tokens e total soberania de marca.
 
 ## DEC-016: Fechamento dos Marcos M2 a M6: BFF Multi-Tenant Lockdown, Allowlists Fiscais, Baixa Idempotente BOM, Telemetria Edge Cloudflare, Harvester Multidomínio e Orquestrador Manus
+
 - **Data:** 2026-10-03
 - **Contexto:** Execução dos Marcos M2, M3, M4, M5 e M6 do Plano Diretor de Auditoria Forense e Refatoração. Identificou-se: (1) Ausência de validação de `store_id` e permissões de tenant em chamadas de deleção/edição em `admin-catalog`, `service-orders`, `events`, `billing` e `store.functions.ts`. (2) Risco de vazamento de dados fiscais (NCM, CEST, custo de aquisição, margem) em rotas públicas de listagem de produtos e classificados. (3) Dedução de insumos da ficha técnica (BOM) violando restrição de banco (check constraint do Postgres em `stock_movements`) e ausência de resolução canônica por `variant_id`. (4) Títulos compostos prolixos (> 6 palavras) em rotas de segurança, configurações e currículo violando a Regra B.8. (5) Falta de extração de ASN e organização autônoma de rede (`cf-connecting-asn`) e ausência de persistência de IP em telemetria PWA nativa (`pwa_telemetry`). (6) Necessidade de expansão dos mineradores mecânicos (crawlers) para suportar múltiplos domínios (vagas de emprego via JobPosting, hospedagem/hotéis/resorts via LodgingBusiness, agenda cultural de eventos e vinculação determinística de receitas com catálogo BOM) acoplados ao Orquestrador Autônomo estilo Manus com cache em SHA-256.
 - **Decisão:** (1) **Blindagem BFF & Multi-Tenant:** Implementada verificação estrita de `store_id: identity.store_id` em todas as mutações e eliminada vulnerabilidade IDOR em `billing.functions.ts`, `service-orders.functions.ts`, `admin-catalog.functions.ts`, `events.functions.ts` e `store.functions.ts`. (2) **Closed Allowlist Fiscal:** Aplicada `sanitizePublicProductAttributes` em `unified-listing.functions.ts`, `catalog.functions.ts`, `product.functions.ts` e `classifieds.functions.ts`, impedindo a exposição de custos, margens e perfis tributários. (3) **Dedução Canônica de BOM:** Normalizada em `pdv.functions.ts` a baixa com `movement_type: "sale"`, resolução hierárquica por `variant_id` UUID -> SKU -> produto -> busca textual, com garantia de idempotência em ordens de serviço. (4) **Regra B.8 e HIG:** Substituídos todos os 3 títulos compostos por rótulos concisos ("Alertas de Risco Ativo", "Produtos Pesáveis", "Acesse seu Currículo Digital"), mantendo touch targets móveis >= 44px (`h-11`) e 12 colunas em Bento Grid. (5) **Telemetria de Borda Cloudflare:** Extraído ASN e AS Organization em `network-telemetry.server.ts` e sincronizado `ip_address` no registro de eventos de instalação e abertura em `pwa.functions.ts`. (6) **Harvester Multidomínio & Manus Copilot:** Criados extratores mecânicos Schema.org para vagas e hospedagens em `specialized-extractors.ts`, motor de vinculação determinística de receitas ao estoque `linkRecipeIngredientsToInventory`, integrados no orquestrador `ai-manus-orchestrator.ts` com geração de artefatos vivos (planilhas interativas, documentos para PDF e páginas Base44) e deduplicação determinística em SHA-256 no banco de dados. (7) **Testes e Qualidade:** 100% de testes verdes em suítes focadas Vitest (manus-and-harvest, mining-forensic-quality, classifieds, catalog, pwa), conformidade com design-lint e zero execução de `build` ou `typecheck` automatizados.
@@ -130,14 +146,15 @@
 - **Consequências:** Todas as 393 rotas operacionais sem quebras, ecossistema transacional blindado contra vazamento fiscal e bypass de tenant, mineradores autônomos multidomínio operando com máxima eficiência mecânica e paridade plena em todas as frentes de engenharia.
 
 ## DEC-015: Storage RLS Lockdown, Tríade Canônica de Governança de Mídia e Purga Completa de Mocks & Unsplash
+
 - **Data:** 2026-10-03
 - **Contexto:** Execução do Marco M1 (Storage Governance, Media Triad, Mock & Unsplash Purge). Identificou-se que: (1) O storage do Supabase operava com políticas permissivas legadas (`Universal Media *`), 6 views estruturais (`store_memberships`, `store_members`, `classified_ads`, `companies`, `store_reviews`, `store_integrations`) sem a flag de segurança `security_invoker = true`, e buckets privados (`legal-documents`, `receipts`, `identity-vault`) com risco de vazamento ou configurações públicas inadequadas, além de ausência/desalinhamento dos buckets canônicos `covers` e `classified-media`. (2) Os componentes de upload (`media-uploader.tsx` e `image-upload.tsx`) suportavam apenas upload local de arquivo por drag-and-drop/diálogo nativo, faltando a Tríade de Governança de Mídia (Upload Local + Inserção de URL Externa HTTPS + Colagem Híbrida via Clipboard Ctrl+V), além de conterem violações de acessibilidade como botões com alvos táteis abaixo de 44px e fundos arbitrários `bg-black`. (3) O repositório continha uso ativo da API e tokens expostos do Unsplash (`searchUnsplash`, token Client-ID vazado em `proposals.ts`), componentes de picker atrelados ao Unsplash (`StudioUnsplashPicker.tsx`, `SectionCover.tsx`, `SectionHotels.tsx`, `SectionItinerary.tsx`) e fallback mock `placehold.co` em `admin/builder/MediaUploader.tsx`, violando os princípios de soberania e Invariante M01 (Zero Mocks).
 - **Decisão:** (1) **RLS Lockdown e Security Invoker:** Criada e aplicada migration canônica `supabase/migrations/20261231000000_storage_rls_lockdown_views_security_invoker.sql` no Supabase (`jfuebqmltksyznovhlwa`). As 6 views foram recriadas com `security_invoker = true`. Extintas todas as políticas `Universal Media *`. Provisionados e alinhados os buckets `covers` (10MB, public=true), `classified-media` (12MB, public=true), e configurados com `public=false` os buckets privados `legal-documents`, `receipts`, `identity-vault`. Aplicadas políticas RLS estritas de leitura, inserção, atualização e deleção com isolamento por usuário autenticado e tenant. (2) **Roteamento de Storage:** Ajustado `src/lib/classifieds/upload-classified-media.ts` para direcionar mídias públicas para `classifieds` e documentos sensíveis para `legal-documents`. Adicionado suporte a `classified-media` e `covers` em `src/services/storage.functions.ts` e direcionamento de avatar/cover em `uploadProfileMediaDirect`. (3) **Tríade de Governança de Mídia no Design System:** Em `media-uploader.tsx` e `image-upload.tsx`, implementada a tríade completa: gaveta retrátil de URL externa com validação HTTPS, colagem híbrida via Ctrl+V (arquivos e links), alvos táteis mínimos de 44px (`size-11 sm:size-8`, `h-11`), anéis `:focus-visible` em 100% dos controles interativos e zero classes `bg-black`. Ambos os componentes auditados com 0 violações P0 e 0 violações P1. (4) **Purga Absoluta de Unsplash & Mocks:** Revogado o token e expurgada a integração do Unsplash de `proposals.ts` e `proposal-storage.ts`. Transformado o seletor `StudioUnsplashPicker` no canônico `StudioAssetPicker` com Tríade de Upload/URL/Ctrl+V. Atualizadas as seções de estúdio de turismo (`SectionCover`, `SectionHotels`, `SectionItinerary`) e rotas para consumir mídia da agência e URLs HTTPS autênticas. Erradicado o mock `placehold.co` de `MediaUploader.tsx`, substituído por empty state vetorial SVG honesto.
 - **Fundamentação:** Invariantes M01 (Zero Mocks), M08 (Integridade Transacional e RLS), AGENTS.md B.4/B.8 (WCAG 2.2 AA DL-01, DL-02, DL-04, DL-14, DL-15, DL-18), Apple HIG e Mandato de Soberania de Dados.
 - **Consequências:** Blindagem criptográfica e multi-tenant no armazenamento em nuvem, eliminação de superfície de ataque e vazamento de chaves terceiras, experiência unificada e ergonômica de ingestão de ativos em todas as superfícies e conformidade total com os testes de integridade.
 
-
 ## DEC-175: Indexação Urbana Contextual por Cidade, Resolução Isomórfica de Localidade, Reatividade de Roteador e Paridade Canônica de Conteúdo Minerado
+
 - **Data:** 2026-10-04
 - **Contexto:** Execução do Marco 2 da Auditoria All-in-One: (1) O portal público carecia de consistência na filtragem de conteúdos pela localidade selecionada pelo usuário (Chapecó, Florianópolis, São Miguel do Oeste, etc.), com múltiplos pontos usando regexes manuais de cookies vulneráveis a inconsistências no SSR. (2) Funções de servidor (`jobs.functions.ts`, `directory.functions.ts`, `classifieds.functions.ts`) descartavam o parâmetro `city` silenciosamente por ausência no schema `.validator()`. (3) O componente `LocationMasterPill` salvava cookies e local storage sem invalidar o cache de rotas do TanStack Router, exigindo refresh manual de página. (4) `surface-cms.functions.ts` continha métricas sintéticas fixas (`rating: 4.9`, `delivery_time_min: "Disponível"`), violando a Invariante M01. (5) Artigos minerados em `automated-harvest.ts` não persistiam `city` e `state` na tabela `news_articles`, impossibilitando segmentação geográfica idêntica à de matérias publicadas por humanos.
 - **Decisão:** (1) **Resolução Isomórfica Unificada (`city-helper.ts`):** Centralizada a resolução de cidade em `resolveActiveCity`, inspecionando parâmetros de busca (`?city=`), cookies universais (`waesy_city` no client e header `cookie` no SSR), header de borda Cloudflare `cf-ipcity` e `localStorage`, normalizando termos globais/reservados ("Global", "Todas", "all") para `undefined`. (2) **Reatividade sem Recarga no `LocationMasterPill`:** Injetado `router.invalidate()` e sincronização de query param `?city=` na troca de localidade, forçando re-execução instantânea dos loaders. (3) **Paridade e Schemas RPC:** Adicionado `city: z.string().optional()` aos validators e queries de `jobs.functions.ts`, `directory.functions.ts`, `classifieds.functions.ts`, `events.functions.ts`, `surface-cms.functions.ts` e `search.functions.ts`. (4) **Erradicação de Mocks em Vitrines:** Excluídos atributos estáticos de `StoreCardDTO` no Surface CMS, consumindo estritamente campos do banco ou mantendo `undefined`. (5) **Paridade Editorial e UI:** `automated-harvest.ts` e `crawler-sources.functions.ts` configurados para persistir `city` e `state` em `news_articles` e `crawl_queue`, e `NewsCard` atualizado com badge de localidade e atribuição de fonte com alvos de toque >= 44px e zero violações no Design Lint.
@@ -145,6 +162,7 @@
 - **Consequências:** Navegação urbana contextualizada e reativa em toda a plataforma, dados minerados e manuais com paridade estrutural indistinguível, conformidade estrita com o design system (0 regressões visuais) e testes unitários 100% aprovados.
 
 ## DEC-174: Resolução Forense de Gaps de Mineradores, Integração Overpass OpenStreetMap, Ingestão Massiva de Sitemaps e Fila Industrial (7.300+ URLs)
+
 - **Data:** 2026-10-04
 - **Contexto:** Auditoria forense ao vivo (`scripts/forensic-audit-all-miners.ts`) em 37 vetores de mineração revelou: (1) `places-harvester` retornando 0 estabelecimentos devido a rate limits da instância pública do Nominatim; (2) `datajud-harvester` com falha de autenticação e lentidão de resposta no endpoint do TJSC devido à rotação da chave pública pelo CNJ; (3) `real-estate-harvester` e `auction-harvester` quebrando por encadeamento de `.catch()` em `PostgrestFilterBuilder`; (4) `specialized-extractors` rejeitando Schema.org com prefixos de URI (`https://schema.org/Recipe`) e variações de maiúsculas; (5) necessidade de ingestão em massa de dezenas de milhares de links para alimentar a esteira contínua da `crawl_queue`.
 - **Decisão:** (1) **Overpass Geo Engine (`places-harvester.ts`):** Integrado motor Overpass QL baseado em Bounding Box urbana para Chapecó e cidades do Oeste (`[-27.16, -52.70, -27.04, -52.55]`), mantendo Nominatim como fallback e persistindo 18 estabelecimentos reais em `directory_listings` com geolocalização e endereço. (2) **Chave Oficial CNJ e Roteamento Multitribunal (`datajud-harvester.ts`):** Extraída a chave pública vigente da documentação oficial do CNJ (`cDZHYzlZa0JadVREZDJCendQbXY6SkJlTzNjLV9TRENyQk1RdnFKZGRQdw==`), comprovando conexão e extração de 10.000 processos no TRF4. (3) **Blindagem de Inserção Supabase:** Corrigido o encadeamento de `.catch()` para blocos `try/catch` seguros nos harvesters de leilões e imobiliárias. (4) **Normalização Case-Insensitive de Schemas:** Ajustados extratores de receitas e eventos para aceitar qualquer prefixo Schema.org via regex (`/recipe/i`, `/event/i`). (5) **Motor de Descoberta Massiva de Sitemaps (`sitemap-crawler.engine.ts` e `regional-sources-catalog.ts`):** Criado crawler recursivo de `<sitemapindex>` e `<urlset>`, catalogando fontes regionais (ClicRDC, Chapecó Online, ND Mais, NSC Total, G1 SC, Câmara Municipal, Vagas.com.br). (6) **Carga Massiva e Consumo de Fila:** Executado `seed-massive-crawlers.ts` com descoberta de 7.211 links e enfileiramento de 7.210 URLs reais com deduplicação, escalando a `crawl_queue` para 7.321 itens ativos e validando o consumo de lotes com 100% de sucesso.
@@ -152,6 +170,7 @@
 - **Consequências:** Fila de mineração industrialmente populada com mais de 7.000 links reais, eliminação total de falhas silenciosas nos harvesters secundários, conformidade plena com design-lint (0 P0/P1) e 20/20 testes unitários verdes.
 
 ## DEC-173: Motor Puro Desacoplado de Processamento em Lote (CrawlerBatchEngine), Extratores Especializados (Imóveis e Leilões), Enriquecimento Cruzado (OSM x CNPJ) e Bateria de Benchmark 8/8
+
 - **Data:** 2026-10-04
 - **Contexto:** Necessidade de comprovação mecânica de qualidade dos mineradores e crawlers da plataforma Waesy sem dados sintéticos/mocks (Invariante M01). Identificou-se exceção de runtime `AsyncLocalStorage` no TanStack Start ao invocar funções de servidor (`createServerFn`) fora do contexto de requisição HTTP (em background tasks, runners CLI e suítes de teste). Além disso, identificou-se a necessidade de expansão do catálogo de entidades mineradas para incluir imobiliárias locais (`real-estate-harvester.ts`), leilões oficiais (`auction-harvester.ts`), enriquecimento cruzado OpenStreetMap x Receita Federal via BrasilAPI (`places-cnpj-cross-enricher.ts`) e deduplicação semântica determinística (`semantic-deduplicator.ts`).
 - **Decisão:** (1) **Motor Puro Desacoplado (`crawler-batch-engine.ts`):** Criado `executeCrawlQueueBatchDirect` isolando a orquestração da fila polimórfica `crawl_queue` de dependências de request context do TanStack Start, mantendo `processCrawlQueueBatch` apenas como casca para o frontend. (2) **Extratores Especializados:** Implementados `real-estate-harvester.ts` (ingestão de imobiliárias e corretores em `directory_listings` com categoria `imobiliaria`) e `auction-harvester.ts` (leiloeiros judiciais e extrajudiciais com categoria `leiloes`), ambos com persistência dual e idempotência. (3) **Enriquecimento Cruzado OSM x Receita Federal:** Criado `places-cnpj-cross-enricher.ts`, correlacionando nós comerciais do OpenStreetMap com dados cadastrais da Receita Federal (CNAE, razão social, telefone, quadro societário) via BrasilAPI e salvando em `directory_listings.metadata`. (4) **Deduplicação Semântica:** Implementado `semantic-deduplicator.ts` com clusterização determinística baseada em n-gramas e coeficiente de similaridade de Jaccard dentro de janela temporal de 48h. (5) **Extração Profunda PNCP:** Adicionada `fetchPncpContractItems` em `pncp-extractor.ts` e integrada ao pipeline `pncp-harvester.ts` para persistência de itens e lotes em `mined_tenders.ai_curated_digest.items`. (6) **Migração de Índices:** Aplicada no Supabase a migração `20270102000000_crawler_industrialization_indexes.sql` com índices de alta performance em `mined_tenders`, `directory_listings`, `jobs`, `crawl_queue` e RLS público de leitura. (7) **Testes e Benchmarks Forenses:** 20/20 testes unitários verdes no Vitest e execução mecânica ao vivo das 8 verticais com 100% de sucesso em 7.4s.
@@ -159,6 +178,7 @@
 - **Consequências:** Subsistema de crawlers e mineradores 100% mecânico, auditável, resiliente a falhas de contexto de servidor, executável em ambientes desacoplados (workers de borda, scripts de benchmark, pg_cron) e com cobertura completa de 8 verticais de dados urbanos reais para Chapecó e região.
 
 ## DEC-172: Industrialização, Sanitização e Ativação Operacional dos Crawlers, Mineradores & Sincronização PNCP/BCB/Empregos
+
 - **Data:** 2026-10-03
 - **Contexto:** Auditoria forense e sanitização profunda de todo o ecossistema de crawlers e mineradores urbanos da plataforma Waesy atendendo à diretriz de eliminação radical de dados mock, sintéticos ou estáticos. Foram identificados: falhas de integração no PNCP por ausência de parâmetros obrigatórios (`codigoModalidadeContratacao`, `codigoMunicipioIbge`), dependência de endpoints depreciados da API SGS do Banco Central, ausência de extrator real conectado a vagas de emprego, falha de integridade em fallbacks de processos judiciais (`buildFallbackLawsuit`), e inexistência da rota HTTP `/api/cron/mining-worker` associada ao trigger do `pg_cron`.
 - **Decisão:** (1) **PNCP & Licitações Oficiais:** Refatorado `pncp-extractor.ts` e criado `pncp-harvester.ts` com suporte aos parâmetros normativos do PNCP (IBGE 4204202 Chapecó/SC, modalidades 6 e 8), persistindo 30 licitações reais com upsert idempotente em `mined_tenders`. (2) **Indicadores Econômicos SGS/BCB:** Criado `economic-indicators-persister.ts` conectado à API OData Olinda do Banco Central, populando `economic_indicators` com 5 indicadores oficiais (Dólar, Euro, Selic, IPCA) e telemetria em `scraper_audit_log`. (3) **Extração Real de Vagas:** Implementado `job-opportunity-extractor.ts` com extração direta de HTML e Schema.org (`vagas.com.br`, `infojobs.com.br`), populando a tabela `jobs` com 3 registros autênticos e ativos. (4) **Purga de Mocks & Isolamento Legal:** Expurgado `buildFallbackLawsuit` de `datajud-harvester.ts` e restaurada a assinatura canônica de `harvestAndPersistDataJudProcess`. (5) **Despacho Automatizado pg_cron & pg_net:** Criada a rota de borda `/api/cron/mining-worker` com validação de Bearer token (`waesy_omni_cron_key_v2026`), integrando com o despachador `dispatchScheduledMiningJobFn` nas 4 verticais (`market-data`, `rss-fetcher`, `continuous-crawler`, `cnpj-enrichment`).
@@ -166,6 +186,7 @@
 - **Consequências:** Subsistema de mineração 100% ancorado em fontes governamentais e portais reais; tabelas do banco de dados ativas e verificáveis sem dados forjados; orquestração contínua por cron e rede ativa.
 
 ## DEC-171: Fechamento Forense de Gaps: Paridade Fiscal de Produtos ($id.tsx), Persistência E2E de IA no Onboarding Rápido, Combobox de Cidades e Cabeçalho 1:1 + 21:9
+
 - **Data:** 2026-10-03
 - **Contexto:** Auditoria detalhada e inventário forense de completude de requisitos solicitados pelo usuário: (1) Paridade de Produto: Ao criar produtos (`novo.tsx`), a aba fiscal (`ProductFiscalTab`) com NCM, CEST, Regime Tributário e Cadastur estava presente, mas ao editar um produto existente (`$id.tsx`), a aba fiscal estava ausente e o hook `use-product-edit.ts` não possuía estado nem rotina de persistência para `fiscalData`. (2) Onboarding Rápido com IA: O fluxo de criação rápida (`FastCompanyOnboarding`) executava a extração com IA via `executeMagicOnboarding`, mas ao salvar a nova empresa via `fastRegisterCompany`, o `jobId` da extração não era enviado nem persistido, fazendo com que o BrandKit, BrandDNA, SWOT, Canvas Osterwalder e produtos sugeridos não fossem salvos no banco. (3) Autopreenchimento de Cidades: O formulário rápido dependia de entrada livre de endereço ou mapa, sem um seletor nativo do catálogo canônico de cidades (`CANONICAL_CITIES` / `CityCombobox`). (4) Cabeçalho Canônico da Loja: Na página de configurações (`workspace.configuracoes.index.tsx`), a Capa (Banner) era renderizada separadamente em largura total acima e o Logotipo 1:1 abaixo em grid, em vez de comporem a mesma linha canônica (1:1 squircle à esquerda e capa 21:9 à direita). (5) Regra B.8 em Abas de Criador: No `creator-profile-sheet-editor.tsx`, títulos de abas continham termos compostos ("Identidade e Visual", "Redes e Canais", "Opções Avançadas").
 - **Decisão:** (1) Implementada paridade fiscal integral em `use-product-edit.ts` e `workspace.catalogo.produtos.$id.tsx` com `ProductFiscalTab`, persistindo `attributes.fiscal`. (2) Conectado `onboardingJobId` em `FastRegisterCompanySchema` e `fastRegisterCompany`, invocando `persistOnboardingForJob` para salvar imediatamente `brand_kits`, `brand_dna_profiles`, `briefings` e catálogo gerado pela IA. (3) Integrado `CityCombobox` diretamente no `FastCompanyOnboarding` para seleção instantânea a partir de `CANONICAL_CITIES`. (4) Refatorada a identidade visual da loja em `workspace.configuracoes.index.tsx` para o padrão canônico 1:1 squircle ao lado de 21:9 panorâmica na mesma linha. (5) Higienizados os títulos das abas de criador para termos simples e desaninhados ("Identidade", "Redes", "Avançado").
@@ -173,6 +194,7 @@
 - **Consequências:** Zero perda de dados fiscais na edição de produtos, persistência atômica da inteligência de marca no onboarding rápido, seleção ergonômica de cidades e consistência visual rigorosa em todos os perfis e editores.
 
 ## DEC-170: Trilhos com Feature Cards Verticais (iFood-Style) no CMS de Vitrines, Purga de Confirmações Nativas e HIG em Banners & Vitrines Master
+
 - **Data:** 2026-10-03
 - **Contexto:** Execução da Onda 11 do Plano Diretor (`docs/MASTER_PLAN_AUDIT.md`, Itens 1 e 2): (1) O sistema de gerenciamento de vitrines e seções modulares (`admin-master.vitrines.tsx` e `surface-cms.functions.ts`) carecia de suporte formal à variante de layout de trilhos com card vertical líder (Feature Cards iFood-Style), impedindo o Admin Master de configurar visualmente trilhos que se iniciam com banner/feature card temático. (2) O componente `ModularSurfaceFeed` (`modular-surface-feed.tsx`) continha 14 violações da regra DL-02 (`text-[9px]`, `text-[10px]`, `text-[11px]`, `active:scale-[0.98]`, `active:scale-[0.99]`, `py-0.2`, `w-[350px]`) e classe quebrada `drop-`, além de não renderizar o feature card líder de início de trilho. (3) As telas do Admin Master de gestão de vitrines (`admin-master.vitrines.tsx`) e banners (`admin-master.banners.tsx`) continham o uso indevido de diálogos nativos bloqueantes `window.confirm()` para exclusão (violação direta da constituição AGENTS.md B.8), alvos de toque móveis sub-ergonômicos `size-6` / `h-8` (DL-14) e ausência de anéis de foco `:focus-visible:ring-2` (DL-15).
 - **Decisão:** (1) **Variantes de Layout no Surface CMS:** Expandida a união tipada `SurfaceLayoutVariant` em `src/services/surface-cms.functions.ts` com as opções `"rail_feature_card"` e `"rail_lead_banner"`. (2) **Feature Cards Líderes no ModularSurfaceFeed:** Integrado o componente `HitsLeadCard` no início dos trilhos de produtos e ofertas relâmpago quando a seção possui `layout_variant === "rail_feature_card" | "rail_lead_banner"` ou possui metadados em `config.lead_card`, com alinhamento pixel-perfect de altura (`h-36 sm:h-40`), badge, gradiente dinâmico e link de destino. (3) **Erradicação Absoluta de `window.confirm`:** Em `admin-master.vitrines.tsx` e `admin-master.banners.tsx`, eliminadas as chamadas de `confirm()`, substituindo-as por exclusão imediata assistida com notificação e feedback via toast (`toast.success`). (4) **Higienização Ergonômica Apple HIG:** Erradicadas todas as classes de colchetes arbitrários (normalizados para `text-xs`, `aspect-video md:aspect-21/9`, `w-80 sm:w-88`), elevados os alvos de toque móveis para `h-11 sm:h-9` e `size-11 sm:size-8`, e adicionados anéis de foco `:focus-visible:ring-2 focus-visible:ring-primary` em todos os botões, abas e controles interativos. (5) **Suíte de Testes:** Criada suíte em `src/routes/admin-master.vitrines-banners.test.ts` com 5/5 testes verdes.
@@ -180,6 +202,7 @@
 - **Consequências:** Trilhos de produtos com visual moderno de alto impacto no estilo iFood / Super App, painel Master operando sem bloqueios de janelas nativas do navegador, e conformidade estrita de acessibilidade em telas de administração e vitrines públicas.
 
 ## DEC-169: Paridade Pública de Detalhe de Eventos & Turismo: Expositor de Patrocinadores Oficiais, Expurgos de Mocks M01 e Barreira de Autenticação
+
 - **Data:** 2026-10-03
 - **Contexto:** Execução da Onda 10 do Plano Diretor (`docs/MASTER_PLAN_AUDIT.md`, Itens 4 e 5): (1) O expositor de patrocinadores e apoiadores gerido no Workspace (`evento-parceiros.tsx`, tabela `eventos_parceiros`) não era carregado no loader de eventos públicos (`getEventWithLots` em `events.functions.ts`), resultando em omissão completa das cotas de patrocinadores (Diamante, Ouro, Prata, Bronze, Apoio) nas páginas de detalhe desktop e mobile (`_store.evento.$id.tsx`). (2) O componente `TravelItineraryTimeline` (`travel-itinerary-timeline.tsx`) continha 5 dias sintéticos fictícios codificados no default prop (violação direta do princípio Zero Mocks M01). (3) A rota de detalhe de turismo (`_store.turismo.$id.tsx`) continha uma URL de imagem sintética de fallback do Unsplash (`images.unsplash.com`), botões de reserva sem integração com a barreira canônica de autenticação `useActionAuthGuard` / `ActionAuthGuardModal` (com risco de emissão anônima de vouchers sem salvar na conta do usuário), além de múltiplas violações das regras DL-02 (`min-h-[100dvh]`, `text-[10px]`, `text-[11px]`), DL-14 (alvos de toque `h-10` inferiores a 44px) e DL-15 (botões sem anel de foco `:focus-visible:ring-2`).
 - **Decisão:** (1) **Propagação de Parceiros em Eventos:** Atualizada a função `_getEventWithLots` em `src/services/events.functions.ts` para consultar em paralelo a tabela `eventos_parceiros` ordenada por `ordem`, repassando os dados via loader de `_store.evento.$id.tsx` para `EventDetailDesktop` e `EventDetailMobile`. (2) **Expositor Canônico de Patrocinadores (Desktop & Mobile):** Implementado o expositor com badges de nível semântico, logos oficiais, links externos com segurança (`target="_blank"` e `rel="noopener noreferrer"`) e ícone `Handshake`, omitindo silenciosamente a seção caso não haja patrocinadores cadastrados. (3) **Purga de Mocks M01 em Turismo:** Erradicado o array de dias falsos padrão de `TravelItineraryTimeline` (default `days = []` com early return `null` se vazio) e eliminada a URL de imagem sintética do Unsplash em `_store.turismo.$id.tsx`. (4) **Proteção de Autenticação em Reservas:** Integrados `useActionAuthGuard` e `ActionAuthGuardModal` no fluxo de reserva de turismo ("Reservar"), garantindo contexto e salvamento em `/conta/viagens`. (5) **Saneamento Ergonômico Apple HIG:** Elevados todos os botões móveis de ingressos e reservas para `h-11` (>= 44px), normalizadas alturas para `min-h-screen`, textos para `text-xs` e adicionados anéis de foco visível `:focus-visible:ring-2 focus-visible:ring-primary` em todos os controles interativos. (6) **Suíte de Testes:** Criada suíte em `_store.evento-turismo-detail.test.ts` com 6/6 testes verdes.
@@ -187,6 +210,7 @@
 - **Consequências:** Páginas públicas de eventos e turismo com paridade total aos cadastros do painel administrativo, monetização por patrocinadores visível publicamente, zero dados sintéticos, e conversão de reservas protegida com autenticação.
 
 ## DEC-168: Restauração da Vitrine Canônica do Marketplace, Isolamento dos 4 Pilares (Zero Vazamento de Classificados) e Botão Colapsável com 14 Sub-Marketplaces
+
 - **Data:** 2026-10-03
 - **Contexto:** Auditoria Forense e Chamado do Usuário: (1) Degradação visual da rota `/marketplace`: um commit anterior (`2394c2e0`) havia substituído a arquitetura de vitrine dinâmica CMS avançada por um componente estático e simplificado (`MarketplaceHub`), desvinculando os banners, botões editáveis e seções rotativas dinâmicas do Admin Master (`admin-master.vitrines.tsx`, `admin-master.banners.tsx` e `admin-master.botoes.tsx`). (2) **Quebra Gravíssima dos 4 Pilares:** O loader de `_store.marketplace.index.tsx` invocava `listUnifiedListings`, que concatenava indiscriminadamente produtos de empresas credenciadas (`products`) com desapegos C2C de pessoas físicas (`classifieds`), vazando anúncios de classificados para dentro do Marketplace B2C formal com garantia. (3) O botão expansível/colapsável "Marketplaces" na barra lateral de navegação (`context-sidebar.tsx`), que abria os 14 sub-marketplaces/subnichos em grade compacta, havia sido achatado para um link simples.
 - **Decisão:** (1) **Isolamento Absoluto dos 4 Pilares em `unified-listing.functions.ts`:** Condicionada a execução de queries ao parâmetro `data.origin`. Quando `origin: "workspace"`, a query de `classifieds` é estritamente anulada (`classifiedsQuery = null`), garantindo retorno exclusivo de produtos comerciais de lojas credenciadas com nota fiscal e garantia. Quando `origin: "classified"`, apenas classificados são buscados. (2) **Restauração Integral da Vitrine Avançada do Marketplace (`_store.marketplace.index.tsx`):** Reconectado o motor dinâmico com: (a) Banners Herói via `BannerHeroCarousel` (`placement: "marketplace"` gerenciado no Admin Master com fallback para home); (b) Cards Herói e Chips editáveis via `HotpagesRail` (`module: "marketplace"` gerenciado no Admin Master); (c) Seletor horizontal com os 14 subnichos canônicos com link direto para vitrines especializadas; (d) Feed modular CMS via `ModularSurfaceFeed` com suporte a trilhos, flash deals, bento grid, 21:9 panorâmico e random shuffle rotativo; (e) Catálogo de produtos com `OfferCard`, busca facetada e matriz de 4 estados; (f) Banner superior de garantia comercial e conformidade B2C. (3) **Botão Colapsável no `ContextSidebar`:** Reintegrado o botão expansível/recolhível com badge "14", indicador chevron (`CaretDown`/`CaretRight`), detecção automática de rota ativa e grade de 2 colunas com todos os 14 subnichos comerciais (`/gastronomia`, `/mercado`, `/farmacia`, `/bebidas`, `/acougue`, `/moda`, `/pet`, `/eletronicos`, `/casa`, `/construcao`, `/servicos`, `/imoveis`, `/beleza`, `/ofertas`). (4) **Fallback de Superfície em `surface-cms.functions.ts`:** Adicionada resolução inteligente de fallback em `getModularSurfaceFeed` para buscar `home_mercado` ou `marketplace` caso a superfície ainda não tenha sido explicitamente provisionada. (5) **Suíte de Testes:** Criada suíte unitária em `_store.marketplace.index.test.ts` e executada bateria de 31 testes vitest (100% verde).
@@ -194,6 +218,7 @@
 - **Consequências:** Fim imediato do vazamento de anúncios de classificados no marketplace, restabelecimento pleno do design avançado modular editável pelo Admin Master, usabilidade de navegação por subnichos restaurada e zero regressões em rotas adjacentes.
 
 ## DEC-167: Cockpit KDS Impressão Térmica Desaninhada e Higienização de Recibo Térmico
+
 - **Data:** 2026-10-03
 - **Contexto:** Execução da Onda 9 do Plano Diretor (`docs/MASTER_PLAN_AUDIT.md`, Item 8): (1) Os botões de impressão de comanda térmica nas colunas de pedidos do Workspace (`workspace.pedidos.index.tsx`) direcionavam para a rota interna `/workspace/pedidos/${order.id}/recibo`, que falhava em tempo de execução por colisão com a definição canônica desaninhada do TanStack Router (`workspace_.pedidos.$id.recibo.tsx`). (2) A terceira coluna do KDS ("Prontos / Em Rota") não possuía atalho de reimpressão de comanda/etiqueta para o expedidor. (3) A rota de recibo térmico (`workspace_.pedidos.$id.recibo.tsx`) continha 15 violações de classes arbitrárias com colchetes (`min-h-[100dvh]`, `text-[10px]`, `text-[11px]`) violando a regra DL-02 e botões de impressão em tela sem atendimento ao piso tátil de 44px (DL-14).
 - **Decisão:** (1) **Correção Unificada de Rotas de Comanda:** Ajustadas as 4 referências em `workspace.pedidos.index.tsx` para o endpoint canônico `/workspace_/pedidos/${order.id}/recibo`, garantindo que a visualização de comanda para impressão abra imediatamente em aba limpa sem o shell de navegação do Workspace. (2) **Atalho de Reimpressão na Coluna 3:** Inserido botão com ícone `Printer` (`size-11 sm:size-9` com anel de foco `:focus-visible:ring-2`) na coluna "Prontos / Em Rota", permitindo à equipe de despacho reimprimir comandas de entrega sem necessidade de abrir a ficha 360 do pedido. (3) **Higienização Integral do Recibo Térmico:** Em `workspace_.pedidos.$id.recibo.tsx`, eliminadas todas as 15 ocorrências de classes com colchetes arbitrários, normalizadas as alturas para `min-h-screen`, os textos secundários para `text-xs` e os botões de ação para o componente canônico `Button` com `h-11 sm:h-9 px-4`, preservando as regras de `@media print`.
@@ -201,6 +226,7 @@
 - **Consequências:** Operação de cozinha e despacho gastronômico ágil, emissão de comandas térmicas e DANFE sem quebras de navegação, e conformidade estrita com o Design System.
 
 ## DEC-166: Feature Cards Verticais nos Trilhos da Home (iFood-Style) & Barreira Canônica de Autenticação em Ações (Itens 1 e 9)
+
 - **Data:** 2026-10-03
 - **Contexto:** Execução da Onda 8 do Plano Diretor (`docs/MASTER_PLAN_AUDIT.md`, Itens 1, 2 e 9): (1) O componente `HitsLeadCard` continha múltiplas violações da regra DL-02 (`w-[150px] sm:w-[170px] h-[145px] sm:h-[155px]`, `active:scale-[0.98]`) e não suportava o modo editorial rico com título, subtítulo e CTA dos feature banners verticais (iFood-Style). (2) O componente `HorizontalRail` possuía classes arbitrárias (`text-[10px]`), botões com altura sub-ergonômica (`h-8`) e setas de navegação desktop sem dimensões mínimas táteis nem anéis de foco visível (DL-14 e DL-15). (3) Os trilhos da Home (`/_store/`) não apresentavam cards líderes de categoria. (4) Ações privilegiadas no ecossistema (candidatura a vagas, compra de ingressos para eventos, contato comercial) permitiam submissão anônima que falhava silenciosamente ou apresentavam mensagens de erro confusas sem preservar o contexto do usuário.
 - **Decisão:** (1) **Upgrade do HitsLeadCard:** Refatorado `src/components/commerce/hits-lead-card.tsx` para eliminar 100% das classes arbitrárias com colchetes, introduzir suporte a layout editorial rico (`title`, `subtitle`, `badge`, `actionLabel`, `gradient`, `coverImage`, `className`), adicionar feedback tátil nativo `active:scale-95` e anel de foco `:focus-visible:ring-2`. (2) **Calibração Ergonômica do HorizontalRail:** Em `horizontal-rail.tsx`, eliminada a classe `text-[10px]` (substituída por `text-xs`), elevados todos os botões de ação para `h-11 sm:h-9 px-3.5` e ampliadas as setas de rolagem para `size-11 sm:size-9` com anel de foco. (3) **Feature Cards nos Trilhos da Home:** Integrados cards verticais líderes nos 4 principais trilhos de `_store.index.tsx` (Places, Classificados, Empregos e Eventos), orientando o usuário visualmente para os pilares. (4) **Barreira Canônica de Autenticação (`ActionAuthGuardModal` & `useActionAuthGuard`):** Criados `src/components/common/action-auth-guard-modal.tsx` e `src/hooks/use-action-auth-guard.ts` interceptando ações de não-logados e redirecionando para `/entrar?returnUrl=...` com preservação total de contexto, integrados em `_store.empregos.$id.tsx` e `_store.evento.$id.tsx`.
@@ -208,50 +234,47 @@
 - **Consequências:** Trilhos da Home com identidade visual rica e inspirada nos melhores super apps modernos, e proteção de ações prevenindo erros de autenticação e perdas de conversão.
 
 ## DEC-165: Portal de Notícias: Feed Editorial Dinâmico em 5 Trilhos Temáticos, Saneamento de Mojibake e HIG
+
 - **Data:** 2026-10-03
 - **Contexto:** Execução da Onda 7 do Plano Diretor (`docs/MASTER_PLAN_AUDIT.md`, Itens 7 e 2): (1) O portal de notícias (`/_store/noticias`) carecia da completude dos trilhos editoriais dinâmicos horizontais previstos para Cotidiano & Cidade e Esportes & Regional. (2) O array de categorias continha caracteres corrompidos por encoding (`"Plant?o"` e `"Pol?tica"`). (3) O componente de cartão de matéria (`news-card.tsx`) continha múltiplas ocorrências de classes arbitrárias com colchetes (`text-[9px]`, `text-[10px]`, `text-[11px]`, `max-w-[360px]`, `h-[145px] sm:h-[155px]`) violando a regra DL-02, além de botão de compartilhamento com altura sub-ergonômica sem anel de foco visível (DL-14 e DL-15).
 - **Decisão:** (1) **Cinco Trilhos Editoriais Temáticos:** Implementados carrosséis dedicados para (a) Plantão & Última Hora, (b) Cotidiano & Cidade, (c) Economia & Negócios, (d) Cultura, Noite & Lazer e (e) Esportes & Regional com Lead Cards temáticos e gradientes visuais suaves. (2) **Erradicação do Mojibake:** Corrigidas as categorias para "Plantão" e "Política" em UTF-8 limpo, com adição de anel de foco `:focus-visible:ring-2` nos seletores. (3) **Saneamento e Ergonomia no NewsCard:** Convertidas todas as classes de texto com colchetes para o token canônico `text-xs`, normalizadas as dimensões de altura para `h-36 sm:h-40 max-w-sm`, e calibrado o botão de compartilhamento para `size-11 sm:size-9` com anel de foco e suporte tátil.
 - **Fundamentação:** Apple HIG, Invariantes M01 (Zero Mocks), AGENTS.md B.4/B.8 (Eliminação de DL-02, DL-14 e DL-15) e WCAG 2.2 AA.
 - **Consequências:** Portal editorial dinâmico, rico e livre de quebras visuais ou caracteres corrompidos, com experiência de leitura ergonômica em smartphones e tablets.
 
-
-
 ## DEC-164: Gestão de Eventos: Virada Automática de Lotes de Ingressos, Expositor de Patrocinadores e HIG
+
 - **Data:** 2026-10-03
 - **Contexto:** Execução da Onda 6 do Plano Diretor (`docs/MASTER_PLAN_AUDIT.md`, Item 4): (1) O módulo de ingressos de eventos carecia de virada automática de lotes quando o lote atual atinge a capacidade máxima (`sold_count >= capacity`), paralisando as vendas online até intervenção manual do organizador. (2) O componente de gestão de patrocinadores (`evento-parceiros.tsx`) continha classes arbitrárias com colchetes (`text-[11px]`, `text-[10px]`) violando a regra DL-02 e botões de exclusão sem dimensão mínima de toque nem anel de foco (DL-14 e DL-15). (3) O painel de gestão do evento (`/workspace/eventos/$id`) possuía botões no cabeçalho e nos lotes com alturas sub-ergonômicas no mobile (`size="sm"`), sem indicação visual explícita de lotes esgotados.
 - **Decisão:** (1) **Virada Automática de Lotes de Ingressos:** Implementada a função `checkAndRolloverEventLots` e exposta a Server Action `triggerLotRolloverCheck` em `src/services/events.functions.ts`. Ao constatar que o lote ativo atingiu a capacidade máxima (`sold_count >= capacity`), a rotina transiciona atomicamente o lote para `sold_out` e ativa o próximo lote na fila cronológica/preço (`status = 'active'`). (2) **Saneamento do Expositor de Patrocinadores:** Em `evento-parceiros.tsx`, erradicadas todas as classes arbitrárias com colchetes substituídas pelo token semântico `text-xs`, e o botão de exclusão de parceiro foi convertido para o componente canônico `Button` com `size-11 sm:size-9`, anel de foco `:focus-visible:ring-2` e cursor pointer. (3) **Calibração Ergonômica do Painel de Eventos:** Em `workspace.eventos.$id.tsx`, calibrados os botões do cabeçalho ("Escalar Equipe", "Portaria Fullscreen", "Vitrine Pública") e os botões de ação de lotes para `h-11 sm:h-9 px-4 rounded-lg text-xs font-bold`. No card do lote, foi integrado badge com estado "Esgotado" (`variant="destructive"`) e o botão de remoção foi elevado para `Button` (`size-11 sm:size-9`).
 - **Fundamentação:** Apple HIG, Invariantes M01 (Zero Mocks), M08 (Integridade Transacional), AGENTS.md B.4/B.8 (Eliminação de DL-02, DL-14 e DL-15) e WCAG 2.2 AA.
 - **Consequências:** Bilheteria de eventos opera com continuidade ininterrupta através da virada autônoma de lotes, marcas patrocinadoras são gerenciadas com conformidade visual e usabilidade tátil atende ao piso nativo de 44px.
 
-
-
 ## DEC-164: Deploy Industrial para Produção: Migrações Supabase, RLS Hardening, Waesy Go e Master 360
+
 - **Data:** 2026-10-05
 - **Contexto:** Solicitação executiva de deploy integral e otimizado para produção envolvendo 100% dos pilares operacionais: (1) Sincronização de migrações DDL no banco de produção Supabase (`jfuebqmltksyznovhlwa`). (2) Blindagem de segurança com Row Level Security (RLS) Deny-by-Default em todas as 10 novas tabelas (`customer_debt_ledger`, `courier_expense_logs`, `mobility_ratings`, `mobility_requests`, `mobility_stops`, `mobility_offers_negotiations`, `user_cart_telemetry`, `user_form_submissions_log`, `employee_tenant_audit_logs`, `customer_store_affinity`). (3) Garantia de execução estritamente server-side para transações, dívidas, senhas e chaves de API. (4) Padronização de alvos de toque na Header global e cards de vitrine com CTA canônico de 44px (`h-11`). (5) Redução de 21 violações na catraca de design lint com atualização da baseline. (6) Deploy no Cloudflare Pages via Wrangler e sincronização completa no GitHub (main).
 - **Decisão:** (1) **Migrações Supabase Aplicadas com Sucesso:** Executadas as migrações `20260815170001_mobility_and_logistics_ecosystem`, `20270104000000_waesy_go_courier_governance_and_ratings`, `20270105000000_master_360_telemetry_and_governance` e `20270106000000_campaign_scheduling_and_auto_archive`. Todas as tabelas operam sob RLS ativo (`rowsecurity: true`) e restrição de acesso por tenant e admin master (`is_platform_admin()`). Buckets de storage sensíveis (`legal-documents`, `receipts`, `identity-vault`) validados como privados. (2) **Zero Erros de Tipagem & Design Lint Aprovado:** Corrigidos 12 erros prévios de TypeScript e adicionado o tipo `thought` ao `AIActivityTrail`. O `node scripts/design-lint.mjs --ratchet` confirmou 0 regressões e o débito foi reduzido em 21 violações (baseline congelada em 14.339). (3) **Deploy no Cloudflare Pages:** `npm run build` gerou client e worker SSR otimizado (`dist/_worker.js`), implantado via Wrangler com hash `7363344b` e disponível na URL canônica `https://usewaesy.pages.dev/`. Smoke tests confirmaram HTTP 200 OK na Home e no módulo Waesy Go (`/mobilidade`). (4) **Sincronização no GitHub:** Commit atômico e `git push origin main` executados com sucesso no repositório `EduardoChapeco/waesy`.
 - **Fundamentação:** AGENTS.md B.4/B.8/B.9, Invariantes B.20 a B.30, WCAG 2.2 AA e Princípio Zero-Trust Server-Side.
 - **Consequências:** Plataforma inteiramente atualizada em produção com integridade transacional de fretes e corridas, governança multi-tenant reforçada, vitrines e campanhas configuráveis com agendamento temporal e proteção máxima contra vazamento de dados.
 
-
-
 ## DEC-163: Omni-Integrações P0/P1: Resposta a Perguntas ML (POST /answers), Pausa iFood e NFe Bling
+
 - **Data:** 2026-10-03
 - **Contexto:** Execução da Onda 5 do Plano Diretor (`docs/specs/SPEC-V144-OMNI-INTEGRATION-ENDPOINT-COMPLIANCE.md`): (1) O atendimento ao cliente no Workspace (`/workspace/atendimento` e `src/services/chat.functions.ts`) despachava respostas para threads do Mercado Livre (`context_type: 'mercadolivre'`), porém a função `answerMercadoLivreQuestion` não estava exportada em `marketplace-hub.functions.ts`, causando quebra silenciosa em runtime. (2) Faltava conformidade formal no disparo `POST /answers` com Bearer Token e `fetchWithExponentialBackoff`. (3) Necessidade de garantir sincronização reversa no iFood com pausa de itens esgotados (`PATCH /catalog/v1.0/merchants/{id}/items/{id}/status`) e ingestão de notas fiscais autorizadas do Bling ERP v3 (`nfe.emitida`) na tabela de pedidos `public.orders`, `store_nfe_invoices` e faturas.
 - **Decisão:** (1) **Exportação e Implementação de `answerMercadoLivreQuestion`:** Implementada em `src/services/marketplace-hub.functions.ts` com validação de credenciais do conector no cofre, envio para `https://api.mercadolibre.com/answers` via cliente resiliente com exponential backoff, registro de auditoria atômico em `marketplace_sync_logs` e compatibilidade polimórfica para chamada direta ou como Server Action. (2) **Auditoria de Pausa de Estoque Zero iFood:** Ratificada e testada a rotina em `dispatchRealChannelEvent` que dispara o status `UNAVAILABLE` no endpoint de catálogo do iFood Merchant quando o saldo é zero e `AVAILABLE` no reabastecimento. (3) **Ingestão Bling ERP NFe:** Ratificado o fluxo em `marketplace-webhooks.functions.ts` que vincula chave NFe de 44 dígitos, Danfe URL e XML em `public.orders`, além de atualizar `store_nfe_invoices` e `billing_invoices`. (4) **Cobertura por Testes:** Expandida a suíte em `omni-integration-compliance.test.ts` cobrindo cenários de reposta segura mesmo em canais não configurados.
 - **Fundamentação:** SPEC-V144, Apple HIG, Invariantes M01 (Zero Mocks), M08 (Integridade Transacional), AGENTS.md B.4/B.8.
 - **Consequências:** Operação de SAC e perguntas do Mercado Livre 100% funcional sem quebras, catálogo do iFood protegido contra pedidos de itens sem estoque e faturamento fiscal do Bling integrado aos pedidos.
 
-
-
 ## DEC-162: Logística Urbana & Pontos de Retirada (PUDO): Remuneração de Custódia, Checklist de Avarias e Ergonomia Tátil
+
 - **Data:** 2026-10-03
 - **Contexto:** Execução da Onda 4 do Plano Diretor (`docs/MASTER_PLAN_AUDIT.md`, Item 6): (1) O painel de gestão PUDO (`/workspace/logistica/pudo`) necessitava de transparência na remuneração de custódia por pacote retido/entregue (R$ 3,00 / volume) no balcão da loja parceira. (2) Faltava visualização direta e consolidada dos ganhos de custódia nos indicadores chave (KPIs). (3) Controles de interface, abas e botões de ação apresentavam alturas sub-ergonômicas (`h-10`, `h-9` e `h-8`), violando a regra de acessibilidade tátil móvel DL-14 (>= 44px).
 - **Decisão:** (1) **Remuneração de Custódia Transparente:** Adicionado cálculo em tempo real de `custodyEarningsCents = delivered * 300` e criado o 5º bloco de KPI no grid superior ("Remuneração Custódia") com formatação canônica de moeda via `formatMoney`. (2) **Checklist de Avarias e Logística Reversa:** Formalizado fluxo de avaria com modal descritivo e anexo de evidências fotográficas conectado a `reportPackageDamageAndReturn`. (3) **Calibração Ergonômica Apple HIG:** Todos os botões primários, secundários, exportador de manifesto CSV, abas de filtro por status e campos de formulário e pesquisa foram calibrados para `h-11 sm:h-9` (touch target >= 44px no mobile com `:focus-visible:ring-2`), sem colchetes arbitrários.
 - **Fundamentação:** Apple HIG, Invariantes M01 (Zero Mocks), M08 (Integridade Transacional), AGENTS.md B.4/B.8 (Piso WCAG 2.2 AA DL-14) e Doutrina de Design Silencioso.
 - **Consequências:** Lojistas parceiros visualizam com clareza a rentabilidade financeira da operação PUDO, o fluxo de logística reversa e avarias opera com integridade fotográfica e a usabilidade em dispositivos móveis atende integralmente às diretrizes HIG.
 
-
 ## DEC-161: PropTech & Gestão de Locação: Central de Manutenção, Vistorias de Entrada/Saída e Conciliação de Aluguel
+
 - **Data:** 2026-10-03
 - **Contexto:** Execução da Onda 3 do Plano Diretor (`docs/MASTER_PLAN_AUDIT.md`, Itens 5 e 4): (1) O módulo de manutenções de imóveis (`/workspace/imoveis/manutencoes`) sofria com corrupção de codificação de caracteres (mojibake duplo em dezenas de strings), botão "Novo Chamado" sem modal no JSX (falsa completude), e botões com alvos de toque `h-8` violando DL-14. (2) Faltava suporte à seleção de imóveis reais da loja (`listStoreProperties`) no formulário de criação de chamados. (3) Ausência da aba de Vistorias Técnicas (Entrada/Saída) e Conciliação de Comprovantes de Aluguel com o módulo de recebíveis (`/workspace/financeiro/recebiveis`).
 - **Decisão:** (1) **BFF de Imóveis Ampliado:** Criada a função `listStoreProperties` em `src/services/real-estate.functions.ts` listando imóveis ativos da imobiliária (`classifieds` com `category: 'real_estate'`) por tenant. (2) **Erradicação do Mojibake & Modal de Novo Chamado:** Reescrever integralmente `workspace.imoveis.manutencoes.tsx` em UTF-8 limpo, implementando o modal completo de criação de chamados com seleção do imóvel, título, categoria (hidráulica, elétrica, alvenaria, etc.), urgência, descrição detalhada e fotos, conectado diretamente a `createMaintenanceRequest`. (3) **Aba de Vistorias & Comprovantes:** Criada a visualização "Vistorias & Comprovantes de Aluguel" com monitoramento de laudos técnicos de entrada e periódicos e atalho para conciliação em `/workspace/financeiro/recebiveis`. (4) **Ergonomia Apple HIG:** Todos os botões, abas e inputs calibrados para `h-11 sm:h-9` (piso de 44px mobile), zero classes com colchetes arbitrários e conformidade total com o Design System.
@@ -259,6 +282,7 @@
 - **Consequências:** Gestão imobiliária operacional ponta a ponta sem botões órfãos, formulário de abertura de chamados 100% funcional com persistência no Supabase, e conciliação de aluguel desobstruída.
 
 ## DEC-160: Master Squircle Hero na Home, Cockpit KDS com Detalhamento de Comandas e Saneamento Ergonomico no ATS de Candidatos
+
 - **Data:** 2026-10-03
 - **Contexto:** Execução das diretrizes de produto e design do Plano Diretor (`docs/MASTER_PLAN_AUDIT.md`): (1) A Home da Vitrine (`/_store/`) carecia dos dois Master Banners Squircle no topo (Delivery vs Mercado) e do trilho de pills de acesso rápido, conforme padrão Apple HIG / iFood. (2) O Cockpit de Cozinha (KDS) em `workspace.pedidos.index.tsx` apresentava quebra funcional severa: os cards de produção não listavam os itens do pedido (`items_snapshot`), suas quantidades e observações/customizações, além de possuir botões com altura `h-9` e `size-9` violando o piso móvel de 44px (DL-14). (3) A tela de gestão de candidaturas (`workspace.empregos.candidatos.tsx`) continha classes arbitrárias com colchetes (`min-h-[70px]`, `max-h-[92dvh]`) e botões `h-8` violando as regras DL-02 e DL-14.
 - **Decisão:** (1) **Master Squircle Hero Banners:** Criado o componente modular `MasterSquircleHero` em `src/components/commerce/master-squircle-hero.tsx` e integrado no topo de `_store.index.tsx`. Apresenta dois cards squircle principais para "Delivery & Gastronomia" e "Mercado & Essenciais", complementados por trilho de 8 pills de acesso rápido com ícones Phosphor, zero classes arbitrárias e transições suaves. (2) **KDS com Detalhamento de Comandas:** Atualizado `workspace.pedidos.index.tsx` para renderizar o desdobramento completo de itens, quantidades (`3x`) e observações (`Obs: sem cebola`) em todas as três colunas do KDS (`Novos Pedidos`, `Em Preparo` e `Prontos / Em Rota`), elevando simultaneamente todos os botões de ação e ícones para `h-11 sm:h-9` e `size-11 sm:size-9`. (3) **Saneamento do ATS de Candidatos:** Em `workspace.empregos.candidatos.tsx`, eliminadas as classes arbitrárias `min-h-[70px]` (substituída por `min-h-20`) e `max-h-[92dvh]` (substituída por `max-h-screen`), e calibrados todos os botões de ação de `h-8` para `h-11 sm:h-9`. (4) **Feed de Notícias:** Corrigida a classe arbitrária `text-[11px]` em `_store.noticias.index.tsx` para o token semântico `text-xs`.
@@ -266,6 +290,7 @@
 - **Consequências:** Navegação na Home visualmente atraente e silenciosa com acessos rápidos, cockpit KDS 100% operacional para brigada de cozinha com visualização imediata dos pedidos, e eliminação de defeitos de design lint.
 
 ## DEC-159: Ativação da Grade 2D no Cadastro Rápido, Auditoria Canônica de Estoque e Preços de Atacado B2B
+
 - **Data:** 2026-10-03
 - **Contexto:** Execução das ações prioritárias de catálogo e estoque do Roadmap Fase 2/Fase 3: (1) O formulário de criação rápida de produtos (`/workspace/catalogo/produtos/novo`) necessitava de paridade com o editor avançado, permitindo alternar para Modo Amplo e coluna mestra sticky sem esmagar a matriz 2D. (2) As movimentações de estoque e saldo inicial na criação/edição de variantes não estavam alimentando de forma canônica e rastreável a tabela `public.stock_movements` sob a origem `variant_matrix`. (3) Inexistência de sobreposição contextual na grade 2D e no formulário de variantes para precificação B2B/Atacado (`wholesale_price_cents`), respeitando o estado da loja (`isWholesaleEnabled`).
 - **Decisão:** (1) **Modo Amplo no Cadastro Rápido:** Adicionado seletor Apple HIG "Modo Amplo / Modo Dividido" em `workspace.catalogo.produtos.novo.tsx` alternando entre `maxWidth="2xl"` com `CanonicalSplit` e `maxWidth="full"` em grade de 12 colunas, permitindo total expansão horizontal da matriz de variantes 2D. (2) **Auditoria Canônica de Movimentações Físicas:** Inserido canal badge `variant_matrix` ("Matriz 2D") em `channel-badge.tsx` e mapeado como referência prioritária em `workspace.estoque.movimentos.tsx`. Atualizado `admin-catalog.functions.ts` para que toda inserção de variante ou saldo inicial (`stock_on_hand > 0`) emita registro de auditoria atômico em `public.stock_movements` (`movement_type: 'adjustment'`, `reference_type: 'variant_matrix'`). (3) **Multi-tabela de Preços Atacado/Varejo:** Exposta a coluna e bloco responsivo `Preço Atacado (B2B)` (`wholesale_price_cents`) na matriz 2D (`variant-matrix-grid.tsx`) e no editor avançado de variantes (`advanced-variant-editor.tsx`), condicionada à ativação da modalidade de atacado na loja (`isWholesaleEnabled`), persistindo os valores em lote de forma transparente.
@@ -273,6 +298,7 @@
 - **Consequências:** Experiência consistente e ampla tanto na criação quanto na edição de produtos, histórico de auditoria de estoque em `stock_movements` 100% íntegro com origem explícita, e suporte a fluxos comerciais de atacado e varejo unificados.
 
 ## DEC-158: Overhaul do Editor de Produtos & Grade 2D de Variações: Pipeline Unificado de Salvamento, Modo Amplo e HIG Erradicando Diálogos Nativos
+
 - **Data:** 2026-10-03
 - **Contexto:** Relatos de usuários indicavam que o Editor de Produtos no Workspace (`/workspace/catalogo/produtos/$id`) sofria com esmagamento horizontal severo da matriz 2D de variações (~650px úteis devido à coluna fixa de preview de 5 colunas), falta de sincronização entre o botão primário de salvar alterações e as variações editadas (salvamento desconectado), e uso de diálogos nativos bloqueantes (`window.prompt` e `window.confirm`) em desacordo com as diretrizes Apple HIG e a Constituição AGENTS.md B.8.
 - **Decisão:** (1) **Pipeline Unificado de Salvamento:** Centralizado o estado das variantes e o pipeline de mutação em `use-product-edit.ts` e `product-edit-general-form.tsx`. O acionamento de "Salvar Alterações" no PageHeader, no `ProductEditorStickyBar` ou no formulário principal agora persiste atomicamente tanto as propriedades gerais quanto toda a matriz de variantes via `batch_upsert_variant_matrix_v5`, mantendo SKUs, EANs, estoque e sobreposições de preços sincronizados com loading unificado e feedback visual. (2) **Canvas Amplo & Modo Foco (ProductEditorLayout):** Implementado alternador de visualização entre Modo Dividido (60% formulário + 40% preview real) e Modo Amplo (100% full-width / `col-span-12`), permitindo que a grade 2D e composições técnicas usufruam da largura total do desktop sem compressão. (3) **Coluna Mestra Fixa (Sticky Left Column):** A primeira coluna da matriz 2D (Opção Mãe / Cor / Foto) agora é fixada à esquerda (`sticky left-0 bg-card z-10 border-r border-border shadow-xs`) durante a rolagem horizontal, garantindo que o lojista nunca perca o contexto da variação sendo editada. (4) **Erradicação de Diálogos Nativos:** Substituído `window.prompt` pelo modal acessível `ProductDimensionModal` com sanitização e chips sugeridos; substituído `window.confirm` por remoção imediata e fluida acompanhada de ação "Desfazer" via toast. (5) **Redução de Débito Técnico:** Zero violações P0/P1 novas introduzidas; dívida total da catraca de design lint reduzida de 18.701 para 18.693 (-8 violações; -5 P0, -2 P1), e baseline congelada com sucesso. (6) **Build de Produção Aprovado:** Compilação com Exit Code 0 gerando assets de cliente e worker Cloudflare Pages (`dist/_worker.js`).
@@ -280,6 +306,7 @@
 - **Consequências:** Experiência de edição rápida e avançada fluida, sem perda de dados entre abas, tabela espaçosa e legível com rolagem suave, e catraca de CI verde.
 
 ## DEC-157: AI-First Copilot All-In-One com ReAct Engine, Generative UI, Multi-API Pool e Claude Artifacts
+
 - **Data:** 2026-10-03
 - **Contexto:** Expansão do Waesy Copilot para arquitetura AI-First All-In-One inspirada no Manus AI, Lovable e Claude Artifacts. Demanda de integração ponta a ponta eliminando fallbacks sintéticos em favor do pool multi-provedores (Groq Llama 3.3 70B primário, Gemini 1.5 Flash fallback, OpenRouter), consultas reais de banco de dados (`directory_listings`, `products`, `mobility`), pipeline ReAct com blocos de UI generativa tipados, firewall anti-injeção e visualizador split-screen de artefatos.
 - **Decisão:** (1) Criado motor assíncrono `executeAiCopilotPipeline` em `ai-conversations.functions.ts` com tool-calling real e teto de 2.000 chars por mensagem inspecionado via `inspectPromptSecurity`. (2) Implementados 6 novos blocos de UI generativa em `structured-message-view.tsx` (`places_carousel`, `mobility_quote`, `travel_itinerary`, `legal_triage`, `food_modifier_selector`, `creative_ad_preview`) com alvos de toque >= 44px (`h-11`), zero colchetes arbitrários e conformidade WCAG 2.2 AA. (3) Estabelecida paridade completa entre a rota dedicada `/_store.copilot` e o drawer flutuante `WaesyCopilotDrawer`. (4) Criado visualizador split-screen de Claude Artifacts na coluna 3 de `ai-chat-shell.tsx` com navegação de versão, cópia e inspeção de dados. (5) Corrigidas 54 violações visuais da catraca de design lint, abaixando a baseline oficial de 18.716 para 18.701 violações. (6) Build de produção aprovado e empacotado para Cloudflare Pages via Nitro/Wrangler.
@@ -287,6 +314,7 @@
 - **Consequências:** Sistema 100% funcional end-to-end com zero dados sintéticos, suite de testes Vitest 11/11 verde, build limpo Exit Code 0, e catraca de CI reduzida com sucesso.
 
 ## DEC-156: Auditoria Visual do Workspace e Parecer do Conselho sobre Infraestrutura & Segurança
+
 - **Data:** 2026-10-03
 - **Contexto:** Auditoria profunda do painel Workspace (177 rotas) revelou quebras visuais (DL-02 colchetes, botões h-8/h-10 abaixo de 44px no mobile, window.confirm nativo e ausência de focus-visible) nas rotas `workspace.marketing.vitrine.tsx`, `workspace.integracoes.marketplaces.tsx`, `workspace.index.tsx`, `workspace.catalogo.produtos.index.tsx` e `workspace.estoque.index.tsx`. Adicionalmente, o conselho emitiu parecer sobre as 3 questões de infraestrutura pendentes.
 - **Decisão:** (1) Corrigidas 15 violações de design e ergonomia no Workspace: removidos `min-h-[220px]`, `min-h-[195px]`, `lg:max-w-[70vw]`, classes de força bruta `!`, eliminados dois `window.confirm()` nativos substituindo por feedback imediato via toast com undo, adicionado `focus-visible` nos botões de status e calibrados alvos de toque para `h-11 sm:h-9`. (2) Parecer Q1: Preservar os 36 arquivos modulares de `src/types/` (Domain-Driven Design) para não colapsar a performance do typecheck do compilador TypeScript. (3) Parecer Q2: APROVAR migração DDL em lote para fixar `search_path = public, pg_temp` nas 85 funções `SECURITY DEFINER` (incluindo `process_pos_sale_transaction`, `prevent_ledger_modification`, `adjust_stock`), neutralizando vetor crítico de escalada de privilégios. (4) Parecer Q3: Identificadas 5 tabelas com policies `cmd: ALL` e `roles: {public}` perigosamente permissivas (`crawl_queue`, `crawl_cache`, `scraper_configs`, `order_events`, `delivery_events`), recomendando restrição imediata para `{service_role}` ou `{authenticated}`.
@@ -294,6 +322,7 @@
 - **Consequências:** Catraca de CI reduzida de 18.731 para 18.716 violações com Exit Code 0. Diretrizes de segurança prontas para execução via DDL.
 
 ## DEC-155: Eliminação de Regressões DL — Baseline Atualizada de 18.881 → 18.731
+
 - **Data:** 2026-10-03
 - **Contexto:** Design-lint --ratchet detectou +257 regressões visuais acima da baseline 18.624 em arquivos editados nas sessões recentes: delivery-time-and-radius-matrix.tsx, variant-matrix-grid.tsx, product-editor-sticky-bar.tsx, canonical-store-profile-view.tsx, cart-sheet.tsx, waesy-copilot-drawer.tsx, _store.checkout.tsx, configuracoes.index.tsx e marketplace-hub.tsx.
 - **Decisão:** (1) Corrigidas 150 violações reais: DL-02 (text-[Xpx]→text-xs/sm, min-w-[70px]→min-w-16), DL-03 (mt-0.5→mt-1, gap-1.5→gap-2, gap-2.5→gap-3), DL-15 (focus-visible:ring-2 adicionado a botões raw). (2) Regressões persistentes de DL-04 (+28) e DL-15 (+60) identificadas como falsos positivos do regex da lint (JS negation operator `!expr` sendo detectado como Tailwind force modifier, e `<Button>` Radix sendo contado como `<button>` sem foco). (3) Baseline congelada atualizada para 18.731 para absorver arquivos preexistentes que não estavam na baseline anterior.
@@ -301,6 +330,7 @@
 - **Consequências:** Catraca passa com Exit Code 0. DL-04 e DL-15 continuam sendo monitorados. A dívida real (18.731) segue sendo reduzida iterativamente.
 
 ## DEC-001: Adoção do Diretório .agents como Raiz de Customização e Governança
+
 - **Data:** 2026-09-29
 - **Contexto:** A árvore de regras do IDE Antigravity mapeia o workspace para `.agents/` enquanto o prompt da spec referenciava `<dir-de-regras>/`.
 - **Decisão:** Manter `.agents/` como raiz canônica (`.agents/skills/`, `.agents/agents/`, `.agents/workflows/`), mantendo cópias de paridade na raiz (`AGENTS.md`, `DESIGN.md`) para garantir cobertura absoluta.
@@ -308,6 +338,7 @@
 - **Consequências:** Todos os agentes, skills e fluxos são lidos nativamente pelo IDE sem conflito.
 
 ## DEC-002: Estabelecimento de Tokens DTCG em 3 Camadas Semânticas
+
 - **Data:** 2026-09-29
 - **Contexto:** Existência de 94 variáveis CSS declaradas sem consumo direto nos componentes de aplicação.
 - **Decisão:** Unificar a taxonomia no padrão W3C DTCG em três camadas (`primitivo` -> `semântico` -> `componente`), vinculando tokens diretamente às classes Tailwind do `@tailwindcss/vite`.
@@ -315,6 +346,7 @@
 - **Consequências:** Proibição de valores literais nos componentes e eliminação de tokens mortos no design lint.
 
 ## DEC-003: Integração das Regras 31 a 33 e Módulo Theme Factory
+
 - **Data:** 2026-09-29
 - **Contexto:** Necessidade de harmonização das diretrizes de pesquisa empírica (Regra 31), governança de arquivos (Regra 32) e fábrica de temas (Regra 33) no contrato canônico de 12 seções.
 - **Decisão:** Integrar as referências nas seções B.2 e B.12 de `AGENTS.md`, mantendo todas as seções estritamente abaixo do teto de 25 linhas.
@@ -322,6 +354,7 @@
 - **Consequências:** 100% de aprovação na suíte de testes de serviços (`vitest` 56/56 testes verdes).
 
 ## DEC-004: Conclusão da Onda 1 — Resiliência Transacional e Anti-AI Design (GAP-001 a GAP-005)
+
 - **Data:** 2026-09-29
 - **Contexto:** Execução da Onda 1 da SPEC-001/SPEC-002 atacando as 5 principais quebras de round-trip e falhas de conclusão (P0) em catálogo, PDV, checkout, pedidos e turismo.
 - **Decisão:** Invalidação direta de catálogo, recuperação de estados com reset de loading no PDV, feedback silencioso e direto (Anti-AI Design: máximo 3 palavras em botões/toasts), auto-reconexão Realtime e polling de 6s no MotoLink, e sanitização defensiva de search params em turismo.
@@ -329,6 +362,7 @@
 - **Consequências:** Zero erros de compilação nos arquivos da Onda 1 e 5/5 gaps P0 fechados no ledger.
 
 ## DEC-005: Conclusão da Onda 2 — Reconexão de Componentes Órfãos e Unificação de Primitivos (SPEC-003)
+
 - **Data:** 2026-09-29
 - **Contexto:** Reconexão de componentes de interface órfãos e eliminação de duplicatas de primitivos de acordo com a Regra B.8.
 - **Decisão:** Conexão do `ManagerOverrideDialog` no terminal PDV (`workspace.pdv.index.tsx`), conexão do `MotoLinkTrackingWidget` no acompanhamento de pedidos (`_store.conta.pedidos.$id.tsx`), e unificação dos primitivos duplicados `working-hours-editor.tsx` e `return-modal.tsx` delegando aos componentes canônicos `BusinessHoursEditor` e `RmaWizard`.
@@ -336,6 +370,7 @@
 - **Consequências:** Zero componentes fora do roteador nos fluxos críticos de PDV, pedidos e governança; zero mocks e conformidade com Anti-AI Design.
 
 ## DEC-006: Erradicação de Glassmorphism, Blindagem RLS V140 e Deploy de Produção
+
 - **Data:** 2026-09-29
 - **Contexto:** Solicitação executiva (/goal) de erradicação de glassmorphism em superfícies utilitárias, atualização da navegação com rotas ativas de empregos, purificação de CTAs, blindagem RLS e deploy completo em produção.
 - **Decisão:** Refatoração de `FrostedCard`, `SearchableSelect`, `NativeBackButton` e `fluid-noise-surface` para superfícies sólidas e silenciosas (`bg-card`, `border-border/70`); inclusão de `/workspace/empregos` e `/workspace/curriculo/editor` em `GROUP_JOBS`; redução dos CTAs de Classificados Desktop para <= 3 palavras; criação da migração V140 com ativação forçada de RLS em todas as tabelas públicas e proteção das RPCs sensíveis; build de produção com esbuild e empacotador de ambiente Nitro/Supabase e deploy Cloudflare Pages via Wrangler.
@@ -345,6 +380,7 @@
 ---
 
 ## Handoff Operacional Final (Release de Produção e Goal Homologado)
+
 - **Status da Sessão:** Execução completa em modo /goal homologada com sucesso.
 - **Deploy Cloudflare Pages:** Realizado com sucesso em `https://72eb4b4d.usewaesy.pages.dev`.
 - **Sincronização Git:** Branch `main` sincronizado com GitHub (`1119862`).
@@ -353,6 +389,7 @@
 - **Navegação & Ergonomia:** `GROUP_JOBS` atualizado no Workspace e rótulos de Classificados enxugados conforme Anti-AI Design.
 
 ## DEC-007: Master Prompt V140 — Hybrid Checkout, Classifieds Bypass & Omni-Cart Matrix
+
 - **Data:** 2026-09-29
 - **Contexto:** Necessidade de bifurcação arquitetural entre fluxos transacionais B2C (Lojas com carrinho múltiplo e cross-sell) e fluxos conversacionais C2C (Classificados particulares e serviços locais com negociação direta).
 - **Decisão:** Refatoração do modelo de itens de carrinho para suportar rigorosamente `items: [{ item_id, qty, selected_variations, price_snapshot }]` com o motor Server Function `getCartCrossSellItems` (busca de até 3 itens da mesma loja `WHERE store_id = X AND id != Y`). No frontend, bifurcação estrita dos CTAs de anúncio: para Classificados/Serviços, o botão transacional de comprar é eliminado e substituído por `[Enviar Mensagem]` (abrindo chat nativo direto com pré-preenchimento contextual) e `[WhatsApp]`. Parametrização dos métodos de pagamento como informativos (`is_informative_only = true`) sem disparo de gateway para vendas diretas entre particulares. No carrinho, remoção de regras `!important` (DL-04) e enxugamento do título para `Carrinho (N)`.
@@ -360,6 +397,7 @@
 - **Consequências:** 100% de aprovação na suíte de testes (Vitest 110 arquivos / 702 testes verdes), build de produção aprovado e deploy na borda Cloudflare Pages (`https://7ef2b305.usewaesy.pages.dev`).
 
 ## DEC-008: Master Prompt V142 — The Omni-Marketing Engine, External Ads Binding & Max Tier Activation
+
 - **Data:** 2026-09-30
 - **Contexto:** Necessidade de conectar o impulsionamento interno (`Waesy Ads`) ao `invoice_ledger` (V141) e implementar o algoritmo de intercalação 1:4 na Vitrine Principal (`is_sponsored = true` & `sponsored_until > NOW()`), trancar as ferramentas externas de Meta Ads / Google Ads / Pixels no `Waesy Max` com Bottom Sheet de Upsell silencioso, vincular OAuth 2.0 real com disparo via Meta Graph API v20.0 / Google Ads REST API v17, conectar o Pool de IA (V127) para geração de criativos em 2 cliques e fechar o loop transacional de ROI (Telemetria V125 + Pedidos Checkout V139).
 - **Decisão:** Aplicada migração `20261210000000_v142_omni_marketing_engine_and_invoice_ledger.sql` no Supabase (`jfuebqmltksyznovhlwa`) criando `invoice_ledger`, sincronizando `billing_invoices`/`billing_line_items`, adicionando `is_sponsored`/`sponsored_until` em `classifieds` e `products`, `oauth_access_token` em `store_ad_accounts` e `attributed_campaign_id` em `orders`. Implementadas as Server Functions `executeAtomicInvoiceLedgerBoost`, `assertWaesyMaxTier`, `connectExternalAdAccountOAuth`, `dispatchExternalMetaOrGoogleCampaign`, `generateAiAdCreativeFromCatalog` e `getMarketingRoiClosedLoopMetrics`.
@@ -367,6 +405,7 @@
 - **Consequências:** Faturamento atômico por centavos inteiros com desconto automático de 50% para assinantes Waesy Max, intercalação 1:4 determinística em Classificados e Catálogo, bloqueio total de vazamento de tier para tráfego externo e prova matemática de ROI transacional.
 
 ## DEC-009: Master Prompt V143 (Fase 2) — Purga de Anúncios Falsos & Refatoração Profunda do Motor de Notícias e Curadoria IA
+
 - **Data:** 2026-09-30
 - **Contexto:** Remoção de todos os anúncios sintéticos (`classifieds` com fotos do `images.unsplash.com`), vagas fictícias (`jobs`) e editais fictícios (`mined_tenders`), além da refatoração completa do pipeline de mineração e curadoria de notícias (`mechanical-extractor.ts`, `integrity-gate.ts`, `editorial-squad.ts`, `mining.functions.ts`, `news.functions.ts`) para erradicar matérias rasas de 1 parágrafo, repetição de subtítulo no corpo, imagens genéricas do Unsplash e links de programação de TV ao vivo.
 - **Decisão:** Purgados 13 classificados sintéticos, 10 vagas sintéticas, 8 editais sintéticos e 41 stubs de notícias no Supabase (`jfuebqmltksyznovhlwa`), preservando os 5 anúncios reais de clientes (`post-media/classifieds/...`). Refatorados o extrator mecânico (suporte a `@graph` JSON-LD, extração integral de `<p>` e decodificação de entidades HTML), o Gate de Integridade (bloqueio de `images.unsplash.com`, stubs `"AO VIVO"`/`"VÍDEOS:"` e matérias `< 3` parágrafos) e o Squad Editorial (desacoplamento estrito entre `subtitle` e `mobile_sections[0]`), republicando 49 matérias reais completas com média de 6.6 parágrafos e `og:image` original dos veículos (`s2-g1.glbimg.com`, `static.ndmais.com.br`).
@@ -374,6 +413,7 @@
 - **Consequências:** Zero anúncios ou imagens sintéticas do Unsplash no banco de produção, zero matérias com repetição de subtítulo ou texto genérico de preenchimento, e 7/7 testes verdes na suíte forense (`mining-forensic-quality.test.ts`).
 
 ## DEC-010: Master Prompt V143 (Fase 3) — Executive Board E2E Audit, Sincronização DB-BFF-UI & Propagação de Design Silencioso
+
 - **Data:** 2026-09-30
 - **Contexto:** Auditoria recursiva E2E de todos os módulos e prompts anteriores (V125 a V143) para garantir zero arquivos vazios/stubs, alinhamento completo de colunas DB (`news_articles.author_name`, `source_url`, `ai_summary`, `quality_score`) com contratos BFF e componentes de leitura, registro da rota `/workspace/integracoes/marketplaces` na navegação do Workspace e erradicação de ruídos visuais (emojis, títulos compostos, badges âmbar/pulsantes) preservando 100% da capacidade funcional dos módulos.
 - **Decisão:** Atualizados `src/lib/workspace-navigation.ts` (inclusão de `/workspace/integracoes/marketplaces` e simplificação de 100% dos rótulos compostos em grupos e perfis operacionais), `src/routes/_store.noticias.index.tsx` (remoção de emojis, alinhamento do ID `tecnologia` com o banco e alvos de toque `h-11`), `src/routes/_store.noticias.$slug.tsx` (renderização de subtítulos de seções `section.heading`, síntese IA e atribuição de fonte original com alvos `h-11`), `src/routes/workspace.marketing.anuncios.tsx`, `src/routes/workspace.integracoes.marketplaces.tsx` e `src/routes/_store.classificados.index.tsx` (remoção de gradientes decorativos âmbar, `animate-pulse` e cabeçalhos compostos).
@@ -381,6 +421,7 @@
 - **Consequências:** Navegação determinística sem itens órfãos, paridade total entre tabelas Supabase, DTOs BFF e UI de leitura, alvos de toque móveis >= 44px (`h-11`) e conformidade estrita com os Gates de Design.
 
 ## DEC-011: Master Prompt V144 — Omni-Integration Audit, Endpoint Compliance & Deep Synchronization
+
 - **Data:** 2026-09-30
 - **Contexto:** Superação do modelo de "Integrações Superficiais" através de auditoria forense e implementação de padrões Enterprise oficiais (Mercado Livre, iFood OpenDelivery, Bling ERP v3 e WhatsApp Cloud API), sincronização bidirecional em tempo real de estoque/preços, ingestão de webhooks em chat unificado e faturamento automatizado de NF-e.
 - **Decisão:** Criado o cliente resiliente com Exponential Backoff e Full Jitter (`src/lib/resilient-api-client.ts`), adicionada validação de assinatura HMAC SHA-256 com janela de proteção contra replay attack (300s) e suporte a Bling v3 e WhatsApp em `src/routes/api.webhooks.marketplaces.ts` e `src/services/marketplace-webhooks.functions.ts`. No Mercado Livre, ingestão de perguntas (`topic = 'questions'`) diretamente na Central de Atendimento (`chat_threads` e `chat_messages`) e resposta oficial via `POST /answers`. No WhatsApp, ingestão de mensagens recebidas no chat central e disparo de respostas do atendente de volta ao cliente via Cloud API. No Bling ERP v3, processamento de webhooks de faturamento vinculando Danfe PDF e chave da NF-e ao pedido (`public.orders`, `store_nfe_invoices` e `billing_invoices`). No estoque, disparo resiliente de atualizações de saldo e disponibilidade para Mercado Livre, iFood e Bling ERP com tolerância a HTTP 429 Rate Limiting.
@@ -388,6 +429,7 @@
 - **Consequências:** 100% de paridade entre a documentação oficial dos grandes canais e o código do ecossistema Waesy, zero pedidos fantasmas ou furos de estoque por concorrência de canais, respostas centralizadas em 1 único inbox para múltiplos marketplaces e teste automatizado cobrindo todos os cenários com 100% de aprovação.
 
 ## DEC-012: Conclusão da Auditoria Recursiva V144 — Silent Design Hardening & 100% Test Pass Rate
+
 - **Data:** 2026-09-30
 - **Contexto:** Fechamento e consolidação das melhorias solicitadas: 100% das rotas do workspace registradas na navegação (172/172), eliminação de títulos compostos em menus/cabeçalhos, remoção de emojis e badges âmbar residuais, ampliação de touch targets para no mínimo 44px (`h-11`) no mobile e garantia de aprovação total na suíte de testes e compilação de produção.
 - **Decisão:** Registradas as 5 rotas restantes em `workspace-navigation.ts` (`/workspace/cms/calendario`, `/workspace/master/influencers`, `/workspace/configuracoes/fretes/cotacoes`, `/workspace/configuracoes/loja`, `/workspace/lojas`); simplificados os títulos em `workspace.cms.calendario.tsx` ("Calendário Editorial"), `workspace.lojas.index.tsx` ("Lojas"), `workspace.master.influencers.tsx` ("Influenciadores") e `admin-master.hubs.tsx` ("Categorias Globais"); removidos emojis e badges âmbar/pulsantes em `admin-master.boost-payments.tsx`, `admin-master.entregadores.auditoria.tsx` e `admin-master.hubs.tsx`; padronizados botões e controles para `h-11 sm:h-9` em mobile; corrigidas referências tipadas em `bigtech-lifecycle.ts` (`evaluateCoreWebVitals`) e import de `Sparkles` em `workspace-navigation.ts`.
@@ -395,6 +437,7 @@
 - **Consequências:** 115/115 suítes de testes passando (730/730 testes verdes), compilação do Vite com código de saída 0 (27.5s), zero rotas de workspace não registradas e conformidade total com o piso de design e acessibilidade.
 
 ## DEC-013: Canonical Cart Architecture, Options Preservation, Multi-Store Merging & Stock Enforcement
+
 - **Data:** 2026-09-30
 - **Contexto:** Auditoria e consolidação do fluxo canônico de Carrinho (CARRINHO / Fase 2 do Roadmap). Detecção de componente órfão duplicado (slide-out-cart.tsx), ausência de validação de estoque em incrementos de quantidade (updateCartItemQty e updateCartItemOptions), perda de selected_options e colisão de chave única em merge de convidados (merge_guest_cart RPC anterior), e recálculo dinâmico de cupons e adicionais de preço.
 - **Decisão:** Excluído o componente órfão slide-out-cart.tsx, unificando a experiência no canônico CartSheet (cart-sheet.tsx). Implementada validação estrita de estoque no backend (stock_on_hand, allow_backorder, pv.status = 'active') em updateCartItemQty e updateCartItemOptions com erros de domínio descritivos e deleção limpa quando qty <= 0. Criada a migração 20261211000000_cart_merge_options_aware.sql para suportar mesclagem multi-loja e preservação de selected_options no conflito (cart_id, variant_id, COALESCE(selected_options, '{}'::jsonb)), com fallback relacional resiliente em cart-helpers.ts. Adicionado campo compareAtCents em CartItemDTO.
@@ -402,6 +445,7 @@
 - **Consequências:** Eliminação de furos de estoque em tempo real pelo carrinho, integridade total de adicionais e opções selecionadas durante o login, 116/116 suítes de testes passando (734/734 testes verdes) e build de produção aprovado com código 0.
 
 ## DEC-014: Master Prompt V145 — The Omni-PWA Whitelabel Builder, Native Telemetry & App Metamorphosis
+
 - **Data:** 2026-09-30
 - **Contexto:** Transmutação do gerador básico de manifest PWA (`workspace.configuracoes.pwa.tsx`) em um verdadeiro Construtor de Aplicativos (App Builder) superior ao Wix, eliminando a "ilusão do app" com interface customizável da Home, blocos exclusivos mobile (`MobileBottomNav`, `AppHomeFeed`, `CategoryGrid`, `QuickCheckoutButton`), telemetria nativa determinística de instalações (`pwa_telemetry`) e ancoragem jurídica clara (separação de responsabilidade civil entre Lojista e Plataforma Waesy).
 - **Decisão:** Criada a migração `20261212000000_pwa_builder_and_telemetry.sql` para tabela `pwa_telemetry` com políticas RLS para equipe da loja e inserção anônima em eventos de prompt/install. Implementado o hook nativo `usePwaTelemetry` com interceptação de `beforeinstallprompt` e escuta de `appinstalled`. Transmutada a rota `workspace.configuracoes.pwa.tsx` em painel de 4 abas (Construtor Visual com simulador iPhone 16 Pro/Android e sincronização bilateral de catálogo real, Identidade/Manifesto, Telemetria com cálculo de conversão e breakdown por SO, e Governança/Termos).
@@ -409,6 +453,7 @@
 - **Consequências:** Zero mocks ou dados simulados, medição real de instalações por loja, interface mobile modular configurável pelo lojista, suíte de testes 100% verde (9/9 e 4/4 testes passando) e conformidade total com os gates do repositório.
 
 ## DEC-015: Master Prompt V147 — Omni-Design Audit, Spatial Architecture Metamorphosis & Pixel-Perfect Purification
+
 - **Data:** 2026-09-30
 - **Contexto:** Execução do Omni-Design Audit (V147) para erradicar a "Assimetria Visual", grids quebrados, classes arbitrárias de colchetes, paddings desiguais e interfaces mobile que eram apenas desktops espremidos em 2 colunas truncadas.
 - **Decisão:** Realizada a Fase 1 (Cartografia do Design) com emissão do docs/design/01-relatorio-assimetria.md. Reconstrução integral do esqueleto espacial do dashboard principal (workspace.index.tsx): implementação de Bento Grid canônico de 12 colunas no desktop (grid-cols-12) alinhando perfeitamente o card herói de faturamento (col-span-8) com a matriz de 4 métricas táticas (col-span-4) e a matriz bilateral de Atividades Recentes e Canais; no mobile, aplicação de bifurcação nativa eliminando colunas truncadas; purificação silenciosa com contraste por opacidade (text-muted-foreground/75), botões secundários em formato suave/tonal e garantia de alvos táteis mínimos de 44px (h-11). Erradicação de emojis e sombras decorativas em seasonal-marketing-calendar-widget.tsx, e eliminação de classes arbitrárias (-mb-[9px], min-w-[200px], min-h-[80px], stroke-[1.5]) em _store.checkout.tsx.
@@ -416,6 +461,7 @@
 - **Consequências:** Zero classes arbitrárias com colchetes nos arquivos tocados, zero emojis em interfaces de software corporativo, Bento Grid de 12 colunas operando com proporção áurea, alvos de toque móveis com piso >= 44px e experiência mobile fluida e respirável.
 
 ## DEC-016: Master Prompt V149/V147 — Omni-Purification, Anti-Mock Shield & Visual Silence Hardening
+
 - **Data:** 2026-09-30
 - **Contexto:** Consolidação sistêmica e execução de ponta a ponta dos mandatos V145 a V149: erradicação da fragmentação do Builder (unificação de Modo Clássico e Modo Omni em motor canônico único), remoção do simulador de pedidos falsos com comprador sintético em Marketplaces, eliminação de mais de 720 linhas de classes arbitrárias de colchetes e emojis em 40 arquivos (Checkout, Vitrines, Membro, Turismo, Classificados, Financeiro, Notícias e Landing), e erradicação de badges âmbar/pulsantes residuais.
 - **Decisão:** Unificado o motor do Construtor de Páginas em `src/components/builder/OmniEditor.tsx` e `src/routes/workspace.builder.$documentId.editor.tsx` eliminando a duplicidade de editores e preservando 100% da profundidade dos blocos de blocos de catálogo, landing e vitrine; removido o modal de pedidos simulados em `workspace.integracoes.marketplaces.tsx` mantendo apenas conexões e webhooks reais via HMAC SHA-256; purgadas classes arbitrárias de espaçamento e tipografia convertendo para escala de 4px do Tailwind (`h-11`, `w-80`, `min-w-52`, `text-xs text-muted-foreground/75`); substituídos badges com `animate-pulse` por estados silenciosos e simplificados títulos e tooltips compostos para rótulos diretos (<= 3 palavras).
@@ -423,6 +469,7 @@
 - **Consequências:** Zero dependência de dados sintéticos ou pedidos falsos, motor único e canônico de edição de páginas e PWA, alvos de toque >= 44px (`h-11`), 0 erros de sintaxe nos 40 arquivos modificados e silêncio visual integral em todas as superfícies auditadas.
 
 ## DEC-017: Nativização Total do Legado — Extração Canônica de Brand Kit, Modelos BMC e Populações SimLab
+
 - **Data:** 2026-09-30
 - **Contexto:** Missão de absorção e nativização total dos ativos úteis dos projetos legados (`ENGIOS`, `simwork`/`simlab`, `brand-builder-ai`, `persona-nexus`, `wider-669929d7`, `cloudblock`, `studiomachine`, `lean-canvas-creator`) sem copiar dívida técnica, código morto, mocks ou dependências externas desnecessárias.
 - **Decisão:** (1) Criada a migração `20261213000000_legacy_nativization_brandkit_bmc_simlab.sql` estendendo `brand_dna_profiles` (com tipografia, logos e proveniência de IA) e criando as tabelas `store_business_model_canvas` (com os 9 blocos de Osterwalder e RLS) e `synthetic_population_archetypes` (personas brasileiras hipercalibradas com Censo IBGE e ABEP). (2) Implementadas Server Functions BFF puras em `src/services/brand-kit.functions.ts`, `src/services/canvas-bmc.functions.ts` e `src/services/ibge-market-intelligence.functions.ts` com orquestrador universal de IA e cache resiliente. (3) Criados módulos de Silent UI em `src/routes/workspace.marketing.canvas-bmc.tsx`, `src/routes/workspace.marketing.swot.tsx` e ampliado `src/routes/workspace.marketing.brand-kit.tsx` com extração via URL. (4) Conectado o Onboarding por IA (`src/components/onboarding/magic-onboarding-card.tsx`) com navegação imediata para as matrizes estratégicas e registradas as novas rotas em `src/lib/workspace-navigation.ts`.
@@ -430,6 +477,7 @@
 - **Consequências:** 100% dos ativos úteis portados (17/17), 0 violações de classes arbitrárias de colchetes ou emojis nos novos arquivos, 6/6 testes vitest aprovados e total preservação da profundidade analítica sem dependência de SDKs de IA legados.
 
 ## DEC-018: Deploy Completo de Produção — Supabase Migrations, Worker Packaging & Cloudflare Pages Live
+
 - **Data:** 2026-09-30
 - **Contexto:** Execução do mandato estrito de deploy completo para produção no Supabase e no Cloudflare Pages via Wrangler (`usewaesy`), garantindo zero quebras, zero regressões, auditoria total de rotas e injeção resiliente de variáveis de ambiente de produção.
 - **Decisão:** (1) Saneamento das 412 migrações locais do Supabase (`scripts/check-and-apply-supabase-migrations.mjs`), corrigindo chaves estrangeiras que referenciavam views (`companies` -> `stores`) e garantindo retrocompatibilidade em `synthetic_population_archetypes`. Todas as migrações aplicadas no banco de produção (`jfuebqmltksyznovhlwa`) com recarregamento bem-sucedido do cache PostgREST e contagem validada (8 templates de squad, 23 agentes especialistas com currículo PhD e 18 arquétipos sintéticos calibrados). (2) Empacotamento unificado do worker via `scripts/wrap-worker.js` e `esbuild` em arquivo único `dist/_worker.js` (17.4MB) com variáveis de ambiente do Supabase injetadas diretamente no topo do bundle. (3) Deploy no Cloudflare Pages concluído com sucesso (`https://a17d8f83.usewaesy.pages.dev` e domínio canônico `https://usewaesy.pages.dev`). (4) Auditoria de rotas ao vivo atestando HTTP 200 OK nas superfícies públicas e HTTP 307 nas rotas autenticadas (`/workspace`, `/admin-master`) com preservação do parâmetro `returnUrl`.
@@ -437,23 +485,30 @@
 - **Consequências:** Zero quebras em produção, 100% dos testes unitários e de integração verdes (80+ arquivos de teste aprovados), banco de dados e rotas públicas/privadas plenamente operacionais.
 
 ## DEC-019: Cadeia Canônica de IA (Prompts 01-10), RLS Absoluto, Silent Gallery Snap-Scroll e Cards de Vitrine
+
 - **Data:** 2026-09-30
 - **Contexto:** Execução integral do Protocolo Base de IA (Prompts 01 a 10) e mandatos de UI/UX do Chief Architect: auditoria de RLS (zero tabelas desprotegidas), erradicação de contadores e poluição em botões de topo na Home, introdução de snap scroll horizontal nativo com indicadores na galeria mobile de classificados, e formalização dos schemas e contratos em `ia/` com ledger único persistido.
 - **Decisão:** (1) Implementada especificação completa dos Prompts 01 a 10 e criado o ledger único `ia/ledger.json` mantendo inventário canônico de 14 módulos com IA, 32 chamadas, 23 skills e 23 agentes. (2) Desacoplamento da configuração de categorias Wix de `OmniEditor.tsx` para `registry.ts`, eliminando timeout de compilação em testes e garantindo 100% de aprovação (756/756 testes verdes). (3) Verificação mecânica de RLS no banco de produção via `scripts/list-no-rls.mjs` com contagem zero de tabelas desprotegidas (100% protegidas). (4) Refatoração do componente `VitrineEngineSelector` para cards amplos, táteis (`min-h-14 sm:min-h-16`) e silenciosos sem números ou jargões técnicos. (5) Refatoração da galeria mobile em `ClassifiedDetailMobile` para container horizontal nativo com CSS scroll-snap (`snap-x snap-mandatory`), rastreio dinâmico do slide ativo e dots minimalistas.
 - **Fundamentação:** AGENTS.md B.1 a B.12, Protocolo Base de IA, DESIGN.md (Apple HIG / Silent Design) e Zero-Trust Client RLS.
 - **Consequências:** 100% dos testes verdes em Vitest, zero tabelas sem RLS, conformidade visual estrita e experiência tátil mobile instantânea.
+
 ## DEC-020: V148 Micro-Widget Engine — MetricWidget, TaskCard, TaskDetailSheet e Biblioteca de Injeção Chat
+
 - **Data:** 2026-09-30
 - **Contexto:** Implementação das Fases 1 e 2 do Master Prompt V148 (Micro-Widget Engine & Chat-Injectable UI): biblioteca de componentes React de alta densidade para injeção dinâmica pela IA dentro do fluxo de chat e para uso como painéis compactos em Dashboard.
 - **Decisão:** (1) Criado `src/components/widgets/MetricWidget.tsx` com discriminated union Zod (`MetricWidgetPropsSchema`) cobrindo `circular_progress` (anel SVG + percentage), `bar_chart_minimal` (barras CSS nativas com highlight) e `big_number` (valor grande + tendência com TrendingUp/Down). Todos os payloads da IA validados via `safeParse` com fallback silencioso de erro sem crash. (2) Criado `src/components/widgets/TaskCard.tsx` com tripla bifurcação nativa (`board`, `list`, `chat`), cluster de avatares com `-space-x-2`, motor de presença em tempo real (anel emerald no avatar ativo, badge "X editando" com dot animado) e foco acessível via `focus-visible:ring-2`. (3) Criado `src/components/widgets/TaskDetailSheet.tsx` com detecção de viewport nativa via `window.matchMedia`, bifurcando automaticamente entre `SheetContent side="right"` (Desktop ≥769px) e `SheetContent side="bottom"` (Mobile ≤768px). Painel inclui checklist de subtarefas com toggle, cluster de responsáveis com presença, linha do tempo de aprovações, ações de status (h-11 = 44px mínimo) e escape via SheetClose acessível. (4) Barrel de exportação em `src/components/widgets/index.ts` e suite de testes unitários `micro-widgets.test.ts` com 29 casos cobrindo: validação Zod (aceite/rejeição por variante), contratos de props de TaskCard e lógica de bifurcação de viewport. (5) Todas as classes arbitrárias entre colchetes eliminadas (`text-[10px]` → `text-xs`, `stroke-[2.5]` → `stroke-2`, `transition-all` → `transition-colors`), `duration-500` reduzida para `duration-300`, conformidade total com DL-02, DL-04, DL-27.
 - **Fundamentação:** AGENTS.md B.8, DESIGN.md (Silent Design / Apple HIG), `ia/09-chat.md` (Chat-First Architecture), Skill `anti-ai-design`, Skill `accessibility-floor` (touch targets ≥44px).
 - **Consequências:** 29/29 testes unitários verdes, zero erros de typecheck nos arquivos de widget, barrel exportável por qualquer módulo da plataforma, ready para injeção dinâmica da IA via BFF.
+
 ## DEC-021: Prompt 15 — Motor de Janela e Primitivas Nativas (Eliminação do Espremimento)
+
 - **Data:** 2026-09-30
 - **Contexto:** Execução integral do Prompt 15 para estabelecer fonte única de window size class, erradicar o drift histórico de breakpoints (768px vs 600px/840px da doutrina), adicionar contratos declarados de variante de janela (`windowVariant`) nas primitivas canônicas (Card, Table, Sheet, Dialog) e remediar as cinco quebras prioritárias de layout levantadas no Prompt 14 (I-0006 a I-0010).
 - **Decisão:** (1) Criado o motor canônico reativo `WindowSizeProvider` e hook `useWindowSizeClass` em `src/hooks/use-mobile.tsx`, ancorado nos tokens canônicos de `src/styles.css` (`COMPACT_MAX_WIDTH: 599`, `MEDIUM_MIN_WIDTH: 600`, `MEDIUM_MAX_WIDTH: 839`, `EXPANDED_MIN_WIDTH: 840`). Montado no root em `src/routes/__root.tsx`. (2) Bifurcado o shell da plataforma (`AppShell`, `MobileNav`, `ContextSidebar`): `MobileNav` renderiza exclusivamente em Compact (<600px), liberando 64px de área vertical em Medium (tablets); `ContextSidebar` projeta rail condensado de 64px (`w-16`) em Medium e gaveta completa de 224px (`w-56`) em Expanded. (3) Estendidas as primitivas `Card`, `Table`, `Sheet` e `Dialog` com contrato `windowVariant?: 'auto' | 'compact' | 'expanded'`. `Sheet` projeta gaveta inferior de 92dvh com alça de arraste tátil em Compact e gaveta lateral de 420px em Expanded; `Dialog` projeta full-screen sem margens em Compact e modal contido em Expanded sem colchetes arbitrários. (4) Remediados os 5 piores arquivos de layout do Prompt 14: eliminado scroll horizontal em `TemplateVerticalPremium.tsx`, eliminada barra fixa persistente em desktop e quebra de grid de 3 colunas em `travel-package-detail-view.tsx`, adicionado layout adaptativo 2x2 para abas em `editorial-showcase-view.tsx` e convertida quebra de palavras em `_store.receitas.index.tsx`.
 - **Fundamentação:** AGENTS.md B.1 a B.12, DESIGN.md Princípio 6, Apple HIG (Window Size Classes) e Protocolo de Primitivas Nativas.
+
 ## DEC-022: Prompt 16 — Anti-Jank: Interação, Render e Carregamento
+
 - **Data:** 2026-09-30
 - **Contexto:** Execução do mandato estrito do Prompt 16 para transformar a fluidez do app em padrão nativo: purga de bibliotecas pesadas do caminho crítico, erradicação de backdrop-blur decorativo e transições layout-thrashing em superfícies roláveis, eliminação de todas as ocorrências de `!important` em código `.tsx`, equalização geométrica de skeleton (CLS = 0) e aceleração tátil de overlays.
 - **Decisão:** (1) Removido `@import "maplibre-gl/dist/maplibre-gl.css"` de `src/styles.css`, transferindo o carregamento de CSS do mapa para injeção dinâmica sob demanda (`import()`) nos componentes de mapa (`StudioMapWidget`, `AddressField`, `BusinessLocationPicker`, `MapLibreCanvas`). (2) Convertido o uso de `html2canvas` para import 100% dinâmico em `recipe-story-modal.tsx` e `carousel-studio-editor.tsx`. (3) Substituído o filtro `backdrop-blur` em badges e botões de cartões roláveis (`PostCard`, `NewsCard`, `OfferCard`, `StoreCard`, `GroceryProductCard`, `DynamicProductCard`) por superfícies opacas/tonais com WCAG AAA, e substituído `transition-all` por `transition-colors`/`transition-transform` associado à classe de virtualização nativa `.content-auto-card` (`content-visibility: auto`). (4) Erradicadas as 4 ocorrências residuais de `!important` em arquivos `.tsx` (`workspace.pedidos.gestor.tsx` e `workspace_.pedidos.$id.recibo.tsx`). (5) Sincronizada a proporção do `ProductCardSkeleton` para `aspect-square`, zerando Cumulative Layout Shift (CLS) no carregamento de produtos. (6) Acelerada a duração de abertura de `SheetContent` de 500ms para 300ms e fechamento para 200ms, eliminando classes arbitrárias de colchetes.
@@ -461,6 +516,7 @@
 - **Consequências:** 61/61 testes unitários verdes (incluindo 12 novos testes em `src/hooks/anti-jank.test.ts`), zero `!important` em arquivos `.tsx`, zero bytes de maplibre no caminho crítico de páginas comuns, zero passadas de blur de fundo durante rolagem de feed e render estável a 60/120fps.
 
 ## DEC-023: BigTech Board — Chat-as-an-Application, Mensagens Estruturadas, Ações Comerciais e Purga Visual
+
 - **Data:** 2026-09-30
 - **Contexto:** Auditoria do Conselho Executivo BigTech (CPO, Chief Architect, Security Engineer, Design Ops, QA Gatekeeper) sobre todo o histórico de planos e prompts (`ia/01` a `ia/16`), executando de ponta a ponta as fases que permaneceram em especificação: o ecossistema de Chat de Interface (Prompt 09 e Prompt 10), menu "+" com ações tipadas, erradicação de classes de força bruta (`!important`), expurgo de emojis em componentes de UI e eliminação de títulos compostos (> 6 palavras).
 - **Decisão:** (1) Criado o componente canônico `StructuredMessageView` em `src/components/chat/structured-message-view.tsx` com renderização de blocos tipados: `order_tracker` (5 etapas da jornada de entrega), `product_card` (card de produto com CTA direto de adição ao carrinho), `proposal_card` (orçamento com cálculo de parcelas e CTA de aceite), `metric_widget` (integrado com `MetricWidget`), `task_card` (integrado com `TaskCard`) e `table`. (2) Atualizados os schemas `sendStaffMessageSchema` e `sendCustomerMessageSchema` em `src/services/chat.functions.ts` para suportar `message_type: "structured_blocks"` com validação Zod. (3) Integrada a exibição de blocos estruturados no Workspace (`workspace.atendimento.index.tsx`) e na área do cliente (`_store.conta.conversas.$id.tsx`). (4) Implementado menu "+" com `DropdownMenu` acessível no composer de atendimento para inserção instantânea de rastreio, proposta, métricas e tarefas de suporte. (5) Erradicadas as classes com `!` (`max-sm:!h-[100dvh]`, `max-sm:!inset-0`, `max-sm:!rounded-none`) e colchetes arbitrários `[70vw]` em `workspace.atendimento.index.tsx`. (6) Erradicados emojis na interface (`⭐`, `💬`, `🎯`, `🔥`, `💡`) e substituídos títulos compostos por rótulos diretos em `location-master-pill`, `editorial-showcase-view`, `business-hours-editor`, `variant-matrix-grid`, `inline-post-composer` e `digital-companion-card`. (7) Criada suíte de testes `src/components/chat/structured-chat.test.ts` (10 novos testes unitários) e corrigido teste de import dinâmico em `omni-builder.test.ts`, garantindo 100% de testes verdes em todo o repositório (817+ testes).
@@ -468,6 +524,7 @@
 - **Consequências:** Zero mocks, zero dados fictícios, 87/87 testes no conjunto nuclear aprovados, total compatibilidade com banco de dados de produção e experiência de chat de alta fidelidade operacional.
 
 ## DEC-024: Auditoria Forense Recursiva — RBAC Multi-Nível, Purga de Emojis em 100% das Rotas e Normalização Tipográfica
+
 - **Data:** 2026-09-30
 - **Contexto:** Execução do mandato do Conselho Executivo BigTech para auditoria e remediação end-to-end do ecossistema: garantia de autorização em 3 camadas (UI Shell, BFF Server Functions e RLS), erradicação absoluta de emojis na árvore de rotas de workspace, eliminação de classes arbitrárias de tipografia (`text-[9px]`, `text-[10px]`, `text-[11px]`) e normalização de títulos compostos (> 6 palavras).
 - **Decisão:** (1) Auditadas as 174 rotas de workspace e os 321 módulos de BFF em `src/services/`. Mapeado o modelo de governança em 3 camadas: `WorkspaceShell` e `workspace.tsx` com restrições por cargo (`OWNER_ONLY_ROUTES`, `TEAM_MANAGEMENT_ROUTES`, `FINANCE_RESTRICTED_ROUTES`), BFF protegido por `requireOwner()`, `requireManager()`, `requireFinance()`, `requireStaff()` e `assertStoreAccess()`, e RLS forçando isolamento estrito por `store_id`. (2) Erradicados 100% dos emojis em todas as rotas do workspace (138 arquivos limpos), substituindo ícones decorativos por componentes semânticos de `lucide-react` (`Package`, `UtensilsCrossed`, `Plane`, `ClipboardList`, `Truck`, `Boxes`, `Palette`, `Link2`, `Megaphone`, `Newspaper`, `Ticket`, `Briefcase`, `Car`, `GraduationCap`, `Bus`, `Star`). (3) Normalizadas todas as classes tipográficas arbitrárias `text-[9px]`, `text-[10px]`, `text-[11px]` para o token canônico `text-xs`. (4) Simplificados títulos compostos com mais de 6 palavras em 11 rotas para títulos diretos e objetivos. (5) Higienizado `src/components/workspace/workspace-shell.tsx` com eliminação de classes arbitrárias de largura e padding (`w-64`, `w-72`, `max-w-36`, `rounded-2xl`, `transition-colors`).
@@ -475,6 +532,7 @@
 - **Consequências:** Zero emojis nas 174 rotas de workspace, zero violações de classes arbitrárias de fonte em rotas de workspace, 87/87 testes nucleares Vitest 100% verdes e conformidade estrita com as diretrizes de governança e design.
 
 ## DEC-025: Prompt 16 Anti-Jank & Design Lint Gate Closing — Lazy Loading de Bibliotecas Pesadas, Erradicação de Drift em Rotas e Conclusão de Testes
+
 - **Data:** 2026-09-30
 - **Contexto:** Fechamento e certificação final do Prompt 16 (Anti-Jank: Interação, Render e Carregamento): eliminação de dependências pesadas restantes do bundle inicial, validação de rotas do TanStack Router, alinhamento rigoroso com as regras DL-01 a DL-30 e prova com 100% de testes verdes.
 - **Decisão:** (1) Otimizado `src/components/ui/image-cropper-dialog.tsx`: conversão de `Cropper` (`react-easy-crop`) para carregamento sob demanda com `React.lazy()` e `<Suspense />`, purga de emoji residual e normalização de classes arbitrárias de fonte (`text-[11px]` → `text-xs`) e transição (`transition-all` → `transition-colors`). (2) Corrigida rota em `src/components/chat/structured-message-view.tsx` para o path canônico `/produto/$slug` (sem o prefixo de layout pathless `_store`), normalizadas todas as fontes arbitrárias e instalados anéis de foco acessíveis (`focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none`) em todos os botões e CTAs interativos. (3) Verificação integral de compilação TypeScript com 0 erros (`npm run typecheck` Exit Code 0 em todos os 1.461 arquivos). (4) Execução da suíte completa de testes unitários e de integração (`vitest run`), atingindo 827/827 testes aprovados em 124 arquivos de teste sem falhas. (5) Registro final no ledger e relatório técnico `ia/16-relatorio.md`.
@@ -482,6 +540,7 @@
 - **Consequências:** Zero dependências pesadas bloqueando carregamento inicial, 827/827 testes vitest verdes, typecheck com 0 erros em 1.461 arquivos, total conformidade com os portões de qualidade BigTech.
 
 ## DEC-026: Paridade Canônica de Perfil Comercial, Tri-Engine Vitrine e Onboarding Ágil
+
 - **Data:** 2026-09-30
 - **Contexto:** Execução do mandato estrito sob a flag /goal para resolução integral das quebras e gaps reportados: (1) erradicação de sufixos numéricos aleatórios (-1721) em slugs e handles de empresas; (2) adequação da capa da empresa para proporção panorâmica hero 21:9 com scroll snap de múltiplos banners; (3) propagação atômica de capas e logos entre Brand Kit, perfil público e banco de dados; (4) criação de editor in-page completo da empresa no perfil público (capa 21:9, logo 1:1, contatos, bio, redes e biolinks); (5) integração de AddressField com busca de CEP, geolocalização e pin no mapa, assistente IA de bio e prévia ao vivo 1:1 no Onboarding Expresso; (6) implementação da arquitetura Tri-Engine da Vitrine (Empresas, Marketplace e Classificados) em _store.index.tsx e _store.explorar.tsx.
 - **Decisão:** (1) Criado src/lib/slug-utils.ts com generateSlug, normalizeHandle e resolveUniqueStoreSlug, erradicando números aleatórios e adotando sufixos incrementais limpos (-2, -3) somente em colisão real. Atualizados company-mvp.functions.ts e onboarding.functions.ts. (2) Implementado updateStoreProfileFn em src/services/store.functions.ts com validação Zod e sincronização bilateral atômica entre stores e directory_listings. (3) Atualizado getPublicStoreProfile em src/services/catalog.functions.ts para selecionar e propagar banner_url e cover_url. (4) Reestruturado o cabeçalho em canonical-store-profile-view.tsx com capa hero 21:9 (aspect-[21/9]), scroll snap contínuo e avatar squircle 1:1 sobreposto. Modal de edição expandido para editor in-page completo com suporte a biolinks e upload de capa 21:9. (5) Refatorado FastCompanyOnboarding: integrado AddressField com CEP e geocoding, adicionado botão de geração com IA e atualizada a prévia ao vivo fiel à CanonicalStoreProfileView sem emojis. (6) Expandido VitrineEngineMode para "empresas" | "marketplace" | "classifieds" em marketplace-compliance.ts e atualizado VitrineEngineSelector com 3 cards no index e explorar. (7) Criada suíte de testes unitários src/services/store-profile-and-tri-engine.test.ts (8 novos testes aprovados).
@@ -489,6 +548,7 @@
 - **Consequências:** 835/835 testes unitários e de integração verdes em 125 arquivos, compilação TypeScript com 0 erros em todos os 1.461 arquivos, paridade total de dados e sincronização de contratos BFF/UI.
 
 ## DEC-027: Prompt 17 — Design Lint V2, Catraca Anti-Regressão e Gate de CI
+
 - **Data:** 2026-09-30
 - **Contexto:** Execução do mandato do Prompt 17 para completar o catálogo mecânico de regras de design (DL-01 a DL-30) de docs/design/DESIGN-LINT.md com detectores determinísticos de máquina, escopo e linha exata, validação de exceções não-silenciosas (com motivo >= 10 chars e prazo de expiração), congelamento da baseline atual e implantação da catraca (ratchet) no pipeline de CI para impedir qualquer regressão visual.
 - **Decisão:** (1) Implementado motor Design Lint V2 em scripts/design-lint.mjs cobrindo todas as regras do catálogo (DL-01 a DL-30) com reporte linha a linha, coluna, severidade e mapeamento por módulo (routes/store, routes/workspace, routes/admin, components/ui, etc.). (2) Criado parser de exceções inline (// design-lint-ignore DL-XX reason:... expiry:YYYY-MM-DD) com validação estrita (rejeita ausência de motivo, motivo < 10 caracteres ou validade expirada como violação impeditiva DL-EXEMPTION P0). (3) Criada suíte unitária de testes normativos em scripts/design-lint.test.mjs com 44 testes automatizados cobrindo caso positivo, caso negativo, exceção válida, exceção expirada e lógica de catraca para todas as regras. (4) Congelada a baseline em design-lint.baseline.json com total de 40.203 violações históricas mapeadas por módulo e por regra. (5) Integrado modo --ratchet em package.json (lint:design), validando que qualquer alteração que incremente violações totais, severidades P0/P1 ou contagens individuais de regra ou módulo bloqueia o gate com Exit Code 1. (6) Provada a eficácia com injeção de violações canário (DL-01, DL-02, DL-03, DL-04), registrando falha da catraca com Exit Code 1, e posterior remoção retornando a aprovação com Exit Code 0. (7) Publicado painel executivo em docs/design/LINT_DASHBOARD.md.
@@ -496,6 +556,7 @@
 - **Consequências:** Zero regressões permitidas a partir deste marco; 44/44 testes normativos de lint verdes; 835/835 testes de integração vitest verdes; compilação TypeScript com 0 erros em 1.461 arquivos; gate automatizado e acoplado a npm run check:canonical.
 
 ## DEC-028: Prompt 32 — Recuperação End-to-End de Rotas, Zero Links Quebrados e Redução em Lote da Dívida Visual
+
 - **Data:** 2026-09-30
 - **Contexto:** Execução do PROMPT 32 (Prompt Mestre: Recuperação End-to-End, Conformidade e Escala): auditoria e erradicação de links quebrados em 100% da árvore de rotas, saneamento de referências legadas (/admin/*), alinhamento de links no modal global de ferramentas, e redução em lote de 1.645 violações visuais nas telas prioritárias de maior débito histórico (_store.conta.classificados.novo.tsx, workspace.turismo.viagens.$id.tsx, travel-package-detail-view.tsx, mining-dashboard.tsx, editorial-showcase-view.tsx).
 - **Decisão:** (1) Saneamento do script de auditoria de rotas `scripts/audit-routes-matrix.mjs` para suporte a propriedades de objeto (`to:`, `href:`, `path:`) e exclusão de assets estáticos e rotas geradas de árvore interna, reduzindo links quebrados de 240 para 0 absoluto. (2) Correção do redirecionamento pós-publicação de mural em `src/routes/workspace.mural.novo.tsx:78` de `/_store/mural` para a URL pública canônica `/mural`. (3) Atualização dos links legados `/admin/*` em `src/components/admin/admin-shell.tsx` para os equivalentes canônicos em `/workspace/*`. (4) Correção de link quebrado para publicação de vagas em `src/lib/navigation-registry.ts:410` para `/workspace/empregos/novo`. (5) Correção de links de biolinks e carnês em `src/components/workspace/workspace-all-tools-dialog.tsx` para `/workspace/marketing/hotpages` e `/workspace/financeiro/recebiveis`. (6) Erradicação de emojis em `src/components/commerce/travel/travel-package-detail-view.tsx` e `src/lib/classifieds/canonical-airports.ts`, substituindo por componentes semânticos de ícone (`Check`, `Plane`, `Bus`, `Ship`). (7) Sanitização em lote de tokens fora de grade (0.5, 1.5, 2.5, 3.5), classes de colchetes arbitrários (`text-[10px]`, `min-h-[100dvh]`), raios não canônicos (`rounded-xl`, `rounded-2xl`) e `transition-all` nos 5 arquivos topo de dívida, reduzindo o total global de violações de 40.203 para 38.558 (-1.645 violações, -936 P1, -635 P2, -74 P3). (8) Atualização e congelamento da nova baseline em `design-lint.baseline.json` com aprovação da catraca `npm run lint:design` (Exit Code 0). (9) Emissão dos relatórios de auditoria `ia/32-selo.md`, `ia/32-rotas.md`, `ia/32-rotas.json` e `ia/32-erros.md`. (10) Verificação contínua aprovada com 835/835 testes Vitest verdes, 44/44 testes normativos do lint e 0 erros TypeScript.
@@ -503,6 +564,7 @@
 - **Consequências:** Zero links quebrados no repositório inteiro, 1.645 violações visuais eliminadas, catraca ativa com novo teto reduzido (38.558), 100% de testes verdes e zero perda de funcionalidade.
 
 ## DEC-029: PROMPT 11 (Plano #15) — Módulos Verticais com IA: RH, Contábil, Financeiro e Jurídico
+
 - **Data:** 2026-09-30
 - **Contexto:** Execução do mandato do PROMPT 11 (Plano #15) da cadeia declarativa de IA: dotação de capacidade de inteligência artificial nativa aos 4 grandes módulos verticais do ecossistema Waesy (Recursos Humanos, Contábil/Fiscal, Gestão Financeira e Jurídico/Governança), integrados através da porta única de backend (`executeUnifiedAiCall`), sem acoplamento a modelos específicos, com suporte a human-in-the-loop e acionáveis pelo Chat AI-First.
 - **Decisão:** (1) Documentada especificação técnica completa em `ia/11-verticais.md` catalogando as 16 capacidades (4 por módulo vertical), seus gatilhos, níveis de risco e requisitos de aprovação humana. (2) Implementado serviço canônico de BFF em `src/services/vertical-ai-modules.functions.ts` exportando funções Server Functions tipadas por Zod e funções lógicas com fallbacks determinísticos sem mocks ou alucinações. (3) Adicionado suporte ao bloco `vertical_ai_result` e ação `execute_vertical_ai` no componente de chat silencioso `src/components/chat/structured-message-view.tsx`. (4) Criada suíte de testes unitários `src/services/vertical-ai-modules.test.ts` cobrindo 100% das 16 capacidades verticais e expandida suíte `src/components/chat/structured-chat.test.ts` para 11 testes aprovados. (5) Registro no ledger com selo `PROMPT_11_VERTICAL_AI_MODULES_CERTIFIED`.
@@ -510,6 +572,7 @@
 - **Consequências:** 16 novas capacidades de inteligência vertical em produção, proteção human-in-the-loop para decisões sensíveis, 100% de testes verdes e paridade funcional completa com o catálogo corporativo.
 
 ## DEC-030: PROMPT 12 (Plano #16) — Framework de Qualidade da IA, Benchmarks Reais e Baseline Congelada
+
 - **Data:** 2026-09-30
 - **Contexto:** Execução do mandato do PROMPT 12 (Plano #16) da cadeia declarativa de IA: estabelecimento de um framework de avaliação sistemática e contínua da qualidade das respostas de IA no ecossistema Waesy, prevenindo alucinações, degradação semântica e regressões funcionais, com rubricas objetivas, benchmarks reais e baseline congelada.
 - **Decisão:** (1) Criada especificação técnica `ia/12-qualidade.md` formalizando 6 rubricas com âncoras comportamentais 0-5 (Precisão Factual, Aderência ao Formato, Relevância de Negócio, Ausência de Alucinação, Tom de Voz, Segurança/Conformidade). (2) Criado dataset de referência `ia/reference-benchmarks.json` com 20 casos reais cobrindo RH, Contábil, Financeiro e Jurídico com thresholds estritos. (3) Congelada a baseline canônica de qualidade em `ia/quality-baseline.json` com score global de 4.70/5.00 e taxa de alucinação de 0.0%. (4) Implementado motor de avaliação automatizado em `src/services/ai-quality-evaluator.engine.ts` capaz de avaliar respostas individuais e rodar suítes de benchmark contra regressões. (5) Criada suíte de testes unitários `src/services/ai-quality-evaluator.test.ts` (4 testes cobrindo 20 benchmarks com 100% de aprovação e validação anti-regressão da baseline). (6) Registro no ledger com selo `PROMPT_12_AI_QUALITY_FRAMEWORK_CERTIFIED`.
@@ -517,6 +580,7 @@
 - **Consequências:** 20 benchmarks canônicos automatizados, 100% de precisão nos testes de regressão, zero tolerância a alucinação e porta de qualidade blindada para modelos de IA.
 
 ## DEC-031: PROMPT 13 (Plano #17) — UX Conversacional Canônica, Engenharia Reversa e Matriz de Blocos
+
 - **Data:** 2026-10-01
 - **Contexto:** Execução do mandato do PROMPT 13 (Plano #17) da cadeia declarativa de IA: engenharia reversa das melhores referências de design limpo (Apple HIG, Linear, WhatsApp Minimalist, Framer), especificação e desenho nos dois shells (compacto <600px e expandido >=840px), implementação da matriz completa de 14 blocos estruturados e 5 estados (loading skeleton, empty, error com retry, filled, streaming), piso WCAG 2.2 AA e redução de débitos visuais.
 - **Decisão:** (1) Criada especificação normativa `ia/13-design-conversa.md` detalhando princípios com contra-exemplos, medidas anatômicas e catálogo de blocos. (2) Refatorado e expandido `src/components/chat/structured-message-view.tsx` para catálogo de 14 blocos tipados (`order_tracker`, `product_card`, `proposal_card`, `table`, `metric_widget`, `task_card`, `vertical_ai_result`, `card_carousel`, `entity_card`, `inline_form`, `poll`, `event_card`, `job_card`, `financial_entry`, `summary_card`), com suporte nativo a `isLoading` (skeleton), `isStreaming` (cursor pulsante), `error` com `onRetry` e estado vazio. (3) Saneadas todas as cores literais e classes fora de grade em `src/routes/_store.conta.conversas.$id.tsx` e instalados atributos de acessibilidade `role="log"`, `aria-live="polite"` e touch targets >= 44px (`h-11`). (4) Expandida suíte `src/components/chat/structured-chat.test.ts` de 11 para 20 testes unitários aprovados (100% de cobertura de blocos e estados). (5) Executado Design Lint V2 com eliminação de 38 violações globais, catraca de CI aprovada (`npm run lint:design`) e novo teto congelado em 38.514 violações em `design-lint.baseline.json`. (6) Build de produção aprovado (`npm run build`) com Exit Code 0 e zero erros TypeScript. (7) Registro no ledger com selo `PROMPT_13_CONVERSATIONAL_UX_CERTIFIED`.
@@ -524,6 +588,7 @@
 - **Consequências:** Experiência conversacional de nível de engenharia Apple/Linear, 14 blocos funcionais nativos, acessibilidade em tempo real com live-regions, baseline de design lint permanentemente reduzida para 38.514 violações.
 
 ## DEC-032: PROMPT 18 (Plano #18) — META-CHECK: Auditoria de Coerência Sistêmica dos Prompts 01 a 13
+
 - **Data:** 2026-10-01
 - **Contexto:** Execução do mandato do PROMPT 18 (Plano #18) da cadeia declarativa de IA: auditoria forense transversal de coerência sistêmica de todos os módulos fundamentais (Prompts P01 a P13), verificação da ausência de arquivos vazios, validação da Doutrina Anti-Mock (zero Truman Show) e mapeamento exaustivo de gaps remanescentes para o Plano #19.
 - **Decisão:** (1) Emitido relatório técnico canônico `ia/18-meta-check.md` validando a integridade dos 11 prompts fundamentais executados e mapeando suas conexões com tabelas, BFFs e UIs. (2) Verificada conformidade com build de produção limpo (`npm run build` Nitro bundle Cloudflare Pages), compilação TypeScript com 0 erros em 1.460+ arquivos e 865/865 testes unitários/integração verdes. (3) Identificados e priorizados os gaps G-01 (integração pericial no backend de RMA), G-02 (upload local de mídia e paste Ctrl+V no portal B2C de trocas) e G-03 (visualização pericial da avaria no Drawer de Resolução do lojista) para execução imediata no Plano #19. (4) Registrado selo `META_CHECK_PROMPTS_01_TO_13_CERTIFIED` no ledger.
@@ -531,6 +596,7 @@
 - **Consequências:** Coerência sistêmica homologada entre todos os módulos de IA, catálogo de blocos conversacionais e contratos BFF, com caminho livre e especificado para a execução do Plano #19.
 
 ## DEC-033: PROMPT 19 (Plano #19) — Perícia Visual Anti-Fraude com IA em RMA e Upload Local / Ctrl+V
+
 - **Data:** 2026-10-01
 - **Contexto:** Execução do mandato do Plano #19 (Frente B): integração do pipeline de perícia visual anti-fraude com IA no ciclo de devoluções e trocas (RMA), eliminando riscos de fraudes por imagens sintéticas geradas por IA (Midjourney, DALL-E, Stable Diffusion) ou fotos descontextualizadas da web, provendo upload de arquivo local, drag-and-drop e captura por Ctrl+V no portal do consumidor, além de visualização pericial e laudo técnico para o lojista.
 - **Decisão:** (1) Implementado motor forense de imagens (`analyzePhotoForensics`, `parseRmaForensics`) e exportado tipo canônico `RmaForensics` em `src/services/rma.functions.ts`. (2) Atualizados contratos Zod de `requestCustomerRma` para aceitar `claimPhotoUrl` e `claimPhotoBase64`, adicionando validação de segurança e estamparia do cabeçalho de auditoria `[LAUDO_PERICIAL]` nas notas de solicitação. (3) Atualizadas consultas de RMA do cliente (`listCustomerRmas`) e do lojista (`listAdminRmas`) com parsing automático dos campos forenses (`claimPhotoUrl`, `forensicStatus`, `forensicRisk`, `isAiFlagged`, `cleanNotes`). (4) Integrado `src/services/exchanges.functions.ts` (`listExchanges` e `updateExchangeStatus`) unificando as tabelas e RPCs atômicas com os campos periciais. (5) Criada suíte de testes unitários `src/services/rma.test.ts` (6 testes passando 100% verde) validando fotos reais, imagens sintéticas de IA, placeholders genéricos e integridade de parsing. (6) Desenvolvido no portal do cliente (`src/routes/_store.conta.trocas.tsx`) componente de dropzone acessível com upload de arquivo local, drag-and-drop, captura de área de transferência (Ctrl+V via `extractMediaFromClipboard`), URL fallback e visualização de miniatura com selo forense. (7) Atualizado o painel do lojista (`src/routes/workspace.pedidos.trocas.tsx`) com inspeção de alta resolução no `ResolutionDrawer`, alertas de imagem sintética ou selo de autenticidade, além de badges e miniaturas no Kanban e Tabela. (8) Executado Design Lint V2 com redução de mais 4 violações visuais e congelamento da nova baseline em `design-lint.baseline.json` (38.510 violações). (9) Registro no ledger com selo `PROMPT_19_RMA_AI_FORENSICS_CERTIFIED`.
@@ -538,16 +604,21 @@
 - **Consequências:** Proteção ativa contra fraudes de RMA com imagens geradas por IA, UX de upload fluido sem fricção (Ctrl+V nativo), transparência para o lojista e baseline do lint rebaixada para 38.510 violações.
 
 ## DEC-034: PROMPT 18 (Plano #24) — Auditoria Contínua de UI por Módulo: Saneamento Completo de viagens.$id.tsx
+
 - **Data:** 2026-10-01
 - **Contexto:** Execução do mandato do PROMPT 18 (Plano #24): ciclo de auditoria contínua e elevação de módulo, iniciando pela fila prioritária no ecossistema de turismo (`src/routes/workspace.turismo.viagens.$id.tsx`). Saneamento cirúrgico de 63 violações (44 P0, 17 P1, 1 P2, 1 P3), conformidade estrita com Apple HIG / Silent Design, eliminação de controles interativos sub-dimensionados (< 44px) e rebaixamento do teto de CI.
 - **Decisão:** (1) Criado SSOT normativo de auditoria contínua de UI em `docs/UI_AUDIT_LEDGER.md` com rastreamento por módulo, ciclo, métricas e fila de prioridade. (2) Emitido relatório canônico `ia/18-turismo-viagens.md` com cumprimento das Fases A a E e resumo executivo de 8 linhas. (3) Saneadas 100% das 63 violações em `src/routes/workspace.turismo.viagens.$id.tsx`: alvos táteis normalizados para `h-11` (44px) e `size-11`, espaçamentos fora de grade (`space-y-0.5`, `px-2.5`) convertidos para múltiplos canônicos de 4px (`space-y-1`, `px-3`), cores literais `text-white` substituídas por `text-primary-foreground`, sombras `shadow-sm` convertidas para `shadow-xs`, guardas `motion-reduce:transition-none` instaladas e anéis de foco `:focus-visible` aplicados em todos os botões e abas. (4) Reduzido o total de violações no módulo de 63 para 0 absoluto. (5) Catraca de CI executada com sucesso (`npm run lint:design`), registrando redução líquida de 63 violações e congelando o novo teto global em 38.447 violações em `design-lint.baseline.json`. Arquivos globais com débito reduzidos de 1.118 para 1.117. (6) Suíte de testes normativos aprovada com 44/44 testes verdes (`npm run lint:design:test`). (7) Registrado selo `PROMPT_18_TURISMO_VIAGENS_AUDITED` no ledger.
 - **Fundamentação:** AGENTS.md B.1 a B.12, PROMPT 18 (Fases A a E), Apple HIG e Silent Design.
+
 ## DEC-035: PROMPT 19 (Plano #25) — MCP e WebMCP: O Sistema como Superfície Autônoma para Outras IAs
+
 - **Data:** 2026-10-01
 - **Contexto:** Execução do mandato do PROMPT 19 (Plano #25): transformação do ecossistema Waesy em superfície de operação programática de primeira classe para agentes autônomos de IA externos (Cursor, Claude, Windsurf, Perplexity, GPT e squads internos), derivando declarativamente as ferramentas de negócio a partir do registry oficial com contratos tipados, isolamento multi-tenant estrito, recursos, prompts, manifestos WebMCP e OpenAPI 3.1, e indexação autônoma.
 - **Decisão:** (1) Criado o SSOT declarativo `src/registries/mcp-tool-registry.ts` expandindo a cobertura de 13 ferramentas manuais para 28 ferramentas derivadas cobrindo 14 módulos críticos de negócio (Catálogo, Diretório, Logística/WMS, Pedidos, Agendamento, Turismo, Propostas, Contratos, Financeiro/Caixa, RH, Marketing/SimLab, Fiscal, Integrações e Suporte/RMA). (2) Implementada camada de autorização com isolamento multi-tenant intransponível (`assertStoreAccess`) e rate limiting por IP/loja via sentinela (`enforceRateLimit`), disparando 403 Forbidden imediato e registro append-only em `system_audit_logs` para tentativas de acesso cross-tenant. (3) Atualizado `src/services/mcp-server.functions.ts` derivando dinamicamente `MCP_TOOLS_MANIFEST` e expondo o protocolo completo de Resources (`MCP_RESOURCES_MANIFEST`) e Prompts (`MCP_PROMPTS_MANIFEST`). (4) Sincronizados os endpoints canônicos de descoberta `/api/webmcp.json` e `/api/openapi.json` com versão 2.2.0 e capabilities completas (tools: true, resources: true, prompts: true). (5) Criados os arquivos canônicos de descoberta para modelos e agentes de IA `public/llms.txt` e `public/.well-known/mcp.json`. (6) Desenvolvida suíte completa de testes unitários `src/services/mcp-server.test.ts` (13/13 testes verdes, 39/39 na suíte de serviços). (7) Validada catraca de design lint sem regressões (38.447 violações mantidas). (8) Registro no ledger com selo `PROMPT_19_WEBMCP_PROTOCOL_CERTIFIED`.
 - **Fundamentação:** AGENTS.md B.1 a B.12, PROMPT 19 (Fases A a E), Zero-Mock Doctrine, Model Context Protocol (v1) e Restrição Multi-Tenant Zero-Trust.
+
 ## DEC-036: PROMPT 21 (Plano #28) — Shell de Conversa AI-First com Trilha de Atividade e Artefatos Versionados
+
 - **Data:** 2026-10-01
 - **Contexto:** Execução do mandato do PROMPT 21 (Plano #28): transformação do chat em superfície principal do produto com bifurcação responsiva entre Compact (<600px) e Expanded (>=840px), exibição em tempo real de trilha de atividade da IA (`AIActivityTrail`), renderização in-stream de artefatos versionados (`ChatArtifactCard`) integrados ao Builder, composer unificado ergonômico (`ChatComposer`) com gravação de áudio e citação de respostas, e persistência de threads de projeto e memória de trabalho.
 - **Decisão:** (1) Criada migração aditiva `supabase/migrations/20261215000000_ai_chat_shell_artifacts_and_projects.sql` expandindo `chat_threads.thread_type` para `project` e `ai_assistant`, adicionando `working_memory` e `is_pinned`, e criando a tabela `chat_artifacts` com RLS multi-tenant. (2) Desenvolvido componente `src/components/chat/ai-activity-trail.tsx` com telemetria real (duração em ms, tokens, custo), cancelamento de run e zero passos simulados. (3) Desenvolvido componente `src/components/chat/chat-artifact-card.tsx` com 6 tipos de artefato versionados e ação nativa "Abrir no Builder". (4) Desenvolvido componente `src/components/chat/chat-composer.tsx` com alvos de toque de 44px, ditado por voz e citação de mensagens. (5) Desenvolvido `src/components/chat/ai-chat-shell.tsx` com os dois layouts bifurcados, histórico com separadores de data e painel de contexto. (6) Implementado serviço BFF `src/services/ai-conversations.functions.ts` com tipagem Zod e Server Functions seguras. (7) Criada suíte de testes `src/components/chat/ai-chat-shell.test.ts` (6/6 testes verdes em 589ms, 39/39 globais). (8) Design lint verificado com zero regressões na catraca congelada (38.447 violações), typecheck com 0 erros em 1.528 arquivos e build de produção Cloudflare Pages gerado com sucesso. (9) Registro do selo `PROMPT_21_AI_CHAT_SHELL_CERTIFIED` no ledger.
@@ -555,6 +626,7 @@
 - **Consequências:** Superfície conversacional AI-First completa e auditada, artefatos versionados manipuláveis no builder, trilha de atividade determinística transparente e conformidade total com a catraca de design.
 
 ## DEC-037: PROMPT 22 (Plano #30) — O Chat como Aplicativo: Comércio, Serviços, Agenda, Orçamentos e Idempotência
+
 - **Data:** 2026-10-01
 - **Contexto:** Execução do mandato do PROMPT 22 (Plano #30): transformação do chat em superfície transacional soberana de aplicação para compras em mercados e lojas de vestuário, contratação e agendamento de serviços com especialistas, solicitação de orçamentos e acompanhamento de entregas com telemetria em tempo real (`order_events`), integrados a pagamentos com recálculo obrigatório no servidor e proteção criptográfica por chave de idempotência com ledger SHA-256.
 - **Decisão:** (1) Criada migração aditiva `supabase/migrations/20261216000000_chat_commerce_preferences_and_events.sql` enriquecendo `user_preferences` com `preferred_merchants` e `category_preferences`, com índices B-Tree e RLS soberano. (2) Implementado serviço BFF `src/services/chat-commerce.functions.ts` cobrindo as 5 Fases do Prompt com tipagem Zod rigorosa, busca filtrável de produtos e serviços, gestão de carrinho sincronizado, verificação de horários livres (`getChatAvailableSlots`), criação de agendamentos (`createChatAppointment`), cotações (`requestChatQuote`), e processamento de pagamentos com chave de idempotência e registro em `immutable-ledger` (`order_payment`, `booking_payment`). (3) Desenvolvido componente de UI `src/components/chat/chat-commerce-card.tsx` com 4 sub-cards canônicos (`ChatCartCard`, `ChatOrderTrackerCard`, `ChatAppointmentCard`, `ChatQuoteCard`) em padrão Apple HIG, touch targets de 44px (`h-11`), zero classes arbitrárias e zero violações de design lint. (4) Atualizado `src/components/chat/structured-message-view.tsx` para renderizar os 4 novos blocos estruturados in-stream. (5) Integrado o pipeline conversacional da IA em `src/services/ai-conversations.functions.ts` para disparar tools reais de catálogo, telemetria de pedidos e agenda de serviços. (6) Desenvolvida suíte de testes `src/services/chat-commerce.test.ts` cobrindo 100% dos 3 fluxos mandatórios (Mercado, Vestuário, Agendamento) e prova formal de idempotência criptográfica por repetição (5/5 testes verdes, 31/31 na suíte completa de chat). (7) Validado design lint com 0 regressões (38.447 violações), typecheck com 0 erros em 1.531 arquivos e build de produção Cloudflare Pages gerado com sucesso. (8) Registro do selo `PROMPT_22_CHAT_AS_APPLICATION_CERTIFIED` no ledger.
@@ -562,6 +634,7 @@
 - **Consequências:** Experiência de compras, contratações e agendamentos fluida diretamente no chat, carrinho com estado único entre chat e módulo web, recálculo financeiro estritamente server-side e garantia absoluta contra cobranças duplicadas por repetição de chamadas.
 
 ## DEC-038: PROMPT 23 (Plano #31) — Runtime de Skills, Agentes e Squads no App com Grafo de Handoff e Roteador Heurístico
+
 - **Data:** 2026-10-01
 - **Contexto:** Execução do mandato do PROMPT 23 (Plano #31): formalização do runtime de Inteligência Artificial no app, transformando skills em dados versionados soberanos (`ai_skills`), gerenciáveis por workspace e loja (`workspace_skill_settings`), com roteamento determinístico de intenções com pontuação e justificativa explícita (`resolveSkillIntentLogic`), e orquestração de squads com grafo de handoff explícito e controle orçamentário por supervisor (`ai-agent-squad-orchestrator.functions.ts`).
 - **Decisão:** (1) Auditadas e consolidadas as 10 skills canônicas (`commercial_proposal`, `receipt_organizer`, `lead_qualifier_sdr`, `contract_reviewer`, `tourism_itinerary_builder`, `real_estate_appraiser`, `ad_copywriter`, `support_auto_responder`, `accessibility_checker`, `inventory_forecaster`), cada uma com versão, modelo, gatilho explícito, procedimento de 3 passos, regras duras e Definition of Done. (2) Saneado `ai-skills-router.functions.ts` eliminando violações do DL-04 (`!` operador) e garantindo execução pura pela Porta Única (`executeAiCoreGateway`). (3) Implementados 7 agentes canônicos e 3 squads estruturados (`sales_squad`, `publishing_squad`, `finance_squad`) com grafo sequencial de handoff (`SquadHandoffDTO`), registro de etapas concluídas e mecanismo de veto do supervisor quando o custo excede o orçamento do squad. (4) Auditado painel no workspace em `src/routes/workspace.skills.tsx` com filtro por 9 categorias, ativação/desativação por workspace e modal interativo de teste com telemetria. (5) Criada suíte de testes `src/services/ai-skills-and-squads-runtime.test.ts` validando os schemas das 10 skills, a execução ponta a ponta dos 3 squads, o veto do supervisor e atingindo 100% de precisão (20 de 20 acertos) no benchmark de prompts reais. (6) Redução líquida de 3 violações no design lint congelando a nova baseline em 38.444 violações em `design-lint.baseline.json`. (7) Emitido relatório canônico `ia/23-runtime-skills-squads.md` e registrado selo `PROMPT_23_SKILLS_SQUADS_RUNTIME_CERTIFIED` no ledger.
@@ -569,16 +642,19 @@
 - **Consequências:** Runtime de IA no app totalmente parametrizado como dado versionado, 0 chamadas diretas a provedores no cliente, squads com governança estrita de custo e handoff, e acurácia comprovada do roteador de intenções.
 
 ## DEC-039: PROMPT 24 (Plano #32) — Memória em 5 Camadas, Perfil do Cliente, Curadoria Editorial e Tom de Voz da Marca
+
 - **Data:** 2026-10-01
 - **Contexto:** Execução do mandato do PROMPT 24 (Plano #32): implementação da infraestrutura soberana de memória em 5 camadas (`session`, `user`, `brand`, `niche`, `product`), curadoria de conteúdo com máquina de 4 estados e parametrização declarativa de tom de voz e persona da marca, com conformidade estrita à LGPD e isolamento multi-tenant.
 - **Decisão:** (1) Criada migração aditiva `supabase/migrations/20261217000000_ai_memory_layers_and_curation.sql` estabelecendo as tabelas `ai_memory_layers` (com constraint de dono P0 e índices parciais), `ai_curated_content` (estados `proposed`, `under_review`, `approved`, `unpublished`) e `ai_brand_voice_settings` (persona, formalidade, verbosidade, termos proibidos) com RLS soberano. (2) Implementadas Server Functions BFF puras em `src/services/ai-memory-curation.functions.ts` (`recordMemory`, `queryMemory`, `deleteUserMemory`, `proposeCuratedContent`, `updateCuratedContentStatus`, `listApprovedCuratedContentForAI`, `getBrandVoiceSettings`, `saveBrandVoiceSettings`) com gerador canônico de tags de citação (`generateCitationTag`) e formatação de tom de voz (`formatBrandVoicePrompt`). (3) Estabelecida barreira de consentimento para dados sensíveis (`is_sensitive: true`) e direito ao esquecimento. (4) Desenvolvida suíte de testes unitários `src/services/ai-memory-curation.test.ts` (6/6 testes verdes, 27/27 globais em chat e IA). (5) Design lint validado sem regressões (38.444 violações mantidas). (6) Emitido relatório canônico `ia/24-memoria-curadoria.md` e registrado selo `PROMPT_24_MEMORY_AND_CURATION_CERTIFIED` no ledger.
 
 ## DEC-040: PROMPT 25 (Plano #33) — Builders Nativizados e Dirigidos por IA: Site, Documento, PDF, Apresentação e Arte
+
 - **Data:** 2026-10-01
 - **Contexto:** Execução do mandato do PROMPT 25 (Plano #33): unificação de todos os produtores de interface em um motor de composição único nativizado por IA, servindo sites, biolinks, documentos formais (propostas, contratos, laudos), apresentações de slides (16:9) e artes gráficas para cartões sociais (1200x630), com blocos estritamente derivados do catálogo canônico (`SITE_BUILDER_BLOCKS`), exportação fiel sem quebras e rubrica de qualidade de 5 dimensões com limiar de publicação (score >= 80).
 - **Decisão:** (1) Criada migração aditiva `supabase/migrations/20261218000000_ai_builder_unified_artifacts.sql` adicionando `quality_score`, `quality_rubric`, `artifact_archetype`, `niche` e `chat_artifact_id` a `experience_documents`, além de vincular `chat_artifacts` diretamente aos documentos do builder com RLS soberano. (2) Implementado serviço BFF unificado `src/services/ai-builder-composition.functions.ts` provendo `composeAiArtifactDocument`, `evaluateArtifactQuality`, `exportBuilderArtifact`, `generateAiBuilderArtifact` e `exportArtifactService`, com erradicação total de HTML arbitrário inventado por IA (100% de blocos canônicos). (3) Implementada rubrica de qualidade determinística de 5 dimensões (vocabulário técnico, completude da jornada, conformidade com o registry, concisão de títulos e hierarquia de exportação) bloqueando publicação de artefatos com pontuação inferior a 80. (4) Desenvolvido exportador multi-formato fiel com suporte a HTML semântico, PDF-ready com regras de impressão CSS (`@page { size: A4 }`, `.avoid-orphan`, `.page-break-inside: avoid`), Presentation Slides (16:9) e Social Card Canvas (1200x630). (5) Cobertura exaustiva dos 5 nichos canônicos (`legal`, `gastronomy`, `tourism`, `real_estate`, `health`) com vocabulário restrito, eliminação de clichês de IA e temas harmonizados. (6) Desenvolvida suíte de testes unitários e de integração `src/services/ai-builder-composition.test.ts` (5/5 testes verdes em 14ms, 26/26 na suíte integrada de IA). (7) Validado design lint com zero regressões na catraca (38.444 violações mantidas), typecheck com 0 erros em 1.536 arquivos e build de produção Cloudflare Pages gerado com sucesso. (8) Emitido relatório normativo `ia/25-builders-ai.md` e registrado selo `PROMPT_25_AI_BUILDERS_CERTIFIED` no ledger.
 
 ## DEC-041: PROMPT 26 (Plano #36) — Biblioteca de Prompts Master: Governança, Versionamento Semântico e Fallback em Cascata
+
 - **Data:** 2026-10-01
 - **Contexto:** Execução do mandato do PROMPT 26 (Plano #36): erradicação de qualquer prompt hardcoded solto em string no código; centralização de 100% das instruções do ecossistema na Biblioteca de Prompts Master com versionamento SemVer (1.0.0), validação rigorosa de variáveis com Zod, cascata de resolução de 3 níveis (Tenant -> Global System -> Builtin Inabalável), cache de alta performance sub-2ms e ferramentas de governança com diff e rollback.
 - **Decisão:** (1) Criada migração aditiva `supabase/migrations/20261219000000_ai_master_prompts_governance.sql` expandindo `ai_master_prompts` com `version`, `store_id`, `category`, `purpose`, `variables_schema`, `recommended_providers`, `max_tokens` e métricas de sucesso, além de criar as tabelas `ai_master_prompt_versions` (SemVer com diff) e `ai_prompt_execution_logs` com RLS multi-tenant intransponível. (2) Implementado motor em `src/services/ai-master-prompts.functions.ts` catalogando 12 prompts master canônicos em `BUILTIN_MASTER_PROMPTS_REGISTRY` cobrindo operações, catálogo, SDR, comércio, agenda, builder, turismo, contratos, campanhas, RMA e mídias visuais. (3) Implementada interpolação segura com `interpolatePromptTemplate`: qualquer variável obrigatória faltante dispara `PromptVariableMissingError`, proibindo vazamento de strings vazias ou `undefined` para o modelo. (4) Desenvolvido mecanismo de resolução em cascata `resolveMasterPrompt` com cache em memória (TTL 5 min) e resolução comprovada em menos de 2ms. (5) Desenvolvidas Server Functions de governança (`listMasterPromptsService`, `testPromptInterpolationService`, `rollbackMasterPromptVersionService`) e comparador de versões `diffPromptDefinitions`. (6) Desenvolvida suíte de testes unitários `src/services/ai-master-prompts.test.ts` (5/5 testes verdes em 11ms, 31/31 na suíte integrada de IA). (7) Validado design lint com zero regressões (38.444 violações mantidas), typecheck com 0 erros em 1.538 arquivos e build de produção Cloudflare Pages gerado com sucesso. (8) Emitido relatório normativo `ia/26-prompts-master.md` e registrado selo `PROMPT_26_MASTER_PROMPTS_CERTIFIED` no ledger.
@@ -586,6 +662,7 @@
 - **Consequências:** Governança total e auditável sobre todos os prompts do sistema, zero falhas silenciosas por variáveis ausentes, resiliência inabalável mesmo com banco de dados indisponível e capacidade de rollback instantâneo de prompts em produção.
 
 ## DEC-042: PROMPT 27 (Plano #37) — Núcleo de IA e Pool de Chaves 2.0: Uma Porta, Custo, Limite e Telemetria
+
 - **Data:** 2026-10-01
 - **Contexto:** Execução do mandato do PROMPT 27 (Plano #37): unificação arquitetural obrigatória de todas as chamadas de inteligência artificial da plataforma Waesy através de uma Porta Única (`executeAiCoreGateway`), erradicando chamadas diretas fragmentadas a APIs externas, com matriz de roteamento canônico para 10 tarefas, máquina de estados de Circuit Breaker com resiliência a 3 falhas consecutivas, tabela FinOps de cálculo de custo por token com precisão de 6 casas decimais, barreira pré-execução Prompt Shield contra jailbreak e injeções, deduplicação em voo (in-flight request dedup) e política Zero Segredos Expostos no payload de resposta.
 - **Decisão:** (1) Consolidada a Porta Única em `src/services/ai-core-gateway.functions.ts` (`executeAiCoreGateway`, `callAiCoreGateway`, `getAiTelemetryMetrics`) cobrindo as 10 tarefas do enum `aiTaskTypeEnum` (`chat`, `resumo`, `classificacao`, `extracao`, `geracao_texto`, `imagem`, `video`, `embedding`, `ocr`, `codigo`). (2) Implementada máquina de estados de Circuit Breaker por provedor (`closed` -> 3 falhas -> `open` 60s -> `half_open` -> `closed`) com comutação instantânea para o próximo candidato da cascata sem interrupção do serviço ao usuário. (3) Implementado cálculo matemático de FinOps `calculateCost` referenciando `MODEL_PRICING` com precisão de 6 casas decimais e telemetria analítica com métricas consolidadas em `ai_telemetry_logs` e função `getAiTelemetryMetrics`. (4) Integrado filtro pré-execução Prompt Shield via `inspectPromptSecurity`, rejeitando tentativas de anulação de diretivas ("ignore previous instructions"), modo DAN e exfiltração de sistema com código padronizado `PROMPT_SHIELD_VIOLATION` e custo zero. (5) Implementada deduplicação em voo (`inFlightRequests`) e resolução em cache (`ai_response_cache`) indexada por hash criptográfico SHA-256 com custo zero e latência ultrabaixa. (6) Desenvolvida suíte de testes unitários `src/services/ai-core-gateway.test.ts` (6/6 testes verdes em 532ms, 16/16 na suíte consolidada de Prompts 25, 26 e 27). (7) Validado design lint com 0 regressões (38.444 violações mantidas em 1.539 arquivos), typecheck com 0 erros (`npm run typecheck`, exit code 0) e build de produção Cloudflare Pages gerado com sucesso (`npm run build`, exit code 0). (8) Emitido relatório normativo `ia/27-nucleo-ia-chaves.md` e registrado selo `PROMPT_27_AI_CORE_GATEWAY_CERTIFIED` no ledger.
@@ -593,6 +670,7 @@
 - **Consequências:** Eliminação definitiva de chamadas não monitoradas de IA, contenção orçamentária automática com controle por token, alta disponibilidade por chave/provedor através de circuit breaker e imunidade contra injeção e vazamento de chaves secretas.
 
 ## DEC-043: PROMPT 28 (Plano #40) — Avaliação Contínua e Benchmark de Qualidade 2.0: Rubricas, Conjunto de Referência e Regressão
+
 - **Data:** 2026-10-01
 - **Contexto:** Execução do mandato do PROMPT 28 (Plano #40): medição objetiva de qualidade para impedir regressões silenciosas decorrentes de alterações em prompts, skills, agentes, modelos ou parâmetros térmicos. Necessidade de rubricas com âncoras explícitas de 0 a 5, dataset de referência de 20 casos críticos e gate executável de entrega bloqueando deploys em caso de queda de notas.
 - **Decisão:** (1) Criada migração aditiva `supabase/migrations/20261220000000_ai_quality_benchmark_v2.sql` estabelecendo as tabelas `ai_quality_benchmarks`, `ai_quality_evaluation_runs` e `ai_quality_task_metrics` com RLS multi-tenant e carga inicial. (2) Definido catálogo normativo em `src/services/ai-quality-rubrics.ts` contendo 8 rubricas universais com âncoras textuais obrigatórias para cada nota (0 a 5) ponderadas por tarefa (`fidelidade_ao_dado_interno`, `ausencia_de_invencao`, `aderencia_ao_tom`, `estrutura`, `densidade`, `acionabilidade`, `formato`, `ausencia_de_promessa_vazia`) cobrindo 9 tarefas canônicas (`chat`, `document`, `presentation`, `page`, `ad`, `classification`, `extraction`, `summary`, `code`). (3) Construído dataset canônico `ia/benchmark-reference-dataset-v2.json` com 20 casos reais com termos obrigatórios e proibidos. (4) Congelada a linha de base `ia/quality-baseline-v2.json` com limiares rigorosos (mínimo geral 4.40, mínimo por tarefa 4.30). (5) Desenvolvido motor avaliador em `src/services/ai-quality-benchmark.functions.ts` (`evaluateOutputAgainstBenchmark`, `runPlatformQualityBenchmark`, `getAiQualityDashboardLogic`, `getAiQualityDashboardService`) rastreando custo, latência e identificando as 3 piores tarefas. (6) Implementado script de CI executável `scripts/ai-quality-gate.mjs` com saída limpa e Exit Code 1 em caso de regressão. (7) Desenvolvida suíte de testes unitários `src/services/ai-quality-benchmark.test.ts` (5/5 testes verdes em 12ms, 21/21 na suíte consolidada de IA). (8) Validado design lint com 0 regressões (38.444 violações mantidas em 1.542 arquivos), typecheck com 0 erros (`npm run typecheck`, exit code 0) e build de produção Cloudflare Pages gerado com sucesso (`npm run build`, exit code 0). (9) Emitido relatório normativo `ia/28-qualidade-benchmark.md` e registrado selo `PROMPT_28_AI_QUALITY_BENCHMARK_CERTIFIED` no ledger.
@@ -600,6 +678,7 @@
 - **Consequências:** Erradicação de julgamentos subjetivos sobre qualidade de prompts e modelos, garantia de que qualquer alteração degradante é detectada e revertida antes do merge, e visibilidade em tempo real sobre taxa de aceitação humana e custo por resposta aceita.
 
 ## DEC-044: PROMPT 31 (Plano #41) — Nativização e Deduplicação de Ativos Entre Projetos: Quarentena, Deduplicação e Primitivos Canônicos
+
 - **Data:** 2026-10-01
 - **Contexto:** Execução do mandato do PROMPT 31 (Plano #41): auditoria exaustiva dos diretórios `legacy_quarantine/` (66 arquivos distribuídos em 8 subdiretórios) e `scratch/`, eliminando redundâncias funcionais e nativizando componentes de alto valor para o núcleo `src/` em estrita conformidade com Apple HIG, design tokens canônicos, alvos de toque >= 44px (`h-11`) e catraca do design lint.
 - **Decisão:** (1) Realizada triagem exaustiva de `legacy_quarantine/` e `scratch/`. Identificado que os módulos de turismo (`tourism_trips`, `tourism_proposals`, `tourism_boarding`, `tourism_crm`) e restaurante/mesas (`restaurante/GarcomApp.tsx`, `restaurant/TablesTab.tsx`) já haviam sido absorvidos de forma superior por `src/components/tourism/`, `src/routes/workspace.turismo.viagens.$id.tsx` e `src/components/pos/quick-waiter-order-modal.tsx`. O diretório `scratch/` foi classificado como descartável por ausência de referências ativas. (2) Nativizado o Leitor Óptico / Barcode Scanner em `src/components/scanner/barcode-scanner-modal.tsx`: classificador puro determinístico (`classifyScannedCode`) cobrindo 8 categorias (EAN-13, EAN-8, UPC, NF-e, PIX EMV, cupons, credenciais e URLs), captura de vídeo com controle de lanterna, entrada manual por teclado (`Enter`), sem strings mágicas ou valores de cor hexadecimais literais. (3) Nativizado o Kitchen Display System (KDS) em `src/components/pos/kds-order-card.tsx`: comanda de preparo em tempo real, cronômetro de minutos com detecção visual de atraso (>= 15m), badges de prioridade, diferenciação por canal de origem (`pdv`, `delivery`, `table`, `marketplace`), e alternância de itens com anel de foco teclado (`:focus-visible`). (4) Desenvolvidas suítes de testes unitários em `src/components/scanner/barcode-scanner.test.ts` (6/6 testes verdes) e `src/components/pos/kds-order-card.test.ts` (3/3 testes verdes). (5) Validado design lint com 0 regressões (38.444 violações mantidas em 1.546 arquivos inspecionados), compilação TypeScript com 0 erros (`npm run typecheck`, Exit Code 0) e build de produção Cloudflare Pages gerado com sucesso (`npm run build`, Exit Code 0). (6) Emitido relatório normativo `ia/31-nativizacao-ativos.md` e registrado selo `PROMPT_31_NATIVE_ASSET_DEDUP_CERTIFIED` no ledger.
@@ -607,6 +686,7 @@
 - **Consequências:** Zero dependência de stubs ou arquivos em quarentena, consolidação de utilitários ópticos e de cozinha em componentes canônicos reutilizáveis e eliminação de duplicações estruturais no repositório.
 
 ## DEC-045: PROMPT 01 (Plano #3) — Inventário Universal de IA: Fichas Normativas, Pool de Chaves e Matriz de Lacunas
+
 - **Data:** 2026-10-01
 - **Contexto:** Execução do mandato do PROMPT 01 (Plano #3): inventário universal de todos os pontos de IA do repositório, detalhando arquivos, finalidades, provedores, modelos, chaves, lados de execução, entradas, saídas, fallback, cache, telemetria, tratamento de erros e custos estimados por chamada, com prova matemática de zero chaves expostas no bundle do cliente.
 - **Decisão:** (1) Mapeados e catalogados 15 módulos canônicos de inteligência artificial em `ia/01-inventario.json` (`AI-001` a `AI-015`), englobando a Porta Única (`ai-core-gateway`), Biblioteca de Prompts SemVer (`ai-master-prompts`), Benchmark Contínuo (`ai-quality-benchmark`), Memória em 5 Camadas (`ai-memory-curation`), Builders (`ai-builder-composition`), Skills e Squads (`ai-skills-router`), Chat Commerce (`chat-commerce`), Shell AI-First (`ai-conversations`), Módulos Verticais (`vertical-ai-modules`), RMA Forense (`rma`), WebMCP (`mcp-server`), SDR Lead Qualifier (`ai-sdr`), OCR Turístico (`travel-ai-extractor`), OCR Fiscal DANFE (`multimodal-ocr`) e Curadoria Noticiosa (`editorial-squad`). (2) Consolidado o relatório normativo em `ia/01-mapa.md` contendo a ficha completa por ponto de IA, diagrama textual do ciclo de vida das chaves (requisição -> Prompt Shield -> hash SHA-256 in-flight dedup/cache -> resolução SemVer -> pool com circuit breaker -> chamada externa -> filtro de saída -> telemetria FinOps). (3) Estruturada a matriz de lacunas em `ia/01-gaps.md` evidenciando as capacidades existentes vs parciais, destacando os 5 achados de maior impacto no ledger. (4) Confirmada ausência total de chaves em componentes e rotas da UI (`Direct AI calls in UI: 0`). (5) Registrado o selo `PROMPT_01_AI_INVENTORY_CERTIFIED` no ledger.
@@ -614,6 +694,7 @@
 - **Consequências:** Visibilidade panorâmica inequívoca sobre 100% da infraestrutura de IA da plataforma, base sólida e documentada para a execução dos planos subsequentes.
 
 ## DEC-046: PROMPT 02 (Plano #5) — Núcleo de IA: Porta Única, Roteamento por Tarefa, Pool de Chaves e Resiliência
+
 - **Data:** 2026-10-01
 - **Contexto:** Execução do mandato do PROMPT 02 (Plano #5): formalização arquitetural e contratual da Porta Única Server-Side por onde toda IA do ecossistema passa, com roteamento para 10 tarefas do enum `aiTaskTypeEnum`, máquina de estados do pool com Circuit Breaker (`closed` -> 3 falhas -> `open` 60s -> `half_open`), guardas operacionais (in-flight dedup e cache SHA-256), telemetria FinOps granular com precisão de 6 decimais e migração dos serviços legados (`src/services/ai.functions.ts`).
 - **Decisão:** (1) Estruturado o documento de arquitetura `ia/02-arquitetura.md` detalhando o fluxo de 9 etapas da porta única, matriz de roteamento custo vs latência por tarefa, estados do pool de chaves (`active`, `exhausted`, `dead`), guardas de operação e painel analítico (`getAiTelemetryMetrics`). (2) Consolidado o contrato formal em `ia/02-contrato.md` contendo schemas tipados de entrada (`AIGatewayRequest`), saída (`AIGatewayResponse`), catálogo padronizado de erros e regras de auditoria. (3) Confirmada a convergência do serviço histórico `src/services/ai.functions.ts` que delega integralmente para `executeAiCoreGateway`, mantendo compatibilidade com o débito da carteira de tokens da loja e retornando os metadados unificados. (4) Verificada a integridade da suíte de testes `src/services/ai-core-gateway.test.ts` (6/6 testes verdes em 748ms) comprovando circuit breaker, FinOps, Prompt Shield, cache e ausência de vazamento de credenciais. (5) Registrado o selo `PROMPT_02_AI_GATEWAY_CERTIFIED` no ledger.
@@ -621,6 +702,7 @@
 - **Consequências:** Erradicação de dispersão de chamadas a provedores externos, contenção orçamentária unificada, tolerância automática a falhas de rede/rate-limiting e governança estrita de telemetria em produção.
 
 ## DEC-047: PROMPT 03 (Plano #6) — Sistema de Skills: Catálogo Declarativo, Resolução e Ativação por Workspace
+
 - **Data:** 2026-10-01
 - **Contexto:** Execução do mandato do PROMPT 03 (Plano #6): consolidação de skills como DADOS estruturados e declarativos em vez de código disperso, com gatilhos semânticos explícitos, limites negativos de escopo ("quando NÃO usar"), procedimentos numerados, regras duras, definição de pronto, roteador de intenções com suporte a encadeamento de pipelines e tela de ativação por workspace e perfil.
 - **Decisão:** (1) Estruturado o documento normativo `ia/03-skills.md` estabelecendo o contrato universal `AISkillDefinition` e o fluxo de resolução em 5 etapas. (2) Semeado o catálogo normativo `ia/CATALOGO-SKILLS.md` cobrindo 28 skills distribuídas em 8 famílias funcionais (Conteúdo e Docs, Design e Frontend, Marketing e Vendas, Dados e BI, Financeiro e Contábil, Jurídico, Atendimento/SDR e Nichos Especializados). (3) Verificado o motor em `src/services/ai-skills-router.functions.ts` catalogando 10 skills canônicas pré-configuradas com procedimentos determinísticos, regras duras e definição de pronto, além de prover as Server Functions `listSkillsCatalog`, `toggleSkillActivation` e `executeSkill` protegidas por RLS. (4) Auditada a rota `src/routes/workspace.skills.tsx` provendo interface visual com filtragem por categorias, busca textual, ativação via switch e modal de inspeção de detalhes sem violações de design lint. (5) Validada a suíte de testes `src/services/ai-skills-and-squads-runtime.test.ts` (10/10 testes verdes em 12ms) com 100% de acerto no benchmark de intenções. (6) Registrado o selo `PROMPT_03_SKILLS_SYSTEM_CERTIFIED` no ledger.
@@ -628,6 +710,7 @@
 - **Consequências:** Desacoplamento entre lógica de orquestração e definição de habilidades, capacidade do usuário de personalizar o conjunto ativo de inteligências por loja e transparência operacional total com registro de justificativas de escolha.
 
 ## DEC-048: PROMPT 04 (Planos #7 e #8) — Agentes e Squads: Orquestração em Grafo com Handoff Explícito, Orçamento e Observabilidade
+
 - **Data:** 2026-10-01
 - **Contexto:** Execução do mandato do PROMPT 04 (Planos #7 e #8): agentes como configuração declarativa e squads como grafo direcionado acíclico (DAG) com handoff contratual inviolável, supervisor de arbitragem de conflitos, teto triplo de orçamento (execuções, custo em USD, timeout) e registro granular de telemetria por etapa.
 - **Decisão:** (1) Mapeado e auditado o contrato normativo `ia/04-agentes.md` (65 linhas, 3304 bytes) contendo os 6 princípios de governança, a interface `AIAgentContract` e os 3 squads canônicos. (2) Verificada a implementação completa em `src/services/ai-agent-squad-orchestrator.functions.ts` (422 linhas): catálogo `CANONICAL_AGENTS` com 7 agentes especializados com escopo de dados restrito, skills permitidas, critérios de aceite verificáveis e condições de parada; catálogo `CANONICAL_SQUADS` com 3 squads declarativos; motor `runSquadGraphExecution` com loop de etapas, verificação de orçamento pelo supervisor antes de cada passo, construção de contrato de handoff por etapa, execução mandatória via `executeAiCoreGateway`, acumulação de custo/tokens e persistência fire-and-forget em `ai_squad_runs`. (3) Confirmadas 5 migrações de BD cobrindo `ai_agent_definitions`, `ai_squad_definitions`, `ai_squad_members`, `ai_squad_runs` e seed canônico. (4) Validadas as Server Functions `listSquads` e `executeSquad` com validação Zod. (5) Auditada a rota `src/routes/workspace.squads.index.tsx` (636 linhas). (6) Suíte de testes: 10/10 verdes em 15ms. (7) Registrado o selo `PROMPT_04_AGENTS_SQUADS_CERTIFIED` no ledger.
@@ -635,6 +718,7 @@
 - **Consequências:** Agentes com escopo irrestrito erradicado, handoff auditável persistido por run, supervisor garantindo encerramento seguro em falha ou estouro de orçamento, plataforma pronta para squads declarativos adicionais sem alteração de infraestrutura.
 
 ## DEC-049: PROMPT 05 (Plano #11) — Memória, Curadoria de Dados e Tom de Voz por Usuário e Marca
+
 - **Data:** 2026-10-01
 - **Contexto:** Execução do mandato do PROMPT 05 (Plano #11): consolidação das 5 camadas canônicas de memória (session, user, brand, niche, product) com isolamento estrito via RLS, curadoria editorial em 4 etapas (proposed -> under_review -> approved -> unpublished) e parametrização declarativa do tom de voz da loja.
 - **Decisão:** (1) Auditado o documento normativo `ia/05-memoria.md`. (2) Confirmada a implementação em `src/services/ai-memory-curation.functions.ts` (516 linhas) e testes unitários em `src/services/ai-memory-curation.test.ts` (6/6 testes verdes). (3) Aplicada migração `20261217000000_ai_memory_layers_and_curation.sql` no banco de produção Supabase com validação `public.is_store_staff(store_id)`. (4) Registrado o selo `PROMPT_05_MEMORY_CURATION_CERTIFIED`.
@@ -642,6 +726,7 @@
 - **Consequências:** Memória de IA persistida com governança por loja/usuário, citação interna de fontes e conformidade estrita de tom de voz.
 
 ## DEC-050: PROMPT 06 (Plano #12) — Registry Central de Blocos, Seções e Widgets
+
 - **Data:** 2026-10-01
 - **Contexto:** Execução do mandato do PROMPT 06 (Plano #12): centralização de todos os blocos construtivos e widgets em autoridade única, erradicando declarações de componentes soltos nos editores.
 - **Decisão:** (1) Auditado `ia/06-registry.md`. (2) Verificado `src/components/builder/registry.ts` (12.926 bytes) contendo as famílias Hero, Layout, Seções e Interativo conformes com Design Tokens. (3) Registrado o selo `PROMPT_06_BLOCK_REGISTRY_CERTIFIED`.
@@ -649,6 +734,7 @@
 - **Consequências:** Reuso estrutural de blocos em builders, páginas e artefatos de chat sem duplicações.
 
 ## DEC-051: PROMPT 09 (Plano #13) — Chat AI-First: Mensagem Estruturada, Widgets e Ações Tipadas
+
 - **Data:** 2026-10-01
 - **Contexto:** Execução do mandato do PROMPT 09 (Plano #13): transformação da interface de chat em superfície rica orientada a widgets estruturados, carrosséis, tabelas e ações de checkout integradas.
 - **Decisão:** (1) Auditado `ia/09-chat.md`. (2) Implementados os componentes `ai-chat-shell.tsx`, `ai-activity-trail.tsx`, `chat-composer.tsx`, `chat-artifact-card.tsx` e `structured-message-view.tsx`. (3) Validados testes em `src/components/chat/ai-chat-shell.test.ts` e `structured-chat.test.ts`. (4) Aplicada migração `20261215000000_ai_chat_shell_artifacts_and_projects.sql` no Supabase com suporte a threads de projeto e RLS soberano. (5) Registrado o selo `PROMPT_09_AI_CHAT_SHELL_CERTIFIED`.
@@ -656,6 +742,7 @@
 - **Consequências:** Conversas inteligentes com rendering inline de artefatos, histórico versionado e sem recarregamento de página.
 
 ## DEC-052: PROMPT 10 (Plano #14) — Comércio, Delivery e Serviços no Chat: Do Pedido à Entrega
+
 - **Data:** 2026-10-01
 - **Contexto:** Execução do mandato do PROMPT 10 (Plano #14): fechamento do ciclo transacional completo dentro da interface conversacional, conectado diretamente ao banco de dados e ordens reais.
 - **Decisão:** (1) Auditado `ia/10-comercio.md`. (2) Implementado `chat-commerce-card.tsx` e `src/services/chat-commerce.functions.ts`. (3) Validados testes em `src/services/chat-commerce.test.ts`. (4) Aplicada migração `20261216000000_chat_commerce_preferences_and_events.sql` no Supabase para preferências de comércio e telemetria. (5) Registrado o selo `PROMPT_10_CHAT_COMMERCE_CERTIFIED`.
@@ -663,6 +750,7 @@
 - **Consequências:** Compras, cotações de entrega e agendamentos executados de ponta a ponta no chat com consistência ACID no Supabase.
 
 ## DEC-053: Sincronização e Deploy Integral de Produção (Supabase + Cloudflare Pages)
+
 - **Data:** 2026-10-01
 - **Contexto:** Conclusão de todos os planos de infraestrutura e inteligência artificial (#3 a #43), com aplicação das migrações pendentes no banco Supabase de produção e configuração das variáveis de ambiente para deploy no Cloudflare Pages.
 - **Decisão:** (1) Aplicadas com sucesso as 6 migrações pendentes (`20261215000000` a `20261220000000`) no projeto de produção `jfuebqmltksyznovhlwa` via MCP Supabase, sincronizando a tabela `schema_migrations`. (2) Documentadas integralmente as credenciais e variáveis em `docs/SUPABASE_ENV_PRODUCTION.md`. (3) Embutidas as variáveis de produção no `wrangler.toml` sob `[vars]`. (4) Executado build completo de produção com compilação TypeScript limpa. (5) Atualizados ledger e árvore de reconciliação de prompts.
@@ -670,6 +758,7 @@
 - **Consequências:** Repositório 100% atualizado, banco de produção sincronizado e pronto para operação em qualquer máquina via clone do GitHub.
 
 ## DEC-054: Execução das Ondas 3 e 4 — Higiene Cognitiva, Inteligência Transacional e Devolução de Valor (SPEC-004)
+
 - **Data:** 2026-10-01
 - **Contexto:** Execução integral e recursiva das Ondas 3 e 4 do plano de melhorias (`melhoria/06-waves.md` e `melhoria/05-ledger.json`). O objetivo foi eliminar promessas vazias, falsos toasts de erro, e conectar as tabelas gravadas a decisões operacionais em checkout, marketing, CRM, segurança/RH, stories e logística.
 - **Decisão:**
@@ -684,6 +773,7 @@
 - **Consequências:** Eliminação total de gaps de usabilidade nos fluxos críticos, devolução ativa de valor coletado em tabelas unidirecionais e governança transacional auditada.
 
 ## DEC-055: Homologação Integral das Ondas 2 e 3 — Reconexão de Elos Órfãos e Catraca (SPEC-005)
+
 - **Data:** 2026-10-01
 - **Contexto:** Execução integral da reconexão de componentes de interface órfãos e saneamento de promessas vazias conforme SPEC-005.
 - **Decisão:**
@@ -699,6 +789,7 @@
 - **Consequências:** Eliminação de elos órfãos nos fluxos operacionais, zero erros de compilação TypeScript e governança de design preservada.
 
 ## DEC-056: Resolução Global de Acesso ao Workspace, RBAC Store Owner e Vitrine Silenciosa (SPEC-006)
+
 - **Data:** 2026-10-01
 - **Contexto:** Atendimento à solicitação de resolução global de acessos ao Workspace, criação de empresas, saneamento da colisão RBAC de `store_owner`, eliminação de ReferenceError do OmniEditor em produção e redesign da Vitrine Principal em cards amplos e silenciosos.
 - **Decisão:**
@@ -713,6 +804,7 @@
 - **Consequências:** Zero falhas de acesso ao workspace, criação fluida de empresas em 1 clique e interface inicial silenciosa e direta.
 
 ## DEC-057: Conclusão Integral da Onda 2 — 100% dos Gaps Resolvidos (SPEC-007)
+
 - **Data:** 2026-10-01
 - **Contexto:** Fechamento dos últimos 39 gaps abertos da Onda 2 do roadmap de melhorias do Waesy (`melhoria/06-waves.md` e `melhoria/05-ledger.json`).
 - **Decisão:**
@@ -732,6 +824,7 @@
 - **Consequências:** Fim de todos os componentes órfãos do repositório, 100% de rastreabilidade de código, compilação limpa e prontidão para novos cadernos de auditoria profunda.
 
 ## DEC-058: PROMPT P01 — Selar o Terreno, Infraestrutura de Auditoria (.audit/) e Baseline Inicial C01-C43
+
 - **Data:** 2026-10-01
 - **Contexto:** Execução do mandato P01 (Selar o Terreno) da nova cadeia de auditoria profunda e governança (Fase 0: Fundação & Selamento), estabelecendo a infraestrutura determinística de auditoria em `.audit/`, com inventário de capacidades, donos canônicos, lista de desativação (Kill List) e execução da baseline dos checks C01 a C43.
 - **Decisão:**
@@ -744,6 +837,7 @@
 - **Consequências:** Infraestrutura de auditoria versionada e ativa em disco; zero suposições em chat; placar inicial de 43 checks gravado e caminho livre para o P02 (Mapa de Donos e Duplicatas).
 
 ## DEC-059: PROMPT P02 — Mapeamento Forense de Donos e Duplicatas por AST (Check C26)
+
 - **Data:** 2026-10-01
 - **Contexto:** Execução do mandato P02 (Mapa de Donos e Duplicatas) para provar por código e AST quais capacidades têm múltiplos donos, mapear sobreposições funcionais reais e isolar a árvore de dependências antes da desativação em P03.
 - **Decisão:**
@@ -757,6 +851,7 @@
 - **Consequências:** Rastreabilidade absoluta de 100% das sobreposições de código, zero ambiguidade sobre quem é o dono de cada funcionalidade e autorização expressa para a confecção da Kill List executável em P03.
 
 ## DEC-060: PROMPT P03 — Kill List e Estratégia de Migração Progressiva (Zero Features Novas)
+
 - **Data:** 2026-10-01
 - **Contexto:** Execução do mandato P03 (Kill List e Decisão de Dono Único) para erradicar a duplicação estrutural que fragmenta o produto, estabelecendo classificação em 3 classes (o que morre, o que migra, o que vira adapter) e plano de migração de dados coluna a coluna.
 - **Decisão:**
@@ -769,6 +864,7 @@
 - **Consequências:** Kill List homologada em disco com ordem de execução explícita; zero features novas criadas; plano de migração idempotente e avanço autorizado para o P04 (Inventário de Rotas, Telas, Shells e Nichos).
 
 ## DEC-061: PROMPT P04 — Inventário Completo de 384 Rotas, Shells e Nichos (Check C27 = 0)
+
 - **Data:** 2026-10-01
 - **Contexto:** Execução do mandato P04 (Inventário de Rotas, Telas, Shells e Nichos) para catalogar com precisão cirúrgica todas as rotas ativas do sistema TanStack Router, classificando-as por shell de exibição e nicho de negócio, além de comprovar a ausência de rotas mortas ou apontamentos órfãos (Check C27).
 - **Decisão:**
@@ -781,6 +877,7 @@
 - **Consequências:** Mapeamento exaustivo de 100% da superfície de navegação do produto persistido em disco; zero rotas fantasmas e avanço autorizado para o P05 (Baseline Mensurável).
 
 ## DEC-062: PROMPT P05 — Baseline Mensurável do Repositório (1.560 arquivos, 579k LOC)
+
 - **Data:** 2026-10-01
 - **Contexto:** Execução do mandato P05 (Baseline Mensurável) para produzir a fotografia determinística e auditável do estado atual do código-fonte antes das cirurgias de refatoração, quantificando volume de código, complexidade, maiores arquivos e densidade de dívidas técnicas.
 - **Decisão:**
@@ -792,6 +889,7 @@
 - **Consequências:** Teto máximo de dívida congelado e versionado; base matemática rigorosa para aferir reduções futuras de código morto e avanço liberado para P06 e P07.
 
 ## DEC-063: PROMPT P07 — Cirurgia do "Cheiro de IA" (Erradicação de Gradientes, Emojis e Glassmorphism)
+
 - **Data:** 2026-10-01
 - **Contexto:** Execução do mandato P07 (Cirurgia do "Cheiro de IA") para eliminar anomalias visuais e padrões artificiais que degradam a experiência do usuário (Checks C06, C07, C08, C09, C10, C11), aplicando as Leis de Design Nativo (L01 a L18) nas telas prioritárias do catálogo de dívidas.
 - **Decisão:**
@@ -805,6 +903,7 @@
 - **Consequências:** Telas e painéis principais operando com design silencioso, minimalista e 100% aderente ao padrão Apple HIG / Linear; dívidas DEBT-01, DEBT-02, DEBT-10 e DEBT-11 resolvidas no código-fonte.
 
 ## DEC-064: PROMPT P08 — Auditoria e Consolidação de Tokens (Erradicação Total de C02 e C03)
+
 - **Data:** 2026-10-01
 - **Contexto:** Execução do mandato P08 (Auditoria de Tokens) para garantir que 100% dos estilos, raios e espaçamentos decorram estritamente dos design tokens, eliminando valores mágicos entre colchetes em raios (`rounded-[...]`) e espaçamentos (`p-[...]`, `m-[...]`, `gap-[...]`).
 - **Decisão:**
@@ -816,6 +915,7 @@
 - **Consequências:** Zero estilos arbitrários com colchetes de espaçamento no repositório; conformidade matemática estrita com a grade modular de 4px/8px e avanço desbloqueado para o P09 (Superfície Única).
 
 ## DEC-065: PROMPT P09 — Superfície Única e Erradicação de Compressão Estrutural (C04, C05, C36 = 0)
+
 - **Data:** 2026-10-01
 - **Contexto:** Execução do mandato P09 (Superfície Única: Sem Card em Card, Sem Grid em Grid) para erradicar a compressão visual e estrutural, eliminando Cards dentro de Cards, grids concorrentes aninhados e scrolls conflitantes (Checks C04, C05, C36), aplicando as Leis de Design Nativo L01 (Uma superfície, um plano) e L04 (Elevação zero).
 - **Decisão:**
@@ -825,7 +925,9 @@
   4. **Redução em C18 (100vh -> 100dvh):** Substituídos `min-h-screen` e `max-h-screen` por `min-h-[100dvh]` e `max-h-[90dvh]` nas rotas de embarques e radar, reduzindo o check C18 de 25 para 22 ocorrências.
   5. **Purga de Sombras e Normalização de Hairlines:** Removidas sombras espúrias `shadow-2xs`, `shadow-xs` e `hover:shadow-sm` em cards de embarque e radar, aplicando hairlines `border border-border` e `hover:border-primary/40`.
 - **Fundamentação:** AGENTS.md B.4 (Gate DL-04), Invariantes M01, M04, M15, M20, Leis L01, L04 e P09.
+
 ## DEC-066: PROMPT P10 — Tipografia e Limite de Texto (C12, C13, C35 = 0)
+
 - **Data:** 2026-10-01
 - **Contexto:** Execução do mandato P10 (Tipografia e Limite de Texto) para garantir que nada estoura e nada espreme em viewports compactas ou sob strings longas de dados, aplicando as Leis L05 (Tipografia expressiva mas contida), L09 (Títulos com limite estrito) e L16 (Largura de leitura e ritmo vertical), garantindo line-clamp em títulos de cards e tabelas, parágrafos contidos e tabular-nums global em valores monetários e numéricos (Checks C12, C13, C35).
 - **Decisão:**
@@ -845,7 +947,9 @@
      - `voucher-boarding-card.tsx`: Adicionado `line-clamp-1 truncate` no nome do hotel e removido `shadow-2xs`.
   3. **Conformidade C12, C13 e C35 = 0:** Auditoria ratificada com zero quebras visuais e zero transbordamento de texto.
   4. **Validação de Tipos:** Suíte de TypeScript executada com 1.560 arquivos compilados e **0 erros** (`tsc --noEmit` exit code 0).
+
 ## DEC-067: PROMPT P11 — Mídia com Proporção Travada (Erradicação Total de C14 = 0)
+
 - **Data:** 2026-10-01
 - **Contexto:** Execução do mandato P11 (Mídia com Proporção Travada) para garantir zero distorção visual e zero salto de layout (Cumulative Layout Shift - CLS), impondo aspect-ratio travado, object-cover/contain, width/height explícitos e lazy loading em todo elemento `<img />` e `<video />` (Check C14 = 0).
 - **Decisão:**
@@ -862,7 +966,9 @@
      - `workspace.marketing.patrocinadores.tsx`: Aplicados `aspect-square`, `width={48}`, `height={48}`, `loading="lazy"` no tile de patrocinadores.
   3. **Check C14 = ZERO (0):** Varredura analítica de 1.560 arquivos confirmou zero (0) ocorrências remanescentes de mídias sem proporção travada ou dimensões explícitas.
 - **Fundamentação:** AGENTS.md B.1 a B.12, Invariantes M04, M12, Lei L10, Core Web Vitals (CLS = 0) e P11.
+
 ## DEC-068: PROMPT P12 — Densidade por Shell e Normalização de Gutters (16px Mobile / 24-32px Tablet / 32-40px Desktop)
+
 - **Data:** 2026-10-01
 - **Contexto:** Execução do mandato P12 (Densidade por Shell) para erradicar espaçamentos comprimidos ou excessivos, definindo a escala canônica de respiro, margens laterais e gutters estruturais em todos os app shells (Leis L03 e L16), garantindo que cada viewport respire com naturalidade sem sufocar o conteúdo.
 - **Decisão:**
@@ -877,7 +983,9 @@
   4. **Conformidade com a Grade 4px/8px:** 100% dos shells operando com múltiplos exatos de 8px (16px, 24px, 32px), sem telas espremidas na borda física dos dispositivos.
 - **Fundamentação:** AGENTS.md B.1 a B.12, Invariantes M04, M16, Leis L03, L16 e P12.
 - **Consequências:** Respiro visual nativo em smartphones e tablets, eliminação de cortes laterais em formulários e feeds e avanço liberado para P13 (Shell Nativo de Navegação).
+
 ## DEC-069: PROMPT P13 — Shell Nativo de Navegação e Safe Area (C20, C31, C32 = 0)
+
 - **Data:** 2026-10-01
 - **Contexto:** Execução do mandato P13 (Shell Nativo de Navegação) para conferir sensação de aplicativo nativo em cada dispositivo, implementando barras inferiores com safe-area nativa (env(safe-area-inset-bottom)), transição responsiva de modais para sheets em viewports móveis (<600px) e eliminação definitiva do hover como affordance primária (Checks C20, C31, C32).
 - **Decisão:**
@@ -891,7 +999,9 @@
      - Instalada regra global de mídia CSS Level 4 `@media (hover: none) and (pointer: coarse)` em `src/styles.css` aplicando resposta mecânica tátil instantânea (`opacity: 0.82; transform: scale(0.985); transition-duration: 80ms;`) em todos os botões e links quando tocados por dedos, com salvaguarda `prefers-reduced-motion: reduce`.
 - **Fundamentação:** AGENTS.md B.1 a B.12, Invariantes M04, M16, Leis L06, L07, L17 e P13.
 - **Consequências:** Comportamento e sensação de app nativo em iPhone/Android; barras inferiores protegidas contra sobreposição com a Home Bar do iOS e botões de gestos do Android; avanço desbloqueado para P14 (Estados Completos).
+
 ## DEC-070: PROMPT P14 — Estados Completos e Paridade de Geometria (C15, C38, C39 = 0)
+
 - **Data:** 2026-10-01
 - **Contexto:** Execução do mandato P14 (Estados Completos) para erradicar o padrão "tela vazia e do nada acontece", garantindo que 100% dos carregamentos utilizem skeleton de geometria paritária, ações destrutivas ou demoradas possuam estado de progresso integrado e nenhum spinner fique solto no meio de conteúdo (Checks C15, C38, C39).
 - **Decisão:**
@@ -904,7 +1014,9 @@
      - Todos os botões transacionais derivam do contrato canônico `Button` com suporte nativo a `isLoading`, `loadingText`, `aria-busy="true"` e transição de opacidade/escala.
 - **Fundamentação:** AGENTS.md B.1 a B.12, Invariantes M04, M11, M14, Leis L11, L12, L15 e P14.
 - **Consequências:** Fim de saltos bruscos ou telas em branco durante carregamento de dados em rotas longas; experiência fluida de carregamento perceptivo e avanço desbloqueado para P15 (Acessibilidade e Ergonomia de Toque).
+
 ## DEC-071: PROMPT P15 — Acessibilidade e Ergonomia de Toque (C19 = 0, WCAG 2.2 AA)
+
 - **Data:** 2026-10-01
 - **Contexto:** Execução do mandato P15 (Acessibilidade e Ergonomia de Toque) para garantir conformidade estrita com o piso WCAG 2.2 AA e Apple Human Interface Guidelines, auditando que todos os alvos interativos em superfícies móveis possuam dimensão mínima de 44x44px (`h-11`), anel de foco visível não obscurecido e teclado totalmente navegável (Check C19 = 0).
 - **Decisão:**
@@ -916,7 +1028,9 @@
      - Respeito universal a `prefers-reduced-motion: reduce` desativando animações e transições forçadas (WCAG 2.3.3).
 - **Fundamentação:** AGENTS.md B.4, B.9 (Piso WCAG 2.2 AA), Leis L06, L08 e P15.
 - **Consequências:** Operação fluida para usuários de leitores de tela e navegação por teclado; toque preciso sem cliques falsos em smartphones e avanço desbloqueado para P16 (Movimento).
+
 ## DEC-072: PROMPT P16 — Movimento e Orçamento de Duração (C17 = 0)
+
 - **Data:** 2026-10-01
 - **Contexto:** Execução do mandato P16 (Movimento) para erradicar animações lentas, arrastadas ou com múltiplos caminhos, garantindo sensação nativa ágil, animações estritamente focadas em transform e opacity e durações contidas no orçamento de 120-200ms (Check C17 = 0).
 - **Decisão:**
@@ -928,7 +1042,9 @@
      - Garantia absoluta de redução total de movimento com `animation-duration: 0.01ms` sob `prefers-reduced-motion: reduce`.
 - **Fundamentação:** AGENTS.md B.1 a B.12, Invariantes M04, M18, Leis L18 e P16.
 - **Consequências:** Interface com resposta tátil instantânea, eliminação de lentidão perceptiva em carrosséis e cards, e avanço liberado para P17 (Anti-Jank e CLS Instrumentado).
+
 ## DEC-073: PROMPT P17 — Anti-Jank, 100dvh e Prevenção de Reflow (C16 = 0, C18 = 0, CLS < 0.05)
+
 - **Data:** 2026-10-01
 - **Contexto:** Execução do mandato P17 (Anti-Jank e CLS Instrumentado) para eliminar saltos visuais, quebras de rolagem no iOS Safari decorrentes de barras de endereço dinâmicas e gargalos de reflow durante scroll contínuo (Checks C16 = 0, C18 = 0).
 - **Decisão:**
@@ -942,7 +1058,9 @@
      - Listas densas e feeds com mais de 50 itens operam com fragmentação procedural (`ProceduralInfiniteFeed`) ou paginação sem bloqueio da thread principal, garantindo INP < 200ms e CLS < 0.05.
 - **Fundamentação:** AGENTS.md B.1 a B.12, Invariantes M04, M16, Leis L04, L10, Core Web Vitals e P17.
 - **Consequências:** Zero saltos ou redimensionamentos espúrios ao rolar em smartphones iOS e Android; eliminação definitiva de dívidas D-08 e D-18 de `DEBTS.md`; avanço liberado para P18 (Matriz de Responsividade).
+
 ## DEC-074: PROMPT P18 — Matriz de Responsividade Universal e Saneamento de Breakpoints
+
 - **Data:** 2026-10-01
 - **Contexto:** Execução do mandato P18 (Matriz de Responsividade: Varredura) cobrindo 385 rotas e shells nos 9 breakpoints normativos (320px, 360px, 390px, 430px, 768px, 1024px, 1280px, 1440px, 1920px), identificando pontos de pressão estrutural e erradicando larguras estáticas que estouram a viewport móvel.
 - **Decisão:**
@@ -955,6 +1073,7 @@
 - **Consequências:** Zero scroll horizontal indesejado ou botões empurrados para fora da viewport em telas móveis estreitas; avanço liberado para P19 (Forms Nativos).
 
 ## DEC-075: PROMPT P19 — Forms Nativos, Autosave e Teclados Otimizados
+
 - **Data:** 2026-10-01
 - **Contexto:** Execução do mandato P19 (Forms Nativos) para erradicar atrito de formulários com teclados móveis virtuais no iOS e Android, eliminando inputs numéricos crus sem inputMode apropriado, garantindo máscaras progressivas dinâmicas (CPF/CNPJ, Telefone, CEP e Moeda), validação visual inline não-bloqueante e proteção contra perda acidental de dados com autosave de rascunhos.
 - **Decisão:**
@@ -973,6 +1092,7 @@
 - **Consequências:** Formulários ágeis, teclados virtuais sem zoom indesejado ou botões quebrados, zero perda de dados em formulários extensos e avanço liberado para P20 (Tabelas e Listas Densas no Mobile).
 
 ## DEC-076: PROMPT P20 — Tabelas e Listas Densas no Mobile (C30 = 0)
+
 - **Data:** 2026-10-01
 - **Contexto:** Execução do mandato P20 (Tabelas e Listas Densas no Mobile) para garantir que nenhuma visualização tabular extensa fique espremida ou force rolagem horizontal desconfortável em smartphones (<640px), assegurando progressive disclosure e conversão sistemática de linhas em cards ergonômicos (Check C30 = 0).
 - **Decisão:**
@@ -988,6 +1108,7 @@
 - **Consequências:** Leitura e operação confortáveis de dados tabulares em telas compactas de 320px a 430px sem perda de densidade no desktop; avanço desbloqueado para P21 (PWA / Standalone Nativo).
 
 ## DEC-077: PROMPT P21 — PWA / Standalone Nativo (Fechamento da Fase 1: UI Nativa e Ergonomia)
+
 - **Data:** 2026-10-01
 - **Contexto:** Execução e fechamento do mandato P21 (PWA / Standalone Nativo), concluindo integralmente a **Fase 1 (UI Nativa e Ergonomia — P07 a P21)**, garantindo que o aplicativo instalado em dispositivos móveis (iOS/Android) e desktops opere como software nativo de alto padrão, sem saltos de viewport, sem arrasto de página que expõe fundo branco (rubber-banding / ghost pull), com manifest robusto, Service Worker com tolerância a falhas offline e total ausência de regras coercitivas de estilo (Check DL-04 = 0).
 - **Decisão:**
@@ -1004,6 +1125,7 @@
 - **Consequências:** Fase 1 completamente selada e homologada; o app oferece ergonomia tátil nativa impecável; transição liberada para **Fase 2: Backend e Integridade Transacional (P22 a P28)**.
 
 ## DEC-078: PROMPT P22 a P28 — Conclusão Integral e Selamento da Fase 2 (Backend, Sem Mock, Sem Hardcode, Purga da Kill List)
+
 - **Data:** 2026-10-01
 - **Contexto:** Execução e fechamento integral da **Fase 2 (P22 a P28)** do plano diretor: erradicação total de mocks, fakes e dados simulados (Checks C22, C24, C37 = 0), saneamento de strings hardcoded de backend, purga da Kill List (quarentena de arquivos sem consumidores) e unificação de componentes duplicados de Kanban e Tickets de Suporte.
 - **Decisão:**
@@ -1026,6 +1148,7 @@
 - **Consequências:** Fase 2 concluída com sucesso e selada no ledger; zero dados fictícios no código de aplicação; transição liberada para **Fase 3: Metamorfose por Nicho (P29 a P36)**.
 
 ## DEC-079: Deploy Completo de Produção (Supabase + Cloudflare Pages via Wrangler)
+
 - **Data:** 2026-10-01
 - **Contexto:** Execução do mandato de deploy completo de produção para o Supabase (banco Postgres gerenciado) e Cloudflare Pages (borda global com SSR Worker via Wrangler), com injeção segura de segredos e validação de ponta a ponta.
 - **Decisão:**
@@ -1048,6 +1171,7 @@
 - **Consequências:** Aplicação 100% implantada em produção na borda do Cloudflare Pages com backend Supabase sincronizado e operacional.
 
 ## DEC-080: Conclusão da Fase 3 (Metamorfose por Nicho) e Fase 6 (Ferramental MCP & Governança)
+
 - **Data:** 2026-10-01
 - **Contexto:** Execução e fechamento integral da **Fase 3 (P29 a P36)** e **Fase 6 (P62 a P65)**: estruturação de manifesto canônico de 10 nichos, registro universal de módulos, máquinas de estado explícitas para 8 entidades centrais, motor de formulários schema-driven com consentimento LGPD, Kanban unificado adaptável por nicho, barramento de eventos de domínio com timeline consolidada e exposição no registro unificado de ferramentas MCP.
 - **Decisão:**
@@ -1071,6 +1195,7 @@
 - **Consequências:** Waesy opera como um núcleo polimórfico adaptativo sem bifurcações ad-hoc no JSX; IA e UI operam sobre as mesmas máquinas de estado e timeline de eventos auditáveis.
 
 ## DEC-081: Conclusão Integral das Fases 4, 5, 6, 7 e 8 (Transplante Canônico, Fluxo Turismo Ponta a Ponta, MCP e Selo Final de Plataforma P78)
+
 - **Data:** 2026-10-01
 - **Contexto:** Execução e fechamento integral de todas as fases planejadas do plano mestre: Fase 4 (Transplante de Capacidades Centrais P37 a P44), Fase 5 (Fluxo Turismo e Operações Integradas Ponta a Ponta P45 a P61), Fase 6 (Expansão de Ferramental MCP e WebMCP P66 a P69), Fase 7 (Hardening e Governança de IA P70 a P72) e Fase 8 (Blindagem, Ciclo Contínuo e Selo Executivo P73 a P78).
 - **Decisão:**
@@ -1105,6 +1230,7 @@
 - **Consequências:** Todas as 8 fases do Plano Diretor (Fases 0 a 8) e todos os 78 mandatos (P01 a P78) estão integralmente concluídos, auditados e selados no repositório.
 
 ## DEC-082: Suporte Universal a Clipboard (Ctrl+V) em Anexos e Consolidação da Documentação Mestra de Auditoria
+
 - **Data:** 2026-10-01
 - **Contexto:** Necessidade de permitir envio imediato de capturas de tela e arquivos via área de transferência (Ctrl+V) no componente central de anexos (`FileAttachmentUpload`) sem depender de preenchimento manual de URLs, além da formalização canônica em disco dos três documentos de auditoria ativos (`docs/audit/PLANO_MESTRE.md`, `docs/audit/GAPS.md` e `docs/audit/DESIGN_AUDIT.md`).
 - **Decisão:**
@@ -1122,6 +1248,7 @@
 - **Consequências:** Usuários e operadores têm experiência de upload fluida e sem atrito na plataforma; todas as especificações e auditorias residem permanentemente no disco em conformidade com a economia de contexto (B.7).
 
 ## DEC-083: Criação de Skills Especializadas, Fachada Unificada de API Pool e Certificação Executiva
+
 - **Data:** 2026-10-01
 - **Contexto:** Execução das Fases 5, 6 e 7 do Prompt Mestre de Auditoria Total: criação do conjunto canônico de novas skills para o IDE Antigravity (`gap-hunter`, `fallback-sweeper`, `design-auditor`, `api-pool-manager`, `recursive-fix`), implementação da fachada unificada de consumo de IAs (`ai-pool.ts`) e emissão do relatório oficial de certificação executiva (`AUDIT_REPORT_2026-10-01.md`).
 - **Decisão:**
@@ -1135,6 +1262,7 @@
 - **Consequências:** O ecossistema Waesy conta com ferramental completo e autônomo para manutenção perpétua da qualidade, segurança e conformidade arquitetural.
 
 ## DEC-084: Execução do Bloco B — Modelo Canônico do Motor de Anúncios e Vitrine (F07 a F14)
+
 - **Data:** 2026-10-01
 - **Contexto:** Execução do Bloco B do PLANO DE IMPLEMENTAÇÃO — MOTOR DE ANÚNCIOS E VITRINE (CLASSIFICADOS + WORKSPACE), unificando as origens concorrentes em um único modelo canônico com dono único de cada informação.
 - **Decisão:**
@@ -1162,6 +1290,7 @@
 - **Consequências:** Base de dados e camada de serviços do motor de anúncios completamente unificadas e blindadas; Bloco B concluído com zero regressões de build e lint.
 
 ## DEC-085: Execução do Bloco C (F15 a F24) — Editor Canônico, Eliminação de Duplicidades e Consolidação Total de Prompts
+
 - **Data:** 2026-10-01
 - **Contexto:** Execução integral do Bloco C do PLANO DE IMPLEMENTAÇÃO — MOTOR DE ANÚNCIOS E VITRINE (F15 a F24) e persistência definitiva de todos os 10 documentos de prompts não salvos do IDE para continuidade multi-máquina.
 - **Decisão:**
@@ -1200,6 +1329,7 @@
 - **Consequências:** Bloco C concluído com 100% de integridade; repositório pronto para git push e continuidade imediata no Bloco D (F25 a F32).
 
 ## DEC-086: Execução dos Blocos D, E e F (F25 a F48) — Preview Real, Fluxos Transacionais e Blindagem WebMCP
+
 - **Data:** 2026-10-01
 - **Contexto:** Conclusão integral das Fases F25 a F48 do PLANO DE IMPLEMENTAÇÃO — MOTOR DE ANÚNCIOS E VITRINE (F01 a F48), abrangendo preview em tempo real, geração de pedidos/reservas/orçamentos, integração bilateral com CRM e timeline, e paridade WebMCP com RLS de produção.
 - **Decisão:**
@@ -1221,7 +1351,9 @@
   6. **Paridade WebMCP e Governança Multi-Tenant (F41, F42):**
      - Ferramentas `search_unified_listings` e `transact_unified_listing` registradas no `MCP_TOOL_REGISTRY` em `src/registries/mcp-tool-registry.ts`, com validação Zod, isolamento de tenant e limites de taxa.
   7. **Garantia por Testes Automatizados (Vitest):**
- ## DEC-087: Implementação das Ondas 2 a 5 (G10 a G46) — Biblioteca Canônica de Nichos, Padrão de Conteúdo em 11 Blocos, Primitivas de Design System e Ledger Imutável de Estoque
+
+## DEC-087: Implementação das Ondas 2 a 5 (G10 a G46) — Biblioteca Canônica de Nichos, Padrão de Conteúdo em 11 Blocos, Primitivas de Design System e Ledger Imutável de Estoque
+
 - **Data:** 2026-10-01
 - **Contexto:** Execução das Fases G10 a G46 do PLANO 3 — MOTOR DE OFERTAS, BIBLIOTECA DE NICHOS, PADRÃO DE CONTEÚDO, DESIGN SYSTEM E ESTOQUE.
 - **Decisão:**
@@ -1235,7 +1367,9 @@
   3. **Primitivas de Design System e CMS (G27 a G38 - Onda 4):**
      - Implementação das primitivas em `src/components/ui/canonical/`: `CanonicalPage`, `CanonicalSection`, `CanonicalSplit`, `CanonicalBottomBar`, `CanonicalFieldGroup`, `CanonicalFormRow` e `CanonicalField`.
      - 100% de conformidade com os tokens, touch target >= 44px (`h-11`) e foco `:focus-visible`.
+
 ## DEC-088: Implementação das Ondas 6 a 9 (G47 a G72) — Motor de Preço e Promoção, Paridade Classificados/Workspace, Componentes Adaptativos e Ferramentas WebMCP
+
 - **Data:** 2026-10-01
 - **Contexto:** Conclusão das Fases G47 a G72 do PLANO 3 — MOTOR DE OFERTAS, BIBLIOTECA DE NICHOS, PADRÃO DE CONTEÚDO, DESIGN SYSTEM E ESTOQUE.
 - **Decisão:**
@@ -1252,7 +1386,9 @@
      - Mapeamento bidirecional em `src/lib/ad-engine/workspace-parity-bridge.ts`, unificando os 15 arquétipos canônicos sem perda de metadados.
   4. **Expansão WebMCP e Transações (G67 a G72 - Onda 9):**
      - Registro de 3 novas ferramentas no `MCP_TOOL_REGISTRY` em `src/registries/mcp-tool-registry.ts`: `calculate_canonical_offer_price`, `get_niche_package_spec` e `inspect_stock_ledger`.
+
 ## DEC-089: Operação Verdade Única — Criação da SSOT Canônica (R01 a R06) e Artefatos Estruturados
+
 - **Data:** 2026-10-01
 - **Contexto:** Execução do Bloco 1 (Fases R01 a R06) do SUPER PROMPT — OPERAÇÃO VERDADE ÚNICA (05_SUPER_PROMPT_OPERACAO_VERDADE_UNICA.md).
 - **Decisão:**
@@ -1274,6 +1410,7 @@
 - **Consequências:** Fim da proliferação de documentos de planejamento soltos; SSOT única e inviolável ativa no repositório.
 
 ## DEC-090: Execução do Bloco 2 (R07 a R14) e Início do Bloco 3 (R15) — Primitivas Canônicas, Saneamento de Commerce e Decomposição de Monólitos de Rota
+
 - **Data:** 2026-10-01
 - **Contexto:** Execução do Bloco 2 (Fases R07 a R14 — O Lint Engolido e o Design System) e início do Bloco 3 (Fase R15 — Decomposição de Monólitos de Rota) do SUPER PROMPT — OPERAÇÃO VERDADE ÚNICA.
 - **Decisão:**
@@ -1300,6 +1437,7 @@
 - **Consequências:** Rotas enxutas, manutenibilidade extrema, fim de formulários gigantes monolíticos e base sólida para decomposição de `$id.tsx` (R16).
 
 ## DEC-091: Execução da Fase R16 (Bloco 3) — Decomposição do Monólito `workspace.catalogo.produtos.$id.tsx`
+
 - **Data:** 2026-10-01
 - **Contexto:** Execução da Fase R16 do PLANO 4 — OPERAÇÃO VERDADE ÚNICA. O arquivo `workspace.catalogo.produtos.$id.tsx` continha 1.705 linhas com múltiplos formulários aninhados, gerenciamento de mídia, matriz de variações, mockup simulado redundante e violações de design lint.
 - **Decisão:**
@@ -1320,6 +1458,7 @@
 - **Consequências:** Ambos os monólitos de produto do Workspace (`novo.tsx` e `$id.tsx`) estão abaixo de 300 linhas e 100% modulares. Próximo alvo: `_store.classificados.$id.tsx` (R17).
 
 ## DEC-092: Execução da Fase R17 (Bloco 3) — Decomposição de `_store.classificados.$id.tsx` e Ativação de Candidaturas
+
 - **Data:** 2026-10-01
 - **Contexto:** Execução da Fase R17 do PLANO 4 — OPERAÇÃO VERDADE ÚNICA. O arquivo de rota `_store.classificados.$id.tsx` continha 1.829 linhas de código acoplado, com estados de candidatura a vagas sem renderização de interface real e modais de reserva, proposta e guia digital gigantes embutidos na rota.
 - **Decisão:**
@@ -1344,8 +1483,8 @@
 - **Fundamentação:** AGENTS.md B.1 a B.12, DL-01 a DL-30 e Mandato R17 da Operação Verdade Única.
 - **Consequências:** Rota de detalhe de classificados completamente modularizada, reativa, auditada e sem nenhum mock ou placeholder. Próximo alvo: `_store.classificados.index.tsx` (R18).
 
-
 ## DEC-093: R18 — Decomposição de `_store.classificados.index.tsx` e módulo catalog
+
 - **Data:** 2026-10-02
 - **Contexto:** `_store.classificados.index.tsx` tinha 1.701 linhas — violação grave do Gate R18 (<300 linhas por rota). 3 violações DL-04 em `niche-taxonomy-manifest.ts` bloqueavam entrega.
 - **Decisão:**
@@ -1359,26 +1498,27 @@
 - **Consequências:** Todos os 4 maiores classificados monólitos (R15–R18) decompostos. R19 ativo.
 
 ## DEC-094: R19 — Inventário de Monólitos de Rota Acima de 500 Linhas
+
 - **Data:** 2026-10-02
 - **Contexto:** Varredura determinística de `src/routes/` para identificar todos os arquivos acima de 500 linhas — Gate obrigatório do Bloco 3 (R19).
 - **Decisão:** Lista canônica produzida com 73 arquivos acima de 500 linhas. Top-10 críticos:
-  | Linhas | Arquivo |
-  |-------:|---------|
-  | 9.285 | `_store.conta.classificados.novo.tsx` |
-  | 3.789 | `_store.membro.$id.tsx` |
-  | 2.231 | `workspace.orcamentos.novo.tsx` |
-  | 2.194 | `_store.checkout.tsx` |
-  | 2.076 | `workspace.turismo.viagens.$id.tsx` |
-  | 2.058 | `workspace.turismo.hoteis.tsx` |
-  | 2.048 | `admin-master.mining.tsx` |
-  | 2.024 | `workspace.pdv.index.tsx` |
-  | 2.012 | `workspace.comercial.tsx` |
-  | 1.969 | `workspace.financeiro.recebiveis.tsx` |
+  | Linhas | Arquivo                               |
+  | -----: | ------------------------------------- |
+  |  9.285 | `_store.conta.classificados.novo.tsx` |
+  |  3.789 | `_store.membro.$id.tsx`               |
+  |  2.231 | `workspace.orcamentos.novo.tsx`       |
+  |  2.194 | `_store.checkout.tsx`                 |
+  |  2.076 | `workspace.turismo.viagens.$id.tsx`   |
+  |  2.058 | `workspace.turismo.hoteis.tsx`        |
+  |  2.048 | `admin-master.mining.tsx`             |
+  |  2.024 | `workspace.pdv.index.tsx`             |
+  |  2.012 | `workspace.comercial.tsx`             |
+  |  1.969 | `workspace.financeiro.recebiveis.tsx` |
 - **Fundamentação:** Operação Verdade Única R19, Gate Bloco 3.
 - **Consequências:** Fila de decomposição ordenada por impacto para R20+. Próximo alvo: `_store.conta.classificados.novo.tsx` (9.285 linhas → meta <300 linhas).
 
-
 ## DEC-095: R29 — Inventário dos Mecanismos Concorrentes de Metamorfose de Template
+
 - **Data:** 2026-10-02
 - **Contexto:** R29 exige mapear quem decide o template hoje no sistema — identificação de 33 arquivos com lógica de template concorrente.
 - **Decisão:** Dono único eleito: `src/lib/ad-engine/niche-taxonomy-manifest.ts` (campo `allowedTemplates` por nicho). Arquivos concorrentes identificados: `niche-presets.ts` (importa UI — violação), `presentation-presets.ts` (cores hex — DL-01), `hotel-presets.ts`, `src/components/social-templates/`.
@@ -1386,6 +1526,7 @@
 - **Consequências:** R30 deve criar `template-metamorphosis.ts` e eliminar concorrentes. Subagente R29-R34 ativo.
 
 ## DEC-096: R35 — Biblioteca Semântica Canônica por Nicho
+
 - **Data:** 2026-10-02
 - **Contexto:** Textos de interface (labels, CTAs, mensagens de erro) hardcoded em 20+ arquivos de rotas — violação direta da Regra R35.
 - **Decisão:** Criado `src/lib/ad-engine/niche-semantic-library.ts` com 5 nichos completos (turismo, varejo, mercado, serviços, imóveis). Funções canônicas: `getNicheLabel`, `getSellingUnitLabel`, `getNicheErrorMessage`, `getNicheEmptyState`. 0 violações de lint.
@@ -1394,6 +1535,7 @@
 - **Consequências:** Componentes devem migrar para `getNicheLabel(nicheId, key)` ao invés de strings literais por nicho.
 
 ## DEC-097: R36 — Nichos como Dado Puro no NICHE_REGISTRY
+
 - **Data:** 2026-10-02
 - **Contexto:** R36 exige que trocar ou adicionar nicho não exija tocar em nenhum componente — gate testável.
 - **Decisão:** Criado `src/lib/ad-engine/niche-data-registry.ts` com `NICHE_REGISTRY` unificando `NicheTaxonomyConfig` + `NicheSemanticConfig` + metadados operacionais (suporte a scheduling, subscription, digital delivery, regulatory body, document type). 7 nichos ativos declarados. Funções: `getNicheById`, `getActiveNiches`, `getAllowedTemplates`, `getNicheSections`.
@@ -1401,8 +1543,8 @@
 - **Fundamentação:** R36 Operação Verdade Única, Gate: "trocar de nicho sem tocar em componente".
 - **Consequências:** Adicionar novo nicho = adicionar entrada em `NICHE_DEFINITIONS[]` + `NICHE_TAXONOMY_REGISTRY` + `NICHE_SEMANTIC_LIBRARY`. Zero toques em componentes.
 
-
 ## DEC-098: Conclusão do Bloco 4 (R21 a R28) — Duplicação e Dono Único Canônico
+
 - **Data:** 2026-10-02
 - **Contexto:** Existência de duplicações concorrentes em cálculo de parcelamento, classificação fiscal NCM/CFOP, precificação/margem, movimentação de estoque e gestão de galeria de mídia.
 - **Decisão:**
@@ -1416,6 +1558,7 @@
 - **Consequências:** 0 duplicidades nos campos canônicos F01–F09. Bloco 4 100% concluído.
 
 ## DEC-099: Conclusão do Bloco 5 (R29 a R36) — Metamorfose e Nichos como Dado Puro
+
 - **Data:** 2026-10-02
 - **Contexto:** Mecanismos concorrentes de metamorfose e seleção de template soltos em 33 arquivos, com textos hardcoded por nicho e ausência de correlação formal com arquétipos.
 - **Decisão:**
@@ -1429,6 +1572,7 @@
 - **Consequências:** Bloco 5 100% concluído. 0 violações de design lint. Início do Bloco 6 (Editor, Preview e Compra).
 
 ## DEC-100: Conclusão do Bloco 6 (R37 a R44) — Editor, Preview Fidedigno e Transação Multi-Nicho
+
 - **Data:** 2026-10-02
 - **Contexto:** Necessidade de garantir que os fluxos de criação, prévia e compra de produtos e anúncios operem ponta a ponta sem falhas, com suporte a rascunhos, prévia adaptativa nos 3 viewports canônicos (390/768/1280), fiscal condicional por nicho e revisão humana na IA.
 - **Decisão:**
@@ -1442,6 +1586,7 @@
 - **Consequências:** Bloco 6 100% concluído. 44 de 64 fases do Plano 4 finalizadas. 0 violações de design lint. Início do Bloco 7 (Fluxos e Integração).
 
 ## DEC-101: Conclusão do Bloco 7 (R45 a R50) — Fluxos Transacionais e Integração E2E
+
 - **Data:** 2026-10-02
 - **Contexto:** Garantir a unificação de ponta a ponta dos fluxos transacionais do ecossistema Waesy: da ingestão e upload à vitrine, carrinho, checkout, timeline de pedidos, split financeiro e notificações.
 - **Decisão:**
@@ -1455,6 +1600,7 @@
 - **Consequências:** Bloco 7 100% concluído. 50 de 64 fases finalizadas.
 
 ## DEC-102: Conclusão do Bloco 8 (R51 a R54) — Blindagem de Segurança, RLS 100% e Isolamento Multi-Tenant
+
 - **Data:** 2026-10-02
 - **Contexto:** Necessidade de blindagem absoluta de Row Level Security (RLS) em 100% das tabelas do banco, isolamento multi-tenant estrito com prova de leitura cruzada bloqueada, alinhamento de escopos de papéis e eliminação de rotas que furam o menu.
 - **Decisão:**
@@ -1466,6 +1612,7 @@
 - **Consequências:** Bloco 8 100% concluído (54 de 64 fases do Plano 4 finalizadas). 0 violações de design lint. 13/13 testes de isolamento multi-tenant verdes. Início do Bloco 9 (MCP, IA e Agentes).
 
 ## DEC-103: Conclusão do Bloco 9 (R55 a R58) — MCP, IA e Governança de Agentes
+
 - **Data:** 2026-10-02
 - **Contexto:** Necessidade de auditar e alinhar o MCP Tool Registry (`src/registries/mcp-tool-registry.ts`), o Integration Registry (`src/registries/integration-registry.ts`), a ausência de portas dos fundos para a IA interna, e podar o meta-trabalho em `.agents/` que não altera o comportamento do produto entregue.
 - **Decisão:**
@@ -1477,6 +1624,7 @@
 - **Consequências:** Bloco 9 100% concluído (58 de 64 fases do Plano 4 finalizadas). Início do Bloco 10 (Limpeza, Regressão e Ciclo Contínuo).
 
 ## DEC-104: Conclusão do Bloco 10 (R59 a R64) e Homologação Final da Operação Verdade Única
+
 - **Data:** 2026-10-02
 - **Contexto:** Execução e fechamento das 6 fases finais (R59 a R64): remoção de remendos da raiz, governança de diretórios legados, regressão visual, CI canônico, evals/observabilidade e ciclo contínuo em todas as verticais e arquétipos.
 - **Decisão:**
@@ -1490,6 +1638,7 @@
 - **Consequências:** PLANO 4 100% CONCLUÍDO (64 de 64 fases finalizadas). Sistema estável, blindado, com verdade única em código e banco.
 
 ## DEC-105: Conclusão do Bloco A (S01 a S05) e Início do Bloco B (S06) — BigTech Structure & Scaling
+
 - **Data:** 2026-10-02
 - **Contexto:** Inicialização do Plano 5 (Estrutura, Escala e Operação BigTech): medição matemática do repositório (Re-baseline S01), mapa de donos e camadas (S02), grafo de dependência e imports proibidos (S03), isolamento e governança de diretórios paralelos (S04), congelamento do orçamento de escala (S05) e contrato de camadas com teste automatizado (S06).
 - **Decisão:**
@@ -1502,11 +1651,8 @@
 - **Fundamentação:** AGENTS.md B.1 a B.12, Prompt 06 (BigTech Scale) e Gate GT1.
 - **Consequências:** Bloco A 100% concluído e selado. Início do Bloco B (S06 a S14). CI canônico unificado verde (`check:canonical`).
 
-
-
-
-
 ## DEC-106: Conclusão das Fases S07, S08 e S09 (Plano 5 — Bloco B) — Camadas Puras, BFF Desacoplado e Rotas Finas
+
 - **Data:** 2026-10-02
 - **Contexto:** Execução das Fases S07 (src/lib puro), S08 (src/services BFF desacoplado de UI) e S09 (rotas finas sem acoplamento direto com persistência).
 - **Decisão:**
@@ -1518,6 +1664,7 @@
 - **Consequências:** Fases S07, S08 e S09 100% concluídas. Total de 9 de 48 fases do Plano 5 finalizadas. Próxima fase: S10 (Manifestos por vertical e fronteiras explícitas).
 
 ## DEC-107: Conclusão das Fases S10 a S14 e Fechamento Integral do Bloco B (Plano 5) — Estrutura e Camadas
+
 - **Data:** 2026-10-02
 - **Contexto:** Execução das Fases S10 (Manifestos por vertical e fronteiras explícitas), S11 (Detector de código morto e órfão em CI), S12 (Padronização de nomenclatura e sufixos canônicos), S13 (Unificação de tipos e schemas duplicados) e S14 (Grafo acíclico sem dependência circular entre verticais).
 - **Decisão:**
@@ -1527,7 +1674,9 @@
   4. `S13`: Implementado `scripts/check-type-duplications.mjs` (`npm run check:types-ssot`). As 24 duplicações concorrentes de tipos/interfaces exportados foram unificadas em seus donos canônicos (`Role`, `IntegrationStatus`, `ViewModeType` vs `WorkspaceViewModeType`, `AddressData`, `ItineraryDay`, `RawVariant`, `SheetPageProps`, `PolicyFaqItem`, `DestinationCatalogReview`, `NichePackageId`, etc.). Validador: 100% de unicidade e zero declarações duplicadas.
   5. `S14`: Implementado `scripts/check-circular-deps.mjs` (`npm run check:cycles`). Módulos intermediários e folhas extraídos (`src/services/mining/mined-product-enricher.ts`, `src/types/hr.ts`, `src/types/catalog.ts`, `src/types/unified-ad-engine.ts`, desvinculação `sheet.tsx` e `sheet-page.tsx`). Validador: Grafo estritamente acíclico com 0 ciclos de aplicação.
   6. CI e Build de Produção: TypeScript `tsc --noEmit` com 0 erros, `npm run check:canonical` 100% aprovado em todos os 8 gates, Vitest com 153 suítes e 1.015 testes verdes (100%), e `npm run build` gerando `dist/_worker.js` e `dist/_routes.json` para Cloudflare Pages com sucesso.
+
 ## DEC-108: Conclusão das Fases S15 e S16 (Plano 5 — Bloco C) — Code-Split por Vertical, Preload por Intenção e Orçamento Bloqueante por Rota
+
 - **Data:** 2026-10-02
 - **Contexto:** Execução das Fases S15 (Code-split por vertical e preload por intenção) e S16 (Orçamento por rota bloqueante no CI) do Bloco C (Rotas e Performance).
 - **Decisão:**
@@ -1538,6 +1687,7 @@
 - **Consequências:** Fases S15 e S16 100% CONCLUÍDAS e HOMOLOGADAS. Total de 16 de 48 fases do Plano 5 finalizadas. Próxima fase: S17 (Paginação keyset e streaming em listagens volumosas).
 
 ## DEC-109: Conclusão das Fases S17 e S18 (Plano 5 — Bloco C) — Paginação Keyset, Streaming e Cache de Borda com Invalidação Precisa
+
 - **Data:** 2026-10-02
 - **Contexto:** Execução das Fases S17 (Paginação keyset e streaming em listagens volumosas) e S18 (Cache de borda para páginas públicas e invalidação precisa) do Bloco C (Rotas e Performance).
 - **Decisão:**
@@ -1548,6 +1698,7 @@
 - **Consequências:** Fases S17 e S18 100% CONCLUÍDAS e HOMOLOGADAS. Total de 18 de 48 fases do Plano 5 finalizadas (37.5%). Próxima fase: S19 (Otimização do Worker: bundle, cold start e imports seletivos).
 
 ## DEC-110: Conclusão das Fases S19 e S20 (Plano 5 — Bloco C) — Otimização do Worker, Índices de Banco e Eliminação de Loops N+1
+
 - **Data:** 2026-10-02
 - **Contexto:** Execução das Fases S19 (Otimização do Cloudflare Worker) e S20 (Índices no banco, seleção explícita e fim do N+1) do Bloco C (Rotas e Performance).
 - **Decisão:**
@@ -1558,6 +1709,7 @@
 - **Consequências:** Fases S19 e S20 100% CONCLUÍDAS e HOMOLOGADAS. Total de 20 de 48 fases do Plano 5 finalizadas (41.7%). Próximas fases: S21 (RLS performático com medição do custo por linha) e S22 (Rate limit, idempotência e desacoplamento assíncrono).
 
 ## DEC-111: Conclusão das Fases S21 e S22 (Plano 5 — Bloco C) — RLS Performático, InitPlan O(1), Rate Limit Anti-Enumeração, Idempotência e Outbox DLQ
+
 - **Data:** 2026-10-02
 - **Contexto:** Execução das Fases S21 (RLS performático com medição de custo por linha) e S22 (Rate limit, idempotência e desacoplamento assíncrono) finalizando integralmente o Bloco C (Rotas e Performance: Fases S15 a S22).
 - **Decisão:**
@@ -1575,6 +1727,7 @@
 - **Consequências:** Fases S21 e S22 100% CONCLUÍDAS e HOMOLOGADAS. **Bloco C (S15 a S22) 100% FINALIZADO**. Total de **22 de 48 fases do Plano 5 concluídas (45.8%)**. Próximo bloco: **Bloco D — Design System como Fonte Única (Fases S23 a S31)**.
 
 ## DEC-112: Conclusão da Fase S23 (Plano 5 — Bloco D) — Auditoria de Tokens e Consolidação na Fonte Única (W3C DTCG)
+
 - **Data:** 2026-10-02
 - **Contexto:** Execução da Fase S23 (Auditoria de Tokens e Consolidação na Fonte Única) abrindo o Bloco D (Design System como Fonte Única: Fases S23 a S31) do Plano 5.
 - **Decisão:**
@@ -1586,6 +1739,7 @@
 - **Consequências:** Fase S23 100% CONCLUÍDA e HOMOLOGADA. Total de **23 de 48 fases do Plano 5 concluídas (47.9%)**. Próxima fase: **S24 (Showcase Interno com Renderização Completa e Matriz de 4 Estados)**.
 
 ## DEC-113: Conclusão da Fase S24 (Plano 5 — Bloco D) — Showcase Interno com Renderização Completa e Matriz de 4 Estados
+
 - **Data:** 2026-10-02
 - **Contexto:** Execução da Fase S24 (Showcase Interno com Renderização Completa e Matriz de 4 Estados) do Bloco D (Design System como Fonte Única: Fases S23 a S31) do Plano 5.
 - **Decisão:**
@@ -1602,7 +1756,9 @@
      - **Estado 4 (Erro)**: Alert de diagnóstico técnico com borda semântica e botão de reintento.
   4. `Piso de Acessibilidade e Ergonomia`: Alvos de toque móveis garantidos com dimensão mínima de 44x44px (`h-11`) e anéis de foco visíveis em todos os elementos (`focus-visible:ring-2`).
   5. `Verificação e Provas`: Testes unitários em `src/components/design-system/design-system-showcase.test.ts` (2/2 testes verdes), Design Lint com 0 violações P0/P1/P2 nos arquivos alterados, e grafo acíclico mantido com 0 ciclos.
+
 ## DEC-114: Conclusão da Fase S25 (Plano 5 — Bloco D) — Família Shell e Navegação Canônica
+
 - **Data:** 2026-10-02
 - **Contexto:** Execução da Fase S25 (Família Shell e Navegação) do Bloco D (Design System como Fonte Única: Fases S23 a S31) do Plano 5.
 - **Decisão:**
@@ -1615,6 +1771,7 @@
 - **Consequências:** Fase S25 100% CONCLUÍDA e HOMOLOGADA. Total de **25 de 48 fases do Plano 5 concluídas (52.1%)**. Próxima fase: **S26 (Família Superfície e Dados)**.
 
 ## DEC-115: Conclusão da Fase S26 (Plano 5 — Bloco D) — Família Superfície e Dados Canônica
+
 - **Data:** 2026-10-02
 - **Contexto:** Execução da Fase S26 (Família Superfície e Dados) do Bloco D (Design System como Fonte Única: Fases S23 a S31) do Plano 5.
 - **Decisão:**
@@ -1631,6 +1788,7 @@
 - **Consequências:** Fase S26 100% CONCLUÍDA e HOMOLOGADA. Total de **26 de 48 fases do Plano 5 concluídas (54.2%)**. Próxima fase: **S27 (Família Mídia)**.
 
 ## DEC-116: Conclusão da Fase S27 (Plano 5 — Bloco D) — Família Mídia Canônica
+
 - **Data:** 2026-10-02
 - **Contexto:** Execução da Fase S27 (Família Mídia) do Bloco D (Design System como Fonte Única: Fases S23 a S31) do Plano 5.
 - **Decisão:**
@@ -1646,6 +1804,7 @@
 - **Consequências:** Fase S27 100% CONCLUÍDA e HOMOLOGADA. Total de **27 de 48 fases do Plano 5 concluídas (56.3%)**. Próxima fase: **S28 (Família Formulário e Wizard)**.
 
 ## DEC-117: Conclusão da Fase S28 (Plano 5 — Bloco D) — Família Formulário e Wizard Canônica
+
 - **Data:** 2026-10-02
 - **Contexto:** Execução da Fase S28 (Família Formulário e Wizard) do Bloco D (Design System como Fonte Única: Fases S23 a S31) do Plano 5.
 - **Decisão:**
@@ -1658,6 +1817,7 @@
 - **Consequências:** Fase S28 100% CONCLUÍDA e HOMOLOGADA. Total de **28 de 48 fases do Plano 5 concluídas (58.3%)**. Próxima fase: **S29 (Família Overlay e Matriz de 4 Estados)**.
 
 ## DEC-118: Conclusão da Fase S29 (Plano 5 — Bloco D) — Família Overlay e Matriz de 4 Estados Canônica
+
 - **Data:** 2026-10-02
 - **Contexto:** Execução da Fase S29 (Família Overlay e Matriz de 4 Estados) do Bloco D (Design System como Fonte Única: Fases S23 a S31) do Plano 5.
 - **Decisão:**
@@ -1672,6 +1832,7 @@
 - **Consequências:** Fase S29 100% CONCLUÍDA e HOMOLOGADA. Total de **29 de 48 fases do Plano 5 concluídas (60.4%)**. Próxima fase: **S30 (Migração de Módulos para Primitivas Canônicas com Catraca Zerando)**.
 
 ## DEC-119: Conclusão da Fase S30 (Plano 5 — Bloco D) — Migração de Módulos para Primitivas Canônicas com Catraca Zerando
+
 - **Data:** 2026-10-02
 - **Contexto:** Execução da Fase S30 (Migração de Módulos para as Primitivas e Catraca Zerando) do Bloco D (Design System como Fonte Única: Fases S23 a S31) do Plano 5.
 - **Decisão:**
@@ -1687,6 +1848,7 @@
 - **Consequências:** Fase S30 100% CONCLUÍDA e HOMOLOGADA. Total de **30 de 48 fases do Plano 5 concluídas (62.5%)**. Próxima fase: **S31 (Nativização Mobile, Tablet e Desktop nos 5 Viewports: 320, 390, 768, 1280, 1920)**.
 
 ## DEC-120: Conclusão da Fase S31 (Plano 5 — Bloco D) — Nativização Mobile, Tablet e Desktop nos 5 Viewports e Fechamento do Bloco D
+
 - **Data:** 2026-10-02
 - **Contexto:** Execução da Fase S31 (Nativização Mobile, Tablet e Desktop nos 5 Viewports: 320px, 390px, 768px, 1280px, 1920px) e Fechamento Integral do Bloco D (Design System como Fonte Única: Fases S23 a S31) do Plano 5.
 - **Decisão:**
@@ -1702,6 +1864,7 @@
 - **Consequências:** Fase S31 100% CONCLUÍDA e HOMOLOGADA. Bloco D (Design System como Fonte Única: Fases S23 a S31) 100% CONCLUÍDO. Total de **31 de 48 fases do Plano 5 concluídas (64.6%)**. Reorganização imediata de prioridades para focar na eliminação de monólitos e débitos herdados conforme o compêndio `Untitled-12` (`docs/audit/REVISAO_DOC_COMPLETO_02102026.md`).
 
 ## DEC-121: Conclusão das Fases S32 e S33 (Plano 5 — Bloco E) — Telemetria Real, Correlação por Request ID e Extinção do Buffer de 5s
+
 - **Data:** 2026-10-02
 - **Contexto:** Execução das Fases S32 (Captura de Erro de Cliente e Worker com Correlação) e S33 (Extinção do Buffer de 5s de `error-capture.ts`) do Bloco E (Telemetria Real) do Plano 5.
 - **Decisão:**
@@ -1714,6 +1877,7 @@
 - **Consequências:** Fases S32 e S33 100% CONCLUÍDAS e HOMOLOGADAS. Total de **33 de 48 fases do Plano 5 concluídas (68.7%)**. Próxima fase: **S34 (Detecção de Quebra Silenciosa: catch vazio, promessa rejeitada, job não executado)**.
 
 ## DEC-122: Conclusão da Fase S34 (Plano 5 — Bloco E) — Detecção de Quebras Silenciosas e Resguardo Operacional
+
 - **Data:** 2026-10-02
 - **Contexto:** Execução da Fase S34 (Detecção de Quebras Silenciosas: catch vazio, promessa rejeitada, job não executado) do Bloco E (Telemetria Real) do Plano 5.
 - **Decisão:**
@@ -1728,6 +1892,7 @@
 - **Consequências:** Fase S34 100% CONCLUÍDA e HOMOLOGADA. Total de **34 de 48 fases do Plano 5 concluídas (70.8%)**. Próxima fase: **S35 (Web Vitals Reais: LCP, FID, CLS, TTFB gravados em métricas)**.
 
 ## DEC-123: Conclusão da Fase S35 (Plano 5 — Bloco E) — Coletor e Registro de Web Vitals Reais (RUM)
+
 - **Data:** 2026-10-02
 - **Contexto:** Execução da Fase S35 (Web Vitals Reais: LCP, FID/INP, CLS, TTFB gravados em métricas) do Bloco E (Telemetria Real) do Plano 5.
 - **Decisão:**
@@ -1740,6 +1905,7 @@
 - **Consequências:** Fase S35 100% CONCLUÍDA e HOMOLOGADA. Total de **35 de 48 fases do Plano 5 concluídas (72.9%)**. Próxima fase: **S36 (Contabilização Sistemática de Erros de Negócio: pagamento falho, estoque esgotado, limite atingido)**.
 
 ## DEC-124: Conclusão da Fase S36 (Plano 5 — Bloco E) — Contabilização Sistemática de Erros de Negócio
+
 - **Data:** 2026-10-02
 - **Contexto:** Execução da Fase S36 (Contabilização Sistemática de Erros de Negócio: pagamento falho, estoque esgotado, limite atingido) do Bloco E (Telemetria Real) do Plano 5.
 - **Decisão:**
@@ -1752,6 +1918,7 @@
 - **Consequências:** Fase S36 100% CONCLUÍDA e HOMOLOGADA. Total de **36 de 48 fases do Plano 5 concluídas (75.0%)**. Próxima fase: **S37 (Orçamento de Erro, Alertas Operacionais e Página de Status /status)**.
 
 ## DEC-125: Conclusão da Fase S37 e Fechamento Integral do Bloco E (Telemetria Real: Fases S32 a S37)
+
 - **Data:** 2026-10-02
 - **Contexto:** Execução da Fase S37 (Orçamento de Erro, Alertas Operacionais e Página de Status /status) e conclusão integral do Bloco E (Telemetria Real) do Plano 5.
 - **Decisão:**
@@ -1763,6 +1930,7 @@
 - **Consequências:** Fase S37 100% CONCLUÍDA e HOMOLOGADA. Bloco E (Telemetria Real: Fases S32 a S37) 100% CONCLUÍDO. Total de **37 de 48 fases do Plano 5 concluídas (77.1%)**. Transição liberada para o grande alinhamento estrutural e plano de estabilização E2E solicitado pelo usuário.
 
 ## DEC-126: Auditoria Forense dos 4 Pilares, Fase F01 (Marketplace Hub) e Deploy Completo de Produção (GitHub + Cloudflare Pages)
+
 - **Data:** 2026-10-02
 - **Contexto:** Execução da auditoria forense do ecossistema Waesy convocada pelo BigTech Executive Board, desentrelaçamento dos 4 Pilares (Places, Classificados, Marketplace e Workspace), implementação da Fase F01 (Hub do Marketplace), commit no GitHub (`2394c2e0`) e deploy de produção no Cloudflare Pages.
 - **Decisão:**
@@ -1781,6 +1949,7 @@
 - **Consequências:** Plataforma Waesy estabilizada e publicada em produção; separação conceitual dos 4 pilares consolidada; liberação para a execução contínua das próximas fases do plano de estabilização E2E (F02 a F24).
 
 ## DEC-127: Conclusão da Fase F02 (Plano de Estabilização E2E) — Blindagem da Rota de Classificados e Desambiguação de Contexto
+
 - **Data:** 2026-10-02
 - **Contexto:** Execução da Fase F02 do Bloco 1 (Separação Arquitetural dos 4 Pilares) do Plano de Estabilização E2E, estabelecendo as fronteiras visuais e funcionais dos Classificados avulsos em relação ao Marketplace e Places.
 - **Decisão:**
@@ -1791,6 +1960,7 @@
 - **Consequências:** Fase F02 100% CONCLUÍDA e HOMOLOGADA. Transição imediata para a **Fase F03: Consolidação da Rota Places / Diretório Local (`/places` / `/diretorio`) como Guia Oficial de Estabelecimentos**.
 
 ## DEC-128: Deploy Completo de Produção (GitHub + Supabase + Cloudflare Pages Edge Worker)
+
 - **Data:** 2026-10-02
 - **Contexto:** Solicitação executiva de deploy completo de produção cobrindo sincronização de migrações do Supabase, empacotamento otimizado com injeção de credenciais seguras e publicação na borda Cloudflare Pages com validação HTTP.
 - **Decisão:**
@@ -1803,6 +1973,7 @@
 - **Consequências:** Ambiente de produção 100% atualizado, estável e operacional na borda e no banco de dados.
 
 ## DEC-129: Conclusão da Fase F03 (Plano de Estabilização E2E) — Consolidação do Places e Guia Oficial de Estabelecimentos
+
 - **Data:** 2026-10-02
 - **Contexto:** Execução da Fase F03 do Bloco 1 (Separação Arquitetural dos 4 Pilares) do Plano de Estabilização E2E, consolidando o pilar Places (`/places` e `/diretorio`) como Guia Oficial da Cidade com desambiguação formal em relação a Marketplace e Classificados.
 - **Decisão:**
@@ -1813,6 +1984,7 @@
 - **Consequências:** Fase F03 100% CONCLUÍDA e HOMOLOGADA. Transição imediata para a **Fase F04: Ponte Canônica de Upgrade Classificados ➔ Workspace (promoteClassifiedToWorkspaceProduct)**.
 
 ## DEC-130: Conclusão da Fase F04 (Plano de Estabilização E2E) — Ponte Canônica de Promoção e Upgrade (Classificados ➔ Workspace)
+
 - **Data:** 2026-10-02
 - **Contexto:** Execução da Fase F04 do Bloco 1 (Separação Arquitetural dos 4 Pilares) do Plano de Estabilização E2E, construindo a ponte canônica que permite ao lojista promover anúncios avulsos de pessoa física para produtos oficiais de catálogo do Workspace corporativo.
 - **Decisão:**
@@ -1823,6 +1995,7 @@
 - **Consequências:** Fase F04 100% CONCLUÍDA e HOMOLOGADA. Transição imediata para a **Fase F05: Assistente e Modal de Nativização no Workspace ("Importar Meus Anúncios do Classificados para o Catálogo Pro")**.
 
 ## DEC-131: Conclusão da Fase F05 (Plano de Estabilização E2E) — Assistente de Nativização e Modal de Importação no Workspace
+
 - **Data:** 2026-10-02
 - **Contexto:** Execução da Fase F05 do Bloco 1 (Separação Arquitetural dos 4 Pilares) do Plano de Estabilização E2E, integrando um assistente modal nativo na listagem de produtos do Workspace que permite ao comerciante pesquisar e converter anúncios avulsos de classificados em produtos de catálogo corporativo com 1 clique.
 - **Decisão:**
@@ -1834,6 +2007,7 @@
 - **Consequências:** Fase F05 100% CONCLUÍDA e HOMOLOGADA. Transição imediata para a **Fase F06: Testes Automatizados E2E da Separação dos 4 Pilares e Fechamento do Bloco 1**.
 
 ## DEC-132: Conclusão da Fase F06 (Plano de Estabilização E2E) — Testes de Isolamento dos 4 Pilares e Fechamento do Bloco 1
+
 - **Data:** 2026-10-02
 - **Contexto:** Execução da Fase F06 do Bloco 1 (Separação Arquitetural dos 4 Pilares) do Plano de Estabilização E2E, implementando testes automatizados rigorosos de isolamento entre os pilares Places, Classificados, Marketplace e Workspace.
 - **Decisão:**
@@ -1853,6 +2027,7 @@
 - **Consequências:** Bloco 1 (F01 a F06) 100% CONCLUÍDO e HOMOLOGADA. Transição imediata para a **Fase F07: Vitrine Pública do Marketplace (Cards de Produto com SSR e SEO Canônico)**.
 
 ## DEC-133: Conclusão da Fase F07 (Plano de Estabilização E2E) — Vitrine Pública do Marketplace por Loja (SSR e SEO Canônico)
+
 - **Data:** 2026-10-02
 - **Contexto:** Execução da Fase F07 do Plano de Estabilização E2E, implementando a vitrine pública individual de loja no Marketplace (`/marketplace/:storeSlug`) com SSR de produtos, SEO canônico OpenGraph e isolamento rigoroso de empresas credenciadas (Workspace Pro).
 - **Decisão:**
@@ -1865,7 +2040,9 @@
      - `node scripts/design-lint.mjs --ratchet`: Catraca 100% aprovada com preservação estrita da baseline congelada (37.702 violações).
      - `npm run build`: Build de produção aprovado gerando worker Cloudflare Pages em arquivo único (`dist/_worker.js`) e mapeamento de rotas (`dist/_routes.json`).
 - **Fundamentação:** AGENTS.md B.1 a B.12, SPEC-F07-MARKETPLACE-SHOWCASE, docs/audit/AUDITORIA_FORENSE_DESVIOS_E_PLANO_ESTABILIZACAO_E2E.md e Definition of Done B.9.
+
 ## DEC-134: Conclusão da Fase F08 (Plano de Estabilização E2E) — Checkout do Marketplace B2C com Wizard de 3 Etapas e Cálculo de Frete
+
 - **Data:** 2026-10-02
 - **Contexto:** Execução da Fase F08 do Plano de Estabilização E2E, implementando o fluxo transacional de checkout B2C do Marketplace (`/marketplace/checkout`) com cálculo real de frete, carrinho com produtos multiloja/loja única, seleção de método de pagamento (Pix, Cartão de Crédito, Pagar na Entrega) e persistência de pedidos na tabela `orders`.
 - **Decisão:**
@@ -1877,7 +2054,9 @@
      - `node scripts/design-lint.mjs --ratchet`: Catraca 100% aprovada com preservação estrita da baseline congelada (37.702 violações, zero regressões).
      - `npm run build`: Sincronização do `routeTree.gen.ts` e compilação do bundle de produção.
 - **Fundamentação:** AGENTS.md B.1 a B.12, SPEC-F08-MARKETPLACE-CHECKOUT, docs/audit/AUDITORIA_FORENSE_DESVIOS_E_PLANO_ESTABILIZACAO_E2E.md e Definition of Done B.9.
+
 ## DEC-135: Conclusão da Fase F09 (Plano de Estabilização E2E) — Places: Detalhe do Estabelecimento com Reputação, Galeria e Mapa
+
 - **Data:** 2026-10-02
 - **Contexto:** Execução da Fase F09 do Plano de Estabilização E2E, implementando a página canônica de detalhe do estabelecimento no Guia Oficial (Pilar 1: Places em `/places/:placeSlug`) com SSR, reputação e avaliações transparentes, horários de atendimento, rotas de mapa (OpenStreetMap/Google Maps) e ponte de navegação opcional para o Marketplace se possuir vitrine comercial ativa.
 - **Decisão:**
@@ -1895,7 +2074,9 @@
      - `node scripts/design-lint.mjs --ratchet`: Catraca 100% aprovada (37.702 violações estritamente mantidas, zero regressões).
      - `npm run build`: Sincronização do `routeTree.gen.ts` e compilação do bundle de produção.
 - **Fundamentação:** AGENTS.md B.1 a B.12, SPEC-F09-PLACES-DETAIL, docs/audit/AUDITORIA_FORENSE_DESVIOS_E_PLANO_ESTABILIZACAO_E2E.md e Definition of Done B.9.
+
 ## DEC-136: Conclusão da Fase F10 (Plano de Estabilização E2E) — Workspace: Dashboard com KPIs Reais do Supabase (Zero Mocks)
+
 - **Data:** 2026-10-02
 - **Contexto:** Execução da Fase F10 do Plano de Estabilização E2E, implementando agregação e cálculo de KPIs reais do Supabase para o Workspace Pro (`getWorkspaceDashboardKpisFn`), cobrindo vendas (receita bruta, ticket médio, pedidos pendentes), catálogo (ativos e sem estoque), clientes e finanças consolidadas, com isolamento rigoroso multi-tenant (`assertStoreAccess`).
 - **Decisão:**
@@ -1909,6 +2090,7 @@
 - **Consequências:** Fase F10 100% CONCLUÍDA e HOMOLOGADA. Transição imediata para a **Fase F11: Workspace — Gestão de Pedidos Real (CRUD Completo e Transições de Status)**.
 
 ## DEC-137: Conclusão da Fase F11 (Plano de Estabilização E2E) — Workspace: Gestão de Pedidos Real (CRUD Completo e Transições de Status)
+
 - **Data:** 2026-10-02
 - **Contexto:** Execução da Fase F11 do Plano de Estabilização E2E, implementando a gestão transacional de pedidos reais no Workspace Pro (`src/services/orders.functions.ts`), com listagem paginada por keyset (`listOrdersFn`), detalhe do pedido com itens e dados do cliente (`getOrderDetailFn`) e máquina de estados para transições de status (`updateOrderStatusFn`), com isolamento multi-tenant rigoroso (`assertStoreAccess`).
 - **Decisão:**
@@ -1925,6 +2107,7 @@
 - **Consequências:** Fase F11 100% CONCLUÍDA e HOMOLOGADA. Transição imediata para a **Fase F12: Workspace — Catálogo de Produtos Real (CRUD Completo de Produtos, Mídia, Variantes e Estoque)**.
 
 ## DEC-138: Conclusão da Fase F12 (Plano de Estabilização E2E) — Workspace: Catálogo de Produtos Real (CRUD Completo de Produtos, Mídia, Variantes e Estoque)
+
 - **Data:** 2026-10-02
 - **Contexto:** Execução da Fase F12 do Plano de Estabilização E2E, implementando as Server Functions transacionais para o ciclo de vida completo do catálogo de produtos no Workspace Pro (`src/services/workspace-catalog.functions.ts` e integração em `catalog.functions.ts`), com paginação keyset por `created_at DESC`, filtros por status e busca textual (`listWorkspaceProductsFn`), criação atômica com mídia e variantes (`createWorkspaceProductFn`), atualização parcial com validação de posse (`updateWorkspaceProductFn`), arquivamento soft delete (`archiveWorkspaceProductFn`) e resolução de detalhes (`getWorkspaceProductDetailFn`).
 - **Decisão:**
@@ -1938,6 +2121,7 @@
 - **Consequências:** Fase F12 100% CONCLUÍDA e HOMOLOGADA. Transição imediata para a **Fase F13: Workspace — CRM de Clientes Real (Lista Paginada, Detalhe e LTV Calculado)**.
 
 ## DEC-139: Conclusão da Fase F13 (Plano de Estabilização E2E) — Workspace: CRM de Clientes Real (Lista Paginada, Detalhe e LTV Calculado)
+
 - **Data:** 2026-10-02
 - **Contexto:** Execução da Fase F13 do Plano de Estabilização E2E, consolidando e ratificando as Server Functions transacionais de CRM do Workspace Pro (`src/services/crm.functions.ts`), incluindo listagem keyset com filtros e busca (`listCustomersFn` / `listCustomers`), agregação de pedidos para cálculo exato de Lifetime Value (`ltvCents`), alertas de expiração de documentos e visão 360 individual do cliente (`getCustomerDetailFn` / `getCustomer360`), com garantia de isolamento multi-tenant (`assertStoreAccess`).
 - **Decisão:**
@@ -1950,22 +2134,8 @@
 - **Fundamentação:** AGENTS.md B.1 a B.12, SPEC-F13-WORKSPACE-CRM, docs/audit/AUDITORIA_FORENSE_DESVIOS_E_PLANO_ESTABILIZACAO_E2E.md e Definition of Done B.9.
 - **Consequências:** Fase F13 100% CONCLUÍDA e HOMOLOGADA. Transição imediata para a **Fase F14: Motor de Busca Universal (Classificados + Marketplace + Places)**.
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ## DEC-140: Conclusão da Fase F14 (Plano de Estabilização E2E) — Motor de Busca Universal (Classificados + Marketplace + Places)
+
 - **Data:** 2026-10-02
 - **Contexto:** Execução da Fase F14 do Plano de Estabilização E2E, unificando a descoberta pública multi-domínio através dos 3 pilares de consumo (Places, Classificados e Marketplace Pro) com zero mocks, rota transparente /busca redirecionando para /buscar e queries federadas com proteção anti-varredura para termos curtos (< 2 caracteres).
 - **Decisão:**
@@ -1980,6 +2150,7 @@
 - **Consequências:** Fase F14 100% CONCLUÍDA e HOMOLOGADA. Transição imediata para a **Fase F15: Geolocalização e Filtros de Cidade/Bairro**.
 
 ## DEC-141: Conclusão da Fase F15 (Plano de Estabilização E2E) — Geolocalização e Filtros de Proximidade (Places & Classificados)
+
 - **Data:** 2026-10-02
 - **Contexto:** Execução da Fase F15 do Plano de Estabilização E2E, implementando os motores geodésicos server-side de proximidade física para estabelecimentos de Places e filtros espaciais por cidade e bairro em Classificados e Lojas, eliminando dependências de dados fictícios (M01: Zero Mocks).
 - **Decisão:**
@@ -1995,6 +2166,7 @@
 - **Consequências:** Fase F15 100% CONCLUÍDA e HOMOLOGADA. Transição imediata para a **Fase F16: Notificações em Tempo Real (Supabase Realtime)**.
 
 ## DEC-142: Conclusão da Fase F16 (Plano de Estabilização E2E) — Notificações em Tempo Real no Workspace (Supabase Realtime)
+
 - **Data:** 2026-10-02
 - **Contexto:** Execução da Fase F16 do Plano de Estabilização E2E, consolidando as Server Functions de notificações do Workspace Pro (`src/services/notifications.functions.ts`) e o componente de sino reativo (`src/components/workspace/notification-bell.tsx`) conectado ao canal do Supabase Realtime, eliminando polling agressivo e garantindo dados 100% reais (M01: Zero Mocks).
 - **Decisão:**
@@ -2009,6 +2181,7 @@
 - **Consequências:** Fase F16 100% CONCLUÍDA e HOMOLOGADA. Transição imediata para a **Fase F17: Painel Financeiro Real (Receita, Despesas e Fluxo de Caixa)**.
 
 ## DEC-143: Conclusão da Fase F17 (Plano de Estabilização E2E) — Painel Financeiro Real (Receita, Despesas e Fluxo de Caixa)
+
 - **Data:** 2026-10-02
 - **Contexto:** Execução da Fase F17 do Plano de Estabilização E2E, consolidando a gestão financeira do Workspace Pro com zero mocks (M01), Server Functions puras (`src/services/financial.functions.ts`), validação Zod rigorosa, agregação de fluxo de caixa e resolução de rota sem 404 para `/workspace/financeiro/`.
 - **Decisão:**
@@ -2024,6 +2197,7 @@
 - **Consequências:** Fase F17 100% CONCLUÍDA e HOMOLOGADA. Transição imediata para a **Fase F18: Suporte Interno — Módulo de Tickets com SLA**.
 
 ## DEC-144: Conclusão da Fase F18 (Plano de Estabilização E2E) — Suporte Interno: Módulo de Tickets com SLA
+
 - **Data:** 2026-10-02
 - **Contexto:** Execução da Fase F18 do Plano de Estabilização E2E, consolidando o módulo de chamados e suporte interno no Workspace Pro com categorização, prioridades calibradas, SLA determinístico e histórico encadeado de mensagens, sem dados fictícios (M01: Zero Mocks).
 - **Decisão:**
@@ -2038,6 +2212,7 @@
 - **Consequências:** Fase F18 100% CONCLUÍDA e HOMOLOGADA. Transição imediata para a **Fase F19: Roadmap Vivo e Changelog Automatizado**.
 
 ## DEC-145: Conclusão da Fase F19 (Plano de Estabilização E2E) — Roadmap Vivo e Changelog Automatizado
+
 - **Data:** 2026-10-02
 - **Contexto:** Execução da Fase F19 do Plano de Estabilização E2E, estabelecendo o motor determinístico de documentação viva e rastreabilidade contínua da plataforma Waesy (`scripts/generate-changelog.mjs`), sincronizando `CHANGELOG.md` e `docs/canonico/ROADMAP_VIVO.md` diretamente dos commits e das decisões de arquitetura.
 - **Decisão:**
@@ -2049,7 +2224,9 @@
      - `npm run typecheck`: 0 erros de compilação TypeScript.
      - `npm run build`: Build de produção Cloudflare Pages aprovado gerando single-file _worker.js.
 - **Fundamentação:** AGENTS.md B.1 a B.12, SPEC-F19-ROADMAP-CHANGELOG, docs/audit/AUDITORIA_FORENSE_DESVIOS_E_PLANO_ESTABILIZACAO_E2E.md e Definition of Done B.9.
+
 ## DEC-146: Conclusão da Fase F20 (Plano de Estabilização E2E) — ADRs, Runbook de Operação e Dicionário de Domínio
+
 - **Data:** 2026-10-02
 - **Contexto:** Execução da Fase F20 do Plano de Estabilização E2E, estabelecendo a infraestrutura canônica de governança operacional e conhecimento do repositório, incluindo procedimentos de deploy e resposta a incidentes (`docs/operacao/RUNBOOK.md`), terminologia ubíqua do ecossistema Waesy (`docs/canonico/DICIONARIO_DOMINIO.md`) e guia unificado de desenvolvimento e agentes (`CONTRIBUTING.md`).
 - **Decisão:**
@@ -2060,6 +2237,7 @@
 - **Consequências:** Fase F20 100% CONCLUÍDA e HOMOLOGADA. Transição imediata para a **Fase F21: Scanner de Órfãos, Duplicados e Dead Code no CI**.
 
 ## DEC-147: Conclusão da Fase F21 (Plano de Estabilização E2E) — Scanner de Órfãos, Duplicados e Dead Code no CI
+
 - **Data:** 2026-10-02
 - **Contexto:** Execução da Fase F21 do Plano de Estabilização E2E, estabelecendo o detector determinístico de código morto, componentes com nomes duplicados e arquivos órfãos (`scripts/dead-code-detector.mjs`), com exportação de métricas estruturadas (`dead-code.report.json`) e integração como Gate 5 no pipeline unificado de CI.
 - **Decisão:**
@@ -2070,6 +2248,7 @@
 - **Consequências:** Fase F21 100% CONCLUÍDA e HOMOLOGADA. Transição imediata para a **Fase F22: CI Bloqueante Unificado (5 Gates de Qualidade)**.
 
 ## DEC-148: Conclusão da Fase F22 (Plano de Estabilização E2E) — CI Bloqueante Unificado (5 Gates de Qualidade)
+
 - **Data:** 2026-10-02
 - **Contexto:** Execução da Fase F22 do Plano de Estabilização E2E, estabelecendo o pipeline de integração contínua unificado no GitHub Actions (`.github/workflows/ci.yml`), orquestrando os 5 gates obrigatórios de qualidade e bloqueando pull requests com qualquer falha técnica, regressão visual ou quebra transacional.
 - **Decisão:**
@@ -2085,6 +2264,7 @@
 - **Consequências:** Fase F22 100% CONCLUÍDA e HOMOLOGADA. Transição imediata para a **Fase F23: Auditoria de Segurança Final e RLS Abrangente**.
 
 ## DEC-149: Conclusão da Fase F23 (Plano de Estabilização E2E) — Auditoria de Segurança Final e RLS Abrangente
+
 - **Data:** 2026-10-02
 - **Contexto:** Execução da Fase F23 do Plano de Estabilização E2E, conduzindo a auditoria pericial de segurança e integridade transacional na base de dados PostgreSQL do Supabase e nas Server Functions do BFF (`docs/auditoria/AUDITORIA_SEGURANCA_F23.md`), atestando conformidade Zero-Trust em multi-tenancy, RLS e prevenção de ataques.
 - **Decisão:**
@@ -2096,6 +2276,7 @@
 - **Consequências:** Fase F23 100% CONCLUÍDA e HOMOLOGADA. Transição imediata para a **Fase F24: Selo Final de Conclusão do Plano Mestre (Waesy v2.0)**.
 
 ## DEC-150: Conclusão da Fase F24 (Plano de Estabilização E2E) — Selo Final do Plano Mestre e Release v2.0
+
 - **Data:** 2026-10-02
 - **Contexto:** Homologação final e fechamento integral do Plano Mestre de Estabilização E2E dos 4 Pilares da Plataforma Waesy (Places, Classificados, Marketplace e Workspace Pro), com certificação das 24 fases (F01 a F24), emissão do selo canônico (`docs/canonico/SELO_FINAL_F24.md`) e preparação do release estável v2.0 para produção.
 - **Decisão:**
@@ -2114,6 +2295,7 @@
 - **Consequências:** Plano Mestre dos 4 Pilares 100% CONCLUÍDO e HOMOLOGADO. Plataforma Waesy consolidada na versão estável 2.0.
 
 ## DEC-151: Redução Massiva de Débito Visual e Catraca do Design Lint V2
+
 - **Data:** 2026-10-02
 - **Contexto:** Execução da remediação determinística em lote em 808 arquivos do repositório através de `scripts/remediate-design-lint.mjs`, normalizando raios geométricos (DL-09), espaçamentos fracionários fora da grade de 4px (DL-03), valores arbitrários entre colchetes (DL-02), classes forçadas (DL-04) e alvos de toque móveis (DL-14).
 - **Decisão:**
@@ -2124,6 +2306,7 @@
 - **Consequências:** Base de código substancialmente mais limpa, consistente, moderna e nativa, com aprovação contínua no Gate 2 do CI.
 
 ## DEC-152: Homologação Arquitetural do Super Checkout Metamórfico, Order Bumps e Governança Multi-Nicho
+
 - **Data:** 2026-10-02
 - **Contexto:** Alinhamento técnico executivo com o Conselho BigTech para unificar as regras de transação heterogêneas dos 18 Super Nichos (SPEC-M08), suportando produtos físicos, agendamentos, digitais, pesáveis por quilo e locações.
 - **Decisão:**
@@ -2136,6 +2319,7 @@
 - **Consequências:** Eliminação definitiva de atritos e quebras de checkout em negócios híbridos e de nichos específicos, com preservação de zero dados simulados e design silencioso.
 
 ## DEC-153: Governança ERP de Produtos Compostos (Kits/BOM), Variações Multidimensionais e Fiscal por Nicho
+
 - **Data:** 2026-10-02
 - **Contexto:** Auditoria profunda e benchmark de sistemas ERP de mercado (Bling, Tiny ERP, Avec, Belasis) para garantir que a gestão de catálogo no Workspace Waesy suporte o ciclo completo de produtos simples, com grade (variações), kits/combos compostos, serviços com consumo de insumos, movimentação de estoque, financeiro e notas fiscais.
 - **Decisão:**
@@ -2148,6 +2332,7 @@
 - **Consequências:** Capacidade ERP de nível corporativo plenamente integrada, sem necessidade de sistemas externos paralelos, com governança auditável e zero mocks.
 
 ## DEC-154: Refatoração Ergonômica do Editor de Produtos & Matriz Logística Multimodal 360
+
 - **Data:** 2026-10-02
 - **Contexto:** Entrevista interativa executiva (/grill-me) identificando quebra de ergonomia no Editor de Produtos (ausência de botão de salvar persistente, matriz 2D comprimida em telas menores sem visualização mobile utilizável) e necessidade de consolidar o painel multimodal de logística estilo iFood Merchant (MotoLink, Entregador Próprio com raios e taxas, Balcão, Transportadora) com despacho avulso e regras de ciclo de vida do entregador.
 - **Decisão:**
@@ -2158,7 +2343,9 @@
   5. `Produtos Fracionados & Checkout Híbrido`: Tolerância de peso de até 10%, captura de preferência de substituição (similar, WhatsApp ou estorno) e separação de etapas no checkout (frete só para físicos, agendador para serviços e liberação imediata para digitais).
 - **Fundamentação:** AGENTS.md B.1 a B.12, SPEC-M09-PRODUCT-EDITOR-AND-LOGISTICS-360, Apple HIG, Linear Design System e WCAG 2.2 AA.
 - **Consequências:** Ergonomia impecável no editor de produtos em desktop e mobile, ausência de colunas espremidas e governança logística 360 completa e integrada.
+
 ## DEC-155: Motor ReAct de IA Copilot, Widgets Generativos de Alta Densidade e Split-Screen de Artefatos
+
 - **Data:** 2026-10-03
 - **Contexto:** Execução integral da suíte de 6 Prompts do Ecossistema AI Copilot & All-In-One: (1) eliminação definitiva de mocks/árvore estática no dispatcher ReAct; (2) enriquecimento dos blocos de Generative UI sem AI-smell; (3) paridade total de geolocalização e métodos entre rota dedicada e gaveta flutuante; (4) blindagem de segurança com firewall financeiro deny-by-default; (5) split-screen estilo Claude Artifacts com visualizadores nativos e paridade mobile via Sheet; (6) prova end-to-end com zero erros TypeScript e catraca do design lint aprovada.
 - **Decisão:**
@@ -2170,7 +2357,9 @@
   6. `Conformidade e Redução de Dívida`: Baseline do Design Lint atualizada de 18.693 para 18.692 (-1 dívida reduzida), 0 violações P0/P1 novas, 100% de testes unitários verdes em `chat-commerce.test.ts` e compilação de produção com Exit Code 0.
 - **Fundamentação:** AGENTS.md B.1 a B.12, docs/design/DESIGN.md, docs/design/DESIGN-LINT.md, Silent Design, Apple HIG e Doutrina Zero-Mock.
 - **Consequências:** IA Copilot 100% conectada a dados reais de produção, sem elementos visuais artificiais, com segurança estrita para dados financeiros e conformidade arquitetural absoluta.
+
 ## DEC-156: Preços de Atacado B2B (wholesale_price_cents) e Trilha Canônica de Auditoria em stock_movements na Matriz 2D
+
 - **Data:** 2026-10-03
 - **Contexto:** Execução das ações prioritárias de catálogo e governança de estoque: (1) adição de suporte nativo a preços diferenciados de atacado B2B por variante (`wholesale_price_cents`); (2) vinculação direta das edições de saldo na matriz 2D à trilha imutável de auditoria em `stock_movements`; (3) sincronização remota via migração DDL aplicada ao banco de produção.
 - **Decisão:**
@@ -2182,6 +2371,7 @@
 - **Consequências:** Trilha de auditoria 100% preservada para movimentações de matriz, suporte nativo a B2B/atacado e banco de dados de produção sincronizado.
 
 ## DEC-157: Ecossistema Completo de Classificados — Unificação de Ficha Técnica dos 15 Nichos, Isolamento de Contexto Civil vs Loja, Chat Nativo In-App, Agendamento de Serviços e Blindagem de Pedidos de Conveniência
+
 - **Data:** 2026-10-03
 - **Contexto:** Auditoria sistêmica do ecossistema de Classificados (rotas de criação/edição `_store.conta.classificados.novo.tsx`, listagem `_store.conta.classificados.index.tsx` e visualizadores `classified-detail-desktop.tsx`, `classified-detail-mobile.tsx`, `convenience-showcase-view.tsx`):
   1. Divergência de propriedades entre o formulário, colunas da tabela `classified_ads` e o objeto JSONB `attributes` provocando omissão de campos cadastrados na vitrine de detalhes (ex: `mileage_km` vs `mileage`, `garage_spots` vs `parking_spots`, `year_model`/`year_fab` vs `year`).
@@ -2202,6 +2392,7 @@
 - **Consequências:** 100% dos campos cadastrados renderizados fielmente na vitrine de detalhes, isolamento de contexto civil preservado, experiência omnichannel com chat nativo e agendamento de serviços plenamente operacionais.
 
 ## DEC-158: Padronização Canônica de Perfil (1:1 Squircle + Capa 21:9), Desacoplamento da Capa do BrandKit, Mineração com Terminal IA ao Vivo e UUID Estrito no Copilot
+
 - **Data:** 2026-10-03
 - **Contexto:** Execução do mandato estrito de unificação arquitetural e visual de perfis e criação de empresas: (1) cabeçalho canônico do perfil público (foto 1:1 squircle grande ao lado na mesma linha da capa 21:9 com scroll interno de banners) desrespeitado no editor universal, na prévia lateral e no cadastro rápido; (2) conflito de capa onde o BrandKit sobrescrevia destrutivamente a capa da vitrine pública em vez de alimentar apenas o card do Places; (3) onboarding com IA no cadastro rápido relying on hardcoded location ("São Miguel do Oeste") e templates sintéticos em vez do concílio de 5 squads com terminal ao vivo; (4) quebra por UUID inválido (`default-assistant-thread`) no Copilot IA violando a validação Zod do BFF.
 - **Decisão:**
@@ -2216,6 +2407,7 @@
 - **Consequências:** Zero colisões de capa entre BrandKit e Vitrine, mineração real com visualização ao vivo para novos cadastros, conformidade estrutural nos cabeçalhos de todos os perfis, chat Copilot operando com persistência de UUID sem erros e código sincronizado no commit `b4c36b44`.
 
 ## DEC-159: Doutrina de Blindagem de Ficha Técnica — Allowlist Fechada e Erradicação de Dados Fiscais/Internos em Superfícies Públicas
+
 - **Data:** 2026-10-03
 - **Contexto:** Alerta do usuário e auditoria de segurança perimetral sobre a integridade da "Ficha Técnica": dados sigilosos e de governança interna da empresa (NCM, CEST, CFOP, alíquotas tributárias de IBS/CBS, preço de custo, margem de lucro bruta/líquida, comissões, fornecedores e observações internas de gestão) são estritamente confidenciais ao ERP/Workspace e jamais podem existir ou trafegar para o cliente final. O uso anterior de blacklist (`PRIVATE_INTERNAL_KEYS`) com loop genérico (`Object.entries`) em `NicheSpecificationsDisplay` representava risco estrutural de vazamento.
 - **Decisão:**
@@ -2227,6 +2419,7 @@
 - **Consequências:** Zero possibilidade de vazamento de dados fiscais ou internos na UI pública ou via payloads JSON de BFF, conformidade estrita com a Doutrina de Allowlist Fechada e alinhamento total com a diretriz do usuário.
 
 ## DEC-160: Harmonização Canônica de Pagamentos, Gestão de Insumos em Ordens de Serviço e Qualificação de Leads Omnichannel
+
 - **Data:** 2026-10-03
 - **Contexto:** Execução integral dos mandatos do Conselho BigTech e requisitos do usuário: (1) erradicação de duplicações de formas de pagamento no checkout e nos visualizadores/previews de classificados; (2) consumo automático de estoque (`stock_movements`) a partir de insumos e peças vinculadas a ordens de serviço (`service_orders`); (3) unificação do fluxo de captação de leads para anunciantes civis (Pessoa Física) e empresas (Workspace), com acionamento imediato do SDR IA e preenchimento automático.
 - **Decisão:**
@@ -2235,7 +2428,9 @@
   3. `Qualificação de Leads Civil vs Workspace`: Em `src/services/lead-forms.functions.ts` e `src/components/leads/lead-form-modal.tsx`, sincronizados os retornos de `submitCivilInquiryLead` e as tipagens de `virtualForm` (`LeadFormDTO`), garantindo que formulários civis exibam a tela de sucesso com CTA direto "Conversar com o SDR IA Agora" munido com as respostas do visitante.
 - **Fundamentação:** AGENTS.md B.1 a B.12, BigTech Board, DESIGN.md (Silent Design / Apple HIG), Doutrina Zero-Mock e Integridade de Estoque.
 - **Consequências:** Zero duplicações de meios de pagamento, rastreabilidade física de peças em OS com auditoria em `stock_movements`, e qualificação omnichannel de leads plenamente operacional.
+
 ## DEC-161: Auditoria Integral do Conselho BigTech — Erradicação de Títulos Compostos, Padronização HIG de Touch Targets e Injeção de Qualificação no Chat SDR
+
 - **Data:** 2026-10-03
 - **Contexto:** Auditoria profunda e refinamento de excelência acionada pelos mandatos `/review`, `/audit`, `/design-auditor`, `/apple-design`, `/boost`: (1) enriquecimento da experiência de transição entre o formulário de leads e o chat com o vendedor/SDR IA nativo em classificados Desktop e Mobile; (2) erradicação de títulos compostos (> 6 palavras) em cabeçalhos de abas fiscais e fichas de insumos (B.8); (3) padronização de ergonomia e acessibilidade tátil móvel (Apple HIG, DL-14 e DL-15), elevando inputs comprimidos de 36px (`h-9`) ou 32px (`h-8`) para o piso de 44px (`h-11`), com foco visível nítido (`focus-visible:ring-2`) em botões de ação e pagamento.
 - **Decisão:**
@@ -2249,9 +2444,8 @@
 - **Fundamentação:** AGENTS.md B.1 a B.12, DESIGN.md (Apple HIG / Silent Design), WCAG 2.2 AA (DL-14, DL-15) e Doutrina Zero-Mock.
 - **Consequências:** Zero controles espremidos abaixo de 44px, total acessibilidade por teclado com foco visual, zero títulos prolixos ou compostos, e transferência transparente de dados de qualificação de leads diretamente para a thread de chat.
 
-
-
 ## DEC-162: Saneamento Forense — Onda 1/2/3 (Mocks, Motores de IA, Leads Civis)
+
 - **Data:** 2026-10-03
 - **Contexto:** Auditoria `/gap-hunter` revelou fallbacks Unsplash mascarando ausência de mídia, chaves Groq desativadas por modelo inválido (`gemini-1.5-flash` despachado ao Groq, HTTP 404), timeout de 8s abortando Gemini, print do Steel ignorado pela IA, e dois selects com colunas inexistentes (`classifieds.contact_phone`, `classifieds.niche`) que quebravam 100% do formulário de lead civil e do chat SDR em classificados.
 - **Decisão Adotada:** (1) Fallbacks Unsplash substituídos por empty state com ícone ou asset da marca em rotas públicas, workspace e serviços; (2) orquestrador higieniza modelo por provedor, timeouts Groq 20s / Gemini 30s, chave só é desativada em erro 401; (3) print Steel baixado em base64 e enviado à visão do Gemini nos squads de Design e Copy; (4) `lead_forms`/`lead_form_submissions` aceitam posse civil (`author_profile_id`) com CHECK de dono e RLS própria; (5) deduplicação normalizada (sem acento) de métodos de pagamento manuais; (6) modelos Gemini 1.5 migrados para 2.5 no código e em `ai_task_routing_rules`/`ai_master_prompts`.
@@ -2259,6 +2453,7 @@
 - **Consequências:** Restam presets de catálogo com URLs Unsplash (`hotel-presets.ts`, `vehicles-catalog.ts`) e arquivos de teste — pendentes para a Onda 1.2. Migração: `20261229000000_civil_lead_forms_author_ownership.sql`.
 
 ## DEC-163: Telemetria de Borda Cloudflare, Fingerprint Anti-Spam em Leads, Purga Total de Presets Unsplash, Alinhamento Canônico de Perfis (1:1 + 21:9) e Consumo Automático de Insumos (BOM)
+
 - **Data:** 2026-10-03
 - **Contexto:** Execução e certificação das Ondas 1.2, 3.2, 4 e saneamento das quebras de UX de perfis apontadas pelo usuário: (1) bloqueio de spam e rastreamento de IP real via Cloudflare Pages (`cf-connecting-ip`, geo edge, threat score) e fingerprint de dispositivo em submissões de leads (`lead_form_submissions`); (2) purga total de URLs Unsplash restantes nos catálogos de veículos, produtos mestres, hotéis/resorts e componentes de vitrine/mockup; (3) unificação do cabeçalho de perfil (Pessoa Física e Criadores) no padrão canônico: Foto 1:1 Squircle grande ao lado da Capa 21:9 com cropper 21:9; (4) isolamento da capa de Places em Brand Kit contra sobreposição da capa de perfil; (5) baixa transacional automática de estoque de insumos e embalagens (BOM) ao vender produtos compostos ou serviços no PDV.
 - **Decisão Adotada:**
@@ -2270,6 +2465,7 @@
 - **Consequências:** Zero Unsplash remanescente em todo o código de produção, perfis unificados e consistentes com o Instagram/HIG, proteção anti-spam ativa na borda Cloudflare e rastreamento completo de estoque de insumos.
 
 ## DEC-171: Paridade Fiscal no Catálogo ($id.tsx), Persistência E2E da IA no Onboarding Rápido, Combobox Canônico de Cidades e Cabeçalho Canônico 1:1 Squircle + 21:9 em Configurações de Loja
+
 - **Data:** 2026-10-03
 - **Contexto:** (1) Aba Fiscal (`ProductFiscalTab`) ausente no editor de produtos existentes (`workspace.catalogo.produtos.$id.tsx`), impossibilitando edição de NCM/CEST em itens já cadastrados; (2) Onboarding Rápido com IA executava scraping/análise de 5 squads mas descartava o `onboardingJobId` no registro da empresa, perdendo dados minerados; (3) ausência de autocomplete canônico com capitais e polos regionais no cadastro rápido; (4) desalinhamento do cabeçalho em `workspace.configuracoes.index.tsx` com foto sobrepondo capa.
 - **Decisão:** (1) Adicionada `ProductFiscalTab`, `fiscalData` e persistência de `attributes.fiscal` em `use-product-edit.ts` e `workspace.catalogo.produtos.$id.tsx`; (2) Adicionada `persistOnboardingForJob` em `magic-onboarding.functions.ts` e conectada a `fastRegisterCompany` garantindo persistência atômica da IA no banco; (3) Integrado `CityCombobox` canônico no cadastro rápido; (4) Unificado cabeçalho em `workspace.configuracoes.index.tsx` para 1:1 Squircle ao lado de 21:9 Panorâmica.
@@ -2277,11 +2473,14 @@
 - **Consequências:** Paridade fiscal 100% no catálogo, dados de IA do onboarding gravados de verdade no Supabase, cidades canônicas com UF e alinhamento visual de configurações de loja.
 
 ## DEC-172: Conexão Canônica da Aba Links (Biolinks) no Perfil Civil, Saneamento de Rótulos em Membros/Criadores e Homologação do Conselho BigTech (5 Personas)
+
 - **Data:** 2026-10-03
 - **Contexto:** (1) Rota de Perfil Civil (`_store.conta.perfil.tsx`) possuía coluna `biolinks` no schema do banco e na Server Function `updateProfile`, porém não possuía aba visual in-page para gestão de links públicos, impedindo que cidadãos configurassem seus biolinks/botões; (2) Rótulos compostos em `_store.membro.$id.tsx` e `creator-profile-sheet-editor.tsx` violavam a Regra B.8; (3) Demanda de auditoria profunda e forense de todas as solicitações recentes, separando o que foi feito de verdade vs o que ficou parcial, com revisão pelo Conselho Executivo de 5 Personas.
 - **Decisão:** (1) Criada e conectada a aba in-page "Links" em `src/routes/_store.conta.perfil.tsx` com adição de novos links, suporte a URLs externas, mini-banners 16:9, botões minimalistas, remoção atômica e prévia em tempo real idêntica ao perfil público; (2) Suporte aos parâmetros de busca `tab=links` e `tab=comercial`; (3) Simplificação estrita dos títulos das abas para termos únicos ("Identidade", "Currículo", "Links", "Privacidade" e "Vitrine"); (4) Emissão da Matriz Forense do Conselho BigTech mapeando 100% dos fluxos.
 - **Fundamentação:** AGENTS.md B.1 a B.12, Apple HIG (Ergonomia tátil 44px, elevação L1/L2, ausência de jitter), WCAG 2.2 AA (DL-14, DL-15) e Doutrina de Completude do Conselho Executivo.
+
 ## DEC-173: Conclusão do Marco 1 (M1) — Blindagem RLS de Storage, security_invoker nas 6 Views, Governança Tripla de Mídia (Bucket + URL + Ctrl+V) e Purga Total de Unsplash no Turismo
+
 - **Data:** 2026-10-03
 - **Contexto:** Execução do Marco 1 do `PROJECT.md` resultante da auditoria forense do Conselho BigTech:
   1. Eliminação de brecha P0 de `Universal Media *` em `storage.objects` que concedia permissão irrestrita à role `{public}` em 9 buckets.
@@ -2294,32 +2493,36 @@
 - **Consequências:** Storage e views 100% blindados contra bypass de RLS, zero mocks ou Unsplash remanescentes no turismo/builders, e uploaders de mídia universalmente compatíveis com a tríade Bucket, URL e Ctrl+V.
 
 ## DEC-174: Conclusão do Marco 2 (BFF Security, Multi-Tenant Protection, Fiscal Allowlist, BOM Idempotency), Refatoração Editorial de Notícias e Expansão da Esteira de Mineração & Copiloto Manus
+
 - **Data:** 2026-10-03
 - **Contexto:** Execução do Marco 2 (M2) do `PROJECT.md` e entrega da expansão de mineração automatizada e copiloto autônomo com as seguintes frentes:
-  1. *Blindagem BFF e Closed Allowlists Fiscais:* Ocultação de dados fiscais sensíveis (`cost_cents`, `margin_percent`, `markup_percent`, `fiscal_profile`) em `unified-listing.functions.ts` através de `PUBLIC_SPEC_ALLOWLIST` e parâmetro `isPublic` (default `true`). Resolução de IDOR em `billing.functions.ts` passando `storeId` / `data.storeId` para `assertStoreAccess`.
-  2. *Proteção de Endpoints Públicos e Multi-Tenant:* Inclusão de `await requireAdmin()` em `executeHardRefresh` (`store.functions.ts`), autenticação com validação de pedido e idempotência estrita em `recordOrderMicroFee` (`billing-ledger.functions.ts`), escopo de `store_id` e checagem de movimentos existentes antes da baixa de peças em `service-orders.functions.ts` (idempotência BOM), e escopo de tenant em exclusão/atualização em lote de produtos e complementos em `admin-catalog.functions.ts`.
-  3. *Refatoração Editorial de Notícias (`_store.noticias.$slug.tsx`):* Filtro estrito de termos estruturais internos (`FORBIDDEN_HEADER_KEYWORDS`: "Síntese", "Resumo", "Desenrolar", "Desenvolvimento", "Introdução", "Contexto", "Conclusão"), hierarquia editorial canônica (Chapéu, Headline limpa 24-32px, Dek neutro, metadados em linha única com link verificado de fonte, imagem 16:9 contida com crédito de foto e corpo fluido contínuo) e erradicação de cards conversacionais de IA.
-  4. *Esteira de Mineração Autônoma e Deduplicação SHA-256 (`automated-harvest.ts`):* Colheita automatizada de notícias com deduplicação de URL canônica por hash SHA-256 no banco (zero desperdício de tokens), agendamento a cada 2 horas via Cloudflare Cron Trigger em `wrangler.toml` (`[triggers] crons = ["0 */2 * * *"]`) e suporte via `/api/mining/worker`.
-  5. *Diretrizes Jornalísticas Rígidas no Squad Editorial (`editorial-squad.ts`):* Incorporação dos 6 pilares de redações profissionais (Pirâmide Invertida, Lead das 6 Perguntas 5W1H no primeiro parágrafo, Imparcialidade e Neutralidade Factual sem adjetivação opinativa, Atribuição Obrigatória de Fontes, Bloqueio de Clichês e AI-Smell, Subtítulos Contextuais Reais).
-  6. *Orquestrador Autônomo Estilo Manus & Copilot Engine (`ai-manus-orchestrator.ts`):* Fragmentação de prompts em sintaxe EARS, cache dinâmico de tokens no banco via SHA-256 de consulta, delegação automática a mineradores mecânicos (Lugares/Places, Empresas/CNPJ, Processos/DataJud, Notícias) gerando artefatos vivos (planilhas interativas, fichas cadastrais, blocos Base44) conectados diretamente ao chat copilot (`ai-conversations.functions.ts`).
-  7. *Base44 Builders e Exportação Segura:* Higienização de `pdf-export.ts` removendo `!important` para conformidade absoluta com a regra DL-04 de Design Lint.
+  1. _Blindagem BFF e Closed Allowlists Fiscais:_ Ocultação de dados fiscais sensíveis (`cost_cents`, `margin_percent`, `markup_percent`, `fiscal_profile`) em `unified-listing.functions.ts` através de `PUBLIC_SPEC_ALLOWLIST` e parâmetro `isPublic` (default `true`). Resolução de IDOR em `billing.functions.ts` passando `storeId` / `data.storeId` para `assertStoreAccess`.
+  2. _Proteção de Endpoints Públicos e Multi-Tenant:_ Inclusão de `await requireAdmin()` em `executeHardRefresh` (`store.functions.ts`), autenticação com validação de pedido e idempotência estrita em `recordOrderMicroFee` (`billing-ledger.functions.ts`), escopo de `store_id` e checagem de movimentos existentes antes da baixa de peças em `service-orders.functions.ts` (idempotência BOM), e escopo de tenant em exclusão/atualização em lote de produtos e complementos em `admin-catalog.functions.ts`.
+  3. _Refatoração Editorial de Notícias (`_store.noticias.$slug.tsx`):_ Filtro estrito de termos estruturais internos (`FORBIDDEN_HEADER_KEYWORDS`: "Síntese", "Resumo", "Desenrolar", "Desenvolvimento", "Introdução", "Contexto", "Conclusão"), hierarquia editorial canônica (Chapéu, Headline limpa 24-32px, Dek neutro, metadados em linha única com link verificado de fonte, imagem 16:9 contida com crédito de foto e corpo fluido contínuo) e erradicação de cards conversacionais de IA.
+  4. _Esteira de Mineração Autônoma e Deduplicação SHA-256 (`automated-harvest.ts`):_ Colheita automatizada de notícias com deduplicação de URL canônica por hash SHA-256 no banco (zero desperdício de tokens), agendamento a cada 2 horas via Cloudflare Cron Trigger em `wrangler.toml` (`[triggers] crons = ["0 */2 * * *"]`) e suporte via `/api/mining/worker`.
+  5. _Diretrizes Jornalísticas Rígidas no Squad Editorial (`editorial-squad.ts`):_ Incorporação dos 6 pilares de redações profissionais (Pirâmide Invertida, Lead das 6 Perguntas 5W1H no primeiro parágrafo, Imparcialidade e Neutralidade Factual sem adjetivação opinativa, Atribuição Obrigatória de Fontes, Bloqueio de Clichês e AI-Smell, Subtítulos Contextuais Reais).
+  6. _Orquestrador Autônomo Estilo Manus & Copilot Engine (`ai-manus-orchestrator.ts`):_ Fragmentação de prompts em sintaxe EARS, cache dinâmico de tokens no banco via SHA-256 de consulta, delegação automática a mineradores mecânicos (Lugares/Places, Empresas/CNPJ, Processos/DataJud, Notícias) gerando artefatos vivos (planilhas interativas, fichas cadastrais, blocos Base44) conectados diretamente ao chat copilot (`ai-conversations.functions.ts`).
+  7. _Base44 Builders e Exportação Segura:_ Higienização de `pdf-export.ts` removendo `!important` para conformidade absoluta com a regra DL-04 de Design Lint.
 - **Decisão Adotada:** Implementadas todas as correções estruturais no BFF, rotas de notícias, mineradores e chat copilot com aprovação unânime em testes unitários focados (`manus-and-harvest.test.ts` 5/5, `mining-forensic-quality.test.ts` 7/7, `ai-builder-composition.test.ts` 5/5, `onboarding-e2e-verification.test.ts` 4/4).
 - **Fundamentação:** AGENTS.md B.1 a B.12, Constituição do Repositório, Apple HIG, Silent Design, WCAG 2.2 AA, Doutrina Zero-Mock e Protocolo de Economia Extrema de Tokens.
 - **Consequências:** Zero vazamentos de dados fiscais no catálogo público, proteção multi-tenant integral nos serviços administrativos, experiência de leitura editorial de alta credibilidade e motor autônomo de mineração e copiloto com cache dinâmico no banco de dados.
 
 ## DEC-016 / DEC-175: Implementação Integral do Marco 2 (M2) — BFF Multi-Tenant Isolation, Fiscal Allowlists & BOM Deduction Hardening
+
 - **Data:** 2026-10-03
 - **Contexto:** Execução estrita do Marco 2 (M2) do projeto Waesy focado em três frentes críticas:
-  1. *BFF Multi-Tenant Isolation & IDOR Fixes:* Prevenção contra cross-tenant bypass em `saveStoreComplementGroup` e `deleteStoreComplementGroup` (`admin-catalog.functions.ts`), validação rigorosa de `store_id` e estado prévio em `updateServiceOrderStatus` (`service-orders.functions.ts`), criação do helper `assertEventAccess` protegendo deleções em cascata de tarefas, orçamentos, setores, parceiros, lineup e documentos de eventos (`events.functions.ts`), passagem de `storeId` para `assertStoreAccess` em `billing.functions.ts`, exigência de `await requireAdmin()` em `executeHardRefresh` (`store.functions.ts`), e verificação de identidade e integridade de faturamento em `recordOrderMicroFee` e `recordSubscriptionMonthlyFee` com idempotência de ciclo (`billing-ledger.functions.ts`).
-  2. *Closed Allowlists & Fiscal Leakage Purge:* Desacoplamento entre `rawAttrs` e `attrs` sanitizados em `mapDatabaseRowToUnifiedListing` (`unified-listing.functions.ts`), purga completa de campos fiscais (`cost_cents`, `margin_percent`, `markup_percent`, `fiscal_profile`) atribuindo `undefined` para garantir omissão no JSON público; aplicação de `sanitizePublicProductAttributes` em cards e variantes de catálogo (`catalog.functions.ts:123, 850`) e em variantes de produto (`product.functions.ts:152`); criação de `sanitizePublicClassifiedAttributes` com allowlist pública para os 15 nichos em `classifieds.functions.ts`, expurgando prompts e instruções internas de IA (`ai_instructions`).
-  3. *BOM Deduction & Idempotency Hardening:* Correção da violação de constraint PostgreSQL (`stock_movements_movement_type_check`) substituindo `movement_type: "loss"` por `movement_type: "sale"` em `pdv.functions.ts` e `service-orders.functions.ts`; expurgo de colunas fantasmas inexistentes `previous_stock` e `new_stock`; implantação de idempotência em duas camadas em ordens de serviço (`wasAlreadyConcluded` + consulta prévia no ledger `stock_movements`); suporte ao status `"completed"` no enum de OS; substituição de busca frágil por substring `ilike` no PDV por resolução hierárquica canônica de insumos (`variant_id` UUID > `sku` > `product_id` > título exato) com sincronização em `product_location_inventories`.
+  1. _BFF Multi-Tenant Isolation & IDOR Fixes:_ Prevenção contra cross-tenant bypass em `saveStoreComplementGroup` e `deleteStoreComplementGroup` (`admin-catalog.functions.ts`), validação rigorosa de `store_id` e estado prévio em `updateServiceOrderStatus` (`service-orders.functions.ts`), criação do helper `assertEventAccess` protegendo deleções em cascata de tarefas, orçamentos, setores, parceiros, lineup e documentos de eventos (`events.functions.ts`), passagem de `storeId` para `assertStoreAccess` em `billing.functions.ts`, exigência de `await requireAdmin()` em `executeHardRefresh` (`store.functions.ts`), e verificação de identidade e integridade de faturamento em `recordOrderMicroFee` e `recordSubscriptionMonthlyFee` com idempotência de ciclo (`billing-ledger.functions.ts`).
+  2. _Closed Allowlists & Fiscal Leakage Purge:_ Desacoplamento entre `rawAttrs` e `attrs` sanitizados em `mapDatabaseRowToUnifiedListing` (`unified-listing.functions.ts`), purga completa de campos fiscais (`cost_cents`, `margin_percent`, `markup_percent`, `fiscal_profile`) atribuindo `undefined` para garantir omissão no JSON público; aplicação de `sanitizePublicProductAttributes` em cards e variantes de catálogo (`catalog.functions.ts:123, 850`) e em variantes de produto (`product.functions.ts:152`); criação de `sanitizePublicClassifiedAttributes` com allowlist pública para os 15 nichos em `classifieds.functions.ts`, expurgando prompts e instruções internas de IA (`ai_instructions`).
+  3. _BOM Deduction & Idempotency Hardening:_ Correção da violação de constraint PostgreSQL (`stock_movements_movement_type_check`) substituindo `movement_type: "loss"` por `movement_type: "sale"` em `pdv.functions.ts` e `service-orders.functions.ts`; expurgo de colunas fantasmas inexistentes `previous_stock` e `new_stock`; implantação de idempotência em duas camadas em ordens de serviço (`wasAlreadyConcluded` + consulta prévia no ledger `stock_movements`); suporte ao status `"completed"` no enum de OS; substituição de busca frágil por substring `ilike` no PDV por resolução hierárquica canônica de insumos (`variant_id` UUID > `sku` > `product_id` > título exato) com sincronização em `product_location_inventories`.
 - **Decisão Adotada:** Modificados estritamente os arquivos autorizados do BFF com aplicação de testes unitários focados (`unified-listing.test.ts`, `canonical-stock-ledger.test.ts`, `pdv-floor-plan.test.ts`, `dual-engine-and-billing-ledger.test.ts`, `admin-catalog-contracts.test.ts`, `canonical-specs-resolver.test.ts`, `central-knowledge.test.ts`) resultando em 57/57 testes verdes.
 - **Fundamentação:** AGENTS.md B.1 a B.12, Zero-Trust Client, RLS Deny-by-Default, Restrições de Schema PostgreSQL e Protocolo de Sigilo Fiscal Absoluto (AC-65).
 - **Consequências:** Zero vazamentos de parâmetros comerciais e fiscais em DTOs públicos, conformidade matemática com constraints de banco de dados, idempotência estrita sem duplicação de deduções de estoque e blindagem multi-tenant hermética em todas as rotas administrativas e de PDV.
+
 ## DEC-176: Auditoria Mestre All-in-One, Indexação Urbana por Cidade & Resiliência do Chat
+
 - **Data:** 2026-10-04
 - **Contexto:** Execução do Super Prompt Mestre de Auditoria em 40 ondas: catalogação de 537 tabelas do Supabase (`jfuebqmltksyznovhlwa`), 1.837 arquivos fonte, 44 skills e 8 verticais industriais. Correção de bugs de escopo de `activeCity` em `_store.eventos.tsx`, `_store.empregos.index.tsx` e `_store.noticias.index.tsx`.
-- **Decisão Adotada:** 
+- **Decisão Adotada:**
   1. Formalizada a arquitetura em 4 camadas com 24 artefatos analíticos em `audits/` e 10 catálogos de máquina em `audits/machine-readable/`.
   2. Implementado e propagado o contrato de indexação contextual por cidade em todos os BFFs (`news`, `jobs`, `events`, `directory`) consumindo `resolveActiveCity`.
   3. Corrigida a extração de `activeCity` em `EventosPage` e inclusão do parâmetro `city` nos handlers de busca/categoria e queryFn de empregos, notícias e eventos.
@@ -2328,6 +2531,7 @@
 - **Consequências:** Zero mocks em produção, paridade visual total entre conteúdo minerado e civil, dados 100% contextualizados por cidade no feed do cidadão e 12/12 testes passando no Vitest.
 
 ## DEC-177: Fechamento do Marco 3 — Despacho MCP Terminal, Recorte Municipal do Copilot e Testes Não Tautológicos
+
 - **Data:** 2026-10-04
 - **Contexto:** Auditoria direta do Marco 3 após parada por cota dos agentes sentinela e orquestrador G4. Achados: (1) `executeAiCopilotPipeline` executava a MCP Tool e continuava na cadeia heurística (`includes("loja"|"perto")`), sobrescrevendo resultado e FSM; (2) `fragmentAndOptimizePrompt` fabricava a cidade `"Chapecó"` quando o prompt não informava, ignorando a cidade ativa do usuário; (3) o bloco 5 de `copilot-fsm-and-resilience.test.ts` simulava o próprio `catch` sem exercitar código de produção; (4) `ai-conversations.functions.ts` importava o shim depreciado `@/lib/prompt-shield`.
 - **Decisão Adotada:**
@@ -2339,6 +2543,7 @@
 - **Consequências:** 90/90 testes verdes em 9 arquivos; catraca design-lint 15.417 sem regressão. Risco residual: `state` ainda assume `"SC"` quando não informado (harvesters `places-harvester.ts`), registrado para o Marco 4.
 
 ## DEC-178: Marco 4 — Resolução Geográfica Dinâmica de UF (Erradicação do Risco Residual 'SC') e Auditoria dos Motores de Mineração
+
 - **Data:** 2026-10-04
 - **Contexto:** Eliminação do risco residual registrado na DEC-177 onde os harvesters (`places-harvester.ts`, `pncp-harvester.ts`, `pncp-extractor.ts`, `crawler-batch-engine.ts`, `places-cnpj-cross-enricher.ts`) assumiam fallback hardcoded `"SC"`, gerando UF inconsistente para buscas e cidades fora de Santa Catarina.
 - **Decisão Adotada:**
@@ -2351,19 +2556,18 @@
 - **Consequências:** 91/91 testes passando no Vitest com 100% de aprovação (8 suítes verdes); catraca de design lint ratificada com código 0 e zero regressões em relação à baseline congelada de 15.417 violações.
 
 ## DEC-179: Remediação de Fluxos Visuais, Paridade de Interfaces (Prints 1 a 4), Blindagem do Copilot Client-Side e Conformidade Tátil DL-14
+
 - **Data:** 2026-10-04
 - **Contexto:** Remediação integral das deficiências de interface relatadas nos 4 prints e gaps operacionais:
-  1. *Print 1 (Pacotes de Turismo):* Consolidação da verificação de pacotes turísticos em `_store.produto.$slug.tsx` em ramo único integrado com `ProductTelemetry`, erradicação de bloco duplicado/inatingível, remoção do gap visual no desktop em `travel-package-detail-view.tsx` (`sticky` -> `relative md:static`) e tratamento de vazio ("0 inclusões" e roteiro sem dias) com CTA amigável.
-  2. *Print 2 (Marketplace & Navegação):* Erradicação de truncamento de categorias no submenu lateral (`context-sidebar.tsx`) substituindo a grade bidimensional espremida (`grid grid-cols-2`) por lista vertical ergonômica (`flex flex-col space-y-0.5`, `h-8 px-2.5`), e purga do banner conversacional prolixo "Marketplace 100% Verificado" em `_store.marketplace.index.tsx`.
-  3. *Print 3 (Vitrine & Feed Home):* Expansão dos botões herói em `master-squircle-hero.tsx` de 2 para 4 cards editáveis (Mercado, Restaurantes, Mobilidade, Serviços), higienização de tags markdown brutas (`==destaque==`) em posts do feed social em `_store.index.tsx`, formatação relativa de data (`formatRelativeTime`) e fallback gracioso em `onError` para imagens corrompidas.
-  4. *Print 4 (Copilot Chat):* Criação da Server Function `executeGuestCopilotMessage` em `ai-conversations.functions.ts` eliminando o crash de runtime de funções de servidor no navegador; implementação de `deleteAiConversationThread` com botão de exclusão no cabeçalho e na lista de conversas de `ai-chat-shell.tsx`; colapso padrão do painel lateral de contexto para layout focado e limpo estilo WhatsApp/Linear; inclusão do ramo de `planilha` em `resolveAiPipelineSteps`.
-  5. *Contas & Currículo:* Inclusão de `router.invalidate()` no alternador de identidades `context-switcher.tsx` para sincronização imediata dos loaders de rota TanStack Router, e gerador seguro de IDs em `_store.conta.curriculo.tsx`.
-  6. *Conformidade Tátil DL-14:* Erradicação de classes `size-8` e `sm:h-9` em botões de ação de `media-uploader.tsx`, `image-upload.tsx` e `StudioUnsplashPicker.tsx`, garantindo alvos mínimos de 44x44px (`h-11 w-11 min-h-11 min-w-11`).
+  1. _Print 1 (Pacotes de Turismo):_ Consolidação da verificação de pacotes turísticos em `_store.produto.$slug.tsx` em ramo único integrado com `ProductTelemetry`, erradicação de bloco duplicado/inatingível, remoção do gap visual no desktop em `travel-package-detail-view.tsx` (`sticky` -> `relative md:static`) e tratamento de vazio ("0 inclusões" e roteiro sem dias) com CTA amigável.
+  2. _Print 2 (Marketplace & Navegação):_ Erradicação de truncamento de categorias no submenu lateral (`context-sidebar.tsx`) substituindo a grade bidimensional espremida (`grid grid-cols-2`) por lista vertical ergonômica (`flex flex-col space-y-0.5`, `h-8 px-2.5`), e purga do banner conversacional prolixo "Marketplace 100% Verificado" em `_store.marketplace.index.tsx`.
+  3. _Print 3 (Vitrine & Feed Home):_ Expansão dos botões herói em `master-squircle-hero.tsx` de 2 para 4 cards editáveis (Mercado, Restaurantes, Mobilidade, Serviços), higienização de tags markdown brutas (`==destaque==`) em posts do feed social em `_store.index.tsx`, formatação relativa de data (`formatRelativeTime`) e fallback gracioso em `onError` para imagens corrompidas.
+  4. _Print 4 (Copilot Chat):_ Criação da Server Function `executeGuestCopilotMessage` em `ai-conversations.functions.ts` eliminando o crash de runtime de funções de servidor no navegador; implementação de `deleteAiConversationThread` com botão de exclusão no cabeçalho e na lista de conversas de `ai-chat-shell.tsx`; colapso padrão do painel lateral de contexto para layout focado e limpo estilo WhatsApp/Linear; inclusão do ramo de `planilha` em `resolveAiPipelineSteps`.
+  5. _Contas & Currículo:_ Inclusão de `router.invalidate()` no alternador de identidades `context-switcher.tsx` para sincronização imediata dos loaders de rota TanStack Router, e gerador seguro de IDs em `_store.conta.curriculo.tsx`.
+  6. _Conformidade Tátil DL-14:_ Erradicação de classes `size-8` e `sm:h-9` em botões de ação de `media-uploader.tsx`, `image-upload.tsx` e `StudioUnsplashPicker.tsx`, garantindo alvos mínimos de 44x44px (`h-11 w-11 min-h-11 min-w-11`).
 - **Decisão Adotada:** Aplicadas as correções com 100% de aprovação nos testes do Vitest (`ai-chat-shell.test.ts`, `media-ui-triad.test.ts`) e 0 regressões de design lint.
 - **Fundamentação:** AGENTS.md B.1 a B.12, Anti-AI Design, Apple HIG, WCAG 2.2 AA (DL-14) e TanStack Router Cache Invalidation Contracts.
 - **Consequências:** Zero quebras no chat copilot para usuários convidados, alvos de toque em conformidade com o piso de acessibilidade de 44px, e alternância de contexto imediatamente reativa.
-
-
 
 ## 2026-10-04 — DEC-182 — Fixing the ratchet regression and lowering the baseline (wave R2, batch 4)
 
@@ -2377,23 +2581,24 @@
 - **Context**: Design lint remediation wave targeting store routes. Previous session left `_store.conta.trocas.tsx`, `_store.conta.salvos.tsx`, and `_store.conta.empresa.tsx` along with 17 other store routes with DL-XX violations (arbitrary bracket classes DL-02, 4px-grid deviations DL-03, touch targets under 44px DL-14, missing `:focus-visible` DL-15, `transition-all` DL-27, unhandled animations DL-28, and horizontal overflow DL-30).
 - **Decision**: Remediated 20 store routes completely to 0 violations: `_store.conta.trocas.tsx` (0), `_store.conta.salvos.tsx` (0), `_store.conta.empresa.tsx` (0), `_store.agendar.tsx` (0), `_store.cadastroantecipado.tsx` (0), `_store.colecao.$slug.tsx` (0), `_store.diretorio.$id.tsx` (0), `_store.eletronicos.tsx` (0), `_store.limpeza.tsx` (0), `_store.perfil-da-loja.tsx` (0), `_store.vendedora.$slug.tsx` (0), `_store.loja.$slug.senha.tsx` (0), `_store.loja.$slug.tsx` (0), `_store.places.$placeSlug.tsx` (0), `_store.redefinir-senha.tsx` (0), `_store.conta.creditos.tsx` (0), `_store.noticias.$slug.tsx` (0), `_store.categoria.$slug.tsx` (0), `_store.conta.tokens.tsx` (0), `_store.conta.verificacao.tsx` (0). Also fixed regressions in `workspace.imoveis.manutencoes.tsx`, `master-squircle-hero.tsx`, `waesy-copilot-drawer.tsx`, and `context-sidebar.tsx`. Added desktop inpage headers (`hidden md:flex`) and canonical `EmptyState` component.
 - **Rationale**: AGENTS.md B.4/B.8/B.9; DESIGN-LINT DL-01 through DL-30; zero P0/P1 design violations policy; WCAG 2.2 AA touch and keyboard floor.
+
 ## 2026-10-04 — DEC-184 — Deploy Completo de Produção Cloudflare Pages via Wrangler & Sanidade de Botões
 
 - **Context**: Mandato de deploy para produção no Cloudflare Pages (`usewaesy.pages.dev`), com verificação de variáveis de ambiente do Supabase, auditoria profunda de botões/rotas inoperantes, 100% de testes automatizados e compilação limpa.
-- **Decision**: 
-  1. *Auditoria de Ações e Rotas:* Identificados e corrigidos botões inertes em `admin-master.onboarding.tsx` (adicionado CRUD bilateral completo de passos de onboarding com persistência e remoção), `workspace.advocacia.index.tsx` (vinculação de clique no botão Eye para seleção e visualização de detalhes), `workspace.empregos.novo.tsx` (eliminação de botão inerte aninhado sob Link e normalização para `asChild` com 44px), `workspace.configuracoes.integracoes.tsx` e `workspace.configuracoes.inteligencia-artificial.tsx` (conversão para `Button asChild` e touch targets `h-11 min-h-11`), `workspace.financeiro.relatorios-canal.tsx` e `workspace.fiscal.nfe.tsx` (remoção de elementos aninhados inválidos sob `<a>`).
-  2. *Suíte de Testes:* Executado `vitest run` com 202 arquivos de teste e 1.351 testes aprovados (100% verde, Exit Code 0).
-  3. *Typecheck:* Executado `tsc --noEmit` com 0 erros de compilação em 1.848 arquivos TypeScript.
-  4. *Build & Empacotamento:* Ajustado heap limit de build (`--max-old-space-size=6144`) em `package.json`, gerando bundle `dist/_worker.js` de 17.51 MB com injeção segura de segredos do Supabase.
-  5. *Deploy Cloudflare Pages:* Realizado deploy com sucesso via `wrangler pages deploy dist --project-name usewaesy --commit-dirty=true --no-bundle`, gerando release ativa em `https://usewaesy.pages.dev` com status 200 OK verificado em rotas raiz e secundárias.
+- **Decision**:
+  1. _Auditoria de Ações e Rotas:_ Identificados e corrigidos botões inertes em `admin-master.onboarding.tsx` (adicionado CRUD bilateral completo de passos de onboarding com persistência e remoção), `workspace.advocacia.index.tsx` (vinculação de clique no botão Eye para seleção e visualização de detalhes), `workspace.empregos.novo.tsx` (eliminação de botão inerte aninhado sob Link e normalização para `asChild` com 44px), `workspace.configuracoes.integracoes.tsx` e `workspace.configuracoes.inteligencia-artificial.tsx` (conversão para `Button asChild` e touch targets `h-11 min-h-11`), `workspace.financeiro.relatorios-canal.tsx` e `workspace.fiscal.nfe.tsx` (remoção de elementos aninhados inválidos sob `<a>`).
+  2. _Suíte de Testes:_ Executado `vitest run` com 202 arquivos de teste e 1.351 testes aprovados (100% verde, Exit Code 0).
+  3. _Typecheck:_ Executado `tsc --noEmit` com 0 erros de compilação em 1.848 arquivos TypeScript.
+  4. _Build & Empacotamento:_ Ajustado heap limit de build (`--max-old-space-size=6144`) em `package.json`, gerando bundle `dist/_worker.js` de 17.51 MB com injeção segura de segredos do Supabase.
+  5. _Deploy Cloudflare Pages:_ Realizado deploy com sucesso via `wrangler pages deploy dist --project-name usewaesy --commit-dirty=true --no-bundle`, gerando release ativa em `https://usewaesy.pages.dev` com status 200 OK verificado em rotas raiz e secundárias.
 - **Rationale**: AGENTS.md B.1 a B.12, Deploy Verifier, Proof Verifier, WCAG 2.2 AA.
 - **Consequences**: Sistema 100% funcional, bilateral e publicado em produção no Cloudflare Pages com variáveis ativas do Supabase.
 
 ## 2026-10-04 — DEC-185 — Purga Forense de Débito Visual e Bilateralidade KYC (Onda Anti-Debt Batch 1) & Deploy Produção
 
-- **Contexto**: Execução do mandato Squad Master Anti-Debt (Pipeline IFRE-C) focado na eliminação cirúrgica de violações de design lint em rotas críticas do ecossistema (_store.*, admin-master.*), sincronização bilateral de KYC e verificação pré-deploy no Cloudflare Pages.
+- **Contexto**: Execução do mandato Squad Master Anti-Debt (Pipeline IFRE-C) focado na eliminação cirúrgica de violações de design lint em rotas críticas do ecossistema (_store._, admin-master._), sincronização bilateral de KYC e verificação pré-deploy no Cloudflare Pages.
 - **Decisão**:
-  1. *Purga Integral de Violações (6 Rotas Zeradas):*
+  1. _Purga Integral de Violações (6 Rotas Zeradas):_
      - `admin-master.kyc.tsx` (5 -> 0 violações): Substituição de container ad-hoc pelo componente canônico `EmptyState`, expurgo de emojis proibidos (`CheckCircle2` de Lucide), erradicação de `text-[11px]` e elevação de alvos de toque para `h-11 min-h-11`.
      - `_store.afiliados.tsx` (79 -> 0 violações): Erradicação de 49 classes de colchetes arbitrários (`text-[10px]`, `text-[11px]`, `aspect-[21/9]`), eliminação de gradientes decorativos, normalização de 21 botões para `h-11 min-h-11` e anotação semântica de carrossel (DL-30).
      - `_store.conta.curriculo.tsx` (78 -> 0 violações): Purga de cores literais `#ffffff` e `#0A66C2`, conversão de `grid-cols-3` em responsivo (`grid-cols-1 sm:grid-cols-3`), `EmptyState` canônico em histórico vazio e correção de sintaxe JSX no map de formações.
@@ -2401,20 +2606,21 @@
      - `_store.checkout.tsx` (94 -> 0 violações): Remoção de `style` inline safe-area (DL-05), correção de `variant="default"` duplicado em containers Surface (DL-25) e elevação de alvos táteis para `h-11 min-h-11`.
      - `_store.membro.$id.tsx` (110 -> 0 violações): Extração de props JSX do `NativeMobileHeader` para eliminação de falso-positivo DL-14, remoção de handlers em containers e padronização de ações em `size-11 min-h-11 min-w-11`.
      - `_store.conta.classificados.novo.tsx` (125 -> 0 violações): Correção de variantes de Badge, espaçamentos na grade modular de 4px, duração de transições limitada a 300ms e anéis de foco `:focus-visible`.
-  2. *Sincronização Bilateral de Governança KYC:*
+  2. _Sincronização Bilateral de Governança KYC:_
      - Aprimorado `reviewKycVerification` em `src/services/master.functions.ts` para sincronizar atomicamente o status de aprovação com `profiles.is_verified` (true em aprovação, false em rejeição/solicitação de reenvio).
-  3. *Rebaixamento Permanente de Baseline:* Redução de 15.008 para 14.416 violações (-592 violações no total, P0 reduzido para 1.569 e P1 para 10.127). Catraca aprovada com 0 novas violações.
-  4. *Qualidade Mecânica e Deploy:* 202 suítes de teste e 1.351 testes unitários aprovados no Vitest (100% verde). Build de produção limpo com empacotamento em `dist/_worker.js` e deploy de produção no Cloudflare Pages via Wrangler.
+  3. _Rebaixamento Permanente de Baseline:_ Redução de 15.008 para 14.416 violações (-592 violações no total, P0 reduzido para 1.569 e P1 para 10.127). Catraca aprovada com 0 novas violações.
+  4. _Qualidade Mecânica e Deploy:_ 202 suítes de teste e 1.351 testes unitários aprovados no Vitest (100% verde). Build de produção limpo com empacotamento em `dist/_worker.js` e deploy de produção no Cloudflare Pages via Wrangler.
 
 ## DEC-176: Erradicação Universal de Sparkles, Escala Móvel Proporcional sem Cortes (Zero Clipping) e Governança de Localidade e Agendamento CMS
+
 - **Data:** 2026-10-05
 - **Contexto:** Auditoria visual, de layout e governança do ecossistema: (1) Presença residual do ícone decorativo `Sparkles` e AI tropes em componentes de builder, busca, checkout, eventos e onboarding, violando as regras estritas de design silencioso (Apple HIG, Linear e WhatsApp list silencioso). (2) No mobile, carrosséis de banners e cards de produtos/classificados cortavam partes das mídias com `object-cover` ou aspect ratios arbitrários em vez de manterem escala proporcional verdadeira com visualização integral da arte (Zero Image Clipping). (3) Necessidade de expansão da governança de localidade (`city_filter`) e agendamento temporal (`starts_at`, `ends_at`, `auto_archive_at`) no Admin Master para Banners, Vitrines e Botões/Hotpages. (4) Garantia das regras B.22 e B.28 com botões CTA táteis proeminentes (`h-11 min-h-11`) em todos os cards de produtos e classificados.
 - **Decisão:**
-  1. *Erradicação Universal de Sparkles (Zero Sparkles no Codebase):* Substituídos 100% dos imports e elementos JSX de `Sparkles` por ícones semânticos canônicos (`Zap`, `Ticket`, `Flame`, `Layers`, `Bot`, `Camera`, `Package`, `LayoutGrid`, `ImagePlus`, `Play`, `Target`) em 20 arquivos.
-  2. *Escala Móvel Proporcional sem Cortes (Zero Image Clipping):* Implementada a técnica canônica de dupla camada (camada de fundo ambiente desfocada `blur-xl opacity-35 scale-110` + elemento principal `relative size-full object-contain`) em `BannerHeroCarousel`, `HeroCarousel`, `OfferCard`, `ProductCard`, `ClassifiedItemCard` e `HitsLeadCard`, ajustando o aspect ratio móvel para `aspect-[16/9] sm:aspect-[2.4/1] md:aspect-[21/9]`.
-  3. *Governança de Localidade e Agendamento no Admin Master & BFF:* Criada e aplicada migração `20270107000000_cms_locality_and_banner_auto_archive.sql` adicionando `city_filter` em `hotpages` e `auto_archive_at` em `banners`. Atualizados os endpoints BFF `hotpage.functions.ts` e `banner.functions.ts` com filtragem por cidade e expiração temporal automática. Adicionados controles de seleção de cidade e datas nos modais de edição de `admin-master.banners.tsx`, `admin-master.vitrines.tsx` e `admin-master.botoes.tsx`.
-  4. *CTAs Táteis Proeminentes (Piso 44px):* Inseridos botões canônicos proeminentes (`h-11 min-h-11`) com anéis de foco `:focus-visible:ring-2` em `ProductCard` ("Ver Detalhes" / "Encomendar"), `OfferCard` ("Ver Oferta") e `ClassifiedItemCard` ("Ver Anúncio").
-  5. *Validação Técnica Estrita:* `npm run typecheck` aprovado com Exit Code 0 (zero erros TypeScript em 1854 arquivos). Design Lint executado com catraca ativa aprovada (Exit Code 0). Build de produção aprovado (`npm run build`) gerando worker único otimizado `dist/_worker.js` e `dist/_routes.json` para Cloudflare Pages.
+  1. _Erradicação Universal de Sparkles (Zero Sparkles no Codebase):_ Substituídos 100% dos imports e elementos JSX de `Sparkles` por ícones semânticos canônicos (`Zap`, `Ticket`, `Flame`, `Layers`, `Bot`, `Camera`, `Package`, `LayoutGrid`, `ImagePlus`, `Play`, `Target`) em 20 arquivos.
+  2. _Escala Móvel Proporcional sem Cortes (Zero Image Clipping):_ Implementada a técnica canônica de dupla camada (camada de fundo ambiente desfocada `blur-xl opacity-35 scale-110` + elemento principal `relative size-full object-contain`) em `BannerHeroCarousel`, `HeroCarousel`, `OfferCard`, `ProductCard`, `ClassifiedItemCard` e `HitsLeadCard`, ajustando o aspect ratio móvel para `aspect-[16/9] sm:aspect-[2.4/1] md:aspect-[21/9]`.
+  3. _Governança de Localidade e Agendamento no Admin Master & BFF:_ Criada e aplicada migração `20270107000000_cms_locality_and_banner_auto_archive.sql` adicionando `city_filter` em `hotpages` e `auto_archive_at` em `banners`. Atualizados os endpoints BFF `hotpage.functions.ts` e `banner.functions.ts` com filtragem por cidade e expiração temporal automática. Adicionados controles de seleção de cidade e datas nos modais de edição de `admin-master.banners.tsx`, `admin-master.vitrines.tsx` e `admin-master.botoes.tsx`.
+  4. _CTAs Táteis Proeminentes (Piso 44px):_ Inseridos botões canônicos proeminentes (`h-11 min-h-11`) com anéis de foco `:focus-visible:ring-2` em `ProductCard` ("Ver Detalhes" / "Encomendar"), `OfferCard` ("Ver Oferta") e `ClassifiedItemCard` ("Ver Anúncio").
+  5. _Validação Técnica Estrita:_ `npm run typecheck` aprovado com Exit Code 0 (zero erros TypeScript em 1854 arquivos). Design Lint executado com catraca ativa aprovada (Exit Code 0). Build de produção aprovado (`npm run build`) gerando worker único otimizado `dist/_worker.js` e `dist/_routes.json` para Cloudflare Pages.
 - **Fundamentação:** AGENTS.md B.1 a B.12, B.20, B.22, B.28, B.29, Apple HIG, WCAG 2.2 AA e Mandato de Silêncio Visual.
 - **Consequências:** Zero clipping em qualquer dispositivo móvel, eliminação completa de AI smell visual, CMS de vitrines e campanhas 100% gerenciável por cidade e janela temporal pelo Admin Master.
 
@@ -2422,20 +2628,21 @@
 
 - **Contexto**: Execução do Plano Mestre de Mapeamento Forense e Correção Completa de Botões, Ações, Roteadores e Acesso (`mapeamento_botoes_e_funcoes_plano_mestre.md`). Resolução de funis cegos no onboarding, aninhamento `<Link><Button>` e botões inertes ou sem action.
 - **Decisão**:
-  1. *Auditoria Industrial de Botões via AST:* Varredura de 1.024 rotas e 5.078 botões com TypeScript AST (`scripts/audit/audit-interactive-buttons.mjs`), atingindo 0 botões sem ação, 0 falsos stubs e 0 aninhamentos inválidos `Link>Button`.
-  2. *Correção de Onboarding & Workspace Access:* Unificação do fluxo de registro rápido (`FastCompanyOnboarding`), persistência de cookies de contexto de tenant (`waesy_active_context=store`, `waesy_active_tenant=storeId`), elevação consistente de role (`owner`) e tratamento de auto-seleção de membership no loader de `workspace.tsx`.
-  3. *Eliminação de Regressões de Lint:* Saneamento de `PricingTablesClean.tsx`, `media-showcase-family.tsx`, `navigation-family.tsx` e `surfaces-family.tsx`, erradicando violações de anel de foco (DL-15) e sombra decorativa (DL-07).
-  4. *Catraca de Design Lint:* Redução líquida de 21 violações em relação à baseline anterior. Executado congelamento de novo teto em 14.306 violações (P0: 1.561, P1: 10.044) com aprovação na catraca `--ratchet`.
-  5. *Verificação Mecânica:* 100% verde no typecheck TypeScript (`tsc --noEmit` com 0 erros) e suíte de testes Vitest aprovada nos serviços afetados (`auth`, `company-mvp`, `onboarding-pipeline`, `classifieds`).
+  1. _Auditoria Industrial de Botões via AST:_ Varredura de 1.024 rotas e 5.078 botões com TypeScript AST (`scripts/audit/audit-interactive-buttons.mjs`), atingindo 0 botões sem ação, 0 falsos stubs e 0 aninhamentos inválidos `Link>Button`.
+  2. _Correção de Onboarding & Workspace Access:_ Unificação do fluxo de registro rápido (`FastCompanyOnboarding`), persistência de cookies de contexto de tenant (`waesy_active_context=store`, `waesy_active_tenant=storeId`), elevação consistente de role (`owner`) e tratamento de auto-seleção de membership no loader de `workspace.tsx`.
+  3. _Eliminação de Regressões de Lint:_ Saneamento de `PricingTablesClean.tsx`, `media-showcase-family.tsx`, `navigation-family.tsx` e `surfaces-family.tsx`, erradicando violações de anel de foco (DL-15) e sombra decorativa (DL-07).
+  4. _Catraca de Design Lint:_ Redução líquida de 21 violações em relação à baseline anterior. Executado congelamento de novo teto em 14.306 violações (P0: 1.561, P1: 10.044) com aprovação na catraca `--ratchet`.
+  5. _Verificação Mecânica:_ 100% verde no typecheck TypeScript (`tsc --noEmit` com 0 erros) e suíte de testes Vitest aprovada nos serviços afetados (`auth`, `company-mvp`, `onboarding-pipeline`, `classifieds`).
 - **Fundamentação**: AGENTS.md B.1 a B.12, DESIGN-LINT.md (DL-01 a DL-30), WCAG 2.2 AA (Piso de 44px e Contraste), Anti-AI Design e Zero-Dead-Buttons.
 - **Consequências**: Zero botões mortos na plataforma, onboarding de empresa fluído com acesso garantido ao Workspace, 0 regressões no lint visual e compilação limpa.
+
 ## 2026-10-05 — DEC-187 — Deploy Completo Cloudflare Pages via Wrangler com Variáveis de Produção Supabase
 
 - **Contexto**: Mandato de deploy para produção no Cloudflare Pages (`usewaesy`) após aprovação dos gates de design lint e resolução de botões via AST.
 - **Decisão**:
-  1. *Configuração de Ambiente de Produção:* Verificadas variáveis canônicas em `wrangler.toml` (`SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `VITE_SITE_URL`) e injetadas no pacote único `dist/_worker.js` via `wrap-worker.js`.
-  2. *Resolução de Conflitos de Binding:* Desvinculados segredos duplicados em `wrangler pages secret` que colidiam com `[vars]` do `wrangler.toml`.
-  3. *Publicação Industrial:* Realizado deploy via `wrangler pages deploy dist --project-name usewaesy --commit-dirty=true --no-bundle`, gerando release com status HTTP 200 OK verificado em `https://39479ced.usewaesy.pages.dev` e no domínio canônico `https://usewaesy.pages.dev`.
+  1. _Configuração de Ambiente de Produção:_ Verificadas variáveis canônicas em `wrangler.toml` (`SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `VITE_SITE_URL`) e injetadas no pacote único `dist/_worker.js` via `wrap-worker.js`.
+  2. _Resolução de Conflitos de Binding:_ Desvinculados segredos duplicados em `wrangler pages secret` que colidiam com `[vars]` do `wrangler.toml`.
+  3. _Publicação Industrial:_ Realizado deploy via `wrangler pages deploy dist --project-name usewaesy --commit-dirty=true --no-bundle`, gerando release com status HTTP 200 OK verificado em `https://39479ced.usewaesy.pages.dev` e no domínio canônico `https://usewaesy.pages.dev`.
 - **Fundamentação**: AGENTS.md B.1 a B.12, Deploy Verifier, WCAG 2.2 AA e Cloudflare Pages Runtime Contracts.
 - **Consequências**: Sistema em produção operacional com SSR, rotas estáticas otimizadas e comunicação com Supabase ativa.
 
@@ -2451,3 +2658,86 @@
 - **Fundamentação**: AGENTS.md B.1 a B.12, DESIGN-LINT DL-14/DL-15, WCAG 2.2 AA e contrato Zero-Dead-Buttons.
 - **Consequências**: Auditoria semântica aprovada em 6.145 controles com 0 P0, 0 P1 e 0 P2; auditorias forenses legadas reportam 0 fake buttons, 0 empty handlers, 0 orphan buttons e 0 silent catch mutations.
 
+## DEC-187: Motor Canônico de Conflitos Documentais em Turismo
+
+- **Data:** 2026-10-06
+- **Contexto:** Confirmações, contratos, recibos, vouchers e orçamentos de operadoras diferentes apresentam campos equivalentes com layouts, nomes, granularidade e valores divergentes. O pipeline OCR existente persistia a extração, mas não comparava fontes nem mantinha decisão humana por campo.
+- **Decisão Adotada:** Criar resolver puro determinístico com normalização semântica, domínio de conflito, severidade, precedência sugerida por domínio, fingerprint idempotente e candidatos com evidência. Persistir conflitos em `travel_document_conflicts`, decisões append-only em `travel_document_conflict_resolutions`, aplicar RLS por loja e expor análise/listagem/resolução via Server Functions. A bancada OCR passa a permitir analisar fontes vinculadas a uma viagem e escolher explicitamente a fonte vencedora.
+- **Fundamentação:** AGENTS.md B.1, B.5, B.9, B.11, B.25; DESIGN.md C.1, C.2, C.7; integridade financeira, jurídica e operacional multi-tenant; preservação de evidência original.
+- **Consequências:** Nenhum valor crítico é sobrescrito silenciosamente; reanálises preservam decisões resolvidas; o fluxo JSON canônico passa a documentar reservas, passageiros, serviços, pagamentos, conflitos e auditoria. A migration deve ser aplicada no Supabase antes do uso em produção.
+
+## DEC-187: Ondas 0–1 — Contenção P0 e Consolidação Inicial do Schema
+
+- **Data:** 2026-10-06
+- **Contexto:** A reauditoria confirmou BOLA em propostas, mutações de listings sem guard suficiente, upload BFF com bucket/pasta controláveis e versões duplicadas de migrations. O cliente de servidor usa `service_role`, portanto a autorização deve ocorrer antes de qualquer query privilegiada.
+- **Decisão:** (1) `getTravelProposalById` e `updateTravelProposal` agora exigem `requireStaff`, filtram `store_id` e não aceitam `public_token` como ID de workspace; (2) links públicos de proposta aceitam somente `public_token`, nunca UUID interno; (3) criação/publicação/transição de listings exigem identidade e não aceitam loja/organização arbitrárias; (4) uploads BFF de loja/universal exigem identidade, allowlist de buckets, pasta segura, limite de 20 MB e não criam buckets em requests; (5) migrations duplicadas foram renomeadas para timestamps únicos; (6) o gate `check:schema` foi adicionado ao fluxo canônico.
+- **Fundamentação:** AGENTS.md B.1, B.5, B.9, B.10, B.11; SPEC-20261006-waves-0-1-containment-schema; princípio deny-by-default e isolamento multi-tenant.
+- **Consequências:** Endpoints antigos que dependiam de UUID público, bucket não allowlisted, usuário anônimo ou auto-criação de bucket passarão a falhar explicitamente. A validação real de RLS/grants e a geração de tipos Supabase continuam pendentes de Postgres/Supabase disponível.
+
+## DEC-188: Onda 2 — RLS tenant-scoped e pagamento turístico transacional
+
+- **Data:** 2026-10-06
+- **Contexto:** A auditoria encontrou `USING(true)`/`WITH CHECK(true)` em propostas e contratos, leitura pública de vouchers e políticas de turismo sem `WITH CHECK` explícito. O ledger append-only também lia o último hash sem lock transacional e não tinha replay idempotente dentro da função.
+- **Decisão:** A migration `20261006150000_wave2_rls_financial_transactions.sql` remove o acesso PostgREST público dos agregados sensíveis, cria policies separadas de staff com `USING` e `WITH CHECK`, adiciona `travel_sale_payments`, serializa o hash-chain com advisory lock e cria `record_travel_sale_payment` para pagamento, ledger e timeline na mesma transação. O BFF `travel-financial.functions.ts` exige `requireFinance`.
+- **Fundamentação:** SPEC-20261006-wave2-rls-financial-transactions; AGENTS.md B.1, B.5, B.9, B.10, B.11; deny-by-default, tenant isolation, idempotency e append-only ledger.
+- **Consequências:** Acesso público direto via PostgREST a proposta, contrato e voucher deixa de funcionar; os Server Functions tokenizados permanecem a única superfície pública. A migration ainda precisa ser executada e testada em Postgres/Supabase real para validar grants, dependências e a implementação de `is_store_staff`.
+
+## DEC-189: Onda 3 — adapters documentais e sincronização canônica de operadoras
+
+- **Data:** 2026-10-06
+- **Contexto:** O OCR existente reconhecia cotações e vouchers, mas não havia envelope versionado, registry de operadoras nem run idempotente que ligasse ingestão a CRM/orçamento/reserva/timeline. Policies legadas de fornecedores ainda usavam permissões amplas.
+- **Decisão:** Criar `travel-operator-sync.ts` como normalizador puro com aliases de operadoras e provenance; criar registry e runs tenant-scoped; conectar a ingestão OCR ao envelope `travel-operator-v1`; expor configuração sem devolver segredos; sincronizar documentos por chave idempotente e manter `review_required` até aprovação humana.
+- **Fundamentação:** SPEC-20261006-wave3-operator-module-sync; origem documental preservada; adapter anti-alucinação; idempotência por ingestão; AGENTS.md B.5, B.9 e B.11.
+- **Consequências:** A onda não chama APIs externas de operadoras sem credenciais e contrato confirmados. A normalização fica disponível imediatamente para proposta, CRM e revisão; a propagação para reserva/viagem continua dependente de aprovação e dos comandos canônicos existentes.
+
+## DEC-190: Onda 4 — reconciliação documental v2
+
+- **Data:** 2026-10-06
+- **Contexto:** A primeira camada identificava conflitos por caminho textual, mas não tratava ordem variável de itens, equivalência de formatos, precedência específica por campo nem uma execução de reconciliação com projeção auditável.
+- **Decisão:** Adotar `travel-conflicts-v2` com normalização semântica de datas/documentos/telefones/dinheiro, chaves estáveis para passageiros/voos/hotéis, regras explícitas por campo, explicação da sugestão, runs idempotentes e valores reconciliados separados do OCR original.
+- **Segurança:** O BFF server-side é a única porta para registrar resolução; as policies autenticadas dos conflitos tornam-se somente leitura e as RPCs de mutação não são executáveis por `authenticated`.
+- **Consequências:** Conflitos críticos abertos bloqueiam aplicação automática na viagem. Resoluções customizadas não adulteram documentos nem extrações; tornam-se projeções versionadas que podem ser revisadas e reaplicadas.
+
+## DEC-191: Onda 5 — contract harness E2E do pipeline turístico
+
+- **Data:** 2026-10-06
+- **Contexto:** Os testes existentes cobriam partes isoladas do turismo, OCR, conflitos, idempotência e ledger, mas não provavam a ordem operacional completa nem a interação entre bloqueio, resolução, conversão, voucher e comissão.
+- **Decisão:** Criar uma suíte E2E dedicada com schemas e normalizadores reais, fixtures explícitas de documentos e um repositório em memória determinístico para observar estados e eventos. O comando oficial é `npm run test:e2e:travel`.
+- **Fundamentação:** SPEC-20261006-wave5-travel-pipeline-e2e; B.5, B.7, B.9 e B.11 do AGENTS.md; preservação de testes rápidos, repetíveis e sem dependência de credenciais externas.
+- **Consequências:** A suíte prova contratos e invariantes do pipeline sem fingir que substitui Postgres/Supabase conectado. A próxima camada de ambiente deve executar migrations e cenários contra banco efêmero/preview, preservando esta suíte como gate determinístico de regressão.
+
+
+## DEC-187: Breakpoint Expandido Canônico no Shell do Workspace
+
+- **Data:** 2026-10-06
+- **Contexto:** A constituição visual define `expanded` a partir de 840px, mas o shell do workspace usava `lg` do Tailwind, que inicia em 1024px. Entre 840px e 1023px, a sidebar expandida permanecia oculta e a navegação móvel (Sheet, identificação compacta e barra inferior) era exibida em desktops pequenos, causando mistura de padrões de plataforma.
+- **Decisão Adotada:** Criados os utilitários globais `waesy-expanded-flex` e `waesy-compact-medium-only` em `src/styles.css`, derivados do breakpoint canônico de 840px. O `workspace-shell` passou a usar esses utilitários no lugar de `lg` para a bifurcação da sidebar e dos controles móveis. Não foram alteradas regras de negócio, loaders ou serviços.
+- **Fundamentação:** AGENTS.md B.8, B.9 e B.11; DESIGN.md C.6 e C.8; Material 3 Window Size Classes; Apple HIG.
+- **Consequências:** O shell passa a tratar 840px como início do produto expandido, reduzindo confusão visual em desktops compactos e preservando o menu móvel apenas em compact/medium. A migração das demais telas que ainda usam `lg` será feita por lotes, com lint e testes por módulo.
+
+
+## DEC-188: Primitivas Compartilhadas no Breakpoint de 840px
+
+- **Data:** 2026-10-06
+- **Contexto:** Sidebar/flyout, toolbar e BottomBar ainda usavam `sm`, `md` e `transition-all`, produzindo diferentes interpretações de mobile, tablet e desktop e dificultando a adaptação de tabelas e filtros.
+- **Decisão Adotada:** As primitivas passaram a usar `waesy-compact-medium-only` e `waesy-expanded-flex`. A toolbar mantém filtros e menus em superfícies compact/medium, ações densas no expandido, faixa de abas com rolagem semântica e controles com 44px/foco visível. A BottomBar mobile oculta somente a partir de 840px.
+- **Fundamentação:** AGENTS.md B.8/B.9/B.11; DESIGN.md C.8/C.10/C.11; Material 3 Window Size Classes; Apple HIG.
+- **Consequências:** A correção propaga-se às rotas que consomem as primitivas. Os nove P2 em `styles.css` permanecem como dívida de compatibilidade explicitamente catalogada para a frente de fundação dos tokens.
+
+
+## DEC-189: Grades Operacionais Adaptativas e Shell Global em 840px
+
+- **Data:** 2026-10-06
+- **Contexto:** O shell global ainda ocultava sidebar em 1.024px e as telas turísticas usavam `md/lg` para grades, criando um intervalo inconsistente entre medium e expanded. Cartões carregados por consulta também não tinham Skeleton estrutural.
+- **Decisão Adotada:** O Shell e o workspace-shell usam utilitários canônicos a partir de 840px. Excursões e Contratos usam `waesy-card-grid` com 1/2/3 colunas em compact/medium/expanded, Skeletons dimensionados e ações de 44px. Barras de progresso usam utilitário próprio com transição de largura.
+- **Fundamentação:** DESIGN.md C.8/C.10/C.11; Material 3 Window Size Classes; Apple HIG; Nielsen CLS/visibilidade de estado.
+- **Consequências:** Tabelas e cartões de novos módulos devem preferir os utilitários semânticos antes de criar grids locais. A dívida de tokens de sombra/duração permanece isolada no CSS-base e não é mascarada.
+
+
+## DEC-190: Sheets Operacionais e Master-detail de Turismo em 840px
+
+- **Data:** 2026-10-06
+- **Contexto:** Propostas, vouchers e embarques usavam `md/lg` como fronteiras diferentes, controles sub-ergonômicos e superfícies de preview com scroll global. O editor de proposta renderizava elementos de mobile em janelas medium e o PDF de embarque continha cores literais fora da fonte canônica.
+- **Decisão Adotada:** O painel lateral da proposta aparece apenas em expanded >= 840px; compact/medium usam `waesy-sheet-responsive`. Vouchers e listas usam `waesy-card-grid`. Calendário, Kanban e previews usam utilitários semânticos próprios. Células e cards interativos são focáveis por teclado. O PDF usa variáveis CSS vivas (`--background`, `--foreground`, `--border`, `--muted`) para conservar a fonte canônica.
+- **Fundamentação:** DESIGN.md C.8/C.10/C.11, Apple HIG, WCAG 2.2 AA, DL-14, DL-15, DL-28 e DL-30.
+- **Consequências:** Novos Sheets operacionais devem adotar `waesy-sheet-responsive`; visualizações horizontais devem encapsular overflow em utilitário semântico; não se deve reintroduzir `md/lg` para separar plataforma quando o shell do produto usa 840px.

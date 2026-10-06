@@ -19,7 +19,7 @@ import { getStoreSettings } from "@/services/store.functions";
 import { NicheOperationalGuard } from "@/components/workspace/niche-operational-guard";
 import { QuotationBuilderSheet } from "@/components/tourism/quotation-builder-sheet";
 import { TravelAiImporterBanner } from "@/components/tourism/promotional-flyer/travel-ai-importer-banner";
-import { processOperatorQuoteOcr } from "@/services/travel-operator-ocr.functions";
+import { ingestTravelDocument } from "@/services/travel-canonical-pipeline.functions";
 import { formatDate } from "@/lib/datetime";
 import { formatMoney } from "@/lib/money";
 
@@ -310,21 +310,24 @@ export default function AgencyQuotesPage() {
                 setIsOcrLoading(true);
                 try {
                   const reader = new FileReader();
-                  reader.onload = async () => {
-                    const base64 = (reader.result as string).split(",")[1];
-                    const res = await processOperatorQuoteOcr({
-                      data: {
-                        fileBase64: base64,
-                        fileMime: file.type,
-                        fileName: file.name,
-                      },
-                    });
-                    if (res.success && res.data) {
-                      toast.success(`Cotação da ${res.data.operator_name} para ${res.data.destination} extraída com sucesso!`);
-                      setIsNewSheetOpen(true);
-                    }
-                  };
-                  reader.readAsDataURL(file);
+                  const dataUrl = await new Promise<string>((resolve, reject) => {
+                    reader.onload = () => resolve(reader.result as string);
+                    reader.onerror = () => reject(reader.error || new Error("Falha ao ler o arquivo."));
+                    reader.readAsDataURL(file);
+                  });
+                  const base64 = dataUrl.split(",")[1];
+                  const res = await ingestTravelDocument({
+                    data: {
+                      fileBase64: base64,
+                      fileMime: file.type,
+                      fileName: file.name,
+                      sourceKind: "operator_quote",
+                    },
+                  });
+                  if (res.success && res.data) {
+                    toast.success(`Cotação da ${res.data.operator_name} para ${res.data.destination} extraída e salva para revisão (documento ${res.ingestionId.slice(0, 8)}).`);
+                    setIsNewSheetOpen(true);
+                  }
                 } catch (err: any) {
                   toast.error(err?.message || "Erro ao processar cotação.");
                 } finally {

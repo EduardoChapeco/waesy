@@ -348,7 +348,7 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
  <div className="mb-2 pb-2 border-b border-border/40 space-y-2">
  <Link
  to="/admin-master"
- className="flex items-center justify-between px-3 py-2 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 transition-all font-bold text-xs group"
+ className="flex items-center justify-between px-3 py-2 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 transition-colors font-bold text-xs group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
  >
  <div className="flex items-center gap-2">
  <ShieldAlert className="size-4 text-primary shrink-0" />
@@ -361,20 +361,24 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
  type="button"
  onClick={() => setIsMasterAllVerticals((prev) => !prev)}
  className={cn(
- "w-full flex items-center justify-between px-3 py-1 rounded-lg text-xs font-bold border transition-colors cursor-pointer",
+ "w-full flex items-center justify-between px-3 py-1 rounded-lg text-xs font-bold border transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
  isMasterAllVerticals
  ? "bg-amber-500/10 text-amber-500 border-amber-500/30"
  : "bg-muted/40 text-muted-foreground border-border/40 hover:text-foreground"
  )}
  >
  <span>{isMasterAllVerticals ? "Modo Master: Todas as Verticais" : "Filtrar por Nicho da Loja"}</span>
- <span className="size-2 rounded-full" style={{ backgroundColor: isMasterAllVerticals ? "var(--color-amber-500, #f59e0b)" : "currentColor" }} />
+ <span className={cn("size-2 rounded-full", isMasterAllVerticals ? "bg-warning" : "bg-muted-foreground")} />
  </button>
  </div>
  )}
 
  {/* Lista de Grupos de Navegação com Flyout Flutuante / Accordion */}
- {activeModules.map((group, idx) => {
+ {activeModules.length === 0 ? (
+ <div className="rounded-lg border border-border/60 px-3 py-4 text-xs text-muted-foreground">
+ Nenhum módulo disponível.
+ </div>
+ ) : activeModules.map((group, idx) => {
  const prevGroup = idx > 0 ? activeModules[idx - 1] : undefined;
  const isNewSection = prevGroup && group.section && group.section !== prevGroup.section;
 
@@ -418,9 +422,9 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
  );
 
   return (
-    <div className={cn("flex h-[100dvh] w-full overflow-hidden bg-background text-foreground selection:bg-primary selection:text-primary-foreground font-sans relative", themeClass)}>
+    <div className={cn("flex h-dvh w-full overflow-hidden bg-background text-foreground selection:bg-primary selection:text-primary-foreground font-sans relative", themeClass)}>
       {/* ── 1. BARRA LATERAL CANÔNICA DO WORKSPACE (PADRÃO META STUDIO - FIXA) ── */}
-      <aside className="hidden lg:flex flex-col w-64 shrink-0 sticky top-0 h-[100dvh] bg-background border-r border-border/60 justify-between select-none z-30 overflow-hidden">
+      <aside className="hidden waesy-expanded-flex flex-col w-64 shrink-0 sticky top-0 h-dvh bg-background border-r border-border/60 justify-between select-none z-30 overflow-hidden">
         {/* Topo da Sidebar com altura exata h-14 (56px) alinhada continuamente à linha do Header */}
         <div className="h-14 border-b border-border/60 px-3 flex items-center shrink-0">
           <WorkspaceAccountSwitcher
@@ -445,7 +449,7 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
  <button
  type="button"
  onClick={() => setIsAllToolsOpen(true)}
- className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors cursor-pointer"
+ className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
  >
  <Sliders className="size-4 text-primary shrink-0" />
  <span className="truncate">Todas as ferramentas</span>
@@ -455,7 +459,7 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
  <button
  type="button"
  onClick={() => setIsAllToolsOpen(true)}
- className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors cursor-pointer"
+ className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
  >
  <Search className="size-4 shrink-0 text-muted-foreground" />
  <span className="truncate">Pesquisar</span>
@@ -497,10 +501,10 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
         <header className="h-14 bg-background/95 backdrop-blur-md border-b border-border/60 px-3 sm:px-6 lg:px-8 flex items-center justify-between shrink-0 sticky top-0 z-20">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             {/* Mobile & Tablet Sheet Trigger */}
-            <div className="lg:hidden shrink-0">
+            <div className="waesy-compact-medium-only shrink-0">
               <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
                 <SheetTrigger asChild>
-                  <Button variant="outline" size="icon" className="size-10 min-w-10 min-h-10 rounded-lg border-border/60">
+                  <Button variant="outline" size="icon" className="size-11 min-w-11 min-h-11 rounded-lg border-border/60 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
                     <Sliders className="size-4" />
                   </Button>
                 </SheetTrigger>
@@ -517,8 +521,8 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
                         onSwitchStore={handleSwitchStore}
                       />
                     </div>
-                    <ScrollArea className="h-[calc(100dvh-130px)] pr-2">
-                      <div onClick={() => setIsMobileMenuOpen(false)}>
+                    <ScrollArea className="h-full pr-2">
+                      <div className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" onClick={() => setIsMobileMenuOpen(false)}>
                         <NavLinks isMobile={true} />
                       </div>
                     </ScrollArea>
@@ -528,7 +532,7 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
             </div>
 
             {/* Identificação rápida da loja no Mobile/Tablet (< lg) */}
-            <div className="lg:hidden flex items-center gap-2 min-w-0">
+            <div className="waesy-compact-medium-only flex items-center gap-2 min-w-0">
               <span className="text-xs font-bold text-foreground truncate max-w-36 sm:max-w-56">
                 {activeStore?.name || "Workspace"}
               </span>
@@ -549,7 +553,7 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
                   asChild
                   size="sm"
                   variant="outline"
-                  className="h-8 rounded-lg text-xs font-bold gap-2 hidden sm:inline-flex border-border bg-card hover:bg-muted"
+                  className="h-11 min-h-11 rounded-lg text-xs font-bold gap-2 hidden waesy-expanded-flex border-border bg-card hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 >
                   <Link
                     to="/perfil-da-loja"
@@ -570,11 +574,11 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
               <Button
                 asChild
                 size="sm"
-                className="h-8 rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground hover:opacity-95 cursor-pointer"
+                className="h-11 min-h-11 rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground hover:opacity-95 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               >
                 <Link to="/admin-master">
                   <ShieldAlert className="size-3.5" />
-                  <span className="hidden sm:inline">Admin Master</span>
+                  <span className="hidden waesy-expanded-flex">Admin Master</span>
                 </Link>
               </Button>
             )}
@@ -590,7 +594,7 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
                   asChild
                   size="sm"
                   variant="outline"
-                  className="h-8 rounded-lg text-xs font-bold gap-2 hidden md:inline-flex border-border bg-card hover:bg-muted"
+                  className="h-11 min-h-11 rounded-lg text-xs font-bold gap-2 hidden waesy-expanded-flex border-border bg-card hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 >
                   <Link to={opAction.path as never}>
                     <OpIcon className="size-3.5 text-primary" />
@@ -605,9 +609,9 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
               <DropdownMenuTrigger asChild>
                 <button
                   type="button"
-                  className="flex items-center gap-2 p-1 pl-2 rounded-lg border border-border/60 bg-card hover:bg-muted/80 transition-all cursor-pointer"
+                  className="flex items-center gap-2 p-1 pl-2 rounded-lg border border-border/60 bg-card hover:bg-muted/80 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 >
-                  <span className="text-xs font-bold text-foreground max-w-28 truncate hidden md:inline-block">
+                  <span className="text-xs font-bold text-foreground max-w-28 truncate hidden waesy-expanded-flex">
                     {userDisplayName}
                   </span>
                   <Avatar className="size-7 rounded-lg">
@@ -660,7 +664,7 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
 
                 <DropdownMenuItem
                   onClick={handleLogout}
-                  className="rounded-lg cursor-pointer text-xs text-destructive focus:text-destructive"
+                  className="rounded-lg cursor-pointer text-xs text-destructive focus:text-destructive focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 >
                   <LogOut className="size-3.5 mr-2" />
                   <span>Sair</span>
@@ -697,13 +701,13 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
           return (
             <nav
               aria-label="Navegação operacional móvel"
-              className="lg:hidden fixed inset-x-2.5 z-30 max-w-lg mx-auto grid grid-cols-5 items-center p-2 bg-background border border-border rounded-lg select-none"
+              className="waesy-compact-medium-only fixed inset-x-2.5 z-30 max-w-lg mx-auto waesy-bottom-nav-grid items-center p-2 bg-background border border-border rounded-lg select-none"
               style={{ bottom: "max(calc(env(safe-area-inset-bottom) + 6px), 8px)" }}
             >
               <Link
                 to="/workspace"
                 className={cn(
-                  "h-11 rounded-lg flex flex-col items-center justify-center gap-1 text-xs transition-colors active:scale-95",
+                  "h-11 min-h-11 rounded-lg flex flex-col items-center justify-center gap-1 text-xs transition-colors active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
                   isOverview ? "text-primary font-bold bg-primary/10" : "text-muted-foreground hover:text-foreground font-medium"
                 )}
               >
@@ -714,7 +718,7 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
               <Link
                 to={opAction.path as any}
                 className={cn(
-                  "h-11 rounded-lg flex flex-col items-center justify-center gap-1 text-xs transition-colors active:scale-95",
+                  "h-11 min-h-11 rounded-lg flex flex-col items-center justify-center gap-1 text-xs transition-colors active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
                   isOpActive ? "text-primary font-bold bg-primary/10" : "text-muted-foreground hover:text-foreground font-medium"
                 )}
               >
@@ -725,7 +729,7 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
               <Link
                 to="/workspace/catalogo/produtos"
                 className={cn(
-                  "h-11 rounded-lg flex flex-col items-center justify-center gap-1 text-xs transition-colors active:scale-95",
+                  "h-11 min-h-11 rounded-lg flex flex-col items-center justify-center gap-1 text-xs transition-colors active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
                   isCatalogActive ? "text-primary font-bold bg-primary/10" : "text-muted-foreground hover:text-foreground font-medium"
                 )}
               >
@@ -736,7 +740,7 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
               <Link
                 to="/workspace/financeiro/caixa"
                 className={cn(
-                  "h-11 rounded-lg flex flex-col items-center justify-center gap-1 text-xs transition-colors active:scale-95",
+                  "h-11 min-h-11 rounded-lg flex flex-col items-center justify-center gap-1 text-xs transition-colors active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
                   isFinanceActive ? "text-primary font-bold bg-primary/10" : "text-muted-foreground hover:text-foreground font-medium"
                 )}
               >
@@ -747,7 +751,7 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
               <button
                 type="button"
                 onClick={() => setIsMobileMenuOpen(true)}
-                className="h-11 rounded-lg flex flex-col items-center justify-center gap-1 text-xs text-muted-foreground hover:text-foreground font-medium transition-colors active:scale-95 cursor-pointer"
+                className="h-11 min-h-11 rounded-lg flex flex-col items-center justify-center gap-1 text-xs text-muted-foreground hover:text-foreground font-medium transition-colors active:scale-95 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               >
                 <Sliders className="size-4" />
                 <span className="truncate">Menu</span>

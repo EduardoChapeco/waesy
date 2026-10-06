@@ -349,8 +349,10 @@ import { Route as WorkspaceRhPontoRouteImport } from './routes/workspace.rh.pont
 import { Route as WorkspaceSimlabFocusGroupRouteImport } from './routes/workspace.simlab.focus-group'
 import { Route as WorkspaceSquadsIndexRouteImport } from './routes/workspace.squads.index'
 import { Route as WorkspaceTurismoAereosRouteImport } from './routes/workspace.turismo.aereos'
+import { Route as WorkspaceTurismoComissoesRouteImport } from './routes/workspace.turismo.comissoes'
 import { Route as WorkspaceTurismoCotacoesRouteImport } from './routes/workspace.turismo.cotacoes'
 import { Route as WorkspaceTurismoDestinosRouteImport } from './routes/workspace.turismo.destinos'
+import { Route as WorkspaceTurismoDocumentosOcrRouteImport } from './routes/workspace.turismo.documentos-ocr'
 import { Route as WorkspaceTurismoEmbarquesRouteImport } from './routes/workspace.turismo.embarques'
 import { Route as WorkspaceTurismoFornecedoresRouteImport } from './routes/workspace.turismo.fornecedores'
 import { Route as WorkspaceTurismoHoteisRouteImport } from './routes/workspace.turismo.hoteis'
@@ -2187,6 +2189,12 @@ const WorkspaceTurismoAereosRoute = WorkspaceTurismoAereosRouteImport.update({
   path: '/turismo/aereos',
   getParentRoute: () => WorkspaceRoute,
 } as any)
+const WorkspaceTurismoComissoesRoute =
+  WorkspaceTurismoComissoesRouteImport.update({
+    id: '/turismo/comissoes',
+    path: '/turismo/comissoes',
+    getParentRoute: () => WorkspaceRoute,
+  } as any)
 const WorkspaceTurismoCotacoesRoute =
   WorkspaceTurismoCotacoesRouteImport.update({
     id: '/turismo/cotacoes',
@@ -2197,6 +2205,12 @@ const WorkspaceTurismoDestinosRoute =
   WorkspaceTurismoDestinosRouteImport.update({
     id: '/turismo/destinos',
     path: '/turismo/destinos',
+    getParentRoute: () => WorkspaceRoute,
+  } as any)
+const WorkspaceTurismoDocumentosOcrRoute =
+  WorkspaceTurismoDocumentosOcrRouteImport.update({
+    id: '/turismo/documentos-ocr',
+    path: '/turismo/documentos-ocr',
     getParentRoute: () => WorkspaceRoute,
   } as any)
 const WorkspaceTurismoEmbarquesRoute =
@@ -2848,8 +2862,10 @@ export interface FileRoutesByFullPath {
   '/workspace/rh/ponto': typeof WorkspaceRhPontoRoute
   '/workspace/simlab/focus-group': typeof WorkspaceSimlabFocusGroupRoute
   '/workspace/turismo/aereos': typeof WorkspaceTurismoAereosRoute
+  '/workspace/turismo/comissoes': typeof WorkspaceTurismoComissoesRoute
   '/workspace/turismo/cotacoes': typeof WorkspaceTurismoCotacoesRoute
   '/workspace/turismo/destinos': typeof WorkspaceTurismoDestinosRoute
+  '/workspace/turismo/documentos-ocr': typeof WorkspaceTurismoDocumentosOcrRoute
   '/workspace/turismo/embarques': typeof WorkspaceTurismoEmbarquesRoute
   '/workspace/turismo/fornecedores': typeof WorkspaceTurismoFornecedoresRoute
   '/workspace/turismo/hoteis': typeof WorkspaceTurismoHoteisRoute
@@ -3241,8 +3257,10 @@ export interface FileRoutesByTo {
   '/workspace/rh/ponto': typeof WorkspaceRhPontoRoute
   '/workspace/simlab/focus-group': typeof WorkspaceSimlabFocusGroupRoute
   '/workspace/turismo/aereos': typeof WorkspaceTurismoAereosRoute
+  '/workspace/turismo/comissoes': typeof WorkspaceTurismoComissoesRoute
   '/workspace/turismo/cotacoes': typeof WorkspaceTurismoCotacoesRoute
   '/workspace/turismo/destinos': typeof WorkspaceTurismoDestinosRoute
+  '/workspace/turismo/documentos-ocr': typeof WorkspaceTurismoDocumentosOcrRoute
   '/workspace/turismo/embarques': typeof WorkspaceTurismoEmbarquesRoute
   '/workspace/turismo/fornecedores': typeof WorkspaceTurismoFornecedoresRoute
   '/workspace/turismo/hoteis': typeof WorkspaceTurismoHoteisRoute
@@ -3645,8 +3663,10 @@ export interface FileRoutesById {
   '/workspace/rh/ponto': typeof WorkspaceRhPontoRoute
   '/workspace/simlab/focus-group': typeof WorkspaceSimlabFocusGroupRoute
   '/workspace/turismo/aereos': typeof WorkspaceTurismoAereosRoute
+  '/workspace/turismo/comissoes': typeof WorkspaceTurismoComissoesRoute
   '/workspace/turismo/cotacoes': typeof WorkspaceTurismoCotacoesRoute
   '/workspace/turismo/destinos': typeof WorkspaceTurismoDestinosRoute
+  '/workspace/turismo/documentos-ocr': typeof WorkspaceTurismoDocumentosOcrRoute
   '/workspace/turismo/embarques': typeof WorkspaceTurismoEmbarquesRoute
   '/workspace/turismo/fornecedores': typeof WorkspaceTurismoFornecedoresRoute
   '/workspace/turismo/hoteis': typeof WorkspaceTurismoHoteisRoute
@@ -4049,8 +4069,10 @@ export interface FileRouteTypes {
     | '/workspace/rh/ponto'
     | '/workspace/simlab/focus-group'
     | '/workspace/turismo/aereos'
+    | '/workspace/turismo/comissoes'
     | '/workspace/turismo/cotacoes'
     | '/workspace/turismo/destinos'
+    | '/workspace/turismo/documentos-ocr'
     | '/workspace/turismo/embarques'
     | '/workspace/turismo/fornecedores'
     | '/workspace/turismo/hoteis'
@@ -4442,8 +4464,10 @@ export interface FileRouteTypes {
     | '/workspace/rh/ponto'
     | '/workspace/simlab/focus-group'
     | '/workspace/turismo/aereos'
+    | '/workspace/turismo/comissoes'
     | '/workspace/turismo/cotacoes'
     | '/workspace/turismo/destinos'
+    | '/workspace/turismo/documentos-ocr'
     | '/workspace/turismo/embarques'
     | '/workspace/turismo/fornecedores'
     | '/workspace/turismo/hoteis'
@@ -4845,8 +4869,10 @@ export interface FileRouteTypes {
     | '/workspace/rh/ponto'
     | '/workspace/simlab/focus-group'
     | '/workspace/turismo/aereos'
+    | '/workspace/turismo/comissoes'
     | '/workspace/turismo/cotacoes'
     | '/workspace/turismo/destinos'
+    | '/workspace/turismo/documentos-ocr'
     | '/workspace/turismo/embarques'
     | '/workspace/turismo/fornecedores'
     | '/workspace/turismo/hoteis'
@@ -7373,6 +7399,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WorkspaceTurismoAereosRouteImport
       parentRoute: typeof WorkspaceRoute
     }
+    '/workspace/turismo/comissoes': {
+      id: '/workspace/turismo/comissoes'
+      path: '/turismo/comissoes'
+      fullPath: '/workspace/turismo/comissoes'
+      preLoaderRoute: typeof WorkspaceTurismoComissoesRouteImport
+      parentRoute: typeof WorkspaceRoute
+    }
     '/workspace/turismo/cotacoes': {
       id: '/workspace/turismo/cotacoes'
       path: '/turismo/cotacoes'
@@ -7385,6 +7418,13 @@ declare module '@tanstack/react-router' {
       path: '/turismo/destinos'
       fullPath: '/workspace/turismo/destinos'
       preLoaderRoute: typeof WorkspaceTurismoDestinosRouteImport
+      parentRoute: typeof WorkspaceRoute
+    }
+    '/workspace/turismo/documentos-ocr': {
+      id: '/workspace/turismo/documentos-ocr'
+      path: '/turismo/documentos-ocr'
+      fullPath: '/workspace/turismo/documentos-ocr'
+      preLoaderRoute: typeof WorkspaceTurismoDocumentosOcrRouteImport
       parentRoute: typeof WorkspaceRoute
     }
     '/workspace/turismo/embarques': {
@@ -8452,8 +8492,10 @@ interface WorkspaceRouteChildren {
   WorkspaceRhPontoRoute: typeof WorkspaceRhPontoRoute
   WorkspaceSimlabFocusGroupRoute: typeof WorkspaceSimlabFocusGroupRoute
   WorkspaceTurismoAereosRoute: typeof WorkspaceTurismoAereosRoute
+  WorkspaceTurismoComissoesRoute: typeof WorkspaceTurismoComissoesRoute
   WorkspaceTurismoCotacoesRoute: typeof WorkspaceTurismoCotacoesRoute
   WorkspaceTurismoDestinosRoute: typeof WorkspaceTurismoDestinosRoute
+  WorkspaceTurismoDocumentosOcrRoute: typeof WorkspaceTurismoDocumentosOcrRoute
   WorkspaceTurismoEmbarquesRoute: typeof WorkspaceTurismoEmbarquesRoute
   WorkspaceTurismoFornecedoresRoute: typeof WorkspaceTurismoFornecedoresRoute
   WorkspaceTurismoHoteisRoute: typeof WorkspaceTurismoHoteisRoute
@@ -8626,8 +8668,10 @@ const WorkspaceRouteChildren: WorkspaceRouteChildren = {
   WorkspaceRhPontoRoute: WorkspaceRhPontoRoute,
   WorkspaceSimlabFocusGroupRoute: WorkspaceSimlabFocusGroupRoute,
   WorkspaceTurismoAereosRoute: WorkspaceTurismoAereosRoute,
+  WorkspaceTurismoComissoesRoute: WorkspaceTurismoComissoesRoute,
   WorkspaceTurismoCotacoesRoute: WorkspaceTurismoCotacoesRoute,
   WorkspaceTurismoDestinosRoute: WorkspaceTurismoDestinosRoute,
+  WorkspaceTurismoDocumentosOcrRoute: WorkspaceTurismoDocumentosOcrRoute,
   WorkspaceTurismoEmbarquesRoute: WorkspaceTurismoEmbarquesRoute,
   WorkspaceTurismoFornecedoresRoute: WorkspaceTurismoFornecedoresRoute,
   WorkspaceTurismoHoteisRoute: WorkspaceTurismoHoteisRoute,

@@ -3,21 +3,6 @@ import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { enforceRateLimit } from "@/lib/rate-limiter";
 
-const ALLOWED_UPLOAD_BUCKETS = new Set([
-  "post-media",
-  "classifieds",
-  "classified-media",
-  "legal-documents",
-  "cms-media",
-  "product-media",
-  "covers",
-  "avatars",
-  "banners",
-  "public_media",
-  "social",
-]);
-const MAX_UPLOAD_BYTES = 25 * 1024 * 1024;
-
 const ALLOWED_MIME_TYPES = new Set([
   "image/jpeg",
   "image/png",
@@ -36,6 +21,56 @@ const ALLOWED_MIME_TYPES = new Set([
   "application/zip",
   "application/octet-stream",
 ]);
+
+const ALLOWED_BFF_BUCKETS = new Set([
+  "product-media",
+  "cms-media",
+  "payment-proofs",
+  "rma-proofs",
+  "classifieds",
+  "classified-media",
+  "covers",
+  "avatars",
+  "banners",
+  "post-media",
+  "public_media",
+  "legal-documents",
+  "receipts",
+  "order-receipts",
+  "identity-vault",
+  "store-assets",
+  "destination-media",
+  "social",
+]);
+
+const MAX_INLINE_UPLOAD_BYTES = 20 * 1024 * 1024;
+
+function decodeInlineUpload(base64Data: string): Buffer {
+  const base64Content = base64Data.includes(",") ? base64Data.split(",", 2)[1] : base64Data;
+  if (!base64Content || !/^[A-Za-z0-9+/\s]+={0,2}$/.test(base64Content)) {
+    throw new Error("Conteúdo Base64 inválido.");
+  }
+  const normalized = base64Content.replace(/\s/g, "");
+  const estimatedBytes =
+    Math.floor((normalized.length * 3) / 4) -
+    (normalized.endsWith("==") ? 2 : normalized.endsWith("=") ? 1 : 0);
+  if (estimatedBytes <= 0 || estimatedBytes > MAX_INLINE_UPLOAD_BYTES) {
+    throw new Error("Arquivo excede o limite de 20 MB para upload BFF.");
+  }
+  return Buffer.from(normalized, "base64");
+}
+
+function assertAllowedBffBucket(bucket: string) {
+  if (!ALLOWED_BFF_BUCKETS.has(bucket)) {
+    throw new Error("Bucket de upload não permitido.");
+  }
+}
+
+function assertSafeFolder(folder: string) {
+  if (!/^[a-zA-Z0-9/_-]{1,120}$/.test(folder) || folder.includes("..")) {
+    throw new Error("Pasta de upload inválida.");
+  }
+}
 
 function validateMimeType(contentType: string) {
   const cleanType = contentType.toLowerCase().split(";")[0].trim();
@@ -96,31 +131,6 @@ export const getSignedUploadUrl = createServerFn({ method: "POST" })
 
       // Tenta criar a URL assinada
       let result = await supabase.storage.from(bucket).createSignedUploadUrl(uniqueName);
-
-      // Auto-Healing: Cria o bucket se não existir e tenta novamente
-      const errMsg = result.error?.message || "";
-      if (
-        errMsg.includes("Bucket not found") ||
-        errMsg.includes("The related resource does not exist")
-      ) {
-        console.log(`[storage] Bucket ${bucket} missing. Auto-healing...`);
-        const { error: createError } = await supabase.storage.createBucket(bucket, {
-          public: ![
-            "payment-proofs",
-            "rma-proofs",
-            "legal-documents",
-            "receipts",
-            "identity-vault",
-          ].includes(bucket),
-          fileSizeLimit: 10485760, // 10MB
-        });
-
-        if (createError) {
-          throw new Error(`Auto-healing failed: ${createError.message}`);
-        }
-
-        result = await supabase.storage.from(bucket).createSignedUploadUrl(uniqueName);
-      }
 
       if (result.error || !result.data) {
         throw new Error(`Erro ao gerar URL de upload: ${result.error?.message}`);
@@ -220,16 +230,16 @@ export const uploadStoreMedia = createServerFn({ method: "POST" })
       fileName: z.string().min(1),
       fileType: z.string().min(1),
       base64Data: z.string().min(1),
-      bucket: z.enum(["cms-media", "store-assets", "product-media", "covers", "avatars", "banners"]),
+      bucket: z.string().default("cms-media"),
     }),
   )
   .handler(async ({ data: { fileName, fileType, base64Data, bucket } }) => {
     try {
       validateMimeType(fileType);
+      assertAllowedBffBucket(bucket);
 
-      const { getServerIdentity } = await import("@/lib/server-access");
-      const identity = await getServerIdentity();
-      if (!identity.id || !identity.store_id) throw new Error("Acesso negado: loja não identificada.");
+      const { requireStaff } = await import("@/lib/server-access");
+      const identity = await requireStaff();
       enforceRateLimit(identity.id, "media_upload");
 
       const supabase = getServerClient();
@@ -238,10 +248,7 @@ export const uploadStoreMedia = createServerFn({ method: "POST" })
       const uniqueName = `stores/${folder}/${Date.now()}-${Math.random().toString(36).substring(2, 9)}.${ext}`;
 
       // Extrai os bytes a partir da string base64
-      const base64Content = base64Data.includes(",") ? base64Data.split(",")[1] : base64Data;
-      const buffer = Buffer.from(base64Content, "base64");
-      if (buffer.byteLength > MAX_UPLOAD_BYTES)
-        throw new Error("Arquivo excede o limite de 25 MB.");
+      const buffer = decodeInlineUpload(base64Data);
 
       let { error: uploadError } = await supabase.storage.from(bucket).upload(uniqueName, buffer, {
         contentType: fileType,
@@ -277,6 +284,7 @@ export const uploadPostMedia = createServerFn({ method: "POST" })
   )
   .handler(async ({ data: { fileName, fileType, base64Data } }) => {
     try {
+      validateMimeType(fileType);
       const { getServerIdentity } = await import("@/lib/server-access");
       const identity = await getServerIdentity();
       if (!identity.id) throw new Error("Faça login para enviar fotos ou vídeos.");
@@ -286,18 +294,17 @@ export const uploadPostMedia = createServerFn({ method: "POST" })
       const uniqueName = `${identity.id}/${Date.now()}-${Math.random().toString(36).substring(2, 9)}.${ext}`;
       const bucket = "post-media";
 
-      const base64Content = base64Data.includes(",") ? base64Data.split(",")[1] : base64Data;
-      const buffer = Buffer.from(base64Content, "base64");
+      const buffer = decodeInlineUpload(base64Data);
 
-      let { error: uploadError } = await supabase.storage.from(bucket).upload(uniqueName, buffer, {
-        contentType: fileType,
-        upsert: true,
-      });
+      const { error: uploadError } = await supabase.storage
+        .from(bucket)
+        .upload(uniqueName, buffer, {
+          contentType: fileType,
+          upsert: true,
+        });
 
       if (uploadError) {
-        throw new Error(
-          `Bucket de upload indisponível ou upload rejeitado: ${uploadError.message}`,
-        );
+        throw new Error(`Erro ao salvar mídia: ${uploadError.message}`);
       }
 
       const { data: publicUrlData } = supabase.storage.from(bucket).getPublicUrl(uniqueName);
@@ -394,21 +401,21 @@ export const uploadMediaUniversal = createServerFn({ method: "POST" })
   )
   .handler(async ({ data: { fileName, fileType, base64Data, bucket, folder } }) => {
     try {
+      assertAllowedBffBucket(bucket);
+      assertSafeFolder(folder);
+      validateMimeType(fileType);
       const { getServerIdentity } = await import("@/lib/server-access");
       const identity = await getServerIdentity();
       if (!identity.id) throw new Error("Faça login para enviar mídia.");
-      if (!ALLOWED_UPLOAD_BUCKETS.has(bucket)) throw new Error("Bucket de upload não permitido.");
-      validateMimeType(fileType);
+      enforceRateLimit(identity.id, "media_upload");
+
       const supabase = getServerClient();
       const ext = fileName.split(".").pop()?.toLowerCase() || "jpg";
       const cleanName = `${Date.now()}_${Math.random().toString(36).substring(2, 9)}.${ext}`;
-      const tenantFolder = identity.store_id || identity.id;
-      const uniqueName = `${tenantFolder}/${cleanName}`;
+      const tenantNamespace = identity.store_id || identity.id;
+      const uniqueName = `${tenantNamespace}/${folder}/${cleanName}`;
 
-      const base64Content = base64Data.includes(",") ? base64Data.split(",")[1] : base64Data;
-      const buffer = Buffer.from(base64Content, "base64");
-      if (buffer.byteLength > MAX_UPLOAD_BYTES)
-        throw new Error("Arquivo excede o limite de 25 MB.");
+      const buffer = decodeInlineUpload(base64Data);
 
       let { error: uploadError } = await supabase.storage.from(bucket).upload(uniqueName, buffer, {
         contentType: fileType,
@@ -419,17 +426,11 @@ export const uploadMediaUniversal = createServerFn({ method: "POST" })
         throw new Error(`Erro ao persistir mídia no storage: ${uploadError.message}`);
       }
 
-      const isPrivate = new Set(["classifieds", "classified-media", "legal-documents"]).has(bucket);
-      const signed = isPrivate
-        ? await supabase.storage.from(bucket).createSignedUrl(uniqueName, 900)
-        : null;
-      if (isPrivate && (signed?.error || !signed?.data?.signedUrl))
-        throw new Error("Não foi possível gerar URL privada para o arquivo.");
       const { data: publicUrlData } = supabase.storage.from(bucket).getPublicUrl(uniqueName);
 
       return {
         id: cleanName,
-        url: isPrivate ? signed!.data!.signedUrl : publicUrlData.publicUrl,
+        url: publicUrlData.publicUrl,
         path: uniqueName,
         name: fileName,
         type: fileType.startsWith("video/") ? ("video" as const) : ("image" as const),

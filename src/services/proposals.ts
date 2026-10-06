@@ -211,3 +211,4 @@ export async function refineItineraryText(
 
 // Re-export canonical Server Functions
 export * from "./travel-proposal.functions";
+export * from "./travel-canonical-pipeline.functions";

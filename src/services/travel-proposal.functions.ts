@@ -8,11 +8,7 @@ import { executeUnifiedAiCall } from "./api-orchestrator.functions";
 // ─── Tipos e Contratos de Domínio ─────────────────────────────────────────────
 
 export type ProposalCanvasFormat =
-  | "a4-portrait"
-  | "a4-landscape"
-  | "story-916"
-  | "presentation-169"
-  | "letter-portrait";
+  "a4-portrait" | "a4-landscape" | "story-916" | "presentation-169" | "letter-portrait";
 
 export type ProposalStatus = "draft" | "sent" | "approved" | "rejected" | "expired";
 
@@ -197,16 +193,19 @@ function rowToProposalDTO(row: any, storeRow?: any): TravelProposalDTO {
   const rawPricing = meta.pricing || row.pricing || {};
 
   const basePriceCents = Number(rawPricing.base_price_cents || rawPricing.basePriceCents || 0);
-  const boardingTaxCents = Number(rawPricing.boarding_tax_cents || rawPricing.boardingTaxCents || 0);
+  const boardingTaxCents = Number(
+    rawPricing.boarding_tax_cents || rawPricing.boardingTaxCents || 0,
+  );
   const otherTaxesCents = Number(rawPricing.other_taxes_cents || 0);
   const discountCents = Number(rawPricing.discount_cents || 0);
 
-  const totalCents = Number(
-    rawPricing.total_price_cents ??
-    rawPricing.total_cents ??
-    row.total_cents ??
-    (basePriceCents + boardingTaxCents + otherTaxesCents - discountCents)
-  ) || 0;
+  const totalCents =
+    Number(
+      rawPricing.total_price_cents ??
+        rawPricing.total_cents ??
+        row.total_cents ??
+        basePriceCents + boardingTaxCents + otherTaxesCents - discountCents,
+    ) || 0;
 
   const defaultPricing: PricingBreakdownDTO = {
     currency: rawPricing.currency || "BRL",
@@ -216,15 +215,27 @@ function rowToProposalDTO(row: any, storeRow?: any): TravelProposalDTO {
     discount_cents: discountCents,
     total_price_cents: totalCents,
     total_cents: totalCents,
-    installments_options: rawPricing.installments_options && rawPricing.installments_options.length > 0
-      ? rawPricing.installments_options
-      : totalCents > 0
-        ? [
-            { installments_count: 1, installment_value_cents: totalCents, method: "pix", has_interest: false },
-            { installments_count: 10, installment_value_cents: Math.round(totalCents / 10), method: "credit_card", has_interest: false },
-          ]
-        : [],
-    payment_terms: rawPricing.payment_terms || "Entrada de 20% + saldo em até 10x sem juros no cartão.",
+    installments_options:
+      rawPricing.installments_options && rawPricing.installments_options.length > 0
+        ? rawPricing.installments_options
+        : totalCents > 0
+          ? [
+              {
+                installments_count: 1,
+                installment_value_cents: totalCents,
+                method: "pix",
+                has_interest: false,
+              },
+              {
+                installments_count: 10,
+                installment_value_cents: Math.round(totalCents / 10),
+                method: "credit_card",
+                has_interest: false,
+              },
+            ]
+          : [],
+    payment_terms:
+      rawPricing.payment_terms || "Entrada de 20% + saldo em até 10x sem juros no cartão.",
   };
 
   const title =
@@ -238,43 +249,48 @@ function rowToProposalDTO(row: any, storeRow?: any): TravelProposalDTO {
   const clientEmail = row.client_email || row.guest_email || meta.client_email || null;
   const destinationCity = row.destination_city || meta.destination_city || "";
 
-  const flights = Array.isArray(row.flights) && row.flights.length > 0
-    ? row.flights
-    : Array.isArray(meta.flights)
-      ? meta.flights
-      : [];
+  const flights =
+    Array.isArray(row.flights) && row.flights.length > 0
+      ? row.flights
+      : Array.isArray(meta.flights)
+        ? meta.flights
+        : [];
 
-  const hotels = Array.isArray(row.hotels) && row.hotels.length > 0
-    ? row.hotels
-    : Array.isArray(meta.hotels)
-      ? meta.hotels
-      : [];
+  const hotels =
+    Array.isArray(row.hotels) && row.hotels.length > 0
+      ? row.hotels
+      : Array.isArray(meta.hotels)
+        ? meta.hotels
+        : [];
 
-  const itinerary = Array.isArray(row.itinerary) && row.itinerary.length > 0
-    ? row.itinerary
-    : Array.isArray(meta.itinerary)
-      ? meta.itinerary
-      : [];
+  const itinerary =
+    Array.isArray(row.itinerary) && row.itinerary.length > 0
+      ? row.itinerary
+      : Array.isArray(meta.itinerary)
+        ? meta.itinerary
+        : [];
 
-  const includes = Array.isArray(row.includes) && row.includes.length > 0
-    ? row.includes
-    : Array.isArray(meta.includes) && meta.includes.length > 0
-      ? meta.includes
-      : [
-          "Passagens aéreas ida e volta",
-          "Hospedagem selecionada com café da manhã",
-          "Seguro viagem internacional completo",
-          "Suporte e conciergerie da agência 24h",
-        ];
+  const includes =
+    Array.isArray(row.includes) && row.includes.length > 0
+      ? row.includes
+      : Array.isArray(meta.includes) && meta.includes.length > 0
+        ? meta.includes
+        : [
+            "Passagens aéreas ida e volta",
+            "Hospedagem selecionada com café da manhã",
+            "Seguro viagem internacional completo",
+            "Suporte e conciergerie da agência 24h",
+          ];
 
-  const excludes = Array.isArray(row.excludes) && row.excludes.length > 0
-    ? row.excludes
-    : Array.isArray(meta.excludes) && meta.excludes.length > 0
-      ? meta.excludes
-      : [
-          "Despesas de caráter pessoal e passeios opcionais",
-          "Taxas turísticas locais de preservação ambiental recolhidas no destino",
-        ];
+  const excludes =
+    Array.isArray(row.excludes) && row.excludes.length > 0
+      ? row.excludes
+      : Array.isArray(meta.excludes) && meta.excludes.length > 0
+        ? meta.excludes
+        : [
+            "Despesas de caráter pessoal e passeios opcionais",
+            "Taxas turísticas locais de preservação ambiental recolhidas no destino",
+          ];
 
   return {
     id: row.id,
@@ -292,7 +308,9 @@ function rowToProposalDTO(row: any, storeRow?: any): TravelProposalDTO {
     client_email: clientEmail,
     adults_count: row.adults_count ?? meta.adults_count ?? 2,
     children_count: row.children_count ?? meta.children_count ?? 0,
-    canvas_format: (row.canvas_format || meta.canvas_format || "a4-portrait") as ProposalCanvasFormat,
+    canvas_format: (row.canvas_format ||
+      meta.canvas_format ||
+      "a4-portrait") as ProposalCanvasFormat,
     template_theme: row.template_theme || meta.template_theme || "editorial-flat",
     destination_city: destinationCity,
     travel_start_date: row.travel_start_date || meta.travel_start_date || null,
@@ -300,25 +318,34 @@ function rowToProposalDTO(row: any, storeRow?: any): TravelProposalDTO {
     flights,
     hotels,
     itinerary,
-    transfers: Array.isArray(row.transfers) ? row.transfers : Array.isArray(meta.transfers) ? meta.transfers : [],
+    transfers: Array.isArray(row.transfers)
+      ? row.transfers
+      : Array.isArray(meta.transfers)
+        ? meta.transfers
+        : [],
     tours: Array.isArray(row.tours) ? row.tours : Array.isArray(meta.tours) ? meta.tours : [],
     rooms: Array.isArray(row.rooms) ? row.rooms : Array.isArray(meta.rooms) ? meta.rooms : [],
     includes,
     excludes,
     pricing: defaultPricing,
-    options: Array.isArray(row.options) && row.options.length > 0
-      ? row.options
-      : Array.isArray(meta.options) && meta.options.length > 0
-        ? meta.options
-        : [],
+    options:
+      Array.isArray(row.options) && row.options.length > 0
+        ? row.options
+        : Array.isArray(meta.options) && meta.options.length > 0
+          ? meta.options
+          : [],
     ai_sales_advisor_enabled: row.ai_sales_advisor_enabled ?? meta.ai_sales_advisor_enabled ?? true,
     ai_sales_advisor_prompt: row.ai_sales_advisor_prompt || meta.ai_sales_advisor_prompt || null,
     special_notes: row.special_notes || meta.special_notes || null,
-    status: (row.status === "approved" ? "approved"
-      : row.status === "rejected" ? "rejected"
-      : row.status === "expired" ? "expired"
-      : row.status === "sent" ? "sent"
-      : "draft") as ProposalStatus,
+    status: (row.status === "approved"
+      ? "approved"
+      : row.status === "rejected"
+        ? "rejected"
+        : row.status === "expired"
+          ? "expired"
+          : row.status === "sent"
+            ? "sent"
+            : "draft") as ProposalStatus,
     valid_until: row.valid_until || null,
     created_at: row.created_at || new Date().toISOString(),
     updated_at: row.updated_at || new Date().toISOString(),
@@ -348,7 +375,9 @@ export const createTravelProposalInputSchema = z.object({
   infantsCount: z.number().int().min(0).default(0),
   currency: z.string().default("BRL"),
   validUntilDays: z.number().int().min(1).default(7),
-  canvasFormat: z.enum(["a4-portrait", "a4-landscape", "story-916", "presentation-169", "letter-portrait"]).default("a4-portrait"),
+  canvasFormat: z
+    .enum(["a4-portrait", "a4-landscape", "story-916", "presentation-169", "letter-portrait"])
+    .default("a4-portrait"),
   templateTheme: z.string().default("editorial-flat"),
   initialNotes: z.string().optional(),
   templateId: z.string().optional(),
@@ -367,230 +396,251 @@ export const createTravelProposalInputSchema = z.object({
 
 export const createTravelProposal = createServerFn({ method: "POST" })
   .validator(createTravelProposalInputSchema)
-  .handler(async ({ data: input }): Promise<{ success: boolean; id: string; publicToken: string }> => {
-    const supabase = getServerClient();
-    const identity = await getServerIdentity().catch(() => null);
-    let effectiveStoreId = identity?.store_id;
-    if (!effectiveStoreId) {
-      const { data: firstStore } = await supabase.from("stores").select("id").limit(1).maybeSingle();
-      effectiveStoreId = firstStore?.id;
-    }
-
-    const publicToken = "prop_" + Math.random().toString(36).substring(2, 10);
-    const quoteNumber = `PROP-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
-
-    const validUntilDate = new Date();
-    validUntilDate.setDate(validUntilDate.getDate() + (input.validUntilDays || 7));
-
-    const clientName = (input.clientName || "Cliente Especial").trim();
-    const clientWhatsapp = (input.clientWhatsapp || input.clientPhone || "49998887777").trim();
-    const destinationCity = (input.destinationCity || "Destino Exclusivo").trim();
-    const title = (input.title || `Proposta: ${destinationCity} (${clientName})`).trim();
-    const startDate = input.travelStartDate || input.startDate || null;
-    const endDate = input.travelEndDate || input.endDate || null;
-    const adultsCount = input.adultsCount || input.paxCount || 2;
-
-    const rawPricing = input.pricing || {};
-    const basePriceCents = Number(rawPricing.base_price_cents || rawPricing.basePriceCents || 0);
-    const boardingTaxCents = Number(rawPricing.boarding_tax_cents || rawPricing.boardingTaxCents || 0);
-    const otherTaxesCents = Number(rawPricing.other_taxes_cents || 0);
-    const discountCents = Number(rawPricing.discount_cents || 0);
-    const calculatedTotal = Number(
-      rawPricing.total_price_cents ??
-      rawPricing.total_cents ??
-      (basePriceCents + boardingTaxCents + otherTaxesCents - discountCents)
-    ) || 0;
-
-    const initialPricing: PricingBreakdownDTO = {
-      currency: rawPricing.currency || input.currency || "BRL",
-      base_price_cents: basePriceCents || calculatedTotal,
-      boarding_tax_cents: boardingTaxCents,
-      other_taxes_cents: otherTaxesCents,
-      discount_cents: discountCents,
-      total_price_cents: calculatedTotal,
-      total_cents: calculatedTotal,
-      installments_options: rawPricing.installments_options && rawPricing.installments_options.length > 0
-        ? rawPricing.installments_options
-        : calculatedTotal > 0
-          ? [
-              { installments_count: 1, installment_value_cents: calculatedTotal, method: "pix", has_interest: false },
-              { installments_count: 10, installment_value_cents: Math.round(calculatedTotal / 10), method: "credit_card", has_interest: false },
-            ]
-          : [],
-      payment_terms: rawPricing.payment_terms || "Entrada de 20% + saldo em até 10x sem juros no cartão.",
-    };
-
-    const includesList = input.includes || [
-      "Passagens aéreas ida e volta",
-      "Hospedagem selecionada com café da manhã",
-      "Seguro viagem internacional completo",
-      "Suporte e conciergerie da agência 24h",
-    ];
-
-    const excludesList = input.excludes || [
-      "Despesas de caráter pessoal e passeios opcionais",
-      "Taxas turísticas locais de preservação ambiental recolhidas no destino",
-    ];
-
-    let insertedId = "";
-
-    // 1. Inserção nativa na tabela travel_proposals
-    try {
-      const { data: propData, error: propErr } = await supabase
-        .from("travel_proposals")
-        .insert({
-          store_id: effectiveStoreId,
-          created_by_profile_id: identity?.id || null,
-          public_token: publicToken,
-          canvas_format: input.canvasFormat || "a4-portrait",
-          title,
-          destination_city: destinationCity,
-          client_name: clientName,
-          client_whatsapp: clientWhatsapp,
-          client_email: input.clientEmail?.trim() || null,
-          travel_start_date: startDate,
-          travel_end_date: endDate,
-          adults_count: adultsCount,
-          children_count: input.childrenCount || 0,
-          hero_image_url: input.coverPhotoUrl || null,
-          flights: input.flights || [],
-          hotels: input.hotels || [],
-          itinerary: input.itinerary || [],
-          pricing: initialPricing,
-          includes: includesList,
-          excludes: excludesList,
-          important_notes: input.initialNotes ? [input.initialNotes] : [],
-          status: "draft",
-        })
-        .select("id")
-        .single();
-
-      if (propData?.id) {
-        insertedId = propData.id;
-      }
-      if (propErr) {
-        console.warn("[travel-proposal] Notice on travel_proposals insert:", propErr.message);
-      }
-    } catch (e) {
-      console.warn("[travel-proposal] Exception on travel_proposals insert:", e);
-    }
-
-    // 2. Inserção de compatibilidade na tabela quotes
-    const conditionsMeta = JSON.stringify({
-      public_token: publicToken,
-      lead_id: input.leadId || null,
-      title,
-      client_name: clientName,
-      client_whatsapp: clientWhatsapp,
-      client_email: input.clientEmail?.trim() || null,
-      client_document: input.clientDocument?.trim() || null,
-      customer_id: input.customerId || null,
-      destination_city: destinationCity,
-      travel_start_date: startDate,
-      travel_end_date: endDate,
-      adults_count: adultsCount,
-      children_count: input.childrenCount || 0,
-      infants_count: input.infantsCount || 0,
-      currency: input.currency || "BRL",
-      canvas_format: input.canvasFormat,
-      template_theme: input.templateTheme,
-      template_id: input.templateId || null,
-      flights: input.flights || [],
-      hotels: input.hotels || [],
-      itinerary: input.itinerary || [],
-      transfers: input.transfers || [],
-      tours: input.tours || [],
-      rooms: input.rooms || [],
-      includes: includesList,
-      excludes: excludesList,
-      pricing: initialPricing,
-      special_notes: input.initialNotes?.trim() || null,
-    });
-
-    try {
-      const { data: quoteInserted, error: qErr } = await supabase
-        .from("quotes")
-        .insert({
-          id: insertedId ? insertedId : undefined,
-          store_id: effectiveStoreId,
-          quote_number: quoteNumber,
-          customer_id: input.customerId || null,
-          guest_name: clientName,
-          guest_phone: clientWhatsapp,
-          guest_email: input.clientEmail?.trim() || null,
-          valid_until: validUntilDate.toISOString(),
-          internal_notes: title,
-          conditions: conditionsMeta,
-          subtotal_cents: calculatedTotal,
-          total_cents: calculatedTotal,
-          discount_cents: 0,
-          status: "draft",
-          created_by: identity?.id || null,
-        })
-        .select("id")
-        .single();
-
-      if (!insertedId && quoteInserted?.id) {
-        insertedId = quoteInserted.id;
-      }
-    } catch (e) {
-      console.warn("[travel-proposal] Notice on quotes insert:", e);
-    }
-
-    if (!insertedId) {
-      insertedId = "prop_" + Date.now();
-    }
-
-    // 3. Sincronização sistêmica com leads_crm
-    if (input.leadId) {
-      try {
-        const { data: leadRow } = await supabase
-          .from("leads_crm")
-          .select("checklist")
-          .eq("id", input.leadId)
+  .handler(
+    async ({ data: input }): Promise<{ success: boolean; id: string; publicToken: string }> => {
+      const supabase = getServerClient();
+      const identity = await getServerIdentity().catch(() => null);
+      let effectiveStoreId = identity?.store_id;
+      if (!effectiveStoreId) {
+        const { data: firstStore } = await supabase
+          .from("stores")
+          .select("id")
+          .limit(1)
           .maybeSingle();
+        effectiveStoreId = firstStore?.id;
+      }
 
-        let updatedChecklist = leadRow?.checklist || [];
-        if (Array.isArray(updatedChecklist)) {
-          updatedChecklist = updatedChecklist.map((item: any) =>
-            item.id === "item-3" || item.text?.toLowerCase().includes("proposta")
-              ? { ...item, done: true }
-              : item
-          );
-        }
+      const publicToken = "prop_" + Math.random().toString(36).substring(2, 10);
+      const quoteNumber = `PROP-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
 
-        await supabase
-          .from("leads_crm")
-          .update({
-            status: "proposal",
-            checklist: updatedChecklist,
-            updated_at: new Date().toISOString(),
-            last_contacted_at: new Date().toISOString(),
+      const validUntilDate = new Date();
+      validUntilDate.setDate(validUntilDate.getDate() + (input.validUntilDays || 7));
+
+      const clientName = (input.clientName || "Cliente Especial").trim();
+      const clientWhatsapp = (input.clientWhatsapp || input.clientPhone || "49998887777").trim();
+      const destinationCity = (input.destinationCity || "Destino Exclusivo").trim();
+      const title = (input.title || `Proposta: ${destinationCity} (${clientName})`).trim();
+      const startDate = input.travelStartDate || input.startDate || null;
+      const endDate = input.travelEndDate || input.endDate || null;
+      const adultsCount = input.adultsCount || input.paxCount || 2;
+
+      const rawPricing = input.pricing || {};
+      const basePriceCents = Number(rawPricing.base_price_cents || rawPricing.basePriceCents || 0);
+      const boardingTaxCents = Number(
+        rawPricing.boarding_tax_cents || rawPricing.boardingTaxCents || 0,
+      );
+      const otherTaxesCents = Number(rawPricing.other_taxes_cents || 0);
+      const discountCents = Number(rawPricing.discount_cents || 0);
+      const calculatedTotal =
+        Number(
+          rawPricing.total_price_cents ??
+            rawPricing.total_cents ??
+            basePriceCents + boardingTaxCents + otherTaxesCents - discountCents,
+        ) || 0;
+
+      const initialPricing: PricingBreakdownDTO = {
+        currency: rawPricing.currency || input.currency || "BRL",
+        base_price_cents: basePriceCents || calculatedTotal,
+        boarding_tax_cents: boardingTaxCents,
+        other_taxes_cents: otherTaxesCents,
+        discount_cents: discountCents,
+        total_price_cents: calculatedTotal,
+        total_cents: calculatedTotal,
+        installments_options:
+          rawPricing.installments_options && rawPricing.installments_options.length > 0
+            ? rawPricing.installments_options
+            : calculatedTotal > 0
+              ? [
+                  {
+                    installments_count: 1,
+                    installment_value_cents: calculatedTotal,
+                    method: "pix",
+                    has_interest: false,
+                  },
+                  {
+                    installments_count: 10,
+                    installment_value_cents: Math.round(calculatedTotal / 10),
+                    method: "credit_card",
+                    has_interest: false,
+                  },
+                ]
+              : [],
+        payment_terms:
+          rawPricing.payment_terms || "Entrada de 20% + saldo em até 10x sem juros no cartão.",
+      };
+
+      const includesList = input.includes || [
+        "Passagens aéreas ida e volta",
+        "Hospedagem selecionada com café da manhã",
+        "Seguro viagem internacional completo",
+        "Suporte e conciergerie da agência 24h",
+      ];
+
+      const excludesList = input.excludes || [
+        "Despesas de caráter pessoal e passeios opcionais",
+        "Taxas turísticas locais de preservação ambiental recolhidas no destino",
+      ];
+
+      let insertedId = "";
+
+      // 1. Inserção nativa na tabela travel_proposals
+      try {
+        const { data: propData, error: propErr } = await supabase
+          .from("travel_proposals")
+          .insert({
+            store_id: effectiveStoreId,
+            created_by_profile_id: identity?.id || null,
+            public_token: publicToken,
+            canvas_format: input.canvasFormat || "a4-portrait",
+            title,
+            destination_city: destinationCity,
+            client_name: clientName,
+            client_whatsapp: clientWhatsapp,
+            client_email: input.clientEmail?.trim() || null,
+            travel_start_date: startDate,
+            travel_end_date: endDate,
+            adults_count: adultsCount,
+            children_count: input.childrenCount || 0,
+            hero_image_url: input.coverPhotoUrl || null,
+            flights: input.flights || [],
+            hotels: input.hotels || [],
+            itinerary: input.itinerary || [],
+            pricing: initialPricing,
+            includes: includesList,
+            excludes: excludesList,
+            important_notes: input.initialNotes ? [input.initialNotes] : [],
+            status: "draft",
           })
-          .eq("id", input.leadId);
-      } catch (leadErr) {
-        console.warn("[travel-proposal] Erro ao sincronizar lead status:", leadErr);
-      }
-    }
+          .select("id")
+          .single();
 
-    // 4. Disparo transacional via WhatsApp Cloud API (se configurado na loja)
-    if (effectiveStoreId && clientWhatsapp) {
-      const cleanPhone = clientWhatsapp.replace(/\D/g, "");
-      if (cleanPhone.length >= 10) {
-        const publicUrl = `https://app.usewaesy.com/proposta/${publicToken}`;
-        const messageText = `Olá ${clientName}! Sua proposta de viagem para *${destinationCity}* foi gerada com sucesso pela agência.\n\nVocê pode visualizá-la, conferir o roteiro e aprovar online pelo link:\n${publicUrl}`;
-        sendWhatsAppNotification({
-          storeId: effectiveStoreId,
-          recipientPhone: cleanPhone,
-          messageText,
-        }).catch((err) => {
-          console.warn("[travel-proposal] WhatsApp Cloud notification warning:", err?.message);
-        });
+        if (propData?.id) {
+          insertedId = propData.id;
+        }
+        if (propErr) {
+          console.warn("[travel-proposal] Notice on travel_proposals insert:", propErr.message);
+        }
+      } catch (e) {
+        console.warn("[travel-proposal] Exception on travel_proposals insert:", e);
       }
-    }
 
-    return { success: true, id: insertedId, publicToken };
-  });
+      // 2. Inserção de compatibilidade na tabela quotes
+      const conditionsMeta = JSON.stringify({
+        public_token: publicToken,
+        lead_id: input.leadId || null,
+        title,
+        client_name: clientName,
+        client_whatsapp: clientWhatsapp,
+        client_email: input.clientEmail?.trim() || null,
+        client_document: input.clientDocument?.trim() || null,
+        customer_id: input.customerId || null,
+        destination_city: destinationCity,
+        travel_start_date: startDate,
+        travel_end_date: endDate,
+        adults_count: adultsCount,
+        children_count: input.childrenCount || 0,
+        infants_count: input.infantsCount || 0,
+        currency: input.currency || "BRL",
+        canvas_format: input.canvasFormat,
+        template_theme: input.templateTheme,
+        template_id: input.templateId || null,
+        flights: input.flights || [],
+        hotels: input.hotels || [],
+        itinerary: input.itinerary || [],
+        transfers: input.transfers || [],
+        tours: input.tours || [],
+        rooms: input.rooms || [],
+        includes: includesList,
+        excludes: excludesList,
+        pricing: initialPricing,
+        special_notes: input.initialNotes?.trim() || null,
+      });
+
+      try {
+        const { data: quoteInserted, error: qErr } = await supabase
+          .from("quotes")
+          .insert({
+            id: insertedId ? insertedId : undefined,
+            store_id: effectiveStoreId,
+            quote_number: quoteNumber,
+            customer_id: input.customerId || null,
+            guest_name: clientName,
+            guest_phone: clientWhatsapp,
+            guest_email: input.clientEmail?.trim() || null,
+            valid_until: validUntilDate.toISOString(),
+            internal_notes: title,
+            conditions: conditionsMeta,
+            subtotal_cents: calculatedTotal,
+            total_cents: calculatedTotal,
+            discount_cents: 0,
+            status: "draft",
+            created_by: identity?.id || null,
+          })
+          .select("id")
+          .single();
+
+        if (!insertedId && quoteInserted?.id) {
+          insertedId = quoteInserted.id;
+        }
+      } catch (e) {
+        console.warn("[travel-proposal] Notice on quotes insert:", e);
+      }
+
+      if (!insertedId) {
+        insertedId = "prop_" + Date.now();
+      }
+
+      // 3. Sincronização sistêmica com leads_crm
+      if (input.leadId) {
+        try {
+          const { data: leadRow } = await supabase
+            .from("leads_crm")
+            .select("checklist")
+            .eq("id", input.leadId)
+            .maybeSingle();
+
+          let updatedChecklist = leadRow?.checklist || [];
+          if (Array.isArray(updatedChecklist)) {
+            updatedChecklist = updatedChecklist.map((item: any) =>
+              item.id === "item-3" || item.text?.toLowerCase().includes("proposta")
+                ? { ...item, done: true }
+                : item,
+            );
+          }
+
+          await supabase
+            .from("leads_crm")
+            .update({
+              status: "proposal",
+              checklist: updatedChecklist,
+              updated_at: new Date().toISOString(),
+              last_contacted_at: new Date().toISOString(),
+            })
+            .eq("id", input.leadId);
+        } catch (leadErr) {
+          console.warn("[travel-proposal] Erro ao sincronizar lead status:", leadErr);
+        }
+      }
+
+      // 4. Disparo transacional via WhatsApp Cloud API (se configurado na loja)
+      if (effectiveStoreId && clientWhatsapp) {
+        const cleanPhone = clientWhatsapp.replace(/\D/g, "");
+        if (cleanPhone.length >= 10) {
+          const publicUrl = `https://app.usewaesy.com/proposta/${publicToken}`;
+          const messageText = `Olá ${clientName}! Sua proposta de viagem para *${destinationCity}* foi gerada com sucesso pela agência.\n\nVocê pode visualizá-la, conferir o roteiro e aprovar online pelo link:\n${publicUrl}`;
+          sendWhatsAppNotification({
+            storeId: effectiveStoreId,
+            recipientPhone: cleanPhone,
+            messageText,
+          }).catch((err) => {
+            console.warn("[travel-proposal] WhatsApp Cloud notification warning:", err?.message);
+          });
+        }
+      }
+
+      return { success: true, id: insertedId, publicToken };
+    },
+  );
 
 // ─── 2. Buscar Proposta por ID (Painel / Workspace) ───────────────────────────
 
@@ -598,13 +648,16 @@ export const getTravelProposalById = createServerFn({ method: "GET" })
   .validator(z.object({ id: z.string().min(1) }))
   .handler(async ({ data }): Promise<TravelProposalDTO | null> => {
     const supabase = getServerClient();
+    const { requireStaff } = await import("@/lib/server-access");
+    const identity = await requireStaff();
 
     // 1. Busca prioritária em travel_proposals
     try {
       const { data: propRow } = await supabase
         .from("travel_proposals")
         .select("*, stores(name, logo_url, settings)")
-        .or(`id.eq.${data.id},public_token.eq.${data.id}`)
+        .eq("store_id", identity.store_id)
+        .eq("id", data.id)
         .maybeSingle();
 
       if (propRow) {
@@ -617,6 +670,7 @@ export const getTravelProposalById = createServerFn({ method: "GET" })
       const { data: row } = await supabase
         .from("quotes")
         .select("*, stores(name, logo_url, settings)")
+        .eq("store_id", identity.store_id)
         .eq("id", data.id)
         .maybeSingle();
 
@@ -646,7 +700,9 @@ export const updateTravelProposal = createServerFn({ method: "POST" })
         travel_end_date: z.string().optional().nullable(),
         adults_count: z.number().optional(),
         children_count: z.number().optional(),
-        canvas_format: z.enum(["a4-portrait", "a4-landscape", "story-916", "presentation-169", "letter-portrait"]).optional(),
+        canvas_format: z
+          .enum(["a4-portrait", "a4-landscape", "story-916", "presentation-169", "letter-portrait"])
+          .optional(),
         template_theme: z.string().optional(),
         flights: z.array(z.any()).optional(),
         hotels: z.array(z.any()).optional(),
@@ -661,17 +717,20 @@ export const updateTravelProposal = createServerFn({ method: "POST" })
         status: z.enum(["draft", "sent", "approved", "rejected", "expired"]).optional(),
         valid_until: z.string().optional().nullable(),
       }),
-    })
+    }),
   )
   .handler(async ({ data }): Promise<{ success: boolean }> => {
     const supabase = getServerClient();
+    const { requireStaff } = await import("@/lib/server-access");
+    const identity = await requireStaff();
 
     const rawPricing = data.patch.pricing || {};
-    const totalCents = Number(
-      rawPricing.total_price_cents ??
-      rawPricing.total_cents ??
-      (Number(rawPricing.base_price_cents || 0) + Number(rawPricing.boarding_tax_cents || 0))
-    ) || undefined;
+    const totalCents =
+      Number(
+        rawPricing.total_price_cents ??
+          rawPricing.total_cents ??
+          Number(rawPricing.base_price_cents || 0) + Number(rawPricing.boarding_tax_cents || 0),
+      ) || undefined;
 
     // 1. Atualiza na tabela travel_proposals se existir
     try {
@@ -683,10 +742,13 @@ export const updateTravelProposal = createServerFn({ method: "POST" })
       if (data.patch.client_name) propPatch.client_name = data.patch.client_name;
       if (data.patch.client_whatsapp) propPatch.client_whatsapp = data.patch.client_whatsapp;
       if (data.patch.client_email !== undefined) propPatch.client_email = data.patch.client_email;
-      if (data.patch.travel_start_date !== undefined) propPatch.travel_start_date = data.patch.travel_start_date;
-      if (data.patch.travel_end_date !== undefined) propPatch.travel_end_date = data.patch.travel_end_date;
+      if (data.patch.travel_start_date !== undefined)
+        propPatch.travel_start_date = data.patch.travel_start_date;
+      if (data.patch.travel_end_date !== undefined)
+        propPatch.travel_end_date = data.patch.travel_end_date;
       if (data.patch.adults_count !== undefined) propPatch.adults_count = data.patch.adults_count;
-      if (data.patch.children_count !== undefined) propPatch.children_count = data.patch.children_count;
+      if (data.patch.children_count !== undefined)
+        propPatch.children_count = data.patch.children_count;
       if (data.patch.canvas_format) propPatch.canvas_format = data.patch.canvas_format;
       if (data.patch.flights) propPatch.flights = data.patch.flights;
       if (data.patch.hotels) propPatch.hotels = data.patch.hotels;
@@ -700,10 +762,14 @@ export const updateTravelProposal = createServerFn({ method: "POST" })
       const { error: updatePropErr } = await supabase
         .from("travel_proposals")
         .update(propPatch)
-        .or(`id.eq.${data.id},public_token.eq.${data.id}`);
+        .eq("store_id", identity.store_id)
+        .eq("id", data.id);
 
       if (updatePropErr) {
-        console.warn("[updateTravelProposal] Aviso ao atualizar travel_proposals:", updatePropErr.message);
+        console.warn(
+          "[updateTravelProposal] Aviso ao atualizar travel_proposals:",
+          updatePropErr.message,
+        );
       }
     } catch (err: any) {
       console.warn("[updateTravelProposal] Exceção ao atualizar travel_proposals:", err?.message);
@@ -714,6 +780,7 @@ export const updateTravelProposal = createServerFn({ method: "POST" })
       const { data: currentQuote } = await supabase
         .from("quotes")
         .select("conditions, guest_name, guest_phone, total_cents")
+        .eq("store_id", identity.store_id)
         .eq("id", data.id)
         .maybeSingle();
 
@@ -738,7 +805,11 @@ export const updateTravelProposal = createServerFn({ method: "POST" })
         if (data.patch.title) quotePatch.internal_notes = data.patch.title;
         if (data.patch.status) quotePatch.status = data.patch.status;
 
-        const { error: quoteUpdateErr } = await supabase.from("quotes").update(quotePatch).eq("id", data.id);
+        const { error: quoteUpdateErr } = await supabase
+          .from("quotes")
+          .update(quotePatch)
+          .eq("store_id", identity.store_id)
+          .eq("id", data.id);
         if (quoteUpdateErr) {
           console.warn("[updateTravelProposal] Aviso ao atualizar quotes:", quoteUpdateErr.message);
         }
@@ -762,7 +833,7 @@ export const getPublicTravelProposalByToken = createServerFn({ method: "GET" })
       const { data: propRow } = await supabase
         .from("travel_proposals")
         .select("*, stores(name, logo_url, settings)")
-        .or(`public_token.eq.${data.token},id.eq.${data.token}`)
+        .eq("public_token", data.token)
         .maybeSingle();
 
       if (propRow) {
@@ -794,7 +865,7 @@ export const getPublicTravelProposalByToken = createServerFn({ method: "GET" })
       const match = (rows || []).find((r: any) => {
         try {
           const meta = JSON.parse(r.conditions || "{}");
-          return meta.public_token === data.token || r.id === data.token;
+          return meta.public_token === data.token;
         } catch (_) {
           return false;
         }
@@ -815,25 +886,45 @@ export const approveTravelProposal = createServerFn({ method: "POST" })
     z.object({
       token: z.string().min(1),
       notes: z.string().optional(),
-    })
+    }),
   )
   .handler(async ({ data }): Promise<{ success: boolean; message: string }> => {
     const supabase = getServerClient();
 
-    // 1. Localiza a proposta pelo token público ou ID
-    let proposalId = data.token;
+    // 1. Localiza a proposta exclusivamente pelo token público
+    let proposalId: string | null = null;
     let storeId: string | undefined;
 
     try {
       const { data: propRow } = await supabase
         .from("travel_proposals")
-        .select("id, store_id, title")
-        .or(`public_token.eq.${data.token},id.eq.${data.token}`)
+        .select("id, store_id, title, public_token, snapshot_hash")
+        .eq("public_token", data.token)
         .maybeSingle();
 
       if (propRow) {
         proposalId = propRow.id;
         storeId = propRow.store_id;
+        try {
+          const acceptanceHash = propRow.snapshot_hash || `legacy-proposal-${propRow.id}`;
+          await supabase.rpc(
+            "record_travel_proposal_acceptance" as never,
+            {
+              p_proposal_id: propRow.id,
+              p_public_token: propRow.public_token,
+              p_snapshot_hash: acceptanceHash,
+              p_idempotency_key: `public-acceptance:${propRow.id}`,
+              p_accepted_by_name: null,
+              p_accepted_by_email: null,
+              p_terms_version: "travel-v1",
+            } as never,
+          );
+        } catch (acceptanceErr: any) {
+          console.warn(
+            "[approveTravelProposal] Registro canônico de aceite indisponível:",
+            acceptanceErr?.message,
+          );
+        }
         await supabase
           .from("travel_proposals")
           .update({
@@ -844,7 +935,30 @@ export const approveTravelProposal = createServerFn({ method: "POST" })
           .eq("id", propRow.id);
       }
     } catch (err: any) {
-      console.warn("[approveTravelProposal] Aviso na atualização de travel_proposals:", err?.message);
+      console.warn(
+        "[approveTravelProposal] Aviso na atualização de travel_proposals:",
+        err?.message,
+      );
+    }
+
+    if (!proposalId) {
+      try {
+        const { data: legacyQuote } = await supabase
+          .from("quotes")
+          .select("id, store_id, conditions")
+          .ilike("conditions", `%,\"public_token\":\"${data.token}\"%`)
+          .maybeSingle();
+        if (legacyQuote) {
+          proposalId = legacyQuote.id;
+          storeId = legacyQuote.store_id;
+        }
+      } catch (err: any) {
+        console.warn("[approveTravelProposal] Aviso ao localizar cotação legada:", err?.message);
+      }
+    }
+
+    if (!proposalId) {
+      return { success: false, message: "Token público inválido ou expirado." };
     }
 
     // 2. Atualiza na tabela quotes
@@ -863,6 +977,7 @@ export const approveTravelProposal = createServerFn({ method: "POST" })
             status: "approved",
             updated_at: new Date().toISOString(),
           })
+          .eq("store_id", quoteRow.store_id)
           .eq("id", quoteRow.id);
       }
     } catch (err: any) {
@@ -879,12 +994,16 @@ export const approveTravelProposal = createServerFn({ method: "POST" })
         },
       });
     } catch (lifecycleErr: any) {
-      console.warn("[approveTravelProposal] Aviso na conversão sistêmica do ciclo de vida:", lifecycleErr?.message);
+      console.warn(
+        "[approveTravelProposal] Aviso na conversão sistêmica do ciclo de vida:",
+        lifecycleErr?.message,
+      );
     }
 
     return {
       success: true,
-      message: "Proposta aprovada com sucesso! A agência entrará em contato para emissão dos vouchers e confirmação dos serviços.",
+      message:
+        "Proposta aprovada com sucesso! A agência entrará em contato para emissão dos vouchers e confirmação dos serviços.",
     };
   });
 
@@ -897,14 +1016,18 @@ export const listAgencyTravelProposals = createServerFn({ method: "GET" })
         status: z.string().optional(),
         search: z.string().optional(),
       })
-      .optional()
+      .optional(),
   )
   .handler(async ({ data }): Promise<TravelProposalDTO[]> => {
     const supabase = getServerClient();
     const identity = await getServerIdentity().catch(() => null);
     let effectiveStoreId = identity?.store_id;
     if (!effectiveStoreId) {
-      const { data: firstStore } = await supabase.from("stores").select("id").limit(1).maybeSingle();
+      const { data: firstStore } = await supabase
+        .from("stores")
+        .select("id")
+        .limit(1)
+        .maybeSingle();
       effectiveStoreId = firstStore?.id;
     }
 
@@ -927,7 +1050,9 @@ export const listAgencyTravelProposals = createServerFn({ method: "GET" })
       }
 
       if (data?.search) {
-        q = q.or(`client_name.ilike.%${data.search}%,destination_city.ilike.%${data.search}%,title.ilike.%${data.search}%`);
+        q = q.or(
+          `client_name.ilike.%${data.search}%,destination_city.ilike.%${data.search}%,title.ilike.%${data.search}%`,
+        );
       }
 
       const { data: tpRows } = await q;
@@ -970,7 +1095,11 @@ export const listAgencyTravelProposals = createServerFn({ method: "GET" })
             if (seenIds.has(row.id) || (token && seenIds.has(token))) {
               continue;
             }
-            if (token?.startsWith("prop_") || meta.destination_city || row.internal_notes?.toLowerCase().includes("proposta")) {
+            if (
+              token?.startsWith("prop_") ||
+              meta.destination_city ||
+              row.internal_notes?.toLowerCase().includes("proposta")
+            ) {
               results.push(rowToProposalDTO(row));
               seenIds.add(row.id);
               if (token) seenIds.add(token);
@@ -1039,7 +1168,10 @@ export const deleteTravelProposal = createServerFn({ method: "POST" })
         .or(`id.eq.${data.id},public_token.eq.${data.id}`);
 
       if (propDelErr) {
-        console.warn("[deleteTravelProposal] Aviso ao excluir de travel_proposals:", propDelErr.message);
+        console.warn(
+          "[deleteTravelProposal] Aviso ao excluir de travel_proposals:",
+          propDelErr.message,
+        );
       }
     } catch (err: any) {
       console.warn("[deleteTravelProposal] Exceção ao excluir de travel_proposals:", err?.message);
@@ -1064,7 +1196,7 @@ export const generateProposalCoverAI = createServerFn({ method: "POST" })
     z.object({
       prompt: z.string().min(1),
       proposalId: z.string().optional(),
-    })
+    }),
   )
   .handler(async ({ data: { prompt } }): Promise<{ url: string }> => {
     return { url: "/brand-logo.png" };
@@ -1076,10 +1208,15 @@ export const AskProposalSalesAdvisorInputSchema = z.object({
   token: z.string().min(1),
   question: z.string().min(1),
   currentOptionId: z.string().optional(),
-  conversationHistory: z.array(z.object({
-    role: z.enum(["user", "assistant"]),
-    content: z.string(),
-  })).optional().default([]),
+  conversationHistory: z
+    .array(
+      z.object({
+        role: z.enum(["user", "assistant"]),
+        content: z.string(),
+      }),
+    )
+    .optional()
+    .default([]),
 });
 
 export const askProposalSalesAdvisorAI = createServerFn({ method: "POST" })
@@ -1090,15 +1227,20 @@ export const askProposalSalesAdvisorAI = createServerFn({ method: "POST" })
       throw new Error("Proposta não encontrada.");
     }
 
-    const optionsSummary = (proposal.options && proposal.options.length > 0)
-      ? proposal.options.map((opt, idx) => `
+    const optionsSummary =
+      proposal.options && proposal.options.length > 0
+        ? proposal.options
+            .map(
+              (opt, idx) => `
 Opção ${idx + 1}: ${opt.name} ${opt.is_recommended ? "(RECOMENDADA PELA AGÊNCIA)" : ""}
 - Hotel: ${opt.hotel_name || opt.hotels?.[0]?.hotel_name || "Hotel Selecionado"} (${opt.meal_plan || "Regime informado"})
 - Aéreo: ${opt.airline || opt.flights?.[0]?.airline || "Voo Incluso"}
-- Valor Total: R$ ${((opt.pricing?.total_price_cents || 0) / 100).toFixed(2)} (${opt.pricing?.installments_options?.[1]?.installments_count || 10}x de R$ ${(((opt.pricing?.installments_options?.[1]?.installment_value_cents || 0) / 100).toFixed(2))})
+- Valor Total: R$ ${((opt.pricing?.total_price_cents || 0) / 100).toFixed(2)} (${opt.pricing?.installments_options?.[1]?.installments_count || 10}x de R$ ${((opt.pricing?.installments_options?.[1]?.installment_value_cents || 0) / 100).toFixed(2)})
 - Inclusões: ${(opt.includes || []).join(", ")}
-`).join("\n")
-      : `
+`,
+            )
+            .join("\n")
+        : `
 Opção Única:
 - Destino: ${proposal.destination_city}
 - Datas: ${proposal.travel_start_date || "A definir"} a ${proposal.travel_end_date || "A definir"}
@@ -1126,7 +1268,9 @@ DIRETRIZES FUNDAMENTAIS DO CONSULTOR:
 7. Finalize encorajando o cliente a garantir a vaga ou tirar dúvidas finais pelo WhatsApp da agência (${proposal.agency_whatsapp}).
 Mantenha a resposta concisa, bem formatada com tópicos e agradável de ler em smartphones.`;
 
-    const historyMessages = data.conversationHistory.map((m) => `${m.role === "user" ? "Viajante" : "Consultor"}: ${m.content}`).join("\n");
+    const historyMessages = data.conversationHistory
+      .map((m) => `${m.role === "user" ? "Viajante" : "Consultor"}: ${m.content}`)
+      .join("\n");
     const userPrompt = `${historyMessages ? `${historyMessages}\n` : ""}Viajante: ${data.question}`;
 
     const aiResponse = await executeUnifiedAiCall({
@@ -1138,7 +1282,8 @@ Mantenha a resposta concisa, bem formatada com tópicos e agradável de ler em s
     });
 
     return {
-      reply: aiResponse.text || "Estou à disposição para tirar qualquer dúvida sobre esta viagem incrível!",
+      reply:
+        aiResponse.text ||
+        "Estou à disposição para tirar qualquer dúvida sobre esta viagem incrível!",
     };
   });
-

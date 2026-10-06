@@ -1,0 +1,65 @@
+# SPEC-20261006 — Shell visual nativo e breakpoint canônico
+
+## Objetivo
+
+Eliminar a divergência entre o breakpoint visual normativo do Waesy (`expanded >= 840px`) e as classes Tailwind `lg` (`>= 1024px`) no shell operacional, impedindo que navegação móvel, gatilhos de Sheet e identificação compacta sejam renderizados em desktops pequenos.
+
+## Escopo autorizado
+
+- `src/styles.css`
+- `src/components/workspace/workspace-shell.tsx`
+- `docs/design/DECISIONS.md`
+- `docs/design/LINT_DASHBOARD.md` (gerado pelo gate)
+
+Não alterar rotas de negócio, loaders, services ou contratos de dados nesta frente.
+
+## Requisitos EARS
+
+- **R1 — Breakpoint:** Quando a viewport tiver largura `>= 840px`, o shell deverá renderizar somente sidebar e navegação expandida, ocultando controles compactos e a barra inferior móvel.
+- **R2 — Compacto/médio:** Quando a viewport tiver largura `< 840px`, o shell deverá manter o menu de Sheet e a navegação inferior, sem exibir sidebar expandida.
+- **R3 — Fonte única:** Os breakpoints deverão ser declarados uma única vez em `src/styles.css` como utilitários canônicos derivados dos tokens `--breakpoint-*`; componentes não poderão criar valores arbitrários de breakpoint.
+- **R4 — Acessibilidade:** Todo controle mantido nesta alteração deverá preservar alvo mínimo de 44px no compacto/médio e foco visível.
+- **R5 — Antijank:** A troca de classe responsiva não poderá depender de `window.innerWidth` no componente nem introduzir animação de layout.
+- **R6 — Design silencioso:** A alteração não poderá adicionar gradiente, sombra decorativa, cor literal ou classe Tailwind arbitrária.
+
+## Invariantes
+
+- `compact = 0..599px`
+- `medium = 600..839px`
+- `expanded = >= 840px`
+- Nenhuma regra de negócio é movida para o CSS.
+- Nenhum acesso a banco ou service é alterado.
+
+## Evidências de aceite
+
+1. Teste unitário existente de `use-mobile` permanece verde.
+2. `npm run lint:design -- --changed` não introduz novas violações no escopo.
+3. `npm run check:tokens` permanece verde.
+4. `npm run build` conclui ou reporta exclusivamente bloqueios previamente catalogados.
+5. Snapshot/inspeção estática confirma ausência de `lg:hidden`/`hidden lg` no shell alterado quando o comportamento significa `< 840px`.
+6. Decisão arquitetural registrada em `docs/design/DECISIONS.md`.
+
+## Fases posteriores
+
+- F2: substituir progressivamente `lg` divergente em componentes de workspace e módulos de dados.
+- F3: reduzir DL-14/DL-15 e normalizar focus/touch targets.
+- F4: remover classes arbitrárias, gradientes, sombras e transições genéricas.
+- F5: completar a matriz loading/empty/error.
+- F6: preparar camada de nativização React Native/Expo, compartilhando tokens e contratos sem duplicar regra de negócio.
+
+
+## Lote F2 — Primitivas compartilhadas de workspace
+
+Esta frente autoriza também `src/components/workspace/workspace-sidebar-flyout.tsx`, `src/components/workspace/workspace-canonical-toolbar.tsx` e `src/components/layout/bottom-bar.tsx`. O objetivo é propagar a adaptação para tabelas, filtros e navegação sem corrigir rotas individualmente por substituição cega.
+
+Os componentes devem usar `waesy-compact-medium-only` para ações próprias de compact/medium e `waesy-expanded-flex` para superfícies expandidas. Elementos interativos devem ter foco visível e, no mínimo, 44px quando disponíveis em telas compactas/medium. `transition-all`, sombras em superfícies, cores literais, classes de valores arbitrários e `sm/md/lg` como substituto de 840px devem ser removidos somente quando o comportamento semântico estiver preservado.
+
+
+## Lote F3 — Superfícies operacionais turísticas
+
+O lote seguinte inclui `workspace.turismo.grupos.index.tsx` e `workspace.turismo.contratos.index.tsx`. Grades de cartões devem bifurcar em uma coluna no compacto, duas no medium e três no expandido a partir de 840px, usando utilitário semântico compartilhado. Barras de progresso devem animar somente a propriedade de largura por utilitário próprio, sem `transition-all`. Ações devem manter alvo mínimo de 44px em todas as janelas compactas e medium, sem sombra decorativa em cartões ou botões.
+
+
+## Lote F4 — Propostas, vouchers e embarques
+
+A frente F4 inclui as telas de lista e detalhe de propostas, vouchers e embarques. O editor de propostas deverá separar o painel lateral expandido do editor em Sheet compact/medium a partir de 840px, sem `md/lg` como fronteira. Vouchers e listas de embarque devem usar `waesy-card-grid` e estados estruturais de carregamento. Sheets operacionais devem usar `waesy-sheet-responsive`, com largura total e altura dinâmica em compact/medium, limite confortável no expandido e scroll interno único. Visualizadores documentais devem preservar overflow horizontal sem causar scroll global.

@@ -63,9 +63,9 @@ export function WorkspaceSidebarFlyout({
  <Link
  to={singleItem.path}
  className={cn(
- "group flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer",
+ "group flex min-h-11 items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
  isSingleActive
- ? "text-primary bg-primary/10 font-bold border border-primary/20 shadow-2xs"
+ ? "text-primary bg-primary/10 font-bold border border-primary/20"
  : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
  )}
  >
@@ -81,7 +81,7 @@ export function WorkspaceSidebarFlyout({
  {group.badge !== undefined && (
  <span
  className={cn(
- "px-2 py-1 rounded-md text-[10px] font-mono font-bold shrink-0",
+ "px-2 py-1 rounded-md text-xs font-mono font-bold shrink-0",
  isSingleActive
  ? "bg-primary/20 text-primary"
  : "bg-muted text-muted-foreground"
@@ -102,7 +102,7 @@ export function WorkspaceSidebarFlyout({
  type="button"
  onClick={onToggleExpand}
  className={cn(
- "flex w-full items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold transition-colors cursor-pointer",
+ "flex min-h-11 w-full items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
  isGroupActive
  ? "text-primary bg-primary/10 font-bold"
  : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
@@ -132,13 +132,13 @@ export function WorkspaceSidebarFlyout({
  key={item.path}
  to={item.path}
  className={cn(
- "flex items-center px-3 py-2 rounded-lg text-xs font-medium transition-colors",
+ "flex min-h-11 items-center px-3 py-2 rounded-lg text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
  isItemActive
  ? "bg-primary/10 text-primary font-bold border border-primary/20"
  : "text-muted-foreground hover:text-foreground hover:bg-muted/70"
  )}
  >
- <span className={cn("size-1.5 rounded-full mr-2 shrink-0 transition-all", isItemActive ? "bg-primary scale-100" : "bg-transparent scale-0")} />
+ <span className={cn("size-1.5 rounded-full mr-2 shrink-0 transition-transform", isItemActive ? "bg-primary scale-100" : "bg-transparent scale-0")} />
  <span>{item.label}</span>
  </Link>
  );
@@ -161,7 +161,7 @@ export function WorkspaceSidebarFlyout({
  type="button"
  onClick={onToggleExpand}
  className={cn(
- "group flex w-full items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer relative",
+ "group flex min-h-11 w-full items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold transition-colors cursor-pointer relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
  isGroupActive
  ? "text-primary bg-primary/10 font-bold"
  : "text-muted-foreground hover:text-foreground hover:bg-muted/60",
@@ -181,7 +181,7 @@ export function WorkspaceSidebarFlyout({
  {group.badge !== undefined && (
  <span
  className={cn(
- "px-2 py-1 rounded-md text-[9px] font-mono font-bold",
+ "px-2 py-1 rounded-md text-xs font-mono font-bold",
  isGroupActive
  ? "bg-primary/20 text-primary"
  : "bg-muted text-muted-foreground"
@@ -214,15 +214,15 @@ export function WorkspaceSidebarFlyout({
  key={item.path}
  to={item.path}
  className={cn(
- "flex items-center px-3 py-2 rounded-lg text-xs font-medium transition-all",
+ "flex min-h-11 items-center px-3 py-2 rounded-lg text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
  isItemActive
- ? "bg-primary/10 text-primary font-bold border border-primary/20 shadow-2xs"
+ ? "bg-primary/10 text-primary font-bold border border-primary/20"
  : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
  )}
  >
  <span
  className={cn(
- "size-1.5 rounded-full mr-2 shrink-0 transition-all",
+ "size-1.5 rounded-full mr-2 shrink-0 transition-transform",
  isItemActive ? "bg-primary scale-100" : "bg-transparent scale-0"
  )}
  />
@@ -236,11 +236,11 @@ export function WorkspaceSidebarFlyout({
  {/* Flyout Flutuante à Direita (Hover / Apenas quando recolhido) */}
  {isFlyoutOpen && !isExpanded && (
  <div
- className="absolute left-full top-0 ml-2 w-56 rounded-lg border border-border/80 bg-background/98 backdrop-blur-xl shadow-xl p-2 z-50 animate-in fade-in-0 zoom-in-95 duration-150"
- style={{ minWidth: "220px" }}
+ className="absolute left-full top-0 ml-2 w-56 rounded-lg border border-border/80 bg-background/98 backdrop-blur-xl p-2 z-50 animate-in fade-in-0 zoom-in-95 duration-150"
+
  >
  <div className="px-3 py-2 pb-2 border-b border-border/40 mb-1">
- <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-muted-foreground block">
+ <span className="text-xs font-mono font-bold uppercase tracking-wider text-muted-foreground block">
  {group.label}
  </span>
  </div>
@@ -260,9 +260,9 @@ export function WorkspaceSidebarFlyout({
  to={item.path}
  onClick={() => setIsFlyoutOpen(false)}
  className={cn(
- "flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-all cursor-pointer",
+ "flex min-h-11 items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
  isItemActive
- ? "bg-primary/10 text-primary font-bold border border-primary/20 shadow-2xs"
+ ? "bg-primary/10 text-primary font-bold border border-primary/20"
  : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
  )}
  >
@@ -271,7 +271,7 @@ export function WorkspaceSidebarFlyout({
  ) : (
  <span
  className={cn(
- "size-1.5 rounded-full shrink-0 transition-all",
+ "size-1.5 rounded-full shrink-0 transition-transform",
  isItemActive ? "bg-primary scale-100" : "bg-muted-foreground/40 scale-75"
  )}
  />

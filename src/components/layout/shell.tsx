@@ -41,7 +41,7 @@ export const Shell = forwardRef<HTMLDivElement, ShellProps>(
 
         <div className="flex-1 flex w-full min-h-0">
           {sidebar && (
-            <aside className="hidden lg:flex flex-col w-64 shrink-0 border-r border-border/60 bg-card/40">
+            <aside className="hidden waesy-expanded-flex flex-col w-64 shrink-0 border-r border-border/60 bg-card/40">
               {sidebar}
             </aside>
           )}
