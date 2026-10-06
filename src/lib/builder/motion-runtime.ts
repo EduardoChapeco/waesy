@@ -12,8 +12,6 @@ const DURATION_CLASSES: Record<number, string> = {
   150: "duration-150",
   200: "duration-200",
   300: "duration-300",
-  500: "duration-500",
-  700: "duration-700",
 };
 
 function durationClass(durationMs?: number): string {
@@ -31,7 +29,7 @@ function durationClass(durationMs?: number): string {
 export function resolveStudioMotionClasses(config?: StudioMotionConfig): string {
   if (!config || config.trigger === "none") return "";
 
-  const classes = ["motion-safe:transition-[transform,opacity,box-shadow]", durationClass(config.durationMs)];
+  const classes = ["motion-safe:transition-transform motion-safe:transition-opacity", durationClass(config.durationMs)];
   const trigger = config.trigger;
 
   if (trigger === "fade_up") classes.push("motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-6 motion-safe:fill-mode-both");
@@ -41,9 +39,9 @@ export function resolveStudioMotionClasses(config?: StudioMotionConfig): string 
   if (trigger === "parallax") classes.push("motion-safe:hover:-translate-y-1 motion-safe:transition-transform");
   if (trigger === "stagger") classes.push("motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-4 motion-safe:fill-mode-both");
 
-  if (config.hover === "lift") classes.push("motion-safe:hover:-translate-y-1.5 motion-safe:hover:shadow-xl");
-  if (config.hover === "scale") classes.push("motion-safe:hover:scale-[1.015] motion-safe:transition-transform");
-  if (config.hover === "glow") classes.push("motion-safe:hover:ring-2 motion-safe:hover:ring-primary/40 motion-safe:hover:shadow-lg");
+  if (config.hover === "lift") classes.push("motion-safe:hover:-translate-y-1 motion-safe:hover:ring-2 motion-safe:hover:ring-primary/30");
+  if (config.hover === "scale") classes.push("motion-safe:hover:scale-105 motion-safe:transition-transform");
+  if (config.hover === "glow") classes.push("motion-safe:hover:ring-2 motion-safe:hover:ring-primary/40");
 
   return classes.join(" ");
 }

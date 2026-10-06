@@ -1,35 +1,35 @@
 {
   "version": "2.0.0",
-  "timestamp": "2026-10-06T19:13:35.494Z",
-  "inspectedFiles": 1906,
-  "totalViolations": 13972,
+  "timestamp": "2026-10-06T19:32:10.708Z",
+  "inspectedFiles": 1918,
+  "totalViolations": 13795,
   "summary": {
-    "totalViolations": 13972,
+    "totalViolations": 13795,
     "bySeverity": {
-      "P0": 1554,
-      "P1": 9724,
-      "P2": 1330,
-      "P3": 1364
+      "P0": 1528,
+      "P1": 9611,
+      "P2": 1313,
+      "P3": 1343
     },
     "byRule": {
       "DL-18": 1228,
-      "DL-02": 4602,
-      "DL-14": 2262,
-      "DL-28": 295,
-      "DL-15": 1551,
-      "DL-07": 489,
-      "DL-27": 1121,
-      "DL-30": 243,
-      "DL-26": 89,
-      "DL-01": 1011,
-      "DL-29": 122,
-      "DL-05": 136,
+      "DL-02": 4566,
+      "DL-14": 2223,
+      "DL-28": 291,
+      "DL-15": 1525,
+      "DL-07": 483,
+      "DL-27": 1104,
+      "DL-30": 239,
+      "DL-26": 87,
+      "DL-01": 981,
+      "DL-29": 119,
+      "DL-05": 134,
       "DL-23": 473,
       "DL-03": 120,
-      "DL-09": 14,
+      "DL-09": 8,
       "DL-08": 114,
       "DL-24": 2,
-      "DL-11": 25,
+      "DL-11": 23,
       "DL-12": 34,
       "DL-13": 11,
       "DL-25": 23,
@@ -38,11 +38,11 @@
     },
     "byModule": {
       "components/app": {
-        "total": 6145,
-        "P0": 651,
-        "P1": 4283,
-        "P2": 632,
-        "P3": 579
+        "total": 6086,
+        "P0": 635,
+        "P1": 4253,
+        "P2": 630,
+        "P3": 568
       },
       "components/builder": {
         "total": 136,
@@ -52,10 +52,10 @@
         "P3": 17
       },
       "components/chat": {
-        "total": 62,
+        "total": 46,
         "P0": 4,
-        "P1": 53,
-        "P2": 4,
+        "P1": 41,
+        "P2": 0,
         "P3": 1
       },
       "components/tourism": {
@@ -80,16 +80,16 @@
         "P3": 0
       },
       "lib": {
-        "total": 265,
+        "total": 256,
         "P0": 1,
-        "P1": 224,
-        "P2": 40,
+        "P1": 219,
+        "P2": 36,
         "P3": 0
       },
       "routes/admin": {
-        "total": 1049,
+        "total": 1045,
         "P0": 93,
-        "P1": 782,
+        "P1": 778,
         "P2": 51,
         "P3": 123
       },
@@ -108,17 +108,17 @@
         "P3": 9
       },
       "routes/workspace": {
-        "total": 2449,
-        "P0": 461,
-        "P1": 1584,
-        "P2": 118,
-        "P3": 286
+        "total": 2363,
+        "P0": 451,
+        "P1": 1522,
+        "P2": 114,
+        "P3": 276
       },
       "routes/store": {
-        "total": 1691,
+        "total": 1688,
         "P0": 161,
         "P1": 1126,
-        "P2": 160,
+        "P2": 157,
         "P3": 244
       },
       "services": {
@@ -143,8 +143,8 @@
         "P3": 0
       }
     },
-    "filesWithViolations": 872,
-    "filesCount": 1906
+    "filesWithViolations": 860,
+    "filesCount": 1918
   },
   "config": {
     "$schema": "https://json-schema.org/draft/2020-12/schema",

@@ -295,7 +295,7 @@ function AdvancedMarketplacePage() {
 
       <div className="px-4 sm:px-6 space-y-6 pt-3 sm:pt-5">
         {activeNiche !== "todos" && activeNicheConfig.targetRoute && (
-          <div className="flex items-center justify-between p-3 rounded-xl bg-card border border-border/80">
+          <div className="flex items-center justify-between p-3 rounded-lg bg-card border border-border/80">
             <span className="text-xs font-medium text-muted-foreground">Vitrine especializada disponível</span>
             <Link
               to={activeNicheConfig.targetRoute as any}
@@ -396,7 +396,7 @@ function AdvancedMarketplacePage() {
               </div>
 
               {productCards.length === 0 ? (
-                <div className="py-12 text-center bg-card rounded-xl border border-border/60 p-6">
+                <div className="py-12 text-center bg-card rounded-lg border border-border/60 p-6">
                   <EmptyState
                     title="Nenhum produto cadastrado neste nicho"
                     description="As lojas deste segmento estão atualizando seus estoques. Experimente selecionar outro nicho ou buscar pelo nome do item."
@@ -420,7 +420,7 @@ function AdvancedMarketplacePage() {
             </div>
 
             {productCards.length === 0 ? (
-              <div className="py-12 text-center bg-card rounded-xl border border-border/60 p-6">
+              <div className="py-12 text-center bg-card rounded-lg border border-border/60 p-6">
                 <EmptyState
                   title="Nenhum produto encontrado"
                   description="Verifique os termos de busca ou selecione outro nicho no menu superior."

@@ -16,7 +16,7 @@ describe("Omni AST → ExperienceNode adapter", () => {
           id: "hero-1",
           type: "hero_minimal_split",
           config: { title: "Título", imageUrl: "https://cdn.example.test/hero.webp", imageAlt: "Montanha ao amanhecer" },
-          styling: { backgroundColor: "#ffffff", textColor: "#111111", scrollAnimation: "fade", animationDelayMs: 300 },
+          styling: { backgroundColor: "var(--background)", textColor: "var(--foreground)", scrollAnimation: "fade", animationDelayMs: 300 },
           assetRefs: [{ asset_id: "asset-1", provider: "upload", provenance_state: "user-provided" }],
           isHidden: false,
         },
@@ -29,7 +29,7 @@ describe("Omni AST → ExperienceNode adapter", () => {
     expect(nodes[0].block_type).toBe(`${OMNI_EXPERIENCE_NODE_PREFIX}hero_minimal_split`);
     expect(nodes[0].sort_order).toBe(0);
     expect(nodes[0].content.title).toBe("Título");
-    expect(nodes[0].design_tokens.omniStyling.backgroundColor).toBe("#ffffff");
+    expect(nodes[0].design_tokens.omniStyling.backgroundColor).toBe("var(--background)");
     expect(nodes[0].design_tokens.animation.trigger).toBe("fade_up");
     expect((nodes[0] as any).asset_refs[0].asset_id).toBe("asset-1");
     expect(nodes[1].is_hidden).toBe(true);

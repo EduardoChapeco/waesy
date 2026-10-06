@@ -65,7 +65,8 @@ describe("Waesy Studio canonical contracts", () => {
   it("mantém motion não essencial dentro de motion-safe", () => {
     const classes = resolveStudioMotionClasses({ trigger: "fade_up", hover: "lift" });
     expect(classes).toContain("motion-safe:animate-in");
-    expect(classes).toContain("motion-safe:hover:-translate-y-1.5");
+    expect(classes).toContain("motion-safe:hover:-translate-y-1");
+    expect(classes).toContain("motion-safe:hover:ring-2");
     expect(classes).not.toContain("animate-in fade-in");
     expect(resolveStudioMotionClasses({ trigger: "none" })).toBe("");
   });

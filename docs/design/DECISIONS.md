@@ -2741,3 +2741,12 @@
 - **Decisão Adotada:** O painel lateral da proposta aparece apenas em expanded >= 840px; compact/medium usam `waesy-sheet-responsive`. Vouchers e listas usam `waesy-card-grid`. Calendário, Kanban e previews usam utilitários semânticos próprios. Células e cards interativos são focáveis por teclado. O PDF usa variáveis CSS vivas (`--background`, `--foreground`, `--border`, `--muted`) para conservar a fonte canônica.
 - **Fundamentação:** DESIGN.md C.8/C.10/C.11, Apple HIG, WCAG 2.2 AA, DL-14, DL-15, DL-28 e DL-30.
 - **Consequências:** Novos Sheets operacionais devem adotar `waesy-sheet-responsive`; visualizações horizontais devem encapsular overflow em utilitário semântico; não se deve reintroduzir `md/lg` para separar plataforma quando o shell do produto usa 840px.
+
+
+## DEC-192: Merge Completo de Produção e Hardening de Ações
+
+- **Data:** 2026-10-06
+- **Contexto:** `main` precisava absorver todas as melhorias salvas no GitHub, incluindo WhatsApp, Studio Omni, evolução turística e auditoria sistêmica de botões/ações sem quebrar os gates de produção.
+- **Decisão Adotada:** Integrar `origin/main`, `origin/feat/whatsapp-wave1-8-complete-release`, `origin/feat/waesy-studio-omni-audit` e `origin/feat/waesy-canonical-travel-evolution` em `main`; resolver conflitos preservando isolamento multi-tenant, contratos BFF e gates canônicos; endurecer o scanner de botões; padronizar primitivas compartilhadas; corrigir regressões visuais introduzidas pelos merges.
+- **Fundamentação:** AGENTS.md B.1, B.5, B.9, B.10 e B.11; SPEC-DESIGN-ACTIONS-HARDENING; piso WCAG 2.2 AA; deny-by-default; catraca visual.
+- **Consequências:** `main` local contém todas as branches remotas conhecidas, auditoria de botões fecha em P0/P1/P2 zero, build e testes passam localmente, e o relatório `docs/AUDITORIA_PRODUCAO_MAIN_2026-10-06.md` passa a ser a evidência de fechamento desta leva.
