@@ -8,9 +8,9 @@
 
 ## Veredito
 
-O trabalho histórico foi recuperado e publicado no branch do Waesy. Foram corrigidos problemas adicionais no Copilot, no viewer de artefactos, na persistência FSM e no gate de schema. O branch remoto confirmado mais recentemente é `9bbd33a18087c3b4d901cd4625f72c7475f2c54c`.
+O trabalho histórico foi recuperado e publicado no branch do Waesy. Foram corrigidos problemas adicionais no Copilot, no viewer de artefactos, na persistência FSM e no gate de schema. O SHA atualmente publicado deve ser confirmado diretamente no [PR #6](https://github.com/EduardoChapeco/waesy/pull/6), para evitar duplicar aqui um identificador que muda com cada commit documental.
 
-**Produção não está confirmada.** No estado mais recente observado em 2026-10-06 às 18:50 (UTC−03), o check **Cloudflare Pages falhou** e o check **CI Unificado — Waesy Quality Gates** ainda estava pendente. Não houve confirmação de deployment público. O OAuth do Wrangler iniciado anteriormente não terminou com uma sessão autenticada.
+**Produção não está confirmada.** Nas consultas ao PR durante esta tarefa, o check **Cloudflare Pages falhou** e o check **CI Unificado — Waesy Quality Gates** apareceu pendente/em execução nos commits mais recentes. Não houve confirmação de deployment público. O OAuth do Wrangler iniciado anteriormente não terminou com uma sessão autenticada.
 
 ## Alterações no Waesy
 
