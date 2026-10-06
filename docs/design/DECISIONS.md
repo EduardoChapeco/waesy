@@ -2451,3 +2451,11 @@
 - **Fundamentação**: AGENTS.md B.1 a B.12, DESIGN-LINT DL-14/DL-15, WCAG 2.2 AA e contrato Zero-Dead-Buttons.
 - **Consequências**: Auditoria semântica aprovada em 6.145 controles com 0 P0, 0 P1 e 0 P2; auditorias forenses legadas reportam 0 fake buttons, 0 empty handlers, 0 orphan buttons e 0 silent catch mutations.
 
+
+
+## DEC-187: Motor Canônico de Conflitos Documentais em Turismo
+- **Data:** 2026-10-06
+- **Contexto:** Confirmações, contratos, recibos, vouchers e orçamentos de operadoras diferentes apresentam campos equivalentes com layouts, nomes, granularidade e valores divergentes. O pipeline OCR existente persistia a extração, mas não comparava fontes nem mantinha decisão humana por campo.
+- **Decisão Adotada:** Criar resolver puro determinístico com normalização semântica, domínio de conflito, severidade, precedência sugerida por domínio, fingerprint idempotente e candidatos com evidência. Persistir conflitos em `travel_document_conflicts`, decisões append-only em `travel_document_conflict_resolutions`, aplicar RLS por loja e expor análise/listagem/resolução via Server Functions. A bancada OCR passa a permitir analisar fontes vinculadas a uma viagem e escolher explicitamente a fonte vencedora.
+- **Fundamentação:** AGENTS.md B.1, B.5, B.9, B.11, B.25; DESIGN.md C.1, C.2, C.7; integridade financeira, jurídica e operacional multi-tenant; preservação de evidência original.
+- **Consequências:** Nenhum valor crítico é sobrescrito silenciosamente; reanálises preservam decisões resolvidas; o fluxo JSON canônico passa a documentar reservas, passageiros, serviços, pagamentos, conflitos e auditoria. A migration deve ser aplicada no Supabase antes do uso em produção.

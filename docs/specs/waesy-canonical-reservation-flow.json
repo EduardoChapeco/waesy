@@ -1,0 +1,139 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://waesy.app/schemas/canonical-reservation-flow.json",
+  "title": "Waesy Canonical Reservation Flow",
+  "version": "1.0.0",
+  "description": "Modelo canônico para consolidar documentos de operadoras em uma operação turística auditável.",
+  "flow": [
+    "document_received",
+    "document_classified",
+    "extraction_created",
+    "sources_linked",
+    "fields_normalized",
+    "conflicts_detected",
+    "human_review",
+    "canonical_operation_updated",
+    "proposal_or_contract_rendered",
+    "payment_reconciled",
+    "voucher_and_boarding_updated",
+    "archived_with_audit"
+  ],
+  "entities": {
+    "operation": {
+      "type": "object",
+      "required": ["tenant_id", "operation_key", "status", "documents", "passengers", "payments"],
+      "properties": {
+        "tenant_id": { "type": "string", "format": "uuid" },
+        "operation_key": { "type": "string" },
+        "reservation_ids": { "type": "array", "items": { "type": "string" } },
+        "voucher_ids": { "type": "array", "items": { "type": "string" } },
+        "locators": { "type": "array", "items": { "type": "string" } },
+        "status": { "enum": ["lead", "quoted", "reserved", "confirmed", "in_trip", "completed", "cancelled", "archived"] },
+        "lead_id": { "type": ["string", "null"], "format": "uuid" },
+        "proposal_id": { "type": ["string", "null"], "format": "uuid" },
+        "trip_id": { "type": ["string", "null"], "format": "uuid" },
+        "documents": { "type": "array", "items": { "$ref": "#/$defs/document" } },
+        "passengers": { "type": "array", "items": { "$ref": "#/$defs/passenger" } },
+        "services": { "type": "array", "items": { "$ref": "#/$defs/service" } },
+        "payments": { "type": "array", "items": { "$ref": "#/$defs/payment" } },
+        "conflicts": { "type": "array", "items": { "$ref": "#/$defs/conflict" } },
+        "audit": { "$ref": "#/$defs/audit" }
+      }
+    }
+  },
+  "$defs": {
+    "document": {
+      "type": "object",
+      "required": ["ingestion_id", "kind", "sha256", "extraction", "evidence"],
+      "properties": {
+        "ingestion_id": { "type": "string", "format": "uuid" },
+        "kind": { "enum": ["operator_quote", "reservation_confirmation", "payment_receipt", "contract", "voucher", "operator_contact", "other"] },
+        "operator": { "type": ["string", "null"] },
+        "file_name": { "type": ["string", "null"] },
+        "sha256": { "type": ["string", "null"] },
+        "issued_at": { "type": ["string", "null"], "format": "date-time" },
+        "extraction": { "type": "object" },
+        "evidence": { "type": "array", "items": { "$ref": "#/$defs/evidence" } }
+      }
+    },
+    "passenger": {
+      "type": "object",
+      "required": ["full_name"],
+      "properties": {
+        "full_name": { "type": "string" },
+        "normalized_name": { "type": "string" },
+        "document": { "type": ["string", "null"] },
+        "birth_date": { "type": ["string", "null"], "format": "date" },
+        "age": { "type": ["integer", "null"] },
+        "category": { "type": ["string", "null"] },
+        "payer": { "type": "boolean" },
+        "relationship": { "type": ["string", "null"] },
+        "source_refs": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "service": {
+      "type": "object",
+      "required": ["type", "status"],
+      "properties": {
+        "type": { "enum": ["hotel", "flight", "transfer", "tour", "insurance", "other"] },
+        "status": { "type": "string" },
+        "supplier": { "type": ["string", "null"] },
+        "locator": { "type": ["string", "null"] },
+        "start_at": { "type": ["string", "null"], "format": "date-time" },
+        "end_at": { "type": ["string", "null"], "format": "date-time" },
+        "details": { "type": "object" },
+        "source_refs": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "payment": {
+      "type": "object",
+      "required": ["kind", "amount_cents", "currency", "status"],
+      "properties": {
+        "kind": { "enum": ["charge", "installment_plan", "installment", "refund", "fee", "commission"] },
+        "payer_id": { "type": ["string", "null"] },
+        "method": { "type": ["string", "null"] },
+        "amount_cents": { "type": "integer", "minimum": 0 },
+        "installment_count": { "type": ["integer", "null"], "minimum": 1 },
+        "installment_number": { "type": ["integer", "null"], "minimum": 1 },
+        "currency": { "type": "string" },
+        "status": { "enum": ["planned", "pending", "paid", "partially_paid", "refunded", "cancelled", "unknown"] },
+        "due_at": { "type": ["string", "null"], "format": "date-time" },
+        "paid_at": { "type": ["string", "null"], "format": "date-time" },
+        "source_refs": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "conflict": {
+      "type": "object",
+      "required": ["field_path", "severity", "status", "candidates"],
+      "properties": {
+        "field_path": { "type": "string" },
+        "domain": { "enum": ["identity", "operational", "financial", "legal", "commercial", "other"] },
+        "severity": { "enum": ["low", "medium", "high", "critical"] },
+        "status": { "enum": ["open", "suggested", "resolved", "dismissed"] },
+        "suggested_source_id": { "type": ["string", "null"] },
+        "suggested_value": {},
+        "candidates": { "type": "array", "items": { "type": "object" } },
+        "resolution": { "type": ["object", "null"] }
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "required": ["path", "value"],
+      "properties": {
+        "path": { "type": "string" },
+        "page": { "type": ["integer", "null"] },
+        "quote": { "type": ["string", "null"] },
+        "value": {},
+        "confidence": { "type": ["number", "null"], "minimum": 0, "maximum": 1 }
+      }
+    },
+    "audit": {
+      "type": "object",
+      "required": ["created_at", "events"],
+      "properties": {
+        "created_at": { "type": "string", "format": "date-time" },
+        "events": { "type": "array", "items": { "type": "object" } }
+      }
+    }
+  }
+}
