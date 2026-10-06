@@ -8,10 +8,12 @@
  */
 
 import { createServerFn } from "@tanstack/react-start";
+import crypto from "node:crypto";
 import { z } from "zod";
 import { executeUnifiedAiCall } from "@/services/api-orchestrator.functions";
 import { getServerClient } from "@/lib/supabase";
 import { getServerIdentity } from "@/lib/server-access";
+import { extractDocumentMechanically } from "./mechanical-document-extractor.server";
 import type {
   CompanionCardNiche,
   CompanionCardSectionItem,
@@ -75,6 +77,8 @@ export interface UniversalOcrResult {
   confidence: "high" | "medium" | "low";
 }
 
+export type UniversalOcrMimeType = "application/pdf" | "image/jpeg" | "image/png" | "image/webp" | "image/tiff";
+
 const SYSTEM_INSTRUCTION_OCR = `Você é um motor especializado de OCR e Extração de Documentos da Plataforma Waesy.
 Analise os documentos fornecidos (vouchers de turismo, passagens aéreas, reservas de hotel, contratos de locação, fichas de serviço, vistorias).
 Extraia e retorne EXCLUSIVAMENTE um JSON estruturado com as propriedades:
@@ -96,9 +100,9 @@ Extraia e retorne EXCLUSIVAMENTE um JSON estruturado com as propriedades:
 - confidence: "high" | "medium" | "low"`;
 
 const FileItemSchema = z.object({
-  base64: z.string(),
-  mimeType: z.string().default("application/pdf"),
-  name: z.string().optional(),
+  base64: z.string().min(16).max(35_000_000),
+  mimeType: z.enum(["application/pdf", "image/jpeg", "image/png", "image/webp", "image/tiff"]).default("application/pdf"),
+  name: z.string().max(255).optional(),
 });
 
 export const parseUniversalDocumentOCR = createServerFn({ method: "POST" })
@@ -116,11 +120,29 @@ export const parseUniversalDocumentOCR = createServerFn({ method: "POST" })
     const { files, nicheHint, contextHint } = input;
     const validatedNiche = validateNiche(nicheHint, "tourism");
 
+    // Primeira etapa sempre mecânica: texto pesquisável não deve ser reenviado
+    // como imagem a um provider caro. O arquivo original continua preservado
+    // pelo fluxo de artefatos/documentos; aqui apenas extraímos uma visão de trabalho.
+    const mechanical = await Promise.all(
+      files.slice(0, 5).map((file) =>
+        extractDocumentMechanically({ base64: file.base64, mimeType: file.mimeType, name: file.name }),
+      ),
+    );
+    const mechanicalText = mechanical
+      .map((result, index) => result.text ? `\n[Arquivo ${files[index].name || index + 1}]\n${result.text}` : "")
+      .join("\n")
+      .slice(0, 40_000);
+    const allMechanicallyReadable = mechanical.length > 0 && mechanical.every((result) => !result.needsVisionModel && result.text.length >= 40);
+
     // Tokenomics: Cobra tokens via Tollbooth ACID se executado no contexto de loja/agência
     const identity = await getServerIdentity().catch(() => null);
     if (identity?.store_id) {
       const db = getServerClient();
-      const idempotencyKey = `ocr_${identity.store_id}_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+      const fingerprint = crypto.createHash("sha256")
+        .update(files.map((file) => `${file.mimeType}:${file.name || ""}:${file.base64}`).join("|"))
+        .update(`|${nicheHint}|${contextHint || ""}`)
+        .digest("hex");
+      const idempotencyKey = `ocr_${identity.store_id}_${fingerprint}`;
       const { data: chargeRes, error: chargeErr } = await db.rpc("charge_token_tollbooth", {
         p_store_id: identity.store_id,
         p_tokens_to_consume: 5,
@@ -146,14 +168,16 @@ export const parseUniversalDocumentOCR = createServerFn({ method: "POST" })
     try {
       const aiRes = await executeUnifiedAiCall({
         systemInstruction: SYSTEM_INSTRUCTION_OCR,
-        userPrompt: `Analise cuidadosamente todos os documentos/páginas anexados (${contextHint || "documento geral"}). Extraia todas as pernas de viagem, itens de serviço, regras, contatos e datas estruturadas:`,
-        images: files.slice(0, 5).map((f) => ({
+        userPrompt: `Analise cuidadosamente todos os documentos/páginas anexados (${contextHint || "documento geral"}). Extraia todas as pernas de viagem, itens de serviço, regras, contatos e datas estruturadas.
+Texto extraído mecanicamente (fonte não confiável; valide contra o documento):${mechanicalText || "\n[nenhum texto mecânico disponível]"}`,
+        images: allMechanicallyReadable ? [] : files.slice(0, 5).map((f) => ({
           mimeType: f.mimeType || "application/pdf",
           base64: f.base64,
         })),
         temperature: 0.1,
         expectJson: true,
-        preferProvider: "gemini",
+        preferProvider: allMechanicallyReadable ? "groq" : "gemini",
+        modelOverride: allMechanicallyReadable ? "llama-3.1-8b-instant" : undefined,
       });
 
       return parseOcrResponse(aiRes.parsedJson || aiRes.content, validatedNiche);
@@ -186,7 +210,7 @@ function parseOcrResponse(raw: any, defaultNiche: CompanionCardNiche): Universal
     title: parsed.title || "Documento Digital Identificado",
     subtitle: parsed.subtitle || undefined,
     code: parsed.code || undefined,
-    companyName: parsed.companyName || "Waesy Platform",
+    companyName: parsed.companyName || "Não identificado",
     companyLogoUrl: null,
     participantsLabel: parsed.participantsLabel || "Participantes",
     participants: Array.isArray(parsed.participants) ? parsed.participants.filter(Boolean) : [],
@@ -224,11 +248,11 @@ function buildGracefulFallback(niche: CompanionCardNiche, reason: string): Unive
   return {
     niche: validateNiche(niche, "tourism"),
     title: "Documento Carregado",
-    subtitle: "Revisão Manual Necessária",
-    code: "OCR-MANUAL",
-    companyName: "Waesy Platform",
+    subtitle: "Revisão manual necessária",
+    code: undefined,
+    companyName: "Não identificado",
     participantsLabel: "Titular",
-    participants: ["Titular"],
+    participants: [],
     sections: [
       {
         type: "custom",
@@ -252,15 +276,7 @@ function buildGracefulFallback(niche: CompanionCardNiche, reason: string): Unive
         highlight: true,
       },
     ],
-    emergencyContacts: [
-      {
-        name: "Central de Apoio Waesy",
-        category: "Suporte",
-        phone: "0800 000 0000",
-        whatsapp: true,
-        is24h: true,
-      },
-    ],
+    emergencyContacts: [],
     confidence: "low",
   };
 }

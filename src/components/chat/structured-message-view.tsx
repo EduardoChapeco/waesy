@@ -483,9 +483,25 @@ function CardCarouselBlock({
             {item.subtitle && (
               <p className="text-xs text-muted-foreground line-clamp-1">{item.subtitle}</p>
             )}
+            {item.description && (
+              <p className="text-xs text-muted-foreground/90 leading-relaxed line-clamp-2">
+                {item.description}
+              </p>
+            )}
+            {item.location && (
+              <p className="text-xs text-muted-foreground line-clamp-1 flex items-center gap-1">
+                <MapPin className="size-3 shrink-0" />
+                {item.location}
+              </p>
+            )}
             {item.price_cents && (
               <p className="text-xs font-mono font-bold text-primary">
                 {formatMoney(item.price_cents / 100)}
+              </p>
+            )}
+            {item.source_table && (
+              <p className="text-2xs text-muted-foreground/70 uppercase tracking-wider">
+                Conteúdo publicado na plataforma
               </p>
             )}
             {item.action && (

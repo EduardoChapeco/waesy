@@ -43,7 +43,7 @@ export const Route = createFileRoute("/workspace/financeiro/caixa/")({
      return { register: null, history: null };
    }
  },
- errorComponent: ({ error }) => <CashRegisterError error={error} />,
+ errorComponent: ({ error }) => <CashRegisterError error={error instanceof Error ? error : new Error(String(error))} />,
  component: CashRegisterManagerPage,
 });
 

@@ -169,6 +169,7 @@ export const COPILOT_FSM_TRANSITIONS: Record<CopilotFsmPhase, readonly CopilotFs
     "CANCELLED",
   ],
   WAITING_TOOL: [
+    "NEEDS_CLARIFICATION",
     "PARTIAL_RESULT",
     "RUNNING",
     "VALIDATING",

@@ -36,6 +36,33 @@ export async function getServerIdentity(): Promise<ServerIdentity> {
  return mod.getServerIdentity();
 }
 
+/** Resolve o tenant ativo sem criar aresta estática para tenant.server. */
+export async function resolveTenantStoreId(): Promise<string | null> {
+ const mod = await import("@/lib/tenant.server");
+ return mod.resolveTenantStoreId();
+}
+
+/** Helpers de sessão resolvidos apenas dentro do handler server-side. */
+export async function getGuestSession(): Promise<string | null> {
+ const mod = await import("@/lib/session");
+ return mod.getGuestSession();
+}
+
+export async function getOrCreateGuestSession(): Promise<string> {
+ const mod = await import("@/lib/session");
+ return mod.getOrCreateGuestSession();
+}
+
+export async function getSellerRefCookie(): Promise<string | null> {
+ const mod = await import("@/lib/session");
+ return mod.getSellerRefCookie();
+}
+
+export async function setSellerRefCookie(sellerId: string): Promise<void> {
+ const mod = await import("@/lib/session");
+ return mod.setSellerRefCookie(sellerId);
+}
+
 /** Exige um dos papéis informados. Lança se não autorizado. Servidor apenas. */
 export async function requireRole(allowedRoles: Role[]): Promise<{ id: string; role: Role; store_id: string }> {
  const mod = await import("@/lib/auth-guards.server");
@@ -77,4 +104,3 @@ export async function requirePlatformAdmin(): Promise<{ id: string; role: Role; 
   const mod = await import("@/lib/auth-guards.server");
   return mod.requirePlatformAdmin();
 }
-

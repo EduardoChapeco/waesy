@@ -12,6 +12,7 @@ import {
 import { useWindowSizeClass } from "@/hooks/use-mobile";
 import {
   executeAiCopilotPipeline,
+  dispatchAiChatAction,
   type AiExecutionResult,
 } from "@/services/ai-conversations.functions";
 import { AIActivityTrail, type AIActivityStep } from "@/components/chat/ai-activity-trail";
@@ -60,9 +61,6 @@ export function WaesyCopilotDrawer({ session }: { session?: any }) {
 
   // Nao exibe o drawer flutuante se o usuario ja esta na rota dedicada /copilot
   const currentPath = location.pathname || "/";
-  if (currentPath.startsWith("/copilot")) {
-    return null;
-  }
 
   const [messages, setMessages] = useState<DrawerMessage[]>([
     {
@@ -124,6 +122,26 @@ export function WaesyCopilotDrawer({ session }: { session?: any }) {
   };
 
   const handleDrawerAction = async (action: AIChatAction) => {
+    if (["add_to_cart", "request_travel_quote", "submit_legal_demand", "publish_ad"].includes(action.action_type)) {
+      try {
+        const result = await dispatchAiChatAction({
+          data: {
+            action_type: action.action_type as "add_to_cart" | "request_travel_quote" | "submit_legal_demand" | "publish_ad",
+            payload: action.payload || {},
+          },
+        });
+        if (action.action_type === "add_to_cart") {
+          await refreshCart();
+          setIsGlobalCartOpen(true);
+        }
+        toast.success(action.action_type === "publish_ad" ? "Anúncio publicado com sucesso!" : "Ação concluída com sucesso.");
+        return result;
+      } catch (error: any) {
+        toast.error(error?.message || "Não foi possível executar a ação.");
+        return;
+      }
+    }
+
     switch (action.action_type) {
       case "open_place":
         setIsOpen(false);
@@ -270,8 +288,9 @@ export function WaesyCopilotDrawer({ session }: { session?: any }) {
         break;
       }
       default:
-        if (action.payload?.url) {
-          navigate({ to: action.payload.url as any });
+        if (typeof action.payload?.href === "string" && action.payload.href.startsWith("/")) {
+          setIsOpen(false);
+          navigate({ to: action.payload.href as any });
         }
         break;
     }
@@ -281,6 +300,8 @@ export function WaesyCopilotDrawer({ session }: { session?: any }) {
     setIsOpen(false);
     navigate({ to: "/copilot" as any });
   };
+
+  if (currentPath.startsWith("/copilot")) return null;
 
   return (
     <>

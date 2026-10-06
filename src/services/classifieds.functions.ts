@@ -18,21 +18,48 @@ import { applyServerFnEdgeCache, CACHE_TAGS } from "@/lib/cache/edge-cache";
 import { sanitizePublicProductAttributes } from "./unified-listing.functions";
 
 const CLASSIFIED_PUBLIC_ALLOWLIST_EXTRA = new Set([
-  "feed_media", "feed_images", "display_mode", "template_style",
-  "single_owner", "unico_dono", "delivery_mode", "delivery_type",
-  "is_digital", "is_free_donation", "is_business_sale", "business_type",
-  "accepts_card", "accepts_trade", "accepts_pix", "pix_discount_percent",
-  "installments_available", "max_installments", "working_hours_start",
-  "working_hours_end", "available_weekdays", "cancellation_policy",
-  "inquiry_config", "travel", "amenities", "features", "provenance",
+  "feed_media",
+  "feed_images",
+  "display_mode",
+  "template_style",
+  "single_owner",
+  "unico_dono",
+  "delivery_mode",
+  "delivery_type",
+  "is_digital",
+  "is_free_donation",
+  "is_business_sale",
+  "business_type",
+  "accepts_card",
+  "accepts_trade",
+  "accepts_pix",
+  "pix_discount_percent",
+  "installments_available",
+  "max_installments",
+  "working_hours_start",
+  "working_hours_end",
+  "available_weekdays",
+  "cancellation_policy",
+  "inquiry_config",
+  "travel",
+  "amenities",
+  "features",
+  "provenance",
 ]);
 
-function sanitizePublicClassifiedAttributes(raw: Record<string, any> | null | undefined): Record<string, any> {
+function sanitizePublicClassifiedAttributes(
+  raw: Record<string, any> | null | undefined,
+): Record<string, any> {
   if (!raw || typeof raw !== "object") return {};
   const base = sanitizePublicProductAttributes(raw);
   for (const [key, value] of Object.entries(raw)) {
     const lower = key.toLowerCase();
-    if (CLASSIFIED_PUBLIC_ALLOWLIST_EXTRA.has(lower) && (typeof value !== "object" || Array.isArray(value)) && value !== null && value !== undefined) {
+    if (
+      CLASSIFIED_PUBLIC_ALLOWLIST_EXTRA.has(lower) &&
+      (typeof value !== "object" || Array.isArray(value)) &&
+      value !== null &&
+      value !== undefined
+    ) {
       base[key] = value;
     }
   }
@@ -40,124 +67,132 @@ function sanitizePublicClassifiedAttributes(raw: Record<string, any> | null | un
 }
 
 export const getPublicClassifieds = createServerFn({ method: "GET" })
- .validator(
- z
- .object({
- limit: z.number().int().min(1).max(100).optional(),
- cursor: z.string().optional(),
- category: z.string().optional(),
- dealType: z.string().optional(),
- search: z.string().optional(),
- storeId: z.string().uuid().optional(),
+  .validator(
+    z
+      .object({
+        limit: z.number().int().min(1).max(100).optional(),
+        cursor: z.string().optional(),
+        category: z.string().optional(),
+        dealType: z.string().optional(),
+        search: z.string().optional(),
+        storeId: z.string().uuid().optional(),
         city: z.string().optional(),
- })
- .optional(),
- )
- .handler(async ({ data }) => {
- const supabase = getServerClient();
- const limit = Math.min(Math.max(data?.limit ?? 50, 1), 100);
+      })
+      .optional(),
+  )
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const limit = Math.min(Math.max(data?.limit ?? 50, 1), 100);
 
- try {
- let query = supabase
- .from("classifieds")
- .select(
- "id, author_profile_id, store_id, category, deal_type, title, content, price_cents, images, contact_whatsapp, location_name, location_text, city, state, expires_at, condition, negotiable, attributes, status, is_sponsored, is_boosted, sponsored_until, boosted_until, created_at, updated_at",
- )
- .eq("status", "active")
- .order("created_at", { ascending: false })
- .limit(limit);
+    try {
+      let query = supabase
+        .from("classifieds")
+        .select(
+          "id, author_profile_id, store_id, category, deal_type, title, content, price_cents, images, contact_whatsapp, location_name, location_text, city, state, expires_at, condition, negotiable, attributes, status, is_sponsored, is_boosted, sponsored_until, boosted_until, created_at, updated_at",
+        )
+        .eq("status", "active")
+        .order("created_at", { ascending: false })
+        .limit(limit);
 
- if (data?.cursor) {
- query = query.lt("created_at", data.cursor);
- }
+      if (data?.cursor) {
+        query = query.lt("created_at", data.cursor);
+      }
 
-	if (data?.storeId) {
-		query = query.eq("store_id", data.storeId);
-	}
+      if (data?.storeId) {
+        query = query.eq("store_id", data.storeId);
+      }
 
-	if (data?.category && data.category !== "todos") {
-      let cat = data.category.toLowerCase().trim();
-      if (cat === "vehicles" || cat === "veiculos") cat = "vehicle";
-      else if (cat === "services" || cat === "servicos") cat = "service";
-      else if (cat === "imoveis" || cat === "imovel") cat = "real_estate";
-      else if (cat === "desapego" || cat === "eletronicos" || cat === "produtos") cat = "sale";
-      query = query.eq("category", cat);
+      if (data?.category && data.category !== "todos") {
+        let cat = data.category.toLowerCase().trim();
+        if (cat === "vehicles" || cat === "veiculos") cat = "vehicle";
+        else if (cat === "services" || cat === "servicos") cat = "service";
+        else if (cat === "imoveis" || cat === "imovel") cat = "real_estate";
+        else if (cat === "desapego" || cat === "eletronicos" || cat === "produtos") cat = "sale";
+        query = query.eq("category", cat);
+      }
+
+      if (data?.dealType && data.dealType !== "todos") {
+        query = query.eq("deal_type", data.dealType);
+      }
+
+      if (
+        data?.city &&
+        data.city !== "todos" &&
+        data.city !== "Todas" &&
+        data.city !== "Global" &&
+        data.city !== "all" &&
+        data.city !== "Todas as Cidades"
+      ) {
+        const cCity = `%${data.city.trim()}%`;
+        query = query.or(`city.ilike.${cCity},location_text.ilike.${cCity}`);
+      }
+
+      if (data?.search && data.search.trim()) {
+        const q = `%${data.search.trim()}%`;
+        query = query.or(`title.ilike.${q},content.ilike.${q},location_name.ilike.${q}`);
+      }
+
+      const { data: classifieds, error } = await query;
+
+      if (!error && classifieds) {
+        const nowMs = Date.now();
+        const sponsoredPool: any[] = [];
+        const organicPool: any[] = [];
+
+        for (const item of classifieds) {
+          const rawUntil = item.sponsored_until || item.boosted_until;
+          const isValidSponsored =
+            Boolean(item.is_sponsored || item.is_boosted) &&
+            (!rawUntil || new Date(rawUntil).getTime() > nowMs);
+
+          const normalizedItem = {
+            ...item,
+            cost_cents: undefined,
+            margin_percent: undefined,
+            markup_percent: undefined,
+            fiscal_profile: undefined,
+            attributes: sanitizePublicClassifiedAttributes(item.attributes),
+            is_sponsored: isValidSponsored,
+            is_boosted: isValidSponsored,
+            sponsored_until: rawUntil || null,
+          };
+
+          if (isValidSponsored) {
+            sponsoredPool.push({ ...normalizedItem, vitrine_slot_type: "sponsored_top" });
+          } else {
+            organicPool.push({ ...normalizedItem, vitrine_slot_type: "organic" });
+          }
+        }
+
+        const interleaved: any[] = [];
+        let sIdx = 0;
+        let oIdx = 0;
+
+        while (
+          interleaved.length < limit &&
+          (sIdx < sponsoredPool.length || oIdx < organicPool.length)
+        ) {
+          if (sIdx < sponsoredPool.length) {
+            interleaved.push(sponsoredPool[sIdx++]);
+          }
+          for (let i = 0; i < 4 && oIdx < organicPool.length && interleaved.length < limit; i++) {
+            interleaved.push(organicPool[oIdx++]);
+          }
+        }
+
+        applyServerFnEdgeCache(setResponseHeader, "PUBLIC_DYNAMIC", [
+          CACHE_TAGS.classifieds(),
+          ...(data?.storeId ? [CACHE_TAGS.store(data.storeId)] : []),
+        ]);
+
+        return interleaved;
+      }
+    } catch (err) {
+      console.warn("[classifieds] Erro ao buscar no banco:", err);
     }
 
- if (data?.dealType && data.dealType !== "todos") {
- query = query.eq("deal_type", data.dealType);
- }
-
-
-    if (data?.city && data.city !== "todos" && data.city !== "Todas" && data.city !== "Global" && data.city !== "all" && data.city !== "Todas as Cidades") {
-      const cCity = `%${data.city.trim()}%`;
-      query = query.or(`city.ilike.${cCity},location_text.ilike.${cCity}`);
-    }
-
- if (data?.search && data.search.trim()) {
- const q = `%${data.search.trim()}%`;
- query = query.or(`title.ilike.${q},content.ilike.${q},location_name.ilike.${q}`);
- }
-
- const { data: classifieds, error } = await query;
-
- if (!error && classifieds) {
-   const nowMs = Date.now();
-   const sponsoredPool: any[] = [];
-   const organicPool: any[] = [];
-
-   for (const item of classifieds) {
-     const rawUntil = item.sponsored_until || item.boosted_until;
-     const isValidSponsored =
-       Boolean(item.is_sponsored || item.is_boosted) &&
-       (!rawUntil || new Date(rawUntil).getTime() > nowMs);
-
-     const normalizedItem = {
-       ...item,
-       cost_cents: undefined,
-       margin_percent: undefined,
-       markup_percent: undefined,
-       fiscal_profile: undefined,
-       attributes: sanitizePublicClassifiedAttributes(item.attributes),
-       is_sponsored: isValidSponsored,
-       is_boosted: isValidSponsored,
-       sponsored_until: rawUntil || null,
-     };
-
-     if (isValidSponsored) {
-       sponsoredPool.push({ ...normalizedItem, vitrine_slot_type: "sponsored_top" });
-     } else {
-       organicPool.push({ ...normalizedItem, vitrine_slot_type: "organic" });
-     }
-   }
-
-   const interleaved: any[] = [];
-   let sIdx = 0;
-   let oIdx = 0;
-
-   while (interleaved.length < limit && (sIdx < sponsoredPool.length || oIdx < organicPool.length)) {
-     if (sIdx < sponsoredPool.length) {
-       interleaved.push(sponsoredPool[sIdx++]);
-     }
-     for (let i = 0; i < 4 && oIdx < organicPool.length && interleaved.length < limit; i++) {
-       interleaved.push(organicPool[oIdx++]);
-     }
-   }
-
-   applyServerFnEdgeCache(
-     setResponseHeader,
-     "PUBLIC_DYNAMIC",
-     [CACHE_TAGS.classifieds(), ...(data?.storeId ? [CACHE_TAGS.store(data.storeId)] : [])],
-   );
-
-   return interleaved;
- }
- } catch (err) {
- console.warn("[classifieds] Erro ao buscar no banco:", err);
- }
-
- return [];
- });
+    return [];
+  });
 
 // ---------------------------------------------------------------------------
 // STRICT STORE DATA SCOPING: getAdsByStoreId (Zero Context Bleeding)
@@ -174,7 +209,10 @@ export const getAdsByStoreId = createServerFn({ method: "GET" })
     const limit = data.limit ?? 30;
 
     try {
-      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(data.storeId);
+      const isUuid =
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+          data.storeId,
+        );
       let targetStoreId = data.storeId;
 
       if (!isUuid) {
@@ -219,15 +257,13 @@ export const getAdsByStoreId = createServerFn({ method: "GET" })
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-async function getSimilarClassifiedsFallback(
-  supabase: any,
-  category?: string,
-  excludeId?: string,
-) {
+async function getSimilarClassifiedsFallback(supabase: any, category?: string, excludeId?: string) {
   try {
     let query = supabase
       .from("classifieds")
-      .select("id, title, price_cents, images, city, location_name, category, deal_type, status, created_at")
+      .select(
+        "id, title, price_cents, images, city, location_name, category, deal_type, status, created_at",
+      )
       .eq("status", "active")
       .order("created_at", { ascending: false })
       .limit(4);
@@ -279,6 +315,8 @@ export const getPublicClassifiedById = createServerFn({ method: "GET" })
         .from("classifieds")
         .select("*")
         .eq("id", rawId)
+        .in("status", ["active", "published"])
+        .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
         .maybeSingle();
 
       if (error) {
@@ -287,14 +325,31 @@ export const getPublicClassifiedById = createServerFn({ method: "GET" })
 
       let classifiedData: any = data;
 
+      if (!classifiedData) {
+        const similarAds = await getSimilarClassifiedsFallback(supabase);
+        return {
+          classified: null,
+          status: "not_found" as const,
+          isOwner: false,
+          canManage: false,
+          viewerContext: "anonymous" as const,
+          similarAds,
+        };
+      }
+
       // Normalize feed_media and payment_settings for public view
-      classifiedData.feed_media = Array.isArray(classifiedData.feed_media) && classifiedData.feed_media.length > 0
-        ? classifiedData.feed_media
-        : (Array.isArray(classifiedData.attributes?.feed_media) && classifiedData.attributes.feed_media.length > 0
-          ? classifiedData.attributes.feed_media
-          : (Array.isArray(classifiedData.attributes?.feed_images) ? classifiedData.attributes.feed_images : []));
-      
-      classifiedData.payment_settings = classifiedData.payment_settings || classifiedData.attributes?.payment_settings || {};
+      classifiedData.feed_media =
+        Array.isArray(classifiedData.feed_media) && classifiedData.feed_media.length > 0
+          ? classifiedData.feed_media
+          : Array.isArray(classifiedData.attributes?.feed_media) &&
+              classifiedData.attributes.feed_media.length > 0
+            ? classifiedData.attributes.feed_media
+            : Array.isArray(classifiedData.attributes?.feed_images)
+              ? classifiedData.attributes.feed_images
+              : [];
+
+      classifiedData.payment_settings =
+        classifiedData.payment_settings || classifiedData.attributes?.payment_settings || {};
 
       if (classifiedData && classifiedData.id) {
         const [telRes, dealRes] = await Promise.all([
@@ -303,12 +358,18 @@ export const getPublicClassifiedById = createServerFn({ method: "GET" })
             .select("event_type")
             .eq("article_id", classifiedData.id)
             .limit(2000)
-            .then((r) => r.data || [], () => []),
+            .then(
+              (r) => r.data || [],
+              () => [],
+            ),
           supabase
             .from("deals")
             .select("id")
             .eq("classified_id", classifiedData.id)
-            .then((r) => r.data || [], () => []),
+            .then(
+              (r) => r.data || [],
+              () => [],
+            ),
         ]);
         let vCount = 0;
         let cCount = 0;
@@ -327,7 +388,7 @@ export const getPublicClassifiedById = createServerFn({ method: "GET" })
         classifiedData.clicks_count = Math.max(Number(classifiedData.clicks_count || 0), cCount);
         classifiedData.whatsapp_clicks_count = Math.max(
           Number(classifiedData.whatsapp_clicks_count || classifiedData.proposals_count || 0),
-          wCount
+          wCount,
         );
       }
       if (!classifiedData) {
@@ -381,7 +442,8 @@ export const getPublicClassifiedById = createServerFn({ method: "GET" })
               logo_url: storeData.logo_url,
               phone: storeData.phone,
               pix_key: storeData.pix_key || storeData.settings?.pix_key || null,
-              payment_instructions: storeData.payment_instructions || storeData.settings?.payment_instructions || null,
+              payment_instructions:
+                storeData.payment_instructions || storeData.settings?.payment_instructions || null,
               custom_inquiry_fields: storeData.settings?.custom_inquiry_fields || [],
             };
 
@@ -393,7 +455,8 @@ export const getPublicClassifiedById = createServerFn({ method: "GET" })
                 rules.pix_key = effectivePix;
                 if (rules.pix_enabled === undefined) rules.pix_enabled = true;
               }
-              const instructions = storeData.payment_instructions || storeData.settings?.payment_instructions;
+              const instructions =
+                storeData.payment_instructions || storeData.settings?.payment_instructions;
               if (instructions) {
                 rules.store_payment_instructions = instructions;
               }
@@ -410,7 +473,9 @@ export const getPublicClassifiedById = createServerFn({ method: "GET" })
         try {
           const { data: formData } = await supabase
             .from("lead_forms")
-            .select("id, title, slug, headline, subheadline, submit_button_text, after_submit_action, trigger_mode, scroll_trigger_pct")
+            .select(
+              "id, title, slug, headline, subheadline, submit_button_text, after_submit_action, trigger_mode, scroll_trigger_pct",
+            )
             .eq("id", classifiedData.form_id)
             .eq("status", "active")
             .maybeSingle();
@@ -423,20 +488,32 @@ export const getPublicClassifiedById = createServerFn({ method: "GET" })
       }
 
       const isOwner = !!(identity?.id && classifiedData.author_profile_id === identity.id);
-      const isAdmin = !!(identity?.role === "admin" || identity?.role === "master" || identity?.role === "platform_admin" || identity?.role === "owner");
+      const isAdmin = !!(
+        identity?.role === "admin" ||
+        identity?.role === "master" ||
+        identity?.role === "platform_admin" ||
+        identity?.role === "owner"
+      );
       const canManage = isOwner || isAdmin;
 
       const viewerContext: "owner" | "admin" | "visitor" | "anonymous" = isOwner
         ? "owner"
         : isAdmin
-        ? "admin"
-        : identity?.id
-        ? "visitor"
-        : "anonymous";
+          ? "admin"
+          : identity?.id
+            ? "visitor"
+            : "anonymous";
 
       // Se o anúncio está pausado ou arquivado e o visitante não é gestor/dono, não exibe
-      if ((classifiedData.status === "paused" || classifiedData.status === "archived") && !canManage) {
-        const similarAds = await getSimilarClassifiedsFallback(supabase, classifiedData.category, rawId);
+      if (
+        (classifiedData.status === "paused" || classifiedData.status === "archived") &&
+        !canManage
+      ) {
+        const similarAds = await getSimilarClassifiedsFallback(
+          supabase,
+          classifiedData.category,
+          rawId,
+        );
         return {
           classified: null,
           status: "not_found" as const,
@@ -453,7 +530,7 @@ export const getPublicClassifiedById = createServerFn({ method: "GET" })
         classifiedData.attributes?.hide_location ||
         classifiedData.attributes?.hide_address ||
         classifiedData.attributes?.hide_exact_address ||
-        classifiedData.attributes?.location_privacy === "hidden"
+        classifiedData.attributes?.location_privacy === "hidden",
       );
 
       if (!canManage && isPrivacyHidden) {
@@ -472,19 +549,54 @@ export const getPublicClassifiedById = createServerFn({ method: "GET" })
         }
       }
 
-      const similarAds = await getSimilarClassifiedsFallback(supabase, classifiedData.category, rawId);
+      const similarAds = await getSimilarClassifiedsFallback(
+        supabase,
+        classifiedData.category,
+        rawId,
+      );
 
       const computedStatus: "active" | "sold" | "paused" | "reserved" | "archived" =
-        classifiedData.status === "completed" ? "sold" : (classifiedData.status || "active");
+        classifiedData.status === "completed" ? "sold" : classifiedData.status || "active";
 
-      const publicClassified = canManage ? classifiedData : {
-        ...classifiedData,
-        cost_cents: undefined,
-        margin_percent: undefined,
-        markup_percent: undefined,
-        fiscal_profile: undefined,
-        attributes: sanitizePublicClassifiedAttributes(classifiedData.attributes),
-      };
+      const publicClassified = canManage
+        ? classifiedData
+        : (() => {
+            const {
+              profiles,
+              store,
+              payment_settings: _paymentSettings,
+              ...safeBase
+            } = classifiedData;
+            const safeProfiles = profiles
+              ? { id: profiles.id, full_name: profiles.full_name, avatar_url: profiles.avatar_url }
+              : undefined;
+            const safeStore = store
+              ? {
+                  id: store.id,
+                  name: store.name,
+                  slug: store.slug,
+                  logo_url: store.logo_url,
+                  custom_inquiry_fields: store.custom_inquiry_fields || [],
+                }
+              : undefined;
+            const safeAttributes = sanitizePublicClassifiedAttributes(classifiedData.attributes);
+            if (safeAttributes && typeof safeAttributes === "object") {
+              delete safeAttributes.payment_rules;
+              delete safeAttributes.payment_settings;
+              delete safeAttributes.pix_key;
+              delete safeAttributes.store_payment_instructions;
+            }
+            return {
+              ...safeBase,
+              profiles: safeProfiles,
+              store: safeStore,
+              cost_cents: undefined,
+              margin_percent: undefined,
+              markup_percent: undefined,
+              fiscal_profile: undefined,
+              attributes: safeAttributes,
+            };
+          })();
 
       return {
         classified: publicClassified,
@@ -509,20 +621,29 @@ export const getPublicClassifiedById = createServerFn({ method: "GET" })
   });
 
 export const updateClassifiedStatus = createServerFn({ method: "POST" })
- .validator(
- z.object({
- id: z.string().uuid(),
- status: z.enum(["active", "paused", "draft", "reserved", "completed", "resolved", "archived", "expired"]),
- reason: z.string().optional(),
- }),
- )
- .handler(async ({ data: { id, status, reason } }) => {
- const supabase = getServerClient();
- const identity = await getIdentity();
+  .validator(
+    z.object({
+      id: z.string().uuid(),
+      status: z.enum([
+        "active",
+        "paused",
+        "draft",
+        "reserved",
+        "completed",
+        "resolved",
+        "archived",
+        "expired",
+      ]),
+      reason: z.string().optional(),
+    }),
+  )
+  .handler(async ({ data: { id, status, reason } }) => {
+    const supabase = getServerClient();
+    const identity = await getIdentity();
 
- if (!identity || !identity.id) {
- throw new Error("Não autorizado.");
- }
+    if (!identity || !identity.id) {
+      throw new Error("Não autorizado.");
+    }
 
     // Busca o anúncio para verificar autoria e loja
     const { data: existing, error: fetchErr } = await supabase
@@ -541,7 +662,10 @@ export const updateClassifiedStatus = createServerFn({ method: "POST" })
     if (!hasAuthority && existing.store_id) {
       if (identity.store_id === existing.store_id) {
         hasAuthority = true;
-      } else if (Array.isArray(identity.memberships) && identity.memberships.some((m) => m.store_id === existing.store_id)) {
+      } else if (
+        Array.isArray(identity.memberships) &&
+        identity.memberships.some((m) => m.store_id === existing.store_id)
+      ) {
         hasAuthority = true;
       } else {
         const { data: storeMember } = await supabase
@@ -551,7 +675,9 @@ export const updateClassifiedStatus = createServerFn({ method: "POST" })
           .eq("profile_id", identity.id)
           .maybeSingle();
 
-        const hasMembership = (identity.memberships || []).some((m: any) => m.store_id === existing.store_id);
+        const hasMembership = (identity.memberships || []).some(
+          (m: any) => m.store_id === existing.store_id,
+        );
         hasAuthority = !!storeMember || hasMembership || !!identity.isPlatformAdmin;
       }
     }
@@ -565,166 +691,170 @@ export const updateClassifiedStatus = createServerFn({ method: "POST" })
       throw new Error("Você não tem permissão para alterar o estado deste anúncio.");
     }
 
- const { data: updated, error: updateErr } = await supabase
- .from("classifieds")
- .update({
-       status,
-      updated_at: new Date().toISOString(),
-      ...(status === "active"
-        ? { expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() }
-        : {}),
- })
- .eq("id", id)
- .select()
- .single();
+    const { data: updated, error: updateErr } = await supabase
+      .from("classifieds")
+      .update({
+        status,
+        updated_at: new Date().toISOString(),
+        ...(status === "active"
+          ? { expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() }
+          : {}),
+      })
+      .eq("id", id)
+      .select()
+      .single();
 
- if (updateErr) {
- console.error("[classifieds] updateClassifiedStatus error:", updateErr);
- throw new Error("Erro ao atualizar o status do anúncio.");
- }
+    if (updateErr) {
+      console.error("[classifieds] updateClassifiedStatus error:", updateErr);
+      throw new Error("Erro ao atualizar o status do anúncio.");
+    }
 
- return { success: true, classified: updated };
- });
+    return { success: true, classified: updated };
+  });
 
 // ---------------------------------------------------------------------------
 // AUTHENTICATED (own classifieds — user)
 // ---------------------------------------------------------------------------
 
 export const getClassifieds = createServerFn({ method: "GET" }).handler(async () => {
-	const supabase = getServerClient();
-	const identity = await getIdentity();
+  const supabase = getServerClient();
+  const identity = await getIdentity();
 
-	if (!identity || !identity.id) {
-		throw new Error("Unauthorized");
-	}
+  if (!identity || !identity.id) {
+    throw new Error("Unauthorized");
+  }
 
-	const userStoreIds = Array.isArray(identity.memberships)
-		? identity.memberships.map((m: any) => m.store_id).filter(Boolean)
-		: [];
-	if (identity.store_id && !userStoreIds.includes(identity.store_id)) {
-		userStoreIds.push(identity.store_id);
-	}
+  const userStoreIds = Array.isArray(identity.memberships)
+    ? identity.memberships.map((m: any) => m.store_id).filter(Boolean)
+    : [];
+  if (identity.store_id && !userStoreIds.includes(identity.store_id)) {
+    userStoreIds.push(identity.store_id);
+  }
 
-	let query = supabase.from("classifieds").select("*");
+  let query = supabase.from("classifieds").select("*");
 
-	if (userStoreIds.length > 0) {
-		query = query.or(
-			`author_profile_id.eq.${identity.id},store_id.in.(${userStoreIds.join(",")})`
-		);
-	} else {
-		query = query.eq("author_profile_id", identity.id);
-	}
+  if (userStoreIds.length > 0) {
+    query = query.or(`author_profile_id.eq.${identity.id},store_id.in.(${userStoreIds.join(",")})`);
+  } else {
+    query = query.eq("author_profile_id", identity.id);
+  }
 
-	const { data, error } = await query.order("created_at", { ascending: false }).limit(100);
+  const { data, error } = await query.order("created_at", { ascending: false }).limit(100);
 
-	if (error) {
-		console.error("Error fetching classifieds:", error);
-		throw new Error("Failed to fetch classifieds");
-	}
+  if (error) {
+    console.error("Error fetching classifieds:", error);
+    throw new Error("Failed to fetch classifieds");
+  }
 
-	const ads = data || [];
-	if (ads.length === 0) return [];
+  const ads = data || [];
+  if (ads.length === 0) return [];
 
-	const adIds = ads.map((a: any) => a.id).filter(Boolean);
+  const adIds = ads.map((a: any) => a.id).filter(Boolean);
 
-	// Telemetry Reality Check (V117 Fase 4): Agrega eventos reais de ad_telemetry_events e deals
-	const [telemetryRes, dealsRes] = await Promise.all([
-		supabase
-			.from("ad_telemetry_events")
-			.select("article_id, event_type, created_at")
-			.in("article_id", adIds)
-			.limit(5000)
-			.then((r) => r.data || [], () => []),
-		supabase
-			.from("deals")
-			.select("classified_id")
-			.in("classified_id", adIds)
-			.then((r) => r.data || [], () => []),
-	]);
+  // Telemetry Reality Check (V117 Fase 4): Agrega eventos reais de ad_telemetry_events e deals
+  const [telemetryRes, dealsRes] = await Promise.all([
+    supabase
+      .from("ad_telemetry_events")
+      .select("article_id, event_type, created_at")
+      .in("article_id", adIds)
+      .limit(5000)
+      .then(
+        (r) => r.data || [],
+        () => [],
+      ),
+    supabase
+      .from("deals")
+      .select("classified_id")
+      .in("classified_id", adIds)
+      .then(
+        (r) => r.data || [],
+        () => [],
+      ),
+  ]);
 
-	const now = Date.now();
-	const DAY_MS = 86_400_000;
+  const now = Date.now();
+  const DAY_MS = 86_400_000;
 
-	const telemetryMap = new Map<
-		string,
-		{ views: number; clicks: number; whatsapp: number; sparkline: number[] }
-	>();
+  const telemetryMap = new Map<
+    string,
+    { views: number; clicks: number; whatsapp: number; sparkline: number[] }
+  >();
 
-	for (const id of adIds) {
-		telemetryMap.set(id, { views: 0, clicks: 0, whatsapp: 0, sparkline: [0, 0, 0, 0, 0, 0, 0] });
-	}
+  for (const id of adIds) {
+    telemetryMap.set(id, { views: 0, clicks: 0, whatsapp: 0, sparkline: [0, 0, 0, 0, 0, 0, 0] });
+  }
 
-	for (const ev of telemetryRes as any[]) {
-		const entry = telemetryMap.get(ev.article_id);
-		if (!entry) continue;
-		const type = String(ev.event_type || "view").toLowerCase();
-		if (type === "view") {
-			entry.views += 1;
-		} else if (type.includes("whatsapp") || type.includes("lead")) {
-			entry.whatsapp += 1;
-			entry.clicks += 1;
-		} else {
-			entry.clicks += 1;
-		}
+  for (const ev of telemetryRes as any[]) {
+    const entry = telemetryMap.get(ev.article_id);
+    if (!entry) continue;
+    const type = String(ev.event_type || "view").toLowerCase();
+    if (type === "view") {
+      entry.views += 1;
+    } else if (type.includes("whatsapp") || type.includes("lead")) {
+      entry.whatsapp += 1;
+      entry.clicks += 1;
+    } else {
+      entry.clicks += 1;
+    }
 
-		if (ev.created_at) {
-			const ageDays = Math.floor((now - new Date(ev.created_at).getTime()) / DAY_MS);
-			if (ageDays >= 0 && ageDays < 7) {
-				entry.sparkline[6 - ageDays] += 1;
-			}
-		}
-	}
+    if (ev.created_at) {
+      const ageDays = Math.floor((now - new Date(ev.created_at).getTime()) / DAY_MS);
+      if (ageDays >= 0 && ageDays < 7) {
+        entry.sparkline[6 - ageDays] += 1;
+      }
+    }
+  }
 
-	for (const d of dealsRes as any[]) {
-		const entry = telemetryMap.get(d.classified_id);
-		if (entry) {
-			entry.whatsapp += 1;
-		}
-	}
+  for (const d of dealsRes as any[]) {
+    const entry = telemetryMap.get(d.classified_id);
+    if (entry) {
+      entry.whatsapp += 1;
+    }
+  }
 
-	return ads.map((ad: any) => {
-		const t = telemetryMap.get(ad.id);
-		const realViews = Math.max(Number(ad.views_count || 0), t?.views || 0);
-		const realClicks = Math.max(Number(ad.clicks_count || 0), t?.clicks || 0);
-		const realWhatsapp = Math.max(
-			Number(ad.whatsapp_clicks_count || ad.proposals_count || 0),
-			t?.whatsapp || 0
-		);
-		const hasSparkline = t && t.sparkline.some((v) => v > 0);
-		return {
-			...ad,
-			views_count: realViews,
-			clicks_count: realClicks,
-			whatsapp_clicks_count: realWhatsapp,
-			sparkline_7d: hasSparkline ? t!.sparkline : ad.sparkline_7d || [0, 0, 0, 0, 0, 0, realViews],
-		};
-	});
+  return ads.map((ad: any) => {
+    const t = telemetryMap.get(ad.id);
+    const realViews = Math.max(Number(ad.views_count || 0), t?.views || 0);
+    const realClicks = Math.max(Number(ad.clicks_count || 0), t?.clicks || 0);
+    const realWhatsapp = Math.max(
+      Number(ad.whatsapp_clicks_count || ad.proposals_count || 0),
+      t?.whatsapp || 0,
+    );
+    const hasSparkline = t && t.sparkline.some((v) => v > 0);
+    return {
+      ...ad,
+      views_count: realViews,
+      clicks_count: realClicks,
+      whatsapp_clicks_count: realWhatsapp,
+      sparkline_7d: hasSparkline ? t!.sparkline : ad.sparkline_7d || [0, 0, 0, 0, 0, 0, realViews],
+    };
+  });
 });
 
 export const getClassified = createServerFn({ method: "GET" })
- .validator(z.string().uuid())
- .handler(async ({ data: id }) => {
- const supabase = getServerClient();
- const identity = await getIdentity();
+  .validator(z.string().uuid())
+  .handler(async ({ data: id }) => {
+    const supabase = getServerClient();
+    const identity = await getIdentity();
 
- if (!identity || !identity.id) {
- throw new Error("Unauthorized");
- }
+    if (!identity || !identity.id) {
+      throw new Error("Unauthorized");
+    }
 
- const { data, error } = await supabase
- .from("classifieds")
- .select("*")
- .eq("id", id)
- .eq("author_profile_id", identity.id)
- .single();
+    const { data, error } = await supabase
+      .from("classifieds")
+      .select("*")
+      .eq("id", id)
+      .eq("author_profile_id", identity.id)
+      .single();
 
- if (error) {
- console.error("Error fetching classified:", error);
- throw new Error("Failed to fetch classified");
- }
+    if (error) {
+      console.error("Error fetching classified:", error);
+      throw new Error("Failed to fetch classified");
+    }
 
- return data;
-});
+    return data;
+  });
 
 const upsertClassifiedInput = z.object({
   id: z.string().uuid().optional(),
@@ -745,7 +875,9 @@ const upsertClassifiedInput = z.object({
     "business",
     "food",
   ]),
-  deal_type: z.enum(["venda", "aluguel", "temporada", "servico", "repasse", "doacao", "troca"]).optional(),
+  deal_type: z
+    .enum(["venda", "aluguel", "temporada", "servico", "repasse", "doacao", "troca"])
+    .optional(),
   property_type: z.string().nullable().optional(),
   bedrooms: z.coerce.number().int().optional(),
   bathrooms: z.coerce.number().int().optional(),
@@ -757,73 +889,93 @@ const upsertClassifiedInput = z.object({
   cleaning_fee_cents: z.coerce.number().int().optional(),
   rental_period: z.string().optional(),
   digital_file_url: z.string().nullable().optional(),
- is_digital: z.boolean().optional(),
- digital_file_name: z.string().nullable().optional(),
- digital_file_size_bytes: z.coerce.number().int().nullable().optional(),
- digital_preview_url: z.string().nullable().optional(),
- download_limit: z.coerce.number().int().optional(),
- access_duration_days: z.coerce.number().int().optional(),
- booking_enabled: z.boolean().optional(),
- available_slots: z.coerce.number().int().optional(),
- service_duration_minutes: z.coerce.number().int().optional(),
- available_weekdays: z.array(z.string()).optional(),
- working_hours_start: z.string().optional(),
- working_hours_end: z.string().optional(),
- property_tags: z.array(z.string()).optional(),
- is_boosted: z.boolean().optional(),
- delivery_mode: z.enum(["pickup", "local_pickup", "local_delivery", "national_shipping", "both", "digital_download"]).optional(),
- accepts_trade: z.boolean().optional(),
- accepts_card: z.boolean().optional(),
- max_installments: z.coerce.number().int().optional(),
+  is_digital: z.boolean().optional(),
+  digital_file_name: z.string().nullable().optional(),
+  digital_file_size_bytes: z.coerce.number().int().nullable().optional(),
+  digital_preview_url: z.string().nullable().optional(),
+  download_limit: z.coerce.number().int().optional(),
+  access_duration_days: z.coerce.number().int().optional(),
+  booking_enabled: z.boolean().optional(),
+  available_slots: z.coerce.number().int().optional(),
+  service_duration_minutes: z.coerce.number().int().optional(),
+  available_weekdays: z.array(z.string()).optional(),
+  working_hours_start: z.string().optional(),
+  working_hours_end: z.string().optional(),
+  property_tags: z.array(z.string()).optional(),
+  is_boosted: z.boolean().optional(),
+  delivery_mode: z
+    .enum([
+      "pickup",
+      "local_pickup",
+      "local_delivery",
+      "national_shipping",
+      "both",
+      "digital_download",
+    ])
+    .optional(),
+  accepts_trade: z.boolean().optional(),
+  accepts_card: z.boolean().optional(),
+  max_installments: z.coerce.number().int().optional(),
   validity_days: z.coerce.number().int().optional(),
   stock_limit: z.coerce.number().int().optional(),
   offer_limit: z.coerce.number().int().optional(),
- accepted_payment_methods: z.array(z.string()).optional(),
- installments_available: z.boolean().optional(),
- cancellation_policy: z.string().optional(),
- content: z.string().min(10, "Descrição deve ter no mínimo 10 caracteres"),
- price_cents: z.coerce.number().int().min(0).nullable().optional(),
- images: z.array(z.string()).optional().default([]),
- feed_images: z.array(z.string()).optional().default([]),
+  accepted_payment_methods: z.array(z.string()).optional(),
+  installments_available: z.boolean().optional(),
+  cancellation_policy: z.string().optional(),
+  content: z.string().min(10, "Descrição deve ter no mínimo 10 caracteres"),
+  price_cents: z.coerce.number().int().min(0).nullable().optional(),
+  images: z.array(z.string()).optional().default([]),
+  feed_images: z.array(z.string()).optional().default([]),
   feed_media: z.array(z.any()).optional().default([]),
   payment_settings: z.record(z.any()).optional().default({}),
- whatsapp: z.string().nullable().optional(),
- contact_whatsapp: z.string().nullable().optional(),
- location_name: z.string().nullable().optional(),
- location_text: z.string().nullable().optional(),
- location_lat: z.number().nullable().optional(),
- location_lng: z.number().nullable().optional(),
- condition: z.enum(["new", "used", "refurbished"]).nullable().optional(),
- negotiable: z.boolean().optional().default(true),
- pricing_model: z.enum(["one_time", "recurring"]).optional(),
- billing_cycle: z.enum(["monthly", "quarterly", "semiannual", "yearly"]).optional(),
- setup_fee_cents: z.number().int().min(0).optional(),
- trial_days: z.number().int().min(0).optional(),
- recurring_features: z.array(z.string()).optional(),
- sub_category: z.string().optional(),
- hide_location: z.boolean().optional(),
- location_privacy: z.enum(["full", "city_only", "hidden"]).optional(),
- attributes: z.record(z.any()).optional().default({}),
- status: z.enum(["draft", "active", "paused", "reserved", "completed", "resolved", "archived", "expired"]).default("active"),
- max_discount_pct: z.coerce.number().min(0).max(100).optional().default(0),
- delivery_type: z.enum(["pickup", "local_pickup", "local_delivery", "national_shipping", "both", "digital_download"]).optional(),
- ai_instructions: z.string().optional(),
- ai_agent_enabled: z.boolean().optional(),
- form_id: z.string().uuid().nullable().optional(),
+  whatsapp: z.string().nullable().optional(),
+  contact_whatsapp: z.string().nullable().optional(),
+  location_name: z.string().nullable().optional(),
+  location_text: z.string().nullable().optional(),
+  location_lat: z.number().nullable().optional(),
+  location_lng: z.number().nullable().optional(),
+  condition: z.enum(["new", "used", "refurbished"]).nullable().optional(),
+  negotiable: z.boolean().optional().default(true),
+  pricing_model: z.enum(["one_time", "recurring"]).optional(),
+  billing_cycle: z.enum(["monthly", "quarterly", "semiannual", "yearly"]).optional(),
+  setup_fee_cents: z.number().int().min(0).optional(),
+  trial_days: z.number().int().min(0).optional(),
+  recurring_features: z.array(z.string()).optional(),
+  sub_category: z.string().optional(),
+  hide_location: z.boolean().optional(),
+  location_privacy: z.enum(["full", "city_only", "hidden"]).optional(),
+  attributes: z.record(z.any()).optional().default({}),
+  status: z
+    .enum(["draft", "active", "paused", "reserved", "completed", "resolved", "archived", "expired"])
+    .default("active"),
+  max_discount_pct: z.coerce.number().min(0).max(100).optional().default(0),
+  delivery_type: z
+    .enum([
+      "pickup",
+      "local_pickup",
+      "local_delivery",
+      "national_shipping",
+      "both",
+      "digital_download",
+    ])
+    .optional(),
+  ai_instructions: z.string().optional(),
+  ai_agent_enabled: z.boolean().optional(),
+  form_id: z.string().uuid().nullable().optional(),
 });
 
 export const upsertClassified = createServerFn({ method: "POST" })
- .validator(upsertClassifiedInput)
- .handler(async ({ data: input }) => {
- const supabase = getServerClient();
- const identity = await getIdentity();
+  .validator(upsertClassifiedInput)
+  .handler(async ({ data: input }) => {
+    const supabase = getServerClient();
+    const identity = await getIdentity();
 
- if (!identity || !identity.id) {
- throw new Error("Unauthorized");
- }
+    if (!identity || !identity.id) {
+      throw new Error("Unauthorized");
+    }
 
- const { id, ...rest } = input;
- const isUpdating = !!id;
+    const { id, ...rest } = input;
+    const isUpdating = !!id;
 
     // FASE 1: Limite Soberano de Ofertas Ativas por Usuário (Prevenção de Spam & Lifecycle)
     if (!isUpdating && !rest.store_id) {
@@ -836,288 +988,347 @@ export const upsertClassified = createServerFn({ method: "POST" })
       const MAX_ACTIVE_FREE_OFFERS = 20;
       if (!countErr && count !== null && count >= MAX_ACTIVE_FREE_OFFERS) {
         throw new Error(
-          `Você atingiu o limite de ${MAX_ACTIVE_FREE_OFFERS} anúncios ativos simultâneos. Pause ou exclua anúncios antigos para publicar novos.`
+          `Você atingiu o limite de ${MAX_ACTIVE_FREE_OFFERS} anúncios ativos simultâneos. Pause ou exclua anúncios antigos para publicar novos.`,
         );
       }
     }
 
+    // Sanitiza e mapeia os campos para colunas existentes estritamente na tabela classifieds
+    const payload: Record<string, any> = {
+      title: rest.title,
+      content: rest.content,
+      category: rest.category,
+      form_id: rest.form_id || rest.attributes?.form_id || null,
+      deal_type:
+        rest.deal_type ||
+        rest.attributes?.deal_type ||
+        (rest.category === "real_estate" ? "venda" : "venda"),
+      property_type: rest.property_type || rest.attributes?.property_type || null,
+      bedrooms: rest.bedrooms ?? rest.attributes?.bedrooms ?? null,
+      bathrooms: rest.bathrooms ?? rest.attributes?.bathrooms ?? null,
+      suites: rest.suites ?? rest.attributes?.suites ?? null,
+      parking_spots: rest.parking_spots ?? rest.attributes?.parking_spots ?? null,
+      area_sqm: rest.area_sqm ?? rest.attributes?.area_sqm ?? null,
+      amenities: Array.isArray(rest.amenities)
+        ? rest.amenities
+        : Array.isArray(rest.attributes?.amenities)
+          ? rest.attributes.amenities
+          : [],
+      max_guests: rest.max_guests ?? rest.attributes?.max_guests ?? 1,
+      cleaning_fee_cents: rest.cleaning_fee_cents ?? rest.attributes?.cleaning_fee_cents ?? 0,
+      rental_period:
+        rest.rental_period ||
+        rest.attributes?.rental_period ||
+        (rest.deal_type === "temporada" ? "diaria" : "mensal"),
+      is_digital: rest.is_digital ?? !!rest.digital_file_url,
+      digital_file_url: rest.digital_file_url || rest.attributes?.digital_file_url || null,
+      digital_file_name: rest.digital_file_name || rest.attributes?.digital_file_name || null,
+      digital_file_size_bytes:
+        rest.digital_file_size_bytes ?? rest.attributes?.digital_file_size_bytes ?? null,
+      digital_preview_url: rest.digital_preview_url || rest.attributes?.digital_preview_url || null,
+      download_limit: rest.download_limit ?? rest.attributes?.download_limit ?? 5,
+      access_duration_days:
+        rest.access_duration_days ?? rest.attributes?.access_duration_days ?? null,
+      booking_enabled: rest.booking_enabled ?? rest.attributes?.booking_enabled ?? false,
+      available_slots: rest.available_slots ?? rest.attributes?.available_slots ?? null,
+      service_duration_minutes:
+        rest.service_duration_minutes ?? rest.attributes?.service_duration_minutes ?? null,
+      property_tags: Array.isArray(rest.property_tags)
+        ? rest.property_tags
+        : Array.isArray(rest.attributes?.property_tags)
+          ? rest.attributes.property_tags
+          : [],
+      is_boosted: rest.is_boosted ?? rest.attributes?.is_boosted ?? false,
+      delivery_mode: rest.delivery_mode || rest.attributes?.delivery_mode || "pickup",
+      accepts_trade: rest.accepts_trade ?? rest.attributes?.accepts_trade ?? false,
+      accepts_card: rest.accepts_card ?? rest.attributes?.accepts_card ?? false,
+      max_installments: rest.max_installments ?? rest.attributes?.max_installments ?? 1,
+      price_cents: rest.price_cents ?? null,
+      pricing_model: rest.pricing_model || rest.attributes?.pricing_model || "one_time",
+      billing_cycle: rest.billing_cycle || rest.attributes?.billing_cycle || "monthly",
+      setup_fee_cents: rest.setup_fee_cents ?? rest.attributes?.setup_fee_cents ?? 0,
+      trial_days: rest.trial_days ?? rest.attributes?.trial_days ?? 0,
+      recurring_features: rest.recurring_features || rest.attributes?.recurring_features || [],
+      sub_category: rest.sub_category || rest.attributes?.sub_category || null,
+      contact_whatsapp: rest.contact_whatsapp || rest.whatsapp || null,
+      location_name: rest.location_name || null,
+      location_text: rest.location_text || rest.location_name || null,
+      location_lat: rest.location_lat ?? null,
+      location_lng: rest.location_lng ?? null,
+      images: Array.isArray(rest.images) ? rest.images : [],
+      feed_media:
+        Array.isArray(rest.feed_media) && rest.feed_media.length > 0
+          ? rest.feed_media
+          : Array.isArray(rest.feed_images) && rest.feed_images.length > 0
+            ? rest.feed_images
+            : [],
+      payment_settings: rest.payment_settings || rest.attributes?.payment_settings || {},
+      condition: rest.condition || null,
+      negotiable: rest.negotiable ?? true,
+      attributes: {
+        ...(rest.attributes || {}),
+        feed_images:
+          Array.isArray(rest.feed_images) && rest.feed_images.length > 0
+            ? rest.feed_images
+            : Array.isArray(rest.attributes?.feed_images)
+              ? rest.attributes.feed_images
+              : [],
+        hide_location:
+          rest.hide_location !== undefined
+            ? rest.hide_location
+            : (rest.attributes?.hide_location ?? false),
+        location_privacy: rest.location_privacy || rest.attributes?.location_privacy || "full",
+        pricing_model: rest.pricing_model || rest.attributes?.pricing_model || "one_time",
+        billing_cycle: rest.billing_cycle || rest.attributes?.billing_cycle || "monthly",
+        setup_fee_cents: rest.setup_fee_cents ?? rest.attributes?.setup_fee_cents ?? 0,
+        trial_days: rest.trial_days ?? rest.attributes?.trial_days ?? 0,
+        recurring_features: rest.recurring_features || rest.attributes?.recurring_features || [],
+        sub_category: rest.sub_category || rest.attributes?.sub_category || null,
+        accepted_payment_methods: rest.accepted_payment_methods ??
+          rest.attributes?.accepted_payment_methods ?? ["pix", "cartao_credito", "dinheiro"],
+        installments_available:
+          rest.installments_available ?? rest.attributes?.installments_available ?? true,
+        cancellation_policy:
+          rest.cancellation_policy ||
+          rest.attributes?.cancellation_policy ||
+          "Negociação direta com o anunciante",
+        ...(rest.available_weekdays ? { available_weekdays: rest.available_weekdays } : {}),
+        ...(rest.working_hours_start ? { working_hours_start: rest.working_hours_start } : {}),
+        ...(rest.working_hours_end ? { working_hours_end: rest.working_hours_end } : {}),
+        ...(rest.ai_instructions ? { ai_instructions: rest.ai_instructions } : {}),
+        ...(rest.ai_agent_enabled !== undefined ? { ai_agent_enabled: rest.ai_agent_enabled } : {}),
+      },
+      status: rest.status || "active",
+      max_discount_pct: rest.max_discount_pct ?? 0,
+      delivery_type:
+        rest.delivery_type || rest.delivery_mode || rest.attributes?.delivery_type || "pickup",
+      author_profile_id: identity.id,
+      store_id: rest.store_id || null,
+      // FASE 1: Lifecycle & Validade Obrigatória (30, 60 ou 90 dias)
+      expires_at:
+        (rest as any).expires_at ||
+        new Date(
+          Date.now() +
+            ([30, 60, 90].includes(
+              Number((rest as any).validity_days || rest.attributes?.validity_days),
+            )
+              ? Number((rest as any).validity_days || rest.attributes?.validity_days)
+              : 30) *
+              24 *
+              60 *
+              60 *
+              1000,
+        ).toISOString(),
+      stock_limit:
+        (rest as any).stock_limit !== undefined && (rest as any).stock_limit !== null
+          ? Number((rest as any).stock_limit)
+          : rest.attributes?.stock_limit
+            ? Number(rest.attributes.stock_limit)
+            : null,
+      offer_limit:
+        (rest as any).offer_limit !== undefined && (rest as any).offer_limit !== null
+          ? Number((rest as any).offer_limit)
+          : rest.attributes?.offer_limit
+            ? Number(rest.attributes.offer_limit)
+            : null,
+    };
 
- // Sanitiza e mapeia os campos para colunas existentes estritamente na tabela classifieds
- const payload: Record<string, any> = {
- title: rest.title,
- content: rest.content,
- category: rest.category,
- form_id: rest.form_id || rest.attributes?.form_id || null,
- deal_type: rest.deal_type || rest.attributes?.deal_type || (rest.category === "real_estate" ? "venda" : "venda"),
- property_type: rest.property_type || rest.attributes?.property_type || null,
- bedrooms: rest.bedrooms ?? rest.attributes?.bedrooms ?? null,
- bathrooms: rest.bathrooms ?? rest.attributes?.bathrooms ?? null,
- suites: rest.suites ?? rest.attributes?.suites ?? null,
- parking_spots: rest.parking_spots ?? rest.attributes?.parking_spots ?? null,
- area_sqm: rest.area_sqm ?? rest.attributes?.area_sqm ?? null,
- amenities: Array.isArray(rest.amenities) ? rest.amenities : Array.isArray(rest.attributes?.amenities) ? rest.attributes.amenities : [],
- max_guests: rest.max_guests ?? rest.attributes?.max_guests ?? 1,
- cleaning_fee_cents: rest.cleaning_fee_cents ?? rest.attributes?.cleaning_fee_cents ?? 0,
- rental_period: rest.rental_period || rest.attributes?.rental_period || (rest.deal_type === "temporada" ? "diaria" : "mensal"),
- is_digital: rest.is_digital ?? (!!rest.digital_file_url),
- digital_file_url: rest.digital_file_url || rest.attributes?.digital_file_url || null,
- digital_file_name: rest.digital_file_name || rest.attributes?.digital_file_name || null,
- digital_file_size_bytes: rest.digital_file_size_bytes ?? rest.attributes?.digital_file_size_bytes ?? null,
- digital_preview_url: rest.digital_preview_url || rest.attributes?.digital_preview_url || null,
- download_limit: rest.download_limit ?? rest.attributes?.download_limit ?? 5,
- access_duration_days: rest.access_duration_days ?? rest.attributes?.access_duration_days ?? null,
- booking_enabled: rest.booking_enabled ?? rest.attributes?.booking_enabled ?? false,
- available_slots: rest.available_slots ?? rest.attributes?.available_slots ?? null,
- service_duration_minutes: rest.service_duration_minutes ?? rest.attributes?.service_duration_minutes ?? null,
- property_tags: Array.isArray(rest.property_tags) ? rest.property_tags : Array.isArray(rest.attributes?.property_tags) ? rest.attributes.property_tags : [],
- is_boosted: rest.is_boosted ?? rest.attributes?.is_boosted ?? false,
- delivery_mode: rest.delivery_mode || rest.attributes?.delivery_mode || "pickup",
- accepts_trade: rest.accepts_trade ?? rest.attributes?.accepts_trade ?? false,
- accepts_card: rest.accepts_card ?? rest.attributes?.accepts_card ?? false,
- max_installments: rest.max_installments ?? rest.attributes?.max_installments ?? 1,
- price_cents: rest.price_cents ?? null,
- pricing_model: rest.pricing_model || rest.attributes?.pricing_model || "one_time",
- billing_cycle: rest.billing_cycle || rest.attributes?.billing_cycle || "monthly",
- setup_fee_cents: rest.setup_fee_cents ?? rest.attributes?.setup_fee_cents ?? 0,
- trial_days: rest.trial_days ?? rest.attributes?.trial_days ?? 0,
- recurring_features: rest.recurring_features || rest.attributes?.recurring_features || [],
- sub_category: rest.sub_category || rest.attributes?.sub_category || null,
- contact_whatsapp: rest.contact_whatsapp || rest.whatsapp || null,
- location_name: rest.location_name || null,
- location_text: rest.location_text || rest.location_name || null,
- location_lat: rest.location_lat ?? null,
- location_lng: rest.location_lng ?? null,
- images: Array.isArray(rest.images) ? rest.images : [],
-    feed_media: Array.isArray(rest.feed_media) && rest.feed_media.length > 0
-      ? rest.feed_media
-      : (Array.isArray(rest.feed_images) && rest.feed_images.length > 0 ? rest.feed_images : []),
-    payment_settings: rest.payment_settings || rest.attributes?.payment_settings || {},
- condition: rest.condition || null,
- negotiable: rest.negotiable ?? true,
-  attributes: {
-    ...(rest.attributes || {}),
-    feed_images: Array.isArray(rest.feed_images) && rest.feed_images.length > 0
-      ? rest.feed_images
-      : (Array.isArray(rest.attributes?.feed_images) ? rest.attributes.feed_images : []),
-    hide_location: rest.hide_location !== undefined ? rest.hide_location : (rest.attributes?.hide_location ?? false),
-    location_privacy: rest.location_privacy || rest.attributes?.location_privacy || "full",
-    pricing_model: rest.pricing_model || rest.attributes?.pricing_model || "one_time",
-   billing_cycle: rest.billing_cycle || rest.attributes?.billing_cycle || "monthly",
-   setup_fee_cents: rest.setup_fee_cents ?? rest.attributes?.setup_fee_cents ?? 0,
-   trial_days: rest.trial_days ?? rest.attributes?.trial_days ?? 0,
-   recurring_features: rest.recurring_features || rest.attributes?.recurring_features || [],
-   sub_category: rest.sub_category || rest.attributes?.sub_category || null,
-   accepted_payment_methods: rest.accepted_payment_methods ?? rest.attributes?.accepted_payment_methods ?? ["pix", "cartao_credito", "dinheiro"],
-   installments_available: rest.installments_available ?? rest.attributes?.installments_available ?? true,
-   cancellation_policy: rest.cancellation_policy || rest.attributes?.cancellation_policy || "Negociação direta com o anunciante",
-   ...(rest.available_weekdays ? { available_weekdays: rest.available_weekdays } : {}),
-   ...(rest.working_hours_start ? { working_hours_start: rest.working_hours_start } : {}),
-   ...(rest.working_hours_end ? { working_hours_end: rest.working_hours_end } : {}),
-   ...(rest.ai_instructions ? { ai_instructions: rest.ai_instructions } : {}),
-   ...(rest.ai_agent_enabled !== undefined ? { ai_agent_enabled: rest.ai_agent_enabled } : {}),
- },
- status: rest.status || "active",
- max_discount_pct: rest.max_discount_pct ?? 0,
- delivery_type: rest.delivery_type || rest.delivery_mode || rest.attributes?.delivery_type || "pickup",
- author_profile_id: identity.id,
- store_id: rest.store_id || null,
- // FASE 1: Lifecycle & Validade Obrigatória (30, 60 ou 90 dias)
- expires_at: (rest as any).expires_at || new Date(
-    Date.now() + ([30, 60, 90].includes(Number((rest as any).validity_days || rest.attributes?.validity_days))
-      ? Number((rest as any).validity_days || rest.attributes?.validity_days)
-      : 30) * 24 * 60 * 60 * 1000
-  ).toISOString(),
- stock_limit: (rest as any).stock_limit !== undefined && (rest as any).stock_limit !== null
-    ? Number((rest as any).stock_limit)
-    : (rest.attributes?.stock_limit ? Number(rest.attributes.stock_limit) : null),
-  offer_limit: (rest as any).offer_limit !== undefined && (rest as any).offer_limit !== null
-    ? Number((rest as any).offer_limit)
-    : (rest.attributes?.offer_limit ? Number(rest.attributes.offer_limit) : null),
- };
+    let savedRecord: any = null;
 
-  let savedRecord: any = null;
+    if (isUpdating) {
+      // Busca o anúncio existente para validar autoridade
+      const { data: existingAd, error: fetchErr } = await supabase
+        .from("classifieds")
+        .select("id, author_profile_id, store_id")
+        .eq("id", id)
+        .single();
 
-  if (isUpdating) {
-    // Busca o anúncio existente para validar autoridade
-    const { data: existingAd, error: fetchErr } = await supabase
-      .from("classifieds")
-      .select("id, author_profile_id, store_id")
-      .eq("id", id)
-      .single();
+      if (fetchErr || !existingAd) {
+        throw new Error("Anúncio não encontrado para edição.");
+      }
 
-    if (fetchErr || !existingAd) {
-      throw new Error("Anúncio não encontrado para edição.");
-    }
+      const isAuthor = existingAd.author_profile_id === identity.id;
+      let isStoreManager = false;
 
-    const isAuthor = existingAd.author_profile_id === identity.id;
-    let isStoreManager = false;
+      if (!isAuthor && existingAd.store_id) {
+        const hasMembership = (identity.memberships || []).some(
+          (m: any) => m.store_id === existingAd.store_id,
+        );
+        if (hasMembership || identity.isPlatformAdmin) {
+          isStoreManager = true;
+        } else {
+          const { data: storeMember } = await supabase
+            .from("workspace_members")
+            .select("id")
+            .eq("store_id", existingAd.store_id)
+            .eq("profile_id", identity.id)
+            .maybeSingle();
+          isStoreManager = !!storeMember;
+        }
+      }
 
-    if (!isAuthor && existingAd.store_id) {
-      const hasMembership = (identity.memberships || []).some((m: any) => m.store_id === existingAd.store_id);
-      if (hasMembership || identity.isPlatformAdmin) {
-        isStoreManager = true;
-      } else {
-        const { data: storeMember } = await supabase
-          .from("workspace_members")
-          .select("id")
-          .eq("store_id", existingAd.store_id)
-          .eq("profile_id", identity.id)
-          .maybeSingle();
-        isStoreManager = !!storeMember;
+      if (!isAuthor && !isStoreManager) {
+        throw new Error("Você não tem permissão para editar este anúncio.");
+      }
+
+      const { data, error } = await supabase
+        .from("classifieds")
+        .update(payload)
+        .eq("id", id)
+        .select()
+        .single();
+
+      if (error) {
+        console.error("Error updating classified:", error);
+        throw new Error(error.message || "Falha ao atualizar anúncio.");
+      }
+      savedRecord = data;
+
+      // Auditoria Forense Imutável (Regra de Governança BigTech)
+      try {
+        await supabase.from("audit_logs").insert({
+          store_id: savedRecord.store_id || null,
+          user_id: identity.id,
+          action: "classified.update",
+          entity_type: "classified",
+          entity_id: savedRecord.id,
+          payload_snapshot: {
+            title: savedRecord.title,
+            category: savedRecord.category,
+            price_cents: savedRecord.price_cents,
+            status: savedRecord.status,
+            updated_at: new Date().toISOString(),
+          },
+        });
+      } catch (logErr) {
+        console.warn("[audit_logs] Falha ao gravar log de atualização de anúncio:", logErr);
+      }
+    } else {
+      const { data, error } = await supabase.from("classifieds").insert(payload).select().single();
+
+      if (error) {
+        console.error("Error inserting classified:", error);
+        throw new Error(error.message || "Falha ao salvar anúncio.");
+      }
+      savedRecord = data;
+
+      // Auditoria Forense Imutável na Criação
+      try {
+        await supabase.from("audit_logs").insert({
+          store_id: savedRecord.store_id || null,
+          user_id: identity.id,
+          action: "classified.create",
+          entity_type: "classified",
+          entity_id: savedRecord.id,
+          payload_snapshot: {
+            title: savedRecord.title,
+            category: savedRecord.category,
+            price_cents: savedRecord.price_cents,
+            status: savedRecord.status,
+            created_at: new Date().toISOString(),
+          },
+        });
+      } catch (logErr) {
+        console.warn("[audit_logs] Falha ao gravar log de criação de anúncio:", logErr);
       }
     }
 
-    if (!isAuthor && !isStoreManager) {
-      throw new Error("Você não tem permissão para editar este anúncio.");
-    }
+    // Telemetria invisível de histórico de rotatividade de ponto comercial (Fase 4 Master Plan)
+    if (
+      savedRecord &&
+      (savedRecord.category === "business" || savedRecord.attributes?.commercial_point_type)
+    ) {
+      const address = savedRecord.location_name || savedRecord.location_text || savedRecord.address;
+      if (address && address.trim()) {
+        (async () => {
+          try {
+            const city = getDefaultCity(savedRecord.city);
+            const state = getDefaultState(savedRecord.state);
+            const addressNorm = address.trim().toLowerCase();
 
-    const { data, error } = await supabase
-      .from("classifieds")
-      .update(payload)
-      .eq("id", id)
-      .select()
-      .single();
-
-    if (error) {
-      console.error("Error updating classified:", error);
-      throw new Error(error.message || "Falha ao atualizar anúncio.");
-    }
-    savedRecord = data;
-
-    // Auditoria Forense Imutável (Regra de Governança BigTech)
-    try {
-      await supabase.from("audit_logs").insert({
-        store_id: savedRecord.store_id || null,
-        user_id: identity.id,
-        action: "classified.update",
-        entity_type: "classified",
-        entity_id: savedRecord.id,
-        payload_snapshot: {
-          title: savedRecord.title,
-          category: savedRecord.category,
-          price_cents: savedRecord.price_cents,
-          status: savedRecord.status,
-          updated_at: new Date().toISOString(),
-        },
-      });
-    } catch (logErr) {
-      console.warn("[audit_logs] Falha ao gravar log de atualização de anúncio:", logErr);
-    }
-  } else {
-    const { data, error } = await supabase
-      .from("classifieds")
-      .insert(payload)
-      .select()
-      .single();
-
-    if (error) {
-      console.error("Error inserting classified:", error);
-      throw new Error(error.message || "Falha ao salvar anúncio.");
-    }
-    savedRecord = data;
-
-    // Auditoria Forense Imutável na Criação
-    try {
-      await supabase.from("audit_logs").insert({
-        store_id: savedRecord.store_id || null,
-        user_id: identity.id,
-        action: "classified.create",
-        entity_type: "classified",
-        entity_id: savedRecord.id,
-        payload_snapshot: {
-          title: savedRecord.title,
-          category: savedRecord.category,
-          price_cents: savedRecord.price_cents,
-          status: savedRecord.status,
-          created_at: new Date().toISOString(),
-        },
-      });
-    } catch (logErr) {
-      console.warn("[audit_logs] Falha ao gravar log de criação de anúncio:", logErr);
-    }
-  }
-
-  // Telemetria invisível de histórico de rotatividade de ponto comercial (Fase 4 Master Plan)
-  if (savedRecord && (savedRecord.category === "business" || savedRecord.attributes?.commercial_point_type)) {
-    const address = savedRecord.location_name || savedRecord.location_text || savedRecord.address;
-    if (address && address.trim()) {
-      (async () => {
-        try {
-          const city = getDefaultCity(savedRecord.city);
-          const state = getDefaultState(savedRecord.state);
-          const addressNorm = address.trim().toLowerCase();
-
-          const { data: existingPoint } = await supabase
-            .from("commercial_point_records")
-            .select("id, turnover_count")
-            .ilike("address_normalized", `%${addressNorm}%`)
-            .maybeSingle();
-
-          let pointId = existingPoint?.id;
-          if (!pointId) {
-            const { data: newPoint } = await supabase
+            const { data: existingPoint } = await supabase
               .from("commercial_point_records")
-              .insert({
-                address_normalized: address.trim(),
-                city,
-                state,
-                area_sqm: Number(savedRecord.attributes?.area_sqm) || null,
-                point_type: savedRecord.attributes?.commercial_point_type || "loja_rua",
-                current_occupant_name: savedRecord.title,
-                current_occupant_cnpj: savedRecord.attributes?.company_cnpj || null,
-                current_occupant_segment: savedRecord.attributes?.business_segment || "Comércio Geral",
-                occupancy_status: savedRecord.attributes?.business_type === "repasse_ponto" ? "transitioning" : "occupied",
-                turnover_count: 1,
-              })
-              .select("id")
-              .single();
-            pointId = newPoint?.id;
-          } else {
-            await supabase
-              .from("commercial_point_records")
-              .update({
-                current_occupant_name: savedRecord.title,
-                current_occupant_cnpj: savedRecord.attributes?.company_cnpj || null,
-                current_occupant_segment: savedRecord.attributes?.business_segment || "Comércio Geral",
-                occupancy_status: savedRecord.attributes?.business_type === "repasse_ponto" ? "transitioning" : "occupied",
-                turnover_count: ((existingPoint as any)?.turnover_count || 0) + 1,
-                updated_at: new Date().toISOString(),
-              })
-              .eq("id", pointId);
-          }
+              .select("id, turnover_count")
+              .ilike("address_normalized", `%${addressNorm}%`)
+              .maybeSingle();
 
-          if (pointId) {
-            await supabase.from("commercial_point_turnover").insert({
-              commercial_point_id: pointId,
-              former_company_name: savedRecord.title,
-              former_cnpj: savedRecord.attributes?.company_cnpj || null,
-              segment: savedRecord.attributes?.business_segment || "Comércio Geral",
-              duration_months: Number(savedRecord.attributes?.contract_remaining_years) 
-                ? Math.round(Number(savedRecord.attributes.contract_remaining_years) * 12) 
-                : 12,
-              reason_for_leaving: savedRecord.attributes?.sale_reason || "Transição Comercial",
-              reported_revenue_monthly_cents: savedRecord.attributes?.monthly_revenue_cents || null,
-            });
+            let pointId = existingPoint?.id;
+            if (!pointId) {
+              const { data: newPoint } = await supabase
+                .from("commercial_point_records")
+                .insert({
+                  address_normalized: address.trim(),
+                  city,
+                  state,
+                  area_sqm: Number(savedRecord.attributes?.area_sqm) || null,
+                  point_type: savedRecord.attributes?.commercial_point_type || "loja_rua",
+                  current_occupant_name: savedRecord.title,
+                  current_occupant_cnpj: savedRecord.attributes?.company_cnpj || null,
+                  current_occupant_segment:
+                    savedRecord.attributes?.business_segment || "Comércio Geral",
+                  occupancy_status:
+                    savedRecord.attributes?.business_type === "repasse_ponto"
+                      ? "transitioning"
+                      : "occupied",
+                  turnover_count: 1,
+                })
+                .select("id")
+                .single();
+              pointId = newPoint?.id;
+            } else {
+              await supabase
+                .from("commercial_point_records")
+                .update({
+                  current_occupant_name: savedRecord.title,
+                  current_occupant_cnpj: savedRecord.attributes?.company_cnpj || null,
+                  current_occupant_segment:
+                    savedRecord.attributes?.business_segment || "Comércio Geral",
+                  occupancy_status:
+                    savedRecord.attributes?.business_type === "repasse_ponto"
+                      ? "transitioning"
+                      : "occupied",
+                  turnover_count: ((existingPoint as any)?.turnover_count || 0) + 1,
+                  updated_at: new Date().toISOString(),
+                })
+                .eq("id", pointId);
+            }
+
+            if (pointId) {
+              await supabase.from("commercial_point_turnover").insert({
+                commercial_point_id: pointId,
+                former_company_name: savedRecord.title,
+                former_cnpj: savedRecord.attributes?.company_cnpj || null,
+                segment: savedRecord.attributes?.business_segment || "Comércio Geral",
+                duration_months: Number(savedRecord.attributes?.contract_remaining_years)
+                  ? Math.round(Number(savedRecord.attributes.contract_remaining_years) * 12)
+                  : 12,
+                reason_for_leaving: savedRecord.attributes?.sale_reason || "Transição Comercial",
+                reported_revenue_monthly_cents:
+                  savedRecord.attributes?.monthly_revenue_cents || null,
+              });
+            }
+          } catch (telemetryErr: any) {
+            console.warn(
+              "[classifieds] Telemetria de ponto comercial registrada com fallback:",
+              telemetryErr?.message,
+            );
           }
-        } catch (telemetryErr: any) {
-          console.warn("[classifieds] Telemetria de ponto comercial registrada com fallback:", telemetryErr?.message);
-        }
-      })().catch(() => {});
+        })().catch(() => {});
+      }
     }
-  }
 
-  return savedRecord;
- });
+    return savedRecord;
+  });
 
 export const deleteClassified = createServerFn({ method: "POST" })
- .validator(z.string().uuid())
- .handler(async ({ data: id }) => {
- const supabase = getServerClient();
- const identity = await getIdentity();
+  .validator(z.string().uuid())
+  .handler(async ({ data: id }) => {
+    const supabase = getServerClient();
+    const identity = await getIdentity();
 
- if (!identity || !identity.id) {
- throw new Error("Unauthorized");
- }
+    if (!identity || !identity.id) {
+      throw new Error("Unauthorized");
+    }
 
     const { data: existing, error: fetchErr } = await supabase
       .from("classifieds")
@@ -1135,7 +1346,10 @@ export const deleteClassified = createServerFn({ method: "POST" })
     if (!hasAuthority && existing.store_id) {
       if (identity.store_id === existing.store_id) {
         hasAuthority = true;
-      } else if (Array.isArray(identity.memberships) && identity.memberships.some((m) => m.store_id === existing.store_id)) {
+      } else if (
+        Array.isArray(identity.memberships) &&
+        identity.memberships.some((m) => m.store_id === existing.store_id)
+      ) {
         hasAuthority = true;
       } else {
         const { data: storeMember } = await supabase
@@ -1145,7 +1359,9 @@ export const deleteClassified = createServerFn({ method: "POST" })
           .eq("profile_id", identity.id)
           .maybeSingle();
 
-        const hasMembership = (identity.memberships || []).some((m: any) => m.store_id === existing.store_id);
+        const hasMembership = (identity.memberships || []).some(
+          (m: any) => m.store_id === existing.store_id,
+        );
         hasAuthority = !!storeMember || hasMembership || !!identity.isPlatformAdmin;
       }
     }
@@ -1154,10 +1370,7 @@ export const deleteClassified = createServerFn({ method: "POST" })
       throw new Error("Você não tem permissão para excluir este anúncio.");
     }
 
-    const { error } = await supabase
-      .from("classifieds")
-      .delete()
-      .eq("id", id);
+    const { error } = await supabase.from("classifieds").delete().eq("id", id);
 
     if (error) {
       console.error("Error deleting classified:", error);
@@ -1165,151 +1378,154 @@ export const deleteClassified = createServerFn({ method: "POST" })
     }
 
     return { success: true };
- });
-
+  });
 
 // ---------------------------------------------------------------------------
 // CANDIDATURAS A VAGAS DE CLASSIFICADOS (100% Real no Supabase)
 // ---------------------------------------------------------------------------
 
 export const applyToClassifiedJob = createServerFn({ method: "POST" })
- .validator(
- z.object({
- classified_id: z.string().uuid(),
- candidate_name: z.string().min(2, "Nome do candidato é obrigatório"),
- candidate_email: z.string().email().optional(),
- candidate_phone: z.string().optional(),
- education_level: z.string().optional(),
- experience_years: z.string().optional(),
- candidate_role: z.string().optional(),
- resume_url: z.string().optional(),
- resume_snapshot: z.record(z.any()).optional(),
- cover_note: z.string().optional(),
- })
- )
- .handler(async ({ data: input }) => {
- const supabase = getServerClient();
- const identity = await getIdentity().catch(() => null);
+  .validator(
+    z.object({
+      classified_id: z.string().uuid(),
+      candidate_name: z.string().min(2, "Nome do candidato é obrigatório"),
+      candidate_email: z.string().email().optional(),
+      candidate_phone: z.string().optional(),
+      education_level: z.string().optional(),
+      experience_years: z.string().optional(),
+      candidate_role: z.string().optional(),
+      resume_url: z.string().optional(),
+      resume_snapshot: z.record(z.any()).optional(),
+      cover_note: z.string().optional(),
+    }),
+  )
+  .handler(async ({ data: input }) => {
+    const supabase = getServerClient();
+    const identity = await getIdentity().catch(() => null);
 
- const { data, error } = await supabase
- .from("classified_applications")
- .insert({
- classified_id: input.classified_id,
- candidate_profile_id: identity?.id || null,
- candidate_name: input.candidate_name,
- candidate_email: input.candidate_email || null,
- candidate_phone: input.candidate_phone || null,
- education_level: input.education_level || null,
- experience_years: input.experience_years || null,
- candidate_role: input.candidate_role || null,
- resume_url: input.resume_url || null,
- resume_snapshot: input.resume_snapshot || {},
- cover_note: input.cover_note || null,
- status: "pending",
- })
- .select()
- .single();
+    const { data, error } = await supabase
+      .from("classified_applications")
+      .insert({
+        classified_id: input.classified_id,
+        candidate_profile_id: identity?.id || null,
+        candidate_name: input.candidate_name,
+        candidate_email: input.candidate_email || null,
+        candidate_phone: input.candidate_phone || null,
+        education_level: input.education_level || null,
+        experience_years: input.experience_years || null,
+        candidate_role: input.candidate_role || null,
+        resume_url: input.resume_url || null,
+        resume_snapshot: input.resume_snapshot || {},
+        cover_note: input.cover_note || null,
+        status: "pending",
+      })
+      .select()
+      .single();
 
- if (error) {
- console.error("[classifieds] Erro ao aplicar para vaga:", error);
- throw new Error(error.message || "Falha ao enviar candidatura.");
- }
+    if (error) {
+      console.error("[classifieds] Erro ao aplicar para vaga:", error);
+      throw new Error(error.message || "Falha ao enviar candidatura.");
+    }
 
- // Conexão Sistêmica: Se o classificado pertence a uma loja/empresa, gera Lead no Funil Comercial
- const { data: item } = await supabase
- .from("classifieds")
- .select("id, title, store_id")
- .eq("id", input.classified_id)
- .maybeSingle();
+    // Conexão Sistêmica: Se o classificado pertence a uma loja/empresa, gera Lead no Funil Comercial
+    const { data: item } = await supabase
+      .from("classifieds")
+      .select("id, title, store_id")
+      .eq("id", input.classified_id)
+      .maybeSingle();
 
- if (item?.store_id) {
- try {
- await supabase
- .from("leads_crm")
- .insert({
- store_id: item.store_id,
- full_name: input.candidate_name.trim(),
- email: input.candidate_email || null,
- phone: input.candidate_phone || null,
- title: `Candidatura: ${item.title}`,
- destination: `Classificado: ${item.title}`,
- source: "site",
- lead_source_detail: "Classificados / Vagas",
- status: "new",
- tags: ["Classificados", "Candidato", input.candidate_role || item.title],
- notes: `Candidatura a vaga via classificados. Cargo pretendido: ${input.candidate_role || "Não informado"}. Experiência: ${input.experience_years || "Não informada"}. Escolaridade: ${input.education_level || "Não informada"}. Nota: ${input.cover_note || "Nenhuma"}.`,
- });
- } catch (err: any) {
- console.warn("[classifieds] Failed to sync to leads_crm:", err);
- }
- }
+    if (item?.store_id) {
+      try {
+        await supabase.from("leads_crm").insert({
+          store_id: item.store_id,
+          full_name: input.candidate_name.trim(),
+          email: input.candidate_email || null,
+          phone: input.candidate_phone || null,
+          title: `Candidatura: ${item.title}`,
+          destination: `Classificado: ${item.title}`,
+          source: "site",
+          lead_source_detail: "Classificados / Vagas",
+          status: "new",
+          tags: ["Classificados", "Candidato", input.candidate_role || item.title],
+          notes: `Candidatura a vaga via classificados. Cargo pretendido: ${input.candidate_role || "Não informado"}. Experiência: ${input.experience_years || "Não informada"}. Escolaridade: ${input.education_level || "Não informada"}. Nota: ${input.cover_note || "Nenhuma"}.`,
+        });
+      } catch (err: any) {
+        console.warn("[classifieds] Failed to sync to leads_crm:", err);
+      }
+    }
 
- return data;
- });
+    return data;
+  });
 
 export const listClassifiedJobApplications = createServerFn({ method: "GET" })
- .validator(z.string().uuid())
- .handler(async ({ data: classified_id }) => {
- const supabase = getServerClient();
- const identity = await getIdentity();
- if (!identity?.id) throw new Error("Unauthorized");
+  .validator(z.string().uuid())
+  .handler(async ({ data: classified_id }) => {
+    const supabase = getServerClient();
+    const identity = await getIdentity();
+    if (!identity?.id) throw new Error("Unauthorized");
 
- const { data: apps, error } = await supabase
- .from("classified_applications")
- .select("*")
- .eq("classified_id", classified_id)
- .order("created_at", { ascending: false });
+    const { data: apps, error } = await supabase
+      .from("classified_applications")
+      .select("*")
+      .eq("classified_id", classified_id)
+      .order("created_at", { ascending: false });
 
- if (error) {
- console.error("[classifieds] Erro ao listar candidaturas:", error);
- return [];
- }
+    if (error) {
+      console.error("[classifieds] Erro ao listar candidaturas:", error);
+      return [];
+    }
 
- return apps || [];
- });
+    return apps || [];
+  });
 
 export const getDigitalDownloadSignedUrl = createServerFn({ method: "POST" })
   .validator(z.object({ classifiedId: z.string().uuid() }))
   .handler(async ({ data: { classifiedId } }) => {
     const supabase = getServerClient();
+    const identity = await getIdentity().catch(() => null);
+    if (!identity?.id) throw new Error("Autenticação necessária para baixar este arquivo.");
+
     const { data: ad, error } = await supabase
       .from("classifieds")
-      .select("id, title, digital_file_url, digital_file_name, is_digital, status")
+      .select(
+        "id, title, digital_file_url, digital_file_name, is_digital, status, expires_at, author_profile_id",
+      )
       .eq("id", classifiedId)
       .single();
-
     if (error || !ad) throw new Error("Anúncio não encontrado.");
-    if (!ad.digital_file_url) throw new Error("Este anúncio não possui arquivo digital anexado.");
+    if (!ad.is_digital || !ad.digital_file_url)
+      throw new Error("Este anúncio não possui arquivo digital anexado.");
+    if (ad.expires_at && new Date(ad.expires_at).getTime() <= Date.now())
+      throw new Error("Este anúncio expirou.");
+
+    // O autor pode validar o próprio arquivo; compradores precisam de deal concluído.
+    const isOwner = ad.author_profile_id === identity.id;
+    if (!isOwner) {
+      const { data: deal, error: dealError } = await supabase
+        .from("deals")
+        .select("id, status, buyer_id, classified_id")
+        .eq("classified_id", classifiedId)
+        .eq("buyer_id", identity.id)
+        .eq("status", "completed")
+        .limit(1)
+        .maybeSingle();
+      if (dealError || !deal)
+        throw new Error("Download disponível somente após a conclusão da compra.");
+    }
 
     let storagePath = ad.digital_file_url;
-    if (storagePath.includes("/classifieds/")) {
-      storagePath = storagePath.split("/classifieds/")[1];
-    }
-
-    // Se já é uma URL pública direta com https, retorna ela
+    if (storagePath.includes("/classifieds/")) storagePath = storagePath.split("/classifieds/")[1];
     if (storagePath.startsWith("http://") || storagePath.startsWith("https://")) {
-      return {
-        downloadUrl: storagePath,
-        fileName: ad.digital_file_name || `${ad.title || "arquivo"}.zip`,
-      };
+      throw new Error("Arquivo digital não está em um bucket privado da Waesy.");
     }
 
-    const { data: signedData, error: signErr } = await supabase
-      .storage
+    const { data: signedData, error: signErr } = await supabase.storage
       .from("classifieds")
-      .createSignedUrl(storagePath, 3600);
-
-    if (signErr) {
-      console.warn("[classifieds] createSignedUrl falhou, tentando URL pública:", signErr);
-      const { data: pubData } = supabase.storage.from("classifieds").getPublicUrl(storagePath);
-      return {
-        downloadUrl: pubData.publicUrl,
-        fileName: ad.digital_file_name || `${ad.title || "arquivo"}.zip`,
-      };
-    }
-
+      .createSignedUrl(storagePath, 900);
+    if (signErr || !signedData?.signedUrl)
+      throw new Error("Não foi possível gerar o download privado.");
     return {
-      downloadUrl: signedData?.signedUrl || ad.digital_file_url,
+      downloadUrl: signedData.signedUrl,
       fileName: ad.digital_file_name || `${ad.title || "arquivo"}.zip`,
     };
   });
@@ -1337,7 +1553,9 @@ export const subscribeToClassifiedPlan = createServerFn({ method: "POST" })
     // Busca o anúncio para verificar se é recorrente e obter o vendedor
     const { data: ad, error: adErr } = await supabase
       .from("classifieds")
-      .select("id, author_profile_id, price_cents, pricing_model, billing_cycle, setup_fee_cents, title")
+      .select(
+        "id, author_profile_id, price_cents, pricing_model, billing_cycle, setup_fee_cents, title",
+      )
       .eq("id", input.classifiedId)
       .single();
 
@@ -1392,15 +1610,15 @@ export const subscribeToClassifiedPlan = createServerFn({ method: "POST" })
     return sub;
   });
 
-export const listMyClassifiedSubscriptions = createServerFn({ method: "GET" })
-  .handler(async () => {
-    const supabase = getServerClient();
-    const identity = await getIdentity();
-    if (!identity || !identity.id) return [];
+export const listMyClassifiedSubscriptions = createServerFn({ method: "GET" }).handler(async () => {
+  const supabase = getServerClient();
+  const identity = await getIdentity();
+  if (!identity || !identity.id) return [];
 
-    const { data, error } = await supabase
-      .from("classified_subscriptions")
-      .select(`
+  const { data, error } = await supabase
+    .from("classified_subscriptions")
+    .select(
+      `
         *,
         classified:classified_id (
           id,
@@ -1416,20 +1634,21 @@ export const listMyClassifiedSubscriptions = createServerFn({ method: "GET" })
           avatar_url,
           phone
         )
-      `)
-      .eq("subscriber_profile_id", identity.id)
-      .order("created_at", { ascending: false });
+      `,
+    )
+    .eq("subscriber_profile_id", identity.id)
+    .order("created_at", { ascending: false });
 
-    if (error) {
-      console.warn("[classifieds] listMyClassifiedSubscriptions error:", error);
-      return [];
-    }
+  if (error) {
+    console.warn("[classifieds] listMyClassifiedSubscriptions error:", error);
+    return [];
+  }
 
-    return data || [];
-  });
+  return data || [];
+});
 
-export const listSellerClassifiedSubscriptions = createServerFn({ method: "GET" })
-  .handler(async () => {
+export const listSellerClassifiedSubscriptions = createServerFn({ method: "GET" }).handler(
+  async () => {
     const supabase = getServerClient();
     const identity = await getIdentity();
     if (!identity || !identity.id) {
@@ -1438,7 +1657,8 @@ export const listSellerClassifiedSubscriptions = createServerFn({ method: "GET" 
 
     const { data, error } = await supabase
       .from("classified_subscriptions")
-      .select(`
+      .select(
+        `
         *,
         classified:classified_id (
           id,
@@ -1454,7 +1674,8 @@ export const listSellerClassifiedSubscriptions = createServerFn({ method: "GET" 
           avatar_url,
           phone
         )
-      `)
+      `,
+      )
       .eq("seller_profile_id", identity.id)
       .order("created_at", { ascending: false });
 
@@ -1483,7 +1704,8 @@ export const listSellerClassifiedSubscriptions = createServerFn({ method: "GET" 
         totalCount: subs.length,
       },
     };
-  });
+  },
+);
 
 export const updateSubscriptionStatus = createServerFn({ method: "POST" })
   .validator(
@@ -1599,13 +1821,11 @@ export const trackClassifiedView = createServerFn({ method: "POST" })
 
         // Telemetria imutável em ad_telemetry_events
         Promise.resolve(
-          supabase
-            .from("ad_telemetry_events")
-            .insert({
-              article_id: adId,
-              event_type: "view",
-              store_id: current.store_id || null,
-            })
+          supabase.from("ad_telemetry_events").insert({
+            article_id: adId,
+            event_type: "view",
+            store_id: current.store_id || null,
+          }),
         ).catch(() => null);
       }
       return { success: true };
@@ -1624,11 +1844,18 @@ export const trackClassifiedWhatsAppClick = createServerFn({ method: "POST" })
       const { error: rpcErr } = await supabase.rpc("increment_classified_click", { ad_id: adId });
       if (rpcErr) {
         // Fallback defensivo com update direto
-        const { data: current } = await supabase.from("classifieds").select("clicks_count, whatsapp_clicks_count").eq("id", adId).single();
+        const { data: current } = await supabase
+          .from("classifieds")
+          .select("clicks_count, whatsapp_clicks_count")
+          .eq("id", adId)
+          .single();
         if (current) {
           await supabase
             .from("classifieds")
-            .update({ clicks_count: (current.clicks_count || 0) + 1, whatsapp_clicks_count: ((current as any).whatsapp_clicks_count || 0) + 1 })
+            .update({
+              clicks_count: (current.clicks_count || 0) + 1,
+              whatsapp_clicks_count: ((current as any).whatsapp_clicks_count || 0) + 1,
+            })
             .eq("id", adId);
         }
       }
@@ -1670,7 +1897,9 @@ export const getBoostPaymentStatus = createServerFn({ method: "GET" }).handler(a
   const integrations = (settings.integrations as Record<string, any>) || {};
 
   const hasAsaas = !!(integrations.asaas_api_key && integrations.asaas_api_key.length > 10);
-  const hasStripe = !!(integrations.stripe_secret_key && integrations.stripe_secret_key.length > 10);
+  const hasStripe = !!(
+    integrations.stripe_secret_key && integrations.stripe_secret_key.length > 10
+  );
 
   // Determina provider ativo (Asaas tem prioridade por ser brasileiro/PIX nativo)
   const activeProvider = hasAsaas ? "asaas" : hasStripe ? "stripe" : null;
@@ -1694,7 +1923,7 @@ export const initiateBoostPayment = createServerFn({ method: "POST" })
     z.object({
       adId: z.string().uuid(),
       planDays: z.union([z.literal(7), z.literal(15), z.literal(30)]),
-    })
+    }),
   )
   .handler(async ({ data: { adId, planDays } }) => {
     const supabase = getServerClient();
@@ -1734,13 +1963,17 @@ export const initiateBoostPayment = createServerFn({ method: "POST" })
 
     const hasAsaas = !!(asaasKey && asaasKey.length > 10 && !asaasKey.includes("••••"));
     const hasStripe = !!(stripeKey && stripeKey.length > 10 && !stripeKey.includes("••••"));
-    const activeProvider: "asaas" | "stripe" | null = hasAsaas ? "asaas" : hasStripe ? "stripe" : null;
+    const activeProvider: "asaas" | "stripe" | null = hasAsaas
+      ? "asaas"
+      : hasStripe
+        ? "stripe"
+        : null;
 
     // Se não há gateway: bloqueia completamente — sem fallback simulado
     if (!activeProvider) {
       throw new Error(
         "Nenhum gateway de pagamento está configurado na plataforma. " +
-        "Configure Asaas ou Stripe em /admin-master/integracoes para habilitar o impulsionamento."
+          "Configure Asaas ou Stripe em /admin-master/integracoes para habilitar o impulsionamento.",
       );
     }
 
@@ -1771,14 +2004,18 @@ export const initiateBoostPayment = createServerFn({ method: "POST" })
         .maybeSingle();
 
       const userEmail = (userProfile as any)?.email || "";
-      const userName = (userProfile as any)?.name || (userProfile as any)?.username || "Usuário Waesy";
+      const userName =
+        (userProfile as any)?.name || (userProfile as any)?.username || "Usuário Waesy";
 
       // Primeiro: verifica/cria customer no Asaas
       let asaasCustomerId: string | null = null;
       try {
-        const customerRes = await fetch(`${asaasBaseUrl}/customers?email=${encodeURIComponent(userEmail)}`, {
-          headers: { "access_token": asaasKey, "Content-Type": "application/json" },
-        });
+        const customerRes = await fetch(
+          `${asaasBaseUrl}/customers?email=${encodeURIComponent(userEmail)}`,
+          {
+            headers: { access_token: asaasKey, "Content-Type": "application/json" },
+          },
+        );
         const customerData = await customerRes.json();
         if (customerData?.data?.[0]?.id) {
           asaasCustomerId = customerData.data[0].id;
@@ -1786,7 +2023,7 @@ export const initiateBoostPayment = createServerFn({ method: "POST" })
           // Cria customer
           const createRes = await fetch(`${asaasBaseUrl}/customers`, {
             method: "POST",
-            headers: { "access_token": asaasKey, "Content-Type": "application/json" },
+            headers: { access_token: asaasKey, "Content-Type": "application/json" },
             body: JSON.stringify({
               name: userName,
               email: userEmail || undefined,
@@ -1800,7 +2037,9 @@ export const initiateBoostPayment = createServerFn({ method: "POST" })
       }
 
       if (!asaasCustomerId) {
-        throw new Error("Não foi possível criar o cliente no gateway de pagamento. Tente novamente.");
+        throw new Error(
+          "Não foi possível criar o cliente no gateway de pagamento. Tente novamente.",
+        );
       }
 
       // Gera cobrança PIX
@@ -1809,7 +2048,7 @@ export const initiateBoostPayment = createServerFn({ method: "POST" })
 
       const chargeRes = await fetch(`${asaasBaseUrl}/payments`, {
         method: "POST",
-        headers: { "access_token": asaasKey, "Content-Type": "application/json" },
+        headers: { access_token: asaasKey, "Content-Type": "application/json" },
         body: JSON.stringify({
           customer: asaasCustomerId,
           billingType: "PIX",
@@ -1835,7 +2074,7 @@ export const initiateBoostPayment = createServerFn({ method: "POST" })
       if (providerRef) {
         try {
           const pixRes = await fetch(`${asaasBaseUrl}/payments/${providerRef}/pixQrCode`, {
-            headers: { "access_token": asaasKey },
+            headers: { access_token: asaasKey },
           });
           if (pixRes.ok) {
             const pixData = await pixRes.json();
@@ -1851,7 +2090,7 @@ export const initiateBoostPayment = createServerFn({ method: "POST" })
       const stripeRes = await fetch("https://api.stripe.com/v1/payment_intents", {
         method: "POST",
         headers: {
-          "Authorization": `Bearer ${stripeKey}`,
+          Authorization: `Bearer ${stripeKey}`,
           "Content-Type": "application/x-www-form-urlencoded",
         },
         body: new URLSearchParams({
@@ -1865,7 +2104,9 @@ export const initiateBoostPayment = createServerFn({ method: "POST" })
       if (!stripeRes.ok) {
         const errBody = await stripeRes.json().catch(() => ({}));
         console.error("[boost] Stripe payment intent error:", errBody);
-        throw new Error("Erro ao gerar intenção de pagamento. Verifique as credenciais do gateway.");
+        throw new Error(
+          "Erro ao gerar intenção de pagamento. Verifique as credenciais do gateway.",
+        );
       }
 
       const intent = await stripeRes.json();
@@ -1910,7 +2151,8 @@ export const initiateBoostPayment = createServerFn({ method: "POST" })
       pixQrCode,
       pixCopyPaste,
       paymentLink,
-      stripeClientSecret: activeProvider === "stripe" ? (providerPayload as any).client_secret : null,
+      stripeClientSecret:
+        activeProvider === "stripe" ? (providerPayload as any).client_secret : null,
       expiresAt: expiresAt.toISOString(),
       adTitle: classified.title,
     };
@@ -1926,7 +2168,7 @@ export const confirmBoostPaymentAdmin = createServerFn({ method: "POST" })
     z.object({
       boostPaymentId: z.string().uuid(),
       method: z.enum(["admin_manual", "webhook"]).default("admin_manual"),
-    })
+    }),
   )
   .handler(async ({ data: { boostPaymentId, method } }) => {
     const supabase = getServerClient();
@@ -2041,10 +2283,15 @@ export const confirmBoostPaymentAdmin = createServerFn({ method: "POST" })
  */
 export const listBoostPayments = createServerFn({ method: "GET" })
   .validator(
-    z.object({
-      status: z.enum(["pending", "paid", "failed", "refunded", "expired", "all"]).optional().default("all"),
-      limit: z.number().int().min(1).max(100).optional().default(50),
-    }).optional()
+    z
+      .object({
+        status: z
+          .enum(["pending", "paid", "failed", "refunded", "expired", "all"])
+          .optional()
+          .default("all"),
+        limit: z.number().int().min(1).max(100).optional().default(50),
+      })
+      .optional(),
   )
   .handler(async ({ data }) => {
     await requireAdmin();
@@ -2055,7 +2302,8 @@ export const listBoostPayments = createServerFn({ method: "GET" })
 
     let query = supabase
       .from("classified_boost_payments")
-      .select(`
+      .select(
+        `
         id,
         classified_id,
         profile_id,
@@ -2073,7 +2321,8 @@ export const listBoostPayments = createServerFn({ method: "GET" })
         created_at,
         profiles!profile_id(id, name, username, avatar_url),
         classifieds!classified_id(id, title, category)
-      `)
+      `,
+      )
       .order("created_at", { ascending: false })
       .limit(limit);
 
@@ -2102,7 +2351,9 @@ export const getBoostPaymentById = createServerFn({ method: "GET" })
 
     const { data, error } = await supabase
       .from("classified_boost_payments")
-      .select("id, status, paid_at, activated_at, expires_at, pix_qr_code, pix_copy_paste, payment_link, amount_cents, plan_name, plan_days, provider")
+      .select(
+        "id, status, paid_at, activated_at, expires_at, pix_qr_code, pix_copy_paste, payment_link, amount_cents, plan_name, plan_days, provider",
+      )
       .eq("id", boostPaymentId)
       .eq("profile_id", identity.id)
       .single();
@@ -2179,7 +2430,7 @@ export const refineClassifiedWithAI = createServerFn({ method: "POST" })
       title: z.string().optional().default(""),
       description: z.string().optional().default(""),
       niche: z.string().optional().default("desapego"),
-    })
+    }),
   )
   .handler(async ({ data }) => internalRefineClassifiedWithAI(data));
 
@@ -2198,7 +2449,7 @@ export const signClassifiedNda = createServerFn({ method: "POST" })
       signerName: z.string().min(3, "Nome completo é obrigatório"),
       signerEmail: z.string().email("E-mail corporativo válido é obrigatório"),
       signerDocument: z.string().min(11, "CPF ou CNPJ válido é obrigatório"),
-    })
+    }),
   )
   .handler(async ({ data }) => {
     const identity = await getIdentity();
@@ -2257,7 +2508,7 @@ export const signClassifiedNda = createServerFn({ method: "POST" })
           status: "active",
           signed_at: new Date().toISOString(),
         },
-        { onConflict: "classified_id, user_id" }
+        { onConflict: "classified_id, user_id" },
       )
       .select("id, signed_at")
       .single();
@@ -2282,7 +2533,7 @@ export const checkClassifiedNdaStatus = createServerFn({ method: "GET" })
   .validator(
     z.object({
       classifiedId: z.string().uuid(),
-    })
+    }),
   )
   .handler(async ({ data }) => {
     const identity = await getIdentity().catch(() => null);
@@ -2326,7 +2577,7 @@ export const listClassifiedNdaSignatures = createServerFn({ method: "GET" })
   .validator(
     z.object({
       classifiedId: z.string().uuid(),
-    })
+    }),
   )
   .handler(async ({ data }) => {
     const identity = await getIdentity();
@@ -2360,9 +2611,7 @@ export const listClassifiedNdaSignatures = createServerFn({ method: "GET" })
     // Mascarar CPF/CNPJ para conformidade LGPD
     return (signatures || []).map((sig) => {
       const doc = sig.signer_document || "";
-      const maskedDoc = doc.length > 6
-        ? `${doc.slice(0, 3)}.***.${doc.slice(-2)}`
-        : "***";
+      const maskedDoc = doc.length > 6 ? `${doc.slice(0, 3)}.***.${doc.slice(-2)}` : "***";
 
       return {
         id: sig.id,
@@ -2430,12 +2679,13 @@ export const convertClassifiedToWorkspaceStore = createServerFn({ method: "POST"
 
     // 4. Criar organização e loja profissional
     const storeName = customStoreName || classified.title || "Minha Empresa";
-    const baseSlug = storeName
-      .toLowerCase()
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/(^-|-$)/g, "") || "empresa";
+    const baseSlug =
+      storeName
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/(^-|-$)/g, "") || "empresa";
     const uniqueSlug = `${baseSlug}-${Math.floor(1000 + Math.random() * 9000)}`;
 
     const { data: org, error: orgErr } = await db
@@ -2448,7 +2698,9 @@ export const convertClassifiedToWorkspaceStore = createServerFn({ method: "POST"
       .single();
 
     if (orgErr || !org) {
-      throw new Error("Falha ao criar organização para a nova loja: " + (orgErr?.message || "Erro desconhecido"));
+      throw new Error(
+        "Falha ao criar organização para a nova loja: " + (orgErr?.message || "Erro desconhecido"),
+      );
     }
 
     const attrs = classified.attributes || {};
@@ -2490,7 +2742,9 @@ export const convertClassifiedToWorkspaceStore = createServerFn({ method: "POST"
       .single();
 
     if (storeErr || !store) {
-      throw new Error("Falha ao criar loja profissional: " + (storeErr?.message || "Erro desconhecido"));
+      throw new Error(
+        "Falha ao criar loja profissional: " + (storeErr?.message || "Erro desconhecido"),
+      );
     }
 
     // 5. Vincular usuário como proprietário (owner)
@@ -2501,10 +2755,13 @@ export const convertClassifiedToWorkspaceStore = createServerFn({ method: "POST"
           store_id: store.id,
           role: "owner",
         },
-        { onConflict: "profile_id,store_id" }
+        { onConflict: "profile_id,store_id" },
       );
     } catch (e: any) {
-      console.warn("[convertClassifiedToWorkspaceStore] workspace_members upsert warning:", e?.message);
+      console.warn(
+        "[convertClassifiedToWorkspaceStore] workspace_members upsert warning:",
+        e?.message,
+      );
     }
 
     // 6. Atualizar anúncio vinculando ao store_id recém-criado
@@ -2553,10 +2810,7 @@ export const listStoreBusinessClassifieds = createServerFn({ method: "GET" }).ha
   if (!identity?.id) throw new Error("Não autenticado");
 
   const supabase = getServerClient();
-  let query = supabase
-    .from("classifieds")
-    .select("*")
-    .order("created_at", { ascending: false });
+  let query = supabase.from("classifieds").select("*").order("created_at", { ascending: false });
 
   if (identity.store_id) {
     query = query.or(`store_id.eq.${identity.store_id},author_profile_id.eq.${identity.id}`);
@@ -2599,7 +2853,9 @@ export const listStoreAllNdaSignatures = createServerFn({ method: "GET" }).handl
 
   const { data: signatures, error: sigErr } = await supabase
     .from("classified_nda_signatures")
-    .select("id, classified_id, signer_name, signer_email, signer_document, signed_at, ip_address, status")
+    .select(
+      "id, classified_id, signer_name, signer_email, signer_document, signed_at, ip_address, status",
+    )
     .in("classified_id", adIds)
     .order("signed_at", { ascending: false });
 
@@ -2633,10 +2889,7 @@ export const listStoreDonations = createServerFn({ method: "GET" }).handler(asyn
   if (!identity?.id) throw new Error("Não autenticado");
 
   const supabase = getServerClient();
-  let query = supabase
-    .from("classifieds")
-    .select("*")
-    .order("created_at", { ascending: false });
+  let query = supabase.from("classifieds").select("*").order("created_at", { ascending: false });
 
   if (identity.store_id) {
     query = query.or(`store_id.eq.${identity.store_id},author_profile_id.eq.${identity.id}`);
@@ -2666,7 +2919,7 @@ export const linkClassifiedToStore = createServerFn({ method: "POST" })
     z.object({
       classifiedId: z.string().uuid(),
       storeId: z.string().uuid().nullable(),
-    })
+    }),
   )
   .handler(async ({ data }) => {
     const identity = await getIdentity();
@@ -2685,7 +2938,9 @@ export const linkClassifiedToStore = createServerFn({ method: "POST" })
       throw new Error("Anúncio não encontrado.");
     }
 
-    const isPlatformAdmin = ["admin", "master", "superadmin", "platform_admin"].includes(identity.role || "");
+    const isPlatformAdmin = ["admin", "master", "superadmin", "platform_admin"].includes(
+      identity.role || "",
+    );
     const isAdAuthor = ad.author_profile_id === identity.id;
 
     if (!isAdAuthor && !isPlatformAdmin) {
@@ -2703,7 +2958,9 @@ export const linkClassifiedToStore = createServerFn({ method: "POST" })
           .maybeSingle();
 
         if (!membership) {
-          throw new Error("Você não tem autorização como membro ou administrador da loja selecionada.");
+          throw new Error(
+            "Você não tem autorização como membro ou administrador da loja selecionada.",
+          );
         }
       }
     }
@@ -2729,17 +2986,15 @@ export const linkClassifiedToStore = createServerFn({ method: "POST" })
     };
   });
 
-
 // ---------------------------------------------------------------------------
 // FASE 1: Cron / Server Action de Expiração Automática de Anúncios
 // ---------------------------------------------------------------------------
-export const checkAndExpireClassifieds = createServerFn({ method: "POST" })
- .handler(async () => {
- const supabase = getServerClient();
- const { data, error } = await supabase.rpc("expire_classifieds_cron");
- if (error) {
- console.error("[classifieds] Erro ao expirar anúncios:", error);
- return { success: false, expiredCount: 0 };
- }
- return { success: true, expiredCount: Number(data) || 0 };
- });
+export const checkAndExpireClassifieds = createServerFn({ method: "POST" }).handler(async () => {
+  const supabase = getServerClient();
+  const { data, error } = await supabase.rpc("expire_classifieds_cron");
+  if (error) {
+    console.error("[classifieds] Erro ao expirar anúncios:", error);
+    return { success: false, expiredCount: 0 };
+  }
+  return { success: true, expiredCount: Number(data) || 0 };
+});

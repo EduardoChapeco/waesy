@@ -89,7 +89,7 @@ export default function WorkspaceMarketingEncartesPage() {
   const imageCanvasRef = useRef<HTMLImageElement>(null);
 
   // Filtragem dos encartes por aba
-  const filteredFlyers = flyers.filter((f) => {
+  const filteredFlyers = flyers.filter((f: any) => {
     if (activeTab === "todos") return true;
     if (activeTab === "ativos") return f.status_badge === "active";
     if (activeTab === "agendados") return f.status_badge === "scheduled";
@@ -97,9 +97,9 @@ export default function WorkspaceMarketingEncartesPage() {
     return true;
   });
 
-  const activeCount = flyers.filter((f) => f.status_badge === "active").length;
-  const scheduledCount = flyers.filter((f) => f.status_badge === "scheduled").length;
-  const expiredCount = flyers.filter((f) => f.status_badge === "expired").length;
+  const activeCount = flyers.filter((f: any) => f.status_badge === "active").length;
+  const scheduledCount = flyers.filter((f: any) => f.status_badge === "scheduled").length;
+  const expiredCount = flyers.filter((f: any) => f.status_badge === "expired").length;
 
   // Abrir editor para novo encarte
   const handleOpenCreate = () => {
@@ -343,7 +343,7 @@ export default function WorkspaceMarketingEncartesPage() {
             <ShoppingBag className="size-3.5 text-amber-500" />
           </div>
           <p className="text-2xl font-black text-foreground">
-            {flyers.reduce((acc, f) => acc + (f.clicks_count || 0), 0)}
+            {flyers.reduce((acc: any, f: any) => acc + (f.clicks_count || 0), 0)}
           </p>
           <p className="text-xs text-muted-foreground">Cliques em produtos vinculados</p>
         </div>
@@ -390,7 +390,7 @@ export default function WorkspaceMarketingEncartesPage() {
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredFlyers.map((flyer) => {
+              {filteredFlyers.map((flyer: any) => {
                 const isRetro = flyer.theme === "retro_mercado";
                 const hotspotsCount = Array.isArray(flyer.hotspots) ? flyer.hotspots.length : 0;
 

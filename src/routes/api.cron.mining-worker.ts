@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { dispatchScheduledMiningJobFn } from "@/services/mining.functions";
 import { z } from "zod";
 
+import type {} from "@tanstack/react-start";
 const cronBodySchema = z.object({
   jobType: z.enum(["market-data", "rss-fetcher", "cnpj-enrichment", "continuous-crawler"]),
   triggeredAt: z.string().optional(),
@@ -74,7 +75,7 @@ async function handleCronWorker(request: Request): Promise<Response> {
 export const Route = createFileRoute("/api/cron/mining-worker")({
   server: {
     handlers: {
-      POST: async ({ request }) => handleCronWorker(request),
+      POST: async ({ request }: { request: Request }) => handleCronWorker(request),
     },
   },
-});
+} as never)

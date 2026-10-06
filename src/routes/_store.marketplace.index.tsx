@@ -20,7 +20,6 @@ import {
   Buildings,
   Scissors,
   ArrowRight,
-  Sparkle,
   ArrowSquareOut,
   SlidersHorizontal,
 } from "@phosphor-icons/react";

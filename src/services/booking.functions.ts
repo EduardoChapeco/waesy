@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
-import { resolveTenantStoreId } from "@/lib/tenant.server";
+import { resolveTenantStoreId } from "@/lib/server-access";
 import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
 import { getWorkingIntervalsForDate } from "@/services/store.functions";
 import { sendWhatsAppNotification } from "./integrations.functions";
@@ -469,24 +469,39 @@ export const createAppointment = createServerFn({ method: "POST" })
       const storeId = service.store_id || tenantStoreId;
       if (!storeId) throw new Error("Loja não encontrada no contexto.");
 
- // Try to get logged in user (optional)
- let customer_id = null;
- try {
- const identity = await getServerIdentity();
- customer_id = identity?.id || null;
- } catch (e) {
- // Guest user
- }
+      const apptStart = new Date(input.scheduled_at);
+      if (Number.isNaN(apptStart.getTime()) || apptStart.getTime() <= Date.now()) {
+        throw new Error("O horário do agendamento deve ser uma data futura válida.");
+      }
+
+      let customer_id: string | null = null;
+      const identity = await getServerIdentity().catch(() => null);
+      if (identity?.id) customer_id = identity.id;
+
+      if (input.resource_id) {
+        const { data: resource } = await db
+          .from("booking_resources")
+          .select("id, store_id, status")
+          .eq("id", input.resource_id)
+          .maybeSingle();
+        if (!resource || resource.store_id !== storeId || resource.status !== "active") {
+          throw new Error("Recurso de agenda inválido para este serviço.");
+        }
+      }
 
  let apptStatus = "pending";
  let passRow: any = null;
 
  if (input.pass_id) {
- // Debita 1 crédito do passe do cliente
+ // Passe precisa pertencer ao cliente autenticado e à loja/serviço selecionados.
+ if (!customer_id) throw new Error("Faça login para usar um passe de serviço.");
  const { data: pData } = await db
  .from("customer_service_passes")
- .select("id, remaining_credits")
+ .select("id, remaining_credits, customer_id, store_id, service_id")
  .eq("id", input.pass_id)
+ .eq("customer_id", customer_id)
+ .eq("store_id", storeId)
+ .eq("service_id", input.service_id)
  .single();
 
  passRow = pData;
@@ -506,7 +521,6 @@ export const createAppointment = createServerFn({ method: "POST" })
  }
 
  // Anti-Double Booking Enforcement via PostgreSQL Hold
- const apptStart = new Date(input.scheduled_at);
  const apptEnd = new Date(apptStart.getTime() + (service.duration_minutes || 60) * 60000);
  const { data: holdRes, error: holdErr } = await db.rpc("hold_resource_slot", {
  p_resource_id: input.resource_id || service.id,
@@ -531,6 +545,7 @@ export const createAppointment = createServerFn({ method: "POST" })
  guest_name: input.guest_name,
  guest_phone: input.guest_phone,
  scheduled_at: input.scheduled_at,
+ duration_minutes: service.duration_minutes || 60,
  notes: input.notes,
  pass_id: input.pass_id || null,
  resource_id: input.resource_id || null,

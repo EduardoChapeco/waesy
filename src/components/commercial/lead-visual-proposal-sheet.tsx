@@ -135,7 +135,7 @@ export function LeadVisualProposalSheet({
               files: [
                 {
                   base64: base64Data,
-                  mimeType: file.type || "image/jpeg",
+                  mimeType: file.type === "application/pdf" || file.type === "image/png" || file.type === "image/webp" || file.type === "image/tiff" || file.type === "image/jpeg" ? file.type : "image/jpeg",
                   name: file.name,
                 },
               ],

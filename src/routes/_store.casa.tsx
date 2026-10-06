@@ -91,7 +91,7 @@ function CasaVerticalPage() {
  const handleDepartmentChange = (depId: string) => {
  setActiveDepartment(depId);
  navigate({
- search: (prev) => ({
+ search: (prev: any) => ({
  ...prev,
  categoria: depId === "todos" ? undefined : depId,
  }),
@@ -101,7 +101,7 @@ function CasaVerticalPage() {
  const handleViewModeChange = (mode: ViewModeType) => {
  setViewMode(mode);
  navigate({
- search: (prev) => ({
+ search: (prev: any) => ({
  ...prev,
  view: mode === "feed" ? undefined : mode,
  }),
@@ -188,7 +188,7 @@ function CasaVerticalPage() {
  {/* ── 3. Discovery Control Bar ── */}
  <DiscoveryControlBar
  search={search.q || ""}
- onSearchChange={(q) => navigate({ search: (prev) => ({ ...prev, q }) })}
+ onSearchChange={(q) => navigate({ search: (prev: any) => ({ ...prev, q }) })}
  searchPlaceholder="Buscar móveis, decoração, iluminação, cama & banho..."
  categories={CASA_DEPARTMENTS}
  activeCategory={activeDepartment}

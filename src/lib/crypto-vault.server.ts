@@ -32,10 +32,10 @@ const SEPARATOR = ":";
  * Lança erro se a env var não estiver configurada (falha rápida e explícita).
  */
 function getMasterKey(): Buffer {
-  const rawKey =
-    process.env.VAULT_MASTER_KEY ||
-    process.env.SUPABASE_SERVICE_ROLE_KEY ||
-    "waesy-vault-master-secret-key-32b-fallback";
+  const rawKey = process.env.VAULT_MASTER_KEY?.trim();
+  if (!rawKey) {
+    throw new Error("[crypto-vault] VAULT_MASTER_KEY ausente; operação bloqueada em fail-closed.");
+  }
 
   // SHA-256 para garantir exatos 32 bytes independente do comprimento da env var
   return createHash("sha256").update(rawKey).digest();
@@ -71,16 +71,8 @@ export function encryptSecret(plaintext: string): string {
  * @returns Texto plano original
  */
 export function decryptSecret(encryptedPayload: string): string {
-  // Suporta legado base64 para migração suave dos registros antigos
   if (!encryptedPayload.includes(SEPARATOR)) {
-    // Legado: tenta decodificar como base64 simples (será migrado no próximo save)
-    try {
-      const decoded = Buffer.from(encryptedPayload, "base64").toString("utf-8");
-      if (decoded.trim().length > 0) return decoded.trim();
-    } catch {
-      // fallthrough
-    }
-    throw new Error("[crypto-vault] Payload inválido: não é AES-GCM nem base64 legado");
+    throw new Error("[crypto-vault] Segredo legado sem AES-GCM; rotação obrigatória antes do uso.");
   }
 
   const parts = encryptedPayload.split(SEPARATOR);

@@ -420,11 +420,18 @@ export async function executeAutonomousCopilotTask(
   });
 
   if (needsCityClarification(task)) {
+    const clarificationMessage = "Informe a cidade para a busca (ex.: \"em Chapecó\") ou ative sua localização.";
+    await completeCopilotExecution(
+      { executionId: taskId },
+      "paused",
+      { domain: task.domain, stepsCount: steps.length, reason: "needs_city_clarification" },
+      clarificationMessage,
+    ).catch((error) => console.warn("[copilot-execution] clarification persistence unavailable", error));
     return {
       success: false,
       taskId,
       domain: task.domain,
-      summaryMessage: "Informe a cidade para a busca (ex.: \"em Chapecó\") ou ative sua localização.",
+      summaryMessage: clarificationMessage,
       isCacheHit: false,
       tokensSaved: 0,
       steps,

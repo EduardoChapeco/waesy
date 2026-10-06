@@ -1,10 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { getServerClient } from "@/lib/supabase";
 
+import type {} from "@tanstack/react-start";
 export const Route = createFileRoute("/api/pwa/manifest.json")({
   server: {
     handlers: {
-      GET: async ({ request }) => {
+      GET: async ({ request }: { request: Request }) => {
         try {
           const url = new URL(request.url);
           const storeId = url.searchParams.get("storeId");
@@ -280,4 +281,4 @@ export const Route = createFileRoute("/api/pwa/manifest.json")({
       },
     },
   },
-});
+} as never)

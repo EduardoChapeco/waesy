@@ -7,7 +7,8 @@ import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
 // Types & Schemas
 // ---------------------------------------------------------------------------
 
-export type AiProviderType = "openai" | "anthropic" | "gemini" | "deepseek" | "groq" | "openrouter" | "custom";
+export type AiProviderType =
+  "openai" | "anthropic" | "gemini" | "deepseek" | "groq" | "openrouter" | "custom";
 
 export interface TenantAiProviderItem {
   id: string;
@@ -38,10 +39,10 @@ export const TestAiProviderSchema = z.object({
 });
 
 function maskApiKey(key: string): string {
- if (!key || key.length < 8) return "••••••••";
- const start = key.substring(0, 4);
- const end = key.substring(key.length - 4);
- return `${start}••••••••${end}`;
+  if (!key || key.length < 8) return "••••••••";
+  const start = key.substring(0, 4);
+  const end = key.substring(key.length - 4);
+  return `${start}••••••••${end}`;
 }
 
 // ---------------------------------------------------------------------------
@@ -49,34 +50,45 @@ function maskApiKey(key: string): string {
 // ---------------------------------------------------------------------------
 
 export const listTenantAiProviders = createServerFn({ method: "GET" })
- .validator(z.object({ store_id: z.string().uuid() }))
- .handler(async ({ data }): Promise<TenantAiProviderItem[]> => {
- const identity = await getServerIdentity();
- assertStoreAccess(identity);
+  .validator(z.object({ store_id: z.string().uuid() }))
+  .handler(async ({ data }): Promise<TenantAiProviderItem[]> => {
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity);
 
- const db = getServerClient();
- const { data: rows, error } = await db
- .from("tenant_ai_providers")
- .select("*")
- .eq("store_id", data.store_id)
- .order("created_at", { ascending: true });
+    const db = getServerClient();
+    const { data: rows, error } = await db
+      .from("tenant_ai_providers")
+      .select(
+        "id, store_id, provider, model_name, api_key, is_active, monthly_token_limit, last_tested_at, status, created_at, updated_at",
+      )
+      .eq("store_id", data.store_id)
+      .order("created_at", { ascending: true });
 
- if (error) throw error;
+    if (error) throw error;
 
- return (rows || []).map((r) => ({
- id: r.id,
- store_id: r.store_id,
- provider: r.provider,
- model_name: r.model_name,
- api_key_masked: maskApiKey(r.api_key),
- is_active: r.is_active,
- monthly_token_limit: r.monthly_token_limit,
- last_tested_at: r.last_tested_at,
- status: r.status,
- created_at: r.created_at,
- updated_at: r.updated_at,
- }));
- });
+    const { decryptSecret } = await import("@/lib/crypto-vault.server");
+    return (rows || []).map((r) => {
+      let masked = "••••••••";
+      try {
+        masked = maskApiKey(decryptSecret(r.api_key));
+      } catch {
+        masked = "•••••••• (rotação necessária)";
+      }
+      return {
+        id: r.id,
+        store_id: r.store_id,
+        provider: r.provider,
+        model_name: r.model_name,
+        api_key_masked: masked,
+        is_active: r.is_active,
+        monthly_token_limit: r.monthly_token_limit,
+        last_tested_at: r.last_tested_at,
+        status: r.status,
+        created_at: r.created_at,
+        updated_at: r.updated_at,
+      };
+    });
+  });
 
 export const saveTenantAiProvider = createServerFn({ method: "POST" })
   .validator(SaveAiProviderSchema)
@@ -88,6 +100,8 @@ export const saveTenantAiProvider = createServerFn({ method: "POST" })
     }
 
     const db = getServerClient();
+    const { encryptSecret } = await import("@/lib/crypto-vault.server");
+    const encryptedApiKey = encryptSecret(data.api_key.trim());
     const { data: saved, error } = await db
       .from("tenant_ai_providers")
       .upsert(
@@ -95,19 +109,31 @@ export const saveTenantAiProvider = createServerFn({ method: "POST" })
           store_id: data.store_id,
           provider: data.provider,
           model_name: data.model_name.trim(),
-          api_key: data.api_key.trim(),
+          api_key: encryptedApiKey,
           is_active: data.is_active,
           monthly_token_limit: data.monthly_token_limit || null,
           status: "untested",
           updated_at: new Date().toISOString(),
         },
-        { onConflict: "store_id,provider" }
+        { onConflict: "store_id,provider" },
       )
       .select()
       .single();
 
     if (error) throw error;
-    return saved;
+    return {
+      id: saved.id,
+      store_id: saved.store_id,
+      provider: saved.provider,
+      model_name: saved.model_name,
+      api_key_masked: maskApiKey(data.api_key),
+      is_active: saved.is_active,
+      monthly_token_limit: saved.monthly_token_limit,
+      last_tested_at: saved.last_tested_at,
+      status: saved.status,
+      created_at: saved.created_at,
+      updated_at: saved.updated_at,
+    } satisfies TenantAiProviderItem;
   });
 
 export const deleteTenantAiProvider = createServerFn({ method: "POST" })
@@ -140,90 +166,104 @@ export const testAiProviderConnection = createServerFn({ method: "POST" })
     }
 
     const db = getServerClient();
- const { data: row, error: fetchErr } = await db
- .from("tenant_ai_providers")
- .select("*")
- .eq("store_id", data.store_id)
- .eq("provider", data.provider)
- .single();
+    const { data: row, error: fetchErr } = await db
+      .from("tenant_ai_providers")
+      .select(
+        "id, store_id, provider, model_name, api_key, is_active, monthly_token_limit, last_tested_at, status, created_at, updated_at",
+      )
+      .eq("store_id", data.store_id)
+      .eq("provider", data.provider)
+      .single();
 
- if (fetchErr || !row) throw new Error("Provedor não encontrado.");
+    if (fetchErr || !row) throw new Error("Provedor não encontrado.");
+    const { decryptSecret } = await import("@/lib/crypto-vault.server");
+    let apiKey: string;
+    try {
+      apiKey = decryptSecret(row.api_key);
+    } catch {
+      throw new Error("A chave deste provedor precisa ser rotacionada antes do teste.");
+    }
 
- const startTime = Date.now();
- let isSuccess = false;
- let errorMessage = "";
+    const startTime = Date.now();
+    let isSuccess = false;
+    let errorMessage = "";
 
- try {
-    if (row.provider === "openai" || row.provider === "groq" || row.provider === "deepseek" || row.provider === "openrouter") {
-      const baseUrl =
-        row.provider === "groq"
-          ? "https://api.groq.com/openai/v1/models"
-          : row.provider === "deepseek"
-          ? "https://api.deepseek.com/models"
-          : row.provider === "openrouter"
-          ? "https://openrouter.ai/api/v1/models"
-          : "https://api.openai.com/v1/models";
+    try {
+      if (
+        row.provider === "openai" ||
+        row.provider === "groq" ||
+        row.provider === "deepseek" ||
+        row.provider === "openrouter"
+      ) {
+        const baseUrl =
+          row.provider === "groq"
+            ? "https://api.groq.com/openai/v1/models"
+            : row.provider === "deepseek"
+              ? "https://api.deepseek.com/models"
+              : row.provider === "openrouter"
+                ? "https://openrouter.ai/api/v1/models"
+                : "https://api.openai.com/v1/models";
 
-      const res = await fetch(baseUrl, {
-        headers: { Authorization: `Bearer ${row.api_key}` },
-      });
+        const res = await fetch(baseUrl, {
+          headers: { Authorization: `Bearer ${apiKey}` },
+        });
 
- if (res.ok) {
- isSuccess = true;
- } else {
- const errData = await res.json().catch(() => ({}));
- errorMessage = errData?.error?.message || `HTTP ${res.status}`;
- }
- } else if (row.provider === "anthropic") {
- const res = await fetch("https://api.anthropic.com/v1/models", {
- headers: {
- "x-api-key": row.api_key,
- "anthropic-version": "2023-06-01",
- },
- });
- if (res.ok) {
- isSuccess = true;
- } else {
- const errData = await res.json().catch(() => ({}));
- errorMessage = errData?.error?.message || `HTTP ${res.status}`;
- }
- } else if (row.provider === "gemini") {
- const res = await fetch(
- `https://generativelanguage.googleapis.com/v1beta/models?key=${row.api_key}`
- );
- if (res.ok) {
- isSuccess = true;
- } else {
- const errData = await res.json().catch(() => ({}));
- errorMessage = errData?.error?.message || `HTTP ${res.status}`;
- }
- } else {
- // Custom
- isSuccess = true;
- }
- } catch (e: any) {
- errorMessage = e?.message || "Erro ao contactar API";
- }
+        if (res.ok) {
+          isSuccess = true;
+        } else {
+          const errData = await res.json().catch(() => ({}));
+          errorMessage = errData?.error?.message || `HTTP ${res.status}`;
+        }
+      } else if (row.provider === "anthropic") {
+        const res = await fetch("https://api.anthropic.com/v1/models", {
+          headers: {
+            "x-api-key": apiKey,
+            "anthropic-version": "2023-06-01",
+          },
+        });
+        if (res.ok) {
+          isSuccess = true;
+        } else {
+          const errData = await res.json().catch(() => ({}));
+          errorMessage = errData?.error?.message || `HTTP ${res.status}`;
+        }
+      } else if (row.provider === "gemini") {
+        const res = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`,
+        );
+        if (res.ok) {
+          isSuccess = true;
+        } else {
+          const errData = await res.json().catch(() => ({}));
+          errorMessage = errData?.error?.message || `HTTP ${res.status}`;
+        }
+      } else {
+        // Custom
+        isSuccess = true;
+      }
+    } catch (e: any) {
+      errorMessage = e?.message || "Erro ao contactar API";
+    }
 
- const latencyMs = Date.now() - startTime;
- const finalStatus = isSuccess ? "active" : "error";
+    const latencyMs = Date.now() - startTime;
+    const finalStatus = isSuccess ? "active" : "error";
 
- await db
- .from("tenant_ai_providers")
- .update({
- status: finalStatus,
- last_tested_at: new Date().toISOString(),
- })
- .eq("id", row.id);
+    await db
+      .from("tenant_ai_providers")
+      .update({
+        status: finalStatus,
+        last_tested_at: new Date().toISOString(),
+      })
+      .eq("id", row.id);
 
- if (!isSuccess) {
- throw new Error(`Falha no teste de conexão: ${errorMessage}`);
- }
+    if (!isSuccess) {
+      throw new Error(`Falha no teste de conexão: ${errorMessage}`);
+    }
 
- return {
- success: true,
- latencyMs,
- provider: row.provider,
- status: finalStatus,
- };
- });
+    return {
+      success: true,
+      latencyMs,
+      provider: row.provider,
+      status: finalStatus,
+    };
+  });

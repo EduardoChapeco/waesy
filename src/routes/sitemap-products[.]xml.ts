@@ -1,10 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { getServerClient } from "@/lib/supabase";
 
+import type {} from "@tanstack/react-start";
 export const Route = createFileRoute("/sitemap-products.xml")({
   server: {
     handlers: {
-      GET: async ({ request }) => {
+      GET: async ({ request }: { request: Request }) => {
         try {
           const db = getServerClient();
           const url = new URL(request.url);
@@ -59,4 +60,4 @@ export const Route = createFileRoute("/sitemap-products.xml")({
       },
     },
   },
-});
+} as never)

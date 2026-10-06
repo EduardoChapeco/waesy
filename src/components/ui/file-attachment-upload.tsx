@@ -7,6 +7,8 @@ import { cn } from "@/lib/utils";
 import { uploadStoreMedia } from "@/services/storage.functions";
 import { extractMediaFromClipboard } from "@/lib/clipboard-media";
 
+export type StoreMediaBucket = "cms-media" | "store-assets" | "product-media" | "covers" | "avatars" | "banners";
+
 export interface FileAttachmentUploadProps {
  value?: string | null;
  onChange: (url: string) => void;
@@ -14,7 +16,7 @@ export interface FileAttachmentUploadProps {
  label?: string;
  helperText?: string;
  accept?: string;
- bucket?: string;
+ bucket?: StoreMediaBucket;
  maxSizeMB?: number;
  className?: string;
  showExternalUrlOption?: boolean;

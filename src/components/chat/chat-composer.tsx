@@ -98,7 +98,6 @@ export function ChatComposer({
   const toggleRecording = () => {
     if (isRecording) {
       setIsRecording(false);
-      setText((prev) => (Boolean(prev) ? `${prev} [Áudio transcrito]` : "Áudio transcrito"));
     } else {
       setIsRecording(true);
     }
@@ -149,18 +148,20 @@ export function ChatComposer({
       {/* ── Barra de Entrada e Ações ── */}
       <div className="p-2 sm:p-3 flex items-end gap-2 max-w-4xl mx-auto">
         {/* Botão de Anexo com Touch Target de 44px */}
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          onClick={onAttachFile} /* focus-visible:ring-2 */
-          disabled={disabled || isSending || isRecording}
-          className="size-11 rounded-full text-muted-foreground hover:text-foreground shrink-0 cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-          title="Anexar arquivo ou mídia"
-          aria-label="Anexar arquivo"
-        >
-          <Paperclip className="size-5" />
-        </Button>
+        {onAttachFile && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={onAttachFile}
+            disabled={disabled || isSending || isRecording}
+            className="size-11 rounded-full text-muted-foreground hover:text-foreground shrink-0 cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+            title="Anexar arquivo ou mídia"
+            aria-label="Anexar arquivo"
+          >
+            <Paperclip className="size-5" />
+          </Button>
+        )}
 
         {/* Campo de Texto ou Indicador de Gravação de Áudio */}
         <div className="flex-1 min-h-11 rounded-lg bg-muted/50 border border-border/40 flex items-center px-3 py-2 focus-within:border-primary/40 focus-within:ring-1 focus-within:ring-primary/20 transition-colors">

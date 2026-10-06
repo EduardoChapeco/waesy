@@ -1,10 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { MCP_TOOLS_MANIFEST } from "@/services/mcp-server.functions";
 
+import type {} from "@tanstack/react-start";
 export const Route = createFileRoute("/api/openapi.json")({
   server: {
     handlers: {
-      GET: async ({ request }) => {
+      GET: async ({ request }: { request: Request }) => {
         const url = new URL(request.url);
 
         const openapiSpec = {
@@ -354,4 +355,4 @@ export const Route = createFileRoute("/api/openapi.json")({
       },
     },
   },
-});
+} as never)

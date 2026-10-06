@@ -2,10 +2,11 @@ import { createFileRoute } from "@tanstack/react-router";
 import { getServerClient } from "@/lib/supabase";
 import { verifyWebhookSignature } from "@/lib/webhook-signature";
 
+import type {} from "@tanstack/react-start";
 export const Route = createFileRoute("/api/webhooks/pix")({
  server: {
  handlers: {
- POST: async ({ request }) => {
+ POST: async ({ request }: { request: Request }) => {
  try {
  const rawBody = await request.text();
  const verification = verifyWebhookSignature(rawBody, request.headers, process.env.PIX_WEBHOOK_SECRET);
@@ -81,4 +82,4 @@ export const Route = createFileRoute("/api/webhooks/pix")({
  },
  },
  },
-});
+} as never)

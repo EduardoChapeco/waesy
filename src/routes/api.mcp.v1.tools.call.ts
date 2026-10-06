@@ -1,10 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { executeMcpToolCall, McpToolCallRequestSchema } from "@/services/mcp-server.functions";
 
+import type {} from "@tanstack/react-start";
 export const Route = createFileRoute("/api/mcp/v1/tools/call")({
   server: {
     handlers: {
-      POST: async ({ request }) => {
+      POST: async ({ request }: { request: Request }) => {
         try {
           const body = await request.json();
           const parsed = McpToolCallRequestSchema.safeParse(body);
@@ -84,4 +85,4 @@ export const Route = createFileRoute("/api/mcp/v1/tools/call")({
       },
     },
   },
-});
+} as never)

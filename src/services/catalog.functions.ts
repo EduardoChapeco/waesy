@@ -35,7 +35,7 @@ import type {
 // Helpers
 // ---------------------------------------------------------------------------
 
-import { resolveTenantStoreId } from "@/lib/tenant.server";
+import { resolveTenantStoreId } from "@/lib/server-access";
 import { sanitizePublicProductAttributes } from "./unified-listing.functions";
 
 /**

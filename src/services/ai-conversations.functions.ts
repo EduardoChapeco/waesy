@@ -25,6 +25,11 @@ import {
   type CopilotFsmPhase,
   type CopilotFsmExecutionState,
 } from "@/types/copilot-fsm";
+import {
+  searchPlatformForCopilot,
+  shouldSearchPlatform,
+  type InternalSearchResult,
+} from "./copilot-internal-search";
 import type {
   AIActivityStep,
   AIActivityStepType,
@@ -47,6 +52,7 @@ export const createAiThreadSchema = z.object({
 
 export const sendAiMessageSchema = z.object({
   threadId: z.string().uuid(),
+  clientMessageId: z.string().uuid().optional(),
   message: z.string().min(1, "Mensagem não pode ser vazia").max(2000, "Limite de 2.000 caracteres por mensagem atingido"),
   replyToId: z.string().uuid().optional(),
   attachments: z.array(z.string().url()).default([]),
@@ -71,6 +77,33 @@ export const updateWorkingMemorySchema = z.object({
   key: z.string().min(1),
   value: z.any(),
 });
+
+type AiThreadAccessRow = {
+  id?: string;
+  customer_id?: string | null;
+  recipient_profile_id?: string | null;
+  store_id?: string | null;
+};
+
+function assertAiThreadAccess(thread: AiThreadAccessRow, identity: Awaited<ReturnType<typeof getServerIdentity>>): void {
+  if (!identity?.id) throw new Error("Usuário não autenticado");
+  const isPlatformAdmin = ["platform_admin", "master"].includes(identity.role);
+  const isParticipant = thread.customer_id === identity.id || thread.recipient_profile_id === identity.id;
+  const hasStoreMembership = Boolean(thread.store_id && (
+    identity.store_id === thread.store_id ||
+    identity.memberships?.some((membership) => membership.store_id === thread.store_id)
+  ));
+  if (!isPlatformAdmin && !isParticipant && !hasStoreMembership) {
+    throw new Error("Sem permissão para acessar esta conversa");
+  }
+}
+
+function assertAiStoreTarget(storeId: string | null | undefined, identity: Awaited<ReturnType<typeof getServerIdentity>>): void {
+  if (!storeId || !identity?.id) return;
+  if (["platform_admin", "master"].includes(identity.role)) return;
+  const allowed = identity.store_id === storeId || identity.memberships?.some((membership) => membership.store_id === storeId);
+  if (!allowed) throw new Error("A loja informada não pertence ao contexto do usuário");
+}
 
 export const toggleThreadPinnedSchema = z.object({
   threadId: z.string().uuid(),
@@ -504,6 +537,17 @@ function extractSearchTerm(text: string): string {
   return clean.slice(0, 30);
 }
 
+/** Impede que provider, crawler ou RPC externo bloqueie o request do chat. */
+function withCopilotTimeout<T>(promise: Promise<T>, timeoutMs = 45_000): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) => {
+      const timer = setTimeout(() => reject(new Error("Tempo limite excedido na execução do Copilot.")), timeoutMs);
+      promise.finally(() => clearTimeout(timer)).catch(() => undefined);
+    }),
+  ]);
+}
+
 export async function executeAiCopilotPipeline(
   userPrompt: string,
   workingMemory: Record<string, any> = {},
@@ -593,9 +637,82 @@ export async function executeAiCopilotPipeline(
 
     const db = getServerClient();
 
+    // A plataforma é a primeira fonte de verdade. Só escalamos para IA/mineração
+    // quando a busca persistida não resolve a intenção do usuário.
+    let platformSearch: InternalSearchResult | null = null;
+    if (shouldSearchPlatform(userPrompt)) {
+      const searchStart = Date.now();
+      fsm.transition("RUNNING", "Executando a busca soberana da plataforma");
+      fsm.transition("WAITING_TOOL", "Consultando o catálogo soberano da plataforma");
+      platformSearch = await searchPlatformForCopilot(db, userPrompt);
+      steps.push({
+        id: `step-platform-search-${searchStart}`,
+        type: "search",
+        label: "Busca interna Waesy",
+        detail: platformSearch.cards.length > 0
+          ? `${platformSearch.cards.length} resultado(s) persistido(s) encontrado(s) no sistema`
+          : "Nenhum resultado persistido; a solicitação pode escalar para engines de mineração",
+        status: "completed",
+        fsmPhase: "WAITING_TOOL",
+        startedAt: new Date(searchStart).toISOString(),
+        completedAt: new Date().toISOString(),
+        durationMs: Date.now() - searchStart,
+        tokensUsed: 0,
+      });
+
+      const isExternalMiningOrCreation = /\b(minerar|mineração|minerador|crawler|raspar|scrap|planilha|landing page|biolink|criar anúncio|gerar arte|proposta|roteiro de viagem)\b/i.test(userPrompt);
+      if (platformSearch.cards.length > 0 && !isExternalMiningOrCreation) {
+        const items = platformSearch.cards.map((card) => ({
+          id: card.id,
+          title: card.title,
+          subtitle: [card.kind, card.subtitle, card.location].filter(Boolean).join(" · "),
+          description: card.description,
+          location: card.location,
+          image_url: card.image_url,
+          price_cents: card.price_cents,
+          source_table: card.source_table,
+          source_id: card.source_id,
+          action: card.action,
+        }));
+        updatedMemory.last_platform_search = {
+          query: platformSearch.query,
+          count: platformSearch.cards.length,
+          kinds: platformSearch.searchedKinds,
+        };
+        fsm.transition("PARTIAL_RESULT", "Resultados internos encontrados");
+        fsm.transition("VALIDATING", "Validando cards e provenance da plataforma");
+        fsm.transition("COMPLETED", "Busca interna concluída sem chamada de modelo");
+        return {
+          responseMessage: `Encontrei ${items.length} resultado(s) na plataforma para “${platformSearch.query}”. Priorizei o conteúdo já publicado no Waesy para economizar processamento e manter os dados verificáveis:`,
+          activitySteps: steps,
+          structuredPayload: {
+            blocks: [{
+              type: "card_carousel",
+              data: {
+                title: "Resultados no Waesy",
+                source: "platform",
+                query: platformSearch.query,
+                items,
+              },
+            }],
+          },
+          updatedMemory,
+          fsmPhase: fsm.currentPhase,
+          fsmState: fsm.snapshot,
+        };
+      }
+    }
+
     // Executa o Gateway de IA Soberano se houver modelo ativo no pool (com Prompt Sandboxing)
     let gatewayResponse: any = null;
     try {
+      const internalSearchContext = platformSearch
+        ? `
+CONTEXTO SOBERANO DA PLATAFORMA (não invente e não substitua por dados externos):
+${JSON.stringify({ query: platformSearch.query, cards: platformSearch.cards, unavailableTables: platformSearch.unavailableTables }).slice(0, 12000)}
+Se houver cards, priorize-os na resposta. Se não houver cards, indique a lacuna e escolha uma engine autorizada de mineração apenas se a intenção justificar.
+`
+        : "";
       const systemPrompt = `Você é o Waesy Copilot, assistente inteligente do ecossistema local.
 Você tem acesso a ferramentas da cidade:
 1. 'search_places': busca estabelecimentos locais (cafés, restaurantes, mercados, academias, oficinas, etc.)
@@ -612,9 +729,9 @@ Responda SEMPRE em formato JSON com os campos:
   "intent": "search_places" | "estimate_mobility" | "search_catalog" | "travel_itinerary" | "legal_triage" | "create_ad" | "commercial_proposal" | "financial_report" | "general_chat",
   "tool_args": { ... },
   "message": "Mensagem concisa e clara para o usuário",
-  "step_label": "Título amigável da ferramenta acionada",
-  "step_detail": "Detalhe da operação executada"
-}`;
+	"step_label": "Título amigável da ferramenta acionada",
+	"step_detail": "Detalhe da operação executada"
+}${internalSearchContext}`;
 
       // 🛡️ Prompt Sandboxing: Isola dados não-confiáveis externos em <user_untrusted_data>
       const { hardenedSystemPrompt, sandboxedUserPrompt } = buildSandboxedPromptPayload(
@@ -1450,13 +1567,22 @@ export const listAiConversationThreads = createServerFn({ method: "GET" })
         return [];
       }
 
+      const storeIds = Array.from(new Set([
+        identity.store_id,
+        ...(identity.memberships || []).map((membership) => membership.store_id),
+      ].filter(Boolean)));
+      const visibilityClauses = [
+        `customer_id.eq.${identity.id}`,
+        `recipient_profile_id.eq.${identity.id}`,
+        ...storeIds.map((storeId) => `store_id.eq.${storeId}`),
+      ];
       let query = db
         .from("chat_threads")
         .select(`
           id, type:thread_type, subject, store_id, customer_id, recipient_profile_id,
           status, is_pinned, metadata, working_memory, created_at, updated_at
         `)
-        .or(`customer_id.eq.${identity.id},recipient_profile_id.eq.${identity.id}`)
+        .or(visibilityClauses.join(","))
         .order("is_pinned", { ascending: false })
         .order("updated_at", { ascending: false });
 
@@ -1497,6 +1623,7 @@ export const createAiConversationThread = createServerFn({ method: "POST" })
     if (!identity?.id) {
       throw new Error("Usuário não autenticado");
     }
+    assertAiStoreTarget(data.storeId, identity);
 
     const { data: newThread, error } = await db
       .from("chat_threads")
@@ -1531,9 +1658,10 @@ export const getAiConversationThread = createServerFn({ method: "GET" })
     const db = getServerClient();
     const identity = await getServerIdentity().catch(() => null);
 
-    if (Boolean(identity?.id) === false) {
+    if (!identity?.id) {
       throw new Error("Usuário não autenticado");
     }
+    const authenticatedIdentity = identity;
 
     // 1. Thread
     const { data: thread, error: threadErr } = await db
@@ -1545,6 +1673,7 @@ export const getAiConversationThread = createServerFn({ method: "GET" })
     if (threadErr || Boolean(thread) === false) {
       throw new Error("Thread não encontrada");
     }
+    assertAiThreadAccess(thread, authenticatedIdentity);
 
     // 2. Mensagens
     const { data: messages } = await db
@@ -1608,25 +1737,27 @@ export const sendAiConversationMessage = createServerFn({ method: "POST" })
     // 1. Obter thread para contexto e memória de trabalho
     const { data: thread } = await db
       .from("chat_threads")
-      .select("id, thread_type, working_memory, store_id")
+      .select("id, thread_type, working_memory, store_id, customer_id, recipient_profile_id")
       .eq("id", data.threadId)
       .single();
 
     if (!thread) {
       throw new Error("Thread inexistente");
     }
+    assertAiThreadAccess(thread, identity);
 
     // 2. Inserir mensagem do usuário
     const { data: userMsg, error: userMsgErr } = await db
       .from("chat_messages")
       .insert({
         thread_id: data.threadId,
+        client_message_id: data.clientMessageId || null,
         sender_id: identity.id,
         is_staff_reply: false,
         message: data.message,
         message_type: "text",
         attachments: data.attachments || [],
-        status: "delivered",
+        status: "sending",
       })
       .select("id, created_at")
       .single();
@@ -1638,7 +1769,7 @@ export const sendAiConversationMessage = createServerFn({ method: "POST" })
     // 3. Execução do pipeline de IA ReAct com chamada de ferramentas reais (com Error Boundary)
     let execution: AiExecutionResult;
     try {
-      execution = await executeAiCopilotPipeline(
+      execution = await withCopilotTimeout(executeAiCopilotPipeline(
         data.message,
         thread.working_memory || {},
         {
@@ -1649,7 +1780,7 @@ export const sendAiConversationMessage = createServerFn({ method: "POST" })
           userLng: data.userLng,
           city: normalizeActiveCity(data.city) ?? resolveActiveCity(),
         }
-      );
+      ));
     } catch (pipelineErr: any) {
       console.warn("[COPILOT-DEFENSIVE-WRAPPER] Erro capturado em sendAiConversationMessage:", pipelineErr);
       execution = {
@@ -1722,6 +1853,17 @@ export const sendAiConversationMessage = createServerFn({ method: "POST" })
       .select("id, created_at")
       .single();
 
+    if (aiMsgErr) {
+      throw new Error(`Falha ao registrar resposta do Copilot: ${aiMsgErr.message}`);
+    }
+
+    await db
+      .from("chat_messages")
+      .update({
+        status: execution.fsmPhase === "FAILED_RETRYABLE" || execution.fsmPhase === "FAILED_FINAL" ? "failed" : "delivered",
+      })
+      .eq("id", userMsg.id);
+
     // 6. Atualizar memória de trabalho e timestamp da thread
     await db
       .from("chat_threads")
@@ -1741,6 +1883,10 @@ export const sendAiConversationMessage = createServerFn({ method: "POST" })
         artifact: execution.artifact,
         structuredPayload: execution.structuredPayload,
         createdAt: aiMsg?.created_at || new Date().toISOString(),
+        status: execution.fsmPhase === "FAILED_RETRYABLE" || execution.fsmPhase === "FAILED_FINAL" ? "failed" : "delivered",
+        fsmPhase: execution.fsmPhase,
+        fsmState: execution.fsmState,
+        toolCalls: execution.toolCalls || [],
       },
       updatedWorkingMemory: execution.updatedMemory,
     };
@@ -1759,6 +1905,16 @@ export const saveAiChatArtifact = createServerFn({ method: "POST" })
     if (!identity?.id) {
       throw new Error("Usuário não autenticado");
     }
+
+    const { data: thread, error: threadError } = await db
+      .from("chat_threads")
+      .select("id, customer_id, recipient_profile_id, store_id")
+      .eq("id", data.threadId)
+      .single();
+    if (threadError || !thread) throw new Error("Thread não encontrada");
+    assertAiThreadAccess(thread, identity);
+    assertAiStoreTarget(data.storeId, identity);
+    if (data.storeId && thread.store_id !== data.storeId) throw new Error("O artefato não pertence à loja da thread");
 
     const { data: artifact, error } = await db
       .from("chat_artifacts")
@@ -1797,6 +1953,13 @@ export const toggleAiThreadPinned = createServerFn({ method: "POST" })
       throw new Error("Usuário não autenticado");
     }
 
+    const { data: thread } = await db
+      .from("chat_threads")
+      .select("customer_id, recipient_profile_id, store_id")
+      .eq("id", data.threadId)
+      .single();
+    if (!thread) throw new Error("Thread não encontrada");
+    assertAiThreadAccess(thread, identity);
     const { error } = await db
       .from("chat_threads")
       .update({ is_pinned: data.isPinned, updated_at: new Date().toISOString() })
@@ -1829,7 +1992,7 @@ export const deleteAiConversationThread = createServerFn({ method: "POST" })
 
     const { data: thread } = await db
       .from("chat_threads")
-      .select("id, created_by, store_id")
+      .select("id, customer_id, recipient_profile_id, store_id")
       .eq("id", data.threadId)
       .single();
 
@@ -1837,9 +2000,7 @@ export const deleteAiConversationThread = createServerFn({ method: "POST" })
       throw new Error("Thread não encontrada");
     }
 
-    if (thread.created_by !== identity.id && identity.role !== "admin") {
-      throw new Error("Sem permissão para excluir esta conversa");
-    }
+    assertAiThreadAccess(thread, identity);
 
     await db.from("chat_messages").delete().eq("thread_id", data.threadId);
     await db.from("chat_artifacts").delete().eq("thread_id", data.threadId);
@@ -1866,7 +2027,7 @@ export const executeGuestCopilotMessageSchema = z.object({
 export const executeGuestCopilotMessage = createServerFn({ method: "POST" })
   .validator(executeGuestCopilotMessageSchema)
   .handler(async ({ data }) => {
-    const execution = await executeAiCopilotPipeline(
+    const execution = await withCopilotTimeout(executeAiCopilotPipeline(
       data.message,
       {},
       {
@@ -1874,6 +2035,76 @@ export const executeGuestCopilotMessage = createServerFn({ method: "POST" })
         userLng: data.userLng,
         city: data.city,
       }
-    );
+    ));
     return execution;
+  });
+
+// ============================================================
+// 9. Dispatcher tipado de ações do Chat
+// ============================================================
+
+const chatActionSchema = z.object({
+  action_type: z.enum(["add_to_cart", "request_travel_quote", "submit_legal_demand", "publish_ad"]),
+  payload: z.record(z.any()).default({}),
+});
+
+export const dispatchAiChatAction = createServerFn({ method: "POST" })
+  .validator(chatActionSchema)
+  .handler(async ({ data }) => {
+    const identity = await getServerIdentity().catch(() => null);
+    if (!identity?.id) throw new Error("Faça login para executar esta ação");
+
+    switch (data.action_type) {
+      case "add_to_cart": {
+        const productId = data.payload.productId || data.payload.product_id || data.payload.id;
+        if (typeof productId !== "string" || !productId) throw new Error("Produto não identificado");
+        const { addToCart } = await import("./cart.functions");
+        return await addToCart({ data: { productId, quantity: Math.max(1, Number(data.payload.quantity) || 1) } });
+      }
+      case "request_travel_quote": {
+        const { requestTravelQuote } = await import("./tourism.functions");
+        const destination = String(data.payload.destination || "").trim();
+        const origin = String(data.payload.origin_city || "").trim();
+        const contactName = String(identity.fullName || identity.name || "").trim();
+        const contactEmail = String(identity.email || "").trim();
+        if (!origin || !destination || !contactName || !contactEmail) throw new Error("Origem, destino e dados de contato são obrigatórios");
+        return await requestTravelQuote({ data: {
+          origin_city: origin,
+          destination_city: destination,
+          rooms_count: Math.max(1, Number(data.payload.rooms_count) || 1),
+          adults_count: Math.max(1, Number(data.payload.passengers_count) || 1),
+          children_count: 0,
+          children_ages: [],
+          trip_type: "air_package",
+          flexible_dates: true,
+          contact_name: contactName,
+          contact_whatsapp: String(identity.email || ""),
+          contact_email: contactEmail,
+          special_notes: typeof data.payload.notes === "string" ? data.payload.notes : undefined,
+        } });
+      }
+      case "submit_legal_demand": {
+        const { createJusDemand } = await import("./jus.functions");
+        const title = String(data.payload.title || "").trim();
+        const description = String(data.payload.description || "").trim();
+        if (title.length < 3 || description.length < 10) throw new Error("Título e descrição completos são obrigatórios");
+        return await createJusDemand({ data: {
+          title,
+          legal_area: String(data.payload.legal_area || "Direito Cível"),
+          description,
+          urgency: ["low", "normal", "high", "urgent"].includes(data.payload.urgency) ? data.payload.urgency : "normal",
+          city: typeof data.payload.city === "string" ? data.payload.city : undefined,
+          state: typeof data.payload.state === "string" ? data.payload.state : undefined,
+          documents: [],
+          is_anonymous: false,
+        } });
+      }
+      case "publish_ad": {
+        const { upsertClassified } = await import("./classifieds.functions");
+        const title = String(data.payload.headline || "").trim();
+        const content = String(data.payload.body_text || "").trim();
+        if (title.length < 3 || content.length < 10) throw new Error("Título e descrição completos são obrigatórios");
+        return await upsertClassified({ data: { title, category: "sale", content, price_cents: Number(data.payload.price_cents) || 0 } });
+      }
+    }
   });

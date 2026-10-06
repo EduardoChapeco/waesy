@@ -1,10 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { getServerClient } from "@/lib/supabase";
 
+import type {} from "@tanstack/react-start";
 export const Route = createFileRoute("/api/auth/marketplace/callback")({
   server: {
     handlers: {
-      GET: async ({ request }) => {
+      GET: async ({ request }: { request: Request }) => {
         try {
           const url = new URL(request.url);
           const code = url.searchParams.get("code");
@@ -205,4 +206,4 @@ export const Route = createFileRoute("/api/auth/marketplace/callback")({
       },
     },
   },
-});
+} as never)
