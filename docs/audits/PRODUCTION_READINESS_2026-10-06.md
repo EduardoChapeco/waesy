@@ -10,7 +10,7 @@
 
 O trabalho histórico foi recuperado e publicado no branch do Waesy. Foram corrigidos problemas adicionais no Copilot, no viewer de artefactos, na persistência FSM e no gate de schema. O SHA atualmente publicado deve ser confirmado diretamente no [PR #6](https://github.com/EduardoChapeco/waesy/pull/6), para evitar duplicar aqui um identificador que muda com cada commit documental.
 
-**Produção não está confirmada.** Nas consultas ao PR durante esta tarefa, o check **Cloudflare Pages falhou** e o check **CI Unificado — Waesy Quality Gates** apareceu pendente/em execução nos commits mais recentes. Não houve confirmação de deployment público. O OAuth do Wrangler iniciado anteriormente não terminou com uma sessão autenticada.
+**Produção não está confirmada.** No commit de código `4b76520`, os **5 Quality Gates do Waesy passaram**. O check **Cloudflare Pages falhou com “Build failed”**; não houve confirmação de deployment público.
 
 ## Alterações no Waesy
 
@@ -52,8 +52,8 @@ migration version uniqueness: OK
 | `npm run check:canonical` | Exit code 0 |
 | Naming, dependências circulares, tipos SSOT, duplicação e route budget | Aprovados pelo gate canónico |
 | Dívida de decomposição | 511 avisos no gate não bloqueante: 86 críticos, 97 altos, 328 médios |
-| CI principal anterior | Os 5 Quality Gates passaram no commit anterior ao hardening final |
-| Check do PR no SHA atual | Cloudflare Pages falhou; CI Waesy estava pendente no último estado consultado |
+| CI principal no commit de código `4b76520` | **Aprovado:** 5 Quality Gates |
+| Check do PR #6 — Cloudflare Pages | **Falhou:** o provedor reportou “Build failed” |
 | Deploy público | Não confirmado |
 
 Os 511 avisos de tamanho são dívida técnica existente reportada por `check:size:warn`; o script termina com sucesso, mas isso não significa que a dívida tenha sido resolvida nem que a auditoria considere os monólitos ideais.
@@ -62,4 +62,4 @@ Os 511 avisos de tamanho são dívida técnica existente reportada por `check:si
 
 O PR [#6](https://github.com/EduardoChapeco/waesy/pull/6) está aberto contra `main`. O branch local foi atualizado com `git fetch` e `git pull --rebase origin main`; os pushes foram confirmados por comparação entre SHA local e remoto.
 
-Para declarar a publicação Waesy concluída, falta obter os Quality Gates verdes no SHA atual, resolver a configuração/autenticação do check Cloudflare Pages, fazer merge de `#6` para `main`, confirmar o deployment no Cloudflare e executar smoke tests Waesy de status/worker, Copilot, Builder, tabelas/artefactos e rotas principais. Nenhum desses passos deve ser marcado como concluído sem a respetiva confirmação do provedor.
+Para declarar a publicação Waesy concluída, falta resolver a falha de build no check Cloudflare Pages, fazer merge de `#6` para `main`, confirmar o deployment no Cloudflare e executar smoke tests Waesy de status/worker, Copilot, Builder, tabelas/artefactos e rotas principais. Nenhum desses passos deve ser marcado como concluído sem a respetiva confirmação do provedor.
