@@ -43,7 +43,7 @@ export async function startCopilotExecution(context: ExecutionContext): Promise<
     user_id: context.userId ?? null,
     domain: context.domain,
     status: "running",
-    current_phase: "PLANNING",
+    current_phase: "PLANNED",
     started_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   }, { onConflict: "id" }).throwOnError();
@@ -52,7 +52,9 @@ export async function startCopilotExecution(context: ExecutionContext): Promise<
 export async function persistCopilotExecutionStep(context: Pick<ExecutionContext, "executionId">, step: AIActivityStep, sequenceNo: number): Promise<void> {
   const db = getServerClient();
   await db.from("copilot_execution_steps").upsert(toPersistedStep(step, context.executionId, sequenceNo), { onConflict: "execution_id,step_id" }).throwOnError();
-  await db.from("copilot_executions").update({ current_phase: step.fsmPhase ?? null, updated_at: new Date().toISOString() }).eq("id", context.executionId).throwOnError();
+  const executionUpdate: Record<string, unknown> = { updated_at: new Date().toISOString() };
+  if (step.fsmPhase) executionUpdate.current_phase = step.fsmPhase;
+  await db.from("copilot_executions").update(executionUpdate).eq("id", context.executionId).throwOnError();
 }
 
 export async function completeCopilotExecution(context: Pick<ExecutionContext, "executionId">, status: PersistedExecutionStatus, state: Record<string, unknown> = {}, error?: string): Promise<void> {
@@ -62,7 +64,16 @@ export async function completeCopilotExecution(context: Pick<ExecutionContext, "
     pendingExecutionWrites.delete(context.executionId);
   }
   const db = getServerClient();
-  await db.from("copilot_executions").update({ status, state, last_error: error ?? null, completed_at: ["completed", "failed_final", "cancelled"].includes(status) ? new Date().toISOString() : null, updated_at: new Date().toISOString() }).eq("id", context.executionId).throwOnError();
+  const currentPhase = status === "completed"
+    ? "COMPLETED"
+    : status === "failed_retryable"
+      ? "FAILED_RETRYABLE"
+      : status === "failed_final"
+        ? "FAILED_FINAL"
+        : status === "cancelled"
+          ? "CANCELLED"
+          : "RUNNING";
+  await db.from("copilot_executions").update({ current_phase: currentPhase, status, state, last_error: error ?? null, completed_at: ["completed", "failed_final", "cancelled"].includes(status) ? new Date().toISOString() : null, updated_at: new Date().toISOString() }).eq("id", context.executionId).throwOnError();
 }
 
 export function createPersistedActivitySteps(context: Pick<ExecutionContext, "executionId">): AIActivityStep[] {

@@ -366,8 +366,25 @@ function ProposalCardBlock({
 }
 
 function TableBlock({ data }: { data: Record<string, any> }) {
-  const headers: string[] = data.headers || [];
-  const rows: Array<Array<string | number>> = data.rows || [];
+  const headers: string[] = Array.isArray(data.headers) ? data.headers : [];
+  const rawRows: unknown[] = Array.isArray(data.rows)
+    ? data.rows
+    : Array.isArray(data.dataRows)
+      ? data.dataRows
+      : [];
+  const rows: Array<Array<string | number>> = rawRows.map((row) => {
+    if (Array.isArray(row)) return row as Array<string | number>;
+    if (row && typeof row === "object") {
+      const record = row as Record<string, unknown>;
+      return headers.map((header) => {
+        const value = record[header];
+        return value == null || ["string", "number"].includes(typeof value)
+          ? (value as string | number | null | undefined) ?? ""
+          : JSON.stringify(value) ?? String(value);
+      });
+    }
+    return [String(row ?? "")];
+  });
 
   return (
     <div className="rounded-lg border border-border/80 bg-card overflow-hidden shadow-2xs max-w-md w-full">

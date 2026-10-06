@@ -13,7 +13,9 @@ import {
   sendAiConversationMessage,
   executeGuestCopilotMessage,
   deleteAiConversationThread,
+  dispatchAiChatAction,
 } from "@/services/ai-conversations.functions";
+import type { AIChatAction } from "@/components/chat/structured-message-view";
 import { getUserSession } from "@/services/auth.functions";
 import { toast } from "sonner";
 
@@ -254,6 +256,43 @@ function CopilotPage() {
     toast.info("Execução interrompida. Você pode tentar novamente.");
   };
 
+  const handleStructuredAction = async (action: AIChatAction) => {
+    const payload = action.payload || {};
+    const dispatchable = ["add_to_cart", "request_travel_quote", "submit_legal_demand", "publish_ad"] as const;
+
+    if ((dispatchable as readonly string[]).includes(action.action_type)) {
+      try {
+        await dispatchAiChatAction({
+          data: {
+            action_type: action.action_type as (typeof dispatchable)[number],
+            payload,
+          },
+        });
+        toast.success("Ação do Copilot concluída.");
+      } catch (error: any) {
+        toast.error(error?.message || "Não foi possível executar a ação do Copilot.");
+      }
+      return;
+    }
+
+    const href = typeof payload.href === "string" ? payload.href : typeof payload.url === "string" ? payload.url : null;
+    if (href?.startsWith("/")) {
+      window.location.assign(href);
+      return;
+    }
+
+    if (action.action_type === "open_checkout") {
+      window.location.assign("/checkout");
+      return;
+    }
+    if (action.action_type === "call_ride") {
+      window.location.assign("/mobilidade");
+      return;
+    }
+
+    toast.info("Esta ação está disponível no módulo correspondente e requer os dados completos da operação.");
+  };
+
   const handleCreateThread = async (type: ThreadType, title: string) => {
     try {
       if (effectiveUserId) {
@@ -320,6 +359,7 @@ function CopilotPage() {
         onCancelActiveRun={handleCancelActiveRun}
         onCreateThread={handleCreateThread}
         onDeleteThread={handleDeleteThread}
+        onStructuredAction={handleStructuredAction}
         isSending={isSending}
         currentUserProfileId={effectiveUserId || undefined}
         className="h-full border-none rounded-none"

@@ -1,8 +1,8 @@
 {
-  "timestamp": "2026-10-06T19:18:41.116Z",
-  "totalFilesScanned": 1028,
-  "totalButtonsScanned": 6181,
-  "totalControls": 6181,
+  "timestamp": "2026-10-06T21:27:10.271Z",
+  "totalFilesScanned": 1029,
+  "totalButtonsScanned": 6193,
+  "totalControls": 6193,
   "totalIssues": 0,
   "summary": {
     "deadButtons": 0,
@@ -13,13 +13,13 @@
   },
   "summaryBySeverity": {},
   "summaryByIntent": {
-    "navigate": 1635,
-    "local-state": 3416,
-    "mutate": 430,
-    "submit": 242,
-    "open-modal-with-continuation": 164,
+    "navigate": 1641,
+    "mutate": 432,
     "copy-share": 273,
-    "preview-only": 20,
+    "local-state": 3419,
+    "submit": 244,
+    "open-modal-with-continuation": 164,
+    "preview-only": 19,
     "disabled-with-reason": 1
   },
   "issues": []
