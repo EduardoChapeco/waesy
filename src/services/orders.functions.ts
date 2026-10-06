@@ -41,7 +41,7 @@ export type UpdateOrderStatusInput = z.infer<typeof updateOrderStatusInputSchema
 
 // ── DTOs ──────────────────────────────────────────────────────────────────
 
-export interface OrderItemDTO {
+export interface WorkspaceOrderItemDTO {
   id: string;
   productTitle: string;
   variantSku?: string | null;
@@ -65,7 +65,7 @@ export interface OrderDetailDTO {
   customerPhone?: string | null;
   shippingMethod?: string | null;
   shippingAddress?: any;
-  items: OrderItemDTO[];
+  items: WorkspaceOrderItemDTO[];
 }
 
 // ── Server Functions ──────────────────────────────────────────────────────

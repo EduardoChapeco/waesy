@@ -10,7 +10,7 @@
 
 import { readCookieFromRequest } from "@/lib/http-cookies";
 
-export interface ResolvedGeoLocation {
+export interface NetworkResolvedGeoLocation {
   city: string;
   state: string;
   country: string;
@@ -24,7 +24,7 @@ export interface ClientTelemetrySnapshot {
   userAgent: string;
   deviceName: string;
   deviceType: "desktop" | "mobile" | "tablet";
-  geo: ResolvedGeoLocation;
+  geo: NetworkResolvedGeoLocation;
   isDatacenterOrVpn: boolean;
   threatScore: number;
   cfRay: string;
@@ -147,7 +147,7 @@ export function resolveGeoLocation(
     lat?: number;
     lng?: number;
   } | null,
-): ResolvedGeoLocation {
+): NetworkResolvedGeoLocation {
   // 1. Prioridade Máxima: GPS verificado transmitido no payload
   if (explicitGpsPayload?.city && explicitGpsPayload.city !== "Global" && explicitGpsPayload.city !== "Todas as Regiões") {
     return {
