@@ -29,10 +29,11 @@
     "check:deadcode": "node scripts/dead-code-detector.mjs",
     "check:naming": "node scripts/naming-convention-validator.mjs",
     "check:cycles": "node scripts/check-circular-deps.mjs",
+    "check:schema": "node scripts/check-schema-consolidation.mjs",
     "check:types-ssot": "node scripts/check-type-duplications.mjs",
     "check:route-budget": "node scripts/route-budget-guard.mjs",
     "check:tokens": "node scripts/token-sync.mjs --check",
-    "check:canonical": "npm run audit:buttons && npm run typecheck && npm test && npm run check:tokens && npm run lint:design && npm run lint && npm run check:size:warn && npm run check:duplication:warn && npm run check:naming && npm run check:cycles && npm run check:types-ssot && npm run check:route-budget"
+    "check:canonical": "npm run audit:buttons && npm run typecheck && npm test && npm run check:schema && npm run check:tokens && npm run lint:design && npm run lint && npm run check:size:warn && npm run check:duplication:warn && npm run check:naming && npm run check:cycles && npm run check:types-ssot && npm run check:route-budget"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
