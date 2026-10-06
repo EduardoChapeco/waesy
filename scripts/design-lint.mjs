@@ -423,6 +423,8 @@ export function lintSource(content, filePath, customConfig = null) {
       let m;
       arbitraryClassRegex.lastIndex = 0;
       while ((m = arbitraryClassRegex.exec(line)) !== null) {
+        // Attribute variants select state; only their utility value can be arbitrary.
+        if (/^(?:data|aria|supports)-\[/.test(m[0]) && line[m.index + m[0].length] === ':') continue;
         violations.push({
           id: 'DL-02',
           rule: 'DL-02',

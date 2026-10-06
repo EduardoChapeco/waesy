@@ -96,7 +96,9 @@ const expectedComponentCssVars = [
   '--input-radius',
   '--card-bg',
   '--card-border',
-  '--card-radius'
+  '--card-radius',
+  '--dialog-overlay-bg',
+  '--spacing-overlay-max'
 ];
 
 // 3. Verificar presença em src/styles.css

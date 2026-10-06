@@ -51,17 +51,20 @@ CREATE INDEX IF NOT EXISTS idx_copilot_execution_steps_execution ON public.copil
 
 ALTER TABLE public.copilot_executions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.copilot_execution_steps ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON public.copilot_executions, public.copilot_execution_steps FROM anon, authenticated;
+GRANT SELECT ON public.copilot_executions, public.copilot_execution_steps TO authenticated;
+GRANT ALL ON public.copilot_executions, public.copilot_execution_steps TO service_role;
 
 DO $$
 BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'copilot_executions' AND policyname = 'copilot_executions_select_own') THEN
     CREATE POLICY copilot_executions_select_own ON public.copilot_executions FOR SELECT TO authenticated USING (
-      user_id = auth.uid() OR store_id IS NULL OR store_id = ANY(auth_user_store_ids()) OR is_platform_admin()
+      user_id = (SELECT auth.uid()) OR store_id = ANY(auth_user_store_ids()) OR is_platform_admin()
     );
   END IF;
   IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'copilot_execution_steps' AND policyname = 'copilot_execution_steps_select_own') THEN
     CREATE POLICY copilot_execution_steps_select_own ON public.copilot_execution_steps FOR SELECT TO authenticated USING (
-      EXISTS (SELECT 1 FROM public.copilot_executions e WHERE e.id = execution_id AND (e.user_id = auth.uid() OR e.store_id IS NULL OR e.store_id = ANY(auth_user_store_ids()) OR is_platform_admin()))
+      EXISTS (SELECT 1 FROM public.copilot_executions e WHERE e.id = execution_id)
     );
   END IF;
 END $$;

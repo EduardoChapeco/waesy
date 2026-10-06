@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "@tanstack/react-router";
 import { MapPin, Navigation, Search, X, Check, Loader2, Compass, Maximize2, Minimize2, Crosshair, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { MapLibreCanvas } from "@/components/mobility/maplibre-canvas";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { findClosestCanonicalCity } from "@/lib/constants/cities";
@@ -265,6 +266,10 @@ export function LocationMasterPill({ className = "" }: { className?: string }) {
  const holdTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
  const isLongPressRef = useRef(false);
 
+ useEffect(() => () => {
+   if (holdTimerRef.current) clearTimeout(holdTimerRef.current);
+ }, []);
+
  // Trigger GPS Geolocation
  const triggerGeolocation = () => {
  if (!navigator.geolocation) {
@@ -328,7 +333,9 @@ export function LocationMasterPill({ className = "" }: { className?: string }) {
  );
  };
 
- const handlePointerDown = () => {
+ const handlePointerDown = (event: React.PointerEvent<HTMLButtonElement>) => {
+ if (event.button !== 0 || !event.isPrimary) return;
+ if (holdTimerRef.current) clearTimeout(holdTimerRef.current);
  isLongPressRef.current = false;
  setIsHolding(true);
  holdTimerRef.current = setTimeout(() => {
@@ -341,16 +348,23 @@ export function LocationMasterPill({ className = "" }: { className?: string }) {
  const handlePointerUp = () => {
  if (holdTimerRef.current) {
  clearTimeout(holdTimerRef.current);
+ holdTimerRef.current = null;
  }
  setIsHolding(false);
- if (!isLongPressRef.current) {
- setModalOpen(true);
- }
+ };
+
+ const handleClick = () => {
+   if (isLongPressRef.current) {
+     isLongPressRef.current = false;
+     return;
+   }
+   setModalOpen(true);
  };
 
  const handlePointerCancel = () => {
  if (holdTimerRef.current) {
  clearTimeout(holdTimerRef.current);
+ holdTimerRef.current = null;
  }
  setIsHolding(false);
  };
@@ -363,11 +377,15 @@ export function LocationMasterPill({ className = "" }: { className?: string }) {
  onPointerDown={handlePointerDown}
  onPointerUp={handlePointerUp}
  onPointerCancel={handlePointerCancel}
- onClick={() => { /* acionado via onPointerUp — mantém compatibilidade */ }}
+ onPointerLeave={handlePointerCancel}
+ onClick={handleClick}
  type="button"
+ aria-haspopup="dialog"
+ aria-expanded={modalOpen}
+ aria-busy={isLocating || undefined}
  aria-label="Alterar Localização"
  title="Alterar Localização"
- className={`inline-flex items-center gap-2 px-3 h-11 min-h-11 rounded-lg text-xs font-bold transition-colors motion-reduce:transition-none border select-none cursor-pointer shrink-0 ${
+ className={`inline-flex items-center gap-2 px-3 h-11 min-h-11 min-w-11 rounded-lg text-xs font-bold transition-colors motion-reduce:transition-none border select-none cursor-pointer shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
  isHolding
  ? "scale-95 bg-primary/20 border-primary text-primary"
  : "bg-muted/60 hover:bg-muted text-foreground border-border/80 hover:border-primary/40"
@@ -380,7 +398,7 @@ export function LocationMasterPill({ className = "" }: { className?: string }) {
  ) : (
  <MapPin className="size-3.5 text-primary shrink-0" />
  )}
- <span className="truncate max-w-[70px] sm:max-w-[130px] lg:max-w-[180px]">
+ <span className="truncate max-w-20 sm:max-w-32 lg:max-w-44">
  {isGlobal ? "Global" : `${location.city}${location.state ? ` · ${location.state}` : ""}`}
  </span>
  </button>
@@ -428,10 +446,9 @@ export function LocationPickerModal({
  currentLocation.address || "São Miguel do Oeste - SC"
  );
  const [isResolvingPin, setIsResolvingPin] = useState(false);
- const [isMapFullscreen, setIsMapFullscreen] = useState(false);
 
  const POPULAR_CITIES = [
- { city: "Global", state: "", label: "🌐 Global (Todas as Cidades)", lat: undefined, lng: undefined },
+ { city: "Global", state: "", label: "Global", lat: undefined, lng: undefined },
  { city: "São Miguel do Oeste", state: "SC", label: "São Miguel do Oeste - SC", lat: -26.7264, lng: -53.5186 },
  { city: "Chapecó", state: "SC", label: "Chapecó - SC", lat: -27.1004, lng: -52.6152 },
  { city: "Xanxerê", state: "SC", label: "Xanxerê - SC", lat: -26.8747, lng: -52.4036 },
@@ -517,12 +534,12 @@ export function LocationPickerModal({
  <Dialog open={open} onOpenChange={onOpenChange}>
  <DialogContent
  className={`p-0 overflow-hidden bg-background transition-opacity duration-200 motion-reduce:transition-none ${
- isMapFullscreen || activeTab === "map"
- ? "max-w-4xl w-[95vw] h-[85vh] rounded-lg flex flex-col"
+ activeTab === "map"
+ ? "max-w-4xl w-full h-overlay-max rounded-lg flex flex-col"
  : "max-w-xl rounded-lg"
  }`}
  >
- <DialogHeader className="p-5 sm:p-6 pb-3 bg-muted/20 shrink-0">
+ <DialogHeader className="p-4 sm:p-6 pb-3 bg-muted/20 shrink-0">
  <div className="flex items-center justify-between">
  <DialogTitle className="flex items-center gap-2 text-base sm:text-lg font-black tracking-tight">
  <MapPin className="size-5 text-primary" />
@@ -534,7 +551,7 @@ export function LocationPickerModal({
  <button
  type="button"
  onClick={() => setActiveTab("quick")}
- className={`px-3 py-1 rounded-lg text-xs font-bold transition-colors motion-reduce:transition-none ${
+ className={`h-11 min-h-11 min-w-11 px-3 py-2 rounded-lg text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-colors motion-reduce:transition-none ${
  activeTab === "quick"
  ? "bg-background text-foreground "
  : "text-muted-foreground hover:text-foreground"
@@ -545,7 +562,7 @@ export function LocationPickerModal({
  <button
  type="button"
  onClick={() => setActiveTab("map")}
- className={`flex items-center gap-2 px-3 py-1 rounded-lg text-xs font-bold transition-colors motion-reduce:transition-none ${
+ className={`flex items-center gap-2 h-11 min-h-11 min-w-11 px-3 py-2 rounded-lg text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-colors motion-reduce:transition-none ${
  activeTab === "map"
  ? "bg-primary text-primary-foreground "
  : "text-muted-foreground hover:text-foreground"
@@ -580,11 +597,14 @@ export function LocationPickerModal({
 
  {/* Search by CEP */}
  <form onSubmit={handleSearchCep} className="space-y-2">
- <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+ <label htmlFor="location-cep" className="text-xs font-semibold text-muted-foreground">
  Buscar por CEP
  </label>
  <div className="flex gap-2">
  <Input
+ id="location-cep"
+ inputMode="numeric"
+ autoComplete="postal-code"
  placeholder="Ex: 89801-000"
  value={cep}
  onChange={(e) => setCep(e.target.value)}
@@ -593,7 +613,8 @@ export function LocationPickerModal({
  />
  <Button
  type="submit"
- disabled={isSearchingCep}
+ isLoading={isSearchingCep}
+ loadingText="Buscando"
  className="h-11 px-5 rounded-lg font-bold bg-primary text-primary-foreground text-xs"
  >
  {isSearchingCep ? <Loader2 className="size-4 animate-spin motion-reduce:animate-none" /> : "Buscar"}
@@ -624,9 +645,9 @@ export function LocationPickerModal({
  source: c.city === "Global" ? "default" : "manual",
  })
  }
- className={`flex items-center justify-between p-3 rounded-lg border text-xs font-semibold transition-colors motion-reduce:transition-none ${
+ className={`flex min-h-11 items-center justify-between p-3 rounded-lg border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring text-xs font-semibold transition-colors motion-reduce:transition-none ${
  isSelected
- ? "bg-primary text-primary-foreground border-primary font-bold shadow-xs"
+ ? "bg-primary text-primary-foreground border-primary font-bold"
  : "bg-card hover:bg-muted text-foreground border-border/80"
  }`}
  >
@@ -645,45 +666,20 @@ export function LocationPickerModal({
  {/* TAB 2: INTERACTIVE FULLSCREEN MAP PIN PICKER */}
  {activeTab === "map" && (
  <div className="flex-1 flex flex-col min-h-0 relative">
- {/* Interactive Map Area */}
- <div
- className="flex-1 relative bg-zinc-950 w-full overflow-hidden cursor-crosshair"
- onClick={(e) => {
- const rect = e.currentTarget.getBoundingClientRect();
- const x = (e.clientX - rect.left) / rect.width - 0.5;
- const y = (e.clientY - rect.top) / rect.height - 0.5;
- // Offset latitude and longitude proportionally around Chapecó center
- const newLat = pinLat - y * 0.05;
- const newLng = pinLng + x * 0.05;
- setPinLat(newLat);
- setPinLng(newLng);
- resolvePinCoords(newLat, newLng);
- }}
- >
- {/* Map Tile Background Image */}
- <div
- className="absolute inset-0 size-full opacity-60 bg-cover bg-center pointer-events-none"
- style={{
- backgroundImage: `url('')`,
- }}
- />
- <div className="absolute inset-0 bg-radial from-transparent via-background/40 to-background/90 pointer-events-none" />
-
- {/* Center Map Pin with Pulse */}
- <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-full flex flex-col items-center pointer-events-none z-20">
- <div className="px-3 py-1 rounded-full bg-foreground text-background text-[11px] font-black mb-1 whitespace-nowrap">
- {isResolvingPin ? "Localizando..." : "📍 Solte o Pin Aqui"}
- </div>
- <div className="relative flex items-center justify-center">
- <MapPin className="size-10 text-primary fill-primary animate-bounce motion-reduce:animate-none" />
- </div>
- <div className="size-3 bg-black/40 rounded-full blur-[2px] mt-1" />
- </div>
-
- {/* Coordinates Indicator */}
- <div className="absolute top-3 left-3 z-30 bg-background/90 backdrop-blur-md px-3 py-2 rounded-lg text-[11px] font-mono text-muted-foreground ">
- Lat: {pinLat.toFixed(5)} · Lng: {pinLng.toFixed(5)}
- </div>
+ <div className="flex-1 min-h-64 relative bg-muted">
+   <MapLibreCanvas
+     center={{ lat: pinLat, lng: pinLng }}
+     origin={{ lat: pinLat, lng: pinLng }}
+     pinMode="origin"
+     onMapClick={(lat, lng) => {
+       setPinLat(lat);
+       setPinLng(lng);
+       void resolvePinCoords(lat, lng);
+     }}
+   />
+   <div className="absolute top-3 left-3 z-30 bg-background px-3 py-2 rounded-lg text-xs font-mono text-muted-foreground">
+     Lat: {pinLat.toFixed(5)} · Lng: {pinLng.toFixed(5)}
+   </div>
 
  {/* Fullscreen Map Toggle & Recenter GPS */}
  <div className="absolute top-3 right-3 z-30 flex items-center gap-2">
@@ -702,10 +698,24 @@ export function LocationPickerModal({
  </div>
  </div>
 
+ <div className="grid grid-cols-2 gap-2 px-4 py-2 bg-background">
+   <label className="space-y-1 text-xs text-muted-foreground">
+     <span>Latitude</span>
+     <Input type="number" min={-90} max={90} step="any" value={pinLat}
+       onChange={(event) => { const value = event.currentTarget.valueAsNumber; if (Number.isFinite(value) && Math.abs(value) <= 90) setPinLat(value); }}
+       onBlur={() => void resolvePinCoords(pinLat, pinLng)} />
+   </label>
+   <label className="space-y-1 text-xs text-muted-foreground">
+     <span>Longitude</span>
+     <Input type="number" min={-180} max={180} step="any" value={pinLng}
+       onChange={(event) => { const value = event.currentTarget.valueAsNumber; if (Number.isFinite(value) && Math.abs(value) <= 180) setPinLng(value); }}
+       onBlur={() => void resolvePinCoords(pinLat, pinLng)} />
+   </label>
+ </div>
  {/* Bottom Bar: Resolved Address & Confirm Button */}
- <div className="p-4 sm:p-5 bg-card flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
+ <div className="p-4 sm:p-6 bg-card flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
  <div className="w-full sm:flex-1 space-y-1">
- <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+ <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
  Endereço Selecionado
  </span>
  <p className="text-xs sm:text-sm font-bold text-foreground line-clamp-1">
@@ -725,7 +735,8 @@ export function LocationPickerModal({
  <Button
  type="button"
  onClick={handleConfirmMapPin}
- disabled={isResolvingPin}
+ isLoading={isResolvingPin}
+ loadingText="Localizando"
  className="flex-1 sm:flex-none rounded-lg font-bold text-xs bg-primary text-primary-foreground px-6 "
  >
  {isResolvingPin ? (

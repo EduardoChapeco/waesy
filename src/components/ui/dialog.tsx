@@ -18,7 +18,7 @@ const DialogOverlay = React.forwardRef<
   <DialogPrimitive.Overlay
     ref={ref}
     className={cn(
-      "fixed inset-0 z-50 bg-black/60 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+      "fixed inset-0 z-50 bg-overlay data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
       className,
     )}
     {...props}
@@ -47,7 +47,7 @@ const DialogContent = React.forwardRef<
     default: "sm:max-w-lg",
     lg: "sm:max-w-2xl",
     xl: "sm:max-w-4xl",
-    full: "sm:max-w-5xl sm:h-[90vh]",
+    full: "sm:max-w-5xl sm:h-overlay-max",
   }[size];
 
   return (
@@ -57,8 +57,8 @@ const DialogContent = React.forwardRef<
         ref={ref}
         className={cn(
           isForceCompact
-            ? "fixed inset-0 z-50 flex flex-col w-full h-full max-w-none rounded-none border-none bg-background p-4 sm:p-5 overflow-y-auto no-scrollbar duration-200"
-            : "fixed inset-auto left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 flex flex-col w-full max-h-[90vh] rounded-lg border border-border bg-background p-6 overflow-y-auto no-scrollbar duration-200",
+            ? "fixed inset-0 z-50 flex flex-col w-full h-full max-w-none rounded-none border-none bg-background p-4 sm:p-6 overflow-y-auto no-scrollbar duration-150"
+            : "fixed inset-auto left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 flex flex-col w-full max-h-overlay-max rounded-lg border border-border bg-background p-6 overflow-y-auto no-scrollbar duration-150",
           !isForceCompact && sizeClasses,
           "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
           className,
@@ -66,7 +66,7 @@ const DialogContent = React.forwardRef<
         {...props}
       >
         {children}
-        <DialogPrimitive.Close className="absolute right-4 top-4 rounded-lg p-3 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary touch-manipulation">
+        <DialogPrimitive.Close className="absolute right-4 top-4 flex size-11 min-h-11 min-w-11 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring touch-manipulation">
           <X className="size-4" />
           <span className="sr-only">Fechar</span>
         </DialogPrimitive.Close>

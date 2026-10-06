@@ -92,6 +92,13 @@ runTest('DL-02: Permite classes utilitárias canônicas', () => {
   assert.strictEqual(dl02.length, 0);
 });
 
+runTest('DL-02: distingue variantes de estado de valores arbitrarios', () => {
+  const code = '<button className="data-[state=open]:bg-muted aria-[expanded=true]:text-foreground data-[state=closed]:w-[327px]">Abrir</button>';
+  const violations = lintSource(code, 'src/components/ui/example.tsx', testConfig).filter(v => v.id === 'DL-02');
+  assert.strictEqual(violations.length, 1);
+  assert.strictEqual(violations[0].match, 'w-[327px]');
+});
+
 // 3. DL-03: Espaçamento Fora da Grade de 4px
 runTest('DL-03: Detecta espaçamento em half-steps (0.5, 1.5, 2.5, 3.5)', () => {
   const code = `<div className="p-0.5 m-1.5 gap-2.5 space-x-3.5">Grade Quebrada</div>`;

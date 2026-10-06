@@ -1,5 +1,6 @@
 import type { AIActivityStep } from "@/types/chat";
 import { getServerClient } from "@/lib/supabase";
+import { getServerIdentity, getSSRClient } from "@/lib/server-access";
 
 export type PersistedExecutionStatus = "queued" | "running" | "paused" | "completed" | "failed_retryable" | "failed_final" | "cancelled";
 
@@ -11,6 +12,8 @@ interface ExecutionContext {
   userId?: string;
   domain: string;
 }
+
+const pendingExecutionWrites = new Map<string, Promise<void>>();
 
 function toPersistedStep(step: AIActivityStep, executionId: string, sequenceNo: number) {
   return {
@@ -43,18 +46,23 @@ export async function startCopilotExecution(context: ExecutionContext): Promise<
     current_phase: "PLANNING",
     started_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
-  }, { onConflict: "id" });
+  }, { onConflict: "id" }).throwOnError();
 }
 
 export async function persistCopilotExecutionStep(context: Pick<ExecutionContext, "executionId">, step: AIActivityStep, sequenceNo: number): Promise<void> {
   const db = getServerClient();
-  await db.from("copilot_execution_steps").upsert(toPersistedStep(step, context.executionId, sequenceNo), { onConflict: "execution_id,step_id" });
-  await db.from("copilot_executions").update({ current_phase: step.fsmPhase ?? null, updated_at: new Date().toISOString() }).eq("id", context.executionId);
+  await db.from("copilot_execution_steps").upsert(toPersistedStep(step, context.executionId, sequenceNo), { onConflict: "execution_id,step_id" }).throwOnError();
+  await db.from("copilot_executions").update({ current_phase: step.fsmPhase ?? null, updated_at: new Date().toISOString() }).eq("id", context.executionId).throwOnError();
 }
 
 export async function completeCopilotExecution(context: Pick<ExecutionContext, "executionId">, status: PersistedExecutionStatus, state: Record<string, unknown> = {}, error?: string): Promise<void> {
+  try {
+    await pendingExecutionWrites.get(context.executionId);
+  } finally {
+    pendingExecutionWrites.delete(context.executionId);
+  }
   const db = getServerClient();
-  await db.from("copilot_executions").update({ status, state, last_error: error ?? null, completed_at: ["completed", "failed_final", "cancelled"].includes(status) ? new Date().toISOString() : null, updated_at: new Date().toISOString() }).eq("id", context.executionId);
+  await db.from("copilot_executions").update({ status, state, last_error: error ?? null, completed_at: ["completed", "failed_final", "cancelled"].includes(status) ? new Date().toISOString() : null, updated_at: new Date().toISOString() }).eq("id", context.executionId).throwOnError();
 }
 
 export function createPersistedActivitySteps(context: Pick<ExecutionContext, "executionId">): AIActivityStep[] {
@@ -65,7 +73,10 @@ export function createPersistedActivitySteps(context: Pick<ExecutionContext, "ex
       return (...steps: AIActivityStep[]) => {
         const firstIndex = array.length;
         steps.forEach((step, offset) => {
-          void persistCopilotExecutionStep(context, step, firstIndex + offset).catch((error) => console.warn("[copilot-execution] step telemetry unavailable", error));
+          const previous = pendingExecutionWrites.get(context.executionId) ?? Promise.resolve();
+          const pending = previous.then(() => persistCopilotExecutionStep(context, step, firstIndex + offset));
+          pendingExecutionWrites.set(context.executionId, pending);
+          void pending.catch((error) => console.warn("[copilot-execution] step telemetry unavailable", error));
         });
         return Array.prototype.push.apply(array, steps);
       };
@@ -74,11 +85,11 @@ export function createPersistedActivitySteps(context: Pick<ExecutionContext, "ex
 }
 
 export async function resumeCopilotExecution(executionId: string): Promise<{ execution: Record<string, unknown> | null; steps: Record<string, unknown>[] }> {
-  const db = getServerClient();
-  const [{ data: execution }, { data: steps }] = await Promise.all([
-    db.from("copilot_executions").select("*").eq("id", executionId).maybeSingle(),
-    db.from("copilot_execution_steps").select("*").eq("execution_id", executionId).order("sequence_no", { ascending: true }),
-  ]);
-  if (execution) await db.from("copilot_executions").update({ resume_count: Number(execution.resume_count || 0) + 1, status: "running", updated_at: new Date().toISOString() }).eq("id", executionId);
+  await getServerIdentity();
+  const scoped = await getSSRClient();
+  const { data: execution } = await scoped.from("copilot_executions").select("*").eq("id", executionId).maybeSingle().throwOnError();
+  if (!execution) return { execution: null, steps: [] };
+  const { data: steps } = await scoped.from("copilot_execution_steps").select("*").eq("execution_id", executionId).order("sequence_no", { ascending: true }).throwOnError();
+  await getServerClient().from("copilot_executions").update({ resume_count: Number(execution.resume_count || 0) + 1, status: "running", updated_at: new Date().toISOString() }).eq("id", executionId).throwOnError();
   return { execution: execution ?? null, steps: steps ?? [] };
 }

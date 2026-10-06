@@ -19,7 +19,7 @@ const SelectTrigger = React.forwardRef<
  <SelectPrimitive.Trigger
  ref={ref}
  className={cn(
- "flex h-12 w-full items-center justify-between whitespace-nowrap rounded-lg border border-input bg-transparent px-4 py-2 text-sm ring-offset-background cursor-pointer data-[placeholder]:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1",
+ "flex h-11 min-h-11 w-full items-center justify-between whitespace-nowrap rounded-lg border border-input bg-transparent px-4 py-2 text-sm ring-offset-background cursor-pointer data-[placeholder]:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1",
  className,
  )}
  {...props}
@@ -68,7 +68,7 @@ const SelectContent = React.forwardRef<
  <SelectPrimitive.Content
  ref={ref}
  className={cn(
- "relative z-50 max-h-(--radix-select-content-available-height) min-w-[8rem] overflow-y-auto no-scrollbar overflow-x-hidden rounded-lg border bg-popover text-popover-foreground data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 origin-(--radix-select-content-transform-origin)",
+ "relative z-50 max-h-(--radix-select-content-available-height) min-w-32 overflow-y-auto no-scrollbar overflow-x-hidden rounded-lg border bg-popover text-popover-foreground data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 origin-(--radix-select-content-transform-origin)",
  position === "popper" &&
  "data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1",
  className,
@@ -81,7 +81,7 @@ const SelectContent = React.forwardRef<
  className={cn(
  "p-1",
  position === "popper" &&
- "h-[var(--radix-select-trigger-height)] w-full min-w-[var(--radix-select-trigger-width)]",
+ "w-full min-w-(--radix-select-trigger-width)",
  )}
  >
  {children}
@@ -111,12 +111,12 @@ const SelectItem = React.forwardRef<
  <SelectPrimitive.Item
  ref={ref}
  className={cn(
- "relative flex w-full cursor-default select-none items-center rounded-lg py-2 pl-2 pr-8 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+ "relative flex min-h-11 w-full cursor-default select-none items-center rounded-lg py-2 pl-2 pr-8 text-sm outline-none focus:bg-accent focus:text-accent-foreground focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
  className,
  )}
  {...props}
  >
- <span className="absolute right-2 flex h-3.5 w-3.5 items-center justify-center">
+ <span className="absolute right-2 flex size-4 items-center justify-center">
  <SelectPrimitive.ItemIndicator>
  <Check className="h-4 w-4" />
  </SelectPrimitive.ItemIndicator>
@@ -148,11 +148,12 @@ export const NativeSelect = React.forwardRef<HTMLSelectElement, NativeSelectProp
       <select
         ref={ref}
         className={cn(
-          "flex h-12 w-full rounded-lg border border-input bg-background px-4 py-2 text-base md:text-sm text-foreground ring-offset-background transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-50",
-          hasError && "border-destructive focus:ring-destructive",
+          "flex h-11 min-h-11 w-full rounded-lg border border-input bg-background px-4 py-2 text-base md:text-sm text-foreground ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-50",
+          hasError && "border-destructive focus-visible:ring-destructive",
           className,
         )}
         {...props}
+        aria-invalid={hasError || props["aria-invalid"]}
       >
         {children}
       </select>

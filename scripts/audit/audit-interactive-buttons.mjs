@@ -59,13 +59,71 @@ function getTextContent(node, sourceFile) {
     .map((child) => {
       if (ts.isJsxText(child)) return child.getText(sourceFile);
       if (ts.isJsxExpression(child)) return child.getText(sourceFile);
-      if (ts.isJsxElement(child)) return getJsxName(child.openingElement.tagName);
-      if (ts.isJsxSelfClosingElement(child)) return getJsxName(child.tagName);
+      if (ts.isJsxElement(child)) return getTextContent(child, sourceFile);
+      if (ts.isJsxSelfClosingElement(child)) return '';
       return '';
     })
     .join(' ')
     .replace(/\s+/g, ' ')
     .trim();
+}
+
+function unwrapCallback(expression) {
+  if (expression && ts.isCallExpression(expression) && /^(useCallback|React\.useCallback)$/.test(expression.expression.getText())) {
+    return expression.arguments[0];
+  }
+  return expression;
+}
+
+function resolveCallback(expression, node) {
+  expression = unwrapCallback(expression);
+  if (!expression || !ts.isIdentifier(expression)) return expression;
+  const name = expression.text;
+  let scope = node.parent;
+  while (scope) {
+    if (ts.isBlock(scope) || ts.isSourceFile(scope)) {
+      for (const statement of scope.statements) {
+        if (ts.isFunctionDeclaration(statement) && statement.name?.text === name) return statement;
+        if (ts.isVariableStatement(statement)) {
+          const declaration = statement.declarationList.declarations.find((entry) => ts.isIdentifier(entry.name) && entry.name.text === name);
+          if (declaration) return unwrapCallback(declaration.initializer);
+        }
+      }
+    }
+    scope = scope.parent;
+  }
+  return expression;
+}
+
+function callbackExpression(callback) {
+  if (!callback || !(ts.isArrowFunction(callback) || ts.isFunctionExpression(callback) || ts.isFunctionDeclaration(callback))) return undefined;
+  if (!callback.body) return undefined;
+  if (!ts.isBlock(callback.body)) return callback.body;
+  const statements = callback.body.statements.filter((statement) => !ts.isEmptyStatement(statement));
+  if (statements.length !== 1) return undefined;
+  const statement = statements[0];
+  return ts.isReturnStatement(statement) || ts.isExpressionStatement(statement) ? statement.expression : undefined;
+}
+
+function isNoOp(callback) {
+  if (!callback) return false;
+  if (ts.isIdentifier(callback) && callback.text === 'undefined') return true;
+  if (!(ts.isArrowFunction(callback) || ts.isFunctionExpression(callback) || ts.isFunctionDeclaration(callback))) return false;
+  if (callback.body && ts.isBlock(callback.body)) {
+    if (callback.body.statements.every((statement) => ts.isEmptyStatement(statement) || (ts.isReturnStatement(statement) && !statement.expression))) return true;
+  }
+  const expression = callbackExpression(callback);
+  return Boolean(expression && (expression.kind === ts.SyntaxKind.NullKeyword || expression.kind === ts.SyntaxKind.FalseKeyword || (ts.isIdentifier(expression) && expression.text === 'undefined')));
+}
+
+function staticDestination(attributes, sourceFile) {
+  for (const attribute of attributes.properties) {
+    if (!ts.isJsxAttribute(attribute) || !['href', 'to'].includes(attribute.name.getText(sourceFile))) continue;
+    let value = attribute.initializer;
+    if (value && ts.isJsxExpression(value)) value = value.expression;
+    if (value && ts.isStringLiteralLike(value)) return value.text;
+  }
+  return undefined;
 }
 
 function getAncestorFlags(node, sourceFile) {
@@ -101,7 +159,7 @@ function classifyIntent({ tagName, attr, hasSpread, label, isInsideLink, isInsid
   const disabledText = String(attr.get('disabled') ?? '');
   const roleText = String(attr.get('role') ?? '');
   const typeText = String(attr.get('type') ?? '');
-  const hasAsChild = attr.has('asChild');
+  const hasAsChild = attr.has('asChild') && attr.get('asChild') !== '{false}';
   const hasHref = attr.has('href') || attr.has('to');
   const hasOnClick = attr.has('onClick') || hasSpread;
   const hasReason =
@@ -116,7 +174,7 @@ function classifyIntent({ tagName, attr, hasSpread, label, isInsideLink, isInsid
   if (declaredIntent === 'preview-only') return 'preview-only';
   if (isStaticDisabled && hasReason) return 'disabled-with-reason';
   if (typeText.includes('submit')) return 'submit';
-  if (hasAsChild || hasHref || isInsideLink || tagName === 'a' || tagName === 'Link') return 'navigate';
+  if (hasAsChild || hasHref || isInsideLink) return 'navigate';
   if (roleText.includes('tab') || isInsideTrigger) return 'open-modal-with-continuation';
   if (COPY_SHARE_LANGUAGE.test(label) || COPY_SHARE_LANGUAGE.test(onClickText)) return 'copy-share';
   if (PREVIEW_LANGUAGE.test(label) || PREVIEW_LANGUAGE.test(onClickText)) return 'preview-only';
@@ -144,7 +202,11 @@ function makeIssue(type, severity, control, evidence, expectedFix) {
 
 function evaluateControl(control) {
   const issues = [];
-  const cleanClick = control.onClickText.replace(/[{}]/g, '').trim();
+  const cleanClick = control.resolvedHandler || control.onClickText;
+
+  if (control.destination !== undefined && (!control.destination.trim() || control.destination.trim() === '#' || /^javascript:/i.test(control.destination.trim()))) {
+    issues.push(makeIssue('INVALID_LINK_DESTINATION', 'P1', control, `Destino sem fluxo real: ${control.destination}`, 'Informar rota, URL ou ancora existente; usar button para acao local.'));
+  }
 
   if (control.isInsideLink && !control.hasAsChild && (control.tagName === 'Button' || control.tagName === 'button')) {
     issues.push(
@@ -171,10 +233,8 @@ function evaluateControl(control) {
   }
 
   if (
-    cleanClick === '() => {}' ||
-    cleanClick === '() => false' ||
-    cleanClick === '() => null' ||
-    cleanClick === 'undefined' ||
+    control.isNoOp ||
+    control.isToastOnlyTransaction ||
     /alert\s*\(/.test(cleanClick) ||
     /console\.log\s*\(/.test(cleanClick) ||
     FAKE_TOAST.test(cleanClick)
@@ -210,6 +270,13 @@ export function analyzeSource(source, filePath = 'inline.tsx') {
   const controls = [];
   const issues = [];
   const relativePath = path.relative(process.cwd(), filePath).replace(/\\/g, '/');
+  const iconNames = new Set();
+  for (const statement of sourceFile.statements) {
+    if (!ts.isImportDeclaration(statement) || !ts.isStringLiteral(statement.moduleSpecifier)) continue;
+    if (!['lucide-react', '@phosphor-icons/react'].includes(statement.moduleSpecifier.text)) continue;
+    const bindings = statement.importClause?.namedBindings;
+    if (bindings && ts.isNamedImports(bindings)) for (const element of bindings.elements) iconNames.add(element.name.text);
+  }
 
   function visit(node) {
     let tagName = '';
@@ -223,14 +290,21 @@ export function analyzeSource(source, filePath = 'inline.tsx') {
       attributes = node.attributes;
     }
 
-    const isControl = ['Button', 'button', 'a', 'Link'].includes(tagName);
+    const roleButton = attributes?.properties.some((prop) => ts.isJsxAttribute(prop) && prop.name.getText(sourceFile) === 'role' && prop.initializer?.getText(sourceFile).includes('button'));
+    const isControl = (!iconNames.has(tagName) && ['Button', 'button', 'a', 'Link'].includes(tagName)) || roleButton;
 
     if (isControl && attributes) {
       const { attr, hasSpread } = getAttributeMap(attributes, sourceFile);
       const { isInsideLink, isInsideTrigger } = getAncestorFlags(node, sourceFile);
       const { line } = sourceFile.getLineAndCharacterOfPosition(node.getStart(sourceFile));
       const label = getTextContent(node, sourceFile);
-      const intent = classifyIntent({ tagName, attr, hasSpread, label, isInsideLink, isInsideTrigger });
+      const clickAttribute = attributes.properties.find((prop) => ts.isJsxAttribute(prop) && prop.name.getText(sourceFile) === 'onClick');
+      const callback = resolveCallback(clickAttribute?.initializer && ts.isJsxExpression(clickAttribute.initializer) ? clickAttribute.initializer.expression : undefined, node);
+      const resolvedHandler = callback?.getText(sourceFile) ?? '';
+      const resolvedAttributes = new Map(attr);
+      if (resolvedHandler) resolvedAttributes.set('onClick', resolvedHandler);
+      const intent = classifyIntent({ tagName, attr: resolvedAttributes, hasSpread, label, isInsideLink, isInsideTrigger });
+      const singleExpression = callbackExpression(callback);
       const control = {
         file: relativePath || filePath,
         line: line + 1,
@@ -238,7 +312,11 @@ export function analyzeSource(source, filePath = 'inline.tsx') {
         label,
         intent,
         hasOnClick: attr.has('onClick') || hasSpread,
-        hasAsChild: attr.has('asChild'),
+        hasAsChild: attr.has('asChild') && attr.get('asChild') !== '{false}',
+        destination: staticDestination(attributes, sourceFile),
+        resolvedHandler,
+        isNoOp: isNoOp(callback),
+        isToastOnlyTransaction: Boolean(singleExpression && ts.isCallExpression(singleExpression) && singleExpression.expression.getText(sourceFile) === 'toast.success' && TRANSACTIONAL_LABEL.test(label)),
         onClickText: String(attr.get('onClick') ?? ''),
         isStaticDisabled:
           attr.has('disabled') &&
@@ -285,6 +363,7 @@ export function analyzeFiles(files) {
     FAKE_OR_STUB_ACTION: allIssues.filter((i) => i.type === 'FAKE_OR_STUB_ACTION'),
     INVALID_LINK_BUTTON_NESTING: allIssues.filter((i) => i.type === 'INVALID_LINK_BUTTON_NESTING'),
     STATIC_DISABLED_BUTTON: allIssues.filter((i) => i.type === 'STATIC_DISABLED_BUTTON'),
+    INVALID_LINK_DESTINATION: allIssues.filter((i) => i.type === 'INVALID_LINK_DESTINATION'),
   };
 
   return {
@@ -298,6 +377,7 @@ export function analyzeFiles(files) {
       fakeOrStubActions: grouped.FAKE_OR_STUB_ACTION.length,
       invalidNesting: grouped.INVALID_LINK_BUTTON_NESTING.length,
       staticDisabled: grouped.STATIC_DISABLED_BUTTON.length,
+      invalidDestinations: grouped.INVALID_LINK_DESTINATION.length,
     },
     summaryBySeverity,
     summaryByIntent,

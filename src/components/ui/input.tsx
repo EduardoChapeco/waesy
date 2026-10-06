@@ -14,10 +14,9 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
  type={type}
  className={cn(
  // Base — layout e tipografia
- "flex h-12 w-full rounded-lg px-4 py-2 text-base md:text-sm",
+ "flex h-11 min-h-11 w-full rounded-lg border border-input px-4 py-2 text-base md:text-sm",
  // Aparência — usa tokens do design system
  "bg-input text-foreground",
- "",
  // Comportamento
  "transition-colors",
  "placeholder:text-muted-foreground",
@@ -31,9 +30,9 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
  hasError && "border-destructive focus-visible:ring-destructive",
  className,
  )}
- aria-invalid={hasError || undefined}
  ref={ref}
  {...props}
+ aria-invalid={hasError || props["aria-invalid"]}
  />
  );
  },
