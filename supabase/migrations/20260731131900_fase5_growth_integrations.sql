@@ -2,10 +2,31 @@
 -- Author: Antigravity
 
 -- 1. Tabelas de Credenciais de Integração (Cofre Seguro)
+-- A migration 0017 criou provider como enum e chamou o payload de
+-- credentials. CREATE TABLE IF NOT EXISTS não altera tabela existente;
+-- normalizamos ambos antes de os BFFs usarem token_payload e novos providers.
+ALTER TABLE public.integration_credentials
+  ALTER COLUMN provider TYPE text USING provider::text;
+
+ALTER TABLE public.integration_credentials
+  ADD COLUMN IF NOT EXISTS credentials JSONB,
+  ADD COLUMN IF NOT EXISTS token_payload JSONB NOT NULL DEFAULT '{}'::jsonb;
+
+UPDATE public.integration_credentials
+SET token_payload = credentials
+WHERE token_payload = '{}'::jsonb
+  AND credentials IS NOT NULL
+  AND jsonb_typeof(credentials) = 'object';
+
+-- credentials é legado; novos BFFs gravam token_payload (ou o payload cifrado)
+-- e não devem ser obrigados a duplicar segredos nessa coluna antiga.
+ALTER TABLE public.integration_credentials
+  ALTER COLUMN credentials DROP NOT NULL;
+
 CREATE TABLE IF NOT EXISTS public.integration_credentials (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     store_id UUID NOT NULL REFERENCES public.stores(id) ON DELETE CASCADE,
-    provider VARCHAR(100) NOT NULL, -- e.g., 'melhorenvio', 'frenet', 'meta_pixel', 'google_merchant'
+    provider VARCHAR(100) NOT NULL, -- e.g., 'whatsapp_cloud_api', 'melhorenvio', 'meta_pixel'
     token_payload JSONB NOT NULL DEFAULT '{}'::jsonb, -- Armazena a chave de API e secrets (acessível apenas via server functions)
     is_active BOOLEAN NOT NULL DEFAULT true,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),

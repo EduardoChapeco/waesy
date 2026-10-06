@@ -1,19 +1,28 @@
 -- Migration: 20260612000011_update_omnichannel_triggers.sql
--- Descrição: Atualiza os gatilhos (Webhooks) de Edge Functions com o project_ref e service_role_key reais.
+-- Descrição: atualização histórica dos triggers omnichannel.
+--
+-- Esta referência não contém project_ref ou service_role JWT. A aplicação exige
+-- app.supabase_functions_url e app.service_role_key configurados no servidor.
+-- Para produção, migrar o fluxo para inbox/outbox e worker durável.
 
--- 1. Gatilho: whatsapp-sender
 CREATE OR REPLACE FUNCTION public.trigger_whatsapp_sender()
 RETURNS trigger
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = public, pg_temp
 AS $$
+DECLARE
+  v_base_url text := current_setting('app.supabase_functions_url', true);
+  v_service_key text := current_setting('app.service_role_key', true);
 BEGIN
-  IF NEW.direction = 'outbound' AND NEW.status = 'pending' THEN
+  IF NEW.direction = 'outbound' AND NEW.status = 'pending'
+     AND NULLIF(v_base_url, '') IS NOT NULL
+     AND NULLIF(v_service_key, '') IS NOT NULL THEN
     PERFORM net.http_post(
-      url := 'https://esmppoxxnyiscidzsjvy.supabase.co/functions/v1/whatsapp-sender',
+      url := rtrim(v_base_url, '/') || '/functions/v1/whatsapp-sender',
       headers := jsonb_build_object(
         'Content-Type', 'application/json',
-        'Authorization', 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVzbXBwb3h4bnlpc2NpZHpzanZ5Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4MTI1Mzg0OCwiZXhwIjoyMDk2ODI5ODQ4fQ.4fKEXQ_ahfmAPep8sXyyYa5gp9uit39bfOJiwPJ1IkQ'
+        'Authorization', 'Bearer ' || v_service_key
       ),
       body := jsonb_build_object(
         'type', 'INSERT',
@@ -27,20 +36,24 @@ BEGIN
 END;
 $$;
 
-
--- 2. Gatilho: ai-message-processor
 CREATE OR REPLACE FUNCTION public.trigger_ai_message_processor()
 RETURNS trigger
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = public, pg_temp
 AS $$
+DECLARE
+  v_base_url text := current_setting('app.supabase_functions_url', true);
+  v_service_key text := current_setting('app.service_role_key', true);
 BEGIN
-  IF NEW.direction = 'inbound' THEN
+  IF NEW.direction = 'inbound'
+     AND NULLIF(v_base_url, '') IS NOT NULL
+     AND NULLIF(v_service_key, '') IS NOT NULL THEN
     PERFORM net.http_post(
-      url := 'https://esmppoxxnyiscidzsjvy.supabase.co/functions/v1/ai-message-processor',
+      url := rtrim(v_base_url, '/') || '/functions/v1/ai-message-processor',
       headers := jsonb_build_object(
         'Content-Type', 'application/json',
-        'Authorization', 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVzbXBwb3h4bnlpc2NpZHpzanZ5Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4MTI1Mzg0OCwiZXhwIjoyMDk2ODI5ODQ4fQ.4fKEXQ_ahfmAPep8sXyyYa5gp9uit39bfOJiwPJ1IkQ'
+        'Authorization', 'Bearer ' || v_service_key
       ),
       body := jsonb_build_object(
         'type', 'INSERT',
@@ -54,20 +67,25 @@ BEGIN
 END;
 $$;
 
-
--- 3. Gatilho: meta-capi-sync
 CREATE OR REPLACE FUNCTION public.trigger_meta_capi_sync()
 RETURNS trigger
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = public, pg_temp
 AS $$
+DECLARE
+  v_base_url text := current_setting('app.supabase_functions_url', true);
+  v_service_key text := current_setting('app.service_role_key', true);
 BEGIN
-  IF NEW.status = 'converted' AND (OLD.status IS DISTINCT FROM 'converted') THEN
+  IF NEW.status = 'converted'
+     AND OLD.status IS DISTINCT FROM 'converted'
+     AND NULLIF(v_base_url, '') IS NOT NULL
+     AND NULLIF(v_service_key, '') IS NOT NULL THEN
     PERFORM net.http_post(
-      url := 'https://esmppoxxnyiscidzsjvy.supabase.co/functions/v1/meta-capi-sync',
+      url := rtrim(v_base_url, '/') || '/functions/v1/meta-capi-sync',
       headers := jsonb_build_object(
         'Content-Type', 'application/json',
-        'Authorization', 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVzbXBwb3h4bnlpc2NpZHpzanZ5Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4MTI1Mzg0OCwiZXhwIjoyMDk2ODI5ODQ4fQ.4fKEXQ_ahfmAPep8sXyyYa5gp9uit39bfOJiwPJ1IkQ'
+        'Authorization', 'Bearer ' || v_service_key
       ),
       body := jsonb_build_object(
         'type', 'UPDATE',

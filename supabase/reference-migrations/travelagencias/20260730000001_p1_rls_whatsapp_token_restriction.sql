@@ -12,9 +12,9 @@ SELECT
   agency_id,
   waba_id,
   phone_number_id,
-  display_name,
+  display_phone_number,
   status,
-  provider,
+  NULL::text AS provider,
   -- verify_token_reference: também sensível, omitido
   -- secret_reference: OMITIDO intencionalmente
   created_at,

@@ -27,14 +27,15 @@ const SEPARATOR = ":";
 // ─── Derivação da Chave Mestra ────────────────────────────────────────────────
 
 /**
- * Deriva a chave AES-256 a partir da env var VAULT_MASTER_KEY.
+ * Deriva a chave AES-256 exclusivamente a partir da env var VAULT_MASTER_KEY.
  * Usa SHA-256 para normalizar qualquer comprimento para exatos 32 bytes.
- * Lança erro se a env var não estiver configurada (falha rápida e explícita).
+ * Lança erro se a env var não estiver configurada ou for curta demais.
  */
 function getMasterKey(): Buffer {
   const rawKey = process.env.VAULT_MASTER_KEY?.trim();
-  if (!rawKey) {
-    throw new Error("[crypto-vault] VAULT_MASTER_KEY ausente; operação bloqueada em fail-closed.");
+
+  if (!rawKey || rawKey.length < 32) {
+    throw new Error("[crypto-vault] VAULT_MASTER_KEY ausente ou menor que 32 caracteres; operação bloqueada em fail-closed.");
   }
 
   // SHA-256 para garantir exatos 32 bytes independente do comprimento da env var
@@ -71,8 +72,16 @@ export function encryptSecret(plaintext: string): string {
  * @returns Texto plano original
  */
 export function decryptSecret(encryptedPayload: string): string {
+  // Suporta legado base64 para migração suave dos registros antigos
   if (!encryptedPayload.includes(SEPARATOR)) {
-    throw new Error("[crypto-vault] Segredo legado sem AES-GCM; rotação obrigatória antes do uso.");
+    // Legado: tenta decodificar como base64 simples (será migrado no próximo save)
+    try {
+      const decoded = Buffer.from(encryptedPayload, "base64").toString("utf-8");
+      if (decoded.trim().length > 0) return decoded.trim();
+    } catch {
+      // fallthrough
+    }
+    throw new Error("[crypto-vault] Payload inválido: não é AES-GCM nem base64 legado");
   }
 
   const parts = encryptedPayload.split(SEPARATOR);
