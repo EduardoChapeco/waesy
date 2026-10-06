@@ -15,6 +15,21 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* Window-size utilities: the product expands at 840px, not Tailwind's lg (1024px). */
+.waesy-expanded-flex.waesy-expanded-flex {
+  display: none;
+}
+
+@media (min-width: 840px) {
+  .waesy-compact-medium-only.waesy-compact-medium-only {
+    display: none;
+  }
+
+  .waesy-expanded-flex.waesy-expanded-flex {
+    display: flex;
+  }
+}
+
 @theme inline {
   /* ── Master Niche Chameleon Tokens (MASTER PROMPT V138) ── */
   --radius-master: var(--radius-master, 0.75rem);

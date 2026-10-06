@@ -2705,3 +2705,12 @@
 - **Decisão:** Criar uma suíte E2E dedicada com schemas e normalizadores reais, fixtures explícitas de documentos e um repositório em memória determinístico para observar estados e eventos. O comando oficial é `npm run test:e2e:travel`.
 - **Fundamentação:** SPEC-20261006-wave5-travel-pipeline-e2e; B.5, B.7, B.9 e B.11 do AGENTS.md; preservação de testes rápidos, repetíveis e sem dependência de credenciais externas.
 - **Consequências:** A suíte prova contratos e invariantes do pipeline sem fingir que substitui Postgres/Supabase conectado. A próxima camada de ambiente deve executar migrations e cenários contra banco efêmero/preview, preservando esta suíte como gate determinístico de regressão.
+
+
+## DEC-187: Breakpoint Expandido Canônico no Shell do Workspace
+
+- **Data:** 2026-10-06
+- **Contexto:** A constituição visual define `expanded` a partir de 840px, mas o shell do workspace usava `lg` do Tailwind, que inicia em 1024px. Entre 840px e 1023px, a sidebar expandida permanecia oculta e a navegação móvel (Sheet, identificação compacta e barra inferior) era exibida em desktops pequenos, causando mistura de padrões de plataforma.
+- **Decisão Adotada:** Criados os utilitários globais `waesy-expanded-flex` e `waesy-compact-medium-only` em `src/styles.css`, derivados do breakpoint canônico de 840px. O `workspace-shell` passou a usar esses utilitários no lugar de `lg` para a bifurcação da sidebar e dos controles móveis. Não foram alteradas regras de negócio, loaders ou serviços.
+- **Fundamentação:** AGENTS.md B.8, B.9 e B.11; DESIGN.md C.6 e C.8; Material 3 Window Size Classes; Apple HIG.
+- **Consequências:** O shell passa a tratar 840px como início do produto expandido, reduzindo confusão visual em desktops compactos e preservando o menu móvel apenas em compact/medium. A migração das demais telas que ainda usam `lg` será feita por lotes, com lint e testes por módulo.
