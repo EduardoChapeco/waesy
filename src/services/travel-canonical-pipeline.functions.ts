@@ -4,6 +4,7 @@ import { getServerClient } from "@/lib/supabase";
 import { getServerIdentity, requireStaff } from "@/lib/server-access";
 import { processOperatorQuoteOcr } from "./travel-operator-ocr.functions";
 import { applyParsedVoucherToTrip, parseOperatorVoucherAI } from "./travel-lifecycle.functions";
+import { normalizeOperatorDocument } from "@/lib/travel-operator-sync";
 
 const SourceKindSchema = z.enum([
   "operator_quote",
@@ -15,16 +16,18 @@ const SourceKindSchema = z.enum([
   "other",
 ]);
 
-const DocumentInputSchema = z.object({
-  fileBase64: z.string().optional(),
-  fileMime: z.string().optional(),
-  fileName: z.string().optional(),
-  rawText: z.string().optional(),
-  sourceKind: SourceKindSchema.default("operator_quote"),
-  leadId: z.string().uuid().optional().nullable(),
-}).refine((data) => Boolean(data.fileBase64 || data.rawText?.trim()), {
-  message: "Envie um arquivo ou texto para extração.",
-});
+const DocumentInputSchema = z
+  .object({
+    fileBase64: z.string().optional(),
+    fileMime: z.string().optional(),
+    fileName: z.string().optional(),
+    rawText: z.string().optional(),
+    sourceKind: SourceKindSchema.default("operator_quote"),
+    leadId: z.string().uuid().optional().nullable(),
+  })
+  .refine((data) => Boolean(data.fileBase64 || data.rawText?.trim()), {
+    message: "Envie um arquivo ou texto para extração.",
+  });
 
 const ApplyInputSchema = z.object({
   ingestionId: z.string().uuid(),
@@ -45,7 +48,9 @@ export const ingestTravelDocument = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const identity = await requireStaff();
     const supabase = getServerClient();
-    const contentSha256 = await sha256Hex(`${data.fileMime || ""}|${data.fileName || ""}|${data.fileBase64 || data.rawText || ""}`);
+    const contentSha256 = await sha256Hex(
+      `${data.fileMime || ""}|${data.fileName || ""}|${data.fileBase64 || data.rawText || ""}`,
+    );
 
     const { data: ingestion, error: insertError } = await supabase
       .from("travel_document_ingestions")
@@ -64,34 +69,46 @@ export const ingestTravelDocument = createServerFn({ method: "POST" })
       .single();
 
     if (insertError || !ingestion?.id) {
-      throw new Error(`Não foi possível registrar a ingestão do documento: ${insertError?.message || "ID ausente"}`);
+      throw new Error(
+        `Não foi possível registrar a ingestão do documento: ${insertError?.message || "ID ausente"}`,
+      );
     }
 
     try {
       // Os extratores existentes continuam sendo a única porta de IA; esta camada
       // apenas torna cada resultado persistente, revisável e ligado ao tenant correto.
-      const extraction = data.sourceKind === "operator_quote"
-        ? await (processOperatorQuoteOcr as any)({
-            data: {
-              fileBase64: data.fileBase64,
-              fileMime: data.fileMime,
-              fileName: data.fileName,
-              rawText: data.rawText,
-            },
-          })
-        : await (parseOperatorVoucherAI as any)({
-            data: {
-              fileBase64: data.fileBase64,
-              fileMime: data.fileMime,
-              fileName: data.fileName,
-              rawText: data.rawText,
-            },
-          });
+      const extraction =
+        data.sourceKind === "operator_quote"
+          ? await (processOperatorQuoteOcr as any)({
+              data: {
+                fileBase64: data.fileBase64,
+                fileMime: data.fileMime,
+                fileName: data.fileName,
+                rawText: data.rawText,
+              },
+            })
+          : await (parseOperatorVoucherAI as any)({
+              data: {
+                fileBase64: data.fileBase64,
+                fileMime: data.fileMime,
+                fileName: data.fileName,
+                rawText: data.rawText,
+              },
+            });
+
+      const canonical = normalizeOperatorDocument({
+        sourceKind: data.sourceKind,
+        ingestionId: ingestion.id,
+        extraction: extraction.data || extraction.parsed,
+      });
 
       const { error: updateError } = await supabase
         .from("travel_document_ingestions")
         .update({
           extraction: extraction.data || extraction.parsed,
+          operator_code: canonical.operator.code,
+          normalized_payload: canonical,
+          canonical_status: "review_required",
           extraction_status: "needs_review",
           review_status: "pending",
           confidence: null,
@@ -108,6 +125,7 @@ export const ingestTravelDocument = createServerFn({ method: "POST" })
         requiresReview: true,
         sourceKind: data.sourceKind,
         data: extraction.data || extraction.parsed,
+        canonical,
       };
     } catch (error) {
       await supabase
@@ -163,15 +181,17 @@ export const applyTravelOcrToDraft = createServerFn({ method: "POST" })
   });
 
 export const recordTravelProposalAcceptance = createServerFn({ method: "POST" })
-  .validator(z.object({
-    proposalId: z.string().uuid(),
-    publicToken: z.string().min(8),
-    snapshotHash: z.string().min(16),
-    idempotencyKey: z.string().min(8),
-    acceptedByName: z.string().trim().min(2).optional(),
-    acceptedByEmail: z.string().email().optional(),
-    termsVersion: z.string().default("travel-v1"),
-  }))
+  .validator(
+    z.object({
+      proposalId: z.string().uuid(),
+      publicToken: z.string().min(8),
+      snapshotHash: z.string().min(16),
+      idempotencyKey: z.string().min(8),
+      acceptedByName: z.string().trim().min(2).optional(),
+      acceptedByEmail: z.string().email().optional(),
+      termsVersion: z.string().default("travel-v1"),
+    }),
+  )
   .handler(async ({ data }) => {
     const supabase = getServerClient();
     const { data: result, error } = await supabase.rpc("record_travel_proposal_acceptance", {
@@ -188,10 +208,12 @@ export const recordTravelProposalAcceptance = createServerFn({ method: "POST" })
   });
 
 export const convertAcceptedTravelProposal = createServerFn({ method: "POST" })
-  .validator(z.object({
-    proposalId: z.string().uuid(),
-    idempotencyKey: z.string().min(8),
-  }))
+  .validator(
+    z.object({
+      proposalId: z.string().uuid(),
+      idempotencyKey: z.string().min(8),
+    }),
+  )
   .handler(async ({ data }) => {
     const identity = await getServerIdentity();
     const supabase = getServerClient();
@@ -204,10 +226,12 @@ export const convertAcceptedTravelProposal = createServerFn({ method: "POST" })
   });
 
 export const applyReviewedTravelDocumentToTrip = createServerFn({ method: "POST" })
-  .validator(z.object({
-    ingestionId: z.string().uuid(),
-    tripId: z.string().uuid(),
-  }))
+  .validator(
+    z.object({
+      ingestionId: z.string().uuid(),
+      tripId: z.string().uuid(),
+    }),
+  )
   .handler(async ({ data }) => {
     const identity = await requireStaff();
     const supabase = getServerClient();
@@ -222,7 +246,9 @@ export const applyReviewedTravelDocumentToTrip = createServerFn({ method: "POST"
       return { success: true, replayed: true, tripId: data.tripId, ingestionId: data.ingestionId };
     }
     if (ingestion.source_kind === "operator_quote") {
-      throw new Error("Cotações devem ser aplicadas como draft de orçamento/proposta, não diretamente como reserva.");
+      throw new Error(
+        "Cotações devem ser aplicadas como draft de orçamento/proposta, não diretamente como reserva.",
+      );
     }
     if (!["needs_review", "approved"].includes(ingestion.extraction_status)) {
       throw new Error("O documento precisa estar aguardando revisão antes da aplicação.");
@@ -230,13 +256,18 @@ export const applyReviewedTravelDocumentToTrip = createServerFn({ method: "POST"
 
     const { data: claimed, error: claimError } = await supabase
       .from("travel_document_ingestions")
-      .update({ extraction_status: "processing", reviewed_by_profile_id: identity.id, updated_at: new Date().toISOString() })
+      .update({
+        extraction_status: "processing",
+        reviewed_by_profile_id: identity.id,
+        updated_at: new Date().toISOString(),
+      })
       .eq("id", data.ingestionId)
       .eq("store_id", identity.store_id)
       .in("extraction_status", ["needs_review", "approved"])
       .select("id")
       .maybeSingle();
-    if (claimError || !claimed) throw new Error("Documento já está sendo aplicado por outro operador.");
+    if (claimError || !claimed)
+      throw new Error("Documento já está sendo aplicado por outro operador.");
 
     try {
       const result = await (applyParsedVoucherToTrip as any)({
@@ -265,11 +296,21 @@ export const applyReviewedTravelDocumentToTrip = createServerFn({ method: "POST"
         correlation_id: `ocr-trip:${data.ingestionId}:${data.tripId}`,
         payload: { ingestion_id: data.ingestionId, source_kind: ingestion.source_kind, result },
       });
-      return { success: true, replayed: false, tripId: data.tripId, ingestionId: data.ingestionId, result };
+      return {
+        success: true,
+        replayed: false,
+        tripId: data.tripId,
+        ingestionId: data.ingestionId,
+        result,
+      };
     } catch (error) {
       await supabase
         .from("travel_document_ingestions")
-        .update({ extraction_status: "needs_review", error_message: error instanceof Error ? error.message : "Falha ao aplicar", updated_at: new Date().toISOString() })
+        .update({
+          extraction_status: "needs_review",
+          error_message: error instanceof Error ? error.message : "Falha ao aplicar",
+          updated_at: new Date().toISOString(),
+        })
         .eq("id", data.ingestionId)
         .eq("store_id", identity.store_id);
       throw error;

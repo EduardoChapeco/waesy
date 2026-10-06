@@ -2681,3 +2681,11 @@
 - **Decisão:** A migration `20261006150000_wave2_rls_financial_transactions.sql` remove o acesso PostgREST público dos agregados sensíveis, cria policies separadas de staff com `USING` e `WITH CHECK`, adiciona `travel_sale_payments`, serializa o hash-chain com advisory lock e cria `record_travel_sale_payment` para pagamento, ledger e timeline na mesma transação. O BFF `travel-financial.functions.ts` exige `requireFinance`.
 - **Fundamentação:** SPEC-20261006-wave2-rls-financial-transactions; AGENTS.md B.1, B.5, B.9, B.10, B.11; deny-by-default, tenant isolation, idempotency e append-only ledger.
 - **Consequências:** Acesso público direto via PostgREST a proposta, contrato e voucher deixa de funcionar; os Server Functions tokenizados permanecem a única superfície pública. A migration ainda precisa ser executada e testada em Postgres/Supabase real para validar grants, dependências e a implementação de `is_store_staff`.
+
+## DEC-189: Onda 3 — adapters documentais e sincronização canônica de operadoras
+
+- **Data:** 2026-10-06
+- **Contexto:** O OCR existente reconhecia cotações e vouchers, mas não havia envelope versionado, registry de operadoras nem run idempotente que ligasse ingestão a CRM/orçamento/reserva/timeline. Policies legadas de fornecedores ainda usavam permissões amplas.
+- **Decisão:** Criar `travel-operator-sync.ts` como normalizador puro com aliases de operadoras e provenance; criar registry e runs tenant-scoped; conectar a ingestão OCR ao envelope `travel-operator-v1`; expor configuração sem devolver segredos; sincronizar documentos por chave idempotente e manter `review_required` até aprovação humana.
+- **Fundamentação:** SPEC-20261006-wave3-operator-module-sync; origem documental preservada; adapter anti-alucinação; idempotência por ingestão; AGENTS.md B.5, B.9 e B.11.
+- **Consequências:** A onda não chama APIs externas de operadoras sem credenciais e contrato confirmados. A normalização fica disponível imediatamente para proposta, CRM e revisão; a propagação para reserva/viagem continua dependente de aprovação e dos comandos canônicos existentes.
