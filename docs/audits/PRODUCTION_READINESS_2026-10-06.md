@@ -19,7 +19,7 @@ O checkout local contém a recuperação completa das alterações históricas e
 - cache de artefactos sem escopo explícito de tenant/utilizador;
 - versões duplicadas de migrations que bloqueavam o gate de schema.
 
-**Estado honesto:** o código está pronto para novo ciclo de CI e merge; o deploy Cloudflare Pages continua condicionado à autenticação/configuração Cloudflare do ambiente. O login OAuth do Wrangler expirou por timeout e não deve ser tratado como deploy concluído.
+**Estado honesto:** as alterações passaram o CI obrigatório e foram publicadas no branch/PR; o deploy Cloudflare Pages continua condicionado à autenticação/configuração Cloudflare do ambiente. O login OAuth do Wrangler expirou por timeout e não deve ser tratado como deploy concluído. O gate canónico extra retorna `0`, mas emite 511 avisos de decomposição de ficheiros grandes (`86` críticos, `97` altos e `328` médios); isso é dívida técnica não bloqueante no script atual e não deve ser confundida com prontidão máxima.
 
 ## 2. Correções aplicadas nesta camada
 
@@ -80,7 +80,7 @@ Atenção operacional: as migrations renomeadas são futuras no histórico do pr
 | Testes focados Copilot/UI/FSM | **56 testes aprovados em 5 ficheiros** |
 | Schema consolidation após renomeação | **Aprovado:** 476 migrations, 590 tabelas, 188 funções |
 | Conflitos Git em código/migrations | **Nenhum marcador real encontrado** |
-| Gate canónico completo pós-hardening | **Em execução no momento do snapshot; resultado deve ser anexado ao PR** |
+| Gate canónico completo pós-hardening | **Exit 0, com aviso não bloqueante de 511 violações de tamanho** |
 | Cloudflare Pages do PR #6 | **Falhou por configuração/autenticação de deploy, não por CI de código** |
 
 ## 4. Repositórios de turismo auditados
@@ -113,7 +113,21 @@ Não criar um builder por editor. O modelo recomendado para o Waesy é:
 - **Copilot:** manter um único pipeline oficial; drawer e `/copilot` devem partilhar BFF, FSM, custo, persistência e ações.
 - **Design:** absorver tokens, templates e motion somente depois de passar os gates canónicos de design, acessibilidade, proveniência e bundle.
 
-## 5. Estado GitHub e produção
+## 5. Resultado dos repositórios turísticos relacionados
+
+Os gates determinísticos foram executados nos cinco checkouts clonados. Todos os cinco builds passam, mas os projetos não estão uniformemente prontos para produção:
+
+| Repositório | Typecheck | Lint | Testes | Build | Leitura operacional |
+|---|---|---|---|---|---|
+| `aiturisagente` | não definido | passa | não definido | passa | Protótipo compilável; cobertura de testes não declarada |
+| `travelagencias` | passa | falha: 106 problemas | não definido | passa | Funcionalmente compilável, mas não pronto sob lint |
+| `travelagencias-9d2bd1fc` | passa | falha: 9.737 problemas | não definido | passa | Não absorver sem limpeza de formatação/lint |
+| `turisagencias` | não definido | falha: 280 problemas | passa | passa | Build/testes passam; lint ainda bloqueia qualidade |
+| `turisagencias-57d8b6f8` | não definido | falha: 497 problemas | falha: 10/45 testes | passa | Não está pronto; requer correção funcional e lint |
+
+Esses resultados sustentam a estratégia de absorver capacidades por adapters no Waesy, não fazer merge cego de qualquer árvore turística. Os clones não foram alterados nem publicados nesta tarefa.
+
+## 6. Estado GitHub e produção
 
 - O branch de recuperação foi publicado no GitHub e está associado ao [PR #6](https://github.com/EduardoChapeco/waesy/pull/6).
 - O CI principal do PR já foi aprovado no commit anterior.
@@ -127,12 +141,14 @@ Não criar um builder por editor. O modelo recomendado para o Waesy é:
   5. executar `npm run deploy` com os secrets de produção já configurados;
   6. verificar URL pública, health/status, worker, rotas críticas e logs Cloudflare.
 
-## 6. Pendências que não podem ser declaradas como concluídas sem evidência externa
+## 7. Pendências que não podem ser declaradas como concluídas sem evidência externa
 
 - autenticação Cloudflare e execução efetiva do deploy Pages;
 - migração do banco de produção e confirmação do histórico de migrations;
 - secrets/variáveis de produção para IA, Supabase, storage, pagamentos e integrações;
 - smoke tests autenticados de Copilot, builders, checkout, turismo, documentos e publicação;
 - validação E2E em browser contra dados reais de um tenant de staging/produção.
+- decomposição dos 511 monólitos apontados pelo gate canónico extra;
+- correção dos lint/testes falhos nos repositórios turísticos relacionados, caso devam ser promovidos para o Waesy.
 
 Esses itens permanecem explícitos para evitar declarar “tudo em produção” quando o provedor externo ainda não confirmou o deployment.
