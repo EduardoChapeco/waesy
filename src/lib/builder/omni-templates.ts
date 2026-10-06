@@ -1126,7 +1126,10 @@ export function applyTemplateToPage(page: OmniPageDocument, templateId: string):
 
   return {
     ...page,
+    schemaVersion: page.schemaVersion ?? 1,
     niche: template.niche,
+    source_template_id: template.id,
+    source_template_version: "1.0.0",
     blocks: hydratedBlocks,
     updated_at: new Date().toISOString(),
   };

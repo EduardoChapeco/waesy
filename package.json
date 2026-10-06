@@ -18,6 +18,7 @@
     "typecheck": "node --max-old-space-size=6144 ./node_modules/typescript/bin/tsc --noEmit",
     "test": "vitest run",
     "audit:all": "node scripts/audit/audit-all.mjs",
+    "audit:studio-templates": "node scripts/audit/audit-studio-templates.mjs",
     "audit:buttons": "node scripts/audit/audit-interactive-buttons.mjs",
     "audit:buttons:test": "node scripts/audit/audit-interactive-buttons.test.mjs",
     "deploy": "npm run typecheck && npm test && npm run build && npx wrangler pages deploy dist --project-name usewaesy --commit-dirty=true --no-bundle",

@@ -19,6 +19,7 @@ describe("Omni-Block Engine & State Tree Audit (MASTER PROMPT V129)", () => {
     const validated = OmniPageDocumentSchema.parse(page);
     expect(validated.slug).toBe("minha-clinica");
     expect(validated.title).toBe("Clínica Integrada");
+    expect(validated.schemaVersion).toBe(1);
     expect(validated.blocks).toEqual([]);
     expect(validated.theme.primaryColor).toBeDefined();
   });
@@ -129,6 +130,8 @@ describe("Omni-Block Engine & State Tree Audit (MASTER PROMPT V129)", () => {
     expect(hydratedPage.blocks[2].type).toBe("testimonials_social_proof");
     expect(hydratedPage.blocks[3].type).toBe("faq_clean_accordion");
     expect(hydratedPage.blocks[4].type).toBe("contact_form_direct");
+    expect(hydratedPage.source_template_id).toBe("template_legal_jus");
+    expect(hydratedPage.source_template_version).toBe("1.0.0");
 
     // Cada bloco no template deve ter ID único gerado
     const ids = hydratedPage.blocks.map((b) => b.id);
@@ -304,5 +307,4 @@ describe("Omni-Block Engine & State Tree Audit (MASTER PROMPT V129)", () => {
     expect(() => OmniPageDocumentSchema.parse(darkKitchenPage)).not.toThrow();
   });
 });
-
 

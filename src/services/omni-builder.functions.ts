@@ -11,6 +11,7 @@ import { requireAdmin, getServerIdentity } from "@/lib/server-access";
 import { getServerClient, SupabaseUnconfiguredError } from "@/lib/supabase";
 import { OmniPageDocumentSchema, OmniPageDocument, createEmptyOmniPage } from "@/types/omni-builder";
 import { applyTemplateToPage } from "@/lib/builder/omni-templates";
+import { auditOmniDocument, getPublicationBlockingFindings } from "@/lib/builder/studio-template-audit";
 
 // ── 1. SALVAMENTO ATÔMICO DO DOCUMENTO NO SUPABASE ──
 export const saveOmniPageDocument = createServerFn({ method: "POST" })
@@ -163,6 +164,16 @@ export const publishOmniPageDocument = createServerFn({ method: "POST" })
       const identity = await getServerIdentity();
       if (!identity.store_id) {
         throw new Error("Loja ativa não identificada.");
+      }
+
+      const audit = auditOmniDocument(input.document);
+      const blockingFindings = getPublicationBlockingFindings(audit);
+      if (blockingFindings.length > 0) {
+        const summary = blockingFindings
+          .slice(0, 5)
+          .map((finding) => `${finding.ruleId} (${finding.path}): ${finding.message}`)
+          .join("; ");
+        throw new Error(`Publicação bloqueada pela auditoria do Waesy Studio: ${summary}`);
       }
 
       const db = getServerClient();

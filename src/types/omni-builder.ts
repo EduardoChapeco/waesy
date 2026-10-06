@@ -4,6 +4,7 @@
  */
 
 import { z } from "zod";
+import { BuilderAssetRefSchema } from "@/lib/builder/asset-contract";
 
 export const CANONICAL_BUILDER_BLOCK_IDS = [
   "hero_minimal_split",
@@ -235,6 +236,7 @@ export const OmniBlockInstanceSchema = z.object({
   type: z.string(),
   config: z.record(z.any()),
   styling: OmniBlockStylingSchema.optional(),
+  assetRefs: z.array(BuilderAssetRefSchema).optional(),
   isHidden: z.boolean().optional(),
 });
 export type OmniBlockInstance = z.infer<typeof OmniBlockInstanceSchema>;
@@ -242,6 +244,7 @@ export type OmniBlockInstance = z.infer<typeof OmniBlockInstanceSchema>;
 // ── 4. DOCUMENTO COMPLETO DO SITE / BIOLINK / LANDING PAGE ──
 
 export const OmniPageDocumentSchema = z.object({
+  schemaVersion: z.number().int().positive().default(1),
   id: z.string().optional(),
   page_id: z.string(),
   store_id: z.string().optional(),
@@ -257,6 +260,8 @@ export const OmniPageDocumentSchema = z.object({
     borderRadius: z.string().default("xl"),
   }),
   blocks: z.array(OmniBlockInstanceSchema).default([]),
+  source_template_id: z.string().optional(),
+  source_template_version: z.string().optional(),
   published_at: z.string().nullable().optional(),
   updated_at: z.string().optional(),
 });
@@ -266,6 +271,7 @@ export type OmniPageDocument = z.infer<typeof OmniPageDocumentSchema>;
 
 export function createEmptyOmniPage(slug: string, title: string, niche = "general"): OmniPageDocument {
   return {
+    schemaVersion: 1,
     page_id: `page_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`,
     slug,
     title,

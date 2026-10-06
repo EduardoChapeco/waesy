@@ -603,6 +603,7 @@ export function composeAiArtifactDocument(input: GenerateAiArtifactInput): {
   }
 
   const document: OmniPageDocument = {
+    schemaVersion: 1,
     page_id: `page_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`,
     slug,
     title: `${storeName} — ${blueprint.label}`,

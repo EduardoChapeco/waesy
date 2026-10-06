@@ -21,7 +21,8 @@ import {
   WIX_CATEGORY_CONFIG,
   BLOCK_TO_WIX_CATEGORY,
 } from "./registry";
-import { NICHE_TEMPLATE_MATRIX, applyTemplateToPage, NicheTemplateDefinition } from "./templates";
+import { NicheTemplateDefinition } from "./templates";
+import { STUDIO_TEMPLATE_CATALOG, materializeStudioTemplate } from "@/lib/builder/studio-catalog";
 import { LiveTemplatePreviewModal } from "./LiveTemplatePreviewModal";
 
 import {
@@ -501,7 +502,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
   };
 
   const handleApplyTemplate = (templateId: string) => {
-    const updated = applyTemplateToPage(document, templateId);
+    const updated = materializeStudioTemplate(document, templateId);
     setDocument(updated);
     if (updated.blocks.length > 0) {
       setSelectedBlockId(updated.blocks[0].id);
@@ -766,7 +767,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                 </>
               ) : (
                 <div className="space-y-3">
-                  {NICHE_TEMPLATE_MATRIX.map((tpl) => (
+                  {STUDIO_TEMPLATE_CATALOG.map((tpl) => (
                     <div
                       key={tpl.id}
                       className="p-3 rounded-lg border border-border/70 bg-card hover:border-foreground/30 hover:shadow-xs transition-all group"
@@ -1271,7 +1272,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
             <SheetTitle className="text-sm font-bold tracking-tight">Modelos de Página</SheetTitle>
           </SheetHeader>
           <div className="flex-1 overflow-y-auto space-y-3">
-            {NICHE_TEMPLATE_MATRIX.map((tpl) => (
+            {STUDIO_TEMPLATE_CATALOG.map((tpl) => (
               <div
                 key={tpl.id}
                 className="p-4 rounded-lg border border-border/70 bg-card transition-colors"

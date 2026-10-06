@@ -306,6 +306,14 @@ export function getSiteBlocksByCategory(category: string): SiteBuilderBlockDefin
   return SITE_BUILDER_BLOCKS.filter((b) => b.category === category);
 }
 
+/**
+ * Lookup canônico para fronteiras de publicação. Diferente da API legada abaixo,
+ * não transforma um tipo desconhecido no primeiro bloco do catálogo.
+ */
+export function getSiteBlockByIdStrict(id: string): SiteBuilderBlockDefinition | undefined {
+  return SITE_BUILDER_BLOCKS.find((b) => b.id === id);
+}
+
 export function getSiteBlockById(id: string): SiteBuilderBlockDefinition {
   const found = SITE_BUILDER_BLOCKS.find((b) => b.id === id);
   return found || SITE_BUILDER_BLOCKS[0];

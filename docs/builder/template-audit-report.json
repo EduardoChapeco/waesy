@@ -1,0 +1,182 @@
+{
+  "generatedAt": "2026-10-06T18:29:06.171Z",
+  "summary": {
+    "total": 9,
+    "passed": 9,
+    "warnings": 0,
+    "failed": 0
+  },
+  "templates": [
+    {
+      "templateId": "template_legal_jus",
+      "templateName": "Advocacia & Jurídico",
+      "status": "pass",
+      "score": 100,
+      "findings": [],
+      "metrics": {
+        "blockCount": 5,
+        "serializedBytes": 3051,
+        "imageReferences": 0,
+        "externalImageReferences": 0,
+        "assetsWithProvenance": 0
+      },
+      "limitations": [
+        "Auditoria de performance é estática: não executa navegador, rede, Lighthouse nem mede LCP/INP/CLS/TTFB.",
+        "Contraste só é calculado quando foreground e background são cores hex opacas explícitas; gradientes e imagens exigem revisão visual.",
+        "Metadados fornecidos pelo usuário/provedor são evidência de provenance, não uma opinião jurídica sobre licença."
+      ]
+    },
+    {
+      "templateId": "template_gastronomy",
+      "templateName": "Gastronomia Autoral & Restaurante",
+      "status": "pass",
+      "score": 100,
+      "findings": [],
+      "metrics": {
+        "blockCount": 4,
+        "serializedBytes": 2152,
+        "imageReferences": 0,
+        "externalImageReferences": 0,
+        "assetsWithProvenance": 0
+      },
+      "limitations": [
+        "Auditoria de performance é estática: não executa navegador, rede, Lighthouse nem mede LCP/INP/CLS/TTFB.",
+        "Contraste só é calculado quando foreground e background são cores hex opacas explícitas; gradientes e imagens exigem revisão visual.",
+        "Metadados fornecidos pelo usuário/provedor são evidência de provenance, não uma opinião jurídica sobre licença."
+      ]
+    },
+    {
+      "templateId": "template_tourism",
+      "templateName": "Turismo & Viagens",
+      "status": "pass",
+      "score": 100,
+      "findings": [],
+      "metrics": {
+        "blockCount": 4,
+        "serializedBytes": 2723,
+        "imageReferences": 0,
+        "externalImageReferences": 0,
+        "assetsWithProvenance": 0
+      },
+      "limitations": [
+        "Auditoria de performance é estática: não executa navegador, rede, Lighthouse nem mede LCP/INP/CLS/TTFB.",
+        "Contraste só é calculado quando foreground e background são cores hex opacas explícitas; gradientes e imagens exigem revisão visual.",
+        "Metadados fornecidos pelo usuário/provedor são evidência de provenance, não uma opinião jurídica sobre licença."
+      ]
+    },
+    {
+      "templateId": "template_creators",
+      "templateName": "Criadores & Cursos",
+      "status": "pass",
+      "score": 100,
+      "findings": [],
+      "metrics": {
+        "blockCount": 4,
+        "serializedBytes": 2827,
+        "imageReferences": 0,
+        "externalImageReferences": 0,
+        "assetsWithProvenance": 0
+      },
+      "limitations": [
+        "Auditoria de performance é estática: não executa navegador, rede, Lighthouse nem mede LCP/INP/CLS/TTFB.",
+        "Contraste só é calculado quando foreground e background são cores hex opacas explícitas; gradientes e imagens exigem revisão visual.",
+        "Metadados fornecidos pelo usuário/provedor são evidência de provenance, não uma opinião jurídica sobre licença."
+      ]
+    },
+    {
+      "templateId": "template_real_estate",
+      "templateName": "Imóveis & Temporada",
+      "status": "pass",
+      "score": 100,
+      "findings": [],
+      "metrics": {
+        "blockCount": 4,
+        "serializedBytes": 2334,
+        "imageReferences": 0,
+        "externalImageReferences": 0,
+        "assetsWithProvenance": 0
+      },
+      "limitations": [
+        "Auditoria de performance é estática: não executa navegador, rede, Lighthouse nem mede LCP/INP/CLS/TTFB.",
+        "Contraste só é calculado quando foreground e background são cores hex opacas explícitas; gradientes e imagens exigem revisão visual.",
+        "Metadados fornecidos pelo usuário/provedor são evidência de provenance, não uma opinião jurídica sobre licença."
+      ]
+    },
+    {
+      "templateId": "template_services_wellness",
+      "templateName": "Estética & Saúde",
+      "status": "pass",
+      "score": 100,
+      "findings": [],
+      "metrics": {
+        "blockCount": 5,
+        "serializedBytes": 2920,
+        "imageReferences": 0,
+        "externalImageReferences": 0,
+        "assetsWithProvenance": 0
+      },
+      "limitations": [
+        "Auditoria de performance é estática: não executa navegador, rede, Lighthouse nem mede LCP/INP/CLS/TTFB.",
+        "Contraste só é calculado quando foreground e background são cores hex opacas explícitas; gradientes e imagens exigem revisão visual.",
+        "Metadados fornecidos pelo usuário/provedor são evidência de provenance, não uma opinião jurídica sobre licença."
+      ]
+    },
+    {
+      "templateId": "template_creator_biolink",
+      "templateName": "Link na Bio - Creator Pro",
+      "status": "pass",
+      "score": 100,
+      "findings": [],
+      "metrics": {
+        "blockCount": 4,
+        "serializedBytes": 2617,
+        "imageReferences": 0,
+        "externalImageReferences": 0,
+        "assetsWithProvenance": 0
+      },
+      "limitations": [
+        "Auditoria de performance é estática: não executa navegador, rede, Lighthouse nem mede LCP/INP/CLS/TTFB.",
+        "Contraste só é calculado quando foreground e background são cores hex opacas explícitas; gradientes e imagens exigem revisão visual.",
+        "Metadados fornecidos pelo usuário/provedor são evidência de provenance, não uma opinião jurídica sobre licença."
+      ]
+    },
+    {
+      "templateId": "template_clinic_premium",
+      "templateName": "Landing Page - Clínica Premium",
+      "status": "pass",
+      "score": 100,
+      "findings": [],
+      "metrics": {
+        "blockCount": 5,
+        "serializedBytes": 3930,
+        "imageReferences": 0,
+        "externalImageReferences": 0,
+        "assetsWithProvenance": 0
+      },
+      "limitations": [
+        "Auditoria de performance é estática: não executa navegador, rede, Lighthouse nem mede LCP/INP/CLS/TTFB.",
+        "Contraste só é calculado quando foreground e background são cores hex opacas explícitas; gradientes e imagens exigem revisão visual.",
+        "Metadados fornecidos pelo usuário/provedor são evidência de provenance, não uma opinião jurídica sobre licença."
+      ]
+    },
+    {
+      "templateId": "template_dark_kitchen",
+      "templateName": "Catálogo - Dark Kitchen Express",
+      "status": "pass",
+      "score": 100,
+      "findings": [],
+      "metrics": {
+        "blockCount": 4,
+        "serializedBytes": 2954,
+        "imageReferences": 0,
+        "externalImageReferences": 0,
+        "assetsWithProvenance": 0
+      },
+      "limitations": [
+        "Auditoria de performance é estática: não executa navegador, rede, Lighthouse nem mede LCP/INP/CLS/TTFB.",
+        "Contraste só é calculado quando foreground e background são cores hex opacas explícitas; gradientes e imagens exigem revisão visual.",
+        "Metadados fornecidos pelo usuário/provedor são evidência de provenance, não uma opinião jurídica sobre licença."
+      ]
+    }
+  ]
+}

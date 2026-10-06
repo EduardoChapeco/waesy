@@ -1,42 +1,16 @@
-function resolveAnimationClasses(
-  designTokens?: Record<string, any>,
-  layoutRules?: Record<string, any>,
-): string {
-  const anim = designTokens?.animation || layoutRules?.animation;
-  if (!anim || anim.trigger === "none") return "";
+import { resolveStudioMotionClasses } from "@/lib/builder/motion-runtime";
 
-  const classes: string[] = ["transition-all"];
-
-  // Scroll Trigger
-  if (anim.trigger === "fade_up") {
-    classes.push("animate-in fade-in slide-in-from-bottom-6 duration-700 ease-out fill-mode-both");
-  } else if (anim.trigger === "zoom_in") {
-    classes.push("animate-in fade-in zoom-in-95 duration-500 ease-out fill-mode-both");
-  } else if (anim.trigger === "slide_left") {
-    classes.push("animate-in fade-in slide-in-from-left-6 duration-600 ease-out fill-mode-both");
-  } else if (anim.trigger === "slide_right") {
-    classes.push("animate-in fade-in slide-in-from-right-6 duration-600 ease-out fill-mode-both");
-  } else if (anim.trigger === "parallax") {
-    classes.push("motion-safe:hover:-translate-y-1 transition-transform duration-500");
-  } else if (anim.trigger === "stagger") {
-    classes.push("animate-in fade-in slide-in-from-bottom-4 duration-500 ease-out fill-mode-both");
-  }
-
-  // Hover effect
-  if (anim.hover === "lift") {
-    classes.push("hover:-translate-y-1.5 hover:shadow-xl transition-all duration-300");
-  } else if (anim.hover === "scale") {
-    classes.push("hover:scale-[1.015] transition-transform duration-300");
-  } else if (anim.hover === "glow") {
-    classes.push("hover:ring-2 hover:ring-primary/40 hover:shadow-lg transition-all duration-300");
-  }
-
-  return classes.join(" ");
+function resolveAnimationClasses(designTokens?: Record<string, any>, layoutRules?: Record<string, any>): string {
+ const anim = designTokens?.animation || layoutRules?.animation;
+ return resolveStudioMotionClasses(anim);
 }
 
 import * as React from "react";
 import { ExperienceNode } from "@/lib/builder-types";
 import { builderRegistry } from "@/lib/builder-registry";
+import type { OmniPageDocument } from "@/types/omni-builder";
+import { omniPageToExperienceNodes, OMNI_EXPERIENCE_NODE_PREFIX } from "@/lib/builder/omni-experience-adapter";
+import { getSiteBlockByIdStrict } from "@/components/builder/registry";
 import { cn } from "@/lib/utils";
 import { Surface } from "@/components/ui/surface";
 import { HeroCarousel } from "./dynamic-sections/hero-carousel";
@@ -195,6 +169,39 @@ const componentMap: Record<string, React.FC<any>> = {
   newsletter_capture: NewsletterCaptureSection,
 };
 
+const OMNI_BLOCK_RENDERER_IDS: Record<string, string> = {
+ hero_minimal_split: "hero_minimal_split",
+ hero_interactive_carousel: "hero_interactive_carousel",
+ bento_asymmetric_4: "bento_asymmetric_4",
+ bento_asymmetric_grid: "bento_asymmetric_4",
+ pricing_three_tiers: "pricing_three_tiers",
+ pricing_tables_clean: "pricing_three_tiers",
+ media_gallery_mosaic: "media_gallery_mosaic",
+ testimonials_social_proof: "testimonials_social_proof",
+ contact_form_direct: "contact_form_direct",
+ faq_clean_accordion: "faq_clean_accordion",
+};
+
+function createOmniBlockRenderer(blockType: string): React.FC<any> {
+ const definition = getSiteBlockByIdStrict(OMNI_BLOCK_RENDERER_IDS[blockType] ?? blockType);
+ const OmniComponent = definition?.component as React.ComponentType<any> | undefined;
+
+ return function OmniBlockRenderer({ content, node_id, design_tokens }: any) {
+  if (!OmniComponent) return null;
+  return (
+   <OmniComponent
+    id={node_id}
+    data={content ?? {}}
+    styling={design_tokens?.omniStyling}
+   />
+  );
+ };
+}
+
+for (const blockType of Object.keys(OMNI_BLOCK_RENDERER_IDS)) {
+ componentMap[`${OMNI_EXPERIENCE_NODE_PREFIX}${blockType}`] = createOmniBlockRenderer(blockType);
+}
+
 // ---------------------------------------------------------------------------
 // Block types that receive real-time store profile data from transient_data
 // ---------------------------------------------------------------------------
@@ -289,39 +296,57 @@ class BlockErrorBoundary extends React.Component<
 // ExperienceRenderer — root entry
 // ---------------------------------------------------------------------------
 interface ExperienceRendererProps {
-  nodes: any[];
-  bindings?: any;
-  transientData?: any;
-  isEditing?: boolean;
-  selectedNodeId?: string | null;
-  onSelectNode?: (id: string) => void;
+ nodes?: any[];
+ document?: OmniPageDocument;
+ bindings?: any;
+ transientData?: any;
+ isEditing?: boolean;
+ selectedNodeId?: string | null;
+ onSelectNode?: (id: string) => void;
 }
 
 export function ExperienceRenderer({
-  nodes,
-  bindings,
-  transientData,
-  isEditing,
-  selectedNodeId,
-  onSelectNode,
+ nodes,
+ document,
+ bindings,
+ transientData,
+ isEditing,
+ selectedNodeId,
+ onSelectNode,
 }: ExperienceRendererProps) {
-  if (!nodes || nodes.length === 0) return null;
-  return (
-    <>
-      {nodes.map((node) => (
-        <BlockErrorBoundary key={node.id} isEditing={isEditing} blockName={node.block_type}>
-          <ExperienceNodeRenderer
-            node={node}
-            transientData={transientData}
-            bindings={bindings}
-            isEditing={isEditing}
-            selectedNodeId={selectedNodeId}
-            onSelectNode={onSelectNode}
-          />
-        </BlockErrorBoundary>
-      ))}
-    </>
-  );
+ const renderNodes = document ? omniPageToExperienceNodes(document) : nodes;
+ if (!renderNodes || renderNodes.length === 0) return null;
+ const rendered = (
+ <>
+ {renderNodes.map((node) => (
+ <BlockErrorBoundary key={node.id} isEditing={isEditing} blockName={node.block_type}>
+ <ExperienceNodeRenderer
+ node={node}
+ transientData={transientData}
+ bindings={bindings}
+ isEditing={isEditing}
+ selectedNodeId={selectedNodeId}
+ onSelectNode={onSelectNode}
+ />
+ </BlockErrorBoundary>
+ ))}
+ </>
+ );
+ if (!document) return rendered;
+
+ return (
+  <div
+   className="min-h-dvh w-full flex flex-col overflow-x-hidden bg-background text-foreground"
+   data-omni-document-id={document.id ?? document.page_id}
+   style={{
+    backgroundColor: document.theme?.backgroundColor,
+    color: document.theme?.textColor,
+    fontFamily: document.theme?.fontFamily,
+   }}
+ >
+  {rendered}
+ </div>
+ );
 }
 
 // ---------------------------------------------------------------------------
