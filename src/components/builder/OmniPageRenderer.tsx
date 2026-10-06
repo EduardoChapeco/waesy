@@ -6,7 +6,7 @@
 
 import React from "react";
 import { OmniPageDocument } from "./types";
-import { getSiteBlockById } from "./registry";
+import { getSiteBlockByIdStrict } from "./registry";
 
 export interface OmniPageRendererProps {
   document: OmniPageDocument;
@@ -50,7 +50,13 @@ export const OmniPageRenderer: React.FC<OmniPageRendererProps> = ({
       {document.blocks.map((block) => {
         if (block.isHidden) return null;
 
-        const def = getSiteBlockById(block.type);
+        const def = getSiteBlockByIdStrict(block.type);
+        if (!def) {
+          if (import.meta.env?.DEV) {
+            console.warn(`[OmniPageRenderer] Bloco não registrado ignorado: ${block.type}`);
+          }
+          return null;
+        }
         const Component = def.component;
         const animClass = getAnimationClass(block.styling?.scrollAnimation);
 
