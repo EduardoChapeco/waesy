@@ -140,12 +140,6 @@ export const getEntityForClaim = createServerFn({ method: 'GET' })
 
     if (store) {
       const settings = (store.settings || {}) as Record<string, any>;
-      const { data: intel } = await db
-        .from('claim_intelligence')
-        .select('*')
-        .eq('entity_id', store.id)
-        .maybeSingle();
-
       return {
         id: store.id,
         name: store.name,
@@ -154,23 +148,13 @@ export const getEntityForClaim = createServerFn({ method: 'GET' })
         phone: settings.phone || null,
         email: settings.email || null,
         address: settings.address || null,
-        city: settings.city || 'São Miguel do Oeste',
-        state: settings.state || 'SC',
+        city: settings.city || null,
+        state: settings.state || null,
         description: settings.description || null,
         logoUrl: settings.avatar_url || settings.logo_url || null,
         type: 'store' as const,
         isGhost: Boolean(store.is_ghost || settings.is_ghost),
-        intelligence: intel || {
-          visibility_score: settings.quality_score || 85,
-          reputation_score: 90,
-          market_share_percent: 18.4,
-          rank_state: 1,
-          verified_claims: store.is_ghost ? 0 : 12,
-          solved_rate: 98,
-          avg_reply_hours: 1.8,
-          competitors: [],
-          sentiment: { positive: 92, neutral: 6, negative: 2 },
-        },
+        intelligence: null,
       };
     }
 
@@ -186,29 +170,19 @@ export const getEntityForClaim = createServerFn({ method: 'GET' })
     if (listing) {
       return {
         id: listing.id,
-        name: listing.business_name || 'Empresa',
+        name: listing.business_name || null,
         slug: null,
         document: listing.cnpj || null,
         phone: listing.contact_phone || null,
         email: listing.contact_email || null,
         address: listing.address || null,
-        city: listing.city || 'São Miguel do Oeste',
-        state: listing.state || 'SC',
+        city: listing.city || null,
+        state: listing.state || null,
         description: listing.description || null,
         logoUrl: listing.avatar_url || null,
         type: 'company' as const,
         isGhost: Boolean(listing.ghost_store_id),
-        intelligence: {
-          visibility_score: listing.crawl_score || 80,
-          reputation_score: listing.data_quality_score || 85,
-          market_share_percent: 15.0,
-          rank_state: 1,
-          verified_claims: 0,
-          solved_rate: 95,
-          avg_reply_hours: 2.0,
-          competitors: [],
-          sentiment: { positive: 90, neutral: 8, negative: 2 },
-        },
+        intelligence: null,
       };
     }
 
@@ -221,12 +195,6 @@ export const getEntityForClaim = createServerFn({ method: 'GET' })
         .maybeSingle();
 
       if (company) {
-        const { data: intel } = await db
-          .from('claim_intelligence')
-          .select('*')
-          .eq('entity_id', company.id)
-          .maybeSingle();
-
         return {
           id: company.id,
           name: company.name,
@@ -235,54 +203,18 @@ export const getEntityForClaim = createServerFn({ method: 'GET' })
           phone: company.phone,
           email: company.email,
           address: null,
-          city: company.address_city || 'São Miguel do Oeste',
-          state: company.address_state || 'SC',
+          city: company.address_city || null,
+          state: company.address_state || null,
           description: company.description,
           logoUrl: company.logo_url,
           type: 'company' as const,
           isGhost: false,
-          intelligence: intel || {
-            visibility_score: 80,
-            reputation_score: 88,
-            market_share_percent: 15.0,
-            rank_state: 2,
-            verified_claims: 8,
-            solved_rate: 94,
-            avg_reply_hours: 2.2,
-            competitors: [],
-            sentiment: { positive: 89, neutral: 8, negative: 3 },
-          },
+          intelligence: null,
         };
       }
     }
 
-    // Fallback defensivo
-    return {
-      id: entityId,
-      name: 'Perfil Comercial',
-      slug: null,
-      document: null,
-      phone: null,
-      email: null,
-      address: null,
-      city: 'São Miguel do Oeste',
-      state: 'SC',
-      description: null,
-      logoUrl: null,
-      type: 'company' as const,
-      isGhost: false,
-      intelligence: {
-        visibility_score: 65,
-        reputation_score: 75,
-        market_share_percent: 10.0,
-        rank_state: 5,
-        verified_claims: 0,
-        solved_rate: 90,
-        avg_reply_hours: 4.0,
-        competitors: [],
-        sentiment: { positive: 80, neutral: 15, negative: 5 },
-      },
-    };
+    return null;
   });
 
 

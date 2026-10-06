@@ -91,6 +91,21 @@ describe("Industrial Crawler & Mining Engine Test Suite", () => {
       expect(event?.state).toBe("SC");
       expect(event?.venueName).toBe("Centro de Cultura e Eventos Plínio Arlindo de Nes");
       expect(event?.isFree).toBe(true);
+      expect(event?.ticketUrl).toBeUndefined();
+    });
+
+    it("does not invent a date, ticket URL or free admission when Schema.org omits them", () => {
+      const sampleHtml = `
+        <script type="application/ld+json">
+          {"@context":"https://schema.org","@type":"Event","name":"Mostra Cultural"}
+        </script>
+      `;
+      const event = extractEventFromJsonLd(sampleHtml, "https://events.example.org/mostra");
+      expect(event?.title).toBe("Mostra Cultural");
+      expect(event?.startDate).toBeUndefined();
+      expect(event?.ticketUrl).toBeUndefined();
+      expect(event?.priceMinCents).toBeUndefined();
+      expect(event?.isFree).toBeUndefined();
     });
   });
 

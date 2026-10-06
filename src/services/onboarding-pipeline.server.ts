@@ -10,8 +10,6 @@
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { getNextActiveKey, markKeyError, executeUnifiedAiCall } from "./api-orchestrator.functions";
-import { getDefaultCity, getDefaultState } from "@/lib/brand.config";
-import { SEVEN_SINS_DEFINITIONS, SinType } from "./seven-sins-simlab.functions";
 
 // ============================================================
 // 1. Schemas Zod de Validação de Entrada e Evidências
@@ -63,7 +61,7 @@ export interface DesignSquadResult {
     body: string;
   };
   visual_style: string;
-  confidence: number;
+  confidence: number | null;
   evidence: string[];
 }
 
@@ -78,7 +76,7 @@ export interface CopySquadResult {
   content_pillars: string[];
   bio_concise: string;
   tagline: string;
-  confidence: number;
+  confidence: number | null;
   evidence: string[];
 }
 
@@ -86,7 +84,7 @@ export interface PrSquadResult {
   positioning_statement: string;
   value_proposition: string;
   reputation_summary: string;
-  confidence: number;
+  confidence: number | null;
   evidence: string[];
 }
 
@@ -109,7 +107,7 @@ export interface BusinessStrategistSquadResult {
     threats: string[];
   };
   seven_sins_hooks: Record<string, string>;
-  confidence: number;
+  confidence: number | null;
   evidence: string[];
 }
 
@@ -117,11 +115,13 @@ export interface MarketAnalystSquadResult {
   direct_competitors: Array<{ name: string; notes?: string }>;
   competitive_differentials: string[];
   market_opportunities: string[];
-  confidence: number;
+  confidence: number | null;
   evidence: string[];
 }
 
 export interface FinalConsolidatedBriefing {
+  analysis_status: "ai_generated_draft";
+  requires_human_review: true;
   company_name: string;
   category: string;
   bio: string;
@@ -486,8 +486,8 @@ Regras Absolutas:
 1. Responda ESTRITAMENTE em formato JSON compatível com o schema esperado.
 2. Extraia paleta primária, secundária e de destaque em códigos HEX válidos (#RRGGBB).
 3. Sugira tipografia com famílias canônicas do Google Fonts (ex: Inter, Plus Jakarta Sans, Outfit, DM Sans, Playfair Display).
-4. Forneça o campo confidence (0.0 a 1.0) e cite no array evidence[] de onde você tirou cada cor ou pista visual.
-5. Se não houver cores explícitas no texto ou screenshot, use a sobriedade institucional (#0F172A primário, #3B82F6 secundário) e marque evidence como "paleta_padrao_sugerida".`;
+4. Não estime confiança. Não fabrique evidências; campos sem base devem ficar vazios.
+5. Se a fonte não permitir identificar uma cor, devolva string vazia; nunca invente paleta.`;
 
   const userPrompt = `Evidências Coletadas:
 Domínio: ${evidence.domain}
@@ -499,18 +499,18 @@ Screenshot capturado: ${evidence.screenshotUrl || "Nenhum print disponível"}
 
 Retorne o JSON:
 {
-  "brand_name": "Nome da marca",
-  "primary_color": "#HEX",
-  "secondary_color": "#HEX",
-  "accent_color": "#HEX",
-  "background_color": "#FFFFFF",
+  "brand_name": "",
+  "primary_color": "",
+  "secondary_color": "",
+  "accent_color": "",
+  "background_color": "",
   "typography": {
-    "heading": "Nome da fonte para títulos",
-    "body": "Nome da fonte para corpo"
+    "heading": "",
+    "body": ""
   },
-  "visual_style": "minimalista|editorial|tecnologico|artesanal|corporativo",
-  "confidence": 0.85,
-  "evidence": ["trecho ou pista usada"]
+  "visual_style": "",
+  "confidence": null,
+  "evidence": []
 }`;
 
   const res = await executeUnifiedAiCall({
@@ -525,18 +525,18 @@ Retorne o JSON:
 
   const parsed = res.parsedJson || {};
   return {
-    brand_name: parsed.brand_name || evidence.domain.split(".")[0].toUpperCase(),
-    primary_color: parsed.primary_color || "#0F172A",
-    secondary_color: parsed.secondary_color || "#3B82F6",
-    accent_color: parsed.accent_color || "#F59E0B",
-    background_color: parsed.background_color || "#FFFFFF",
+    brand_name: typeof parsed.brand_name === "string" ? parsed.brand_name : "",
+    primary_color: typeof parsed.primary_color === "string" ? parsed.primary_color : "",
+    secondary_color: typeof parsed.secondary_color === "string" ? parsed.secondary_color : "",
+    accent_color: typeof parsed.accent_color === "string" ? parsed.accent_color : "",
+    background_color: typeof parsed.background_color === "string" ? parsed.background_color : "",
     typography: {
-      heading: parsed.typography?.heading || "Inter",
-      body: parsed.typography?.body || "Inter",
+      heading: parsed.typography?.heading || "",
+      body: parsed.typography?.body || "",
     },
-    visual_style: parsed.visual_style || "minimalista e moderno",
-    confidence: Number(parsed.confidence) || 0.8,
-    evidence: Array.isArray(parsed.evidence) ? parsed.evidence : ["evidencia_textual_site"],
+    visual_style: typeof parsed.visual_style === "string" ? parsed.visual_style : "",
+    confidence: null,
+    evidence: [],
   };
 }
 
@@ -546,15 +546,15 @@ Retorne o JSON:
  */
 export async function runCopySquad(evidence: ScrapedEvidence): Promise<CopySquadResult> {
   const systemPrompt = `Você é o Estrategista-Chefe de Comunicação e Tom de Voz do Waesy.
-Analise a linguagem, o público e o estilo da empresa com base no material coletado.
+Analise a linguagem explícita da empresa. Arquétipos, público, pilares e tom são hipóteses interpretativas, não fatos observados nem perfil validado de clientes. Se a fonte for insuficiente, use campos vazios.
 Regras:
 1. Determine o arquétipo junguiano principal (ex: O Criador, O Cuidador, O Herói, O Sábio, O Rebelde, O Explorador, O Mago, O Governante, O Amante, O Cara Comum).
 2. Defina 4 adjetivos de tom de voz.
 3. Crie regras claras de tom: Como a marca fala vs Como NÃO fala.
 4. Liste palavras obrigatórias (do_words) e vocabulário proibido (dont_words).
 5. Forneça 3 pilares editoriais de conteúdo.
-6. Crie uma bio concisa (máx. 180 caracteres) e um tagline marcante.
-7. Retorne EXCLUSIVAMENTE um JSON estrito com campos confidence e evidence[].`;
+6. Gere bio/tagline somente se as fontes permitirem; caso contrário use strings vazias.
+7. Retorne JSON sem confiança numérica ou evidências inventadas.`;
 
   const userPrompt = `Material da Empresa:
 URL: ${evidence.sourceUrl}
@@ -565,21 +565,18 @@ ${evidence.rawTextSample.slice(0, 2500)}
 
 Retorne o JSON:
 {
-  "tone_of_voice": "Frase que resume a voz da marca",
-  "tone_adjectives": ["adjetivo1", "adjetivo2", "adjetivo3", "adjetivo4"],
-  "archetype": "Nome do arquétipo",
-  "archetype_justification": "Por que esse arquétipo combina com a empresa",
-  "tone_rules": [
-    "Sempre comunicar de forma transparente e acolhedora",
-    "Nunca usar jargões frios ou promessas enganosas"
-  ],
-  "do_words": ["palavra1", "palavra2", "palavra3"],
-  "dont_words": ["termo_proibido1", "termo_proibido2"],
-  "content_pillars": ["Pilar 1", "Pilar 2", "Pilar 3"],
-  "bio_concise": "Bio comercial concisa para o perfil da loja",
-  "tagline": "Slogan de alto impacto",
-  "confidence": 0.9,
-  "evidence": ["trecho relevante do site"]
+  "tone_of_voice": "",
+  "tone_adjectives": [],
+  "archetype": "",
+  "archetype_justification": "",
+  "tone_rules": [],
+  "do_words": [],
+  "dont_words": [],
+  "content_pillars": [],
+  "bio_concise": "",
+  "tagline": "",
+  "confidence": null,
+  "evidence": []
 }`;
 
   const res = await executeUnifiedAiCall({
@@ -594,18 +591,18 @@ Retorne o JSON:
 
   const parsed = res.parsedJson || {};
   return {
-    tone_of_voice: parsed.tone_of_voice || "Profissional, acolhedor e focado no cliente",
-    tone_adjectives: Array.isArray(parsed.tone_adjectives) ? parsed.tone_adjectives : ["Confiável", "Ágil", "Acolhedor", "Claro"],
-    archetype: parsed.archetype || "O Cuidador",
-    archetype_justification: parsed.archetype_justification || "Foco evidente em atender as necessidades da comunidade e clientes com excelência.",
-    tone_rules: Array.isArray(parsed.tone_rules) ? parsed.tone_rules : ["Comunicar com clareza sem burocracia", "Priorizar soluções reais"],
-    do_words: Array.isArray(parsed.do_words) ? parsed.do_words : ["Qualidade", "Agilidade", "Confiança", "Atendimento"],
-    dont_words: Array.isArray(parsed.dont_words) ? parsed.dont_words : ["Impossível", "Complicado", "Atraso"],
-    content_pillars: Array.isArray(parsed.content_pillars) ? parsed.content_pillars : ["Produtos e Serviços em Destaque", "Bastidores e Qualidade", "Depoimentos e Comunidade"],
-    bio_concise: parsed.bio_concise || (evidence.metaDescription ? evidence.metaDescription.slice(0, 180) : `Excelência e dedicação em ${evidence.domain}.`),
-    tagline: parsed.tagline || `Qualidade e compromisso em cada detalhe.`,
-    confidence: Number(parsed.confidence) || 0.85,
-    evidence: Array.isArray(parsed.evidence) ? parsed.evidence : ["analise_conteudo_textual"],
+    tone_of_voice: typeof parsed.tone_of_voice === "string" ? parsed.tone_of_voice : "",
+    tone_adjectives: Array.isArray(parsed.tone_adjectives) ? parsed.tone_adjectives : [],
+    archetype: typeof parsed.archetype === "string" ? parsed.archetype : "",
+    archetype_justification: typeof parsed.archetype_justification === "string" ? parsed.archetype_justification : "",
+    tone_rules: Array.isArray(parsed.tone_rules) ? parsed.tone_rules : [],
+    do_words: Array.isArray(parsed.do_words) ? parsed.do_words : [],
+    dont_words: Array.isArray(parsed.dont_words) ? parsed.dont_words : [],
+    content_pillars: Array.isArray(parsed.content_pillars) ? parsed.content_pillars : [],
+    bio_concise: typeof parsed.bio_concise === "string" ? parsed.bio_concise : (evidence.metaDescription ? evidence.metaDescription.slice(0, 180) : ""),
+    tagline: typeof parsed.tagline === "string" ? parsed.tagline : "",
+    confidence: null,
+    evidence: [],
   };
 }
 
@@ -614,7 +611,7 @@ Retorne o JSON:
  */
 export async function runPrSquad(evidence: ScrapedEvidence): Promise<PrSquadResult> {
   const systemPrompt = `Você é o Diretor de Publicidade e Relações Públicas do Waesy.
-Sua função é formular o posicionamento único de mercado e a proposta de valor irresistível (UVP).
+Sua função é elaborar hipóteses de posicionamento a partir das fontes fornecidas; não afirme exclusividade, superioridade ou reputação não demonstrada.
 Regras:
 1. Posicionamento na fórmula: "Para [público-alvo], a [marca] é a [categoria] que entrega [benefício principal] porque [prova/diferencial]".
 2. Proposta de valor clara em 1 frase.
@@ -629,11 +626,11 @@ ${evidence.rawTextSample.slice(0, 2000)}
 
 Retorne o JSON:
 {
-  "positioning_statement": "Para quem busca X, somos a única empresa que entrega Y porque Z.",
-  "value_proposition": "Proposta de valor em uma frase",
-  "reputation_summary": "Resumo de reputação e credibilidade percebida",
-  "confidence": 0.85,
-  "evidence": ["pistas encontradas"]
+  "positioning_statement": "",
+  "value_proposition": "",
+  "reputation_summary": "",
+  "confidence": null,
+  "evidence": []
 }`;
 
   const res = await executeUnifiedAiCall({
@@ -645,11 +642,11 @@ Retorne o JSON:
 
   const parsed = res.parsedJson || {};
   return {
-    positioning_statement: parsed.positioning_statement || `Referência no segmento para clientes que valorizam atendimento ágil e pontualidade.`,
-    value_proposition: parsed.value_proposition || `Entrega de excelência com atendimento hiper-personalizado.`,
-    reputation_summary: parsed.reputation_summary || (evidence.googleBusiness?.rating ? `Avaliação média ${evidence.googleBusiness.rating}★ no Google.` : `Presença digital ativa e contato direto verificado.`),
-    confidence: Number(parsed.confidence) || 0.8,
-    evidence: Array.isArray(parsed.evidence) ? parsed.evidence : ["dados_institucionais_site"],
+    positioning_statement: typeof parsed.positioning_statement === "string" ? parsed.positioning_statement : "",
+    value_proposition: typeof parsed.value_proposition === "string" ? parsed.value_proposition : "",
+    reputation_summary: typeof parsed.reputation_summary === "string" ? parsed.reputation_summary : (evidence.googleBusiness?.rating != null ? `Avaliação média ${evidence.googleBusiness.rating}★ no Google.` : ""),
+    confidence: null,
+    evidence: [],
   };
 }
 
@@ -659,11 +656,11 @@ Retorne o JSON:
  */
 export async function runBusinessStrategistSquad(evidence: ScrapedEvidence): Promise<BusinessStrategistSquadResult> {
   const systemPrompt = `Você é o Estrategista de Negócios Sênior do Waesy.
-Sua missão é gerar a análise de negócios completa e estruturada da empresa:
+Sua missão é produzir um rascunho analítico, baseado somente nas evidências fornecidas. Separe fatos de hipóteses e marque hipóteses no próprio texto; não trate o output como pesquisa de mercado ou validação de clientes. Campos sem suporte ficam vazios.
 1. Business Model Canvas (9 blocos fundamentais: proposta de valor, segmentos, canais, relacionamento, fontes de receita, recursos, atividades, parceiros, estrutura de custos).
-2. Matriz SWOT (Forças, Fraquezas, Oportunidades, Ameaças) realista com pelo menos 3 pontos em cada quadrante.
+2. Matriz SWOT com hipóteses identificadas; sem base suficiente, devolva listas vazias. Não force quantidade mínima.
 3. Canvas dos 7 Pecados Capitais: gere ganchos persuasivos para cada um dos 7 pecados (orgulho, ganancia, luxuria, inveja, gula, ira, preguica) adaptados especificamente para esta empresa.
-4. Retorne EXCLUSIVAMENTE JSON válido com confidence e evidence[].`;
+4. Retorne JSON sem confiança numérica nem evidências inventadas.`;
 
   const userPrompt = `Empresa:
 Domínio: ${evidence.domain}
@@ -675,33 +672,33 @@ ${evidence.rawTextSample.slice(0, 2500)}
 Retorne o JSON estrito:
 {
   "business_model": {
-    "value_proposition": "Proposta central",
-    "target_segments": ["Segmento 1", "Segmento 2"],
-    "customer_relationships": ["Relacionamento direto", "Suporte rápido"],
-    "distribution_channels": ["Digital", "Loja Física/WhatsApp"],
-    "key_activities": ["Atividade 1", "Atividade 2"],
-    "key_resources": ["Recurso 1", "Recurso 2"],
-    "key_partners": ["Parceiro 1"],
-    "cost_structure": ["Custos operacionais", "Estoque/Logística"],
-    "revenue_streams": ["Venda de produtos", "Prestação de serviços"]
+    "value_proposition": "",
+    "target_segments": [],
+    "customer_relationships": [],
+    "distribution_channels": [],
+    "key_activities": [],
+    "key_resources": [],
+    "key_partners": [],
+    "cost_structure": [],
+    "revenue_streams": []
   },
   "swot": {
-    "strengths": ["Ponto forte 1", "Ponto forte 2", "Ponto forte 3"],
-    "weaknesses": ["Fraqueza 1", "Fraqueza 2", "Fraqueza 3"],
-    "opportunities": ["Oportunidade 1", "Oportunidade 2", "Oportunidade 3"],
-    "threats": ["Ameaça 1", "Ameaça 2", "Ameaça 3"]
+    "strengths": [],
+    "weaknesses": [],
+    "opportunities": [],
+    "threats": []
   },
   "seven_sins_hooks": {
-    "orgulho": "Gancho de exclusividade e status",
-    "ganancia": "Gancho de retorno sobre investimento e economia",
-    "luxuria": "Gancho de apelo estético e desejo imediato",
-    "inveja": "Gancho de destaque social",
-    "gula": "Gancho de fartura e riqueza de benefícios",
-    "ira": "Gancho de indignação contra serviços ruins do mercado",
-    "preguica": "Gancho de conveniência máxima e zero esforço"
+    "orgulho": "",
+    "ganancia": "",
+    "luxuria": "",
+    "inveja": "",
+    "gula": "",
+    "ira": "",
+    "preguica": ""
   },
-  "confidence": 0.88,
-  "evidence": ["evidencias do modelo de negocio"]
+  "confidence": null,
+  "evidence": []
 }`;
 
   const res = await executeUnifiedAiCall({
@@ -718,57 +715,33 @@ Retorne o JSON estrito:
 
   return {
     business_model: {
-      value_proposition: bmc.value_proposition || "Soluções completas com atendimento de alto padrão.",
-      target_segments: Array.isArray(bmc.target_segments) && bmc.target_segments.length > 0
-        ? bmc.target_segments
-        : ["Consumidores locais", "Empresas e profissionais da região"],
-      customer_relationships: Array.isArray(bmc.customer_relationships) && bmc.customer_relationships.length > 0
-        ? bmc.customer_relationships
-        : ["Atendimento via WhatsApp", "Fidelização e suporte dedicado"],
-      distribution_channels: Array.isArray(bmc.distribution_channels) && bmc.distribution_channels.length > 0
-        ? bmc.distribution_channels
-        : ["Plataforma Digital Waesy", "Balcão e WhatsApp"],
-      key_activities: Array.isArray(bmc.key_activities) && bmc.key_activities.length > 0
-        ? bmc.key_activities
-        : ["Operação e atendimento ao cliente", "Gestão de qualidade"],
-      key_resources: Array.isArray(bmc.key_resources) && bmc.key_resources.length > 0
-        ? bmc.key_resources
-        : ["Equipe especializada", "Catálogo e infraestrutura"],
-      key_partners: Array.isArray(bmc.key_partners) && bmc.key_partners.length > 0
-        ? bmc.key_partners
-        : ["Fornecedores homologados", "Rede de logística Waesy"],
-      cost_structure: Array.isArray(bmc.cost_structure) && bmc.cost_structure.length > 0
-        ? bmc.cost_structure
-        : ["Custos com insumos/produtos", "Marketing e operações"],
-      revenue_streams: Array.isArray(bmc.revenue_streams) && bmc.revenue_streams.length > 0
-        ? bmc.revenue_streams
-        : ["Venda direta de produtos", "Serviços e combos"],
+      value_proposition: typeof bmc.value_proposition === "string" ? bmc.value_proposition : "",
+      target_segments: Array.isArray(bmc.target_segments) ? bmc.target_segments : [],
+      customer_relationships: Array.isArray(bmc.customer_relationships) ? bmc.customer_relationships : [],
+      distribution_channels: Array.isArray(bmc.distribution_channels) ? bmc.distribution_channels : [],
+      key_activities: Array.isArray(bmc.key_activities) ? bmc.key_activities : [],
+      key_resources: Array.isArray(bmc.key_resources) ? bmc.key_resources : [],
+      key_partners: Array.isArray(bmc.key_partners) ? bmc.key_partners : [],
+      cost_structure: Array.isArray(bmc.cost_structure) ? bmc.cost_structure : [],
+      revenue_streams: Array.isArray(bmc.revenue_streams) ? bmc.revenue_streams : [],
     },
     swot: {
-      strengths: Array.isArray(swot.strengths) && swot.strengths.length > 0
-        ? swot.strengths
-        : ["Atendimento personalizado", "Qualidade reconhecida", "Agilidade de entrega"],
-      weaknesses: Array.isArray(swot.weaknesses) && swot.weaknesses.length > 0
-        ? swot.weaknesses
-        : ["Dependência de canais tradicionais", "Presença digital em expansão", "Capacidade operacional"],
-      opportunities: Array.isArray(swot.opportunities) && swot.opportunities.length > 0
-        ? swot.opportunities
-        : ["Digitalização do catálogo no ecossistema Waesy", "Vendas diretas via delivery", "Expansão de base local"],
-      threats: Array.isArray(swot.threats) && swot.threats.length > 0
-        ? swot.threats
-        : ["Concorrência de marketplaces genéricos", "Oscilação de preços de fornecedores", "Mudanças nos hábitos de consumo"],
+      strengths: Array.isArray(swot.strengths) ? swot.strengths : [],
+      weaknesses: Array.isArray(swot.weaknesses) ? swot.weaknesses : [],
+      opportunities: Array.isArray(swot.opportunities) ? swot.opportunities : [],
+      threats: Array.isArray(swot.threats) ? swot.threats : [],
     },
     seven_sins_hooks: {
-      orgulho: sins.orgulho || SEVEN_SINS_DEFINITIONS.orgulho.defaultAngle,
-      ganancia: sins.ganancia || SEVEN_SINS_DEFINITIONS.ganancia.defaultAngle,
-      luxuria: sins.luxuria || SEVEN_SINS_DEFINITIONS.luxuria.defaultAngle,
-      inveja: sins.inveja || SEVEN_SINS_DEFINITIONS.inveja.defaultAngle,
-      gula: sins.gula || SEVEN_SINS_DEFINITIONS.gula.defaultAngle,
-      ira: sins.ira || SEVEN_SINS_DEFINITIONS.ira.defaultAngle,
-      preguica: sins.preguica || SEVEN_SINS_DEFINITIONS.preguica.defaultAngle,
+      orgulho: typeof sins.orgulho === "string" ? sins.orgulho : "",
+      ganancia: typeof sins.ganancia === "string" ? sins.ganancia : "",
+      luxuria: typeof sins.luxuria === "string" ? sins.luxuria : "",
+      inveja: typeof sins.inveja === "string" ? sins.inveja : "",
+      gula: typeof sins.gula === "string" ? sins.gula : "",
+      ira: typeof sins.ira === "string" ? sins.ira : "",
+      preguica: typeof sins.preguica === "string" ? sins.preguica : "",
     },
-    confidence: Number(parsed.confidence) || 0.85,
-    evidence: Array.isArray(parsed.evidence) ? parsed.evidence : ["analise_estrategica_negocio"],
+    confidence: null,
+    evidence: [],
   };
 }
 
@@ -778,11 +751,11 @@ Retorne o JSON estrito:
  */
 export async function runMarketAnalystSquad(evidence: ScrapedEvidence): Promise<MarketAnalystSquadResult> {
   const systemPrompt = `Você é o Sherlock — Analista de Inteligência Competitiva e OSINT do Waesy.
-Analise a posição de mercado da empresa sem inventar concorrentes fictícios.
+Analise somente o texto do próprio site recebido. Esta etapa não consulta buscadores nem páginas de concorrentes; não apresente análise como pesquisa competitiva completa.
 Regras:
-1. Mapeie até 3 concorrentes visíveis no nicho ou deixe explícito como "mercado local genérico" se nenhum competidor for detectado.
-2. Identifique os diferenciais competitivos reais e oportunidades de nicho.
-3. Retorne JSON estrito com confidence e evidence[].`;
+1. Liste concorrentes somente quando identificados nas fontes fornecidas; se nenhum for identificado, devolva lista vazia. Não use categorias genéricas como concorrentes.
+2. Diferenciais e oportunidades sem prova devem ser rotulados como hipóteses; sem base, devolva listas vazias.
+3. Retorne JSON sem confiança numérica nem evidências inventadas.`;
 
   const userPrompt = `Dados da Empresa:
 Domínio: ${evidence.domain}
@@ -793,12 +766,12 @@ ${evidence.rawTextSample.slice(0, 2000)}
 Retorne o JSON:
 {
   "direct_competitors": [
-    { "name": "Concorrente relevante ou categoria", "notes": "Diferencial de preço ou atuação" }
+
   ],
-  "competitive_differentials": ["Diferencial 1", "Diferencial 2"],
-  "market_opportunities": ["Oportunidade de mercado 1", "Oportunidade 2"],
-  "confidence": 0.82,
-  "evidence": ["pistas de mercado"]
+  "competitive_differentials": [],
+  "market_opportunities": [],
+  "confidence": null,
+  "evidence": []
 }`;
 
   const res = await executeUnifiedAiCall({
@@ -810,17 +783,11 @@ Retorne o JSON:
 
   const parsed = res.parsedJson || {};
   return {
-    direct_competitors: Array.isArray(parsed.direct_competitors) && parsed.direct_competitors.length > 0
-      ? parsed.direct_competitors
-      : [{ name: "Comércio Local Tradicional", notes: "Concorrentes sem catálogo digital integrado" }],
-    competitive_differentials: Array.isArray(parsed.competitive_differentials) && parsed.competitive_differentials.length > 0
-      ? parsed.competitive_differentials
-      : ["Agilidade de atendimento", "Relacionamento comunitário próximo"],
-    market_opportunities: Array.isArray(parsed.market_opportunities) && parsed.market_opportunities.length > 0
-      ? parsed.market_opportunities
-      : ["Venda omnicanal no ecossistema Waesy", "Fidelização via cashback em tokens"],
-    confidence: Number(parsed.confidence) || 0.8,
-    evidence: Array.isArray(parsed.evidence) ? parsed.evidence : ["analise_concorrencia_nicho"],
+    direct_competitors: Array.isArray(parsed.direct_competitors) ? parsed.direct_competitors : [],
+    competitive_differentials: Array.isArray(parsed.competitive_differentials) ? parsed.competitive_differentials : [],
+    market_opportunities: Array.isArray(parsed.market_opportunities) ? parsed.market_opportunities : [],
+    confidence: null,
+    evidence: [],
   };
 }
 
@@ -838,7 +805,7 @@ export async function runConsolidationAndJudge(
 ): Promise<FinalConsolidatedBriefing> {
   // Extração de produtos genuínos caso o texto contenha catálogo
   const systemPrompt = `Você é o Juiz Final do Concílio de IAs do Waesy.
-Sua missão é auditar os achados dos 5 squads, eliminar redundâncias, resolver contradições e entregar o Briefing Canônico Oficial.
+Sua missão é produzir um rascunho de briefing para revisão humana; a IA não é fonte de verdade nem pesquisador externo nesta etapa.
 Regras Absolutas:
 1. Se o site contiver produtos/serviços reais com preços, extraia até 5 itens legítimos. Se não contiver produtos explícitos com preços, deixe suggested_products como array vazio []. PROIBIDO criar itens fake.
 2. Contato: extraia WhatsApp (apenas dígitos), telefone, e-mail e endereço se mencionados. Se ausente, deixe null sem inventar.
@@ -858,18 +825,16 @@ ${evidence.scrapedMarkdown?.slice(0, 3000) || evidence.rawTextSample}
 Retorne o JSON Consolidado:
 {
   "company_name": "${design.brand_name}",
-  "category": "gastronomia|turismo|comercio|servicos|saude|automotivo|outros",
-  "bio": "${copy.bio_concise}",
-  "tagline": "${copy.tagline}",
-  "suggested_products": [
-    { "name": "Produto real se detectado", "description": "Descrição", "price_cents": 2900, "category": "Categoria" }
-  ],
+  "category": "",
+  "bio": "",
+  "tagline": "",
+  "suggested_products": [],
   "contact": {
     "whatsapp": null,
     "phone": null,
     "email": null,
-    "city": "${getDefaultCity()}",
-    "state": "${getDefaultState()}",
+    "city": null,
+    "state": null,
     "address": null
   },
   "unconfirmed_fields": []
@@ -884,12 +849,51 @@ Retorne o JSON Consolidado:
 
   const parsed = res.parsedJson || {};
   const contact = parsed.contact || {};
+  const normalizeForMatch = (value: string) => value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/\s+/g, " ").trim();
+  const sourceText = normalizeForMatch([
+    evidence.sourceUrl,
+    evidence.pageTitle,
+    evidence.metaDescription || "",
+    evidence.scrapedMarkdown || "",
+    evidence.rawTextSample,
+  ].join("\n"));
+  const rawProducts = Array.isArray(parsed.suggested_products) ? parsed.suggested_products : [];
+  const suggestedProducts = rawProducts.filter((item: any) => {
+    if (!item || typeof item.name !== "string" || !item.name.trim() || !Number.isInteger(item.price_cents) || item.price_cents <= 0) return false;
+    const productName = normalizeForMatch(item.name);
+    const brlComma = (item.price_cents / 100).toFixed(2).replace(".", ",");
+    const brlDot = (item.price_cents / 100).toFixed(2);
+    return productName.length >= 3 && sourceText.includes(productName) && (sourceText.includes(brlComma) || sourceText.includes(brlDot));
+  });
+  const unconfirmedFields = Array.isArray(parsed.unconfirmed_fields)
+    ? parsed.unconfirmed_fields.filter((field: unknown): field is string => typeof field === "string")
+    : [];
+  if (suggestedProducts.length < rawProducts.length) unconfirmedFields.push("suggested_products: alguns itens foram removidos porque nome/preço não aparecem literalmente nas fontes capturadas");
+
+  const sourceDigits = sourceText.replace(/\D/g, "");
+  const verifiedContactValue = (key: "whatsapp" | "phone" | "email" | "city" | "state" | "address") => {
+    const raw = contact[key];
+    if (typeof raw !== "string" || !raw.trim()) return undefined;
+    const normalized = normalizeForMatch(raw);
+    const verified = key === "whatsapp" || key === "phone"
+      ? raw.replace(/\D/g, "").length >= 8 && sourceDigits.includes(raw.replace(/\D/g, ""))
+      : sourceText.includes(normalized);
+    if (!verified) unconfirmedFields.push(`contact.${key}: removido porque não foi encontrado literalmente nas fontes capturadas`);
+    return verified ? raw : undefined;
+  };
+  const sourceCompanyName = typeof parsed.company_name === "string" ? parsed.company_name.trim() : "";
+  const companyName = sourceCompanyName && sourceText.includes(normalizeForMatch(sourceCompanyName))
+    ? sourceCompanyName
+    : (evidence.pageTitle || evidence.domain);
+  if (sourceCompanyName && companyName !== sourceCompanyName) unconfirmedFields.push("company_name: usando título do site/domínio porque o nome sugerido não foi localizado literalmente");
 
   return {
-    company_name: parsed.company_name || design.brand_name,
-    category: parsed.category || "comercio",
-    bio: parsed.bio || copy.bio_concise,
-    tagline: parsed.tagline || copy.tagline,
+    analysis_status: "ai_generated_draft",
+    requires_human_review: true,
+    company_name: companyName,
+    category: parsed.category || "",
+    bio: typeof parsed.bio === "string" ? parsed.bio : copy.bio_concise,
+    tagline: typeof parsed.tagline === "string" ? parsed.tagline : copy.tagline,
     brand_kit: {
       primary_color: design.primary_color,
       secondary_color: design.secondary_color,
@@ -913,7 +917,7 @@ Retorne o JSON Consolidado:
       seven_sins_triggers: biz.seven_sins_hooks,
     },
     briefing: {
-      title: `Briefing Oficial — ${parsed.company_name || design.brand_name}`,
+      title: `Rascunho de briefing (IA; requer revisão) — ${parsed.company_name || design.brand_name}`,
       business_model_text: JSON.stringify(biz.business_model, null, 2),
       swot_strengths: biz.swot.strengths,
       swot_weaknesses: biz.swot.weaknesses,
@@ -921,24 +925,24 @@ Retorne o JSON Consolidado:
       swot_threats: biz.swot.threats,
       competitors: market.direct_competitors,
       ideal_customer_profile: {
-        primary_persona: copy.content_pillars[0] || "Cliente ideal",
+        primary_persona: copy.content_pillars[0] || "",
         positioning: pr.positioning_statement,
         uvp: pr.value_proposition,
       },
     },
-    suggested_products: Array.isArray(parsed.suggested_products) ? parsed.suggested_products : [],
+    suggested_products: suggestedProducts,
     contact: {
-      whatsapp: contact.whatsapp || undefined,
-      phone: contact.phone || undefined,
-      email: contact.email || undefined,
-      city: contact.city || getDefaultCity(),
-      state: contact.state || getDefaultState(),
-      address: contact.address || undefined,
+      whatsapp: verifiedContactValue("whatsapp"),
+      phone: verifiedContactValue("phone"),
+      email: verifiedContactValue("email"),
+      city: verifiedContactValue("city") || "",
+      state: verifiedContactValue("state") || "",
+      address: verifiedContactValue("address"),
     },
     evidence_summary: {
       sources_used: [evidence.sourceUrl],
       screenshots_captured: evidence.screenshotUrl ? [evidence.screenshotUrl] : [],
-      unconfirmed_fields: Array.isArray(parsed.unconfirmed_fields) ? parsed.unconfirmed_fields : [],
+      unconfirmed_fields: unconfirmedFields,
     },
   };
 }
@@ -1094,7 +1098,7 @@ export async function persistOnboardingResults(
         return arr.map((item: any, i: number) => ({
           id: `${prefix}-${i + 1}`,
           text: typeof item === "string" ? item : (item?.text || String(item)),
-          confidence: 0.95,
+          confidence: null,
         }));
       };
 
@@ -1104,7 +1108,7 @@ export async function persistOnboardingResults(
         key_activities: toBmcItems(parsedBizModel.key_activities, "ka"),
         key_resources: toBmcItems(parsedBizModel.key_resources, "kr"),
         value_propositions: parsedBizModel.value_proposition
-          ? [{ id: "vp-1", text: parsedBizModel.value_proposition, confidence: 0.95 }]
+          ? [{ id: "vp-1", text: parsedBizModel.value_proposition, confidence: null }]
           : [],
         customer_relationships: toBmcItems(parsedBizModel.customer_relationships, "cr"),
         channels: toBmcItems(parsedBizModel.distribution_channels, "ch"),
@@ -1113,7 +1117,7 @@ export async function persistOnboardingResults(
         revenue_streams: toBmcItems(parsedBizModel.revenue_streams, "rs"),
         generated_by_job_id: jobId,
         ai_model: "waesy-ai-concilio",
-        confidence: 0.95,
+        confidence: null,
         edited_by_human: false,
         updated_at: now,
       };
@@ -1161,13 +1165,13 @@ export async function persistOnboardingResults(
       whatsapp: consolidated.contact.whatsapp || null,
       website: sourceUrl,
       is_active: true,
-      is_verified: true,
+      is_verified: false,
       updated_at: now,
     },
     { onConflict: "store_id" }
   );
 
-  // G. Auto-calibração dos 4 Squads Agênticos da Loja com DNA e briefings do Onboarding
+  // G. Sincronizar rascunhos do onboarding sem sobrescrever respostas humanas existentes.
   try {
     const { listStoreSquads } = await import("./squads-runtime.functions");
     const squads = await listStoreSquads(storeId);
@@ -1190,19 +1194,11 @@ export async function persistOnboardingResults(
           seven_sins_triggers: consolidated.brand_dna.seven_sins_triggers,
         };
       } else if (dept === "accounting") {
-        squadAnswers = {
-          pricing_strategy: "Margem calibrada conforme mercado regional",
-          split_payment_ready: true,
-        };
         runtimeSettings = {
           business_model: consolidated.briefing.business_model_text,
           swot_strengths: consolidated.briefing.swot_strengths,
         };
       } else if (dept === "human_resources") {
-        squadAnswers = {
-          service_culture: "Atendimento acolhedor e ágil",
-          hospitality_focus: true,
-        };
         runtimeSettings = {
           company_name: consolidated.company_name,
           category: consolidated.category,
@@ -1223,17 +1219,47 @@ export async function persistOnboardingResults(
         };
       }
 
-      await supabase
+      const { data: currentSquad, error: currentSquadError } = await supabase
+        .from("store_squads")
+        .select("onboarding_answers, runtime_settings")
+        .eq("id", ss.id)
+        .eq("store_id", storeId)
+        .maybeSingle();
+      if (currentSquadError) throw new Error(`Falha ao ler configuração atual do squad ${ss.id}: ${currentSquadError.message}`);
+
+      const existingAnswers = currentSquad?.onboarding_answers && typeof currentSquad.onboarding_answers === "object"
+        ? { ...(currentSquad.onboarding_answers as Record<string, unknown>) }
+        : {};
+      if (existingAnswers.pricing_strategy === "Margem calibrada conforme mercado regional" && existingAnswers.split_payment_ready === true) {
+        delete existingAnswers.pricing_strategy;
+        delete existingAnswers.split_payment_ready;
+      }
+      if (existingAnswers.service_culture === "Atendimento acolhedor e ágil" && existingAnswers.hospitality_focus === true) {
+        delete existingAnswers.service_culture;
+        delete existingAnswers.hospitality_focus;
+      }
+      const existingSettings = currentSquad?.runtime_settings && typeof currentSquad.runtime_settings === "object"
+        ? currentSquad.runtime_settings as Record<string, unknown>
+        : {};
+
+      const { error: squadUpdateError } = await supabase
         .from("store_squads")
         .update({
-          onboarding_answers: squadAnswers,
-          runtime_settings: runtimeSettings,
+          onboarding_answers: { ...squadAnswers, ...existingAnswers },
+          runtime_settings: {
+            ...runtimeSettings,
+            ...existingSettings,
+            onboarding_analysis_status: "ai_generated_draft",
+            requires_human_review: true,
+          },
           updated_at: now,
         })
-        .eq("id", ss.id);
+        .eq("id", ss.id)
+        .eq("store_id", storeId);
+      if (squadUpdateError) throw new Error(`Falha ao atualizar squad ${ss.id}: ${squadUpdateError.message}`);
     }
   } catch (sqErr) {
-    console.warn("[onboarding-pipeline] Aviso ao auto-calibrar squads da loja:", sqErr);
+    console.warn("[onboarding-pipeline] Aviso ao sincronizar rascunhos dos squads:", sqErr);
   }
 
   return { createdProductsCount };

@@ -3,58 +3,91 @@ import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
 
+const ABANDONED_CART_INACTIVITY_MS = 2 * 60 * 60 * 1000;
+const MATCH_TIME_PAGE_SIZE = 1000;
+
+function throwIfQueryFailed(error: { message?: string } | null, message: string): void {
+ if (error) {
+  throw new Error(error.message ? `${message}: ${error.message}` : message);
+ }
+}
+
+function requireRows<T>(rows: T[] | null, message: string): T[] {
+ if (!Array.isArray(rows)) throw new Error(message);
+ return rows;
+}
+
 /**
- * Scans for carts that haven't been updated in 2 hours and converts them
- * to abandoned carts if they haven't been already.
+ * Classifies active carts with at least two hours without updates as possible
+ * abandonment. This is a time-based heuristic, not proof that no order exists.
  */
 export const scanAbandonedCarts = createServerFn({ method: "POST" }).handler(async () => {
  const supabase = getServerClient();
  const identity = await getServerIdentity();
  assertStoreAccess(identity, ["owner", "admin", "manager"]);
 
- // In a real Cron job, this runs automatically.
- // Here we trigger it from the Admin panel to simulate the scan.
- const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
+ const now = new Date();
+ const twoHoursAgo = new Date(now.getTime() - ABANDONED_CART_INACTIVITY_MS).toISOString();
 
- // Find carts from this store that are older than 2 hours and not attached to an order
+ // Checkout marks a cart completed, but the schema has no durable cart_id on
+ // orders. Inactivity is therefore only a heuristic and must not be described
+ // as confirmation that the customer has no order.
  const { data: stagnantCarts, error: cartsErr } = await supabase
- .from("carts")
- .select("id, customer_id, updated_at")
- .eq("store_id", identity.store_id)
- .lt("updated_at", twoHoursAgo);
+  .from("carts")
+  .select("id, customer_id, updated_at")
+  .eq("store_id", identity.store_id)
+  .eq("status", "active")
+  .gt("expires_at", now.toISOString())
+  .lt("updated_at", twoHoursAgo);
 
- if (cartsErr || !stagnantCarts || stagnantCarts.length === 0) {
- return { scanned: 0, newAbandons: 0 };
- }
+ throwIfQueryFailed(cartsErr, "Não foi possível consultar carrinhos inativos");
+ const candidates = requireRows(stagnantCarts, "A consulta de carrinhos inativos não retornou dados válidos");
 
- // Ensure they haven't already been marked
+ // `cart_id` is unique in abandoned_carts; ignoreDuplicates makes concurrent
+ // scans idempotent, and returned rows count only inserts confirmed by PostgREST.
+ let scanned = 0;
  let newAbandonsCount = 0;
- for (const cart of stagnantCarts) {
- const { data: existing } = await supabase
- .from("abandoned_carts")
- .select("id")
- .eq("cart_id", cart.id)
- .maybeSingle();
+ for (const cart of candidates) {
+  const { data: items, error: itemsErr } = await supabase
+   .from("cart_items")
+   .select("variant_id, qty, price_snapshot_cents, product_variants(canonical_name, products(title))")
+   .eq("cart_id", cart.id);
 
- if (!existing) {
- // Take a snapshot of the cart items (for marketing emails)
- const { data: items } = await supabase
- .from("cart_items")
- .select("*, product_variants(*, products(title))")
- .eq("cart_id", cart.id);
+  throwIfQueryFailed(itemsErr, "Não foi possível consultar os itens do carrinho");
+  const cartItems = requireRows(items, "A consulta de itens do carrinho não retornou dados válidos");
+  if (cartItems.length === 0) continue;
+  scanned++;
 
- await supabase.from("abandoned_carts").insert({
- store_id: identity.store_id,
- cart_id: cart.id,
- customer_id: cart.customer_id,
- status: "abandoned",
- cart_snapshot: { items: items || [] },
- });
- newAbandonsCount++;
+  const { data: inserted, error: insertErr } = await supabase
+   .from("abandoned_carts")
+   .upsert(
+    {
+     store_id: identity.store_id,
+     cart_id: cart.id,
+     customer_id: cart.customer_id,
+     status: "abandoned",
+     cart_snapshot: {
+      items: cartItems.map((item: any) => ({
+       variant_id: item.variant_id,
+       quantity: item.qty,
+       price_cents: item.price_snapshot_cents,
+       product_title: item.product_variants?.products?.title ?? null,
+       variant_name: item.product_variants?.canonical_name ?? null,
+      })),
+      last_activity_at: cart.updated_at,
+      inactivity_heuristic_hours: 2,
+     },
+    },
+    { onConflict: "cart_id", ignoreDuplicates: true },
+   )
+   .select("id")
+   .maybeSingle();
+
+  throwIfQueryFailed(insertErr, "Não foi possível registrar o carrinho para acompanhamento");
+  if (inserted?.id) newAbandonsCount++;
  }
- }
 
- return { scanned: stagnantCarts.length, newAbandons: newAbandonsCount };
+ return { scanned, newAbandons: newAbandonsCount, inactivityHeuristicHours: 2 };
 });
 
 export const listAbandonedCarts = createServerFn({ method: "GET" }).handler(async () => {
@@ -68,18 +101,20 @@ export const listAbandonedCarts = createServerFn({ method: "GET" }).handler(asyn
  .eq("store_id", identity.store_id)
  .order("created_at", { ascending: false });
 
- if (error || !carts) return [];
+ throwIfQueryFailed(error, "Não foi possível listar carrinhos inativos");
+ const rows = requireRows(carts, "A consulta de carrinhos inativos não retornou dados válidos");
 
- return carts.map((c) => ({
- id: c.id,
- cartId: c.cart_id,
- status: c.status,
- recoveryAttempts: c.recovery_attempts,
- customerName: c.profiles?.full_name || "Visitante Anônimo",
- customerEmail: c.profiles?.email,
- customerPhone: c.profiles?.phone,
- snapshot: c.cart_snapshot,
- createdAt: c.created_at,
+ return rows.map((c) => ({
+  id: c.id,
+  cartId: c.cart_id,
+  status: c.status,
+  recoveryAttempts: c.recovery_attempts,
+  customerName: c.profiles?.full_name || "Nome não informado",
+  customerEmail: c.profiles?.email,
+  customerPhone: c.profiles?.phone,
+  snapshot: c.cart_snapshot,
+  createdAt: c.created_at,
+  lastActivityAt: c.cart_snapshot?.last_activity_at ?? null,
  }));
 });
 
@@ -90,77 +125,92 @@ export const markRecoveryAttempt = createServerFn({ method: "POST" })
  const identity = await getServerIdentity();
  assertStoreAccess(identity, ["owner", "admin", "manager", "seller"]);
 
- // Fetch current to increment
- const { data: cart } = await supabase
- .from("abandoned_carts")
- .select("recovery_attempts")
- .eq("id", id)
- .eq("store_id", identity.store_id)
- .single();
+ // Read the current count, then use it in the update predicate to avoid
+ // reporting success for a missing row or silently losing a concurrent update.
+ const { data: cart, error: fetchError } = await supabase
+  .from("abandoned_carts")
+  .select("recovery_attempts")
+  .eq("id", id)
+  .eq("store_id", identity.store_id)
+  .maybeSingle();
 
- if (cart) {
- await supabase
- .from("abandoned_carts")
- .update({
- recovery_attempts: cart.recovery_attempts + 1,
- last_attempt_at: new Date().toISOString(),
- })
- .eq("id", id)
- .eq("store_id", identity.store_id);
- }
+ throwIfQueryFailed(fetchError, "Não foi possível localizar o carrinho para registrar a tentativa");
+ if (!cart) throw new Error("Carrinho inativo não encontrado nesta loja.");
+
+ const currentAttempts = cart.recovery_attempts ?? 0;
+ const { data: updated, error: updateError } = await supabase
+  .from("abandoned_carts")
+  .update({
+   recovery_attempts: currentAttempts + 1,
+   last_attempt_at: new Date().toISOString(),
+  })
+  .eq("id", id)
+  .eq("store_id", identity.store_id)
+  .eq("recovery_attempts", currentAttempts)
+  .select("id")
+  .maybeSingle();
+
+ throwIfQueryFailed(updateError, "Não foi possível registrar a tentativa de recuperação");
+ if (!updated?.id) throw new Error("O carrinho mudou durante a atualização; tente novamente.");
 
  return { success: true };
  });
 
 /**
- * Gamification "Match Time" Engine
- * Pulls 5 random active variants from the store to show in the Tinder-style UI.
+ * Match Time product discovery. The existing offer schema requires an
+ * authenticated customer and session, neither of which this route creates;
+ * therefore this endpoint only returns verified catalog prices and never
+ * fabricates a discount or an unredeemable offer.
  */
 export const generateMatchTimeOffers = createServerFn({ method: "GET" }).handler(async () => {
  const supabase = getServerClient();
  const identity = await getServerIdentity();
 
- // Select a few random products that have stock
- const { data: variants, error } = await supabase
- .from("product_variants")
- .select(
- "id, price_cents, canonical_name, products!inner(id, title, store_id, is_active), product_media(url)",
- )
- .eq("products.store_id", identity.store_id)
- .eq("products.is_active", true)
- .limit(20);
+ const storeId = identity.store_id ?? identity.memberships?.[0]?.store_id ?? null;
+ assertStoreAccess(identity, ["owner", "admin", "manager", "seller"], storeId);
+ if (!identity.store_id) throw new Error("Nenhuma loja ativa foi selecionada.");
 
- if (error || !variants) return [];
+ const { data: store, error: storeError } = await supabase
+  .from("stores")
+  .select("id")
+  .eq("id", identity.store_id)
+  .maybeSingle();
+ throwIfQueryFailed(storeError, "Não foi possível validar a loja ativa");
+ if (!store?.id) throw new Error("A loja ativa não foi encontrada.");
 
- // Shuffle and pick 5
- const shuffled = variants.sort(() => 0.5 - Math.random()).slice(0, 5);
+ const variants: any[] = [];
+ for (let offset = 0; ; offset += MATCH_TIME_PAGE_SIZE) {
+  const { data: page, error } = await supabase
+   .from("product_variants")
+   .select("id, price_cents, canonical_name, products!inner(id, title, store_id, is_active), product_media(url)")
+   .eq("products.store_id", store.id)
+   .eq("products.is_active", true)
+   .eq("status", "active")
+   .gt("stock_on_hand", 0)
+   .order("id", { ascending: true })
+   .range(offset, offset + MATCH_TIME_PAGE_SIZE - 1);
 
-  // Buscar se há campanha de flash match ativa para aplicar desconto real configurado pelo lojista
-  const { data: activeCampaign } = await supabase
-    .from("eventos_campanhas")
-    .select("config")
-    .eq("status", "active")
-    .limit(1)
-    .maybeSingle();
+  throwIfQueryFailed(error, "Não foi possível carregar produtos para o Match Time");
+  const pageRows = requireRows(page, "A consulta de produtos não retornou dados válidos");
+  variants.push(...pageRows);
+  if (pageRows.length < MATCH_TIME_PAGE_SIZE) break;
+ }
 
-  const campaignDiscountPct = Number(activeCampaign?.config?.discount_percentage || 0);
-  const discountFactor = campaignDiscountPct > 0 ? campaignDiscountPct / 100 : 0;
+ // Shuffle a copy and return at most five catalog entries, at their original price.
+ const shuffled = [...variants];
+ for (let index = shuffled.length - 1; index > 0; index--) {
+  const swapIndex = Math.floor(Math.random() * (index + 1));
+  [shuffled[index], shuffled[swapIndex]] = [shuffled[swapIndex], shuffled[index]];
+ }
 
-  return shuffled.map((v) => {
-    const originalPrice = v.price_cents;
-    const matchPrice = discountFactor > 0 ? Math.floor(originalPrice * (1 - discountFactor)) : originalPrice;
-
-    return {
-      variantId: v.id,
-      productId: (v.products as any)?.id,
-      title: (v.products as any)?.title,
-      variantName: v.canonical_name,
-      image: v.product_media?.[0]?.url || null,
-      originalPrice,
-      matchPrice,
-      discountPercentage: campaignDiscountPct,
-    };
-  });
+ return shuffled.slice(0, 5).map((variant) => ({
+  variantId: variant.id,
+  productId: variant.products?.id,
+  title: variant.products?.title,
+  variantName: variant.canonical_name,
+  image: variant.product_media?.[0]?.url || null,
+  originalPrice: variant.price_cents,
+ }));
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -280,9 +330,9 @@ export interface StoreSocialShareSettingsDTO {
 
 const SocialShareSettingsSchema = z.object({
   og_title_template: z.string().default("{item_title} | {store_name}"),
-  og_description_template: z.string().default("Confira {item_title} na {store_name}. Atendimento rápido e direto no WhatsApp!"),
+  og_description_template: z.string().default("Confira {item_title}."),
   default_og_image_url: z.string().default(""),
-  whatsapp_share_template: z.string().default("Olá! Encontrei isso na {store_name} e achei que você iria gostar: {item_title} {item_price} 👉 {item_url}"),
+  whatsapp_share_template: z.string().default("Confira {item_title} ({item_price}): {item_url}"),
   twitter_card_type: z.enum(["summary_large_image", "summary"]).default("summary_large_image"),
   facebook_app_id: z.string().optional().default(""),
   site_name_suffix: z.string().optional().default("Waesy"),
@@ -308,19 +358,19 @@ export const getStoreSocialShareSettings = createServerFn({ method: "GET" }).han
     const settings = (store.settings as Record<string, any>) || {};
     const rawSocial = settings.social_share || {};
 
-    const storeName = store.name || "Minha Loja";
-    const storeSlug = store.slug || "loja";
+    const storeName = store.name?.trim() || "Nome não informado";
+    const storeSlug = store.slug?.trim() || "";
     const defaultImage = rawSocial.default_og_image_url || store.banner_url || store.logo_url || "";
 
     return {
       og_title_template: rawSocial.og_title_template || `{item_title} | ${storeName}`,
       og_description_template:
         rawSocial.og_description_template ||
-        (store.headline ? `${store.headline} • Compre online ou reserve com atendimento direto.` : `Confira os produtos e serviços de ${storeName}.`),
+        "Confira {item_title}.",
       default_og_image_url: defaultImage,
       whatsapp_share_template:
         rawSocial.whatsapp_share_template ||
-        `Olá! Veja o que encontrei na ${storeName}: {item_title} por apenas {item_price}! Acesse: {item_url}`,
+        "Confira {item_title} ({item_price}): {item_url}",
       twitter_card_type: rawSocial.twitter_card_type || "summary_large_image",
       facebook_app_id: rawSocial.facebook_app_id || "",
       site_name_suffix: rawSocial.site_name_suffix || "Waesy",
@@ -377,4 +427,3 @@ export const saveStoreSocialShareSettings = createServerFn({ method: "POST" })
 
     return { success: true };
   });
-

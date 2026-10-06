@@ -9,7 +9,6 @@ import {
   StoreSquadRunDTO,
 } from "../types/squads-and-onboarding";
 import { executeUnifiedAiCall } from "./api-orchestrator.functions";
-import { getUpcomingMarketingCalendar } from "@/lib/data/holidays-calendar-catalog";
 
 // ── DEFINIÇÃO CANÔNICA DE AGENTES E SQUADS (SSOT DA PLATAFORMA) ─────────────
 
@@ -23,7 +22,7 @@ export interface CanonicalAgentDefinition {
   curriculum: {
     academic_background: string[];
     certifications: string[];
-    years_experience: number;
+    years_experience: number | null;
     specialties: string[];
   };
   deliverables: string[];
@@ -34,167 +33,99 @@ export interface CanonicalAgentDefinition {
 export const CANONICAL_AGENTS: CanonicalAgentDefinition[] = [
   {
     id: "ag-mkt-1",
-    name: "Dra. Sophia Valente",
+    name: "Agente virtual — Estratégia de Marketing",
     category: "marketing",
     ui_group: "growth",
-    seniority: "PhD / Chief Strategist",
-    career_summary:
-      "Especialista em arquitetura de conversão, funis de retenção e posicionamento mercadológico com 12 anos de experiência liderando crescimento em ecossistemas comerciais.",
-    curriculum: {
-      academic_background: [
-        "Doutorado em Comunicação Estratégica - USP",
-        "Mestrado em Ciências do Consumo - FGV",
-      ],
-      certifications: ["Google Ads Master", "Meta Certified Media Director", "Reforge Growth Series"],
-      years_experience: 12,
-      specialties: ["Funis de Conversão", "Posicionamento Estratégico", "CAC/LTV Optimization"],
-    },
-    deliverables: ["Diagnóstico de Posicionamento", "Planejamento Semanal de Campanhas", "Matriz de Segmentação de Audiência"],
+    seniority: "Agente virtual; senioridade não verificada",
+    career_summary: "Agente de IA; não representa uma pessoa real. Qualificações não verificadas.",
+    curriculum: { academic_background: [], certifications: [], years_experience: null, specialties: [] },
+    deliverables: ["Propostas de estratégia de marketing"],
     default_model: "google/gemini-2.5-flash",
-    system_prompt_template:
-      "Você é a Dra. Sophia Valente, Chief Marketing Strategist. Emita pareceres técnicos rigorosos com foco em ROI, clareza e conversão.",
+    system_prompt_template: "Você é um agente virtual de estratégia de marketing. Não afirme credenciais, experiência ou fatos não fornecidos.",
   },
   {
     id: "ag-mkt-2",
-    name: "Lucas Brandão",
+    name: "Agente virtual — Redação",
     category: "marketing",
     ui_group: "copywriting",
-    seniority: "Senior Specialist",
-    career_summary:
-      "Redator sênior de direct response e mestre em psicologia da decisão de compra com 8 anos de prática em e-commerce e serviços locais.",
-    curriculum: {
-      academic_background: ["Graduação em Publicidade e Propaganda - ESPM"],
-      certifications: ["AWAI Direct Response Certified", "Cialdini Institute Principles of Persuasion"],
-      years_experience: 8,
-      specialties: ["Copywriting de Conversão", "E-mails Transacionais", "Gatilhos Mentais Éticos"],
-    },
-    deliverables: ["Textos de Alta Conversão", "Sequências de Nutrição WhatsApp", "Roteiros de Oferta Irresistível"],
+    seniority: "Agente virtual; senioridade não verificada",
+    career_summary: "Agente de IA; não representa uma pessoa real. Qualificações não verificadas.",
+    curriculum: { academic_background: [], certifications: [], years_experience: null, specialties: [] },
+    deliverables: ["Propostas de textos e mensagens"],
     default_model: "google/gemini-2.5-flash",
-    system_prompt_template:
-      "Você é Lucas Brandão, redator de direct response do Waesy. Redija textos concisos, impactantes e livres de clichês ou prolixidade.",
+    system_prompt_template: "Você é um agente virtual de redação. Não afirme credenciais, experiência ou fatos não fornecidos.",
   },
   {
     id: "ag-mkt-3",
-    name: "Carla Mendes",
+    name: "Agente virtual — Design",
     category: "marketing",
     ui_group: "design",
-    seniority: "Senior Creative Designer",
-    career_summary:
-      "Diretora de arte e design de conversão especializada em hierarquia visual, tipografia e criativos de performance para social media.",
-    curriculum: {
-      academic_background: ["Graduação em Design Visual - Belas Artes"],
-      certifications: ["Adobe Certified Expert", "Figma Advanced Systems"],
-      years_experience: 7,
-      specialties: ["Design Editorial", "Lâminas de Oferta", "Identidade Visual de Performance"],
-    },
-    deliverables: ["Diretrizes de Criativos Visuais", "Templates de Carrossel de Oferta", "Paleta de Alto Contraste"],
+    seniority: "Agente virtual; senioridade não verificada",
+    career_summary: "Agente de IA; não representa uma pessoa real. Qualificações não verificadas.",
+    curriculum: { academic_background: [], certifications: [], years_experience: null, specialties: [] },
+    deliverables: ["Propostas de diretrizes visuais"],
     default_model: "google/gemini-2.5-flash",
-    system_prompt_template:
-      "Você é Carla Mendes, diretora de arte do Waesy. Priorize estética premium, proporções geométricas e acessibilidade visual.",
+    system_prompt_template: "Você é um agente virtual de design. Não afirme credenciais, experiência ou fatos não fornecidos.",
   },
   {
     id: "ag-mkt-4",
-    name: "Rodrigo Sato",
+    name: "Agente virtual — Mídia",
     category: "marketing",
     ui_group: "media",
-    seniority: "Traffic & Paid Media Specialist",
-    career_summary:
-      "Especialista em tráfego pago, modelagem de atribuição, pixels e escalabilidade de campanhas locais com ROAS sustentável.",
-    curriculum: {
-      academic_background: ["Graduação em Estatística Aplicada - Unicamp"],
-      certifications: ["Google Premier Partner Specialist", "Meta Blueprint Certified Media Buyer"],
-      years_experience: 9,
-      specialties: ["Geotargeting Local", "Otimização de ROAS", "Auditoria de Pixels"],
-    },
-    deliverables: ["Configuração de Públicos Geotargeted", "Estratégia de Lances de Leilão", "Orçamento Otimizado de Mídia"],
+    seniority: "Agente virtual; senioridade não verificada",
+    career_summary: "Agente de IA; não representa uma pessoa real. Qualificações não verificadas.",
+    curriculum: { academic_background: [], certifications: [], years_experience: null, specialties: [] },
+    deliverables: ["Propostas de mídia e campanhas"],
     default_model: "google/gemini-2.5-flash",
-    system_prompt_template:
-      "Você é Rodrigo Sato, gestor de tráfego do Waesy. Analise métricas frias com rigor matemático e sem desperdício de verba.",
+    system_prompt_template: "Você é um agente virtual de mídia. Não afirme credenciais, experiência ou fatos não fornecidos.",
   },
   {
     id: "ag-mkt-5",
-    name: "Helena Castro",
+    name: "Agente virtual — Análise de Marketing",
     category: "marketing",
     ui_group: "analytics",
-    seniority: "Analytics & BI Lead",
-    career_summary:
-      "Auditora de métricas de aquisição, retenção e comportamento do consumidor em ambientes transacionais multi-tenant.",
-    curriculum: {
-      academic_background: ["Mestrado em Data Science - IME/USP"],
-      certifications: ["Mixpanel Certified Analyst", "Amplitude Analytics Master"],
-      years_experience: 6,
-      specialties: ["Análise de Cohorts", "Modelagem Preditiva de Churn", "Atribuição Multi-Toque"],
-    },
-    deliverables: ["Relatório de Eficiência do Funil", "Diagnóstico de Coorte de Recompra", "Auditoria de Conversão por Canal"],
+    seniority: "Agente virtual; senioridade não verificada",
+    career_summary: "Agente de IA; não representa uma pessoa real. Qualificações não verificadas.",
+    curriculum: { academic_background: [], certifications: [], years_experience: null, specialties: [] },
+    deliverables: ["Propostas de indicadores para acompanhamento"],
     default_model: "google/gemini-2.5-flash",
-    system_prompt_template:
-      "Você é Helena Castro, analista de métricas do Waesy. Forneça insights embasados exclusivamente em dados empíricos.",
+    system_prompt_template: "Você é um agente virtual de análise de marketing. Não afirme credenciais, experiência ou fatos não fornecidos.",
   },
   {
     id: "ag-acc-1",
-    name: "Dr. Henrique Vasconcelos",
+    name: "Agente virtual — Contabilidade e Fiscal",
     category: "finance_tax",
     ui_group: "tax",
-    seniority: "PhD / Chief Tax Auditor",
-    career_summary:
-      "Especialista em compliance tributário, planejamento fiscal corporativo e transição para o novo regime IBS/CBS com 15 anos de atuação.",
-    curriculum: {
-      academic_background: [
-        "Doutorado em Direito Tributário - USP",
-        "Graduação em Ciências Contábeis - FGV",
-      ],
-      certifications: ["CRC Ativo", "Auditor Independente IBRACON"],
-      years_experience: 15,
-      specialties: ["Reforma Tributária (IBS/CBS)", "Não-Cumulatividade", "Planejamento Tributário Ético"],
-    },
-    deliverables: ["Matriz de Classificação Fiscal de Produtos", "Parecer de Conformidade Tributária", "Auditoria de Split Payment"],
+    seniority: "Agente virtual; senioridade não verificada",
+    career_summary: "Agente de IA; não representa uma pessoa real. Qualificações não verificadas.",
+    curriculum: { academic_background: [], certifications: [], years_experience: null, specialties: [] },
+    deliverables: ["Propostas para análise fiscal humana"],
     default_model: "google/gemini-2.5-flash",
-    system_prompt_template:
-      "Você é o Dr. Henrique Vasconcelos, auditor fiscal do Waesy. Assegure conformidade irrestrita com as normas fiscais vigentes.",
+    system_prompt_template: "Você é um agente virtual de apoio fiscal. Não afirme credenciais, experiência, conformidade ou fatos não fornecidos.",
   },
   {
     id: "ag-hr-1",
-    name: "Beatriz Fontana",
+    name: "Agente virtual — Pessoas e Cultura",
     category: "hr_people",
     ui_group: "people",
-    seniority: "Head of People & Culture",
-    career_summary:
-      "Especialista em recrutamento estratégico, desenvolvimento de lideranças e rotinas de excelência em atendimento ao cliente.",
-    curriculum: {
-      academic_background: [
-        "Mestrado em Psicologia Organizacional - PUC",
-        "Especialização em Gestão de Pessoas - Insper",
-      ],
-      certifications: ["SHRM-CP Certified Professional", "Agile HR Practitioner"],
-      years_experience: 10,
-      specialties: ["Cultura de Atendimento", "Trilhas de Onboarding", "Retenção de Talentos"],
-    },
-    deliverables: ["Guia de Atendimento e Hospitalidade", "Roteiro de Treinamento de Novos Colaboradores", "Matriz de Competências Operacionais"],
+    seniority: "Agente virtual; senioridade não verificada",
+    career_summary: "Agente de IA; não representa uma pessoa real. Qualificações não verificadas.",
+    curriculum: { academic_background: [], certifications: [], years_experience: null, specialties: [] },
+    deliverables: ["Propostas para revisão de processos de pessoas"],
     default_model: "google/gemini-2.5-flash",
-    system_prompt_template:
-      "Você é Beatriz Fontana, líder de pessoas do Waesy. Estruture processos humanizados e eficientes para equipes de alto desempenho.",
+    system_prompt_template: "Você é um agente virtual de apoio a pessoas e cultura. Não afirme credenciais, experiência ou fatos não fornecidos.",
   },
   {
     id: "ag-strat-1",
-    name: "Dr. Marcus Valente",
+    name: "Agente virtual — Estratégia Executiva",
     category: "strategy",
     ui_group: "strategy",
-    seniority: "PhD / Principal Strategist",
-    career_summary:
-      "Econometrista sênior e consultor estratégico especializado em economia regional, precificação dinâmica e ampliação de margem operacional.",
-    curriculum: {
-      academic_background: [
-        "PhD em Econometria Aplicada - Columbia University",
-        "Mestrado em Economia - USP",
-      ],
-      certifications: ["CFA Charterholder", "Member of Econometric Society"],
-      years_experience: 16,
-      specialties: ["Elasticidade de Preço", "Diferenciação de Mercado", "Análise de Sensibilidade Financeira"],
-    },
-    deliverables: ["Diagnóstico de Alocação de Margens", "Estudo de Elasticidade de Preço", "Plano Estratégico de Expansão Local"],
+    seniority: "Agente virtual; senioridade não verificada",
+    career_summary: "Agente de IA; não representa uma pessoa real. Qualificações não verificadas.",
+    curriculum: { academic_background: [], certifications: [], years_experience: null, specialties: [] },
+    deliverables: ["Propostas para avaliação estratégica humana"],
     default_model: "google/gemini-2.5-flash",
-    system_prompt_template:
-      "Você é o Dr. Marcus Valente, econometrista chefe do Waesy. Entregue análises densas, probabilísticas e orientadas ao crescimento sustentável.",
+    system_prompt_template: "Você é um agente virtual de apoio estratégico. Não afirme credenciais, experiência ou fatos não fornecidos.",
   },
 ];
 
@@ -211,6 +142,12 @@ export interface CanonicalSquadTemplateDefinition {
     role_label: string;
   }>;
 }
+
+type SquadRuntimeRunDTO = Omit<StoreSquadRunDTO, "store_squad_id" | "total_tokens_consumed" | "cost_estimate_cents"> & {
+  store_squad_id: string | null;
+  total_tokens_consumed?: number;
+  cost_estimate_cents?: number;
+};
 
 export const CANONICAL_SQUAD_TEMPLATES: CanonicalSquadTemplateDefinition[] = [
   {
@@ -312,7 +249,7 @@ export interface SquadWithDetails {
     curriculum: {
       academic_background: string[];
       certifications: string[];
-      years_experience: number;
+      years_experience: number | null;
       specialties: string[];
     };
     deliverables: string[];
@@ -571,9 +508,9 @@ export async function listStoreSquads(storeId: string): Promise<SquadWithDetails
           default_model: reg.default_model || fallbackDef?.default_model || "google/gemini-2.5-flash",
           curriculum: parseJsonField(reg.curriculum || fallbackDef?.curriculum, {
             academic_background: [],
-            certifications: ["Certificação Waesy Enterprise"],
-            years_experience: 10,
-            specialties: ["Inteligência de Mercado"],
+            certifications: [],
+            years_experience: null,
+            specialties: [],
           }),
           deliverables: parseJsonField(reg.deliverables || fallbackDef?.deliverables, [
             "Parecer Técnico",
@@ -642,274 +579,239 @@ export async function listStoreSquads(storeId: string): Promise<SquadWithDetails
   return result;
 }
 
+const SquadAiRecommendationsSchema = z.object({
+  recommendations: z.array(z.object({
+    title: z.string().trim().min(1),
+    description: z.string().trim().min(1),
+    assigned_agent_id: z.string().trim().min(1).optional(),
+  }).strict()).min(1),
+}).strict();
+
+type SquadAiRecommendations = z.infer<typeof SquadAiRecommendationsSchema>;
+
+function hasOperationalEvidence(input: Record<string, any>): boolean {
+  return [input.operational_data, input.store_data, input.evidence].some((value) => {
+    if (Array.isArray(value)) return value.length > 0;
+    return value !== null && typeof value === "object" && Object.keys(value).length > 0;
+  });
+}
+
+function verifiedUsage(value: unknown): number | undefined {
+  return typeof value === "number" && Number.isFinite(value) && value > 0 ? value : undefined;
+}
+
+function notEvaluatedArtifacts(reason: string): Record<string, any> {
+  return {
+    assessment_status: "not_evaluated",
+    acceptanceVerified: false,
+    review_status: "not_evaluated",
+    executive_summary: reason,
+    pending_approval_items: [],
+    kpis_monitored: [],
+    compliance_status: "not_evaluated",
+  };
+}
+
+function parseAiRecommendations(aiResult: any): SquadAiRecommendations {
+  // executeUnifiedAiCall resolves only when a provider returned a response; it does not
+  // expose a `success` property or usage metadata. Reject explicit gateway failures.
+  if (!aiResult || aiResult.success === false || aiResult.gatewayRes?.success === false) {
+    throw new Error(aiResult?.error?.message || "Gateway de IA não confirmou sucesso.");
+  }
+
+  const text = typeof aiResult.text === "string" ? aiResult.text : aiResult.content;
+  let candidate = aiResult.parsedJson;
+  if (candidate === undefined) {
+    if (typeof text !== "string" || !text.trim()) throw new Error("Resposta vazia do gateway de IA.");
+    try {
+      candidate = JSON.parse(text);
+    } catch {
+      throw new Error("Resposta do gateway de IA não é JSON válido.");
+    }
+  }
+
+  const parsed = SquadAiRecommendationsSchema.safeParse(candidate);
+  if (!parsed.success) throw new Error("Resposta do gateway de IA não atende ao schema de recomendações.");
+  return parsed.data;
+}
+
 // ── 2. DISPARAR EXECUÇÃO DO SQUAD COM SUPERVISÃO (HUMAN-IN-THE-LOOP) ────────
 
 export async function triggerSquadRun(
   storeId: string,
   storeSquadId: string,
   options?: { triggerSource?: "manual" | "scheduler" | "onboarding"; inputPayload?: Record<string, any> }
-): Promise<StoreSquadRunDTO> {
+): Promise<SquadRuntimeRunDTO> {
   const supabase = getServerClient();
-  const input = options?.inputPayload || { goal: "Auditoria e diagnóstico proativo de rotina operacional" };
+  const input = options?.inputPayload || {};
   const source = options?.triggerSource || "manual";
+  const isVirtualSquad = storeSquadId.startsWith("ss_");
 
-  // 1. Buscar squad e template vinculado
-  let squad: any = null;
-  let template: any = null;
+  let squad: any;
+  let template: any;
+  let canonicalTemplate: CanonicalSquadTemplateDefinition | undefined;
 
-  if (storeSquadId.startsWith("ss_")) {
-    const slug = storeSquadId.split("_").pop() || "marketing";
-    template = CANONICAL_SQUAD_TEMPLATES.find((t) => t.slug === slug) || CANONICAL_SQUAD_TEMPLATES[0];
+  if (isVirtualSquad) {
+    const [, virtualStorePrefix, slug = ""] = storeSquadId.split("_");
+    if (virtualStorePrefix !== storeId.slice(0, 8)) {
+      throw new Error("Squad virtual não pertence a esta loja.");
+    }
+    canonicalTemplate = CANONICAL_SQUAD_TEMPLATES.find((item) => item.slug === slug);
+    if (!canonicalTemplate) throw new Error("Squad virtual inválido.");
+    template = canonicalTemplate;
     squad = {
       id: storeSquadId,
       store_id: storeId,
-      squad_template_id: template.slug,
-      custom_name: template.name,
+      squad_template_id: canonicalTemplate.slug,
+      custom_name: canonicalTemplate.name,
     };
   } else {
-    const { data: dbSquad } = await supabase
+    const { data: dbSquad, error: squadError } = await supabase
       .from("store_squads")
       .select("*, squad_templates(*)")
       .eq("id", storeSquadId)
+      .eq("store_id", storeId)
       .maybeSingle();
+    if (squadError || !dbSquad) throw new Error("Squad não encontrado para esta loja.");
 
     squad = dbSquad;
-    template = dbSquad?.squad_templates || null;
+    template = Array.isArray(dbSquad.squad_templates) ? dbSquad.squad_templates[0] : dbSquad.squad_templates;
+    canonicalTemplate = CANONICAL_SQUAD_TEMPLATES.find(
+      (item) => item.slug === template?.slug || item.slug === dbSquad.squad_template_id
+    );
   }
 
-  const squadDept = template?.department || "marketing";
-  const squadName = squad?.custom_name || template?.name || "Squad Especializado";
+  const templateId = squad.squad_template_id || template?.id;
+  let configuredAgents: Array<{ agent_id: string; name: string; role_label: string; category: string }> = [];
 
-  // 2. Buscar agentes deste squad
-  const templateId = squad?.squad_template_id || template?.id;
-  const { data: agentRows } = await supabase
-    .from("squad_template_agents")
-    .select("task_order, role_label, agent_id, agent_registry(*)")
-    .eq("squad_template_id", templateId)
-    .order("task_order", { ascending: true });
-
-  const agents = (agentRows || []).map((ar: any) => ({
-    agent_id: ar.agent_id,
-    name: ar.agent_registry?.name || "Especialista",
-    role_label: ar.role_label,
-    deliverables: parseJsonField(ar.agent_registry?.deliverables, []),
-  }));
-
-  const leadAgent = agents[0] || {
-    agent_id: "ag-mkt-1",
-    name: "Dra. Sophia Valente",
-    role_label: "Chief Marketing Strategist",
-    deliverables: ["Planejamento Estratégico"],
-  };
-
-  let generatedArtifacts: any = null;
-  let tokensUsed = 0;
-  let costEstimateCents = 0;
-
-  // 3. Execução Real via Orquestrador Universal de IA (Pool Dinâmico com Failover)
-  try {
-    const systemPrompt = `Você é o agente líder ${leadAgent.name} (${leadAgent.role_label}), atuando no squad "${squadName}" do ecossistema Waesy.
-Sua missão é emitir um parecer analítico executivo rigoroso sobre a rotina da loja (Store ID: ${storeId}).
-Retorne EXCLUSIVAMENTE um JSON válido com a seguinte estrutura:
-{
-  "executive_summary": "Visão geral técnica densa e objetiva de 2 a 3 parágrafos sobre o estado da operação",
-  "pending_approval_items": [
-    {
-      "id": "deliv_01",
-      "title": "Nome do entregável ou diretriz técnica",
-      "description": "Detalhamento da ação recomendada com parâmetros numéricos ou de compliance",
-      "confidence_score": 96,
-      "impact_level": "alto",
-      "assigned_agent": "${leadAgent.name}"
-    }
-  ],
-  "kpis_monitored": ["KPI 1", "KPI 2", "KPI 3"],
-  "compliance_status": "conforme"
-}`;
-
-    const userPrompt = `Objetivo da rotina: ${JSON.stringify(input.goal || "Otimização e conformidade contínua")}
-Especialistas no squad: ${JSON.stringify(agents.map((a: any) => ({ name: a.name, role: a.role_label, deliverables: a.deliverables })))}
-Analise e produza a entrega de trabalho para revisão humana.`;
-
-    const aiRes = await executeUnifiedAiCall({
-      systemPrompt,
-      userPrompt,
-      responseFormat: "json_object",
-      temperature: 0.2,
+  if (isVirtualSquad && canonicalTemplate) {
+    configuredAgents = canonicalTemplate.agents.flatMap((member) => {
+      const definition = CANONICAL_AGENTS.find((agent) => agent.id === member.agent_id);
+      return definition ? [{
+        agent_id: definition.id,
+        name: definition.name,
+        role_label: member.role_label,
+        category: definition.category,
+      }] : [];
     });
+  } else if (templateId) {
+    const { data: agentRows, error: agentsError } = await supabase
+      .from("squad_template_agents")
+      .select("task_order, role_label, agent_id, agent_registry(id, name, category)")
+      .eq("squad_template_id", templateId)
+      .order("task_order", { ascending: true });
 
-    if (aiRes?.parsedJson) {
-      generatedArtifacts = aiRes.parsedJson;
-      tokensUsed = 1250;
-      costEstimateCents = 2;
-    }
-  } catch (llmErr) {
-    console.warn("[squads-runtime] LLM pool fallback to domain synthesis:", llmErr);
-  }
-
-  // 4. Síntese determinística de domínio (Fallback caso nenhuma chave de IA esteja cadastrada)
-  if (!generatedArtifacts) {
-    const isTax = squadDept === "accounting";
-    const isMarketing = squadDept === "marketing";
-    const isStrategy = squadDept === "executive_strategy";
-
-    if (isTax) {
-      generatedArtifacts = {
-        executive_summary: `Auditoria de conformidade fiscal e matriz tributária conduzida sob coordenação de ${leadAgent.name}. Foram revisadas as parametrizações de incidência de alíquotas na esteira de faturamento da loja ${storeId}, com ênfase na preparação do split payment bancário e classificação das regras de transição da CBS/IBS conforme a Emenda Constitucional 132.`,
-        pending_approval_items: [
-          {
-            id: "tax_01",
-            title: "Matriz de Classificação de Créditos Tributários CBS/IBS",
-            description: "Revisão dos itens do catálogo com mapeamento da não-cumulatividade plena e alíquota de referência projetada para serviços turísticos.",
-            confidence_score: 98,
-            impact_level: "critico",
-            assigned_agent: leadAgent.name,
-          },
-          {
-            id: "tax_02",
-            title: "Conciliação Eletrônica de Retenções na Fonte e DIFAL",
-            description: "Mapeamento das notas de saída interestaduais e verificação de compliance de recolhimento automático.",
-            confidence_score: 95,
-            impact_level: "alto",
-            assigned_agent: "Dr. Henrique Vasconcelos",
-          },
-        ],
-        kpis_monitored: ["Carga Tributária Efetiva: 7.8%", "Conformidade SPED: 100%", "Créditos Acumulados: R$ 14.820,00"],
-        compliance_status: "conforme",
-      };
-      tokensUsed = 1400;
-      costEstimateCents = 3;
-    } else if (isMarketing) {
-      const upcomingHolidays = getUpcomingMarketingCalendar(45);
-      const nextHoliday = upcomingHolidays[0];
-      const seasonalApprovalItem = nextHoliday
-        ? [
-            {
-              id: `mkt_seasonal_${nextHoliday.id}`,
-              title: `Campanha Sazonal: ${nextHoliday.name} (${nextHoliday.marketing_theme || "Ação Antecipada"})`,
-              description: `Ação de marketing recomendada com ${nextHoliday.days_until} dias de antecedência para ${nextHoliday.name}. Práticas recomendadas: ${(nextHoliday.suggested_promotional_actions || []).join(", ") || "disparo VIP e cupom sazonal"}.`,
-              confidence_score: 96,
-              impact_level: "estrategico",
-              assigned_agent: leadAgent.name,
-            },
-          ]
-        : [];
-
-      generatedArtifacts = {
-        executive_summary: `Planejamento tático de conversão e aquisição de clientes estruturado por ${leadAgent.name}. Foi inspecionado o funil de leads do canal WhatsApp, a taxa de fechamento de propostas visuais e o calendário sazonal comercial com antecedência estratégica.`,
-        pending_approval_items: [
-          ...seasonalApprovalItem,
-          {
-            id: "mkt_01",
-            title: "Campanha de Retargeting para Oportunidades Abertas sem Fechamento",
-            description: "Sequência de mensagens personalizadas com gatilho de escassez e condições exclusivas de parcelamento para clientes da base.",
-            confidence_score: 94,
-            impact_level: "alto",
-            assigned_agent: leadAgent.name,
-          },
-          {
-            id: "mkt_02",
-            title: "Otimização de Lâminas Visuais do Estúdio de Propostas",
-            description: "Ajuste na hierarquia de informações e destaque da tabela de inclusões para elevar a taxa de conversão em 18%.",
-            confidence_score: 91,
-            impact_level: "estrategico",
-            assigned_agent: "Carla Mendes",
-          },
-        ],
-        kpis_monitored: [
-          "Taxa de Conversão: 24.6%",
-          "CAC Projetado: R$ 42,00",
-          nextHoliday ? `Próxima Janela: ${nextHoliday.name} (${nextHoliday.days_until}d)` : "Volume de Oportunidades: 38",
-        ],
-        compliance_status: "aderente",
-      };
-      tokensUsed = 1420;
-      costEstimateCents = 3;
-    } else if (isStrategy) {
-      generatedArtifacts = {
-        executive_summary: `Análise econométrica e diagnóstico de alocação de capital realizado por ${leadAgent.name}. O relatório avalia o valor de vida útil do cliente (LTV) versus o custo de aquisição (CAC), recomendando ajustes no mix de margens dos pacotes corporativos.`,
-        pending_approval_items: [
-          {
-            id: "strat_01",
-            title: "Revisão da Margem de Contribuição nos Pacotes Internacionais",
-            description: "Recalibração do markup mínimo de 14% para absorver variações cambiais sem perda de competitividade.",
-            confidence_score: 96,
-            impact_level: "estrategico",
-            assigned_agent: leadAgent.name,
-          },
-        ],
-        kpis_monitored: ["LTV/CAC: 4.2x", "Margem Operacional Líquida: 19.4%", "Payback Médio: 45 dias"],
-        compliance_status: "conforme",
-      };
-      tokensUsed = 1450;
-      costEstimateCents = 3;
-    } else {
-      generatedArtifacts = {
-        executive_summary: `Auditoria operacional contínua e verificação de processos executada por ${leadAgent.name}. Foram verificados os manifestos operacionais e a conformidade dos contratos digitais da base.`,
-        pending_approval_items: [
-          {
-            id: "ops_01",
-            title: "Plano de Contingência Operacional",
-            description: "Protocolo preventivo ativado para atendimento da demanda dos próximos 15 dias.",
-            confidence_score: 97,
-            impact_level: "critico",
-            assigned_agent: leadAgent.name,
-          },
-        ],
-        kpis_monitored: ["Índice de Pontualidade: 99.2%", "Vouchers Emitidos: 100%", "Incidentes Abertos: 0"],
-        compliance_status: "conforme",
-      };
-      tokensUsed = 1350;
-      costEstimateCents = 2;
+    if (!agentsError) {
+      configuredAgents = (agentRows || []).map((row: any) => ({
+        agent_id: row.agent_id,
+        name: row.agent_registry?.name,
+        role_label: row.role_label,
+        category: row.agent_registry?.category,
+      })).filter((agent: any) => agent.agent_id && agent.name && agent.category);
     }
   }
 
-  // 5. Inserir corrida real no banco Supabase
-  let runId = `run_${Date.now()}`;
-  let startedAt = new Date().toISOString();
-  let completedAt: string | null = null;
+  const department = template?.department || canonicalTemplate?.department;
+  const expectedCategory: Record<string, string> = {
+    marketing: "marketing",
+    accounting: "finance_tax",
+    human_resources: "hr_people",
+    executive_strategy: "strategy",
+  };
+  const eligibleAgents = configuredAgents.filter((agent) => agent.category === expectedCategory[department]);
+  const leadAgent = eligibleAgents[0];
 
-  try {
-    const { data: runRow, error: runErr } = await supabase
-      .from("store_squad_runs")
-      .insert({
-        store_squad_id: storeSquadId.startsWith("ss_") ? null : storeSquadId,
-        store_id: storeId,
-        trigger_source: source,
-        status: "needs_approval",
-        current_agent_id: leadAgent.agent_id,
-        input_payload: input,
-        output_artifacts: generatedArtifacts,
-        total_tokens_consumed: tokensUsed,
-        cost_estimate_cents: costEstimateCents,
-        started_at: startedAt,
-      })
-      .select()
-      .maybeSingle();
+  let status: "needs_approval" | "failed" = "failed";
+  let errorLog: string | null = null;
+  let artifacts = notEvaluatedArtifacts(
+    "Execução não avaliada: não foram fornecidos dados operacionais verificáveis. Nenhum relatório de estado da loja foi gerado."
+  );
 
-    if (runRow && runRow.id) {
-      runId = runRow.id;
-      startedAt = runRow.started_at || startedAt;
-      completedAt = runRow.completed_at || null;
+  if (!hasOperationalEvidence(input)) {
+    errorLog = "Dados operacionais ausentes; execução não avaliada.";
+  } else if (!leadAgent) {
+    errorLog = "Nenhum agente configurado e compatível com o departamento deste squad.";
+    artifacts = notEvaluatedArtifacts("Execução não avaliada: não há agente compatível configurado para este squad.");
+  } else {
+    try {
+      const evidence = input.operational_data ?? input.store_data ?? input.evidence;
+      const systemPrompt = `Você gera somente rascunhos de recomendações para revisão humana. Você NÃO auditou, consultou ou verificou o estado real da loja; use exclusivamente os dados de entrada fornecidos. Não declare fatos, métricas observadas, desempenho, KPIs com valores, compliance, credenciais ou resultados que não estejam explícitos nesses dados. Não invente números. Retorne exclusivamente JSON neste formato: {"recommendations":[{"title":"...","description":"...","assigned_agent_id":"ID de um agente fornecido"}]}. Cada agente deve ser escolhido somente da lista fornecida. Não inclua IDs de entregáveis, scores, confiança, status de aceitação ou metadados de uso.`;
+      const userPrompt = JSON.stringify({
+        goal: typeof input.goal === "string" ? input.goal : null,
+        operational_data: evidence,
+        squad: { name: squad.custom_name || template?.name, department },
+        agents: eligibleAgents.map(({ agent_id, name, role_label }) => ({ agent_id, name, role_label })),
+      });
+      const aiResult = await executeUnifiedAiCall({
+        systemPrompt,
+        userPrompt,
+        responseFormat: "json_object",
+        temperature: 0.2,
+        storeId,
+      });
+      const recommendations = parseAiRecommendations(aiResult);
+      const pendingItems = recommendations.recommendations.map((recommendation) => {
+        const assigned = eligibleAgents.find((agent) => agent.agent_id === (recommendation.assigned_agent_id || leadAgent.agent_id));
+        if (!assigned) throw new Error("A IA atribuiu uma recomendação a agente não configurado neste departamento.");
+        return {
+          title: recommendation.title,
+          description: recommendation.description,
+          assigned_agent: assigned.name,
+        };
+      });
+
+      artifacts = {
+        assessment_status: "not_evaluated",
+        acceptanceVerified: false,
+        review_status: "needs_human_approval",
+        executive_summary: "Rascunho de recomendações baseado exclusivamente nos dados fornecidos. O estado real da loja, os KPIs e a conformidade não foram verificados.",
+        pending_approval_items: pendingItems,
+        kpis_monitored: [],
+        compliance_status: "not_evaluated",
+      };
+      status = "needs_approval";
+    } catch (error) {
+      errorLog = error instanceof Error ? error.message : "Falha ao validar a resposta de IA.";
+      artifacts = notEvaluatedArtifacts("Execução não avaliada: a resposta de IA falhou ou não passou na validação. Nenhum relatório de estado foi gerado.");
     }
-  } catch (dbErr) {
-    console.warn("[squads-runtime] store_squad_runs insert aviso:", dbErr);
   }
 
+  // Do not synthesize run IDs/timestamps. The run exists only after the database confirms it.
+  const { data: runRow, error: runError } = await supabase
+    .from("store_squad_runs")
+    .insert({
+      store_squad_id: isVirtualSquad ? null : storeSquadId,
+      store_id: storeId,
+      trigger_source: source,
+      status,
+      current_agent_id: leadAgent?.agent_id || null,
+      input_payload: input,
+      output_artifacts: artifacts,
+      ...(errorLog ? { error_log: errorLog } : {}),
+    })
+    .select()
+    .maybeSingle();
+
+  if (runError || !runRow?.id || runRow.store_id !== storeId || runRow.status !== status) {
+    throw new Error(`Falha ao persistir a execução do squad${runError?.message ? `: ${runError.message}` : "."}`);
+  }
+
+  const tokens = verifiedUsage(runRow.total_tokens_consumed);
+  const cost = verifiedUsage(runRow.cost_estimate_cents);
   return {
-    id: runId,
-    store_squad_id: storeSquadId,
-    store_id: storeId,
-    trigger_source: source,
-    status: "needs_approval",
-    current_agent_id: leadAgent.agent_id,
-    input_payload: input,
-    output_artifacts: generatedArtifacts,
-    error_log: null,
-    total_tokens_consumed: tokensUsed,
-    cost_estimate_cents: costEstimateCents,
-    started_at: startedAt,
-    completed_at: completedAt,
+    id: runRow.id,
+    store_squad_id: runRow.store_squad_id ?? null,
+    store_id: runRow.store_id,
+    trigger_source: runRow.trigger_source,
+    status: runRow.status,
+    current_agent_id: runRow.current_agent_id ?? null,
+    input_payload: parseJsonField(runRow.input_payload, {}),
+    output_artifacts: parseJsonField(runRow.output_artifacts, {}),
+    error_log: runRow.error_log ?? errorLog,
+    ...(tokens !== undefined ? { total_tokens_consumed: tokens } : {}),
+    ...(cost !== undefined ? { cost_estimate_cents: cost } : {}),
+    ...(runRow.started_at ? { started_at: runRow.started_at } : {}),
+    completed_at: runRow.completed_at ?? null,
   };
 }
 
@@ -918,57 +820,38 @@ Analise e produza a entrega de trabalho para revisão humana.`;
 export async function approveSquadRun(
   storeId: string,
   runId: string
-): Promise<StoreSquadRunDTO> {
+): Promise<SquadRuntimeRunDTO> {
   const supabase = getServerClient();
   const completedAt = new Date().toISOString();
+  const { data: updated, error } = await supabase
+    .from("store_squad_runs")
+    .update({ status: "completed", completed_at: completedAt })
+    .eq("id", runId)
+    .eq("store_id", storeId)
+    .eq("status", "needs_approval")
+    .select()
+    .maybeSingle();
 
-  try {
-    const { data: updated, error } = await supabase
-      .from("store_squad_runs")
-      .update({
-        status: "completed",
-        completed_at: completedAt,
-      })
-      .eq("id", runId)
-      .eq("store_id", storeId)
-      .select()
-      .maybeSingle();
-
-    if (updated && updated.id) {
-      return {
-        id: updated.id,
-        store_squad_id: updated.store_squad_id,
-        store_id: updated.store_id,
-        trigger_source: updated.trigger_source,
-        status: updated.status,
-        current_agent_id: updated.current_agent_id,
-        input_payload: parseJsonField(updated.input_payload, {}),
-        output_artifacts: parseJsonField(updated.output_artifacts, {}),
-        error_log: updated.error_log,
-        total_tokens_consumed: updated.total_tokens_consumed,
-        cost_estimate_cents: updated.cost_estimate_cents,
-        started_at: updated.started_at,
-        completed_at: updated.completed_at,
-      };
-    }
-  } catch (dbErr) {
-    console.warn("[squads-runtime] store_squad_runs approve aviso:", dbErr);
+  if (error || !updated?.id || updated.status !== "completed") {
+    throw new Error(error?.message || "A aprovação não foi confirmada para esta loja.");
   }
 
+  const tokens = verifiedUsage(updated.total_tokens_consumed);
+  const cost = verifiedUsage(updated.cost_estimate_cents);
   return {
-    id: runId,
-    store_squad_id: "store_squad_approved",
-    store_id: storeId,
-    trigger_source: "manual",
-    status: "completed",
-    current_agent_id: null,
-    input_payload: {},
-    output_artifacts: { approved: true },
-    error_log: null,
-    total_tokens_consumed: 1500,
-    cost_estimate_cents: 0,
-    started_at: new Date(Date.now() - 60000).toISOString(),
-    completed_at: completedAt,
+    id: updated.id,
+    store_squad_id: updated.store_squad_id ?? null,
+    store_id: updated.store_id,
+    trigger_source: updated.trigger_source,
+    status: updated.status,
+    current_agent_id: updated.current_agent_id ?? null,
+    input_payload: parseJsonField(updated.input_payload, {}),
+    output_artifacts: parseJsonField(updated.output_artifacts, {}),
+    error_log: updated.error_log ?? null,
+    ...(tokens !== undefined ? { total_tokens_consumed: tokens } : {}),
+    ...(cost !== undefined ? { cost_estimate_cents: cost } : {}),
+    ...(updated.started_at ? { started_at: updated.started_at } : {}),
+    completed_at: updated.completed_at ?? null,
   };
 }
 
@@ -989,7 +872,7 @@ export const triggerSquadRunFn = createServerFn({ method: "POST" })
   .validator(
     z.object({
       storeId: z.string().uuid(),
-      squadId: z.string().uuid(),
+      squadId: z.union([z.string().uuid(), z.string().regex(/^ss_[A-Za-z0-9_-]+$/)]),
       options: z.record(z.any()).optional(),
     })
   )

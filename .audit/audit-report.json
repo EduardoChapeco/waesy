@@ -1,12 +1,12 @@
 {
-  "timestamp": "2026-10-04T18:04:40.757Z",
+  "timestamp": "2026-10-06T21:00:13.218Z",
   "system": {
-    "totalFiles": 1845,
-    "linesOfCode": 634620,
-    "sizeMB": "23.26",
-    "routes": 405,
-    "components": 718,
-    "services": 402
+    "totalFiles": 1922,
+    "linesOfCode": 650909,
+    "sizeMB": "23.57",
+    "routes": 403,
+    "components": 722,
+    "services": 441
   },
   "checksSummary": {
     "total": 43,
@@ -15,13 +15,13 @@
   },
   "checks": {
     "C01": {
-      "count": 1802,
+      "count": 1724,
       "violations": [
         "src/components/ad-engine/preview/canonical-listing-preview-frame.tsx:181",
         "src/components/ad-engine/preview/canonical-listing-preview-frame.tsx:194",
         "src/components/ad-engine/preview/canonical-listing-preview-frame.tsx:196",
-        "src/components/admin/builder/builder-add-panel-3col.tsx:217",
-        "src/components/admin/builder/builder-global-theme-panel.tsx:28"
+        "src/components/admin/builder/ColorPicker.tsx:18",
+        "src/components/admin/builder/ColorPicker.tsx:27"
       ]
     },
     "C02": {
@@ -43,7 +43,7 @@
       "violations": []
     },
     "C06": {
-      "count": 525,
+      "count": 537,
       "violations": [
         "src/components/ad-engine/editor/editor.test.ts:27",
         "src/components/ad-engine/editor/editor.test.ts:69",
@@ -53,17 +53,17 @@
       ]
     },
     "C07": {
-      "count": 396,
+      "count": 395,
       "violations": [
-        "src/components/ad-engine/public/canonical-listing-view.tsx:186",
+        "src/components/ad-engine/public/canonical-listing-view.tsx:233",
+        "src/components/admin/builder/MediaUploader.tsx:196",
         "src/components/admin/builder/builder-floating-action-bar.tsx:35",
         "src/components/admin/builder/builder-layout-switcher-modal.tsx:73",
-        "src/components/admin/builder/guided-section-picker.tsx:48",
-        "src/components/admin/builder/MediaUploader.tsx:196"
+        "src/components/admin/builder/guided-section-picker.tsx:48"
       ]
     },
     "C08": {
-      "count": 303,
+      "count": 298,
       "violations": [
         "src/components/classifieds/travel-booking-dossier-modal.tsx:123",
         "src/components/classifieds/travel-booking-dossier-modal.tsx:126",
@@ -73,7 +73,7 @@
       ]
     },
     "C09": {
-      "count": 238,
+      "count": 232,
       "violations": [
         "src/components/ad-engine/preview/canonical-listing-preview-frame.tsx:186",
         "src/components/admin/builder/animation-inspector-phase7.test.ts:21",
@@ -115,13 +115,13 @@
       "violations": []
     },
     "C18": {
-      "count": 38,
+      "count": 43,
       "violations": [
         "src/components/ad-engine/editor/unified-listing-editor.tsx:305",
         "src/components/ad-engine/editor/unified-listing-editor.tsx:331",
-        "src/components/ad-engine/public/canonical-listing-view.tsx:117",
+        "src/components/ad-engine/public/canonical-listing-view.tsx:145",
         "src/components/builder/OmniEditor.tsx:575",
-        "src/components/builder/OmniPageRenderer.tsx:33"
+        "src/components/chat/ai-chat-shell.tsx:208"
       ]
     },
     "C19": {
@@ -137,23 +137,23 @@
       "violations": []
     },
     "C22": {
-      "count": 21,
+      "count": 20,
       "violations": [
         "src/components/ad-engine/preview/canonical-listing-preview-frame.tsx:201",
-        "src/components/chat/structured-message-view.tsx:1423",
+        "src/components/chat/structured-message-view.tsx:1439",
         "src/components/commerce/dynamic-sections/product-carousel.tsx:32",
         "src/components/commerce/dynamic-sections/social-grid.tsx:22",
         "src/components/notifications/lead-push-notification-prompt.tsx:37"
       ]
     },
     "C23": {
-      "count": 5941,
+      "count": 6161,
       "violations": [
         "src/components/ad-engine/editor/listing-full-editor.tsx:229",
         "src/components/ad-engine/editor/listing-full-editor.tsx:231",
         "src/components/ad-engine/editor/listing-full-editor.tsx:240",
         "src/components/ad-engine/editor/sections/listing-fiscal-section.tsx:151",
-        "src/components/ad-engine/public/canonical-listing-view.tsx:37"
+        "src/components/ad-engine/public/canonical-listing-view.tsx:38"
       ]
     },
     "C24": {
@@ -180,7 +180,7 @@
     "C28": {
       "count": 2,
       "violations": [
-        "src/routes/api.auth.confirm.ts:5",
+        "src/routes/api.auth.confirm.ts:6",
         "src/services/personal-finance.functions.ts:583"
       ]
     },
@@ -217,7 +217,7 @@
       "violations": []
     },
     "C37": {
-      "count": 86,
+      "count": 87,
       "violations": [
         "src/components/ad-engine/editor/unified-listing-editor.tsx:85",
         "src/components/admin/admin-shell.tsx:248",
@@ -252,16 +252,16 @@
     }
   },
   "shells": {
-    "Storefront Shell (Responsive B2C)": 162,
-    "Workspace Shell (Desktop/Mobile Split)": 178,
-    "Admin Master Shell": 38,
-    "Headless API / MCP": 18,
-    "Mobile Native Shell": 9
+    "Storefront Shell (Responsive B2C)": 154,
+    "Mobile Native Shell": 10,
+    "Admin Master Shell": 37,
+    "Headless API / MCP": 22,
+    "Workspace Shell (Desktop/Mobile Split)": 180
   },
   "niches": {
-    "Núcleo Genérico (Cross-Niche)": 367,
-    "Turismo & Viagens": 29,
+    "Núcleo Genérico (Cross-Niche)": 364,
     "Eventos & Festas": 5,
-    "Gastronomia & Restaurantes": 4
+    "Gastronomia & Restaurantes": 4,
+    "Turismo & Viagens": 30
   }
 }

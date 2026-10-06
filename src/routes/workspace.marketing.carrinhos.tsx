@@ -1,5 +1,5 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
-import { ShoppingCart, Mail, Phone, Clock, RefreshCw, Send, Ghost } from "lucide-react";
+import { Mail, Phone, Clock, RefreshCw, Send } from "lucide-react";
 import { toast } from "sonner";
 import { useState } from "react";
 
@@ -14,13 +14,13 @@ import { formatMoney } from "@/lib/money";
 import { formatDateTime } from "@/lib/datetime";
 
 export const Route = createFileRoute("/workspace/marketing/carrinhos")({
- head: () => ({ meta: [{ title: "Carrinhos Abandonados | Workspace Waesy" }] }),
+ head: () => ({ meta: [{ title: "Carrinhos sem atividade | Workspace Waesy" }] }),
  loader: async () => {
    try {
  return await listAbandonedCarts();
    } catch (err) {
      console.error("[loader:workspace.marketing.carrinhos] Unhandled loader error:", err);
-     return null as any;
+     return null;
     }
  },
  component: AbandonedCartsPage,
@@ -35,9 +35,11 @@ function AbandonedCartsPage() {
  setIsScanning(true);
  try {
  const res = await scanAbandonedCarts();
- toast.success(
- `Varredura concluída (${res.newAbandons} novos)`,
- );
+ if (res.scanned === 0) {
+ toast.info("Nenhum carrinho ativo sem atualização há pelo menos 2 horas foi encontrado.");
+ } else {
+ toast.success(`Varredura concluída: ${res.newAbandons} novo(s) registro(s) pela heurística de inatividade.`);
+ }
  router.invalidate();
  } catch (e: unknown) {
  toast.error(e instanceof Error ? e.message : "Erro ao vasculhar carrinhos.");
@@ -48,18 +50,20 @@ function AbandonedCartsPage() {
 
  const handleMarkAttempt = async (id: string, phone?: string) => {
  try {
- await markRecoveryAttempt({ data: { id } });
+ const result = await markRecoveryAttempt({ data: { id } });
+ if (!result.success) throw new Error("Não foi possível confirmar o registro da tentativa.");
  toast.success("Tentativa registrada");
 
  if (phone) {
  const cleanPhone = phone.replace(/\D/g, "");
  if (cleanPhone.length >= 10) {
  const recoveryMsg = encodeURIComponent(
- "Olá! Vimos que você deixou itens no carrinho. Use o cupom especial VOLTA10 para concluir sua compra com desconto!"
+ "Olá! Gostaríamos de saber se ainda tem interesse nos itens que você consultou. Se quiser, responda a esta mensagem para conversarmos."
  );
  window.open(
  `https://wa.me/55${cleanPhone}?text=${recoveryMsg}`,
  "_blank",
+ "noopener,noreferrer",
  );
  }
  }
@@ -73,7 +77,7 @@ function AbandonedCartsPage() {
  const getStatusBadge = (status: string) => {
  switch (status) {
  case "abandoned":
- return <Badge variant="secondary">Abandonado</Badge>;
+ return <Badge variant="secondary">Possível abandono</Badge>;
  case "recovered":
  return <Badge variant="default">Recuperado</Badge>;
  default:
@@ -85,7 +89,7 @@ function AbandonedCartsPage() {
  <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
  <PageHeader
  eyebrow="Marketing"
- title="Carrinhos Abandonados"
+ title="Carrinhos possivelmente abandonados"
  actions={
  <Button onClick={handleScan} disabled={isScanning} size="sm" variant="outline" className="rounded-lg font-semibold text-xs h-9">
  <RefreshCw className={`mr-2 size-3.5 ${isScanning ? "animate-spin" : ""}`} />
@@ -94,17 +98,27 @@ function AbandonedCartsPage() {
  }
  />
 
- {carts.length === 0 ? (
- <EmptyState title="Nenhum carrinho abandonado" />
+ <div className="rounded-lg border border-border/60 bg-muted/30 p-4 text-sm text-muted-foreground" role="note">
+ Classificação heurística: carrinho ativo sem atualização há pelo menos 2 horas. Isso não confirma a ausência de pedido; confira os pedidos da loja antes de entrar em contato.
+ </div>
+
+ {carts === null ? (
+ <div className="rounded-lg border border-destructive/40 bg-destructive/5 p-5" role="alert">
+ <h2 className="font-semibold">Não foi possível carregar os carrinhos</h2>
+ <p className="mt-1 text-sm text-muted-foreground">Tente novamente. A falha não significa que não existam registros.</p>
+ <Button className="mt-3" size="sm" variant="outline" onClick={() => router.invalidate()}>Tentar novamente</Button>
+ </div>
+ ) : carts.length === 0 ? (
+ <EmptyState title="Nenhum carrinho com atividade recente para classificar" />
  ) : (
  <div className="bg-card rounded-lg border border-border/60 overflow-hidden">
  <Table>
  <TableHeader>
  <TableRow>
- <TableHead>Data do Abandono</TableHead>
+ <TableHead>Detectado em</TableHead>
  <TableHead>Cliente</TableHead>
  <TableHead>Contato</TableHead>
- <TableHead className="text-right">Valor em Risco</TableHead>
+ <TableHead className="text-right">Valor no snapshot</TableHead>
  <TableHead className="text-center">Tentativas</TableHead>
  <TableHead className="text-center">Status</TableHead>
  <TableHead className="text-right">Ação</TableHead>
@@ -113,11 +127,13 @@ function AbandonedCartsPage() {
  <TableBody>
  {carts.map((c: any) => {
  // Calcular total a partir do snapshot
- const totalCents =
- c.snapshot?.items?.reduce(
- (acc: number, item: any) => acc + item.price_cents * item.quantity,
+ const items = Array.isArray(c.snapshot?.items) ? c.snapshot.items : [];
+ const totalCents = items.length > 0
+ ? items.reduce(
+ (acc: number, item: any) => acc + Number(item.price_cents ?? item.price_snapshot_cents ?? 0) * Number(item.quantity ?? item.qty ?? 0),
  0,
- ) || 0;
+ )
+ : null;
 
  return (
  <TableRow key={c.id}>
@@ -125,6 +141,9 @@ function AbandonedCartsPage() {
  <div className="flex items-center gap-2">
  <Clock className="size-4 text-muted-foreground" />
  {formatDateTime(c.createdAt)}
+ </div>
+ <div className="mt-1 text-xs text-muted-foreground">
+ Última atividade: {c.lastActivityAt ? formatDateTime(c.lastActivityAt) : "não registrada"}
  </div>
  </TableCell>
  <TableCell className="font-medium">{c.customerName}</TableCell>
@@ -144,7 +163,7 @@ function AbandonedCartsPage() {
  </div>
  </TableCell>
  <TableCell className="text-right font-medium text-destructive">
- {formatMoney(totalCents)}
+ {totalCents === null ? "Não disponível" : formatMoney(totalCents)}
  </TableCell>
  <TableCell className="text-center font-mono">{c.recoveryAttempts}x</TableCell>
  <TableCell className="text-center">{getStatusBadge(c.status)}</TableCell>

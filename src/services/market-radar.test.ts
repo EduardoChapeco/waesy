@@ -19,18 +19,22 @@ const mockSnapshot = {
   store_id: "c6ccd3b2-aa54-42a2-b0fe-251daa5b97f7",
   source_url: "https://regionaltour.com.br",
   snapshot_type: "full_page",
-  screenshot_url: "https://images.unsplash.com/photo-1460925895917-afdab827c52f",
+  screenshot_url: "https://screens.example.test/capture.png",
   extracted_dna: {
-    brand_archetype: "O Herói",
-    color_palette: ["#0f172a", "#3b82f6"],
-    typography: "Inter, sans-serif",
-    strengths: ["Preço competitivo", "Marca forte"],
-    weaknesses: ["Atendimento demorado"],
-    differentiation_gap: "Nossa loja entrega em 1 clique",
+    brand_archetype: "",
+    color_palette: [],
+    typography: "",
+    strengths: [],
+    weaknesses: [],
+    differentiation_gap: "",
   },
-  marketing_hooks: ["Atendimento imediato no WhatsApp"],
-  pricing_signals: { tier: "mid_market", average_ticket_estimate: 85, promotional_intensity: "moderate" },
-  analyzed_by_agent_id: "agent.strategy_corporate_consultant",
+  marketing_hooks: [],
+  pricing_signals: { tier: null, average_ticket_estimate: null, promotional_intensity: null },
+  analyzed_by_agent_id: null,
+  analysis_status: "ai_generated_draft",
+  source_evidence: { source_url: "https://regionaltour.com.br", captured_text_excerpt: "Public homepage evidence" },
+  ai_provider: "test-provider",
+  ai_model: "test-model",
   captured_at: new Date().toISOString(),
 };
 
@@ -62,6 +66,7 @@ vi.mock("@/lib/supabase", () => ({
                   data: [{ ...mockCompetitor, snapshots: [mockSnapshot] }],
                   error: null,
                 }),
+                single: vi.fn().mockResolvedValue({ data: mockCompetitor, error: null }),
               })),
               single: vi.fn().mockResolvedValue({
                 data: mockCompetitor,
@@ -82,10 +87,10 @@ vi.mock("@/lib/supabase", () => ({
 
       if (table === "competitor_snapshots") {
         return {
-          insert: vi.fn(() => ({
+          insert: vi.fn((payload: any) => ({
             select: vi.fn(() => ({
               single: vi.fn().mockResolvedValue({
-                data: mockSnapshot,
+                data: { ...mockSnapshot, ...payload },
                 error: null,
               }),
             })),
@@ -126,6 +131,30 @@ vi.mock("@/lib/supabase", () => ({
   })),
 }));
 
+vi.mock("@/lib/server-access", () => ({
+  getServerIdentity: vi.fn(async () => ({ store_id: "c6ccd3b2-aa54-42a2-b0fe-251daa5b97f7", role: "owner" })),
+  assertStoreAccess: vi.fn(),
+}));
+
+vi.mock("@/services/api-orchestrator.functions", () => ({
+  getNextActiveKey: vi.fn(async () => ({ id: "test-key", rawKey: "test-key" })),
+  markKeyError: vi.fn(async () => undefined),
+  executeUnifiedAiCall: vi.fn(async () => ({
+    parsedJson: {
+      brand_archetype: "",
+      color_palette: [],
+      typography: "",
+      strengths: [],
+      weaknesses: [],
+      differentiation_gap: "",
+      marketing_hooks: [],
+      pricing_signals: { tier: null, average_ticket_estimate: null, promotional_intensity: null },
+    },
+    provider: "test-provider",
+    model: "test-model",
+  })),
+}));
+
 import { listCompetitorsLogic, createCompetitorLogic, captureAndAnalyzeCompetitorLogic, getStoreBrandDnaLogic, updateStoreBrandDnaLogic } from "./market-radar.functions";
 
 describe("Market Radar & Brand DNA Services (Big Tech Council)", () => {
@@ -160,22 +189,32 @@ describe("Market Radar & Brand DNA Services (Big Tech Council)", () => {
     expect(found?.name).toBe("Concorrente Teste Regional");
   });
 
-  it("3. Deve executar captura forense e análise dos agentes The Visionary & The Identity Engineer", async () => {
+  it("3. Persiste apenas uma análise IA rotulada como rascunho, sem scores ou defaults de mercado", async () => {
     expect(createdCompetitorId).toBeDefined();
+    vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.includes("steel.dev")) {
+        return { ok: true, json: async () => ({ url: "https://screens.example.test/capture.png" }) } as Response;
+      }
+      return { ok: true, json: async () => ({ data: { markdown: "Public homepage evidence", screenshot: "https://screens.example.test/capture.png" } }) } as Response;
+    }));
     const snapshot = await captureAndAnalyzeCompetitorLogic({
       competitorId: createdCompetitorId,
       storeId: realStoreId,
     });
+    vi.unstubAllGlobals();
 
     expect(snapshot).toBeDefined();
     expect(snapshot.competitor_id).toBe(createdCompetitorId);
     expect(snapshot.screenshot_url).toContain("http");
-    expect(snapshot.extracted_dna.brand_archetype).toBeDefined();
-    expect(snapshot.extracted_dna.color_palette.length).toBeGreaterThan(0);
-    expect(snapshot.extracted_dna.weaknesses.length).toBeGreaterThan(0);
-    expect(snapshot.marketing_hooks.length).toBeGreaterThan(0);
-    expect(snapshot.pricing_signals.tier).toBeDefined();
-    expect(snapshot.analyzed_by_agent_id).toBe("agent.strategy_corporate_consultant");
+    expect(snapshot.analysis_status).toBe("ai_generated_draft");
+    expect(snapshot.extracted_dna.color_palette).toEqual([]);
+    expect(snapshot.extracted_dna.weaknesses).toEqual([]);
+    expect(snapshot.marketing_hooks).toEqual([]);
+    expect(snapshot.pricing_signals).toEqual({ tier: null, average_ticket_estimate: null, promotional_intensity: null });
+    expect(snapshot.analyzed_by_agent_id).toBeNull();
+    expect(snapshot.source_evidence?.captured_text_excerpt).toContain("Public homepage evidence");
+    expect(snapshot.ai_model).toBe("test-model");
   });
 
   it("4. Deve obter ou inicializar o Brand DNA da loja com os 7 Pecados e SWOT", async () => {

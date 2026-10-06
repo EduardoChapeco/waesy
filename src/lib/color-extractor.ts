@@ -1,18 +1,18 @@
 /**
  * color-extractor.ts — Utilitário canônico de extração, normalização
- * e análise cromática de produtos e marcas (Waesy Platform).
+ * e análise cromática de produtos e marcas.
  */
 
 export interface ExtractedColorAnalysis {
-  palette: string[]; // Até 5 cores normalizadas em formato HEX #RRGGBB
-  dominantColor: string;
-  inferredCategory: string;
-  contrastRatioWithWhite: number;
+  palette: string[]; // Até 5 cores observadas em formato HEX #RRGGBB; vazio se não houver evidência.
+  dominantColor: string | null;
+  inferredCategory: string | null;
+  contrastRatioWithWhite: number | null;
 }
 
 /**
  * Normaliza uma lista de cores brutas para HEX de 6 dígitos válido,
- * eliminando duplicatas e valores próximos a branco puro/preto puro.
+ * eliminando duplicatas e retornando lista vazia se nenhuma cor foi observada.
  */
 export function normalizeHexPalette(rawPalette: string[] = [], maxColors = 5): string[] {
   const hexRegex = /^#?([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
@@ -25,13 +25,11 @@ export function normalizeHexPalette(rawPalette: string[] = [], maxColors = 5): s
 
     let hex = trimmed.startsWith("#") ? trimmed : `#${trimmed}`;
     if (hex.length === 4) {
-      // Expande #RGB para #RRGGBB
       hex = `#${hex[1]}${hex[1]}${hex[2]}${hex[2]}${hex[3]}${hex[3]}`.toUpperCase();
     } else {
       hex = hex.toUpperCase();
     }
 
-    // Pular quase branco e quase preto se houver outras opções
     if (seen.has(hex)) continue;
     seen.add(hex);
     normalized.push(hex);
@@ -39,13 +37,11 @@ export function normalizeHexPalette(rawPalette: string[] = [], maxColors = 5): s
     if (normalized.length >= maxColors) break;
   }
 
-  return normalized.length > 0 ? normalized : ["#0A84FF", "#5E5CE6", "#30D158"];
+  return normalized;
 }
 
-/**
- * Infere a categoria semântica do produto a partir de descrições ou nomes de arquivos.
- */
-export function inferProductCategoryFromText(text: string): string {
+/** Infere uma categoria apenas quando o texto tem um sinal conhecido. */
+export function inferProductCategoryFromText(text: string): string | null {
   const normalized = text.toLowerCase();
 
   if (/perfume|skincare|serum|cosmetic|cosmetico|maquiagem|batom|creme|hidratante|beleza/.test(normalized)) {
@@ -70,12 +66,10 @@ export function inferProductCategoryFromText(text: string): string {
     return "Serviços Jurídicos";
   }
 
-  return "Comércio Geral";
+  return null;
 }
 
-/**
- * Calcula a luminância relativa de uma cor HEX segundo o padrão WCAG.
- */
+/** Calcula luminância relativa WCAG para um HEX válido. */
 export function getRelativeLuminance(hex: string): number {
   const cleanHex = hex.replace("#", "");
   const r = parseInt(cleanHex.substring(0, 2), 16) / 255;
@@ -87,22 +81,20 @@ export function getRelativeLuminance(hex: string): number {
   return 0.2126 * toLinear(r) + 0.7152 * toLinear(g) + 0.0722 * toLinear(b);
 }
 
-/**
- * Analisa uma paleta e descrições, retornando relatório completo.
- */
+/** Analisa apenas dados fornecidos; ausências permanecem null/vazias. */
 export function analyzeColorPaletteAndContext(
   providedPalette: string[] = [],
   contextText = ""
 ): ExtractedColorAnalysis {
   const palette = normalizeHexPalette(providedPalette);
-  const dominantColor = palette[0] || "#0A84FF";
-  const lum = getRelativeLuminance(dominantColor);
-  const contrastWithWhite = (1.0 + 0.05) / (lum + 0.05);
+  const dominantColor = palette[0] ?? null;
+  const lum = dominantColor ? getRelativeLuminance(dominantColor) : null;
+  const contrastWithWhite = lum == null ? null : Number(((1.0 + 0.05) / (lum + 0.05)).toFixed(2));
 
   return {
     palette,
     dominantColor,
     inferredCategory: inferProductCategoryFromText(contextText),
-    contrastRatioWithWhite: Number(contrastWithWhite.toFixed(2)),
+    contrastRatioWithWhite: contrastWithWhite,
   };
 }

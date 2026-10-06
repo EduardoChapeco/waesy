@@ -19,11 +19,11 @@ export const Route = createFileRoute("/workspace/marketing/brand-kit")({
   }),
   loader: async () => {
     try {
-    const [store, brandKit] = await Promise.all([
-      getStoreSettings().catch(() => null),
-      getStoreBrandKit().catch(() => null),
-    ]);
-    return { store, brandKit };
+      const [store, brandKit] = await Promise.all([
+        getStoreSettings().catch(() => null),
+        getStoreBrandKit().catch(() => null),
+      ]);
+      return { store, brandKit };
     } catch (err) {
       console.error("[loader:workspace.marketing.brand-kit] Unhandled loader error:", err);
       return { store: null, brandKit: null };
@@ -70,21 +70,21 @@ interface BrandKitForm {
 }
 
 const EMPTY_FORM: BrandKitForm = {
-  color_primary: "#7C3AED",
-  color_secondary: "#06B6D4",
-  color_accent: "#F59E0B",
-  color_bg_dark: "#09090F",
-  color_bg_light: "#FFFFFF",
-  color_text_dark: "#111111",
-  color_text_light: "#F8FAFC",
-  color_success: "#10B981",
-  color_warning: "#F59E0B",
-  color_danger: "#EF4444",
+  color_primary: "",
+  color_secondary: "",
+  color_accent: "",
+  color_bg_dark: "",
+  color_bg_light: "",
+  color_text_dark: "",
+  color_text_light: "",
+  color_success: "",
+  color_warning: "",
+  color_danger: "",
   custom_colors: [],
-  font_heading: "Inter",
-  font_body: "Inter",
-  font_mono: "JetBrains Mono",
-  font_display: "Playfair Display",
+  font_heading: "",
+  font_body: "",
+  font_mono: "",
+  font_display: "",
   logo_url: "",
   logo_dark_url: "",
   logo_icon_url: "",
@@ -206,7 +206,7 @@ function ColorSwatch({
         />
         <input
           type="color"
-          value={value}
+          value={/^#[0-9a-fA-F]{6}$/.test(value) ? value : "#000000"}
           onChange={(e) => onChange(e.target.value)}
           className="absolute inset-0 opacity-0 cursor-pointer w-full h-full rounded-lg"
         />
@@ -220,6 +220,7 @@ function ColorSwatch({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         className="h-8 w-28 text-xs font-mono text-right border-border/40 bg-transparent"
+        placeholder="Não informado"
         maxLength={7}
       />
     </div>
@@ -252,6 +253,13 @@ function SectionCard({
 export function BrandKitPage() {
   const { brandKit: initialBrandKit, store } = ((Route.useLoaderData?.() as any) || {});
   const [form, setForm] = useState<BrandKitForm>(EMPTY_FORM);
+  const [brandEvidence, setBrandEvidence] = useState<{
+    analysis_status?: string;
+    source_url?: string | null;
+    ai_provider?: string | null;
+    ai_model?: string | null;
+    edited_by_human?: boolean;
+  } | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [activeTab, setActiveTab] = useState<"cores" | "tipografia" | "logos" | "estetica" | "preview">("cores");
@@ -264,6 +272,10 @@ export function BrandKitPage() {
     }
   }, [initialBrandKit, store]);
 
+  useEffect(() => {
+    setBrandEvidence(initialBrandKit?.analysis_status ? initialBrandKit : null);
+  }, [initialBrandKit]);
+
   const update = (patch: Partial<BrandKitForm>) => setForm((f) => ({ ...f, ...patch }));
 
   const handleSave = async () => {
@@ -271,9 +283,10 @@ export function BrandKitPage() {
     try {
       const payload = formToPayload(form);
       await saveStoreBrandKit({ data: payload });
+      setBrandEvidence((previous) => ({ ...(previous || {}), analysis_status: "human_edited", edited_by_human: true }));
       setLastSaved(new Date());
       toast.success("Brand Kit salvo com sucesso!", {
-        description: "DNA visual consolidado e sincronizado.",
+        description: "Campos visuais salvos. Isso não representa validação de mercado ou de desempenho.",
       });
     } catch (err: any) {
       toast.error(err?.message || "Erro ao salvar o Brand Kit.");
@@ -290,7 +303,7 @@ export function BrandKitPage() {
     if (!extractUrl.trim()) return;
     setIsExtracting(true);
     toast.info("Analisando identidade visual do site...", {
-      description: "Extraindo cores dominantes, tipografia e arquétipo.",
+      description: "Capturando sinais disponíveis; inferências de IA serão marcadas como rascunho.",
     });
     try {
       const extracted = await extractBrandDnaFromUrl({
@@ -300,6 +313,13 @@ export function BrandKitPage() {
         },
       });
       if (extracted) {
+        setBrandEvidence({
+          analysis_status: extracted.analysis_status,
+          source_url: extracted.source_url || extractUrl.trim(),
+          ai_provider: extracted.ai_provider,
+          ai_model: extracted.ai_model,
+          edited_by_human: extracted.edited_by_human,
+        });
         update({
           color_primary: extracted.colors.primary || form.color_primary,
           color_secondary: extracted.colors.secondary || form.color_secondary,
@@ -314,6 +334,8 @@ export function BrandKitPage() {
           description: `Arquétipo inferido: ${extracted.archetype}`,
         });
         setShowExtractInput(false);
+      } else {
+        throw new Error("A extração não retornou um Brand Kit; nenhum valor foi aplicado.");
       }
     } catch (err: any) {
       toast.error(err?.message || "Falha ao extrair identidade da URL.");
@@ -330,6 +352,12 @@ export function BrandKitPage() {
     try {
       const result = await generateBrandKitWithAI({ data: {} });
       if (result?.colors) {
+        setBrandEvidence({
+          analysis_status: "ai_generated_draft",
+          ai_provider: typeof result.provider === "string" ? result.provider : null,
+          ai_model: typeof result.model === "string" ? result.model : null,
+          edited_by_human: false,
+        });
         update({
           color_primary: result.colors.primary || form.color_primary,
           color_secondary: result.colors.secondary || form.color_secondary,
@@ -341,11 +369,11 @@ export function BrandKitPage() {
           font_display: result.fonts?.accent || form.font_display,
         });
         toast.success("DNA Visual gerado com sucesso!", {
-          description: "Revise a paleta e salve quando estiver satisfeito.",
+          description: "Rascunho de IA: revise e salve; não é evidência de mercado.",
         });
       }
     } catch (err: any) {
-      toast.error("Falha na geração AI. Verifique as chaves de API no Vault.");
+      toast.error(err?.message || "Falha ao gerar o Brand Kit com IA.");
     } finally {
       setIsGenerating(false);
     }
@@ -439,6 +467,36 @@ export function BrandKitPage() {
               <h1 className="text-xl font-semibold tracking-tight mt-1 text-foreground">
                 Brand Kit
               </h1>
+              {brandEvidence?.analysis_status === "ai_generated_draft" && (
+                <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
+                  <Badge variant="outline" className="border-amber-500/40 text-amber-700 dark:text-amber-300">
+                    Rascunho de IA · não validado por resultados reais
+                  </Badge>
+                  {(brandEvidence.ai_provider || brandEvidence.ai_model) && (
+                    <span className="text-muted-foreground">
+                      IA: {[brandEvidence.ai_provider, brandEvidence.ai_model].filter(Boolean).join(" / ")}
+                    </span>
+                  )}
+                  {brandEvidence.source_url && (
+                    <a href={brandEvidence.source_url} target="_blank" rel="noreferrer" className="text-primary underline underline-offset-2">
+                      Fonte analisada
+                    </a>
+                  )}
+                </div>
+              )}
+              {brandEvidence?.analysis_status === "legacy_unverified" && (
+                <p className="mt-2 text-xs text-amber-700 dark:text-amber-300">
+                  Perfil legado sem proveniência verificável. Revise antes de tratar como dado observado.
+                </p>
+              )}
+              {brandEvidence?.analysis_status === "human_edited" && (
+                <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
+                  <Badge variant="outline" className="border-emerald-500/40 text-emerald-700 dark:text-emerald-300">
+                    Editado e salvo por pessoa
+                  </Badge>
+                  <span className="text-muted-foreground">Edição humana não equivale a validação de mercado.</span>
+                </div>
+              )}
             </div>
             <div className="flex items-center gap-2">
               <Button

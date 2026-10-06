@@ -1,126 +1,126 @@
 {
-  "timestamp": "2026-10-04T18:04:40.588Z",
+  "timestamp": "2026-10-06T21:00:13.189Z",
   "metrics": {
-    "totalSourceFiles": 1845,
-    "componentsCount": 718,
+    "totalSourceFiles": 1922,
+    "componentsCount": 722,
     "hooksCount": 22,
-    "routesCount": 406,
-    "servicesCount": 402,
-    "totalLinesOfCode": 634620,
-    "totalSizeBytes": 24384982
+    "routesCount": 416,
+    "servicesCount": 441,
+    "totalLinesOfCode": 650909,
+    "totalSizeBytes": 24710275
   },
   "top20LargestFiles": [
     {
       "path": "src/routes/_store.conta.classificados.novo.tsx",
-      "sizeBytes": 490385,
-      "lineCount": 9561
+      "sizeBytes": 490151,
+      "lineCount": 9569
     },
     {
       "path": "src/routeTree.gen.ts",
-      "sizeBytes": 363417,
-      "lineCount": 8591
+      "sizeBytes": 374278,
+      "lineCount": 8818
     },
     {
       "path": "src/components/classifieds/editorial-showcase-view.tsx",
-      "sizeBytes": 179952,
+      "sizeBytes": 176790,
       "lineCount": 3154
     },
     {
       "path": "src/services/mining.functions.ts",
-      "sizeBytes": 147175,
+      "sizeBytes": 147180,
       "lineCount": 4104
     },
     {
       "path": "src/components/commerce/canonical-store-profile-view.tsx",
-      "sizeBytes": 145616,
-      "lineCount": 2985
+      "sizeBytes": 145925,
+      "lineCount": 2989
     },
     {
       "path": "src/routes/_store.membro.$id.tsx",
-      "sizeBytes": 131654,
-      "lineCount": 3790
+      "sizeBytes": 129515,
+      "lineCount": 3728
     },
     {
       "path": "src/routes/_store.checkout.tsx",
-      "sizeBytes": 122649,
+      "sizeBytes": 123809,
       "lineCount": 3011
     },
     {
       "path": "src/components/profile/professional-resume-editor.tsx",
-      "sizeBytes": 110228,
+      "sizeBytes": 107191,
       "lineCount": 3041
     },
     {
+      "path": "src/services/classifieds.functions.ts",
+      "sizeBytes": 106061,
+      "lineCount": 3001
+    },
+    {
       "path": "src/components/mining/mining-dashboard.tsx",
-      "sizeBytes": 103954,
-      "lineCount": 2267
+      "sizeBytes": 101709,
+      "lineCount": 2268
     },
     {
       "path": "src/routes/workspace.turismo.viagens.$id.tsx",
-      "sizeBytes": 103496,
+      "sizeBytes": 101420,
       "lineCount": 2077
     },
     {
-      "path": "src/services/classifieds.functions.ts",
-      "sizeBytes": 102604,
-      "lineCount": 2746
-    },
-    {
-      "path": "src/lib/routes.ts",
-      "sizeBytes": 99195,
-      "lineCount": 3506
-    },
-    {
       "path": "src/routes/workspace.comercial.tsx",
-      "sizeBytes": 98270,
+      "sizeBytes": 96258,
       "lineCount": 2013
     },
     {
+      "path": "src/lib/routes.ts",
+      "sizeBytes": 95685,
+      "lineCount": 3506
+    },
+    {
       "path": "src/routes/admin-master.mining.tsx",
-      "sizeBytes": 96423,
-      "lineCount": 2049
+      "sizeBytes": 95387,
+      "lineCount": 2060
     },
     {
       "path": "src/routes/_store.afiliados.tsx",
-      "sizeBytes": 93112,
+      "sizeBytes": 91386,
       "lineCount": 1835
     },
     {
+      "path": "src/services/travel-lifecycle.functions.ts",
+      "sizeBytes": 89839,
+      "lineCount": 2358
+    },
+    {
       "path": "src/components/classifieds/convenience-showcase-view.tsx",
-      "sizeBytes": 91317,
-      "lineCount": 1930
+      "sizeBytes": 89551,
+      "lineCount": 1935
     },
     {
       "path": "src/routes/workspace.financeiro.recebiveis.tsx",
-      "sizeBytes": 90977,
+      "sizeBytes": 89008,
       "lineCount": 1970
     },
     {
-      "path": "src/services/travel-lifecycle.functions.ts",
-      "sizeBytes": 90800,
-      "lineCount": 2327
+      "path": "src/services/ai-conversations.functions.ts",
+      "sizeBytes": 82517,
+      "lineCount": 2111
     },
     {
-      "path": "src/services/social.functions.ts",
-      "sizeBytes": 83906,
-      "lineCount": 2558
-    },
-    {
-      "path": "src/services/builder.functions.ts",
-      "sizeBytes": 83481,
-      "lineCount": 3103
+      "path": "src/registries/mcp-tool-registry.ts",
+      "sizeBytes": 82198,
+      "lineCount": 2196
     }
   ],
   "checksSummary": {
-    "C01": 1802,
+    "C01": 1724,
     "C02": 1,
     "C03": 0,
     "C04": 0,
     "C05": 0,
-    "C06": 525,
-    "C07": 396,
-    "C08": 303,
-    "C09": 238,
+    "C06": 537,
+    "C07": 395,
+    "C08": 298,
+    "C09": 232,
     "C10": 0,
     "C11": 0,
     "C12": 0,
@@ -129,12 +129,12 @@
     "C15": 0,
     "C16": 0,
     "C17": 0,
-    "C18": 38,
+    "C18": 43,
     "C19": 0,
     "C20": 0,
     "C21": 0,
-    "C22": 21,
-    "C23": 5941,
+    "C22": 20,
+    "C23": 6161,
     "C24": 0,
     "C25": 0,
     "C26": 8,
@@ -148,7 +148,7 @@
     "C34": 0,
     "C35": 0,
     "C36": 0,
-    "C37": 86,
+    "C37": 87,
     "C38": 0,
     "C39": 0,
     "C40": 0,

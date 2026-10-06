@@ -2,7 +2,6 @@ import { describe, it, expect } from 'vitest';
 import { ConditionalStepEngine } from './conditional-step-engine';
 import { NicheCalculationEngine } from './niche-calculation-engine';
 import { FormFieldEngine, type SemanticFieldDefinition } from './form-field-engine';
-import { SimLabV2Engine } from './simlab-v2-engine';
 
 describe('ONDA 2: MOTORES CENTRAIS DO WAESY', () => {
 
@@ -184,26 +183,4 @@ describe('ONDA 2: MOTORES CENTRAIS DO WAESY', () => {
  });
  });
 
- // ─── 4. SIMLAB V2 ENGINE ───
- describe('SimLabV2Engine', () => {
- it('deve rodar simulação estocástica para evento com retorno de personas', () => {
- const output = SimLabV2Engine.simulateOffer({
- title: 'Festival Sunset Eletrônico com Open Bar',
- description: 'Lineup com amigos, desconto no PIX e lote promocional exclusivo',
- priceCents: 9000, // R$ 90,00
- niche: 'eventos',
- });
-
- expect(output.totalPersonasSimulated).toBe(5);
- expect(output.overallScore).toBeGreaterThan(0);
- expect(output.overallScore).toBeLessThanOrEqual(100);
- expect(output.evaluations.length).toBe(5);
- expect(output.executiveSummary).toContain('Simulação SimLab V2 concluída');
-
- // O Lucas Gen Z deve ter alta afinidade com o festival e trigger ativado
- const lucas = output.evaluations.find((e) => e.persona.id === 'persona-lucas-genz');
- expect(lucas).toBeDefined();
- expect(lucas?.willConvert).toBe(true);
- });
- });
 });

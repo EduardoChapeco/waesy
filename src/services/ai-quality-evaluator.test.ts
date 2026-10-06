@@ -1,4 +1,33 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
+
+// Fixtures sintéticas somente para exercitar o harness em CI; não são evidência de produção nem respostas exibidas a usuários.
+vi.mock("./api-orchestrator.functions", () => ({
+  executeUnifiedAiCall: vi.fn(async ({ feature, prompt }: { feature: string; prompt: string }) => {
+    let parsedJson: Record<string, unknown>;
+    if (feature === "rh_screen_resume") {
+      const skills = prompt.match(/Competências requeridas: (.*)/)?.[1].split(", ").filter(Boolean) ?? [];
+      const resume = prompt.split("Currículo (única fonte factual):\n")[1] ?? "";
+      const skillEvidence = skills.flatMap((skill) => {
+        const start = resume.toLocaleLowerCase().indexOf(skill.toLocaleLowerCase());
+        return start < 0 ? [] : [{ skill, evidence: resume.slice(start, start + skill.length) }];
+      });
+      parsedJson = { candidateName: null, skillEvidence };
+    } else if (feature === "rh_job_description") {
+      const title = prompt.match(/Cargo: (.*?) \(/)?.[1] ?? "Cargo informado";
+      parsedJson = { title, summary: `Rascunho para ${title}`, responsibilities: [], requirements: [], benefits: [] };
+    } else if (feature === "rh_interview_guide") {
+      const jobTitle = prompt.match(/Cargo: ([^\n]+)/)?.[1] ?? "Cargo informado";
+      parsedJson = {
+        jobTitle,
+        questions: [{ category: "experiência", question: "Descreva uma situação profissional relevante.", expectedIndicators: [] }],
+      };
+    } else {
+      throw new Error(`Fixture de teste ausente para feature ${feature}`);
+    }
+    return { content: JSON.stringify(parsedJson), parsedJson };
+  }),
+}));
+
 import { runFullQualityEvaluation } from "./ai-quality-evaluator.engine";
 
 describe("AI Quality & Regression Framework (PROMPT 12 / Plano #16)", () => {

@@ -1,9 +1,9 @@
 import { z } from 'zod';
-import { generateSyntheticCohort, BRAZILIAN_CITIES, CANONICAL_BRAZIL_ARCHETYPES } from '@/lib/simlab/brazil-demographics';
-import { decomposeOffer, evaluateMcFaddenDiscreteChoice } from '@/lib/simlab/econometric-engine';
+import { CANONICAL_BRAZIL_ARCHETYPES } from '@/lib/simlab/brazil-demographics';
 import { getNextActiveKey, markKeyError, executeUnifiedAiCall } from '@/services/api-orchestrator.functions';
 import { createServerFn } from '@tanstack/react-start';
 import { getServerClient } from '@/lib/supabase';
+import { assertStoreAccess, getServerIdentity } from '@/lib/server-access';
 import { logSystemError } from '@/lib/logger';
 import type { 
   SyntheticArchetype,
@@ -12,62 +12,121 @@ import type {
   SimLabStatisticalSynthesis,
   FocusGroupSession,
   FocusGroupMessage,
-  VerdictStatus,
-  System1Emotion,
-  PricePerception
+  VerdictStatus
 } from '@/types/simlab';
 
 export { CANONICAL_BRAZIL_ARCHETYPES };
 
-// ─── 1. LISTAR ARQUÉTIPOS DEMOGRÁFICOS SINTÉTICOS ─────────────────────────────
-export async function fetchSyntheticArchetypes(data?: { socialClasses?: string[]; regions?: string[] }): Promise<SyntheticArchetype[]> {
-  const canonicalMap = new Map(CANONICAL_BRAZIL_ARCHETYPES.map(a => [a.code, a]));
+function regionForState(state: string): SyntheticArchetype["region"] {
+  const normalized = state.toUpperCase();
+  if (["SP", "RJ", "MG", "ES"].includes(normalized)) return "Sudeste";
+  if (["PR", "SC", "RS"].includes(normalized)) return "Sul";
+  if (["DF", "GO", "MT", "MS"].includes(normalized)) return "Centro-Oeste";
+  if (["AL", "BA", "CE", "MA", "PB", "PE", "PI", "RN", "SE"].includes(normalized)) return "Nordeste";
+  return "Norte";
+}
+
+export async function fetchSyntheticArchetypes(data?: {
+  socialClasses?: string[];
+  regions?: string[];
+  storeId?: string;
+}): Promise<SyntheticArchetype[]> {
+  if (data?.storeId) {
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "store_owner", "proprietario", "admin", "manager", "gerente", "content"], data.storeId);
+  }
+  const canonicalMap = new Map(CANONICAL_BRAZIL_ARCHETYPES.map((persona) => [persona.code, persona]));
+  const serverClient = getServerClient();
 
   try {
-    const serverClient = getServerClient();
-    let query = serverClient
-      .from('synthetic_population_archetypes')
-      .select('*')
-      .eq('is_active', true)
-      .order('median_income_brl', { ascending: false });
+    let globalQuery = serverClient
+      .from("synthetic_population_archetypes")
+      .select("*")
+      .eq("is_active", true)
+      .order("median_income_brl", { ascending: false, nullsFirst: false });
+    if (data?.socialClasses?.length) globalQuery = globalQuery.in("abep_social_class", data.socialClasses);
+    if (data?.regions?.length) globalQuery = globalQuery.in("region", data.regions);
 
-    if (data?.socialClasses && data.socialClasses.length > 0) {
-      query = query.in('abep_social_class', data.socialClasses);
-    }
-    if (data?.regions && data.regions.length > 0) {
-      query = query.in('region', data.regions);
-    }
-
-    const { data: rows, error } = await query;
+    const { data: rows, error } = await globalQuery;
     if (error) throw error;
-    if (rows && rows.length > 0) {
-      return rows.map((r: any) => {
-        const canonical = canonicalMap.get(r.code);
-        return {
-          ...r,
-          curriculum: canonical?.curriculum || r.curriculum,
-          financial_sheet: canonical?.financial_sheet || r.financial_sheet,
-          household_profile: canonical?.household_profile || r.household_profile,
-        } as SyntheticArchetype;
-      });
+    let globalProfiles: SyntheticArchetype[] = (rows || []).map((row: any) => {
+      const canonical = canonicalMap.get(row.code);
+      return {
+        ...row,
+        profile_origin: "persisted_synthetic_profile",
+        source_profile_type: row.profile_source || "legacy_unknown",
+        // No row-level calibration dataset/model/version is stored; legacy status claims are not auditable.
+        calibration_status: "not_calibrated",
+        curriculum: canonical?.curriculum || row.curriculum,
+        financial_sheet: canonical?.financial_sheet || row.financial_sheet,
+        household_profile: canonical?.household_profile || row.household_profile,
+      } as SyntheticArchetype;
+    });
+
+    if (globalProfiles.length === 0) {
+      let fallback = [...CANONICAL_BRAZIL_ARCHETYPES];
+      if (data?.socialClasses?.length) fallback = fallback.filter((persona) => data.socialClasses!.includes(persona.abep_social_class));
+      if (data?.regions?.length) fallback = fallback.filter((persona) => data.regions!.includes(persona.region));
+      globalProfiles = fallback.map((persona) => ({
+        ...persona,
+        profile_origin: "seed_catalog_profile",
+        source_profile_type: "code_seed_catalog",
+        calibration_status: "not_calibrated",
+      }));
     }
 
-    // Padrão canônico de calibração demográfica IBGE 2022 / ABEP caso o banco esteja sem registros
-    let fallback = [...CANONICAL_BRAZIL_ARCHETYPES];
-    if (data?.socialClasses && data.socialClasses.length > 0) {
-      fallback = fallback.filter(a => data.socialClasses!.includes(a.abep_social_class));
+    let workspaceProfiles: SyntheticArchetype[] = [];
+    if (data?.storeId) {
+      const { data: customRows, error: customError } = await serverClient
+        .from("simlab_workspace_persona_profiles")
+        .select("*")
+        .eq("store_id", data.storeId)
+        .eq("is_active", true)
+        .order("created_at", { ascending: false });
+      if (customError) throw customError;
+      workspaceProfiles = (customRows || []).map((row: any) => ({
+        id: row.id,
+        code: row.code,
+        display_name: row.display_name,
+        gender: row.gender,
+        age: row.age,
+        age_range_label: `${row.age} anos`,
+        abep_social_class: row.abep_class,
+        region: regionForState(row.state),
+        location_type: "interior_medio",
+        median_income_brl: row.median_income_brl == null ? null : Number(row.median_income_brl),
+        education_level: "Não informado",
+        cynicism_index: 5,
+        price_sensitivity: 5,
+        impulsivity_index: 5,
+        primary_social_networks: [],
+        decision_heuristics: {
+          city: row.city,
+          state: row.state,
+          occupation: row.occupation,
+          profile_text: row.psychography?.profile_text || null,
+          habits: row.psychography?.habits || [],
+        },
+        bio: row.psychography?.profile_text || null,
+        profile_origin: "user_defined_synthetic_profile",
+        source_profile_type: row.profile_source,
+        calibration_status: row.calibration_status,
+        is_active: row.is_active,
+        created_at: row.created_at,
+      } as SyntheticArchetype)).filter((persona) =>
+        (!data?.socialClasses?.length || data.socialClasses.includes(persona.abep_social_class)) &&
+        (!data?.regions?.length || data.regions.includes(persona.region)),
+      );
     }
-    if (data?.regions && data.regions.length > 0) {
-      fallback = fallback.filter(a => data.regions!.includes(a.region));
-    }
-    return fallback;
+
+    return [...workspaceProfiles, ...globalProfiles];
   } catch (err: any) {
     logSystemError({
-      route: 'simlab.fetchSyntheticArchetypes',
+      route: "simlab.fetchSyntheticArchetypes",
       error: err,
-      schemaName: 'public',
-      tableName: 'synthetic_population_archetypes',
-      contractName: 'listSyntheticArchetypes',
+      schemaName: "public",
+      tableName: "synthetic_population_archetypes",
+      contractName: "listSyntheticArchetypes",
     });
     throw new Error(`Falha ao carregar arquétipos do SimLab: ${err.message}`);
   }
@@ -76,12 +135,34 @@ export async function fetchSyntheticArchetypes(data?: { socialClasses?: string[]
 export const ListSyntheticArchetypesSchema = z.object({
   socialClasses: z.array(z.string()).optional(),
   regions: z.array(z.string()).optional(),
+  storeId: z.string().uuid().optional(),
 }).optional();
 
 export const listSyntheticArchetypes = createServerFn({ method: 'GET' })
   .validator(ListSyntheticArchetypesSchema)
   .handler(async ({ data }): Promise<SyntheticArchetype[]> => {
-    return fetchSyntheticArchetypes(data);
+    const identity = await getServerIdentity();
+    const privateProfileRoles = ["owner", "store_owner", "proprietario", "admin", "manager", "gerente", "content"] as const;
+    let authorizedStoreId: string | undefined;
+
+    if (data?.storeId) {
+      // Explicit tenant IDs are never trusted merely because the caller knows a UUID.
+      assertStoreAccess(identity, [...privateProfileRoles], data.storeId);
+      authorizedStoreId = data.storeId;
+    } else if (identity.id && identity.store_id) {
+      // A role without membership is not enough: assertStoreAccess checks the active membership.
+      try {
+        assertStoreAccess(identity, [...privateProfileRoles], identity.store_id);
+        authorizedStoreId = identity.store_id;
+      } catch {
+        // The public synthetic catalog remains available, but private workspace personas do not.
+      }
+    }
+
+    return fetchSyntheticArchetypes({
+      ...data,
+      ...(authorizedStoreId ? { storeId: authorizedStoreId } : { storeId: undefined }),
+    });
   });
 
 // ─── 2. CRIAR NOVO EXPERIMENTO NO SIMLAB ─────────────────────────────────────
@@ -93,6 +174,8 @@ export async function executeCreateSimLabExperiment(data: {
   targetAudienceFilters?: Record<string, any>;
   sampleSize?: number;
 }): Promise<{ success: boolean; experiment: SimLabExperiment }> {
+  const identity = await getServerIdentity();
+  assertStoreAccess(identity, ['owner', 'admin', 'manager', 'content'], data.storeId);
   const serverClient = getServerClient();
   const { data: row, error } = await serverClient
     .from('simlab_market_experiments')
@@ -102,7 +185,8 @@ export async function executeCreateSimLabExperiment(data: {
       objective: data.objective,
       stimulus_payload: data.stimulusPayload,
       target_audience_filters: data.targetAudienceFilters || {},
-      sample_size: data.sampleSize || 12,
+      sample_size: Math.min(data.sampleSize || 12, 50),
+      created_by: identity.id,
       status: 'queued',
     })
     .select('*')
@@ -116,12 +200,12 @@ export async function executeCreateSimLabExperiment(data: {
 }
 
 export const CreateSimLabExperimentSchema = z.object({
-  storeId: z.string(),
+  storeId: z.string().uuid(),
   title: z.string().min(2),
   objective: z.string().min(2),
   stimulusPayload: z.record(z.any()),
   targetAudienceFilters: z.record(z.any()).optional(),
-  sampleSize: z.number().int().positive().optional(),
+  sampleSize: z.number().int().positive().max(50).optional(),
 });
 
 export const createSimLabExperiment = createServerFn({ method: 'POST' })
@@ -130,307 +214,302 @@ export const createSimLabExperiment = createServerFn({ method: 'POST' })
     return executeCreateSimLabExperiment(data);
   });
 
-// ─── 3. SIMULAÇÃO EM LOTES (BATCH EVALUATION ENGINE) & ECONOMETRIA ────────────
+// ─── 3. EXPLORAÇÃO QUALITATIVA COM PERSONAS SINTÉTICAS ─────────────────────────
 
-/**
- * Avalia um lote de personas sintéticas usando chamada estruturada à IA Real (Gemini / Groq / OpenAI)
- * via chaves ativas do Key Orchestrator da plataforma Waesy.
- */
+const QualitativeReactionSchema = z.object({
+  reactions: z.array(z.object({
+    persona_id: z.string().min(1),
+    reaction: z.string().trim().min(10).max(1800),
+    factors_for: z.array(z.string().trim().min(2).max(240)).max(5),
+    factors_against: z.array(z.string().trim().min(2).max(240)).max(5),
+    unknowns: z.array(z.string().trim().min(2).max(240)).max(5),
+  })).min(1),
+});
+
+function seededRandom(seedText: string): () => number {
+  let state = 2166136261;
+  for (let i = 0; i < seedText.length; i += 1) {
+    state ^= seedText.charCodeAt(i);
+    state = Math.imul(state, 16777619);
+  }
+  return () => {
+    state += 0x6d2b79f5;
+    let value = state;
+    value = Math.imul(value ^ (value >>> 15), value | 1);
+    value ^= value + Math.imul(value ^ (value >>> 7), value | 61);
+    return ((value ^ (value >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function selectCuratedProfiles<T>(items: T[], count: number, seed: string): T[] {
+  const random = seededRandom(seed);
+  const shuffled = [...items];
+  for (let i = shuffled.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled.slice(0, Math.min(count, shuffled.length));
+}
+
 async function evaluateBatchWithRealAI(
   personas: SyntheticArchetype[],
-  stimulus: { title?: string; description?: string; test_price_brl?: number; niche?: string }
-): Promise<SimLabPersonaResponse[] | null> {
-  const systemInstruction = `Você é o SimLab V2, simulador de populações sintéticas brasileiras calibrado pelo Censo IBGE 2022 e Critério ABEP.
-Sua missão é simular realisticamente a reação de cada persona consumidora a uma oferta de mercado.
-Para cada persona, gere:
-- interest_score (1 a 10)
-- purchase_intent_pct (0 a 100)
-- system1_emotion ('desejo' | 'inseguranca' | 'entusiasmo' | 'desconfianca' | 'indiferenca')
-- price_perception ('barato' | 'justo' | 'caro_mas_vale' | 'inacessivel')
-- objection (barreira real ou dúvida objetiva)
-- quote (depoimento visceral em 1ª pessoa no linguajar brasileiro real, citando seu nome)
-Retorne APENAS um JSON no formato:
-{
-  "evaluations": [
-    {
-      "persona_id": "string",
-      "interest_score": 8,
-      "purchase_intent_pct": 75,
-      "system1_emotion": "desejo",
-      "price_perception": "justo",
-      "objection": "...",
-      "quote": "..."
-    }
-  ]
-}`;
+  stimulus: { title?: string; description?: string; test_price_brl?: number; niche?: string },
+  experimentId: string,
+  storeId: string,
+): Promise<{ responses: SimLabPersonaResponse[]; provider: string; model: string }> {
+  const systemPrompt = `Gere respostas qualitativas hipotéticas de personagens explicitamente SINTÉTICOS para explorar uma hipótese comercial. Eles não são pessoas entrevistadas, não são clientes reais e não representam uma amostra probabilística da população.
+Use somente as características e a oferta recebidas. Não invente estatísticas, intenção percentual, probabilidade de compra, NPS, conversão, elasticidade, opinião de consumidores reais ou validação científica. Se uma informação necessária não estiver nos dados, registre-a como desconhecida. Evite alegar que os dados vieram do IBGE/POF se essa proveniência não estiver explicitamente fornecida.
+Retorne exclusivamente JSON válido no formato {"reactions":[{"persona_id":"...","reaction":"...","factors_for":["..."],"factors_against":["..."],"unknowns":["..."]}]}. Gere uma resposta para cada id informado; não acrescente pessoas.`;
 
-  const userPrompt = `Oferta sob teste:
-- Título: ${stimulus.title || "Oferta sem título"}
-- Descrição: ${stimulus.description || "Descrição padrão"}
-- Preço Testado: R$ ${(stimulus.test_price_brl || 0).toFixed(2)}
-- Nicho: ${stimulus.niche || "geral"}
+  const userPrompt = JSON.stringify({
+    task: "Exploração qualitativa sintética; não prever vendas.",
+    experiment_id: experimentId,
+    offer: {
+      title: stimulus.title || null,
+      description: stimulus.description || null,
+      price_brl: Number.isFinite(stimulus.test_price_brl) ? stimulus.test_price_brl : null,
+      niche: stimulus.niche || null,
+    },
+    synthetic_profiles: personas.map((persona) => ({
+      id: persona.id,
+      profile_code: persona.code,
+      fictional_name: persona.display_name,
+      age: persona.age,
+      social_class: persona.abep_social_class,
+      region: persona.region,
+      income_brl: persona.median_income_brl != null && Number.isFinite(persona.median_income_brl) ? persona.median_income_brl : null,
+      occupation: persona.curriculum?.profession_title || (persona.decision_heuristics as any)?.occupation || null,
+      profile_origin: persona.profile_origin || "legacy_unknown",
+      profile_source_type: persona.source_profile_type || "legacy_unknown",
+      calibration_status: persona.calibration_status || "unknown",
+      characteristics: persona.decision_heuristics,
+      psychography: persona.bio || null,
+    })),
+  });
 
-Personas a avaliar:
-${JSON.stringify(personas.map(p => ({
-  id: p.id,
-  name: p.display_name,
-  age: p.age,
-  class: p.abep_social_class,
-  city: (p.decision_heuristics as any)?.city || p.region,
-  monthly_income: p.median_income_brl,
-  cynicism: p.cynicism_index,
-  price_sensitivity: p.price_sensitivity
-})))}
-`;
-
-  try {
-    const aiRes = await executeUnifiedAiCall({
-      systemInstruction,
-      prompt: userPrompt,
-      temperature: 0.3,
-      expectJson: true,
-      preferProvider: "groq",
-    });
-
-    const rawJson: any = aiRes.parsedJson;
-
-    if (rawJson?.evaluations && Array.isArray(rawJson.evaluations)) {
-      const evaluationsMap = new Map(rawJson.evaluations.map((e: any) => [e.persona_id, e]));
-      return personas.map(arch => {
-        const aiEval = evaluationsMap.get(arch.id) as any;
-        return {
-          id: 'resp-' + arch.id + '-' + Date.now(),
-          experiment_id: (stimulus as any)?.experiment_id || 'exp-batch',
-          archetype_id: arch.id,
-          archetype: arch,
-          interest_score: Number(aiEval?.interest_score || 7),
-          purchase_intent_percent: Number(aiEval?.purchase_intent_pct || 60),
-          system_1_emotion: (aiEval?.system1_emotion || 'desejo') as System1Emotion,
-          price_perception: (aiEval?.price_perception || 'justo') as PricePerception,
-          primary_barrier_objection: aiEval?.objection || 'Nenhuma barreira grave detectada.',
-          verbatim_reaction: aiEval?.quote || `${arch.display_name.split(' ')[0]}: "A proposta parece boa pelo preço ofertado."`,
-          simulated_at: new Date().toISOString(),
-        };
-      });
-    }
-  } catch (err: any) {
-    console.warn('[simlab] Falha na chamada da IA Real, utilizando modelo econométrico calibrado:', err.message);
+  const aiResult = await executeUnifiedAiCall({
+    systemPrompt,
+    userPrompt,
+    responseFormat: "json_object",
+    temperature: 0.55,
+    maxTokens: 5000,
+    feature: "simlab_qualitative_exploration",
+    storeId,
+  });
+  const parsed = aiResult.parsedJson || (aiResult.content ? JSON.parse(aiResult.content) : null);
+  const validated = QualitativeReactionSchema.parse(parsed);
+  const byId = new Map(validated.reactions.map((reaction) => [reaction.persona_id, reaction]));
+  if (byId.size !== personas.length || personas.some((persona) => !byId.has(persona.id))) {
+    throw new Error("A IA não retornou exatamente uma resposta válida para cada perfil selecionado; nenhuma resposta substituta foi criada.");
   }
 
-  return null;
+  const generatedAt = new Date().toISOString();
+  const responses = personas.map((persona): SimLabPersonaResponse => {
+    const reaction = byId.get(persona.id)!;
+    return {
+      id: `synthetic-${experimentId}-${persona.id}`,
+      experiment_id: experimentId,
+      archetype_id: persona.profile_origin === "persisted_synthetic_profile" ? persona.id : null,
+      archetype_code: persona.code,
+      archetype: persona,
+      interest_score: null,
+      purchase_intent_percent: null,
+      choice_probability_percent: null,
+      primary_hook_detected: reaction.factors_for[0] || null,
+      primary_barrier_objection: reaction.factors_against.join("; ") || null,
+      verbatim_reaction: reaction.reaction,
+      system_1_emotion: null,
+      price_perception: null,
+      response_origin: "llm_synthetic",
+      is_synthetic: true,
+      provenance: {
+        record_kind: "llm_generated_synthetic_qualitative_response",
+        provider: aiResult.provider,
+        model: aiResult.model,
+        persona_profile_origin: persona.profile_origin || "legacy_unknown",
+        calibration_status: persona.calibration_status || "unknown",
+        factors_for: reaction.factors_for,
+        factors_against: reaction.factors_against,
+        unknowns: reaction.unknowns,
+      },
+      simulated_at: generatedAt,
+    };
+  });
+  return { responses, provider: aiResult.provider, model: aiResult.model };
+}
+
+function uniqueQualitativeThemes(values: Array<string | null | undefined>, limit = 3): string[] {
+  const seen = new Set<string>();
+  const output: string[] = [];
+  for (const value of values) {
+    const normalized = value?.trim();
+    const key = normalized?.toLocaleLowerCase("pt-BR");
+    if (normalized && key && !seen.has(key)) {
+      seen.add(key);
+      output.push(normalized);
+      if (output.length === limit) break;
+    }
+  }
+  return output;
 }
 
 export async function executeSimLabBatchSimulation(data: {
   experimentId: string;
   storeId: string;
 }): Promise<{ success: boolean; responsesCount: number; synthesis: SimLabStatisticalSynthesis; responses: SimLabPersonaResponse[] }> {
-  // 1. Carregar arquétipos
-  const archetypes = await fetchSyntheticArchetypes();
-  
-  // Obter dados do experimento se existir
-  let testPrice = 85.0;
-  let expRow: any = null;
+  const identity = await getServerIdentity();
+  assertStoreAccess(identity, ["owner", "admin", "manager", "content"], data.storeId);
+  const serverClient = getServerClient();
+  const { data: expRow, error: experimentError } = await serverClient
+    .from("simlab_market_experiments")
+    .select("*")
+    .eq("id", data.experimentId)
+    .eq("store_id", data.storeId)
+    .maybeSingle();
+  if (experimentError) throw new Error(`Falha ao carregar experimento: ${experimentError.message}`);
+  if (!expRow) throw new Error("O experimento não existe neste workspace.");
+  if (expRow.status === "completed") {
+    throw new Error("Este experimento já foi executado. Crie uma nova execução para preservar o histórico.");
+  }
+
+  const { error: statusError } = await serverClient
+    .from("simlab_market_experiments")
+    .update({ status: "simulating" })
+    .eq("id", data.experimentId)
+    .eq("store_id", data.storeId);
+  if (statusError) throw new Error(`Falha ao iniciar experimento: ${statusError.message}`);
+
   try {
-    const supabase = getServerClient();
-    const res = await supabase
-      .from('simlab_market_experiments')
-      .select('*')
-      .eq('id', data.experimentId)
-      .maybeSingle();
-    expRow = res.data;
-
-    if (expRow?.stimulus_payload?.test_price_brl) {
-      testPrice = Number(expRow.stimulus_payload.test_price_brl);
+    const filters = expRow.target_audience_filters || {};
+    const availableProfiles = await fetchSyntheticArchetypes({
+      socialClasses: filters.social_classes || filters.socialClasses,
+      regions: filters.regions,
+      storeId: data.storeId,
+    });
+    if (availableProfiles.length === 0) {
+      throw new Error("Nenhum perfil sintético corresponde aos filtros selecionados.");
     }
-  } catch (e: any) {
-    console.warn('[simlab] Leitura de experimento:', e.message);
-  }
-
-  const responses: SimLabPersonaResponse[] = [];
-  const stimulus = expRow?.stimulus_payload || { test_price_brl: testPrice };
-
-  // ── 1. Tenta Avaliação Cognitiva via IA Real (Gemini / Groq / OpenAI) ──────
-  const realAiResponses = await evaluateBatchWithRealAI(archetypes, {
-    title: expRow?.title || 'Oferta Comercial',
-    description: expRow?.objective || '',
-    test_price_brl: testPrice,
-    niche: stimulus?.niche || 'geral',
-  });
-
-  if (realAiResponses && realAiResponses.length > 0) {
-    responses.push(...realAiResponses);
-  } else {
-    // ── 2. Motor Econométrico Calibrado pelo Censo IBGE 2022 & McFadden RUM
-    const rawPrompt = `${expRow?.title || 'Oferta'} ${expRow?.objective || ''} por R$ ${testPrice.toFixed(2)}`;
-    const offer = decomposeOffer(rawPrompt, testPrice);
-
-    for (const arch of archetypes) {
-      const econEval = evaluateMcFaddenDiscreteChoice(arch, offer);
-
-      responses.push({
-        id: 'resp-' + arch.id + '-' + Date.now(),
-        experiment_id: data.experimentId,
-        archetype_id: arch.id,
-        archetype: arch,
-        interest_score: Math.max(1, Math.min(10, Math.round(econEval.perceived_value_score))),
-        purchase_intent_percent: econEval.choice_probability_percent,
-        primary_hook_detected: offer.detected_hooks[0] || 'Relação de custo-benefício e utilidade percebida',
-        primary_barrier_objection: econEval.primary_objection,
-        verbatim_reaction: econEval.natural_speech_verbatim,
-        system_1_emotion: econEval.system_1_emotion,
-        price_perception: econEval.price_perception,
-        simulated_at: new Date().toISOString(),
-      });
-    }
-  }
-
-  // 2. Cálculos Econométricos e Síntese Estatística (Aaru Engine)
-  const total = responses.length;
-  const promoters = responses.filter(r => r.purchase_intent_percent >= 75).length;
-  const detractors = responses.filter(r => r.purchase_intent_percent <= 40).length;
-  const syntheticNps = Math.round(((promoters - detractors) / total) * 100);
-
-  const approvedCount = responses.filter(r => r.interest_score >= 6).length;
-  const approvalRate = Math.round((approvedCount / total) * 100);
-  const rejectionRate = 100 - approvalRate;
-
-  // Intervalo de Confiança de 95% para taxa de conversão esperada
-  const p = approvalRate / 100;
-  const z95 = 1.96;
-  const stdError = Math.sqrt((p * (1 - p)) / total);
-  const margin = z95 * stdError;
-  const convMin = Math.max(1.5, Math.round((p * 0.08 - margin * 0.05) * 1000) / 10);
-  const convMax = Math.min(18.0, Math.round((p * 0.08 + margin * 0.05) * 1000) / 10);
-
-  // 3. Pareceres do Conselho Acadêmico de Confrontação (Anti-Hallucination)
-  const reviewerReports = [
-    {
-      reviewer_name: 'Prof. Dr. Arnaldo',
-      role: 'Econometrista Chefe & Modelador Estatístico',
-      credibility_score: 96,
-      critique: `Amostra estratificada de ${total} personas com intervalo de confiança de 95% e margem de erro calculada em 4.8%. Coeficiente de elasticidade de preço em 1.45. Distribuição alinhada à pirâmide de renda per capita do Censo IBGE 2022.`,
-      detected_biases: ['Sem viés de homogeneidade', 'Aderência à renda real comprovada'],
-      status: 'passed' as const,
-    },
-    {
-      reviewer_name: 'Profa. Dra. Beatriz',
-      role: 'Psicóloga Social & Comportamento do Consumidor',
-      credibility_score: 94,
-      critique: 'Viés de cortesia da IA auditado e neutralizado. Personas de Classe C e D apresentaram ceticismo proporcional à renda e expressaram abertamente restrições de liquidez mensal.',
-      detected_biases: ['Ausência de otimismo artificial', 'Gatilhos de aversão à perda ativos'],
-      status: 'passed' as const,
-    },
-    {
-      reviewer_name: 'Dr. Cláudio',
-      role: 'Auditor de Viabilidade de Mercado & Risco',
-      credibility_score: 92,
-      critique: 'Excelente atratividade nas classes A e B. Para maximizar volume nas classes C1 e C2 (que respondem por 50% do consumo), é recomendável parcelamento no Pix ou combo familiar.',
-      detected_biases: [],
-      status: 'passed' as const,
-    }
-  ];
-
-  let verdict: VerdictStatus = 'aprovado_para_veiculacao';
-  if (approvalRate < 50) verdict = 'bloqueado_por_alto_risco';
-  else if (approvalRate < 75) verdict = 'revisar_com_ajustes';
-
-  const synthesis: SimLabStatisticalSynthesis = {
-    id: 'synth-' + data.experimentId,
-    experiment_id: data.experimentId,
-    synthetic_nps: syntheticNps,
-    overall_approval_rate: approvalRate,
-    rejection_rate: rejectionRate,
-    estimated_conversion_range: [convMin, convMax],
-    price_elasticity_score: 1.45,
-    top_3_buying_triggers: [
-      'Confiabilidade e transparência no valor final',
-      'Custo-benefício perceptível frente aos concorrentes',
-      'Facilidade de pagamento instantâneo via Pix ou parcelamento'
-    ],
-    top_3_friction_barriers: [
-      'Medo de frete surpresa na etapa de checkout',
-      'Falta de opção de combo familiar para diluir custo individual',
-      'Insegurança com prazos de entrega em períodos de alta demanda'
-    ],
-    scientific_verdict: verdict,
-    reviewer_reports: reviewerReports,
-    recommended_actions: [
+    const requestedCount = Number(expRow.sample_size) || availableProfiles.length;
+    const selectedProfiles = selectCuratedProfiles(availableProfiles, Math.min(requestedCount, 50), data.experimentId);
+    const stimulus = expRow.stimulus_payload || {};
+    const generated = await evaluateBatchWithRealAI(
+      selectedProfiles,
       {
-        title: 'Implementar Combo Promocional ou Parcelamento sem Juros',
-        description: 'Ajuste prioritário para converter a Classe C1 e C2 com menor fricção orçamentária.',
-        priority: 'alta'
+        title: stimulus.title || expRow.title || undefined,
+        description: stimulus.description || expRow.objective || undefined,
+        test_price_brl: Number.isFinite(Number(stimulus.test_price_brl)) && stimulus.test_price_brl != null
+          ? Number(stimulus.test_price_brl)
+          : undefined,
+        niche: stimulus.niche || undefined,
       },
-      {
-        title: 'Destacar Selo de Garantia e Prova Social nos Primeiros 3 Segundos',
-        description: 'Mitiga o cinismo publicitário de 7.2/10 detectado nas personas adultas.',
-        priority: 'media'
-      }
-    ],
-    synthesized_at: new Date().toISOString(),
-  };
+      data.experimentId,
+      data.storeId,
+    );
+    const responses = generated.responses;
+    const synthesis: SimLabStatisticalSynthesis = {
+      id: `synth-${data.experimentId}`,
+      experiment_id: data.experimentId,
+      synthetic_nps: null,
+      overall_approval_rate: null,
+      rejection_rate: null,
+      estimated_conversion_range: null,
+      price_elasticity_score: null,
+      top_3_buying_triggers: uniqueQualitativeThemes(responses.flatMap((response) => response.provenance?.factors_for as string[] || [])),
+      top_3_friction_barriers: uniqueQualitativeThemes(responses.flatMap((response) => response.provenance?.factors_against as string[] || [])),
+      scientific_verdict: "not_validated",
+      reviewer_reports: [],
+      recommended_actions: [],
+      evidence_level: "exploratory_synthetic",
+      methodology: "Respostas qualitativas hipotéticas geradas por LLM sobre perfis sintéticos curados; não é pesquisa observada nem modelo de conversão.",
+      calibration_status: "not_calibrated",
+      provenance: {
+        record_kind: "synthetic_qualitative_exploration",
+        provider: generated.provider,
+        model: generated.model,
+        profile_selection: "seeded_random_from_curated_catalog_not_population_sample",
+        profile_catalog_size: availableProfiles.length,
+        selected_profile_count: selectedProfiles.length,
+        profiles_are_real_people: false,
+        probabilities_or_sales_forecast_generated: false,
+        generated_at: new Date().toISOString(),
+      },
+      limitations: [
+        "Personas são perfis sintéticos curados; não correspondem a pessoas entrevistadas nem constituem amostra representativa da população.",
+        "As respostas são geradas por LLM e podem refletir vieses do modelo, do prompt e dos perfis fornecidos.",
+        "NPS, taxa de aprovação, conversão, elasticidade e veredito de veiculação não são estimados nesta exploração.",
+        "Use teste randomizado com resultados de clientes/contas reais e validação holdout para previsões quantitativas.",
+      ],
+      synthesized_at: new Date().toISOString(),
+    };
 
-  // 4. Persistência 100% Real no Supabase PostgreSQL
-  try {
-    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(data.experimentId);
-    if (isUuid) {
-      const serverClient = getServerClient();
-      const toInsertResponses = responses.map(r => ({
+    const responseRows = responses.map((response) => ({
+      experiment_id: data.experimentId,
+      archetype_id: response.archetype_id,
+      archetype_code: response.archetype_code,
+      archetype_snapshot: response.archetype,
+      interest_score: null,
+      purchase_intent_percent: null,
+      choice_probability_percent: null,
+      primary_hook_detected: response.primary_hook_detected,
+      primary_barrier_objection: response.primary_barrier_objection,
+      verbatim_reaction: response.verbatim_reaction,
+      system_1_emotion: null,
+      price_perception: null,
+      provenance: response.provenance,
+    }));
+    const { error: responsesError } = await serverClient
+      .from("simlab_persona_responses")
+      .insert(responseRows);
+    if (responsesError) throw new Error(`Falha ao persistir as respostas sintéticas: ${responsesError.message}`);
+
+    const { error: synthesisError } = await serverClient
+      .from("simlab_statistical_synthesis")
+      .upsert({
         experiment_id: data.experimentId,
-        archetype_id: r.archetype_id,
-        interest_score: r.interest_score,
-        purchase_intent_percent: r.purchase_intent_percent,
-        primary_hook_detected: r.primary_hook_detected,
-        primary_barrier_objection: r.primary_barrier_objection,
-        verbatim_reaction: r.verbatim_reaction,
-        system_1_emotion: r.system_1_emotion,
-        price_perception: r.price_perception,
-      }));
+        synthetic_nps: null,
+        overall_approval_rate: null,
+        rejection_rate: null,
+        estimated_conversion_range: null,
+        price_elasticity_score: null,
+        top_3_buying_triggers: synthesis.top_3_buying_triggers,
+        top_3_friction_barriers: synthesis.top_3_friction_barriers,
+        scientific_verdict: "not_validated",
+        reviewer_reports: [],
+        recommended_actions: [],
+        evidence_level: synthesis.evidence_level,
+        methodology: synthesis.methodology,
+        calibration_status: synthesis.calibration_status,
+        provenance: synthesis.provenance,
+        limitations: synthesis.limitations,
+      }, { onConflict: "experiment_id" });
+    if (synthesisError) throw new Error(`Falha ao persistir a proveniência da síntese: ${synthesisError.message}`);
 
-      await serverClient
-        .from('simlab_persona_responses')
-        .insert(toInsertResponses);
+    const { error: completeError } = await serverClient
+      .from("simlab_market_experiments")
+      .update({ status: "completed", completed_at: new Date().toISOString() })
+      .eq("id", data.experimentId)
+      .eq("store_id", data.storeId);
+    if (completeError) throw new Error(`Falha ao finalizar o experimento: ${completeError.message}`);
 
-      await serverClient
-        .from('simlab_statistical_synthesis')
-        .upsert({
-          experiment_id: data.experimentId,
-          synthetic_nps: synthesis.synthetic_nps,
-          overall_approval_rate: synthesis.overall_approval_rate,
-          estimated_conversion_range: synthesis.estimated_conversion_range,
-          price_elasticity_score: synthesis.price_elasticity_score,
-          top_3_buying_triggers: synthesis.top_3_buying_triggers,
-          top_3_friction_barriers: synthesis.top_3_friction_barriers,
-          scientific_verdict: synthesis.scientific_verdict,
-          recommended_actions: synthesis.recommended_actions,
-        });
-
-      await serverClient
-        .from('simlab_market_experiments')
-        .update({ status: 'completed', completed_at: new Date().toISOString() })
-        .eq('id', data.experimentId);
-    }
-  } catch (e: any) {
-    console.warn('[simlab] persistence warning:', e.message);
+    return { success: true, responsesCount: responses.length, synthesis, responses };
+  } catch (error) {
+    await serverClient
+      .from("simlab_market_experiments")
+      .update({ status: "failed" })
+      .eq("id", data.experimentId)
+      .eq("store_id", data.storeId);
+    throw error;
   }
-
-  return {
-    success: true,
-    responsesCount: responses.length,
-    synthesis,
-    responses,
-  };
 }
 
 export const RunSimLabBatchSimulationSchema = z.object({
-  experimentId: z.string().min(1),
-  storeId: z.string().min(1),
+  experimentId: z.string().uuid(),
+  storeId: z.string().uuid(),
 });
 
-export const runSimLabBatchSimulation = createServerFn({ method: 'POST' })
+export const runSimLabBatchSimulation = createServerFn({ method: "POST" })
   .validator(RunSimLabBatchSimulationSchema)
-  .handler(async ({ data }) => {
-    return executeSimLabBatchSimulation(data);
-  });
+  .handler(async ({ data }) => executeSimLabBatchSimulation(data));
 
 // ─── 4. FOCUS GROUP VIRTUAL EM TEMPO REAL ────────────────────────────────────
 export async function executeCreateFocusGroupSession(data: {
@@ -440,6 +519,8 @@ export async function executeCreateFocusGroupSession(data: {
   moderatorGoal?: string;
 }): Promise<{ success: boolean; session: FocusGroupSession }> {
   try {
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ['owner', 'admin', 'manager', 'content'], data.storeId);
     const supabase = getServerClient();
     const { data: row, error } = await supabase
       .from('simlab_focus_group_sessions')
@@ -468,9 +549,9 @@ export async function executeCreateFocusGroupSession(data: {
 }
 
 export const CreateFocusGroupSessionSchema = z.object({
-  storeId: z.string().min(1),
+  storeId: z.string().uuid(),
   sessionTitle: z.string().min(2),
-  personaIds: z.array(z.string()),
+  personaIds: z.array(z.string().uuid()).max(50),
   moderatorGoal: z.string().optional(),
 });
 
@@ -485,6 +566,8 @@ export async function executeGetOrCreateActiveFocusSession(data: {
   personaIds?: string[];
 }): Promise<{ session: FocusGroupSession }> {
   try {
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ['owner', 'admin', 'manager', 'content'], data.storeId);
     const supabase = getServerClient();
     const { data: existing, error } = await supabase
       .from('simlab_focus_group_sessions')
@@ -523,8 +606,8 @@ export async function executeGetOrCreateActiveFocusSession(data: {
 }
 
 export const GetOrCreateActiveFocusSessionSchema = z.object({
-  storeId: z.string().min(1),
-  personaIds: z.array(z.string()).optional(),
+  storeId: z.string().uuid(),
+  personaIds: z.array(z.string().uuid()).max(50).optional(),
 });
 
 export const getOrCreateActiveFocusSession = createServerFn({ method: 'POST' })
@@ -535,19 +618,23 @@ export const getOrCreateActiveFocusSession = createServerFn({ method: 'POST' })
 
 export async function executeListFocusGroupMessages(data: { sessionId: string }): Promise<FocusGroupMessage[]> {
   try {
-    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(data.sessionId);
-    if (isUuid) {
-      const supabase = getServerClient();
-      const { data: rows, error } = await supabase
-        .from('simlab_focus_group_messages')
-        .select('*')
-        .eq('session_id', data.sessionId)
-        .order('created_at', { ascending: true });
-
-      if (error) throw error;
-      if (rows && rows.length > 0) return rows as FocusGroupMessage[];
-    }
-    return [];
+    const identity = await getServerIdentity();
+    const supabase = getServerClient();
+    const { data: session, error: sessionError } = await supabase
+      .from('simlab_focus_group_sessions')
+      .select('id, store_id')
+      .eq('id', data.sessionId)
+      .maybeSingle();
+    if (sessionError) throw sessionError;
+    if (!session) throw new Error('Sessão de Focus Group não encontrada.');
+    assertStoreAccess(identity, ['owner', 'admin', 'manager', 'content'], session.store_id);
+    const { data: rows, error } = await supabase
+      .from('simlab_focus_group_messages')
+      .select('*')
+      .eq('session_id', data.sessionId)
+      .order('created_at', { ascending: true });
+    if (error) throw error;
+    return (rows || []) as FocusGroupMessage[];
   } catch (err: any) {
     logSystemError({
       route: 'simlab.executeListFocusGroupMessages',
@@ -571,170 +658,129 @@ export async function executeSendFocusGroupMessage(data: {
   userMessage: string;
   selectedPersonas: SyntheticArchetype[];
 }): Promise<{ success: boolean; newMessages: FocusGroupMessage[] }> {
+  const identity = await getServerIdentity();
   const supabase = getServerClient();
-  const newMessages: FocusGroupMessage[] = [];
+  const { data: session, error: sessionError } = await supabase
+    .from("simlab_focus_group_sessions")
+    .select("id, store_id, selected_persona_ids")
+    .eq("id", data.sessionId)
+    .maybeSingle();
+  if (sessionError) throw new Error(`Falha ao verificar a sessão: ${sessionError.message}`);
+  if (!session) throw new Error("A sessão de Focus Group não existe.");
+  assertStoreAccess(identity, ["owner", "admin", "manager", "content"], session.store_id);
 
-  // 1. Mensagem do Moderador (Lojista/Pesquisador)
-  const modMsg: FocusGroupMessage = {
-    id: "msg-mod-" + Date.now(),
+  const requestedIds = new Set((data.selectedPersonas || []).map((persona) => String(persona.id)));
+  const availableProfiles = await fetchSyntheticArchetypes({ storeId: session.store_id });
+  const personas = availableProfiles.filter((persona) => requestedIds.has(persona.id));
+  if (personas.length === 0 || personas.length !== requestedIds.size) throw new Error("A seleção inclui perfis inexistentes ou indisponíveis neste workspace.");
+
+  const ReplySchema = z.object({
+    replies: z.array(z.object({
+      persona_id: z.string().min(1),
+      reply: z.string().trim().min(10).max(1800),
+      concerns: z.array(z.string().trim().min(2).max(240)).max(5),
+      unknowns: z.array(z.string().trim().min(2).max(240)).max(5),
+    })).min(1),
+  });
+  const systemPrompt = `Você gera contribuições hipotéticas para um focus group SINTÉTICO. Os perfis são personagens inventados/compostos, não pessoas reais nem respondentes entrevistados. Não alegue que currículos, renda, comportamento ou respostas vieram de IBGE, POF, pesquisas ou clientes reais, salvo se a proveniência específica estiver nos dados. Responda em linguagem natural, mas identifique incertezas e limites. Não produza nota, intenção percentual, probabilidade, estimativa de conversão ou conclusão estatística. Retorne JSON válido: {"replies":[{"persona_id":"...","reply":"...","concerns":["..."],"unknowns":["..."]}]}. Produza uma resposta para cada id informado e não invente outras personas.`;
+  const userPrompt = JSON.stringify({
+    moderator_question: data.userMessage,
+    synthetic_profiles: personas.map((persona) => ({
+      id: persona.id,
+      profile_code: persona.code,
+      fictional_name: persona.display_name,
+      age: persona.age,
+      social_class: persona.abep_social_class,
+      region: persona.region,
+      income_brl: persona.median_income_brl != null && Number.isFinite(persona.median_income_brl) ? persona.median_income_brl : null,
+      occupation: persona.curriculum?.profession_title || (persona.decision_heuristics as any)?.occupation || null,
+      family_profile: persona.household_profile || null,
+      known_profile_origin: persona.profile_origin || "legacy_unknown",
+      profile_source_type: persona.source_profile_type || "legacy_unknown",
+      calibration_status: persona.calibration_status || "unknown",
+      characteristics: persona.decision_heuristics,
+    })),
+  });
+
+  const aiResult = await executeUnifiedAiCall({
+    systemPrompt,
+    userPrompt,
+    responseFormat: "json_object",
+    temperature: 0.55,
+    maxTokens: 4000,
+    feature: "simlab_synthetic_focus_group",
+    storeId: session.store_id,
+  });
+  const parsed = aiResult.parsedJson || (aiResult.content ? JSON.parse(aiResult.content) : null);
+  const validated = ReplySchema.parse(parsed);
+  const repliesById = new Map(validated.replies.map((reply) => [reply.persona_id, reply]));
+  if (repliesById.size !== personas.length || personas.some((persona) => !repliesById.has(persona.id))) {
+    throw new Error("A IA não retornou uma resposta válida para cada perfil selecionado; nenhuma fala substituta foi inventada.");
+  }
+
+  const generatedAt = new Date().toISOString();
+  const moderatorMessage: FocusGroupMessage = {
+    id: `mod-${data.sessionId}-${Date.now()}`,
     session_id: data.sessionId,
     sender_type: "moderator_user",
-    sender_id: "moderator",
-    sender_name: "Moderador de Hipóteses (Lojista)",
+    sender_id: identity.id!,
+    sender_name: identity.name || "Pesquisador do workspace",
     sender_avatar_url: null,
     content: data.userMessage,
     sentiment_score: null,
-    created_at: new Date().toISOString(),
+    created_at: generatedAt,
   };
-  newMessages.push(modMsg);
-
-  // 2. Decomposição Semântica e Matemática da Oferta
-  const offer = decomposeOffer(data.userMessage);
-
-  // Garantir que cada persona selecionada contenha seu dossiê completo de currículo e finanças
-  const canonicalMap = new Map(CANONICAL_BRAZIL_ARCHETYPES.map((a) => [a.code, a]));
-  const fullPersonas = data.selectedPersonas.map((p) => {
-    const can = canonicalMap.get(p.code);
+  const personaMessages: FocusGroupMessage[] = personas.map((persona) => {
+    const reply = repliesById.get(persona.id)!;
     return {
-      ...p,
-      curriculum: p.curriculum || can?.curriculum,
-      financial_sheet: p.financial_sheet || can?.financial_sheet,
-      household_profile: p.household_profile || can?.household_profile,
-    } as SyntheticArchetype;
-  });
-
-  // 3. Tentar Geração Cognitiva com IA Real (OpenRouter / Groq / Gemini / OpenAI) com Dossiê Curricular
-  let aiReplies: Record<string, { reply: string; score: number }> = {};
-  try {
-    const systemInstruction = `Você é o SimLab V2, simulador de grupos focais e populações sintéticas brasileiras calibrado pelo Censo IBGE 2022, Pesquisa de Orçamentos Familiares (POF) e Critério Brasil (ABEP).
-Sua missão é simular a reação visceral, hiper-realista, autêntica e em 1ª pessoa de cada persona consumidora brasileira diante da pergunta ou oferta do moderador.
-
-DIRETRIZES ECONÔMICAS E COGNITIVAS MANDATÓRIAS:
-1. CADA PERSONA DEVE RACIOCINAR COM BASE NO SEU CURRÍCULO REAL, SUA PROFISSÃO, SUA FAMÍLIA E SEU BALANÇO FINANCEIRO.
-2. A OFERTA FOI ANALISADA PELO MOTOR ECONOMÉTRICO:
-   - Preço Unitário: R$ ${offer.unit_price_brl.toFixed(2)} (${offer.is_per_person ? "por pessoa" : "preço total"})
-   - Parcelamento: ${offer.installments_count}x de R$ ${offer.installment_value_brl.toFixed(2)} ${offer.interest_free ? "sem juros no cartão" : ""}
-   - Inclusões: ${offer.inclusions.length > 0 ? offer.inclusions.join(" + ") : "Não informadas"}
-   - Destino/Produto: ${offer.destination || offer.product_name}
-3. NUNCA confunda o preço unitário do produto com a renda mensal total da persona! Uma compra de R$ 290 para quem ganha R$ 4.800 representa menos de 7% da renda e apenas R$ 29/mês no cartão.
-4. Para mães ou pais de família em viagens a parques/lazer, calcule o total necessário para levar seus dependentes (ex: Carla Silveira tem 2 filhos, precisará de 3 lugares).
-5. Personas de alta renda (Classe A) não ligam para parcelamento de R$ 29, mas exigem conforto VIP, ônibus leito e ausência de filas.
-6. Personas com renda apertada (Classe C e D) avaliam estritamente se a parcela cabe na folga de lazer do mês e exigem clareza sobre alimentação e taxas extras.
-7. Retorne EXCLUSIVAMENTE um JSON com o formato:
-{
-  "replies": [
-    {
-      "persona_id": "string",
-      "reply": "Fala da persona em 1ª pessoa, visceral, citando sua família/profissão e os valores reais da oferta (preço, parcelas de R$ X)",
-      "score": 0.85
-    }
-  ]
-}`;
-
-    const userPrompt = `Pergunta/Hipótese do Moderador: "${data.userMessage}"
-
-Personas participantes do Focus Group (com Dossiê Curricular e Financeiro):
-${JSON.stringify(
-  fullPersonas.map((p) => ({
-    id: p.id,
-    name: p.display_name,
-    age: p.age,
-    class: p.abep_social_class,
-    city: (p.decision_heuristics as any)?.city || p.region,
-    profession: p.curriculum?.profession_title || "Profissional autônomo",
-    education: p.curriculum?.education_degree || p.education_level,
-    household: p.household_profile ? `${p.household_profile.family_structure} (${p.household_profile.total_members} membros, ${p.household_profile.dependents_count} dependentes)` : "unipessoal",
-    gross_monthly_income_brl: p.financial_sheet?.gross_monthly_income_brl || p.median_income_brl,
-    net_monthly_income_brl: p.financial_sheet?.net_monthly_income_brl,
-    essential_fixed_expenses_brl: p.financial_sheet?.essential_fixed_expenses_brl,
-    discretionary_surplus_brl: p.financial_sheet?.discretionary_surplus_brl,
-    leisure_budget_monthly_brl: p.financial_sheet?.leisure_budget_monthly_brl,
-    credit_limit_available_brl: p.financial_sheet?.credit_limit_available_brl,
-    cynicism_index: p.cynicism_index,
-    price_sensitivity: p.price_sensitivity,
-    preferred_payment: p.financial_sheet?.preferred_payment_method || (p.decision_heuristics as any)?.preferred_payment
-  }))
-)}`;
-
-    const aiResult = await executeUnifiedAiCall({
-      systemPrompt: systemInstruction,
-      userPrompt,
-      responseFormat: "json_object",
-      temperature: 0.35,
-    });
-
-    const parsed = aiResult.parsedJson || (aiResult.content ? JSON.parse(aiResult.content) : {});
-    if (Array.isArray(parsed.replies)) {
-      for (const r of parsed.replies) {
-        if (r.persona_id) {
-          aiReplies[r.persona_id] = { reply: r.reply, score: Number(r.score) || 0.7 };
-        }
-      }
-    }
-  } catch (err: any) {
-    console.warn("[simlab] LLM Focus group offline, executando Motor Econométrico McFadden:", err?.message);
-  }
-
-  // 4. Montar respostas individuais de cada persona:
-  // Se a IA gerou resposta contextualizada, utilizamos.
-  // Caso contrário, executamos o Modelo de Escolha Discreta de McFadden (RUM) — ZERO strings estáticas!
-  for (const p of fullPersonas) {
-    let reply = "";
-    let score = 0.7;
-
-    if (aiReplies[p.id]) {
-      reply = aiReplies[p.id].reply;
-      score = aiReplies[p.id].score;
-    } else {
-      const econEval = evaluateMcFaddenDiscreteChoice(p, offer);
-      reply = econEval.natural_speech_verbatim;
-      score = econEval.choice_probability_percent / 100;
-    }
-
-    const pMsg: FocusGroupMessage = {
-      id: "msg-p-" + p.id + "-" + Date.now(),
+      id: `synthetic-${data.sessionId}-${persona.id}-${Date.now()}`,
       session_id: data.sessionId,
       sender_type: "synthetic_persona",
-      sender_id: p.id,
-      sender_name: `${p.display_name} — Classe ${p.abep_social_class}`,
-      sender_avatar_url: p.avatar_url || null,
-      content: reply,
-      sentiment_score: Math.round(score * 100) / 100,
-      created_at: new Date().toISOString(),
-    };
-    newMessages.push(pMsg);
-  }
+      sender_id: persona.id,
+      sender_name: `${persona.display_name} — perfil sintético ${persona.abep_social_class}`,
+      sender_avatar_url: persona.avatar_url || null,
+      content: reply.reply,
+      sentiment_score: null,
+      provenance: {
+        record_kind: "llm_generated_synthetic_qualitative_response",
+        response_origin: "llm_synthetic",
+        is_synthetic: true,
+        provider: aiResult.provider,
+        model: aiResult.model,
+        persona_code: persona.code,
+        profile_origin: persona.profile_origin || "legacy_unknown",
+        profile_source_type: persona.source_profile_type || "legacy_unknown",
+        calibration_status: persona.calibration_status || "unknown",
+        concerns: reply.concerns,
+        unknowns: reply.unknowns,
+      },
+      created_at: generatedAt,
+    } as FocusGroupMessage;
+  });
+  const newMessages = [moderatorMessage, ...personaMessages];
+  const rows = newMessages.map((message) => ({
+    session_id: data.sessionId,
+    sender_type: message.sender_type,
+    sender_id: message.sender_id,
+    sender_name: message.sender_name,
+    sender_avatar_url: message.sender_avatar_url,
+    content: message.content,
+    sentiment_score: null,
+    provenance: message.sender_type === "moderator_user"
+      ? { record_kind: "human_authored_moderator_question" }
+      : message.provenance,
+  }));
 
-  // 5. Persistência de memória episódica no Supabase
-  try {
-    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(data.sessionId);
-    if (isUuid) {
-      const toInsert = newMessages.map((m) => ({
-        session_id: data.sessionId,
-        sender_type: m.sender_type,
-        sender_id: m.sender_id,
-        sender_name: m.sender_name,
-        sender_avatar_url: m.sender_avatar_url,
-        content: m.content,
-        sentiment_score: m.sentiment_score,
-      }));
+  const { error: insertError } = await supabase.from("simlab_focus_group_messages").insert(rows);
+  if (insertError) throw new Error(`Falha ao salvar as respostas do Focus Group: ${insertError.message}`);
+  const { error: updateError } = await supabase
+    .from("simlab_focus_group_sessions")
+    .update({ updated_at: generatedAt, selected_persona_ids: personas.map((persona) => persona.id) })
+    .eq("id", data.sessionId)
+    .eq("store_id", session.store_id);
+  if (updateError) throw new Error(`Falha ao atualizar a sessão: ${updateError.message}`);
 
-      await supabase.from("simlab_focus_group_messages").insert(toInsert);
-
-      // Atualizar timestamp da sessão de foco
-      await supabase
-        .from("simlab_focus_group_sessions")
-        .update({ updated_at: new Date().toISOString() })
-        .eq("id", data.sessionId);
-    }
-  } catch (e: any) {
-    console.warn("[simlab] Focus group message persistence warning:", e.message);
-  }
-
-  return {
-    success: true,
-    newMessages,
-  };
+  return { success: true, newMessages };
 }
 
 export const SendFocusGroupMessageSchema = z.object({
@@ -761,10 +807,12 @@ export const getSeedPersonas = createServerFn({ method: 'GET' })
 
 export const getSimLabStatus = createServerFn({ method: 'GET' })
   .handler(async () => {
+    const identity = await getServerIdentity();
+    const hasWorkspace = Boolean(identity.id && (identity.store_id || identity.memberships?.length));
     return {
-      isEnabled: true,
-      isAdmin: true,
-      role: 'owner',
+      isEnabled: hasWorkspace,
+      isAdmin: ['owner', 'admin', 'platform_admin', 'master'].includes(identity.role),
+      role: identity.role,
     };
   });
 
@@ -772,110 +820,168 @@ export const RunPersonaSimulationSchema = z.object({
   title: z.string().min(1),
   description: z.string().min(1),
   priceCents: z.number().int().nonnegative(),
-  niche: z.any().optional(),
+  niche: z.string().optional(),
 });
 
-export const runPersonaSimulation = createServerFn({ method: 'POST' })
+/** Endpoint determinístico legado desativado para não expor números fabricados. */
+export const runPersonaSimulation = createServerFn({ method: "POST" })
   .validator(RunPersonaSimulationSchema)
-  .handler(async ({ data }) => {
-    const { runSimulation } = await import('@/lib/simlab/simulator');
-    return runSimulation({
-      title: data.title,
-      description: data.description,
-      priceCents: data.priceCents,
-      niche: data.niche || 'moda',
-    });
+  .handler(async () => {
+    throw new Error("O simulador determinístico legado foi aposentado. Use a exploração qualitativa SimLab ou registre resultados observados de um experimento.");
   });
 
-export const listSimLabPersonas = createServerFn({ method: 'GET' })
+export const listSimLabPersonas = createServerFn({ method: "GET" })
   .handler(async () => {
-    const archetypes = await fetchSyntheticArchetypes();
-    return archetypes.map((a: any) => ({
-      id: a.id,
-      name: a.name,
-      archetype: a.archetype_category || a.socioeconomic_class,
-      neighborhood: a.region || 'Região Sudeste',
-      age_range: a.age || '35',
-      income_level: a.socioeconomic_class || 'C1',
-      prompt_persona: a.consumption_habits || a.behavior_rules,
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin", "manager", "content"]);
+    const archetypes = await fetchSyntheticArchetypes({ storeId: identity.store_id });
+    return archetypes.map((persona) => ({
+      id: persona.id,
+      name: persona.display_name,
+      archetype: `Classe ${persona.abep_social_class} · ${persona.profile_origin || "origem desconhecida"}`,
+      neighborhood: (persona.decision_heuristics as any)?.city || persona.region || "Não informado",
+      age_range: String(persona.age),
+      income_level: persona.abep_social_class,
+      prompt_persona: persona.bio || persona.curriculum?.career_summary || "Perfil sintético sem descrição adicional.",
+      profile_origin: persona.profile_origin || "legacy_unknown",
+      calibration_status: persona.calibration_status || "unknown",
     }));
   });
 
-export const listResearchSessions = createServerFn({ method: 'GET' })
+export const listResearchSessions = createServerFn({ method: "GET" })
   .handler(async () => {
-    try {
-      const db = getServerClient();
-      const { data, error } = await db
-        .from('simlab_market_experiments')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(20);
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin", "manager", "content"]);
+    const db = getServerClient();
+    const { data: experiments, error } = await db
+      .from("simlab_market_experiments")
+      .select("id, store_id, title, objective, status, created_at, completed_at")
+      .eq("store_id", identity.store_id)
+      .order("created_at", { ascending: false })
+      .limit(20);
+    if (error) throw new Error(`Falha ao consultar o histórico SimLab: ${error.message}`);
+    if (!experiments?.length) return [];
 
-      if (error || !data || data.length === 0) {
-        return [];
-      }
-
-      return data.map((d: any) => ({
-        id: d.id,
-        title: d.title,
-        objective: d.hypothesis,
-        summary_insight: d.academic_committee_verdict?.veredito_geral || 'Pesquisa estocástica processada com sucesso.',
-        execution_results: (d.statistical_synthesis?.top_buying_triggers || []).map((t: string, idx: number) => ({
-          persona_name: `Amostra Segmento ${idx + 1}`,
-          purchase_intent: 75 - (idx * 10),
-          feedback: t,
-        })),
-      }));
-    } catch (e) {
-      return [];
+    const ids = experiments.map((experiment: any) => experiment.id);
+    const [{ data: synthesisRows, error: synthesisError }, { data: responseRows, error: responseError }] = await Promise.all([
+      db.from("simlab_statistical_synthesis")
+        .select("experiment_id, evidence_level, methodology, calibration_status, provenance, limitations")
+        .in("experiment_id", ids),
+      db.from("simlab_persona_responses")
+        .select("experiment_id, archetype_code, archetype_snapshot, verbatim_reaction, provenance")
+        .in("experiment_id", ids),
+    ]);
+    if (synthesisError) throw new Error(`Falha ao consultar proveniência do SimLab: ${synthesisError.message}`);
+    if (responseError) throw new Error(`Falha ao consultar respostas do SimLab: ${responseError.message}`);
+    const synthById = new Map((synthesisRows || []).map((row: any) => [row.experiment_id, row]));
+    const responsesById = new Map<string, any[]>();
+    for (const response of responseRows || []) {
+      const current = responsesById.get(response.experiment_id) || [];
+      current.push(response);
+      responsesById.set(response.experiment_id, current);
     }
+
+    return experiments.map((experiment: any) => {
+      const synthesis: any = synthById.get(experiment.id);
+      const evidenceLevel = synthesis?.evidence_level || "legacy_unknown";
+      const summary = evidenceLevel === "exploratory_synthetic"
+        ? "Exploração qualitativa com perfis sintéticos. Não é pesquisa observada, amostra representativa nem previsão de vendas."
+        : "Origem/metodologia deste resultado legado não verificável; não interpretar como estimativa quantitativa.";
+      return {
+        id: experiment.id,
+        title: experiment.title,
+        objective: experiment.objective,
+        status: experiment.status,
+        created_at: experiment.created_at,
+        summary_insight: summary,
+        evidence_level: evidenceLevel,
+        methodology: synthesis?.methodology || null,
+        execution_results: (responsesById.get(experiment.id) || []).map((response: any) => ({
+          persona_name: response.archetype_snapshot?.display_name || response.archetype_code || "Perfil sintético",
+          purchase_intent: null,
+          feedback: response.verbatim_reaction || "Resposta indisponível.",
+          response_origin: response.provenance?.record_kind === "llm_generated_synthetic_qualitative_response"
+            ? "llm_synthetic"
+            : "legacy_unknown",
+        })),
+      };
+    });
   });
 
 export const CreateSimLabPersonaSchema = z.object({
-  name: z.string().min(1),
-  archetype: z.string(),
-  neighborhood: z.string(),
-  prompt_persona: z.string(),
-  habits: z.array(z.string()).optional(),
+  storeId: z.string().uuid().optional(),
+  name: z.string().trim().min(1).max(120),
+  socialClass: z.enum(["A1", "A2", "B1", "B2", "C1", "C2", "D_E"]),
+  age: z.number().int().min(18).max(100),
+  city: z.string().trim().min(1).max(120),
+  state: z.string().trim().length(2).transform((value) => value.toUpperCase()),
+  occupation: z.string().trim().min(1).max(160),
+  medianIncomeBrl: z.number().nonnegative().finite().nullable().optional(),
+  prompt_persona: z.string().trim().min(10).max(2000),
+  habits: z.array(z.string().trim().min(1).max(120)).max(20).optional(),
 });
 
-export const createSimLabPersona = createServerFn({ method: 'POST' })
+export const createSimLabPersona = createServerFn({ method: "POST" })
   .validator(CreateSimLabPersonaSchema)
   .handler(async ({ data }) => {
-    try {
-      const db = getServerClient();
-      const { data: inserted, error } = await db
-        .from('synthetic_population_archetypes')
-        .insert({
-          name: data.name,
-          socioeconomic_class: 'C1',
-          region: data.neighborhood,
-          behavior_rules: data.prompt_persona,
-          consumption_habits: data.prompt_persona,
-          system1_heuristics: data.habits || [],
-        })
-        .select()
-        .single();
-
-      if (error) {
-        console.error('[simlab] Error creating persona:', error.message);
-        throw new Error(error.message);
-      }
-      return { success: true, persona: inserted };
-    } catch (e: any) {
-      console.error('[simlab] createSimLabPersona exception:', e);
-      return { success: true, persona: { id: 'temp-' + Date.now(), ...data } };
-    }
+    const identity = await getServerIdentity();
+    const storeId = data.storeId || identity.store_id || identity.memberships?.[0]?.store_id;
+    if (!storeId) throw new Error("Selecione um workspace antes de criar um perfil sintético.");
+    assertStoreAccess(identity, ["owner", "admin", "manager"], storeId);
+    const db = getServerClient();
+    const suffix = crypto.randomUUID().replace(/-/g, "").slice(0, 12).toUpperCase();
+    const { data: inserted, error } = await db
+      .from("simlab_workspace_persona_profiles")
+      .insert({
+        store_id: storeId,
+        code: `USR_${suffix}`,
+        display_name: data.name,
+        gender: "nao_binario",
+        age: data.age,
+        city: data.city,
+        state: data.state,
+        abep_class: data.socialClass,
+        median_income_brl: data.medianIncomeBrl ?? null,
+        occupation: data.occupation,
+        psychography: { profile_text: data.prompt_persona, habits: data.habits || [] },
+        digital_behavior: {},
+        trigger_scores: {},
+        calibration_status: "not_calibrated",
+        profile_source: "user_defined_synthetic_profile",
+        is_active: true,
+        created_by: identity.id,
+      })
+      .select("*")
+      .single();
+    if (error) throw new Error(`Falha ao salvar o perfil sintético no workspace: ${error.message}`);
+    return { success: true, persona: inserted };
   });
 
 export const RunSimLabResearchSchema = z.object({
-  title: z.string().min(1),
-  objective: z.string().min(1),
-  simulated_personas_count: z.number().int().positive(),
+  storeId: z.string().uuid().optional(),
+  title: z.string().trim().min(1).max(160),
+  objective: z.string().trim().min(1).max(4000),
+  simulated_personas_count: z.number().int().positive().max(50),
+  testPriceBrl: z.number().nonnegative().finite().optional(),
 });
 
-export const runSimLabResearch = createServerFn({ method: 'POST' })
+export const runSimLabResearch = createServerFn({ method: "POST" })
   .validator(RunSimLabResearchSchema)
   .handler(async ({ data }) => {
-    return executeSimLabBatchSimulation({ experimentId: 'temp-' + Date.now(), storeId: 'default' });
+    const identity = await getServerIdentity();
+    const storeId = data.storeId || identity.store_id || identity.memberships?.[0]?.store_id;
+    if (!storeId) throw new Error("Selecione um workspace antes de executar o SimLab.");
+    assertStoreAccess(identity, ["owner", "admin", "manager", "content"], storeId);
+    const { experiment } = await executeCreateSimLabExperiment({
+      storeId,
+      title: data.title,
+      objective: data.objective,
+      stimulusPayload: {
+        title: data.title,
+        description: data.objective,
+        ...(data.testPriceBrl == null ? {} : { test_price_brl: data.testPriceBrl }),
+      },
+      sampleSize: data.simulated_personas_count,
+    });
+    return executeSimLabBatchSimulation({ experimentId: experiment.id, storeId });
   });

@@ -44,8 +44,8 @@ export function CampaignDraftCard({
   const [headline, setHeadline] = useState(payload.creative.headline);
   const [bodyCopy, setBodyCopy] = useState(payload.creative.bodyCopy);
   const [ctaLabel, setCtaLabel] = useState(payload.creative.callToActionLabel);
-  const [locationLabel, setLocationLabel] = useState(payload.targeting.locationLabel);
-  const [radiusKm, setRadiusKm] = useState(payload.targeting.radiusKm);
+  const [locationLabel, setLocationLabel] = useState(payload.targeting.locationLabel || "");
+  const [radiusKm, setRadiusKm] = useState(payload.targeting.radiusKm?.toString() || "");
 
   const totalBudgetCents = dailyBudgetCents * durationDays;
 
@@ -59,9 +59,12 @@ export function CampaignDraftCard({
           platform: payload.platform,
           dailyBudgetCents,
           durationDays,
+          sourcePrompt: metadata.sourcePrompt,
+          provenance: { ...metadata.provenance, generatedAt: metadata.generatedAt },
+          planningAssumptions: metadata.planningAssumptions,
           targeting: {
-            locationLabel,
-            radiusKm,
+            locationLabel: locationLabel.trim() || null,
+            radiusKm: radiusKm.trim() ? Number(radiusKm) : null,
             ageRange: payload.targeting.ageRange,
             interestTags: payload.targeting.interestTags,
           },
@@ -96,9 +99,9 @@ export function CampaignDraftCard({
         <div className="size-12 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto">
           <CheckCircle2 className="size-6" />
         </div>
-        <h4 className="text-sm font-bold text-foreground line-clamp-1">Campanha Aprovada e Em Veiculação</h4>
+        <h4 className="text-sm font-bold text-foreground line-clamp-1">Proposta salva como pausada</h4>
         <p className="text-xs text-muted-foreground max-w-md mx-auto">
-          Os criativos e orçamentos foram autenticados e enviados aos canais de tráfego pago da loja.
+          O rascunho foi registrado no Waesy. Nenhum anúncio foi enviado ou publicado em canais externos.
         </p>
       </div>
     );
@@ -120,15 +123,21 @@ export function CampaignDraftCard({
           <div>
             <div className="flex items-center gap-2">
               <span className="text-xs font-bold text-foreground">
-                Proposta de Campanha Gerada por IA (MCP)
+                Rascunho de campanha gerado por IA
               </span>
               <Badge variant="outline" className="text-[9px] font-mono py-0 px-2 h-4">
-                {payload.platform === "meta_instagram" ? "Instagram Feed" : "Meta Ads"}
+                {payload.platform === "meta_instagram" ? "Instagram" : payload.platform === "meta_facebook" ? "Facebook" : payload.platform === "google_search" ? "Google" : "Waesy local"}
               </Badge>
             </div>
             <p className="text-[10px] text-muted-foreground">
               Comando: &quot;{metadata.sourcePrompt}&quot;
             </p>
+            <p className="text-[10px] text-muted-foreground">
+              Proveniência: {metadata.provenance.provider || "provedor não informado"} · {metadata.provenance.model || "modelo não informado"} · rascunho não testado.
+            </p>
+            {metadata.planningAssumptions.map((assumption, index) => (
+              <p key={index} className="text-[10px] text-amber-700 dark:text-amber-300">Premissa: {assumption}</p>
+            ))}
           </div>
         </div>
 
@@ -142,7 +151,7 @@ export function CampaignDraftCard({
         {/* COLUNA ESQUERDA: MOCKUP NATIVO INSTAGRAM FEED */}
         <div className="lg:col-span-5 flex flex-col items-center">
           <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2 self-start">
-            Mockup em Tempo Real (Feed do Instagram)
+            Prévia ilustrativa (não publicada)
           </span>
 
           <div className="w-full max-w-[340px] rounded-lg border border-border/90 bg-background overflow-hidden text-xs">
@@ -168,11 +177,13 @@ export function CampaignDraftCard({
 
             {/* Imagem do Criativo (Aspect Ratio 1:1) */}
             <div className="relative aspect-square w-full bg-muted/40 overflow-hidden">
-              <img
-                src={payload.creative.recommendedImageUrl}
-                alt={headline}
-                className="size-full object-cover"
-              />
+              {payload.creative.recommendedImageUrl ? (
+                <img src={payload.creative.recommendedImageUrl} alt={headline} className="size-full object-cover" />
+              ) : (
+                <div className="size-full flex items-center justify-center p-6 text-center text-xs text-muted-foreground">
+                  Nenhuma imagem de campanha cadastrada.
+                </div>
+              )}
             </div>
 
             {/* Barra de Ação Patrocinada Instantânea (CTA Bar) */}
@@ -214,7 +225,7 @@ export function CampaignDraftCard({
             <div>
               <h3 className="text-sm font-bold text-foreground line-clamp-1 truncate">{campaignTitle}</h3>
               <p className="text-xs text-muted-foreground">
-                Configurado com base na inteligência de mercado do seu ecossistema.
+                Rascunho baseado no briefing informado; copy e parâmetros ainda não foram testados.
               </p>
             </div>
             <Button
@@ -246,11 +257,13 @@ export function CampaignDraftCard({
                   <Label className="text-[11px] font-semibold">Orçamento Diário (R$)</Label>
                   <Input
                     type="number"
-                    min={10}
+                    min={0.01}
+                    step={0.01}
                     value={(dailyBudgetCents / 100).toFixed(2)}
-                    onChange={(e) =>
-                      setDailyBudgetCents(Math.round(parseFloat(e.target.value) * 100 || 1000))
-                    }
+                    onChange={(e) => {
+                      const value = Number(e.target.value);
+                      setDailyBudgetCents(Number.isFinite(value) ? Math.max(0, Math.round(value * 100)) : 0);
+                    }}
                     className="h-8 text-xs font-mono rounded-lg"
                   />
                 </div>
@@ -261,7 +274,10 @@ export function CampaignDraftCard({
                     min={1}
                     max={60}
                     value={durationDays}
-                    onChange={(e) => setDurationDays(parseInt(e.target.value, 10) || 7)}
+                    onChange={(e) => {
+                      const value = Number.parseInt(e.target.value, 10);
+                      setDurationDays(Number.isFinite(value) ? value : 0);
+                    }}
                     className="h-8 text-xs font-mono rounded-lg"
                   />
                 </div>
@@ -301,7 +317,7 @@ export function CampaignDraftCard({
                     type="number"
                     min={5}
                     value={radiusKm}
-                    onChange={(e) => setRadiusKm(parseInt(e.target.value, 10) || 25)}
+                    onChange={(e) => setRadiusKm(e.target.value)}
                     className="h-8 text-xs font-mono rounded-lg"
                   />
                 </div>
@@ -319,30 +335,28 @@ export function CampaignDraftCard({
                   </p>
                 </div>
                 <div>
-                  <p className="text-[10px] text-muted-foreground font-medium">Período de Veiculação</p>
+                  <p className="text-[10px] text-muted-foreground font-medium">Prazo planejado</p>
                   <p className="text-sm font-bold text-foreground">{durationDays} dias</p>
                 </div>
                 <div>
-                  <p className="text-[10px] text-muted-foreground font-medium">Total Estimado</p>
+                  <p className="text-[10px] text-muted-foreground font-medium">Total do orçamento</p>
                   <p className="text-sm font-black font-mono text-primary">
                     {formatMoney(totalBudgetCents)}
                   </p>
                 </div>
               </div>
 
-              {/* Segmentação & Alcance */}
+              {/* Segmentação informada */}
               <div className="p-4 rounded-lg border border-border/80 bg-muted/20 space-y-2 text-xs">
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <MapPin className="size-3.5 text-primary shrink-0" />
-                  <span className="font-semibold text-foreground">{locationLabel}</span>
-                  <Badge variant="outline" className="text-[10px] py-0">
-                    +{radiusKm} km
-                  </Badge>
+                  <span className="font-semibold text-foreground">{locationLabel || "Localização não informada"}</span>
+                  {radiusKm && <Badge variant="outline" className="text-[10px] py-0">Raio {radiusKm} km</Badge>}
                 </div>
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <Users className="size-3.5 text-primary shrink-0" />
                   <span>
-                    Público: {payload.targeting.ageRange[0]} a {payload.targeting.ageRange[1]} anos
+                    {payload.targeting.ageRange ? `Público: ${payload.targeting.ageRange[0]} a ${payload.targeting.ageRange[1]} anos` : "Faixa etária não configurada"}
                   </span>
                 </div>
                 <div className="flex flex-wrap gap-1 pt-1">
@@ -351,34 +365,19 @@ export function CampaignDraftCard({
                       #{tag}
                     </Badge>
                   ))}
+                  {payload.targeting.interestTags.length === 0 && (
+                    <span className="text-[10px] text-muted-foreground">Interesses não configurados.</span>
+                  )}
                 </div>
               </div>
 
-              {/* Projeção de Performance Estimada */}
-              <div className="p-3 rounded-lg bg-primary/5 border border-primary/20 flex items-center justify-between text-xs">
-                <div className="flex items-center gap-2">
-                  <Eye className="size-4 text-primary shrink-0" />
-                  <div>
-                    <p className="text-[10px] text-muted-foreground">Alcance Estimado</p>
-                    <p className="font-mono font-bold text-foreground">
-                      {payload.targeting.potentialAudienceReach.minDailyImpressions.toLocaleString("pt-BR")}{" "}
-                      a{" "}
-                      {payload.targeting.potentialAudienceReach.maxDailyImpressions.toLocaleString("pt-BR")}{" "}
-                      imp/dia
-                    </p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="text-[10px] text-muted-foreground">CPA Médio</p>
-                  <p className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
-                    ~{formatMoney(payload.targeting.potentialAudienceReach.estimatedCpaCents)}
-                  </p>
-                </div>
+              <div className="rounded-lg border border-amber-500/25 bg-amber-500/5 p-3 text-[10px] leading-relaxed text-amber-700 dark:text-amber-300">
+                Alcance, impressões e CPA não estimados: não há dados de entrega do canal nem desempenho histórico desta campanha. Segmentação sem valor informado permanece vazia.
               </div>
             </div>
           )}
 
-          {/* ── 3. GOVERNANÇA HUMANA (BOTAO DE APROVAÇÃO E ATIVAÇÃO) ── */}
+          {/* ── 3. GOVERNANÇA HUMANA (SALVAMENTO PAUSADO) ── */}
           <div className="pt-2 flex flex-col sm:flex-row items-center gap-3">
             <Button
               type="button"
@@ -389,12 +388,12 @@ export function CampaignDraftCard({
               {isSubmitting ? (
                 <>
                   <Loader2 className="size-4 animate-spin" />
-                  <span>Registrando e Ativando...</span>
+                  <span>Salvando proposta...</span>
                 </>
               ) : (
                 <>
                   <ShieldCheck className="size-4" />
-                  <span>Aprovar e Ativar Campanha</span>
+                  <span>Salvar proposta pausada no Waesy</span>
                 </>
               )}
             </Button>

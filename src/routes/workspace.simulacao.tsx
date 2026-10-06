@@ -16,26 +16,26 @@ import type {
 import { cn } from "@/lib/utils";
 import { WorkspaceCanonicalToolbar } from "@/components/workspace/workspace-canonical-toolbar";
 import { WorkspaceDashboardSheet, type MetricCardItem } from "@/components/workspace/workspace-dashboard-sheet";
+import { ObservedExperimentPanel } from "@/components/simlab/observed-experiment-panel";
 
 export const Route = createFileRoute("/workspace/simulacao")({
   head: () => ({
     meta: [
       {
-        title:
-          "SimLab — Enxame de Validação Preditiva Censo IBGE | Workspace Waesy",
+        title: "SimLab — Exploração Qualitativa e Experimentos Observados | Workspace Waesy",
       },
     ],
   }),
   loader: async () => {
     try {
-    const [personas, status, store] = await Promise.all([
-      fetchSyntheticArchetypes().catch(() => []),
+    const store = await getStoreSettings().catch(() => null);
+    const [personas, status] = await Promise.all([
+      fetchSyntheticArchetypes({ storeId: store?.id }).catch(() => []),
       getSimLabStatus().catch(() => ({
         isEnabled: true,
         isAdmin: false,
         role: "customer",
       })),
-      getStoreSettings().catch(() => null),
     ]);
     return {
       personas: personas as SyntheticArchetype[],
@@ -70,15 +70,14 @@ function SimulacaoPage() {
 
   const storeId = store?.id || "";
 
-  const [title, setTitle] = useState("Lançamento Coleção Cápsula Outono");
-  const [description, setDescription] = useState(
-    "Peças exclusivas feitas à mão com algodão sustentável e tiragem limitada de 50 unidades. Acompanha zine editorial impresso e brinde artesanal.",
-  );
-  const [priceReais, setPriceReais] = useState("129.90");
-  const [selectedNiche, setSelectedNiche] = useState<string>("moda");
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [priceReais, setPriceReais] = useState("");
+  const [selectedNiche, setSelectedNiche] = useState<string>("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [isRunning, setIsRunning] = useState(false);
   const [isMetricsOpen, setIsMetricsOpen] = useState(false);
+  const [currentExperimentId, setCurrentExperimentId] = useState<string | null>(null);
 
   // Resultados de persistência real
   const [synthesis, setSynthesis] = useState<SimLabStatisticalSynthesis | null>(
@@ -105,10 +104,17 @@ function SimulacaoPage() {
       toast.error("Preencha título e descrição para simular a proposta.");
       return;
     }
+    if (!storeId) {
+      toast.error("Não foi possível identificar o workspace ativo.");
+      return;
+    }
 
     setIsRunning(true);
     try {
-      const priceNum = parseFloat(priceReais || "0");
+      const priceNum = priceReais.trim() ? Number.parseFloat(priceReais) : null;
+      if (priceNum != null && (!Number.isFinite(priceNum) || priceNum <= 0)) {
+        throw new Error("Informe um preço positivo ou deixe o campo em branco.");
+      }
 
       // 1. Cria experimento persistido na tabela `simlab_market_experiments`
       const expRes = await createSimLabExperiment({
@@ -119,8 +125,8 @@ function SimulacaoPage() {
           stimulusPayload: {
             title: title.trim(),
             description: description.trim(),
-            test_price_brl: priceNum,
             niche: selectedNiche,
+            ...(priceNum == null ? {} : { test_price_brl: priceNum }),
           },
           sampleSize: personas.length || 12,
         },
@@ -128,8 +134,9 @@ function SimulacaoPage() {
 
       const expId = expRes?.experiment?.id;
       if (!expId) throw new Error("Falha ao registrar experimento.");
+      setCurrentExperimentId(expId);
 
-      // 2. Dispara simulação estocástica ou IA Real calibrada
+      // 2. Gera respostas qualitativas sintéticas via IA; não calcula venda/conversão.
       const simRes = await executeSimLabBatchSimulation({
         experimentId: expId,
         storeId,
@@ -138,7 +145,7 @@ function SimulacaoPage() {
       if (simRes?.synthesis) {
         setSynthesis(simRes.synthesis);
         setEvaluations(simRes.responses || []);
-        toast.success("Simulação concluída e salva no banco de dados!");
+        toast.success("Exploração qualitativa concluída. Consulte abaixo como anexar resultados observados.");
       }
     } catch (err: unknown) {
       const msg =
@@ -150,70 +157,34 @@ function SimulacaoPage() {
   };
 
   // KPIs dinâmicos para a Dashboard Sheet sob demanda
-  const metricsItems: MetricCardItem[] = useMemo(() => {
-    if (!synthesis) {
-      return [
-        {
-          label: "Amostragem Censo IBGE",
-          value: `${personas.length} personas`,
-          description: "12 arquétipos estratificados pelo Critério ABEP 2022",
-        },
-        {
-          label: "Previsão de Conversão",
-          value: "--",
-          description: "Execute a simulação para calcular o intervalo de 95% CI",
-        },
-        {
-          label: "Net Promoter Score",
-          value: "--",
-          description: "Balanço entre promotores e detratores sintéticos",
-        },
-        {
-          label: "Elasticidade de Preço",
-          value: "--",
-          description: "Sensibilidade estocástica em relação à renda mediana",
-        },
-      ];
-    }
-
-    const nps = synthesis.synthetic_nps;
-    return [
-      {
-        label: "Net Promoter Score Sintético",
-        value: `${nps > 0 ? "+" : ""}${nps}`,
-        description: `Balanço ABEP: ${synthesis.overall_approval_rate}% de aprovação da amostra`,
-        trend: {
-          value: `${synthesis.overall_approval_rate}% aprovados`,
-          isPositive: nps >= 20,
-        },
-      },
-      {
-        label: "Conversão Estimada (95% CI)",
-        value: `${synthesis.estimated_conversion_range[0]}% - ${synthesis.estimated_conversion_range[1]}%`,
-        description: "Intervalo estatístico de probabilidade real de compra",
-        trend: {
-          value: `${synthesis.rejection_rate}% rejeição`,
-          isPositive: synthesis.rejection_rate < 30,
-        },
-      },
-      {
-        label: "Elasticidade de Preço",
-        value: `${synthesis.price_elasticity_score.toFixed(2)}x`,
-        description: "Coeficiente de atrito econômico frente à renda diária",
-      },
-      {
-        label: "Amostragem Efetiva",
-        value: `${evaluations.length} perfis`,
-        description: "100% de representatividade demográfica auditada",
-      },
-    ];
-  }, [synthesis, personas.length, evaluations.length]);
+  const metricsItems: MetricCardItem[] = useMemo(() => [
+    {
+      label: "Evidência atual",
+      value: synthesis ? "Exploração qualitativa" : "Aguardando dados",
+      description: synthesis?.methodology || "Personas sintéticas não são respondentes nem amostra representativa.",
+    },
+    {
+      label: "Previsão de vendas",
+      value: "Não estimada",
+      description: "Exige resultados observados e validação prospectiva em holdout.",
+    },
+    {
+      label: "Calibração",
+      value: synthesis?.calibration_status === "validated_on_holdout" ? "Validada" : "Não validada",
+      description: "Uma exploração sintética não calibra um modelo de vendas.",
+    },
+    {
+      label: "Perfis consultados",
+      value: `${evaluations.length} perfis sintéticos`,
+      description: "Catálogo curado; sem alegação de representatividade populacional.",
+    },
+  ], [synthesis, evaluations.length]);
 
   return (
     <div className="flex flex-col min-h-[calc(100dvh-4rem)] w-full">
       {/* ── 1. BARRA CANÔNICA APPLE HIG (SEM TÍTULOS PROLIXOS) ── */}
       <WorkspaceCanonicalToolbar
-        placeholder="Buscar por nome, classe ABEP ou região..."
+          placeholder="Buscar perfis sintéticos por nome, classe ou região..."
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
         filterChips={NICHES.map((n) => ({
@@ -223,7 +194,7 @@ function SimulacaoPage() {
         }))}
         onFilterChange={(id) => setSelectedNiche(id)}
         primaryAction={{
-          label: isRunning ? "Simulando Enxame..." : "Executar Simulação",
+          label: isRunning ? "Gerando reações..." : "Executar exploração",
           icon: isRunning ? Loader2 : Play,
           onClick: () => void handleSimulate(),
           disabled: isRunning,
@@ -234,7 +205,7 @@ function SimulacaoPage() {
           onClick: () => {},
         }}
         onMetricsClick={() => setIsMetricsOpen(true)}
-        metricsBadge={synthesis ? `${synthesis.synthetic_nps} NPS` : undefined}
+        metricsBadge={synthesis ? "Exploratória" : undefined}
       />
 
       {/* ── 2. PAINEL PRINCIPAL EM DUAS COLUNAS OPERACIONAIS ── */}
@@ -290,9 +261,8 @@ function SimulacaoPage() {
                     step="0.01"
                     value={priceReais}
                     onChange={(e) => setPriceReais(e.target.value)}
-                    placeholder="0,00"
+                    placeholder="Opcional — preço da oferta"
                     className="h-11 min-h-11 pl-9 text-xs rounded-lg font-mono font-semibold bg-background"
-                    required
                   />
                 </div>
               </div>
@@ -334,17 +304,20 @@ function SimulacaoPage() {
               </Button>
             </form>
 
-            {/* Lista Compacta de Personas do Censo IBGE 2022 */}
+            {/* Catálogo de perfis sintéticos; não implica representatividade populacional */}
             <div className="rounded-lg border border-border/80 bg-card p-4 space-y-3 shadow-sm">
               <div className="flex items-center justify-between border-b border-border/60 pb-3">
                 <span className="text-xs font-bold text-foreground flex items-center gap-2">
                   <Users className="size-3.5 text-primary" />
-                  Bancada Amostral IBGE
+                  Catálogo de Perfis Sintéticos
                 </span>
                 <span className="text-xs text-muted-foreground">
-                  {filteredPersonas.length} calibradas
+                  {filteredPersonas.length} perfis · calibração não validada
                 </span>
               </div>
+              <p className="mb-3 rounded-md border border-amber-500/25 bg-amber-500/5 p-2 text-[10px] leading-relaxed text-amber-700 dark:text-amber-300">
+                Catálogo atual: personagens fictícios para exploração qualitativa. Idade, renda e classe são atributos ilustrativos, não estimativas IBGE/POF nem amostra representativa.
+              </p>
 
               <div className="space-y-2 max-h-64 overflow-y-auto no-scrollbar pr-1">
                 {filteredPersonas.map((p) => (
@@ -357,8 +330,7 @@ function SimulacaoPage() {
                         {p.display_name}
                       </p>
                       <p className="text-xs text-muted-foreground truncate">
-                        {p.age} anos • {p.region} • R${" "}
-                        {p.median_income_brl.toLocaleString("pt-BR")}/mês
+                        {p.age} anos • {p.region} • {p.median_income_brl == null ? "renda não informada" : `R$ ${p.median_income_brl.toLocaleString("pt-BR")}/mês`}
                       </p>
                     </div>
                     <Badge
@@ -381,12 +353,10 @@ function SimulacaoPage() {
                   <BrainCircuit className="size-8" />
                 </div>
                 <h3 className="text-sm font-bold text-foreground">
-                  Pronto para Validar com População Sintética
+                  Pronto para explorar uma hipótese
                 </h3>
                 <p className="text-xs text-muted-foreground max-w-sm leading-relaxed">
-                  Preencha os detalhes da sua hipótese à esquerda e acione{" "}
-                  <strong>"Executar Simulação"</strong> para mensurar intenção de
-                  compra, elasticidade de preço e objeções das personas.
+                  Preencha a hipótese à esquerda e acione <strong>"Executar exploração"</strong> para gerar reações qualitativas hipotéticas. Para estimar impacto em vendas, registre um experimento randomizado com resultados observados.
                 </p>
               </div>
             )}
@@ -396,11 +366,10 @@ function SimulacaoPage() {
                 <Loader2 className="size-10 text-primary animate-spin" />
                 <div className="space-y-1">
                   <h3 className="text-sm font-bold text-foreground">
-                    Consultando Vetores do Censo IBGE 2022...
+                    Gerando respostas qualitativas para perfis sintéticos...
                   </h3>
                   <p className="text-xs text-muted-foreground max-w-md">
-                    Injetando estímulos nas personas, computando coeficientes de
-                    aversão à perda e extraindo reações em linguagem natural.
+                    A IA está elaborando respostas hipotéticas; não haverá NPS, taxa de conversão ou previsão de vendas.
                   </p>
                 </div>
               </div>
@@ -408,53 +377,25 @@ function SimulacaoPage() {
 
             {synthesis && !isRunning && (
               <div className="space-y-5 animate-in fade-in duration-200">
-                {/* Banner de Veredito Científico */}
-                <div
-                  className={cn(
-                    "p-4 rounded-lg border flex items-center justify-between gap-4",
-                    synthesis.scientific_verdict === "aprovado_para_veiculacao"
-                      ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-300"
-                      : synthesis.scientific_verdict === "revisar_com_ajustes"
-                        ? "bg-amber-500/10 border-amber-500/30 text-amber-700 dark:text-amber-300"
-                        : "bg-rose-500/10 border-rose-500/30 text-rose-700 dark:text-rose-300",
-                  )}
-                >
-                  <div className="flex items-center gap-3">
-                    <Award className="size-5 shrink-0" />
+                <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-start gap-3">
+                <BrainCircuit className="mt-1 size-5 shrink-0 text-primary" />
                     <div>
-                      <p className="text-xs font-bold uppercase tracking-wider">
-                        {synthesis.scientific_verdict ===
-                        "aprovado_para_veiculacao"
-                          ? "Aprovado para Veiculação Comercial"
-                          : synthesis.scientific_verdict ===
-                              "revisar_com_ajustes"
-                            ? "Revisar com Ajustes Estratégicos"
-                            : "Bloqueado por Alto Risco de Mercado"}
-                      </p>
-                      <p className="text-xs opacity-90 mt-1">
-                        Aprovação: {synthesis.overall_approval_rate}% • NPS:{" "}
-                        {synthesis.synthetic_nps} • Conversão Estimada:{" "}
-                        {synthesis.estimated_conversion_range[0]}% a{" "}
-                        {synthesis.estimated_conversion_range[1]}%
-                      </p>
+                      <p className="text-xs font-bold uppercase tracking-wider text-foreground">Exploração qualitativa sintética — não é previsão de vendas</p>
+                      <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{synthesis.methodology || "Respostas hipotéticas geradas por IA; não são entrevistas nem observações de clientes."}</p>
+                      <p className="mt-1 text-[10px] text-muted-foreground">Proveniência: {String(synthesis.provenance?.provider || "provedor não informado")} · modelo {String(synthesis.provenance?.model || "não informado")} · perfil não calibrado.</p>
                     </div>
                   </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setIsMetricsOpen(true)}
-                    className="h-9 rounded-lg text-xs font-semibold shrink-0 cursor-pointer"
-                  >
-                    Ver DRE do Enxame
+                  <Button variant="outline" size="sm" onClick={() => setIsMetricsOpen(true)} className="h-9 shrink-0 text-xs">
+                    Ver evidência e limitações
                   </Button>
                 </div>
-
                 {/* Gatilhos e Barreiras */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="rounded-lg border border-border/80 bg-card p-4 space-y-2 shadow-sm">
                     <h4 className="text-xs font-bold text-foreground flex items-center gap-2">
                       <CheckCircle2 className="size-3.5 text-emerald-500" />
-                      Gatilhos de Compra Principais
+                      Pontos favoráveis mencionados nas respostas
                     </h4>
                     <ul className="space-y-2 text-xs text-muted-foreground">
                       {synthesis.top_3_buying_triggers.map((trigger, i) => (
@@ -469,7 +410,7 @@ function SimulacaoPage() {
                   <div className="rounded-lg border border-border/80 bg-card p-4 space-y-2 shadow-sm">
                     <h4 className="text-xs font-bold text-foreground flex items-center gap-2">
                       <AlertTriangle className="size-3.5 text-amber-500" />
-                      Fricções e Objeções Detectadas
+                      Fricções mencionadas nas respostas
                     </h4>
                     <ul className="space-y-2 text-xs text-muted-foreground">
                       {synthesis.top_3_friction_barriers.map((barrier, i) => (
@@ -482,15 +423,15 @@ function SimulacaoPage() {
                   </div>
                 </div>
 
-                {/* Reações Verbatim das Personas */}
+                {/* Respostas hipotéticas de perfis sintéticos */}
                 <div className="rounded-lg border border-border/80 bg-card p-4 space-y-3 shadow-sm">
                   <div className="flex items-center justify-between border-b border-border/60 pb-3">
                     <span className="text-xs font-bold text-foreground flex items-center gap-2">
                       <MessageSquare className="size-3.5 text-primary" />
-                      Reações Individuais das Personas
+                      Respostas sintéticas individuais
                     </span>
                     <span className="text-xs text-muted-foreground">
-                      {evaluations.length} depoimentos
+                      {evaluations.length} respostas geradas por IA
                     </span>
                   </div>
 
@@ -503,48 +444,23 @@ function SimulacaoPage() {
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
                             <span className="font-bold text-foreground">
-                              {ev.archetype?.display_name || "Consumidor"}
+                              {ev.archetype?.display_name || "Perfil sintético"}
                             </span>
                             <span className="text-xs text-muted-foreground font-mono">
                               Classe {ev.archetype?.abep_social_class || "C"} •{" "}
                               {ev.archetype?.region || "Brasil"}
                             </span>
                           </div>
-                          <Badge
-                            variant={
-                              ev.purchase_intent_percent >= 60
-                                ? "default"
-                                : "outline"
-                            }
-                            className="text-xs rounded-md font-medium px-2 py-1"
-                          >
-                            {ev.purchase_intent_percent}% Intenção
-                          </Badge>
+                          <Badge variant="outline" className="text-[10px]">LLM sintético · sem score</Badge>
                         </div>
 
                         <p className="text-xs text-muted-foreground italic bg-muted/20 p-3 rounded-lg border border-border/40 leading-relaxed">
-                          "{ev.verbatim_reaction}"
+                          “{ev.verbatim_reaction || "A resposta da IA está indisponível."}”
                         </p>
-
+                        <p className="text-[10px] text-muted-foreground">Personagem sintético; não é depoimento de consumidor real.</p>
                         <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-                          <span>
-                            Emoção:{" "}
-                            <strong className="text-foreground capitalize">
-                              {ev.system_1_emotion}
-                            </strong>
-                          </span>
-                          <span>
-                            Preço:{" "}
-                            <strong className="text-foreground capitalize">
-                              {ev.price_perception.replace("_", " ")}
-                            </strong>
-                          </span>
-                          {ev.primary_barrier_objection && (
-                            <span className="text-amber-500">
-                              Objeção:{" "}
-                              <strong>{ev.primary_barrier_objection}</strong>
-                            </span>
-                          )}
+                          {ev.primary_hook_detected && <span>Aspecto favorável mencionado: <strong className="text-foreground">{ev.primary_hook_detected}</strong></span>}
+                          {ev.primary_barrier_objection && <span className="text-amber-600">Fricção mencionada: <strong>{ev.primary_barrier_objection}</strong></span>}
                         </div>
                       </div>
                     ))}
@@ -552,13 +468,14 @@ function SimulacaoPage() {
                 </div>
               </div>
             )}
+            <ObservedExperimentPanel storeId={storeId} experimentId={currentExperimentId} />
           </div>
         </div>
       </div>
 
       {/* ── 3. DASHBOARD SHEET DE MÉTRICAS SOB DEMANDA (APPLE HIG) ── */}
       <WorkspaceDashboardSheet
-        title="Estatísticas do SimLab"
+        title="Evidência e limites do SimLab"
         open={isMetricsOpen}
         onOpenChange={setIsMetricsOpen}
         items={metricsItems}
@@ -566,4 +483,3 @@ function SimulacaoPage() {
     </div>
   );
 }
-
