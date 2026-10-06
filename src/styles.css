@@ -20,6 +20,15 @@
   display: none;
 }
 
+.waesy-tab-strip {
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.waesy-tab-strip::-webkit-scrollbar {
+  display: none;
+}
+
 @media (min-width: 840px) {
   .waesy-compact-medium-only.waesy-compact-medium-only {
     display: none;

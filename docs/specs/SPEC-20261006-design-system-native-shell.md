@@ -46,3 +46,10 @@ Não alterar rotas de negócio, loaders, services ou contratos de dados nesta fr
 - F4: remover classes arbitrárias, gradientes, sombras e transições genéricas.
 - F5: completar a matriz loading/empty/error.
 - F6: preparar camada de nativização React Native/Expo, compartilhando tokens e contratos sem duplicar regra de negócio.
+
+
+## Lote F2 — Primitivas compartilhadas de workspace
+
+Esta frente autoriza também `src/components/workspace/workspace-sidebar-flyout.tsx`, `src/components/workspace/workspace-canonical-toolbar.tsx` e `src/components/layout/bottom-bar.tsx`. O objetivo é propagar a adaptação para tabelas, filtros e navegação sem corrigir rotas individualmente por substituição cega.
+
+Os componentes devem usar `waesy-compact-medium-only` para ações próprias de compact/medium e `waesy-expanded-flex` para superfícies expandidas. Elementos interativos devem ter foco visível e, no mínimo, 44px quando disponíveis em telas compactas/medium. `transition-all`, sombras em superfícies, cores literais, classes de valores arbitrários e `sm/md/lg` como substituto de 840px devem ser removidos somente quando o comportamento semântico estiver preservado.

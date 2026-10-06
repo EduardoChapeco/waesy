@@ -2714,3 +2714,12 @@
 - **Decisão Adotada:** Criados os utilitários globais `waesy-expanded-flex` e `waesy-compact-medium-only` em `src/styles.css`, derivados do breakpoint canônico de 840px. O `workspace-shell` passou a usar esses utilitários no lugar de `lg` para a bifurcação da sidebar e dos controles móveis. Não foram alteradas regras de negócio, loaders ou serviços.
 - **Fundamentação:** AGENTS.md B.8, B.9 e B.11; DESIGN.md C.6 e C.8; Material 3 Window Size Classes; Apple HIG.
 - **Consequências:** O shell passa a tratar 840px como início do produto expandido, reduzindo confusão visual em desktops compactos e preservando o menu móvel apenas em compact/medium. A migração das demais telas que ainda usam `lg` será feita por lotes, com lint e testes por módulo.
+
+
+## DEC-188: Primitivas Compartilhadas no Breakpoint de 840px
+
+- **Data:** 2026-10-06
+- **Contexto:** Sidebar/flyout, toolbar e BottomBar ainda usavam `sm`, `md` e `transition-all`, produzindo diferentes interpretações de mobile, tablet e desktop e dificultando a adaptação de tabelas e filtros.
+- **Decisão Adotada:** As primitivas passaram a usar `waesy-compact-medium-only` e `waesy-expanded-flex`. A toolbar mantém filtros e menus em superfícies compact/medium, ações densas no expandido, faixa de abas com rolagem semântica e controles com 44px/foco visível. A BottomBar mobile oculta somente a partir de 840px.
+- **Fundamentação:** AGENTS.md B.8/B.9/B.11; DESIGN.md C.8/C.10/C.11; Material 3 Window Size Classes; Apple HIG.
+- **Consequências:** A correção propaga-se às rotas que consomem as primitivas. Os nove P2 em `styles.css` permanecem como dívida de compatibilidade explicitamente catalogada para a frente de fundação dos tokens.

@@ -51,3 +51,10 @@ A arquitetura recomendada é um monorepo incremental com pacotes de `tokens`, `c
 - `node scripts/design-lint.mjs --changed`: **0 P0, 0 P1** no escopo corrigido.
 - TypeScript filtrado para `workspace-shell`: **sem erro**.
 - `npm run check:tokens`: **paridade 100%** entre tokens declarados e CSS.
+
+
+## Lote F2 concluído — primitivas compartilhadas
+
+A sidebar/flyout, a toolbar canônica e a BottomBar foram migradas para os utilitários de janela de 840px. O lote removeu `transition-all`, sombras de superfície, classes arbitrárias de dimensão/tipografia, estilo inline de largura e visibilidades `sm/md` que conflitavam com a janela expandida. Controles de aba, filtros, ações secundárias, menus e links receberam alvos mínimos e foco visível; a faixa de abas mantém rolagem horizontal por utilitário semântico, preservando tabelas e superfícies estreitas sem truncamento.
+
+A validação do lote apresentou **0 P0, 0 P1, 0 P2 e 0 P3 nos componentes**, com nove P2 restantes somente em `src/styles.css`. Esses P2 são aliases de compatibilidade (`shadow-sm/md/lg` e classes de duração) que precisam ser revisados como fundação de tokens, não removidos isoladamente sem verificar dependências do projeto.
