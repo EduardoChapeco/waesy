@@ -827,13 +827,27 @@ export const approveTravelProposal = createServerFn({ method: "POST" })
     try {
       const { data: propRow } = await supabase
         .from("travel_proposals")
-        .select("id, store_id, title")
+        .select("id, store_id, title, public_token, snapshot_hash")
         .or(`public_token.eq.${data.token},id.eq.${data.token}`)
         .maybeSingle();
 
       if (propRow) {
         proposalId = propRow.id;
         storeId = propRow.store_id;
+        try {
+          const acceptanceHash = propRow.snapshot_hash || `legacy-proposal-${propRow.id}`;
+          await supabase.rpc("record_travel_proposal_acceptance" as never, {
+            p_proposal_id: propRow.id,
+            p_public_token: propRow.public_token,
+            p_snapshot_hash: acceptanceHash,
+            p_idempotency_key: `public-acceptance:${propRow.id}`,
+            p_accepted_by_name: null,
+            p_accepted_by_email: null,
+            p_terms_version: "travel-v1",
+          } as never);
+        } catch (acceptanceErr: any) {
+          console.warn("[approveTravelProposal] Registro canônico de aceite indisponível:", acceptanceErr?.message);
+        }
         await supabase
           .from("travel_proposals")
           .update({
@@ -1141,4 +1155,3 @@ Mantenha a resposta concisa, bem formatada com tópicos e agradável de ler em s
       reply: aiResponse.text || "Estou à disposição para tirar qualquer dúvida sobre esta viagem incrível!",
     };
   });
-

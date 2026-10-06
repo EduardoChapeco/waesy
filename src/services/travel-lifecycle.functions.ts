@@ -169,12 +169,43 @@ export const convertProposalToTrip = createServerFn({ method: "POST" })
     const identity = await getServerIdentity().catch(() => null);
     let effectiveStoreId = data.storeId || identity?.store_id;
     if (!effectiveStoreId) {
-      const { data: firstStore } = await supabase.from("stores").select("id").limit(1).maybeSingle();
-      effectiveStoreId = firstStore?.id;
+      const { data: proposalStore } = await supabase
+        .from("travel_proposals")
+        .select("store_id")
+        .or(`id.eq.${data.proposalId},public_token.eq.${data.proposalId}`)
+        .maybeSingle();
+      effectiveStoreId = proposalStore?.store_id || undefined;
+    }
+    if (!effectiveStoreId) {
+      throw new Error("Não foi possível determinar a loja da proposta; conversão cancelada por segurança.");
     }
 
-    // 1. Tentar executar a Stored Procedure atômica se não houver passageiros customizados
+    // 1. Nova autoridade canônica: aceite + conversão com lock/idempotência.
     if (!data.leadPassenger && !data.additionalPassengers) {
+      const canonicalKey = `proposal-conversion:${effectiveStoreId}:${data.proposalId}`;
+      const { data: canonicalRes, error: canonicalErr } = await supabase.rpc(
+        "convert_accepted_travel_proposal" as never,
+        { p_proposal_id: data.proposalId, p_idempotency_key: canonicalKey } as never,
+      );
+
+      if (!canonicalErr && canonicalRes && (canonicalRes as any).trip_id) {
+        const resObj = canonicalRes as any;
+        return {
+          success: true,
+          tripId: resObj.trip_id,
+          tripNumber: resObj.trip_number || `TRIP-${resObj.trip_id.slice(0, 8)}`,
+          contractId: resObj.contract_id,
+          voucherId: resObj.voucher_id,
+          voucherToken: resObj.voucher_token,
+        };
+      }
+
+      // Erros de negócio não podem cair no legado e contornar o aceite.
+      if (canonicalErr && /aceite válido|snapshot|não pode ser aceita|proposta não encontrada/i.test(canonicalErr.message)) {
+        throw new Error(canonicalErr.message);
+      }
+
+      // Compatibilidade temporária para instalações que ainda não aplicaram a migration.
       const { data: rpcRes, error: rpcErr } = await supabase.rpc(
         "convert_proposal_to_trip_native" as never,
         {
