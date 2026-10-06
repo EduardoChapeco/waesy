@@ -96,7 +96,7 @@ function BelezaVerticalPage() {
  const handleDepartmentChange = (depId: string) => {
  setActiveDepartment(depId);
  navigate({
- search: (prev) => ({
+ search: (prev: any) => ({
  ...prev,
  categoria: depId === "todos" ? undefined : depId,
  }),
@@ -106,7 +106,7 @@ function BelezaVerticalPage() {
  const handleViewModeChange = (mode: ViewModeType) => {
  setViewMode(mode);
  navigate({
- search: (prev) => ({
+ search: (prev: any) => ({
  ...prev,
  view: mode === "feed" ? undefined : mode,
  }),
@@ -115,7 +115,7 @@ function BelezaVerticalPage() {
 
  const handleSortChange = (sort: any) => {
  navigate({
- search: (prev) => ({
+ search: (prev: any) => ({
  ...prev,
  sort: sort === "newest" ? undefined : sort,
  }),
@@ -215,7 +215,7 @@ function BelezaVerticalPage() {
  {/* ── 4. Discovery Control Bar ── */}
  <DiscoveryControlBar
  search={search.q || ""}
- onSearchChange={(q) => navigate({ search: (prev) => ({ ...prev, q }) })}
+ onSearchChange={(q) => navigate({ search: (prev: any) => ({ ...prev, q }) })}
  searchPlaceholder="Buscar perfumes, maquiagem, shampoos, skincare..."
  categories={BELEZA_DEPARTMENTS}
  activeCategory={activeDepartment}

@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { getServerClient } from "@/lib/supabase";
 
+import type {} from "@tanstack/react-start";
 function escapeXml(unsafe: string): string {
  if (!unsafe) return "";
  return unsafe.replace(/[<>&'"]/g, (c) => {
@@ -23,7 +24,7 @@ function escapeXml(unsafe: string): string {
 export const Route = createFileRoute("/api/feed/xml")({
  server: {
  handlers: {
- GET: async ({ request }) => {
+ GET: async ({ request }: { request: Request }) => {
  try {
  const db = getServerClient();
  const url = new URL(request.url);
@@ -227,4 +228,4 @@ export const Route = createFileRoute("/api/feed/xml")({
  },
  },
  },
-});
+} as never)

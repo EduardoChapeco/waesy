@@ -140,18 +140,22 @@ Extraia todos os itens, preços em centavos (ex: R$ 45,00 -> 4500) e organize po
           name: p.name || "Item sem título",
           category: p.category || "Geral",
           description: p.description || "",
-          price_cents: Number(p.price_cents) || 1000,
+          price_cents: Number.isFinite(Number(p.price_cents)) ? Number(p.price_cents) : null,
           compare_at_cents: p.compare_at_cents ? Number(p.compare_at_cents) : null,
           portion: p.portion || "Individual",
           dietary_tags: Array.isArray(p.dietary_tags) ? p.dietary_tags : [],
           confidence: p.confidence || 0.95,
         })),
         business_profile: {
-          extracted_niche: parsed.business_profile?.extracted_niche || "Comércio Geral",
-          estimated_ticket_average_cents: Number(parsed.business_profile?.estimated_ticket_average_cents) || 3500,
-          currency: "BRL",
+          extracted_niche: parsed.business_profile?.extracted_niche || null,
+          estimated_ticket_average_cents: Number.isFinite(Number(parsed.business_profile?.estimated_ticket_average_cents))
+            ? Number(parsed.business_profile.estimated_ticket_average_cents)
+            : null,
+          currency: parsed.business_profile?.currency || null,
           visual_parser_model: `${aiResult.provider}/${aiResult.model}`,
-          ocr_confidence_overall: 0.95,
+          ocr_confidence_overall: typeof parsed.business_profile?.ocr_confidence_overall === "number"
+            ? parsed.business_profile.ocr_confidence_overall
+            : null,
         },
       };
     }
@@ -200,11 +204,11 @@ export const parseMenuImagesMultimodal = createServerFn({ method: "POST" })
         : Array.from(new Set(extractedProducts.map((p) => p.category).filter(Boolean) as string[]));
 
       const businessProfile = aiExtraction.business_profile || {
-        extracted_niche: "Gastronomia & Varejo",
-        estimated_ticket_average_cents: 0,
-        currency: "BRL",
-        visual_parser_model: "google/gemini-2.5-flash",
-        ocr_confidence_overall: 0.85,
+        extracted_niche: null,
+        estimated_ticket_average_cents: null,
+        currency: null,
+        visual_parser_model: null,
+        ocr_confidence_overall: null,
       };
 
       // Grava no banco remoto
@@ -389,7 +393,7 @@ export const importMasterCatalogProduct = createServerFn({ method: "POST" })
 
       // 2. Insere na tabela products da loja
       const slug = generateSlug(masterItem.name);
-      const priceCents = data.price_cents_override || masterItem.suggested_price_cents || 1000;
+      const priceCents = data.price_cents_override ?? masterItem.suggested_price_cents ?? null;
 
       const { data: createdProduct, error: prodErr } = await db
         .from("products")
@@ -399,7 +403,7 @@ export const importMasterCatalogProduct = createServerFn({ method: "POST" })
           slug,
           brand: masterItem.brand_name,
           ean: masterItem.barcode_ean,
-          description: masterItem.description || `Produto oficial ${masterItem.brand_name}.`,
+          description: masterItem.description || null,
           price_cents: priceCents,
           status: "active",
           is_physical: true,

@@ -15,6 +15,12 @@ if (fs.existsSync(secretsPath)) {
   process.env.SUPABASE_DB_NAME = "postgres";
 }
 
+// Chave determinística exclusiva do processo de teste; nunca é carregada pelo runtime da aplicação.
+// Uma chave explicitamente configurada pelo ambiente de teste continua tendo precedência.
+if (!process.env.VAULT_MASTER_KEY) {
+  process.env.VAULT_MASTER_KEY = "waesy-vitest-only-not-for-production-2026-10-06";
+}
+
 const createChainableMock = () => {
   let proxy: any;
   const fn: any = vi.fn((..._args: any[]) => proxy);

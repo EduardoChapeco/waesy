@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import {
   ChatCircleDots,
-  Sparkle,
   User,
   PaperPlaneRight,
   ArrowSquareOut,
@@ -196,7 +195,7 @@ export function ProductAiSdrChat({
             type="button"
             className="fixed bottom-20 right-4 sm:bottom-8 sm:right-8 z-40 h-12 px-4 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center gap-2 text-xs font-semibold focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none cursor-pointer"
           >
-            <Sparkle className="size-4" weight="fill" />
+            <ChatCircleDots className="size-4" weight="fill" />
             <span>Tirar Duvidas com IA</span>
           </Button>
         ) : triggerVariant === "compact" ? (
@@ -205,7 +204,7 @@ export function ProductAiSdrChat({
             variant="outline"
             className={`h-11 px-3 rounded-lg text-xs font-medium border-border flex items-center gap-2 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none cursor-pointer ${className}`}
           >
-            <Sparkle className="size-3.5 text-primary" weight="fill" />
+            <ChatCircleDots className="size-3.5 text-primary" weight="fill" />
             <span>Duvidas com SDR</span>
           </Button>
         ) : (
@@ -272,7 +271,7 @@ export function ProductAiSdrChat({
             >
               {m.role === "assistant" && (
                 <div className="size-7 rounded-full bg-primary/10 text-primary flex items-center justify-center border border-border shrink-0 mt-1">
-                  <Sparkle className="size-3.5" weight="fill" />
+                  <ChatCircleDots className="size-3.5" weight="fill" />
                 </div>
               )}
 

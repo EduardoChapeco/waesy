@@ -56,7 +56,7 @@ export default function WorkspaceMarketingStoriesPage() {
 
   // Auto-fill from catalog product
   const handleSelectProduct = (productId: string) => {
-    const prod = products.find((p) => p.id === productId);
+    const prod = products.find((p: any) => p.id === productId);
     if (!prod) return;
 
     setTitle(prod.title || "");
@@ -218,7 +218,7 @@ export default function WorkspaceMarketingStoriesPage() {
                 <option value="" disabled>
                   Selecione um produto para preenchimento automático...
                 </option>
-                {products.map((p) => (
+                {products.map((p: any) => (
                   <option key={p.id} value={p.id}>
                     {p.title} — {(p.price_cents / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
                   </option>

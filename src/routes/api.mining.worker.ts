@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { processCrawlQueueBatch, enqueueRssItemsBatch, dispatchScheduledMiningJobFn } from "@/services/mining.functions";
 import { executeAutomatedNewsHarvest } from "@/services/mining/automated-harvest";
 
+import type {} from "@tanstack/react-start";
 async function handleWorkerExecution(request: Request) {
   try {
     const authHeader = request.headers.get("authorization");
@@ -146,8 +147,8 @@ async function handleWorkerExecution(request: Request) {
 export const Route = createFileRoute("/api/mining/worker")({
   server: {
     handlers: {
-      GET: async ({ request }) => handleWorkerExecution(request),
-      POST: async ({ request }) => handleWorkerExecution(request),
+      GET: async ({ request }: { request: Request }) => handleWorkerExecution(request),
+      POST: async ({ request }: { request: Request }) => handleWorkerExecution(request),
     },
   },
-});
+} as never)

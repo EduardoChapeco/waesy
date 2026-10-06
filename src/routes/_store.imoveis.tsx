@@ -108,7 +108,7 @@ function ImoveisVerticalPage() {
   const handleCategoryChange = (catId: string) => {
     setActiveCategory(catId as any);
     navigate({
-      search: (prev) => ({
+      search: (prev: any) => ({
         ...prev,
         tipo: catId === "todos" ? undefined : (catId as any),
       }),
@@ -117,7 +117,7 @@ function ImoveisVerticalPage() {
 
   const handleSearchChange = (q: string) => {
     navigate({
-      search: (prev) => ({
+      search: (prev: any) => ({
         ...prev,
         q: q || undefined,
       }),

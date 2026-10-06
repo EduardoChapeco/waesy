@@ -91,7 +91,7 @@ function LivrosVerticalPage() {
  const handleDepartmentChange = (depId: string) => {
  setActiveDepartment(depId);
  navigate({
- search: (prev) => ({
+ search: (prev: any) => ({
  ...prev,
  categoria: depId === "todos" ? undefined : depId,
  }),
@@ -101,7 +101,7 @@ function LivrosVerticalPage() {
  const handleViewModeChange = (mode: ViewModeType) => {
  setViewMode(mode);
  navigate({
- search: (prev) => ({
+ search: (prev: any) => ({
  ...prev,
  view: mode === "feed" ? undefined : mode,
  }),
@@ -185,7 +185,7 @@ function LivrosVerticalPage() {
  {/* ── 3. Discovery Control Bar ── */}
  <DiscoveryControlBar
  search={search.q || ""}
- onSearchChange={(q) => navigate({ search: (prev) => ({ ...prev, q }) })}
+ onSearchChange={(q) => navigate({ search: (prev: any) => ({ ...prev, q }) })}
  searchPlaceholder="Buscar livros, cadernos, canetas, jogos, presentes..."
  categories={LIVROS_DEPARTMENTS}
  activeCategory={activeDepartment}

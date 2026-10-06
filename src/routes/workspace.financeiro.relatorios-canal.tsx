@@ -107,11 +107,11 @@ function ChannelDREPage() {
 
   // ── KPIS GLOBAIS ─────────────────────────────────────────────────────────
   const totals = useMemo(() => {
-    const gross = dreRows.reduce((s, r) => s + (r.gross_revenue_cents || 0), 0);
-    const net = dreRows.reduce((s, r) => s + (r.net_revenue_cents || 0), 0);
-    const fees = dreRows.reduce((s, r) => s + (r.platform_fees_cents || 0), 0);
-    const shipping = dreRows.reduce((s, r) => s + (r.shipping_costs_cents || 0), 0);
-    const orders = dreRows.reduce((s, r) => s + (r.order_count || 0), 0);
+    const gross = dreRows.reduce((s: any, r: any) => s + (r.gross_revenue_cents || 0), 0);
+    const net = dreRows.reduce((s: any, r: any) => s + (r.net_revenue_cents || 0), 0);
+    const fees = dreRows.reduce((s: any, r: any) => s + (r.platform_fees_cents || 0), 0);
+    const shipping = dreRows.reduce((s: any, r: any) => s + (r.shipping_costs_cents || 0), 0);
+    const orders = dreRows.reduce((s: any, r: any) => s + (r.order_count || 0), 0);
     const margin = gross > 0 ? (net / gross) * 100 : 0;
 
     return { gross, net, fees, shipping, orders, margin };
@@ -120,7 +120,7 @@ function ChannelDREPage() {
   // ── FILTROS E ORDENAÇÃO ──────────────────────────────────────────────────
   const sortedAndFilteredRows = useMemo(() => {
     return dreRows
-      .filter((r) => {
+      .filter((r: any) => {
         if (!searchTerm.trim()) return true;
         const term = searchTerm.toLowerCase();
         return (
@@ -128,7 +128,7 @@ function ChannelDREPage() {
           (r.channel || "").toLowerCase().includes(term)
         );
       })
-      .sort((a, b) => {
+      .sort((a: any, b: any) => {
         if (sortBy === "gross") return b.gross_revenue_cents - a.gross_revenue_cents;
         if (sortBy === "net") return b.net_revenue_cents - a.net_revenue_cents;
         if (sortBy === "margin") return b.gross_margin_percent - a.gross_margin_percent;
@@ -274,7 +274,7 @@ function ChannelDREPage() {
 
           {/* Barra Segmentada */}
           <div className="w-full h-3 rounded-full overflow-hidden flex bg-muted/40">
-            {dreRows.map((row) => {
+            {dreRows.map((row: any) => {
               const sharePercent = totals.gross > 0 ? (row.gross_revenue_cents / totals.gross) * 100 : 0;
               if (sharePercent < 1) return null;
               return (
@@ -290,7 +290,7 @@ function ChannelDREPage() {
 
           {/* Legenda dos Canais */}
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1 pt-1">
-            {dreRows.map((row) => {
+            {dreRows.map((row: any) => {
               const sharePercent = totals.gross > 0 ? (row.gross_revenue_cents / totals.gross) * 100 : 0;
               return (
                 <div key={row.channel} className="flex items-center gap-2 text-xs">
@@ -367,7 +367,7 @@ function ChannelDREPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {sortedAndFilteredRows.map((row) => (
+                {sortedAndFilteredRows.map((row: any) => (
                   <TableRow key={row.channel} className="border-border/40 hover:bg-muted/30 transition-colors">
                     <TableCell className="text-xs font-medium">
                       <Badge

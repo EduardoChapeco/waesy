@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-10-06T12:12:08.004Z",
+  "timestamp": "2026-10-06T18:01:00.006Z",
   "totalFilesScanned": 1024,
   "totalButtonsScanned": 6145,
   "totalControls": 6145,
@@ -13,11 +13,11 @@
   "summaryBySeverity": {},
   "summaryByIntent": {
     "navigate": 1636,
-    "local-state": 3874,
     "mutate": 124,
+    "copy-share": 105,
+    "local-state": 3874,
     "submit": 241,
     "open-modal-with-continuation": 153,
-    "copy-share": 105,
     "preview-only": 10,
     "disabled-with-reason": 2
   },

@@ -65,36 +65,28 @@ export const registerInstallmentPayment = createServerFn({ method: "POST" })
       throw new Error("Acesso negado.");
     }
 
-    // Update installment
+    if (inst.status === "paid") throw new Error("Esta parcela já está quitada.");
+    if (!input.paymentProofUrl) {
+      throw new Error("O comprovante é obrigatório. A quitação só ocorre após conciliação da loja.");
+    }
+
+    // O cliente envia evidência; somente a conciliação da loja executa a baixa financeira.
     const { data: updatedInst, error: upErr } = await supabase
       .from("receivable_installments")
       .update({
-        status: "paid",
-        paid_at: new Date().toISOString(),
+        conciliation_status: "pending",
         payment_method: input.paymentMethod,
         payment_proof_url: input.paymentProofUrl,
-        notes: input.notes,
+        conciliation_proof_url: input.paymentProofUrl,
+        notes: input.notes || inst.notes,
         updated_at: new Date().toISOString(),
       })
       .eq("id", inst.id)
+      .neq("status", "paid")
       .select()
       .single();
 
-    if (upErr) throw new Error("Erro ao registrar quitação da parcela.");
-
-    // Check if all installments are paid to settle receivable
-    const { data: allInsts } = await supabase
-      .from("receivable_installments")
-      .select("status")
-      .eq("receivable_id", receivable.id);
-
-    const allSettled = allInsts?.every((i) => i.status === "paid" || i.status === "waived");
-    if (allSettled) {
-      await supabase
-        .from("receivables")
-        .update({ status: "settled", updated_at: new Date().toISOString() })
-        .eq("id", receivable.id);
-    }
+    if (upErr || !updatedInst) throw new Error("Erro ao enviar a parcela para conciliação.");
 
     return updatedInst;
   });
@@ -1337,4 +1329,3 @@ export const forceMasterConciliation = createServerFn({ method: "POST" })
       return { success: true, action: "reopen" };
     }
   });
-

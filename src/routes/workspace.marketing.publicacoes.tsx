@@ -115,7 +115,7 @@ function SocialPublicacoesPage() {
   };
 
   const filteredPosts =
-    filterStatus === "all" ? posts : posts.filter((p) => p.status === filterStatus);
+    filterStatus === "all" ? posts : posts.filter((p: any) => p.status === filterStatus);
 
   const statusFilters = [
     { key: "all", label: "Todos" },
@@ -183,8 +183,8 @@ function SocialPublicacoesPage() {
         </div>
       ) : (
         <div className="space-y-2">
-          {filteredPosts.map((post) => {
-            const statusMeta = STATUS_BADGE[post.status];
+          {filteredPosts.map((post: any) => {
+            const statusMeta = STATUS_BADGE[post.status as SocialPostDTO["status"]];
             const StatusIcon = statusMeta.icon;
             return (
               <div
@@ -209,7 +209,7 @@ function SocialPublicacoesPage() {
                     </Badge>
                     {/* Redes */}
                     <div className="flex items-center gap-1">
-                      {(post.networks || []).map((net) => (
+                      {(post.networks || []).map((net: any) => (
                         <NetworkIcon key={net} network={net as SocialNetwork} />
                       ))}
                     </div>
