@@ -24,6 +24,8 @@ export const LedgerTransactionTypeSchema = z.enum([
   "pix_sent",
   "giftcard_redeemed",
   "commission_payout",
+  "commission_accrual",
+  "commission_reversal",
   "escrow_hold",
   "escrow_release",
   "order_payment",
