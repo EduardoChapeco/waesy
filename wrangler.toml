@@ -5,7 +5,7 @@ compatibility_flags = ["nodejs_compat"]
 
 [vars]
 VITE_SITE_URL = "https://usewaesy.pages.dev"
-VITE_SUPABASE_URL = "https://<project-ref>.supabase.co"
-SUPABASE_URL = "https://<project-ref>.supabase.co"
+VITE_SUPABASE_URL = "https://jfuebqmltksyznovhlwa.supabase.co"
+SUPABASE_URL = "https://jfuebqmltksyznovhlwa.supabase.co"
 # Configure VITE_SUPABASE_ANON_KEY, service-role and webhook/cron secrets
 # through the Cloudflare secret manager; never commit their values here.
