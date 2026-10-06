@@ -4,11 +4,12 @@ import {
   MCP_RESOURCES_MANIFEST,
   MCP_PROMPTS_MANIFEST,
 } from "@/services/mcp-server.functions";
+import type {} from "@tanstack/react-start";
 
 export const Route = createFileRoute("/api/webmcp.json")({
   server: {
     handlers: {
-      GET: async ({ request }) => {
+      GET: async ({ request }: { request: Request }) => {
         const url = new URL(request.url);
 
         const manifest = {
@@ -79,4 +80,4 @@ export const Route = createFileRoute("/api/webmcp.json")({
       },
     },
   },
-});
+} as never)

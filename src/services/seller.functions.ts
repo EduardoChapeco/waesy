@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getAnonServerClient, getServerClient } from "@/lib/supabase";
-import { setSellerRefCookie } from "@/lib/session";
+import { setSellerRefCookie } from "@/lib/server-access";
 
 export const getSellerShowcase = createServerFn({ method: "GET" })
  .validator(z.object({ slug: z.string() }))
@@ -48,7 +48,7 @@ export const getSellerShowcase = createServerFn({ method: "GET" })
  }
 
  // Track the seller in a cookie so addToCart attributes them automatically
- setSellerRefCookie(showcase.seller_id);
+ await setSellerRefCookie(showcase.seller_id);
 
  return {
  status: "success" as const,

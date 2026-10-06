@@ -158,7 +158,7 @@ USING (
         wm.store_id::text = (storage.foldername(name))[1]
         OR wm.store_id::text = (storage.foldername(name))[2]
       )
-      AND wm.user_id = (SELECT auth.uid())
+      AND wm.profile_id = (SELECT auth.uid())
     )
     OR EXISTS (
       SELECT 1 FROM public.profiles p
@@ -214,7 +214,7 @@ USING (
         wm.store_id::text = (storage.foldername(name))[1]
         OR wm.store_id::text = (storage.foldername(name))[2]
       )
-      AND wm.user_id = (SELECT auth.uid())
+      AND wm.profile_id = (SELECT auth.uid())
     )
     OR EXISTS (
       SELECT 1 FROM public.profiles p
@@ -245,7 +245,7 @@ USING (
         wm.store_id::text = (storage.foldername(name))[1]
         OR wm.store_id::text = (storage.foldername(name))[2]
       )
-      AND wm.user_id = (SELECT auth.uid())
+      AND wm.profile_id = (SELECT auth.uid())
     )
     OR EXISTS (
       SELECT 1 FROM public.profiles p
@@ -271,7 +271,7 @@ WITH CHECK (
         wm.store_id::text = (storage.foldername(name))[1]
         OR wm.store_id::text = (storage.foldername(name))[2]
       )
-      AND wm.user_id = (SELECT auth.uid())
+      AND wm.profile_id = (SELECT auth.uid())
     )
     OR EXISTS (
       SELECT 1 FROM public.profiles p
@@ -311,7 +311,7 @@ USING (
         wm.store_id::text = (storage.foldername(name))[1]
         OR wm.store_id::text = (storage.foldername(name))[2]
       )
-      AND wm.user_id = (SELECT auth.uid())
+      AND wm.profile_id = (SELECT auth.uid())
     )
     OR EXISTS (
       SELECT 1 FROM public.profiles p
@@ -337,7 +337,7 @@ WITH CHECK (
         wm.store_id::text = (storage.foldername(name))[1]
         OR wm.store_id::text = (storage.foldername(name))[2]
       )
-      AND wm.user_id = (SELECT auth.uid())
+      AND wm.profile_id = (SELECT auth.uid())
     )
     OR EXISTS (
       SELECT 1 FROM public.profiles p

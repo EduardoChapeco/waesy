@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import {
   AIChatShell,
@@ -130,6 +130,7 @@ function CopilotPage() {
   ]);
 
   const [isSending, setIsSending] = useState(false);
+  const activeRunRef = useRef(0);
 
   useEffect(() => {
     if (activeThreadId && isUuid(activeThreadId) && activeThreadId !== DEFAULT_GUEST_THREAD_ID) {
@@ -147,7 +148,7 @@ function CopilotPage() {
     if (!text.trim() || isSending) return;
 
     const userMessageItem: ChatMessageItem = {
-      id: `usr-${Date.now()}`,
+      id: typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `00000000-0000-0000-0000-${Date.now().toString().slice(-12).padStart(12, "0")}`,
       threadId: activeThreadId,
       senderName: (session as any)?.user?.user_metadata?.full_name || (session as any)?.user_metadata?.full_name || "Você",
       isStaffOrAI: false,
@@ -157,14 +158,16 @@ function CopilotPage() {
       attachments,
     };
 
+    const runId = ++activeRunRef.current;
     setMessages((prev) => [...prev, userMessageItem]);
     setIsSending(true);
 
     try {
       if (effectiveUserId && isUuid(activeThreadId) && activeThreadId !== DEFAULT_GUEST_THREAD_ID) {
-        await sendAiConversationMessage({
+        const result = await sendAiConversationMessage({
           data: {
             threadId: activeThreadId,
+            clientMessageId: userMessageItem.id,
             message: text,
             replyToId,
             attachments,
@@ -172,9 +175,37 @@ function CopilotPage() {
             userLng: userCoords.lng,
           },
         });
-        const updated = await getAiConversationThread({ data: { threadId: activeThreadId } });
-        if (updated?.messages) {
-          setMessages(updated.messages as any);
+        if (runId !== activeRunRef.current) return;
+        setMessages((prev) => {
+          const deliveredUser = prev.map((item) =>
+            item.id === userMessageItem.id ? { ...item, status: "delivered" as const } : item,
+          );
+          const aiMessage = result?.aiMessage;
+          if (!aiMessage) return deliveredUser;
+          return [
+            ...deliveredUser,
+            {
+              id: aiMessage.id,
+              threadId: activeThreadId,
+              executionId: aiMessage.executionId,
+              senderName: "Waesy Copilot",
+              isStaffOrAI: true,
+              text: aiMessage.text,
+              createdAt: aiMessage.createdAt,
+              status: aiMessage.status || "delivered",
+              fsmPhase: aiMessage.fsmPhase,
+              fsmState: aiMessage.fsmState,
+              activitySteps: aiMessage.activitySteps,
+              toolCalls: aiMessage.toolCalls,
+              artifact: aiMessage.artifact,
+              structuredPayload: aiMessage.structuredPayload,
+            } as ChatMessageItem,
+          ];
+        });
+        if (result?.updatedWorkingMemory) {
+          setThreads((prev) => prev.map((thread) =>
+            thread.id === activeThreadId ? { ...thread, workingMemory: result.updatedWorkingMemory } : thread,
+          ));
         }
       } else {
         const execution = await executeGuestCopilotMessage({
@@ -199,13 +230,28 @@ function CopilotPage() {
           artifact: execution.artifact,
           structuredPayload: execution.structuredPayload,
         };
-        setMessages((prev) => [...prev, aiMessageItem]);
+        if (runId === activeRunRef.current) setMessages((prev) => [...prev, aiMessageItem]);
       }
     } catch (err: any) {
-      toast.error(err?.message || "Erro ao processar mensagem do Copilot.");
+      if (runId === activeRunRef.current) {
+        setMessages((prev) => prev.map((item) => item.id === userMessageItem.id ? { ...item, status: "failed" as const } : item));
+        toast.error(err?.message || "Erro ao processar mensagem do Copilot.");
+      }
     } finally {
-      setIsSending(false);
+      if (runId === activeRunRef.current) setIsSending(false);
     }
+  };
+
+  const handleRetryMessage = (messageId: string) => {
+    const failed = messages.find((message) => message.id === messageId);
+    if (failed?.text) void handleSendMessage(failed.text, failed.attachments || undefined, failed.replyTo?.id);
+  };
+
+  const handleCancelActiveRun = () => {
+    activeRunRef.current += 1;
+    setIsSending(false);
+    setMessages((prev) => prev.map((item) => item.status === "sending" ? { ...item, status: "failed" as const, text: item.text } : item));
+    toast.info("Execução interrompida. Você pode tentar novamente.");
   };
 
   const handleCreateThread = async (type: ThreadType, title: string) => {
@@ -270,6 +316,8 @@ function CopilotPage() {
         messages={messages}
         onSelectThread={(id) => setActiveThreadId(id)}
         onSendMessage={handleSendMessage}
+        onRetryMessage={handleRetryMessage}
+        onCancelActiveRun={handleCancelActiveRun}
         onCreateThread={handleCreateThread}
         onDeleteThread={handleDeleteThread}
         isSending={isSending}

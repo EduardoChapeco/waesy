@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { parseUniversalDocumentOCR, type UniversalOcrResult } from "@/services/multimodal-ocr.functions";
+import { parseUniversalDocumentOCR, type UniversalOcrMimeType, type UniversalOcrResult } from "@/services/multimodal-ocr.functions";
 import { DigitalCompanionCard, type CompanionCardNiche } from "@/components/documents/digital-companion-card";
 
 export interface MultimodalOcrUploaderProps {
@@ -119,10 +119,14 @@ export function MultimodalOcrUploader({
       setIsProcessing(true);
       setStatusMessage("Enviando páginas para inteligência visual...");
 
-      const payload = {
+      const payload: {
+        files: Array<{ base64: string; mimeType: UniversalOcrMimeType; name: string }>;
+        nicheHint: typeof selectedNiche;
+        contextHint?: string;
+      } = {
         files: files.map((f) => ({
           base64: f.base64,
-          mimeType: f.type,
+          mimeType: f.type === "application/pdf" || f.type === "image/png" || f.type === "image/webp" || f.type === "image/tiff" || f.type === "image/jpeg" ? f.type : "image/png",
           name: f.name,
         })),
         nicheHint: selectedNiche,

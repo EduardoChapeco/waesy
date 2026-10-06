@@ -471,9 +471,9 @@ function MarketplaceHubPage() {
   };
 
   // Aggregates
-  const totalGrossSalesCents = summary.reduce((acc, curr) => acc + (curr.gross_sales_cents || 0), 0);
-  const totalFeesCents = summary.reduce((acc, curr) => acc + (curr.marketplace_fees_cents || 0), 0);
-  const totalNetCents = summary.reduce((acc, curr) => acc + (curr.net_payout_cents || 0), 0);
+  const totalGrossSalesCents = summary.reduce((acc: any, curr: any) => acc + (curr.gross_sales_cents || 0), 0);
+  const totalFeesCents = summary.reduce((acc: any, curr: any) => acc + (curr.marketplace_fees_cents || 0), 0);
+  const totalNetCents = summary.reduce((acc: any, curr: any) => acc + (curr.net_payout_cents || 0), 0);
   const totalConnected = connectors.filter((c: MarketplaceConnectorDTO) => c.status === "connected").length;
 
   const filteredCatalog = PLATFORMS_CATALOG.filter((p) => {
@@ -822,7 +822,7 @@ function MarketplaceHubPage() {
                       </TableCell>
                     </TableRow>
                   ) : (
-                    mappings.map((item) => {
+                    mappings.map((item: any) => {
                       const channelKeys = Object.keys(item.mappings || {});
 
                       return (

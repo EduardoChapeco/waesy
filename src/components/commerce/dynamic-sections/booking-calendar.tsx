@@ -5,7 +5,6 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { format, addDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Calendar as CalendarIcon, Clock, Loader2, CheckCircle2 } from "lucide-react";
-import { useServerFn } from "@tanstack/react-start";
 import { listBookingServices, getAvailableSlots, createAppointment } from "@/services/booking.functions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -34,9 +33,9 @@ export function BookingCalendar({ content }: BookingCalendarProps) {
  const [guestPhone, setGuestPhone] = useState("");
  const [notes, setNotes] = useState("");
 
- const listServicesFn = useServerFn(listBookingServices);
- const getSlotsFn = useServerFn(getAvailableSlots);
- const createFn = useServerFn(createAppointment);
+ const listServicesFn = listBookingServices;
+ const getSlotsFn = getAvailableSlots;
+ const createFn = createAppointment;
 
  // Queries
  const { data: servicesRes, isLoading: isLoadingServices } = useQuery({

@@ -181,7 +181,7 @@ function DoacoesPage() {
   const handleCategoryChange = (catId: string) => {
     setActiveCategory(catId);
     navigate({
-      search: (prev) => ({
+      search: (prev: any) => ({
         ...prev,
         categoria: catId === "todos" ? undefined : catId,
       }),
@@ -191,7 +191,7 @@ function DoacoesPage() {
   const handleSearchChange = (value: string) => {
     setSearchInput(value);
     navigate({
-      search: (prev) => ({
+      search: (prev: any) => ({
         ...prev,
         q: value.trim() || undefined,
       }),

@@ -7,7 +7,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
-import { resolveTenantStoreId } from "@/lib/tenant.server";
+import { resolveTenantStoreId } from "@/lib/server-access";
 
 // --- SCHEMAS ---
 

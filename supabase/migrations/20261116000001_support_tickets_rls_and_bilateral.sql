@@ -37,7 +37,7 @@ USING (
   EXISTS (
     SELECT 1 FROM public.workspace_members wm
     WHERE wm.store_id = support_tickets.store_id
-      AND wm.user_id = auth.uid()
+      AND wm.profile_id = auth.uid()
   )
 );
 
@@ -49,7 +49,7 @@ USING (
   EXISTS (
     SELECT 1 FROM public.workspace_members wm
     WHERE wm.store_id = support_tickets.store_id
-      AND wm.user_id = auth.uid()
+      AND wm.profile_id = auth.uid()
   )
 );
 
@@ -94,7 +94,7 @@ USING (
     SELECT 1 FROM public.support_tickets t
     JOIN public.workspace_members wm ON wm.store_id = t.store_id
     WHERE t.id = ticket_messages.ticket_id
-      AND wm.user_id = auth.uid()
+      AND wm.profile_id = auth.uid()
   )
 );
 
@@ -108,7 +108,7 @@ WITH CHECK (
     SELECT 1 FROM public.support_tickets t
     JOIN public.workspace_members wm ON wm.store_id = t.store_id
     WHERE t.id = ticket_messages.ticket_id
-      AND wm.user_id = auth.uid()
+      AND wm.profile_id = auth.uid()
   )
 );
 

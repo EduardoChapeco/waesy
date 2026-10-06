@@ -1,10 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { getServerClient } from "@/lib/supabase";
 
+import type {} from "@tanstack/react-start";
 export const Route = createFileRoute("/api/webhooks/meta-ads")({
   server: {
     handlers: {
-      GET: async ({ request }) => {
+      GET: async ({ request }: { request: Request }) => {
         const url = new URL(request.url);
         const mode = url.searchParams.get("hub.mode");
         const token = url.searchParams.get("hub.verify_token");
@@ -22,7 +23,7 @@ export const Route = createFileRoute("/api/webhooks/meta-ads")({
         return new Response("Forbidden", { status: 403 });
       },
 
-      POST: async ({ request }) => {
+      POST: async ({ request }: { request: Request }) => {
         try {
           const body = await request.json().catch(() => ({}));
           const supabase = getServerClient();
@@ -168,4 +169,4 @@ export const Route = createFileRoute("/api/webhooks/meta-ads")({
       },
     },
   },
-});
+} as never)

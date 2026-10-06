@@ -1,6 +1,6 @@
 import { createServerFn } from '@tanstack/react-start';
 import { z } from 'zod';
-import { getServerIdentity, assertStoreAccess } from '@/lib/identity.server';
+import { getServerIdentity, assertStoreAccess } from '@/lib/server-access';
 import { getServerClient } from '@/lib/supabase';
 import type { DepartureCardDTO, DepartureStage } from '@/types/travel-departures';
 

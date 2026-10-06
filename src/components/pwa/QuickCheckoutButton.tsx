@@ -11,13 +11,13 @@ export interface QuickCheckoutButtonProps {
 }
 
 export const QuickCheckoutButton: React.FC<QuickCheckoutButtonProps> = ({
-  itemCount = 2,
-  totalCents = 12900,
+  itemCount = 0,
+  totalCents = 0,
   themeColor = "#0F172A",
   onCheckout,
   label = "Finalizar Pedido",
 }) => {
-  if (itemCount <= 0) return null;
+  if (itemCount <= 0 || !onCheckout) return null;
 
   return (
     <div className="w-full px-3 py-2 bg-background/80 backdrop-blur-md border-t border-border/40 select-none">

@@ -1,3 +1,4 @@
+import type {} from "@tanstack/react-start";
 /**
  * API Route: POST /api/security-telemetry
  * Recebe beacons do client-side security sentinel.
@@ -53,4 +54,4 @@ export const Route = createFileRoute("/api/security-telemetry")({
  },
  },
  },
-});
+} as never)

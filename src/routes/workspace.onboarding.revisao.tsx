@@ -5,7 +5,7 @@ import { Package, CheckCircle2, Camera, Layers, Barcode, Table, Plus, Trash2, Ar
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { searchMasterCatalog, importMasterCatalogProduct, importProductsTraditional, approveOnboardingProducts } from "@/services/multimodal-onboarding.functions";
+import { searchMasterCatalog, importMasterCatalogProduct, importProductsTraditional, approveOnboardingProducts, getOnboardingSession } from "@/services/multimodal-onboarding.functions";
 import type { GlobalMasterCatalogItemDTO } from "@/types/squads-and-onboarding";
 
 export const Route = createFileRoute("/workspace/onboarding/revisao")({
@@ -35,6 +35,9 @@ export function OnboardingReviewPage() {
 
   // Estado Multimodal (dados reais obtidos da sessão de visão)
   const [items, setItems] = useState<ExtractedItem[]>([]);
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [sessionStatus, setSessionStatus] = useState<string | null>(null);
+  const [isLoadingSession, setIsLoadingSession] = useState(false);
 
   const [isApproving, setIsApproving] = useState(false);
 
@@ -53,10 +56,37 @@ export function OnboardingReviewPage() {
   const [isSavingManual, setIsSavingManual] = useState(false);
 
   useEffect(() => {
+    const querySessionId = new URLSearchParams(window.location.search).get("session_id");
+    if (querySessionId && querySessionId !== sessionId) {
+      setSessionId(querySessionId);
+      void loadOnboardingSession(querySessionId);
+    }
     if (activeTab === "master_catalog") {
       loadMasterCatalogItems();
     }
   }, [activeTab]);
+
+  async function loadOnboardingSession(id: string) {
+    setIsLoadingSession(true);
+    try {
+      const session = await getOnboardingSession({ data: { session_id: id } });
+      setSessionStatus(session.status);
+      const extracted = Array.isArray(session.extracted_products) ? session.extracted_products : [];
+      setItems(extracted.map((item: any, index: number) => ({
+        id: String(item.temp_id || item.id || `extracted-${index}`),
+        name: String(item.name || ""),
+        category: String(item.category || "Geral"),
+        description: String(item.description || ""),
+        price_cents: Number.isFinite(Number(item.price_cents)) ? Number(item.price_cents) : 0,
+        compare_at_cents: item.compare_at_cents == null ? null : Number(item.compare_at_cents),
+        dietary_tags: Array.isArray(item.dietary_tags) ? item.dietary_tags : [],
+      })));
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Não foi possível carregar a sessão de onboarding.");
+    } finally {
+      setIsLoadingSession(false);
+    }
+  }
 
   async function loadMasterCatalogItems(query = "", barcode = "") {
     setIsSearchingCatalog(true);
@@ -96,6 +126,7 @@ export function OnboardingReviewPage() {
     try {
       await approveOnboardingProducts({
         data: {
+          session_id: sessionId || undefined,
           approved_products: items.map((it) => ({
             name: it.name,
             category: it.category,
@@ -248,10 +279,12 @@ export function OnboardingReviewPage() {
                 <div className="relative aspect-[3/4] bg-muted/30 flex flex-col items-center justify-center p-6 text-center border border-border/40 rounded-lg overflow-hidden">
                   <Camera className="size-12 text-muted-foreground/40 mb-3" />
                   <p className="text-xs font-bold text-foreground">Documento Processado via OCR</p>
-                  <p className="text-xs text-muted-foreground mt-1">Extração multimodal concluída</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {isLoadingSession ? "Carregando sessão persistida…" : sessionStatus ? `Status: ${sessionStatus}` : "Nenhuma sessão vinculada"}
+                  </p>
                   <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-background/90 via-background/40 to-transparent p-4">
-                    <p className="text-xs text-foreground font-medium">Cardápio Principal da Casa</p>
-                    <p className="text-xs text-muted-foreground">Itens identificados com alta acurácia semântica</p>
+                    <p className="text-xs text-foreground font-medium">Fonte persistida da sessão</p>
+                    <p className="text-xs text-muted-foreground">Apenas dados retornados pelo processamento são exibidos.</p>
                   </div>
                 </div>
               </div>
@@ -263,7 +296,7 @@ export function OnboardingReviewPage() {
                   <span>Diagnóstico do The Visual Parser</span>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Nicho detectado: <strong className="text-foreground">Gastronomia e Restaurante</strong>. Ticket médio estimado em R$ 45,00. 4 categorias estruturadas.
+                  {sessionStatus ? "O diagnóstico será exibido quando existir na sessão persistida." : "Abra esta tela com uma sessão de onboarding para carregar o diagnóstico real."}
                 </p>
               </div>
             </section>

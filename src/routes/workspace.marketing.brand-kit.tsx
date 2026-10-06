@@ -9,9 +9,9 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { ImageUpload } from "@/components/ui/image-upload";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { saveBrandKit, getBrandKit, generateBrandKitWithAI, type BrandKitDTO } from "@/services/studio.functions";
+import { generateBrandKitWithAI } from "@/services/studio.functions";
 import { getStoreSettings } from "@/services/store.functions";
-import { extractBrandDnaFromUrl } from "@/services/brand-kit.functions";
+import { extractBrandDnaFromUrl, getStoreBrandKit, saveStoreBrandKit } from "@/services/brand-kit.functions";
 
 export const Route = createFileRoute("/workspace/marketing/brand-kit")({
   head: () => ({
@@ -21,7 +21,7 @@ export const Route = createFileRoute("/workspace/marketing/brand-kit")({
     try {
     const [store, brandKit] = await Promise.all([
       getStoreSettings().catch(() => null),
-      getBrandKit().catch(() => null),
+      getStoreBrandKit().catch(() => null),
     ]);
     return { store, brandKit };
     } catch (err) {
@@ -105,7 +105,7 @@ const ALL_FONTS = [...FONTS_SANS, ...FONTS_SERIF, ...FONTS_MONO, ...FONTS_DISPLA
 // ── Serialização DB ↔ Form ────────────────────────────────────────────────────
 function dbToForm(bk: Record<string, any>, store?: any): BrandKitForm {
   const colors = bk.colors || {};
-  const fonts = bk.fonts || {};
+  const fonts = bk.typography || bk.fonts || {};
   const logos = bk.logos || {};
   const voice = bk.voice || {};
 
@@ -133,10 +133,10 @@ function dbToForm(bk: Record<string, any>, store?: any): BrandKitForm {
     logo_icon_url: logos.icon_url || (store as any)?.settings?.favicon_url || "",
     logo_light_url: logos.light_url || "",
     cover_url: logos.cover_url || (store as any)?.settings?.places_cover_url || "",
-    border_radius_scale: voice.border_radius_scale || EMPTY_FORM.border_radius_scale,
-    shadow_style: voice.shadow_style || EMPTY_FORM.shadow_style,
+    border_radius_scale: voice.border_radius_scale || bk.visual_style?.border_radius || EMPTY_FORM.border_radius_scale,
+    shadow_style: voice.shadow_style || bk.visual_style?.shadow || EMPTY_FORM.shadow_style,
     animation_style: voice.animation_style || EMPTY_FORM.animation_style,
-    icon_set: voice.icon_set || EMPTY_FORM.icon_set,
+    icon_set: voice.icon_set || bk.visual_style?.icon_set || EMPTY_FORM.icon_set,
   };
 }
 
@@ -155,7 +155,7 @@ function formToPayload(f: BrandKitForm) {
       danger: f.color_danger,
       palette: f.custom_colors.map((c) => c.hex),
     },
-    fonts: {
+    typography: {
       heading: f.font_heading,
       body: f.font_body,
       mono: f.font_mono,
@@ -168,11 +168,19 @@ function formToPayload(f: BrandKitForm) {
       light_url: f.logo_light_url || null,
       cover_url: f.cover_url || null,
     },
+    archetype: "O Criador",
+    archetype_justification: "Configurado pelo workspace e revisado pelo operador.",
     voice: {
-      border_radius_scale: f.border_radius_scale,
-      shadow_style: f.shadow_style,
-      animation_style: f.animation_style,
-      icon_set: f.icon_set,
+      tone_of_voice: "Confiante, claro e direto",
+      tone_rules: [],
+      do_words: [],
+      dont_words: [],
+    },
+    content_pillars: [],
+    visual_style: {
+      border_radius: f.border_radius_scale === "pill" ? "full" : f.border_radius_scale,
+      shadow: f.shadow_style === "strong" ? "medium" : f.shadow_style,
+      icon_set: f.icon_set === "heroicons" ? "lucide" : f.icon_set,
     },
   };
 }
@@ -262,7 +270,7 @@ export function BrandKitPage() {
     setIsSaving(true);
     try {
       const payload = formToPayload(form);
-      await saveBrandKit({ data: payload });
+      await saveStoreBrandKit({ data: payload });
       setLastSaved(new Date());
       toast.success("Brand Kit salvo com sucesso!", {
         description: "DNA visual consolidado e sincronizado.",

@@ -3,8 +3,6 @@
  * Suporta parâmetro de URL (?city=), Cookie universal (waesy_city), header Cloudflare (cf-ipcity) e LocalStorage.
  */
 
-import { createIsomorphicFn } from "@tanstack/react-start";
-import { getCookie, getRequestHeader } from "@tanstack/react-start/server";
 
 /**
  * DEC-165: Leitura de request isolada em createIsomorphicFn.
@@ -18,23 +16,9 @@ interface ServerCityHints {
   cfIpCity?: string;
 }
 
-const readServerCityHints = createIsomorphicFn()
-  .server((): ServerCityHints => {
-    const hints: ServerCityHints = {};
-    try {
-      hints.ssrCookie = getCookie("waesy_city") ?? undefined;
-    } catch {
-      // fora do contexto de request
-    }
-    try {
-      hints.rawCookie = getRequestHeader("cookie") ?? undefined;
-      hints.cfIpCity = getRequestHeader("cf-ipcity") ?? undefined;
-    } catch {
-      // fora do contexto de request
-    }
-    return hints;
-  })
-  .client((): ServerCityHints => ({}));
+// O módulo é compartilhado pelo browser; request headers devem ser fornecidos
+// pelo loader via `context`, evitando qualquer runtime h3 no bundle client.
+const readServerCityHints = (): ServerCityHints => ({});
 
 const EXCLUDED_CITIES = new Set([
   "global",

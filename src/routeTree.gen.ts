@@ -224,6 +224,7 @@ import { Route as ApiMiningWorkerRouteImport } from './routes/api.mining.worker'
 import { Route as ApiPwaManifestDotjsonRouteImport } from './routes/api.pwa.manifest[.]json'
 import { Route as ApiWebhooksMarketplacesRouteImport } from './routes/api.webhooks.marketplaces'
 import { Route as ApiWebhooksMetaAdsRouteImport } from './routes/api.webhooks.meta-ads'
+import { Route as ApiWebhooksPaymentsRouteImport } from './routes/api.webhooks.payments'
 import { Route as ApiWebhooksPixRouteImport } from './routes/api.webhooks.pix'
 import { Route as ApiWebhooksShipmentRouteImport } from './routes/api.webhooks.shipment'
 import { Route as ApiWebhooksWhatsappRouteImport } from './routes/api.webhooks.whatsapp'
@@ -1490,6 +1491,11 @@ const ApiWebhooksMetaAdsRoute = ApiWebhooksMetaAdsRouteImport.update({
   path: '/api/webhooks/meta-ads',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiWebhooksPaymentsRoute = ApiWebhooksPaymentsRouteImport.update({
+  id: '/api/webhooks/payments',
+  path: '/api/webhooks/payments',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiWebhooksPixRoute = ApiWebhooksPixRouteImport.update({
   id: '/api/webhooks/pix',
   path: '/api/webhooks/pix',
@@ -2713,6 +2719,7 @@ export interface FileRoutesByFullPath {
   '/api/pwa/manifest.json': typeof ApiPwaManifestDotjsonRoute
   '/api/webhooks/marketplaces': typeof ApiWebhooksMarketplacesRoute
   '/api/webhooks/meta-ads': typeof ApiWebhooksMetaAdsRoute
+  '/api/webhooks/payments': typeof ApiWebhooksPaymentsRoute
   '/api/webhooks/pix': typeof ApiWebhooksPixRoute
   '/api/webhooks/shipment': typeof ApiWebhooksShipmentRoute
   '/api/webhooks/whatsapp': typeof ApiWebhooksWhatsappRoute
@@ -3102,6 +3109,7 @@ export interface FileRoutesByTo {
   '/api/pwa/manifest.json': typeof ApiPwaManifestDotjsonRoute
   '/api/webhooks/marketplaces': typeof ApiWebhooksMarketplacesRoute
   '/api/webhooks/meta-ads': typeof ApiWebhooksMetaAdsRoute
+  '/api/webhooks/payments': typeof ApiWebhooksPaymentsRoute
   '/api/webhooks/pix': typeof ApiWebhooksPixRoute
   '/api/webhooks/shipment': typeof ApiWebhooksShipmentRoute
   '/api/webhooks/whatsapp': typeof ApiWebhooksWhatsappRoute
@@ -3500,6 +3508,7 @@ export interface FileRoutesById {
   '/api/pwa/manifest.json': typeof ApiPwaManifestDotjsonRoute
   '/api/webhooks/marketplaces': typeof ApiWebhooksMarketplacesRoute
   '/api/webhooks/meta-ads': typeof ApiWebhooksMetaAdsRoute
+  '/api/webhooks/payments': typeof ApiWebhooksPaymentsRoute
   '/api/webhooks/pix': typeof ApiWebhooksPixRoute
   '/api/webhooks/shipment': typeof ApiWebhooksShipmentRoute
   '/api/webhooks/whatsapp': typeof ApiWebhooksWhatsappRoute
@@ -3899,6 +3908,7 @@ export interface FileRouteTypes {
     | '/api/pwa/manifest.json'
     | '/api/webhooks/marketplaces'
     | '/api/webhooks/meta-ads'
+    | '/api/webhooks/payments'
     | '/api/webhooks/pix'
     | '/api/webhooks/shipment'
     | '/api/webhooks/whatsapp'
@@ -4288,6 +4298,7 @@ export interface FileRouteTypes {
     | '/api/pwa/manifest.json'
     | '/api/webhooks/marketplaces'
     | '/api/webhooks/meta-ads'
+    | '/api/webhooks/payments'
     | '/api/webhooks/pix'
     | '/api/webhooks/shipment'
     | '/api/webhooks/whatsapp'
@@ -4685,6 +4696,7 @@ export interface FileRouteTypes {
     | '/api/pwa/manifest.json'
     | '/api/webhooks/marketplaces'
     | '/api/webhooks/meta-ads'
+    | '/api/webhooks/payments'
     | '/api/webhooks/pix'
     | '/api/webhooks/shipment'
     | '/api/webhooks/whatsapp'
@@ -4908,6 +4920,7 @@ export interface RootRouteChildren {
   ApiPwaManifestDotjsonRoute: typeof ApiPwaManifestDotjsonRoute
   ApiWebhooksMarketplacesRoute: typeof ApiWebhooksMarketplacesRoute
   ApiWebhooksMetaAdsRoute: typeof ApiWebhooksMetaAdsRoute
+  ApiWebhooksPaymentsRoute: typeof ApiWebhooksPaymentsRoute
   ApiWebhooksPixRoute: typeof ApiWebhooksPixRoute
   ApiWebhooksShipmentRoute: typeof ApiWebhooksShipmentRoute
   ApiWebhooksWhatsappRoute: typeof ApiWebhooksWhatsappRoute
@@ -6430,6 +6443,13 @@ declare module '@tanstack/react-router' {
       path: '/api/webhooks/meta-ads'
       fullPath: '/api/webhooks/meta-ads'
       preLoaderRoute: typeof ApiWebhooksMetaAdsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/webhooks/payments': {
+      id: '/api/webhooks/payments'
+      path: '/api/webhooks/payments'
+      fullPath: '/api/webhooks/payments'
+      preLoaderRoute: typeof ApiWebhooksPaymentsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/webhooks/pix': {
@@ -8622,6 +8642,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPwaManifestDotjsonRoute: ApiPwaManifestDotjsonRoute,
   ApiWebhooksMarketplacesRoute: ApiWebhooksMarketplacesRoute,
   ApiWebhooksMetaAdsRoute: ApiWebhooksMetaAdsRoute,
+  ApiWebhooksPaymentsRoute: ApiWebhooksPaymentsRoute,
   ApiWebhooksPixRoute: ApiWebhooksPixRoute,
   ApiWebhooksShipmentRoute: ApiWebhooksShipmentRoute,
   ApiWebhooksWhatsappRoute: ApiWebhooksWhatsappRoute,

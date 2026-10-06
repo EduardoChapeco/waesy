@@ -1,6 +1,7 @@
 export type AiSseEvent =
   | { type: "status"; phase: "planning" | "running" | "verifying"; message: string }
   | { type: "delta"; text: string; final: boolean }
+  | { type: "structured"; payload: Record<string, unknown>; source: "platform" }
   | { type: "done"; callId?: string; provider?: string; model?: string }
   | { type: "error"; code: string; message: string };
 

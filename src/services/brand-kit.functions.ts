@@ -10,6 +10,20 @@ import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
 import { executeUnifiedAiCall } from "@/services/api-orchestrator.functions";
 import { normalizeHexPalette, inferProductCategoryFromText } from "@/lib/color-extractor";
 
+function assertBrandKitSafeUrl(value: string): URL {
+  const parsed = new URL(value);
+  if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+    throw new Error("Apenas protocolos HTTP e HTTPS são permitidos.");
+  }
+  const host = parsed.hostname.toLowerCase();
+  const privateHost = host === "localhost" || host === "127.0.0.1" || host === "::1" ||
+    host.endsWith(".local") || host.endsWith(".internal") || host === "169.254.169.254" ||
+    host === "metadata.google.internal" || /^10\./.test(host) || /^192\.168\./.test(host) ||
+    (/^172\./.test(host) && Number(host.split(".")[1]) >= 16 && Number(host.split(".")[1]) <= 31);
+  if (privateHost) throw new Error("Acesso a endereços locais ou de infraestrutura interna é proibido.");
+  return parsed;
+}
+
 // ── 1. SCHEMAS E TIPOS CANÔNICOS ─────────────────────────────────────────────
 
 export interface BrandKitProfileColorsDTO {
@@ -124,12 +138,13 @@ export const getStoreBrandKit = createServerFn({ method: "GET" })
   )
   .handler(async ({ data }): Promise<BrandKitDTO> => {
     const supabase = getServerClient();
-    const identity = await getServerIdentity().catch(() => null);
+    const identity = await getServerIdentity();
     const storeId = data?.storeId || identity?.store_id;
 
     if (!storeId) {
       throw new Error("Loja não informada para carregar o Brand Kit.");
     }
+    assertStoreAccess(identity, undefined, storeId);
 
     const { data: profile } = await supabase
       .from("brand_dna_profiles")
@@ -279,7 +294,7 @@ export const saveStoreBrandKit = createServerFn({ method: "POST" })
     if (!storeId) {
       throw new Error("Não autorizado: loja não informada.");
     }
-    assertStoreAccess(identity);
+    assertStoreAccess(identity, undefined, storeId);
 
     const now = new Date().toISOString();
 
@@ -323,16 +338,17 @@ export const extractBrandDnaFromUrl = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }): Promise<BrandKitDTO> => {
     const supabase = getServerClient();
-    const identity = await getServerIdentity().catch(() => null);
+    const identity = await getServerIdentity();
     const storeId = data.storeId || identity?.store_id;
 
     if (!storeId) {
       throw new Error("Loja não informada para associar o Brand DNA extraído.");
     }
-    if (identity) assertStoreAccess(identity);
+    assertStoreAccess(identity, undefined, storeId);
 
     let targetUrl = data.url.trim();
-    if (!targetUrl.startsWith("http")) targetUrl = `https://${targetUrl}`;
+    if (!/^https?:\/\//i.test(targetUrl)) targetUrl = `https://${targetUrl}`;
+    targetUrl = assertBrandKitSafeUrl(targetUrl).toString();
 
     // 1. Fetch da URL pública para extrair metadados e CSS inline
     let html = "";

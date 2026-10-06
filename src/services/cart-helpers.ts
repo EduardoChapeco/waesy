@@ -8,7 +8,7 @@
 
 import { getServerClient } from "@/lib/supabase";
 import { getSSRClient } from "@/lib/server-access";
-import { getOrCreateGuestSession, getGuestSession } from "@/lib/session";
+import { getOrCreateGuestSession, getGuestSession } from "@/lib/server-access";
 import { getEnvVar } from "@/lib/env";
 import { z } from "zod";
 
@@ -26,7 +26,7 @@ export async function getCurrentIdentity() {
 
   // If not authenticated, fetch or create guest session synchronously BEFORE any await
   // to keep the vinxi/http unctx context alive.
-  const token = getOrCreateGuestSession();
+  const token = await getOrCreateGuestSession();
   return { customer_id: null, session_token: token };
 }
 
@@ -54,7 +54,7 @@ export async function mergeGuestCartLogic(
   if (session_token === undefined) {
     // If not explicit, get the current one from cookies (if any).
     // Note: We use getGuestSession so we don't accidentally create a new one.
-    session_token = getGuestSession();
+    session_token = await getGuestSession();
   }
 
   if (!session_token) return { status: "success" as const };

@@ -109,18 +109,16 @@ export const payInstallment = createServerFn({ method: "POST" })
 
  if (installment.status === "paid") throw new Error("Fatura já está paga");
 
- const { error: updateError } = await supabase
- .from("installments")
- .update({
- status: "paid",
- paid_at: new Date().toISOString(),
- })
- .eq("id", installmentId);
+ const { data: result, error: conciliationError } = await supabase.rpc(
+ "settle_installment_atomic",
+ {
+ p_installment_id: installmentId,
+ p_settled_by: identity.id,
+ p_payment_method: "manual",
+ },
+ );
 
- if (updateError) throw new Error("Erro ao dar baixa na parcela");
+ if (conciliationError) throw new Error(`Erro ao conciliar a parcela: ${conciliationError.message}`);
 
- // Also inject a cash_register_entry automatically?
- // Not implemented here to keep it decoupled. Cashier should do it or we pass registerId.
-
- return { status: "success" };
+ return { status: "success", result };
  });
