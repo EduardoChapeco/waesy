@@ -9,6 +9,7 @@ import path from "node:path";
 
 const ROOT_DIR = process.cwd();
 const SRC_DIR = path.resolve(ROOT_DIR, "src");
+const SUPABASE_TYPES_FILE = path.resolve(SRC_DIR, "integrations/supabase/types.ts");
 
 function walk(dir) {
   let res = [];
@@ -48,7 +49,11 @@ export function auditTypeDuplications() {
   }
 
   duplicates.sort((a, b) => b.count - a.count);
-  return { filesCount: files.length, duplicates };
+  const supabaseTypes = fs.existsSync(SUPABASE_TYPES_FILE)
+    ? fs.readFileSync(SUPABASE_TYPES_FILE, "utf8")
+    : "";
+  const databaseAny = /export\s+type\s+Database\s*=\s*any\s*;/.test(supabaseTypes);
+  return { filesCount: files.length, duplicates, databaseAny };
 }
 
 // Execution CLI
@@ -59,11 +64,15 @@ if (process.argv[1] && process.argv[1].endsWith("check-type-duplications.mjs")) 
   const result = auditTypeDuplications();
   console.log(`Arquivos inspecionados:            ${result.filesCount}`);
   console.log(`Tipos/interfaces duplicados:       ${result.duplicates.length}`);
+  console.log(`Contrato Supabase Database=any:   ${result.databaseAny ? "ENCONTRADO" : "não encontrado"}`);
 
-  if (result.duplicates.length > 0) {
+  if (result.databaseAny || result.duplicates.length > 0) {
     console.log("\nViolações de duplicidade de tipo encontradas:");
     for (const d of result.duplicates) {
       console.log(`  - ${d.name} (${d.count}x): ${d.occurrences.join(", ")}`);
+    }
+    if (result.databaseAny) {
+      console.log("  - src/integrations/supabase/types.ts contém Database = any; regenerar o contrato do projeto Supabase.");
     }
     process.exit(1);
   } else {
