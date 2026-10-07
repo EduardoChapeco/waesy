@@ -65,3 +65,15 @@ Correção operacional aplicada no provider:
 - variáveis de produção preservadas; nenhum secret foi lido ou alterado.
 
 O próximo push do branch candidato deve gerar um novo preview no projeto correto. O check só pode ser considerado fechado após o novo deployment atingir `deploy: success` e o GitHub refletir `Cloudflare Pages: success` no mesmo SHA.
+
+## Terceira e quarta causas raiz confirmadas
+
+O primeiro preview ligado ao repositório correto falhou porque o Cloudflare detectou `bun.lock` e executou `bun install --frozen-lockfile`. O lockfile estava em drift e, depois de regenerado, atualizou versões transitivas que produziram falhas no build Vite (`lightningcss` tentou abrir o `@import` remoto de Google Fonts) e alterações incompatíveis nos tipos de rotas.
+
+Correção aplicada no branch:
+
+- `bun.lock` removido para impedir a seleção automática do Bun no Pages.
+- `package-lock.json` mantido como lockfile determinístico e validado pelo CI.
+- `npm ci`, `npm run typecheck`, `npm test` e `npm run build` passaram localmente após a remoção.
+
+Assim, o provider deve selecionar npm e reproduzir o mesmo grafo de dependências validado pelo gate `5 Quality Gates`.
