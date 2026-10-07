@@ -92,4 +92,4 @@
 - **W5.5:** `open_place`, pin e archive têm handlers BFF/UI; ações não implementadas continuam a mostrar aviso explícito em vez de fingir sucesso.
 - **W5.6:** troca de thread, retryable failure e limpeza de estado foram corrigidos; SSE/provider abort e browser E2E permanecem bloqueados à validação de staging real.
 - **Gates locais:** typecheck PASS; 227 ficheiros/1.501 testes PASS; build Cloudflare PASS; `git diff --check` PASS.
-- **Estado:** implementação local pendente de revisão adversarial e CI/Cloudflare no SHA final. A evidência de browser/provider/Supabase real não é inferida.
+- **Estado:** **fechada no código e integrada em `main` pelo PR #14**. CI e Cloudflare Pages passaram no SHA final. Browser E2E, abort real do provider e validação com dois utilizadores no Supabase de staging permanecem explicitamente como integração operacional pendente; não são inferidos pelo build.
