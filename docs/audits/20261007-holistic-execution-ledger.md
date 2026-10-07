@@ -62,3 +62,10 @@
 - Finding confirmado: `src/integrations/supabase/types.ts:9` continha `export type Database = any`.
 - Ação: gerado o contrato pelo projeto Supabase Waesy `jfuebqmltksyznovhlwa` através da ferramenta autorizada `generate_typescript_types`; resultado persistido com 45.635 linhas e 1.426.638 bytes.
 - Estado: typecheck de consumidores ainda pendente após a substituição; não declarar W3 fechado até validar typecheck, testes, build e revisão do diff.
+
+
+## W3.2 — Drift de migrations
+
+- Inventário local: 468 ficheiros de migration; colisões de prefixo em `20270106000000`, `20270107000000` e `20270109000000`.
+- Estado: finding aberto; não renomear nem reordenar histórico aplicado sem Postgres efémero e replay completo.
+- Evidência: `docs/audits/W3_SCHEMA_DRIFT.md`.
