@@ -38,7 +38,7 @@ export const ExtractedTravelAdSchema = z.object({
   suggested_background_url: z.string().optional().nullable(),
   matched_hotel_id: z.string().optional().nullable(),
   matched_destination_id: z.string().optional().nullable(),
-  confidence_score: z.number().min(0).max(1).default(0.9),
+  confidence_score: z.number().min(0).max(1).default(0),
   raw_notes: z.string().optional().nullable(),
 });
 
@@ -142,16 +142,21 @@ Retorne ESTRITAMENTE um JSON minificado compatível com este formato:
       }
     }
 
-    // Fallback gracioso se a IA não retornou
+    // Fallback seguro: ausência de resposta do provider nunca pode virar uma
+    // oferta comercial fictícia. O resultado permanece explicitamente revisável.
     if (!extracted) {
       extracted = {
-        title: data.destinationHint || "Pacote Turístico Especial",
+        title: data.destinationHint ? `Extração pendente — ${data.destinationHint}` : "Extração pendente",
         destination_city: data.destinationHint || "Destino a Definir",
         destination_country: "Brasil",
-        inclusions: ["Aéreo ida e volta", "Hospedagem com café", "Traslado"],
-        max_installments: 12,
+        inclusions: [],
+        highlights: [],
+        price_cents: null,
+        installment_cents: null,
+        max_installments: 1,
         pricing_mode: "per_person",
-        confidence_score: 0.5,
+        confidence_score: 0,
+        raw_notes: "Nenhum resultado estruturado foi retornado pelo provider; revisão humana obrigatória.",
       };
     }
 
@@ -219,18 +224,16 @@ Retorne ESTRITAMENTE um JSON minificado compatível com este formato:
       hotel_name: extracted.hotel_name || null,
       meal_plan: extracted.meal_plan || null,
       transport_type: extracted.transport_type || "airplane",
-      inclusions: Array.isArray(extracted.inclusions) && extracted.inclusions.length > 0
-        ? extracted.inclusions
-        : ["Aéreos ida e volta", "Hospedagem com café", "Traslados ao aeroporto"],
+      inclusions: Array.isArray(extracted.inclusions) ? extracted.inclusions : [],
       highlights: Array.isArray(extracted.highlights) ? extracted.highlights : [],
-      price_cents: extracted.price_cents || 278760,
-      max_installments: extracted.max_installments || 12,
-      installment_cents: finalInstallmentCents || 23230,
+      price_cents: extracted.price_cents ?? null,
+      max_installments: extracted.max_installments ?? 1,
+      installment_cents: finalInstallmentCents ?? null,
       pricing_mode: extracted.pricing_mode || "per_person",
       suggested_background_url: suggestedBackgroundUrl,
       matched_hotel_id: matchedHotelId,
       matched_destination_id: matchedDestinationId,
-      confidence_score: extracted.confidence_score || 0.9,
+      confidence_score: extracted.confidence_score ?? 0,
       raw_notes: extracted.raw_notes || null,
     };
 

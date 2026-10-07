@@ -120,3 +120,20 @@
 - **Estado W8.2:** filtro de tenant no `getOmniPageDocument` aplicado; persistência ainda não é versionamento transacional em `experience_versions`, portanto a microfase permanece **parcial/bloqueada**.
 - **Estado W8.3:** draft e published foram separados no snapshot Omni; editor lê draft e rota pública lê somente published; publicação real, reload entre sessões, rollback e cache/CDN ainda não provados.
 - **Decisão de produção:** não publicar, não fazer deploy e não marcar produção verde sem as provas ausentes e sem resolver o versionamento canônico.
+
+### W13 — Design system e regressão visual (2026-10-07)
+- **Evidência:** `node scripts/design-lint.mjs --changed` terminou com P0=0, P1=0, P2=0, P3=0 em 16 arquivos; `node scripts/token-sync.mjs --check` confirmou 134 tokens, 0 aliases quebrados e paridade 100% com `src/styles.css`.
+- **Correções:** checkout turístico normalizado para tokens/classes canônicas, foco visível, targets de 44px, movimento reduzido e placeholder SVG sem hex literal; sem alteração da baseline.
+- **Testes:** 16 testes de design/acessibilidade/travel passaram; typecheck passou.
+- **Estado:** fechada em código e validação local; screenshot/browser visual ainda não inferido.
+
+### W14 — Qualidade dos testes e gates (2026-10-07)
+- **Evidência:** suíte completa `npm test` passou com 233 arquivos e 1.527 testes; typecheck, lint, build, client-leak guard e `git diff --check` passaram no mesmo working tree.
+- **Matriz:** `docs/audits/20261007-w14-evidence-matrix.md` separa unit, contract harness, integration DB, browser E2E, CI e production smoke.
+- **Finding:** vários testes chamados E2E são contract harness em memória; isso está explicitamente classificado, não promovido a E2E real.
+- **Estado:** gates locais fechados; integração com Postgres/Storage/provider e browser E2E continuam pendentes.
+
+### W15 — Observabilidade e redaction (2026-10-07)
+- **Correções:** criado `src/lib/telemetry/operational-logger.ts` com contexto request/trace/job/conversation/tenant, redaction recursiva de segredo/conteúdo e envelope estruturado; AI Gateway integrado nos erros de provider e persistência de telemetria.
+- **Evidência:** `operational-logger.test.ts`, `error-correlator.test.ts`, `ai-core-gateway.test.ts` e `whatsapp-w11-webhook.test.ts`: 18 testes passaram; typecheck passou.
+- **Limite:** ainda há logs legados fora dos fluxos tocados; migração total para logger estruturado e alertas/SLO conectados a infraestrutura real exigem uma etapa operacional adicional.

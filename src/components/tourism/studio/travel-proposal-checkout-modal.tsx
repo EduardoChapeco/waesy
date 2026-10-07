@@ -17,7 +17,7 @@ import { PhoneField } from "@/components/ui/phone-field";
 import { CreditCardNumberInput, CardExpiryInput, CardCvvInput } from "@/components/ui/credit-card-field";
 import { formatMoney } from "@/lib/money";
 import { toast } from "sonner";
-import { ShieldCheck, CreditCard, QrCode, CheckCircle2, Users, Copy, Check, Loader2, ArrowRight, Lock, Building2, FileText, Banknote, Compass } from "lucide-react";
+import { ShieldCheck, CreditCard, CheckCircle2, Users, Loader2, ArrowRight, Lock, Building2, FileText, Banknote, Compass } from "lucide-react";
 import { convertProposalToTrip } from "@/services/travel-lifecycle.functions";
 import type { TravelProposalDTO } from "@/services/travel-proposal.functions";
 
@@ -31,7 +31,6 @@ interface TravelProposalCheckoutModalProps {
 export type AgencyPaymentMethod =
   | "financiamento_bancario"
   | "cartao_operadora"
-  | "pix"
   | "faturado_agencia"
   | "checkout_app";
 
@@ -63,29 +62,19 @@ export function TravelProposalCheckoutModal({
   const [operatorInstallments, setOperatorInstallments] = useState(10);
   const [bankFinanceMonths, setBankFinanceMonths] = useState(24);
   const [clientFinanceNotes, setClientFinanceNotes] = useState("");
-  const [isCopiedPix, setIsCopiedPix] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [confirmedTripData, setConfirmedTripData] = useState<{ tripNumber: string; voucherToken?: string } | null>(null);
 
-  // Valores
-  const totalCents = (proposal.pricing as any)?.total_price_cents || proposal.pricing?.total_cents || 278760;
-
-  // Pix à vista com desconto opcional configurado
-  const pixDiscountPercent = 3;
-  const pixFullCents = Math.round(totalCents * (1 - pixDiscountPercent / 100));
-
-  const mockPixCode = `00020126580014br.gov.bcb.pix0136waesy-${proposal.id.slice(0, 8)}520400005303986540${(pixFullCents / 100).toFixed(2)}5802BR5920WAESY TURISMO OFICIAL6009SAO PAULO62070503***6304`;
-
-  const handleCopyPix = () => {
-    if (typeof navigator !== "undefined") {
-      navigator.clipboard.writeText(mockPixCode);
-      setIsCopiedPix(true);
-      toast.success("Código Pix Copia e Cola copiado!");
-      setTimeout(() => setIsCopiedPix(false), 3000);
-    }
-  };
+  // Valores: preço ausente não pode virar uma cobrança padrão inventada.
+  const configuredTotal = (proposal.pricing as any)?.total_price_cents ?? proposal.pricing?.total_cents;
+  const hasConfirmedPrice = Number.isInteger(configuredTotal) && configuredTotal > 0;
+  const totalCents = hasConfirmedPrice ? configuredTotal : 0;
 
   const handleConfirmBooking = async () => {
+    if (!hasConfirmedPrice) {
+      toast.error("A proposta ainda não possui preço confirmado pela agência.");
+      return;
+    }
     if (!leadName.trim()) {
       toast.error("Preencha o nome completo do passageiro principal.");
       return;
@@ -118,10 +107,10 @@ export function TravelProposalCheckoutModal({
               birthDate: p.birthDate || undefined,
             })),
           paymentDetails: {
-            paymentMethod: selectedMethod === "pix" ? "pix" : "card",
+            paymentMethod: "card",
             cardInstallments: selectedMethod === "cartao_operadora" ? operatorInstallments : 1,
             totalCents,
-            chargeCents: selectedMethod === "pix" ? pixFullCents : totalCents,
+            chargeCents: totalCents,
           },
         },
       });
@@ -148,7 +137,7 @@ export function TravelProposalCheckoutModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto p-4 sm:p-6 rounded-lg bg-card border border-border/80 shadow-2xl">
+      <DialogContent className="max-w-2xl max-h-screen overflow-y-auto p-4 sm:p-6 rounded-lg bg-card border border-border/80 shadow-2xl">
         <DialogHeader className="pb-3 border-b border-border/40">
           <div className="flex items-center justify-between">
             <div className="space-y-1">
@@ -160,7 +149,7 @@ export function TravelProposalCheckoutModal({
                 {proposal.title} · {proposal.destination_city}
               </DialogDescription>
             </div>
-            <Badge variant="outline" className="text-[10px] font-mono font-bold bg-primary/5 text-primary border-primary/20">
+            <Badge variant="outline" className="text-xs font-mono font-bold bg-primary/5 text-primary border-primary/20">
               {step === "passengers" ? "Etapa 1 de 2" : step === "payment" ? "Etapa 2 de 2" : "Confirmado"}
             </Badge>
           </div>
@@ -169,12 +158,12 @@ export function TravelProposalCheckoutModal({
         {/* ── ETAPA 1: MANIFESTO DE PASSAGEIROS ── */}
         {step === "passengers" && (
           <div className="space-y-5 pt-2">
-            <div className="p-4 bg-primary/[0.03] border border-primary/15 rounded-lg space-y-1">
+            <div className="p-4 bg-primary/5 border border-primary/15 rounded-lg space-y-1">
               <p className="text-xs font-bold text-foreground flex items-center gap-2">
                 <Users className="size-4 text-primary" />
                 <span>Manifesto de Passageiros ({totalPassengers} viajante{totalPassengers > 1 ? "s" : ""})</span>
               </p>
-              <p className="text-[11px] text-muted-foreground leading-relaxed">
+              <p className="text-xs text-muted-foreground leading-relaxed">
                 Insira os dados oficiais dos viajantes para emissão dos bilhetes e apólices de seguro.
               </p>
             </div>
@@ -186,7 +175,7 @@ export function TravelProposalCheckoutModal({
                   <span className="size-2 rounded-full bg-primary" />
                   Passageiro 1 (Titular / Responsável)
                 </span>
-                <Badge variant="secondary" className="text-[10px] font-semibold">
+                <Badge variant="secondary" className="text-xs font-semibold">
                   Principal
                 </Badge>
               </div>
@@ -198,7 +187,7 @@ export function TravelProposalCheckoutModal({
                     placeholder="Ex: Carlos Eduardo Silva"
                     value={leadName}
                     onChange={(e) => setLeadName(e.target.value)}
-                    className="h-9 text-xs rounded-lg"
+                    className="h-11 text-xs rounded-lg"
                   />
                 </div>
                 <div className="space-y-1">
@@ -207,7 +196,7 @@ export function TravelProposalCheckoutModal({
                     value={leadCpf}
                     onChange={setLeadCpf}
                     placeholder="000.000.000-00"
-                    className="h-9 text-xs rounded-lg"
+                    className="h-11 text-xs rounded-lg"
                   />
                 </div>
                 <div className="space-y-1">
@@ -216,7 +205,7 @@ export function TravelProposalCheckoutModal({
                     type="date"
                     value={leadBirthDate}
                     onChange={(e) => setLeadBirthDate(e.target.value)}
-                    className="h-9 text-xs rounded-lg"
+                    className="h-11 text-xs rounded-lg"
                   />
                 </div>
                 <div className="space-y-1">
@@ -225,7 +214,7 @@ export function TravelProposalCheckoutModal({
                     value={leadPhone}
                     onChange={(val) => setLeadPhone(val || "")}
                     placeholder="(00) 00000-0000"
-                    className="h-9 text-xs rounded-lg"
+                    className="h-11 text-xs rounded-lg"
                   />
                 </div>
               </div>
@@ -244,7 +233,7 @@ export function TravelProposalCheckoutModal({
                     </span>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                       <div className="space-y-1 sm:col-span-2">
-                        <Label className="text-[11px] text-muted-foreground">Nome Completo</Label>
+                        <Label className="text-xs text-muted-foreground">Nome Completo</Label>
                         <Input
                           placeholder="Nome conforme documento"
                           value={passenger.name}
@@ -253,11 +242,11 @@ export function TravelProposalCheckoutModal({
                             updated[idx].name = e.target.value;
                             setAdditionalPassengers(updated);
                           }}
-                          className="h-8 text-xs rounded-lg"
+                          className="h-11 text-xs rounded-lg"
                         />
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-[11px] text-muted-foreground">CPF / Documento</Label>
+                        <Label className="text-xs text-muted-foreground">CPF / Documento</Label>
                         <Input
                           placeholder="Documento"
                           value={passenger.document}
@@ -266,7 +255,7 @@ export function TravelProposalCheckoutModal({
                             updated[idx].document = e.target.value;
                             setAdditionalPassengers(updated);
                           }}
-                          className="h-8 text-xs rounded-lg"
+                          className="h-11 text-xs rounded-lg"
                         />
                       </div>
                     </div>
@@ -285,7 +274,7 @@ export function TravelProposalCheckoutModal({
                   }
                   setStep("payment");
                 }}
-                className="rounded-lg text-xs font-bold gap-2 h-10 px-5"
+                className="rounded-lg text-xs font-bold gap-2 h-11 px-5"
               >
                 <span>Avançar para Condições de Pagamento</span>
                 <ArrowRight className="size-4" />
@@ -299,7 +288,7 @@ export function TravelProposalCheckoutModal({
           <div className="space-y-5 pt-2">
             <div className="p-4 bg-muted/40 border border-border/60 rounded-lg flex items-center justify-between">
               <div>
-                <span className="text-[10px] text-muted-foreground uppercase font-bold block">Valor Total do Pacote</span>
+                <span className="text-xs text-muted-foreground uppercase font-bold block">Valor Total do Pacote</span>
                 <span className="text-xl font-black font-mono text-foreground">{formatMoney(totalCents)}</span>
               </div>
               <Badge variant="outline" className="text-xs font-bold text-foreground">
@@ -315,7 +304,7 @@ export function TravelProposalCheckoutModal({
                 <button
                   type="button"
                   onClick={() => setSelectedMethod("financiamento_bancario")}
-                  className={`p-4 rounded-lg border text-left transition-all cursor-pointer ${
+                  className={`p-4 min-h-11 rounded-lg border text-left transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none ${
                     selectedMethod === "financiamento_bancario"
                       ? "border-primary bg-primary/5 ring-1 ring-primary/40 shadow-xs"
                       : "border-border/60 hover:bg-muted/40"
@@ -325,7 +314,7 @@ export function TravelProposalCheckoutModal({
                     <Building2 className="size-4 text-primary" />
                     <span className="text-xs font-bold text-foreground">Financiamento Bancário</span>
                   </div>
-                  <p className="text-[11px] text-muted-foreground leading-snug">
+                  <p className="text-xs text-muted-foreground leading-snug">
                     Parcelamento via carnê bancário aprovado pela agência.
                   </p>
                 </button>
@@ -334,7 +323,7 @@ export function TravelProposalCheckoutModal({
                 <button
                   type="button"
                   onClick={() => setSelectedMethod("cartao_operadora")}
-                  className={`p-4 rounded-lg border text-left transition-all cursor-pointer ${
+                  className={`p-4 min-h-11 rounded-lg border text-left transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none ${
                     selectedMethod === "cartao_operadora"
                       ? "border-primary bg-primary/5 ring-1 ring-primary/40 shadow-xs"
                       : "border-border/60 hover:bg-muted/40"
@@ -344,32 +333,8 @@ export function TravelProposalCheckoutModal({
                     <CreditCard className="size-4 text-primary" />
                     <span className="text-xs font-bold text-foreground">Cartão na Operadora</span>
                   </div>
-                  <p className="text-[11px] text-muted-foreground leading-snug">
+                  <p className="text-xs text-muted-foreground leading-snug">
                     Lançamento direto no portal da operadora em até 10x ou 12x.
-                  </p>
-                </button>
-
-                {/* 3. Pix à Vista */}
-                <button
-                  type="button"
-                  onClick={() => setSelectedMethod("pix")}
-                  className={`p-4 rounded-lg border text-left transition-all cursor-pointer ${
-                    selectedMethod === "pix"
-                      ? "border-primary bg-primary/5 ring-1 ring-primary/40 shadow-xs"
-                      : "border-border/60 hover:bg-muted/40"
-                  }`}
-                >
-                  <div className="flex items-center justify-between pb-1">
-                    <div className="flex items-center gap-2">
-                      <QrCode className="size-4 text-primary" />
-                      <span className="text-xs font-bold text-foreground">Pix à Vista</span>
-                    </div>
-                    <Badge variant="outline" className="text-[9px] font-bold">
-                      -{pixDiscountPercent}%
-                    </Badge>
-                  </div>
-                  <p className="text-[11px] text-muted-foreground leading-snug">
-                    Liquidação direta via QR Code instantâneo no valor de {formatMoney(pixFullCents)}.
                   </p>
                 </button>
 
@@ -377,7 +342,7 @@ export function TravelProposalCheckoutModal({
                 <button
                   type="button"
                   onClick={() => setSelectedMethod("faturado_agencia")}
-                  className={`p-4 rounded-lg border text-left transition-all cursor-pointer ${
+                  className={`p-4 min-h-11 rounded-lg border text-left transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none ${
                     selectedMethod === "faturado_agencia"
                       ? "border-primary bg-primary/5 ring-1 ring-primary/40 shadow-xs"
                       : "border-border/60 hover:bg-muted/40"
@@ -387,7 +352,7 @@ export function TravelProposalCheckoutModal({
                     <FileText className="size-4 text-primary" />
                     <span className="text-xs font-bold text-foreground">Faturamento Agência</span>
                   </div>
-                  <p className="text-[11px] text-muted-foreground leading-snug">
+                  <p className="text-xs text-muted-foreground leading-snug">
                     Emissão de faturas a prazo para clientes corporativos ou convênios.
                   </p>
                 </button>
@@ -396,7 +361,7 @@ export function TravelProposalCheckoutModal({
 
             {/* Detalhes Contextuais do Método Selecionado */}
             {selectedMethod === "financiamento_bancario" && (
-              <div className="p-4 rounded-lg bg-primary/[0.03] border border-primary/20 space-y-3">
+              <div className="p-4 rounded-lg bg-primary/5 border border-primary/20 space-y-3">
                 <div className="space-y-1">
                   <Label className="text-xs font-semibold">Prazo de Financiamento Desejado</Label>
                   <select
@@ -411,7 +376,7 @@ export function TravelProposalCheckoutModal({
                     <option value={36}>36x parcelas bancárias</option>
                   </select>
                 </div>
-                <p className="text-[11px] text-muted-foreground">
+                <p className="text-xs text-muted-foreground">
                   Ao confirmar, o consultor da agência receberá o dossiê e cadastrará a proposta de financiamento na instituição bancária.
                 </p>
               </div>
@@ -437,42 +402,16 @@ export function TravelProposalCheckoutModal({
                     })}
                   </select>
                 </div>
-                <p className="text-[11px] text-muted-foreground">
+                <p className="text-xs text-muted-foreground">
                   A confirmação do pacote segue a política de parcelamento da operadora responsável.
                 </p>
-              </div>
-            )}
-
-            {selectedMethod === "pix" && (
-              <div className="p-4 rounded-lg bg-muted/30 border border-border/60 flex flex-col sm:flex-row items-center gap-4">
-                <div className="size-28 sm:size-32 bg-white p-2 rounded-lg border border-border/60 flex items-center justify-center shrink-0">
-                  <QrCode className="size-full text-foreground" />
-                </div>
-                <div className="space-y-2 text-center sm:text-left min-w-0 flex-1">
-                  <div className="space-y-1">
-                    <span className="text-xs font-semibold text-foreground">Valor no Pix com Desconto:</span>
-                    <p className="text-2xl font-black text-foreground font-mono">
-                      {formatMoney(pixFullCents)}
-                    </p>
-                  </div>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    onClick={handleCopyPix}
-                    className="rounded-lg text-xs font-semibold gap-2 h-9 w-full sm:w-auto border-border/80 cursor-pointer"
-                  >
-                    {isCopiedPix ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
-                    <span>{isCopiedPix ? "Copiado!" : "Copiar Código Pix"}</span>
-                  </Button>
-                </div>
               </div>
             )}
 
             {selectedMethod === "faturado_agencia" && (
               <div className="p-4 rounded-lg bg-muted/30 border border-border/60 space-y-2">
                 <p className="text-xs font-bold text-foreground">Faturamento Corporativo</p>
-                <p className="text-[11px] text-muted-foreground leading-relaxed">
+                <p className="text-xs text-muted-foreground leading-relaxed">
                   As faturas e boletos serão gerados pela agência com prazo acordado de 15 a 30 dias após emissão.
                 </p>
               </div>
@@ -483,7 +422,7 @@ export function TravelProposalCheckoutModal({
                 type="button"
                 variant="ghost"
                 onClick={() => setStep("passengers")}
-                className="rounded-lg text-xs font-bold h-10 px-4 text-muted-foreground"
+                className="rounded-lg text-xs font-bold h-11 px-4 text-muted-foreground"
               >
                 Voltar aos Passageiros
               </Button>
@@ -491,9 +430,9 @@ export function TravelProposalCheckoutModal({
                 type="button"
                 disabled={isSubmitting}
                 onClick={handleConfirmBooking}
-                className="rounded-lg text-xs font-bold gap-2 h-10 px-6"
+                className="rounded-lg text-xs font-bold gap-2 h-11 px-6"
               >
-                {isSubmitting ? <Loader2 className="size-4 animate-spin" /> : <Lock className="size-4" />}
+                {isSubmitting ? <Loader2 className="size-4 animate-spin motion-reduce:animate-none" /> : <Lock className="size-4" />}
                 <span>Confirmar Reserva</span>
               </Button>
             </div>
@@ -503,7 +442,7 @@ export function TravelProposalCheckoutModal({
         {/* ── ETAPA 3: PROCESSANDO ── */}
         {step === "processing" && (
           <div className="py-12 flex flex-col items-center justify-center space-y-3 text-center">
-            <Loader2 className="size-10 text-primary animate-spin" />
+            <Loader2 className="size-10 text-primary animate-spin motion-reduce:animate-none" />
             <p className="text-sm font-bold text-foreground">Registrando viagem e manifesto oficial...</p>
             <p className="text-xs text-muted-foreground max-w-xs">
               Criando registro no cockpit da agência, gerando número da viagem e localizadores.
@@ -514,7 +453,7 @@ export function TravelProposalCheckoutModal({
         {/* ── ETAPA 4: SUCESSO ── */}
         {step === "success" && confirmedTripData && (
           <div className="py-8 space-y-5 text-center">
-            <div className="size-16 rounded-full bg-emerald-500/10 text-emerald-600 flex items-center justify-center mx-auto">
+            <div className="size-16 rounded-full bg-success/10 text-success flex items-center justify-center mx-auto">
               <CheckCircle2 className="size-10" />
             </div>
 
@@ -536,7 +475,7 @@ export function TravelProposalCheckoutModal({
                   onClose();
                   navigate({ to: "/conta/viagens" });
                 }}
-                className="rounded-lg text-xs font-bold h-10 px-4 w-full sm:w-auto"
+                className="rounded-lg text-xs font-bold h-11 px-4 w-full sm:w-auto"
               >
                 Minhas Viagens
               </Button>
@@ -547,7 +486,7 @@ export function TravelProposalCheckoutModal({
                   onClose();
                   navigate({ to: "/viajante/carteira" });
                 }}
-                className="rounded-lg text-xs font-bold h-10 px-5 w-full sm:w-auto bg-primary text-primary-foreground"
+                className="rounded-lg text-xs font-bold h-11 px-5 w-full sm:w-auto bg-primary text-primary-foreground"
               >
                 <span>Abrir Carteira Digital</span>
                 <ArrowRight className="size-4 ml-1" />

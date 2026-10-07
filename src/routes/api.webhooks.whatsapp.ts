@@ -270,7 +270,9 @@ export const Route = createFileRoute("/api/webhooks/whatsapp")({
                   .maybeSingle();
 
                 if (inboxMessageError) throw new Error(`Falha ao persistir inbox WhatsApp: ${inboxMessageError.message}`);
-                if (inboxMessage?.status === "processed" || inboxMessage?.status === "ignored") continue;
+                // Com ignoreDuplicates, o Supabase retorna data nula quando outro
+                // request já inseriu a mesma chave. Nunca reexecute lead/thread/flows.
+                if (!inboxMessage || inboxMessage.status === "processed" || inboxMessage.status === "ignored") continue;
 
                 const { text: messageText, type: messageType } = messageContent(message);
                 const occurredAt = eventTime(message.timestamp);

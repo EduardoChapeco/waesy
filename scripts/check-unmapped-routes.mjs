@@ -7,6 +7,7 @@ const SRC = path.join(ROOT, 'src');
 const routesDir = path.join(SRC, 'routes');
 const routeFiles = fs.readdirSync(routesDir).filter(f => f.startsWith('workspace.') && f.endsWith('.tsx'));
 const navRegistryContent = fs.readFileSync(path.join(SRC, 'lib', 'navigation-registry.ts'), 'utf8');
+const workspaceNavigationContent = fs.readFileSync(path.join(SRC, 'lib', 'workspace-navigation.ts'), 'utf8');
 const workspaceAllToolsContent = fs.readFileSync(path.join(SRC, 'components', 'workspace', 'workspace-all-tools-dialog.tsx'), 'utf8');
 const workspaceShellContent = fs.readFileSync(path.join(SRC, 'components', 'workspace', 'workspace-shell.tsx'), 'utf8');
 const workspaceFlyoutContent = fs.readFileSync(path.join(SRC, 'components', 'workspace', 'workspace-sidebar-flyout.tsx'), 'utf8');
@@ -23,11 +24,12 @@ for (const r of routeFiles) {
   }
   
   const inRegistry = navRegistryContent.includes(`"${routeUrl}"`) || navRegistryContent.includes(`'${routeUrl}'`);
+  const inWorkspaceNavigation = workspaceNavigationContent.includes(`"${routeUrl}"`) || workspaceNavigationContent.includes(`'${routeUrl}'`);
   const inAllTools = workspaceAllToolsContent.includes(`"${routeUrl}"`) || workspaceAllToolsContent.includes(`'${routeUrl}'`);
   const inShell = workspaceShellContent.includes(`"${routeUrl}"`) || workspaceShellContent.includes(`'${routeUrl}'`);
   const inFlyout = workspaceFlyoutContent.includes(`"${routeUrl}"`) || workspaceFlyoutContent.includes(`'${routeUrl}'`);
   
-  if (inRegistry || inAllTools || inShell || inFlyout) {
+  if (inRegistry || inWorkspaceNavigation || inAllTools || inShell || inFlyout) {
     mappedWorkspaceRoutes.push({ file: r, url: routeUrl });
   } else {
     unmappedWorkspaceRoutes.push({ file: r, url: routeUrl });

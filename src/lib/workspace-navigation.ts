@@ -60,6 +60,7 @@ const GROUP_AGENTIC_INTELLIGENCE: NavGroup = {
     { path: "/workspace/conteudo/receitas", label: "Receitas", icon: ChefHat },
     { path: "/workspace/simulacao", label: "Simulações", icon: Sliders },
     { path: "/workspace/onboarding/revisao", label: "Catálogo Mestre", icon: Layers },
+    { path: "/workspace/design-system", label: "Design System", icon: Palette },
   ],
 };
 
@@ -251,6 +252,8 @@ const GROUP_TURISMO_OPERATIONS: NavGroup = {
     { path: "/workspace/turismo/viagens", label: "Viagens", icon: Compass },
     { path: "/workspace/turismo/aereos", label: "Aéreos", icon: Plane },
     { path: "/workspace/turismo/incidentes", label: "Incidentes", icon: AlertTriangle },
+    { path: "/workspace/turismo/comissoes", label: "Comissões", icon: DollarSign },
+    { path: "/workspace/turismo/documentos-ocr", label: "OCR de Documentos", icon: FileText },
     { path: "/workspace/turismo/reacomodacao", label: "Reacomodação", icon: ShieldAlert },
     { path: "/workspace/turismo/embarques", label: "Embarques", icon: Calendar },
     { path: "/workspace/turismo/vouchers", label: "Vouchers", icon: Ticket },
@@ -295,6 +298,14 @@ const GROUP_TURISMO_CLIENTS: NavGroup = {
     { path: "/workspace/clientes", label: "Passageiros", icon: Users },
     { path: "/workspace/pedidos", label: "Emissões", icon: ShoppingBag },
   ],
+};
+
+const GROUP_WHATSAPP_AUTOMATIONS: NavGroup = {
+  id: "whatsapp-automations",
+  label: "WhatsApp",
+  icon: MessageSquare,
+  section: "corporate",
+  items: [{ path: "/workspace/whatsapp/automacoes", label: "Automações", icon: Zap }],
 };
 
 const GROUP_TURISMO_MARKETING: NavGroup = {
@@ -526,6 +537,7 @@ const GROUP_FINANCE_CLEAN: NavGroup = {
   icon: Banknote,
   section: "corporate",
   items: [
+    { path: "/workspace/financeiro", label: "Visão Financeira", icon: Banknote },
     { path: "/workspace/financeiro/caixa", label: "Caixa", icon: Banknote },
     { path: "/workspace/financeiro/caixa/lancamentos", label: "Lançamentos", icon: Receipt },
     { path: "/workspace/financeiro/caixa/turnos", label: "Turnos", icon: Clock },
