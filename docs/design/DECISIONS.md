@@ -1,5 +1,21 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-195: Voucher público token-bound e conversão staff atômica — fechamento P0
+
+- **Data:** 2026-10-07
+- **Contexto:** A retomada da auditoria do fluxo de turismo encontrou leitura pública direta de vouchers, conversão BFF com fallback legado/writes parciais e contratos de aceite/conversão sem fronteira suficientemente explícita entre intenção do cliente e operação staff.
+- **Decisão:** Aceite público grava apenas evidência imutável e preferência pendente; conversão posterior exige staff/membership/tenant e chama somente RPC transacional idempotente; voucher público é projetado por RPC `SECURITY DEFINER` token-bound com allowlist, observações nulas, passageiros normalizados e cache desabilitado. Grants públicos são restritos à função, nunca às tabelas subjacentes.
+- **Validação:** 29 regressões P0, 240 arquivos/1.570 testes amplos, typecheck e build verdes; design ratchet sem regressão após correção DL-19 e redução líquida de 547 violações.
+- **Limites:** Migrations/RLS/Postgres real, CI Cloudflare, browser smoke, merge e deploy permanecem não executados por falta de ambiente/autorização; o débito global do design lint segue registrado como baseline histórica, não como “limpo”.
+
+## DEC-187: Propostas públicas — publicação explícita, isolamento de tenant e retenção de aceite
+
+- **Data:** 2026-10-07
+- **Contexto:** A análise P0 do fluxo de propostas descobriu que listagem e exclusão BFF usam service role sem guardas de staff/tenant; a listagem recorria à primeira loja e incluía `store_id IS NULL`, enquanto a exclusão podia apagar por ID/token em outra loja e mascarava erros. Tokens de rascunho também revelavam a proposta pública.
+- **Decisão:** Conforme aprovação explícita do usuário em 2026-10-07 15:44 (opção 1), exigir `requireStaff()` e tenant derivado do servidor em listagem/exclusão; impedir fallback para primeira loja, registros sem tenant e buscas não sanitizadas; publicar explicitamente a versão antes de compartilhar; restringir leitura pública a `sent`, `approved` e `expired`; reservar `approved` à RPC canônica de aceite; não enviar WhatsApp automaticamente ao criar rascunho, exigindo compartilhamento staff após publicação; excluir propostas canônicas atomicamente e bloquear exclusão quando existir qualquer aceite histórico; manter exclusão legacy tenant-scoped; limitar tamanhos do input público de IA.
+- **Fundamentação:** AGENTS.md B.1, B.10, B.25 e B.31; W12.1/W12.4 e W14.1/W14.4; preservação de evidência, isolamento multi-tenant e semântica de estado verdadeira.
+- **Consequências:** Propostas não publicadas deixam de ser acessíveis por token; publicações mostram ação explícita da equipe; registros aceitos não podem ser apagados pelo botão existente. Código e migration permanecem somente no branch/PR; aplicação de migration, merge, deploy, RLS real e browser permanecem não verificados/não autorizados.
+
 ## DEC-186: Eliminação do Colapso de Hidratação React (Root Cause: AsyncLocalStorage Leak), Correção do Cache SSR e Alinhamento de Vitrines
 
 - **Data:** 2026-10-05
@@ -2759,3 +2775,12 @@
 - **Decisão adotada:** Criar a migration `20261007000000_builder_versioned_omni_snapshots.sql` com `experience_versions.document_snapshot` e a RPC `persist_omni_document_snapshot`. A RPC bloqueia o documento, valida ator/loja, reaproveita save idêntico, cria versão monotônica, arquiva publicação anterior e atualiza `omni_page_draft`/`omni_page_published` na mesma transação. O BFF Omni passa a exigir a resposta `version_id`/status confirmada; o carregamento prefere a última versão draft.
 - **Fundamentação:** AGENTS.md B.1, B.9, B.25 e B.31; invariantes anti-falso-positivo da skill de integridade; W8.2/W8.3 do masterplan.
 - **Consequências:** O código agora tem contrato de persistência atômica e auditável, mas a migração ainda precisa ser aplicada em banco efêmero/Supabase autorizado e a jornada browser precisa ser executada antes de declarar integração ou produção concluída. Compatibilidade com `settings.omni_page` permanece apenas como fallback de leitura de dados legados.
+
+
+## DEC-194: Isolamento do Acesso Público a Contratos Turísticos
+
+- **Data:** 2026-10-07
+- **Contexto:** A policy `contracts_public_verify` libera leitura pela condição global de status (`sealed`/`completed`), sem vincular a linha a `verification_code`; `envelopes_token_access` libera `SELECT` em todos os envelopes com `USING (true)`. O BFF turístico também usa cliente anon para `SELECT *`; seu handler de assinatura faz query/update direto anon, não valida consentimento no servidor e grava efeitos em etapas. Os consumidores do motor genérico encontrados usam BFF server-side, então não precisam dessas policies diretas. A policy ampla histórica de `travel_contracts` já foi removida por migrations posteriores e não deve ser confundida com as falhas ativas em `contracts`/`signature_envelopes`.
+- **Decisão adotada:** Na branch/PR desta remediação, remover leitura direta pública das tabelas de contratos/envelopes/evidências; preservar leitura e assinatura somente por BFF/RPC com token bearer exato e projeção allowlist. Preservar a assinatura pública por token, mas realizá-la numa transação idempotente com consentimento validado no servidor, hash/serial gerados de forma criptograficamente segura e status válidos segundo o schema. A emissão a partir de proposta exige staff e tenant autenticado. Não aplicar migrations em produção, não fazer deploy e não afirmar validade jurídica do mecanismo técnico.
+- **Fundamentação:** AGENTS.md B.1, B.5, B.9, B.10 e B.31; W2.2/W2.3/W2.4, W12.4 e W14.1/W14.4; SPEC-20261007-P0-ATOMIC-VOUCHER-APPLY R14–R17; autorização do usuário às 16:03:24 de 2026-10-07.
+- **Consequências:** A jornada legítima de leitura/assinatura deve continuar via token bearer e apenas pelos campos necessários. RLS/grants reais, Postgres/Supabase, browser, revisão jurídica e produção permanecem pendentes até validação no ambiente autorizado.

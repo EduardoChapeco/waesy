@@ -21,7 +21,8 @@ describe("Turismo — integridade de OCR, proposta e checkout W12", () => {
     expect(checkout).toContain("A proposta ainda não possui preço confirmado pela agência.");
     expect(checkout).not.toContain("mockPixCode");
     expect(checkout).not.toContain("278760");
-    expect(checkout).toContain('paymentMethod: "card"');
+    expect(checkout).toContain("paymentPreference");
+    expect(checkout).toContain("cartao_operadora");
   });
 
   it("mantém OCR revisável e aplicação protegida por RPC/conflitos", () => {

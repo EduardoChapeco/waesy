@@ -17,6 +17,15 @@ import { StudioSidebarEditor } from "@/components/tourism/studio/studio-sidebar-
 import { exportElementAsPdf, exportElementAsImage } from "@/lib/pdf-export";
 import { cn } from "@/lib/utils";
 
+type EditableProposalPatch = Omit<Partial<TravelProposalDTO>, "status"> & {
+  status?: Exclude<TravelProposalDTO["status"], "approved">;
+};
+
+function toEditableProposalPatch(patch: Partial<TravelProposalDTO>): EditableProposalPatch {
+  const { status, ...rest } = patch;
+  return status === "approved" ? rest : { ...rest, status };
+}
+
 export const Route = createFileRoute("/workspace/turismo/propostas/$id")({
   head: () => ({ meta: [{ title: "Proposta Comercial | Workspace Waesy" }] }),
   loader: async ({ params }) => {
@@ -57,12 +66,21 @@ function WorkspaceProposalStudioPage() {
  updateTravelProposal({
  data: {
  id: proposal!.id,
- patch,
+ patch: toEditableProposalPatch(patch),
  },
  }),
  onMutate: () => setIsSaving(true),
  onSettled: () => setIsSaving(false),
  onError: (err: any) => toast.error(err?.message || "Erro ao salvar alterações"),
+ });
+
+ const publishMutation = useMutation({
+   mutationFn: () => updateTravelProposal({ data: { id: proposal!.id, patch: { status: "sent" } } }),
+   onSuccess: () => {
+     setProposal((current) => current ? { ...current, status: "sent" } : current);
+     toast.success("Proposta publicada para aceite. Reserva e pagamento ainda dependem de confirmação separada.");
+   },
+   onError: (err: any) => toast.error(err?.message || "Não foi possível publicar a proposta."),
  });
 
  const handleChange = useCallback(
@@ -74,6 +92,20 @@ function WorkspaceProposalStudioPage() {
  },
  [proposal, saveMutation]
  );
+
+ const handlePublishForAcceptance = () => {
+   if (!proposal) return;
+   const validUntil = proposal.valid_until ? Date.parse(proposal.valid_until) : Number.NaN;
+   if (!proposal.snapshot_hash) {
+     toast.error("A proposta ainda não possui fingerprint canônico. Salve as alterações e tente novamente.");
+     return;
+   }
+   if (!Number.isFinite(validUntil) || validUntil <= Date.now()) {
+     toast.error("Defina uma validade futura antes de publicar a proposta.");
+     return;
+   }
+   publishMutation.mutate();
+ };
 
  const handleGenerateContract = async () => {
  if (!proposal) return;
@@ -133,7 +165,11 @@ function WorkspaceProposalStudioPage() {
  const publicUrl = `${typeof window !== "undefined" ? window.location.origin : ""}/proposta/${proposal.public_token}`;
 
  const handleCopyLink = () => {
- if (typeof navigator !== "undefined") {
+   if (proposal.status !== "sent") {
+     toast.info("Publique a proposta para habilitar o aceite antes de compartilhar o link.");
+     return;
+   }
+   if (typeof navigator !== "undefined") {
  navigator.clipboard.writeText(publicUrl);
  toast.success("Link público da proposta copiado!");
  }
@@ -329,6 +365,21 @@ function WorkspaceProposalStudioPage() {
  <span className="hidden waesy-expanded-flex">Converter em Viagem</span>
  </Button>
 
+ {proposal.status === "draft" || proposal.status === "rejected" || proposal.status === "expired" ? (
+   <Button
+     type="button"
+     size="sm"
+     variant="outline"
+     disabled={publishMutation.isPending}
+     onClick={handlePublishForAcceptance}
+     className="rounded-lg text-xs font-bold gap-2 h-11 px-3 cursor-pointer"
+     title="Publicar a versão atual para aceite do cliente"
+   >
+     {publishMutation.isPending ? <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none motion-reduce:transition-none" /> : <Check className="size-3.5" />}
+     <span className="hidden waesy-expanded-flex">Publicar para aceite</span>
+   </Button>
+ ) : null}
+
  <Button
  type="button"
  size="sm"
@@ -345,9 +396,10 @@ function WorkspaceProposalStudioPage() {
  <Button
  type="button"
  size="sm"
+ disabled={proposal.status !== "sent"}
  onClick={handleCopyLink}
  className="rounded-lg text-xs font-bold gap-2 h-11 px-3 bg-foreground text-background hover:bg-foreground/90 cursor-pointer"
- title="Copiar link público da proposta"
+ title={proposal.status === "sent" ? "Copiar link público da proposta" : "Publique a proposta antes de compartilhar o link"}
  >
  <Copy className="size-3.5" />
  </Button>
@@ -356,7 +408,14 @@ function WorkspaceProposalStudioPage() {
  <Button
  type="button"
  size="sm"
- onClick={() => setWhatsappModalOpen(true)}
+ disabled={proposal.status !== "sent"}
+ onClick={() => {
+   if (proposal.status !== "sent") {
+     toast.info("Publique a proposta para habilitar o aceite antes de compartilhar.");
+     return;
+   }
+   setWhatsappModalOpen(true);
+ }}
  className="rounded-lg text-xs font-bold gap-2 h-11 px-3 bg-primary hover:bg-primary/90 text-primary-foreground cursor-pointer"
  title="Enviar Proposta WhatsApp"
  >

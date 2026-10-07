@@ -7,14 +7,14 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { toast } from "sonner";
-import { getPublicTravelProposalByToken, approveTravelProposal, askProposalSalesAdvisorAI, type TravelProposalDTO, type TravelProposalOptionDTO } from "@/services/travel-proposal.functions";
+import { getPublicTravelProposalByToken, askProposalSalesAdvisorAI, type TravelProposalDTO, type TravelProposalOptionDTO } from "@/services/travel-proposal.functions";
 import { ProposalCanvasRenderer } from "@/components/tourism/studio/proposal-canvas-renderer";
 import { TravelProposalCheckoutModal } from "@/components/tourism/studio/travel-proposal-checkout-modal";
 import { exportElementAsPdf } from "@/lib/pdf-export";
 import { formatMoney } from "@/lib/money";
 
 export const Route = createFileRoute("/_store/proposta/$token")({
-  head: ({ loaderData }: { loaderData?: { proposal: TravelProposalDTO | null } }) => ({
+  head: ({ loaderData }: { loaderData?: { proposal: TravelProposalDTO | null; loadError?: boolean } }) => ({
     meta: [
       {
         title: loaderData?.proposal
@@ -30,21 +30,24 @@ export const Route = createFileRoute("/_store/proposta/$token")({
   loader: async ({ params }) => {
     try {
       const proposal = await getPublicTravelProposalByToken({ data: { token: params.token } });
-      return { proposal };
+      return { proposal, loadError: false };
     } catch (err) {
       console.error("[loader:_store.proposta.$token] Unhandled loader error:", err);
-      return { proposal: null };
+      return { proposal: null, loadError: true };
     }
   },
   component: PublicTravelProposalPage,
 });
 
 function PublicTravelProposalPage() {
-  const { proposal } = ((Route.useLoaderData?.() as any) || {});
+  const { proposal, loadError } = ((Route.useLoaderData?.() as any) || {});
   const [isExportingPdf, setIsExportingPdf] = useState(false);
-  const [isApproved, setIsApproved] = useState(proposal?.status === "approved");
+  const [isAccepted, setIsAccepted] = useState(proposal?.acceptance_status === "accepted");
   const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false);
-  const [selectedOptionIndex, setSelectedOptionIndex] = useState(0);
+  const [selectedOptionIndex, setSelectedOptionIndex] = useState(() => {
+    const acceptedIndex = proposal?.options?.findIndex((option: { id?: string }) => option.id === proposal?.accepted_option_id) ?? -1;
+    return acceptedIndex >= 0 ? acceptedIndex : 0;
+  });
 
   // ── AI Sales Advisor (SDR) States ──
   const [isAdvisorOpen, setIsAdvisorOpen] = useState(false);
@@ -77,15 +80,6 @@ function PublicTravelProposalPage() {
       pricing: currentOpt.pricing || proposal.pricing,
     };
   }, [proposal, options, selectedOptionIndex]);
-
-  const approveMutation = useMutation({
-    mutationFn: () => approveTravelProposal({ data: { token: proposal!.public_token } }),
-    onSuccess: (res) => {
-      setIsApproved(true);
-      toast.success(res.message);
-    },
-    onError: (err: any) => toast.error(err?.message || "Erro ao aprovar proposta."),
-  });
 
   const advisorMutation = useMutation({
     mutationFn: (question: string) =>
@@ -122,15 +116,22 @@ function PublicTravelProposalPage() {
   };
 
   if (!proposal || !effectiveProposal) {
+    const unavailableTitle = loadError ? "Proposta indisponível" : "Proposta não encontrada";
     return (
-      <div className="max-w-md mx-auto py-20 px-4 text-center space-y-4">
-        <h2 className="text-lg font-bold text-foreground">Proposta não encontrada</h2>
-        <p className="text-xs text-muted-foreground">
-          Esta proposta pode ter expirado ou o link informado está incorreto.
+      <div className="max-w-md mx-auto py-20 px-4 text-center space-y-4" role={loadError ? "alert" : undefined}>
+        <h2 className="text-lg font-bold text-foreground">{unavailableTitle}</h2>
+        <p className="text-sm text-muted-foreground">
+          {loadError ? "Não foi possível carregar esta proposta. Tente novamente." : "A proposta pode ter expirado ou o link informado está incorreto."}
         </p>
-        <Button asChild size="sm" variant="outline" className="rounded-lg">
-          <Link to="/turismo">Explorar Outros Destinos</Link>
-        </Button>
+        {loadError ? (
+          <Button type="button" size="sm" variant="outline" className="h-11 min-h-11 focus-visible:ring-2 focus-visible:ring-ring" onClick={() => window.location.reload()}>
+            Tentar novamente
+          </Button>
+        ) : (
+          <Button asChild size="sm" variant="outline" className="h-11 min-h-11 rounded-lg focus-visible:ring-2 focus-visible:ring-ring">
+            <Link to="/turismo">Explorar outros destinos</Link>
+          </Button>
+        )}
       </div>
     );
   }
@@ -147,9 +148,12 @@ function PublicTravelProposalPage() {
     }
   };
 
-  const cleanWhatsapp = (proposal.agency_whatsapp || "").replace(/\D/g, "");
+  const whatsappDigits = (proposal.agency_whatsapp || "").replace(/\D/g, "");
+  const cleanWhatsapp = whatsappDigits ? (whatsappDigits.startsWith("55") ? whatsappDigits : `55${whatsappDigits}`) : "";
+  const proposalValidUntil = proposal.valid_until ? Date.parse(proposal.valid_until) : Number.NaN;
+  const isProposalExpired = !Number.isFinite(proposalValidUntil) || proposalValidUntil <= Date.now();
   const waConfirmMessage = encodeURIComponent(
-    `Olá! Gostei muito da proposta #${proposal.public_token} para ${proposal.destination_city} e gostaria de prosseguir com a reserva e emissão dos vouchers!`
+    `Olá! Gostei da proposta #${proposal.public_token} para ${proposal.destination_city} e quero conversar sobre os próximos passos. Entendo que reserva, disponibilidade e emissão ainda dependem da confirmação da agência.`
   );
 
   const activeOption = options[selectedOptionIndex] || null;
@@ -224,13 +228,13 @@ function PublicTravelProposalPage() {
             <span className="text-xs sm:text-sm font-bold text-foreground truncate">
               {activeOption ? `${activeOption.name} · ${proposal.destination_city}` : proposal.title}
             </span>
-            {isApproved ? (
-              <Badge className="bg-emerald-600 text-white text-[10px] font-bold">
-                ✓ Aprovada
+            {isAccepted ? (
+              <Badge variant="secondary" className="text-[10px] font-bold">
+                Aceite registrado
               </Badge>
             ) : (
               <Badge variant="outline" className="text-[10px] font-mono font-bold">
-                Aguardando Decisão
+                {isProposalExpired ? "Validade encerrada" : proposal.status !== "sent" ? "Aguardando agência" : proposal.snapshot_hash ? "Aguardando decisão" : "Revisão necessária"}
               </Badge>
             )}
           </div>
@@ -272,7 +276,7 @@ function PublicTravelProposalPage() {
               className="rounded-lg text-xs font-bold gap-2 h-10 border-emerald-500/40 text-emerald-700 hover:bg-emerald-50 dark:text-emerald-400 cursor-pointer"
             >
               <a
-                href={`https://wa.me/55${cleanWhatsapp}?text=${waConfirmMessage}`}
+                href={`https://wa.me/${cleanWhatsapp}?text=${waConfirmMessage}`}
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -287,13 +291,30 @@ function PublicTravelProposalPage() {
             type="button"
             size="sm"
             onClick={() => setIsCheckoutModalOpen(true)}
+            disabled={isAccepted || proposal.status !== "sent" || !proposal.snapshot_hash || isProposalExpired}
             className="rounded-lg text-xs font-bold gap-2 min-h-11 h-11 px-4 bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer"
           >
             <ShieldCheck className="size-4" />
-            <span>{isApproved ? "Concluir Reserva" : "Escolher & Reservar"}</span>
+            <span>{isAccepted ? "Aceite registrado" : "Registrar aceite"}</span>
           </Button>
         </div>
       </div>
+
+      {!proposal.snapshot_hash && !isAccepted && (
+        <p role="status" className="text-xs text-muted-foreground">
+          A agência precisa atualizar esta proposta antes que o aceite online possa ser registrado.
+        </p>
+      )}
+      {isProposalExpired && !isAccepted && (
+        <p role="status" className="text-sm text-muted-foreground">
+          A validade terminou ou não está definida. Solicite uma proposta atualizada à agência.
+        </p>
+      )}
+      {proposal.status !== "sent" && !isAccepted && !isProposalExpired && (
+        <p role="status" className="text-sm text-muted-foreground">
+          A agência precisa publicar a proposta antes que ela possa receber um aceite.
+        </p>
+      )}
 
       {/* ── 3. RENDERIZAÇÃO DA LÂMINA EDITORIAL DA PROPOSTA ── */}
       <div id="public-proposal-canvas" className="rounded-lg border border-border/80 overflow-hidden bg-white">
@@ -320,9 +341,10 @@ function PublicTravelProposalPage() {
             className="h-11 w-11 rounded-lg shrink-0 border-emerald-500/40 text-emerald-700 cursor-pointer"
           >
             <a
-              href={`https://wa.me/55${cleanWhatsapp}?text=${waConfirmMessage}`}
+              href={`https://wa.me/${cleanWhatsapp}?text=${waConfirmMessage}`}
               target="_blank"
               rel="noopener noreferrer"
+              aria-label="WhatsApp da agência"
             >
               <MessageCircle className="size-5 text-emerald-600" />
             </a>
@@ -332,10 +354,11 @@ function PublicTravelProposalPage() {
         <Button
           type="button"
           onClick={() => setIsCheckoutModalOpen(true)}
+          disabled={isAccepted || proposal.status !== "sent" || !proposal.snapshot_hash || isProposalExpired}
           className="flex-1 min-h-11 h-11 rounded-lg text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer"
         >
           <ShieldCheck className="size-4 mr-2" />
-          <span>{isApproved ? "Concluir Reserva" : "Escolher Opção"}</span>
+          <span>{isAccepted ? "Aceite registrado" : "Registrar aceite"}</span>
         </Button>
       </div>
 
@@ -456,7 +479,11 @@ function PublicTravelProposalPage() {
         isOpen={isCheckoutModalOpen}
         onClose={() => setIsCheckoutModalOpen(false)}
         proposal={effectiveProposal}
-        onSuccess={() => setIsApproved(true)}
+        selectedOptionId={activeOption?.id || null}
+        onSuccess={() => {
+          setIsAccepted(true);
+          setIsCheckoutModalOpen(false);
+        }}
       />
     </div>
   );
