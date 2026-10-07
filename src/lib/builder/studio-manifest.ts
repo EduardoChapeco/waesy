@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isSafeBuilderHref } from "@/lib/builder/safe-href";
 import {
   BentoBlockDataSchema,
   CANONICAL_BUILDER_BLOCK_IDS,
@@ -23,24 +24,12 @@ const SlugSchema = z.string().min(2).max(96).regex(SLUG_PATTERN);
 const SemVerSchema = z.string().regex(/^\d+\.\d+\.\d+$/);
 const EMPTY_IMAGE = z.literal("").optional();
 
-function isSafeTemplateHref(value: string): boolean {
-  if (value === "#" || /^#[A-Za-z0-9_-]{1,128}$/.test(value)) return true;
-  if (value.startsWith("/") && !value.startsWith("//")) return true;
-  if (/^(?:mailto|tel):/i.test(value)) return true;
-  try {
-    const url = new URL(value);
-    return url.protocol === "https:" && !url.username && !url.password;
-  } catch {
-    return false;
-  }
-}
-
 export const StudioTemplateHrefSchema = z
   .string()
   .trim()
   .min(1)
   .max(2048)
-  .refine(isSafeTemplateHref, "Link deve ser âncora, rota local ou URL segura HTTPS.");
+  .refine(isSafeBuilderHref, "Link deve ser âncora, rota local ou URL segura HTTPS.");
 
 const StudioTemplateCtaSchema = z.object({
   label: z.string().trim().min(1).max(80),
@@ -165,7 +154,7 @@ export const StudioTemplateBlockSchema = z.object({
     if (!value || typeof value !== "object") return;
     for (const [key, child] of Object.entries(value as Record<string, unknown>)) {
       const childPath = [...path, key];
-      if (key.toLowerCase() === "href" && typeof child === "string" && !isSafeTemplateHref(child)) {
+      if (/href$/i.test(key) && typeof child === "string" && !isSafeBuilderHref(child)) {
         ctx.addIssue({ code: "custom", path: ["config", ...childPath], message: "Link de template inseguro ou não permitido." });
       } else {
         inspectLinks(child, childPath);

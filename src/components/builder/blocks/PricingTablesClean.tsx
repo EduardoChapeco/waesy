@@ -1,9 +1,9 @@
 import React, { useState } from "react";
-import { Link } from "@tanstack/react-router";
 import { PricingBlockData, OmniBlockStyling } from "../types";
 import { getSectionStyle } from "../utils";
 import { Check, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { getSafeBuilderHref } from "@/lib/builder/safe-href";
 
 export interface PricingTablesCleanProps {
   id?: string;
@@ -16,6 +16,7 @@ export interface PricingTablesCleanProps {
 export const PricingTablesClean: React.FC<PricingTablesCleanProps> = ({ id, data, styling, className = "", onSelectTier }) => {
   const [isAnnual, setIsAnnual] = useState(false);
   const sectionStyle = getSectionStyle(styling);
+  const hasAnnualPrices = data.tiers.length > 0 && data.tiers.every((tier) => typeof tier.priceAnnualCents === "number");
 
   const formatPrice = (cents: number) => {
     return new Intl.NumberFormat("pt-BR", {
@@ -45,9 +46,10 @@ export const PricingTablesClean: React.FC<PricingTablesCleanProps> = ({ id, data
           )}
 
           {/* Toggle Mensal / Anual */}
-          <div className="inline-flex items-center gap-3 p-2 rounded-full bg-muted/60 border border-border/80 text-xs font-semibold">
+          {hasAnnualPrices && <div className="inline-flex items-center gap-3 p-2 rounded-full bg-muted/60 border border-border/80 text-xs font-semibold">
             <button
               type="button"
+              aria-pressed={!isAnnual}
               onClick={() => setIsAnnual(false)}
               className={`px-4 py-2 rounded-full transition-all ${
                 !isAnnual ? "bg-background text-foreground font-medium" : "text-muted-foreground"
@@ -57,24 +59,24 @@ export const PricingTablesClean: React.FC<PricingTablesCleanProps> = ({ id, data
             </button>
             <button
               type="button"
+              aria-pressed={isAnnual}
               onClick={() => setIsAnnual(true)}
               className={`px-4 py-2 rounded-full transition-all flex items-center gap-2 ${
                 isAnnual ? "bg-background text-foreground font-medium" : "text-muted-foreground"
               }`}
             >
               <span>Faturamento Anual</span>
-              <span className="text-[10px] bg-emerald-500/10 text-emerald-600 px-2 py-1 rounded-full font-bold">
-                -20% OFF
-              </span>
             </button>
-          </div>
+          </div>}
         </div>
 
         {/* Grid de 3 Planos */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
           {data.tiers.map((tier) => {
-            const rawPrice = isAnnual && tier.priceAnnualCents ? tier.priceAnnualCents : tier.priceMonthlyCents;
+            const rawPrice = isAnnual && typeof tier.priceAnnualCents === "number" ? tier.priceAnnualCents : tier.priceMonthlyCents;
             const priceFormatted = formatPrice(rawPrice);
+            const ctaTarget = tier.ctaHref?.trim() || tier.href?.trim();
+            const ctaHref = ctaTarget ? getSafeBuilderHref(ctaTarget) : null;
 
             return (
               <div
@@ -118,7 +120,7 @@ export const PricingTablesClean: React.FC<PricingTablesCleanProps> = ({ id, data
                     <span className={`text-xs font-semibold uppercase tracking-wider ${
                       tier.isPopular ? "text-background/60" : "text-muted-foreground"
                     }`}>
-                      /mês
+                      {isAnnual && hasAnnualPrices ? "/mês (ciclo anual)" : "/mês"}
                     </span>
                   </div>
 
@@ -151,7 +153,7 @@ export const PricingTablesClean: React.FC<PricingTablesCleanProps> = ({ id, data
                   >
                     {tier.ctaLabel}
                   </Button>
-                ) : (tier as any).ctaHref || (tier as any).href ? (
+                ) : ctaHref ? (
                   <Button
                     asChild
                     size="lg"
@@ -161,25 +163,21 @@ export const PricingTablesClean: React.FC<PricingTablesCleanProps> = ({ id, data
                         : "bg-foreground text-background hover:bg-foreground/90"
                     }`}
                   >
-                    <a href={(tier as any).ctaHref || (tier as any).href}>{tier.ctaLabel}</a>
+                    <a href={ctaHref}>{tier.ctaLabel}</a>
                   </Button>
                 ) : (
                   <Button
-                    asChild
+                    type="button"
                     size="lg"
-                    className={`w-full h-12 min-h-11 rounded-lg text-sm font-bold transition-transform active:scale-95 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                    disabled
+                    title="Configure um destino seguro para este CTA."
+                    className={`w-full h-12 min-h-11 rounded-lg text-sm font-bold ${
                       tier.isPopular
-                        ? "bg-background text-foreground hover:bg-background/90"
-                        : "bg-foreground text-background hover:bg-foreground/90"
+                        ? "bg-background text-foreground"
+                        : "bg-foreground text-background"
                     }`}
                   >
-                    <Link
-                      to="/workspace/financeiro/faturas"
-                      search={{ upgrade_plan: tier.name }}
-                      className="inline-flex items-center justify-center size-full"
-                    >
-                      {tier.ctaLabel}
-                    </Link>
+                    {tier.ctaLabel}
                   </Button>
                 )}
               </div>

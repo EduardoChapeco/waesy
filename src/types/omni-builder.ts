@@ -148,10 +148,14 @@ export const PricingPlanTierSchema = z.object({
   name: z.string(),
   badge: z.string().optional(),
   priceMonthlyCents: z.number().int().nonnegative(),
+  /** Valor mensal em centavos de BRL no plano com ciclo de cobrança anual. */
   priceAnnualCents: z.number().int().nonnegative().optional(),
   description: z.string(),
   features: z.array(z.string()),
   ctaLabel: z.string(),
+  ctaHref: z.string().trim().max(2048).optional(),
+  /** @deprecated Use ctaHref; mantido para leitura de documentos antigos. */
+  href: z.string().trim().max(2048).optional(),
   isPopular: z.boolean().optional(),
 });
 export type PricingPlanTier = z.infer<typeof PricingPlanTierSchema>;
@@ -192,7 +196,7 @@ export const TestimonialItemSchema = z.object({
   imageAlt: z.string().max(500).optional(),
   rating: z.number().min(1).max(5).default(5),
   comment: z.string(),
-  verified: z.boolean().default(true),
+  verified: z.boolean().default(false),
 });
 export type TestimonialItem = z.infer<typeof TestimonialItemSchema>;
 

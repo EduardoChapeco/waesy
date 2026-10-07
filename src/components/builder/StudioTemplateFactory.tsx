@@ -30,7 +30,7 @@ const FactoryResponseSchema = z.object({
     score: z.number(),
     findings: z.array(z.object({
       ruleId: z.string(),
-      category: z.enum(["license", "accessibility", "performance", "content"]),
+      category: z.enum(["license", "accessibility", "performance", "content", "security"]),
       severity: z.enum(["error", "warning", "info"]),
       path: z.string(),
       message: z.string(),

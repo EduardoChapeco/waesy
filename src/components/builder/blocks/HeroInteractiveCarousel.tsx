@@ -3,6 +3,7 @@ import { HeroCarouselBlockData, OmniBlockStyling } from "../types";
 import { getSectionStyle } from "../utils";
 import { ArrowRight, ChevronLeft, ChevronRight, Tag, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { getSafeBuilderHref } from "@/lib/builder/safe-href";
 
 export interface HeroInteractiveCarouselProps {
   id?: string;
@@ -59,6 +60,8 @@ export const HeroInteractiveCarousel: React.FC<HeroInteractiveCarouselProps> = (
   }
 
   const currentSlide = slides[currentIndex] || slides[0];
+  const primaryHref = getSafeBuilderHref(currentSlide.primaryCta.href) ?? "#";
+  const secondaryHref = currentSlide.secondaryCta ? getSafeBuilderHref(currentSlide.secondaryCta.href) ?? "#" : undefined;
 
   return (
     <section
@@ -100,7 +103,7 @@ export const HeroInteractiveCarousel: React.FC<HeroInteractiveCarouselProps> = (
                   className="h-11 sm:h-12 px-6 sm:px-7 text-xs sm:text-sm font-semibold rounded-lg bg-foreground text-background hover:bg-foreground/90 transition-transform active:scale-95 group shadow-xs cursor-pointer"
                   asChild
                 >
-                  <a href={currentSlide.primaryCta.href} className="flex items-center gap-2">
+                  <a href={primaryHref} className="flex items-center gap-2">
                     <span>{currentSlide.primaryCta.label}</span>
                     <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
                   </a>
@@ -114,7 +117,7 @@ export const HeroInteractiveCarousel: React.FC<HeroInteractiveCarouselProps> = (
                   className="h-11 sm:h-12 px-5 sm:px-6 text-xs sm:text-sm font-semibold rounded-lg border-border bg-card/60 backdrop-blur-xs hover:bg-muted text-foreground transition-all cursor-pointer"
                   asChild
                 >
-                  <a href={currentSlide.secondaryCta.href}>
+                  <a href={secondaryHref}>
                     {currentSlide.secondaryCta.label}
                   </a>
                 </Button>

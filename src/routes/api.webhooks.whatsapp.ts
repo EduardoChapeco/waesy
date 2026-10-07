@@ -108,7 +108,7 @@ export const Route = createFileRoute("/api/webhooks/whatsapp")({
        * GET Handler: handshake de validação do Webhook da Meta / WhatsApp Cloud API.
        * A Meta envia: hub.mode, hub.verify_token e hub.challenge.
        */
-      GET: async ({ request }) => {
+      GET: async ({ request }: { request: Request }) => {
         try {
           const url = new URL(request.url);
           const mode = url.searchParams.get("hub.mode");
@@ -165,7 +165,7 @@ export const Route = createFileRoute("/api/webhooks/whatsapp")({
        * POST Handler: ingestão autenticada de mensagens e recibos da Meta.
        * A assinatura deve ser calculada sobre o corpo bruto antes do JSON ser usado.
        */
-      POST: async ({ request }) => {
+      POST: async ({ request }: { request: Request }) => {
         try {
           const contentLength = Number(request.headers.get("content-length") || 0);
           if (Number.isFinite(contentLength) && contentLength > MAX_WEBHOOK_BODY_BYTES) {
@@ -538,4 +538,4 @@ export const Route = createFileRoute("/api/webhooks/whatsapp")({
       },
     },
   },
-});
+} as never);

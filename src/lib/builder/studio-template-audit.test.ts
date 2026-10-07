@@ -59,6 +59,26 @@ describe("Studio template automated quality pipeline", () => {
     ]));
   });
 
+  it.each(["javascript:alert(1)", "data:text/html,<svg/onload=alert(1)>", "blob:https://example.test/id", "//evil.example/path"])("bloqueia publicação com href inseguro: %s", (href) => {
+    const result = auditStudioTemplate(fixture([{
+      id: "hero",
+      type: "hero_minimal_split",
+      config: { title: "Abrir", primaryCta: { label: "Ação", href } },
+    }]));
+    expect(result.findings.map((finding) => finding.ruleId)).toContain("SECURITY_UNSAFE_HREF");
+    expect(getPublicationBlockingFindings(result).map((finding) => finding.ruleId)).toContain("SECURITY_UNSAFE_HREF");
+  });
+
+  it("bloqueia imagem data/blob em vez de omiti-la da auditoria", () => {
+    const result = auditStudioTemplate(fixture([{
+      id: "hero",
+      type: "hero_minimal_split",
+      config: { title: "Imagem inline", imageUrl: "data:image/png;base64,AAAA", imageAlt: "Imagem de teste" },
+    }]));
+    expect(result.findings.map((finding) => finding.ruleId)).toContain("LICENSE_EPHEMERAL_IMAGE");
+    expect(getPublicationBlockingFindings(result).map((finding) => finding.ruleId)).toContain("LICENSE_EPHEMERAL_IMAGE");
+  });
+
   it("não permite disfarçar images.unsplash.com como asset de upload do usuário", () => {
     const imageUrl = "https://images.unsplash.com/photo-example";
     const result = auditStudioTemplate(fixture([{
@@ -121,6 +141,29 @@ describe("Studio template automated quality pipeline", () => {
     expect(report.summary.reviewRequired).toBe(12);
     expect(report.summary.publishableFailed).toBe(0);
     expect(report.templates.filter((template) => template.templateId.startsWith("pilot_")).every((template) => template.findings.some((finding) => finding.ruleId === "CONTENT_PLACEHOLDER_UNRESOLVED"))).toBe(true);
+  });
+
+  it("bloqueia FAQ/depoimentos vazios e formulário sem destino de lead", () => {
+    const result = auditStudioTemplate(fixture([
+      { id: "faq", type: "faq_clean_accordion", config: { items: [] } },
+      { id: "proof", type: "testimonials_social_proof", config: { testimonials: [] } },
+      { id: "contact", type: "contact_form_direct", config: { whatsappNumber: "" } },
+    ]));
+    expect(result.findings.map((finding) => finding.ruleId)).toEqual(expect.arrayContaining([
+      "CONTENT_FAQ_EMPTY",
+      "CONTENT_SOCIAL_PROOF_EMPTY",
+      "CONTENT_FORM_DESTINATION_MISSING",
+    ]));
+  });
+
+  it("bloqueia planos de pricing sem destino CTA e não usa rota interna genérica", () => {
+    const result = auditStudioTemplate(fixture([{
+      id: "pricing",
+      type: "pricing_three_tiers",
+      config: { tiers: [{ id: "starter", name: "Inicial", ctaLabel: "Contratar" }] },
+    }]));
+    expect(result.findings.map((finding) => finding.ruleId)).toContain("CONTENT_PRICING_CTA_MISSING");
+    expect(getPublicationBlockingFindings(result).map((finding) => finding.ruleId)).toContain("CONTENT_PRICING_CTA_MISSING");
   });
 
   it("bloqueia placeholders não resolvidos e âncoras duplicadas ou inválidas", () => {

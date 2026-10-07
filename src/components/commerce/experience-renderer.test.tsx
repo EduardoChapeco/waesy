@@ -19,7 +19,7 @@ describe("ExperienceRenderer Omni AST integration", () => {
     page.theme.textColor = "#111111";
 
     const markup = renderToStaticMarkup(<ExperienceRenderer document={page} />);
-    expect(markup).toContain('data-omni-document-id="renderer-integration"');
+    expect(markup).toContain(`data-omni-document-id="${page.page_id}"`);
     expect(markup).toContain("AST canônico renderizado");
     expect(markup).toContain("WAESY STUDIO");
     expect(markup).toContain("background-color:#ffffff");

@@ -3,6 +3,7 @@ import { HeroBlockData, OmniBlockStyling } from "../types";
 import { getSectionStyle } from "../utils";
 import { ArrowRight, Play, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { getSafeBuilderHref } from "@/lib/builder/safe-href";
 
 export interface HeroMinimalSplitProps {
   id?: string;
@@ -13,6 +14,8 @@ export interface HeroMinimalSplitProps {
 
 export const HeroMinimalSplit: React.FC<HeroMinimalSplitProps> = ({ id, data, styling, className = "" }) => {
   const sectionStyle = getSectionStyle(styling);
+  const primaryHref = getSafeBuilderHref(data.primaryCta.href) ?? "#";
+  const secondaryHref = data.secondaryCta ? getSafeBuilderHref(data.secondaryCta.href) ?? "#" : undefined;
   return (
     <section
       id={id}
@@ -62,7 +65,7 @@ export const HeroMinimalSplit: React.FC<HeroMinimalSplitProps> = ({ id, data, st
                   size="lg"
                   className="h-12 min-h-11 px-7 text-base font-semibold rounded-lg bg-foreground text-background hover:bg-foreground/90 transition-transform active:scale-95 group  cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 >
-                  <a href={data.primaryCta.href} className="flex items-center gap-2">
+                  <a href={primaryHref} className="flex items-center gap-2">
                     {data.primaryCta.label}
                     <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
                   </a>
@@ -90,7 +93,7 @@ export const HeroMinimalSplit: React.FC<HeroMinimalSplitProps> = ({ id, data, st
                     size="lg"
                     className="h-12 min-h-11 px-6 text-base font-medium rounded-lg border-border hover:bg-muted/50 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                   >
-                    <a href={data.secondaryCta.href} className="flex items-center gap-2">
+                    <a href={secondaryHref} className="flex items-center gap-2">
                       <Play className="size-4 fill-current opacity-80" />
                       {data.secondaryCta.label}
                     </a>
