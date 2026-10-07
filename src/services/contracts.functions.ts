@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { requireStaff } from "@/lib/server-access";
+import { enforceRateLimit } from "@/lib/rate-limiter";
 import { getIdentity } from "./identity.functions";
 import { executeUnifiedAiCall } from "./api-orchestrator.functions";
 import { interpolateContractVariables, autoPositionSignatureFieldsFromContent } from "@/lib/contracts/contract-semantic-dictionary";
@@ -366,31 +367,15 @@ export const sealAndIssueContract = createServerFn({ method: "POST" })
 export const extractContractDataFromOcr = createServerFn({ method: "POST" })
   .validator(
     z.object({
-      imageUrl: z.string().optional(),
-      base64: z.string().optional(),
-      mimeType: z.string().optional().default("image/jpeg"),
+      base64: z.string().max(12_000_000, "Imagem excede o limite de 9 MB."),
+      mimeType: z.string().trim().max(120).default("image/jpeg"),
     }),
   )
   .handler(async ({ data: input }): Promise<OcrContractExtractionResult> => {
-    let imageBase64 = input.base64 || "";
+    const identity = await requireStaff();
+    enforceRateLimit(`${identity.store_id}:${identity.id}`, "ai_generation");
+    const imageBase64 = input.base64;
     let mimeType = input.mimeType || "image/jpeg";
-
-    if (!imageBase64 && input.imageUrl) {
-      try {
-        const res = await fetch(input.imageUrl, { signal: AbortSignal.timeout(10000) });
-        if (!res.ok) throw new Error("Falha ao baixar imagem para OCR.");
-        const cType = res.headers.get("content-type") || "image/jpeg";
-        mimeType = cType.split(";")[0].trim();
-        const buf = await res.arrayBuffer();
-        imageBase64 = Buffer.from(buf).toString("base64");
-      } catch (err: any) {
-        throw new Error(`Erro ao carregar imagem para análise: ${err.message}`);
-      }
-    }
-
-    if (!imageBase64) {
-      throw new Error("Nenhuma imagem fornecida para o OCR.");
-    }
 
     const systemPrompt = `Você é o Agente Especialista em OCR e Extração de Documentos Oficiais Brasileiros da Waesy Platform (Padrão BigTech).
 Sua missão é extrair com precisão cirúrgica os dados de CNH, RG, Passaporte ou contratos comerciais escaneados.

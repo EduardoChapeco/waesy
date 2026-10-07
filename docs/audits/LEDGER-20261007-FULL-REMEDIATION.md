@@ -1,5 +1,5 @@
 
 
-## W2.4 — tenant da criação manual de contratos — 2026-10-07
+## W2.5 — OCR contratual — 2026-10-07
 
-`createContract` agora exige staff, rejeita `storeId` divergente da sessão e persiste somente `identity.store_id`. Regressão de contratos: 2 arquivos / 5 testes verdes; typecheck e diff check verdes. RLS remoto e banco real continuam pendentes.
+O OCR contratual agora exige staff, rate limit por tenant/usuário e base64 limitado a 12 MB; o fetch de `imageUrl` controlado pelo chamador foi removido para eliminar SSRF. Regressão focada: 3 arquivos / 7 testes verdes; typecheck e diff check verdes. Provider real, quota persistente e banco remoto continuam pendentes.
