@@ -18,3 +18,11 @@
 - **Marketplace/carrinho:** removido o endpoint `simulateMarketplaceOrder` e o fallback que escolhia arbitrariamente a primeira loja do banco. A documentação foi alinhada.
 - **Gates:** `npm run typecheck` PASS; testes direcionados PASS (7 testes); `git diff --check` PASS. Verificação pós-migration confirmou `classified-media.public = false` e exclusão da policy pública.
 - **Limite honesto:** provider externo, pagamento real, webhook real e deploy não foram simulados nem declarados como concluídos; permanecem dependentes de configuração e execução reais.
+
+### Onda RPC/identidade — 2026-10-07
+- **Finding confirmado:** o banco real mantinha `auth.on_auth_user_created` ativo, `public.handle_new_user()` com promoção heurística e criação de organização/loja/membership, além de overloads e grants públicos em RPCs `SECURITY DEFINER`.
+- **Correção aplicada no código:** `signUpWithPassword` agora faz upsert explícito do perfil com role `customer` e falha se o provisionamento não persistir; não cria tenant, organização, loja ou membership.
+- **Migration aplicada no banco real:** `rpc_grants_and_explicit_profile_provisioning` registrada pelo Supabase como versão `20261007142914`. O trigger e a função foram removidos; o overload UUID de `get_public_lead_by_token` foi removido; o magic link não injeta nome de agência quando ausente.
+- **Grants verificados:** `add_to_cart_atomic_v6`, `process_checkout_atomic`, `process_checkout_transaction_v2`, `get_public_lead_by_token(text)` e `reconcile_behavioral_telemetry_identity` retornam `anon_exec=false`, `auth_exec=false`, `service_exec=true` no banco real.
+- **Gates:** 12 testes direcionados PASS; `npm run typecheck` PASS; suíte completa PASS; `npm run build` PASS; client-leak guard PASS; `npm run lint -- --quiet` PASS; `git diff --check` PASS.
+- **Limites:** a migration foi aplicada no Supabase real, mas deploy Cloudflare e smoke test público ainda não foram confirmados. O merge em `main` depende dos checks do GitHub no SHA publicado.
