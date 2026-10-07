@@ -76,7 +76,7 @@ export interface VoucherBoardingCardProps {
 export const VoucherBoardingCard = forwardRef<HTMLDivElement, VoucherBoardingCardProps>(
   ({ voucher, trip, tripNumber: tripNumProp, agency: agencyProp, store, passengers, confirmationItems, showActions }, ref) => {
     const agency: AgencyData = agencyProp || {
-      name: store?.name || trip?.agency_name || "Agência de Viagens",
+      name: store?.name || trip?.agency_name || "",
       logo_url: store?.settings?.logoUrl || store?.settings?.logo_url || null,
       whatsapp_phone: store?.settings?.whatsapp || store?.settings?.phone || null,
     };
@@ -177,7 +177,7 @@ export const VoucherBoardingCard = forwardRef<HTMLDivElement, VoucherBoardingCar
  <div className="space-y-2">
  <div className="flex items-center gap-2 flex-wrap">
  <span className="font-black text-base sm:text-lg text-neutral-900">
- {flight.origin || "Origem"} → {flight.destination || "Destino"}
+ {flight.origin && flight.destination ? `${flight.origin} → ${flight.destination}` : flight.origin || flight.destination || null}
  </span>
  {flight.class && (
  <span className="px-3 py-1 rounded-md bg-neutral-200 text-neutral-800 text-xs font-bold uppercase">
@@ -186,7 +186,7 @@ export const VoucherBoardingCard = forwardRef<HTMLDivElement, VoucherBoardingCar
  )}
  </div>
  <p className="text-xs sm:text-sm text-neutral-600">
- {flight.airline || "Cia Aérea"} • Voo <strong className="text-neutral-800">{flight.flight_number || "—"}</strong>
+ {flight.airline || flight.flight_number ? <>{flight.airline || null}{flight.airline && flight.flight_number ? " • " : ""}{flight.flight_number ? <>Voo <strong className="text-neutral-800">{flight.flight_number}</strong></> : null}</> : null}
  {flight.date && ` • ${flight.date}`}
  </p>
  </div>
@@ -349,7 +349,7 @@ export const VoucherBoardingCard = forwardRef<HTMLDivElement, VoucherBoardingCar
  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-[10px] text-neutral-700">
  <div>
  <span className="text-neutral-500 block">Seguradora:</span>
- <span className="font-semibold">{voucher.insurance.provider || "Assist Card / Universal"}</span>
+  {voucher.insurance.provider && <span className="font-semibold">{voucher.insurance.provider}</span>}
  </div>
  <div>
  <span className="text-neutral-500 block">Número da Apólice:</span>
@@ -359,7 +359,7 @@ export const VoucherBoardingCard = forwardRef<HTMLDivElement, VoucherBoardingCar
  </div>
  <div>
  <span className="text-neutral-500 block">Central de Emergência:</span>
- <span className="font-bold">{voucher.insurance.emergency_phone || "0800 24h"}</span>
+  {voucher.insurance.emergency_phone && <span className="font-bold">{voucher.insurance.emergency_phone}</span>}
  </div>
  </div>
  </div>

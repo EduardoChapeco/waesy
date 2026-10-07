@@ -3,7 +3,8 @@
  *
  * Handles login, signup, oauth, logout, and session retrieval using the SSR client.
  * Never stores credentials in the client; delegates all auth to Supabase.
- * Profiles are created strictly by the DB trigger `handle_new_user` on auth.users insert.
+ * Profiles are provisioned explicitly by the authenticated signup BFF after the
+ * Supabase Auth user is created. The database does not create tenants implicitly.
  */
 
 import { createServerFn } from "@tanstack/react-start";
@@ -473,50 +474,22 @@ export const signUpWithPassword = createServerFn({ method: "POST" })
  console.warn("[auth] Auto-login pós-cadastro retornou aviso:", signInErr.message);
  }
 
- // 4. Garante dados complementares no profile
+ // 4. Provisiona explicitamente o perfil. O banco não possui mais trigger de
+ // criação automática e nenhum cadastro recebe organização, loja ou membership.
  if (createdUserId) {
- try {
- const updatePayload: Record<string, any> = {
- is_consent_lgpd: isConsentLgpd ?? true,
+ const profilePayload = {
+   id: createdUserId,
+   full_name: fullName || email.split("@")[0],
+   role: "customer" as const,
+   is_consent_lgpd: isConsentLgpd ?? true,
+   ...(cleanCpf ? { cpf: cleanCpf } : {}),
+   ...(cleanPhone ? { phone: cleanPhone } : {}),
  };
- if (cleanCpf) updatePayload.cpf = cleanCpf;
- if (cleanPhone) updatePayload.phone = cleanPhone;
- if (fullName) updatePayload.full_name = fullName;
-
- await adminDb
- .from("profiles")
- .update(updatePayload)
- .eq("id", createdUserId);
-
- // Sincronizar o workspace master caso seja o primeiro usuário (platform_admin)
- const { data: p } = await adminDb.from("profiles").select("role").eq("id", createdUserId).single();
- if (p?.role === "platform_admin") {
- // Localiza ou cria org
- let orgId: string;
- const { data: orgs } = await adminDb.from("organizations").select("id").eq("slug", "waesy-org").limit(1);
- if (orgs && orgs.length > 0) {
- orgId = orgs[0].id;
- } else {
- const { data: newOrg } = await adminDb.from("organizations").insert({ name: "Waesy Global", slug: "waesy-org" }).select("id").single();
- orgId = newOrg!.id;
- }
-
- // Localiza ou cria store
- let storeId: string;
- const { data: stores } = await adminDb.from("stores").select("id").eq("slug", "waesy").limit(1);
- if (stores && stores.length > 0) {
- storeId = stores[0].id;
- } else {
- const { data: newStore } = await adminDb.from("stores").insert({ organization_id: orgId, name: "Waesy", slug: "waesy", settings: {}, is_platform_root: true, is_active: true }).select("id").single();
- storeId = newStore!.id;
- }
-
- // Associa workspace_members
- await adminDb.from("workspace_members").upsert({ profile_id: createdUserId, store_id: storeId, role: "owner" }, { onConflict: "profile_id,store_id" });
- }
-
- } catch (upErr) {
- console.warn("[auth] Falha ao atualizar dados complementares do profile ou sync de workspace:", upErr);
+ const { error: profileError } = await adminDb
+   .from("profiles")
+   .upsert(profilePayload, { onConflict: "id" });
+ if (profileError) {
+   throw new Error(`Falha ao provisionar o perfil: ${profileError.message}`);
  }
 
  // Grava auditoria forense do evento de cadastro

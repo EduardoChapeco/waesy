@@ -1,95 +1,28 @@
-# Waesy — Ledger de execução holística W0–W17
-
-## Snapshot e escopo
-
-- Data/hora: 2026-10-07T03:16:00Z
-- Repositório: `EduardoChapeco/waesy`
-- Branch de execução: `execute/waesy-holistic-waves`
-- HEAD inicial da execução: `96dfd321` (merge do pacote metodológico do PR #7 sobre `90e40782`)
-- Base remota comparada: `origin/main` em `90e40782187ae77030d11b05f46856bb8ddf9b1c`
-- PRs observados: #1–#4 merged; #5, #6 e #7 abertos no início; #8 merged.
-- Estado do worktree: limpo antes da branch de execução; worktrees `/home/ubuntu/waesy-pr5`, `/home/ubuntu/waesy-pr6` e `/home/ubuntu/waesy-pr7` preservados para comparação.
-- Ambiente: Node 22.13.0, npm 10.x, Ubuntu 24.04, Vitest 4.1.10.
-- Escopo: execução integral do masterplan `docs/audits/WAESY_HOLISTIC_REMEDIATION_MASTERPLAN_2026-10-06.md`, W0–W17, com microfases e prova por níveis.
-- Regra: documentação, código, teste, CI, deployment e runtime são evidências independentes.
-
-## Preflight por onda
-
-| Onda.microfase | Leituras obrigatórias | Estado inicial | Ação | Resultado |
-|---|---|---|---|---|
-| W0.1–W0.3 | `AGENTS.md`, skill de integridade, masterplan, template de ledger, package.json, CI | `90e40782`, worktree main limpo, PR7 não mesclado | Criar branch de execução, preservar worktrees e registrar baseline | Em execução |
-| W1.1–W1.4 | masterplan W1, `.github/workflows/ci.yml`, API GitHub, checks PR | `main` sem proteção; rulesets vazio; checks históricos contraditórios | Aplicar proteção e exigir gates no mesmo SHA | Bloqueado até confirmação da API |
-
-## Gates e resultados da baseline
-
-| Comando/ambiente | SHA | Resultado | Evidência | Não prova |
-|---|---|---:|---|---|
-| `npm ci --no-audit --no-fund` | `90e40782` | PASS / 0 | `/tmp/waesy-w0-install.log` | não prova runtime |
-| `npm run typecheck` | `90e40782` | PASS / 0 | `/tmp/waesy-w0-typecheck.log` | não prova persistência |
-| `npm test -- --reporter=dot` | `90e40782` | PASS / 0 | `/tmp/waesy-w0-test-correct.log` | não prova provider/RLS/browser |
-| `npm run build` | `90e40782` | PASS / 0 | `/tmp/waesy-w0-build.log`; client-leak OK | não prova navegação/produção |
-| `npm test -- --runInBand` | `90e40782` | FAIL / opção inválida | Vitest rejeitou `--runInBand` | não é falha de aplicação; comando incorreto |
-| GitHub protection | `90e40782` | FAIL / não protegido | `GET /branches/main/protection` = 404; rulesets = [] | não prova permissões de runtime |
-| Cloudflare Pages | `90e40782` | deployment em execução/validar | projeto correto `usewaesy`; build `npm run build`, output `dist` | não prova todos os fluxos |
-
-## Bloqueios e decisões
-
-- W1 bloqueador confirmado: `main` não estava protegido e não havia ruleset.
-- A configuração Cloudflare incorreta em `wider` foi desligada; `usewaesy` aponta para `EduardoChapeco/waesy`, preservando `waesy.com.br`.
-- Não aplicar migrations em produção por inferência; W3/W12 exigem banco de teste/efémero e evidência de schema/RLS.
-- Não tratar PR5/PR6 como concluídos enquanto não houver merge e gates no SHA final.
-- Testes Vitest com `--runInBand` não devem ser usados; o comando canônico é `npm test`.
-
-## Fechamento provisório
-
-- Findings fechados com prova completa: nenhum ainda; W0 baseline local fechado parcialmente.
-- Findings abertos/bloqueados: W1 governança; todas as ondas W2–W17 aguardam execução ordenada.
-- Paths alterados nesta fase: documentação de auditoria e pacote metodológico; nenhum runtime alterado.
-- Revisão adversarial: pendente após cada microfase; não declarar produção antes de CI, provider e smoke público.
 
 
-## W2 — Segurança e advisories (execução delta)
-
-- Preflight: branch `execute/w2-security-advisories`, base `origin/main` em `75b7177f`; worktree limpa; scope: `docs/specs/SPEC-W2-SECURITY-ADVISORIES.md`, migration `20270113000000_security_advisory_remediation.sql` e este ledger.
-- Baseline runtime: 24 tabelas com RLS sem policy; `unified_listings_view` security definer; `dispatch_mining_cron` e `touch_document_artifact` com search_path mutável; 53 RPCs security-definer executáveis por anon; 509 FKs sem índices.
-- Decisão: fechar primeiro os findings determinísticos de segurança P0/P1 com deny-by-default e sem tocar no contrato público de checkout/telemetry; a indexação de FKs fica para W3/PERF após plano gerado a partir do catálogo real.
-- Migration: criada localmente; não aplicada diretamente em produção nesta sessão, conforme o protocolo de integridade. Nenhum finding é declarado fechado antes da evidência pós-migration.
-
-
-## W3.3 — Tipos reais derivados do Supabase
-
-- Preflight: branch `execute/w2-security-advisories`, SHA `cd5c3298`; scope ampliado explicitamente para `src/integrations/supabase/types.ts`, `docs/specs/SPEC-W3-SUPABASE-TYPES.md` e este ledger.
-- Finding confirmado: `src/integrations/supabase/types.ts:9` continha `export type Database = any`.
-- Ação: gerado o contrato pelo projeto Supabase Waesy `jfuebqmltksyznovhlwa` através da ferramenta autorizada `generate_typescript_types`; resultado persistido com 45.635 linhas e 1.426.638 bytes.
-- Estado: typecheck de consumidores ainda pendente após a substituição; não declarar W3 fechado até validar typecheck, testes, build e revisão do diff.
+### Onda antifalsidade — continuação e gates finais — 2026-10-07
+- **Superfície pública:** o perfil canônico não injeta mais seções/cards padrão; catálogo, posts, avaliações e vagas só ganham aba quando existem registros persistidos. O renderer de experiências não fabrica `Nossa Loja` quando não há binding de loja.
+- **Studio e propostas:** o Studio exige sessão/tenant real, não usa perfil de marca Waesy implícito, não usa logo de cobertura fictício e falha se a persistência não retornar ID. A proposta visual inicia sem Cancún, México, datas futuras, companhia aérea, hotel, tags, preços, Pix ou parcelamento inventados; dados só entram por lead, usuário, OCR ou tabela real.
+- **Turismo e vouchers:** UUID zero, agência genérica, plantão fictício, destino genérico, cliente/documento de exemplo, observações automáticas e seguradora/central inventadas foram removidos dos caminhos tocados. Token inválido de formulário de viajante agora falha, em vez de retornar contexto genérico com `success: true`.
+- **Contratos de ausência:** parcelas de OCR são tratadas como lista vazia quando ausentes; parser de voucher lança erro explícito quando o provider não retorna JSON estruturado; nenhuma dessas condições produz sucesso ou registro sintético.
+- **Rotas de tenant:** aéreas e reacomodação não usam UUID sentinela e bloqueiam criação sem loja configurada. Reservas mantêm estado vazio honesto quando a planta não possui mesas persistidas.
+- **Gates:** `npm run typecheck` PASS; suíte direcionada final PASS com 4 arquivos e 15 testes; `git diff --check` PASS. Garante compilação e contratos locais, mas não prova provider externo, Postgres/RLS, Storage, browser E2E, deploy ou produção.
+- **Estado honesto:** a onda está corrigida e validada localmente nos caminhos tocados. Permanecem para varredura posterior alguns textos genéricos de apresentação e módulos legados fora do escopo desta micro-onda; eles não devem ser interpretados como dados reais nem como integração concluída.
 
 
-## W3.2 — Drift de migrations
+### Auditoria real de RLS, Storage e pagamentos — 2026-10-07
+- **Storage confirmado no banco:** `classified-media` estava público e incluído na policy pública de leitura. Migration `storage_tenant_boundary_hardening` aplicada no projeto Supabase real; o bucket agora está privado e a policy `media_public_read` não o inclui.
+- **Upload tenant-safe:** a policy genérica de INSERT foi substituída por regra que exige ownership, UID no caminho, store pertencente ao workspace ou role administrativa.
+- **Pagamentos:** `initiatePaymentTransaction` deixou de fabricar `pending_ext_*` e de retornar sucesso sem provider. Métodos não manuais chamam `createGatewayPayment` e persistem somente a referência retornada pelo gateway. Método manual fica `pending`, aguardando comprovante.
+- **Faturas:** removidos chave Pix, beneficiário e payload hardcoded; sem `PLATFORM_PIX_KEY` e `PLATFORM_PIX_BENEFICIARY_NAME`, a função falha explicitamente.
+- **Marketplace/carrinho:** removido o endpoint `simulateMarketplaceOrder` e o fallback que escolhia arbitrariamente a primeira loja do banco. A documentação foi alinhada.
+- **Gates:** `npm run typecheck` PASS; testes direcionados PASS (7 testes); `git diff --check` PASS. Verificação pós-migration confirmou `classified-media.public = false` e exclusão da policy pública.
+- **Limite honesto:** provider externo, pagamento real, webhook real e deploy não foram simulados nem declarados como concluídos; permanecem dependentes de configuração e execução reais.
 
-- Inventário local: 468 ficheiros de migration; colisões de prefixo em `20270106000000`, `20270107000000` e `20270109000000`.
-- Estado: finding aberto; não renomear nem reordenar histórico aplicado sem Postgres efémero e replay completo.
-- Evidência: `docs/audits/W3_SCHEMA_DRIFT.md`.
-
-
-## W2 — Aplicação e validação em produção
-
-- Migration `security_advisory_remediation_w2` aplicada com sucesso no projeto Supabase `jfuebqmltksyznovhlwa`.
-- Evidência pós-aplicação: `policyless_rls=0`, `w2_policies=24`, `search_path_mutable=0`, `invoker_view=1`, `public_execute_restricted=0`.
-- Advisories remanescentes: extensões `pg_trgm`/`btree_gist` em `public` e 50 funções SECURITY DEFINER ainda executáveis por `anon`; são contratos públicos/legados e ficam para uma matriz dedicada, não foram revogados por inferência.
-
-## W4 — Persistência e idempotência do Copilot
-
-- Finding alvo: retry gerava novo UUID, inseria outra mensagem e podia executar IA/cobrança novamente; o BFF não fazia replay da resposta persistida.
-- Ação na branch `execute/w4-persistence-idempotency`: retry reutiliza a chave original; BFF procura `(thread_id, client_message_id, sender_id)` antes do pipeline; resposta persistida inclui a chave e o ID da mensagem de origem; mensagens falhadas podem ser reabertas sem novo registo.
-- Estado: **fechado no código e integrado em `main` pelo PR #12**. Typecheck, 226 ficheiros/1.499 testes, build, CI remoto e Cloudflare Pages passaram. A validação funcional live de dois POSTs idênticos continua como teste operacional recomendado, não foi inventada como evidência.
-
-
-## W5 — Copilot e chat funcional de ponta a ponta
-
-- **W5.1:** fechado no código: drawer global usa `executeCopilotDrawerMessage` e já não importa `executeAiCopilotPipeline` no componente React.
-- **W5.2/W5.3:** fechado parcialmente no código: rate limit/política guest, autorização por participante/atribuição/papel, enumeração restrita e teste unitário negativo/positivo adicionados.
-- **W5.4:** fechado no contrato local: `rows`/`dataRows`, células numéricas/objeto e CSV são normalizados sem fixtures sintéticos; Places deixa de inventar `rating=4.8` e `is_open=true`.
-- **W5.5:** `open_place`, pin e archive têm handlers BFF/UI; ações não implementadas continuam a mostrar aviso explícito em vez de fingir sucesso.
-- **W5.6:** troca de thread, retryable failure e limpeza de estado foram corrigidos; SSE/provider abort e browser E2E permanecem bloqueados à validação de staging real.
-- **Gates locais:** typecheck PASS; 227 ficheiros/1.501 testes PASS; build Cloudflare PASS; `git diff --check` PASS.
-- **Estado:** **fechada no código e integrada em `main` pelo PR #14**. CI e Cloudflare Pages passaram no SHA final. Browser E2E, abort real do provider e validação com dois utilizadores no Supabase de staging permanecem explicitamente como integração operacional pendente; não são inferidos pelo build.
+### Onda RPC/identidade — 2026-10-07
+- **Finding confirmado:** o banco real mantinha `auth.on_auth_user_created` ativo, `public.handle_new_user()` com promoção heurística e criação de organização/loja/membership, além de overloads e grants públicos em RPCs `SECURITY DEFINER`.
+- **Correção aplicada no código:** `signUpWithPassword` agora faz upsert explícito do perfil com role `customer` e falha se o provisionamento não persistir; não cria tenant, organização, loja ou membership.
+- **Migration aplicada no banco real:** `rpc_grants_and_explicit_profile_provisioning` registrada pelo Supabase como versão `20261007142914`. O trigger e a função foram removidos; o overload UUID de `get_public_lead_by_token` foi removido; o magic link não injeta nome de agência quando ausente.
+- **Grants verificados:** `add_to_cart_atomic_v6`, `process_checkout_atomic`, `process_checkout_transaction_v2`, `get_public_lead_by_token(text)` e `reconcile_behavioral_telemetry_identity` retornam `anon_exec=false`, `auth_exec=false`, `service_exec=true` no banco real.
+- **Gates:** 12 testes direcionados PASS; `npm run typecheck` PASS; suíte completa PASS; `npm run build` PASS; client-leak guard PASS; `npm run lint -- --quiet` PASS; `git diff --check` PASS.
+- **Limites:** a migration foi aplicada no Supabase real, mas deploy Cloudflare e smoke test público ainda não foram confirmados. O merge em `main` depende dos checks do GitHub no SHA publicado.

@@ -1451,15 +1451,16 @@ function WorkspaceTripDetailPage() {
                             fileName: file.name,
                           },
                         });
-                        if (res.success && res.data.installments.length > 0) {
+                        const installments = res.data.installments ?? [];
+                        if (res.success && installments.length > 0) {
                           setFinancialInstallments((prev) => [
                             ...prev,
-                            ...res.data.installments.map((inst, i) => ({
+                            ...installments.map((inst, i) => ({
                               id: crypto.randomUUID(),
                               ...inst,
                             })),
                           ]);
-                          toast.success(`OCR concluído: ${res.data.installments.length} parcelas extraídas com sucesso!`);
+                          toast.success(`OCR concluído: ${installments.length} parcelas extraídas com sucesso!`);
                         } else {
                           toast.warning("Nenhuma parcela foi identificada no arquivo.");
                         }

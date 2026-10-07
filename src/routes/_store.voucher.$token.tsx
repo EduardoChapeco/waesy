@@ -203,8 +203,8 @@ function PublicTravelVoucherPage() {
     ...(store.whatsapp_phone
       ? [
           {
-            name: store.name || "Agência de Viagens",
-            category: "Plantão da Agência",
+            name: store.name || "",
+            category: store.name ? "Contato da agência" : "",
             phone: store.whatsapp_phone,
             whatsapp: true,
             is24h: false,

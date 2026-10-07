@@ -23,20 +23,8 @@ export const Route = createFileRoute('/viajante/$token')({
       const context = await getTravelerFormContext({ data: { token: params.token } });
       return { context };
     } catch (err) {
-      console.warn('[loader:viajante.$token] Notice:', err);
-      return {
-        context: {
-          success: true,
-          tripTitle: 'Ficha do Viajante',
-          destination: 'Destino da Viagem',
-          departureDate: null,
-          returnDate: null,
-          agencyName: 'Agência de Viagens',
-          agencyLogo: null,
-          agencyPhone: null,
-          tokenType: 'generic' as const,
-        },
-      };
+      console.warn('[loader:viajante.$token] Contexto não encontrado:', err);
+      throw err;
     }
   },
   component: PublicTravelerFormPage,

@@ -25,49 +25,29 @@ export const saveOmniPageDocument = createServerFn({ method: "POST" })
     try {
       await requireAdmin();
       const identity = await getServerIdentity();
-      if (!identity.store_id) {
+      if (!identity.id || !identity.store_id) {
         throw new Error("Loja ativa não identificada na sessão segura.");
       }
 
       const db = getServerClient();
+      const { data: result, error: persistErr } = await db.rpc("persist_omni_document_snapshot", {
+        p_document_id: input.documentId,
+        p_store_id: identity.store_id,
+        p_actor_id: identity.id,
+        p_snapshot: input.document,
+        p_publish: false,
+      });
 
-      // 1. Busca documento atual para garantir tenant isolation e preservar settings
-      const { data: currentDoc, error: fetchErr } = await db
-        .from("experience_documents")
-        .select("id, store_id, settings, title, slug")
-        .eq("id", input.documentId)
-        .eq("store_id", identity.store_id)
-        .single();
-
-      if (fetchErr || !currentDoc) {
-        throw new Error("Documento não encontrado ou sem permissão de acesso.");
+      if (persistErr || !result?.version_id) {
+        throw persistErr || new Error("Persistência do draft não confirmada.");
       }
-
-      const currentSettings = (currentDoc.settings || {}) as Record<string, any>;
-      const mergedSettings = {
-        ...currentSettings,
-        omni_page: input.document,
-      };
-
-      // 2. Atualiza settings.omni_page e title no banco Supabase
-      const { data: updatedDoc, error: updateErr } = await db
-        .from("experience_documents")
-        .update({
-          title: input.document.title || currentDoc.title,
-          settings: mergedSettings,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", input.documentId)
-        .eq("store_id", identity.store_id)
-        .select("id, title, slug, settings, updated_at")
-        .single();
-
-      if (updateErr) throw updateErr;
 
       return {
         status: "ok" as const,
-        document: (updatedDoc.settings as any)?.omni_page as OmniPageDocument,
-        updated_at: updatedDoc.updated_at,
+        document: input.document,
+        version_id: result.version_id as string,
+        version_number: result.version_number as number,
+        idempotent: Boolean(result.idempotent),
       };
     } catch (e: unknown) {
       if (e instanceof SupabaseUnconfiguredError) throw e;
@@ -98,6 +78,7 @@ export const getOmniPageDocument = createServerFn({ method: "GET" })
         .from("experience_documents")
         .select("*")
         .eq("id", input.documentId)
+        .eq("store_id", identity.store_id)
         .maybeSingle();
 
       if (docError) throw docError;
@@ -106,9 +87,20 @@ export const getOmniPageDocument = createServerFn({ method: "GET" })
       const settings = (doc.settings || {}) as Record<string, any>;
       let omniDoc: OmniPageDocument;
 
-      // Se já existe omni_page salvo e válido
-      if (settings.omni_page) {
-        const parsed = OmniPageDocumentSchema.safeParse(settings.omni_page);
+      const { data: draftVersion, error: draftError } = await db
+        .from("experience_versions")
+        .select("id, version_number, document_snapshot")
+        .eq("document_id", doc.id)
+        .eq("status", "draft")
+        .order("version_number", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (draftError) throw draftError;
+
+      // O editor reabre o rascunho; o snapshot legado só é fallback de migração.
+      const draftSnapshot = draftVersion?.document_snapshot ?? settings.omni_page_draft ?? settings.omni_page;
+      if (draftSnapshot) {
+        const parsed = OmniPageDocumentSchema.safeParse(draftSnapshot);
         if (parsed.success) {
           omniDoc = parsed.data;
         } else {
@@ -140,6 +132,9 @@ export const getOmniPageDocument = createServerFn({ method: "GET" })
           document_type: doc.document_type,
           is_active: doc.is_active,
         },
+        version: draftVersion
+          ? { id: draftVersion.id, version_number: draftVersion.version_number, status: "draft" as const }
+          : null,
       };
     } catch (e: unknown) {
       if (e instanceof SupabaseUnconfiguredError) throw e;
@@ -162,7 +157,7 @@ export const publishOmniPageDocument = createServerFn({ method: "POST" })
     try {
       await requireAdmin();
       const identity = await getServerIdentity();
-      if (!identity.store_id) {
+      if (!identity.id || !identity.store_id) {
         throw new Error("Loja ativa não identificada.");
       }
 
@@ -177,45 +172,24 @@ export const publishOmniPageDocument = createServerFn({ method: "POST" })
       }
 
       const db = getServerClient();
+      const { data: result, error: persistErr } = await db.rpc("persist_omni_document_snapshot", {
+        p_document_id: input.documentId,
+        p_store_id: identity.store_id,
+        p_actor_id: identity.id,
+        p_snapshot: input.document,
+        p_publish: true,
+      });
 
-      // 1. Busca documento
-      const { data: currentDoc, error: fetchErr } = await db
-        .from("experience_documents")
-        .select("id, settings, slug")
-        .eq("id", input.documentId)
-        .eq("store_id", identity.store_id)
-        .single();
-
-      if (fetchErr || !currentDoc) {
-        throw new Error("Documento não encontrado para publicação.");
+      if (persistErr || !result?.version_id || result.version_status !== "published") {
+        throw persistErr || new Error("Publicação não confirmada.");
       }
-
-      const currentSettings = (currentDoc.settings || {}) as Record<string, any>;
-      const mergedSettings = {
-        ...currentSettings,
-        omni_page: input.document,
-      };
-
-      // 2. Atualiza documento como ativo e publicado
-      const { data: updatedDoc, error: updateErr } = await db
-        .from("experience_documents")
-        .update({
-          title: input.document.title,
-          settings: mergedSettings,
-          is_active: true,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", input.documentId)
-        .eq("store_id", identity.store_id)
-        .select()
-        .single();
-
-      if (updateErr) throw updateErr;
 
       return {
         status: "ok" as const,
+        version_id: result.version_id as string,
+        version_number: result.version_number as number,
         published_at: new Date().toISOString(),
-        public_url: `/paginas/${currentDoc.slug || input.document.slug}`,
+        public_url: `/paginas/${input.document.slug}`,
       };
     } catch (e: unknown) {
       if (e instanceof SupabaseUnconfiguredError) throw e;

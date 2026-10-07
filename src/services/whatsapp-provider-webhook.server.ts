@@ -78,6 +78,7 @@ function normalizedDelivery(provider: UnofficialWhatsAppProvider, body: JsonObje
 export function normalizeUnofficialIncomingMessage(provider: UnofficialWhatsAppProvider, body: Record<string, unknown>, item: Record<string, unknown>) { return normalizedMessage(provider, body as JsonObject, item as JsonObject); }
 export function normalizeUnofficialDelivery(provider: UnofficialWhatsAppProvider, body: Record<string, unknown>, item: Record<string, unknown>) { return normalizedDelivery(provider, body as JsonObject, item as JsonObject); }
 function deliveryRank(value: string | null): number { return ({ accepted: 1, sent: 2, delivered: 3, read: 4, failed: 5 } as Record<string, number>)[value || ""] || 0; }
+function campaignDeliveryRank(value: string | null): number { return ({ eligible: 0, queued: 1, accepted: 2, sent: 3, failed: 3, delivered: 4, read: 5 } as Record<string, number>)[value || ""] ?? -1; }
 
 async function persistDelivery(db: ReturnType<typeof getServerClient>, provider: UnofficialWhatsAppProvider, instance: JsonObject, body: JsonObject, delivery: NormalizedDelivery) {
   const storeId = String(instance.store_id);
@@ -85,7 +86,8 @@ async function persistDelivery(db: ReturnType<typeof getServerClient>, provider:
   const eventKey = stableKey(["delivery", provider, instance.id, delivery.externalMessageId, delivery.deliveryStatus, delivery.occurredAt, delivery.remoteJid]);
   const { data: providerEvent, error: providerEventError } = await db.from("whatsapp_provider_webhook_events").upsert({ provider, instance_id: instance.id, store_id: storeId, event_key: eventKey, event_type: "status", external_message_id: delivery.externalMessageId, payload_hash: hashBody(JSON.stringify(body)), payload: delivery.payload, signature_verified: true }, { onConflict: "provider,instance_id,event_key", ignoreDuplicates: true }).select("id, processing_status").maybeSingle();
   if (providerEventError) throw providerEventError;
-  if (providerEvent?.processing_status === "processed") return { eventKey, duplicate: true, matchedMessages: 0 };
+  // ignoreDuplicates retorna data nula quando uma entrega concorrente já criou o evento.
+  if (!providerEvent || providerEvent.processing_status === "processed") return { eventKey, duplicate: true, matchedMessages: 0 };
   await db.from("whatsapp_webhook_inbox").upsert({ store_id: storeId, phone_number_id: phoneNumberId, event_key: eventKey, event_type: "status", external_message_id: delivery.externalMessageId, payload: delivery.payload, status: "processed", processed_at: new Date().toISOString() }, { onConflict: "store_id,event_key", ignoreDuplicates: true });
   const { error: deliveryError } = await db.from("whatsapp_delivery_events").upsert({ store_id: storeId, phone_number_id: phoneNumberId, external_message_id: delivery.externalMessageId, delivery_status: delivery.deliveryStatus, recipient_phone: delivery.recipientPhone, error_code: delivery.errorCode, error_message: delivery.errorMessage, payload: delivery.payload, occurred_at: delivery.occurredAt }, { onConflict: "store_id,external_message_id,delivery_status" });
   if (deliveryError) throw deliveryError;
@@ -101,7 +103,11 @@ async function persistDelivery(db: ReturnType<typeof getServerClient>, provider:
     if (delivery.deliveryStatus === "failed") { update.failed_at = delivery.occurredAt; update.error_code = delivery.errorCode; update.error_message = delivery.errorMessage; }
     await db.from("chat_messages").update(update).eq("id", message.id).eq("thread_id", message.thread_id);
   }
-  await db.from("whatsapp_campaign_recipients").update({ status: delivery.deliveryStatus, error_code: delivery.errorCode, error_message: delivery.errorMessage, updated_at: new Date().toISOString() }).eq("store_id", storeId).eq("external_message_id", delivery.externalMessageId);
+  const { data: recipients } = await db.from("whatsapp_campaign_recipients").select("id, status").eq("store_id", storeId).eq("external_message_id", delivery.externalMessageId);
+  for (const recipient of recipients || []) {
+    if (campaignDeliveryRank(delivery.deliveryStatus) < campaignDeliveryRank(recipient.status)) continue;
+    await db.from("whatsapp_campaign_recipients").update({ status: delivery.deliveryStatus, error_code: delivery.errorCode, error_message: delivery.errorMessage, updated_at: new Date().toISOString() }).eq("id", recipient.id).eq("store_id", storeId);
+  }
   if (providerEvent?.id) await db.from("whatsapp_provider_webhook_events").update({ processing_status: "processed", processed_at: new Date().toISOString(), error_message: null }).eq("id", providerEvent.id);
   return { eventKey, matchedMessages: messages?.length || 0 };
 }
@@ -112,7 +118,8 @@ async function persistInboundMessage(db: ReturnType<typeof getServerClient>, pro
   const eventKey = stableKey(["message", provider, instance.id, message.externalMessageId]);
   const { data: event, error: eventError } = await db.from("whatsapp_provider_webhook_events").upsert({ provider, instance_id: instance.id, store_id: storeId, event_key: eventKey, event_type: "message", external_message_id: message.externalMessageId, payload_hash: hashBody(JSON.stringify(body)), payload: message.payload, signature_verified: true }, { onConflict: "provider,instance_id,event_key", ignoreDuplicates: true }).select("id, processing_status").maybeSingle();
   if (eventError) throw eventError;
-  if (event?.processing_status === "processed") return { duplicate: true };
+  // A ausência de data significa duplicata sob concorrência, não um novo evento.
+  if (!event || event.processing_status === "processed") return { duplicate: true };
   const identity = await resolveWhatsAppIdentity({ storeId, instanceId: instance.id, provider, externalUserId: message.externalUserId, phone: message.phone, displayName: message.pushName });
   if (!identity) return { ignored: "identity_not_resolved" };
   let { data: thread } = await db.from("chat_threads").select("id").eq("store_id", storeId).eq("channel_instance_id", instance.id).eq("channel_identity_id", identity.id).eq("status", "open").maybeSingle();

@@ -1751,8 +1751,6 @@ Renomeia módulos na sidebar conforme o nicho selecionado.
   - `syncOrderToMaster(input)` (Espelhamento atômico em `orders`, `order_items`, `stock_movements` e `cash_registers`)
   - `listStoreWebhookEvents({ platform, status, limit })`
   - `reprocessWebhookEvent({ eventId })`
-  - `simulateMarketplaceOrder({ platform, customerName, productTitle, totalAmountCents })`
-
 
 
 

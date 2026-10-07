@@ -208,43 +208,26 @@ function rowToProposalDTO(row: any, storeRow?: any): TravelProposalDTO {
     ) || 0;
 
   const defaultPricing: PricingBreakdownDTO = {
-    currency: rawPricing.currency || "BRL",
+    currency: rawPricing.currency || "",
     base_price_cents: basePriceCents || totalCents,
     boarding_tax_cents: boardingTaxCents,
     other_taxes_cents: otherTaxesCents,
     discount_cents: discountCents,
     total_price_cents: totalCents,
     total_cents: totalCents,
-    installments_options:
-      rawPricing.installments_options && rawPricing.installments_options.length > 0
-        ? rawPricing.installments_options
-        : totalCents > 0
-          ? [
-              {
-                installments_count: 1,
-                installment_value_cents: totalCents,
-                method: "pix",
-                has_interest: false,
-              },
-              {
-                installments_count: 10,
-                installment_value_cents: Math.round(totalCents / 10),
-                method: "credit_card",
-                has_interest: false,
-              },
-            ]
-          : [],
-    payment_terms:
-      rawPricing.payment_terms || "Entrada de 20% + saldo em até 10x sem juros no cartão.",
+    installments_options: Array.isArray(rawPricing.installments_options)
+      ? rawPricing.installments_options
+      : [],
+    payment_terms: rawPricing.payment_terms || undefined,
   };
 
   const title =
     row.title ||
     row.internal_notes ||
     meta.title ||
-    `Proposta de Viagem: ${row.destination_city || meta.destination_city || "Exclusiva"}`;
+    "";
 
-  const clientName = row.client_name || row.guest_name || meta.client_name || "Cliente Especial";
+  const clientName = row.client_name || row.guest_name || meta.client_name || "";
   const clientWhatsapp = row.client_whatsapp || row.guest_phone || meta.client_whatsapp || "";
   const clientEmail = row.client_email || row.guest_email || meta.client_email || null;
   const destinationCity = row.destination_city || meta.destination_city || "";
@@ -273,31 +256,19 @@ function rowToProposalDTO(row: any, storeRow?: any): TravelProposalDTO {
   const includes =
     Array.isArray(row.includes) && row.includes.length > 0
       ? row.includes
-      : Array.isArray(meta.includes) && meta.includes.length > 0
-        ? meta.includes
-        : [
-            "Passagens aéreas ida e volta",
-            "Hospedagem selecionada com café da manhã",
-            "Seguro viagem internacional completo",
-            "Suporte e conciergerie da agência 24h",
-          ];
+      : Array.isArray(meta.includes) ? meta.includes : [];
 
   const excludes =
     Array.isArray(row.excludes) && row.excludes.length > 0
       ? row.excludes
-      : Array.isArray(meta.excludes) && meta.excludes.length > 0
-        ? meta.excludes
-        : [
-            "Despesas de caráter pessoal e passeios opcionais",
-            "Taxas turísticas locais de preservação ambiental recolhidas no destino",
-          ];
+      : Array.isArray(meta.excludes) ? meta.excludes : [];
 
   return {
     id: row.id,
     store_id: row.store_id || null,
-    agency_name: storeRow?.name || row.stores?.name || "Excelência Tour",
+    agency_name: storeRow?.name || row.stores?.name || "",
     agency_logo_url: storeRow?.logo_url || row.stores?.logo_url || null,
-    agency_whatsapp: storeSettings.whatsapp_phone || storeSettings.phone || "49998887777",
+    agency_whatsapp: storeSettings.whatsapp_phone || storeSettings.phone || null,
     quote_id: row.quote_id || row.id,
     public_token: row.public_token || meta.public_token || row.id,
     title,
@@ -306,7 +277,7 @@ function rowToProposalDTO(row: any, storeRow?: any): TravelProposalDTO {
     client_name: clientName,
     client_whatsapp: clientWhatsapp,
     client_email: clientEmail,
-    adults_count: row.adults_count ?? meta.adults_count ?? 2,
+    adults_count: row.adults_count ?? meta.adults_count ?? 0,
     children_count: row.children_count ?? meta.children_count ?? 0,
     canvas_format: (row.canvas_format ||
       meta.canvas_format ||
@@ -334,7 +305,7 @@ function rowToProposalDTO(row: any, storeRow?: any): TravelProposalDTO {
         : Array.isArray(meta.options) && meta.options.length > 0
           ? meta.options
           : [],
-    ai_sales_advisor_enabled: row.ai_sales_advisor_enabled ?? meta.ai_sales_advisor_enabled ?? true,
+    ai_sales_advisor_enabled: row.ai_sales_advisor_enabled ?? meta.ai_sales_advisor_enabled ?? false,
     ai_sales_advisor_prompt: row.ai_sales_advisor_prompt || meta.ai_sales_advisor_prompt || null,
     special_notes: row.special_notes || meta.special_notes || null,
     status: (row.status === "approved"
@@ -356,23 +327,23 @@ function rowToProposalDTO(row: any, storeRow?: any): TravelProposalDTO {
 
 export const createTravelProposalInputSchema = z.object({
   quoteId: z.string().optional(),
-  title: z.string().optional().default("Proposta de Viagem Personalizada"),
-  clientName: z.string().optional().default("Cliente Especial"),
-  clientWhatsapp: z.string().optional().default("49998887777"),
+  title: z.string().optional(),
+  clientName: z.string().optional(),
+  clientWhatsapp: z.string().optional(),
   clientPhone: z.string().optional(),
   clientEmail: z.string().optional().nullable(),
   clientDocument: z.string().optional(),
   customerId: z.string().uuid().optional().nullable(),
-  destinationCity: z.string().optional().default("Destino Especial"),
+  destinationCity: z.string().optional(),
   destinationCountry: z.string().optional(),
   travelStartDate: z.string().optional().nullable(),
   startDate: z.string().optional().nullable(),
   travelEndDate: z.string().optional().nullable(),
   endDate: z.string().optional().nullable(),
-  adultsCount: z.number().int().min(1).default(2),
+  adultsCount: z.number().int().min(0).optional(),
   paxCount: z.number().int().optional(),
-  childrenCount: z.number().int().min(0).default(0),
-  infantsCount: z.number().int().min(0).default(0),
+  childrenCount: z.number().int().min(0).optional(),
+  infantsCount: z.number().int().min(0).optional(),
   currency: z.string().default("BRL"),
   validUntilDays: z.number().int().min(1).default(7),
   canvasFormat: z
@@ -400,15 +371,8 @@ export const createTravelProposal = createServerFn({ method: "POST" })
     async ({ data: input }): Promise<{ success: boolean; id: string; publicToken: string }> => {
       const supabase = getServerClient();
       const identity = await getServerIdentity().catch(() => null);
-      let effectiveStoreId = identity?.store_id;
-      if (!effectiveStoreId) {
-        const { data: firstStore } = await supabase
-          .from("stores")
-          .select("id")
-          .limit(1)
-          .maybeSingle();
-        effectiveStoreId = firstStore?.id;
-      }
+      const effectiveStoreId = identity?.store_id;
+      if (!effectiveStoreId) throw new Error("Loja autenticada obrigatória para criar proposta.");
 
       const publicToken = "prop_" + Math.random().toString(36).substring(2, 10);
       const quoteNumber = `PROP-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
@@ -416,13 +380,13 @@ export const createTravelProposal = createServerFn({ method: "POST" })
       const validUntilDate = new Date();
       validUntilDate.setDate(validUntilDate.getDate() + (input.validUntilDays || 7));
 
-      const clientName = (input.clientName || "Cliente Especial").trim();
-      const clientWhatsapp = (input.clientWhatsapp || input.clientPhone || "49998887777").trim();
-      const destinationCity = (input.destinationCity || "Destino Exclusivo").trim();
-      const title = (input.title || `Proposta: ${destinationCity} (${clientName})`).trim();
+      const clientName = (input.clientName || "").trim();
+      const clientWhatsapp = (input.clientWhatsapp || input.clientPhone || "").trim();
+      const destinationCity = (input.destinationCity || "").trim();
+      const title = (input.title || "").trim();
       const startDate = input.travelStartDate || input.startDate || null;
       const endDate = input.travelEndDate || input.endDate || null;
-      const adultsCount = input.adultsCount || input.paxCount || 2;
+      const adultsCount = input.adultsCount ?? input.paxCount ?? 0;
 
       const rawPricing = input.pricing || {};
       const basePriceCents = Number(rawPricing.base_price_cents || rawPricing.basePriceCents || 0);
@@ -465,8 +429,7 @@ export const createTravelProposal = createServerFn({ method: "POST" })
                   },
                 ]
               : [],
-        payment_terms:
-          rawPricing.payment_terms || "Entrada de 20% + saldo em até 10x sem juros no cartão.",
+        payment_terms: rawPricing.payment_terms || undefined,
       };
 
       const includesList = input.includes || [

@@ -553,17 +553,7 @@ export const addToCart = createServerFn({ method: "POST" })
  .eq("id", variantId)
  .maybeSingle();
 
- const prodStoreId = (variantData?.products as any)?.store_id;
- if (prodStoreId) {
- storeId = prodStoreId;
- } else {
- const { data: defaultStore } = await supabase
- .from("stores")
- .select("id")
- .limit(1)
- .maybeSingle();
- storeId = defaultStore?.id || null;
- }
+ storeId = (variantData?.products as any)?.store_id || null;
  }
 
  if (!storeId) {

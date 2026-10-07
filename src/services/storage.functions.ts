@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { createHash } from "node:crypto";
 import { getServerClient } from "@/lib/supabase";
 import { enforceRateLimit } from "@/lib/rate-limiter";
 
@@ -79,6 +80,29 @@ function validateMimeType(contentType: string) {
       `Tipo de arquivo não permitido (${contentType}). Aceitos: imagens, vídeos, PDFs, documentos (DOC/DOCX) e textos/logs.`,
     );
   }
+}
+
+function extensionForMime(contentType: string): string {
+  const map: Record<string, string> = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp", "image/gif": "gif", "image/avif": "avif", "image/svg+xml": "svg", "video/mp4": "mp4", "video/webm": "webm", "video/quicktime": "mov" };
+  return map[contentType.toLowerCase().split(";")[0].trim()] || "bin";
+}
+
+function inspectImageDimensions(buffer: Buffer, contentType: string): { width: number | null; height: number | null } {
+  const type = contentType.toLowerCase().split(";")[0].trim();
+  if (type === "image/png" && buffer.length >= 24 && buffer.readUInt32BE(0) === 0x89504e47) return { width: buffer.readUInt32BE(16), height: buffer.readUInt32BE(20) };
+  if (type === "image/gif" && buffer.length >= 10 && buffer.toString("ascii", 0, 3) === "GIF") return { width: buffer.readUInt16LE(6), height: buffer.readUInt16LE(8) };
+  if (type === "image/jpeg" && buffer.length >= 4 && buffer[0] === 0xff && buffer[1] === 0xd8) {
+    let offset = 2;
+    while (offset + 9 < buffer.length) {
+      if (buffer[offset] !== 0xff) { offset++; continue; }
+      const marker = buffer[offset + 1];
+      const segmentLength = buffer.readUInt16BE(offset + 2);
+      if (marker >= 0xc0 && marker <= 0xc3) return { width: buffer.readUInt16BE(offset + 7), height: buffer.readUInt16BE(offset + 5) };
+      if (segmentLength < 2) break;
+      offset += 2 + segmentLength;
+    }
+  }
+  return { width: null, height: null };
 }
 
 /**
@@ -410,30 +434,41 @@ export const uploadMediaUniversal = createServerFn({ method: "POST" })
       enforceRateLimit(identity.id, "media_upload");
 
       const supabase = getServerClient();
-      const ext = fileName.split(".").pop()?.toLowerCase() || "jpg";
+      const normalizedType = fileType.toLowerCase().split(";")[0].trim();
+      const ext = extensionForMime(normalizedType);
       const cleanName = `${Date.now()}_${Math.random().toString(36).substring(2, 9)}.${ext}`;
       const tenantNamespace = identity.store_id || identity.id;
       const uniqueName = `${tenantNamespace}/${folder}/${cleanName}`;
 
       const buffer = decodeInlineUpload(base64Data);
+      const sha256 = createHash("sha256").update(buffer).digest("hex");
+      const dimensions = normalizedType.startsWith("image/") ? inspectImageDimensions(buffer, normalizedType) : { width: null, height: null };
 
       let { error: uploadError } = await supabase.storage.from(bucket).upload(uniqueName, buffer, {
-        contentType: fileType,
-        upsert: true,
+        contentType: normalizedType,
+        upsert: false,
       });
 
       if (uploadError) {
         throw new Error(`Erro ao persistir mídia no storage: ${uploadError.message}`);
       }
 
-      const { data: publicUrlData } = supabase.storage.from(bucket).getPublicUrl(uniqueName);
+      const { data: signedUrlData, error: signedUrlError } = await supabase.storage.from(bucket).createSignedUrl(uniqueName, 60 * 60);
+      if (signedUrlError || !signedUrlData?.signedUrl) throw new Error(`Erro ao gerar URL assinada da mídia: ${signedUrlError?.message || "URL ausente"}`);
 
       return {
         id: cleanName,
-        url: publicUrlData.publicUrl,
+        url: signedUrlData.signedUrl,
+        signedUrl: signedUrlData.signedUrl,
         path: uniqueName,
         name: fileName,
-        type: fileType.startsWith("video/") ? ("video" as const) : ("image" as const),
+        type: normalizedType.startsWith("video/") ? ("video" as const) : ("image" as const),
+        mimeType: normalizedType,
+        byteSize: buffer.byteLength,
+        sha256,
+        width: dimensions.width,
+        height: dimensions.height,
+        expiresInSeconds: 60 * 60,
       };
     } catch (e: any) {
       console.error("[storage] uploadMediaUniversal error:", e);
@@ -600,4 +635,25 @@ export const uploadProfileMediaDirect = createServerFn({ method: "POST" })
       console.error("[storage] uploadProfileMediaDirect error:", e);
       throw new Error(e.message || "Erro no processamento da imagem.");
     }
+  });
+
+
+/**
+ * Reemite uma URL curta para um objeto já persistido sem expor a chave de serviço.
+ * O path deve começar pelo namespace da loja ou do usuário autenticado.
+ */
+export const getSignedMediaDownloadUrl = createServerFn({ method: "POST" })
+  .validator(z.object({ bucket: z.string().min(1), path: z.string().min(1).max(500), expiresInSeconds: z.number().int().min(60).max(3600).default(900) }))
+  .handler(async ({ data }) => {
+    assertAllowedBffBucket(data.bucket);
+    assertSafeFolder(data.path);
+    const identity = await (await import("@/lib/server-access")).getServerIdentity();
+    if (!identity.id) throw new Error("Faça login para acessar a mídia.");
+    const namespaces = [identity.store_id, identity.id].filter(Boolean) as string[];
+    if (!namespaces.some((namespace) => data.path === namespace || data.path.startsWith(`${namespace}/`))) {
+      throw new Error("Acesso negado ao objeto de mídia.");
+    }
+    const { data: signed, error } = await getServerClient().storage.from(data.bucket).createSignedUrl(data.path, data.expiresInSeconds);
+    if (error || !signed?.signedUrl) throw new Error(`Não foi possível gerar URL de download: ${error?.message || "URL ausente"}`);
+    return { signedUrl: signed.signedUrl, expiresInSeconds: data.expiresInSeconds, bucket: data.bucket, path: data.path };
   });

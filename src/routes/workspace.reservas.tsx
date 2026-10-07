@@ -46,25 +46,6 @@ interface SalonTable {
  shape: "square" | "round" | "wide";
 }
 
-// Layout padrão do salão (customizável futuramente via DB)
-const DEFAULT_SALON_TABLES: SalonTable[] = [
- // Área central — mesas quadradas de 4 lugares
- { id: "t01", label: "Mesa 01", seats: 4, col: 1, row: 1, shape: "square" },
- { id: "t02", label: "Mesa 02", seats: 4, col: 2, row: 1, shape: "square" },
- { id: "t03", label: "Mesa 03", seats: 4, col: 3, row: 1, shape: "square" },
- { id: "t04", label: "Mesa 04", seats: 4, col: 4, row: 1, shape: "square" },
- { id: "t05", label: "Mesa 05", seats: 4, col: 1, row: 2, shape: "square" },
- { id: "t06", label: "Mesa 06", seats: 4, col: 2, row: 2, shape: "square" },
- { id: "t07", label: "Mesa 07", seats: 4, col: 3, row: 2, shape: "square" },
- { id: "t08", label: "Mesa 08", seats: 4, col: 4, row: 2, shape: "square" },
- // Mesas redondas — área privê
- { id: "t09", label: "Mesa 09", seats: 2, col: 1, row: 3, shape: "round" },
- { id: "t10", label: "Mesa 10", seats: 2, col: 2, row: 3, shape: "round" },
- { id: "t11", label: "Mesa 11", seats: 2, col: 3, row: 3, shape: "round" },
- // Mesa grande — varanda/eventos
- { id: "t12", label: "Varanda", seats: 10, col: 4, row: 3, shape: "wide" },
-];
-
 // ─── Cores por status de mesa ───────────────────────────────────────────
 const TABLE_STATUS_STYLE: Record<TableStatus, {
  border: string; bg: string; text: string; badgeCn: string; label: string;
@@ -132,7 +113,7 @@ export default function TableReservationsPage() {
  });
 
  const salonTables = useMemo<SalonTable[]>(() => {
- return (floorPlanData?.tables as SalonTable[]) || DEFAULT_SALON_TABLES;
+ return Array.isArray(floorPlanData?.tables) ? (floorPlanData.tables as SalonTable[]) : [];
  }, [floorPlanData]);
 
  // Reservas ativas hoje para o mapa
@@ -230,7 +211,7 @@ export default function TableReservationsPage() {
  // Legenda de status
  const statusCounts = useMemo(() => {
  const counts: Record<TableStatus, number> = { free: 0, reserved: 0, seated: 0, pending: 0 };
- DEFAULT_SALON_TABLES.forEach((t) => {
+ salonTables.forEach((t) => {
  const s = tableStatuses[t.id]?.status ?? "free";
  counts[s]++;
  });
@@ -368,7 +349,15 @@ export default function TableReservationsPage() {
 
  {/* Grid do Salão */}
  <div className="bg-card rounded-lg border border-border/80 shadow-2xs p-5 sm:p-8 overflow-auto">
- {/* Área de layout representando o salão */}
+ {/* Área de layout representando somente o salão persistido */}
+ {salonTables.length === 0 ? (
+ <div className="min-h-48 flex flex-col items-center justify-center gap-3 text-center text-muted-foreground">
+ <LayoutGrid className="size-10 opacity-40" />
+ <p className="font-semibold text-foreground">Planta do salão ainda não configurada</p>
+ <p className="max-w-md text-xs">Cadastre as mesas reais da loja para visualizar reservas e lugares disponíveis.</p>
+ <Button type="button" variant="outline" size="sm" onClick={() => setIsFloorPlanEditorOpen(true)}>Configurar planta</Button>
+ </div>
+ ) : (
  <div
  className="relative grid gap-4"
  style={{
@@ -434,6 +423,8 @@ export default function TableReservationsPage() {
  );
  })}
  </div>
+
+ )}
 
  {/* Legenda de área */}
  <div className="mt-6 pt-4 border-t border-border/60 flex items-center justify-between text-xs text-muted-foreground">

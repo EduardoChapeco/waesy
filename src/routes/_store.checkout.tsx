@@ -1362,10 +1362,10 @@ export function CheckoutPage() {
                   Pacote / Destino Confirmado
                 </span>
                 <h4 className="text-sm font-bold text-foreground">
-                  {cart.items[0]?.productTitle || "Pacote de Viagem Oficial"}
+                  {cart.items[0]?.productTitle || ""}
                 </h4>
                 <p className="text-xs text-muted-foreground">
-                  {storeProfile?.name || "Agência de Viagens Credenciada"}
+                  {storeProfile?.name || ""}
                 </p>
               </div>
               <div className="sm:text-right">

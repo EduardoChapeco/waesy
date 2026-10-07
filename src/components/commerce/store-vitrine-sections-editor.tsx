@@ -32,38 +32,8 @@ export interface VitrineSectionConfig {
   cards?: VitrineCardItem[];
 }
 
-export const DEFAULT_STORE_VITRINE_SECTIONS: VitrineSectionConfig[] = [
-  { id: "sec_banners", type: "banners", title: "Banners Principais da Loja", enabled: true },
-  { id: "sec_flyers", type: "promotional_flyers", title: "Encartes e Tabloides da Semana", enabled: true },
-  {
-    id: "sec_cards",
-    type: "custom_cards",
-    title: "Cards de Destaque e Novidades",
-    enabled: true,
-    cards: [
-      {
-        id: "card_1",
-        title: "Atendimento Personalizado",
-        subtitle: "Fale diretamente com nossa equipe pelo WhatsApp",
-        tag: "Destaque",
-        linkUrl: "whatsapp",
-        imageUrl: "/brand-logo.png",
-      },
-      {
-        id: "card_2",
-        title: "Mais Vendidos da Região",
-        subtitle: "Confira as novidades e produtos em alta",
-        tag: "Tendência",
-        linkUrl: "#catalogo",
-        imageUrl: "/brand-logo.png",
-      },
-    ],
-  },
-  { id: "sec_product_rail", type: "product_rail", title: "Produtos Mais Pedidos", enabled: true },
-  { id: "sec_brand_story", type: "brand_story", title: "Sobre a Marca e Valores", enabled: true },
-  { id: "sec_hotpages", type: "hotpages", title: "Acesso Rápido e Botões", enabled: false },
-  { id: "sec_infinite_feed", type: "infinite_feed", title: "Mais Produtos da Região", enabled: false },
-];
+/** Nenhuma seção é criada implicitamente; a loja precisa configurá-la e persistí-la. */
+export const DEFAULT_STORE_VITRINE_SECTIONS: VitrineSectionConfig[] = [];
 
 interface StoreVitrineSectionsEditorProps {
   open: boolean;
@@ -89,10 +59,6 @@ export function StoreVitrineSectionsEditor({
   const [isEditingCardOpen, setIsEditingCardOpen] = useState(false);
 
   const handleToggleEnabled = (sectionId: string) => {
-    if (sectionId === "sec_infinite_feed") {
-      toast.info("Esta seção é obrigatória para exibir todos os produtos da loja.");
-      return;
-    }
     setSections((prev) =>
       prev.map((s) => (s.id === sectionId ? { ...s, enabled: !s.enabled } : s))
     );

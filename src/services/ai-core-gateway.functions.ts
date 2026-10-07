@@ -4,6 +4,7 @@ import * as crypto from "crypto";
 import { getServerClient } from "@/lib/supabase";
 import { getServerIdentity, assertStoreAccess, requireAdmin } from "@/lib/server-access";
 import { inspectPromptSecurity, buildSandboxedPromptPayload, sanitizeAiOutput } from "@/lib/prompt-shield";
+import { logOperationalEvent } from "@/lib/telemetry/operational-logger";
 import { getNextActiveKey, markKeyError } from "./api-orchestrator.functions";
 
 // ============================================================
@@ -60,6 +61,15 @@ export interface AIGatewayResponse {
     text: string;
     parsedJson?: any;
     asyncJobId?: string;
+    media?: {
+      kind: "image";
+      url?: string;
+      base64?: string;
+      mimeType?: string;
+      provenance: "provider" | "deterministic_fallback";
+      provider: string;
+      jobId?: string;
+    };
   };
   metadata: {
     callId: string;
@@ -208,7 +218,6 @@ export const CANONICAL_TASK_ROUTES: Record<AITaskType, RouteCandidate[]> = {
   ],
   imagem: [
     { provider: "openai", model: "dall-e-3" },
-    { provider: "openrouter", model: "recraft-ai/recraft-v3" },
   ],
   video: [
     { provider: "openrouter", model: "luma/dream-machine" },
@@ -373,6 +382,41 @@ async function callProviderLowLevel(
     }
 
     if (provider === "deepseek" || provider === "openrouter" || provider === "openai") {
+      if (provider === "openai" && model.startsWith("dall-e")) {
+        const res = await fetch("https://api.openai.com/v1/images/generations", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
+          body: JSON.stringify({
+            model,
+            prompt,
+            n: 1,
+            size: "1024x1024",
+            response_format: "b64_json",
+          }),
+          signal: controller.signal,
+        });
+        if (!res.ok) throw new Error(`OpenAI Images error ${res.status}: ${(await res.text()).slice(0, 500)}`);
+        const json = await res.json();
+        const image = json.data?.[0];
+        if (!image?.b64_json && !image?.url) throw new Error("OpenAI Images retornou saída sem imagem válida");
+        return {
+          text: "",
+          inputTokens: Math.ceil(prompt.length / 4),
+          outputTokens: 0,
+          rawJson: {
+            __media: {
+              kind: "image",
+              url: image.url,
+              base64: image.b64_json,
+              mimeType: "image/png",
+              provenance: "provider",
+              provider,
+              jobId: json.id,
+            },
+          },
+        };
+      }
+
       const endpoint = provider === "openrouter"
         ? "https://openrouter.ai/api/v1/chat/completions"
         : provider === "deepseek"
@@ -653,11 +697,13 @@ export async function executeAiCoreGateway(request: AIGatewayRequest): Promise<A
         const costUsd = calculateCost(candidate.provider, candidate.model, response.inputTokens, response.outputTokens);
         const latencyMs = Date.now() - startTime;
 
+        const providerMedia = response.rawJson?.__media;
         const gatewayResult: AIGatewayResponse = {
           success: true,
           result: {
             text: sanitizedText,
-            parsedJson: response.rawJson,
+            parsedJson: providerMedia ? undefined : response.rawJson,
+            ...(providerMedia ? { media: providerMedia } : {}),
           },
           metadata: {
             callId,
@@ -679,7 +725,7 @@ export async function executeAiCoreGateway(request: AIGatewayRequest): Promise<A
           },
         };
 
-        if (!request.bypassCache && (!request.images || request.images.length === 0)) {
+        if (!request.bypassCache && request.task !== "imagem" && (!request.images || request.images.length === 0)) {
           const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
           Promise.resolve(
             supabase
@@ -724,13 +770,21 @@ export async function executeAiCoreGateway(request: AIGatewayRequest): Promise<A
               cache_hit: false,
             })
         ).catch((telemetryErr: any) => {
-          console.error("[AI-CORE-GATEWAY] Erro ao gravar telemetria:", telemetryErr);
+          logOperationalEvent("error", "ai_telemetry_persist_failed", {
+            requestId: callId,
+            tenantId: request.authContext?.storeId,
+            provider: candidate.provider,
+          }, { error: telemetryErr instanceof Error ? telemetryErr.message : "unknown" });
         });
 
         return gatewayResult;
       } catch (err: any) {
         lastError = err;
-        console.error(`[AI-CORE-GATEWAY] Provedor ${candidate.provider} falhou:`, err.message);
+        logOperationalEvent("error", "ai_provider_failed", {
+          requestId: callId,
+          tenantId: request.authContext?.storeId,
+          provider: candidate.provider,
+        }, { error: err instanceof Error ? err.message : String(err) });
 
         recordCircuitFailure(candidate.provider);
         markKeyError(activeKey.id, err.message).catch(() => {});
@@ -741,6 +795,38 @@ export async function executeAiCoreGateway(request: AIGatewayRequest): Promise<A
     }
 
     const latencyMs = Date.now() - startTime;
+    if (request.task === "imagem" && request.context?.allowDeterministicFallback === true) {
+      const fallbackSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024"><rect width="1024" height="1024" fill="lightgray"/><text x="512" y="490" text-anchor="middle" font-family="sans-serif" font-size="40" fill="dimgray">Fallback determinístico</text><text x="512" y="545" text-anchor="middle" font-family="sans-serif" font-size="24" fill="dimgray">Imagem não gerada por provider</text></svg>`;
+      return {
+        success: true,
+        result: {
+          text: "",
+          media: {
+            kind: "image",
+            base64: Buffer.from(fallbackSvg).toString("base64"),
+            mimeType: "image/svg+xml",
+            provenance: "deterministic_fallback",
+            provider: "deterministic_fixture",
+            jobId: `det_${fingerprint.slice(0, 16)}`,
+          },
+        },
+        metadata: {
+          callId,
+          provider: "deterministic_fixture",
+          model: "deterministic-svg-v1",
+          fallbackUsed: true,
+          fallbackFrom,
+          attemptsCount: attempts,
+          latencyMs,
+          cacheHit: false,
+          usage: { inputTokens: 0, outputTokens: 0, totalTokens: 0 },
+          costUsd: 0,
+          promptVersion: request.promptVersion || "v1.0",
+          fingerprint,
+        },
+      };
+    }
+
     const failedResult: AIGatewayResponse = {
       success: false,
       result: { text: "" },

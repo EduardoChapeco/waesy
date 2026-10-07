@@ -1,50 +1,160 @@
 {
-  "timestamp": "2026-10-01T01:42:50.771Z",
+  "timestamp": "2026-10-07T13:31:40.329Z",
   "metrics": {
-    "totalFiles": 384,
-    "registeredInLib": 368,
-    "treeGenerated": 377,
-    "totalLinksAudited": 456,
-    "fileWithoutRegistryCount": 7,
+    "totalFiles": 403,
+    "registeredInLib": 377,
+    "treeGenerated": 401,
+    "totalLinksAudited": 466,
+    "fileWithoutRegistryCount": 17,
     "registeredWithoutFileCount": 1,
     "brokenLinksCount": 0,
-    "orphanRoutesCount": 3
+    "orphanRoutesCount": 12
   },
   "shellDistribution": {
-    "Vitrine Pública & Loja (_store)": 150,
-    "Workspace (Lojista / Operação)": 176,
+    "Vitrine Pública & Loja (_store)": 159,
     "Admin Master (Governança)": 37,
-    "API / Integrações (BFF & MCP)": 18,
-    "SEO / Sitemaps": 3
+    "API / Integrações (BFF & MCP)": 24,
+    "SEO / Sitemaps": 3,
+    "Workspace (Lojista / Operação)": 180
   },
   "brokenLinks": [],
   "orphanSample": [
     {
-      "file": "-apple-hig-design.test.ts",
-      "path": "/-apple-hig-design/test",
+      "file": "_store.busca.tsx",
+      "path": "/busca",
       "shell": "Vitrine Pública & Loja (_store)"
     },
     {
-      "file": "-workspace.marketing.anuncios.test.ts",
-      "path": "/-workspace/marketing/anuncios/test",
-      "shell": "Workspace (Lojista / Operação)"
+      "file": "_store.conta.atividade.tsx",
+      "path": "/conta/atividade",
+      "shell": "Vitrine Pública & Loja (_store)"
+    },
+    {
+      "file": "_store.marketplace.checkout.tsx",
+      "path": "/marketplace/checkout",
+      "shell": "Vitrine Pública & Loja (_store)"
+    },
+    {
+      "file": "_store.places.$placeSlug.tsx",
+      "path": "/places/$placeSlug",
+      "shell": "Vitrine Pública & Loja (_store)"
+    },
+    {
+      "file": "api.ai.stream.ts",
+      "path": "/api/ai/stream",
+      "shell": "API / Integrações (BFF & MCP)"
+    },
+    {
+      "file": "api.cron.mining-worker.ts",
+      "path": "/api/cron/mining-worker",
+      "shell": "API / Integrações (BFF & MCP)"
+    },
+    {
+      "file": "api.internal.whatsapp-outbox-worker.ts",
+      "path": "/api/internal/whatsapp-outbox-worker",
+      "shell": "API / Integrações (BFF & MCP)"
+    },
+    {
+      "file": "api.webhooks.payments.ts",
+      "path": "/api/webhooks/payments",
+      "shell": "API / Integrações (BFF & MCP)"
+    },
+    {
+      "file": "api.webhooks.whatsapp.evolution.$instance.ts",
+      "path": "/api/webhooks/whatsapp/evolution/$instance",
+      "shell": "API / Integrações (BFF & MCP)"
+    },
+    {
+      "file": "api.webhooks.whatsapp.wasender.$instance.ts",
+      "path": "/api/webhooks/whatsapp/wasender/$instance",
+      "shell": "API / Integrações (BFF & MCP)"
     },
     {
       "file": "portal.subpainel.$token.tsx",
       "path": "/portal/subpainel/$token",
+      "shell": "Vitrine Pública & Loja (_store)"
+    },
+    {
+      "file": "status.tsx",
+      "path": "/status",
       "shell": "Vitrine Pública & Loja (_store)"
     }
   ],
   "unregisteredSample": [
     {
-      "file": "-apple-hig-design.test.ts",
-      "path": "/-apple-hig-design/test",
+      "file": "_store.busca.tsx",
+      "path": "/busca",
       "shell": "Vitrine Pública & Loja (_store)"
     },
     {
-      "file": "-workspace.marketing.anuncios.test.ts",
-      "path": "/-workspace/marketing/anuncios/test",
-      "shell": "Workspace (Lojista / Operação)"
+      "file": "_store.conta.atividade.tsx",
+      "path": "/conta/atividade",
+      "shell": "Vitrine Pública & Loja (_store)"
+    },
+    {
+      "file": "_store.conta.entregador.tsx",
+      "path": "/conta/entregador",
+      "shell": "Vitrine Pública & Loja (_store)"
+    },
+    {
+      "file": "_store.copilot.tsx",
+      "path": "/copilot",
+      "shell": "Vitrine Pública & Loja (_store)"
+    },
+    {
+      "file": "_store.marketplace.$storeSlug.tsx",
+      "path": "/marketplace/$storeSlug",
+      "shell": "Vitrine Pública & Loja (_store)"
+    },
+    {
+      "file": "_store.marketplace.checkout.tsx",
+      "path": "/marketplace/checkout",
+      "shell": "Vitrine Pública & Loja (_store)"
+    },
+    {
+      "file": "_store.marketplace.index.tsx",
+      "path": "/marketplace",
+      "shell": "Vitrine Pública & Loja (_store)"
+    },
+    {
+      "file": "_store.places.$placeSlug.tsx",
+      "path": "/places/$placeSlug",
+      "shell": "Vitrine Pública & Loja (_store)"
+    },
+    {
+      "file": "_store.places.index.tsx",
+      "path": "/places",
+      "shell": "Vitrine Pública & Loja (_store)"
+    },
+    {
+      "file": "api.ai.stream.ts",
+      "path": "/api/ai/stream",
+      "shell": "API / Integrações (BFF & MCP)"
+    },
+    {
+      "file": "api.cron.mining-worker.ts",
+      "path": "/api/cron/mining-worker",
+      "shell": "API / Integrações (BFF & MCP)"
+    },
+    {
+      "file": "api.internal.whatsapp-outbox-worker.ts",
+      "path": "/api/internal/whatsapp-outbox-worker",
+      "shell": "API / Integrações (BFF & MCP)"
+    },
+    {
+      "file": "api.webhooks.payments.ts",
+      "path": "/api/webhooks/payments",
+      "shell": "API / Integrações (BFF & MCP)"
+    },
+    {
+      "file": "api.webhooks.whatsapp.evolution.$instance.ts",
+      "path": "/api/webhooks/whatsapp/evolution/$instance",
+      "shell": "API / Integrações (BFF & MCP)"
+    },
+    {
+      "file": "api.webhooks.whatsapp.wasender.$instance.ts",
+      "path": "/api/webhooks/whatsapp/wasender/$instance",
+      "shell": "API / Integrações (BFF & MCP)"
     },
     {
       "file": "portal.subpainel.$token.tsx",
@@ -52,24 +162,9 @@
       "shell": "Vitrine Pública & Loja (_store)"
     },
     {
-      "file": "workspace.configuracoes.conformidade.tsx",
-      "path": "/workspace/configuracoes/conformidade",
-      "shell": "Workspace (Lojista / Operação)"
-    },
-    {
-      "file": "workspace.marketing.canvas-bmc.tsx",
-      "path": "/workspace/marketing/canvas-bmc",
-      "shell": "Workspace (Lojista / Operação)"
-    },
-    {
-      "file": "workspace.marketing.swot.tsx",
-      "path": "/workspace/marketing/swot",
-      "shell": "Workspace (Lojista / Operação)"
-    },
-    {
-      "file": "workspace.skills.tsx",
-      "path": "/workspace/skills",
-      "shell": "Workspace (Lojista / Operação)"
+      "file": "status.tsx",
+      "path": "/status",
+      "shell": "Vitrine Pública & Loja (_store)"
     }
   ]
 }

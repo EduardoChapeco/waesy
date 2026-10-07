@@ -209,9 +209,9 @@ export function ChatArtifactCard({
     } else {
       const docId = (artifact.data as any)?.experience_document_id || (artifact.data as any)?.documentId;
       if (docId) {
-        window.location.href = `/workspace/builder?doc=${docId}`;
+        window.location.href = `/workspace/builder/${docId}/editor`;
       } else {
-        window.location.href = `/workspace/builder?artifactId=${artifact.id}`;
+        window.location.href = `/workspace/cms/paginas?artifactId=${artifact.id}`;
       }
     }
   };
@@ -330,4 +330,3 @@ export function ChatArtifactCard({
     </article>
   );
 }
-

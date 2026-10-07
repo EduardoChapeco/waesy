@@ -2750,3 +2750,12 @@
 - **Decisão Adotada:** Integrar `origin/main`, `origin/feat/whatsapp-wave1-8-complete-release`, `origin/feat/waesy-studio-omni-audit` e `origin/feat/waesy-canonical-travel-evolution` em `main`; resolver conflitos preservando isolamento multi-tenant, contratos BFF e gates canônicos; endurecer o scanner de botões; padronizar primitivas compartilhadas; corrigir regressões visuais introduzidas pelos merges.
 - **Fundamentação:** AGENTS.md B.1, B.5, B.9, B.10 e B.11; SPEC-DESIGN-ACTIONS-HARDENING; piso WCAG 2.2 AA; deny-by-default; catraca visual.
 - **Consequências:** `main` local contém todas as branches remotas conhecidas, auditoria de botões fecha em P0/P1/P2 zero, build e testes passam localmente, e o relatório `docs/AUDITORIA_PRODUCAO_MAIN_2026-10-06.md` passa a ser a evidência de fechamento desta leva.
+
+
+## DEC-187: Snapshots Omni versionados e publicação transacional
+
+- **Data:** 2026-10-07
+- **Contexto:** O Builder salvava `settings.omni_page` por update direto e podia misturar draft com conteúdo público. O plano W8.2/W8.3 exige create→save→reload com ownership, versionamento, publicação separada, idempotência e ausência de efeitos parciais.
+- **Decisão adotada:** Criar a migration `20261007000000_builder_versioned_omni_snapshots.sql` com `experience_versions.document_snapshot` e a RPC `persist_omni_document_snapshot`. A RPC bloqueia o documento, valida ator/loja, reaproveita save idêntico, cria versão monotônica, arquiva publicação anterior e atualiza `omni_page_draft`/`omni_page_published` na mesma transação. O BFF Omni passa a exigir a resposta `version_id`/status confirmada; o carregamento prefere a última versão draft.
+- **Fundamentação:** AGENTS.md B.1, B.9, B.25 e B.31; invariantes anti-falso-positivo da skill de integridade; W8.2/W8.3 do masterplan.
+- **Consequências:** O código agora tem contrato de persistência atômica e auditável, mas a migração ainda precisa ser aplicada em banco efêmero/Supabase autorizado e a jornada browser precisa ser executada antes de declarar integração ou produção concluída. Compatibilidade com `settings.omni_page` permanece apenas como fallback de leitura de dados legados.

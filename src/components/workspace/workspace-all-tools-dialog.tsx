@@ -444,7 +444,7 @@ export function WorkspaceAllToolsDialog({
         },
       });
       setMcpBlock(block);
-      toast.success("Proposta de anúncio gerada via MCP! Revise o mockup antes de aprovar.");
+      toast.success("Rascunho estruturado recebido. Revise os dados antes de salvar; nenhuma publicação foi realizada.");
     } catch (err: any) {
       toast.error(err?.message || "Falha ao orquestrar comando com IA.");
     } finally {

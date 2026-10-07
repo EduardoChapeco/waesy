@@ -679,7 +679,7 @@ export async function executeAutonomousCopilotTask(
         rubric,
         documentId,
         experience_document_id: documentId,
-        previewUrl: documentId ? `/workspace/builder?doc=${documentId}` : undefined,
+        previewUrl: documentId ? `/workspace/builder/${documentId}/editor` : undefined,
       },
     };
     summaryMessage = `Estruturei a página com blocos padronizados no editor visual (Score de Qualidade: ${rubric.totalScore}/100):`;
