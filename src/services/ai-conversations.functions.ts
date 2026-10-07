@@ -19,6 +19,7 @@ import { resolveActiveCity, normalizeActiveCity } from "@/lib/city-helper";
 import { executeMcpToolCall } from "./mcp-server.functions";
 import { MCP_TOOL_REGISTRY } from "@/registries/mcp-tool-registry";
 import { requireTokensOrTollbooth } from "@/lib/token-tollbooth.server";
+import { enforceRateLimit } from "@/lib/rate-limiter";
 import {
   CopilotStateMachine,
   canTransitionCopilotPhase,
@@ -83,19 +84,25 @@ type AiThreadAccessRow = {
   customer_id?: string | null;
   recipient_profile_id?: string | null;
   store_id?: string | null;
+  assigned_to_profile_id?: string | null;
 };
 
-function assertAiThreadAccess(thread: AiThreadAccessRow, identity: Awaited<ReturnType<typeof getServerIdentity>>): void {
-  if (!identity?.id) throw new Error("Usuário não autenticado");
+export function canAccessAiThread(thread: AiThreadAccessRow, identity: Awaited<ReturnType<typeof getServerIdentity>>): boolean {
+  if (!identity?.id) return false;
   const isPlatformAdmin = ["platform_admin", "master"].includes(identity.role);
+  const isStoreAdministrator = ["owner", "admin", "manager"].includes(identity.role);
   const isParticipant = thread.customer_id === identity.id || thread.recipient_profile_id === identity.id;
-  const hasStoreMembership = Boolean(thread.store_id && (
+  const isAssigned = thread.assigned_to_profile_id === identity.id;
+  const hasStoreScope = Boolean(thread.store_id && (
     identity.store_id === thread.store_id ||
     identity.memberships?.some((membership) => membership.store_id === thread.store_id)
   ));
-  if (!isPlatformAdmin && !isParticipant && !hasStoreMembership) {
-    throw new Error("Sem permissão para acessar esta conversa");
-  }
+  return isPlatformAdmin || isParticipant || (isStoreAdministrator && hasStoreScope) || isAssigned;
+}
+
+function assertAiThreadAccess(thread: AiThreadAccessRow, identity: Awaited<ReturnType<typeof getServerIdentity>>): void {
+  if (!identity?.id) throw new Error("Usuário não autenticado");
+  if (!canAccessAiThread(thread, identity)) throw new Error("Sem permissão para acessar esta conversa");
 }
 
 function assertAiStoreTarget(storeId: string | null | undefined, identity: Awaited<ReturnType<typeof getServerIdentity>>): void {
@@ -139,6 +146,7 @@ export interface AiConversationThreadDTO {
   store_id?: string | null;
   customer_id?: string | null;
   recipient_profile_id?: string | null;
+  assigned_to_profile_id?: string | null;
   status: string;
   is_pinned: boolean;
   metadata: Record<string, any>;
@@ -553,6 +561,23 @@ function extractSearchTerm(text: string): string {
     .replace(/(onde\s+fica|onde\s+tem|tem\s+alguma|procuro|gostaria\s+de|perto\s+de\s+mim|na\s+minha\s+cidade)/gi, "")
     .trim();
   return clean.slice(0, 30);
+}
+
+function derivePlaceOpenStatus(workingHours: unknown): boolean | null {
+  if (!workingHours || typeof workingHours !== "object") return null;
+  const value = workingHours as Record<string, any>;
+  if (typeof value.is_open === "boolean") return value.is_open;
+  const days = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+  const today = value[days[new Date().getDay()]] || value[days[new Date().getDay()].slice(0, 3)];
+  if (!today || typeof today !== "object") return null;
+  if (today.closed === true || today.is_closed === true) return false;
+  const open = String(today.open || today.opens || "");
+  const close = String(today.close || today.closes || "");
+  if (!/^\d{1,2}:\d{2}$/.test(open) || !/^\d{1,2}:\d{2}$/.test(close)) return null;
+  const now = new Date();
+  const current = now.getHours() * 60 + now.getMinutes();
+  const toMinutes = (time: string) => { const [h, m] = time.split(":").map(Number); return h * 60 + m; };
+  return current >= toMinutes(open) && current <= toMinutes(close);
 }
 
 /** Impede que provider, crawler ou RPC externo bloqueie o request do chat. */
@@ -1046,8 +1071,8 @@ Responda SEMPRE em formato JSON com os campos:
         category: l.category || "Comércio & Serviços",
         address: l.address || "Endereço no centro",
         distance_km: dist,
-        is_open: true,
-        rating: l.rating || 4.8,
+        is_open: derivePlaceOpenStatus(l.working_hours),
+        rating: typeof l.rating === "number" ? l.rating : null,
         contact_whatsapp: l.contact_whatsapp,
         contact_phone: l.contact_phone,
         avatar_url: l.avatar_url || l.banner_url,
@@ -1592,12 +1617,16 @@ export const listAiConversationThreads = createServerFn({ method: "GET" })
       const visibilityClauses = [
         `customer_id.eq.${identity.id}`,
         `recipient_profile_id.eq.${identity.id}`,
-        ...storeIds.map((storeId) => `store_id.eq.${storeId}`),
       ];
+      if (["platform_admin", "master", "owner", "admin", "manager"].includes(identity.role)) {
+        visibilityClauses.push(...storeIds.map((storeId) => `store_id.eq.${storeId}`));
+      } else {
+        visibilityClauses.push(`assigned_to_profile_id.eq.${identity.id}`);
+      }
       let query = db
         .from("chat_threads")
         .select(`
-          id, type:thread_type, subject, store_id, customer_id, recipient_profile_id,
+          id, type:thread_type, subject, store_id, customer_id, recipient_profile_id, assigned_to_profile_id,
           status, is_pinned, metadata, working_memory, created_at, updated_at
         `)
         .or(visibilityClauses.join(","))
@@ -1616,6 +1645,7 @@ export const listAiConversationThreads = createServerFn({ method: "GET" })
         store_id: t.store_id,
         customer_id: t.customer_id,
         recipient_profile_id: t.recipient_profile_id,
+        assigned_to_profile_id: t.assigned_to_profile_id,
         status: t.status || "open",
         is_pinned: Boolean(t.is_pinned),
         metadata: t.metadata || {},
@@ -1756,7 +1786,7 @@ export const sendAiConversationMessage = createServerFn({ method: "POST" })
     // 1. Obter thread para contexto e memória de trabalho
     const { data: thread } = await db
       .from("chat_threads")
-      .select("id, thread_type, working_memory, store_id, customer_id, recipient_profile_id")
+      .select("id, thread_type, working_memory, store_id, customer_id, recipient_profile_id, assigned_to_profile_id")
       .eq("id", data.threadId)
       .single();
 
@@ -1876,7 +1906,7 @@ export const sendAiConversationMessage = createServerFn({ method: "POST" })
     // 4. Salvar artefato no banco se gerado
     let persistedArtifactId: string | null = null;
     if (execution.artifact) {
-      const { data: artDoc } = await db
+      const { data: artDoc, error: artifactError } = await db
         .from("chat_artifacts")
         .insert({
           thread_id: data.threadId,
@@ -1894,7 +1924,14 @@ export const sendAiConversationMessage = createServerFn({ method: "POST" })
         .select("id")
         .single();
 
-      if (artDoc) {
+      if (artifactError || !artDoc) {
+        execution = {
+          ...execution,
+          artifact: undefined,
+          responseMessage: "A resposta foi gerada, mas o artefato não pôde ser persistido. Tente novamente.",
+          fsmPhase: "FAILED_RETRYABLE",
+        };
+      } else {
         persistedArtifactId = artDoc.id;
         execution.artifact.id = artDoc.id;
       }
@@ -1981,20 +2018,21 @@ export const saveAiChatArtifact = createServerFn({ method: "POST" })
 
     const { data: thread, error: threadError } = await db
       .from("chat_threads")
-      .select("id, customer_id, recipient_profile_id, store_id")
+      .select("id, customer_id, recipient_profile_id, store_id, assigned_to_profile_id")
       .eq("id", data.threadId)
       .single();
     if (threadError || !thread) throw new Error("Thread não encontrada");
     assertAiThreadAccess(thread, identity);
     assertAiStoreTarget(data.storeId, identity);
     if (data.storeId && thread.store_id !== data.storeId) throw new Error("O artefato não pertence à loja da thread");
+    if (!thread.store_id && data.storeId) throw new Error("Thread sem loja não aceita artefato com tenant explícito");
 
     const { data: artifact, error } = await db
       .from("chat_artifacts")
       .insert({
         thread_id: data.threadId,
         message_id: data.messageId || null,
-        store_id: data.storeId || identity.store_id || null,
+        store_id: thread.store_id || null,
         created_by: identity.id,
         artifact_type: data.artifactType,
         title: data.title,
@@ -2028,7 +2066,7 @@ export const toggleAiThreadPinned = createServerFn({ method: "POST" })
 
     const { data: thread } = await db
       .from("chat_threads")
-      .select("customer_id, recipient_profile_id, store_id")
+      .select("customer_id, recipient_profile_id, store_id, assigned_to_profile_id")
       .eq("id", data.threadId)
       .single();
     if (!thread) throw new Error("Thread não encontrada");
@@ -2043,6 +2081,27 @@ export const toggleAiThreadPinned = createServerFn({ method: "POST" })
     }
 
     return { success: true, isPinned: data.isPinned };
+  });
+
+export const toggleAiThreadArchived = createServerFn({ method: "POST" })
+  .validator(z.object({ threadId: z.string().uuid(), isArchived: z.boolean() }))
+  .handler(async ({ data }) => {
+    const db = getServerClient();
+    const identity = await getServerIdentity().catch(() => null);
+    if (!identity?.id) throw new Error("Usuário não autenticado");
+    const { data: thread } = await db
+      .from("chat_threads")
+      .select("customer_id, recipient_profile_id, store_id, assigned_to_profile_id")
+      .eq("id", data.threadId)
+      .single();
+    if (!thread) throw new Error("Thread não encontrada");
+    assertAiThreadAccess(thread, identity);
+    const { error } = await db
+      .from("chat_threads")
+      .update({ status: data.isArchived ? "archived" : "open", updated_at: new Date().toISOString() })
+      .eq("id", data.threadId);
+    if (error) throw new Error("Falha ao alterar arquivamento da thread");
+    return { success: true, isArchived: data.isArchived };
   });
 
 // ============================================================
@@ -2065,7 +2124,7 @@ export const deleteAiConversationThread = createServerFn({ method: "POST" })
 
     const { data: thread } = await db
       .from("chat_threads")
-      .select("id, customer_id, recipient_profile_id, store_id")
+      .select("id, customer_id, recipient_profile_id, store_id, assigned_to_profile_id")
       .eq("id", data.threadId)
       .single();
 
@@ -2100,6 +2159,10 @@ export const executeGuestCopilotMessageSchema = z.object({
 export const executeGuestCopilotMessage = createServerFn({ method: "POST" })
   .validator(executeGuestCopilotMessageSchema)
   .handler(async ({ data }) => {
+    enforceRateLimit("guest", "ai_generation");
+    if (/\b(minerar|mineração|leads?|planilha|vagas?|eventos?|cnpj|processo)\b/i.test(data.message)) {
+      throw new Error("A busca avançada exige uma sessão autenticada.");
+    }
     const execution = await withCopilotTimeout(executeAiCopilotPipeline(
       data.message,
       {},
@@ -2110,6 +2173,27 @@ export const executeGuestCopilotMessage = createServerFn({ method: "POST" })
       }
     ));
     return execution;
+  });
+
+/** Entrada canónica do drawer global, mantendo o pipeline no boundary server-side. */
+export const executeCopilotDrawerMessage = createServerFn({ method: "POST" })
+  .validator(executeGuestCopilotMessageSchema)
+  .handler(async ({ data }) => {
+    const identity = await getServerIdentity().catch(() => null);
+    enforceRateLimit(identity?.id || "guest", "ai_generation");
+    if (!identity?.id && /\b(minerar|mineração|leads?|planilha|vagas?|eventos?|cnpj|processo)\b/i.test(data.message)) {
+      throw new Error("A busca avançada exige uma sessão autenticada.");
+    }
+    return withCopilotTimeout(executeAiCopilotPipeline(
+      data.message,
+      {},
+      {
+        userId: identity?.id || undefined,
+        userLat: data.userLat,
+        userLng: data.userLng,
+        city: data.city,
+      }
+    ));
   });
 
 // ============================================================

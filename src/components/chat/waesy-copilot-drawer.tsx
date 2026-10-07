@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/sheet";
 import { useWindowSizeClass } from "@/hooks/use-mobile";
 import {
-  executeAiCopilotPipeline,
+  executeCopilotDrawerMessage,
   dispatchAiChatAction,
   type AiExecutionResult,
 } from "@/services/ai-conversations.functions";
@@ -91,16 +91,10 @@ export function WaesyCopilotDrawer({ session }: { session?: any }) {
     setIsSending(true);
 
     try {
-      // Executa pipeline ReAct e de pesquisa unificada com geolocalização do navegador
-      const execution: AiExecutionResult = await executeAiCopilotPipeline(
-        text,
-        {},
-        {
-          userId: session?.id,
-          userLat: userCoords.lat,
-          userLng: userCoords.lng,
-        }
-      );
+      // O drawer usa o mesmo boundary server-side dos restantes shells.
+      const execution: AiExecutionResult = await executeCopilotDrawerMessage({
+        data: { message: text, userLat: userCoords.lat, userLng: userCoords.lng },
+      });
 
       const assistantMsg: DrawerMessage = {
         id: `ai-${Date.now()}`,
