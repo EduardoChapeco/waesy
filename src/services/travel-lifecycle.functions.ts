@@ -6,6 +6,7 @@
 
 import { createServerFn } from "@tanstack/react-start";
 import { setResponseHeader } from "@tanstack/start-server-core";
+import { createHash } from "node:crypto";
 import { z } from "zod";
 import { getServerClient, getAnonServerClient } from "@/lib/supabase";
 import { getServerIdentity, requireStaff } from "@/lib/server-access";
@@ -943,289 +944,64 @@ Extraia, consolide e estruture todas as informações no formato JSON especifica
  * 9.2 Aplica o voucher da operadora analisado na viagem do cliente,
  * centralizando todos os dados em tourism_trips, tourism_vouchers e trip_confirmation_items.
  */
+function buildVoucherApplyIdempotencyKey(tripId: string | undefined, parsedData: OperatorParsedVoucherDTO): string {
+  const serialized = JSON.stringify(parsedData);
+  if (serialized.length > 600_000) {
+    throw new Error("Os dados estruturados do voucher excedem o limite permitido.");
+  }
+  const digest = createHash("sha256").update(serialized).digest("hex");
+  return `operator-voucher:${tripId || "new"}:${digest}`;
+}
+
+/**
+ * 9.2 Aplica voucher por uma única RPC transacional. O BFF não executa writes
+ * sequenciais e nunca aceita storeId como autoridade de tenant.
+ */
 export const applyParsedVoucherToTrip = createServerFn({ method: "POST" })
   .validator(
     z.object({
       tripId: z.string().uuid().optional(),
       storeId: z.string().uuid().optional(),
-      parsedData: z.any(),
+      ingestionId: z.string().uuid().optional(),
+      idempotencyKey: z.string().min(8).max(240).optional(),
+      parsedData: z.record(z.string(), z.any()),
     })
   )
   .handler(async ({ data }): Promise<{
     success: boolean;
+    replayed: boolean;
     tripId: string;
-    tripNumber: string;
+    tripNumber: string | null;
+    voucherId: string | null;
     voucherToken: string;
     voucherUrl: string;
   }> => {
+    const identity = await requireStaff();
+    if (data.storeId && data.storeId !== identity.store_id) {
+      throw new Error("A agência informada não corresponde à identidade autenticada.");
+    }
+    const parsed = data.parsedData as OperatorParsedVoucherDTO;
+    const idempotencyKey = data.idempotencyKey || buildVoucherApplyIdempotencyKey(data.tripId, parsed);
     const supabase = getServerClient();
-    const identity = await getServerIdentity().catch(() => null);
-    let effectiveStoreId = data.storeId || identity?.store_id;
-    if (!effectiveStoreId) {
-      const { data: firstStore } = await supabase.from("stores").select("id").limit(1).maybeSingle();
-      effectiveStoreId = firstStore?.id;
+    const { data: result, error } = await supabase.rpc("apply_operator_voucher_atomic", {
+      p_store_id: identity.store_id,
+      p_actor_profile_id: identity.id,
+      p_trip_id: data.tripId || null,
+      p_ingestion_id: data.ingestionId || null,
+      p_parsed_data: data.ingestionId ? null : parsed,
+      p_idempotency_key: idempotencyKey,
+    });
+    if (error || !result) {
+      throw new Error(`Voucher não aplicado: ${error?.message || "resposta vazia"}`);
     }
-
-    const parsed: OperatorParsedVoucherDTO = data.parsedData;
-    let targetTripId = data.tripId;
-    let tripNumber = "";
-
-    // 1. Se tripId foi informado, busca a viagem existente
-    if (targetTripId) {
-      const { data: existingTrip } = await supabase
-        .from("tourism_trips")
-        .select("id, trip_number, flights, hotels, transfers, tours, destination_city, total_cents, operator_name, operator_contacts, tariff_rules, payment_method, installments_count, financial_details")
-        .eq("id", targetTripId)
-        .single();
-
-      if (existingTrip) {
-        tripNumber = existingTrip.trip_number;
-
-        // Mesclar voos sem duplicar por locator/número
-        const mergedFlights = [...(existingTrip.flights || [])];
-        for (const newFlight of (parsed.flights || [])) {
-          const alreadyExists = mergedFlights.some(
-            (f: any) =>
-              (f.locator && f.locator === newFlight.locator) ||
-              (f.flight_number && f.flight_number === newFlight.flight_number)
-          );
-          if (!alreadyExists) mergedFlights.push(newFlight);
-        }
-
-        // Mesclar hotéis sem duplicar por nome
-        const mergedHotels = [...(existingTrip.hotels || [])];
-        for (const newHotel of (parsed.hotels || [])) {
-          const alreadyExists = mergedHotels.some(
-            (h: any) => h.name && h.name.toLowerCase() === newHotel.name.toLowerCase()
-          );
-          if (!alreadyExists) mergedHotels.push(newHotel);
-        }
-
-        // Mesclar transfers
-        const mergedTransfers = [...(existingTrip.transfers || []), ...(parsed.transfers || [])];
-        const mergedTours = [...(existingTrip.tours || []), ...(parsed.tours || [])];
-
-        const totalCentsToSet =
-          existingTrip.total_cents > 0
-            ? existingTrip.total_cents
-            : (parsed.financial_details?.total_amount_cents || 0);
-
-        await supabase
-          .from("tourism_trips")
-          .update({
-            destination_city: existingTrip.destination_city || parsed.destination_city,
-            travel_start_date: parsed.travel_start_date || undefined,
-            travel_end_date: parsed.travel_end_date || undefined,
-            operator_name: parsed.operator_name || existingTrip.operator_name || undefined,
-            operator_contacts: parsed.operator_contacts || existingTrip.operator_contacts || {},
-            tariff_rules: parsed.tariff_rules || existingTrip.tariff_rules || {},
-            payment_method: parsed.financial_details?.payment_method || existingTrip.payment_method || undefined,
-            installments_count: parsed.financial_details?.installments_count || existingTrip.installments_count || 1,
-            financial_details: parsed.financial_details || existingTrip.financial_details || {},
-            total_cents: totalCentsToSet,
-            flights: mergedFlights,
-            hotels: mergedHotels,
-            transfers: mergedTransfers,
-            tours: mergedTours,
-            insurance: parsed.insurance || {},
-            notes: parsed.observations || undefined,
-            updated_at: new Date().toISOString(),
-          })
-          .eq("id", targetTripId);
-      }
-    }
-
-    // 2. Se não havia viagem, cria uma nova viagem com os dados da operadora
-    if (!targetTripId) {
-      tripNumber = `TRIP-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
-      const { data: newTrip, error: insertErr } = await supabase
-        .from("tourism_trips")
-        .insert({
-          store_id: effectiveStoreId,
-          created_by_profile_id: identity?.id || null,
-          trip_number: tripNumber,
-          title: parsed.trip_title || `Viagem para ${parsed.destination_city}`,
-          destination_city: parsed.destination_city || "Destino Turístico",
-          travel_start_date: parsed.travel_start_date || null,
-          travel_end_date: parsed.travel_end_date || null,
-          operator_name: parsed.operator_name || null,
-          operator_contacts: parsed.operator_contacts || {},
-          tariff_rules: parsed.tariff_rules || {},
-          payment_method: parsed.financial_details?.payment_method || "A Definir",
-          installments_count: parsed.financial_details?.installments_count || 1,
-          financial_details: parsed.financial_details || {},
-          adults_count: Math.max(1, (parsed.passengers || []).length),
-          children_count: 0,
-          currency: parsed.financial_details?.currency || "BRL",
-          total_cents: parsed.financial_details?.total_amount_cents || 0,
-          status: "confirmed",
-          client_name: parsed.client_name || parsed.passengers?.[0]?.name || "Passageiro Titular",
-          client_whatsapp: parsed.client_whatsapp || "",
-          client_document: parsed.client_document || parsed.passengers?.[0]?.document || null,
-          flights: parsed.flights || [],
-          hotels: parsed.hotels || [],
-          transfers: parsed.transfers || [],
-          tours: parsed.tours || [],
-          insurance: parsed.insurance || {},
-          itinerary: [],
-          rooms: [],
-          includes: [],
-          notes: parsed.observations || `Voucher emitido via ${parsed.operator_name || "Operadora"}`,
-        })
-        .select()
-        .single();
-
-      if (insertErr || !newTrip) {
-        throw new Error("Erro ao criar viagem com dados do voucher: " + (insertErr?.message || ""));
-      }
-
-      targetTripId = newTrip.id;
-    }
-
-    // 3. Cadastrar ou atualizar passageiros na tabela trip_passengers (com tipo e validade de documentos)
-    if (parsed.passengers && parsed.passengers.length > 0) {
-      for (const pax of parsed.passengers) {
-        if (!pax.name) continue;
-        const { data: existingPax } = await supabase
-          .from("trip_passengers")
-          .select("id")
-          .eq("trip_id", targetTripId)
-          .ilike("full_name", pax.name.trim())
-          .maybeSingle();
-
-        const docPayload = {
-          document_type: pax.document_type || "rg",
-          document: pax.document || null,
-          document_expiry: pax.document_expiry || null,
-          nationality: pax.nationality || "Brasileira",
-          birth_date: pax.birth_date || null,
-          seat_number: pax.seat || null,
-          is_lead_passenger: !!pax.is_lead,
-          documents_metadata: { last_ocr_at: new Date().toISOString() },
-        };
-
-        if (existingPax) {
-          await supabase
-            .from("trip_passengers")
-            .update(docPayload)
-            .eq("id", existingPax.id);
-        } else {
-          await supabase.from("trip_passengers").insert({
-            trip_id: targetTripId,
-            store_id: effectiveStoreId,
-            full_name: pax.name.trim(),
-            ...docPayload,
-          });
-        }
-      }
-    }
-
-    // 4. Cadastrar itens de confirmação (Localizadores PNR, Hotéis, Transfers)
-    for (const flight of (parsed.flights || [])) {
-      if (flight.locator) {
-        await supabase.from("trip_confirmation_items").insert({
-          trip_id: targetTripId,
-          store_id: effectiveStoreId,
-          item_type: "flight",
-          provider_name: flight.airline || parsed.operator_name || "Companhia Aérea",
-          locator_code: flight.locator,
-          status: "confirmed",
-          service_date: flight.date || null,
-          notes: `Voo ${flight.flight_number || ""} (${flight.origin} ➔ ${flight.destination}) | Bagagem: ${flight.baggage || "Padrão"}`,
-        });
-      }
-    }
-
-    for (const hotel of (parsed.hotels || [])) {
-      if (hotel.confirmation) {
-        await supabase.from("trip_confirmation_items").insert({
-          trip_id: targetTripId,
-          store_id: effectiveStoreId,
-          item_type: "hotel",
-          provider_name: hotel.name,
-          locator_code: hotel.confirmation,
-          status: "confirmed",
-          service_date: hotel.checkin || null,
-          notes: `Check-in ${hotel.checkin || ""} em ${hotel.city} (${hotel.room_type || "Apto Standard"})`,
-        });
-      }
-    }
-
-    for (const trf of (parsed.transfers || [])) {
-      if (trf.confirmation) {
-        await supabase.from("trip_confirmation_items").insert({
-          trip_id: targetTripId,
-          store_id: effectiveStoreId,
-          item_type: "transfer",
-          provider_name: trf.supplier || "Receptivo Local",
-          locator_code: trf.confirmation,
-          status: "confirmed",
-          service_date: trf.date || null,
-          notes: `Transfer ${trf.origin || ""} ➔ ${trf.destination || ""}`,
-        });
-      }
-    }
-
-    // 5. Atualizar ou criar o Voucher Oficial na tabela tourism_vouchers
-    const voucherToken = "vch_" + Math.random().toString(36).substring(2, 12);
-    const voucherCode = `VOUCH-${Math.floor(100000 + Math.random() * 900000)}`;
-
-    const { data: existingVoucher } = await supabase
-      .from("tourism_vouchers")
-      .select("id, public_token, voucher_code")
-      .eq("trip_id", targetTripId)
-      .maybeSingle();
-
-    let finalToken = voucherToken;
-
-    const voucherPayload = {
-      destination: parsed.destination_city,
-      flights: parsed.flights || [],
-      hotels: parsed.hotels || [],
-      transfers: parsed.transfers || [],
-      tours: parsed.tours || [],
-      insurance: parsed.insurance || {},
-      passengers: (parsed.passengers || []).map((p) => ({
-        name: p.name,
-        document_type: p.document_type || "rg",
-        document: p.document || "",
-        document_expiry: p.document_expiry || null,
-        seat: p.seat || "",
-      })),
-      emergency_contacts: parsed.emergency_contacts || [],
-      observations:
-        parsed.observations ||
-        "Apresente este documento oficial com documento com foto no balcão de embarque e no check-in do hotel.",
-      updated_at: new Date().toISOString(),
-    };
-
-    const effectiveToken = existingVoucher?.public_token || voucherToken;
-
-    if (existingVoucher) {
-      await supabase
-        .from("tourism_vouchers")
-        .update(voucherPayload)
-        .eq("id", existingVoucher.id);
-    } else {
-      await supabase.from("tourism_vouchers").insert({
-        trip_id: targetTripId,
-        store_id: effectiveStoreId,
-        public_token: effectiveToken,
-        voucher_code: voucherCode,
-        voucher_type: "general",
-        template: "a4-boarding",
-        ...voucherPayload,
-      });
-    }
-
-    const voucherUrl = `/voucher/${effectiveToken}`;
-
     return {
-      success: true,
-      tripId: targetTripId || "",
-      tripNumber,
-      voucherToken: effectiveToken,
-      voucherUrl,
+      success: result.success === true,
+      replayed: result.replayed === true,
+      tripId: String(result.trip_id),
+      tripNumber: result.trip_number ? String(result.trip_number) : null,
+      voucherId: result.voucher_id ? String(result.voucher_id) : null,
+      voucherToken: String(result.voucher_token || ""),
+      voucherUrl: String(result.voucher_url || ""),
     };
   });
 

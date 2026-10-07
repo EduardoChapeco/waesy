@@ -1,34 +1,20 @@
 
 
-## Fechamento da retomada — 2026-10-07 17:18 -03
+## Preflight de nova microfase isolada — R6 aplicação atômica de documento/voucher — 2026-10-07
 
-### Estado recuperado e implementação concluída
+- **Branch/HEAD:** `audit/p0-public-acceptance-conversion-20261007` / `fe0417ae` (`audit: harden public travel acceptance and voucher flow`); worktree limpo antes deste preflight; base `origin/main`/`919c8688`.
+- **Separação:** não foram incorporados commits, cherry-picks ou arquivos das branches/PRs paralelos. A comparação contra refs remotas mostrou colisão apenas nos artefatos gerados de design (`design-lint.report.json` e/ou `docs/design/LINT_DASHBOARD.md`), não no código P0; esta microfase não toca esses artefatos nem catálogo, WhatsApp, chat ou templates.
+- **Escopo autorizado desta microfase:** `src/services/travel-lifecycle.functions.ts`, `src/services/travel-canonical-pipeline.functions.ts`, `src/components/tourism/vouchers/operator-voucher-import-sheet.tsx`, novo teste de regressão P0 e nova migration posterior a `20270117000000` (reservado `20270119000000_p0_atomic_voucher_apply.sql`, evitando o timestamp `20270118000000` observado em branch paralela).
+- **Reprodução confirmada no SHA atual:** `applyParsedVoucherToTrip` usa `getServerIdentity()` com fallback `stores.limit(1)`, aceita `storeId` do body, faz updates/inserts sequenciais em `tourism_trips`, `trip_passengers`, `trip_confirmation_items` e `tourism_vouchers` sem verificar erros nem transação; usa `Math.random()` para token/código e marca viagem nova como `confirmed`. O wrapper `applyReviewedTravelDocumentToTrip` faz claim de ingestion e depois atualiza ingestion/timeline em writes separados, podendo deixar estado parcial.
+- **Causa-raiz:** o caminho de aplicação OCR não usa a autoridade canônica em banco; não há validação conjunta actor/store/trip/ingestion, rollback multi-tabela ou idempotência persistida para retry/concurrency.
+- **Plano mínimo:** criar RPC `apply_reviewed_voucher_to_trip` `SECURITY DEFINER`/tenant-scoped com lock, claim e writes atômicos; derivar actor/store no BFF; transformar `applyParsedVoucherToTrip` em wrapper compatível que só encaminha ao caminho canônico; atualizar UI/pipeline para o handler canônico; adicionar testes positivos, tenant adversarial, failure/rollback, replay e ausência de fallback.
+- **Bloqueio de prova:** sem Postgres/Supabase CLI/Docker, a migration/RLS/rollback real permanecerá explicitamente `não verificada`; não aplicar banco nem deploy. Só mutar após preservar esta reprodução e revisar schemas/testes reais, conforme a skill.
 
-- Branch de continuidade preservada: `audit/p0-public-acceptance-conversion-20261007`.
-- Artefatos históricos das fases A/B/B1 foram recuperados e reaplicados sem descartar o WIP preexistente; o `pnpm-lock.yaml` não foi incluído implicitamente.
-- Aceite público permanece separado de reserva/pagamento: a RPC grava aceite, manifesto, fingerprint, opção e preferência pendente; não cria cobrança, Pix, bilhete, voucher ou reserva externa.
-- Conversão passou a ser exclusivamente staff-only, tenant-scoped e atômica no RPC `convert_accepted_travel_proposal_staff`, com snapshot/aceite/opção/manifesto verificados, idempotência e estados `pending_review`/`pending`; o fallback legado e os writes diretos foram removidos do BFF.
-- Contratos públicos passaram a usar RPCs token-bound allowlisted; a migration `20270115000000_p0_secure_public_contract_access.sql` revoga leitura direta de tabelas/envelopes e a emissão staff exige membership/tenant.
-- Voucher público passou a usar `get_public_tourism_voucher_by_token(TEXT)` com `SECURITY DEFINER`, allowlist, observações sempre nulas, passageiros normalizados e `Cache-Control: no-store, private`; somente a função recebe `EXECUTE` para `anon/authenticated`.
-- Guards de TypeScript foram corrigidos em rotas/editor/listagem e mocks RPC; o modal de checkout mantém a barreira de preço confirmado e o contrato de preferência sem cobrança.
-- O caminho legado de conversão foi removido também para evitar código morto, writes parciais e falsos caminhos de autorização.
 
-### Gates executados após as correções
+## Fechamento da microfase R6 — aplicação atômica de voucher/documento — 2026-10-07
 
-| Gate | Resultado | Limite da prova |
-|---|---|---|
-| Testes focados P0 | **29/29 pass** em 4 arquivos | Mocks/contratos; não substitui Postgres/RLS real |
-| Suíte ampla Vitest | **240 arquivos / 1.570 testes pass** | Testes locais; providers externos usam fallbacks determinísticos em cenários previstos |
-| TypeScript | **`npm run typecheck` pass, exit 0** | Não prova execução de migrations |
-| Build produção | **pass**; worker gerado e `client-leak` OK em 491 chunks | Não é deploy |
-| Design lint completo | exit 0; baseline atual observada: **13.745 violações** (1.524 P0, 9.585 P1, 1.297 P2, 1.339 P3) | Débito histórico global; não declarar design system limpo |
-| Design ratchet | **pass**; débito reduzido em 547 violações | Não baixa baseline automaticamente |
-| `git diff --check` | **pass** | Não prova SQL/RLS |
-| Migration voucher estática | referências de tabela/coluna e grants conferidos | `psql`, Supabase CLI e Docker não estão disponíveis nesta sessão |
+A causa-raiz foi corrigida sem incorporar qualquer artefato das branches paralelas: o caminho `applyParsedVoucherToTrip` agora exige `requireStaff`, deriva o tenant da identidade autenticada, rejeita `storeId` divergente e chama somente `apply_operator_voucher_atomic`. A rota de importação continua funcionando tanto para uma viagem existente quanto para a criação de uma nova viagem, mas a persistência passou a ser uma única operação de banco com chave determinística baseada no conteúdo e na viagem.
 
-### Fechamento e bloqueios honestos
+A nova migration `20270119000000_p0_atomic_voucher_apply.sql` cria a tabela privada de operações idempotentes, lock transacional, membership tenant-scoped, bloqueio de cotação/conflicto crítico, lock de ingestion/viagem, merge de passageiros/itens, criação ou atualização de voucher, atualização da ingestion e evento de timeline dentro da mesma transação. A RPC é `SECURITY DEFINER`, o acesso à tabela auxiliar é revogado para `PUBLIC`, `anon` e `authenticated`, e somente `service_role` recebe `EXECUTE`. O handler canônico não faz mais claim/update/timeline em writes separados.
 
-- Não foi aplicada migration em Supabase/produção, não foi feito deploy, merge ou publicação externa; isso permanece fora da autorização registrada.
-- A aplicação real das migrations `20270114000000`, `20270115000000`, `20270116000000` e `20270117000000`, dump de policies/grants com `SET ROLE anon`, concorrência/idempotência em Postgres, browser smoke e CI Cloudflare continuam pendentes por falta de ambiente/autoridade.
-- O design lint global ainda reporta dívida histórica relevante; a catraca ratchet está verde e não houve nova regressão após corrigir o único DL-19 introduzido pela retomada.
-- Próxima ação segura para promoção: aplicar as migrations em banco de staging autorizado, executar os testes de grants/RLS e concorrência, revisar o diff/PR e só então solicitar aprovação explícita para merge/deploy.
+**Evidências locais:** typecheck limpo; suíte focada final `2 arquivos / 7 testes`; suíte ampla `241 arquivos / 1.574 testes`; build de produção concluído com `dist/_worker.js`; design ratchet executado com exit code 0; `git diff --check` limpo. Os relatórios gerados pelo design lint foram restaurados e não fazem parte desta branch. A migration ainda não foi aplicada nem validada contra um Postgres/Supabase real porque não há cliente/banco autorizado nesta sessão; o próximo passo operacional é aplicar em staging e executar cenários reais de replay, concorrência, tenant adversarial e rollback.

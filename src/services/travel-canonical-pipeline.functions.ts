@@ -237,7 +237,7 @@ export const applyReviewedTravelDocumentToTrip = createServerFn({ method: "POST"
     const supabase = getServerClient();
     const { data: ingestion, error: readError } = await supabase
       .from("travel_document_ingestions")
-      .select("*")
+      .select("id, store_id, trip_id, source_kind, extraction_status, extraction")
       .eq("id", data.ingestionId)
       .eq("store_id", identity.store_id)
       .single();
@@ -245,91 +245,27 @@ export const applyReviewedTravelDocumentToTrip = createServerFn({ method: "POST"
     if (ingestion.extraction_status === "applied" && ingestion.trip_id === data.tripId) {
       return { success: true, replayed: true, tripId: data.tripId, ingestionId: data.ingestionId };
     }
-    const { data: criticalConflicts, error: conflictReadError } = await (
-      supabase.from("travel_document_conflicts") as any
-    )
-      .select("id, field_path, severity, status")
-      .eq("store_id", identity.store_id)
-      .eq("trip_id", data.tripId)
-      .eq("severity", "critical")
-      .in("status", ["open", "suggested"]);
-    if (conflictReadError)
-      throw new Error(
-        `Não foi possível verificar conflitos críticos: ${conflictReadError.message}`,
-      );
-    if (criticalConflicts?.length) {
-      throw new Error(
-        `Aplicação bloqueada: existem ${criticalConflicts.length} divergência(s) crítica(s) não resolvida(s) para esta viagem.`,
-      );
-    }
     if (ingestion.source_kind === "operator_quote") {
-      throw new Error(
-        "Cotações devem ser aplicadas como draft de orçamento/proposta, não diretamente como reserva.",
-      );
+      throw new Error("Cotações devem ser aplicadas como draft de orçamento/proposta, não diretamente como reserva.");
     }
-    if (!["needs_review", "approved"].includes(ingestion.extraction_status)) {
+    if (!("needs_review" === ingestion.extraction_status || "approved" === ingestion.extraction_status)) {
       throw new Error("O documento precisa estar aguardando revisão antes da aplicação.");
     }
 
-    const { data: claimed, error: claimError } = await supabase
-      .from("travel_document_ingestions")
-      .update({
-        extraction_status: "processing",
-        reviewed_by_profile_id: identity.id,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", data.ingestionId)
-      .eq("store_id", identity.store_id)
-      .in("extraction_status", ["needs_review", "approved"])
-      .select("id")
-      .maybeSingle();
-    if (claimError || !claimed)
-      throw new Error("Documento já está sendo aplicado por outro operador.");
-
-    try {
-      const result = await (applyParsedVoucherToTrip as any)({
-        data: {
-          tripId: data.tripId,
-          storeId: identity.store_id,
-          parsedData: ingestion.extraction,
-        },
-      });
-      await supabase
-        .from("travel_document_ingestions")
-        .update({
-          extraction_status: "applied",
-          review_status: "approved",
-          trip_id: data.tripId,
-          reviewed_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", data.ingestionId)
-        .eq("store_id", identity.store_id);
-      await supabase.from("travel_timeline_events").insert({
-        store_id: identity.store_id,
-        trip_id: data.tripId,
-        event_type: "ocr.applied_to_trip",
-        actor_profile_id: identity.id,
-        correlation_id: `ocr-trip:${data.ingestionId}:${data.tripId}`,
-        payload: { ingestion_id: data.ingestionId, source_kind: ingestion.source_kind, result },
-      });
-      return {
-        success: true,
-        replayed: false,
+    const result = await applyParsedVoucherToTrip({
+      data: {
         tripId: data.tripId,
+        storeId: identity.store_id,
         ingestionId: data.ingestionId,
-        result,
-      };
-    } catch (error) {
-      await supabase
-        .from("travel_document_ingestions")
-        .update({
-          extraction_status: "needs_review",
-          error_message: error instanceof Error ? error.message : "Falha ao aplicar",
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", data.ingestionId)
-        .eq("store_id", identity.store_id);
-      throw error;
-    }
+        idempotencyKey: `ocr-trip:${data.ingestionId}:${data.tripId}`,
+        parsedData: (ingestion.extraction || {}) as Record<string, unknown>,
+      },
+    });
+    return {
+      success: result.success,
+      replayed: result.replayed,
+      tripId: data.tripId,
+      ingestionId: data.ingestionId,
+      result,
+    };
   });
