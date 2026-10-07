@@ -23,6 +23,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PageHeader } from "@/components/commerce/page-header";
+import { ErrorState } from "@/components/state/states";
+import { LoadingState } from "@/components/state/loading";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { listAdminProducts } from "@/services/admin-catalog.functions";
@@ -83,12 +85,12 @@ export default function WorkspaceSocialStudioPage() {
   const [ratio, setRatio] = useState<AspectRatio>("9:16");
 
   // Dados da Loja e Catálogo Real
-  const { data: store } = useQuery({
+  const { data: store, isLoading: isStoreLoading, isError: isStoreError } = useQuery({
     queryKey: ["store-settings"],
     queryFn: () => getStoreSettings(),
   });
 
-  const { data: products = [] } = useQuery({
+  const { data: products = [], isLoading: isProductsLoading, isError: isProductsError } = useQuery({
     queryKey: ["admin-products-studio"],
     queryFn: () => listAdminProducts(),
   });
@@ -112,6 +114,8 @@ export default function WorkspaceSocialStudioPage() {
   const authorHandle = `@${store?.slug || "loja"}`;
 
   const previewRef = useRef<HTMLDivElement>(null);
+  const studioIsLoading = isStoreLoading || isProductsLoading;
+  const studioHasError = isStoreError || isProductsError;
 
   // Preencher com produto real do catálogo (popula post único, carrossel e apresentação)
   const handleSelectProduct = (productId: string) => {
@@ -225,6 +229,12 @@ export default function WorkspaceSocialStudioPage() {
   };
 
   const activeSlide = carouselSlides[activeSlideIndex] || carouselSlides[0];
+  if (studioIsLoading) {
+    return <LoadingState label="Carregando dados reais do Studio…" />;
+  }
+  if (studioHasError) {
+    return <ErrorState title="Não foi possível carregar o Studio" description="Verifique a conexão e tente novamente para carregar a loja e o catálogo." />;
+  }
 
   return (
     <div className="space-y-6 pb-20 max-w-7xl mx-auto px-0 sm:px-4 md:px-0">

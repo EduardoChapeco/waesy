@@ -124,23 +124,23 @@ export function CopilotApprovalPanel({ currentUserId }: { currentUserId?: string
   if (!currentUserId || (approvals.length === 0 && !loading && !error)) return null;
 
   return (
-    <section aria-label="Aprovações pendentes do Copilot" className="mx-auto w-full max-w-3xl rounded-xl border border-amber-500/30 bg-amber-500/5 p-3 shadow-sm">
+    <section aria-label="Aprovações pendentes do Copilot" className="mx-auto w-full max-w-3xl rounded-lg border border-amber-500/30 bg-amber-500/5 p-3 shadow-xs">
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-start gap-2">
-          <div className="mt-0.5 rounded-md bg-amber-500/15 p-1.5 text-amber-700 dark:text-amber-300">
+          <div className="mt-1 rounded-md bg-amber-500/15 p-2 text-amber-700 dark:text-amber-300">
             <ShieldCheck className="size-4" />
           </div>
           <div>
             <h2 className="text-xs font-bold text-foreground">Revisão humana necessária</h2>
-            <p className="mt-0.5 text-2xs text-muted-foreground">{pendingCountLabel}. Nenhuma ação externa será executada sem confirmação.</p>
+            <p className="mt-1 text-2xs text-muted-foreground">{pendingCountLabel}. Nenhuma ação externa será executada sem confirmação.</p>
           </div>
         </div>
-        {loading && <Loader2 className="size-4 animate-spin text-muted-foreground" />}
+        {loading && <Loader2 className="size-4 animate-spin motion-reduce:animate-none text-muted-foreground" />}
       </div>
 
       {error && (
         <div className="mt-3 flex items-start gap-2 rounded-md border border-destructive/30 bg-destructive/5 p-2 text-2xs text-destructive">
-          <AlertTriangle className="mt-0.5 size-3.5 shrink-0" />
+          <AlertTriangle className="mt-1 size-4 shrink-0" />
           <span>{error}</span>
         </div>
       )}
@@ -154,7 +154,7 @@ export function CopilotApprovalPanel({ currentUserId }: { currentUserId?: string
                 <Badge variant="outline" className="text-2xs">Pendente</Badge>
               </div>
               <span className={cn("inline-flex items-center gap-1 text-2xs", new Date(approval.expires_at).getTime() <= Date.now() ? "text-destructive" : "text-muted-foreground")}>
-                <Clock3 className="size-3" />
+                <Clock3 className="size-4" />
                 {formatRemaining(approval.expires_at)}
               </span>
             </div>
@@ -174,14 +174,14 @@ export function CopilotApprovalPanel({ currentUserId }: { currentUserId?: string
                 onChange={(event) => setRejectReasons((previous) => ({ ...previous, [approval.id]: event.target.value }))}
                 placeholder="Motivo da rejeição (opcional)"
                 maxLength={500}
-                className="h-9 text-2xs sm:max-w-xs"
+                className="h-11 text-2xs sm:max-w-xs"
                 aria-label="Motivo da rejeição"
               />
-              <Button type="button" variant="outline" size="sm" disabled={reviewingId === approval.id} onClick={() => void review(approval.id, "reject")} className="h-9 gap-1 text-2xs text-destructive hover:bg-destructive/10">
-                <X className="size-3.5" /> Rejeitar
+              <Button type="button" variant="outline" size="sm" disabled={reviewingId === approval.id} onClick={() => void review(approval.id, "reject")} className="h-11 gap-1 text-2xs text-destructive hover:bg-destructive/10">
+                <X className="size-4" /> Rejeitar
               </Button>
-              <Button type="button" size="sm" disabled={reviewingId === approval.id} onClick={() => void review(approval.id, "approve")} className="h-9 gap-1 text-2xs">
-                {reviewingId === approval.id ? <Loader2 className="size-3.5 animate-spin" /> : <Check className="size-3.5" />}
+              <Button type="button" size="sm" disabled={reviewingId === approval.id} onClick={() => void review(approval.id, "approve")} className="h-11 gap-1 text-2xs">
+                {reviewingId === approval.id ? <Loader2 className="size-4 animate-spin" /> : <Check className="size-4" />}
                 Aprovar e executar
               </Button>
             </div>

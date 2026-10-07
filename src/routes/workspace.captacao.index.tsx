@@ -4,6 +4,7 @@ import { Briefcase, Coins, Lock, Plus, ExternalLink, TrendingUp, Building, Users
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { PageHeader } from "@/components/commerce/page-header";
+import { ErrorState } from "@/components/state/states";
 import { formatMoney } from "@/lib/money";
 import { listStoreBusinessClassifieds, listStoreAllNdaSignatures } from "@/services/classifieds.functions";
 
@@ -27,18 +28,21 @@ export const Route = createFileRoute("/workspace/captacao/")({
 function WorkspaceCaptacaoHubPage() {
   const loaderData = Route.useLoaderData();
 
-  const { data: businesses = loaderData.businesses } = useQuery({
+  const { data: businesses = loaderData.businesses, isError: businessesError } = useQuery({
     queryKey: ["workspace", "business-classifieds"],
     queryFn: () => listStoreBusinessClassifieds(),
     initialData: loaderData.businesses,
   });
 
-  const { data: ndas = loaderData.ndas } = useQuery({
+  const { data: ndas = loaderData.ndas, isError: ndasError } = useQuery({
     queryKey: ["workspace", "nda-signatures"],
     queryFn: () => listStoreAllNdaSignatures(),
     initialData: loaderData.ndas,
   });
 
+  if (businessesError && ndasError && businesses.length === 0 && ndas.length === 0) {
+    return <ErrorState title="Não foi possível carregar a captação" description="Os dados reais de empresas e NDAs estão temporariamente indisponíveis." />;
+  }
   // Métricas agregadas reais (Zero Mocks)
   const totalValuationCents = businesses.reduce((acc: number, b: any) => {
     const val = b.attributes?.valuation_cents || b.price_cents || 0;

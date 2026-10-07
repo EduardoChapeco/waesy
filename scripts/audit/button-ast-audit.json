@@ -1,8 +1,8 @@
 {
-  "timestamp": "2026-10-07T13:56:26.497Z",
-  "totalFilesScanned": 1028,
-  "totalButtonsScanned": 6179,
-  "totalControls": 6179,
+  "timestamp": "2026-10-07T17:42:38.135Z",
+  "totalFilesScanned": 1029,
+  "totalButtonsScanned": 6182,
+  "totalControls": 6182,
   "totalIssues": 0,
   "summary": {
     "deadButtons": 0,
@@ -16,7 +16,7 @@
     "navigate": 1635,
     "mutate": 430,
     "copy-share": 272,
-    "local-state": 3415,
+    "local-state": 3418,
     "submit": 242,
     "open-modal-with-continuation": 164,
     "preview-only": 20,

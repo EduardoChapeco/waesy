@@ -176,3 +176,25 @@ As seis migrations históricas com timestamps repetidos foram consolidadas em tr
 O verificador de schema passou com 471 migrations, 590 tabelas e 193 funções, sem versões duplicadas.
 
 Validação final desta onda: typecheck passou; SSOT passou com zero tipos duplicados; schema uniqueness passou; lint terminou sem erros, com 7.815 warnings legados; testes focados passaram com **28/28**.
+
+
+## Sétima onda — auditoria de interface, estados assíncronos e catraca visual
+
+A auditoria recursiva das páginas internas encontrou seis superfícies com consultas reais sem tratamento explícito suficiente de carregamento/erro: captação, NDAs, contratos, doações, alertas de estoque e Studio de marketing. Foram aplicados os estados canônicos `LoadingState` e `ErrorState` onde a página não possui dados iniciais utilizáveis; quando já existe cache/loader, a interface preserva os dados anteriores e mostra diagnóstico de atualização sem fabricar conteúdo.
+
+Também foi corrigido o painel visual de aprovações do Copilot:
+- controles de revisão passaram a respeitar `min-h-11` (44px);
+- ícones foram alinhados ao tamanho canônico;
+- raio e sombra foram ajustados para tokens permitidos;
+- spinners passaram a incluir `motion-reduce:animate-none`;
+- a ordem dos hooks nas páginas Stock Alerts e Marketing Studio foi preservada, com checks de estado somente após todos os hooks.
+
+Validação desta onda:
+- Typecheck completo: passou.
+- Testes focados de Copilot, acesso, comércio e quick-order: **19/19 passaram**.
+- Auditoria interativa: **19/19 testes passaram; P0/P1/P2 = 0** em 1.029 arquivos e 6.182 controles.
+- Testes normativos do Design Lint: **45/45 passaram**.
+- Design lint ratchet: passou sem regressão; `components/chat` retornou à baseline de **46** achados.
+- Débito visual total: redução de **538 violações** na execução do ratchet; 13.754 achados legados permanecem catalogados, sem novos achados introduzidos por esta fase.
+
+Próxima frente recomendada: adicionar testes de componente específicos para os seis estados de consulta e continuar a redução incremental dos módulos legados maiores, sempre usando o ratchet como gate e sem rebaixar a baseline.
