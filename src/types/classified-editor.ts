@@ -53,6 +53,24 @@ export interface AiPrefillListing {
   attributes?: Record<string, unknown>;
 }
 
+export type ClassifiedPricingType =
+  | "fixed"
+  | "starting_at"
+  | "on_quote"
+  | "price_range"
+  | "exchange_only"
+  | "free";
+
+export type ClassifiedPriceDisclaimer =
+  | "none"
+  | "demonstrative"
+  | "subject_to_availability"
+  | "seasonal"
+  | "exchange_rate"
+  | "custom";
+
+export type ClassifiedValidityDays = 30 | 60 | 90;
+
 export interface ClassifiedRefinementSuggestion {
   title: string;
   description: string;

@@ -100,3 +100,22 @@ Validação end-to-end desta onda:
 - Design Lint ratchet: passou, com redução acumulada de **538 violações**; o débito histórico de 13.754 achados permanece explicitamente catalogado, sem atualização artificial do baseline.
 
 Próxima fase: auditar os blocos restantes do editor especializado (preço, estoque, validade e especificações por nicho), priorizando extrações que tenham regras puras testáveis e contratos de payload antes de mover qualquer mutação de publicação.
+
+
+## Décima terceira onda — preço, validade, estoque e continuidade versionada
+
+A renderização completa do bloco de preço, validade e estoque foi extraída para `src/components/classifieds/classified-pricing-lifecycle-section.tsx`, sem mover o estado de domínio, a montagem do payload ou a publicação para fora da rota. A fronteira mantém todas as modalidades de preço (`fixed`, `starting_at`, `price_range`, `on_quote`, `exchange_only` e `free`), negociação, preço inicial, faixa mínima/máxima, validade de 30/60/90 dias, limite de ofertas, estoque físico e todos os avisos legais existentes. Os contratos `ClassifiedPricingType`, `ClassifiedPriceDisclaimer` e `ClassifiedValidityDays` foram centralizados no SSOT `src/types/classified-editor.ts`.
+
+A auditoria de sobreposição confirmou que esta extração não duplica o Copilot de aprovações: o motor persistido continua em `src/services/ai-conversations.functions.ts` e nos painéis de chat; o preview de refinamento permanece uma sugestão local com hash/evidência e não executa ação externa. A nova documentação versionada também inclui o SPEC-MASTER herdado e o playbook de continuidade com log de ações, regras anti-mocks, regras anti-duplicação e backlog P0/P1/P2.
+
+Resultado estrutural: a rota caiu para **8.685 linhas**, redução de 214 linhas nesta fatia; o componente de preço/ciclo de vida ficou com 290 linhas, preservando a renderização especializada e os callbacks explícitos.
+
+Validação desta onda:
+- Typecheck: passou.
+- Suíte completa Vitest: **240 arquivos e 1.552 testes passaram**.
+- Build de produção, worker Cloudflare e route budget: passaram.
+- Client/server leak: aprovado pelo gate canônico.
+- Schema, SSOT, naming, ciclos, Design Lint e auditorias canônicas: aprovados.
+- `check:canonical`: exit code 0.
+
+O playbook operacional está em `docs/WAESY_CONTINUATION_PLAYBOOK_2026-10-07.md`; a especificação arquitetural herdada está em `docs/specs/SPEC-MASTER-COPILOT-AUTONOMOUS-ENGINE.md`. A próxima fase deve testar as regras puras de payload/preço antes de extrair especificações por nicho ou alterar qualquer mutação de publicação.

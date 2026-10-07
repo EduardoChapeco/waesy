@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate, useSearch, Link, redirect } from "@tansta
 import { useState, useMemo, useEffect, useRef } from "react";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Tag, Car, Home as HomeIcon, Briefcase, Wrench, Sliders, ArrowLeft, ChevronRight, Eye, EyeOff, Edit3, ImagePlus, MapPin, MessageCircle, ShieldCheck, Check, Loader2, Phone, FileText, DollarSign, Layers, ChevronLeft, Building, Key, Truck, Package, CreditCard, QrCode, RefreshCw, Banknote, DownloadCloud, FileArchive, Search, Utensils, Plane, Thermometer, CreditCard as CreditCardIcon, PlusCircle, Coins, Wand2, Bot, BadgePercent, Landmark, Info, Trash2, Plus, Bus, Ship, Train, Navigation, Route as RouteIcon, Users, Calendar, Clock, ChevronDown, ChevronUp, X, CheckCircle, GraduationCap, Award, SlidersHorizontal, Store as StoreIcon, Star, Lock, ShieldAlert, FileSpreadsheet, Receipt, BookOpenCheck, Zap, Apple, Flame, Croissant, Milk, Wine, Palette } from 'lucide-react';
+import { Tag, Car, Home as HomeIcon, Briefcase, Wrench, Sliders, ArrowLeft, ChevronRight, Eye, EyeOff, Edit3, ImagePlus, MapPin, MessageCircle, ShieldCheck, Check, Loader2, Phone, FileText, DollarSign, Layers, ChevronLeft, Building, Key, Truck, Package, CreditCard, QrCode, RefreshCw, Banknote, DownloadCloud, FileArchive, Search, Utensils, Plane, Thermometer, CreditCard as CreditCardIcon, PlusCircle, Coins, Wand2, Bot, BadgePercent, Landmark, Info, Trash2, Plus, Bus, Ship, Train, Navigation, Route as RouteIcon, Users, Calendar, ChevronDown, ChevronUp, X, CheckCircle, GraduationCap, Award, SlidersHorizontal, Store as StoreIcon, Star, Lock, ShieldAlert, FileSpreadsheet, Receipt, BookOpenCheck, Zap, Apple, Flame, Croissant, Milk, Wine, Palette } from 'lucide-react';
 import { StoryHighlightUploader, type StoryHighlight } from "@/components/classifieds/story-highlight-uploader";
 import { ItineraryDayEditor, type ItineraryDay } from "@/components/classifieds/itinerary-day-editor";
 import { WeatherWidget } from "@/components/classifieds/weather-widget";
@@ -33,9 +33,10 @@ import { ClassifiedEditorNavigation } from "@/components/classifieds/classified-
 import { ClassifiedMediaSection } from "@/components/classifieds/classified-media-section";
 import { ClassifiedBasicInfoSection } from "@/components/classifieds/classified-basic-info-section";
 import { ClassifiedLocationSection } from "@/components/classifieds/classified-location-section";
+import { ClassifiedPricingLifecycleSection } from "@/components/classifieds/classified-pricing-lifecycle-section";
 import { ChoiceCard } from "@/components/ui/choice-card";
 import { SquircleCard } from "@/components/ui/squircle-card";
-import { CityCombobox, type StructuredLocationValue } from "@/components/ui/city-combobox";
+import type { StructuredLocationValue } from "@/components/ui/city-combobox";
 import { upsertClassified, getPublicClassifiedById, refineClassifiedWithAI } from "@/services/classifieds.functions";
 import { getMyStoresList } from "@/services/store.functions";
 import { getProfile, getUserSession } from "@/services/auth.functions";
@@ -51,7 +52,10 @@ import { z } from "zod";
 import {
   computeClassifiedRefinementBaseHash,
   type ClassifiedNicheType,
+  type ClassifiedPriceDisclaimer,
+  type ClassifiedPricingType,
   type ClassifiedRefinementEvidence,
+  type ClassifiedValidityDays,
   type NicheDefinition,
 } from "@/types/classified-editor";
 
@@ -709,8 +713,8 @@ function SpecializedClassifiedEditor({
  const [negotiable, setNegotiable] = useState(true);
 
   // FASE 1: Lifecycle & Regras de Validade e Estoque
-  const [validityDays, setValidityDays] = useState<30 | 60 | 90>(
-    (initialData?.attributes?.validity_days as any) || 30
+  const [validityDays, setValidityDays] = useState<ClassifiedValidityDays>(
+    (initialData?.attributes?.validity_days as ClassifiedValidityDays) || 30
   );
   const [stockLimit, setStockLimit] = useState<string>(
     initialData?.stock_limit != null ? String(initialData.stock_limit) : ""
@@ -786,9 +790,7 @@ function SpecializedClassifiedEditor({
   const [newQuestionType, setNewQuestionType] = useState<"text" | "select" | "currency" | "textarea">("text");
 
   // ── Motor de Precificação Dinâmica & Avisos ──
-  const [pricingType, setPricingType] = useState<
-    "fixed" | "starting_at" | "on_quote" | "price_range" | "exchange_only" | "free"
-  >(
+  const [pricingType, setPricingType] = useState<ClassifiedPricingType>(
     initialData?.attributes?.pricing_type || (niche.id === "doacao" ? "free" : "fixed")
   );
   const [priceMinCents, setPriceMinCents] = useState<number | undefined>(
@@ -797,8 +799,8 @@ function SpecializedClassifiedEditor({
   const [priceMaxCents, setPriceMaxCents] = useState<number | undefined>(
     initialData?.attributes?.price_max_cents ?? undefined
   );
-  const [priceDisclaimer, setPriceDisclaimer] = useState<string>(
-    initialData?.attributes?.price_disclaimer || "none"
+  const [priceDisclaimer, setPriceDisclaimer] = useState<ClassifiedPriceDisclaimer>(
+    (initialData?.attributes?.price_disclaimer as ClassifiedPriceDisclaimer) || "none"
   );
   const [customDisclaimer, setCustomDisclaimer] = useState<string>(
     initialData?.attributes?.custom_disclaimer || ""
@@ -3172,245 +3174,29 @@ function SpecializedClassifiedEditor({
               onApplyRefinement={applyRefinementPreview}
               onDismissRefinement={() => setRefinementPreview(null)}
             >
-            {/* Motor de Precificação Dinâmica & Avisos */}
-            <div className="space-y-3 pt-1 border-t border-border/40">
-              <div className="space-y-2">
-                <Label className="text-xs text-foreground font-semibold">
-                  Modalidade de Preço
-                </Label>
-                <Select value={pricingType} onValueChange={(v: any) => setPricingType(v)}>
-                  <SelectTrigger className="h-11 rounded-lg text-xs bg-background font-medium">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="fixed">Preço Fixo Definido (R$)</SelectItem>
-                    <SelectItem value="starting_at">A partir de... (Preço Inicial)</SelectItem>
-                    <SelectItem value="price_range">Faixa de Preço (Mínimo e Máximo)</SelectItem>
-                    <SelectItem value="on_quote">Sob Orçamento / Cotação Personalizada</SelectItem>
-                    <SelectItem value="exchange_only">Troca / Permuta Direta (Sem valor)</SelectItem>
-                    <SelectItem value="free">Gratuito / Doação Solidária (R$ 0)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {pricingType === "fixed" && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div className="space-y-2">
-                    <Label className="text-xs text-foreground font-medium">
-                      {niche.id === "servico"
-                        ? "Valor Base (R$) *"
-                        : niche.id === "vaga"
-                        ? "Salário Proposto (R$) *"
-                        : "Valor (R$) *"}
-                    </Label>
-                    <CurrencyField
-                      value={priceCents}
-                      onChange={setPriceCents}
-                      placeholder="0,00"
-                      className="h-11 rounded-lg text-xs bg-background"
-                    />
-                  </div>
-                  <div className="space-y-2 flex items-end">
-                    <div
-                      className="flex items-center gap-2 h-11 px-3 rounded-lg bg-background border border-border/60 hover:bg-muted/30 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary w-full"
-                      onClick={() => setNegotiable(!negotiable)}
-                    >
-                      <Checkbox
-                        id="neg-check"
-                        checked={negotiable}
-                        onCheckedChange={(c) => setNegotiable(!!c)}
-                      />
-                      <Label
-                        htmlFor="neg-check"
-                        className="text-xs text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary font-medium select-none"
-                      >
-                        Aceita Propostas / Negociável
-                      </Label>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* FASE 1: Lifecycle & Regras de Validade e Estoque */}
-              <div className="p-4 rounded-lg border border-border/60 bg-muted/20 space-y-3 mt-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Clock className="size-4 text-primary shrink-0" />
-                    <span className="text-xs font-bold text-foreground">Validade do Anúncio (Obrigatório)</span>
-                  </div>
-                  <div className="flex items-center gap-2 bg-background p-1 rounded-lg border border-border/50">
-                    {([30, 60, 90] as const).map((days) => (
-                      <button
-                        key={days}
-                        type="button"
-                        onClick={() => setValidityDays(days)}
-                        className={`px-3 py-2 text-xs text-muted-foreground/75 font-bold rounded-md min-h-11 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
-                          validityDays === days
-                            ? "bg-primary text-primary-foreground shadow-xs"
-                            : "text-muted-foreground hover:text-foreground"
-                        }`}
-                      >
-                        {days} dias
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-                  <div className="space-y-2">
-                    <Label className="text-xs text-muted-foreground/75 font-semibold text-muted-foreground">
-                      Limite de Pedidos / Oferta (Opcional)
-                    </Label>
-                    <Input
-                      type="number"
-                      min="1"
-                      placeholder="Ex: 5 pedidos"
-                      value={offerLimit}
-                      onChange={(e) => setOfferLimit(e.target.value)}
-                      className="h-11 min-h-11 rounded-lg text-xs bg-background"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-xs text-muted-foreground/75 font-semibold text-muted-foreground">
-                      Estoque Físico Disponível (Opcional)
-                    </Label>
-                    <Input
-                      type="number"
-                      min="1"
-                      placeholder="Ex: 10 unidades"
-                      value={stockLimit}
-                      onChange={(e) => setStockLimit(e.target.value)}
-                      className="h-11 min-h-11 rounded-lg text-xs bg-background"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {pricingType === "starting_at" && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div className="space-y-2">
-                    <Label className="text-xs text-foreground font-medium">A partir de (R$) *</Label>
-                    <CurrencyField
-                      value={priceMinCents}
-                      onChange={(v) => {
-                        setPriceMinCents(v);
-                        if (v && !priceCents) setPriceCents(v);
-                      }}
-                      placeholder="0,00"
-                      className="h-11 rounded-lg text-xs bg-background"
-                    />
-                  </div>
-                  <div className="space-y-2 flex items-end">
-                    <div
-                      className="flex items-center gap-2 h-11 px-3 rounded-lg bg-background border border-border/60 hover:bg-muted/30 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary w-full"
-                      onClick={() => setNegotiable(!negotiable)}
-                    >
-                      <Checkbox
-                        id="neg-check-start"
-                        checked={negotiable}
-                        onCheckedChange={(c) => setNegotiable(!!c)}
-                      />
-                      <Label
-                        htmlFor="neg-check-start"
-                        className="text-xs text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary font-medium select-none"
-                      >
-                        Sujeito a orçamento final
-                      </Label>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {pricingType === "price_range" && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div className="space-y-2">
-                    <Label className="text-xs text-foreground font-medium">Preço Mínimo (R$) *</Label>
-                    <CurrencyField
-                      value={priceMinCents}
-                      onChange={(v) => {
-                        setPriceMinCents(v);
-                        if (v && !priceCents) setPriceCents(v);
-                      }}
-                      placeholder="0,00"
-                      className="h-11 rounded-lg text-xs bg-background"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-xs text-foreground font-medium">Preço Máximo (R$) *</Label>
-                    <CurrencyField
-                      value={priceMaxCents}
-                      onChange={setPriceMaxCents}
-                      placeholder="0,00"
-                      className="h-11 rounded-lg text-xs bg-background"
-                    />
-                  </div>
-                </div>
-              )}
-
-              {pricingType === "on_quote" && (
-                <div className="p-4 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-300 text-xs">
-                  <p className="font-semibold flex items-center gap-2">
-                    <Coins className="size-4 shrink-0" />
-                    <span>Preço sob Orçamento / Cotação</span>
-                  </p>
-                  <p className="mt-1 text-xs text-muted-foreground/75 opacity-90">
-                    O anúncio exibirá "Sob Consulta" na vitrine pública e convidará os clientes a solicitarem cotação personalizada via WhatsApp.
-                  </p>
-                </div>
-              )}
-
-              {pricingType === "exchange_only" && (
-                <div className="p-4 rounded-lg bg-blue-500/10 border border-blue-500/20 text-blue-700 dark:text-blue-300 text-xs">
-                  <p className="font-semibold flex items-center gap-2">
-                    <RefreshCw className="size-4 shrink-0" />
-                    <span>Permuta / Troca Direta</span>
-                  </p>
-                  <p className="mt-1 text-xs text-muted-foreground/75 opacity-90">
-                    O anúncio será classificado como troca direta. Especifique na seção de pagamento o que você aceita em contrapartida.
-                  </p>
-                </div>
-              )}
-
-              {pricingType === "free" && (
-                <div className="p-4 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-300 text-xs">
-                  <p className="font-semibold flex items-center gap-2">
-                    <Tag className="size-4 shrink-0" />
-                    <span>Gratuito / Doação Solidária (R$ 0)</span>
-                  </p>
-                  <p className="mt-1 text-xs text-muted-foreground/75 opacity-90">
-                    Este item ou serviço será oferecido gratuitamente para a comunidade local.
-                  </p>
-                </div>
-              )}
-
-              {/* Aviso Legal / Disclaimer sobre o Valor */}
-              <div className="space-y-2 pt-1">
-                <Label className="text-xs text-foreground font-medium">
-                  Aviso sobre Valores / Flutuação
-                </Label>
-                <Select value={priceDisclaimer} onValueChange={setPriceDisclaimer}>
-                  <SelectTrigger className="h-11 rounded-lg text-xs bg-background font-medium">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">Nenhum aviso adicional</SelectItem>
-                    <SelectItem value="demonstrative">Preço ilustrativo / demonstrativo (sob consulta)</SelectItem>
-                    <SelectItem value="subject_to_availability">Sujeito à disponibilidade e estoque sem aviso prévio</SelectItem>
-                    <SelectItem value="seasonal">Tarifa sazonal válida para baixa temporada / dias úteis</SelectItem>
-                    <SelectItem value="exchange_rate">Sujeito a flutuação cambial e taxas governamentais</SelectItem>
-                    <SelectItem value="custom">Aviso personalizado por extenso</SelectItem>
-                  </SelectContent>
-                </Select>
-                {priceDisclaimer === "custom" && (
-                  <Input
-                    value={customDisclaimer}
-                    onChange={(e) => setCustomDisclaimer(e.target.value)}
-                    placeholder="Escreva o aviso que aparecerá na vitrine pública..."
-                    className="h-11 min-h-11 rounded-lg text-xs bg-background mt-2"
-                  />
-                )}
-              </div>
-            </div>
+            <ClassifiedPricingLifecycleSection
+              nicheId={niche.id}
+              pricingType={pricingType}
+              priceCents={priceCents}
+              priceMinCents={priceMinCents}
+              priceMaxCents={priceMaxCents}
+              negotiable={negotiable}
+              validityDays={validityDays}
+              offerLimit={offerLimit}
+              stockLimit={stockLimit}
+              priceDisclaimer={priceDisclaimer}
+              customDisclaimer={customDisclaimer}
+              onPricingTypeChange={setPricingType}
+              onPriceCentsChange={setPriceCents}
+              onPriceMinCentsChange={setPriceMinCents}
+              onPriceMaxCentsChange={setPriceMaxCents}
+              onNegotiableChange={setNegotiable}
+              onValidityDaysChange={setValidityDays}
+              onOfferLimitChange={setOfferLimit}
+              onStockLimitChange={setStockLimit}
+              onPriceDisclaimerChange={setPriceDisclaimer}
+              onCustomDisclaimerChange={setCustomDisclaimer}
+            />
             </ClassifiedBasicInfoSection>
 
  {/* Seção 2: Especificações Técnicas do Anúncio */}
