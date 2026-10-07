@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { createFileRoute } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 import {
   AIChatShell,
   type ChatThreadItem,
@@ -13,6 +14,8 @@ import {
   sendAiConversationMessage,
   executeGuestCopilotMessage,
   deleteAiConversationThread,
+  toggleAiThreadPinned,
+  toggleAiThreadArchived,
 } from "@/services/ai-conversations.functions";
 import { getUserSession } from "@/services/auth.functions";
 import { toast } from "sonner";
@@ -37,9 +40,13 @@ export const Route = createFileRoute("/_store/copilot")({
   }),
   loader: async () => {
     try {
+      let threadLoadError = false;
       const [session, threads] = await Promise.all([
         getUserSession().catch(() => null),
-        listAiConversationThreads().catch(() => []),
+        listAiConversationThreads().catch(() => {
+          threadLoadError = true;
+          return [];
+        }),
       ]);
 
       let resolvedThreads = threads || [];
@@ -60,21 +67,23 @@ export const Route = createFileRoute("/_store/copilot")({
             resolvedThreads = [newThread as any];
           }
         } catch (e) {
+          threadLoadError = true;
           console.warn("[_store.copilot] Falha ao criar thread inicial:", e);
         }
       }
 
-      return { session, initialThreads: resolvedThreads };
+      return { session, initialThreads: resolvedThreads, initialLoadError: threadLoadError && Boolean(effectiveUserId) };
     } catch {
-      return { session: null, initialThreads: [] };
+      return { session: null, initialThreads: [], initialLoadError: false };
     }
   },
   component: CopilotPage,
 });
 
 function CopilotPage() {
-  const { session, initialThreads } = Route.useLoaderData();
+  const { session, initialThreads, initialLoadError } = Route.useLoaderData();
   const effectiveUserId = session?.id || session?.user?.id || null;
+  const navigate = useNavigate();
   const [userCoords, setUserCoords] = useState<{ lat?: number; lng?: number }>({});
 
   useEffect(() => {
@@ -90,6 +99,7 @@ function CopilotPage() {
   }, []);
 
   const [threads, setThreads] = useState<ChatThreadItem[]>(() => {
+    if (initialLoadError && effectiveUserId) return [];
     if (!initialThreads || initialThreads.length === 0) {
       return [
         {
@@ -107,6 +117,8 @@ function CopilotPage() {
       type: t.type || "ai_assistant",
       title: t.title || t.subject || "Conversa",
       isPinned: t.is_pinned || false,
+      isArchived: t.status === "archived",
+      assignedToProfileId: t.assigned_to_profile_id,
       metadata: t.metadata || {},
       workingMemory: t.working_memory || {},
       updatedAt: t.updated_at,
@@ -131,21 +143,30 @@ function CopilotPage() {
 
   const [isSending, setIsSending] = useState(false);
   const activeRunRef = useRef(0);
+  const threadLoadRef = useRef(0);
 
   useEffect(() => {
+    const requestId = ++threadLoadRef.current;
+    setMessages([]);
     if (activeThreadId && isUuid(activeThreadId) && activeThreadId !== DEFAULT_GUEST_THREAD_ID) {
       getAiConversationThread({ data: { threadId: activeThreadId } })
         .then((res) => {
-          if (res?.messages && res.messages.length > 0) {
-            setMessages(res.messages as any);
+          if (requestId === threadLoadRef.current && activeThreadId === res?.thread?.id) {
+            setMessages((res?.messages || []) as any);
           }
         })
-        .catch(() => {});
+        .catch(() => {
+          if (requestId === threadLoadRef.current) toast.error("Não foi possível carregar esta conversa.");
+        });
     }
   }, [activeThreadId]);
 
   const handleSendMessage = async (text: string, attachments: string[] = [], replyToId?: string, stableClientMessageId?: string) => {
     if (!text.trim() || isSending) return;
+    if (effectiveUserId && !isUuid(activeThreadId)) {
+      toast.error("A conversa ainda não está disponível. Tente recarregar ou criar uma nova thread.");
+      return;
+    }
 
     const userMessageItem: ChatMessageItem = {
       id: stableClientMessageId || (typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `00000000-0000-0000-0000-${Date.now().toString().slice(-12).padStart(12, "0")}`),
@@ -177,8 +198,9 @@ function CopilotPage() {
         });
         if (runId !== activeRunRef.current) return;
         setMessages((prev) => {
+          const executionFailed = result?.aiMessage?.status === "failed" || result?.aiMessage?.fsmPhase === "FAILED_RETRYABLE" || result?.aiMessage?.fsmPhase === "FAILED_FINAL";
           const deliveredUser = prev.map((item) =>
-            item.id === userMessageItem.id ? { ...item, status: "delivered" as const } : item,
+            item.id === userMessageItem.id ? { ...item, status: executionFailed ? "failed" as const : "delivered" as const } : item,
           );
           const aiMessage = result?.aiMessage;
           if (!aiMessage) return deliveredUser;
@@ -312,6 +334,37 @@ function CopilotPage() {
     }
   };
 
+  const handleStructuredAction = (action: any) => {
+    if (action.action_type === "open_place") {
+      const target = action.payload?.slug || action.payload?.placeId;
+      if (target) navigate({ to: `/places/${target}` as any });
+      return;
+    }
+    toast.info("Esta ação está disponível no Copilot, mas ainda não tem um handler nesta conversa.");
+  };
+
+  const handleTogglePinThread = async (threadId: string) => {
+    const thread = threads.find((item) => item.id === threadId);
+    if (!thread) return;
+    try {
+      await toggleAiThreadPinned({ data: { threadId, isPinned: !thread.isPinned } });
+      setThreads((prev) => prev.map((item) => item.id === threadId ? { ...item, isPinned: !item.isPinned } : item));
+    } catch (err: any) {
+      toast.error(err?.message || "Não foi possível fixar a conversa.");
+    }
+  };
+
+  const handleToggleArchiveThread = async (threadId: string) => {
+    const thread = threads.find((item) => item.id === threadId);
+    if (!thread) return;
+    try {
+      await toggleAiThreadArchived({ data: { threadId, isArchived: !thread.isArchived } });
+      setThreads((prev) => prev.map((item) => item.id === threadId ? { ...item, isArchived: !item.isArchived } : item));
+    } catch (err: any) {
+      toast.error(err?.message || "Não foi possível arquivar a conversa.");
+    }
+  };
+
   return (
     <div className="h-full flex-1 w-full flex flex-col bg-background">
       <AIChatShell
@@ -324,6 +377,9 @@ function CopilotPage() {
         onCancelActiveRun={handleCancelActiveRun}
         onCreateThread={handleCreateThread}
         onDeleteThread={handleDeleteThread}
+        onTogglePinThread={handleTogglePinThread}
+        onToggleArchiveThread={handleToggleArchiveThread}
+        onAction={handleStructuredAction}
         isSending={isSending}
         currentUserProfileId={effectiveUserId || undefined}
         className="h-full border-none rounded-none"

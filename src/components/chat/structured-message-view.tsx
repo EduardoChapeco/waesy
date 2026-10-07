@@ -366,8 +366,9 @@ function ProposalCardBlock({
 }
 
 function TableBlock({ data }: { data: Record<string, any> }) {
-  const headers: string[] = data.headers || [];
-  const rows: Array<Array<string | number>> = data.rows || [];
+  const headers: string[] = (data.headers || []).map((header: unknown) => String(header ?? ""));
+  const rawRows = Array.isArray(data.rows) ? data.rows : Array.isArray(data.dataRows) ? data.dataRows : [];
+  const rows: Array<Array<unknown>> = rawRows.map((row: unknown) => Array.isArray(row) ? row : [row]);
 
   return (
     <div className="rounded-lg border border-border/80 bg-card overflow-hidden shadow-2xs max-w-md w-full">
@@ -394,7 +395,7 @@ function TableBlock({ data }: { data: Record<string, any> }) {
               <tr key={rowIdx} className="hover:bg-muted/20">
                 {row.map((cell, cellIdx) => (
                   <td key={cellIdx} className="px-3 py-2 text-foreground font-mono text-xs">
-                    {cell}
+                    {cell === null || typeof cell === "undefined" ? "" : typeof cell === "object" ? JSON.stringify(cell) : String(cell)}
                   </td>
                 ))}
               </tr>
@@ -864,7 +865,7 @@ function PlacesCarouselBlock({
 
       <div className="carousel flex gap-3 overflow-x-auto snap-x snap-mandatory no-scrollbar pb-2">
         {items.map((place, idx) => {
-          const isOpen = place.is_open ?? true;
+          const isOpen = place.is_open;
           const distanceKm = typeof place.distance_km === "number" ? `${place.distance_km.toFixed(1)} km` : place.distance || null;
 
           return (
@@ -912,7 +913,7 @@ function PlacesCarouselBlock({
                         : "border-border/60 text-muted-foreground bg-muted/40"
                     )}
                   >
-                    {isOpen ? "Aberto Agora" : "Fechado"}
+                    {isOpen === null || typeof isOpen === "undefined" ? "Horário indisponível" : isOpen ? "Aberto Agora" : "Fechado"}
                   </Badge>
 
                   {distanceKm && (

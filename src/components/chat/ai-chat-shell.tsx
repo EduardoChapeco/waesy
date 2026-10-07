@@ -36,7 +36,7 @@ import { formatMoney } from "@/lib/money";
 import { AIActivityTrail, type AIActivityStep } from "./ai-activity-trail";
 import { ChatArtifactCard, type ChatArtifactData } from "./chat-artifact-card";
 import { ChatComposer, type QuotedMessage } from "./chat-composer";
-import { StructuredMessageView } from "./structured-message-view";
+import { StructuredMessageView, type AIChatAction } from "./structured-message-view";
 import type { CopilotFsmPhase, CopilotFsmExecutionState } from "@/types/copilot-fsm";
 
 export type ThreadType = "store" | "direct_p2p" | "support" | "project" | "ai_assistant";
@@ -52,6 +52,7 @@ export interface ChatThreadItem {
   unreadCount?: number;
   isPinned?: boolean;
   isArchived?: boolean;
+  assignedToProfileId?: string;
   metadata?: Record<string, any>;
   workingMemory?: Record<string, any>;
 }
@@ -90,6 +91,7 @@ export interface AIChatShellProps {
   onDeleteThread?: (threadId: string) => void;
   onTogglePinThread?: (threadId: string) => void;
   onToggleArchiveThread?: (threadId: string) => void;
+  onAction?: (action: AIChatAction) => void;
   isSending?: boolean;
   isStreaming?: boolean;
   currentUserProfileId?: string;
@@ -108,6 +110,7 @@ export function AIChatShell({
   onDeleteThread,
   onTogglePinThread,
   onToggleArchiveThread,
+  onAction,
   isSending = false,
   isStreaming = false,
   currentUserProfileId,
@@ -502,6 +505,7 @@ export function AIChatShell({
                         <StructuredMessageView
                           payload={msg.structuredPayload as any}
                           isStaff={msg.isStaffOrAI}
+                          onActionSelect={onAction}
                         />
                       </div>
                     )}
@@ -735,12 +739,13 @@ function ArtifactViewerContent({
   const handleDownloadCsv = () => {
     const headers = artifact.data?.headers || ["Categoria", "Qtd", "Valor", "Status"];
     const rows = artifact.data?.dataRows || artifact.data?.rows || [];
+    const serializeCell = (cell: unknown) => cell === null || typeof cell === "undefined" ? "" : typeof cell === "object" ? JSON.stringify(cell) : String(cell);
     const csvContent =
       "data:text/csv;charset=utf-8," +
       [
-        headers.join(";"),
+        headers.map(serializeCell).join(";"),
         ...(Array.isArray(rows) && Array.isArray(rows[0])
-          ? rows.map((r: string[]) => r.join(";"))
+          ? rows.map((r: unknown[]) => r.map(serializeCell).join(";"))
           : []),
       ].join("\n");
     const encodedUri = encodeURI(csvContent);
@@ -855,7 +860,7 @@ function ArtifactViewerContent({
           <div className="flex items-center justify-between border-b border-border/40 pb-2">
             <span className="font-bold text-2xs uppercase tracking-wider text-primary">Tabela de Dados</span>
             <Badge variant="outline" className="text-2xs font-mono">
-              {artifact.data?.rows || artifact.data?.dataRows?.length || 0} registros
+              {Array.isArray(artifact.data?.rows) ? artifact.data.rows.length : artifact.data?.dataRows?.length || 0} registros
             </Badge>
           </div>
 
@@ -871,12 +876,12 @@ function ArtifactViewerContent({
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/30">
-                {(artifact.data?.dataRows || [["1", "Item", "Ok"]]).map((row: string[], rIdx: number) => (
+                {(artifact.data?.dataRows || artifact.data?.rows || []).map((row: unknown[], rIdx: number) => (
                   <tr key={rIdx} className="hover:bg-muted/20">
                     {Array.isArray(row) ? (
-                      row.map((cell: string, cIdx: number) => (
+                      row.map((cell: unknown, cIdx: number) => (
                         <td key={cIdx} className="p-2 whitespace-nowrap text-muted-foreground">
-                          {cell}
+                          {cell === null || typeof cell === "undefined" ? "" : typeof cell === "object" ? JSON.stringify(cell) : String(cell)}
                         </td>
                       ))
                     ) : (
