@@ -82,26 +82,7 @@ export const getStoreCheckoutConfig = createServerFn({ method: "GET" })
     }
 
     if (!resolvedStoreId) {
-      // Default fallback config
-      const defaultConfig: CheckoutDynamicConfig = {
-        niche: "general",
-        cpfOnReceipt: { enabled: true, required: false, defaultRequested: false, label: "CPF na Nota Fiscal" },
-        substitutionPolicy: {
-          enabled: false,
-          default: "similar",
-          options: [
-            { id: "similar", label: "Trocar por similar", desc: "Mesma marca ou categoria" },
-            { id: "contact", label: "Confirmar comigo", desc: "Avisar via WhatsApp" },
-            { id: "cancel", label: "Cancelar item", desc: "Abater valor do total" },
-          ],
-        },
-        receiverInfo: { enabled: true, label: "Quem irá receber as compras" },
-        utensilsPolicy: { enabled: false, label: "Precisa de talheres e guardanapos descartáveis?" },
-        itemNotes: { enabled: true, placeholder: "Observações ou preferências deste item..." },
-        orderNotes: { enabled: true, placeholder: "Instruções especiais para entrega ou ponto de referência..." },
-        customFields: [],
-      };
-      return defaultConfig;
+      throw new Error("Não foi possível resolver a loja deste checkout; configuração comercial indisponível.");
     }
 
     const { data: store } = await db
@@ -110,7 +91,11 @@ export const getStoreCheckoutConfig = createServerFn({ method: "GET" })
       .eq("id", resolvedStoreId)
       .single();
 
-    const seg = (store?.segment || "").toLowerCase();
+    if (!store) {
+      throw new Error("Loja não encontrada; configuração comercial indisponível.");
+    }
+
+    const seg = (store.segment || "").toLowerCase();
     let detectedNiche: "grocery" | "food" | "retail" | "services" | "general" | "tourism" = "general";
     if (seg.includes("mercado") || seg.includes("market") || seg.includes("conveniencia") || seg.includes("supermercado")) {
       detectedNiche = "grocery";

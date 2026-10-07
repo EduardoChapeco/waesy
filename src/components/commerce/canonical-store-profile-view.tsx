@@ -124,15 +124,6 @@ export function CanonicalStoreProfileView({
         cards: s.config?.cards || [],
       }));
     }
-    try {
-      if (typeof window !== "undefined" && window.localStorage) {
-        const cached = localStorage.getItem(`store_vitrine_sections_${store?.id}`);
-        if (cached) {
-          const parsed = JSON.parse(cached);
-          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-        }
-      }
-    } catch {}
     return [];
   });
   const [isSectionsEditorOpen, setIsSectionsEditorOpen] = useState(false);
@@ -185,14 +176,14 @@ export function CanonicalStoreProfileView({
   const [editCompanyCategory, setEditCompanyCategory] = useState(store?.category || store?.type || "servicos");
   const [editCompanyDescription, setEditCompanyDescription] = useState(store?.description || store?.settings?.bio || "");
   const [editCompanyAddress, setEditCompanyAddress] = useState(store?.address || "");
-  const [editCompanyCity, setEditCompanyCity] = useState(store?.city || "São Miguel do Oeste");
+  const [editCompanyCity, setEditCompanyCity] = useState(store?.city || "");
   const [editCompanyPhone, setEditCompanyPhone] = useState(store?.phone || store?.contact_phone || "");
   const [editCompanyWhatsapp, setEditCompanyWhatsapp] = useState(store?.contact_whatsapp || store?.whatsapp || store?.phone || "");
   const [editCompanyEmail, setEditCompanyEmail] = useState(store?.email || store?.contact_email || "");
   const [editCompanyWebsite, setEditCompanyWebsite] = useState(store?.website_url || store?.website || "");
-  const [editCompanyHours, setEditCompanyHours] = useState(store?.settings?.working_hours || store?.settings?.businessHours || "Seg a Sex: 08:00 - 18:00");
+  const [editCompanyHours, setEditCompanyHours] = useState(store?.settings?.working_hours || store?.settings?.businessHours || "");
   const [editCompanySlug, setEditCompanySlug] = useState(store?.slug || "");
-  const [editCompanyState, setEditCompanyState] = useState(store?.state || "SC");
+  const [editCompanyState, setEditCompanyState] = useState(store?.state || "");
   const [editCompanyInstagram, setEditCompanyInstagram] = useState(store?.settings?.instagram || store?.settings?.instagramHandle || "");
   const [editCompanyLogoUrl, setEditCompanyLogoUrl] = useState(logoUrl || "");
   const [editCompanyBannerUrl, setEditCompanyBannerUrl] = useState(coverUrl || "");
@@ -359,17 +350,39 @@ export function CanonicalStoreProfileView({
 
   const realRatingAverage = realReviewsCount > 0
     ? (Array.isArray(reviews) && reviews.length > 0
-        ? Number((reviews.reduce((acc: number, r: any) => acc + (Number(r.rating) || 5), 0) / reviews.length).toFixed(1))
+        ? (() => {
+            const rated = reviews.filter((r: any) => Number.isFinite(Number(r.rating)) && Number(r.rating) > 0);
+            return rated.length > 0
+              ? Number((rated.reduce((acc: number, r: any) => acc + Number(r.rating), 0) / rated.length).toFixed(1))
+              : null;
+          })()
         : (typeof store?.rating_average === "number" && !isNaN(store.rating_average)
             ? store.rating_average
             : (typeof store?.rating === "number" && !isNaN(store.rating) ? store.rating : null)))
     : null;
 
-  const orderTypes = settings.order_types || {
-    delivery: true,
-    takeout: true,
-    dine_in: true,
-  };
+  const orderTypes = settings.order_types || {};
+
+  const hasAboutData = Boolean(
+    store?.description || settings.bio || settings.about ||
+    store?.address || store?.city || store?.state ||
+    store?.phone || store?.contact_phone || store?.email || store?.contact_email ||
+    settings.working_hours || settings.businessHours || settings.payment_methods,
+  );
+
+  useEffect(() => {
+    const available = new Set([
+      "vitrine",
+      ...(catalog.length > 0 ? ["catalogo"] : []),
+      ...(hasAboutData ? ["sobre"] : []),
+      ...(posts.length > 0 ? ["posts"] : []),
+      ...(reviews.length > 0 ? ["avaliacoes"] : []),
+      ...(jobs.length > 0 ? ["vagas"] : []),
+      ...(ads.length > 0 ? ["classificados"] : []),
+      ...(concursos.length > 0 ? ["concursos"] : []),
+    ]);
+    if (!available.has(activeTab)) setActiveTab("vitrine");
+  }, [activeTab, ads.length, catalog.length, concursos.length, hasAboutData, jobs.length, posts.length, reviews.length]);
 
   // Semântica por Nicho
   const segment = (store?.type || store?.category || settings.segment || "loja").toLowerCase();
@@ -1190,8 +1203,8 @@ function cleanAddressSegment(text: string): string {
               )}
             </button>}
 
-            {/* Aba 3: Sobre */}
-            <button
+            {/* Aba 3: Sobre — somente quando há dados institucionais persistidos */}
+            {hasAboutData && <button
               type="button"
               onClick={() => setActiveTab("sobre")}
               className={cn(
@@ -1203,7 +1216,7 @@ function cleanAddressSegment(text: string): string {
             >
               <Building2 className="size-3.5 sm:size-4" />
               <span>Sobre</span>
-            </button>
+            </button>}
 
             {/* Aba 4: Posts & Novidades — só existe com publicações persistidas */}
             {posts.length > 0 && <button
@@ -1956,7 +1969,7 @@ function cleanAddressSegment(text: string): string {
           {activeTab === "vagas" && (
             <div className="space-y-4 animate-in fade-in duration-150">
               {/* Card de Inteligência de Empregador e Cultura Corporativa */}
-              {employerStats && (
+              {employerStats && (employerStats.recommendRate != null || employerStats.avgSalaryCents != null || employerStats.reviewsCount > 0 || employerStats.avgRating != null) && (
                 <div className="p-5 rounded-lg bg-card border border-border/70 space-y-4">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/40 pb-4">
                     <div>
@@ -1985,7 +1998,7 @@ function cleanAddressSegment(text: string): string {
                         <Award className="size-3.5 text-primary" /> Recomendação
                       </span>
                       <p className="text-base font-black text-foreground font-mono">
-                        {employerStats.recommendRate ?? 100}%
+                        {employerStats.recommendRate != null ? `${employerStats.recommendRate}%` : null}
                       </p>
                       <span className="text-xs text-muted-foreground block">
                         recomendam a empresa
@@ -1997,7 +2010,7 @@ function cleanAddressSegment(text: string): string {
                         <Briefcase className="size-3.5 text-emerald-600" /> Média Salarial
                       </span>
                       <p className="text-base font-black text-foreground font-mono">
-                        {employerStats.avgSalaryCents ? formatMoney(employerStats.avgSalaryCents) : "Sigiloso / CLT"}
+                        {employerStats.avgSalaryCents ? formatMoney(employerStats.avgSalaryCents) : null}
                       </p>
                       <span className="text-xs text-muted-foreground block">
                         remuneração informada
@@ -2009,7 +2022,7 @@ function cleanAddressSegment(text: string): string {
                         <FileCheck className="size-3.5 text-sky-600" /> Avaliações
                       </span>
                       <p className="text-base font-black text-foreground font-mono">
-                        {employerStats.reviewsCount ?? 0}
+                        {employerStats.reviewsCount > 0 ? employerStats.reviewsCount : null}
                       </p>
                       <span className="text-xs text-muted-foreground block">
                         depoimentos anônimos
@@ -2030,8 +2043,7 @@ function cleanAddressSegment(text: string): string {
                         <div>
                           <h3 className="text-sm font-bold text-foreground">{j.title}</h3>
                           <span className="text-xs text-muted-foreground font-mono">
-                            {j.city || store.city || "São Miguel do Oeste"} •{" "}
-                            {j.contract_type || "CLT"}
+                            {[j.city || store.city, j.contract_type].filter(Boolean).join(" • ")}
                           </span>
                         </div>
                         {j.salary_range && (
@@ -2230,12 +2242,12 @@ function cleanAddressSegment(text: string): string {
                         >
                           <div className="flex items-center justify-between gap-2">
                             <div className="flex items-center text-muted-foreground">
-                              {Array.from({ length: Math.max(1, Math.min(5, Number(rev.company_rating) || 5)) }).map((_, i) => (
+                              {Array.from({ length: Math.max(0, Math.min(5, Number(rev.company_rating) || 0)) }).map((_, i) => (
                                 <Star key={i} className="size-3 fill-amber-500" />
                               ))}
                             </div>
                             <Badge variant="outline" className="text-xs text-muted-foreground">
-                              {rev.exit_reason || "Colaborador"}
+                              {rev.exit_reason || ""}
                             </Badge>
                           </div>
                           {rev.review_text && (
@@ -2253,7 +2265,9 @@ function cleanAddressSegment(text: string): string {
                   ) : (
                     <div className="p-4 rounded-lg bg-muted/20 border border-border/40 text-center">
                       <p className="text-xs text-muted-foreground">
-                        Índice de aprovação de {employerStats.recommendRate ?? 100}% baseado em {employerStats.reviewsCount ?? 0} registros de colaboradores.
+                        {employerStats.recommendRate != null && employerStats.reviewsCount > 0
+                          ? `Índice de aprovação de ${employerStats.recommendRate}% baseado em ${employerStats.reviewsCount} registros de colaboradores.`
+                          : null}
                       </p>
                     </div>
                   )}
@@ -2392,7 +2406,7 @@ function cleanAddressSegment(text: string): string {
                           {formattedAddress.display}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          {store.city || store.settings?.city || "São Miguel do Oeste"} — {store.state || store.settings?.state || "SC"}
+                          {[store.city || store.settings?.city, store.state || store.settings?.state].filter(Boolean).join(" — ")}
                         </p>
                       </div>
                     ) : (

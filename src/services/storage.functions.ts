@@ -126,7 +126,6 @@ export const getSignedUploadUrl = createServerFn({ method: "POST" })
         "banners",
         "post-media",
         "public_media",
-        "brand-assets",
         "legal-documents",
         "receipts",
         "identity-vault",
@@ -218,22 +217,10 @@ export const getPostMediaSignedUrl = createServerFn({ method: "POST" })
 
     let result = await supabase.storage.from(BUCKET).createSignedUploadUrl(uniqueName);
 
-    // Auto-healing: cria o bucket público se não existir
-    const errMsg = result.error?.message || "";
-    if (
-      errMsg.includes("Bucket not found") ||
-      errMsg.includes("The related resource does not exist")
-    ) {
-      const { error: createErr } = await supabase.storage.createBucket(BUCKET, {
-        public: true,
-        fileSizeLimit: 100 * 1024 * 1024, // 100MB para fotos e vídeos em alta resolução
-      });
-      if (createErr) throw new Error(`[storage] Bucket auto-heal failed: ${createErr.message}`);
-      result = await supabase.storage.from(BUCKET).createSignedUploadUrl(uniqueName);
-    }
-
     if (result.error || !result.data) {
-      throw new Error(`Erro ao gerar URL de upload de mídia: ${result.error?.message}`);
+      throw new Error(
+        `Bucket de mídia não provisionado ou indisponível: ${result.error?.message || "URL ausente"}`,
+      );
     }
 
     const { data: urlData } = supabase.storage.from(BUCKET).getPublicUrl(uniqueName);
@@ -377,24 +364,8 @@ export const uploadAdminMedia = createServerFn({ method: "POST" })
         upsert: true,
       });
 
-      if (
-        uploadError &&
-        (uploadError.message.includes("Bucket not found") ||
-          uploadError.message.includes("The related resource does not exist"))
-      ) {
-        await supabase.storage.createBucket(bucket, {
-          public: true,
-          fileSizeLimit: 20 * 1024 * 1024,
-        });
-        const retry = await supabase.storage.from(bucket).upload(uniqueName, buffer, {
-          contentType: fileType,
-          upsert: true,
-        });
-        uploadError = retry.error;
-      }
-
       if (uploadError) {
-        throw new Error(`Erro ao salvar imagem no servidor: ${uploadError.message}`);
+        throw new Error(`Bucket de marca não provisionado ou indisponível: ${uploadError.message}`);
       }
 
       const { data: publicUrlData } = supabase.storage.from(bucket).getPublicUrl(uniqueName);
@@ -502,29 +473,13 @@ export const uploadBrandAsset = createServerFn({ method: "POST" })
       const base64Content = base64Data.includes(",") ? base64Data.split(",")[1] : base64Data;
       const buffer = Buffer.from(base64Content, "base64");
 
-      let { error: uploadError } = await supabase.storage.from(bucket).upload(uniqueName, buffer, {
+      const { error: uploadError } = await supabase.storage.from(bucket).upload(uniqueName, buffer, {
         contentType: fileType,
         upsert: true,
       });
 
-      if (
-        uploadError &&
-        (uploadError.message.includes("Bucket not found") ||
-          uploadError.message.includes("The related resource does not exist"))
-      ) {
-        await supabase.storage.createBucket(bucket, {
-          public: true,
-          fileSizeLimit: 25 * 1024 * 1024,
-        });
-        const retry = await supabase.storage.from(bucket).upload(uniqueName, buffer, {
-          contentType: fileType,
-          upsert: true,
-        });
-        uploadError = retry.error;
-      }
-
       if (uploadError) {
-        throw new Error(`Erro ao persistir asset de marca no storage: ${uploadError.message}`);
+        throw new Error(`Bucket de marca não provisionado ou indisponível: ${uploadError.message}`);
       }
 
       const { data: publicUrlData } = supabase.storage.from(bucket).getPublicUrl(uniqueName);
@@ -576,24 +531,8 @@ export const uploadProfileMediaDirect = createServerFn({ method: "POST" })
         upsert: true,
       });
 
-      if (
-        uploadError &&
-        (uploadError.message.includes("Bucket not found") ||
-          uploadError.message.includes("The related resource does not exist"))
-      ) {
-        await supabase.storage.createBucket(bucket, {
-          public: true,
-          fileSizeLimit: 25 * 1024 * 1024,
-        });
-        const retry = await supabase.storage.from(bucket).upload(uniqueName, buffer, {
-          contentType: fileType,
-          upsert: true,
-        });
-        uploadError = retry.error;
-      }
-
       if (uploadError) {
-        throw new Error(`Erro no upload da mídia: ${uploadError.message}`);
+        throw new Error(`Bucket de perfil não provisionado ou indisponível: ${uploadError.message}`);
       }
 
       const { data: publicUrlData } = supabase.storage.from(bucket).getPublicUrl(uniqueName);
