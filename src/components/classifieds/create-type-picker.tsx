@@ -7,7 +7,7 @@ import { Link } from "@tanstack/react-router";
 import { ChevronLeft, ChevronRight, Loader2, Search, Wand2, Tag } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createListingWithAI } from "@/services/ai-sdr.functions";
-import type { ClassifiedNicheType, NicheDefinition } from "@/routes/_store.conta.classificados.novo";
+import type { ClassifiedNicheType, NicheDefinition } from "@/types/classified-editor";
 
 type DesapegoTaxonomyItem = { id: string; label: string; desc: string };
 
