@@ -49,7 +49,7 @@ export default function FlightsPage() {
   const loaderData = Route.useLoaderData?.() as any;
   const { currentStore } = useWorkspaceStore();
   const queryClient = useQueryClient();
-  const storeId = loaderData?.store?.id || currentStore?.id || '00000000-0000-0000-0000-000000000000';
+  const storeId = loaderData?.store?.id || currentStore?.id;
 
   const [searchTerm, setSearchTerm] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -163,6 +163,7 @@ export default function FlightsPage() {
         },
       };
 
+      if (!storeId) throw new Error('Loja não configurada; emissão não criada.');
       return createFlightItinerary({
         data: {
           store_id: storeId,

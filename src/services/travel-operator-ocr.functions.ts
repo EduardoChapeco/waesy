@@ -11,7 +11,7 @@ import { executeUnifiedAiCall } from "./api-orchestrator.functions";
 // ─── CONTRATOS DE DADOS DE COTAÇÃO DE OPERADORA B2B ─────────────────────────
 
 export const OperatorFlightItemSchema = z.object({
-  airline: z.string().optional().default("Aérea"),
+  airline: z.string().optional(),
   flight_number: z.string().optional(),
   origin_iata: z.string().optional(),
   origin_city: z.string().optional(),
@@ -20,42 +20,42 @@ export const OperatorFlightItemSchema = z.object({
   departure_time: z.string().optional(),
   arrival_time: z.string().optional(),
   date: z.string().optional(),
-  baggage: z.string().optional().default("Mala de mão 10kg inclusa"),
-  connections_count: z.number().int().default(0),
+  baggage: z.string().optional(),
+  connections_count: z.number().int().optional(),
 });
 
 export const OperatorHotelItemSchema = z.object({
   hotel_name: z.string(),
   city: z.string().optional(),
-  room_category: z.string().optional().default("Standard"),
-  meal_plan: z.string().optional().default("Café da Manhã"),
+  room_category: z.string().optional(),
+  meal_plan: z.string().optional(),
   checkin_date: z.string().optional(),
   checkout_date: z.string().optional(),
-  nights_count: z.number().int().default(1),
-  stars: z.number().optional().default(4),
+  nights_count: z.number().int().optional(),
+  stars: z.number().optional(),
   address: z.string().optional(),
 });
 
 export const OperatorQuoteExtractionResultSchema = z.object({
-  operator_name: z.string().default("Operadora B2B"),
+  operator_name: z.string().optional(),
   quote_reference_number: z.string().optional(),
   destination: z.string(),
   travel_start: z.string().optional().nullable(),
   travel_end: z.string().optional().nullable(),
-  adults_count: z.number().int().default(2),
-  children_count: z.number().int().default(0),
-  flights: z.array(OperatorFlightItemSchema).default([]),
-  hotels: z.array(OperatorHotelItemSchema).default([]),
-  transfers: z.array(z.string()).default([]),
-  tours: z.array(z.string()).default([]),
-  inclusions: z.array(z.string()).default([]),
-  exclusions: z.array(z.string()).default([]),
-  gross_price_cents: z.number().int().default(0),
-  operator_net_cents: z.number().int().default(0),
-  suggested_commission_cents: z.number().int().default(0),
-  max_installments: z.number().int().default(10),
-  installment_cents: z.number().int().default(0),
-  currency: z.string().default("BRL"),
+  adults_count: z.number().int().optional(),
+  children_count: z.number().int().optional(),
+  flights: z.array(OperatorFlightItemSchema).optional(),
+  hotels: z.array(OperatorHotelItemSchema).optional(),
+  transfers: z.array(z.string()).optional(),
+  tours: z.array(z.string()).optional(),
+  inclusions: z.array(z.string()).optional(),
+  exclusions: z.array(z.string()).optional(),
+  gross_price_cents: z.number().int().optional(),
+  operator_net_cents: z.number().int().optional(),
+  suggested_commission_cents: z.number().int().optional(),
+  max_installments: z.number().int().optional(),
+  installment_cents: z.number().int().optional(),
+  currency: z.string().optional(),
   cancellation_rules: z.string().optional(),
   notes: z.string().optional(),
 });
@@ -174,10 +174,7 @@ Retorne ESTRITAMENTE um JSON compatível com o schema OperatorQuoteExtractionRes
       }
     }
 
-    const validated = OperatorQuoteExtractionResultSchema.parse({
-      ...rawJson,
-      destination: rawJson.destination || "Destino a Definir",
-    });
+    const validated = OperatorQuoteExtractionResultSchema.parse(rawJson);
 
     return {
       success: true,
@@ -188,26 +185,26 @@ Retorne ESTRITAMENTE um JSON compatível com o schema OperatorQuoteExtractionRes
 // ─── CONTRATOS DE DADOS DE CARNÊS E BOLETOS BANCÁRIOS ───────────────────────
 
 export const BoletoInstallmentItemSchema = z.object({
-  installment_number: z.number().int().default(1),
-  total_installments: z.number().int().default(1),
+  installment_number: z.number().int().optional(),
+  total_installments: z.number().int().optional(),
   due_date: z.string(), // YYYY-MM-DD
   amount_cents: z.number().int().positive(),
-  digitable_line: z.string().optional().default(""),
-  barcode: z.string().optional().default(""),
-  bank_name: z.string().optional().default("Banco"),
+  digitable_line: z.string().optional(),
+  barcode: z.string().optional(),
+  bank_name: z.string().optional(),
   beneficiary_name: z.string().optional(),
   beneficiary_document: z.string().optional(),
-  status: z.enum(["pending", "paid", "overdue"]).default("pending"),
+  status: z.enum(["pending", "paid", "overdue"]).optional(),
 });
 
 export const BoletoExtractionResultSchema = z.object({
-  beneficiary_name: z.string().default("Agência de Viagens"),
+  beneficiary_name: z.string().optional(),
   beneficiary_document: z.string().optional(),
   payer_name: z.string().optional(),
-  total_amount_cents: z.number().int().default(0),
-  total_installments: z.number().int().default(1),
-  currency: z.string().default("BRL"),
-  installments: z.array(BoletoInstallmentItemSchema).default([]),
+  total_amount_cents: z.number().int().optional(),
+  total_installments: z.number().int().optional(),
+  currency: z.string().optional(),
+  installments: z.array(BoletoInstallmentItemSchema).optional(),
   raw_notes: z.string().optional(),
 });
 

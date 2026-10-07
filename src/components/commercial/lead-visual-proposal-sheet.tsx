@@ -3,7 +3,7 @@ import { Loader2 } from "lucide-react";
 import { parseUniversalDocumentOCR } from "@/services/multimodal-ocr.functions";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { FileText, Plane, Building2, Calendar, DollarSign, Send, MapPin, CheckCircle2, ExternalLink, Plus, Trash2, Layers, Copy, Tag, Check, Compass, CreditCard, QrCode, Users, Star, Eye } from "lucide-react";
+import { FileText, Plane, Building2, Calendar, DollarSign, Send, MapPin, CheckCircle2, ExternalLink, Plus, Trash2, Layers, Copy, Tag, Check, Compass, Users, Star, Eye } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -47,25 +47,25 @@ export function LeadVisualProposalSheet({
   storeId,
   onSuccess,
 }: LeadVisualProposalSheetProps) {
-  const [destinationCity, setDestinationCity] = useState(lead?.destination || "Cancún");
-  const [destinationCountry, setDestinationCountry] = useState("México");
-  const [startDate, setStartDate] = useState(new Date(Date.now() + 86400000 * 30).toISOString().split("T")[0]);
-  const [endDate, setEndDate] = useState(new Date(Date.now() + 86400000 * 37).toISOString().split("T")[0]);
-  const [passengerCount, setPassengerCount] = useState(lead?.passenger_count || 2);
+  const [destinationCity, setDestinationCity] = useState(lead?.destination || "");
+  const [destinationCountry, setDestinationCountry] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [passengerCount, setPassengerCount] = useState(lead?.passenger_count || 0);
   const [coverPhotoUrl, setCoverPhotoUrl] = useState(
     lead?.cover_image || ""
   );
 
   // Voo
-  const [hasFlight, setHasFlight] = useState(true);
-  const [airline, setAirline] = useState("LATAM Airlines");
-  const [flightOrigin, setFlightOrigin] = useState("GRU (São Paulo)");
-  const [flightDest, setFlightDest] = useState("CUN (Cancún)");
+  const [hasFlight, setHasFlight] = useState(false);
+  const [airline, setAirline] = useState("");
+  const [flightOrigin, setFlightOrigin] = useState("");
+  const [flightDest, setFlightDest] = useState("");
 
   // Hotel & Autocomplete
-  const [hasHotel, setHasHotel] = useState(true);
-  const [hotelName, setHotelName] = useState("Grand Palladium Costa Mujeres Resort & Spa");
-  const [roomType, setRoomType] = useState("Junior Suite All Inclusive");
+  const [hasHotel, setHasHotel] = useState(false);
+  const [hotelName, setHotelName] = useState("");
+  const [roomType, setRoomType] = useState("");
   const [hotelSearchOpen, setHotelSearchOpen] = useState(false);
 
   // Consulta do Banco Real de Hotéis
@@ -77,10 +77,7 @@ export function LeadVisualProposalSheet({
   });
 
   // Atrativos e Transfers
-  const [selectedTours, setSelectedTours] = useState<string[]>([
-    "Transfer In/Out Aeroporto ↔ Hotel",
-    "Seguro Viagem Cobertura Completa",
-  ]);
+  const [selectedTours, setSelectedTours] = useState<string[]>([]);
 
   const toggleTourTag = (tag: string) => {
     setSelectedTours((prev) =>
@@ -89,10 +86,10 @@ export function LeadVisualProposalSheet({
   };
 
   // Preço & Pagamento
-  const initialBaseCents = lead?.estimated_value_cents || 850000;
+  const initialBaseCents = lead?.estimated_value_cents || 0;
   const [basePriceCents, setBasePriceCents] = useState(initialBaseCents);
-  const [boardingTaxCents, setBoardingTaxCents] = useState(48000);
-  const [paymentTerms, setPaymentTerms] = useState("Entrada de 20% + saldo em até 10x sem juros no cartão.");
+  const [boardingTaxCents, setBoardingTaxCents] = useState(0);
+  const [paymentTerms, setPaymentTerms] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [createdProposalToken, setCreatedProposalToken] = useState<string | null>(null);
   const [isScanningOcr, setIsScanningOcr] = useState(false);
@@ -180,19 +177,17 @@ export function LeadVisualProposalSheet({
   const totalPrice = basePriceCents + boardingTaxCents;
   const pCount = Math.max(1, passengerCount);
   const perPersonCents = Math.round(totalPrice / pCount);
-  const installment10xCents = Math.round(totalPrice / 10);
-  const pixDiscountCents = Math.round(totalPrice * 0.95);
 
   const handleGenerateProposal = async () => {
     setIsSubmitting(true);
     try {
       const res = await createTravelProposal({
         data: {
-          title: `Proposta: ${destinationCity || "Viagem Exclusiva"} (${lead?.fullName || "Cliente Especial"})`,
-          clientName: lead?.fullName || "Cliente Especial",
+          title: destinationCity ? `Proposta: ${destinationCity}${lead?.fullName ? ` (${lead.fullName})` : ""}` : "",
+          clientName: lead?.fullName || "",
           clientEmail: lead?.email || undefined,
-          clientWhatsapp: lead?.phone || "49998887777",
-          clientPhone: lead?.phone || "49998887777",
+          clientWhatsapp: lead?.phone || "",
+          clientPhone: lead?.phone || "",
           destinationCity,
           destinationCountry,
           startDate,
@@ -210,20 +205,7 @@ export function LeadVisualProposalSheet({
             total_price_cents: totalPrice,
             total_cents: totalPrice,
             payment_terms: paymentTerms,
-            installments_options: [
-              {
-                installments_count: 1,
-                installment_value_cents: pixDiscountCents,
-                method: "pix",
-                has_interest: false,
-              },
-              {
-                installments_count: 10,
-                installment_value_cents: installment10xCents,
-                method: "credit_card",
-                has_interest: false,
-              },
-            ],
+          installments_options: [],
           },
           itinerary: [
             {
@@ -494,14 +476,6 @@ export function LeadVisualProposalSheet({
                       R$ {(perPersonCents / 100).toFixed(2)}
                     </span>
                   </div>
-                  <div className="pt-2 border-t border-primary/10 grid grid-cols-2 gap-2 text-[11px]">
-                    <div className="text-emerald-600 dark:text-emerald-400 font-medium">
-                      PIX (5% off): <span className="font-bold font-mono">R$ {(pixDiscountCents / 100).toFixed(2)}</span>
-                    </div>
-                    <div className="text-right text-muted-foreground">
-                      Cartão: <span className="font-bold text-foreground font-mono">10x R$ {(installment10xCents / 100).toFixed(2)}</span>
-                    </div>
-                  </div>
                 </div>
               </div>
             </div>
@@ -742,26 +716,6 @@ export function LeadVisualProposalSheet({
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2 pt-2 border-t border-border/50 text-[11px]">
-                  <div className="p-3 rounded-lg bg-background border border-border/60 flex items-center gap-2">
-                    <QrCode className="size-4 text-emerald-600 shrink-0" />
-                    <div>
-                      <span className="font-bold text-foreground">PIX (5% off):</span>
-                      <p className="font-mono text-emerald-600 font-bold">
-                        R$ {(pixDiscountCents / 100).toFixed(2)}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="p-3 rounded-lg bg-background border border-border/60 flex items-center gap-2">
-                    <CreditCard className="size-4 text-primary shrink-0" />
-                    <div>
-                      <span className="font-bold text-foreground">Cartão 10x s/ juros:</span>
-                      <p className="font-mono text-foreground font-bold">
-                        10x de R$ {(installment10xCents / 100).toFixed(2)}
-                      </p>
-                    </div>
-                  </div>
-                </div>
               </div>
             </div>
           </div>

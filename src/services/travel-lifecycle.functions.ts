@@ -314,7 +314,7 @@ export const convertProposalToTrip = createServerFn({ method: "POST" })
         customer_id: quote.crm_customer_id || null,
         trip_number: tripNumber,
         title: quote.internal_notes || meta.title || `Viagem: ${meta.destination_city || "Pacote"}`,
-        destination_city: meta.destination_city || "Destino",
+        destination_city: meta.destination_city || null,
         travel_start_date: meta.travel_start_date || null,
         travel_end_date: meta.travel_end_date || null,
         adults_count: meta.adults_count || 1,
@@ -420,10 +420,10 @@ export const convertProposalToTrip = createServerFn({ method: "POST" })
         client_document: leadDoc || "000.000.000-00",
         client_email: leadEmail,
         client_phone: leadPhone || "(00) 00000-0000",
-        destination: meta.destination_city || "Destino",
+        destination: meta.destination_city || null,
         travel_start_date: meta.travel_start_date || null,
         travel_end_date: meta.travel_end_date || null,
-        package_summary: `Viagem para ${meta.destination_city || "Destino"} · Total: ${allManifestPassengers.length} passageiro(s)`,
+        package_summary: `Viagem para ${meta.destination_city || null} · Total: ${allManifestPassengers.length} passageiro(s)`,
         total_value_cents: totalCents,
         payment_conditions: (data.paymentDetails as any)?.paymentConditionsText
           ? (data.paymentDetails as any).paymentConditionsText
@@ -455,7 +455,7 @@ export const convertProposalToTrip = createServerFn({ method: "POST" })
         voucher_code: voucherCode,
         voucher_type: "general",
         template: "a4-boarding",
-        destination: meta.destination_city || "Destino",
+        destination: meta.destination_city || null,
         cover_image_url: meta.cover_image_url || null,
         flights: meta.flights || [],
         hotels: meta.hotels || [],
@@ -463,8 +463,8 @@ export const convertProposalToTrip = createServerFn({ method: "POST" })
         tours: meta.tours || [],
         insurance: meta.insurance || {},
         passengers: allManifestPassengers,
-        emergency_contacts: [{ name: "Plantão da Agência", phone: leadPhone || "" }],
-        observations: "Reserva registrada. Apresente este documento oficial com foto no balcão de check-in.",
+        emergency_contacts: [...(leadPhone ? [{ name: "", phone: leadPhone }] : [])],
+        observations: null,
       })
       .select("id")
       .maybeSingle();
@@ -512,7 +512,7 @@ export const convertProposalToTrip = createServerFn({ method: "POST" })
  status: "active",
  channel: "proposta_turismo",
  tags: ["Turismo", "Reserva Confirmada"],
- notes: `Cliente originado da proposta ${quote.quote_number || data.proposalId} (Viagem ${tripNumber} para ${meta.destination_city || "Destino"})`,
+ notes: `Cliente originado da proposta ${quote.quote_number || data.proposalId} (Viagem ${tripNumber} para ${meta.destination_city || null})`,
  });
  }
  } catch (custErr) {
@@ -525,7 +525,7 @@ export const convertProposalToTrip = createServerFn({ method: "POST" })
   try {
     const departureDate = meta.travel_start_date || (newTrip.travel_start_date) || new Date().toISOString();
     const returnDate = meta.travel_end_date || (newTrip.travel_end_date) || null;
-    const destCity = meta.destination_city || "Destino";
+    const destCity = meta.destination_city || null;
     const isInternational = Boolean(
       (meta.destination_country && meta.destination_country.toLowerCase() !== "brasil" && meta.destination_country.toLowerCase() !== "brazil") ||
       (/(canc[uú]n|orlando|disney|miami|paris|roma|lisboa|europa|italia|itália|chile|argentina|bariloche|punta cana)/i.test(destCity))
@@ -616,7 +616,7 @@ export const convertProposalToTrip = createServerFn({ method: "POST" })
         storeId: effectiveStoreId || undefined,
         customerId: quote.crm_customer_id || null,
         title: `Proposta aceita: ${quote.quote_number || data.proposalId}`,
-        description: `Conversão para viagem ${tripNumber} (${meta.destination_city || "Destino"})`,
+        description: `Conversão para viagem ${tripNumber} (${meta.destination_city || null})`,
         metadata: { tripId, tripNumber, totalCents },
       });
 
@@ -627,7 +627,7 @@ export const convertProposalToTrip = createServerFn({ method: "POST" })
         storeId: effectiveStoreId || undefined,
         customerId: quote.crm_customer_id || null,
         title: `Viagem confirmada: ${tripNumber}`,
-        description: `Cliente: ${leadName} · Destino: ${meta.destination_city || "Destino"}`,
+        description: `Cliente: ${leadName} · Destino: ${meta.destination_city || null}`,
         metadata: { totalCents, departureId, voucherToken, contractId: contractRow?.id },
       });
 
@@ -729,7 +729,7 @@ export const getTripAggregate = createServerFn({ method: "GET" })
  contract: contractRes.data || null,
  store: {
  id: trip.stores?.id || trip.store_id,
- name: trip.stores?.name || "Agência de Viagens",
+ name: trip.stores?.name || "",
  logo_url: trip.stores?.logo_url || null,
  whatsapp_phone: storeSettings.whatsapp_phone || storeSettings.phone || null,
  },
@@ -884,7 +884,7 @@ export const getPublicVoucherByToken = createServerFn({ method: "GET" })
  },
  trip,
  store: {
- name: store.name || "Agência de Viagens",
+ name: store.name || "",
  logo_url: store.logo_url || null,
  whatsapp_phone: settings.whatsapp_phone || settings.phone || null,
  },
@@ -1028,8 +1028,8 @@ export const createManualTrip = createServerFn({ method: "POST" })
       tours: [],
       insurance: {},
       passengers: [{ name: data.clientName, document: data.clientDocument || "" }],
-      emergency_contacts: [{ name: "Plantão da Agência", phone: data.clientWhatsapp || "" }],
-      observations: "Apresente este documento oficial com foto no balcão de check-in.",
+      emergency_contacts: [...(data.clientWhatsapp ? [{ name: "", phone: data.clientWhatsapp }] : [])],
+      observations: null,
     });
 
     return {
@@ -1358,58 +1358,11 @@ Extraia, consolide e estruture todas as informações no formato JSON especifica
         };
       }
     } catch (aiErr: any) {
-      console.warn("[parseOperatorVoucherAI] Falha na chamada unificada de IA, acionando parser defensivo:", aiErr?.message);
+      console.warn("[parseOperatorVoucherAI] OCR não concluído; nenhum voucher sintético será retornado:", aiErr?.message);
+      throw new Error("Não foi possível extrair o voucher com segurança. Nenhum dado foi criado.");
     }
 
-    // 3. Heurística / Parser Defensivo estrito caso IA esteja offline
-    const locMatch = allRawText.match(/(?:localizador|loc|pnr|reserva|c[oó]digo)[\s:]+([A-Z0-9]{5,10})/i);
-    const dateMatch = allRawText.match(/(\d{2}\/\d{2}\/\d{4})/);
-    const operatorMatch = allRawText.match(/(CVC|FRT|Orinter|Azul Viagens|LATAM|Schultz|Trend|Abreu|Decolar|Booking)/i);
-
-    const fallbackParsed: OperatorParsedVoucherDTO = {
-      operator_name: operatorMatch ? operatorMatch[1] : "Operadora Turística",
-      operator_contacts: { commercial_phone: null, emergency_phone: null },
-      destination_city: "Destino da Viagem",
-      trip_title: "Pacote Turístico Integrado",
-      general_locator: locMatch ? locMatch[1].toUpperCase() : "VOUCHER-OPERADORA",
-      travel_start_date: dateMatch ? dateMatch[1].split("/").reverse().join("-") : null,
-      travel_end_date: null,
-      client_name: "Passageiro a Confirmar",
-      passengers: [
-        {
-          name: "Passageiro Confirmado",
-          document_type: "rg",
-          document: "Não informado",
-          document_expiry: null,
-          birth_date: null,
-          nationality: "Brasileira",
-          is_lead: true,
-        },
-      ],
-      flights: [],
-      hotels: [],
-      transfers: [],
-      tours: [],
-      insurance: null,
-      tariff_rules: {
-        cancellation_deadline: null,
-        baggage_rules: "Conforme regra padrão da companhia",
-      },
-      financial_details: {
-        total_amount_cents: 0,
-        currency: "BRL",
-        payment_method: "A Definir",
-        installments_count: 1,
-      },
-      emergency_contacts: [{ name: "Plantão da Agência", phone: "(49) 99999-9999", role: "Agência" }],
-      observations: "Documento importado via leitura de comprovante da operadora.",
-      raw_extracted_text: allRawText,
-    };
-
-    return {
-      success: true,
-      parsed: fallbackParsed,
-    };
+    throw new Error("A extração do voucher não retornou dados estruturados. Nenhum dado foi criado.");
   });
 
 /**
@@ -1665,7 +1618,7 @@ export const applyParsedVoucherToTrip = createServerFn({ method: "POST" })
         document_expiry: p.document_expiry || null,
         seat: p.seat || "",
       })),
-      emergency_contacts: parsed.emergency_contacts || [{ name: "Plantão da Agência", phone: "" }],
+      emergency_contacts: parsed.emergency_contacts || [],
       observations:
         parsed.observations ||
         "Apresente este documento oficial com documento com foto no balcão de embarque e no check-in do hotel.",
@@ -1866,7 +1819,7 @@ export const getTravelerFormContext = createServerFn({ method: "GET" })
           destination: contract.destination || "Destino Turístico",
           departureDate: contract.travel_start_date || null,
           returnDate: contract.travel_end_date || null,
-          agencyName: store.name || "Agência de Viagens",
+          agencyName: store.name || "",
           agencyLogo: store.logo_url || null,
           agencyPhone: settings.whatsapp_phone || settings.phone || null,
           tokenType: "contract",
@@ -1895,7 +1848,7 @@ export const getTravelerFormContext = createServerFn({ method: "GET" })
           destination: trip.destination_city || "Destino Turístico",
           departureDate: trip.travel_start_date || null,
           returnDate: trip.travel_end_date || null,
-          agencyName: store.name || "Agência de Viagens",
+          agencyName: store.name || "",
           agencyLogo: store.logo_url || null,
           agencyPhone: settings.whatsapp_phone || settings.phone || null,
           tokenType: "trip",
@@ -1919,7 +1872,7 @@ export const getTravelerFormContext = createServerFn({ method: "GET" })
           destination: vTrip.destination_city || "Destino Turístico",
           departureDate: vTrip.travel_start_date || null,
           returnDate: vTrip.travel_end_date || null,
-          agencyName: store.name || "Agência de Viagens",
+          agencyName: store.name || "",
           agencyLogo: store.logo_url || null,
           agencyPhone: settings.whatsapp_phone || settings.phone || null,
           tokenType: "voucher",
@@ -1942,7 +1895,7 @@ export const getTravelerFormContext = createServerFn({ method: "GET" })
           destination: proposal.destination || "Destino Turístico",
           departureDate: proposal.start_date || null,
           returnDate: proposal.end_date || null,
-          agencyName: store.name || "Agência de Viagens",
+          agencyName: store.name || "",
           agencyLogo: store.logo_url || null,
           agencyPhone: settings.whatsapp_phone || settings.phone || null,
           tokenType: "proposal",
@@ -1972,7 +1925,7 @@ export const getTravelerFormContext = createServerFn({ method: "GET" })
             destination: pTrip.destination_city || "Destino Turístico",
             departureDate: pTrip.travel_start_date || null,
             returnDate: pTrip.travel_end_date || null,
-            agencyName: store.name || "Agência de Viagens",
+            agencyName: store.name || "",
             agencyLogo: store.logo_url || null,
             agencyPhone: settings.whatsapp_phone || settings.phone || null,
             tokenType: "passenger",
@@ -1996,7 +1949,7 @@ export const getTravelerFormContext = createServerFn({ method: "GET" })
       destination: "Destino da Viagem",
       departureDate: null,
       returnDate: null,
-      agencyName: "Agência de Viagens",
+      agencyName: "",
       agencyLogo: null,
       agencyPhone: null,
       tokenType: "generic",
@@ -2129,16 +2082,8 @@ export const submitTravelerRegistrationForm = createServerFn({ method: "POST" })
       }
     }
 
-    // D. Se não achou storeId, usar store padrão ativa
-    if (!storeId) {
-      const { data: defaultStore } = await supabase
-        .from("stores")
-        .select("id")
-        .eq("is_active", true)
-        .limit(1)
-        .maybeSingle();
-      storeId = defaultStore?.id || "00000000-0000-0000-0000-000000000000";
-    }
+    // D. Sem vínculo real não há tenant válido para persistir a viagem.
+    if (!storeId) throw new Error("Não foi possível identificar a loja da viagem; nenhum registro foi criado.");
 
     // E. Se não achou tripId, criar viagem correspondente
     if (!tripId) {
@@ -2147,8 +2092,8 @@ export const submitTravelerRegistrationForm = createServerFn({ method: "POST" })
         .insert({
           store_id: storeId,
           title: `Viagem — ${data.fullName}`,
-          destination_city: "Destino a confirmar",
-          status: "confirmed",
+          destination_city: null,
+          status: "pending",
           client_name: data.fullName,
           client_phone: data.phone,
           client_email: data.email || null,

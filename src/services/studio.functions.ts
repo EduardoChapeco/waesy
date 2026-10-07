@@ -8,7 +8,6 @@ import { z } from "zod";
 import { getServerClient, getAnonServerClient } from "@/lib/supabase";
 import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
 import type { EscamasCarouselProject, EscamasSlide, StudioBrandProfile } from "@/types/studio-machine";
-import { DEFAULT_BRAND_PROFILE } from "@/lib/studio-machine-constants";
 import { executeUnifiedAiCall } from "./api-orchestrator.functions";
 
 // ============================================================
@@ -1157,13 +1156,27 @@ export const generateCarouselFromMinedContent = createServerFn({ method: "POST" 
     }),
   )
   .handler(async ({ data }): Promise<GeneratedCarouselResultDTO> => {
-    const identity = await getServerIdentity().catch(() => ({ id: "00000000-0000-0000-0000-000000000000", store_id: null }));
+    const identity = await getServerIdentity();
     const supabase = getServerClient();
 
     const targetStoreId = data.storeId || identity.store_id;
+    if (!targetStoreId) throw new Error("Loja autenticada obrigatória para gerar carrossel.");
+    if (data.storeId && data.storeId !== identity.store_id) throw new Error("A loja informada não pertence à sessão atual.");
 
     // 1. Carrega DNA da Marca (Brand Kit & Briefing)
-    let brandProfile: StudioBrandProfile = { ...DEFAULT_BRAND_PROFILE };
+    let brandProfile: StudioBrandProfile = {
+      id: "",
+      name: "",
+      niche: "",
+      primaryColor: "",
+      secondaryColor: "",
+      accentColor: "",
+      fontHeading: "",
+      fontBody: "",
+      mood: "",
+      handle: "",
+      logoLetter: "",
+    };
 
     if (targetStoreId) {
       const { data: brandKit } = await supabase
@@ -1200,7 +1213,7 @@ export const generateCarouselFromMinedContent = createServerFn({ method: "POST" 
 
     // 2. Extrai Pauta & Roteirização Narrativa por Tipo de Conteúdo
     const slides: EscamasSlide[] = [];
-    const coverImage = data.coverUrl || "/brand-logo.png";
+    const coverImage = data.coverUrl || "";
 
     if (data.contentType === "licitacoes") {
       const orgao = data.details?.orgao || data.details?.orgao_nome || "Órgão Público";
@@ -1458,17 +1471,17 @@ export const generateCarouselFromMinedContent = createServerFn({ method: "POST" 
         aspect_ratio: "4:5",
         canvas_data: carouselProject as any,
         thumbnail_url: coverImage,
-        store_id: targetStoreId || null,
-        user_id: identity.id !== "00000000-0000-0000-0000-000000000000" ? identity.id : null,
+        store_id: targetStoreId,
+        user_id: identity.id,
       })
       .select("id, title")
       .single();
 
-    if (error) {
-      console.warn("[studio.functions] Aviso ao salvar studio_project no banco:", error.message);
+    if (error || !savedProject?.id) {
+      throw new Error(`Não foi possível persistir o projeto do Studio: ${error?.message || "resposta sem id"}`);
     }
 
-    const finalId = savedProject?.id || carouselProject.id;
+    const finalId = savedProject.id;
     carouselProject.id = finalId;
 
     return {
@@ -1718,6 +1731,5 @@ export const refineSlideTextWithAI = createServerFn({ method: "POST" })
     const variants = await internalRefineSlideTextWithAI(data);
     return { success: true, variants };
   });
-
 
 

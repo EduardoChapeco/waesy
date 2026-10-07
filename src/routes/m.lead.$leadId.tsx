@@ -180,7 +180,7 @@ function PublicLeadPassageirosPage() {
             <p className="text-sm text-muted-foreground leading-relaxed">
               Suas informações e a relação de acompanhantes foram enviadas com sucesso para a equipe da{" "}
               <strong className="text-foreground font-semibold">
-                {leadData.store_name || "Agência de Viagens"}
+                {leadData.store_name || ""}
               </strong>
               .
             </p>
@@ -190,7 +190,7 @@ function PublicLeadPassageirosPage() {
             <div className="flex items-center justify-between text-xs">
               <span className="text-muted-foreground">Destino:</span>
               <span className="font-bold text-foreground">
-                {leadData.destination || "A definir"}
+                {leadData.destination || ""}
               </span>
             </div>
             <div className="flex items-center justify-between text-xs">
@@ -237,7 +237,7 @@ function PublicLeadPassageirosPage() {
                 Central do Passageiro
               </span>
               <h1 className="text-base font-bold text-foreground truncate">
-                {leadData.store_name || "Agência de Viagens"}
+                {leadData.store_name || ""}
               </h1>
             </div>
           </div>

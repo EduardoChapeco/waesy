@@ -728,22 +728,6 @@ function ExperienceNodeRenderer({
   const bindingSource = (node.data_bindings as any)?.source || null;
 
   // Props for store profile blocks: extract the correct sub-key com fallback defensivo seguro
-  const fallbackStore = {
-    name: "Nossa Loja",
-    slug: "loja",
-    description: "",
-    phone: "",
-    whatsapp: "",
-    email: "",
-    address: "",
-    city: "",
-    state: "",
-    logo_url: null,
-    cover_url: null,
-    business_hours: [],
-    settings: {},
-  };
-
   let storeProfileProps: Record<string, any> = {};
   if (STORE_PROFILE_BLOCKS.has(node.block_type)) {
     const rawStore =
@@ -752,10 +736,7 @@ function ExperienceNodeRenderer({
       nodeTransientData ??
       transientData?.store;
     if (!rawStore && !isEditing) return null;
-    const storeObj =
-      typeof rawStore === "object" && rawStore !== null
-        ? { ...fallbackStore, ...rawStore }
-        : fallbackStore;
+    const storeObj = typeof rawStore === "object" && rawStore !== null ? rawStore : {};
     if (node.block_type === "store_profile_hero") {
       storeProfileProps = { storeData: nodeTransientData?.store_hero ?? storeObj };
     } else if (

@@ -38,7 +38,7 @@ export default function ReaccommodationPage() {
   const loaderData = Route.useLoaderData?.() as any;
   const { currentStore } = useWorkspaceStore();
   const queryClient = useQueryClient();
-  const storeId = loaderData?.store?.id || currentStore?.id || '00000000-0000-0000-0000-000000000000';
+  const storeId = loaderData?.store?.id || currentStore?.id;
 
   const [searchTerm, setSearchTerm] = useState('');
   const [isSheetOpen, setIsSheetOpen] = useState(false);
@@ -97,6 +97,7 @@ export default function ReaccommodationPage() {
 
       const finalPassengerNotes = [passengerHeader, itinHeader, passengerNotes].filter(Boolean).join(' | ');
 
+      if (!storeId) throw new Error('Loja não configurada; caso não criado.');
       return createFlightChangeCase({
         data: {
           store_id: storeId,

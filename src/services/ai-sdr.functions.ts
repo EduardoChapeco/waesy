@@ -306,8 +306,8 @@ Sem blocos markdown adicionais. Apenas o JSON puro.`;
       const validatedData = AIClassifiedSchema.parse(parsedData);
       return { success: true, listing: validatedData };
     } catch (e: any) {
-      console.warn("[ai-sdr] Fallback heurístico acionado:", e?.message);
-      return { success: true, listing: parsePromptFallback(sanitizedPrompt) };
+      console.warn("[ai-sdr] Extração não concluída; nenhum anúncio sintético será retornado:", e?.message);
+      return { success: false, error: "A IA não conseguiu estruturar o anúncio. Revise a conexão e tente novamente." };
     }
   });
 

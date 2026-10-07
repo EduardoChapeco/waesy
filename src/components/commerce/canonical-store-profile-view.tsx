@@ -14,7 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
-import { StoreVitrineSectionsEditor, DEFAULT_STORE_VITRINE_SECTIONS, type VitrineSectionConfig, type VitrineCardItem } from "@/components/commerce/store-vitrine-sections-editor";
+import { StoreVitrineSectionsEditor, type VitrineSectionConfig, type VitrineCardItem } from "@/components/commerce/store-vitrine-sections-editor";
 import { ProceduralInfiniteFeed } from "@/components/commerce/procedural-infinite-feed";
 import { CommunityFeedCard } from "@/components/social/community-feed-card";
 import { UnifiedFeedCard } from "@/components/commerce/unified-feed-card";
@@ -133,7 +133,7 @@ export function CanonicalStoreProfileView({
         }
       }
     } catch {}
-    return DEFAULT_STORE_VITRINE_SECTIONS;
+    return [];
   });
   const [isSectionsEditorOpen, setIsSectionsEditorOpen] = useState(false);
   const [postViewMode, setPostViewMode] = useState<"grid" | "feed">("grid");
@@ -1170,8 +1170,8 @@ function cleanAddressSegment(text: string): string {
               <span>Vitrine</span>
             </button>
 
-            {/* Aba 2: Catálogo / Cardápio */}
-            <button
+            {/* Aba 2: Catálogo / Cardápio — só existe com itens persistidos */}
+            {catalog.length > 0 && <button
               type="button"
               onClick={() => setActiveTab("catalogo")}
               className={cn(
@@ -1188,7 +1188,7 @@ function cleanAddressSegment(text: string): string {
                   {catalog.length}
                 </span>
               )}
-            </button>
+            </button>}
 
             {/* Aba 3: Sobre */}
             <button
@@ -1205,8 +1205,8 @@ function cleanAddressSegment(text: string): string {
               <span>Sobre</span>
             </button>
 
-            {/* Aba 4: Posts & Novidades */}
-            <button
+            {/* Aba 4: Posts & Novidades — só existe com publicações persistidas */}
+            {posts.length > 0 && <button
               type="button"
               onClick={() => setActiveTab("posts")}
               className={cn(
@@ -1223,10 +1223,10 @@ function cleanAddressSegment(text: string): string {
                   {posts.length}
                 </span>
               )}
-            </button>
+            </button>}
 
-            {/* Aba 5: Avaliações */}
-            <button
+            {/* Aba 5: Avaliações — só existe com avaliações persistidas */}
+            {reviews.length > 0 && <button
               type="button"
               onClick={() => setActiveTab("avaliacoes")}
               className={cn(
@@ -1243,10 +1243,10 @@ function cleanAddressSegment(text: string): string {
                   {reviews.length}
                 </span>
               )}
-            </button>
+            </button>}
 
-            {/* Aba 6: Vagas */}
-            <button
+            {/* Aba 6: Vagas — só existe com vagas persistidas */}
+            {jobs.length > 0 && <button
               type="button"
               onClick={() => setActiveTab("vagas")}
               className={cn(
@@ -1263,7 +1263,7 @@ function cleanAddressSegment(text: string): string {
                   {jobs.length}
                 </span>
               )}
-            </button>
+            </button>}
 
             {/* Aba 7: Classificados da Empresa */}
             {ads.length > 0 && (
