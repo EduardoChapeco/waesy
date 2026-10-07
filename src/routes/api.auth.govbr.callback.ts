@@ -102,9 +102,8 @@ export const Route = createFileRoute("/api/auth/govbr/callback")({
 
           // 3. Troca do Authorization Code por Access Token
           let accessToken = "";
-          let idToken = "";
-          let govBrCpf = envelope.signer_cpf || "";
-          let govBrName = envelope.signer_name || "";
+          let govBrCpf = "";
+          let govBrName = "";
           let govBrLevel: "prata" | "ouro" = "prata";
 
           try {
@@ -122,51 +121,59 @@ export const Route = createFileRoute("/api/auth/govbr/callback")({
               }),
             });
 
-            if (tokenRes.ok) {
-              const tokenData = await tokenRes.json();
-              accessToken = tokenData.access_token || "";
-              idToken = tokenData.id_token || "";
+            if (!tokenRes.ok) {
+              return Response.redirect(`${url.origin}/assinar/${state}?error=govbr_token_exchange_failed`, 302);
+            }
 
-              // Consulta dados cadastrais do cidadão
-              if (accessToken) {
-                const userRes = await fetch(`${ssoBase}/userinfo`, {
-                  headers: { Authorization: `Bearer ${accessToken}` },
-                });
-                if (userRes.ok) {
-                  const userData = await userRes.json();
-                  if (userData.sub) govBrCpf = userData.sub;
-                  if (userData.name) govBrName = userData.name;
-                }
+            const tokenData = await tokenRes.json();
+            accessToken = tokenData.access_token || "";
+            if (!accessToken) {
+              return Response.redirect(`${url.origin}/assinar/${state}?error=govbr_missing_access_token`, 302);
+            }
 
-                // Consulta confiabilidade
-                const confRes = await fetch(
-                  `https://${env === "staging" ? "api.staging.acesso.gov.br" : "api.acesso.gov.br"}/confiabilidades/v3/contas/${govBrCpf}/niveis`,
-                  { headers: { Authorization: `Bearer ${accessToken}` } },
-                ).catch(() => null);
+            // Consulta dados cadastrais do cidadão; nunca usa identidade declarada
+            // pelo envelope como fallback de uma autenticação Gov.br falha.
+            const userRes = await fetch(`${ssoBase}/userinfo`, {
+              headers: { Authorization: `Bearer ${accessToken}` },
+            });
+            if (!userRes.ok) {
+              return Response.redirect(`${url.origin}/assinar/${state}?error=govbr_userinfo_failed`, 302);
+            }
+            const userData = await userRes.json();
+            if (typeof userData.sub !== "string" || !userData.sub.trim()) {
+              return Response.redirect(`${url.origin}/assinar/${state}?error=govbr_identity_unverified`, 302);
+            }
+            govBrCpf = userData.sub.trim();
+            govBrName = typeof userData.name === "string" && userData.name.trim() ? userData.name.trim() : envelope.signer_name;
 
-                if (confRes && confRes.ok) {
-                  const confData = await confRes.json();
-                  const niveis = Array.isArray(confData) ? confData.map((n: any) => n.id) : [];
-                  if (niveis.includes("ouro") || niveis.includes("OURO")) {
-                    govBrLevel = "ouro";
-                  } else {
-                    govBrLevel = "prata";
-                  }
-                }
+            if (envelope.signer_cpf && envelope.signer_cpf.replace(/\D/g, "") !== govBrCpf.replace(/\D/g, "")) {
+              return Response.redirect(`${url.origin}/assinar/${state}?error=govbr_identity_mismatch`, 302);
+            }
+
+            // Consulta confiabilidade
+            const confRes = await fetch(
+              `https://${env === "staging" ? "api.staging.acesso.gov.br" : "api.acesso.gov.br"}/confiabilidades/v3/contas/${encodeURIComponent(govBrCpf)}/niveis`,
+              { headers: { Authorization: `Bearer ${accessToken}` } },
+            ).catch(() => null);
+
+            if (confRes && confRes.ok) {
+              const confData = await confRes.json();
+              const niveis = Array.isArray(confData) ? confData.map((n: any) => n.id) : [];
+              if (niveis.includes("ouro") || niveis.includes("OURO")) {
+                govBrLevel = "ouro";
               }
             }
           } catch (fetchErr) {
             console.warn("[govbr:token:exchange] Falha ao comunicar com Gov.br SSO:", fetchErr);
+            return Response.redirect(`${url.origin}/assinar/${state}?error=govbr_provider_unavailable`, 302);
           }
 
           // 4. Executa a selagem do envelope com chancela Gov.br
           await signContractWithGovBr({
-            data: {
-              signingToken: state,
-              govBrLevel,
-              cpf: govBrCpf,
-              name: govBrName,
-            },
+            signingToken: state,
+            govBrLevel,
+            cpf: govBrCpf,
+            name: govBrName,
           });
 
           // 5. Redireciona de volta para a tela de assinatura com flag de sucesso

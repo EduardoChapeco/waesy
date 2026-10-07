@@ -948,17 +948,17 @@ export const getPublicGovBrSigningConfig = createServerFn({ method: "POST" })
   });
 
 // ─── Assinatura Oficial com GOV.BR (Lei 14.063/2020) ──────────────────────────
+// Esta operação é deliberadamente uma função server-only. O callback OAuth é a
+// única fronteira autorizada a chamá-la depois de validar o authorization code.
+const GovBrSealInputSchema = z.object({
+  signingToken: z.string().trim().min(16).max(240),
+  govBrLevel: z.enum(["prata", "ouro"]),
+  cpf: z.string().trim().min(1).max(80),
+  name: z.string().trim().min(1).max(240),
+});
 
-export const signContractWithGovBr = createServerFn({ method: "POST" })
-  .validator(
-    z.object({
-      signingToken: z.string(),
-      govBrLevel: z.enum(["prata", "ouro"]).default("prata"),
-      cpf: z.string().optional(),
-      name: z.string().optional(),
-    }),
-  )
-  .handler(async ({ data: input }) => {
+export async function signContractWithGovBr(rawInput: unknown) {
+    const input = GovBrSealInputSchema.parse(rawInput);
     const supabase = getServerClient();
     const { data: envelope, error: envErr } = await supabase
       .from("signature_envelopes")
@@ -1005,7 +1005,7 @@ export const signContractWithGovBr = createServerFn({ method: "POST" })
       .eq("id", envelope.id);
 
     return { success: true, signedAt, digest };
-  });
+}
 
 // ─── Geração Automática de Contrato a partir de Pedido / Venda ────────────────
 
@@ -1503,4 +1503,3 @@ export const generateContractDocument = createServerFn({ method: "POST" })
       generatedAt: new Date().toISOString(),
     };
   });
-
