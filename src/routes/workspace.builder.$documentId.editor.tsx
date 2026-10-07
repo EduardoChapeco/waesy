@@ -52,8 +52,9 @@ function BuilderEditorPage() {
 
   // Estado Unificado do Waesy Builder (Zero Mocks, Zero Divisão Clássico/Omni)
   const initialOmniDocument: OmniPageDocument = React.useMemo(() => {
-    if (initialData?.document?.settings?.omni_page) {
-      const parsed = OmniPageDocumentSchema.safeParse(initialData.document.settings.omni_page);
+    const draftSnapshot = initialData?.document?.settings?.omni_page_draft ?? initialData?.document?.settings?.omni_page;
+    if (draftSnapshot) {
+      const parsed = OmniPageDocumentSchema.safeParse(draftSnapshot);
       if (parsed.success) return parsed.data;
     }
     const empty = createEmptyOmniPage(

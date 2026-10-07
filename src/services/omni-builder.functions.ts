@@ -46,7 +46,7 @@ export const saveOmniPageDocument = createServerFn({ method: "POST" })
       const currentSettings = (currentDoc.settings || {}) as Record<string, any>;
       const mergedSettings = {
         ...currentSettings,
-        omni_page: input.document,
+        omni_page_draft: input.document,
       };
 
       // 2. Atualiza settings.omni_page e title no banco Supabase
@@ -66,7 +66,7 @@ export const saveOmniPageDocument = createServerFn({ method: "POST" })
 
       return {
         status: "ok" as const,
-        document: (updatedDoc.settings as any)?.omni_page as OmniPageDocument,
+        document: (updatedDoc.settings as any)?.omni_page_draft as OmniPageDocument,
         updated_at: updatedDoc.updated_at,
       };
     } catch (e: unknown) {
@@ -98,6 +98,7 @@ export const getOmniPageDocument = createServerFn({ method: "GET" })
         .from("experience_documents")
         .select("*")
         .eq("id", input.documentId)
+        .eq("store_id", identity.store_id)
         .maybeSingle();
 
       if (docError) throw docError;
@@ -106,9 +107,10 @@ export const getOmniPageDocument = createServerFn({ method: "GET" })
       const settings = (doc.settings || {}) as Record<string, any>;
       let omniDoc: OmniPageDocument;
 
-      // Se já existe omni_page salvo e válido
-      if (settings.omni_page) {
-        const parsed = OmniPageDocumentSchema.safeParse(settings.omni_page);
+      // O editor reabre o rascunho; o snapshot legado só é fallback de migração.
+      const draftSnapshot = settings.omni_page_draft ?? settings.omni_page;
+      if (draftSnapshot) {
+        const parsed = OmniPageDocumentSchema.safeParse(draftSnapshot);
         if (parsed.success) {
           omniDoc = parsed.data;
         } else {
@@ -191,9 +193,14 @@ export const publishOmniPageDocument = createServerFn({ method: "POST" })
       }
 
       const currentSettings = (currentDoc.settings || {}) as Record<string, any>;
+      const publishedAt = new Date().toISOString();
       const mergedSettings = {
         ...currentSettings,
-        omni_page: input.document,
+        omni_page_draft: input.document,
+        omni_page_published: {
+          ...input.document,
+          published_at: publishedAt,
+        },
       };
 
       // 2. Atualiza documento como ativo e publicado
@@ -214,7 +221,7 @@ export const publishOmniPageDocument = createServerFn({ method: "POST" })
 
       return {
         status: "ok" as const,
-        published_at: new Date().toISOString(),
+        published_at: publishedAt,
         public_url: `/paginas/${currentDoc.slug || input.document.slug}`,
       };
     } catch (e: unknown) {
