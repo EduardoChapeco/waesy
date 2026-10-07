@@ -31,6 +31,7 @@ import { DigitalFileDropzone } from "@/components/classifieds/digital-file-dropz
 import { CreateTypePicker } from "@/components/classifieds/create-type-picker";
 import { ClassifiedEditorNavigation } from "@/components/classifieds/classified-editor-navigation";
 import { ClassifiedMediaSection } from "@/components/classifieds/classified-media-section";
+import { ClassifiedBasicInfoSection } from "@/components/classifieds/classified-basic-info-section";
 import { ChoiceCard } from "@/components/ui/choice-card";
 import { SquircleCard } from "@/components/ui/squircle-card";
 import { CityCombobox, type StructuredLocationValue } from "@/components/ui/city-combobox";
@@ -3120,62 +3121,15 @@ function SpecializedClassifiedEditor({
               onUploadingStateChange={setIsUploadingMedia}
             />
             {/* Section 2: Informações Básicas (Design Silencioso V121) */}
-            <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60">
-              <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground pb-3 border-b border-border/40">
-                <FileText className="size-4 text-primary shrink-0" />
-                <span>2. Informações</span>
-              </div>
-
-            <div className="space-y-2">
-              <Label className="text-xs text-foreground font-medium">Título do Anúncio *</Label>
-              <Input
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder={
-                  niche.id === "hospedagem"
-                    ? "Ex: Chalé na Serra com Hidro e Vista Panorâmica"
-                    : niche.id === "imovel"
-                    ? "Ex: Apartamento 2 Quartos no Centro com Garagem"
-                    : niche.id === "veiculo"
-                    ? "Ex: Honda Civic 2.0 EXL Automático 2021"
-                    : niche.id === "servico"
-                    ? "Ex: Manutenção Elétrica Residencial & Comercial"
-                    : niche.id === "vaga"
-                    ? "Ex: Analista Financeiro Sênior (Híbrido)"
-                    : "Ex: iPhone 15 Pro Max 256GB Impecável na Caixa"
-                }
-                className="h-11 rounded-lg text-xs bg-background font-medium"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label className="text-xs text-foreground font-medium">Descrição Completa *</Label>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  disabled={isRefiningDescription}
-                  onClick={handleRefineDescriptionWithAI}
-                  className="h-11 min-h-11 px-3 text-xs text-muted-foreground/75 font-semibold text-primary hover:text-primary hover:bg-primary/10 gap-1 rounded-lg"
-                >
-                  <Star className="size-3" />
-                  {isRefiningDescription ? "Aprimorando..." : "Refinar com IA"}
-                </Button>
-              </div>
-              <Textarea
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                rows={4}
-                placeholder={
-                  niche.id === "hospedagem"
-                    ? "Descreva a atmosfera do espaço, comodidades, localização, distâncias de pontos turísticos e regras de convivência..."
-                    : "Descreva todos os detalhes, histórico, diferenciais e informações importantes..."
-                }
-                className="rounded-lg text-xs bg-background resize-none leading-relaxed"
-              />
-            </div>
-
+            <ClassifiedBasicInfoSection
+              nicheId={niche.id}
+              title={title}
+              description={description}
+              isRefiningDescription={isRefiningDescription}
+              onTitleChange={setTitle}
+              onDescriptionChange={setDescription}
+              onRefineDescription={handleRefineDescriptionWithAI}
+            >
             {/* Motor de Precificação Dinâmica & Avisos */}
             <div className="space-y-3 pt-1 border-t border-border/40">
               <div className="space-y-2">
@@ -3415,7 +3369,7 @@ function SpecializedClassifiedEditor({
                 )}
               </div>
             </div>
- </div>
+            </ClassifiedBasicInfoSection>
 
  {/* Seção 2: Especificações Técnicas do Anúncio */}
             {/* Viagens, Turismo & Resorts */}

@@ -60,3 +60,23 @@ Validação da onda:
 - Schema, SSOT, route budget e `git diff --check`: aprovados.
 
 A rota principal caiu para aproximadamente **8.936 linhas** após a extração. Próxima oportunidade: extrair a seção de informações básicas em subcomponentes menores, começando por campos comuns e mantendo campos especializados por nicho isolados até haver contratos de validação específicos.
+
+
+## Décima primeira onda — Informações Básicas e fronteira pronta para assistência do Copilot
+
+A moldura da seção `2. Informações` foi extraída para `src/components/classifieds/classified-basic-info-section.tsx`. O componente agora possui contrato explícito para nicho, título, descrição, refinamento assistido por IA, estados de refinamento e conteúdo especializado via `children`. A decisão de manter o bloco de precificação, validade, estoque e disclaimers dentro da rota foi intencional: essas regras ainda possuem comportamento específico de domínio e permanecem próximas do payload de publicação até a próxima cobertura de contrato.
+
+A nova fronteira já permite evoluir o Copilot de forma segura: sugestões de título/descrição podem ser injetadas por callbacks tipados, sem o componente visual conhecer provider, prompt ou persistência. Isso preserva a separação entre orquestração, evidência real e apresentação, alinhada ao SPEC-MASTER. O próximo passo de integração do Copilot deve usar uma operação estruturada com preview e aprovação antes de mutar o payload, não um fallback sintético.
+
+Validação final da onda:
+- Typecheck: passou.
+- Testes focados: **16/16 passaram**.
+- Suíte completa Vitest: **239 arquivos e 1.550 testes passaram**.
+- Build de produção: passou; worker Cloudflare e rotas gerados.
+- Client/server leak: passou com **492 chunks verificados**.
+- Design Lint direto nos quatro arquivos auditados: **0 achados**.
+- Auditoria interativa: **19/19 testes passaram**.
+- Grafo de dependências: **0 ciclos**.
+- Schema, SSOT, route budget e `git diff --check`: aprovados.
+
+A rota principal caiu para aproximadamente **8.890 linhas**. A próxima melhoria recomendada é extrair a localização comum e, em seguida, criar uma camada de comando/preview para o refinamento assistido pelo Copilot, com payload versionado, evidência da sugestão e aprovação humana antes da publicação.
