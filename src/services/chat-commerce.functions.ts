@@ -181,6 +181,17 @@ export interface ChatOrderTrackingDTO {
   }>;
 }
 
+export function canReadChatOrderTracking(
+  order: { customer_id?: string | null; store_id?: string | null },
+  identity: { id?: string | null; customer_id?: string | null; store_id?: string | null; role?: string } | null,
+): boolean {
+  return Boolean(identity?.id)
+    && (order.customer_id === identity?.customer_id
+      || (Boolean(order.store_id)
+        && order.store_id === identity?.store_id
+        && ["owner", "admin", "manager", "seller", "support"].includes(String(identity?.role || ""))));
+}
+
 export interface ChatBookingServiceDTO {
   id: string;
   title: string;
@@ -566,7 +577,7 @@ export const getChatOrderTracking = createServerFn({ method: "GET" })
     let orderQuery = db
       .from("orders")
       .select(
-        "id, order_number, public_token, status, total_cents, subtotal_cents, shipping_cents, shipping_address, customer_snapshot, order_items(id)",
+        "id, order_number, public_token, status, total_cents, subtotal_cents, shipping_cents, shipping_address, customer_snapshot, customer_id, store_id, order_items(id)",
       );
 
     const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(data.orderId);
@@ -579,6 +590,11 @@ export const getChatOrderTracking = createServerFn({ method: "GET" })
     const { data: order, error: orderErr } = await orderQuery.maybeSingle();
     if (orderErr || order === null || order === undefined) {
       throw new Error("Pedido não encontrado");
+    }
+
+    if (isUuid) {
+      const identity = await getServerIdentity().catch(() => null);
+      if (!canReadChatOrderTracking(order, identity)) throw new Error("Você não tem permissão para consultar este pedido.");
     }
 
     // 2. Buscar Linha do Tempo Real do Pedido (order_events)

@@ -96,6 +96,10 @@ export const createContract = createServerFn({ method: "POST" })
     const identity = await getIdentity();
     if (!identity?.id) throw new Error("Não autenticado");
 
+    if (input.storeId && input.storeId !== (identity as any).store_id) {
+      throw new Error("A loja informada não pertence ao seu tenant ativo.");
+    }
+
     const isKycVerified = await assertUserKycVerified(identity.id);
     if (!isKycVerified) {
       throw new Error(
@@ -263,6 +267,19 @@ export const sealAndIssueContract = createServerFn({ method: "POST" })
     const supabase = getServerClient();
     const identity = await getIdentity();
     if (!identity?.id) throw new Error("Não autenticado");
+
+    const { data: contract, error: contractErr } = await supabase
+      .from("contracts")
+      .select("id, creator_id, store_id, status")
+      .eq("id", input.contractId)
+      .maybeSingle();
+    if (contractErr || !contract) throw new Error("Contrato não encontrado.");
+    const canSeal = contract.creator_id === identity.id
+      || (Boolean(contract.store_id)
+        && contract.store_id === (identity as any).store_id
+        && ["owner", "admin", "manager"].includes(String((identity as any).role || "")));
+    if (!canSeal) throw new Error("Você não tem permissão para selar este contrato.");
+    if (contract.status !== "draft") throw new Error("Somente contratos em rascunho podem ser selados.");
 
     // Fetch version
     const { data: version, error: vErr } = await supabase
@@ -1489,5 +1506,3 @@ export const generateContractDocument = createServerFn({ method: "POST" })
       generatedAt: new Date().toISOString(),
     };
   });
-
-

@@ -404,33 +404,7 @@ export function resolveAiPipelineSteps(
       tokensUsed: 140,
     });
 
-    structuredPayload = {
-      blocks: [
-        {
-          type: "commerce_order_tracking",
-          data: {
-            orderId: crypto.randomUUID(),
-            orderNumber: "WSY-BR-9842",
-            status: "dispatched",
-            totalCents: 14500,
-            itemsCount: 2,
-            deliveryAddress: "Rua Duque de Caxias, Centro",
-            courier: {
-              name: "MotoLink Express",
-              phone: "49999999999",
-              vehiclePlate: "BRA-2E19",
-            },
-            timeline: [
-              { stage: "received", label: "Pedido Recebido", completedAt: new Date(Date.now() - 3600000).toISOString() },
-              { stage: "preparing", label: "Em Separação", completedAt: new Date(Date.now() - 1800000).toISOString() },
-              { stage: "dispatched", label: "Em Rota com Entregador", completedAt: new Date().toISOString() },
-            ],
-          },
-        },
-      ],
-    };
-
-    responseMessage = "Consultei a linha do tempo do seu pedido na base de dados soberana. O status atual e histórico de eventos estão exibidos no bloco de rastreio:";
+    responseMessage = "Para consultar o rastreio real, informe o número do pedido ou o token público de entrega. Não vou exibir status, endereço ou entregador sem localizar um registro confirmado.";
     updatedMemory.last_tracking_query = new Date().toISOString();
     updatedMemory.last_interaction_topic = userPrompt.slice(0, 40);
   }
@@ -1947,7 +1921,8 @@ export const sendAiConversationMessage = createServerFn({ method: "POST" })
         is_staff_reply: true,
         message: execution.responseMessage,
         message_type: messageType,
-      payload: {
+        attachments: [],
+        payload: {
           executionId: execution.executionId,
           activitySteps: execution.activitySteps,
           toolCalls: execution.toolCalls || [],
@@ -1955,15 +1930,21 @@ export const sendAiConversationMessage = createServerFn({ method: "POST" })
           structuredBlocks: execution.structuredPayload,
           clientMessageId: data.clientMessageId || null,
           userMessageId: userMsg.id,
+          replyToId: data.replyToId || null,
           fsmPhase: execution.fsmPhase,
           fsmState: execution.fsmState,
         },
-        status: "delivered",
+        status: execution.fsmPhase === "FAILED_RETRYABLE" || execution.fsmPhase === "FAILED_FINAL" ? "failed" : "delivered",
       })
       .select("id, created_at")
       .single();
 
     if (aiMsgErr) {
+      await db.from("chat_messages").update({
+        status: "failed",
+        failed_at: new Date().toISOString(),
+        error_message: "Falha ao registrar resposta do Copilot",
+      }).eq("id", userMsg.id);
       throw new Error(`Falha ao registrar resposta do Copilot: ${aiMsgErr.message}`);
     }
 
@@ -2205,31 +2186,54 @@ const chatActionSchema = z.object({
   payload: z.record(z.any()).default({}),
 });
 
-export const dispatchAiChatAction = createServerFn({ method: "POST" })
-  .validator(chatActionSchema)
-  .handler(async ({ data }) => {
-    const identity = await getServerIdentity().catch(() => null);
-    if (!identity?.id) throw new Error("Faça login para executar esta ação");
+const reviewChatActionSchema = z.object({
+  approvalId: z.string().uuid(),
+  decision: z.enum(["approve", "reject"]),
+  reason: z.string().trim().max(500).optional(),
+});
 
-    switch (data.action_type) {
+const HIGH_IMPACT_CHAT_ACTIONS = new Set([
+  "request_travel_quote",
+  "submit_legal_demand",
+  "publish_ad",
+]);
+
+type ChatActionType = z.infer<typeof chatActionSchema>["action_type"];
+type ChatActionPayload = Record<string, any>;
+
+export function isHighImpactChatAction(actionType: ChatActionType): boolean {
+  return HIGH_IMPACT_CHAT_ACTIONS.has(actionType);
+}
+
+export function approvalIdempotencyKey(actionType: ChatActionType, payload: ChatActionPayload): string {
+  const normalized = JSON.stringify(payload, Object.keys(payload).sort()).slice(0, 12000);
+  return `${actionType}:${normalized}`;
+}
+
+async function executeApprovedChatAction(
+  identity: NonNullable<Awaited<ReturnType<typeof getServerIdentity>>>,
+  actionType: ChatActionType,
+  payload: ChatActionPayload,
+) {
+    switch (actionType) {
       case "add_to_cart": {
-        const productId = data.payload.productId || data.payload.product_id || data.payload.id;
+        const productId = payload.productId || payload.product_id || payload.id;
         if (typeof productId !== "string" || !productId) throw new Error("Produto não identificado");
         const { addToCart } = await import("./cart.functions");
-        return await addToCart({ data: { productId, quantity: Math.max(1, Number(data.payload.quantity) || 1) } });
+        return await addToCart({ data: { productId, quantity: Math.max(1, Number(payload.quantity) || 1) } });
       }
       case "request_travel_quote": {
         const { requestTravelQuote } = await import("./tourism.functions");
-        const destination = String(data.payload.destination || "").trim();
-        const origin = String(data.payload.origin_city || "").trim();
+        const destination = String(payload.destination || "").trim();
+        const origin = String(payload.origin_city || "").trim();
         const contactName = String(identity.fullName || identity.name || "").trim();
         const contactEmail = String(identity.email || "").trim();
         if (!origin || !destination || !contactName || !contactEmail) throw new Error("Origem, destino e dados de contato são obrigatórios");
         return await requestTravelQuote({ data: {
           origin_city: origin,
           destination_city: destination,
-          rooms_count: Math.max(1, Number(data.payload.rooms_count) || 1),
-          adults_count: Math.max(1, Number(data.payload.passengers_count) || 1),
+          rooms_count: Math.max(1, Number(payload.rooms_count) || 1),
+          adults_count: Math.max(1, Number(payload.passengers_count) || 1),
           children_count: 0,
           children_ages: [],
           trip_type: "air_package",
@@ -2237,31 +2241,116 @@ export const dispatchAiChatAction = createServerFn({ method: "POST" })
           contact_name: contactName,
           contact_whatsapp: String(identity.email || ""),
           contact_email: contactEmail,
-          special_notes: typeof data.payload.notes === "string" ? data.payload.notes : undefined,
+          special_notes: typeof payload.notes === "string" ? payload.notes : undefined,
         } });
       }
       case "submit_legal_demand": {
         const { createJusDemand } = await import("./jus.functions");
-        const title = String(data.payload.title || "").trim();
-        const description = String(data.payload.description || "").trim();
+        const title = String(payload.title || "").trim();
+        const description = String(payload.description || "").trim();
         if (title.length < 3 || description.length < 10) throw new Error("Título e descrição completos são obrigatórios");
         return await createJusDemand({ data: {
           title,
-          legal_area: String(data.payload.legal_area || "Direito Cível"),
+          legal_area: String(payload.legal_area || "Direito Cível"),
           description,
-          urgency: ["low", "normal", "high", "urgent"].includes(data.payload.urgency) ? data.payload.urgency : "normal",
-          city: typeof data.payload.city === "string" ? data.payload.city : undefined,
-          state: typeof data.payload.state === "string" ? data.payload.state : undefined,
+          urgency: ["low", "normal", "high", "urgent"].includes(payload.urgency) ? payload.urgency : "normal",
+          city: typeof payload.city === "string" ? payload.city : undefined,
+          state: typeof payload.state === "string" ? payload.state : undefined,
           documents: [],
           is_anonymous: false,
         } });
       }
       case "publish_ad": {
         const { upsertClassified } = await import("./classifieds.functions");
-        const title = String(data.payload.headline || "").trim();
-        const content = String(data.payload.body_text || "").trim();
+        const title = String(payload.headline || "").trim();
+        const content = String(payload.body_text || "").trim();
         if (title.length < 3 || content.length < 10) throw new Error("Título e descrição completos são obrigatórios");
-        return await upsertClassified({ data: { title, category: "sale", content, price_cents: Number(data.payload.price_cents) || 0 } });
+        return await upsertClassified({ data: { title, category: "sale", content, price_cents: Number(payload.price_cents) || 0 } });
       }
+    }
+}
+
+export const dispatchAiChatAction = createServerFn({ method: "POST" })
+  .validator(chatActionSchema)
+  .handler(async ({ data }) => {
+    const identity = await getServerIdentity().catch(() => null);
+    if (!identity?.id) throw new Error("Faça login para executar esta ação");
+
+    if (!isHighImpactChatAction(data.action_type)) {
+      return executeApprovedChatAction(identity, data.action_type, data.payload);
+    }
+
+    const db = getServerClient();
+    const idempotencyKey = approvalIdempotencyKey(data.action_type, data.payload);
+    const { data: inserted, error: insertError } = await db
+      .from("copilot_action_approvals")
+      .insert({
+        user_id: identity.id,
+        store_id: identity.store_id || null,
+        action_type: data.action_type,
+        payload: data.payload,
+        idempotency_key: idempotencyKey,
+      })
+      .select("id, status, expires_at")
+      .maybeSingle();
+
+    if (insertError?.code === "23505") {
+      const { data: existing } = await db
+        .from("copilot_action_approvals")
+        .select("id, status, expires_at")
+        .eq("user_id", identity.id)
+        .eq("idempotency_key", idempotencyKey)
+        .maybeSingle();
+      if (existing?.status === "approved") throw new Error("Esta ação já foi aprovada e executada.");
+      if (existing?.status === "rejected") throw new Error("Esta ação já foi rejeitada.");
+      return { status: "needs_approval" as const, approvalId: existing?.id, expiresAt: existing?.expires_at };
+    }
+    if (insertError || !inserted) throw new Error("Não foi possível registrar a aprovação humana");
+
+    return { status: "needs_approval" as const, approvalId: inserted.id, expiresAt: inserted.expires_at };
+  });
+
+export const reviewAiChatAction = createServerFn({ method: "POST" })
+  .validator(reviewChatActionSchema)
+  .handler(async ({ data }) => {
+    const identity = await getServerIdentity().catch(() => null);
+    if (!identity?.id) throw new Error("Faça login para revisar esta ação");
+    const db = getServerClient();
+    const { data: approval, error } = await db
+      .from("copilot_action_approvals")
+      .select("*")
+      .eq("id", data.approvalId)
+      .maybeSingle();
+    if (error || !approval) throw new Error("Solicitação de aprovação não encontrada");
+    const canReview = approval.user_id === identity.id
+      || (Boolean(approval.store_id) && approval.store_id === identity.store_id && ["owner", "admin", "manager"].includes(String(identity.role || "")));
+    if (!canReview) throw new Error("Você não tem permissão para revisar esta ação");
+    if (approval.expires_at && new Date(approval.expires_at).getTime() <= Date.now()) {
+      await db.from("copilot_action_approvals").update({ status: "expired" }).eq("id", approval.id).eq("status", "pending");
+      throw new Error("A solicitação de aprovação expirou");
+    }
+    if (approval.status === "approved") return { status: "approved" as const, result: approval.result };
+    if (approval.status !== "pending") throw new Error(`A solicitação já está ${approval.status}`);
+    if (data.decision === "reject") {
+      await db.from("copilot_action_approvals").update({ status: "rejected", reviewed_at: new Date().toISOString(), reviewed_by: identity.id, result: { reason: data.reason || null } }).eq("id", approval.id).eq("status", "pending");
+      return { status: "rejected" as const, approvalId: approval.id };
+    }
+
+    const { data: claimed } = await db
+      .from("copilot_action_approvals")
+      .update({ status: "approved", reviewed_at: new Date().toISOString(), reviewed_by: identity.id })
+      .eq("id", approval.id)
+      .eq("status", "pending")
+      .select("id")
+      .maybeSingle();
+    if (!claimed) throw new Error("Esta aprovação já está sendo processada");
+
+    try {
+      const result = await executeApprovedChatAction(identity, approval.action_type as ChatActionType, approval.payload as ChatActionPayload);
+      await db.from("copilot_action_approvals").update({ result }).eq("id", approval.id);
+      return { status: "approved" as const, approvalId: approval.id, result };
+    } catch (executionError) {
+      await db.from("copilot_action_approvals").update({ status: "failed", result: { error: String(executionError instanceof Error ? executionError.message : executionError).slice(0, 500) } }).eq("id", approval.id);
+      throw executionError;
     }
   });

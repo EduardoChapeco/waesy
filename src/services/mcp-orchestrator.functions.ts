@@ -295,7 +295,9 @@ export const approveCampaignDraft = createServerFn({ method: "POST" })
           platform: input.platform,
         },
       });
-    } catch {}
+    } catch (auditError) {
+      console.error("[mcp-orchestrator] Falha ao registrar auditoria da campanha aprovada:", auditError);
+    }
 
     return {
       success: true,

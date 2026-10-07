@@ -56,6 +56,19 @@ export const CreateQuickOrderSchema = z.object({
 
 export type CreateQuickOrderInput = z.infer<typeof CreateQuickOrderSchema>;
 
+export function validateQuickOrderArithmetic(input: Pick<CreateQuickOrderInput, "items" | "subtotalCents">): void {
+  const itemsSubtotalCents = input.items.reduce((sum, item) => {
+    const expectedItemTotal = item.quantity * item.unitPriceCents;
+    if (item.totalCents !== expectedItemTotal) {
+      throw new Error(`Total inconsistente no item "${item.title}".`);
+    }
+    return sum + expectedItemTotal;
+  }, 0);
+  if (itemsSubtotalCents !== input.subtotalCents) {
+    throw new Error("O subtotal informado não corresponde aos itens do pedido.");
+  }
+}
+
 export interface QuickOrderResult {
   status: "success" | "error";
   orderId?: string;
@@ -147,6 +160,8 @@ export const createQuickOrder = createServerFn({ method: "POST" })
         ripeness: item.ripeness || null,
       }));
 
+      validateQuickOrderArithmetic(input);
+
       const customerSnapshot = {
         name: input.customerName.trim(),
         phone: input.customerPhone.trim(),
@@ -232,9 +247,22 @@ export const createQuickOrder = createServerFn({ method: "POST" })
           },
         }));
 
-        await db.from("order_items").insert(orderItemsPayload);
+        const { error: itemsError } = await db.from("order_items").insert(orderItemsPayload);
+        if (itemsError) {
+          await db.from("orders").delete().eq("id", orderId);
+          console.error("[quick-order] Falha ao gravar order_items; pedido removido para evitar órfão:", itemsError);
+          return {
+            status: "error",
+            message: "Não foi possível concluir o pedido porque os itens não foram persistidos.",
+          };
+        }
       } catch (itemsErr) {
-        console.warn("[quick-order] Aviso não-fatal ao gravar order_items:", itemsErr);
+        await db.from("orders").delete().eq("id", orderId);
+        console.error("[quick-order] Exceção ao gravar order_items; pedido removido:", itemsErr);
+        return {
+          status: "error",
+          message: "Não foi possível concluir o pedido porque os itens não foram persistidos.",
+        };
       }
 
       // 6. Construção da Mensagem Humana e Calorosa para WhatsApp (The WhatsApp Concierge)

@@ -43,9 +43,11 @@ async function requirePlatformAdmin() {
  ];
 
  if (email && MASTER_EMAILS.includes(email)) {
- try {
- await db.from("profiles").update({ role: "platform_admin" }).eq("id", identity.id);
- } catch {}
+ const { error: promotionError } = await db.from("profiles").update({ role: "platform_admin" }).eq("id", identity.id);
+ if (promotionError) {
+ console.error("[master] Falha ao persistir promoção para platform_admin:", promotionError);
+ throw new Error("Não foi possível confirmar a autorização administrativa.");
+ }
  return { ...identity, role: "platform_admin" };
  }
 
