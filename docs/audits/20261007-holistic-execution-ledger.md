@@ -46,3 +46,11 @@
 - Findings abertos/bloqueados: W1 governança; todas as ondas W2–W17 aguardam execução ordenada.
 - Paths alterados nesta fase: documentação de auditoria e pacote metodológico; nenhum runtime alterado.
 - Revisão adversarial: pendente após cada microfase; não declarar produção antes de CI, provider e smoke público.
+
+
+## W2 — Segurança e advisories (execução delta)
+
+- Preflight: branch `execute/w2-security-advisories`, base `origin/main` em `75b7177f`; worktree limpa; scope: `docs/specs/SPEC-W2-SECURITY-ADVISORIES.md`, migration `20270113000000_security_advisory_remediation.sql` e este ledger.
+- Baseline runtime: 24 tabelas com RLS sem policy; `unified_listings_view` security definer; `dispatch_mining_cron` e `touch_document_artifact` com search_path mutável; 53 RPCs security-definer executáveis por anon; 509 FKs sem índices.
+- Decisão: fechar primeiro os findings determinísticos de segurança P0/P1 com deny-by-default e sem tocar no contrato público de checkout/telemetry; a indexação de FKs fica para W3/PERF após plano gerado a partir do catálogo real.
+- Migration: criada localmente; não aplicada diretamente em produção nesta sessão, conforme o protocolo de integridade. Nenhum finding é declarado fechado antes da evidência pós-migration.
