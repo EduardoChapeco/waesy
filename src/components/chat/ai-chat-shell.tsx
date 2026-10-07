@@ -59,6 +59,7 @@ export interface ChatThreadItem {
 export interface ChatMessageItem {
   id: string;
   threadId: string;
+  clientMessageId?: string;
   executionId?: string;
   senderId?: string;
   senderName: string;

@@ -144,11 +144,11 @@ function CopilotPage() {
     }
   }, [activeThreadId]);
 
-  const handleSendMessage = async (text: string, attachments: string[] = [], replyToId?: string) => {
+  const handleSendMessage = async (text: string, attachments: string[] = [], replyToId?: string, stableClientMessageId?: string) => {
     if (!text.trim() || isSending) return;
 
     const userMessageItem: ChatMessageItem = {
-      id: typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `00000000-0000-0000-0000-${Date.now().toString().slice(-12).padStart(12, "0")}`,
+      id: stableClientMessageId || (typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `00000000-0000-0000-0000-${Date.now().toString().slice(-12).padStart(12, "0")}`),
       threadId: activeThreadId,
       senderName: (session as any)?.user?.user_metadata?.full_name || (session as any)?.user_metadata?.full_name || "Você",
       isStaffOrAI: false,
@@ -244,7 +244,11 @@ function CopilotPage() {
 
   const handleRetryMessage = (messageId: string) => {
     const failed = messages.find((message) => message.id === messageId);
-    if (failed?.text) void handleSendMessage(failed.text, failed.attachments || undefined, failed.replyTo?.id);
+    if (failed?.text) {
+      // Preserve the original UUID so the BFF replays the persisted result.
+      const stableClientMessageId = (failed as ChatMessageItem).clientMessageId || failed.id;
+      void handleSendMessage(failed.text, failed.attachments || undefined, failed.replyTo?.id, stableClientMessageId);
+    }
   };
 
   const handleCancelActiveRun = () => {

@@ -69,3 +69,16 @@
 - Inventário local: 468 ficheiros de migration; colisões de prefixo em `20270106000000`, `20270107000000` e `20270109000000`.
 - Estado: finding aberto; não renomear nem reordenar histórico aplicado sem Postgres efémero e replay completo.
 - Evidência: `docs/audits/W3_SCHEMA_DRIFT.md`.
+
+
+## W2 — Aplicação e validação em produção
+
+- Migration `security_advisory_remediation_w2` aplicada com sucesso no projeto Supabase `jfuebqmltksyznovhlwa`.
+- Evidência pós-aplicação: `policyless_rls=0`, `w2_policies=24`, `search_path_mutable=0`, `invoker_view=1`, `public_execute_restricted=0`.
+- Advisories remanescentes: extensões `pg_trgm`/`btree_gist` em `public` e 50 funções SECURITY DEFINER ainda executáveis por `anon`; são contratos públicos/legados e ficam para uma matriz dedicada, não foram revogados por inferência.
+
+## W4 — Persistência e idempotência do Copilot
+
+- Finding alvo: retry gerava novo UUID, inseria outra mensagem e podia executar IA/cobrança novamente; o BFF não fazia replay da resposta persistida.
+- Ação na branch `execute/w4-persistence-idempotency`: retry reutiliza a chave original; BFF procura `(thread_id, client_message_id, sender_id)` antes do pipeline; resposta persistida inclui a chave e o ID da mensagem de origem; mensagens falhadas podem ser reabertas sem novo registo.
+- Estado: implementação local passou typecheck, testes e build; aguarda revisão de diff e gates remotos. Nenhum finding W4 é declarado fechado antes do CI/Cloudflare.

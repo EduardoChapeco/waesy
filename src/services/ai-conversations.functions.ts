@@ -105,6 +105,24 @@ function assertAiStoreTarget(storeId: string | null | undefined, identity: Await
   if (!allowed) throw new Error("A loja informada não pertence ao contexto do usuário");
 }
 
+function mapPersistedAiMessage(row: any, threadId: string) {
+  const payload = row?.payload || {};
+  return {
+    id: row.id,
+    threadId,
+    executionId: payload.executionId,
+    text: row.message,
+    activitySteps: payload.activitySteps || [],
+    artifact: payload.artifact || null,
+    structuredPayload: payload.structuredBlocks || null,
+    createdAt: row.created_at,
+    status: row.status || "delivered",
+    fsmPhase: payload.fsmPhase,
+    fsmState: payload.fsmState,
+    toolCalls: payload.toolCalls || [],
+  };
+}
+
 export const toggleThreadPinnedSchema = z.object({
   threadId: z.string().uuid(),
   isPinned: z.boolean(),
@@ -1702,6 +1720,7 @@ export const getAiConversationThread = createServerFn({ method: "GET" })
       messages: (messages || []).map((m: any) => ({
         id: m.id,
         threadId: m.thread_id,
+        clientMessageId: m.client_message_id || undefined,
         executionId: m.payload?.executionId,
         senderId: m.sender_id,
         isStaffOrAI: Boolean(m.is_staff_reply),
@@ -1746,24 +1765,76 @@ export const sendAiConversationMessage = createServerFn({ method: "POST" })
     }
     assertAiThreadAccess(thread, identity);
 
-    // 2. Inserir mensagem do usuário
-    const { data: userMsg, error: userMsgErr } = await db
-      .from("chat_messages")
-      .insert({
-        thread_id: data.threadId,
-        client_message_id: data.clientMessageId || null,
-        sender_id: identity.id,
-        is_staff_reply: false,
-        message: data.message,
-        message_type: "text",
-        attachments: data.attachments || [],
-        status: "sending",
-      })
-      .select("id, created_at")
-      .single();
+    // 2. Inserir ou recuperar a mensagem do usuário por chave estável.
+    // A constraint (thread_id, client_message_id) é a última barreira contra
+    // retries concorrentes; o lookup anterior permite devolver o resultado já
+    // persistido sem executar o pipeline/consumir tokens novamente.
+    let userMsg: { id: string; created_at: string } | null = null;
+    if (data.clientMessageId) {
+      const { data: existingUser } = await db
+        .from("chat_messages")
+        .select("id, created_at, status, message, payload")
+        .eq("thread_id", data.threadId)
+        .eq("client_message_id", data.clientMessageId)
+        .eq("sender_id", identity.id)
+        .eq("is_staff_reply", false)
+        .maybeSingle();
 
-    if (userMsgErr || Boolean(userMsg) === false) {
-      throw new Error("Falha ao registrar mensagem do usuário");
+      if (existingUser) {
+        const { data: existingAi } = await db
+          .from("chat_messages")
+          .select("id, created_at, message, payload, status")
+          .eq("thread_id", data.threadId)
+          .eq("is_staff_reply", true)
+          .contains("payload", { clientMessageId: data.clientMessageId })
+          .order("created_at", { ascending: true })
+          .limit(1)
+          .maybeSingle();
+
+        if (existingAi) {
+          return {
+            userMessageId: existingUser.id,
+            aiMessage: mapPersistedAiMessage(existingAi, data.threadId),
+            updatedWorkingMemory: thread.working_memory || {},
+          };
+        }
+
+        if (existingUser.status === "sending") {
+          throw new Error("Mensagem já está em processamento; aguarde a resposta persistida.");
+        }
+
+        const { error: resetError } = await db
+          .from("chat_messages")
+          .update({ status: "sending", failed_at: null, error_message: null })
+          .eq("id", existingUser.id);
+        if (resetError) throw new Error("Falha ao reabrir mensagem para retry");
+        userMsg = { id: existingUser.id, created_at: existingUser.created_at };
+      }
+    }
+
+    if (!userMsg) {
+      const { data: insertedUser, error: userMsgErr } = await db
+        .from("chat_messages")
+        .insert({
+          thread_id: data.threadId,
+          client_message_id: data.clientMessageId || null,
+          sender_id: identity.id,
+          is_staff_reply: false,
+          message: data.message,
+          message_type: "text",
+          attachments: data.attachments || [],
+          status: "sending",
+        })
+        .select("id, created_at")
+        .single();
+
+      if (userMsgErr || Boolean(insertedUser) === false) {
+        if (data.clientMessageId && userMsgErr?.code === "23505") {
+          throw new Error("Mensagem duplicada em processamento; repita o pedido para recuperar o resultado.");
+        }
+        throw new Error("Falha ao registrar mensagem do usuário");
+      }
+      userMsg = insertedUser;
     }
 
     // 3. Execução do pipeline de IA ReAct com chamada de ferramentas reais (com Error Boundary)
@@ -1845,6 +1916,8 @@ export const sendAiConversationMessage = createServerFn({ method: "POST" })
           toolCalls: execution.toolCalls || [],
           artifact: execution.artifact,
           structuredBlocks: execution.structuredPayload,
+          clientMessageId: data.clientMessageId || null,
+          userMessageId: userMsg.id,
           fsmPhase: execution.fsmPhase,
           fsmState: execution.fsmState,
         },
