@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
+import { requireStaff } from "@/lib/server-access";
 import { getIdentity } from "./identity.functions";
 import { executeUnifiedAiCall } from "./api-orchestrator.functions";
 import { interpolateContractVariables, autoPositionSignatureFieldsFromContent } from "@/lib/contracts/contract-semantic-dictionary";
@@ -93,8 +94,10 @@ export const createContract = createServerFn({ method: "POST" })
   )
   .handler(async ({ data: input }) => {
     const supabase = getServerClient();
-    const identity = await getIdentity();
-    if (!identity?.id) throw new Error("Não autenticado");
+    const identity = await requireStaff();
+    if (input.storeId && input.storeId !== identity.store_id) {
+      throw new Error("A loja do contrato não corresponde ao tenant autenticado.");
+    }
 
     const isKycVerified = await assertUserKycVerified(identity.id);
     if (!isKycVerified) {
@@ -117,7 +120,7 @@ export const createContract = createServerFn({ method: "POST" })
       .from("contracts")
       .insert({
         deal_id: input.dealId || null,
-        store_id: input.storeId || (identity as any).store_id || null,
+        store_id: identity.store_id,
         entity_type: input.entityType || null,
         entity_id: input.entityId || null,
         folder_id: input.folderId || null,

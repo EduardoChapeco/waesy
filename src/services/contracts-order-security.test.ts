@@ -28,4 +28,16 @@ describe("order contract authorization boundary", () => {
     expect(source).toContain("const { publicToken } = Route.useParams();");
     expect(source).toContain("publicToken } });");
   });
+
+  it("anchors manual contract creation to staff tenant identity", async () => {
+    const source = await readFile(new URL("./contracts.functions.ts", import.meta.url), "utf8");
+    const handler = source.indexOf("export const createContract");
+    const guard = source.indexOf("const identity = await requireStaff();", handler);
+    const mismatch = source.indexOf("input.storeId !== identity.store_id", guard);
+    const insert = source.indexOf("store_id: identity.store_id", mismatch);
+    expect(handler).toBeGreaterThan(-1);
+    expect(guard).toBeGreaterThan(handler);
+    expect(mismatch).toBeGreaterThan(guard);
+    expect(insert).toBeGreaterThan(mismatch);
+  });
 });
