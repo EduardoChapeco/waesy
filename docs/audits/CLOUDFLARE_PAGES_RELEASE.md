@@ -77,3 +77,5 @@ Correção aplicada no branch:
 - `npm ci`, `npm run typecheck`, `npm test` e `npm run build` passaram localmente após a remoção.
 
 Assim, o provider deve selecionar npm e reproduzir o mesmo grafo de dependências validado pelo gate `5 Quality Gates`.
+
+O preview seguinte confirmou que o Pages selecionava `pnpm install` porque `pnpm-lock.yaml` também estava presente, mesmo com `bun.lock` removido. Esse grafo instalava versões diferentes das validadas pelo CI e o build terminava em failure durante o empacotamento. O `pnpm-lock.yaml` foi removido; o repositório fica agora com `package-lock.json` como único lockfile, e os quatro gates locais continuam verdes.
