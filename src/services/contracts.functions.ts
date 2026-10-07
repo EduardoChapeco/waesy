@@ -1014,22 +1014,36 @@ export const generateContractFromOrder = createServerFn({ method: "POST" })
     z.object({
       orderId: z.string().uuid(),
       templateTitle: z.string().optional(),
+      publicToken: z.string().trim().min(16).max(200).optional(),
     }),
   )
   .handler(async ({ data: input }) => {
     const supabase = getServerClient();
-    const { data: order, error } = await supabase
+    const identity = await getIdentity().catch(() => null);
+    let orderQuery = supabase
       .from("orders")
       .select(`
         id, public_token, total_cents, customer_snapshot, items_snapshot, store_id,
         store:store_id (name, slug)
       `)
-      .eq("id", input.orderId)
-      .single();
+      .eq("id", input.orderId);
+
+    if (input.publicToken) {
+      orderQuery = orderQuery.eq("public_token", input.publicToken);
+    }
+
+    const { data: order, error } = await orderQuery.single();
 
     if (error || !order) throw new Error("Pedido não encontrado.");
 
     const customer = (order.customer_snapshot as Record<string, any>) || {};
+    const isPublicOrderAccess = Boolean(input.publicToken);
+    const isTenantStaff = identity?.store_id === order.store_id;
+    const isOrderCustomer = identity?.id && identity.id === customer.profile_id;
+    if (!isPublicOrderAccess && !isTenantStaff && !isOrderCustomer) {
+      throw new Error("Você não tem permissão para gerar contrato deste pedido.");
+    }
+
     const clientName = customer.name || "Cliente";
     const clientCpf = customer.cpf || customer.document || "";
     const clientPhone = customer.phone || "";
@@ -1090,7 +1104,7 @@ Data de emissão: {{data_extenso}}`;
     const { data: contract, error: cErr } = await supabase
       .from("contracts")
       .insert({
-        creator_id: customer.profile_id || "00000000-0000-0000-0000-000000000000",
+        creator_id: identity?.id || customer.profile_id || "00000000-0000-0000-0000-000000000000",
         store_id: order.store_id,
         order_id: order.id,
         title,
@@ -1489,5 +1503,4 @@ export const generateContractDocument = createServerFn({ method: "POST" })
       generatedAt: new Date().toISOString(),
     };
   });
-
 
