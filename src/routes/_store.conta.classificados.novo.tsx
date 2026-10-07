@@ -32,6 +32,7 @@ import { CreateTypePicker } from "@/components/classifieds/create-type-picker";
 import { ClassifiedEditorNavigation } from "@/components/classifieds/classified-editor-navigation";
 import { ClassifiedMediaSection } from "@/components/classifieds/classified-media-section";
 import { ClassifiedBasicInfoSection } from "@/components/classifieds/classified-basic-info-section";
+import { ClassifiedLocationSection } from "@/components/classifieds/classified-location-section";
 import { ChoiceCard } from "@/components/ui/choice-card";
 import { SquircleCard } from "@/components/ui/squircle-card";
 import { CityCombobox, type StructuredLocationValue } from "@/components/ui/city-combobox";
@@ -47,7 +48,12 @@ import { CANONICAL_EDUCATION_LEVELS, CANONICAL_EXPERIENCE_LEVELS, CANONICAL_JOB_
 // (ChevronDown, ChevronUp merged into main lucide import above)
 import { resolveClassifiedNiche } from "@/lib/classifieds/semantics";
 import { z } from "zod";
-import type { ClassifiedNicheType, NicheDefinition } from "@/types/classified-editor";
+import {
+  computeClassifiedRefinementBaseHash,
+  type ClassifiedNicheType,
+  type ClassifiedRefinementEvidence,
+  type NicheDefinition,
+} from "@/types/classified-editor";
 
 
 const ClassifiedSearchSchema = z.object({
@@ -628,6 +634,9 @@ function SpecializedClassifiedEditor({
    initialData?.content || initialData?.description || ""
  );
  const [isRefiningDescription, setIsRefiningDescription] = useState(false);
+ const [refinementPreview, setRefinementPreview] = useState<ClassifiedRefinementEvidence | null>(null);
+ const [appliedRefinementEvidence, setAppliedRefinementEvidence] = useState<ClassifiedRefinementEvidence | null>(null);
+ const [refinementVersion, setRefinementVersion] = useState(0);
 
  const handleRefineDescriptionWithAI = async () => {
    if (!title.trim() && !description.trim()) {
@@ -645,17 +654,46 @@ function SpecializedClassifiedEditor({
        },
      });
      if (res.success) {
-       if (res.title) setTitle(res.title);
-       if (res.description) setDescription(res.description);
-       toast.success("Título e descrição aprimorados com sucesso!", { id: "ai-refine" });
+       const suggestion = {
+         title: res.title?.trim() || title.trim(),
+         description: res.description?.trim() || description.trim(),
+         suggestedTags: Array.isArray(res.suggestedTags) ? res.suggestedTags : [],
+       };
+       const nextVersion = refinementVersion + 1;
+       setRefinementVersion(nextVersion);
+       setRefinementPreview({
+         version: nextVersion,
+         source: "unified_ai",
+         generatedAt: new Date().toISOString(),
+         baseHash: computeClassifiedRefinementBaseHash(title, description),
+         before: { title: title.trim(), description: description.trim() },
+         suggestion,
+       });
+       toast.success("Preview de título e descrição pronto para revisão.", { id: "ai-refine" });
      } else {
        toast.error(res.message || "Não foi possível aprimorar no momento.", { id: "ai-refine" });
      }
-   } catch (err: any) {
-     toast.error(err?.message || "Erro ao conectar com a IA.", { id: "ai-refine" });
+   } catch (err: unknown) {
+     toast.error(err instanceof Error ? err.message : "Erro ao conectar com a IA.", { id: "ai-refine" });
    } finally {
      setIsRefiningDescription(false);
    }
+ };
+
+ const applyRefinementPreview = () => {
+   if (!refinementPreview) return;
+   const currentHash = computeClassifiedRefinementBaseHash(title, description);
+   if (currentHash !== refinementPreview.baseHash) {
+     setRefinementPreview(null);
+     toast.warning("O texto mudou desde o preview. Gere uma nova sugestão para evitar sobrescrever sua edição.");
+     return;
+   }
+   const applied = { ...refinementPreview, appliedAt: new Date().toISOString() };
+   setTitle(applied.suggestion.title);
+   setDescription(applied.suggestion.description);
+   setAppliedRefinementEvidence(applied);
+   setRefinementPreview(null);
+   toast.success(`Sugestão v${applied.version} aplicada com evidência registrada.`);
  };
 
  const [aiInstructions, setAiInstructions] = useState("");
@@ -1841,6 +1879,7 @@ function SpecializedClassifiedEditor({
         city: structuredLoc?.city || undefined,
         state: structuredLoc?.state || undefined,
         neighborhood: structuredLoc?.neighborhood || undefined,
+        ai_refinement_evidence: appliedRefinementEvidence || undefined,
         delivery_mode: niche.id === "desapego" ? deliveryMode : niche.id === "digital" ? "digital_download" : undefined,
         pricing_type: pricingType,
         price_min_cents: pricingType === "price_range" || pricingType === "starting_at" ? priceMinCents : undefined,
@@ -3129,6 +3168,9 @@ function SpecializedClassifiedEditor({
               onTitleChange={setTitle}
               onDescriptionChange={setDescription}
               onRefineDescription={handleRefineDescriptionWithAI}
+              refinementPreview={refinementPreview}
+              onApplyRefinement={applyRefinementPreview}
+              onDismissRefinement={() => setRefinementPreview(null)}
             >
             {/* Motor de Precificação Dinâmica & Avisos */}
             <div className="space-y-3 pt-1 border-t border-border/40">
@@ -7864,47 +7906,15 @@ function SpecializedClassifiedEditor({
                 </div>
               </div>
 
-              {/* Seção: Localização */}
-              <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60">
-                <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground pb-3 border-b border-border/40">
-                  <MapPin className="size-4 text-primary shrink-0" />
-                  <span>Localização</span>
-                </div>
-
- <CityCombobox
- value={locationName}
- onChange={(formatted, struct) => {
- setLocationName(formatted);
- if (struct) setStructuredLoc(struct);
- }}
- label="Bairro e Cidade do Anúncio *"
- />
-
-            {/* Controle de Privacidade Total de Endereço (LGPD) */}
-            <div className="p-4 bg-muted/20 border border-border/70 rounded-lg space-y-2">
-              <div className="flex items-center justify-between gap-3">
-                <div className="space-y-1 min-w-0">
-                  <Label htmlFor="hide-location-toggle" className="text-xs font-bold text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary flex items-center gap-2">
-                    <ShieldCheck className="size-4 text-primary" />
-                    Ocultar endereço completamente
-                  </Label>
-                  <p className="text-xs text-muted-foreground/75 text-muted-foreground leading-snug">
-                    Não exibe cidade, bairro nem mapa no anúncio público.
-                  </p>
-                </div>
-                <Switch
-                  id="hide-location-toggle"
-                  checked={hideLocation}
-                  onCheckedChange={setHideLocation}
-                />
-              </div>
-              {hideLocation && (
-                <div className="text-xs text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-2 rounded-lg font-medium flex items-center gap-2">
-                  <Check className="size-3 shrink-0" />
-                  Privacidade total ativa: nenhum dado geográfico ou mapa será exposto.
-                </div>
-              )}
-            </div>
+              <ClassifiedLocationSection
+                locationName={locationName}
+                hideLocation={hideLocation}
+                onLocationChange={(formatted, structured) => {
+                  setLocationName(formatted);
+                  if (structured) setStructuredLoc(structured);
+                }}
+                onHideLocationChange={setHideLocation}
+              />
 
  <div className="space-y-2 pt-1">
  <Label className="text-xs text-foreground font-medium">
@@ -7916,7 +7926,6 @@ function SpecializedClassifiedEditor({
 									placeholder="(49) 99999-9999"
 									className="h-11 min-h-11 rounded-lg text-xs bg-background"
 								/>
- </div>
  </div>
 
               {/* ── Formulário de Captura de Leads / Landing Page Vinculada (Restrito a Lojas Oficiais) ── */}

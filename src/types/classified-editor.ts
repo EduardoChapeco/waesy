@@ -52,3 +52,32 @@ export interface AiPrefillListing {
   seo_meta_tags?: string[];
   attributes?: Record<string, unknown>;
 }
+
+export interface ClassifiedRefinementSuggestion {
+  title: string;
+  description: string;
+  suggestedTags: string[];
+}
+
+export interface ClassifiedRefinementEvidence {
+  version: number;
+  source: "unified_ai";
+  generatedAt: string;
+  baseHash: string;
+  before: {
+    title: string;
+    description: string;
+  };
+  suggestion: ClassifiedRefinementSuggestion;
+  appliedAt?: string;
+}
+
+export function computeClassifiedRefinementBaseHash(title: string, description: string): string {
+  const input = `${title.trim()}\u0000${description.trim()}`;
+  let hash = 2166136261;
+  for (let index = 0; index < input.length; index += 1) {
+    hash ^= input.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+  return (hash >>> 0).toString(16).padStart(8, "0");
+}

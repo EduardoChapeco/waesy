@@ -80,3 +80,23 @@ Validação final da onda:
 - Schema, SSOT, route budget e `git diff --check`: aprovados.
 
 A rota principal caiu para aproximadamente **8.890 linhas**. A próxima melhoria recomendada é extrair a localização comum e, em seguida, criar uma camada de comando/preview para o refinamento assistido pelo Copilot, com payload versionado, evidência da sugestão e aprovação humana antes da publicação.
+
+
+## Décima segunda onda — localização comum e preview versionado do Copilot
+
+A seção comum de localização do `SpecializedClassifiedEditor` foi extraída para `src/components/classifieds/classified-location-section.tsx`. O componente concentra o `CityCombobox` e o controle de privacidade LGPD, recebendo somente valores e callbacks tipados; a montagem do payload e a persistência continuam na rota. Durante a integração foi encontrado e corrigido um delimitador JSX duplicado no bloco de telefone, que havia quebrado a composição `aside/main`.
+
+A assistência de título e descrição foi refinada de mutação imediata para um fluxo de **preview com evidência**. Cada sugestão recebe versão incremental, timestamp, origem, hash do texto-base e snapshot anterior. A aplicação valida novamente o hash antes de mutar o formulário; se o usuário editou o texto nesse intervalo, o preview é descartado e nenhuma edição é sobrescrita. A evidência aplicada segue no payload como `ai_refinement_evidence`, permitindo rastreabilidade real sem inventar conteúdo.
+
+Resultado estrutural: a rota ficou com **8.899 linhas**; a localização isolada ficou em 56 linhas, e o contrato compartilhado `src/types/classified-editor.ts` passou a concentrar o hash/evidência do refinamento sem criar ciclos.
+
+Validação end-to-end desta onda:
+- Typecheck: passou.
+- Testes focados: **4 arquivos e 15 testes passaram**.
+- Suíte completa Vitest: **240 arquivos e 1.552 testes passaram**.
+- Build de produção: passou; worker Cloudflare e rotas gerados.
+- Client/server leak: passou com **492 chunks verificados**.
+- Schema, SSOT, route budget e `git diff --check`: aprovados.
+- Design Lint ratchet: passou, com redução acumulada de **538 violações**; o débito histórico de 13.754 achados permanece explicitamente catalogado, sem atualização artificial do baseline.
+
+Próxima fase: auditar os blocos restantes do editor especializado (preço, estoque, validade e especificações por nicho), priorizando extrações que tenham regras puras testáveis e contratos de payload antes de mover qualquer mutação de publicação.

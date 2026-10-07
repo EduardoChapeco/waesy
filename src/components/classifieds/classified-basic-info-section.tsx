@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { FileText, Star } from "lucide-react";
-import type { ClassifiedNicheType } from "@/types/classified-editor";
+import type { ClassifiedNicheType, ClassifiedRefinementEvidence } from "@/types/classified-editor";
 
 const TITLE_PLACEHOLDERS: Partial<Record<ClassifiedNicheType, string>> = {
   hospedagem: "Ex: Chalé na Serra com Hidro e Vista Panorâmica",
@@ -23,6 +23,9 @@ export interface ClassifiedBasicInfoSectionProps {
   onTitleChange: (value: string) => void;
   onDescriptionChange: (value: string) => void;
   onRefineDescription: () => void;
+  refinementPreview?: ClassifiedRefinementEvidence | null;
+  onApplyRefinement?: () => void;
+  onDismissRefinement?: () => void;
   children: ReactNode;
 }
 
@@ -34,6 +37,9 @@ export function ClassifiedBasicInfoSection({
   onTitleChange,
   onDescriptionChange,
   onRefineDescription,
+  refinementPreview,
+  onApplyRefinement,
+  onDismissRefinement,
   children,
 }: ClassifiedBasicInfoSectionProps) {
   return (
@@ -80,6 +86,43 @@ export function ClassifiedBasicInfoSection({
           className="rounded-lg text-xs bg-background resize-none leading-relaxed"
         />
       </div>
+
+      {refinementPreview && (
+        <div className="space-y-3 rounded-lg border border-primary/25 bg-primary/5 p-3" aria-label="Preview de refinamento por IA">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <p className="text-xs font-semibold text-foreground">Preview da sugestão do Copilot</p>
+              <p className="text-2xs text-muted-foreground">
+                Versão {refinementPreview.version} · Evidência {refinementPreview.baseHash}
+              </p>
+            </div>
+            <span className="text-2xs font-medium text-muted-foreground">Não aplicado</span>
+          </div>
+          <div className="grid gap-2 text-xs sm:grid-cols-2">
+            <div className="rounded-md border border-border/60 bg-background p-2">
+              <p className="mb-1 font-semibold text-muted-foreground">Título sugerido</p>
+              <p className="text-foreground">{refinementPreview.suggestion.title}</p>
+            </div>
+            <div className="rounded-md border border-border/60 bg-background p-2">
+              <p className="mb-1 font-semibold text-muted-foreground">Descrição sugerida</p>
+              <p className="line-clamp-4 whitespace-pre-wrap text-foreground">{refinementPreview.suggestion.description}</p>
+            </div>
+          </div>
+          {refinementPreview.suggestion.suggestedTags.length > 0 && (
+            <p className="text-2xs text-muted-foreground">
+              Tags sugeridas: {refinementPreview.suggestion.suggestedTags.join(", ")}
+            </p>
+          )}
+          <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
+            <Button type="button" variant="outline" size="sm" className="h-11 text-xs" onClick={onDismissRefinement}>
+              Descartar
+            </Button>
+            <Button type="button" size="sm" className="h-11 text-xs" onClick={onApplyRefinement}>
+              Aplicar sugestão
+            </Button>
+          </div>
+        </div>
+      )}
 
       {children}
     </div>
