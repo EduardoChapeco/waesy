@@ -81,4 +81,4 @@
 
 - Finding alvo: retry gerava novo UUID, inseria outra mensagem e podia executar IA/cobrança novamente; o BFF não fazia replay da resposta persistida.
 - Ação na branch `execute/w4-persistence-idempotency`: retry reutiliza a chave original; BFF procura `(thread_id, client_message_id, sender_id)` antes do pipeline; resposta persistida inclui a chave e o ID da mensagem de origem; mensagens falhadas podem ser reabertas sem novo registo.
-- Estado: implementação local passou typecheck, testes e build; aguarda revisão de diff e gates remotos. Nenhum finding W4 é declarado fechado antes do CI/Cloudflare.
+- Estado: **fechado no código e integrado em `main` pelo PR #12**. Typecheck, 226 ficheiros/1.499 testes, build, CI remoto e Cloudflare Pages passaram. A validação funcional live de dois POSTs idênticos continua como teste operacional recomendado, não foi inventada como evidência.
