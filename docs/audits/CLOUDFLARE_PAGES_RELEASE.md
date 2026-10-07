@@ -46,3 +46,22 @@ Os valores devem ser definidos pelo proprietário do ambiente no Cloudflare. Est
 7. Smoke test de `https://usewaesy.pages.dev` e `https://waesy.com.br`.
 
 A correção do binding não prova, por si só, que os secrets estejam preenchidos nem que o deployment esteja ativo. Esses estados devem ser observados no provider após o novo deployment.
+
+## Segunda causa raiz confirmada
+
+O check Cloudflare do PR estava ligado ao projeto Pages `wider`, cuja origem GitHub era `EduardoChapeco/jah`, e o projeto tinha `build_command` vazio. O log do deployment do PR registou:
+
+```text
+No build command specified. Skipping build step.
+Error: Output directory "dist" not found.
+```
+
+Correção operacional aplicada no provider:
+
+- `wider` reconectado ao repositório `EduardoChapeco/waesy`.
+- build command definido como `npm run build`.
+- destino mantido como `dist`.
+- previews e deployments automáticos mantidos ativos.
+- variáveis de produção preservadas; nenhum secret foi lido ou alterado.
+
+O próximo push do branch candidato deve gerar um novo preview no projeto correto. O check só pode ser considerado fechado após o novo deployment atingir `deploy: success` e o GitHub refletir `Cloudflare Pages: success` no mesmo SHA.
