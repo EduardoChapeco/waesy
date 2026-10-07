@@ -38,3 +38,25 @@ Validação end-to-end final:
 - Grafo de dependências: **0 ciclos; aprovado**.
 
 A primeira execução do build revelou o ciclo e um erro de composição JSX; ambos foram corrigidos e os gates foram repetidos no estado final. A próxima fatia deve extrair uma seção visual de formulário do editor com contrato de props explícito, mantendo o pipeline de publicação dentro da rota até haver testes de payload específicos.
+
+
+## Décima onda — seção de mídias e integridade de uploads concorrentes
+
+A seção `1. Mídias do Anúncio` foi extraída do `SpecializedClassifiedEditor` para `src/components/classifieds/classified-media-section.tsx`. O componente encapsula a galeria Hero, a galeria exclusiva do Feed, limites, formatos, recorte e callbacks de alteração. O pipeline de publicação e a persistência do anúncio permaneceram na rota.
+
+Foi corrigida uma falha de estado concorrente: os dois `MediaUploader` compartilhavam diretamente um único setter booleano. Se os uploads Hero e Feed ocorressem ao mesmo tempo, o primeiro a terminar poderia liberar a publicação enquanto o segundo ainda estivesse ativo. O novo componente mantém estados independentes e publica o estado agregado `Hero || Feed`, usando a regra pura testável em `src/lib/classifieds/media-state.ts`.
+
+Também foram refinados os componentes previamente extraídos. O contrato de pré-preenchimento por IA deixou de usar `any`, o tratamento de erro passou a usar `unknown` com narrowing seguro e os três `useMemo` do seletor passaram a declarar as coleções que realmente consultam como dependências.
+
+Validação da onda:
+- Typecheck: passou.
+- Testes focados: **16/16 passaram**, incluindo 3 regressões da agregação de uploads.
+- Suíte completa Vitest: **239 arquivos e 1.550 testes passaram**.
+- Build de produção: passou; worker Cloudflare e rotas gerados.
+- Client/server leak: passou com **492 chunks verificados**.
+- Design Lint direto nos quatro arquivos alterados: **0 achados**.
+- Auditoria de botões: **19/19 testes passaram**.
+- Grafo de dependências: **0 ciclos**.
+- Schema, SSOT, route budget e `git diff --check`: aprovados.
+
+A rota principal caiu para aproximadamente **8.936 linhas** após a extração. Próxima oportunidade: extrair a seção de informações básicas em subcomponentes menores, começando por campos comuns e mantendo campos especializados por nicho isolados até haver contratos de validação específicos.

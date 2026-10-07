@@ -37,3 +37,18 @@ export interface NicheDefinition {
   badge: string;
   gradient: string;
 }
+
+export interface AiPrefillListing {
+  category?: string;
+  niche?: string;
+  subcategory?: string;
+  title?: string;
+  content?: string;
+  description?: string;
+  price_cents?: number | null;
+  location?: string;
+  delivery_type?: string;
+  search_tags?: string[];
+  seo_meta_tags?: string[];
+  attributes?: Record<string, unknown>;
+}

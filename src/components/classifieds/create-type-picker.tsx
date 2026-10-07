@@ -7,13 +7,13 @@ import { Link } from "@tanstack/react-router";
 import { ChevronLeft, ChevronRight, Loader2, Search, Wand2, Tag } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createListingWithAI } from "@/services/ai-sdr.functions";
-import type { ClassifiedNicheType, NicheDefinition } from "@/types/classified-editor";
+import type { AiPrefillListing, ClassifiedNicheType, NicheDefinition } from "@/types/classified-editor";
 
 type DesapegoTaxonomyItem = { id: string; label: string; desc: string };
 
 export function CreateTypePicker({ onSelect, onAiPrefill, nicheCards, desapegoTaxonomy }: {
   onSelect: (typeId: ClassifiedNicheType, sub?: string) => void;
-  onAiPrefill?: (listing: any) => void;
+  onAiPrefill?: (listing: AiPrefillListing) => void;
   nicheCards: NicheDefinition[];
   desapegoTaxonomy: DesapegoTaxonomyItem[];
 }) {
@@ -42,9 +42,10 @@ export function CreateTypePicker({ onSelect, onAiPrefill, nicheCards, desapegoTa
       } else {
         toast.error("Não foi possível gerar os dados. Escolha a categoria abaixo.", { id: "ai-ad" });
       }
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.warn("Erro ao gerar anúncio com IA:", e);
-      toast.error(e?.message || "Erro ao conectar com a IA. Escolha a categoria manualmente.", { id: "ai-ad" });
+      const message = e instanceof Error ? e.message : "Erro ao conectar com a IA. Escolha a categoria manualmente.";
+      toast.error(message, { id: "ai-ad" });
     } finally {
       setIsAiGenerating(false);
     }
@@ -64,14 +65,14 @@ export function CreateTypePicker({ onSelect, onAiPrefill, nicheCards, desapegoTa
     if (!searchFilter.trim()) return nicheCards.filter(n => ids.includes(n.id));
     const q = searchFilter.toLowerCase();
     return nicheCards.filter(n => ids.includes(n.id) && (n.title.toLowerCase().includes(q) || n.subtitle.toLowerCase().includes(q) || n.description.toLowerCase().includes(q)));
-  }, [searchFilter]);
+  }, [nicheCards, searchFilter]);
 
   const businessNiches = useMemo(() => {
     const ids = ["assinatura", "gastronomia", "farmacia", "mercado"];
     if (!searchFilter.trim()) return nicheCards.filter(n => ids.includes(n.id));
     const q = searchFilter.toLowerCase();
     return nicheCards.filter(n => ids.includes(n.id) && (n.title.toLowerCase().includes(q) || n.subtitle.toLowerCase().includes(q) || n.description.toLowerCase().includes(q)));
-  }, [searchFilter]);
+  }, [nicheCards, searchFilter]);
 
   const filteredDesapegoItems = useMemo(() => {
     if (!searchFilter.trim()) return [];
@@ -81,7 +82,7 @@ export function CreateTypePicker({ onSelect, onAiPrefill, nicheCards, desapegoTa
         d.label.toLowerCase().includes(q) ||
         d.desc.toLowerCase().includes(q)
     );
-  }, [searchFilter]);
+  }, [desapegoTaxonomy, searchFilter]);
 
   const [scopeTab, setScopeTab] = useState<"all" | "personal" | "business">("all");
 

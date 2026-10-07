@@ -30,6 +30,7 @@ import { MediaUploader } from "@/components/ui/media-uploader";
 import { DigitalFileDropzone } from "@/components/classifieds/digital-file-dropzone";
 import { CreateTypePicker } from "@/components/classifieds/create-type-picker";
 import { ClassifiedEditorNavigation } from "@/components/classifieds/classified-editor-navigation";
+import { ClassifiedMediaSection } from "@/components/classifieds/classified-media-section";
 import { ChoiceCard } from "@/components/ui/choice-card";
 import { SquircleCard } from "@/components/ui/squircle-card";
 import { CityCombobox, type StructuredLocationValue } from "@/components/ui/city-combobox";
@@ -3111,69 +3112,13 @@ function SpecializedClassifiedEditor({
  >
           <div className="space-y-6">
             {/* Section 1: Fotos do Topo & Galeria Exclusiva do Feed */}
-            <div className="bg-card rounded-lg p-4 sm:p-5 space-y-5 border border-border/60">
-              <div className="flex items-center justify-between pb-3 border-b border-border/40">
-                <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
-                  <ImagePlus className="size-4 text-primary shrink-0" />
-                  <span>1. Mídias do Anúncio</span>
-                </div>
-              </div>
-
-              {/* 1.1 Fotos de Destaque / Carrossel Superior */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label className="text-xs font-semibold text-foreground flex items-center gap-2">
-                    <span>Fotos do Topo (Carrossel Hero)</span>
-                    <Badge variant="outline" className="text-xs py-0 px-2 font-mono">Até 10 fotos</Badge>
-                  </Label>
-                  <span className="text-xs text-muted-foreground/75 font-mono text-muted-foreground">
-                    {images.length}/10 adicionada(s)
-                  </span>
-                </div>
-                <p className="text-xs text-muted-foreground/75 text-muted-foreground leading-relaxed">
-                  Imagens principais exibidas no carrossel de topo do anúncio (formato 4:3 com recorte).
-                </p>
-                <MediaUploader
-                  value={images}
-                  onChange={setImages}
-                  onUploadingStateChange={setIsUploadingMedia}
-                  bucket="post-media"
-                  folder="classifieds"
-                  aspect={4 / 3}
-                  enableCrop={true}
-                  lockAspect={true}
-                  maxFiles={10}
-                />
-              </div>
-
-              {/* 1.2 Galeria Exclusiva do Feed */}
-              <div className="pt-3 border-t border-border/40 space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label className="text-xs font-semibold text-foreground flex items-center gap-2">
-                    <span>Galeria Exclusiva do Feed</span>
-                    <Badge className="bg-primary/10 text-primary border-primary/20 text-xs py-0 px-2 font-bold">Até 12 mídias</Badge>
-                  </Label>
-                  <span className="text-xs text-muted-foreground/75 font-mono text-muted-foreground">
-                    {feedMedia.length}/12 adicionada(s)
-                  </span>
-                </div>
-                <p className="text-xs text-muted-foreground/75 text-muted-foreground leading-relaxed">
-                  Mídias que aparecem exclusivamente no feed e grid do anúncio. Aceita Fotos, GIFs animados e Vídeos curtos (MP4/WebM). <strong>Não duplica as fotos do topo.</strong>
-                </p>
-                <MediaUploader
-                  value={feedMedia}
-                  onChange={setFeedMedia}
-                  onUploadingStateChange={setIsUploadingMedia}
-                  bucket="post-media"
-                  folder="classifieds-feed"
-                  aspect={1}
-                  enableCrop={false}
-                  maxFiles={12}
-                  accept="all"
-                />
-              </div>
-            </div>
-
+            <ClassifiedMediaSection
+              images={images}
+              feedMedia={feedMedia}
+              onImagesChange={setImages}
+              onFeedMediaChange={setFeedMedia}
+              onUploadingStateChange={setIsUploadingMedia}
+            />
             {/* Section 2: Informações Básicas (Design Silencioso V121) */}
             <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60">
               <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground pb-3 border-b border-border/40">
