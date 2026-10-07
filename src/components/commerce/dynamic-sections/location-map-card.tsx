@@ -15,15 +15,16 @@ export interface LocationMapCardProps {
 }
 
 export function LocationMapCardSection({
- title = "Venha nos Visitar",
- subtitle = "Ambiente acolhedor e atendimento exclusivo esperando por você.",
- address = "Av. Brasil, 1420 - Sala 402, Centro",
- cityState = "São Miguel do Oeste - SC",
- zipCode = "CEP 89900-000",
- phone = "(49) 3622-0000",
- workingHours = "Segunda a Sexta das 08h30 às 18h30",
- googleMapsUrl = "https://maps.google.com",
+ title = "",
+ subtitle = "",
+ address = "",
+ cityState = "",
+ zipCode = "",
+ phone = "",
+ workingHours = "",
+ googleMapsUrl = "",
 }: LocationMapCardProps) {
+ if (!address && !cityState && !phone && !workingHours && !googleMapsUrl) return null;
  return (
  <section className="py-12 bg-background w-full">
  <div className="max-w-6xl mx-auto px-4 sm:px-6">
@@ -42,7 +43,7 @@ export function LocationMapCardSection({
  <MapPin className="size-4 text-primary shrink-0 mt-1" />
  <div>
  <span className="font-bold text-foreground block text-sm">{address}</span>
- <span className="text-muted-foreground">{cityState} • {zipCode}</span>
+ {(cityState || zipCode) && <span className="text-muted-foreground">{[cityState, zipCode].filter(Boolean).join(" • ")}</span>}
  </div>
  </div>
 
@@ -79,11 +80,7 @@ export function LocationMapCardSection({
  </div>
 
  <div className="lg:col-span-6 rounded-lg overflow-hidden aspect-4/3 bg-muted border border-border/60 relative flex items-center justify-center">
- <img
- src=""
- alt="Mapa"
- className="size-full object-cover"
- />
+ {googleMapsUrl && <img src={googleMapsUrl} alt="Mapa" className="size-full object-cover" />}
  <div className="absolute inset-0 bg-background/20 backdrop-blur-2xs flex items-center justify-center">
  <div className="p-4 rounded-lg bg-background/95 border border-border shadow-xl flex items-center gap-3">
  <div className="size-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">

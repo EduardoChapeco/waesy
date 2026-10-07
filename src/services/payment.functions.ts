@@ -221,7 +221,8 @@ export const confirmPayment = createServerFn({ method: "POST" })
   order_id: orderId,
   store_id: order.store_id,
   idempotency_key: deterministicKey,
-  provider_ref: `manual_ref_${orderId}`,
+  // Pagamento manual não possui referência de gateway. Nunca fabricar um ID.
+  provider_ref: null,
   provider_name: "manual",
   amount_cents: order.total_cents,
   method: actualMethod,
@@ -497,26 +498,9 @@ export const uploadPaymentReceipt = createServerFn({ method: "POST" })
  };
  const contentType = mimeMap[ext] || "application/octet-stream";
 
- let { error: uploadError } = await db.storage
- .from("receipts")
- .upload(storagePath, bytes, { contentType, upsert: false });
-
- // Auto-Healing: If bucket not found, create it dynamically and retry
- if (uploadError && uploadError.message.includes("Bucket not found")) {
- console.log(`[storage] Bucket receipts missing. Auto-healing...`);
- const { error: createError } = await db.storage.createBucket("receipts", {
- public: false, // Receipts should not be public
- fileSizeLimit: 10485760,
- });
-
- if (createError) throw new Error(`Auto-healing failed: ${createError.message}`);
-
- // Retry
- const retry = await db.storage
- .from("receipts")
- .upload(storagePath, bytes, { contentType, upsert: false });
- uploadError = retry.error;
- }
+ const { error: uploadError } = await db.storage
+	 .from("receipts")
+	 .upload(storagePath, bytes, { contentType, upsert: false });
 
  if (uploadError) {
  console.error("[payment] receipt upload error:", uploadError);

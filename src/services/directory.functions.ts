@@ -13,11 +13,11 @@ export interface DirectoryListingDTO {
  store_id?: string | null;
  store?: { id: string; name: string; slug: string; avatar_url?: string | null } | null;
  author_profile_id?: string | null;
- business_name: string;
- category: string;
+ business_name: string | null;
+ category: string | null;
  description: string;
  specialties: string[];
- address: string;
+ address: string | null;
   city?: string | null;
   state?: string | null;
   is_crawled?: boolean | null;
@@ -34,7 +34,7 @@ export interface DirectoryListingDTO {
  reviews_count: number;
  avatar_url?: string | null;
  banner_url?: string | null;
- status: "active" | "inactive";
+ status: "active" | "inactive" | null;
  created_at: string;
 }
 
@@ -100,11 +100,11 @@ export const getPublicDirectory = createServerFn({ method: "GET" })
           store_id: row.store_id,
           store: row.stores || null,
           author_profile_id: row.author_profile_id,
-          business_name: row.business_name || row.stores?.name || "Negócio Local",
+          business_name: row.business_name || row.stores?.name || null,
           category: cat,
           description: row.description || "",
           specialties: row.specialties || [],
-          address: row.address || "Regional",
+          address: row.address || null,
           city: row.city || null,
           state: row.state || null,
           is_crawled: !!row.is_crawled,
@@ -118,7 +118,7 @@ export const getPublicDirectory = createServerFn({ method: "GET" })
           working_hours:
             typeof row.working_hours === "string"
               ? row.working_hours
-              : row.working_hours?.weekdays || "Seg a Sex: 08:00 - 18:00",
+              : row.working_hours?.weekdays || null,
           is_verified: !!row.is_verified,
           rating: row.rating ? Number(row.rating) : 0,
           reviews_count: Number(row.reviews_count || 0),
@@ -155,18 +155,18 @@ export const getPublicDirectoryById = createServerFn({ method: "GET" })
  store_id: row.store_id,
  store: row.stores || null,
  author_profile_id: row.author_profile_id,
- business_name: row.business_name || row.stores?.name || "Negócio Local",
+ business_name: row.business_name || row.stores?.name || null,
  category: row.category,
  description: row.description || "",
  specialties: row.specialties || [],
- address: row.address || "Regional",
+ address: row.address || null,
  latitude: row.latitude,
  longitude: row.longitude,
  contact_phone: row.contact_phone,
  contact_whatsapp: row.contact_whatsapp,
  contact_email: row.contact_email,
  website_url: row.website_url,
- working_hours: typeof row.working_hours === "string" ? row.working_hours : (row.working_hours?.weekdays || "Seg a Sex: 08:00 - 18:00"),
+ working_hours: typeof row.working_hours === "string" ? row.working_hours : (row.working_hours?.weekdays || null),
  is_verified: !!row.is_verified,
  rating: row.rating ? Number(row.rating) : 0,
  reviews_count: Number(row.reviews_count || 0),
@@ -193,24 +193,24 @@ export const getPublicDirectoryById = createServerFn({ method: "GET" })
  id: storeRow.id,
  store_id: storeRow.id,
  author_profile_id: null,
- business_name: storeRow.name || "Loja Oficial Waesy",
+ business_name: storeRow.name || null,
  category: (storeRow as any).category || (storeRow as any).type || "servicos",
- description: storeRow.description || "Empresa credenciada no ecossistema de compras e serviços Waesy.",
- specialties: settings.specialties || ["Atendimento Especializado", "Pronta Entrega"],
- address: storeRow.address ? `${storeRow.address}${storeRow.city ? ` — ${storeRow.city}, ${storeRow.state || "SC"}` : ""}` : (storeRow.city ? `${storeRow.city}${storeRow.state ? ` - ${storeRow.state}` : ""}` : "Regional"),
+ description: storeRow.description || "",
+ specialties: settings.specialties || [],
+ address: storeRow.address ? `${storeRow.address}${storeRow.city ? ` — ${storeRow.city}${storeRow.state ? `, ${storeRow.state}` : ""}` : ""}` : (storeRow.city ? `${storeRow.city}${storeRow.state ? ` - ${storeRow.state}` : ""}` : null),
  latitude: storeRow.latitude,
  longitude: storeRow.longitude,
  contact_phone: storeRow.phone,
- contact_whatsapp: storeRow.phone,
+ contact_whatsapp: settings.whatsapp || null,
  contact_email: storeRow.email,
  website_url: null,
- working_hours: typeof settings.businessHours === "string" ? settings.businessHours : "Seg a Sex: 08:00 - 18:00",
- is_verified: true,
- rating: 5.0,
- reviews_count: 12,
+ working_hours: typeof settings.businessHours === "string" ? settings.businessHours : null,
+ is_verified: Boolean(storeRow.is_verified),
+ rating: storeRow.rating ? Number(storeRow.rating) : 0,
+ reviews_count: Number(storeRow.reviews_count || 0),
  avatar_url: storeRow.logo_url || settings.logoUrl || settings.logo_url,
  banner_url: storeRow.banner_url || settings.cover_url || settings.bannerUrl,
- status: "active",
+ status: storeRow.status || null,
  created_at: storeRow.created_at,
  } as DirectoryListingDTO;
  }
@@ -471,4 +471,3 @@ export const claimDirectoryListingFn = createServerFn({ method: "POST" })
       storeId,
     };
   });
-

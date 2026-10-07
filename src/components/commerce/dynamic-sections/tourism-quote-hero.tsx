@@ -23,16 +23,16 @@ export interface TourismQuoteHeroProps {
 export const TourismQuoteHero: React.FC<TourismQuoteHeroProps> = ({
  title = "Sua Próxima Viagem Inesquecível Começa Aqui",
  subtitle = "Roteiros exclusivos, cruzeiros, passagens aéreas e pacotes completos com assessoria VIP.",
- badge = "✈️ Agência Boutique de Turismo",
+ badge = "",
  bgImageUrl = "",
- destinationPresets = ["Beto Carrero", "Gramado & Canela", "Mendoza & Vinhos", "Nordeste All Inclusive", "Cruzeiro Costa"],
+ destinationPresets = [],
  whatsappPhone,
  storeData,
 }) => {
  const [destination, setDestination] = useState("");
- const [origin, setOrigin] = useState("São Miguel do Oeste / SC");
+ const [origin, setOrigin] = useState("");
  const [departureDate, setDepartureDate] = useState("");
- const [passengers, setPassengers] = useState("2 adultos");
+ const [passengers, setPassengers] = useState("");
  const [clientName, setClientName] = useState("");
  const [clientPhone, setClientPhone] = useState("");
  const [isSubmitting, setIsSubmitting] = useState(false);
@@ -54,11 +54,9 @@ export const TourismQuoteHero: React.FC<TourismQuoteHeroProps> = ({
  entity_title: `Cotação ${destination} (${passengers})`,
  phone_target: clientPhone.trim(),
  device_type: "desktop",
- metadata: {
- notes: `Nome: ${clientName || "Cliente"} | Origem: ${origin} | Data: ${departureDate || "A definir"}`,
+ metadata: { notes: `Nome: ${clientName} | Origem: ${origin} | Data: ${departureDate}` },
  },
- },
- }).catch(() => null);
+ });
 
  setSubmitted(true);
  toast.success("Solicitação de cotação enviada com sucesso!");
@@ -70,7 +68,7 @@ export const TourismQuoteHero: React.FC<TourismQuoteHeroProps> = ({
 
  if (targetPhone) {
  const msg = encodeURIComponent(
- `Olá! Solicitei uma cotação no site:\n\n✈️ *Destino:* ${destination}\n📍 *Origem:* ${origin}\n📅 *Data:* ${departureDate || "A definir"}\n👥 *Passageiros:* ${passengers}\n👤 *Nome:* ${clientName || "Cliente"}\n\nPoderiam me enviar os detalhes e valores disponíveis?`
+ `Olá! Solicitei uma cotação no site:\n\nDestino: ${destination}\nOrigem: ${origin}\nData: ${departureDate}\nPassageiros: ${passengers}\nNome: ${clientName}\n\nPoderiam me enviar os detalhes e valores disponíveis?`
  );
  setTimeout(() => {
  window.open(`https://wa.me/${targetPhone}?text=${msg}`, "_blank");

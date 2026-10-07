@@ -358,9 +358,9 @@ function DirectoryMobileWhatsAppItem({ item }: { item: DirectoryListingDTO }) {
             phone={whatsappNumber}
             entityType="directory"
             entityId={item.id}
-            entityTitle={item.business_name}
+            entityTitle={item.business_name || undefined}
             storeId={(item as any).store_id || null}
-            niche={item.category}
+            niche={item.category || undefined}
             variant="ghost"
             size="sm"
             className="size-11 p-0 rounded-full hover:bg-muted/40 text-foreground active:scale-95 transition-colors"
@@ -404,7 +404,7 @@ function DirectoryBusinessCard({
           {coverUrl ? (
             <img
               src={coverUrl}
-              alt={item.business_name}
+              alt={item.business_name || undefined}
               loading="lazy"
               className="size-full object-cover group-hover:scale-105 transition-transform duration-200"
             />
@@ -444,12 +444,12 @@ function DirectoryBusinessCard({
                 {item.avatar_url ? (
                   <img
                     src={item.avatar_url}
-                    alt={item.business_name}
+                    alt={item.business_name || undefined}
                     className="size-full object-cover"
                   />
                 ) : (
                   <div className="size-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs font-mono">
-                    {item.business_name.slice(0, 2).toUpperCase()}
+                    {item.business_name ? item.business_name.slice(0, 2).toUpperCase() : null}
                   </div>
                 )}
               </div>
@@ -521,9 +521,9 @@ function DirectoryBusinessCard({
             phone={whatsappNumber}
             entityType="directory"
             entityId={item.id}
-            entityTitle={item.business_name}
+            entityTitle={item.business_name || undefined}
             storeId={(item as any).store_id || null}
-            niche={item.category}
+            niche={item.category || undefined}
             variant="outline"
             size="sm"
             label="WhatsApp"
@@ -565,7 +565,7 @@ function DirectoryListItem({ item }: { item: DirectoryListingDTO }) {
         {coverUrl ? (
           <img
             src={coverUrl}
-            alt={item.business_name}
+            alt={item.business_name || undefined}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
             loading="lazy"
           />
@@ -617,9 +617,9 @@ function DirectoryListItem({ item }: { item: DirectoryListingDTO }) {
               phone={whatsappNumber}
               entityType="directory"
               entityId={item.id}
-              entityTitle={item.business_name}
+              entityTitle={item.business_name || undefined}
               storeId={(item as any).store_id || null}
-              niche={item.category}
+              niche={item.category || undefined}
               variant="outline"
               size="sm"
               label="WhatsApp"

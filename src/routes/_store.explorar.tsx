@@ -610,7 +610,7 @@ function CommunityHomePage() {
                           {coverImage ? (
                             <img
                               src={coverImage}
-                              alt={item.business_name}
+                              alt={item.business_name || undefined}
                               className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
                               loading="lazy"
                             />
@@ -636,7 +636,7 @@ function CommunityHomePage() {
                             )}
                           </div>
                           <p className="text-xs text-muted-foreground line-clamp-1">
-                            {item.address || "Localidade da região"}
+                            {item.address || null}
                           </p>
                         </div>
                       </Link>
@@ -644,7 +644,7 @@ function CommunityHomePage() {
                       <div className="px-4 pb-3 pt-0 flex items-center justify-between gap-2 border-t border-border/30 mt-auto h-10">
                         <div className="flex items-center gap-1 text-xs font-bold text-amber-500">
                           <Star size={13} weight="fill" />
-                          <span>{item.rating ? Number(item.rating).toFixed(1) : "5.0"}</span>
+                          <span>{item.rating ? Number(item.rating).toFixed(1) : null}</span>
                         </div>
 
                         {(item.contact_whatsapp || item.contact_phone) && (
@@ -658,7 +658,7 @@ function CommunityHomePage() {
                                 entityType: "directory",
                                 entityId: item.id,
                                 entityTitle: item.business_name,
-                                niche: item.category,
+                                niche: item.category || undefined,
                               })
                             }
                             className="inline-flex items-center gap-1 text-xs text-muted-foreground/75 font-bold text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 cursor-pointer"

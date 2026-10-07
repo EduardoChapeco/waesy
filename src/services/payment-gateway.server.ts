@@ -61,11 +61,22 @@ export async function createGatewayPayment(input: CreateGatewayPaymentInput): Pr
   const payload = await response.json().catch(() => ({})) as Record<string, unknown>;
   if (!response.ok) throw new Error(`Gateway recusou o pagamento (${response.status}).`);
 
-  const status = String(payload.status || "pending");
+  const providerRef = typeof payload.id === "string" || typeof payload.id === "number"
+    ? String(payload.id).trim()
+    : "";
+  if (!providerRef) {
+    throw new Error("Gateway retornou resposta sem identificador de pagamento.");
+  }
+
+  const status = String(payload.status || "").trim();
+  if (!["approved", "rejected", "pending", "in_process", "authorized"].includes(status)) {
+    throw new Error("Gateway retornou status de pagamento não reconhecido.");
+  }
+
   return {
     provider: "mercado_pago",
-    providerRef: String(payload.id || ""),
-    status: status === "approved" ? "paid" : status === "rejected" ? "failed" : "pending",
+    providerRef,
+    status: status === "approved" || status === "authorized" ? "paid" : status === "rejected" ? "failed" : "pending",
     payload,
     pix: input.method === "pix" ? {
       qrCode: typeof (payload.point_of_interaction as any)?.transaction_data?.qr_code === "string"
