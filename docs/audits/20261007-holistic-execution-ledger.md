@@ -54,3 +54,11 @@
 - Baseline runtime: 24 tabelas com RLS sem policy; `unified_listings_view` security definer; `dispatch_mining_cron` e `touch_document_artifact` com search_path mutável; 53 RPCs security-definer executáveis por anon; 509 FKs sem índices.
 - Decisão: fechar primeiro os findings determinísticos de segurança P0/P1 com deny-by-default e sem tocar no contrato público de checkout/telemetry; a indexação de FKs fica para W3/PERF após plano gerado a partir do catálogo real.
 - Migration: criada localmente; não aplicada diretamente em produção nesta sessão, conforme o protocolo de integridade. Nenhum finding é declarado fechado antes da evidência pós-migration.
+
+
+## W3.3 — Tipos reais derivados do Supabase
+
+- Preflight: branch `execute/w2-security-advisories`, SHA `cd5c3298`; scope ampliado explicitamente para `src/integrations/supabase/types.ts`, `docs/specs/SPEC-W3-SUPABASE-TYPES.md` e este ledger.
+- Finding confirmado: `src/integrations/supabase/types.ts:9` continha `export type Database = any`.
+- Ação: gerado o contrato pelo projeto Supabase Waesy `jfuebqmltksyznovhlwa` através da ferramenta autorizada `generate_typescript_types`; resultado persistido com 45.635 linhas e 1.426.638 bytes.
+- Estado: typecheck de consumidores ainda pendente após a substituição; não declarar W3 fechado até validar typecheck, testes, build e revisão do diff.
