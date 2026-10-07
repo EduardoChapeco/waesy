@@ -167,6 +167,7 @@ export type PricingBlockData = z.infer<typeof PricingBlockDataSchema>;
 export const MediaGalleryItemSchema = z.object({
   id: z.string(),
   imageUrl: z.string(),
+  imageAlt: z.string().max(500).optional(),
   title: z.string().optional(),
   caption: z.string().optional(),
   category: z.string().optional(),
@@ -188,6 +189,7 @@ export const TestimonialItemSchema = z.object({
   name: z.string(),
   role: z.string().optional(),
   avatarUrl: z.string().optional(),
+  imageAlt: z.string().max(500).optional(),
   rating: z.number().min(1).max(5).default(5),
   comment: z.string(),
   verified: z.boolean().default(true),

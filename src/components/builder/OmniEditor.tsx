@@ -81,7 +81,8 @@ interface BlockContentFieldsProps {
   selectedBlock: OmniBlockInstance;
   onUpdateConfig: (key: string, value: any) => void;
   onUpdateAssetRef?: (asset: BuilderAssetRef) => void;
-  onClearAssetRef?: () => void;
+  onClearAssetRef?: (usageSlot?: string) => void;
+  onUpdateAssetAltText?: (usageSlot: string, altText: string) => void;
   unsplashUsageSlot?: string;
   unsplashDefaultQuery?: string;
 }
@@ -91,6 +92,7 @@ export const BlockContentFields: React.FC<BlockContentFieldsProps> = ({
   onUpdateConfig,
   onUpdateAssetRef,
   onClearAssetRef,
+  onUpdateAssetAltText,
   unsplashUsageSlot,
   unsplashDefaultQuery,
 }) => {
@@ -150,13 +152,18 @@ export const BlockContentFields: React.FC<BlockContentFieldsProps> = ({
           <MediaUploader
             value={config.imageUrl || ""}
             onChange={(url) => onUpdateConfig("imageUrl", url)}
-            bucket="store-assets"
+            bucket="public_media"
             folder="builder"
             label="Imagem de Destaque"
             allowUnsplash={Boolean(unsplashUsageSlot)}
             unsplashUsageSlot={unsplashUsageSlot}
             unsplashDefaultQuery={unsplashDefaultQuery}
+            studioAssetUsageSlot={unsplashUsageSlot || `${selectedBlock.id}-hero`}
             onAssetSelected={(asset) => {
+              onUpdateAssetRef?.(asset);
+              onUpdateConfig("imageAlt", asset.alt_text || "");
+            }}
+            onAssetUploaded={(asset) => {
               onUpdateAssetRef?.(asset);
               onUpdateConfig("imageAlt", asset.alt_text || "");
             }}
@@ -169,7 +176,10 @@ export const BlockContentFields: React.FC<BlockContentFieldsProps> = ({
             <Input
               id={`image-alt-${selectedBlock.id}`}
               value={config.imageAlt || ""}
-              onChange={(event) => onUpdateConfig("imageAlt", event.target.value)}
+              onChange={(event) => {
+                onUpdateConfig("imageAlt", event.target.value);
+                onUpdateAssetAltText?.(unsplashUsageSlot || `${selectedBlock.id}-hero`, event.target.value);
+              }}
               maxLength={500}
               placeholder="Descreva fielmente o que aparece; vazio apenas se decorativa"
               className="h-9 rounded-lg text-xs"
@@ -192,6 +202,7 @@ export const BlockContentFields: React.FC<BlockContentFieldsProps> = ({
                 const newItem = {
                   id: `g-${Date.now()}`,
                   imageUrl: "",
+                  imageAlt: "",
                   title: "Nova Foto",
                   caption: "",
                 };
@@ -213,6 +224,7 @@ export const BlockContentFields: React.FC<BlockContentFieldsProps> = ({
                     type="button"
                     onClick={() => {
                       const current = config.items || [];
+                      onClearAssetRef?.(`${selectedBlock.id}-gallery-${item.id || idx}`);
                       onUpdateConfig(
                         "items",
                         current.filter((_: any, i: number) => i !== idx)
@@ -230,9 +242,24 @@ export const BlockContentFields: React.FC<BlockContentFieldsProps> = ({
                     current[idx] = { ...current[idx], imageUrl: url };
                     onUpdateConfig("items", current);
                   }}
-                  bucket="store-assets"
+                  bucket="public_media"
                   folder="builder"
                   label="Mídia da Galeria"
+                  studioAssetUsageSlot={`${selectedBlock.id}-gallery-${item.id || idx}`}
+                  onAssetUploaded={onUpdateAssetRef}
+                  onAssetCleared={onClearAssetRef}
+                />
+                <Input
+                  value={item.imageAlt || ""}
+                  onChange={(e) => {
+                    const current = [...(config.items || [])];
+                    current[idx] = { ...current[idx], imageAlt: e.target.value };
+                    onUpdateConfig("items", current);
+                    onUpdateAssetAltText?.(`${selectedBlock.id}-gallery-${item.id || idx}`, e.target.value);
+                  }}
+                  maxLength={500}
+                  placeholder="Texto alternativo da foto"
+                  className="h-8 text-xs"
                 />
                 <Input
                   value={item.title || ""}
@@ -276,6 +303,7 @@ export const BlockContentFields: React.FC<BlockContentFieldsProps> = ({
                   title: "Novo Slide",
                   subtitle: "Descrição do slide em destaque",
                   imageUrl: "",
+                  imageAlt: "",
                   ctaText: "Ver Mais",
                   ctaHref: "#",
                 };
@@ -297,6 +325,7 @@ export const BlockContentFields: React.FC<BlockContentFieldsProps> = ({
                     type="button"
                     onClick={() => {
                       const current = config.slides || [];
+                      onClearAssetRef?.(`${selectedBlock.id}-slide-${slide.id || idx}`);
                       onUpdateConfig(
                         "slides",
                         current.filter((_: any, i: number) => i !== idx)
@@ -314,9 +343,24 @@ export const BlockContentFields: React.FC<BlockContentFieldsProps> = ({
                     current[idx] = { ...current[idx], imageUrl: url };
                     onUpdateConfig("slides", current);
                   }}
-                  bucket="store-assets"
+                  bucket="public_media"
                   folder="builder"
                   label="Imagem do Slide"
+                  studioAssetUsageSlot={`${selectedBlock.id}-slide-${slide.id || idx}`}
+                  onAssetUploaded={onUpdateAssetRef}
+                  onAssetCleared={onClearAssetRef}
+                />
+                <Input
+                  value={slide.imageAlt || ""}
+                  onChange={(e) => {
+                    const current = [...(config.slides || [])];
+                    current[idx] = { ...current[idx], imageAlt: e.target.value };
+                    onUpdateConfig("slides", current);
+                    onUpdateAssetAltText?.(`${selectedBlock.id}-slide-${slide.id || idx}`, e.target.value);
+                  }}
+                  maxLength={500}
+                  placeholder="Texto alternativo do slide"
+                  className="h-8 text-xs"
                 />
                 <Input
                   value={slide.title || ""}
@@ -350,6 +394,7 @@ export const BlockContentFields: React.FC<BlockContentFieldsProps> = ({
                   name: "Nome do Cliente",
                   role: "Empresa / Cidade",
                   avatarUrl: "",
+                  imageAlt: "",
                   rating: 5,
                   comment: "Excelente experiência e atendimento pontual.",
                   verified: true,
@@ -372,6 +417,7 @@ export const BlockContentFields: React.FC<BlockContentFieldsProps> = ({
                     type="button"
                     onClick={() => {
                       const current = config.testimonials || [];
+                      onClearAssetRef?.(`${selectedBlock.id}-testimonial-${t.id || idx}`);
                       onUpdateConfig(
                         "testimonials",
                         current.filter((_: any, i: number) => i !== idx)
@@ -389,11 +435,26 @@ export const BlockContentFields: React.FC<BlockContentFieldsProps> = ({
                     current[idx] = { ...current[idx], avatarUrl: url };
                     onUpdateConfig("testimonials", current);
                   }}
-                  bucket="store-assets"
+                  bucket="public_media"
                   folder="builder"
                   aspect={1}
                   cropShape="round"
                   label="Foto do Cliente"
+                  studioAssetUsageSlot={`${selectedBlock.id}-testimonial-${t.id || idx}`}
+                  onAssetUploaded={onUpdateAssetRef}
+                  onAssetCleared={onClearAssetRef}
+                />
+                <Input
+                  value={t.imageAlt || ""}
+                  onChange={(e) => {
+                    const current = [...(config.testimonials || [])];
+                    current[idx] = { ...current[idx], imageAlt: e.target.value };
+                    onUpdateConfig("testimonials", current);
+                    onUpdateAssetAltText?.(`${selectedBlock.id}-testimonial-${t.id || idx}`, e.target.value);
+                  }}
+                  maxLength={500}
+                  placeholder="Texto alternativo da foto"
+                  className="h-8 text-xs"
                 />
                 <Input
                   value={t.name || ""}
@@ -583,7 +644,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
       blocks: current.blocks.map((block) => block.id !== selectedBlockId ? block : {
         ...block,
         assetRefs: [
-          ...(block.assetRefs ?? []).filter((existing) => existing.provider !== "unsplash" && existing.usage_slot !== asset.usage_slot),
+          ...(block.assetRefs ?? []).filter((existing) => existing.usage_slot !== asset.usage_slot),
           asset,
         ],
       }),
@@ -591,13 +652,26 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
     }));
   };
 
-  const handleClearAssetRef = () => {
+  const handleClearAssetRef = (usageSlot?: string) => {
+    if (!usageSlot) return;
     if (!selectedBlockId) return;
     setDocument((current) => ({
       ...current,
       blocks: current.blocks.map((block) => block.id !== selectedBlockId ? block : {
         ...block,
-        assetRefs: (block.assetRefs ?? []).filter((asset) => asset.provider !== "unsplash"),
+        assetRefs: (block.assetRefs ?? []).filter((asset) => asset.usage_slot !== usageSlot),
+      }),
+      updated_at: new Date().toISOString(),
+    }));
+  };
+
+  const handleUpdateAssetAltText = (usageSlot: string, altText: string) => {
+    if (!selectedBlockId) return;
+    setDocument((current) => ({
+      ...current,
+      blocks: current.blocks.map((block) => block.id !== selectedBlockId ? block : {
+        ...block,
+        assetRefs: (block.assetRefs ?? []).map((asset) => asset.usage_slot === usageSlot ? { ...asset, alt_text: altText } : asset),
       }),
       updated_at: new Date().toISOString(),
     }));
@@ -1025,6 +1099,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                   onUpdateConfig={handleUpdateConfig}
                   onUpdateAssetRef={handleUpdateAssetRef}
                   onClearAssetRef={handleClearAssetRef}
+                  onUpdateAssetAltText={handleUpdateAssetAltText}
                   unsplashUsageSlot={unsplashDecorativeSlot?.id}
                   unsplashDefaultQuery={unsplashDecorativeSlot?.searchHints[0] ?? activeStudioManifest?.niche.replace(/[-_]/g, " ")}
                 />
@@ -1288,6 +1363,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                     onUpdateConfig={handleUpdateConfig}
                     onUpdateAssetRef={handleUpdateAssetRef}
                     onClearAssetRef={handleClearAssetRef}
+                    onUpdateAssetAltText={handleUpdateAssetAltText}
                     unsplashUsageSlot={unsplashDecorativeSlot?.id}
                     unsplashDefaultQuery={unsplashDecorativeSlot?.searchHints[0] ?? activeStudioManifest?.niche.replace(/[-_]/g, " ")}
                   />

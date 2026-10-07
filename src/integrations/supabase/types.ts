@@ -21266,7 +21266,11 @@ export type Database = {
           id: string
           mime_type: string
           public_url: string
+          rights_attestation_version: string | null
+          rights_attested_at: string | null
+          rights_attested_by: string | null
           store_id: string
+          studio_usage_slot: string | null
           updated_at: string
           uploaded_by: string | null
         }
@@ -21279,7 +21283,11 @@ export type Database = {
           id?: string
           mime_type: string
           public_url: string
+          rights_attestation_version?: string | null
+          rights_attested_at?: string | null
+          rights_attested_by?: string | null
           store_id: string
+          studio_usage_slot?: string | null
           updated_at?: string
           uploaded_by?: string | null
         }
@@ -21292,7 +21300,11 @@ export type Database = {
           id?: string
           mime_type?: string
           public_url?: string
+          rights_attestation_version?: string | null
+          rights_attested_at?: string | null
+          rights_attested_by?: string | null
           store_id?: string
+          studio_usage_slot?: string | null
           updated_at?: string
           uploaded_by?: string | null
         }

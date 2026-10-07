@@ -13,6 +13,7 @@ import { OmniPageDocumentSchema, OmniPageDocument, createEmptyOmniPage } from "@
 import { applyTemplateToPage } from "@/lib/builder/omni-templates";
 import { auditOmniDocument, getPublicationBlockingFindings } from "@/lib/builder/studio-template-audit";
 import { matchesUnsplashSelectionLedger } from "@/lib/builder/unsplash-api";
+import { matchesStudioUploadAssetLedger } from "@/lib/builder/asset-contract";
 
 // ── 1. SALVAMENTO ATÔMICO DO DOCUMENTO NO SUPABASE ──
 export const saveOmniPageDocument = createServerFn({ method: "POST" })
@@ -178,6 +179,30 @@ export const publishOmniPageDocument = createServerFn({ method: "POST" })
         const unverifiable = unsplashRefs.filter((asset) => !ledgerRows?.some((row) => matchesUnsplashSelectionLedger(asset, row)));
         if (unverifiable.length > 0) {
           throw new Error(`Publicação bloqueada: ${unverifiable.length} asset(s) Unsplash não correspondem a uma seleção e tracking verificados nesta loja. Selecione novamente pelo picker oficial.`);
+        }
+      }
+
+      const studioUploadRefs = input.document.blocks
+        .flatMap((block) => block.assetRefs ?? [])
+        .filter((asset) => asset.provider === "upload");
+      if (studioUploadRefs.length > 0) {
+        if (studioUploadRefs.some((asset) => !asset.asset_id || !asset.source_asset_id || !asset.usage_slot)) {
+          throw new Error("Publicação bloqueada: upload Studio sem ID, caminho ou slot de uso verificável.");
+        }
+        const assetIds = Array.from(new Set(studioUploadRefs.map((asset) => asset.asset_id)));
+        const { data: uploadLedgerRows, error: uploadLedgerError } = await db
+          .from("media_assets")
+          .select("id, store_id, bucket_name, file_path, public_url, mime_type, studio_usage_slot, rights_attested_at, rights_attested_by, rights_attestation_version")
+          .eq("store_id", identity.store_id)
+          .in("id", assetIds);
+        if (uploadLedgerError) {
+          throw new Error("Não foi possível verificar o ledger de uploads Studio. A publicação falhou de forma segura; confira se a migration de provenance está aplicada.");
+        }
+        const unverifiableUploads = studioUploadRefs.filter((asset) =>
+          !uploadLedgerRows?.some((row) => matchesStudioUploadAssetLedger(asset, row, identity.store_id!)),
+        );
+        if (unverifiableUploads.length > 0) {
+          throw new Error(`Publicação bloqueada: ${unverifiableUploads.length} upload(s) não correspondem ao ledger de direitos desta loja. Reenvie pelo MediaUploader do Omni Studio.`);
         }
       }
 
