@@ -1,7 +1,9 @@
 
 
-## Fechamento W7.1 — contrato canônico de provider WhatsApp — 2026-10-07
+## Fechamento W1-D — Cloudflare Pages — 2026-10-07
 
-O drift confirmado foi corrigido sem alterar branches paralelas: o webhook oficial agora separa explicitamente `WHATSAPP_CREDENTIAL_PROVIDER` (`whatsapp_cloud_api`, namespace histórico de `integration_credentials`) de `WHATSAPP_META_CHANNEL_PROVIDER` (`meta_cloud_api`, namespace operacional de `whatsapp_channel_instances`, identidades, mensagens e flows). O endpoint não propaga mais o provider de credencial para o domínio de canal. Evolution/WaSender ficaram fora do escopo.
+A causa da falha foi confirmada diretamente nos logs Cloudflare: `Failed to publish your Function` por binding duplicado `SUPABASE_URL`; deployments anteriores também falharam por `SUPABASE_ANON_KEY`. O Pages já tinha variáveis no ambiente e o commit publicado redeclarava esses nomes em `[vars]` do `wrangler.toml`. O `wrangler.toml` atual da branch não tem `[vars]`, e o último deployment de produção consultado, `a2482b5a` no SHA `919c8688`, passou em todas as etapas. O SHA candidato atual ainda não foi publicado. Nenhuma configuração externa foi alterada.
 
-**Evidências locais:** regressão focada `5 arquivos / 24 testes` passou; typecheck passou; referências estáticas e `git diff --check` passaram. A prova ainda é de código/teste local: banco, RLS, webhook Meta real, provider outbound, replay concorrente, CI/deploy e produção continuam não verificados.
+## W2.1/W2.5 — extrator de mídia — 2026-10-07
+
+O endpoint `parseTravelMediaAI` foi endurecido com `requireStaff()` e rate limit por `store_id:user_id` antes de `getServerClient()` e antes de qualquer chamada ao provider. A fronteira Zod agora limita base64, texto, nome, MIME e rejeita requisição sem mídia/texto. Regressão focada: 3 arquivos / 13 testes verdes; typecheck verde; diff check verde. Isso fecha somente esta microfase de código. RLS, JWT real, quota persistente, custo real, provider real e banco continuam não verificados.
