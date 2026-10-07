@@ -430,18 +430,18 @@ Retorne ESTRITAMENTE um JSON com este formato (sem markdown \`\`\`json):
 export const signContractEnvelope = createServerFn({ method: "POST" })
   .validator(
     z.object({
-      signingToken: z.string(),
+      signingToken: z.string().trim().min(16).max(240),
       consent: z.boolean(),
-      signatureImageBase64: z.string().optional(),
-      ipAddress: z.string().optional(),
-      userAgent: z.string().optional(),
-      screenResolution: z.string().optional(),
+      signatureImageBase64: z.string().max(2_000_000).optional(),
+      ipAddress: z.string().max(80).optional(),
+      userAgent: z.string().max(500).optional(),
+      screenResolution: z.string().max(80).optional(),
       timezone: z.string().optional(),
-      geoLatitude: z.number().optional(),
-      geoLongitude: z.number().optional(),
-      geoCity: z.string().optional(),
-      geoState: z.string().optional(),
-      faceImageUrl: z.string().optional(),
+      geoLatitude: z.number().finite().gte(-90).lte(90).optional(),
+      geoLongitude: z.number().finite().gte(-180).lte(180).optional(),
+      geoCity: z.string().max(120).optional(),
+      geoState: z.string().max(80).optional(),
+      faceImageUrl: z.string().url().max(2000).optional(),
       facialBiometricsHash: z.string().optional(),
     }),
   )
@@ -459,6 +459,10 @@ export const signContractEnvelope = createServerFn({ method: "POST" })
 
     if (envErr || !envelope) throw new Error("Link de assinatura inválido ou expirado.");
 
+    if (envelope.expires_at && new Date(envelope.expires_at).getTime() <= Date.now()) {
+      throw new Error("O link de assinatura expirou.");
+    }
+
     const identity = await getIdentity();
     if (identity?.id) {
       const isKycVerified = await assertUserKycVerified(identity.id);
@@ -473,10 +477,11 @@ export const signContractEnvelope = createServerFn({ method: "POST" })
       return { success: true, message: "Este documento já foi assinado por você." };
     }
 
-    const digest = `SIG-${envelope.id}-${Date.now()}-${Math.random().toString(36).substring(2, 10)}`;
+const digest = `SIG-${envelope.id}-${Date.now()}-${Math.random().toString(36).substring(2, 10)}`;
+    const signedAt = new Date().toISOString();
 
     // Registra evidência forense de assinatura
-    await supabase.from("signature_evidence").insert({
+    const { error: evidenceErr } = await supabase.from("signature_evidence").insert({
       envelope_id: envelope.id,
       ip_address: input.ipAddress || "127.0.0.1",
       user_agent: input.userAgent || "Browser",
@@ -500,19 +505,29 @@ export const signContractEnvelope = createServerFn({ method: "POST" })
         face_image: input.faceImageUrl || null,
       },
     });
+    if (evidenceErr) throw new Error("Não foi possível registrar a evidência da assinatura.");
 
-    // Atualiza status do envelope
-    await supabase
+    // Atualiza somente de pending para signed. Em concorrência, a tentativa
+    // perdedora remove sua evidência e retorna de forma idempotente.
+    const { data: transitioned, error: transitionErr } = await supabase
       .from("signature_envelopes")
       .update({
         status: "signed",
-        signed_at: new Date().toISOString(),
+        signed_at: signedAt,
       })
-      .eq("id", envelope.id);
+      .eq("id", envelope.id)
+      .eq("status", "pending")
+      .select("id")
+      .maybeSingle();
+
+    if (transitionErr || !transitioned) {
+      await supabase.from("signature_evidence").delete().eq("signature_digest", digest);
+      return { success: true, message: "Este documento já foi assinado por você." };
+    }
 
     return {
       success: true,
-      signedAt: new Date().toISOString(),
+      signedAt,
       signatureDigest: digest,
     };
   });
