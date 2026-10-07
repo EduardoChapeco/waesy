@@ -79,3 +79,16 @@ Correção aplicada no branch:
 Assim, o provider deve selecionar npm e reproduzir o mesmo grafo de dependências validado pelo gate `5 Quality Gates`.
 
 O preview seguinte confirmou que o Pages selecionava `pnpm install` porque `pnpm-lock.yaml` também estava presente, mesmo com `bun.lock` removido. Esse grafo instalava versões diferentes das validadas pelo CI e o build terminava em failure durante o empacotamento. O `pnpm-lock.yaml` foi removido; o repositório fica agora com `package-lock.json` como único lockfile, e os quatro gates locais continuam verdes.
+
+## Correção definitiva do projeto Pages
+
+O projeto Pages correto da Waesy é `usewaesy`, com os domínios `usewaesy.pages.dev` e `waesy.com.br`. A configuração foi corrigida para:
+
+- origem GitHub: `EduardoChapeco/waesy`;
+- branch de produção: `main`;
+- comando: `npm run build`;
+- output: `dist`;
+- domínio customizado `waesy.com.br` preservado;
+- variáveis e secrets de produção preservados.
+
+A origem GitHub do projeto incorreto `wider` foi desligada. O projeto e os deployments existentes não foram apagados.
