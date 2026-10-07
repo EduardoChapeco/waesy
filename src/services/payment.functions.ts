@@ -11,7 +11,7 @@ import crypto from "crypto";
 
 import { getServerClient } from "@/lib/supabase";
 import { getServerIdentity, assertStoreAccess, getSSRClient } from "@/lib/server-access";
-import { getEnvVar } from "@/lib/env";
+import { createGatewayPayment } from "./payment-gateway.server";
 import { requireAdmin } from "@/lib/server-access";
 import { withDataPayload } from "./cart-helpers";
 import { recordLedgerEntryCore } from "@/services/immutable-ledger.functions";
@@ -93,48 +93,69 @@ export const initiatePaymentTransaction = createServerFn({ method: "POST" })
  throw new Error("Não foi encontrada intenção de pagamento válida para este pedido.");
  }
 
- // --- REAL GATEWAY INTEGRATION CHECK ---
- // Zero Mock Policy: Never simulate an external payment gateway.
- const { data: credentials } = await supabase
- .from("integration_credentials")
- .select("provider, token_payload")
- .eq("store_id", order.store_id)
- .eq("is_active", true)
- .limit(1)
- .maybeSingle();
+ // --- REAL GATEWAY INTEGRATION ---
+ // Never create a provider reference locally: only the provider response is authoritative.
+ const { data: customerOrder } = await supabase
+  .from("orders")
+  .select("customer_snapshot")
+  .eq("id", order.id)
+  .maybeSingle();
 
- if (!credentials && method !== "manual") {
- throw new Error(
- "Gateway de pagamento não configurado. Por favor, utilize uma forma de pagamento manual ou contate o lojista.",
- );
+ if (method === "manual") {
+  const { error: manualUpdateError } = await supabase
+   .from("payments")
+   .update({
+    provider_name: "manual",
+    provider_ref: null,
+    metadata: { internal_order_id: order.id, confirmation: "awaiting_manual_proof" },
+   })
+   .eq("id", existingPayment.id);
+  if (manualUpdateError) throw new Error("Não foi possível registrar o pagamento manual.");
+ } else {
+  const snapshot = (customerOrder?.customer_snapshot ?? {}) as Record<string, unknown>;
+  const payerName = typeof snapshot.name === "string" ? snapshot.name.trim() : "";
+  const payerEmail = typeof snapshot.email === "string" ? snapshot.email.trim() : null;
+  if (!payerName || !payerEmail) {
+   throw new Error("Nome e e-mail do pagador são obrigatórios para gerar a cobrança.");
+  }
+
+  const gateway = await createGatewayPayment({
+   orderId: order.id,
+   amountCents: order.total_cents,
+   method: method === "pix" ? "pix" : "credit_card",
+   idempotencyKey: idempotencyKey || `payment_${existingPayment.id}`,
+   payer: { name: payerName, email: payerEmail },
+  });
+
+  const { error: gatewayUpdateError } = await supabase
+   .from("payments")
+   .update({
+    provider_name: gateway.provider,
+    provider_ref: gateway.providerRef,
+    gateway_payload: gateway.payload,
+    status: gateway.status === "paid" ? "paid" : gateway.status,
+    metadata: { internal_order_id: order.id },
+   })
+   .eq("id", existingPayment.id);
+  if (gatewayUpdateError) throw new Error("Cobrança criada, mas não foi possível persistir sua referência.");
+
+  return {
+   status: gateway.status === "paid" ? "success" : "pending",
+   paymentId: existingPayment.id,
+   message: gateway.status === "paid"
+    ? "Pagamento aprovado pelo gateway."
+    : "Cobrança criada; aguarde a confirmação do gateway.",
+   pix: gateway.pix,
+  };
  }
-
- // In a real environment with credentials, we would call Pagar.me/Stripe here.
- // For this Phase 10 proof, we guarantee that without credentials, the process aborts.
-
- // Only manual fallbacks proceed without credentials.
- const transactionId =
- method === "manual" ? `manual_receipt_${order.id}` : `pending_ext_${crypto.randomUUID()}`;
-
- // Update internal payment transaction with provider reference
- await supabase
- .from("payments")
- .update({
- provider_name: credentials ? credentials.provider : "manual",
- provider_ref: transactionId,
- metadata: {
- internal_order_id: order.id,
- },
- })
- .eq("id", existingPayment.id);
 
  // [CRITICAL FIX] We DO NOT update the order status to "processing" here anymore.
  // The order stays "awaiting_payment". It will transition only when the Webhook arrives.
 
  return {
- status: "success",
+ status: "pending",
  paymentId: existingPayment.id,
- message: "Cobrança gerada com sucesso. Efetue o pagamento para liberar o pedido.",
+ message: "Pagamento manual registrado como aguardando comprovante.",
  };
  });
 

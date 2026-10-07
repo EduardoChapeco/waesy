@@ -184,15 +184,18 @@ export const getStoreInvoicePixDetails = createServerFn({ method: "GET" })
 
     if (!inv) throw new Error("Fatura não encontrada.");
 
-    // Chave PIX oficial da plataforma Waesy
-    const pixKey = "financeiro@usewaesy.com";
-    const beneficiaryName = "Waesy Tecnologia e Pagamentos Ltda";
+    const pixKey = process.env.PLATFORM_PIX_KEY?.trim();
+    const beneficiaryName = process.env.PLATFORM_PIX_BENEFICIARY_NAME?.trim();
+    if (!pixKey || !beneficiaryName) {
+      throw new Error("Pagamento Pix da plataforma ainda não está configurado; solicite os dados oficiais à administração.");
+    }
 
     return {
       invoiceId: inv.id,
       amountCents: inv.amount_cents,
       pixKey,
       beneficiaryName,
-      pixCopyPaste: `00020126360014BR.GOV.BCB.PIX0114${pixKey}520400005303986540${(inv.amount_cents / 100).toFixed(2)}5802BR5925${beneficiaryName.slice(0, 25)}6009SAO PAULO62070503***6304`,
+      // O payload copia-e-cola só é exibido quando gerado por um provedor Pix real.
+      pixCopyPaste: null,
     };
   });
