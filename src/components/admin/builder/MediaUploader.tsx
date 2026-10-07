@@ -7,6 +7,8 @@ import { toast } from "sonner";
 import { ImageCropperDialog } from "@/components/ui/image-cropper-dialog";
 import { uploadMediaUniversal } from "@/services/storage.functions";
 import { cn } from "@/lib/utils";
+import { UnsplashAssetPicker } from "@/components/builder/UnsplashAssetPicker";
+import type { BuilderAssetRef } from "@/lib/builder/asset-contract";
 
 interface MediaUploaderProps {
   value: string;
@@ -18,6 +20,11 @@ interface MediaUploaderProps {
   aspect?: number;
   cropShape?: "rect" | "round";
   lockAspect?: boolean;
+  allowUnsplash?: boolean;
+  unsplashUsageSlot?: string;
+  unsplashDefaultQuery?: string;
+  onAssetSelected?: (asset: BuilderAssetRef) => void;
+  onAssetCleared?: () => void;
 }
 
 const PRESET_DEMO_IMAGES: Array<{ label: string; url: string }> = [];
@@ -32,12 +39,22 @@ export function MediaUploader({
   aspect,
   cropShape = "rect",
   lockAspect = true,
+  allowUnsplash = false,
+  unsplashUsageSlot = "builder-image",
+  unsplashDefaultQuery,
+  onAssetSelected,
+  onAssetCleared,
 }: MediaUploaderProps) {
  const [isUploading, setIsUploading] = useState(false);
  const [activeMode, setActiveMode] = useState<"upload" | "url">("upload");
  const [showPresets, setShowPresets] = useState(false);
  const [hasImageError, setHasImageError] = useState(false);
  const fileInputRef = useRef<HTMLInputElement>(null);
+
+ const handleManualValueChange = (nextValue: string) => {
+   onChange(nextValue);
+   onAssetCleared?.();
+ };
 
  React.useEffect(() => {
  setHasImageError(false);
@@ -104,7 +121,7 @@ export function MediaUploader({
  });
 
  if (res?.url) {
- onChange(res.url);
+ handleManualValueChange(res.url);
  toast.success("Mídia carregada com sucesso!");
  } else {
  throw new Error("URL de resposta não encontrada.");
@@ -143,7 +160,7 @@ export function MediaUploader({
  });
 
  if (res?.url) {
- onChange(res.url);
+ handleManualValueChange(res.url);
  toast.success("Imagem recortada e salva com sucesso!");
  } else {
  throw new Error("URL da imagem recortada não retornada.");
@@ -209,7 +226,7 @@ export function MediaUploader({
  variant="destructive"
  size="icon"
  className="h-8 w-8 rounded-lg cursor-pointer"
- onClick={() => onChange("")}
+ onClick={() => handleManualValueChange("")}
  title="Remover mídia"
  >
  <X className="size-4" />
@@ -252,7 +269,7 @@ export function MediaUploader({
  className="h-8 pl-7 pr-2 text-xs bg-background rounded-lg border-border/70 font-sans"
  placeholder="Cole a URL da imagem (https://...)"
  value={value || ""}
- onChange={(e) => onChange(e.target.value)}
+ onChange={(e) => handleManualValueChange(e.target.value)}
  />
  <LinkIcon className="size-3.5 absolute left-2 top-2.5 text-muted-foreground pointer-events-none" />
  </div>
@@ -295,6 +312,18 @@ export function MediaUploader({
  </div>
  )}
  </div>
+
+ {allowUnsplash && (
+   <UnsplashAssetPicker
+     usageSlot={unsplashUsageSlot}
+     defaultQuery={unsplashDefaultQuery}
+     onSelect={(asset) => {
+       onChange(asset.source_url ?? "");
+       onAssetSelected?.(asset);
+       setShowPresets(false);
+     }}
+   />
+ )}
 
  {/* Hidden File Input */}
  <input

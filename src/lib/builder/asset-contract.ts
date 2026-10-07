@@ -34,8 +34,13 @@ export const BuilderAssetRefSchema = z.object({
   source_url: z.string().url().nullable().optional(),
   source_page_url: z.string().url().nullable().optional(),
   creator: z.string().nullable().optional(),
+  creator_profile_url: z.string().url().nullable().optional(),
   attribution_text: z.string().nullable().optional(),
   license_url: z.string().url().nullable().optional(),
+  license_id: z.string().max(100).nullable().optional(),
+  usage_slot: z.string().min(1).max(120).nullable().optional(),
+  alt_text: z.string().max(500).nullable().optional(),
+  download_event_status: z.enum(["tracked", "failed", "pending", "not-required"]).nullable().optional(),
   byte_size: z.number().int().nonnegative().nullable().optional(),
   mime_type: z.string().max(128).nullable().optional(),
   width: z.number().int().positive().nullable().optional(),
@@ -57,7 +62,19 @@ export type BuilderAssetRef = z.infer<typeof BuilderAssetRefSchema>;
 export function isAssetPublicationReady(asset: BuilderAssetRef): boolean {
   if (asset.provenance_state === "unknown") return false;
   if (asset.provider === "unsplash") {
-    return Boolean(asset.source_url && asset.source_page_url && asset.creator && asset.attribution_text);
+    if (!asset.source_url || !asset.source_page_url || !asset.creator || !asset.creator_profile_url) return false;
+    if (!asset.attribution_text || asset.license_id !== "unsplash-license" || !asset.license_url) return false;
+    if (!asset.source_asset_id || !asset.usage_slot || asset.download_event_status !== "tracked") return false;
+    try {
+      const imageUrl = new URL(asset.source_url);
+      const photoUrl = new URL(asset.source_page_url);
+      const creatorUrl = new URL(asset.creator_profile_url);
+      return imageUrl.protocol === "https:" && imageUrl.hostname === "images.unsplash.com" &&
+        photoUrl.protocol === "https:" && photoUrl.hostname === "unsplash.com" &&
+        creatorUrl.protocol === "https:" && creatorUrl.hostname === "unsplash.com";
+    } catch {
+      return false;
+    }
   }
   if (asset.provider === "stock") {
     return Boolean(asset.source_url && asset.source_page_url && asset.creator && asset.license_url);

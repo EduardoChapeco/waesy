@@ -59,6 +59,17 @@ describe("Studio template automated quality pipeline", () => {
     ]));
   });
 
+  it("não permite disfarçar images.unsplash.com como asset de upload do usuário", () => {
+    const imageUrl = "https://images.unsplash.com/photo-example";
+    const result = auditStudioTemplate(fixture([{
+      id: "hero",
+      type: "hero_minimal_split",
+      config: { title: "Ambiente", imageUrl, imageAlt: "Espaço com luz natural" },
+      assetRefs: [{ asset_id: "falsely-uploaded", provider: "upload", source_url: imageUrl, provenance_state: "user-provided" }],
+    }]));
+    expect(result.findings.map((finding) => finding.ruleId)).toContain("LICENSE_PROVIDER_MISMATCH");
+  });
+
   it("aprova imagem Unsplash com atribuição verificável e alt, se dentro do orçamento", () => {
     const imageUrl = "https://images.unsplash.com/photo-example";
     const result = auditStudioTemplate(fixture([
@@ -69,10 +80,16 @@ describe("Studio template automated quality pipeline", () => {
         assetRefs: [{
           asset_id: "photo-1",
           provider: "unsplash",
+          source_asset_id: "photo-example",
           source_url: imageUrl,
           source_page_url: "https://unsplash.com/photos/example",
           creator: "Autoria confirmada",
+          creator_profile_url: "https://unsplash.com/@autoria",
           attribution_text: "Foto por Autoria confirmada no Unsplash",
+          license_id: "unsplash-license",
+          license_url: "https://unsplash.com/license",
+          usage_slot: "hero-ambience",
+          download_event_status: "tracked",
           provenance_state: "provider-reported",
           byte_size: 300_000,
         }],
@@ -97,10 +114,27 @@ describe("Studio template automated quality pipeline", () => {
 
   it("gera relatório determinístico por catálogo com resultado de cada template", () => {
     const report = auditAllStudioTemplates();
-    expect(report.summary.total).toBe(9);
-    expect(report.templates).toHaveLength(9);
+    expect(report.summary.total).toBe(12);
+    expect(report.templates).toHaveLength(12);
     expect(report.templates.every((template) => template.findings && template.metrics)).toBe(true);
     expect(report.summary.failed + report.summary.warnings + report.summary.passed).toBe(report.summary.total);
+    expect(report.summary.reviewRequired).toBe(12);
+    expect(report.summary.publishableFailed).toBe(0);
+    expect(report.templates.filter((template) => template.templateId.startsWith("pilot_")).every((template) => template.findings.some((finding) => finding.ruleId === "CONTENT_PLACEHOLDER_UNRESOLVED"))).toBe(true);
+  });
+
+  it("bloqueia placeholders não resolvidos e âncoras duplicadas ou inválidas", () => {
+    const result = auditStudioTemplate(fixture([
+      { id: "hero", type: "hero_minimal_split", sectionAnchorId: "hero", config: { title: "[[NOME_REAL]]", primaryCta: { label: "Saiba mais", href: "#ausente" } } },
+      { id: "faq", type: "faq_clean_accordion", sectionAnchorId: "hero", config: { title: "Dúvidas", items: [] } },
+    ]));
+    const ruleIds = result.findings.map((finding) => finding.ruleId);
+    expect(ruleIds).toEqual(expect.arrayContaining([
+      "CONTENT_PLACEHOLDER_UNRESOLVED",
+      "LINK_DUPLICATE_SECTION_ANCHOR",
+      "LINK_BROKEN_SECTION_ANCHOR",
+    ]));
+    expect(getPublicationBlockingFindings(result).length).toBeGreaterThanOrEqual(3);
   });
 
   it("expõe findings bloqueantes ao serviço de publicação para um documento Omni", () => {

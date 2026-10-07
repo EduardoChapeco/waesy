@@ -237,6 +237,7 @@ export const OmniBlockInstanceSchema = z.object({
   config: z.record(z.any()),
   styling: OmniBlockStylingSchema.optional(),
   assetRefs: z.array(BuilderAssetRefSchema).optional(),
+  sectionAnchorId: z.string().regex(/^[a-z][a-z0-9_-]{0,63}$/).optional(),
   isHidden: z.boolean().optional(),
 });
 export type OmniBlockInstance = z.infer<typeof OmniBlockInstanceSchema>;
@@ -379,6 +380,9 @@ export function duplicateBlockInPage(page: OmniPageDocument, blockId: string): O
   const duplicate: OmniBlockInstance = {
     ...original,
     id: `blk_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`,
+    sectionAnchorId: original.sectionAnchorId
+      ? `${original.sectionAnchorId.slice(0, 45)}-copy-${Math.random().toString(36).slice(2, 6)}`
+      : undefined,
     config: JSON.parse(JSON.stringify(original.config)),
     styling: original.styling ? JSON.parse(JSON.stringify(original.styling)) : undefined,
   };

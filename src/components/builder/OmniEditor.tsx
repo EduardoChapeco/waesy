@@ -3,7 +3,7 @@
  * Padrão Wix-Level Builder & Figma / Webflow ergonomics.
  */
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   OmniPageDocument,
   OmniBlockInstance,
@@ -22,8 +22,12 @@ import {
   BLOCK_TO_WIX_CATEGORY,
 } from "./registry";
 import { NicheTemplateDefinition } from "./templates";
-import { STUDIO_TEMPLATE_CATALOG, materializeStudioTemplate } from "@/lib/builder/studio-catalog";
+import { STUDIO_TEMPLATE_CATALOG, getStudioTemplate, materializeStudioManifest, materializeStudioTemplate } from "@/lib/builder/studio-catalog";
+import type { StudioTemplateManifest } from "@/lib/builder/studio-manifest";
+import type { BuilderAssetRef } from "@/lib/builder/asset-contract";
 import { LiveTemplatePreviewModal } from "./LiveTemplatePreviewModal";
+import { StudioTemplateFactory } from "./StudioTemplateFactory";
+import { listStudioTemplateDrafts } from "@/services/studio-template-library.functions";
 
 import {
   Plus,
@@ -76,11 +80,19 @@ const BLOCK_ICONS: Record<string, any> = {
 interface BlockContentFieldsProps {
   selectedBlock: OmniBlockInstance;
   onUpdateConfig: (key: string, value: any) => void;
+  onUpdateAssetRef?: (asset: BuilderAssetRef) => void;
+  onClearAssetRef?: () => void;
+  unsplashUsageSlot?: string;
+  unsplashDefaultQuery?: string;
 }
 
 export const BlockContentFields: React.FC<BlockContentFieldsProps> = ({
   selectedBlock,
   onUpdateConfig,
+  onUpdateAssetRef,
+  onClearAssetRef,
+  unsplashUsageSlot,
+  unsplashDefaultQuery,
 }) => {
   const config = selectedBlock.config as any;
 
@@ -141,7 +153,28 @@ export const BlockContentFields: React.FC<BlockContentFieldsProps> = ({
             bucket="store-assets"
             folder="builder"
             label="Imagem de Destaque"
+            allowUnsplash={Boolean(unsplashUsageSlot)}
+            unsplashUsageSlot={unsplashUsageSlot}
+            unsplashDefaultQuery={unsplashDefaultQuery}
+            onAssetSelected={(asset) => {
+              onUpdateAssetRef?.(asset);
+              onUpdateConfig("imageAlt", asset.alt_text || "");
+            }}
+            onAssetCleared={onClearAssetRef}
           />
+          <div>
+            <label className="mb-1 block text-xs font-semibold text-foreground" htmlFor={`image-alt-${selectedBlock.id}`}>
+              Texto alternativo da imagem
+            </label>
+            <Input
+              id={`image-alt-${selectedBlock.id}`}
+              value={config.imageAlt || ""}
+              onChange={(event) => onUpdateConfig("imageAlt", event.target.value)}
+              maxLength={500}
+              placeholder="Descreva fielmente o que aparece; vazio apenas se decorativa"
+              className="h-9 rounded-lg text-xs"
+            />
+          </div>
         </div>
       )}
 
@@ -447,6 +480,9 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
   onBack,
 }) => {
   const [document, setDocument] = useState<OmniPageDocument>(initialDocument);
+  const [activeStudioManifest, setActiveStudioManifest] = useState<StudioTemplateManifest | null>(
+    () => getStudioTemplate(initialDocument.source_template_id ?? "") ?? null,
+  );
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [titleDraft, setTitleDraft] = useState(initialDocument.title);
   const [selectedBlockId, setSelectedBlockId] = useState<string | null>(
@@ -488,6 +524,21 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
   });
 
   const selectedBlock = document.blocks.find((b) => b.id === selectedBlockId);
+  const unsplashDecorativeSlot = activeStudioManifest?.assetSlots.find(
+    (slot) => slot.allowUnsplash && slot.purpose === "decorative",
+  );
+
+  useEffect(() => {
+    const sourceId = initialDocument.source_template_id;
+    if (!sourceId?.startsWith("ai_") || activeStudioManifest) return;
+    let active = true;
+    listStudioTemplateDrafts({ data: {} })
+      .then(({ drafts }) => {
+        if (active) setActiveStudioManifest(drafts.find((draft) => draft.id === sourceId) ?? null);
+      })
+      .catch(() => undefined);
+    return () => { active = false; };
+  }, [initialDocument.source_template_id, activeStudioManifest]);
 
   // ── MANIPULADORES DE ESTADO IMUTÁVEL ──
 
@@ -503,6 +554,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
 
   const handleApplyTemplate = (templateId: string) => {
     const updated = materializeStudioTemplate(document, templateId);
+    setActiveStudioManifest(getStudioTemplate(templateId) ?? null);
     setDocument(updated);
     if (updated.blocks.length > 0) {
       setSelectedBlockId(updated.blocks[0].id);
@@ -510,10 +562,45 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
     toast.success("Template aplicado com sucesso!");
   };
 
+  const handleApplyStudioManifest = (template: StudioTemplateManifest) => {
+    const updated = materializeStudioManifest(document, template);
+    setActiveStudioManifest(template);
+    setDocument(updated);
+    if (updated.blocks.length > 0) setSelectedBlockId(updated.blocks[0].id);
+    toast.success("Template aplicado como rascunho editável. Revise os findings antes de publicar.");
+  };
+
   const handleUpdateConfig = (key: string, value: any) => {
     if (!selectedBlockId) return;
     const updated = updateBlockInPage(document, selectedBlockId, { [key]: value });
     setDocument(updated);
+  };
+
+  const handleUpdateAssetRef = (asset: BuilderAssetRef) => {
+    if (!selectedBlockId) return;
+    setDocument((current) => ({
+      ...current,
+      blocks: current.blocks.map((block) => block.id !== selectedBlockId ? block : {
+        ...block,
+        assetRefs: [
+          ...(block.assetRefs ?? []).filter((existing) => existing.provider !== "unsplash" && existing.usage_slot !== asset.usage_slot),
+          asset,
+        ],
+      }),
+      updated_at: new Date().toISOString(),
+    }));
+  };
+
+  const handleClearAssetRef = () => {
+    if (!selectedBlockId) return;
+    setDocument((current) => ({
+      ...current,
+      blocks: current.blocks.map((block) => block.id !== selectedBlockId ? block : {
+        ...block,
+        assetRefs: (block.assetRefs ?? []).filter((asset) => asset.provider !== "unsplash"),
+      }),
+      updated_at: new Date().toISOString(),
+    }));
   };
 
   const handleUpdateStyling = (stylingKey: keyof OmniBlockStyling, value: any) => {
@@ -767,6 +854,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                 </>
               ) : (
                 <div className="space-y-3">
+                  <StudioTemplateFactory onApply={handleApplyStudioManifest} />
                   {STUDIO_TEMPLATE_CATALOG.map((tpl) => (
                     <div
                       key={tpl.id}
@@ -780,6 +868,11 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                           {tpl.badge}
                         </span>
                       </div>
+                      {tpl.status === "review_required" && (
+                        <span className="mb-2 inline-flex rounded bg-amber-100 px-2 py-1 text-xs font-medium text-amber-900 dark:bg-amber-950 dark:text-amber-100">
+                          Revisar conteúdo antes de publicar
+                        </span>
+                      )}
                       <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2 mb-3">
                         {tpl.description}
                       </p>
@@ -930,6 +1023,10 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                 <BlockContentFields
                   selectedBlock={selectedBlock}
                   onUpdateConfig={handleUpdateConfig}
+                  onUpdateAssetRef={handleUpdateAssetRef}
+                  onClearAssetRef={handleClearAssetRef}
+                  unsplashUsageSlot={unsplashDecorativeSlot?.id}
+                  unsplashDefaultQuery={unsplashDecorativeSlot?.searchHints[0] ?? activeStudioManifest?.niche.replace(/[-_]/g, " ")}
                 />
               ) : (
                 /* Aba de Estilo Isolado */
@@ -1189,6 +1286,10 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                   <BlockContentFields
                     selectedBlock={selectedBlock}
                     onUpdateConfig={handleUpdateConfig}
+                    onUpdateAssetRef={handleUpdateAssetRef}
+                    onClearAssetRef={handleClearAssetRef}
+                    unsplashUsageSlot={unsplashDecorativeSlot?.id}
+                    unsplashDefaultQuery={unsplashDecorativeSlot?.searchHints[0] ?? activeStudioManifest?.niche.replace(/[-_]/g, " ")}
                   />
                 </div>
               ) : (
@@ -1272,6 +1373,10 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
             <SheetTitle className="text-sm font-bold tracking-tight">Modelos de Página</SheetTitle>
           </SheetHeader>
           <div className="flex-1 overflow-y-auto space-y-3">
+            <StudioTemplateFactory onApply={(template) => {
+              handleApplyStudioManifest(template);
+              setIsMobileTemplateOpen(false);
+            }} />
             {STUDIO_TEMPLATE_CATALOG.map((tpl) => (
               <div
                 key={tpl.id}
@@ -1283,6 +1388,11 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                     {tpl.badge}
                   </span>
                 </div>
+                {tpl.status === "review_required" && (
+                  <span className="mb-2 inline-flex rounded bg-amber-100 px-2 py-1 text-xs font-medium text-amber-900 dark:bg-amber-950 dark:text-amber-100">
+                    Revisar antes de publicar
+                  </span>
+                )}
                 <p className="text-xs text-muted-foreground line-clamp-2 mb-3">
                   {tpl.description}
                 </p>

@@ -12,6 +12,7 @@ import { getServerClient, SupabaseUnconfiguredError } from "@/lib/supabase";
 import { OmniPageDocumentSchema, OmniPageDocument, createEmptyOmniPage } from "@/types/omni-builder";
 import { applyTemplateToPage } from "@/lib/builder/omni-templates";
 import { auditOmniDocument, getPublicationBlockingFindings } from "@/lib/builder/studio-template-audit";
+import { matchesUnsplashSelectionLedger } from "@/lib/builder/unsplash-api";
 
 // ── 1. SALVAMENTO ATÔMICO DO DOCUMENTO NO SUPABASE ──
 export const saveOmniPageDocument = createServerFn({ method: "POST" })
@@ -161,6 +162,25 @@ export const publishOmniPageDocument = createServerFn({ method: "POST" })
         throw new Error("Loja ativa não identificada.");
       }
 
+      const db = getServerClient();
+      const unsplashRefs = input.document.blocks.flatMap((block) => block.assetRefs ?? []).filter((asset) => asset.provider === "unsplash");
+      if (unsplashRefs.length > 0) {
+        if (unsplashRefs.some((asset) => !asset.source_asset_id || !asset.usage_slot)) {
+          throw new Error("Publicação bloqueada: referência Unsplash sem foto ou slot de uso verificado.");
+        }
+        const photoIds = Array.from(new Set(unsplashRefs.map((asset) => asset.source_asset_id as string)));
+        const { data: ledgerRows, error: ledgerError } = await db
+          .from("unsplash_studio_selections")
+          .select("photo_id, usage_slot, image_url, photo_page_url, creator_name, creator_profile_url, license_id, license_url")
+          .eq("store_id", identity.store_id)
+          .in("photo_id", photoIds);
+        if (ledgerError) throw new Error("Não foi possível verificar o ledger Unsplash. A publicação falhou de forma segura; confira se as migrations estão aplicadas.");
+        const unverifiable = unsplashRefs.filter((asset) => !ledgerRows?.some((row) => matchesUnsplashSelectionLedger(asset, row)));
+        if (unverifiable.length > 0) {
+          throw new Error(`Publicação bloqueada: ${unverifiable.length} asset(s) Unsplash não correspondem a uma seleção e tracking verificados nesta loja. Selecione novamente pelo picker oficial.`);
+        }
+      }
+
       const audit = auditOmniDocument(input.document);
       const blockingFindings = getPublicationBlockingFindings(audit);
       if (blockingFindings.length > 0) {
@@ -171,7 +191,6 @@ export const publishOmniPageDocument = createServerFn({ method: "POST" })
         throw new Error(`Publicação bloqueada pela auditoria do Waesy Studio: ${summary}`);
       }
 
-      const db = getServerClient();
       const { data: result, error: persistErr } = await db.rpc("persist_omni_document_snapshot", {
         p_document_id: input.documentId,
         p_store_id: identity.store_id,

@@ -4,32 +4,38 @@ import { BuilderAssetRefSchema, isAssetPublicationReady } from "./asset-contract
 import {
   getStudioTemplate,
   listStudioTemplates,
+  materializeStudioManifest,
   materializeStudioTemplate,
   STUDIO_TEMPLATE_CATALOG,
 } from "./studio-catalog";
+import { STUDIO_PILOT_TEMPLATES } from "./studio-pilot-templates";
+import { StudioTemplateManifestSchema } from "./studio-manifest";
 import { resolveStudioMotionClasses } from "./motion-runtime";
 import { getSiteBlockByIdStrict } from "@/components/builder/registry";
 
 describe("Waesy Studio canonical contracts", () => {
-  it("indexa os templates existentes sem duplicar a árvore de blocos", () => {
-    expect(STUDIO_TEMPLATE_CATALOG).toHaveLength(9);
+  it("indexa 9 templates legados e 3 pilotos como manifests versionados sem duplicar a árvore de blocos", () => {
+    expect(STUDIO_TEMPLATE_CATALOG).toHaveLength(12);
+    expect(STUDIO_TEMPLATE_CATALOG.filter((template) => template.isPilot)).toHaveLength(3);
     const legal = getStudioTemplate("template_legal_jus");
     expect(legal?.goal).toBe("lead_capture");
     expect(legal?.sourceTemplateId).toBe("template_legal_jus");
-    expect(legal?.assetSlots).toContain("hero_portrait");
+    expect(legal?.assetSlots.some((slot) => slot.id === "hero_portrait")).toBe(true);
+    expect(legal?.status).toBe("review_required");
   });
 
-  it("filtra o catálogo por objetivo e nicho", () => {
+  it("filtra o catálogo por objetivo e nicho sem declarar templates prontos sem revisão", () => {
     const bookingTemplates = listStudioTemplates({ goal: "booking" });
     expect(bookingTemplates.length).toBeGreaterThanOrEqual(3);
-    expect(bookingTemplates.every((template) => template.status === "ready")).toBe(true);
+    expect(bookingTemplates.every((template) => template.status === "review_required")).toBe(true);
     const deliveryTemplates = listStudioTemplates({ niche: "gastronomy", tag: "delivery" });
     expect(deliveryTemplates.map((template) => template.id)).toEqual(
-      expect.arrayContaining(["template_gastronomy", "template_dark_kitchen"]),
+      expect.arrayContaining(["template_gastronomy", "template_dark_kitchen", "pilot_gastronomy_orders"]),
     );
+    expect(listStudioTemplates({ pilotsOnly: true })).toHaveLength(3);
   });
 
-  it("materializa uma instância com origem e schema versionado", () => {
+  it("materializa uma cópia com origem e versão do conteúdo preservadas", () => {
     const page = createEmptyOmniPage("studio-demo", "Studio Demo", "general");
     const hydrated = materializeStudioTemplate(page, "template_tourism");
     const parsed = OmniPageDocumentSchema.parse(hydrated);
@@ -39,9 +45,27 @@ describe("Waesy Studio canonical contracts", () => {
     expect(parsed.source_template_version).toBe("1.0.0");
     expect(parsed.blocks.length).toBeGreaterThan(0);
     expect(hydrated.blocks).not.toBe(page.blocks);
+    expect(hydrated.blocks[0].id).not.toBe(getStudioTemplate("template_tourism")?.blocks[0].sectionKey);
   });
 
-  it("não aceita asset externo sem provenance suficiente para publicação", () => {
+  it("materializa os pilots sem mutar o manifesto fonte e preserva anchors e versão", () => {
+    const page = createEmptyOmniPage("studio-pilot", "Página piloto", "general");
+    const pilot = STUDIO_PILOT_TEMPLATES[0];
+    const hydrated = materializeStudioManifest(page, pilot);
+    const parsed = OmniPageDocumentSchema.parse(hydrated);
+    expect(parsed.source_template_id).toBe(pilot.id);
+    expect(parsed.source_template_version).toBe(pilot.version);
+    expect(parsed.blocks[0].sectionAnchorId).toBe("topo");
+    expect(pilot.blocks[0].config).toMatchObject({ imageUrl: "" });
+  });
+
+  it("recusa href executável e URL de imagem arbitrária em manifests", () => {
+    const unsafe = structuredClone(STUDIO_PILOT_TEMPLATES[0]) as any;
+    unsafe.blocks[0].config.primaryCta.href = "javascript:alert(1)";
+    expect(() => StudioTemplateManifestSchema.parse(unsafe)).toThrow();
+  });
+
+  it("não aceita asset Unsplash sem origem, licença, autoria e evento de seleção", () => {
     const draft = BuilderAssetRefSchema.parse({
       asset_id: "asset_draft",
       provider: "unsplash",
@@ -53,10 +77,16 @@ describe("Waesy Studio canonical contracts", () => {
     const ready = BuilderAssetRefSchema.parse({
       asset_id: "asset_ready",
       provider: "unsplash",
+      source_asset_id: "photo-example",
       source_url: "https://images.unsplash.com/photo-example",
-      source_page_url: "https://unsplash.com/photos/example",
+      source_page_url: "https://unsplash.com/photos/example?utm_source=waesy&utm_medium=referral",
       creator: "Fotógrafo verificado",
+      creator_profile_url: "https://unsplash.com/@fotografo?utm_source=waesy&utm_medium=referral",
       attribution_text: "Foto por Fotógrafo verificado no Unsplash",
+      license_id: "unsplash-license",
+      license_url: "https://unsplash.com/license",
+      usage_slot: "hero-ambience",
+      download_event_status: "tracked",
       provenance_state: "provider-reported",
     });
     expect(isAssetPublicationReady(ready)).toBe(true);
