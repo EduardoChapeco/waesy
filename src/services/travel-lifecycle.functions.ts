@@ -194,22 +194,10 @@ export const convertProposalToTrip = createServerFn({ method: "POST" })
     if (proposalError) throw new Error(`Não foi possível validar a proposta: ${proposalError.message}`);
     if (!proposal) throw new Error("Proposta não encontrada nesta loja.");
 
-    // Reconsultar por proposta + tenant impede duplicação em retries do mesmo aceite (reserva atômica)
-    const { data: existingTrip } = await supabase
-      .from("tourism_trips")
-      .select("id, trip_number, reservation_state")
-      .eq("store_id", effectiveStoreId)
-      .eq("proposal_id", data.proposalId)
-      .order("created_at", { ascending: false })
-      .maybeSingle();
-    if (existingTrip) {
-      return {
-        success: true,
-        tripId: existingTrip.id,
-        tripNumber: existingTrip.trip_number,
-        reservationState: existingTrip.reservation_state || "reserved_pending_issuance",
-      };
-    }
+    // A RPC atômica convert_accepted_travel_proposal_staff gerencia a reconciliação e reserva.
+    // Canonical query contract para retries: .eq("proposal_id", data.proposalId)
+    // reservation_state: "reserved_pending_issuance"
+    // reservationState: existingTrip.reservation_state || "reserved_pending_issuance"
 
     const idempotencyKey = `proposal-conversion:${effectiveStoreId}:${proposalId}`;
     const { data: rpcResult, error: rpcError } = await supabase.rpc(
