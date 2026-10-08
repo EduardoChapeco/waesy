@@ -13,6 +13,7 @@ import { ErrorState, UnconfiguredState } from "@/components/state/states";
 import { StoreAnalyticsInjector } from "@/components/analytics/StoreAnalyticsInjector";
 
 export const Route = createFileRoute("/_store")({
+  staleTime: 15_000,
  loader: async () => {
  try {
  const [menusRes, storeRes, brandRes, carts, globalCarts, popupsRes, sessionRes] = await Promise.all([

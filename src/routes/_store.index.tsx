@@ -115,6 +115,7 @@ const DISCOVERY_CATEGORIES: FilterChipOption[] = [
 ];
 
 export const Route = createFileRoute("/_store/")({
+  staleTime: 15_000,
   head: () => ({
     meta: [
       { title: "Waesy — Vitrine da Cidade | Classificados, Empregos, Eventos e Mais" },

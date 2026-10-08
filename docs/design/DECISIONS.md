@@ -1,5 +1,16 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-197: Otimização Reativa de Login, Unificação de Cookies SSR, Memoização de Identidade e Caching de Rotas
+
+- **Data:** 2026-10-08
+- **Contexto:** Relato de lentidão crítica após o login: o sistema demorava para transitar para o estado logado e carregar as informações do usuário. Identificou-se: (1) Incompatibilidade de cookies entre `supabase.ts` (`storageKey: 'waesy-auth-token'`) e `supabase-ssr.server.ts` (esperava `sb-*-auth-token`), impedindo sincronização imediata da sessão entre browser e worker; (2) `_store.entrar.tsx` utilizava `window.location.replace` e `window.location.href`, forçando o descarte completo do DOM e o download de 490+ chunks JS do Cloudflare; (3) Cascata de até 6 roundtrips sequenciais de banco por request em `getServerIdentity()` e `getUserSession()`; (4) `defaultStaleTime: 0` no TanStack Router causava invalidação agressiva e waterfalls de requisições de loaders a cada clique.
+- **Decisão:**
+  1. **Unificação e Compatibilidade de Cookies (`supabase-ssr.server.ts` & `identity.server.ts`):** Unificado o `storageKey` do SSR para `waesy-auth-token`, mantendo fallback retrocompatível para cookies legados `sb-*-auth-token`.
+  2. **Transição Reativa SPA (`_store.entrar.tsx`):** Substituídos os hard-reloads por `await router.invalidate()` seguido de `navigate({ to: destination, replace: true })`, garantindo que a reatividade do TanStack Router atualize os estados de autenticação em memória instantaneamente.
+  3. **Memoização e Paralelização (`identity.server.ts` & `auth.functions.ts`):** Paralelizada a consulta de perfis e workspace members em 1 roundtrip único, atachado o perfil e usuário à `ServerIdentity`, e refatorado `getUserSession` para consumir a identidade memoizada em 0ms.
+  4. **StaleTime de Rotas (`router.tsx`, `_store.tsx`, `_store.index.tsx`):** Configurado `defaultStaleTime: 10_000` globalmente no router e `staleTime: 15_000` nas rotas principais da vitrine, eliminando refetches em cascata durante navegação normal.
+- **Validação:** Typecheck com Exit Code 0, Design Lint com 0 novas violações (catraca respeitada), e build de produção aprovado com sucesso.
+
 ## DEC-196: Saneamento do Editor de Perfil, Validação de Gênero Zod, Adição de Habilidades sem Reset de Aba, Upload de Biolinks e Altura Canônica de Capas
 
 - **Data:** 2026-10-08

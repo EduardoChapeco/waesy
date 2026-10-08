@@ -36,6 +36,8 @@ export interface ServerIdentity {
   activeContext?: string | null;
   /** @deprecated use identity.id instead */
   userId?: string | null;
+  user?: any;
+  profile?: any;
 }
 
 export const STAFF_ROLES = [

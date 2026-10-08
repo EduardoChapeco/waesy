@@ -51,75 +51,52 @@ function getClientIp(req: Request): string {
 // ---------------------------------------------------------------------------
 
 export const getUserSession = createServerFn({ method: "GET" }).handler(async () => {
- try {
- const identity = await getServerIdentity();
+  try {
+    const identity = await getServerIdentity();
 
- // Se a identidade não tem user, não há sessão ativa.
- const effectiveUserId = identity.id;
- if (!effectiveUserId) {
- return null;
- }
+    // Se a identidade não tem user, não há sessão ativa.
+    const effectiveUserId = identity.id;
+    if (!effectiveUserId) {
+      return null;
+    }
 
- const adminDb = getServerClient();
+    const user = (identity as any).user || null;
+    const profile = (identity as any).profile || null;
+    const userMeta = user?.user_metadata || {};
+    const effectiveEmail = (identity as any).email || user?.email || "";
+    const effectiveFullName =
+      (identity as any).fullName ||
+      profile?.full_name ||
+      userMeta?.full_name ||
+      effectiveEmail?.split("@")[0] ||
+      "Membro Waesy";
 
- // Busca o usuário do Supabase Auth apenas se necessário para dados de metadata
- // (identity.server.ts já chamou getSSRClient().auth.getUser() internamente)
- const supabase = await getSSRClient();
- let user: any = null;
- try {
- const authRes = await supabase.auth.getUser();
- user = authRes.data?.user || null;
- } catch {
- user = null;
- }
-
- // 1. Busca perfil real no banco
- let profile: any = null;
- try {
- const { data: p } = await adminDb
- .from("profiles")
- .select("id, full_name, username, avatar_url, role, phone, cpf")
- .eq("id", effectiveUserId)
- .maybeSingle();
- profile = p;
- } catch {
- profile = null;
- }
-
- const effectiveEmail = user?.email || "";
- const effectiveFullName =
- profile?.full_name ||
- user?.user_metadata?.full_name ||
- user?.email?.split("@")[0] ||
- "Membro Waesy";
-
- return {
- id: effectiveUserId,
- user: {
- id: effectiveUserId,
- email: effectiveEmail,
- user_metadata: {
- ...(user?.user_metadata || {}),
- full_name: effectiveFullName,
- avatar_url: profile?.avatar_url || user?.user_metadata?.avatar_url || null,
- username: profile?.username || "admin",
- },
- },
- email: effectiveEmail,
- role: profile?.role || identity.role || "customer",
- store_id: identity.store_id,
- memberships: identity.memberships,
- };
- } catch (e) {
- logSystemError({ route: "auth.functions.getUserSession", error: e });
- console.error("[auth] Erro em getUserSession:", e);
- return null;
- }
+    return {
+      id: effectiveUserId,
+      user: {
+        id: effectiveUserId,
+        email: effectiveEmail,
+        user_metadata: {
+          ...userMeta,
+          full_name: effectiveFullName,
+          avatar_url: profile?.avatar_url || userMeta?.avatar_url || null,
+          username: profile?.username || "admin",
+        },
+      },
+      email: effectiveEmail,
+      role: profile?.role || identity.role || "customer",
+      store_id: identity.store_id,
+      memberships: identity.memberships,
+    };
+  } catch (e) {
+    logSystemError({ route: "auth.functions.getUserSession", error: e });
+    console.error("[auth] Erro em getUserSession:", e);
+    return null;
+  }
 });
 
 /**
  * Verifica se um identificador (email, @username, CPF, telefone) existe na plataforma.
- * Usado na Etapa 1 do login para feedback imediato sem expor senhas.
  */
 export const checkIdentifierExists = createServerFn({ method: "POST" })
  .validator(z.object({ identifier: z.string().min(1) }))
@@ -634,27 +611,17 @@ export const resetPasswordForEmail = createServerFn({ method: "POST" })
  });
 
 export const getProfile = createServerFn({ method: "GET" }).handler(async () => {
- try {
- let identity: any = null;
- try {
- identity = await getServerIdentity();
- } catch {
- // Não simular usuário em produção. Se falhar, retornar nulo e deixar o front tratar.
- identity = null;
- }
+  try {
+    let identity: any = null;
+    try {
+      identity = await getServerIdentity();
+    } catch {
+      identity = null;
+    }
 
- let user: any = null;
- try {
- const supabase = await getSSRClient();
- const authRes = await supabase.auth.getUser();
- user = authRes?.data?.user || null;
- } catch {
- user = null;
- }
-
- const effectiveUserId = user?.id || identity?.id;
- // Sem ID real, não há perfil para retornar
- if (!effectiveUserId) return null;
+    const effectiveUserId = identity?.id;
+    const user = identity?.user || null;
+    if (!effectiveUserId) return null;
 
  let profile: any = null;
  try {
