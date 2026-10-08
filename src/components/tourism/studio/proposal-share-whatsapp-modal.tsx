@@ -37,20 +37,20 @@ export function ProposalShareWhatsappModal({
  ? `Voo ${f.airline_name || f.airline || 'Aéreo'} (${f.origin_iata || f.origin || ''} ➔ ${f.destination_iata || f.destination || ''})`
  : 'Aéreo conforme roteiro';
 
- const defaultMessage = `Olá ${proposal.client_name}! ✈️🌟
+ const defaultMessage = `Olá ${proposal.client_name}!
 
 Preparamos com muito carinho a sua proposta exclusiva de viagem para *${proposal.destination_city}*!
 
-📌 *Resumo do Pacote:*
-🗓️ *Período:* ${proposal.travel_start_date || 'A combinar'} até ${proposal.travel_end_date || 'A combinar'}
-🏨 *Hotel:* ${hotelHighlight}
-✈️ *Aéreo:* ${flightHighlight}
-💰 *Valor Total:* *${totalPriceFormatted}* (com condições especiais de parcelamento)
+*Resumo do Pacote:*
+*Período:* ${proposal.travel_start_date || 'A combinar'} até ${proposal.travel_end_date || 'A combinar'}
+*Hotel:* ${hotelHighlight}
+*Aéreo:* ${flightHighlight}
+*Valor Total:* *${totalPriceFormatted}* (confirme as condições vigentes com a agência)
 
-📲 *Acesse sua Proposta Visual Interativa no link abaixo:*
+*Acesse sua proposta no link abaixo:*
 ${publicUrl}
 
-Ficamos à disposição para tirar qualquer dúvida e garantir sua reserva! `;
+Ficamos à disposição para tirar dúvidas e confirmar disponibilidade e próximos passos. A reserva só existe após confirmação separada da agência. `;
 
  const [message, setMessage] = useState(defaultMessage);
 
@@ -86,10 +86,11 @@ Ficamos à disposição para tirar qualquer dúvida e garantir sua reserva! `;
  };
 
  const handleOpenWhatsApp = () => {
- const phoneToUse = recipientPhone.replace(/\D/g, '');
+ const phoneDigits = recipientPhone.replace(/\D/g, '');
+ const phoneToUse = phoneDigits ? (phoneDigits.startsWith('55') ? phoneDigits : `55${phoneDigits}`) : '';
  const encoded = encodeURIComponent(message);
  const waUrl = phoneToUse
- ? `https://wa.me/55${phoneToUse}?text=${encoded}`
+ ? `https://wa.me/${phoneToUse}?text=${encoded}`
  : `https://wa.me/?text=${encoded}`;
  window.open(waUrl, '_blank');
  };
@@ -100,15 +101,15 @@ Ficamos à disposição para tirar qualquer dúvida e garantir sua reserva! `;
  <DialogHeader className="p-5 border-b border-border/70 bg-muted/20">
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-2">
- <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-600">
+ <div className="p-2 rounded-lg bg-primary/10 text-primary">
  <Send className="size-4" />
  </div>
  <div>
  <DialogTitle className="text-sm font-bold text-foreground">
  Compartilhar Proposta
  </DialogTitle>
- <p className="text-[11px] text-muted-foreground">
- Envio 1-clique formatado para o WhatsApp do passageiro
+       <p className="text-[11px] text-muted-foreground">
+        A mensagem será aberta no WhatsApp para você revisar e enviar
  </p>
  </div>
  </div>
@@ -141,7 +142,7 @@ Ficamos à disposição para tirar qualquer dúvida e garantir sua reserva! `;
  onClick={handleCopyText}
  className="h-7 px-2 text-[11px] text-muted-foreground hover:text-foreground"
  >
- {copiedText ? <Check className="size-3 text-emerald-500 mr-1" /> : <Copy className="size-3 mr-1" />}
+ {copiedText ? <Check className="size-3 text-success mr-1" /> : <Copy className="size-3 mr-1" />}
  {copiedText ? 'Copiado!' : 'Copiar Texto'}
  </Button>
  </div>
@@ -179,8 +180,8 @@ Ficamos à disposição para tirar qualquer dúvida e garantir sua reserva! `;
  onClick={handleExportPdf}
  className="h-9 rounded-lg text-xs font-bold gap-2 border-border bg-card hover:bg-muted"
  >
- <Download className="size-3.5 text-rose-500" />
- {isExportingPdf ? 'Gerando PDF...' : 'Baixar Proposta (PDF)'}
+ <Download className="size-3.5 text-destructive" />
+ {isExportingPdf ? 'Gerando PDF...' : 'Baixar PDF'}
  </Button>
  </div>
  </div>
@@ -194,10 +195,10 @@ Ficamos à disposição para tirar qualquer dúvida e garantir sua reserva! `;
  <Button
  type="button"
  onClick={handleOpenWhatsApp}
- className="rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs gap-2 shadow-md px-5"
+ className="h-11 min-h-11 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs gap-2 shadow-md px-5"
  >
  <Send className="size-3.5" />
- Disparar no WhatsApp
+      Abrir WhatsApp
  </Button>
  </DialogFooter>
  </DialogContent>

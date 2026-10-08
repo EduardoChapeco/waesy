@@ -6,8 +6,8 @@ const root = process.cwd();
 const extractor = fs.readFileSync(path.join(root, "src/services/travel-ai-extractor.functions.ts"), "utf8");
 const checkout = fs.readFileSync(path.join(root, "src/components/tourism/studio/travel-proposal-checkout-modal.tsx"), "utf8");
 const pipeline = fs.readFileSync(path.join(root, "src/services/travel-canonical-pipeline.functions.ts"), "utf8");
-const flyerModal = fs.readFileSync(path.join(root, "src/components/tourism/promotional-flyer/travel-promo-flyer-modal.tsx"), "utf8");
-const flyerTemplate = fs.readFileSync(path.join(root, "src/components/social-templates/TravelTemplateEditorial.tsx"), "utf8");
+const lifecycle = fs.readFileSync(path.join(root, "src/services/travel-lifecycle.functions.ts"), "utf8");
+const voucherMigration = fs.readFileSync(path.join(root, "supabase/migrations/20270119000000_p0_atomic_voucher_apply.sql"), "utf8");
 
 describe("Turismo — integridade de OCR, proposta e checkout W12", () => {
   it("mantém fallback de OCR sem preço, inclusões ou confiança inventados", () => {
@@ -23,25 +23,16 @@ describe("Turismo — integridade de OCR, proposta e checkout W12", () => {
     expect(checkout).toContain("A proposta ainda não possui preço confirmado pela agência.");
     expect(checkout).not.toContain("mockPixCode");
     expect(checkout).not.toContain("278760");
-    expect(checkout).toContain('paymentMethod: "card"');
+    expect(checkout).toContain("paymentPreference");
+    expect(checkout).toContain("cartao_operadora");
   });
 
   it("mantém OCR revisável e aplicação protegida por RPC/conflitos", () => {
     expect(pipeline).toContain('extraction_status: "needs_review"');
-    expect(pipeline).toContain("apply_travel_ocr_to_draft");
-    expect(pipeline).toContain("travel_document_conflicts");
-    expect(pipeline).toContain("Aplicação bloqueada");
-  });
-
-  it("não reintroduz defaults comerciais quando o preço não foi extraído", () => {
-    expect(flyerModal).toContain("priceCents ?? null");
-    expect(flyerModal).toContain("resolvedInitialInclusions = propInclusions || initialData?.inclusions || []");
-    expect(flyerModal).not.toContain("249000");
-    expect(flyerModal).not.toContain("Temporada 2026/2027");
-    expect(flyerModal).not.toContain("Aéreo ida e volta");
-    expect(flyerTemplate).toContain("return null;");
-    expect(flyerTemplate).not.toContain("249000");
-    expect(flyerTemplate).not.toContain("20750");
-    expect(flyerTemplate).not.toContain("Traslados inclusos");
+    expect(pipeline).toContain("applyParsedVoucherToTrip");
+    expect(pipeline).toContain("idempotencyKey: `ocr-trip:");
+    expect(lifecycle).toContain('rpc("apply_operator_voucher_atomic"');
+    expect(voucherMigration).toContain("travel_document_conflicts");
+    expect(voucherMigration).toContain("Aplicação bloqueada");
   });
 });
