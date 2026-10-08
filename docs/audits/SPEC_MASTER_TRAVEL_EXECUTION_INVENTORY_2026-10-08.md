@@ -59,3 +59,11 @@ A Edge Function deixou de ser apenas um endpoint isolado. O Hub de Integrações
 O detalhe da viagem agora expõe as ações **Importar InfoTravel** e **Sincronizar GDS**. A importação valida o tenant, verifica que a viagem pertence à loja, consulta a reserva no provider e aplica hotéis, voos, transfers, tours, cliente, datas e total à `tourism_trips`, com `reservation_state=reserved_pending_issuance`. Repetir a operação atualiza a mesma viagem e não cria duplicata. A sincronização também passa pelo BFF e recarrega o aggregate da viagem.
 
 Os testes focados continuam aprovados (8/8), assim como o typecheck e o diff check. A validação externa ainda depende de migration aplicada, secrets configurados e endpoint/credencial reais do provider InfoTravel.
+
+## Microfase 9 — Onda 7: aplicação transacional InfoTravel
+
+Foi criada a migration `20261008101500_infotravel_atomic_booking_apply.sql`, mantendo `tourism_trips` como raiz operacional explícita enquanto a decisão futura entre `tourism_trips` e `trips` permanece documentada. A migration adiciona identificadores de origem/reserva, índices de replay e a RPC `apply_infotravel_booking`.
+
+A RPC bloqueia a viagem por tenant, atualiza o snapshot principal, substitui somente projeções InfoTravel da mesma reserva, aplica passageiros e itens de confirmação, preserva dados manuais e retorna contadores sanitizados. A importação e o sync agora usam o mesmo helper server-side; o sync deixou de apenas retornar o provider e passou a persistir o snapshot normalizado. O resultado bruto do provider não atravessa mais o boundary da Server Function.
+
+Validação local: 12 testes focados aprovados, typecheck aprovado e diff check aprovado. Validação pendente: aplicar a migration em Supabase, executar RPC contra banco real, testar RLS, replay concorrente e payload InfoTravel real/sandbox.

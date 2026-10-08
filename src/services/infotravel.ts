@@ -222,74 +222,70 @@ export async function infotravelImportToTrip(
   return await importInfotravelBookingToTrip({ data: { bookingId, tripId, agencyId } });
 }
 
-/**
- * Importa uma reserva real do provider e aplica os serviços retornados na
- * `tourism_trips` da agência. A mutação é idempotente por tripId: repetir a
- * importação substitui apenas os arrays provenientes do GDS e não duplica a
- * viagem nem cria dados comerciais fictícios.
- */
+function toInfotravelSnapshot(providerResult: any, requestedBookingId: string): { bookingId: string; snapshot: Record<string, unknown> } {
+  const normalized = providerResult?.normalized || providerResult || {};
+  const bookingId = String(
+    normalized.bookingCode || normalized.booking_id || normalized.bookingId || normalized.code || requestedBookingId,
+  );
+  const totalAmountCents = Number(normalized.totalAmountCents);
+  const totalSale = Number.isFinite(totalAmountCents)
+    ? totalAmountCents / 100
+    : Number(normalized.total_sale ?? normalized.totalAmount ?? 0);
+  return {
+    bookingId,
+    snapshot: {
+      provider: "InfoTravel",
+      booking_id: bookingId,
+      flights: Array.isArray(normalized.flights) ? normalized.flights : Array.isArray(providerResult?.bookingFlights) ? providerResult.bookingFlights : [],
+      hotels: Array.isArray(normalized.hotels) ? normalized.hotels : Array.isArray(providerResult?.bookingHotels) ? providerResult.bookingHotels : [],
+      transfers: Array.isArray(normalized.transfers) ? normalized.transfers : [],
+      tours: Array.isArray(normalized.tours) ? normalized.tours : Array.isArray(normalized.activities) ? normalized.activities : [],
+      passengers: Array.isArray(normalized.passengers) ? normalized.passengers : [],
+      destination: normalized.destination || normalized.destination_city,
+      travel_start: normalized.travel_start || normalized.travelStart,
+      travel_end: normalized.travel_end || normalized.travelEnd,
+      total_sale: Number.isFinite(totalSale) ? totalSale : undefined,
+      client_name: normalized.clientName || normalized.client_name || normalized.client?.name,
+      client_email: normalized.clientEmail || normalized.client_email || normalized.client?.email,
+      client_phone: normalized.clientPhone || normalized.client_phone || normalized.client?.phone,
+    },
+  };
+}
+
+async function applyInfotravelSnapshot(
+  supabase: ReturnType<typeof getServerClient>,
+  agencyId: string,
+  tripId: string,
+  providerResult: any,
+  requestedBookingId: string,
+) {
+  const { bookingId, snapshot } = toInfotravelSnapshot(providerResult, requestedBookingId);
+  const { data, error } = await supabase.rpc("apply_infotravel_booking", {
+    p_trip_id: tripId,
+    p_store_id: agencyId,
+    p_booking_id: bookingId,
+    p_snapshot: snapshot,
+  });
+  if (error || !data) throw new Error("Não foi possível aplicar a reserva InfoTravel de forma transacional: " + (error?.message || "retorno vazio"));
+  const result = data as { booking_id?: unknown; passengers_applied?: unknown; confirmation_items_applied?: unknown };
+  return {
+    booking_id: String(result.booking_id || requestedBookingId),
+    passengers_applied: Number(result.passengers_applied || 0),
+    confirmation_items_applied: Number(result.confirmation_items_applied || 0),
+  };
+}
+
+/** Importa e aplica a reserva inteira, incluindo passageiros e localizadores, em uma RPC idempotente. */
 export const importInfotravelBookingToTrip = createServerFn({ method: "POST" })
-  .validator(z.object({
-    agencyId: z.string().uuid(),
-    bookingId: z.string().min(1),
-    tripId: z.string().uuid(),
-  }))
+  .validator(z.object({ agencyId: z.string().uuid(), bookingId: z.string().min(1), tripId: z.string().uuid() }))
   .handler(async ({ data }) => {
     const identity = await getServerIdentity();
     assertStoreAccess(identity);
     const elevatedRoles = ["owner", "admin", "manager", "master", "platform_admin"];
-    if (data.agencyId !== identity.store_id && !elevatedRoles.includes(identity.role)) {
-      throw new Error("Acesso negado ao tenant solicitado.");
-    }
-    const supabase = getServerClient();
-    const { data: trip, error: tripError } = await supabase
-      .from("tourism_trips")
-      .select("id, store_id")
-      .eq("id", data.tripId)
-      .eq("store_id", data.agencyId)
-      .maybeSingle();
-    if (tripError || !trip) throw new Error("Viagem não encontrada para a agência autenticada.");
-
-    const providerResult = await invokeConnector<any>("import_booking", data.agencyId, {
-      bookingId: data.bookingId,
-      tripId: data.tripId,
-    });
-    const normalized = providerResult?.normalized || providerResult;
-    const flights = Array.isArray(normalized?.flights)
-      ? normalized.flights
-      : Array.isArray(providerResult?.bookingFlights) ? providerResult.bookingFlights : [];
-    const hotels = Array.isArray(normalized?.hotels)
-      ? normalized.hotels
-      : Array.isArray(providerResult?.bookingHotels) ? providerResult.bookingHotels : [];
-    const transfers = Array.isArray(normalized?.transfers) ? normalized.transfers : [];
-    const tours = Array.isArray(normalized?.activities) ? normalized.activities : [];
-    const passengers = Array.isArray(normalized?.passengers) ? normalized.passengers : [];
-    const update: Record<string, unknown> = {
-      flights,
-      hotels,
-      transfers,
-      tours,
-      reservation_state: "reserved_pending_issuance",
-      updated_at: new Date().toISOString(),
-    };
-    if (normalized?.destination) update.destination_city = normalized.destination;
-    if (normalized?.travel_start) update.travel_start_date = normalized.travel_start;
-    if (normalized?.travel_end) update.travel_end_date = normalized.travel_end;
-    if (Number.isFinite(Number(normalized?.total_sale))) update.total_cents = Math.round(Number(normalized.total_sale) * 100);
-    if (normalized?.client_name) update.client_name = normalized.client_name;
-    if (normalized?.client_email) update.client_email = normalized.client_email;
-    if (normalized?.client_phone) update.client_whatsapp = normalized.client_phone;
-
-    const { data: updatedTrip, error: updateError } = await supabase
-      .from("tourism_trips")
-      .update(update)
-      .eq("id", data.tripId)
-      .eq("store_id", data.agencyId)
-      .select()
-      .single();
-    if (updateError || !updatedTrip) throw new Error("Reserva importada, mas não foi possível atualizar a viagem: " + (updateError?.message || "erro desconhecido"));
-
-    return { success: true, trip: updatedTrip, passengersImported: passengers.length, providerResult };
+    if (data.agencyId !== identity.store_id && !elevatedRoles.includes(identity.role)) throw new Error("Acesso negado ao tenant solicitado.");
+    const providerResult = await invokeConnector<any>("import_booking", data.agencyId, { bookingId: data.bookingId, tripId: data.tripId });
+    const applied = await applyInfotravelSnapshot(getServerClient(), data.agencyId, data.tripId, providerResult, data.bookingId);
+    return { success: true, ...applied };
   });
 
 export const syncInfotravelTrip = createServerFn({ method: "POST" })
@@ -300,7 +296,10 @@ export const syncInfotravelTrip = createServerFn({ method: "POST" })
     const elevatedRoles = ["owner", "admin", "manager", "master", "platform_admin"];
     if (data.agencyId !== identity.store_id && !elevatedRoles.includes(identity.role)) throw new Error("Acesso negado ao tenant solicitado.");
     const providerResult = await invokeConnector<any>("run_periodic_sync", data.agencyId, { tripId: data.tripId });
-    return { success: true, providerResult };
+    const { data: trip, error: tripError } = await getServerClient().from("tourism_trips").select("external_booking_id").eq("id", data.tripId).eq("store_id", data.agencyId).maybeSingle();
+    if (tripError || !trip?.external_booking_id) throw new Error("A viagem ainda não possui uma reserva InfoTravel vinculada para sincronizar.");
+    const applied = await applyInfotravelSnapshot(getServerClient(), data.agencyId, data.tripId, providerResult, trip.external_booking_id);
+    return { success: true, ...applied };
   });
 
 // ── Teste de Conexão ───────────────────────────────────────────────────────
