@@ -46,3 +46,7 @@ O conector recebe a reserva real do provider e expõe `normalized` com `booking_
 7. somente depois disso considerar merge em `main` e release.
 
 O ponto importante é que o código está completo como adapter seguro e configurável, mas o contrato de negócio do provider não pode ser inventado. A validação externa do endpoint e do payload continua sendo uma dependência factual, não uma falha mascarada por mock.
+
+## Atualização — integração conectada às páginas e ao ciclo de viagem
+
+O produto agora oferece configuração operacional do InfoTravel no Hub de Integrações e ações de importação/sincronização na página de detalhe da viagem. A persistência usa a tabela canônica `tourism_trips`, respeita a loja autenticada e atualiza o estado de reserva pendente de emissão. O próximo teste de completude deve ser executado com uma credencial real e um booking real, pois somente o provider pode confirmar paths, autenticação e nomes finais dos campos de payload.

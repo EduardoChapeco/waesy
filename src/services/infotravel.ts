@@ -219,8 +219,89 @@ export async function infotravelImportToTrip(
   bookingId: string,
   tripId: string,
 ): Promise<any> {
-  return await invokeConnector("import_booking", agencyId, { bookingId, tripId });
+  return await importInfotravelBookingToTrip({ data: { bookingId, tripId, agencyId } });
 }
+
+/**
+ * Importa uma reserva real do provider e aplica os serviços retornados na
+ * `tourism_trips` da agência. A mutação é idempotente por tripId: repetir a
+ * importação substitui apenas os arrays provenientes do GDS e não duplica a
+ * viagem nem cria dados comerciais fictícios.
+ */
+export const importInfotravelBookingToTrip = createServerFn({ method: "POST" })
+  .validator(z.object({
+    agencyId: z.string().uuid(),
+    bookingId: z.string().min(1),
+    tripId: z.string().uuid(),
+  }))
+  .handler(async ({ data }) => {
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity);
+    const elevatedRoles = ["owner", "admin", "manager", "master", "platform_admin"];
+    if (data.agencyId !== identity.store_id && !elevatedRoles.includes(identity.role)) {
+      throw new Error("Acesso negado ao tenant solicitado.");
+    }
+    const supabase = getServerClient();
+    const { data: trip, error: tripError } = await supabase
+      .from("tourism_trips")
+      .select("id, store_id")
+      .eq("id", data.tripId)
+      .eq("store_id", data.agencyId)
+      .maybeSingle();
+    if (tripError || !trip) throw new Error("Viagem não encontrada para a agência autenticada.");
+
+    const providerResult = await invokeConnector<any>("import_booking", data.agencyId, {
+      bookingId: data.bookingId,
+      tripId: data.tripId,
+    });
+    const normalized = providerResult?.normalized || providerResult;
+    const flights = Array.isArray(normalized?.flights)
+      ? normalized.flights
+      : Array.isArray(providerResult?.bookingFlights) ? providerResult.bookingFlights : [];
+    const hotels = Array.isArray(normalized?.hotels)
+      ? normalized.hotels
+      : Array.isArray(providerResult?.bookingHotels) ? providerResult.bookingHotels : [];
+    const transfers = Array.isArray(normalized?.transfers) ? normalized.transfers : [];
+    const tours = Array.isArray(normalized?.activities) ? normalized.activities : [];
+    const passengers = Array.isArray(normalized?.passengers) ? normalized.passengers : [];
+    const update: Record<string, unknown> = {
+      flights,
+      hotels,
+      transfers,
+      tours,
+      reservation_state: "reserved_pending_issuance",
+      updated_at: new Date().toISOString(),
+    };
+    if (normalized?.destination) update.destination_city = normalized.destination;
+    if (normalized?.travel_start) update.travel_start_date = normalized.travel_start;
+    if (normalized?.travel_end) update.travel_end_date = normalized.travel_end;
+    if (Number.isFinite(Number(normalized?.total_sale))) update.total_cents = Math.round(Number(normalized.total_sale) * 100);
+    if (normalized?.client_name) update.client_name = normalized.client_name;
+    if (normalized?.client_email) update.client_email = normalized.client_email;
+    if (normalized?.client_phone) update.client_whatsapp = normalized.client_phone;
+
+    const { data: updatedTrip, error: updateError } = await supabase
+      .from("tourism_trips")
+      .update(update)
+      .eq("id", data.tripId)
+      .eq("store_id", data.agencyId)
+      .select()
+      .single();
+    if (updateError || !updatedTrip) throw new Error("Reserva importada, mas não foi possível atualizar a viagem: " + (updateError?.message || "erro desconhecido"));
+
+    return { success: true, trip: updatedTrip, passengersImported: passengers.length, providerResult };
+  });
+
+export const syncInfotravelTrip = createServerFn({ method: "POST" })
+  .validator(z.object({ agencyId: z.string().uuid(), tripId: z.string().uuid() }))
+  .handler(async ({ data }) => {
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity);
+    const elevatedRoles = ["owner", "admin", "manager", "master", "platform_admin"];
+    if (data.agencyId !== identity.store_id && !elevatedRoles.includes(identity.role)) throw new Error("Acesso negado ao tenant solicitado.");
+    const providerResult = await invokeConnector<any>("run_periodic_sync", data.agencyId, { tripId: data.tripId });
+    return { success: true, providerResult };
+  });
 
 // ── Teste de Conexão ───────────────────────────────────────────────────────
 export async function infotravelTestConnection(agencyId: string): Promise<boolean> {
@@ -231,3 +312,14 @@ export async function infotravelTestConnection(agencyId: string): Promise<boolea
     return false;
   }
 }
+
+export const testInfotravelConnection = createServerFn({ method: "POST" })
+  .validator(z.object({ agencyId: z.string().uuid() }))
+  .handler(async ({ data }) => ({ success: await infotravelTestConnection(data.agencyId) }));
+
+export const testCurrentInfotravelConnection = createServerFn({ method: "POST" })
+  .handler(async () => {
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin", "manager"]);
+    return { success: await infotravelTestConnection(identity.store_id) };
+  });

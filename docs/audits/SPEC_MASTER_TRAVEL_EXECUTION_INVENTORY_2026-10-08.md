@@ -51,3 +51,11 @@ O BFF `src/services/infotravel.ts` já invocava `supabase.functions.invoke("info
 - Ainda falta executar a migration no Supabase remoto, cadastrar uma credencial de homologação e fazer smoke test autenticado contra um endpoint real do provider.
 - Ainda falta confirmar o formato de resposta real para ajustar, se necessário, o mapper de reservas/voos/hotéis sem degradar para dados fictícios.
 - Deploy, merge em `main` e aplicação remota de migrations continuam fora desta rodada por solicitação explícita; a PR permanece o artefato de revisão.
+
+## Microfase 8 — Wiring operacional completo no produto
+
+A Edge Function deixou de ser apenas um endpoint isolado. O Hub de Integrações agora possui uma aba **GDS Turismo / InfoTravel** que grava `base_url`, modo de autenticação, credenciais e paths de ação através de `saveIntegrationCredential`; credenciais sensíveis de InfoTravel passam a ser cifradas com AES-256-GCM, enquanto apenas metadata operacional é mantida pública.
+
+O detalhe da viagem agora expõe as ações **Importar InfoTravel** e **Sincronizar GDS**. A importação valida o tenant, verifica que a viagem pertence à loja, consulta a reserva no provider e aplica hotéis, voos, transfers, tours, cliente, datas e total à `tourism_trips`, com `reservation_state=reserved_pending_issuance`. Repetir a operação atualiza a mesma viagem e não cria duplicata. A sincronização também passa pelo BFF e recarrega o aggregate da viagem.
+
+Os testes focados continuam aprovados (8/8), assim como o typecheck e o diff check. A validação externa ainda depende de migration aplicada, secrets configurados e endpoint/credencial reais do provider InfoTravel.

@@ -84,6 +84,11 @@ export function parseCredentialPayload(value: unknown): ProviderCredential {
         .map(([key, item]) => [key, item as string]),
     ) as ProviderCredential["action_paths"];
   }
+  if (!credential.action_paths) credential.action_paths = {};
+  for (const action of SUPPORTED_ACTIONS) {
+    const flatPath = raw[`${action}_path`];
+    if (typeof flatPath === "string" && flatPath.trim()) credential.action_paths[action] = flatPath.trim();
+  }
   return credential;
 }
 
