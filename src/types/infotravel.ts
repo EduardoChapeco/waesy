@@ -73,9 +73,19 @@ export interface NormalizedBooking {
   createdAt?: string;
 }
 
+function stableExternalId(prefix: string, ...parts: Array<string | number | undefined>): string {
+  const source = parts.filter((part) => part !== undefined && part !== "").join("|");
+  let hash = 2166136261;
+  for (let index = 0; index < source.length; index += 1) {
+    hash ^= source.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+  return `${prefix}_${(hash >>> 0).toString(36)}`;
+}
+
 export function mapApiHotelToCanonical(raw: ApiHotelAvail): Hotel {
   return {
-    id: raw.id || raw.hotelId || `hotel_${Math.random().toString(36).slice(2, 9)}`,
+    id: raw.id || raw.hotelId || stableExternalId("hotel", raw.name || raw.hotelName, raw.city || raw.cityName, raw.checkin || raw.checkIn, raw.checkout || raw.checkOut),
     name: raw.name || raw.hotelName || "Hotel",
     city: raw.city || raw.cityName || "",
     checkin: raw.checkin || raw.checkIn || "",
@@ -92,7 +102,7 @@ export function mapApiHotelToCanonical(raw: ApiHotelAvail): Hotel {
 
 export function mapApiFlightToCanonical(raw: ApiFlightAvail): Flight {
   return {
-    id: raw.id || raw.flightId || `fl_${Math.random().toString(36).slice(2, 9)}`,
+    id: raw.id || raw.flightId || stableExternalId("fl", raw.origin, raw.destination, raw.date || raw.flightDate, raw.flightNumber || raw.flight_number),
     origin: raw.origin || "",
     destination: raw.destination || "",
     date: raw.date || raw.flightDate || "",
@@ -108,7 +118,7 @@ export function mapApiFlightToCanonical(raw: ApiFlightAvail): Flight {
 
 export function mapApiBookingToNormalized(raw: ApiBooking): NormalizedBooking {
   return {
-    id: raw.id || raw.bookingId || `bk_${Math.random().toString(36).slice(2, 9)}`,
+    id: raw.id || raw.bookingId || stableExternalId("bk", raw.code, raw.client?.email, raw.client?.phone, raw.createdAt),
     bookingCode: raw.code || raw.bookingId || "BOOKING",
     clientName: raw.client?.name || "Cliente",
     clientEmail: raw.client?.email,

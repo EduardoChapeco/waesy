@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
+import { assertStoreAccess, getServerIdentity } from "@/lib/server-access";
 import { type Hotel, type Flight } from "@/services/proposals";
 import { mapApiHotelToCanonical, mapApiFlightToCanonical, mapApiBookingToNormalized, type NormalizedBooking, type ApiHotelAvail, type ApiFlightAvail, type ApiBooking } from "@/types/infotravel";
 
@@ -26,24 +27,32 @@ export const invokeInfotravelConnector = createServerFn({ method: "POST" })
   .validator(
     z.object({
       action: z.string(),
-      agencyId: z.string(),
+      agencyId: z.string().uuid(),
       params: z.record(z.any()).optional(),
     })
   )
   .handler(async ({ data: { action, agencyId, params } }) => {
     try {
+      const identity = await getServerIdentity();
+      assertStoreAccess(identity);
+      const elevatedRoles = ["owner", "admin", "manager", "master", "platform_admin"];
+      if (agencyId !== identity.store_id && !elevatedRoles.includes(identity.role)) {
+        throw new Error("Acesso negado ao tenant solicitado.");
+      }
+
       const supabase = getServerClient();
       const { data, error } = await supabase.functions.invoke("infotravel-connector", {
         body: { action, agencyId, params: params || {} },
       });
 
       if (error) {
-        return { error_code: "CREDENTIALS_NOT_CONFIGURED", error: error.message };
+        return { error_code: "CONNECTOR_UNAVAILABLE", error: error.message };
       }
 
       return data;
     } catch (e: any) {
-      return { error_code: "CREDENTIALS_NOT_CONFIGURED", error: e?.message || "Falha no conector GDS" };
+      if (e?.message === "Acesso negado ao tenant solicitado.") throw e;
+      return { error_code: "CONNECTOR_UNAVAILABLE", error: e?.message || "Falha no conector GDS" };
     }
   });
 
@@ -64,6 +73,10 @@ async function invokeConnector<T = any>(
   // Credenciais não configuradas — retorno estruturado
   if (data?.error_code === "CREDENTIALS_NOT_CONFIGURED") {
     throw new InfotravelNotConfiguredError();
+  }
+
+  if (data?.error_code === "CONNECTOR_UNAVAILABLE") {
+    throw new Error(data.error || "Conector InfoTravel indisponível.");
   }
 
   // Erro de API retornado como JSON estruturado

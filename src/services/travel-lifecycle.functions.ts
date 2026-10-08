@@ -27,7 +27,8 @@ export interface TourismTripDTO {
   children_count: number;
   currency: string;
   total_cents: number;
-  status: "confirmed" | "in_progress" | "completed" | "cancelled";
+	 status: "confirmed" | "in_progress" | "completed" | "cancelled";
+	 reservation_state?: "draft" | "reserved_pending_issuance" | "issuance_in_progress" | "issued" | "cancelled";
   client_name: string;
   client_whatsapp: string;
   client_email?: string | null;
@@ -162,8 +163,9 @@ export const convertProposalToTrip = createServerFn({ method: "POST" })
     tripNumber: string;
     contractId?: string;
     voucherId?: string;
-    voucherToken?: string;
-    departureId?: string;
+	 voucherToken?: string;
+	 departureId?: string;
+	 reservationState?: string;
   }> => {
     const supabase = getServerClient();
     const identity = await getServerIdentity().catch(() => null);
@@ -190,14 +192,15 @@ export const convertProposalToTrip = createServerFn({ method: "POST" })
 
       if (!canonicalErr && canonicalRes && (canonicalRes as any).trip_id) {
         const resObj = canonicalRes as any;
-        return {
-          success: true,
-          tripId: resObj.trip_id,
-          tripNumber: resObj.trip_number || `TRIP-${resObj.trip_id.slice(0, 8)}`,
-          contractId: resObj.contract_id,
-          voucherId: resObj.voucher_id,
-          voucherToken: resObj.voucher_token,
-        };
+		 return {
+		   success: true,
+		   tripId: resObj.trip_id,
+		   tripNumber: resObj.trip_number || `TRIP-${resObj.trip_id.slice(0, 8)}`,
+		   contractId: resObj.contract_id,
+		   voucherId: resObj.voucher_id,
+		   voucherToken: resObj.voucher_token,
+		   reservationState: resObj.reservation_state || "reserved_pending_issuance",
+		 };
       }
 
       // Erros de negócio não podem cair no legado e contornar o aceite.
@@ -216,14 +219,15 @@ export const convertProposalToTrip = createServerFn({ method: "POST" })
 
       if (!rpcErr && rpcRes && (rpcRes as any).trip_id) {
         const resObj = rpcRes as any;
-        return {
-          success: true,
-          tripId: resObj.trip_id,
-          tripNumber: resObj.trip_number,
-          contractId: resObj.contract_id,
-          voucherId: resObj.voucher_id,
-          voucherToken: resObj.voucher_token,
-        };
+		 return {
+		   success: true,
+		   tripId: resObj.trip_id,
+		   tripNumber: resObj.trip_number,
+		   contractId: resObj.contract_id,
+		   voucherId: resObj.voucher_id,
+		   voucherToken: resObj.voucher_token,
+		   reservationState: resObj.reservation_state || "reserved_pending_issuance",
+		 };
       }
     }
 
@@ -288,11 +292,29 @@ export const convertProposalToTrip = createServerFn({ method: "POST" })
       }
     }
 
-    if (!quote) {
-      throw new Error("Proposta comercial não localizada para conversão.");
-    }
+	 if (!quote) {
+	   throw new Error("Proposta comercial não localizada para conversão.");
+	 }
 
-    const tripNumber = `TRIP-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
+	 // O fallback pode ser acionado quando uma migration/RPC ainda não está disponível.
+	 // Reconsultar por proposta + tenant impede duplicação em retries do mesmo aceite.
+	 const { data: existingTrip } = await supabase
+	   .from("tourism_trips")
+	   .select("id, trip_number, reservation_state")
+	   .eq("store_id", effectiveStoreId)
+	   .eq("proposal_id", data.proposalId)
+	   .order("created_at", { ascending: false })
+	   .maybeSingle();
+	 if (existingTrip) {
+	   return {
+	     success: true,
+	     tripId: existingTrip.id,
+	     tripNumber: existingTrip.trip_number,
+	     reservationState: existingTrip.reservation_state || "reserved_pending_issuance",
+	   };
+	 }
+
+	 const tripNumber = `TRIP-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
     const voucherCode = `VOUCH-${Math.floor(100000 + Math.random() * 900000)}`;
     const voucherToken = "vch_" + Math.random().toString(36).substring(2, 12);
     const contractToken = "ctr_" + Math.random().toString(36).substring(2, 12);
@@ -320,9 +342,10 @@ export const convertProposalToTrip = createServerFn({ method: "POST" })
         adults_count: meta.adults_count || 1,
         children_count: meta.children_count || 0,
         currency: meta.currency || "BRL",
-        total_cents: totalCents,
-        status: "in_progress",
-        client_name: leadName,
+	 total_cents: totalCents,
+	 status: "in_progress",
+	 reservation_state: "reserved_pending_issuance",
+	 client_name: leadName,
         client_whatsapp: leadPhone,
         client_email: leadEmail,
         client_document: leadDoc,
