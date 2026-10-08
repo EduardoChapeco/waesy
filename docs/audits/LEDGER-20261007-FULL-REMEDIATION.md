@@ -1,5 +1,5 @@
 
 
-## W2.6 — assinatura manual de envelope — 2026-10-07
+## W2.7 — verificação pública de documentos — 2026-10-08
 
-O handler agora limita entradas, rejeita envelopes expirados, verifica o insert da evidência e usa compare-and-set `pending → signed`; concorrência perdedora remove sua evidência e retorna idempotente. Regressão focada: 4 arquivos / 9 testes verdes; typecheck e diff check verdes. RPC transacional, IP real do request e prova em banco/runtime continuam pendentes.
+A projeção pública foi reduzida a uma allowlist: removidos creator, `dispatch_settings`, observers, e-mail e telefone dos signatários; o fallback turístico deixou de usar `select("*")`. Regressão focada: 5 arquivos / 11 testes verdes; typecheck e diff check verdes. RLS/grants efetivos e banco remoto continuam pendentes.

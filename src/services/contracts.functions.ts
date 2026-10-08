@@ -541,13 +541,10 @@ export const verifyDocumentPublic = createServerFn({ method: "GET" })
 
     // Tenta por verification_code ou por hash_sha256
     let query = supabase.from("contracts").select(`
-      id, title, category, status, verification_code, created_at, dispatch_settings, observers, is_settled, discharge_hash_sha256, discharge_issued_at,
-      creator:creator_id (id, full_name),
+      id, title, category, status, verification_code, created_at, is_settled, discharge_hash_sha256, discharge_issued_at,
       versions:contract_versions (
         version_number, hash_sha256, sealed_at, is_sealed, signature_fields, page_count,
-        envelopes:signature_envelopes (
-          signer_name, signer_role, signer_email, signer_phone, status, signed_at, auth_level, color_code
-        )
+        envelopes:signature_envelopes (signer_name, signer_role, status, signed_at, auth_level, color_code)
       )
     `);
 
@@ -575,7 +572,7 @@ export const verifyDocumentPublic = createServerFn({ method: "GET" })
       // Fallback: busca contratos turísticos na tabela canônica contracts (category='tourism')
       const { data: tourismContract } = await supabase
         .from("contracts")
-        .select("*")
+        .select("id, title, status, verification_code, created_at, current_version, is_settled, discharge_hash_sha256, discharge_issued_at, metadata")
         .eq("category", "tourism")
         .or(`verification_code.eq.${codeOrHash}`)
         .maybeSingle();
@@ -627,8 +624,6 @@ export const verifyDocumentPublic = createServerFn({ method: "GET" })
       status: contract.status,
       verificationCode: contract.verification_code,
       createdAt: contract.created_at,
-      dispatchSettings: contract.dispatch_settings,
-      observers: contract.observers,
       sealedVersion: (contract.versions as any[])?.find((v) => v.is_sealed) || null,
       isSettled: Boolean(contract.is_settled),
       dischargeHash: contract.discharge_hash_sha256 || null,
