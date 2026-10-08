@@ -75,3 +75,11 @@ O módulo compartilhado da Edge Function agora declara `INFOTRAVEL_CONTRACT_VERS
 As ações `import_booking` e `run_periodic_sync` exigem identificador de reserva e retornam erro `PROVIDER_SCHEMA_MISMATCH` quando o provider não cumpre o contrato mínimo. Buscas de hotéis, voos, transfers e atividades retornam envelope versionado com `contract_version`. O conector passa o mapper por todas as ações, em vez de normalizar somente importações com `tripId`.
 
 Validação local: 14 testes focados aprovados, typecheck aprovado e diff check aprovado. A confirmação do contrato real do provider ainda exige fixtures sanitizadas ou sandbox autorizado da InfoTravel; o código não declara que o endpoint externo foi homologado sem essa evidência.
+
+## Microfase 11 — Onda 9: wiring dos módulos dependentes ao DTO v1
+
+O BFF `src/services/infotravel.ts` agora exige `contract_version = infotravel-v1` nas buscas de hotéis, voos, transfers e atividades, além de importação e sincronização. O DTO de booking v1 é convertido por `mapInfotravelV1BookingToNormalized` para os tipos canônicos que Proposal Studio e o pipeline de viagens já consomem.
+
+A busca de hotéis e voos deixou de fazer cast direto de ofertas brutas: os IDs externos determinísticos passam pelos mappers canônicos. A importação e o sync rejeitam envelopes legados antes da RPC atômica. O teste de conexão passou a reconhecer o retorno versionado `status=ok`, em vez de esperar um campo `success` que o contrato v1 não promete.
+
+Mapa de módulos validado: SectionHotels/SectionFlights → buscas v1 → Proposal Studio; aprovação/conversão → tourism_trips; persistência transacional → passageiros e trip_confirmation_items; vouchers e Kanban de embarques continuam lendo a raiz tourism_trips; financeiro permanece vinculado ao total_cents/financial_details da viagem. Validação local: 17 testes focados aprovados, typecheck aprovado e diff check aprovado.

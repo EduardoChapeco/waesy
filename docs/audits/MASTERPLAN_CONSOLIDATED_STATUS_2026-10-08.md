@@ -15,3 +15,7 @@ A importação e a sincronização agora convergem para `apply_infotravel_bookin
 ## Onda 8 — contrato v1 e mappers versionados
 
 A Edge Function agora usa o envelope `infotravel-v1`, mapeia respostas por ação e rejeita bookings sem identificador com `PROVIDER_SCHEMA_MISMATCH`. Hotéis e voos recebem IDs externos determinísticos para deduplicação e replay. O contrato de produção do provider continua aguardando fixture/sandbox real; a implementação local está preparada para comparar esse payload sem persistir dados desconhecidos.
+
+## Onda 9 — módulos dependentes conectados ao DTO v1
+
+O contrato `infotravel-v1` passou a ser obrigatório no BFF dos consumidores. Ofertas são convertidas para `Hotel`/`Flight`, bookings são convertidos para `NormalizedBooking`, e importação/sync passam pela RPC atômica. O lifecycle de propostas, viagens, passageiros, itens de confirmação, vouchers, embarques e financeiro foi validado como consumidor da raiz canônica `tourism_trips`.

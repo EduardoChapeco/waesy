@@ -3,7 +3,7 @@ import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { assertStoreAccess, getServerIdentity } from "@/lib/server-access";
 import { type Hotel, type Flight } from "@/services/proposals";
-import { mapApiHotelToCanonical, mapApiFlightToCanonical, mapApiBookingToNormalized, type NormalizedBooking, type ApiHotelAvail, type ApiFlightAvail, type ApiBooking } from "@/types/infotravel";
+import { INFOTRAVEL_CONTRACT_VERSION, mapApiHotelToCanonical, mapApiFlightToCanonical, mapInfotravelV1BookingToNormalized, type NormalizedBooking, type ApiHotelAvail, type ApiFlightAvail, type InfotravelV1BookingDTO } from "@/types/infotravel";
 
 // ── Erro estruturado para credenciais não configuradas ─────────────────────
 // O conector retorna códigos estruturados também para respostas HTTP não-2xx;
@@ -93,6 +93,13 @@ async function invokeConnector<T = any>(
   return data as T;
 }
 
+function requireV1Envelope(data: any, action: string): any {
+  if (data?.contract_version !== INFOTRAVEL_CONTRACT_VERSION) {
+    throw new Error(`Resposta InfoTravel incompatível com ${INFOTRAVEL_CONTRACT_VERSION} para ${action}.`);
+  }
+  return data;
+}
+
 // ── Busca de Hotéis ────────────────────────────────────────────────────────
 export async function infotravelSearchHotels(
   agencyId: string,
@@ -106,18 +113,8 @@ export async function infotravelSearchHotels(
   },
 ): Promise<Hotel[]> {
   const data = await invokeConnector("search_hotels", agencyId, params);
-
-  // Resposta do cenário de cotação (ofertas já normalizadas e salvas no banco)
-  if (Array.isArray(data?.offers)) {
-    return data.offers as Hotel[];
-  }
-
-  // Resposta direta da API GDS (sem scenarioId)
-  if (data?.hotelAvail) {
-    return (data.hotelAvail as ApiHotelAvail[]).map(mapApiHotelToCanonical);
-  }
-
-  return data?.hotels || [];
+  const envelope = requireV1Envelope(data, "search_hotels");
+  return (Array.isArray(envelope.offers) ? envelope.offers : []).map((item: ApiHotelAvail) => mapApiHotelToCanonical(item));
 }
 
 // ── Busca de Voos ──────────────────────────────────────────────────────────
@@ -132,16 +129,8 @@ export async function infotravelSearchFlights(
   },
 ): Promise<Flight[]> {
   const data = await invokeConnector("search_flights", agencyId, params);
-
-  if (Array.isArray(data?.offers)) {
-    return data.offers as Flight[];
-  }
-
-  if (data?.flightAvail) {
-    return (data.flightAvail as ApiFlightAvail[]).map(mapApiFlightToCanonical);
-  }
-
-  return data?.flights || [];
+  const envelope = requireV1Envelope(data, "search_flights");
+  return (Array.isArray(envelope.offers) ? envelope.offers : []).map((item: ApiFlightAvail) => mapApiFlightToCanonical(item));
 }
 
 // ── Busca de Traslados/Transfers ───────────────────────────────────────────
@@ -159,12 +148,8 @@ export async function infotravelSearchTransfers(
   },
 ): Promise<any[]> {
   const data = await invokeConnector("search_transfers", agencyId, params);
-
-  if (Array.isArray(data?.offers)) {
-    return data.offers;
-  }
-
-  return data?.transfers || data?.transferAvail || [];
+  const envelope = requireV1Envelope(data, "search_transfers");
+  return Array.isArray(envelope.offers) ? envelope.offers : [];
 }
 
 // ── Busca de Passeios e Atividades ─────────────────────────────────────────
@@ -182,12 +167,8 @@ export async function infotravelSearchActivities(
   },
 ): Promise<any[]> {
   const data = await invokeConnector("search_activities", agencyId, params);
-
-  if (Array.isArray(data?.offers)) {
-    return data.offers;
-  }
-
-  return data?.activities || data?.tourAvail || [];
+  const envelope = requireV1Envelope(data, "search_activities");
+  return Array.isArray(envelope.offers) ? envelope.offers : [];
 }
 
 // ── Importação de Reserva ──────────────────────────────────────────────────
@@ -196,13 +177,8 @@ export async function infotravelImportBooking(
   bookingId: string,
 ): Promise<NormalizedBooking> {
   const data = await invokeConnector("import_booking", agencyId, { bookingId });
-
-  // Se for a reserva crua do GDS real (contém estruturas de hotéis ou voos da API), normalizamos
-  if (data && (data.client || data.bookingHotels || data.bookingFlights)) {
-    return mapApiBookingToNormalized(data as ApiBooking);
-  }
-
-  return data as NormalizedBooking;
+  const envelope = requireV1Envelope(data, "import_booking");
+  return mapInfotravelV1BookingToNormalized(envelope.normalized as InfotravelV1BookingDTO);
 }
 
 // ── Criação e Sincronização de Reservas (Trips) ───────────────────────────
@@ -235,6 +211,7 @@ function toInfotravelSnapshot(providerResult: any, requestedBookingId: string): 
     bookingId,
     snapshot: {
       provider: "InfoTravel",
+      contract_version: INFOTRAVEL_CONTRACT_VERSION,
       booking_id: bookingId,
       flights: Array.isArray(normalized.flights) ? normalized.flights : Array.isArray(providerResult?.bookingFlights) ? providerResult.bookingFlights : [],
       hotels: Array.isArray(normalized.hotels) ? normalized.hotels : Array.isArray(providerResult?.bookingHotels) ? providerResult.bookingHotels : [],
@@ -283,7 +260,10 @@ export const importInfotravelBookingToTrip = createServerFn({ method: "POST" })
     assertStoreAccess(identity);
     const elevatedRoles = ["owner", "admin", "manager", "master", "platform_admin"];
     if (data.agencyId !== identity.store_id && !elevatedRoles.includes(identity.role)) throw new Error("Acesso negado ao tenant solicitado.");
-    const providerResult = await invokeConnector<any>("import_booking", data.agencyId, { bookingId: data.bookingId, tripId: data.tripId });
+    const providerResult = requireV1Envelope(
+      await invokeConnector<any>("import_booking", data.agencyId, { bookingId: data.bookingId, tripId: data.tripId }),
+      "import_booking",
+    );
     const applied = await applyInfotravelSnapshot(getServerClient(), data.agencyId, data.tripId, providerResult, data.bookingId);
     return { success: true, ...applied };
   });
@@ -295,7 +275,10 @@ export const syncInfotravelTrip = createServerFn({ method: "POST" })
     assertStoreAccess(identity);
     const elevatedRoles = ["owner", "admin", "manager", "master", "platform_admin"];
     if (data.agencyId !== identity.store_id && !elevatedRoles.includes(identity.role)) throw new Error("Acesso negado ao tenant solicitado.");
-    const providerResult = await invokeConnector<any>("run_periodic_sync", data.agencyId, { tripId: data.tripId });
+    const providerResult = requireV1Envelope(
+      await invokeConnector<any>("run_periodic_sync", data.agencyId, { tripId: data.tripId }),
+      "run_periodic_sync",
+    );
     const { data: trip, error: tripError } = await getServerClient().from("tourism_trips").select("external_booking_id").eq("id", data.tripId).eq("store_id", data.agencyId).maybeSingle();
     if (tripError || !trip?.external_booking_id) throw new Error("A viagem ainda não possui uma reserva InfoTravel vinculada para sincronizar.");
     const applied = await applyInfotravelSnapshot(getServerClient(), data.agencyId, data.tripId, providerResult, trip.external_booking_id);
@@ -306,7 +289,7 @@ export const syncInfotravelTrip = createServerFn({ method: "POST" })
 export async function infotravelTestConnection(agencyId: string): Promise<boolean> {
   try {
     const data = await invokeConnector("test_connection", agencyId);
-    return data?.success === true;
+    return data?.contract_version === INFOTRAVEL_CONTRACT_VERSION && data?.normalized?.status === "ok";
   } catch {
     return false;
   }
