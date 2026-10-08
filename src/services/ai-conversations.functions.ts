@@ -15,6 +15,7 @@ import {
   fragmentAndOptimizePrompt,
   needsCityClarification,
 } from "./autonomous-copilot-orchestrator";
+import { harvestAndPersistPlaces } from "./mining/places-harvester";
 import { resolveActiveCity, normalizeActiveCity } from "@/lib/city-helper";
 import { executeMcpToolCall } from "./mcp-server.functions";
 import { MCP_TOOL_REGISTRY } from "@/registries/mcp-tool-registry";
@@ -503,13 +504,31 @@ export function calculateHaversineDistance(
 }
 
 function detectIntent(text: string): string {
-  if (text.includes("onde fica") || text.includes("cafeteria") || text.includes("restaurante") || text.includes("perto de mim") || text.includes("empresa") || text.includes("loja")) {
+  if (
+    text.includes("onde fica") ||
+    text.includes("onde tem") ||
+    text.includes("cafeteria") ||
+    text.includes("restaurante") ||
+    text.includes("perto de mim") ||
+    text.includes("empresa") ||
+    text.includes("loja") ||
+    text.includes("hotel") ||
+    text.includes("hotéis") ||
+    text.includes("hoteis") ||
+    text.includes("pousada") ||
+    text.includes("pousadas") ||
+    text.includes("resort") ||
+    text.includes("resorts") ||
+    text.includes("hospedagem") ||
+    text.includes("padaria") ||
+    text.includes("mercado")
+  ) {
     return "search_places";
   }
   if (text.includes("corrida") || text.includes("motorista") || text.includes("uber") || text.includes("moto passageiro") || text.includes("carro") || text.includes("frete")) {
     return "estimate_mobility";
   }
-  if (text.includes("viagem") || text.includes("turismo") || text.includes("roteiro") || text.includes("pacote") || text.includes("oktober") || text.includes("hotel") || text.includes("pousada") || text.includes("passeio")) {
+  if (text.includes("viagem") || text.includes("turismo") || text.includes("roteiro") || text.includes("pacote") || text.includes("oktober") || text.includes("passeio")) {
     return "travel_itinerary";
   }
   if (text.includes("advogad") || text.includes("processo") || text.includes("demitid") || text.includes("jurídic") || text.includes("indenização")) {
@@ -532,9 +551,9 @@ function detectIntent(text: string): string {
 
 function extractSearchTerm(text: string): string {
   const clean = text
-    .replace(/(onde\s+fica|onde\s+tem|tem\s+alguma|procuro|gostaria\s+de|perto\s+de\s+mim|na\s+minha\s+cidade)/gi, "")
+    .replace(/(onde\s+fica|onde\s+tem|tem\s+alguma|tem\s+algum|procuro|gostaria\s+de|quais\s+os\s+melhores|quais\s+os|qual\s+o\s+melhor|melhores|perto\s+de\s+mim|na\s+minha\s+cidade|em\s+[a-zà-ÿ\s-]+$)/gi, "")
     .trim();
-  return clean.slice(0, 30);
+  return clean.slice(0, 40) || text.trim();
 }
 
 function derivePlaceOpenStatus(workingHours: unknown): boolean | null {
@@ -777,9 +796,9 @@ Responda SEMPRE em formato JSON com os campos:
     const intent = gatewayResponse?.intent || detectIntent(promptLower);
     const toolArgs = gatewayResponse?.tool_args || {};
 
-    // ── 0. Orquestrador autônomo de mineração e copilot (planilhas, leads, CNPJ, processos CNJ, turismo, vagas, builder) ──
+    // ── 0. Orquestrador autônomo de mineração e copilot (planilhas, leads, CNPJ, processos CNJ, builder) ──
     const isAutonomousOrMiningRequest =
-      /\b(minerar|minere|minera[çc][ãa]o|planilha|tabela|leads?|hospedagem|hot[eé]is|resorts?|pousadas?|vagas?|empregos?|eventos?|shows?|receita|ficha t[eé]cnica|landing page|biolink)\b/i.test(userPrompt) ||
+      /\b(minerar|minere|minera[çc][ãa]o|planilha|tabela|exportar leads|extrair leads|ficha t[eé]cnica|criar landing page|montar landing page|criar biolink|montar biolink)\b/i.test(userPrompt) ||
       /\b\d{2}\.?\d{3}\.?\d{3}\/?\d{4}-?\d{2}\b/.test(userPrompt) ||
       /\b\d{7}-?\d{2}\.?\d{4}\.?\d\.?\d{2}\.?\d{4}\b/.test(userPrompt);
 
@@ -825,7 +844,7 @@ Responda SEMPRE em formato JSON com os campos:
             version: 1,
             totalVersions: 1,
             authorName: "Waesy Copilot",
-            authorRole: "Mineração e Inteligência Urbana",
+            authorRole: "Consultor Comercial Waesy",
             previewSummary: copilotResult.summaryMessage,
             data: copilotResult.artifact.data,
           };
@@ -981,12 +1000,27 @@ Responda SEMPRE em formato JSON com os campos:
     }
 
   // ── 1. Estabelecimentos & Places ──
-  if (intent === "search_places" || promptLower.includes("onde fica") || promptLower.includes("perto") || promptLower.includes("cafeteria") || promptLower.includes("restaurante") || promptLower.includes("empresa") || promptLower.includes("loja")) {
+  if (
+    intent === "search_places" ||
+    promptLower.includes("onde fica") ||
+    promptLower.includes("onde tem") ||
+    promptLower.includes("perto") ||
+    promptLower.includes("cafeteria") ||
+    promptLower.includes("restaurante") ||
+    promptLower.includes("empresa") ||
+    promptLower.includes("loja") ||
+    promptLower.includes("hotel") ||
+    promptLower.includes("hotéis") ||
+    promptLower.includes("hoteis") ||
+    promptLower.includes("pousada") ||
+    promptLower.includes("pousadas") ||
+    promptLower.includes("hospedagem")
+  ) {
     const stepStart = Date.now();
     steps.push({
       id: `step-places-${stepStart}`,
       type: "tool",
-      label: gatewayResponse?.step_label || "Ferramenta search_places acionada",
+      label: gatewayResponse?.step_label || "Busca de Estabelecimentos",
       detail: gatewayResponse?.step_detail || "Buscando estabelecimentos ativos e calculando distância geográfica",
       status: "completed",
       startedAt: new Date(stepStart).toISOString(),
@@ -1006,7 +1040,28 @@ Responda SEMPRE em formato JSON com os campos:
       query = query.or(`business_name.ilike.%${term}%,category.ilike.%${term}%,description.ilike.%${term}%`);
     }
 
-    const { data: listings } = await query;
+    let { data: listings } = await query;
+
+    // Se a base local não possui resultados para esse termo (ex.: hotéis em Chapecó), consulta o harvester georreferenciado
+    if ((!listings || listings.length === 0) && term) {
+      try {
+        const harvestRes = await harvestAndPersistPlaces({
+          query: term,
+          city: context.city || "Chapecó",
+          state: context.state || "SC",
+          storeId: context.storeId,
+        });
+        if (harvestRes.places && harvestRes.places.length > 0) {
+          const { data: freshListings } = await query;
+          if (freshListings && freshListings.length > 0) {
+            listings = freshListings;
+          }
+        }
+      } catch (hErr) {
+        console.warn("[search_places] Harvester de apoio falhou de forma não-bloqueante:", hErr);
+      }
+    }
+
     const places = (listings && listings.length > 0 ? listings : []).map((l: any) => {
       let dist = null;
       if (context.userLat && context.userLng && l.latitude && l.longitude) {
@@ -1027,22 +1082,24 @@ Responda SEMPRE em formato JSON com os campos:
       };
     });
 
-    structuredPayload = {
-      blocks: [
-        {
-          type: "places_carousel",
-          data: {
-            title: "Estabelecimentos Locais",
-            places,
+    if (places.length > 0) {
+      structuredPayload = {
+        blocks: [
+          {
+            type: "places_carousel",
+            data: {
+              title: "Estabelecimentos Encontrados",
+              places,
+            },
           },
-        },
-      ],
-    };
+        ],
+      };
+    }
 
     if (!responseMessage) {
       responseMessage = places.length > 0
-        ? `Localizei ${places.length} estabelecimentos correspondentes na sua região. Você pode conferir os detalhes e entrar em contato direto:`
-        : "Não encontrei estabelecimentos cadastrados para esse termo no momento. Você pode explorar outras categorias no diretório do Places.";
+        ? `Localizei ${places.length} opções recomendadas em ${context.city || "sua região"}. Você pode conferir os detalhes e entrar em contato direto:`
+        : `Não encontrei estabelecimentos cadastrados para "${term}" em ${context.city || "sua região"} no momento. Você pode refinar o termo de busca ou explorar o diretório do Places.`;
     }
 
     updatedMemory.last_places_query = term;

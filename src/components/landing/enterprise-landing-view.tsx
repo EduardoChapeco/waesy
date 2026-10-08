@@ -358,11 +358,11 @@ export function EnterpriseLandingView({ initialSettings }: EnterpriseLandingView
           </div>
           <div className="p-4 sm:p-5 rounded-lg border border-border/60 bg-card/50 text-left space-y-1">
             <span className="text-2xl sm:text-3xl font-black font-mono text-primary">100%</span>
-            <p className="text-xs font-semibold text-muted-foreground">Server-Authoritative (Zero Fake)</p>
+            <p className="text-xs font-semibold text-muted-foreground">Alta Confiabilidade Garantida</p>
           </div>
           <div className="p-4 sm:p-5 rounded-lg border border-border/60 bg-card/50 text-left space-y-1">
-            <span className="text-2xl sm:text-3xl font-black font-mono text-foreground">Multi-Tenant</span>
-            <p className="text-xs font-semibold text-muted-foreground">RLS Deny-by-Default Isolado</p>
+            <span className="text-2xl sm:text-3xl font-black font-mono text-foreground">Multi-Empresas</span>
+            <p className="text-xs font-semibold text-muted-foreground">Segurança e Isolamento Total</p>
           </div>
           <div className="p-4 sm:p-5 rounded-lg border border-border/60 bg-card/50 text-left space-y-1">
             <span className="text-2xl sm:text-3xl font-black font-mono text-emerald-600">24/7</span>
@@ -432,7 +432,7 @@ export function EnterpriseLandingView({ initialSettings }: EnterpriseLandingView
             </div>
 
             <div className="pt-4 border-t border-border/40 flex items-center justify-between">
-              <span className="text-xs text-muted-foreground font-mono">Módulos: /workspace/*</span>
+              <span className="text-xs text-muted-foreground">Gestão Empresarial Integrada</span>
               <Button asChild variant="ghost" size="sm" className="text-xs font-bold gap-1 text-primary">
                 <Link to="/workspace">
                   <span>Conhecer o Workspace</span>
@@ -522,7 +522,7 @@ export function EnterpriseLandingView({ initialSettings }: EnterpriseLandingView
             </div>
 
             <div className="pt-4 border-t border-border/40">
-              <span className="text-[11px] text-muted-foreground font-mono">Inteligência Real no Banco</span>
+              <span className="text-xs text-muted-foreground">Automação Inteligente</span>
             </div>
           </div>
 
@@ -570,7 +570,7 @@ export function EnterpriseLandingView({ initialSettings }: EnterpriseLandingView
             </div>
 
             <div className="pt-4 border-t border-border/40 flex items-center justify-between">
-              <span className="text-xs text-muted-foreground font-mono">Integrações de API Reais</span>
+              <span className="text-xs text-muted-foreground">Canais & Conectividade</span>
               <Button asChild variant="ghost" size="sm" className="text-xs font-bold gap-1 text-emerald-600">
                 <Link to="/workspace/configuracoes/integracoes">
                   <span>Ver Integrações</span>
