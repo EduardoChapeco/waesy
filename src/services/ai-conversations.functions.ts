@@ -509,7 +509,7 @@ function detectIntent(text: string): string {
   if (text.includes("corrida") || text.includes("motorista") || text.includes("uber") || text.includes("moto passageiro") || text.includes("carro") || text.includes("frete")) {
     return "estimate_mobility";
   }
-  if (text.includes("viagem") || text.includes("turismo") || text.includes("roteiro") || text.includes("pacote")) {
+  if (text.includes("viagem") || text.includes("turismo") || text.includes("roteiro") || text.includes("pacote") || text.includes("oktober") || text.includes("hotel") || text.includes("pousada") || text.includes("passeio")) {
     return "travel_itinerary";
   }
   if (text.includes("advogad") || text.includes("processo") || text.includes("demitid") || text.includes("jurídic") || text.includes("indenização")) {
@@ -677,45 +677,11 @@ export async function executeAiCopilotPipeline(
         tokensUsed: 0,
       });
 
-      const isExternalMiningOrCreation = /\b(minerar|mineração|minerador|crawler|raspar|scrap|planilha|landing page|biolink|criar anúncio|gerar arte|proposta|roteiro de viagem)\b/i.test(userPrompt);
-      if (platformSearch.cards.length > 0 && !isExternalMiningOrCreation) {
-        const items = platformSearch.cards.map((card) => ({
-          id: card.id,
-          title: card.title,
-          subtitle: [card.kind, card.subtitle, card.location].filter(Boolean).join(" · "),
-          description: card.description,
-          location: card.location,
-          image_url: card.image_url,
-          price_cents: card.price_cents,
-          source_table: card.source_table,
-          source_id: card.source_id,
-          action: card.action,
-        }));
+      if (platformSearch.cards.length > 0) {
         updatedMemory.last_platform_search = {
           query: platformSearch.query,
           count: platformSearch.cards.length,
           kinds: platformSearch.searchedKinds,
-        };
-        fsm.transition("PARTIAL_RESULT", "Resultados internos encontrados");
-        fsm.transition("VALIDATING", "Validando cards e provenance da plataforma");
-        fsm.transition("COMPLETED", "Busca interna concluída sem chamada de modelo");
-        return {
-          responseMessage: `Encontrei ${items.length} resultado(s) na plataforma para “${platformSearch.query}”. Priorizei o conteúdo já publicado no Waesy para economizar processamento e manter os dados verificáveis:`,
-          activitySteps: steps,
-          structuredPayload: {
-            blocks: [{
-              type: "card_carousel",
-              data: {
-                title: "Resultados no Waesy",
-                source: "platform",
-                query: platformSearch.query,
-                items,
-              },
-            }],
-          },
-          updatedMemory,
-          fsmPhase: fsm.currentPhase,
-          fsmState: fsm.snapshot,
         };
       }
     }
@@ -725,13 +691,21 @@ export async function executeAiCopilotPipeline(
     try {
       const internalSearchContext = platformSearch
         ? `
-CONTEXTO SOBERANO DA PLATAFORMA (não invente e não substitua por dados externos):
+CONTEXTO SOBERANO DA PLATAFORMA (itens reais já publicados no Waesy — priorize-os):
 ${JSON.stringify({ query: platformSearch.query, cards: platformSearch.cards, unavailableTables: platformSearch.unavailableTables }).slice(0, 12000)}
-Se houver cards, priorize-os na resposta. Se não houver cards, indique a lacuna e escolha uma engine autorizada de mineração apenas se a intenção justificar.
+Se houver cards no contexto acima, mencione-os de forma clara e calorosa, destacando seus diferenciais e convidando o usuário a conferir. Se a intenção for turismo ou evento (ex: Oktoberfest), integre essas informações naturalmente.
 `
         : "";
-      const systemPrompt = `Você é o Waesy Copilot, assistente inteligente do ecossistema local.
-Você tem acesso a ferramentas da cidade:
+      const systemPrompt = `Você é o Waesy Copilot, concierge e assistente inteligente da cidade e da comunidade no ecossistema Waesy.
+Seu objetivo é orientar o usuário com simpatia, naturalidade, calor humano e precisão, conectando-o ao comércio, serviços, passeios e oportunidades locais.
+
+DIRETRIZES DE COMUNICAÇÃO:
+- Fale como um concierge atencioso e acolhedor: tom humano, fluido, empático e resolutivo.
+- NUNCA use jargões robóticos, termos de programação ou frases como "para economizar processamento", "como modelo de linguagem", "ordens recebidas" ou "instruções do sistema".
+- Se houver dados no CONTEXTO SOBERANO DA PLATAFORMA (cards), mencione os itens reais encontrados pelo nome e diferenciais, recomendando com entusiasmo.
+- Quando o usuário perguntar sobre turismo ou eventos específicos (ex: Oktoberfest, feiras, festivais), adapte o roteiro para a cidade e tradição correta (ex: Oktoberfest em Blumenau - SC).
+
+Ferramentas disponíveis:
 1. 'search_places': busca estabelecimentos locais (cafés, restaurantes, mercados, academias, oficinas, etc.)
 2. 'estimate_mobility': calcula estimativas de corrida urbana (moto, carro, entrega, van)
 3. 'search_catalog': busca produtos ou itens de cardápio com modificadores
@@ -745,9 +719,9 @@ Responda SEMPRE em formato JSON com os campos:
 {
   "intent": "search_places" | "estimate_mobility" | "search_catalog" | "travel_itinerary" | "legal_triage" | "create_ad" | "commercial_proposal" | "financial_report" | "general_chat",
   "tool_args": { ... },
-  "message": "Mensagem concisa e clara para o usuário",
-	"step_label": "Título amigável da ferramenta acionada",
-	"step_detail": "Detalhe da operação executada"
+  "message": "Mensagem calorosa, humana e completa para o usuário",
+  "step_label": "Título amigável da ação",
+  "step_detail": "Detalhe amigável para o usuário"
 }${internalSearchContext}`;
 
       // 🛡️ Prompt Sandboxing: Isola dados não-confiáveis externos em <user_untrusted_data>
@@ -1138,13 +1112,13 @@ Responda SEMPRE em formato JSON com os campos:
     updatedMemory.last_mobility_dest = dest;
   }
   // ── 3. Pacotes de Viagem & Turismo ──
-  else if (intent === "travel_itinerary" || promptLower.includes("viagem") || promptLower.includes("turismo") || promptLower.includes("roteiro") || promptLower.includes("pacote")) {
+  else if (intent === "travel_itinerary" || promptLower.includes("viagem") || promptLower.includes("turismo") || promptLower.includes("roteiro") || promptLower.includes("pacote") || promptLower.includes("oktober")) {
     const stepStart = Date.now();
     steps.push({
       id: `step-travel-${stepStart}`,
       type: "skill",
-      label: gatewayResponse?.step_label || "Skill Tourism Itinerary Builder acionada",
-      detail: gatewayResponse?.step_detail || "Compilando atrações diárias, categoria hoteleira e estimativa BRL",
+      label: gatewayResponse?.step_label || "Roteiro de Viagem & Turismo",
+      detail: gatewayResponse?.step_detail || "Organizando atrações, passeios e estimativa de hospedagem",
       status: "completed",
       startedAt: new Date(stepStart).toISOString(),
       completedAt: new Date(stepStart + 350).toISOString(),
@@ -1152,12 +1126,32 @@ Responda SEMPRE em formato JSON com os campos:
       tokensUsed: 310,
     });
 
-    const destination = toolArgs.destination || "Serra Gaúcha (Gramado & Canela)";
-    const days = toolArgs.days || [
-      { day: 1, title: "Chegada e Passeio pelo Centro", activities: ["Check-in no Hotel", "Visita à Rua Coberta e Palácio dos Festivais", "Jantar de Fondue Tradicional"] },
-      { day: 2, title: "Passeio de Trem e Vinícolas", activities: ["Passeio da Maria Fumaça com degustação", "Visita ao Vale dos Vinhedos", "Parada no Parque do Caracol"] },
-      { day: 3, title: "Chocolates Artesanais e Retorno", activities: ["Tour em fábrica de chocolate artesanal", "Compras e almoço colonial", "Check-out e transfer de retorno"] },
-    ];
+    let destination = toolArgs.destination;
+    if (!destination) {
+      if (/oktober\s*fest|blumenau/i.test(userPrompt)) {
+        destination = "Oktoberfest (Blumenau - SC)";
+      } else {
+        const destMatch = userPrompt.match(/(?:para|em|de|pra|conhecer|visitar)\s+([A-ZÀ-ÿ][a-zà-ÿ]+(?:\s+[A-ZÀ-ÿ][a-zà-ÿ]+)*)/i);
+        destination = destMatch ? destMatch[1] : (context.city ? `${context.city} e Região` : "Destino Solicitado");
+      }
+    }
+
+    let days = toolArgs.days;
+    if (!Array.isArray(days) || days.length === 0) {
+      if (/oktober/i.test(destination) || /blumenau/i.test(destination)) {
+        days = [
+          { day: 1, title: "Chegada e Vila Germânica", activities: ["Check-in na hospedagem em Blumenau", "Passeio pelos pavilhões da Vila Germânica", "Jantar típico com gastronomia germânica e chopp artesanal"] },
+          { day: 2, title: "Desfile Típico e Pavilhões", activities: ["Desfile folclórico na Rua XV de Novembro", "Apresentações musicais e culturais tradicionais", "Noite festiva nos pavilhões principais da Oktoberfest"] },
+          { day: 3, title: "Centro Histórico e Retorno", activities: ["Visita ao Museu da Cerveja e Parque Ramiro Ruediger", "Compras de lembranças e trajes típicos", "Check-out e retorno com tranquilidade"] },
+        ];
+      } else {
+        days = [
+          { day: 1, title: `Chegada em ${destination}`, activities: ["Check-in e acomodação", "Passeio de reconhecimento pelo centro histórico e arredores", "Jantar com culinária regional típica"] },
+          { day: 2, title: "Experiências e Atrações Principais", activities: ["Visita aos principais pontos turísticos e culturais", "Passeios guiados ou ecoturismo na região", "Momento livre para compras e gastronomia"] },
+          { day: 3, title: "Despedida e Retorno", activities: ["Últimas compras de produtos e artesanato local", "Almoço de despedida", "Check-out e transfer de retorno"] },
+        ];
+      }
+    }
 
     structuredPayload = {
       blocks: [
@@ -1165,11 +1159,11 @@ Responda SEMPRE em formato JSON com os campos:
           type: "travel_itinerary",
           data: {
             destination,
-            duration_days: 3,
-            passengers_count: 2,
-            hotel_category: "Hotel 4 Estrelas com Café",
-            flights_included: true,
-            estimated_budget_cents: 289000,
+            duration_days: days.length,
+            passengers_count: toolArgs.passengers_count || 2,
+            hotel_category: toolArgs.hotel_category || "Hotel Selecionado com Café",
+            flights_included: Boolean(toolArgs.flights_included),
+            estimated_budget_cents: toolArgs.estimated_budget_cents || 249000,
             days,
           },
         },
@@ -1181,18 +1175,18 @@ Responda SEMPRE em formato JSON com os campos:
       type: "proposal",
       title: `Roteiro Turístico: ${destination}`,
       version: 1,
-      authorName: "Consultor de Turismo IA",
-      authorRole: "Especialista em Destinos",
-      previewSummary: `Itinerário de 3 dias para ${destination} com passeios, hospedagem e estimativa de investimento.`,
+      authorName: "Consultor de Turismo Waesy",
+      authorRole: "Especialista em Experiências",
+      previewSummary: `Itinerário personalizado para ${destination} com passeios, hospedagem e estimativa de investimento.`,
       data: {
         destination,
-        daysCount: 3,
-        estimated_budget_cents: 289000,
+        daysCount: days.length,
+        estimated_budget_cents: toolArgs.estimated_budget_cents || 249000,
       },
     };
 
     if (!responseMessage) {
-      responseMessage = `Estruturei o roteiro completo de viagem para ${destination}. Você pode enviar a demanda para uma agência de turismo credenciada na plataforma para obter a cotação final com emissão de vouchers:`;
+      responseMessage = `Preparei um roteiro especial para ${destination}! Veja abaixo a programação detalhada e as sugestões de passeios para aproveitar ao máximo a sua experiência:`;
     }
 
     updatedMemory.last_travel_destination = destination;
@@ -1526,6 +1520,45 @@ Responda SEMPRE em formato JSON com os campos:
 
     updatedMemory.last_interaction_topic = userPrompt.slice(0, 40);
   }
+
+    if (platformSearch && platformSearch.cards.length > 0) {
+      const carouselBlock = {
+        type: "card_carousel",
+        data: {
+          title: "Opções no Waesy",
+          source: "platform",
+          query: platformSearch.query,
+          items: platformSearch.cards.map((card) => ({
+            id: card.id,
+            title: card.title,
+            subtitle: [card.kind, card.subtitle, card.location].filter(Boolean).join(" · "),
+            description: card.description,
+            location: card.location,
+            image_url: card.image_url,
+            price_cents: card.price_cents,
+            source_table: card.source_table,
+            source_id: card.source_id,
+            action: card.action,
+          })),
+        },
+      };
+
+      if (!structuredPayload) {
+        structuredPayload = { blocks: [carouselBlock] };
+      } else if (Array.isArray(structuredPayload.blocks)) {
+        if (!structuredPayload.blocks.some((b: any) => b.type === "card_carousel")) {
+          structuredPayload.blocks.push(carouselBlock);
+        }
+      }
+    }
+
+    if (!responseMessage) {
+      if (platformSearch && platformSearch.cards.length > 0) {
+        responseMessage = `Encontrei ótimas opções no Waesy para você aproveitar "${platformSearch.query}". Confira os destaques abaixo:`;
+      } else {
+        responseMessage = "Olá! Sou o Waesy Copilot. Como posso ajudar você no ecossistema local hoje?";
+      }
+    }
 
     if (!fsm.isFailure && !fsm.isTerminal) {
       if (canTransitionCopilotPhase(fsm.currentPhase, "VALIDATING")) {

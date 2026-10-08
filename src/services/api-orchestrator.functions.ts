@@ -703,11 +703,11 @@ export async function executeUnifiedAiCall(options: UnifiedAiCallOptions): Promi
           continue;
         }
 
-        // Higienização de modelo para o Groq: nunca despachar modelos Gemini/OpenAI para o Groq
-        let model = "llama-3.3-70b-versatile";
+        // Higienização de modelo para o Groq: utilizar modelo ativo no provedor
+        let model = "qwen/qwen3.8-27b";
         if (options.modelOverride) {
           const o = options.modelOverride.toLowerCase();
-          if (o.includes("llama") || o.includes("mixtral") || o.includes("gemma")) {
+          if (o.includes("qwen") || o.includes("llama") || o.includes("gpt-oss") || o.includes("mixtral") || o.includes("gemma")) {
             model = options.modelOverride;
           }
         }

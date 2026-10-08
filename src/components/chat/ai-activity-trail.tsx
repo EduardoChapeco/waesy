@@ -58,7 +58,7 @@ export function AIActivityTrail({
   onCancel,
   className,
 }: AIActivityTrailProps) {
-  const [isExpanded, setIsExpanded] = useState<boolean>(isStreaming);
+  const [isExpanded, setIsExpanded] = useState<boolean>(false);
   const [persistedSteps, setPersistedSteps] = useState<AIActivityStep[]>([]);
 
   useEffect(() => {
@@ -101,87 +101,60 @@ export function AIActivityTrail({
   const runningStep = visibleSteps.find((s) => s.status === "running");
   const failedStep = visibleSteps.find((s) => s.status === "failed");
   const hasError = Boolean(failedStep);
-  const totalDurationMs = visibleSteps.reduce(
-    (acc, curr) => acc + (curr.durationMs || 0),
-    0
-  );
-  const totalTokens = visibleSteps.reduce(
-    (acc, curr) => acc + (curr.tokensUsed || 0),
-    0
-  );
 
   const toggleExpanded = () => {
-    setIsExpanded((prev) => (prev === false ? true : false));
+    setIsExpanded((prev) => !prev);
   };
 
   return (
     <section
       role="region"
-      aria-label="Trilha de execução da inteligência artificial"
+      aria-label="Trilha de execução do Copilot"
       aria-live="polite"
       className={cn(
-        "rounded-lg border border-border/60 bg-muted/30 overflow-hidden text-xs transition-colors",
+        "rounded-lg border border-border/40 bg-muted/20 overflow-hidden text-xs transition-colors",
         hasError && "border-destructive/40 bg-destructive/5",
         className
       )}
     >
       {/* ── Cabeçalho do Rastreio / Resumo ── */}
-      <div className="flex items-center justify-between p-3 gap-2">
+      <div className="flex items-center justify-between p-2 gap-2">
         <Button
           type="button"
           variant="ghost"
-          onClick={toggleExpanded} /* focus-visible:ring-2 */
-          className="flex items-center gap-2 text-left flex-1 min-w-0 font-medium text-foreground hover:text-foreground/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 rounded-md cursor-pointer h-auto p-0 justify-start"
+          onClick={toggleExpanded}
+          className="flex items-center gap-2 text-left flex-1 min-w-0 font-normal text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 rounded-md cursor-pointer h-auto p-0 justify-start"
           aria-expanded={isExpanded}
         >
-
-          <div className="size-6 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">
+          <div className="size-5 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">
             {isStreaming || runningStep ? (
-              <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" />
+              <Loader2 className="size-3 animate-spin motion-reduce:animate-none" />
             ) : hasError ? (
-              <AlertCircle className="size-3.5 text-destructive" />
+              <AlertCircle className="size-3 text-destructive" />
             ) : (
-              <CheckCircle2 className="size-3.5 text-primary" />
+              <CheckCircle2 className="size-3 text-primary" />
             )}
           </div>
 
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
-              <span className="font-semibold text-xs text-foreground truncate">
+              <span className="text-2xs text-muted-foreground truncate">
                 {runningStep
                   ? runningStep.label
                   : hasError
-                  ? "Execução interrompida"
-                  : `${completedCount} etapas concluídas`}
+                  ? "Consulta com alerta"
+                  : completedCount > 1
+                  ? `${completedCount} fontes e ações consultadas`
+                  : "Consulta ao ecossistema"}
               </span>
-              <Badge variant="outline" className="text-2xs font-mono h-4 px-2 border-border/40">
-                {visibleSteps.length} {visibleSteps.length === 1 ? "passo" : "passos"}
-              </Badge>
             </div>
-            {runningStep && runningStep.detail && (
-              <p className="text-2xs text-muted-foreground truncate mt-1 font-mono">
-                {runningStep.detail}
-              </p>
-            )}
           </div>
 
-          <div className="flex items-center gap-2 shrink-0">
-            {totalDurationMs > 0 && (
-              <span className="hidden sm:inline-flex items-center gap-1 text-2xs text-muted-foreground font-mono">
-                <Clock className="size-3" />
-                {totalDurationMs}ms
-              </span>
-            )}
-            {totalTokens > 0 && (
-              <span className="hidden sm:inline-flex items-center gap-1 text-2xs text-muted-foreground font-mono">
-                <Coins className="size-3" />
-                {totalTokens} tok
-              </span>
-            )}
+          <div className="flex items-center gap-1 shrink-0">
             {isExpanded ? (
-              <ChevronUp className="size-4 text-muted-foreground" />
+              <ChevronUp className="size-3.5 text-muted-foreground" />
             ) : (
-              <ChevronDown className="size-4 text-muted-foreground" />
+              <ChevronDown className="size-3.5 text-muted-foreground" />
             )}
           </div>
         </Button>

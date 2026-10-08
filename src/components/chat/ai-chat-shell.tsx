@@ -476,46 +476,6 @@ export function AIChatShell({
                       </div>
                     )}
 
-                    {/* Trilha de Atividade da IA em Tempo Real (Phase B) */}
-                    {msg.activitySteps && msg.activitySteps.length > 0 && (
-                      <div className="w-full max-w-md mb-2">
-                        <AIActivityTrail
-                          steps={msg.activitySteps}
-                          executionId={msg.executionId}
-                          isStreaming={isStreaming && idx === messagesWithSeparators.length - 1}
-                          onCancel={onCancelActiveRun}
-                        />
-                      </div>
-                    )}
-
-                    {/* Artefato Versionado no Chat (Phase C) */}
-                    {msg.artifact && (
-                      <div className="w-full max-w-md mb-2">
-                        <ChatArtifactCard
-                          artifact={msg.artifact}
-                          onOpenBuilder={(art) => {
-                            const data = art.data || {};
-                            const docId = data.experience_document_id || data.documentId;
-                            const query = docId
-                              ? `doc=${encodeURIComponent(String(docId))}`
-                              : `artifactId=${encodeURIComponent(String(art.id))}`;
-                            window.location.assign(`/workspace/builder?${query}`);
-                          }}
-                        />
-                      </div>
-                    )}
-
-                    {/* Blocos Estruturados se houver */}
-                    {msg.structuredPayload && (
-                      <div className="w-full max-w-md mb-2">
-                        <StructuredMessageView
-                          payload={msg.structuredPayload as any}
-                          isStaff={msg.isStaffOrAI}
-                          onActionClick={onStructuredAction}
-                        />
-                      </div>
-                    )}
-
                     {/* Bolha de Texto da Mensagem */}
                     {msg.text && (
                       <div
@@ -547,6 +507,46 @@ export function AIChatShell({
                             </span>
                           )}
                         </div>
+                      </div>
+                    )}
+
+                    {/* Blocos Estruturados se houver */}
+                    {msg.structuredPayload && (
+                      <div className="w-full max-w-md mt-2 mb-1">
+                        <StructuredMessageView
+                          payload={msg.structuredPayload as any}
+                          isStaff={msg.isStaffOrAI}
+                          onActionClick={onStructuredAction}
+                        />
+                      </div>
+                    )}
+
+                    {/* Artefato Versionado no Chat (Phase C) */}
+                    {msg.artifact && (
+                      <div className="w-full max-w-md mt-2 mb-1">
+                        <ChatArtifactCard
+                          artifact={msg.artifact}
+                          onOpenBuilder={(art) => {
+                            const data = art.data || {};
+                            const docId = data.experience_document_id || data.documentId;
+                            const query = docId
+                              ? `doc=${encodeURIComponent(String(docId))}`
+                              : `artifactId=${encodeURIComponent(String(art.id))}`;
+                            window.location.assign(`/workspace/builder?${query}`);
+                          }}
+                        />
+                      </div>
+                    )}
+
+                    {/* Trilha de Atividade da IA em Tempo Real (Phase B) */}
+                    {msg.activitySteps && msg.activitySteps.length > 0 && (
+                      <div className="w-full max-w-md my-2">
+                        <AIActivityTrail
+                          steps={msg.activitySteps}
+                          executionId={msg.executionId}
+                          isStreaming={isStreaming && idx === messagesWithSeparators.length - 1}
+                          onCancel={onCancelActiveRun}
+                        />
                       </div>
                     )}
 
