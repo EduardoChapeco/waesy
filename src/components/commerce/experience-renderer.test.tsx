@@ -2,7 +2,13 @@ import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { addBlockToPage, createEmptyOmniPage } from "@/types/omni-builder";
-import { ExperienceRenderer } from "./experience-renderer";
+import {
+  ExperienceRenderer,
+  EXPERIENCE_STRUCTURAL_BLOCK_TYPES,
+  getExperienceRendererAliases,
+  getExperienceRendererBlockTypes,
+} from "./experience-renderer";
+import { builderRegistry } from "@/lib/builder/builder-registry";
 
 describe("ExperienceRenderer Omni AST integration", () => {
   it("renders the canonical Omni block through the Experience renderer and applies page theme", () => {
@@ -45,5 +51,19 @@ describe("ExperienceRenderer Omni AST integration", () => {
       ]} />,
     );
     expect(markup).toContain("Conteúdo legado");
+  });
+
+  it("não deixa manifesto órfão entre registry, inspector e renderer", () => {
+    const rendererTypes = new Set(getExperienceRendererBlockTypes());
+    const aliases = getExperienceRendererAliases();
+    const covered = new Set([
+      ...rendererTypes,
+      ...EXPERIENCE_STRUCTURAL_BLOCK_TYPES,
+      ...Object.keys(aliases),
+      ...Object.values(aliases),
+    ]);
+    const orphaned = Object.keys(builderRegistry).filter((blockType) => !covered.has(blockType));
+
+    expect(orphaned).toEqual([]);
   });
 });

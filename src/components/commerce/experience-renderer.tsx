@@ -165,6 +165,7 @@ const componentMap: Record<string, React.FC<any>> = {
   biolink_profile_header: BiolinkProfileSection,
   biolink_action_buttons: BiolinkActionButtonsSection,
   biolink_pix_card: BiolinkPixCardSection,
+  office_contract_viewer: OfficeContractViewer,
   location_map_card: LocationMapCardSection,
   newsletter_capture: NewsletterCaptureSection,
 };
@@ -199,7 +200,20 @@ function createOmniBlockRenderer(blockType: string): React.FC<any> {
 }
 
 for (const blockType of Object.keys(OMNI_BLOCK_RENDERER_IDS)) {
- componentMap[`${OMNI_EXPERIENCE_NODE_PREFIX}${blockType}`] = createOmniBlockRenderer(blockType);
+  componentMap[`${OMNI_EXPERIENCE_NODE_PREFIX}${blockType}`] = createOmniBlockRenderer(blockType);
+}
+
+/**
+ * Contrato de cobertura usado pelo Builder CMS e pelos gates de publicação.
+ * Blocos estruturais não precisam de componente leaf; aliases são resolvidos
+ * antes do dispatch e os blocos Omni possuem renderer próprio.
+ */
+export const EXPERIENCE_STRUCTURAL_BLOCK_TYPES = new Set(["section", "container"]);
+export function getExperienceRendererBlockTypes(): string[] {
+  return Object.keys(componentMap);
+}
+export function getExperienceRendererAliases(): Record<string, string> {
+  return { ...BLOCK_TYPE_ALIASES };
 }
 
 // ---------------------------------------------------------------------------

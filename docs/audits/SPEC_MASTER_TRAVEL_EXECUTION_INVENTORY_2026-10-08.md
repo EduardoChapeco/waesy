@@ -1,13 +1,15 @@
 
 
-## Continuação executada — Ondas 3 e 4
+## Continuação executada — Onda 5: Builder CMS modular
 
-### Onda 3 — InfoTravel
+Foi auditado o contrato entre `src/lib/builder/builder-registry.ts`, `BuilderInspector`, `ExperienceRenderer` e os painéis CMS. O primeiro gap real encontrado foi o manifesto `office_contract_viewer`: ele estava descrito no registry e disponível no componente visual, mas não estava conectado ao `componentMap` canônico do renderer. Em produção isso resultava em bloco vazio/fallback silencioso fora do modo de edição.
 
-O BFF `invokeInfotravelConnector` agora exige identidade autenticada, valida acesso ao tenant e rejeita `agencyId` diferente do `store_id` para papéis não elevados. Falhas de transporte/conector deixaram de ser classificadas falsamente como credenciais ausentes: `CREDENTIALS_NOT_CONFIGURED` fica reservado para o retorno explícito do conector, enquanto indisponibilidade usa `CONNECTOR_UNAVAILABLE`. Os IDs gerados na normalização de hotéis, voos e reservas também passaram a ser determinísticos, evitando mudanças de identidade em retries do mesmo payload.
+Entregas desta etapa:
 
-### Onda 4 — Reserva/Kanban/contratos
+- conexão de `office_contract_viewer` ao `ExperienceRenderer`;
+- exportação da cobertura efetiva do renderer e dos aliases estruturais;
+- novo gate que compara automaticamente todos os manifests do registry com structural handlers, aliases e componentes leaf;
+- cobertura dos blocos Omni preservada no mesmo contrato;
+- detecção preventiva de novos blocos órfãos antes da publicação.
 
-Foi criada a migration `20261008093000_travel_reservation_state.sql`, com o estado `reserved_pending_issuance` em `tourism_trips`, além dos estados de emissão e índice por tenant/data. O fallback de `convertProposalToTrip` agora consulta uma viagem já criada para a mesma proposta e loja antes de inserir outra, reduzindo duplicação quando a RPC canônica ainda não está disponível. Novas conversões fallback persistem explicitamente `reservation_state: reserved_pending_issuance`, deixando a emissão de locators/vouchers como etapa posterior observável.
-
-**Validação incremental:** 3 arquivos de teste, 9 casos aprovados; typecheck e `git diff --check` passaram.
+**Validação incremental:** renderer + contratos Studio: 6 testes aprovados; typecheck e `git diff --check` passaram. O próximo incremento da Onda 5 deve evoluir esse gate para validar também schemas/defaultProps e registrar a versão do contrato no CMS.
