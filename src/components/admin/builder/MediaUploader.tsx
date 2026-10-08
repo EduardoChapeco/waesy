@@ -229,7 +229,7 @@ export function MediaUploader({
 	       onChange={(event) => setRightsAttested(event.target.checked)}
 	       className="mt-1 size-4 shrink-0"
 	     />
-	     <span>Confirmo que minha loja possui direitos e autorizações/consentimentos necessários para usar esta imagem publicamente. O arquivo ficará acessível no bucket público de mídia mesmo antes de publicar a página.</span>
+	     <span>Confirmo que possuo os direitos e autorizações necessários para uso público desta imagem na vitrine da loja.</span>
 	   </label>
 	 )}
 

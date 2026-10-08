@@ -648,26 +648,36 @@ export function AIChatShell({
                 </Badge>
               </div>
 
-              {/* Memória de Trabalho Ativa (Phase D) */}
+              {/* Contexto e Preferências da Conversa */}
               <div className="space-y-2">
                 <span className="text-2xs font-semibold text-muted-foreground uppercase flex items-center gap-1">
                   <Brain className="size-3 text-primary" />
-                  <span>Memória de Trabalho</span>
+                  <span>Contexto da Conversa</span>
                 </span>
-                {activeThread.workingMemory && Object.keys(activeThread.workingMemory).length > 0 ? (
+                {activeThread.workingMemory &&
+                Object.entries(activeThread.workingMemory).filter(([k]) => !k.startsWith("last_tokens") && !k.startsWith("last_mcp")).length > 0 ? (
                   <div className="rounded-lg border border-border/40 bg-muted/20 p-2 space-y-2 text-xs">
-                    {Object.entries(activeThread.workingMemory).map(([k, v]) => (
-                      <div key={k} className="flex justify-between gap-2">
-                        <span className="text-muted-foreground truncate">{k}:</span>
-                        <span className="font-medium text-foreground truncate font-mono">
-                          {String(v)}
-                        </span>
-                      </div>
-                    ))}
+                    {Object.entries(activeThread.workingMemory)
+                      .filter(([k]) => !k.startsWith("last_tokens") && !k.startsWith("last_mcp"))
+                      .map(([k, v]) => {
+                        const friendlyLabel =
+                          k === "last_places_query" ? "Última busca" :
+                          k === "last_travel_destination" ? "Destino" :
+                          k === "last_creative_topic" ? "Tema criativo" :
+                          k.replace(/_/g, " ");
+                        return (
+                          <div key={k} className="flex justify-between gap-2">
+                            <span className="text-muted-foreground truncate capitalize">{friendlyLabel}:</span>
+                            <span className="font-medium text-foreground truncate">
+                              {String(v)}
+                            </span>
+                          </div>
+                        );
+                      })}
                   </div>
                 ) : (
                   <p className="text-2xs text-muted-foreground">
-                    Nenhum dado retido na memória desta thread.
+                    Nenhum contexto adicional registrado.
                   </p>
                 )}
               </div>

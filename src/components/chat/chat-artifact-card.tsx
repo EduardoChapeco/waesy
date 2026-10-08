@@ -324,7 +324,15 @@ export function ChatArtifactCard({
           className="h-11 px-3 text-xs font-semibold rounded-md bg-primary text-primary-foreground hover:bg-primary/90 gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
         >
           <ExternalLink className="size-3.5" aria-hidden="true" />
-          <span>Abrir no Builder</span>
+          <span>
+            {artifact.type === "landing_page"
+              ? "Abrir no Editor"
+              : artifact.type === "spreadsheet"
+              ? "Visualizar Dados"
+              : artifact.type === "proposal"
+              ? "Ver Proposta"
+              : "Visualizar"}
+          </span>
         </Button>
       </div>
     </article>

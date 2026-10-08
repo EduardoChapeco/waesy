@@ -707,10 +707,14 @@ export async function executeAutonomousCopilotTask(
       startedAt: new Date().toISOString(),
     });
 
+    const cleanLodgingQuery = task.targetQuery
+      .replace(/\b(hoteis|hotéis|pousadas|resorts|hospedagem)\b/gi, "")
+      .trim() || "hotel";
+
     const placesResult = await withExponentialRetry(
       () =>
         harvestAndPersistPlaces({
-          query: `hotel pousada resort ${task.targetQuery}`.trim(),
+          query: cleanLodgingQuery,
           city: task.city as string,
           state: task.state ?? resolveCityAndState(task.city)?.state,
           storeId: context.storeId,
@@ -732,17 +736,22 @@ export async function executeAutonomousCopilotTask(
       p.source || "OpenStreetMap Overpass",
     ]);
 
-    artifact = {
-      type: "spreadsheet",
-      title: `Hospedagens & Resorts - ${task.city}/${task.state}`,
-      data: {
-        headers,
-        rows,
-        totalItems: rows.length,
-        city: task.city,
-      },
-    };
-    summaryMessage = `Localizei ${rows.length} opções de hospedagem, pousadas e resorts em ${task.city}. Planilha interativa pronta:`;
+    if (rows.length > 0) {
+      artifact = {
+        type: "spreadsheet",
+        title: `Hospedagens & Resorts - ${task.city}/${task.state}`,
+        data: {
+          headers,
+          rows,
+          totalItems: rows.length,
+          city: task.city,
+        },
+      };
+      summaryMessage = `Localizei ${rows.length} opções de hospedagem, pousadas e resorts em ${task.city}. Planilha interativa pronta:`;
+    } else {
+      artifact = undefined;
+      summaryMessage = `Não foram encontradas opções de hospedagem registradas em ${task.city} para essa busca.`;
+    }
     tokensSaved = rows.length * 200;
   } else if (task.domain === "job_opportunities") {
     steps.push({
