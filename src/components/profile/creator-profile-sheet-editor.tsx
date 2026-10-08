@@ -341,7 +341,7 @@ export function CreatorProfileSheetEditor({
                   </div>
 
                   {/* Capa Panorâmica Canônica 21:9 ao lado */}
-                  <div className="flex-1 min-w-0 aspect-[21/9] rounded-lg bg-muted/20 relative overflow-hidden flex items-center group border border-border/40">
+                  <div className="flex-1 min-w-0 h-20 sm:h-24 rounded-lg bg-muted/20 relative overflow-hidden flex items-center group border border-border/40">
                     {coverUrl ? (
                       <img
                         src={coverUrl}

@@ -743,7 +743,7 @@ function cleanAddressSegment(text: string): string {
           </div>
 
           {/* Capa Panorâmica Canônica 21:9 ao lado com Scroll Interno de Banners Promocionais */}
-          <div className="flex-1 min-w-0 aspect-[21/9] rounded-lg bg-muted/20 relative overflow-hidden flex items-center group border border-border/40">
+          <div className="flex-1 min-w-0 h-20 sm:h-28 md:h-32 rounded-lg bg-muted/20 relative overflow-hidden flex items-center group border border-border/40">
             <div 
               tabIndex={0}
               aria-label="Galeria de banners da empresa"
@@ -1445,7 +1445,7 @@ function cleanAddressSegment(text: string): string {
                                 className="group rounded-lg border border-border/60 bg-card overflow-hidden hover:border-foreground/30 transition-all cursor-pointer flex flex-col justify-between"
                               >
                                 {card.imageUrl ? (
-                                  <div className="aspect-[16/9] w-full overflow-hidden bg-muted/30 relative">
+                                  <div className="aspect-[21/9] w-full overflow-hidden bg-muted/30 relative">
                                     <img
                                       src={card.imageUrl}
                                       alt={card.title}

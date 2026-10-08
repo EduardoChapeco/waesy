@@ -409,23 +409,35 @@ export function ProfessionalResumeEditor({
  </div>
  </div>
 
- <form onSubmit={handleAddSkill} className="flex gap-2">
+ <div className="flex gap-2">
  <Input
- value={newSkillInput}
- onChange={(e) => setNewSkillInput(e.target.value)}
- placeholder="Digite uma habilidade e pressione Enter (ex: React, Vendas, Gestão de Projetos)"
- className="h-11 rounded-lg text-xs flex-1"
+  value={newSkillInput}
+  onChange={(e) => setNewSkillInput(e.target.value)}
+  onKeyDown={(e) => {
+   if (e.key === "Enter") {
+    e.preventDefault();
+    e.stopPropagation();
+    handleAddSkill();
+   }
+  }}
+  placeholder="Digite uma habilidade e pressione Enter (ex: React, Vendas, Gestão de Projetos)"
+  className="h-11 rounded-lg text-xs flex-1"
  />
  <Button
- type="submit"
- size="sm"
- variant="outline"
- className="rounded-lg text-xs font-bold h-11 px-3 gap-1"
+  type="button"
+  size="sm"
+  variant="outline"
+  onClick={(e) => {
+   e.preventDefault();
+   e.stopPropagation();
+   handleAddSkill();
+  }}
+  className="rounded-lg text-xs font-bold h-11 px-3 gap-1 cursor-pointer"
  >
- <Plus className="size-3.5" />
- <span>Adicionar</span>
+  <Plus className="size-3.5" />
+  <span>Adicionar</span>
  </Button>
- </form>
+ </div>
 
  {skills.length === 0 ? (
  <p className="text-xs text-muted-foreground italic py-2">
