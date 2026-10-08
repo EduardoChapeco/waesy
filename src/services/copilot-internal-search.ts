@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-export type InternalSearchKind = "product" | "store" | "event" | "classified";
+export type InternalSearchKind = "product" | "store" | "event" | "classified" | "travel";
 
 export interface InternalSearchCard {
   id: string;
@@ -31,11 +31,12 @@ export interface InternalSearchResult {
   source: "platform";
 }
 
-const SEARCH_TERMS = /\b(onde|onde fica|onde tem|procuro|buscar|busco|encontre|encontrar|quero|tem|produto|produtos|loja|lojas|evento|eventos|show|shows|classificado|classificados|comprar|cardápio|restaurante|mercado|serviço|servicos|perto|disponível|disponivel)\b/i;
+const SEARCH_TERMS = /\b(onde|onde fica|onde tem|procuro|buscar|busco|encontre|encontrar|quero|tem|produto|produtos|loja|lojas|evento|eventos|show|shows|classificado|classificados|comprar|cardápio|restaurante|mercado|serviço|servicos|perto|disponível|disponivel|viagem|viagens|turismo|roteiro|roteiros|pacote|pacotes|hotel|hotéis|pousada|destino|destinos|oktoberfest)\b/i;
 const STORE_TERMS = /\b(loja|lojas|empresa|restaurante|mercado|cafeteria|academia|oficina|serviço|servicos|perto|onde fica|onde tem)\b/i;
-const EVENT_TERMS = /\b(evento|eventos|show|shows|feira|festival|agenda|hoje|amanhã|amanha|fim de semana)\b/i;
+const EVENT_TERMS = /\b(evento|eventos|show|shows|feira|festival|agenda|hoje|amanhã|amanha|fim de semana|oktoberfest)\b/i;
 const CLASSIFIED_TERMS = /\b(classificado|classificados|usado|usados|vendo|vendo-se|alugo|aluguel|imóvel|imovel|carro|moto|emprego|vaga|vagas)\b/i;
 const PRODUCT_TERMS = /\b(produto|produtos|comprar|compro|cardápio|cardapio|pizza|lanche|preço|preco|valor|oferta|ofertas)\b/i;
+const TRAVEL_TERMS = /\b(viagem|viagens|turismo|passeio|passeios|roteiro|roteiros|pacote|pacotes|hotel|hotéis|hoteis|pousada|pousadas|destino|destinos|resort|resorts|praia|serra|oktoberfest|blumenau|gramado|voo|aéreo)\b/i;
 
 function safeSearchTerm(input: string): string {
   return input
@@ -60,11 +61,13 @@ function uniqueKinds(prompt: string): InternalSearchKind[] {
   if (STORE_TERMS.test(prompt)) kinds.add("store");
   if (EVENT_TERMS.test(prompt)) kinds.add("event");
   if (CLASSIFIED_TERMS.test(prompt)) kinds.add("classified");
+  if (TRAVEL_TERMS.test(prompt)) kinds.add("travel");
   if (kinds.size === 0) {
     kinds.add("product");
     kinds.add("store");
     kinds.add("event");
     kinds.add("classified");
+    kinds.add("travel");
   }
   return [...kinds];
 }
@@ -175,6 +178,30 @@ function classifiedCard(row: Record<string, any>): InternalSearchCard | null {
   };
 }
 
+function travelCard(row: Record<string, any>): InternalSearchCard | null {
+  const title = firstText(row, ["title", "name", "destination_name", "package_name"]);
+  if (!row.id || !title) return null;
+  return {
+    id: `travel:${row.id}`,
+    kind: "travel",
+    title,
+    subtitle: firstText(row, ["state", "country", "category", "region"]),
+    description: firstText(row, ["description", "short_description", "summary"]),
+    image_url: firstImage(row),
+    price_cents: typeof row.price_cents === "number" ? row.price_cents : (typeof row.base_price_cents === "number" ? row.base_price_cents : null),
+    location: firstText(row, ["city", "destination", "location", "address"]),
+    source_table: row.destination_name || row.state ? "destinations" : "tourism_trips",
+    source_id: row.id,
+    slug: row.slug ?? null,
+    action: {
+      id: `open-travel:${row.id}`,
+      label: "Ver viagem",
+      action_type: "navigate",
+      payload: { href: row.slug ? `/viagens/${encodeURIComponent(row.slug)}` : `/viagens/${row.id}`, travel_id: row.id },
+    },
+  };
+}
+
 async function searchTable(
   db: SupabaseClient,
   table: string,
@@ -197,12 +224,12 @@ async function searchTable(
       if (status && !["active", "published", "approved", "live", "public"].includes(status)) return false;
     }
     if (!normalized) return true;
-    const haystack = [row.title, row.name, row.business_name, row.store_name, row.category, row.description, row.address, row.city]
+    const haystack = [row.title, row.name, row.business_name, row.store_name, row.destination_name, row.package_name, row.category, row.description, row.address, row.city, row.state]
       .filter(Boolean).join(" ").toLocaleLowerCase("pt-BR");
     return normalized.split(/\s+/).filter((token) => token.length > 2).some((token) => haystack.includes(token));
   });
 
-  const mapper = kind === "product" ? productCard : kind === "store" ? storeCard : kind === "event" ? eventCard : classifiedCard;
+  const mapper = kind === "product" ? productCard : kind === "store" ? storeCard : kind === "event" ? eventCard : kind === "travel" ? travelCard : classifiedCard;
   return { cards: rows.map(mapper).filter((item): item is InternalSearchCard => Boolean(item)).slice(0, 6), unavailable: false };
 }
 
@@ -218,6 +245,7 @@ export async function searchPlatformForCopilot(db: SupabaseClient, prompt: strin
     store: ["directory_listings", "stores"],
     event: ["events"],
     classified: ["classifieds"],
+    travel: ["destinations", "tourism_trips"],
   };
   const searches = await Promise.all(kinds.flatMap((kind) => tableByKind[kind].map(async (table) => ({ kind, table, result: await searchTable(db, table, query, kind) }))));
   const cards = searches.flatMap(({ result }) => result.cards);

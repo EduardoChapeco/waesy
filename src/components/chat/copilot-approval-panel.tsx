@@ -27,12 +27,32 @@ const ACTION_LABELS: Record<ApprovalRow["action_type"], string> = {
 const SENSITIVE_KEYS = /token|secret|password|credential|authorization|apikey|api_key/i;
 
 function summarizePayload(payload: Record<string, unknown>) {
+  const FRIENDLY_KEYS: Record<string, string> = {
+    destination: "Destino",
+    daysCount: "Duração (dias)",
+    duration_days: "Duração (dias)",
+    passengers_count: "Passageiros",
+    hotel_category: "Categoria de Hotel",
+    estimated_budget_cents: "Orçamento Estimado",
+    demand_title: "Título da Demanda",
+    area: "Área Jurídica",
+    campaign_name: "Campanha",
+  };
+
   return Object.entries(payload)
     .filter(([key, value]) => !SENSITIVE_KEYS.test(key) && value !== null && value !== undefined && value !== "")
-    .slice(0, 5)
+    .filter(([key]) => key !== "days" && key !== "checklist" && key !== "documents")
+    .slice(0, 4)
     .map(([key, value]) => {
-      const text = typeof value === "object" ? JSON.stringify(value) : String(value);
-      return { key: key.replaceAll("_", " "), value: text.slice(0, 140) };
+      let text = "";
+      if (key.includes("cents") && typeof value === "number") {
+        text = `R$ ${(value / 100).toFixed(2).replace(".", ",")}`;
+      } else if (typeof value === "object") {
+        text = JSON.stringify(value).slice(0, 80);
+      } else {
+        text = String(value).slice(0, 80);
+      }
+      return { key: FRIENDLY_KEYS[key] || key.replaceAll("_", " "), value: text };
     });
 }
 
@@ -63,8 +83,9 @@ export function CopilotApprovalPanel({ currentUserId }: { currentUserId?: string
         .from("copilot_action_approvals")
         .select("id, action_type, payload, status, requested_at, expires_at, store_id, user_id")
         .eq("status", "pending")
+        .eq("user_id", currentUserId)
         .order("requested_at", { ascending: false })
-        .limit(20);
+        .limit(10);
       if (queryError) throw queryError;
       setApprovals((data || []) as ApprovalRow[]);
       setError(null);
@@ -121,7 +142,7 @@ export function CopilotApprovalPanel({ currentUserId }: { currentUserId?: string
     }
   };
 
-  if (!currentUserId || (approvals.length === 0 && !loading && !error)) return null;
+  if (!currentUserId || approvals.length === 0) return null;
 
   return (
     <section aria-label="Aprovações pendentes do Copilot" className="mx-auto w-full max-w-3xl rounded-lg border border-amber-500/30 bg-amber-500/5 p-3 shadow-xs">

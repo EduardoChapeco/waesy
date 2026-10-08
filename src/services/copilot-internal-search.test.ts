@@ -7,6 +7,8 @@ describe("copilot internal search", () => {
     expect(shouldSearchPlatform("quero comprar pizza")).toBe(true);
     expect(shouldSearchPlatform("me mostre eventos neste fim de semana")).toBe(true);
     expect(shouldSearchPlatform("procuro um carro usado")).toBe(true);
+    expect(shouldSearchPlatform("quero viajar para a oktoberfest")).toBe(true);
+    expect(shouldSearchPlatform("roteiro de viagem e turismo")).toBe(true);
   });
 
   it("não força busca de catálogo em conversa geral curta", () => {
