@@ -13,6 +13,7 @@ import {
   createAiConversationThread,
   sendAiConversationMessage,
   executeGuestCopilotMessage,
+  dispatchAiChatAction,
   deleteAiConversationThread,
   dispatchAiChatAction,
   toggleAiThreadPinned,
@@ -337,44 +338,59 @@ function CopilotPage() {
   };
 
   const handleStructuredAction = async (action: AIChatAction) => {
-    const payload = action.payload || {};
-    const dispatchable = ["add_to_cart", "request_travel_quote", "submit_legal_demand", "publish_ad"] as const;
+    const payload = action?.payload || {};
+    const actionType = action?.action_type;
 
-    if ((dispatchable as readonly string[]).includes(action.action_type)) {
+    if (["add_to_cart", "request_travel_quote", "submit_legal_demand", "publish_ad"].includes(actionType)) {
       try {
-        await dispatchAiChatAction({
+        const result = await dispatchAiChatAction({
           data: {
-            action_type: action.action_type as (typeof dispatchable)[number],
+            action_type: actionType,
             payload,
           },
         });
-        toast.success("Ação do Copilot concluída.");
+        if ((result as { status?: string } | null)?.status === "needs_approval") {
+          toast.info("Solicitação registrada e aguardando aprovação humana.");
+          return result;
+        }
+        if (actionType === "add_to_cart") {
+          toast.success("Item adicionado ao carrinho.");
+        } else if (actionType === "request_travel_quote") {
+          toast.success("Solicitação de cotação registrada.");
+        } else if (actionType === "submit_legal_demand") {
+          toast.success("Demanda encaminhada para o painel jurídico.");
+        } else if (actionType === "publish_ad") {
+          toast.success("Anúncio publicado.");
+        }
+        return result;
       } catch (error: any) {
-        toast.error(error?.message || "Não foi possível executar a ação do Copilot.");
+        toast.error(error?.message || "Não foi possível executar esta ação.");
+        return;
       }
-      return;
     }
 
-    const href = typeof payload.href === "string" ? payload.href : typeof payload.url === "string" ? payload.url : null;
-    if (href?.startsWith("/")) {
-      window.location.assign(href);
-      return;
-    }
-
-    if (action.action_type === "open_place") {
+    if (actionType === "open_place") {
       const target = payload.slug || payload.placeId;
-      if (target) navigate({ to: `/places/${target}` as any });
+      if (typeof target === "string" && target.length > 0) {
+        navigate({ to: `/places/${target}` as any });
+        return;
+      }
+    }
+
+    if (actionType === "navigate" || actionType === "open_checkout") {
+      const href = payload.href || payload.url;
+      if (typeof href === "string" && href.startsWith("/") && !href.startsWith("//")) {
+        navigate({ to: href as any });
+        return;
+      }
+    }
+
+    if (actionType === "call_ride") {
+      navigate({ to: "/mobilidade" as any });
       return;
     }
-    if (action.action_type === "open_checkout") {
-      window.location.assign("/checkout");
-      return;
-    }
-    if (action.action_type === "call_ride") {
-      window.location.assign("/mobilidade");
-      return;
-    }
-    toast.info("Esta ação está disponível no Copilot, mas ainda não tem um handler nesta conversa.");
+
+    toast.info("Esta ação ainda não possui executor seguro disponível.");
   };
 
   const handleTogglePinThread = async (threadId: string) => {

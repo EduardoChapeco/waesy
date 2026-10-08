@@ -8553,6 +8553,79 @@ export type Database = {
           },
         ]
       }
+      copilot_action_approvals: {
+        Row: {
+          action_type: string
+          expires_at: string
+          execution_id: string | null
+          id: string
+          idempotency_key: string
+          payload: Json
+          requested_at: string
+          result: Json
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          store_id: string | null
+          thread_id: string | null
+          user_id: string
+        }
+        Insert: {
+          action_type: string
+          expires_at?: string
+          execution_id?: string | null
+          id?: string
+          idempotency_key: string
+          payload?: Json
+          requested_at?: string
+          result?: Json
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          store_id?: string | null
+          thread_id?: string | null
+          user_id: string
+        }
+        Update: {
+          action_type?: string
+          expires_at?: string
+          execution_id?: string | null
+          id?: string
+          idempotency_key?: string
+          payload?: Json
+          requested_at?: string
+          result?: Json
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          store_id?: string | null
+          thread_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "copilot_action_approvals_execution_id_fkey"
+            columns: ["execution_id"]
+            isOneToOne: false
+            referencedRelation: "copilot_executions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "copilot_action_approvals_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "copilot_action_approvals_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "chat_threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       corporate_clients: {
         Row: {
           agency_id: string | null

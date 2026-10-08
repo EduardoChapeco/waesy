@@ -40,7 +40,7 @@ beforeEach(() => {
 describe("Copilot persistent execution", () => {
   it("stores nullable optional context without inventing tenant or owner", async () => {
     await startCopilotExecution({ executionId: "optional", taskId: "task", domain: "chat" });
-    expect(writes[0].payload).toMatchObject({ store_id: null, user_id: null, thread_id: null, current_phase: "PLANNED" });
+    expect(writes[0].payload).toMatchObject({ store_id: null, user_id: null, thread_id: null, current_phase: "RECEIVED" });
     await startCopilotExecution({ executionId: "full", taskId: "task", domain: "chat", storeId: "tenant", userId: "owner", threadId: "thread" });
     expect(writes[1].payload).toMatchObject({ store_id: "tenant", user_id: "owner", thread_id: "thread" });
   });
@@ -57,7 +57,8 @@ describe("Copilot persistent execution", () => {
     expect(steps.push(step, { ...step, id: "two" })).toBe(2);
     await completeCopilotExecution({ executionId: "ordered" }, "completed");
     expect(writes.filter((entry) => entry.table === "copilot_execution_steps").map((entry) => entry.payload.sequence_no)).toEqual([0, 1]);
-    expect(writes.at(-1)?.payload).toMatchObject({ status: "completed", current_phase: "COMPLETED" });
+    expect(writes.filter((entry) => entry.table === "copilot_executions").some((entry) => entry.payload.current_phase === "RUNNING")).toBe(true);
+    expect(writes.at(-1)?.payload.status).toBe("completed");
   });
 
   it("does not resume records hidden by the user's RLS client", async () => {

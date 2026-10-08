@@ -11,7 +11,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { EmptyState } from "@/components/state/states";
+import { EmptyState, ErrorState } from "@/components/state/states";
+import { LoadingState } from "@/components/state/loading";
 import { getStockLevels, adjustStock } from "@/services/stock.functions";
 import { getWaitlistDemandCounts } from "@/services/waitlist.functions";
 import { playCashRegisterSound, playWarningAlert } from "@/lib/audio-chimes";
@@ -46,7 +47,7 @@ function StockAlertsPage() {
   const [customNote, setCustomNote] = useState<string>("Entrada de reposição de estoque");
   const [isSubmittingCustom, setIsSubmittingCustom] = useState(false);
 
-  const { data: waitlistCounts = {} } = useQuery({
+  const { data: waitlistCounts = {}, isLoading: isWaitlistLoading, isError: isWaitlistError } = useQuery({
     queryKey: ["waitlist-demand-counts"],
     queryFn: () => getWaitlistDemandCounts(),
   });
@@ -96,6 +97,12 @@ function StockAlertsPage() {
       return true;
     });
   }, [variants, searchQuery, filterSeverity, waitlistCounts]);
+  if (isWaitlistLoading && variants.length === 0) {
+    return <LoadingState label="Carregando alertas de estoque…" />;
+  }
+  if (isWaitlistError && variants.length === 0) {
+    return <ErrorState title="Não foi possível carregar a demanda" description="Os alertas de estoque estão temporariamente indisponíveis." />;
+  }
 
   const handleQuickRefill = async (variantId: string, qty: number) => {
     setAdjustingId(variantId);

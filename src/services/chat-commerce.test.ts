@@ -4,6 +4,7 @@ import {
   executeChatOrderPaymentCore,
   executeChatBookingPaymentCore,
   resolveMerchantForCategory,
+  canReadChatOrderTracking,
 } from "@/services/chat-commerce.functions";
 
 // Mock do Supabase e do Ledger Imutável
@@ -340,5 +341,13 @@ describe("Prompt 22: O Chat como Aplicativo (Comércio, Serviços, Agenda, Orça
     const bookingRes = resolveAiPipelineSteps("Preciso agendar um horário com o especialista");
     expect(bookingRes.activitySteps.some((s) => s.label.includes("booking_services"))).toBe(true);
     expect(bookingRes.updatedMemory.last_booking_query).toBeDefined();
+  });
+
+  it("bloqueia rastreio por UUID para cliente ou loja não relacionados", () => {
+    const order = { customer_id: "customer-a", store_id: "store-a" };
+    expect(canReadChatOrderTracking(order, { id: "customer-a", customer_id: "customer-a", store_id: "store-z", role: "customer" })).toBe(true);
+    expect(canReadChatOrderTracking(order, { id: "manager-a", customer_id: "customer-z", store_id: "store-a", role: "manager" })).toBe(true);
+    expect(canReadChatOrderTracking(order, { id: "customer-b", customer_id: "customer-b", store_id: "store-b", role: "customer" })).toBe(false);
+    expect(canReadChatOrderTracking(order, null)).toBe(false);
   });
 });

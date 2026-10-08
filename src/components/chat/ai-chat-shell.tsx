@@ -37,6 +37,7 @@ import { AIActivityTrail, type AIActivityStep } from "./ai-activity-trail";
 import { ChatArtifactCard, type ChatArtifactData } from "./chat-artifact-card";
 import { ChatComposer, type QuotedMessage } from "./chat-composer";
 import { StructuredMessageView, type AIChatAction } from "./structured-message-view";
+import { CopilotApprovalPanel } from "./copilot-approval-panel";
 import type { CopilotFsmPhase, CopilotFsmExecutionState } from "@/types/copilot-fsm";
 
 export type ThreadType = "store" | "direct_p2p" | "support" | "project" | "ai_assistant";
@@ -431,6 +432,8 @@ export function AIChatShell({
                   <span>Sessão segura com isolamento multi-tenant</span>
                 </div>
               </div>
+
+              <CopilotApprovalPanel currentUserId={currentUserProfileId} />
 
               {messagesWithSeparators.map((item, idx) => {
                 if (item.type === "separator") {

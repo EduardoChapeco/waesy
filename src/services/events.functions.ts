@@ -305,7 +305,9 @@ async function _issueComplimentaryTicket(params: {
   try {
     await supabase.rpc("increment_lot_sold_count", { p_lot_id: params.lotId });
     await checkAndRolloverEventLots(params.eventId, params.lotId);
-  } catch {}
+  } catch (lotError) {
+    console.error("[events] Falha ao atualizar lote após emissão de ingresso cortesia:", lotError);
+  }
 
   await logAuditAction(identity, "INSERT", "tickets", ticket.id, {
     type: "complimentary",
@@ -1877,4 +1879,3 @@ export const validateCredentialCheckin = createServerFn({ method: "POST" })
       message: `Acesso Liberado: ${updated.nome} [${updated.tipo.toUpperCase()}]`,
     };
   });
-

@@ -15,6 +15,7 @@ import { listContracts } from "@/services/contracts.functions";
 import { formatMoney } from "@/lib/money";
 import { formatDate } from "@/lib/datetime";
 import { WorkspaceCanonicalToolbar, type WorkspaceToolbarTab } from "@/components/workspace/workspace-canonical-toolbar";
+import { ErrorState } from "@/components/state/states";
 import { WorkspaceDashboardSheet, type MetricCardItem } from "@/components/workspace/workspace-dashboard-sheet";
 
 export const Route = createFileRoute("/workspace/contratos/")({
@@ -54,12 +55,13 @@ function ContractsDashboard() {
  const router = useRouter();
   const { contracts: initialContracts } = ((Route.useLoaderData?.() as any) || {});
 
-  const { data: contracts = [] } = useQuery({
+  const { data: contracts = [], isError } = useQuery({
     queryKey: ["contracts-list"],
     queryFn: () => listContracts(),
     initialData: initialContracts || [],
   });
 
+  const queryError = isError && !initialContracts?.length;
   const [activeTab, setActiveTab] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [dashboardOpen, setDashboardOpen] = useState(false);
@@ -154,6 +156,7 @@ function ContractsDashboard() {
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto px-0 sm:px-4 md:px-0 pb-20">
+      {queryError && <ErrorState title="Não foi possível atualizar os contratos" description="A listagem de contratos está temporariamente indisponível. Os dados anteriores continuam disponíveis quando houver cache local." />}
       {/* ── 1. Top Header ── */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <PageHeader

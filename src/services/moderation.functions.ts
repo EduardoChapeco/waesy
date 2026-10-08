@@ -127,32 +127,46 @@ export const resolveModerationReport = createServerFn({ method: "POST" })
  throw new Error("Denúncia não encontrada.");
  }
 
+ if (input.action === "warn_author" || input.action === "ban_author") {
+   throw new Error("Esta ação de moderação ainda não possui enforcement persistido e não pode ser marcada como concluída.");
+ }
+
  // 2. Executa a ação sobre o conteúdo se for remoção / ocultação
  if (input.action === "remove_content" || input.action === "hide_content") {
+ let contentUpdateError: { message: string } | null = null;
  if (report.entity_type === "classified") {
- await supabase
+ const { error } = await supabase
  .from("classifieds")
  .update({
  status: "archived",
  updated_at: new Date().toISOString(),
  })
  .eq("id", report.entity_id);
+ contentUpdateError = error;
  } else if (report.entity_type === "post") {
- await supabase
+ const { error } = await supabase
  .from("posts")
  .update({
  is_deleted: true,
  updated_at: new Date().toISOString(),
  })
  .eq("id", report.entity_id);
+ contentUpdateError = error;
  } else if (report.entity_type === "event") {
- await supabase
+ const { error } = await supabase
  .from("events")
  .update({
  status: "cancelled",
  updated_at: new Date().toISOString(),
  })
  .eq("id", report.entity_id);
+ contentUpdateError = error;
+ } else {
+   throw new Error("Este tipo de conteúdo ainda não possui enforcement de remoção implementado.");
+ }
+ if (contentUpdateError) {
+   console.error("[moderation] Falha ao alterar conteúdo denunciado:", contentUpdateError);
+   throw new Error("Não foi possível aplicar a ação ao conteúdo denunciado.");
  }
  }
 
@@ -160,8 +174,6 @@ export const resolveModerationReport = createServerFn({ method: "POST" })
  const targetStatus =
  input.action === "dismiss"
  ? "resolved_dismissed"
- : input.action === "warn_author"
- ? "resolved_warned"
  : "resolved_removed";
 
  const { data: updated, error: updateErr } = await supabase

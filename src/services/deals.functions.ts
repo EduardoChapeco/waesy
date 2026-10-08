@@ -32,6 +32,21 @@ export const createDealProposal = createServerFn({ method: "POST" })
  throw new Error("Você não pode enviar uma proposta para o seu próprio anúncio.");
  }
 
+ if (input.classifiedId) {
+   const { data: classified, error: classifiedErr } = await supabase
+     .from("classifieds")
+     .select("author_profile_id, status")
+     .eq("id", input.classifiedId)
+     .maybeSingle();
+   if (classifiedErr || !classified) throw new Error("Anúncio não encontrado.");
+   if (classified.author_profile_id !== input.sellerId) {
+     throw new Error("O vendedor não corresponde ao proprietário do anúncio.");
+   }
+   if (["archived", "removed", "completed"].includes(String(classified.status))) {
+     throw new Error("Este anúncio não aceita novas negociações.");
+   }
+ }
+
  const isDirect = input.isDirectBooking || false;
  const initialStatus = isDirect ? "accepted" : "negotiating";
 
@@ -160,6 +175,19 @@ export const respondToDealProposal = createServerFn({ method: "POST" })
 
  if (deal.buyer_id !== identity.id && deal.seller_id !== identity.id) {
  throw new Error("Acesso negado a esta negociação.");
+ }
+
+ if (["rejected", "cancelled", "completed"].includes(String(deal.status))) {
+   throw new Error("Esta negociação já está encerrada.");
+ }
+ if (input.action === "counter_proposal" && deal.status !== "negotiating") {
+   throw new Error("Contrapropostas só podem ser feitas durante a negociação.");
+ }
+ if ((input.action === "accept" || input.action === "confirm_dates") && !["negotiating", "accepted"].includes(String(deal.status))) {
+   throw new Error("A negociação não está em uma fase que aceite confirmação.");
+ }
+ if (input.action === "complete" && !["accepted", "negotiating"].includes(String(deal.status))) {
+   throw new Error("Somente negociações aceitas podem ser concluídas.");
  }
 
  let nextStatus = deal.status;

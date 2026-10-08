@@ -43,7 +43,9 @@ export async function startCopilotExecution(context: ExecutionContext): Promise<
     user_id: context.userId ?? null,
     domain: context.domain,
     status: "running",
-    current_phase: "PLANNED",
+    // PLANNING não faz parte da FSM canônica; RECEIVED é o primeiro estado
+    // persistível e evita gravar um estado fantasma no banco.
+    current_phase: "RECEIVED",
     started_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   }, { onConflict: "id" }).throwOnError();
@@ -52,9 +54,7 @@ export async function startCopilotExecution(context: ExecutionContext): Promise<
 export async function persistCopilotExecutionStep(context: Pick<ExecutionContext, "executionId">, step: AIActivityStep, sequenceNo: number): Promise<void> {
   const db = getServerClient();
   await db.from("copilot_execution_steps").upsert(toPersistedStep(step, context.executionId, sequenceNo), { onConflict: "execution_id,step_id" }).throwOnError();
-  const executionUpdate: Record<string, unknown> = { updated_at: new Date().toISOString() };
-  if (step.fsmPhase) executionUpdate.current_phase = step.fsmPhase;
-  await db.from("copilot_executions").update(executionUpdate).eq("id", context.executionId).throwOnError();
+  await db.from("copilot_executions").update({ current_phase: step.fsmPhase ?? "RUNNING", updated_at: new Date().toISOString() }).eq("id", context.executionId).throwOnError();
 }
 
 export async function completeCopilotExecution(context: Pick<ExecutionContext, "executionId">, status: PersistedExecutionStatus, state: Record<string, unknown> = {}, error?: string): Promise<void> {

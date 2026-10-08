@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate, useSearch, Link, redirect } from "@tansta
 import { useState, useMemo, useEffect, useRef } from "react";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Tag, Car, Home as HomeIcon, Briefcase, Wrench, Sliders, ArrowLeft, ChevronRight, Eye, EyeOff, Edit3, ImagePlus, MapPin, MessageCircle, ShieldCheck, Check, Loader2, Phone, FileText, DollarSign, Layers, ChevronLeft, Building, Key, Truck, Package, CreditCard, QrCode, RefreshCw, Banknote, DownloadCloud, FileArchive, Search, Utensils, Plane, Thermometer, CreditCard as CreditCardIcon, PlusCircle, Coins, Wand2, Bot, BadgePercent, Landmark, Info, Trash2, Plus, Bus, Ship, Train, Navigation, Route as RouteIcon, Users, Calendar, Clock, ChevronDown, ChevronUp, X, CheckCircle, GraduationCap, Award, SlidersHorizontal, Store as StoreIcon, Star, Lock, ShieldAlert, FileSpreadsheet, Receipt, BookOpenCheck, Zap, Apple, Flame, Croissant, Milk, Wine, Palette } from 'lucide-react';
+import { Tag, Car, Home as HomeIcon, Briefcase, Wrench, Sliders, ArrowLeft, ChevronRight, Eye, EyeOff, Edit3, ImagePlus, MapPin, MessageCircle, ShieldCheck, Check, Loader2, Phone, FileText, DollarSign, Layers, ChevronLeft, Building, Key, Truck, Package, CreditCard, QrCode, RefreshCw, Banknote, DownloadCloud, FileArchive, Search, Utensils, Plane, Thermometer, CreditCard as CreditCardIcon, PlusCircle, Coins, Wand2, Bot, BadgePercent, Landmark, Info, Trash2, Plus, Bus, Ship, Train, Navigation, Route as RouteIcon, Users, Calendar, ChevronDown, ChevronUp, X, CheckCircle, GraduationCap, Award, SlidersHorizontal, Store as StoreIcon, Star, Lock, ShieldAlert, FileSpreadsheet, Receipt, BookOpenCheck, Zap, Apple, Flame, Croissant, Milk, Wine, Palette } from 'lucide-react';
 import { StoryHighlightUploader, type StoryHighlight } from "@/components/classifieds/story-highlight-uploader";
 import { ItineraryDayEditor, type ItineraryDay } from "@/components/classifieds/itinerary-day-editor";
 import { WeatherWidget } from "@/components/classifieds/weather-widget";
@@ -28,9 +28,15 @@ import { formatMoney } from "@/lib/money";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { MediaUploader } from "@/components/ui/media-uploader";
 import { DigitalFileDropzone } from "@/components/classifieds/digital-file-dropzone";
+import { CreateTypePicker } from "@/components/classifieds/create-type-picker";
+import { ClassifiedEditorNavigation } from "@/components/classifieds/classified-editor-navigation";
+import { ClassifiedMediaSection } from "@/components/classifieds/classified-media-section";
+import { ClassifiedBasicInfoSection } from "@/components/classifieds/classified-basic-info-section";
+import { ClassifiedLocationSection } from "@/components/classifieds/classified-location-section";
+import { ClassifiedPricingLifecycleSection } from "@/components/classifieds/classified-pricing-lifecycle-section";
 import { ChoiceCard } from "@/components/ui/choice-card";
 import { SquircleCard } from "@/components/ui/squircle-card";
-import { CityCombobox, type StructuredLocationValue } from "@/components/ui/city-combobox";
+import type { StructuredLocationValue } from "@/components/ui/city-combobox";
 import { upsertClassified, getPublicClassifiedById, refineClassifiedWithAI } from "@/services/classifieds.functions";
 import { getMyStoresList } from "@/services/store.functions";
 import { getProfile, getUserSession } from "@/services/auth.functions";
@@ -43,6 +49,16 @@ import { CANONICAL_EDUCATION_LEVELS, CANONICAL_EXPERIENCE_LEVELS, CANONICAL_JOB_
 // (ChevronDown, ChevronUp merged into main lucide import above)
 import { resolveClassifiedNiche } from "@/lib/classifieds/semantics";
 import { z } from "zod";
+import {
+  computeClassifiedRefinementBaseHash,
+  type ClassifiedNicheType,
+  type ClassifiedPriceDisclaimer,
+  type ClassifiedPricingType,
+  type ClassifiedRefinementEvidence,
+  type ClassifiedValidityDays,
+  type NicheDefinition,
+} from "@/types/classified-editor";
+
 
 const ClassifiedSearchSchema = z.object({
   tipo: z.string().optional(),
@@ -102,33 +118,7 @@ function ContaClassificadoNovoErrorComponent({ error }: { error: any }) {
 }
 
 // ─── 1. Taxonomia Canônica de Tipos ────────────
-export type ClassifiedNicheType =
-  | "viagem"
-  | "equipamento"
-  | "doacao"
-  | "hospedagem"
-  | "imovel"
-  | "desapego"
-  | "digital"
-  | "veiculo"
-  | "servico"
-  | "vaga"
-  | "assinatura"
-  | "gastronomia"
-  | "farmacia"
-  | "mercado"
-  | "negocio";
-
-interface NicheDefinition {
-  id: ClassifiedNicheType;
-  canonicalCategory: "sale" | "vehicle" | "real_estate" | "service" | "job" | "travel" | "equipment" | "donation" | "business" | "food";
-  title: string;
-  subtitle: string;
-  description: string;
-  icon: any;
-  badge: string;
-  gradient: string;
-}
+export type { ClassifiedNicheType, NicheDefinition } from "@/types/classified-editor";
 
 const NICHE_CARDS: NicheDefinition[] = [
   {
@@ -477,6 +467,8 @@ function NovoClassificadoPage() {
   if (!activeNiche) {
     return (
       <CreateTypePicker
+        nicheCards={NICHE_CARDS}
+        desapegoTaxonomy={DESAPEGO_TAXONOMY}
         onSelect={(typeId, sub) =>
           navigate({
             to: "/conta/classificados/novo",
@@ -572,413 +564,6 @@ function NovoClassificadoPage() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// CAMADA 2: CreateTypePicker (Cards Verticais com Scroll Horizontal)
-// ─────────────────────────────────────────────────────────────────────────────
-function CreateTypePicker({
-  onSelect,
-  onAiPrefill,
-}: {
-  onSelect: (typeId: ClassifiedNicheType, sub?: string) => void;
-  onAiPrefill?: (listing: any) => void;
-}) {
-  const [searchFilter, setSearchFilter] = useState("");
-  const [aiPrompt, setAiPrompt] = useState("");
-  const [isAiGenerating, setIsAiGenerating] = useState(false);
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-
-  const handleGenerateWithAi = async () => {
-    const trimmed = aiPrompt.trim();
-    if (!trimmed) {
-      toast.error("Descreva o que você quer anunciar primeiro.");
-      return;
-    }
-    setIsAiGenerating(true);
-    toast.loading("A Inteligência Artificial está montando seu anúncio...", { id: "ai-ad" });
-    try {
-      const res = await createListingWithAI({ data: { prompt: trimmed } });
-      if (res?.success && res.listing) {
-        toast.success("Anúncio estruturado com IA! Revise os dados.", { id: "ai-ad" });
-        if (onAiPrefill) {
-          onAiPrefill(res.listing);
-        } else {
-          onSelect((res.listing.niche as ClassifiedNicheType) || "desapego");
-        }
-      } else {
-        toast.error("Não foi possível gerar os dados. Escolha a categoria abaixo.", { id: "ai-ad" });
-      }
-    } catch (e: any) {
-      console.warn("Erro ao gerar anúncio com IA:", e);
-      toast.error(e?.message || "Erro ao conectar com a IA. Escolha a categoria manualmente.", { id: "ai-ad" });
-    } finally {
-      setIsAiGenerating(false);
-    }
-  };
-
-  const handleScroll = (direction: "left" | "right") => {
-    if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollBy({
-        left: direction === "left" ? -300 : 300,
-        behavior: "smooth",
-      });
-    }
-  };
-
-  const personalNiches = useMemo(() => {
-    const ids = ["desapego", "veiculo", "imovel", "servico", "vaga", "digital", "hospedagem", "equipamento", "doacao", "viagem"];
-    if (!searchFilter.trim()) return NICHE_CARDS.filter(n => ids.includes(n.id));
-    const q = searchFilter.toLowerCase();
-    return NICHE_CARDS.filter(n => ids.includes(n.id) && (n.title.toLowerCase().includes(q) || n.subtitle.toLowerCase().includes(q) || n.description.toLowerCase().includes(q)));
-  }, [searchFilter]);
-
-  const businessNiches = useMemo(() => {
-    const ids = ["assinatura", "gastronomia", "farmacia", "mercado"];
-    if (!searchFilter.trim()) return NICHE_CARDS.filter(n => ids.includes(n.id));
-    const q = searchFilter.toLowerCase();
-    return NICHE_CARDS.filter(n => ids.includes(n.id) && (n.title.toLowerCase().includes(q) || n.subtitle.toLowerCase().includes(q) || n.description.toLowerCase().includes(q)));
-  }, [searchFilter]);
-
-  const filteredDesapegoItems = useMemo(() => {
-    if (!searchFilter.trim()) return [];
-    const q = searchFilter.toLowerCase();
-    return DESAPEGO_TAXONOMY.filter(
-      (d) =>
-        d.label.toLowerCase().includes(q) ||
-        d.desc.toLowerCase().includes(q)
-    );
-  }, [searchFilter]);
-
-  const [scopeTab, setScopeTab] = useState<"all" | "personal" | "business">("all");
-
-  const visibleNiches = useMemo(() => {
-    if (scopeTab === "personal") return personalNiches;
-    if (scopeTab === "business") return businessNiches;
-    return [...personalNiches, ...businessNiches];
-  }, [scopeTab, personalNiches, businessNiches]);
-
-  return (
-    <div className="w-full max-w-6xl mx-auto space-y-6 pb-20 px-1 sm:px-0">
-      {/* ── 1. Clean Minimalist Header ── */}
-      <div className="flex items-center justify-between gap-4 border-b border-border/40 pb-4 pt-1">
-        <div className="flex items-center gap-2">
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
-            Criar Anúncio
-          </h1>
-          <Badge variant="outline" className="text-xs font-semibold text-muted-foreground border-border/60">
-            {NICHE_CARDS.length} Formatos
-          </Badge>
-        </div>
-        <Button asChild size="sm" variant="outline" className="rounded-lg text-xs font-semibold h-11 min-h-11 px-4 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary border-border/70">
-          <Link to="/conta/classificados">Meus Anúncios</Link>
-        </Button>
-      </div>
-
-      {/* ── Tabs Limpas no Topo (Apple HIG Segmented Control) ── */}
-      <div className="flex items-center gap-1 p-1 bg-muted/40 rounded-lg border border-border/50 max-w-md">
-        <button
-          type="button"
-          onClick={() => setScopeTab("all")}
-          className={cn(
-            "flex-1 py-2 px-3 rounded-lg text-xs font-semibold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-            scopeTab === "all"
-              ? "bg-background text-foreground  border border-border/70"
-              : "text-muted-foreground hover:text-foreground border border-transparent"
-          )}
-        >
-          Todos ({personalNiches.length + businessNiches.length})
-        </button>
-        <button
-          type="button"
-          onClick={() => setScopeTab("personal")}
-          className={cn(
-            "flex-1 py-2 px-3 rounded-lg text-xs font-semibold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-            scopeTab === "personal"
-              ? "bg-background text-foreground  border border-border/70"
-              : "text-muted-foreground hover:text-foreground border border-transparent"
-          )}
-        >
-          Pessoal ({personalNiches.length})
-        </button>
-        <button
-          type="button"
-          onClick={() => setScopeTab("business")}
-          className={cn(
-            "flex-1 py-2 px-3 rounded-lg text-xs font-semibold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-            scopeTab === "business"
-              ? "bg-background text-foreground  border border-border/70"
-              : "text-muted-foreground hover:text-foreground border border-transparent"
-          )}
-        >
-          Negócios ({businessNiches.length})
-        </button>
-      </div>
-
-      {/* ── Ação Unificada: Busca & Criar com IA Adjacente (Sem Layout Shift) ── */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-        <div className="relative flex-1">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-          <Input
-            value={searchFilter || aiPrompt}
-            onChange={(e) => {
-              setSearchFilter(e.target.value);
-              setAiPrompt(e.target.value);
-            }}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                handleGenerateWithAi();
-              }
-            }}
-            placeholder="Busque categorias ou descreva seu anúncio (ex: iPhone 13 Pro 128GB)..."
-            className="pl-10 pr-16 h-11 rounded-lg text-xs sm:text-sm bg-card border-border/70 focus-visible:ring-1 focus-visible:ring-foreground/20"
-            id="ai-intent-input"
-          />
-          {(searchFilter || aiPrompt) && (
-            <button
-              type="button"
-              onClick={() => {
-                setSearchFilter("");
-                setAiPrompt("");
-              }}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary px-2 py-1"
-            >
-              Limpar
-            </button>
-          )}
-        </div>
-        <Button
-          type="button"
-          disabled={isAiGenerating}
-          onClick={handleGenerateWithAi}
-          variant="outline"
-          className="h-11 px-4 rounded-lg font-semibold text-xs border border-border/80 text-foreground hover:bg-muted/40 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary shrink-0"
-        >
-          {isAiGenerating ? (
-            <Loader2 className="size-4 mr-2 animate-spin motion-reduce:animate-none" />
-          ) : (
-            <Wand2 className="size-4 mr-2 text-primary" />
-          )}
-          {isAiGenerating ? "Gerando..." : "Criar com IA"}
-        </Button>
-      </div>
-
-      {/* ── MOBILE: The WhatsApp List Pattern (Listas Verticais Limpas) ── */}
-      <div className="block sm:hidden space-y-1">
-        <span className="text-xs text-muted-foreground/75 font-bold uppercase tracking-wider text-muted-foreground block px-1 py-1">
-          {scopeTab === "personal"
-            ? "Formatos para Você"
-            : scopeTab === "business"
-            ? "Formatos para Negócios"
-            : "Todos os Formatos"}
-        </span>
-        <div className="divide-y divide-border/20 rounded-lg border border-border/50 bg-card overflow-hidden">
-          {visibleNiches.map((niche) => {
-            const Icon = niche.icon;
-            return (
-              <button
-                key={niche.id}
-                onClick={() => onSelect(niche.id)}
-                className="w-full flex items-center justify-between p-4 hover:bg-muted/30 active:bg-muted/50 transition-colors text-left cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary min-h-14"
-              >
-                <div className="flex items-center gap-4 min-w-0">
-                  <div className="size-11 rounded-full border border-border/60 flex items-center justify-center shrink-0 text-foreground bg-background">
-                    <Icon className="size-5" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
-                      <h3 className="text-sm font-semibold text-foreground truncate">
-                        {niche.title}
-                      </h3>
-                      <span className="text-xs font-medium text-muted-foreground border border-border/60 px-2 py-0.2 rounded-sm shrink-0">
-                        {niche.badge}
-                      </span>
-                    </div>
-                    <p className="text-xs text-muted-foreground truncate mt-1">
-                      {niche.subtitle}
-                    </p>
-                  </div>
-                </div>
-                <ChevronRight className="size-4 text-muted-foreground shrink-0 ml-2" />
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* ── DESKTOP: Trilho de Cards Refinado (Apple HIG Clean) ── */}
-      <div className="hidden sm:block space-y-6">
-        {/* Trilho Pessoal */}
-        {(scopeTab === "all" || scopeTab === "personal") && personalNiches.length > 0 && (
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">
-                Para Você (Comunidade)
-              </span>
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => handleScroll("left")}
-                  className="size-11 min-h-11 min-w-11 rounded-lg border border-border/70 bg-card hover:bg-muted flex items-center justify-center text-foreground transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                  title="Rolar para a esquerda"
-                  aria-label="Rolar para esquerda"
-                >
-                  <ChevronLeft className="size-4" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleScroll("right")}
-                  className="size-11 min-h-11 min-w-11 rounded-lg border border-border/70 bg-card hover:bg-muted flex items-center justify-center text-foreground transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                  title="Rolar para a direita"
-                  aria-label="Rolar para direita"
-                >
-                  <ChevronRight className="size-4" />
-                </button>
-              </div>
-            </div>
-
-            <div className="relative group/rail">
-              <div
-                ref={scrollContainerRef}
-                className="flex flex-row gap-4 overflow-x-auto carousel snap-x snap-mandatory no-scrollbar py-1 px-1 scroll-smooth"
-              >
-                {personalNiches.map((niche) => {
-                  const Icon = niche.icon;
-                  return (
-                    <button
-                      key={niche.id}
-                      onClick={() => onSelect(niche.id)}
-                      className="w-68 min-w-68 h-11 min-h-116 shrink-0 snap-start text-left relative rounded-lg border border-border/60 bg-card hover:border-foreground/40 hover: transition-colors duration-200 p-5 flex flex-col justify-between overflow-hidden group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                    >
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="size-12 rounded-lg bg-muted/40 border border-border/70 flex items-center justify-center text-foreground group-hover:scale-105 transition-colors">
-                          <Icon className="size-6" />
-                        </div>
-                        <span className="text-xs font-semibold text-muted-foreground border border-border/60 px-2 py-1 rounded-md">
-                          {niche.badge}
-                        </span>
-                      </div>
-
-                      <div className="space-y-2 flex-1 flex flex-col justify-center mt-3">
-                        <h3 className="text-base font-bold text-foreground group-hover:text-primary transition-colors line-clamp-2">
-                          {niche.title}
-                        </h3>
-                        <p className="text-xs font-semibold text-foreground/80">
-                          {niche.subtitle}
-                        </p>
-                        <p className="text-xs text-muted-foreground line-clamp-3 leading-relaxed">
-                          {niche.description}
-                        </p>
-                      </div>
-
-                      <div className="pt-3 border-t border-border/40 flex items-center justify-between text-xs font-semibold text-foreground group-hover:text-primary transition-colors">
-                        <span>Criar Anúncio</span>
-                        <ChevronRight className="size-4 group-hover:translate-x-1 transition-transform" />
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Trilho Negócios */}
-        {(scopeTab === "all" || scopeTab === "business") && businessNiches.length > 0 && (
-          <div className="space-y-3 pt-4 border-t border-border/30">
-            <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">
-              Para o Seu Negócio (Varejo e Serviços)
-            </span>
-
-            <div className="flex flex-row gap-4 overflow-x-auto carousel snap-x snap-mandatory no-scrollbar py-1 px-1 scroll-smooth">
-              {businessNiches.map((niche) => {
-                const Icon = niche.icon;
-                return (
-                  <button
-                    key={niche.id}
-                    onClick={() => onSelect(niche.id)}
-                    className="w-68 min-w-68 h-11 min-h-116 shrink-0 snap-start text-left relative rounded-lg border border-border/60 bg-card hover:border-foreground/40 hover: transition-colors duration-200 p-5 flex flex-col justify-between overflow-hidden group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                  >
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="size-12 rounded-lg bg-muted/40 border border-border/70 flex items-center justify-center text-foreground group-hover:scale-105 transition-colors">
-                        <Icon className="size-6" />
-                      </div>
-                      <span className="text-xs font-semibold text-muted-foreground border border-border/60 px-2 py-1 rounded-md">
-                        {niche.badge}
-                      </span>
-                    </div>
-
-                    <div className="space-y-2 flex-1 flex flex-col justify-center mt-3">
-                      <h3 className="text-base font-bold text-foreground group-hover:text-primary transition-colors line-clamp-2">
-                        {niche.title}
-                      </h3>
-                      <p className="text-xs font-semibold text-foreground/80">
-                        {niche.subtitle}
-                      </p>
-                      <p className="text-xs text-muted-foreground line-clamp-3 leading-relaxed">
-                        {niche.description}
-                      </p>
-                    </div>
-
-                    <div className="pt-3 border-t border-border/40 flex items-center justify-between text-xs font-semibold text-foreground group-hover:text-primary transition-colors">
-                      <span>Criar Anúncio</span>
-                      <ChevronRight className="size-4 group-hover:translate-x-1 transition-transform" />
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* ── 3. Categorias Rápidas para Desapego ── */}
-      <div className="space-y-2 pt-2 border-t border-border/40">
-        <span className="text-xs text-muted-foreground/75 font-bold uppercase tracking-wider text-muted-foreground block">
-          Categorias Populares para Desapego Rápido
-        </span>
-        <div className="flex flex-wrap gap-2">
-          {DESAPEGO_TAXONOMY.slice(0, 8).map((cat) => (
-            <Badge
-              key={cat.id}
-              variant="outline"
-              onClick={() => onSelect("desapego", cat.id)}
-              className="text-xs py-2 px-3 rounded-lg gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary hover:bg-primary/10 hover:text-primary hover:border-primary/30 transition-colors"
-            >
-              <span>{cat.label}</span>
-            </Badge>
-          ))}
-        </div>
-      </div>
-
-      {filteredDesapegoItems.length > 0 && (
-        <div className="space-y-2 pt-2">
-          <span className="text-xs text-muted-foreground/75 font-bold uppercase tracking-wider text-primary block">
-            Itens Específicos Encontrados ({filteredDesapegoItems.length})
-          </span>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            {filteredDesapegoItems.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => onSelect("desapego", item.id)}
-                className="flex items-center gap-3 p-4 rounded-lg border border-border/60 bg-card hover:bg-muted/40 text-left transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-              >
-                <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                  <Tag className="size-4" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs font-bold text-foreground truncate">{item.label}</p>
-                  <p className="text-xs text-muted-foreground/75 text-muted-foreground truncate">{item.desc}</p>
-                </div>
-                <ChevronRight className="size-4 text-muted-foreground" />
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
 // CAMADA 3: Specialized Editor + Live Truthful Preview
 // ─────────────────────────────────────────────────────────────────────────────
 function SpecializedClassifiedEditor({
@@ -1053,6 +638,9 @@ function SpecializedClassifiedEditor({
    initialData?.content || initialData?.description || ""
  );
  const [isRefiningDescription, setIsRefiningDescription] = useState(false);
+ const [refinementPreview, setRefinementPreview] = useState<ClassifiedRefinementEvidence | null>(null);
+ const [appliedRefinementEvidence, setAppliedRefinementEvidence] = useState<ClassifiedRefinementEvidence | null>(null);
+ const [refinementVersion, setRefinementVersion] = useState(0);
 
  const handleRefineDescriptionWithAI = async () => {
    if (!title.trim() && !description.trim()) {
@@ -1070,17 +658,46 @@ function SpecializedClassifiedEditor({
        },
      });
      if (res.success) {
-       if (res.title) setTitle(res.title);
-       if (res.description) setDescription(res.description);
-       toast.success("Título e descrição aprimorados com sucesso!", { id: "ai-refine" });
+       const suggestion = {
+         title: res.title?.trim() || title.trim(),
+         description: res.description?.trim() || description.trim(),
+         suggestedTags: Array.isArray(res.suggestedTags) ? res.suggestedTags : [],
+       };
+       const nextVersion = refinementVersion + 1;
+       setRefinementVersion(nextVersion);
+       setRefinementPreview({
+         version: nextVersion,
+         source: "unified_ai",
+         generatedAt: new Date().toISOString(),
+         baseHash: computeClassifiedRefinementBaseHash(title, description),
+         before: { title: title.trim(), description: description.trim() },
+         suggestion,
+       });
+       toast.success("Preview de título e descrição pronto para revisão.", { id: "ai-refine" });
      } else {
        toast.error(res.message || "Não foi possível aprimorar no momento.", { id: "ai-refine" });
      }
-   } catch (err: any) {
-     toast.error(err?.message || "Erro ao conectar com a IA.", { id: "ai-refine" });
+   } catch (err: unknown) {
+     toast.error(err instanceof Error ? err.message : "Erro ao conectar com a IA.", { id: "ai-refine" });
    } finally {
      setIsRefiningDescription(false);
    }
+ };
+
+ const applyRefinementPreview = () => {
+   if (!refinementPreview) return;
+   const currentHash = computeClassifiedRefinementBaseHash(title, description);
+   if (currentHash !== refinementPreview.baseHash) {
+     setRefinementPreview(null);
+     toast.warning("O texto mudou desde o preview. Gere uma nova sugestão para evitar sobrescrever sua edição.");
+     return;
+   }
+   const applied = { ...refinementPreview, appliedAt: new Date().toISOString() };
+   setTitle(applied.suggestion.title);
+   setDescription(applied.suggestion.description);
+   setAppliedRefinementEvidence(applied);
+   setRefinementPreview(null);
+   toast.success(`Sugestão v${applied.version} aplicada com evidência registrada.`);
  };
 
  const [aiInstructions, setAiInstructions] = useState("");
@@ -1096,8 +713,8 @@ function SpecializedClassifiedEditor({
  const [negotiable, setNegotiable] = useState(true);
 
   // FASE 1: Lifecycle & Regras de Validade e Estoque
-  const [validityDays, setValidityDays] = useState<30 | 60 | 90>(
-    (initialData?.attributes?.validity_days as any) || 30
+  const [validityDays, setValidityDays] = useState<ClassifiedValidityDays>(
+    (initialData?.attributes?.validity_days as ClassifiedValidityDays) || 30
   );
   const [stockLimit, setStockLimit] = useState<string>(
     initialData?.stock_limit != null ? String(initialData.stock_limit) : ""
@@ -1173,9 +790,7 @@ function SpecializedClassifiedEditor({
   const [newQuestionType, setNewQuestionType] = useState<"text" | "select" | "currency" | "textarea">("text");
 
   // ── Motor de Precificação Dinâmica & Avisos ──
-  const [pricingType, setPricingType] = useState<
-    "fixed" | "starting_at" | "on_quote" | "price_range" | "exchange_only" | "free"
-  >(
+  const [pricingType, setPricingType] = useState<ClassifiedPricingType>(
     initialData?.attributes?.pricing_type || (niche.id === "doacao" ? "free" : "fixed")
   );
   const [priceMinCents, setPriceMinCents] = useState<number | undefined>(
@@ -1184,8 +799,8 @@ function SpecializedClassifiedEditor({
   const [priceMaxCents, setPriceMaxCents] = useState<number | undefined>(
     initialData?.attributes?.price_max_cents ?? undefined
   );
-  const [priceDisclaimer, setPriceDisclaimer] = useState<string>(
-    initialData?.attributes?.price_disclaimer || "none"
+  const [priceDisclaimer, setPriceDisclaimer] = useState<ClassifiedPriceDisclaimer>(
+    (initialData?.attributes?.price_disclaimer as ClassifiedPriceDisclaimer) || "none"
   );
   const [customDisclaimer, setCustomDisclaimer] = useState<string>(
     initialData?.attributes?.custom_disclaimer || ""
@@ -2266,6 +1881,7 @@ function SpecializedClassifiedEditor({
         city: structuredLoc?.city || undefined,
         state: structuredLoc?.state || undefined,
         neighborhood: structuredLoc?.neighborhood || undefined,
+        ai_refinement_evidence: appliedRefinementEvidence || undefined,
         delivery_mode: niche.id === "desapego" ? deliveryMode : niche.id === "digital" ? "digital_download" : undefined,
         pricing_type: pricingType,
         price_min_cents: pricingType === "price_range" || pricingType === "starting_at" ? priceMinCents : undefined,
@@ -3329,175 +2945,25 @@ function SpecializedClassifiedEditor({
   ]);
 
  return (
- <div className="space-y-4">
- {/* ── Topbar Operacional Compacta & Sticky no Mobile ────────── */}
-      <div className="sticky top-0 z-30 bg-background/95 backdrop-blur-md border-b border-border/60 -mx-4 px-4 py-2 sm:mx-0 sm:px-0 sm:py-0 sm:static sm:border-0 sm:bg-transparent flex items-center justify-between gap-2 pb-3">
-        <div className="flex items-center gap-2">
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            onClick={onBack}
-            className="rounded-lg size-11 min-size-11 font-bold text-muted-foreground hover:text-foreground shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-            aria-label="Voltar"
-          >
-            <ArrowLeft className="size-5 sm:size-4" />
-          </Button>
+ <div className="space-y-4 pb-20">
 
-          <div className="hidden sm:flex items-center gap-2">
-            <span className="text-muted-foreground text-xs">/</span>
-            <Badge variant="outline" className="text-xs font-semibold gap-2">
-              <niche.icon className="size-4 text-primary" />
-              <span>{niche.title}</span>
-            </Badge>
-          </div>
-        </div>
-
-        {/* Mobile Switcher & Publicar / Salvar Action */}
-        <div className="flex items-center gap-2">
-          <div className="flex md:hidden bg-muted p-1 rounded-lg text-xs font-semibold">
-            <button
-              type="button"
-              onClick={() => setMobileTab("edit")}
-              className={`px-3 py-2 rounded-lg min-h-11 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
-                mobileTab === "edit"
-                  ? "bg-card text-foreground font-bold "
-                  : "text-muted-foreground"
-              }`}
-            >
-              Editar
-            </button>
-            <button
-              type="button"
-              onClick={() => setMobileTab("preview")}
-              className={`px-3 py-2 rounded-lg min-h-11 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
-                mobileTab === "preview"
-                  ? "bg-card text-foreground font-bold "
-                  : "text-muted-foreground"
-              }`}
-            >
-              Prévia ({images.length})
-            </button>
-          </div>
-
-          <Button
-            onClick={handlePublish}
-            disabled={isSubmitting || isUploadingMedia}
-            size="sm"
-            className="rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground h-11 min-h-11 px-4"
-          >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
-                <span>{editId ? "Salvando..." : "Publicando..."}</span>
-              </>
-            ) : (
-              <>
-                <Check className="size-4" />
-                <span>{editId ? "Salvar Alterações" : "Publicar Anúncio"}</span>
-              </>
-            )}
-          </Button>
-        </div>
-      </div>
-
-      {/* ── 5-Step Adaptive Stepper Tracker (Media-First & Snap-X V121) ── */}
-      <div className="w-full bg-card rounded-lg border border-border/60 p-2 sm:p-2">
-        <div className="flex overflow-x-auto carousel snap-x snap-mandatory scrollbar-none gap-1 sm:grid sm:grid-cols-2 sm:grid-cols-5 sm:gap-2">
-          {[
-            { step: 1, label: "Nicho", short: "Nicho" },
-            { step: 2, label: "Fotos e Mídia", short: "Mídia" },
-            { step: 3, label: "Especificações", short: "Specs" },
-            { step: 4, label: "Condições Comerciais", short: "Comercial" },
-            { step: 5, label: "Prévia e Publicar", short: "Publicar" },
-          ].map((s) => {
-            const isCurrent = currentStep === s.step;
-            const isPast = currentStep > s.step;
-            return (
-              <button
-                key={s.step}
-                type="button"
-                onClick={() => {
-                  if (s.step === 1) onBack();
-                  else setCurrentStep(s.step as any);
-                }}
-                className={cn(
-                  "flex items-center justify-center gap-2 py-2 px-3 sm:px-2 rounded-lg text-xs font-semibold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary text-center shrink-0 snap-center min-w-20 sm:min-w-0",
-                  isCurrent
-                    ? "bg-primary text-primary-foreground font-bold"
-                    : isPast
-                    ? "bg-muted/50 text-foreground hover:bg-muted"
-                    : "text-muted-foreground hover:bg-muted/30 opacity-70"
-                )}
-              >
-                <span
-                  className={cn(
-                    "size-5 rounded-full flex items-center justify-center text-xs font-mono shrink-0",
-                    isCurrent
-                      ? "bg-primary-foreground/20 text-primary-foreground"
-                      : isPast
-                      ? "bg-primary/15 text-primary"
-                      : "bg-muted text-muted-foreground"
-                  )}
-                >
-                  {isPast ? "" : s.step}
-                </span>
-                <span className="hidden sm:inline truncate">{s.label}</span>
-                <span className="sm:hidden truncate">{s.short}</span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* ── Alerta Discreto de Rascunho Disponível ── */}
-      {draftInfo && (
-        <div className="flex items-center justify-between gap-3 p-3 rounded-lg bg-primary/5 border border-primary/20 text-xs">
-          <span className="text-muted-foreground">
-            Rascunho não finalizado encontrado (Etapa {draftInfo.step} de 5).
-          </span>
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={handleRestoreDraft}
-              className="font-bold text-primary hover:underline cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-            >
-              Restaurar
-            </button>
-            <span className="text-muted-foreground/40">•</span>
-            <button
-              type="button"
-              onClick={handleDiscardDraft}
-              className="text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-            >
-              Descartar
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* ── Barra de Score de Qualidade (Silenciosa & Informativa) ── */}
-      <div className="flex items-center justify-between gap-3 px-4 py-2 rounded-lg bg-card border border-border/60 text-xs">
-        <div className="flex items-center gap-2 flex-1 min-w-0">
-          <span className="text-xs text-muted-foreground/75 font-bold text-muted-foreground uppercase tracking-wider shrink-0">
-            Qualidade
-          </span>
-          <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden max-w-xs">
-            <div
-              className={cn(
-                "h-full rounded-full transition-colors duration-300",
-                qualityScore >= 80 ? "bg-emerald-500" : qualityScore >= 50 ? "bg-amber-500" : "bg-primary"
-              )}
-              style={{ width: `${qualityScore}%` }}
-            />
-          </div>
-          <span className="font-mono font-bold text-foreground text-xs text-muted-foreground/75 shrink-0">{qualityScore}%</span>
-        </div>
-        <span className="text-xs text-muted-foreground/75 text-muted-foreground truncate hidden sm:inline">
-          {qualityScore >= 80 ? "Excelente · Pronto para publicar" : qualityScore >= 50 ? "Bom · Adicione fotos e dados para 100%" : "Básico · Preencha mais campos"}
-        </span>
-      </div>
-
+      <ClassifiedEditorNavigation
+        niche={niche}
+        editId={editId}
+        currentStep={currentStep}
+        mobileTab={mobileTab}
+        imagesCount={images.length}
+        isSubmitting={isSubmitting}
+        isUploadingMedia={isUploadingMedia}
+        qualityScore={qualityScore}
+        draftInfo={draftInfo}
+        onBack={onBack}
+        onPublish={handlePublish}
+        onMobileTabChange={setMobileTab}
+        onStepChange={setCurrentStep}
+        onRestoreDraft={handleRestoreDraft}
+        onDiscardDraft={handleDiscardDraft}
+      />
       {currentStep === 5 ? (
         <div className="space-y-4 max-w-5xl mx-auto">
           {/* Header do Preview com Alternador de Dispositivo sem Emojis */}
@@ -3688,366 +3154,50 @@ function SpecializedClassifiedEditor({
  >
           <div className="space-y-6">
             {/* Section 1: Fotos do Topo & Galeria Exclusiva do Feed */}
-            <div className="bg-card rounded-lg p-4 sm:p-5 space-y-5 border border-border/60">
-              <div className="flex items-center justify-between pb-3 border-b border-border/40">
-                <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
-                  <ImagePlus className="size-4 text-primary shrink-0" />
-                  <span>1. Mídias do Anúncio</span>
-                </div>
-              </div>
-
-              {/* 1.1 Fotos de Destaque / Carrossel Superior */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label className="text-xs font-semibold text-foreground flex items-center gap-2">
-                    <span>Fotos do Topo (Carrossel Hero)</span>
-                    <Badge variant="outline" className="text-xs py-0 px-2 font-mono">Até 10 fotos</Badge>
-                  </Label>
-                  <span className="text-xs text-muted-foreground/75 font-mono text-muted-foreground">
-                    {images.length}/10 adicionada(s)
-                  </span>
-                </div>
-                <p className="text-xs text-muted-foreground/75 text-muted-foreground leading-relaxed">
-                  Imagens principais exibidas no carrossel de topo do anúncio (formato 4:3 com recorte).
-                </p>
-                <MediaUploader
-                  value={images}
-                  onChange={setImages}
-                  onUploadingStateChange={setIsUploadingMedia}
-                  bucket="post-media"
-                  folder="classifieds"
-                  aspect={4 / 3}
-                  enableCrop={true}
-                  lockAspect={true}
-                  maxFiles={10}
-                />
-              </div>
-
-              {/* 1.2 Galeria Exclusiva do Feed */}
-              <div className="pt-3 border-t border-border/40 space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label className="text-xs font-semibold text-foreground flex items-center gap-2">
-                    <span>Galeria Exclusiva do Feed</span>
-                    <Badge className="bg-primary/10 text-primary border-primary/20 text-xs py-0 px-2 font-bold">Até 12 mídias</Badge>
-                  </Label>
-                  <span className="text-xs text-muted-foreground/75 font-mono text-muted-foreground">
-                    {feedMedia.length}/12 adicionada(s)
-                  </span>
-                </div>
-                <p className="text-xs text-muted-foreground/75 text-muted-foreground leading-relaxed">
-                  Mídias que aparecem exclusivamente no feed e grid do anúncio. Aceita Fotos, GIFs animados e Vídeos curtos (MP4/WebM). <strong>Não duplica as fotos do topo.</strong>
-                </p>
-                <MediaUploader
-                  value={feedMedia}
-                  onChange={setFeedMedia}
-                  onUploadingStateChange={setIsUploadingMedia}
-                  bucket="post-media"
-                  folder="classifieds-feed"
-                  aspect={1}
-                  enableCrop={false}
-                  maxFiles={12}
-                  accept="all"
-                />
-              </div>
-            </div>
-
+            <ClassifiedMediaSection
+              images={images}
+              feedMedia={feedMedia}
+              onImagesChange={setImages}
+              onFeedMediaChange={setFeedMedia}
+              onUploadingStateChange={setIsUploadingMedia}
+            />
             {/* Section 2: Informações Básicas (Design Silencioso V121) */}
-            <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60">
-              <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground pb-3 border-b border-border/40">
-                <FileText className="size-4 text-primary shrink-0" />
-                <span>2. Informações</span>
-              </div>
-
-            <div className="space-y-2">
-              <Label className="text-xs text-foreground font-medium">Título do Anúncio *</Label>
-              <Input
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder={
-                  niche.id === "hospedagem"
-                    ? "Ex: Chalé na Serra com Hidro e Vista Panorâmica"
-                    : niche.id === "imovel"
-                    ? "Ex: Apartamento 2 Quartos no Centro com Garagem"
-                    : niche.id === "veiculo"
-                    ? "Ex: Honda Civic 2.0 EXL Automático 2021"
-                    : niche.id === "servico"
-                    ? "Ex: Manutenção Elétrica Residencial & Comercial"
-                    : niche.id === "vaga"
-                    ? "Ex: Analista Financeiro Sênior (Híbrido)"
-                    : "Ex: iPhone 15 Pro Max 256GB Impecável na Caixa"
-                }
-                className="h-11 rounded-lg text-xs bg-background font-medium"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label className="text-xs text-foreground font-medium">Descrição Completa *</Label>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  disabled={isRefiningDescription}
-                  onClick={handleRefineDescriptionWithAI}
-                  className="h-11 min-h-11 px-3 text-xs text-muted-foreground/75 font-semibold text-primary hover:text-primary hover:bg-primary/10 gap-1 rounded-lg"
-                >
-                  <Star className="size-3" />
-                  {isRefiningDescription ? "Aprimorando..." : "Refinar com IA"}
-                </Button>
-              </div>
-              <Textarea
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                rows={4}
-                placeholder={
-                  niche.id === "hospedagem"
-                    ? "Descreva a atmosfera do espaço, comodidades, localização, distâncias de pontos turísticos e regras de convivência..."
-                    : "Descreva todos os detalhes, histórico, diferenciais e informações importantes..."
-                }
-                className="rounded-lg text-xs bg-background resize-none leading-relaxed"
-              />
-            </div>
-
-            {/* Motor de Precificação Dinâmica & Avisos */}
-            <div className="space-y-3 pt-1 border-t border-border/40">
-              <div className="space-y-2">
-                <Label className="text-xs text-foreground font-semibold">
-                  Modalidade de Preço
-                </Label>
-                <Select value={pricingType} onValueChange={(v: any) => setPricingType(v)}>
-                  <SelectTrigger className="h-11 rounded-lg text-xs bg-background font-medium">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="fixed">Preço Fixo Definido (R$)</SelectItem>
-                    <SelectItem value="starting_at">A partir de... (Preço Inicial)</SelectItem>
-                    <SelectItem value="price_range">Faixa de Preço (Mínimo e Máximo)</SelectItem>
-                    <SelectItem value="on_quote">Sob Orçamento / Cotação Personalizada</SelectItem>
-                    <SelectItem value="exchange_only">Troca / Permuta Direta (Sem valor)</SelectItem>
-                    <SelectItem value="free">Gratuito / Doação Solidária (R$ 0)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {pricingType === "fixed" && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div className="space-y-2">
-                    <Label className="text-xs text-foreground font-medium">
-                      {niche.id === "servico"
-                        ? "Valor Base (R$) *"
-                        : niche.id === "vaga"
-                        ? "Salário Proposto (R$) *"
-                        : "Valor (R$) *"}
-                    </Label>
-                    <CurrencyField
-                      value={priceCents}
-                      onChange={setPriceCents}
-                      placeholder="0,00"
-                      className="h-11 rounded-lg text-xs bg-background"
-                    />
-                  </div>
-                  <div className="space-y-2 flex items-end">
-                    <div
-                      className="flex items-center gap-2 h-11 px-3 rounded-lg bg-background border border-border/60 hover:bg-muted/30 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary w-full"
-                      onClick={() => setNegotiable(!negotiable)}
-                    >
-                      <Checkbox
-                        id="neg-check"
-                        checked={negotiable}
-                        onCheckedChange={(c) => setNegotiable(!!c)}
-                      />
-                      <Label
-                        htmlFor="neg-check"
-                        className="text-xs text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary font-medium select-none"
-                      >
-                        Aceita Propostas / Negociável
-                      </Label>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* FASE 1: Lifecycle & Regras de Validade e Estoque */}
-              <div className="p-4 rounded-lg border border-border/60 bg-muted/20 space-y-3 mt-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Clock className="size-4 text-primary shrink-0" />
-                    <span className="text-xs font-bold text-foreground">Validade do Anúncio (Obrigatório)</span>
-                  </div>
-                  <div className="flex items-center gap-2 bg-background p-1 rounded-lg border border-border/50">
-                    {([30, 60, 90] as const).map((days) => (
-                      <button
-                        key={days}
-                        type="button"
-                        onClick={() => setValidityDays(days)}
-                        className={`px-3 py-2 text-xs text-muted-foreground/75 font-bold rounded-md min-h-11 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
-                          validityDays === days
-                            ? "bg-primary text-primary-foreground shadow-xs"
-                            : "text-muted-foreground hover:text-foreground"
-                        }`}
-                      >
-                        {days} dias
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-                  <div className="space-y-2">
-                    <Label className="text-xs text-muted-foreground/75 font-semibold text-muted-foreground">
-                      Limite de Pedidos / Oferta (Opcional)
-                    </Label>
-                    <Input
-                      type="number"
-                      min="1"
-                      placeholder="Ex: 5 pedidos"
-                      value={offerLimit}
-                      onChange={(e) => setOfferLimit(e.target.value)}
-                      className="h-11 min-h-11 rounded-lg text-xs bg-background"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-xs text-muted-foreground/75 font-semibold text-muted-foreground">
-                      Estoque Físico Disponível (Opcional)
-                    </Label>
-                    <Input
-                      type="number"
-                      min="1"
-                      placeholder="Ex: 10 unidades"
-                      value={stockLimit}
-                      onChange={(e) => setStockLimit(e.target.value)}
-                      className="h-11 min-h-11 rounded-lg text-xs bg-background"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {pricingType === "starting_at" && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div className="space-y-2">
-                    <Label className="text-xs text-foreground font-medium">A partir de (R$) *</Label>
-                    <CurrencyField
-                      value={priceMinCents}
-                      onChange={(v) => {
-                        setPriceMinCents(v);
-                        if (v && !priceCents) setPriceCents(v);
-                      }}
-                      placeholder="0,00"
-                      className="h-11 rounded-lg text-xs bg-background"
-                    />
-                  </div>
-                  <div className="space-y-2 flex items-end">
-                    <div
-                      className="flex items-center gap-2 h-11 px-3 rounded-lg bg-background border border-border/60 hover:bg-muted/30 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary w-full"
-                      onClick={() => setNegotiable(!negotiable)}
-                    >
-                      <Checkbox
-                        id="neg-check-start"
-                        checked={negotiable}
-                        onCheckedChange={(c) => setNegotiable(!!c)}
-                      />
-                      <Label
-                        htmlFor="neg-check-start"
-                        className="text-xs text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary font-medium select-none"
-                      >
-                        Sujeito a orçamento final
-                      </Label>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {pricingType === "price_range" && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div className="space-y-2">
-                    <Label className="text-xs text-foreground font-medium">Preço Mínimo (R$) *</Label>
-                    <CurrencyField
-                      value={priceMinCents}
-                      onChange={(v) => {
-                        setPriceMinCents(v);
-                        if (v && !priceCents) setPriceCents(v);
-                      }}
-                      placeholder="0,00"
-                      className="h-11 rounded-lg text-xs bg-background"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-xs text-foreground font-medium">Preço Máximo (R$) *</Label>
-                    <CurrencyField
-                      value={priceMaxCents}
-                      onChange={setPriceMaxCents}
-                      placeholder="0,00"
-                      className="h-11 rounded-lg text-xs bg-background"
-                    />
-                  </div>
-                </div>
-              )}
-
-              {pricingType === "on_quote" && (
-                <div className="p-4 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-300 text-xs">
-                  <p className="font-semibold flex items-center gap-2">
-                    <Coins className="size-4 shrink-0" />
-                    <span>Preço sob Orçamento / Cotação</span>
-                  </p>
-                  <p className="mt-1 text-xs text-muted-foreground/75 opacity-90">
-                    O anúncio exibirá "Sob Consulta" na vitrine pública e convidará os clientes a solicitarem cotação personalizada via WhatsApp.
-                  </p>
-                </div>
-              )}
-
-              {pricingType === "exchange_only" && (
-                <div className="p-4 rounded-lg bg-blue-500/10 border border-blue-500/20 text-blue-700 dark:text-blue-300 text-xs">
-                  <p className="font-semibold flex items-center gap-2">
-                    <RefreshCw className="size-4 shrink-0" />
-                    <span>Permuta / Troca Direta</span>
-                  </p>
-                  <p className="mt-1 text-xs text-muted-foreground/75 opacity-90">
-                    O anúncio será classificado como troca direta. Especifique na seção de pagamento o que você aceita em contrapartida.
-                  </p>
-                </div>
-              )}
-
-              {pricingType === "free" && (
-                <div className="p-4 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-300 text-xs">
-                  <p className="font-semibold flex items-center gap-2">
-                    <Tag className="size-4 shrink-0" />
-                    <span>Gratuito / Doação Solidária (R$ 0)</span>
-                  </p>
-                  <p className="mt-1 text-xs text-muted-foreground/75 opacity-90">
-                    Este item ou serviço será oferecido gratuitamente para a comunidade local.
-                  </p>
-                </div>
-              )}
-
-              {/* Aviso Legal / Disclaimer sobre o Valor */}
-              <div className="space-y-2 pt-1">
-                <Label className="text-xs text-foreground font-medium">
-                  Aviso sobre Valores / Flutuação
-                </Label>
-                <Select value={priceDisclaimer} onValueChange={setPriceDisclaimer}>
-                  <SelectTrigger className="h-11 rounded-lg text-xs bg-background font-medium">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">Nenhum aviso adicional</SelectItem>
-                    <SelectItem value="demonstrative">Preço ilustrativo / demonstrativo (sob consulta)</SelectItem>
-                    <SelectItem value="subject_to_availability">Sujeito à disponibilidade e estoque sem aviso prévio</SelectItem>
-                    <SelectItem value="seasonal">Tarifa sazonal válida para baixa temporada / dias úteis</SelectItem>
-                    <SelectItem value="exchange_rate">Sujeito a flutuação cambial e taxas governamentais</SelectItem>
-                    <SelectItem value="custom">Aviso personalizado por extenso</SelectItem>
-                  </SelectContent>
-                </Select>
-                {priceDisclaimer === "custom" && (
-                  <Input
-                    value={customDisclaimer}
-                    onChange={(e) => setCustomDisclaimer(e.target.value)}
-                    placeholder="Escreva o aviso que aparecerá na vitrine pública..."
-                    className="h-11 min-h-11 rounded-lg text-xs bg-background mt-2"
-                  />
-                )}
-              </div>
-            </div>
- </div>
+            <ClassifiedBasicInfoSection
+              nicheId={niche.id}
+              title={title}
+              description={description}
+              isRefiningDescription={isRefiningDescription}
+              onTitleChange={setTitle}
+              onDescriptionChange={setDescription}
+              onRefineDescription={handleRefineDescriptionWithAI}
+              refinementPreview={refinementPreview}
+              onApplyRefinement={applyRefinementPreview}
+              onDismissRefinement={() => setRefinementPreview(null)}
+            >
+            <ClassifiedPricingLifecycleSection
+              nicheId={niche.id}
+              pricingType={pricingType}
+              priceCents={priceCents}
+              priceMinCents={priceMinCents}
+              priceMaxCents={priceMaxCents}
+              negotiable={negotiable}
+              validityDays={validityDays}
+              offerLimit={offerLimit}
+              stockLimit={stockLimit}
+              priceDisclaimer={priceDisclaimer}
+              customDisclaimer={customDisclaimer}
+              onPricingTypeChange={setPricingType}
+              onPriceCentsChange={setPriceCents}
+              onPriceMinCentsChange={setPriceMinCents}
+              onPriceMaxCentsChange={setPriceMaxCents}
+              onNegotiableChange={setNegotiable}
+              onValidityDaysChange={setValidityDays}
+              onOfferLimitChange={setOfferLimit}
+              onStockLimitChange={setStockLimit}
+              onPriceDisclaimerChange={setPriceDisclaimer}
+              onCustomDisclaimerChange={setCustomDisclaimer}
+            />
+            </ClassifiedBasicInfoSection>
 
  {/* Seção 2: Especificações Técnicas do Anúncio */}
             {/* Viagens, Turismo & Resorts */}
@@ -8542,47 +7692,15 @@ function SpecializedClassifiedEditor({
                 </div>
               </div>
 
-              {/* Seção: Localização */}
-              <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60">
-                <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground pb-3 border-b border-border/40">
-                  <MapPin className="size-4 text-primary shrink-0" />
-                  <span>Localização</span>
-                </div>
-
- <CityCombobox
- value={locationName}
- onChange={(formatted, struct) => {
- setLocationName(formatted);
- if (struct) setStructuredLoc(struct);
- }}
- label="Bairro e Cidade do Anúncio *"
- />
-
-            {/* Controle de Privacidade Total de Endereço (LGPD) */}
-            <div className="p-4 bg-muted/20 border border-border/70 rounded-lg space-y-2">
-              <div className="flex items-center justify-between gap-3">
-                <div className="space-y-1 min-w-0">
-                  <Label htmlFor="hide-location-toggle" className="text-xs font-bold text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary flex items-center gap-2">
-                    <ShieldCheck className="size-4 text-primary" />
-                    Ocultar endereço completamente
-                  </Label>
-                  <p className="text-xs text-muted-foreground/75 text-muted-foreground leading-snug">
-                    Não exibe cidade, bairro nem mapa no anúncio público.
-                  </p>
-                </div>
-                <Switch
-                  id="hide-location-toggle"
-                  checked={hideLocation}
-                  onCheckedChange={setHideLocation}
-                />
-              </div>
-              {hideLocation && (
-                <div className="text-xs text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-2 rounded-lg font-medium flex items-center gap-2">
-                  <Check className="size-3 shrink-0" />
-                  Privacidade total ativa: nenhum dado geográfico ou mapa será exposto.
-                </div>
-              )}
-            </div>
+              <ClassifiedLocationSection
+                locationName={locationName}
+                hideLocation={hideLocation}
+                onLocationChange={(formatted, structured) => {
+                  setLocationName(formatted);
+                  if (structured) setStructuredLoc(structured);
+                }}
+                onHideLocationChange={setHideLocation}
+              />
 
  <div className="space-y-2 pt-1">
  <Label className="text-xs text-foreground font-medium">
@@ -8594,7 +7712,6 @@ function SpecializedClassifiedEditor({
 									placeholder="(49) 99999-9999"
 									className="h-11 min-h-11 rounded-lg text-xs bg-background"
 								/>
- </div>
  </div>
 
               {/* ── Formulário de Captura de Leads / Landing Page Vinculada (Restrito a Lojas Oficiais) ── */}
