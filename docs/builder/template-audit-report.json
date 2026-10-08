@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-10-07T19:22:17.974Z",
+  "generatedAt": "2026-10-08T12:06:15.637Z",
   "summary": {
     "total": 12,
-    "passed": 2,
-    "warnings": 7,
-    "failed": 3,
+    "passed": 0,
+    "warnings": 3,
+    "failed": 9,
     "reviewRequired": 12,
     "publishableFailed": 0
   },
@@ -66,9 +66,30 @@
     {
       "templateId": "template_tourism",
       "templateName": "Turismo & Viagens",
-      "status": "warn",
-      "score": 95,
+      "status": "fail",
+      "score": 35,
       "findings": [
+        {
+          "ruleId": "CONTENT_PRICING_CTA_MISSING",
+          "category": "content",
+          "severity": "error",
+          "path": "blocks[2].config.tiers[0].ctaHref",
+          "message": "Configure um destino CTA seguro para este plano; a publicação não redireciona para uma rota genérica do workspace."
+        },
+        {
+          "ruleId": "CONTENT_PRICING_CTA_MISSING",
+          "category": "content",
+          "severity": "error",
+          "path": "blocks[2].config.tiers[1].ctaHref",
+          "message": "Configure um destino CTA seguro para este plano; a publicação não redireciona para uma rota genérica do workspace."
+        },
+        {
+          "ruleId": "CONTENT_PRICING_CTA_MISSING",
+          "category": "content",
+          "severity": "error",
+          "path": "blocks[2].config.tiers[2].ctaHref",
+          "message": "Configure um destino CTA seguro para este plano; a publicação não redireciona para uma rota genérica do workspace."
+        },
         {
           "ruleId": "CONTENT_PRICING_REVIEW",
           "category": "content",
@@ -93,9 +114,23 @@
     {
       "templateId": "template_creators",
       "templateName": "Criadores & Cursos",
-      "status": "warn",
-      "score": 95,
+      "status": "fail",
+      "score": 55,
       "findings": [
+        {
+          "ruleId": "CONTENT_PRICING_CTA_MISSING",
+          "category": "content",
+          "severity": "error",
+          "path": "blocks[2].config.tiers[0].ctaHref",
+          "message": "Configure um destino CTA seguro para este plano; a publicação não redireciona para uma rota genérica do workspace."
+        },
+        {
+          "ruleId": "CONTENT_PRICING_CTA_MISSING",
+          "category": "content",
+          "severity": "error",
+          "path": "blocks[2].config.tiers[1].ctaHref",
+          "message": "Configure um destino CTA seguro para este plano; a publicação não redireciona para uma rota genérica do workspace."
+        },
         {
           "ruleId": "CONTENT_PRICING_REVIEW",
           "category": "content",
@@ -120,9 +155,17 @@
     {
       "templateId": "template_real_estate",
       "templateName": "Imóveis & Temporada",
-      "status": "pass",
-      "score": 100,
-      "findings": [],
+      "status": "fail",
+      "score": 80,
+      "findings": [
+        {
+          "ruleId": "CONTENT_FORM_DESTINATION_MISSING",
+          "category": "content",
+          "severity": "error",
+          "path": "blocks[3].config.whatsappNumber",
+          "message": "Configure um destino WhatsApp válido; este bloco ainda não envia leads por e-mail/CRM."
+        }
+      ],
       "metrics": {
         "blockCount": 4,
         "serializedBytes": 2334,
@@ -139,8 +182,8 @@
     {
       "templateId": "template_services_wellness",
       "templateName": "Estética & Saúde",
-      "status": "warn",
-      "score": 95,
+      "status": "fail",
+      "score": 75,
       "findings": [
         {
           "ruleId": "CONTENT_SOCIAL_PROOF_REVIEW",
@@ -148,6 +191,13 @@
           "severity": "warning",
           "path": "blocks[2].config.testimonials",
           "message": "Confirme que cada depoimento é real, autorizado e fiel; o campo verified não comprova autenticidade."
+        },
+        {
+          "ruleId": "CONTENT_FORM_DESTINATION_MISSING",
+          "category": "content",
+          "severity": "error",
+          "path": "blocks[4].config.whatsappNumber",
+          "message": "Configure um destino WhatsApp válido; este bloco ainda não envia leads por e-mail/CRM."
         }
       ],
       "metrics": {
@@ -166,9 +216,17 @@
     {
       "templateId": "template_creator_biolink",
       "templateName": "Link na Bio - Creator Pro",
-      "status": "pass",
-      "score": 100,
-      "findings": [],
+      "status": "fail",
+      "score": 80,
+      "findings": [
+        {
+          "ruleId": "CONTENT_FORM_DESTINATION_MISSING",
+          "category": "content",
+          "severity": "error",
+          "path": "blocks[3].config.whatsappNumber",
+          "message": "Configure um destino WhatsApp válido; este bloco ainda não envia leads por e-mail/CRM."
+        }
+      ],
       "metrics": {
         "blockCount": 4,
         "serializedBytes": 2617,
@@ -212,9 +270,30 @@
     {
       "templateId": "template_dark_kitchen",
       "templateName": "Catálogo - Dark Kitchen Express",
-      "status": "warn",
-      "score": 95,
+      "status": "fail",
+      "score": 35,
       "findings": [
+        {
+          "ruleId": "CONTENT_PRICING_CTA_MISSING",
+          "category": "content",
+          "severity": "error",
+          "path": "blocks[2].config.tiers[0].ctaHref",
+          "message": "Configure um destino CTA seguro para este plano; a publicação não redireciona para uma rota genérica do workspace."
+        },
+        {
+          "ruleId": "CONTENT_PRICING_CTA_MISSING",
+          "category": "content",
+          "severity": "error",
+          "path": "blocks[2].config.tiers[1].ctaHref",
+          "message": "Configure um destino CTA seguro para este plano; a publicação não redireciona para uma rota genérica do workspace."
+        },
+        {
+          "ruleId": "CONTENT_PRICING_CTA_MISSING",
+          "category": "content",
+          "severity": "error",
+          "path": "blocks[2].config.tiers[2].ctaHref",
+          "message": "Configure um destino CTA seguro para este plano; a publicação não redireciona para uma rota genérica do workspace."
+        },
         {
           "ruleId": "CONTENT_PRICING_REVIEW",
           "category": "content",
@@ -346,6 +425,13 @@
           "severity": "error",
           "path": "blocks[3].config.items[2].answer",
           "message": "Texto placeholder permanece no documento. Preencha com informação real ou remova a seção antes de publicar."
+        },
+        {
+          "ruleId": "CONTENT_FORM_DESTINATION_MISSING",
+          "category": "content",
+          "severity": "error",
+          "path": "blocks[4].config.whatsappNumber",
+          "message": "Configure um destino WhatsApp válido; este bloco ainda não envia leads por e-mail/CRM."
         }
       ],
       "metrics": {
@@ -471,6 +557,13 @@
           "severity": "error",
           "path": "blocks[3].config.items[2].answer",
           "message": "Texto placeholder permanece no documento. Preencha com informação real ou remova a seção antes de publicar."
+        },
+        {
+          "ruleId": "CONTENT_FORM_DESTINATION_MISSING",
+          "category": "content",
+          "severity": "error",
+          "path": "blocks[4].config.whatsappNumber",
+          "message": "Configure um destino WhatsApp válido; este bloco ainda não envia leads por e-mail/CRM."
         }
       ],
       "metrics": {
@@ -568,6 +661,13 @@
           "severity": "error",
           "path": "blocks[2].config.items[2].answer",
           "message": "Texto placeholder permanece no documento. Preencha com informação real ou remova a seção antes de publicar."
+        },
+        {
+          "ruleId": "CONTENT_FORM_DESTINATION_MISSING",
+          "category": "content",
+          "severity": "error",
+          "path": "blocks[3].config.whatsappNumber",
+          "message": "Configure um destino WhatsApp válido; este bloco ainda não envia leads por e-mail/CRM."
         }
       ],
       "metrics": {
