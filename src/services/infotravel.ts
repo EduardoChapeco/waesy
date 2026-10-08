@@ -176,8 +176,10 @@ export async function infotravelImportBooking(
   agencyId: string,
   bookingId: string,
 ): Promise<NormalizedBooking> {
-  const data = await invokeConnector("import_booking", agencyId, { bookingId });
-  const envelope = requireV1Envelope(data, "import_booking");
+  const envelope = requireV1Envelope(
+      await invokeConnector<any>("import_booking", agencyId, { bookingId }),
+      "import_booking",
+  );
   return mapInfotravelV1BookingToNormalized(envelope.normalized as InfotravelV1BookingDTO);
 }
 
@@ -187,7 +189,10 @@ export async function infotravelCreateBooking(agencyId: string, tripId: string):
 }
 
 export async function infotravelSyncBooking(agencyId: string, tripId: string): Promise<any> {
-  return await invokeConnector("run_periodic_sync", agencyId, { tripId });
+  return requireV1Envelope(
+      await invokeConnector<any>("run_periodic_sync", agencyId, { tripId }),
+      "run_periodic_sync",
+  );
 }
 
 export async function infotravelImportToTrip(

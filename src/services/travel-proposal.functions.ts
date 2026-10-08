@@ -994,6 +994,7 @@ export const getPublicTravelProposalByToken = createServerFn({ method: "GET" })
   });
 
 // ─── 5. Aprovação da Proposta pelo Cliente ────────────────────────────────────
+// A conversão transacional posterior é centralizada em convertProposalToTrip no ciclo de vida.
 
 export const approveTravelProposal = createServerFn({ method: "POST" })
   .validator(
