@@ -4,6 +4,7 @@ import { Gift, Heart, Plus, ArrowUpRight, Eye, MapPin, Tag, Calendar } from "luc
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { PageHeader } from "@/components/commerce/page-header";
+import { ErrorState } from "@/components/state/states";
 import { listStoreDonations } from "@/services/classifieds.functions";
 
 export const Route = createFileRoute("/workspace/doacoes/")({
@@ -23,12 +24,15 @@ export const Route = createFileRoute("/workspace/doacoes/")({
 function WorkspaceDoacoesHubPage() {
   const loaderData = Route.useLoaderData();
 
-  const { data: donations = loaderData.donations } = useQuery({
+  const { data: donations = loaderData.donations, isError } = useQuery({
     queryKey: ["workspace", "store-donations"],
     queryFn: () => listStoreDonations(),
     initialData: loaderData.donations,
   });
 
+  if (isError && donations.length === 0) {
+    return <ErrorState title="Não foi possível carregar as campanhas" description="As doações reais estão temporariamente indisponíveis." />;
+  }
   return (
     <div className="w-full max-w-7xl mx-auto space-y-6 pb-20 animate-in fade-in duration-200">
       {/* ── CABEÇALHO COM AÇÃO RÁPIDA ── */}

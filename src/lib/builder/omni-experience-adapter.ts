@@ -41,6 +41,7 @@ export function omniPageToExperienceNodes(document: OmniPageDocument): Experienc
       data_bindings: {},
       action_bindings: {},
       sort_order: index,
+      section_anchor_id: block.sectionAnchorId,
       is_hidden: block.isHidden ?? false,
       ...(block.assetRefs ? { asset_refs: structuredClone(block.assetRefs) } : {}),
     } as ExperienceNode;

@@ -1,60 +1,13 @@
 /**
- * brazil-demographics.ts — Framework Demográfico Canônico de Populações Sintéticas Brasileiras
- * Calibrado com microdados do Censo IBGE 2022, PNAD Contínua e Critério Brasil (ABEP).
- * Permite instanciar milhões de perfis sintéticos estratificados por cidades, capitais e classes sociais.
+ * Catálogo legado de arquétipos fictícios para exploração qualitativa.
+ * Não é calibrado, não representa amostra/população e não deve gerar previsão quantitativa.
+ * Dados demográficos reais só podem ser adicionados com fonte, versão, licença e transformação rastreáveis.
  */
 
-import type { 
-  SyntheticArchetype,
-  PersonaCurriculum,
-  PersonaFinancialSheet,
-  PersonaHouseholdProfile
-} from "@/types/simlab";
+import type { SyntheticArchetype } from "@/types/simlab";
 
-export interface BrazilianCityProfile {
-  name: string;
-  state: string;
-  region: "Sudeste" | "Sul" | "Nordeste" | "Centro-Oeste" | "Norte";
-  type: "capital_metropole" | "interior_polo" | "interior_medio";
-  population_ibge: number;
-  pib_per_capita_brl: number;
-  dominant_sectors: string[];
-}
-
-export const BRAZILIAN_CITIES: BrazilianCityProfile[] = [
-  // ── SUDESTE ──
-  { name: "São Paulo", state: "SP", region: "Sudeste", type: "capital_metropole", population_ibge: 11451245, pib_per_capita_brl: 65400, dominant_sectors: ["Serviços Financeiros", "Tecnologia", "Varejo", "Saúde"] },
-  { name: "Rio de Janeiro", state: "RJ", region: "Sudeste", type: "capital_metropole", population_ibge: 6211423, pib_per_capita_brl: 54200, dominant_sectors: ["Turismo", "Petróleo & Gás", "Entretenimento", "Serviços"] },
-  { name: "Belo Horizonte", state: "MG", region: "Sudeste", type: "capital_metropole", population_ibge: 2315560, pib_per_capita_brl: 43800, dominant_sectors: ["Biotecnologia", "Mineração", "Gastronomia", "Comércio"] },
-  { name: "Campinas", state: "SP", region: "Sudeste", type: "interior_polo", population_ibge: 1138309, pib_per_capita_brl: 62100, dominant_sectors: ["Polo Tecnológico", "Logística", "Pesquisa", "Indústria"] },
-  { name: "Ribeirão Preto", state: "SP", region: "Sudeste", type: "interior_polo", population_ibge: 698259, pib_per_capita_brl: 51200, dominant_sectors: ["Agronegócio", "Saúde", "Bebidas", "Serviços"] },
-
-  // ── SUL ──
-  { name: "Curitiba", state: "PR", region: "Sul", type: "capital_metropole", population_ibge: 1773733, pib_per_capita_brl: 53900, dominant_sectors: ["Automotivo", "Tecnologia", "Comércio", "Serviços"] },
-  { name: "Porto Alegre", state: "RS", region: "Sul", type: "capital_metropole", population_ibge: 1332570, pib_per_capita_brl: 52400, dominant_sectors: ["Saúde", "Educação Superior", "Serviços", "Varejo"] },
-  { name: "Florianópolis", state: "SC", region: "Sul", type: "capital_metropole", population_ibge: 537213, pib_per_capita_brl: 56800, dominant_sectors: ["Tecnologia / Startups", "Turismo", "Serviços Públicos"] },
-  { name: "Joinville", state: "SC", region: "Sul", type: "interior_polo", population_ibge: 616323, pib_per_capita_brl: 63700, dominant_sectors: ["Indústria Metalmecânica", "Tecnologia", "Logística"] },
-  { name: "Caxias do Sul", state: "RS", region: "Sul", type: "interior_polo", population_ibge: 463377, pib_per_capita_brl: 55900, dominant_sectors: ["Metalmecânico", "Vitivinicultura", "Comércio"] },
-  { name: "Chapecó", state: "SC", region: "Sul", type: "interior_polo", population_ibge: 254781, pib_per_capita_brl: 58200, dominant_sectors: ["Agroindústria", "Cooperativismo", "Saúde"] },
-  { name: "São Miguel do Oeste", state: "SC", region: "Sul", type: "interior_medio", population_ibge: 44330, pib_per_capita_brl: 48900, dominant_sectors: ["Comércio Regional", "Agropecuária", "Serviços"] },
-
-  // ── CENTRO-OESTE ──
-  { name: "Brasília", state: "DF", region: "Centro-Oeste", type: "capital_metropole", population_ibge: 2817068, pib_per_capita_brl: 87100, dominant_sectors: ["Administração Pública", "Serviços", "Gastronomia"] },
-  { name: "Goiânia", state: "GO", region: "Centro-Oeste", type: "capital_metropole", population_ibge: 1437237, pib_per_capita_brl: 41300, dominant_sectors: ["Agronegócio", "Moda / Confeção", "Saúde", "Construção"] },
-  { name: "Cuiabá", state: "MT", region: "Centro-Oeste", type: "capital_metropole", population_ibge: 650912, pib_per_capita_brl: 45700, dominant_sectors: ["Agronegócio (Soja/Milho)", "Logística", "Comércio"] },
-
-  // ── NORDESTE ──
-  { name: "Salvador", state: "BA", region: "Nordeste", type: "capital_metropole", population_ibge: 2418005, pib_per_capita_brl: 25100, dominant_sectors: ["Turismo", "Comércio Popular", "Cultura", "Serviços"] },
-  { name: "Recife", state: "PE", region: "Nordeste", type: "capital_metropole", population_ibge: 1488920, pib_per_capita_brl: 34200, dominant_sectors: ["Porto Digital / Tech", "Polo Médico", "Logística"] },
-  { name: "Fortaleza", state: "CE", region: "Nordeste", type: "capital_metropole", population_ibge: 2428678, pib_per_capita_brl: 27800, dominant_sectors: ["Turismo", "Comércio Têxtil", "Tecnologia", "Logística"] },
-
-  // ── NORTE ──
-  { name: "Manaus", state: "AM", region: "Norte", type: "capital_metropole", population_ibge: 2063547, pib_per_capita_brl: 41900, dominant_sectors: ["Polo Industrial de Manaus", "Eletrônicos", "Comércio"] },
-  { name: "Belém", state: "PA", region: "Norte", type: "capital_metropole", population_ibge: 1303389, pib_per_capita_brl: 24600, dominant_sectors: ["Biodiversidade", "Comércio", "Mineração / Portos"] },
-];
-
-// ─── 12 ARQUÉTIPOS CANÔNICOS CALIBRADOS PELO CENSO IBGE 2022 / POF / CRITÉRIO ABEP ──
-export const CANONICAL_BRAZIL_ARCHETYPES: SyntheticArchetype[] = [
+// ─── ARQUÉTIPOS SINTÉTICOS DE SEED (FICTÍCIOS; NÃO CALIBRADOS) ──
+const SEED_ARCHETYPES: Omit<SyntheticArchetype, "profile_origin" | "source_profile_type" | "calibration_status">[] = [
   {
     id: "7ecbbf4a-52b1-405f-9b16-f5be3c0f7740",
     code: "BR_F_34_CLASSE_C1_MAE",
@@ -660,110 +613,10 @@ export const CANONICAL_BRAZIL_ARCHETYPES: SyntheticArchetype[] = [
   },
 ];
 
-/**
- * Gerador Determinístico & Estocástico de Personas Sintéticas Calibradas por Cidade.
- * Permite criar amostras de 10 a 10.000 personas instantaneamente com ancoragem sociológica real.
- */
-export function generateSyntheticCohort(options: {
-  city?: string;
-  region?: string;
-  targetClasses?: Array<"A1" | "A2" | "B1" | "B2" | "C1" | "C2" | "D_E">;
-  sampleSize?: number;
-}): SyntheticArchetype[] {
-  const size = options.sampleSize || 12;
-  const classes = options.targetClasses || ["A1", "A2", "B1", "B2", "C1", "C2", "D_E"];
-  const cities = options.city 
-    ? BRAZILIAN_CITIES.filter(c => c.name.toLowerCase() === options.city!.toLowerCase())
-    : options.region
-    ? BRAZILIAN_CITIES.filter(c => c.region === options.region)
-    : BRAZILIAN_CITIES;
-
-  const result: SyntheticArchetype[] = [];
-
-  const FIRST_NAMES_F = ["Carla", "Camila", "Juliana", "Vera", "Brenda", "Aline", "Mariana", "Fernanda", "Patrícia", "Neide", "Leticia", "Renata", "Daniela"];
-  const FIRST_NAMES_M = ["Marcos", "Gabriel", "Lucas", "Rodrigo", "Tiago", "Moacir", "Felipe", "Eduardo", "Bruno", "Ricardo", "André", "Matheus", "Gustavo"];
-  const SURNAMES = ["Silva", "Santos", "Oliveira", "Souza", "Pereira", "Albuquerque", "Silveira", "Zanin", "Fontes", "Motta", "Bastos", "Costa", "Lima", "Ferreira"];
-
-  const CLASS_PROFILES: Record<string, { incomeRange: [number, number]; cynicism: [number, number]; priceSensitivity: [number, number]; impulsivity: [number, number] }> = {
-    A1: { incomeRange: [25000, 45000], cynicism: [6.5, 8.5], priceSensitivity: [1.5, 3.0], impulsivity: [2.5, 4.5] },
-    A2: { incomeRange: [18000, 24900], cynicism: [6.0, 8.0], priceSensitivity: [2.5, 4.0], impulsivity: [3.5, 5.0] },
-    B1: { incomeRange: [11000, 17900], cynicism: [6.5, 8.5], priceSensitivity: [4.0, 6.0], impulsivity: [4.5, 6.5] },
-    B2: { incomeRange: [6500, 10900], cynicism: [5.5, 7.5], priceSensitivity: [5.0, 7.0], impulsivity: [5.0, 7.0] },
-    C1: { incomeRange: [3800, 6400], cynicism: [6.0, 8.0], priceSensitivity: [7.0, 9.0], impulsivity: [4.0, 6.5] },
-    C2: { incomeRange: [2200, 3790], cynicism: [5.0, 7.5], priceSensitivity: [8.0, 9.5], impulsivity: [4.5, 7.5] },
-    D_E: { incomeRange: [1412, 2190], cynicism: [4.5, 7.0], priceSensitivity: [9.0, 10.0], impulsivity: [2.5, 5.5] },
-  };
-
-  for (let i = 0; i < size; i++) {
-    const selectedClass = classes[i % classes.length];
-    const selectedCity = cities[i % cities.length] || BRAZILIAN_CITIES[0];
-    const isFemale = i % 2 === 0;
-    const firstName = isFemale ? FIRST_NAMES_F[i % FIRST_NAMES_F.length] : FIRST_NAMES_M[i % FIRST_NAMES_M.length];
-    const surname = SURNAMES[(i * 3) % SURNAMES.length];
-    const profile = CLASS_PROFILES[selectedClass] || CLASS_PROFILES.C1;
-
-    const age = 20 + ((i * 7) % 45); // de 20 a 65 anos
-    const income = Math.round(profile.incomeRange[0] + ((profile.incomeRange[1] - profile.incomeRange[0]) * ((i * 17) % 100) / 100));
-    const cynicism = Number((profile.cynicism[0] + (profile.cynicism[1] - profile.cynicism[0]) * 0.5).toFixed(1));
-    const priceSensitivity = Number((profile.priceSensitivity[0] + (profile.priceSensitivity[1] - profile.priceSensitivity[0]) * 0.5).toFixed(1));
-    const impulsivity = Number((profile.impulsivity[0] + (profile.impulsivity[1] - profile.impulsivity[0]) * 0.5).toFixed(1));
-
-    const netIncome = Math.round(income * (selectedClass.startsWith("A") ? 0.75 : selectedClass.startsWith("B") ? 0.82 : 0.88));
-    const fixedExpenses = Math.round(income * (selectedClass.startsWith("A") ? 0.40 : selectedClass.startsWith("B") ? 0.55 : 0.72));
-    const surplus = Math.max(200, netIncome - fixedExpenses);
-
-    result.push({
-      id: `synth-${selectedCity.name.toLowerCase()}-${selectedClass.toLowerCase()}-${i + 1}`,
-      code: `BR_${isFemale ? "F" : "M"}_${age}_${selectedClass}_${selectedCity.name.toUpperCase().replace(/\s+/g, "_")}`,
-      display_name: `${firstName} ${surname} (${selectedCity.name}/${selectedCity.state})`,
-      gender: isFemale ? "feminino" : "masculino",
-      age,
-      age_range_label: `${Math.floor(age / 10) * 10}-${Math.floor(age / 10) * 10 + 9} anos`,
-      abep_social_class: selectedClass as any,
-      region: selectedCity.region,
-      location_type: selectedCity.type,
-      median_income_brl: income,
-      education_level: selectedClass === "A1" || selectedClass === "A2" ? "Pós-graduação" : selectedClass.startsWith("B") ? "Superior Completo" : selectedClass === "C1" ? "Ensino Médio / Técnico" : "Ensino Médio Completo",
-      cynicism_index: cynicism,
-      price_sensitivity: priceSensitivity,
-      impulsivity_index: impulsivity,
-      primary_social_networks: isFemale ? ["Instagram", "WhatsApp"] : ["WhatsApp", "YouTube"],
-      decision_heuristics: {
-        city: selectedCity.name,
-        state: selectedCity.state,
-        seeks_delivery: selectedCity.type === "capital_metropole",
-        prefers_local_trust: selectedCity.type !== "capital_metropole",
-        cashflow_conscious: selectedClass.startsWith("C") || selectedClass === "D_E",
-      },
-      curriculum: {
-        profession_title: selectedClass.startsWith("A") ? "Executivo / Especialista Sênior" : selectedClass.startsWith("B") ? "Analista Pleno / Empreendedor" : "Profissional Autônomo / Comerciário",
-        occupation_sector: selectedCity.dominant_sectors[0] || "Serviços Gerais",
-        work_experience_years: Math.max(2, age - 22),
-        education_degree: selectedClass.startsWith("A") ? "Pós-graduação" : selectedClass.startsWith("B") ? "Superior Completo" : "Ensino Médio Completo",
-        career_summary: `Atua no setor de ${selectedCity.dominant_sectors[0] || "Serviços"} em ${selectedCity.name}. Equilíbrio entre rotina profissional e compromissos familiares.`,
-        key_competencies: ["Gestão Financeira Básica", "Avaliação de Risco Local", "Consumo Ponderado"]
-      },
-      household_profile: {
-        family_structure: i % 3 === 0 ? "nuclear_com_filhos" : i % 3 === 1 ? "casal_sem_filhos" : "unipessoal",
-        total_members: i % 3 === 0 ? 3 : i % 3 === 1 ? 2 : 1,
-        dependents_count: i % 3 === 0 ? 1 : 0,
-        decision_power_in_home: "decisora_principal"
-      },
-      financial_sheet: {
-        gross_monthly_income_brl: income,
-        net_monthly_income_brl: netIncome,
-        essential_fixed_expenses_brl: fixedExpenses,
-        discretionary_surplus_brl: surplus,
-        leisure_budget_monthly_brl: Math.round(surplus * 0.35),
-        liquid_reserves_brl: Math.round(surplus * 3),
-        credit_limit_available_brl: Math.round(income * 0.8),
-        debt_commitment_percent: selectedClass.startsWith("C") ? 25 : 10,
-        preferred_payment_method: selectedClass.startsWith("A") ? "cartao_black_a_vista" : selectedClass.startsWith("B") ? "pix_a_vista" : "cartao_parcelado_sem_juros"
-      },
-      bio: `Residente em ${selectedCity.name} (${selectedCity.state}), classe ${selectedClass}. Renda mensal de R$ ${income.toLocaleString("pt-BR")}.`,
-      is_active: true,
-    });
-  }
-
-  return result;
-}
+export const CANONICAL_BRAZIL_ARCHETYPES: SyntheticArchetype[] = SEED_ARCHETYPES.map((profile): SyntheticArchetype => ({
+  ...profile,
+  gender: profile.gender as SyntheticArchetype["gender"],
+  profile_origin: "seed_catalog_profile",
+  source_profile_type: "code_seed_catalog_unverified",
+  calibration_status: "not_calibrated",
+}));

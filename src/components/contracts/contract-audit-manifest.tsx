@@ -22,7 +22,7 @@ interface ContractAuditManifestProps {
   documentTitle: string;
   category: string;
   verificationCode: string;
-  hashSha256: string;
+  hashSha256?: string | null;
   sealedAt?: string | null;
   signers: ManifestSignerInfo[];
   observers?: Array<{ name: string; email: string; role?: string }>;
@@ -73,8 +73,8 @@ export function ContractAuditManifest({
           </div>
         </div>
 
-        <Badge variant="outline" className="text-[11px] font-mono border-emerald-500/30 text-emerald-600 dark:text-emerald-400 bg-emerald-500/5">
-          Assinatura Avançada · Lei 14.063/2020
+        <Badge variant="outline" className="text-[11px] font-mono border-border/70 text-muted-foreground bg-muted/30">
+          Protocolo de assinatura
         </Badge>
       </div>
 
@@ -126,7 +126,7 @@ export function ContractAuditManifest({
             Hash Criptográfico do Arquivo (SHA-256):
           </p>
           <p className="font-mono text-[10px] break-all bg-background/80 p-2 rounded-lg border border-border/60 text-foreground select-all">
-            {hashSha256 || "CÁLCULO CRIPTOGRÁFICO EM ANDAMENTO"}
+            {hashSha256 || "Hash ainda não disponível"}
           </p>
           {sealedAt && (
             <p className="text-[10px] text-muted-foreground flex items-center gap-1">
@@ -251,10 +251,12 @@ export function ContractAuditManifest({
       {/* Rodapé Legal & Fundamentação Jurídica */}
       <div className="border-t border-border/50 pt-4 text-[10px] text-muted-foreground space-y-1 leading-normal">
         <p>
-          <strong>Fundamentação Jurídica:</strong> O presente documento eletrônico possui validade jurídica plena nos termos do Art. 10, § 2º da Medida Provisória nº 2.200-2/2001 e dos Arts. 4º e 5º da Lei Federal nº 14.063/2020.
+          <strong>Nota jurídica:</strong> A eficácia do documento depende do método de assinatura, da integridade da versão e dos requisitos legais aplicáveis.
         </p>
         <p>
-          A autoria e integridade deste instrumento são atestadas pelo cálculo criptográfico SHA-256 e pelo registro auditável de conexões sob a Lei nº 12.965/2014 (Marco Civil da Internet).
+          {hashSha256
+            ? "O hash SHA-256 apresentado permite comparar a integridade da versão selada consultada."
+            : "A integridade da versão ainda não pode ser confirmada por hash SHA-256."}
         </p>
       </div>
     </div>

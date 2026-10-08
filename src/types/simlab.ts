@@ -6,7 +6,7 @@ export type SocialClass = 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2' | 'D_E';
 export type RegionBrazil = 'Sudeste' | 'Sul' | 'Nordeste' | 'Centro-Oeste' | 'Norte';
 export type LocationType = 'capital_metropole' | 'interior_polo' | 'interior_medio' | 'rural';
 export type ExperimentStatus = 'queued' | 'simulating' | 'synthesizing' | 'completed' | 'failed';
-export type VerdictStatus = 'aprovado_para_veiculacao' | 'revisar_com_ajustes' | 'bloqueado_por_alto_risco';
+export type VerdictStatus = 'aprovado_para_veiculacao' | 'revisar_com_ajustes' | 'bloqueado_por_alto_risco' | 'not_validated';
 export type System1Emotion = 'desejo' | 'desconfianca' | 'tedio' | 'entusiasmo' | 'inseguranca';
 export type PricePerception = 'muito_barato_duvidoso' | 'justo' | 'caro_mas_vale' | 'inacessivel';
 
@@ -80,7 +80,7 @@ export interface SyntheticArchetype {
  abep_social_class: SocialClass;
  region: RegionBrazil;
  location_type: LocationType;
- median_income_brl: number;
+	 median_income_brl: number | null;
  education_level: string;
  cynicism_index: number;
  price_sensitivity: number;
@@ -90,9 +90,12 @@ export interface SyntheticArchetype {
  curriculum?: PersonaCurriculum;
  financial_sheet?: PersonaFinancialSheet;
  household_profile?: PersonaHouseholdProfile;
- avatar_url?: string | null;
- bio?: string | null;
- is_active: boolean;
+	 avatar_url?: string | null;
+	 bio?: string | null;
+	 profile_origin?: 'persisted_synthetic_profile' | 'seed_catalog_profile' | 'user_defined_synthetic_profile' | 'legacy_unknown';
+	 source_profile_type?: string;
+	 calibration_status?: 'not_calibrated' | 'descriptive_only' | 'externally_calibrated' | 'unknown';
+	 is_active: boolean;
  created_at?: string;
 }
 
@@ -138,22 +141,44 @@ export interface SimLabExperiment {
 }
 
 export interface SimLabPersonaResponse {
-  id: string;
-  experiment_id: string;
-  archetype_id: string;
-  persona_id?: string;
-  archetype?: SyntheticArchetype;
-  interest_score: number; // 0 a 10
-  purchase_intent_percent: number; // 0 a 100%
-  choice_probability_percent?: number;
-  primary_hook_detected?: string | null;
-  primary_barrier_objection: string;
-  primary_objection?: string;
-  verbatim_reaction: string;
-  natural_speech_verbatim?: string;
-  system_1_emotion: System1Emotion;
-  price_perception: PricePerception;
-  simulated_at: string;
+	  id: string;
+	  experiment_id: string;
+	  archetype_id: string | null;
+	  archetype_code?: string | null;
+	  persona_id?: string;
+	  archetype?: SyntheticArchetype;
+	  interest_score: number | null;
+	  purchase_intent_percent: number | null;
+	  choice_probability_percent?: number | null;
+	  primary_hook_detected?: string | null;
+	  primary_barrier_objection: string | null;
+	  primary_objection?: string;
+	  verbatim_reaction: string | null;
+	  natural_speech_verbatim?: string;
+	  system_1_emotion: System1Emotion | null;
+	  price_perception: PricePerception | null;
+	  response_origin?: 'llm_synthetic' | 'rules_synthetic' | 'fixture' | 'human_observed';
+	  is_synthetic?: boolean;
+	  provenance?: SimLabProvenance;
+	  simulated_at: string;
+}
+
+export interface SimLabProvenance {
+	record_kind?: string;
+	provider?: string | null;
+	model?: string | null;
+	persona_profile_origin?: string;
+	calibration_status?: string;
+	factors_for?: string[];
+	factors_against?: string[];
+	unknowns?: string[];
+	response_origin?: string;
+	profile_selection?: string;
+	profile_catalog_size?: number;
+	selected_profile_count?: number;
+	profiles_are_real_people?: boolean;
+	probabilities_or_sales_forecast_generated?: boolean;
+	generated_at?: string;
 }
 
 export interface ScientificReviewerVerdict {
@@ -166,23 +191,28 @@ export interface ScientificReviewerVerdict {
 }
 
 export interface SimLabStatisticalSynthesis {
- id: string;
- experiment_id: string;
- synthetic_nps: number; // -100 a +100
- overall_approval_rate: number; // %
- rejection_rate: number; // %
- estimated_conversion_range: [number, number]; // [min%, max%]
- price_elasticity_score: number;
- top_3_buying_triggers: string[];
- top_3_friction_barriers: string[];
- scientific_verdict: VerdictStatus;
- reviewer_reports: ScientificReviewerVerdict[];
- recommended_actions: Array<{
- title: string;
- description: string;
- priority: 'alta' | 'media' | 'baixa';
- }>;
- synthesized_at: string;
+	 id: string;
+	 experiment_id: string;
+	 synthetic_nps: number | null;
+	 overall_approval_rate: number | null;
+	 rejection_rate: number | null;
+	 estimated_conversion_range: [number, number] | null;
+	 price_elasticity_score: number | null;
+	 top_3_buying_triggers: string[];
+	 top_3_friction_barriers: string[];
+	 scientific_verdict: VerdictStatus;
+	 reviewer_reports: ScientificReviewerVerdict[];
+	 recommended_actions: Array<{
+	 title: string;
+	 description: string;
+	 priority: 'alta' | 'media' | 'baixa';
+	 }>;
+	 evidence_level?: 'exploratory_synthetic' | 'observed_association' | 'randomized_experiment' | 'legacy_unknown';
+		 methodology?: string;
+		 calibration_status?: 'not_calibrated' | 'fit_requires_holdout' | 'validated_on_holdout' | 'unknown';
+		 provenance?: SimLabProvenance;
+	 limitations?: string[];
+	 synthesized_at: string;
 }
 
 export interface FocusGroupSession {
@@ -202,7 +232,8 @@ export interface FocusGroupMessage {
  sender_id: string;
  sender_name: string;
  sender_avatar_url?: string | null;
- content: string;
- sentiment_score?: number | null;
- created_at: string;
+	  content: string;
+		sentiment_score?: number | null;
+		 provenance?: SimLabProvenance;
+	 created_at: string;
 }

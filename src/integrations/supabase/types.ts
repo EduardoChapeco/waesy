@@ -8553,6 +8553,79 @@ export type Database = {
           },
         ]
       }
+      copilot_action_approvals: {
+        Row: {
+          action_type: string
+          expires_at: string
+          execution_id: string | null
+          id: string
+          idempotency_key: string
+          payload: Json
+          requested_at: string
+          result: Json
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          store_id: string | null
+          thread_id: string | null
+          user_id: string
+        }
+        Insert: {
+          action_type: string
+          expires_at?: string
+          execution_id?: string | null
+          id?: string
+          idempotency_key: string
+          payload?: Json
+          requested_at?: string
+          result?: Json
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          store_id?: string | null
+          thread_id?: string | null
+          user_id: string
+        }
+        Update: {
+          action_type?: string
+          expires_at?: string
+          execution_id?: string | null
+          id?: string
+          idempotency_key?: string
+          payload?: Json
+          requested_at?: string
+          result?: Json
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          store_id?: string | null
+          thread_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "copilot_action_approvals_execution_id_fkey"
+            columns: ["execution_id"]
+            isOneToOne: false
+            referencedRelation: "copilot_executions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "copilot_action_approvals_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "copilot_action_approvals_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "chat_threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       corporate_clients: {
         Row: {
           agency_id: string | null
@@ -21266,7 +21339,11 @@ export type Database = {
           id: string
           mime_type: string
           public_url: string
+          rights_attestation_version: string | null
+          rights_attested_at: string | null
+          rights_attested_by: string | null
           store_id: string
+          studio_usage_slot: string | null
           updated_at: string
           uploaded_by: string | null
         }
@@ -21279,7 +21356,11 @@ export type Database = {
           id?: string
           mime_type: string
           public_url: string
+          rights_attestation_version?: string | null
+          rights_attested_at?: string | null
+          rights_attested_by?: string | null
           store_id: string
+          studio_usage_slot?: string | null
           updated_at?: string
           uploaded_by?: string | null
         }
@@ -21292,7 +21373,11 @@ export type Database = {
           id?: string
           mime_type?: string
           public_url?: string
+          rights_attestation_version?: string | null
+          rights_attested_at?: string | null
+          rights_attested_by?: string | null
           store_id?: string
+          studio_usage_slot?: string | null
           updated_at?: string
           uploaded_by?: string | null
         }
@@ -43793,6 +43878,34 @@ export type Database = {
       }
     }
     Functions: {
+      finalize_contract_signature: {
+        Args: {
+          p_envelope_id: string
+          p_evidence_payload: Json
+          p_gov_br_level?: string | null
+          p_signature_digest: string
+        }
+        Returns: Json
+      }
+      promote_contract_after_signatures: {
+        Args: { p_contract_version_id: string }
+        Returns: Json
+      }
+      seal_and_issue_contract: {
+        Args: {
+          p_actor_id: string
+          p_contract_id: string
+          p_expected_clauses: Json
+          p_expected_content_markdown: string
+          p_expected_signature_fields: Json
+          p_hash_sha256: string
+          p_signature_fields: Json
+          p_signers: Json
+          p_store_id: string
+          p_version_id: string
+        }
+        Returns: Json
+      }
       acquire_whatsapp_provider_circuit: {
         Args: { p_instance_id: string; p_worker_id: string }
         Returns: {

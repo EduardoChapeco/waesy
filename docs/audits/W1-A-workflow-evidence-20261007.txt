@@ -1,0 +1,225 @@
+--- workflows ---
+CI Unificado — Waesy Quality Gates	active	373509007
+--- recent runs ---
+[1;37m[[m
+  [1;37m{[m
+    [1;34m"conclusion"[m[1;37m:[m [32m"success"[m[1;37m,[m
+    [1;34m"createdAt"[m[1;37m:[m [32m"2026-10-07T20:58:13Z"[m[1;37m,[m
+    [1;34m"databaseId"[m[1;37m:[m 37686009028[1;37m,[m
+    [1;34m"event"[m[1;37m:[m [32m"pull_request"[m[1;37m,[m
+    [1;34m"headBranch"[m[1;37m:[m [32m"feat/waesy-niche-template-factory"[m[1;37m,[m
+    [1;34m"headSha"[m[1;37m:[m [32m"7e02af6b7888382a24ba9f4a0a2156b60fbf13d6"[m[1;37m,[m
+    [1;34m"status"[m[1;37m:[m [32m"completed"[m[1;37m,[m
+    [1;34m"url"[m[1;37m:[m [32m"https://github.com/EduardoChapeco/waesy/actions/runs/37686009028"[m[1;37m,[m
+    [1;34m"workflowName"[m[1;37m:[m [32m"CI Unificado — Waesy Quality Gates"[m
+  [1;37m}[m[1;37m,[m
+  [1;37m{[m
+    [1;34m"conclusion"[m[1;37m:[m [32m"success"[m[1;37m,[m
+    [1;34m"createdAt"[m[1;37m:[m [32m"2026-10-07T20:37:23Z"[m[1;37m,[m
+    [1;34m"databaseId"[m[1;37m:[m 37683411995[1;37m,[m
+    [1;34m"event"[m[1;37m:[m [32m"pull_request"[m[1;37m,[m
+    [1;34m"headBranch"[m[1;37m:[m [32m"feat/waesy-niche-template-factory"[m[1;37m,[m
+    [1;34m"headSha"[m[1;37m:[m [32m"fb3c3c571d205fade9b5d664aef3869c479e9b9d"[m[1;37m,[m
+    [1;34m"status"[m[1;37m:[m [32m"completed"[m[1;37m,[m
+    [1;34m"url"[m[1;37m:[m [32m"https://github.com/EduardoChapeco/waesy/actions/runs/37683411995"[m[1;37m,[m
+    [1;34m"workflowName"[m[1;37m:[m [32m"CI Unificado — Waesy Quality Gates"[m
+  [1;37m}[m[1;37m,[m
+  [1;37m{[m
+    [1;34m"conclusion"[m[1;37m:[m [32m"success"[m[1;37m,[m
+    [1;34m"createdAt"[m[1;37m:[m [32m"2026-10-07T20:32:55Z"[m[1;37m,[m
+    [1;34m"databaseId"[m[1;37m:[m 37682830920[1;37m,[m
+    [1;34m"event"[m[1;37m:[m [32m"pull_request"[m[1;37m,[m
+    [1;34m"headBranch"[m[1;37m:[m [32m"fix/copilot-p0-integrity-2026-10-07"[m[1;37m,[m
+    [1;34m"headSha"[m[1;37m:[m [32m"331a3c9b1727a0918a1450ab7623f42269b4aab6"[m[1;37m,[m
+    [1;34m"status"[m[1;37m:[m [32m"completed"[m[1;37m,[m
+    [1;34m"url"[m[1;37m:[m [32m"https://github.com/EduardoChapeco/waesy/actions/runs/37682830920"[m[1;37m,[m
+    [1;34m"workflowName"[m[1;37m:[m [32m"CI Unificado — Waesy Quality Gates"[m
+  [1;37m}[m[1;37m,[m
+  [1;37m{[m
+    [1;34m"conclusion"[m[1;37m:[m [32m"success"[m[1;37m,[m
+    [1;34m"createdAt"[m[1;37m:[m [32m"2026-10-07T20:25:20Z"[m[1;37m,[m
+    [1;34m"databaseId"[m[1;37m:[m 37681864754[1;37m,[m
+    [1;34m"event"[m[1;37m:[m [32m"pull_request"[m[1;37m,[m
+    [1;34m"headBranch"[m[1;37m:[m [32m"feat/waesy-niche-template-factory"[m[1;37m,[m
+    [1;34m"headSha"[m[1;37m:[m [32m"589279551d0b4c69946babe7ccbb2d6bdbf9a6ca"[m[1;37m,[m
+    [1;34m"status"[m[1;37m:[m [32m"completed"[m[1;37m,[m
+    [1;34m"url"[m[1;37m:[m [32m"https://github.com/EduardoChapeco/waesy/actions/runs/37681864754"[m[1;37m,[m
+    [1;34m"workflowName"[m[1;37m:[m [32m"CI Unificado — Waesy Quality Gates"[m
+  [1;37m}[m[1;37m,[m
+  [1;37m{[m
+    [1;34m"conclusion"[m[1;37m:[m [32m"success"[m[1;37m,[m
+    [1;34m"createdAt"[m[1;37m:[m [32m"2026-10-07T19:31:07Z"[m[1;37m,[m
+    [1;34m"databaseId"[m[1;37m:[m 37675085320[1;37m,[m
+    [1;34m"event"[m[1;37m:[m [32m"pull_request"[m[1;37m,[m
+    [1;34m"headBranch"[m[1;37m:[m [32m"feat/waesy-niche-template-factory"[m[1;37m,[m
+    [1;34m"headSha"[m[1;37m:[m [32m"a6afc304aa9676178b4cc3cf4a5db960d1493de7"[m[1;37m,[m
+    [1;34m"status"[m[1;37m:[m [32m"completed"[m[1;37m,[m
+    [1;34m"url"[m[1;37m:[m [32m"https://github.com/EduardoChapeco/waesy/actions/runs/37675085320"[m[1;37m,[m
+    [1;34m"workflowName"[m[1;37m:[m [32m"CI Unificado — Waesy Quality Gates"[m
+  [1;37m}[m[1;37m,[m
+  [1;37m{[m
+    [1;34m"conclusion"[m[1;37m:[m [32m"success"[m[1;37m,[m
+    [1;34m"createdAt"[m[1;37m:[m [32m"2026-10-07T15:40:21Z"[m[1;37m,[m
+    [1;34m"databaseId"[m[1;37m:[m 37645804817[1;37m,[m
+    [1;34m"event"[m[1;37m:[m [32m"push"[m[1;37m,[m
+    [1;34m"headBranch"[m[1;37m:[m [32m"main"[m[1;37m,[m
+    [1;34m"headSha"[m[1;37m:[m [32m"919c86881db1ce83de3feae7fcf7df5aadb58b7d"[m[1;37m,[m
+    [1;34m"status"[m[1;37m:[m [32m"completed"[m[1;37m,[m
+    [1;34m"url"[m[1;37m:[m [32m"https://github.com/EduardoChapeco/waesy/actions/runs/37645804817"[m[1;37m,[m
+    [1;34m"workflowName"[m[1;37m:[m [32m"CI Unificado — Waesy Quality Gates"[m
+  [1;37m}[m[1;37m,[m
+  [1;37m{[m
+    [1;34m"conclusion"[m[1;37m:[m [32m"success"[m[1;37m,[m
+    [1;34m"createdAt"[m[1;37m:[m [32m"2026-10-07T15:33:44Z"[m[1;37m,[m
+    [1;34m"databaseId"[m[1;37m:[m 37644897919[1;37m,[m
+    [1;34m"event"[m[1;37m:[m [32m"pull_request"[m[1;37m,[m
+    [1;34m"headBranch"[m[1;37m:[m [32m"wave-20261007"[m[1;37m,[m
+    [1;34m"headSha"[m[1;37m:[m [32m"0efc879a43a69fafcaf4c97ccc8842c1e472f131"[m[1;37m,[m
+    [1;34m"status"[m[1;37m:[m [32m"completed"[m[1;37m,[m
+    [1;34m"url"[m[1;37m:[m [32m"https://github.com/EduardoChapeco/waesy/actions/runs/37644897919"[m[1;37m,[m
+    [1;34m"workflowName"[m[1;37m:[m [32m"CI Unificado — Waesy Quality Gates"[m
+  [1;37m}[m[1;37m,[m
+  [1;37m{[m
+    [1;34m"conclusion"[m[1;37m:[m [32m"success"[m[1;37m,[m
+    [1;34m"createdAt"[m[1;37m:[m [32m"2026-10-07T14:38:08Z"[m[1;37m,[m
+    [1;34m"databaseId"[m[1;37m:[m 37638347720[1;37m,[m
+    [1;34m"event"[m[1;37m:[m [32m"push"[m[1;37m,[m
+    [1;34m"headBranch"[m[1;37m:[m [32m"main"[m[1;37m,[m
+    [1;34m"headSha"[m[1;37m:[m [32m"21b5c34368c795c83759f1801e76365025c10e3a"[m[1;37m,[m
+    [1;34m"status"[m[1;37m:[m [32m"completed"[m[1;37m,[m
+    [1;34m"url"[m[1;37m:[m [32m"https://github.com/EduardoChapeco/waesy/actions/runs/37638347720"[m[1;37m,[m
+    [1;34m"workflowName"[m[1;37m:[m [32m"CI Unificado — Waesy Quality Gates"[m
+  [1;37m}[m[1;37m,[m
+  [1;37m{[m
+    [1;34m"conclusion"[m[1;37m:[m [32m"success"[m[1;37m,[m
+    [1;34m"createdAt"[m[1;37m:[m [32m"2026-10-07T14:32:14Z"[m[1;37m,[m
+    [1;34m"databaseId"[m[1;37m:[m 37637512806[1;37m,[m
+    [1;34m"event"[m[1;37m:[m [32m"pull_request"[m[1;37m,[m
+    [1;34m"headBranch"[m[1;37m:[m [32m"execute/waesy-resumption-2026-10-07"[m[1;37m,[m
+    [1;34m"headSha"[m[1;37m:[m [32m"b1ec23574adf83275bfcb4422c251bf48c0159f6"[m[1;37m,[m
+    [1;34m"status"[m[1;37m:[m [32m"completed"[m[1;37m,[m
+    [1;34m"url"[m[1;37m:[m [32m"https://github.com/EduardoChapeco/waesy/actions/runs/37637512806"[m[1;37m,[m
+    [1;34m"workflowName"[m[1;37m:[m [32m"CI Unificado — Waesy Quality Gates"[m
+  [1;37m}[m[1;37m,[m
+  [1;37m{[m
+    [1;34m"conclusion"[m[1;37m:[m [32m"success"[m[1;37m,[m
+    [1;34m"createdAt"[m[1;37m:[m [32m"2026-10-07T05:40:14Z"[m[1;37m,[m
+    [1;34m"databaseId"[m[1;37m:[m 37577459436[1;37m,[m
+    [1;34m"event"[m[1;37m:[m [32m"push"[m[1;37m,[m
+    [1;34m"headBranch"[m[1;37m:[m [32m"main"[m[1;37m,[m
+    [1;34m"headSha"[m[1;37m:[m [32m"67a056a325180b4257571e64e0a9e9374f1458a0"[m[1;37m,[m
+    [1;34m"status"[m[1;37m:[m [32m"completed"[m[1;37m,[m
+    [1;34m"url"[m[1;37m:[m [32m"https://github.com/EduardoChapeco/waesy/actions/runs/37577459436"[m[1;37m,[m
+    [1;34m"workflowName"[m[1;37m:[m [32m"CI Unificado — Waesy Quality Gates"[m
+  [1;37m}[m[1;37m,[m
+  [1;37m{[m
+    [1;34m"conclusion"[m[1;37m:[m [32m"success"[m[1;37m,[m
+    [1;34m"createdAt"[m[1;37m:[m [32m"2026-10-07T05:33:47Z"[m[1;37m,[m
+    [1;34m"databaseId"[m[1;37m:[m 37576921400[1;37m,[m
+    [1;34m"event"[m[1;37m:[m [32m"pull_request"[m[1;37m,[m
+    [1;34m"headBranch"[m[1;37m:[m [32m"docs/w5-ledger-final"[m[1;37m,[m
+    [1;34m"headSha"[m[1;37m:[m [32m"7af49d97176523279f6a520e52cca54457e9bde2"[m[1;37m,[m
+    [1;34m"status"[m[1;37m:[m [32m"completed"[m[1;37m,[m
+    [1;34m"url"[m[1;37m:[m [32m"https://github.com/EduardoChapeco/waesy/actions/runs/37576921400"[m[1;37m,[m
+    [1;34m"workflowName"[m[1;37m:[m [32m"CI Unificado — Waesy Quality Gates"[m
+  [1;37m}[m[1;37m,[m
+  [1;37m{[m
+    [1;34m"conclusion"[m[1;37m:[m [32m"cancelled"[m[1;37m,[m
+    [1;34m"createdAt"[m[1;37m:[m [32m"2026-10-07T05:33:26Z"[m[1;37m,[m
+    [1;34m"databaseId"[m[1;37m:[m 37576893449[1;37m,[m
+    [1;34m"event"[m[1;37m:[m [32m"push"[m[1;37m,[m
+    [1;34m"headBranch"[m[1;37m:[m [32m"main"[m[1;37m,[m
+    [1;34m"headSha"[m[1;37m:[m [32m"8e50750bcc10f56c85677387992af6b264b9dab6"[m[1;37m,[m
+    [1;34m"status"[m[1;37m:[m [32m"completed"[m[1;37m,[m
+    [1;34m"url"[m[1;37m:[m [32m"https://github.com/EduardoChapeco/waesy/actions/runs/37576893449"[m[1;37m,[m
+    [1;34m"workflowName"[m[1;37m:[m [32m"CI Unificado — Waesy Quality Gates"[m
+  [1;37m}[m[1;37m,[m
+  [1;37m{[m
+    [1;34m"conclusion"[m[1;37m:[m [32m"success"[m[1;37m,[m
+    [1;34m"createdAt"[m[1;37m:[m [32m"2026-10-07T05:26:16Z"[m[1;37m,[m
+    [1;34m"databaseId"[m[1;37m:[m 37576296395[1;37m,[m
+    [1;34m"event"[m[1;37m:[m [32m"pull_request"[m[1;37m,[m
+    [1;34m"headBranch"[m[1;37m:[m [32m"execute/w5-copilot-chat-e2e"[m[1;37m,[m
+    [1;34m"headSha"[m[1;37m:[m [32m"223ce7bd998ae283678188052b059cf7559616dc"[m[1;37m,[m
+    [1;34m"status"[m[1;37m:[m [32m"completed"[m[1;37m,[m
+    [1;34m"url"[m[1;37m:[m [32m"https://github.com/EduardoChapeco/waesy/actions/runs/37576296395"[m[1;37m,[m
+    [1;34m"workflowName"[m[1;37m:[m [32m"CI Unificado — Waesy Quality Gates"[m
+  [1;37m}[m[1;37m,[m
+  [1;37m{[m
+    [1;34m"conclusion"[m[1;37m:[m [32m"success"[m[1;37m,[m
+    [1;34m"createdAt"[m[1;37m:[m [32m"2026-10-07T04:43:26Z"[m[1;37m,[m
+    [1;34m"databaseId"[m[1;37m:[m 37572820745[1;37m,[m
+    [1;34m"event"[m[1;37m:[m [32m"push"[m[1;37m,[m
+    [1;34m"headBranch"[m[1;37m:[m [32m"main"[m[1;37m,[m
+    [1;34m"headSha"[m[1;37m:[m [32m"f6833abdf842c0dd3ba6f0f11a23d6a8c0128ed7"[m[1;37m,[m
+    [1;34m"status"[m[1;37m:[m [32m"completed"[m[1;37m,[m
+    [1;34m"url"[m[1;37m:[m [32m"https://github.com/EduardoChapeco/waesy/actions/runs/37572820745"[m[1;37m,[m
+    [1;34m"workflowName"[m[1;37m:[m [32m"CI Unificado — Waesy Quality Gates"[m
+  [1;37m}[m[1;37m,[m
+  [1;37m{[m
+    [1;34m"conclusion"[m[1;37m:[m [32m"success"[m[1;37m,[m
+    [1;34m"createdAt"[m[1;37m:[m [32m"2026-10-07T04:36:19Z"[m[1;37m,[m
+    [1;34m"databaseId"[m[1;37m:[m 37572260656[1;37m,[m
+    [1;34m"event"[m[1;37m:[m [32m"pull_request"[m[1;37m,[m
+    [1;34m"headBranch"[m[1;37m:[m [32m"docs/w4-ledger-final"[m[1;37m,[m
+    [1;34m"headSha"[m[1;37m:[m [32m"aa6f6d72f59c926eafb151acfba9cd58fd7116a2"[m[1;37m,[m
+    [1;34m"status"[m[1;37m:[m [32m"completed"[m[1;37m,[m
+    [1;34m"url"[m[1;37m:[m [32m"https://github.com/EduardoChapeco/waesy/actions/runs/37572260656"[m[1;37m,[m
+    [1;34m"workflowName"[m[1;37m:[m [32m"CI Unificado — Waesy Quality Gates"[m
+  [1;37m}[m[1;37m,[m
+  [1;37m{[m
+    [1;34m"conclusion"[m[1;37m:[m [32m"success"[m[1;37m,[m
+    [1;34m"createdAt"[m[1;37m:[m [32m"2026-10-07T04:35:59Z"[m[1;37m,[m
+    [1;34m"databaseId"[m[1;37m:[m 37572234764[1;37m,[m
+    [1;34m"event"[m[1;37m:[m [32m"push"[m[1;37m,[m
+    [1;34m"headBranch"[m[1;37m:[m [32m"main"[m[1;37m,[m
+    [1;34m"headSha"[m[1;37m:[m [32m"70cd4fef99f721765b7e7abf2059f236166e53a6"[m[1;37m,[m
+    [1;34m"status"[m[1;37m:[m [32m"completed"[m[1;37m,[m
+    [1;34m"url"[m[1;37m:[m [32m"https://github.com/EduardoChapeco/waesy/actions/runs/37572234764"[m[1;37m,[m
+    [1;34m"workflowName"[m[1;37m:[m [32m"CI Unificado — Waesy Quality Gates"[m
+  [1;37m}[m[1;37m,[m
+  [1;37m{[m
+    [1;34m"conclusion"[m[1;37m:[m [32m"success"[m[1;37m,[m
+    [1;34m"createdAt"[m[1;37m:[m [32m"2026-10-07T04:29:33Z"[m[1;37m,[m
+    [1;34m"databaseId"[m[1;37m:[m 37571710601[1;37m,[m
+    [1;34m"event"[m[1;37m:[m [32m"pull_request"[m[1;37m,[m
+    [1;34m"headBranch"[m[1;37m:[m [32m"execute/w4-persistence-idempotency"[m[1;37m,[m
+    [1;34m"headSha"[m[1;37m:[m [32m"71f4eb8f8c7c00fdb73798f3c9423662b7330c3f"[m[1;37m,[m
+    [1;34m"status"[m[1;37m:[m [32m"completed"[m[1;37m,[m
+    [1;34m"url"[m[1;37m:[m [32m"https://github.com/EduardoChapeco/waesy/actions/runs/37571710601"[m[1;37m,[m
+    [1;34m"workflowName"[m[1;37m:[m [32m"CI Unificado — Waesy Quality Gates"[m
+  [1;37m}[m[1;37m,[m
+  [1;37m{[m
+    [1;34m"conclusion"[m[1;37m:[m [32m"success"[m[1;37m,[m
+    [1;34m"createdAt"[m[1;37m:[m [32m"2026-10-07T04:06:11Z"[m[1;37m,[m
+    [1;34m"databaseId"[m[1;37m:[m 37569842466[1;37m,[m
+    [1;34m"event"[m[1;37m:[m [32m"push"[m[1;37m,[m
+    [1;34m"headBranch"[m[1;37m:[m [32m"main"[m[1;37m,[m
+    [1;34m"headSha"[m[1;37m:[m [32m"3d441445b2a1bab9adadd0680d396e96c2e4ff78"[m[1;37m,[m
+    [1;34m"status"[m[1;37m:[m [32m"completed"[m[1;37m,[m
+    [1;34m"url"[m[1;37m:[m [32m"https://github.com/EduardoChapeco/waesy/actions/runs/37569842466"[m[1;37m,[m
+    [1;34m"workflowName"[m[1;37m:[m [32m"CI Unificado — Waesy Quality Gates"[m
+  [1;37m}[m[1;37m,[m
+  [1;37m{[m
+    [1;34m"conclusion"[m[1;37m:[m [32m"success"[m[1;37m,[m
+    [1;34m"createdAt"[m[1;37m:[m [32m"2026-10-07T03:59:57Z"[m[1;37m,[m
+    [1;34m"databaseId"[m[1;37m:[m 37569335704[1;37m,[m
+    [1;34m"event"[m[1;37m:[m [32m"pull_request"[m[1;37m,[m
+    [1;34m"headBranch"[m[1;37m:[m [32m"execute/w3-real-supabase-types"[m[1;37m,[m
+    [1;34m"headSha"[m[1;37m:[m [32m"055d6fd56a6b027838926a5f28840500f049b938"[m[1;37m,[m
+    [1;34m"status"[m[1;37m:[m [32m"completed"[m[1;37m,[m
+    [1;34m"url"[m[1;37m:[m [32m"https://github.com/EduardoChapeco/waesy/actions/runs/37569335704"[m[1;37m,[m
+    [1;34m"workflowName"[m[1;37m:[m [32m"CI Unificado — Waesy Quality Gates"[m
+  [1;37m}[m[1;37m,[m
+  [1;37m{[m
+    [1;34m"conclusion"[m[1;37m:[m [32m"success"[m[1;37m,[m
+    [1;34m"createdAt"[m[1;37m:[m [32m"2026-10-07T03:44:00Z"[m[1;37m,[m
+    [1;34m"databaseId"[m[1;37m:[m 37568117778[1;37m,[m
+    [1;34m"event"[m[1;37m:[m [32m"workflow_dispatch"[m[1;37m,[m
+    [1;34m"headBranch"[m[1;37m:[m [32m"execute/w3-real-supabase-types"[m[1;37m,[m
+    [1;34m"headSha"[m[1;37m:[m [32m"ef5c6796e86b2c2a1ea6122a4165201575966eb9"[m[1;37m,[m
+    [1;34m"status"[m[1;37m:[m [32m"completed"[m[1;37m,[m
+    [1;34m"url"[m[1;37m:[m [32m"https://github.com/EduardoChapeco/waesy/actions/runs/37568117778"[m[1;37m,[m
+    [1;34m"workflowName"[m[1;37m:[m [32m"CI Unificado — Waesy Quality Gates"[m
+  [1;37m}[m
+[1;37m][m

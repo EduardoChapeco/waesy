@@ -73,9 +73,46 @@ export interface NormalizedBooking {
   createdAt?: string;
 }
 
+export const INFOTRAVEL_CONTRACT_VERSION = "infotravel-v1" as const;
+
+export interface InfotravelV1BookingDTO {
+  contract_version: typeof INFOTRAVEL_CONTRACT_VERSION;
+  booking_id: string;
+  locator: string;
+  destination?: string | null;
+  client_name: string;
+  client_email?: string | null;
+  client_phone?: string | null;
+  total_sale: number;
+  status: string;
+  travel_start?: string | null;
+  travel_end?: string | null;
+  passengers: Array<Record<string, unknown>>;
+  flights: Array<Record<string, unknown>>;
+  hotels: Array<Record<string, unknown>>;
+  transfers: Array<Record<string, unknown>>;
+  tours: Array<Record<string, unknown>>;
+}
+
+export type InfotravelV1SearchEnvelope = {
+  contract_version: typeof INFOTRAVEL_CONTRACT_VERSION;
+  action: "search_hotels" | "search_flights" | "search_transfers" | "search_activities";
+  offers: Array<Record<string, unknown>>;
+};
+
+function stableExternalId(prefix: string, ...parts: Array<string | number | undefined>): string {
+  const source = parts.filter((part) => part !== undefined && part !== "").join("|");
+  let hash = 2166136261;
+  for (let index = 0; index < source.length; index += 1) {
+    hash ^= source.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+  return `${prefix}_${(hash >>> 0).toString(36)}`;
+}
+
 export function mapApiHotelToCanonical(raw: ApiHotelAvail): Hotel {
   return {
-    id: raw.id || raw.hotelId || `hotel_${Math.random().toString(36).slice(2, 9)}`,
+    id: raw.id || raw.hotelId || (raw as ApiHotelAvail & { external_id?: string }).external_id || stableExternalId("hotel", raw.name || raw.hotelName, raw.city || raw.cityName, raw.checkin || raw.checkIn, raw.checkout || raw.checkOut),
     name: raw.name || raw.hotelName || "Hotel",
     city: raw.city || raw.cityName || "",
     checkin: raw.checkin || raw.checkIn || "",
@@ -92,7 +129,7 @@ export function mapApiHotelToCanonical(raw: ApiHotelAvail): Hotel {
 
 export function mapApiFlightToCanonical(raw: ApiFlightAvail): Flight {
   return {
-    id: raw.id || raw.flightId || `fl_${Math.random().toString(36).slice(2, 9)}`,
+    id: raw.id || raw.flightId || (raw as ApiFlightAvail & { external_id?: string }).external_id || stableExternalId("fl", raw.origin, raw.destination, raw.date || raw.flightDate, raw.flightNumber || raw.flight_number),
     origin: raw.origin || "",
     destination: raw.destination || "",
     date: raw.date || raw.flightDate || "",
@@ -108,7 +145,7 @@ export function mapApiFlightToCanonical(raw: ApiFlightAvail): Flight {
 
 export function mapApiBookingToNormalized(raw: ApiBooking): NormalizedBooking {
   return {
-    id: raw.id || raw.bookingId || `bk_${Math.random().toString(36).slice(2, 9)}`,
+    id: raw.id || raw.bookingId || stableExternalId("bk", raw.code, raw.client?.email, raw.client?.phone, raw.createdAt),
     bookingCode: raw.code || raw.bookingId || "BOOKING",
     clientName: raw.client?.name || "Cliente",
     clientEmail: raw.client?.email,
@@ -118,5 +155,23 @@ export function mapApiBookingToNormalized(raw: ApiBooking): NormalizedBooking {
     totalAmountCents: Math.round((raw.totalAmount || 0) * 100),
     status: raw.status || "confirmed",
     createdAt: raw.createdAt || new Date().toISOString(),
+  };
+}
+
+export function mapInfotravelV1BookingToNormalized(raw: InfotravelV1BookingDTO): NormalizedBooking {
+  if (raw.contract_version !== INFOTRAVEL_CONTRACT_VERSION || !raw.booking_id) {
+    throw new Error("Payload InfoTravel incompatível com infotravel-v1.");
+  }
+  return {
+    id: raw.booking_id,
+    bookingCode: raw.locator || raw.booking_id,
+    clientName: raw.client_name || "Cliente",
+    clientEmail: raw.client_email || undefined,
+    clientPhone: raw.client_phone || undefined,
+    hotels: raw.hotels.map((item) => mapApiHotelToCanonical(item as ApiHotelAvail)),
+    flights: raw.flights.map((item) => mapApiFlightToCanonical(item as ApiFlightAvail)),
+    totalAmountCents: Math.round(Number(raw.total_sale || 0) * 100),
+    status: raw.status || "confirmed",
+    createdAt: raw.travel_start || undefined,
   };
 }

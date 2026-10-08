@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { ArrowLeft, Plane, Building2, Users, FileText, Ticket, Calendar, Phone, Mail, Copy, Check, ExternalLink, Plus, Printer, Download, Luggage, Shield, Clock, Car, FileCheck2, Loader2, Compass, AlertTriangle, CheckCircle2, Trash2, Edit2, CreditCard, Receipt, ShieldAlert, DollarSign, Building, Barcode } from "lucide-react";
+import { ArrowLeft, Plane, Building2, Users, FileText, Ticket, Calendar, Phone, Mail, Copy, Check, ExternalLink, Plus, Printer, Download, Luggage, Shield, Clock, Car, RefreshCw, FileCheck2, Loader2, Compass, AlertTriangle, CheckCircle2, Trash2, Edit2, CreditCard, Receipt, ShieldAlert, DollarSign, Building, Barcode } from "lucide-react";
 import { WhatsappLogo } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { NativeBackButton } from "@/components/ui/native-back-button";
@@ -12,6 +12,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFo
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { getTripAggregate, saveConfirmationItem, saveTripPassenger, deleteTripPassenger, saveTripFinancialDetails, type TripAggregateDTO, type TripConfirmationItemDTO, type TripPassengerDTO } from "@/services/travel-lifecycle.functions";
+import { importInfotravelBookingToTrip, syncInfotravelTrip } from "@/services/infotravel";
 import { processBoletoOcr } from "@/services/travel-operator-ocr.functions";
 import { VoucherBoardingCard } from "@/components/tourism/voucher-boarding-card";
 import { OperatorVoucherImportSheet } from "@/components/tourism/vouchers/operator-voucher-import-sheet";
@@ -85,6 +86,7 @@ function WorkspaceTripDetailPage() {
   const [isCopied, setIsCopied] = useState(false);
   const [isExportingPdf, setIsExportingPdf] = useState(false);
   const [isImportVoucherOpen, setIsImportVoucherOpen] = useState(false);
+  const [isInfotravelBusy, setIsInfotravelBusy] = useState(false);
 
   // ── Estados Financeiros & Boletos 3-em-1 ──
   const tripFinancialDetails = (aggregate?.trip?.financial_details || {}) as any;
@@ -239,6 +241,38 @@ function WorkspaceTripDetailPage() {
     },
   });
 
+  const handleImportInfotravel = async () => {
+    if (!aggregate?.trip) return;
+    const bookingId = typeof window !== "undefined" ? window.prompt("Informe o código/localizador da reserva InfoTravel:")?.trim() : "";
+    if (!bookingId) return;
+    setIsInfotravelBusy(true);
+    try {
+      await importInfotravelBookingToTrip({ data: { agencyId: aggregate.trip.store_id, bookingId, tripId: aggregate.trip.id } });
+      const updated = await getTripAggregate({ data: { tripId: aggregate.trip.id } });
+      setAggregate(updated);
+      toast.success("Reserva InfoTravel importada e aplicada à viagem.");
+    } catch (error: any) {
+      toast.error(error?.message || "Não foi possível importar a reserva InfoTravel.");
+    } finally {
+      setIsInfotravelBusy(false);
+    }
+  };
+
+  const handleSyncInfotravel = async () => {
+    if (!aggregate?.trip) return;
+    setIsInfotravelBusy(true);
+    try {
+      await syncInfotravelTrip({ data: { agencyId: aggregate.trip.store_id, tripId: aggregate.trip.id } });
+      const updated = await getTripAggregate({ data: { tripId: aggregate.trip.id } });
+      setAggregate(updated);
+      toast.success("Sincronização InfoTravel concluída.");
+    } catch (error: any) {
+      toast.error(error?.message || "Não foi possível sincronizar a viagem no InfoTravel.");
+    } finally {
+      setIsInfotravelBusy(false);
+    }
+  };
+
   if (aggregate === null || aggregate === undefined || aggregate.trip === null || aggregate.trip === undefined) {
     return (
       <div className="py-20 text-center space-y-4">
@@ -364,6 +398,26 @@ function WorkspaceTripDetailPage() {
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleImportInfotravel}
+              disabled={isInfotravelBusy}
+              className="rounded-lg text-xs font-bold gap-2 h-11 px-4 sm:px-3 border-sky-500/30 text-sky-700 hover:bg-sky-500/10 cursor-pointer"
+            >
+              {isInfotravelBusy ? <Loader2 className="size-4 sm:size-3.5 animate-spin" /> : <Plane className="size-4 sm:size-3.5" />}
+              <span>Importar InfoTravel</span>
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleSyncInfotravel}
+              disabled={isInfotravelBusy}
+              className="rounded-lg text-xs font-bold gap-2 h-11 px-4 sm:px-3 border-sky-500/30 text-sky-700 hover:bg-sky-500/10 cursor-pointer"
+            >
+              <RefreshCw className={`size-4 sm:size-3.5 ${isInfotravelBusy ? "animate-spin" : ""}`} />
+              <span>Sincronizar GDS</span>
+            </Button>
             <Button
               type="button"
               variant="outline"

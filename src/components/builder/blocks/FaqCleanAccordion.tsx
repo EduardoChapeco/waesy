@@ -40,28 +40,7 @@ export const FaqCleanAccordion: React.FC<FaqCleanAccordionProps> = ({
     color: styling?.textColor || undefined,
   };
 
-  const items = data.items && data.items.length > 0 ? data.items : [
-    {
-      id: "faq-1",
-      question: "Como funciona a contratação e entrega dos serviços?",
-      answer: "Todo o processo ocorre de forma digital e transparente. Após o primeiro contato ou contratação do plano, alinhamos os detalhes específicos e você acompanha o andamento em tempo real diretamente pelo portal.",
-    },
-    {
-      id: "faq-2",
-      question: "Quais são as formas de pagamento aceitas?",
-      answer: "Aceitamos Pix instantâneo, boleto bancário e cartões de crédito em até 12x. Para contratos corporativos, disponibilizamos faturamento mediante análise cadastral.",
-    },
-    {
-      id: "faq-3",
-      question: "Existe suporte ou garantia pós-entrega?",
-      answer: "Sim, oferecemos suporte técnico contínuo e canal de atendimento prioritário via WhatsApp para esclarecer qualquer dúvida operacional.",
-    },
-    {
-      id: "faq-4",
-      question: "Os documentos e contratos têm validade jurídica?",
-      answer: "Com certeza. Nossos contratos são emitidos em conformidade com o Código Civil brasileiro e assinados com certificado digital que gera manifesto auditável e hash criptográfico SHA-256.",
-    },
-  ];
+  const items = data.items ?? [];
 
   const toggleItem = (index: number) => {
     setOpenIndex(openIndex === index ? null : index);
@@ -91,7 +70,11 @@ export const FaqCleanAccordion: React.FC<FaqCleanAccordionProps> = ({
         </div>
 
         {/* Acordeão */}
-        <div className="space-y-3">
+        {items.length === 0 ? (
+          <p role="note" className="mx-auto max-w-xl rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
+            Nenhuma pergunta foi configurada. Adicione respostas verificadas antes de publicar esta seção.
+          </p>
+        ) : <div className="space-y-3">
           {items.map((item, index) => {
             const isOpen = openIndex === index;
             return (
@@ -126,7 +109,7 @@ export const FaqCleanAccordion: React.FC<FaqCleanAccordionProps> = ({
               </div>
             );
           })}
-        </div>
+        </div>}
       </div>
     </section>
   );

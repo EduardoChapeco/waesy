@@ -18,6 +18,10 @@ import { WorkspaceCanonicalToolbar } from "@/components/workspace/workspace-cano
 import { WorkspaceDashboardSheet } from "@/components/workspace/workspace-dashboard-sheet";
 import { CrudActionsMenu } from "@/components/ui/crud-actions-menu";
 
+type ProposalListStatus = "todos" | "draft" | "sent" | "approved" | "rejected" | "expired";
+const proposalListStatuses: readonly ProposalListStatus[] = ["todos", "draft", "sent", "approved", "rejected", "expired"];
+const isProposalListStatus = (value: string): value is ProposalListStatus => proposalListStatuses.includes(value as ProposalListStatus);
+
 export const Route = createFileRoute("/workspace/turismo/propostas/")({
  head: () => ({ meta: [{ title: "Propostas de Viagem | Workspace Waesy" }] }),
  validateSearch: (search: Record<string, unknown>): {
@@ -57,7 +61,7 @@ function WorkspaceProposalsIndexPage() {
  const queryClient = useQueryClient();
 
  const [search, setSearch] = useState("");
- const [selectedStatus, setSelectedStatus] = useState("todos");
+ const [selectedStatus, setSelectedStatus] = useState<ProposalListStatus>("todos");
  const [isDashboardOpen, setIsDashboardOpen] = useState(false);
  const [isNewModalOpen, setIsNewModalOpen] = useState(Boolean(searchParams?.new || searchParams?.leadId));
 
@@ -102,10 +106,18 @@ function WorkspaceProposalsIndexPage() {
    onError: (err: any) => toast.error(err?.message || "Erro ao converter proposta em viagem."),
  });
 
- const handleCopyLink = (publicToken: string) => {
- const url = `${window.location.origin}/proposta/${publicToken}`;
- navigator.clipboard.writeText(url);
- toast.success("Link da lâmina copiado para a área de transferência!");
+ const handleCopyLink = async (proposal: TravelProposalDTO) => {
+ if (proposal.status !== "sent") {
+   toast.info("Publique a proposta no Studio antes de compartilhar o link para aceite.");
+   return;
+ }
+ const url = `${window.location.origin}/proposta/${proposal.public_token}`;
+ try {
+   await navigator.clipboard.writeText(url);
+   toast.success("Link público da proposta copiado para a área de transferência!");
+ } catch {
+   toast.error("Não foi possível copiar o link. Verifique a permissão da área de transferência.");
+ }
  };
 
  const proposalsList = proposals || [];
@@ -133,11 +145,13 @@ function WorkspaceProposalsIndexPage() {
           tabs={[
             { id: "todos", label: "Todas", icon: FileText, count: totalCount },
             { id: "draft", label: "Rascunhos", icon: Clock, count: draftCount },
-            { id: "sent", label: "Enviadas", icon: Send, count: sentCount },
+            { id: "sent", label: "Publicadas", icon: Send, count: sentCount },
             { id: "approved", label: "Aprovadas", icon: CheckCircle2, count: approvedCount },
           ]}
           activeTab={selectedStatus}
-          onTabChange={(id) => setSelectedStatus(id)}
+          onTabChange={(id) => {
+            if (isProposalListStatus(id)) setSelectedStatus(id);
+          }}
           searchQuery={search}
           onSearchChange={setSearch}
           searchPlaceholder="Buscar por título, cliente ou destino..."
@@ -209,7 +223,7 @@ function WorkspaceProposalsIndexPage() {
  {p.status === "approved"
  ? "Aprovada"
  : p.status === "sent"
- ? "Enviada"
+ ? "Publicada"
  : "Rascunho"}
  </Badge>
                     <CrudActionsMenu
@@ -227,7 +241,7 @@ function WorkspaceProposalsIndexPage() {
                           id: "copy-link",
                           label: "Copiar Link Público",
                           icon: Copy,
-                          onClick: () => handleCopyLink(p.public_token),
+                          onClick: () => handleCopyLink(p),
                         },
                         ...(p.status !== "approved"
                           ? [

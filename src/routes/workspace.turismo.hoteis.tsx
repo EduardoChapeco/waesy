@@ -22,6 +22,8 @@ import { NicheOperationalGuard } from "@/components/workspace/niche-operational-
 import { CANONICAL_DESTINATIONS, type CanonicalDestination } from "@/lib/destinations-catalog";
 import { FAMOUS_HOTEL_PRESETS, RESORT_AMENITY_OPTIONS, type HotelPreset } from "@/lib/hotel-presets";
 import { cn } from "@/lib/utils";
+import { HotelAutocompleteInput } from "@/components/tourism/hotels/hotel-autocomplete-input";
+import type { GlobalHotelDTO } from "@/services/travel-catalog.functions";
 
 export const Route = createFileRoute("/workspace/turismo/hoteis")({
   head: () => ({ meta: [{ title: "Hotéis | Workspace Waesy" }] }),
@@ -58,6 +60,7 @@ function WorkspaceHotelsPage() {
  const [previewHotel, setPreviewHotel] = useState<HotelBankDTO | null>(null);
  const [isMetricsOpen, setIsMetricsOpen] = useState(false);
  const [sheetTab, setSheetTab] = useState<string>("dados");
+ const [selectedGlobalHotel, setSelectedGlobalHotel] = useState<GlobalHotelDTO | null>(null);
 
  // Form State Modular
  const [formData, setFormData] = useState<{
@@ -196,6 +199,7 @@ function WorkspaceHotelsPage() {
 
  const resetForm = () => {
  setEditingHotel(null);
+ setSelectedGlobalHotel(null);
  setSheetTab("dados");
  setFormData({
  name: "",
@@ -267,6 +271,7 @@ function WorkspaceHotelsPage() {
 
   const handleOpenEdit = (hotel: HotelBankDTO) => {
  setEditingHotel(hotel);
+ setSelectedGlobalHotel(null);
  setSheetTab("dados");
  setFormData({
  name: hotel.name,
@@ -318,6 +323,7 @@ function WorkspaceHotelsPage() {
  };
 
  const handleApplyPreset = (preset: HotelPreset) => {
+ setSelectedGlobalHotel(null);
  const matchedDest = destinations.find(
  (d: DestinationDTO) =>
  d.name.toLowerCase().includes(preset.city.toLowerCase()) ||
@@ -394,6 +400,21 @@ function WorkspaceHotelsPage() {
  ],
  }));
  toast.success(`Destino "${dest.name}" selecionado! Cidade, estado e gateway IATA preenchidos.`);
+ };
+
+ const handleSelectGlobalHotel = (hotel: GlobalHotelDTO | null) => {
+   setSelectedGlobalHotel(hotel);
+   if (!hotel) return;
+   setFormData((prev) => ({
+     ...prev,
+     name: hotel.name,
+     city: hotel.city,
+     state: hotel.state || prev.state,
+     country: hotel.country,
+     address: hotel.address || prev.address,
+     stars: hotel.stars || prev.stars,
+   }));
+   toast.success(`Hotel canônico "${hotel.name}" selecionado.`);
  };
 
  const toggleAmenityBadge = (amenity: string) => {
@@ -495,6 +516,7 @@ function WorkspaceHotelsPage() {
 
  const payload = {
  ...formData,
+ global_hotel_id: selectedGlobalHotel?.id || editingHotel?.global_hotel_id || null,
  destination_id: formData.destination_id || undefined,
  };
 
@@ -1352,6 +1374,15 @@ function WorkspaceHotelsPage() {
  <div className="p-5 flex-1 space-y-4 text-xs">
  {/* ── ABA 1: DADOS GERAIS & LOCALIZAÇÃO ── */}
  <TabsContent value="dados" className="space-y-4 m-0">
+ <div className="space-y-2 rounded-lg border border-primary/20 bg-primary/5 p-3">
+ <Label className="font-semibold text-primary">Vincular ao Banco Central de Hotéis</Label>
+ <HotelAutocompleteInput
+ value={selectedGlobalHotel?.id || editingHotel?.global_hotel_id || null}
+ onChange={handleSelectGlobalHotel}
+ disabled={createMut.isPending || updateMut.isPending}
+ />
+ <p className="text-[11px] text-muted-foreground">Selecione um registro verificado para evitar duplicatas. A criação e fusão de registros canônicos permanece sob governança Master.</p>
+ </div>
  <div className="space-y-2">
  <Label className="font-semibold text-foreground">Nome do Hotel / Resort *</Label>
  <Input

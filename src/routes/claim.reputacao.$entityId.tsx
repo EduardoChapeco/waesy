@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { useState, useMemo } from 'react';
-import { ShieldCheck, BarChart3, TrendingUp, Star, Award, Globe, Users, MessageSquare, CheckCircle2, AlertTriangle, ArrowUpRight, Share2 } from 'lucide-react';
+import { BarChart3, TrendingUp, Star, Award, CheckCircle2, AlertTriangle, Share2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -30,31 +30,44 @@ function ClaimReputacaoPage() {
 
   const intel = useMemo(() => {
     const raw = entity?.intelligence || {};
-    const hasData = Object.keys(raw).length > 0;
+    const hasVerifiedEvidence = raw.provenance_status === 'observed_verified';
+    const verifiedNumber = (value: unknown) => hasVerifiedEvidence && typeof value === 'number' ? value : null;
     return {
-      entity_name: entity?.name || 'Perfil Comercial',
-      visibility_score: typeof raw.visibility_score === 'number' ? raw.visibility_score : 0,
-      reputation_score: typeof raw.reputation_score === 'number' ? raw.reputation_score : 0,
-      market_share_percent: typeof raw.market_share_percent === 'number' ? raw.market_share_percent : 0,
-      rank_state: raw.rank_state || null,
-      verified_claims: typeof raw.verified_claims === 'number' ? raw.verified_claims : 0,
-      solved_rate: typeof raw.solved_rate === 'number' ? raw.solved_rate : 0,
-      avg_reply_hours: typeof raw.avg_reply_hours === 'number' ? raw.avg_reply_hours : 0,
-      competitors: Array.isArray(raw.competitors) ? raw.competitors : [],
-      sentiment: raw.sentiment || {
-        positive: 0,
-        neutral: 0,
-        negative: 0,
+      entity_name: entity?.name || 'Nome não informado',
+      visibility_score: verifiedNumber(raw.visibility_score),
+      reputation_score: verifiedNumber(raw.reputation_score),
+      market_share_percent: verifiedNumber(raw.market_share_percent),
+      rank_state: hasVerifiedEvidence ? raw.rank_state ?? null : null,
+      verified_claims: verifiedNumber(raw.verified_claims),
+      solved_rate: verifiedNumber(raw.solved_rate),
+      avg_reply_hours: verifiedNumber(raw.avg_reply_hours),
+      competitors: hasVerifiedEvidence && Array.isArray(raw.competitors) ? raw.competitors : [],
+      sentiment: {
+        positive: verifiedNumber(raw.sentiment?.positive),
+        neutral: verifiedNumber(raw.sentiment?.neutral),
+        negative: verifiedNumber(raw.sentiment?.negative),
       },
-      hasData,
+      hasVerifiedEvidence,
     };
   }, [entity]);
 
   const initials = useMemo(() => {
-    const parts = (intel.entity_name || 'PC').trim().split(/\s+/);
+    const parts = intel.entity_name.trim().split(/\s+/);
     if (parts.length >= 2) return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
-    return (intel.entity_name || 'PC').slice(0, 2).toUpperCase();
+    return intel.entity_name.slice(0, 2).toUpperCase();
   }, [intel.entity_name]);
+
+  if (!entity) {
+    return (
+      <div className="min-h-[100dvh] bg-background text-foreground grid place-items-center px-4">
+        <div className="max-w-lg rounded-lg border border-border bg-card p-8 text-center space-y-3">
+          <h1 className="text-xl font-bold">Perfil não encontrado</h1>
+          <p className="text-sm text-muted-foreground">Não há um cadastro correspondente a este identificador. Nenhum perfil ou indicador foi criado automaticamente.</p>
+          <Button asChild variant="outline"><Link to="/">Voltar ao início</Link></Button>
+        </div>
+      </div>
+    );
+  }
 
  return (
  <div className="min-h-[100dvh] bg-background text-foreground py-10 px-4 sm:px-6">
@@ -68,12 +81,12 @@ function ClaimReputacaoPage() {
  <div>
  <div className="flex items-center gap-2">
  <h1 className="text-2xl font-bold tracking-tight">{intel.entity_name}</h1>
- <Badge variant="outline" className="gap-1 border-emerald-500/30 bg-emerald-500/10 text-emerald-500 text-xs py-1">
- <ShieldCheck className="size-3.5" /> Perfil Verificado
+ <Badge variant="outline" className="gap-1 text-muted-foreground text-xs py-1">
+ <AlertTriangle className="size-3.5" /> Indicadores não verificados
  </Badge>
  </div>
  <p className="text-xs text-muted-foreground mt-1">
- Índice de Confiança e Inteligência Competitiva auditado em tempo real pelo Waesy.
+ Indicadores só serão exibidos quando houver evidência e método verificáveis.
  </p>
  </div>
  </div>
@@ -102,10 +115,9 @@ function ClaimReputacaoPage() {
  <Award className="size-4 text-amber-500" /> Score de Reputação
  </span>
  <div className="flex items-baseline gap-2 mt-2">
- <span className="text-3xl font-black text-foreground">{intel.reputation_score}</span>
- <span className="text-xs text-emerald-500 font-bold">Excelente (RA 1000)</span>
+ <span className="text-3xl font-black text-foreground">{intel.reputation_score ?? "Sem dados"}</span>
  </div>
- <Progress value={intel.reputation_score} className="h-1.5 mt-2 bg-muted/40" />
+ {intel.reputation_score !== null && <Progress value={intel.reputation_score} className="h-1.5 mt-2 bg-muted/40" />}
  </div>
 
  <div className="p-5 rounded-lg border border-border bg-card flex flex-col gap-1">
@@ -113,10 +125,9 @@ function ClaimReputacaoPage() {
  <TrendingUp className="size-4 text-emerald-500" /> Visibilidade de Marca
  </span>
  <div className="flex items-baseline gap-2 mt-2">
- <span className="text-3xl font-black text-foreground">{intel.visibility_score}%</span>
- <span className="text-xs text-muted-foreground">Top 3 Regional</span>
+ <span className="text-3xl font-black text-foreground">{intel.visibility_score === null ? "Sem dados" : `${intel.visibility_score}%`}</span>
  </div>
- <Progress value={intel.visibility_score} className="h-1.5 mt-2 bg-muted/40" />
+ {intel.visibility_score !== null && <Progress value={intel.visibility_score} className="h-1.5 mt-2 bg-muted/40" />}
  </div>
 
  <div className="p-5 rounded-lg border border-border bg-card flex flex-col gap-1">
@@ -124,10 +135,10 @@ function ClaimReputacaoPage() {
  <CheckCircle2 className="size-4 text-blue-500" /> Taxa de Resolução
  </span>
  <div className="flex items-baseline gap-2 mt-2">
- <span className="text-3xl font-black text-foreground">{intel.solved_rate}%</span>
- <span className="text-xs text-muted-foreground">Tempo médio: {intel.avg_reply_hours}h</span>
+ <span className="text-3xl font-black text-foreground">{intel.solved_rate === null ? "Sem dados" : `${intel.solved_rate}%`}</span>
+ <span className="text-xs text-muted-foreground">Tempo médio: {intel.avg_reply_hours === null ? "não apurado" : `${intel.avg_reply_hours}h`}</span>
  </div>
- <Progress value={intel.solved_rate} className="h-1.5 mt-2 bg-muted/40" />
+ {intel.solved_rate !== null && <Progress value={intel.solved_rate} className="h-1.5 mt-2 bg-muted/40" />}
  </div>
 
  <div className="p-5 rounded-lg border border-border bg-card flex flex-col gap-1">
@@ -135,10 +146,9 @@ function ClaimReputacaoPage() {
  <BarChart3 className="size-4 text-purple-500" /> Market Share Regional
  </span>
  <div className="flex items-baseline gap-2 mt-2">
- <span className="text-3xl font-black text-foreground">{intel.market_share_percent}%</span>
- <span className="text-xs text-emerald-500 font-bold">#1 no Segmento</span>
+ <span className="text-3xl font-black text-foreground">{intel.market_share_percent === null ? "Sem dados" : `${intel.market_share_percent}%`}</span>
  </div>
- <Progress value={intel.market_share_percent * 2} className="h-1.5 mt-2 bg-muted/40" />
+ {intel.market_share_percent !== null && <Progress value={Math.min(100, intel.market_share_percent)} className="h-1.5 mt-2 bg-muted/40" />}
  </div>
  </div>
 
@@ -155,7 +165,7 @@ function ClaimReputacaoPage() {
  <h2 className="text-base font-bold flex items-center gap-2">
  <Star className="size-4 text-amber-500" /> Distribuição de Sentimento do Consumidor
  </h2>
- <div className="space-y-2">
+ {intel.sentiment.positive !== null && intel.sentiment.neutral !== null && intel.sentiment.negative !== null ? <div className="space-y-2">
  <div className="flex justify-between text-xs font-semibold">
  <span className="text-emerald-500">Positivo ({intel.sentiment.positive}%)</span>
  <span className="text-muted-foreground">Neutro ({intel.sentiment.neutral}%)</span>
@@ -166,7 +176,7 @@ function ClaimReputacaoPage() {
  <div style={{ width: `${intel.sentiment.neutral}%` }} className="bg-amber-400" />
  <div style={{ width: `${intel.sentiment.negative}%` }} className="bg-rose-500" />
  </div>
- </div>
+ </div> : <p className="text-sm text-muted-foreground">Distribuição de sentimento indisponível: não há uma amostra de avaliações com fonte e método registrados.</p>}
  </div>
  </TabsContent>
 
@@ -187,7 +197,7 @@ function ClaimReputacaoPage() {
                       </div>
                     ))
                   ) : (
-                    <p className="text-xs text-muted-foreground py-6 text-center">Nenhum concorrente cadastrado no radar para este segmento.</p>
+                    <p className="text-xs text-muted-foreground py-6 text-center">Dados de concorrentes verificados indisponíveis; ausência de cadastro não significa ausência de concorrentes.</p>
                   )}
                 </div>
               </div>
@@ -197,12 +207,14 @@ function ClaimReputacaoPage() {
               <div className="p-6 rounded-lg border border-border bg-card text-center py-10">
                 <CheckCircle2 className="size-10 text-emerald-500 mx-auto mb-2" />
                 <h3 className="font-bold text-foreground">
-                  {intel.verified_claims > 0 ? `${intel.verified_claims} Atendimentos Registrados` : "Nenhum Atendimento Registrado"}
+                  {intel.verified_claims === null ? "Dados de atendimento indisponíveis" : `${intel.verified_claims} atendimentos registrados`}
                 </h3>
                 <p className="text-xs text-muted-foreground mt-1 max-w-md mx-auto">
-                  {intel.verified_claims > 0
-                    ? `Taxa de resolução apurada de ${intel.solved_rate}% com tempo médio de resposta de ${intel.avg_reply_hours}h.`
-                    : "Este perfil não possui registros ou disputas em aberto no canal público de atendimento."}
+                  {intel.verified_claims === null
+                    ? "Não há contagem verificável de atendimentos, respostas ou resoluções para este perfil."
+                    : intel.verified_claims > 0
+                    ? `Foram encontrados ${intel.verified_claims} registros. Taxa de resolução: ${intel.solved_rate === null ? "não apurada" : `${intel.solved_rate}%`}; tempo médio: ${intel.avg_reply_hours === null ? "não apurado" : `${intel.avg_reply_hours}h`}.`
+                    : "Nenhum atendimento foi registrado na fonte consultada."}
                 </p>
               </div>
             </TabsContent>

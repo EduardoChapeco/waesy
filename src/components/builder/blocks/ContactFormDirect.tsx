@@ -24,7 +24,8 @@ export const ContactFormDirect: React.FC<ContactFormDirectProps> = ({
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [isSending, setIsSending] = useState(false);
+  const whatsappDigits = (data.whatsappNumber ?? "").replace(/\D/g, "");
+  const hasValidWhatsApp = /^\d{10,15}$/.test(whatsappDigits);
 
   const paddingYClasses = {
     none: "py-0",
@@ -60,22 +61,22 @@ export const ContactFormDirect: React.FC<ContactFormDirectProps> = ({
       return;
     }
 
-    setIsSending(true);
-
-    // Se houver número de WhatsApp configurado, redirecionar com mensagem estruturada
-    if (data.whatsappNumber) {
-      const cleanPhone = data.whatsappNumber.replace(/\D/g, "");
-      const text = encodeURIComponent(
-        `Olá! Mensagem enviada pelo site:\n*Nome:* ${name}\n*Contato:* ${phone || email}\n*Mensagem:* ${message || "Tenho interesse nos serviços."}`
-      );
-      window.open(`https://wa.me/${cleanPhone}?text=${text}`, "_blank");
+    if (!hasValidWhatsApp) {
+      toast.error("Este formulário ainda não tem um WhatsApp válido configurado.");
+      return;
     }
 
-    setTimeout(() => {
-      setIsSending(false);
-      setIsSubmitted(true);
-      toast.success(data.successMessage || "Mensagem enviada com sucesso!");
-    }, 600);
+    const text = encodeURIComponent(
+      `Olá! Mensagem iniciada pelo site:\n*Nome:* ${name}\n*Contato:* ${phone || email}\n*Mensagem:* ${message || "Tenho interesse nos serviços."}`
+    );
+    const openedWindow = window.open(`https://wa.me/${whatsappDigits}?text=${text}`, "_blank");
+    if (!openedWindow) {
+      toast.error("O navegador bloqueou a abertura do WhatsApp. Permita pop-ups e tente novamente.");
+      return;
+    }
+    openedWindow.opener = null;
+    setIsSubmitted(true);
+    toast.success("WhatsApp aberto. Revise a mensagem e toque em Enviar para concluir o contato.");
   };
 
   return (
@@ -103,9 +104,9 @@ export const ContactFormDirect: React.FC<ContactFormDirectProps> = ({
               <div className="size-16 rounded-full bg-emerald-500/10 text-emerald-600 flex items-center justify-center mb-4">
                 <CheckCircle2 className="size-8" />
               </div>
-              <h3 className="text-xl font-bold text-foreground mb-2">Mensagem Recebida!</h3>
+              <h3 className="text-xl font-bold text-foreground mb-2">Continue no WhatsApp</h3>
               <p className="text-sm text-muted-foreground max-w-md mb-6">
-                {data.successMessage || "Agradecemos o contato. Responderemos o mais breve possível."}
+                O WhatsApp foi aberto com a mensagem preenchida. Revise o conteúdo e toque em Enviar para concluir o contato.
               </p>
               <Button
                 variant="outline"
@@ -123,10 +124,11 @@ export const ContactFormDirect: React.FC<ContactFormDirectProps> = ({
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4 max-w-xl mx-auto">
               <div>
-                <label className="block text-xs font-semibold text-foreground uppercase tracking-wider mb-2">
+                <label htmlFor={`${id}-name`} className="block text-xs font-semibold text-foreground uppercase tracking-wider mb-2">
                   Nome Completo *
                 </label>
                 <Input
+                  id={`${id}-name`}
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Seu nome ou razão social"
@@ -138,10 +140,11 @@ export const ContactFormDirect: React.FC<ContactFormDirectProps> = ({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {data.showPhoneField !== false && (
                   <div>
-                    <label className="block text-xs font-semibold text-foreground uppercase tracking-wider mb-2">
+                    <label htmlFor={`${id}-phone`} className="block text-xs font-semibold text-foreground uppercase tracking-wider mb-2">
                       Telefone / WhatsApp *
                     </label>
                     <Input
+                      id={`${id}-phone`}
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
                       placeholder="(00) 00000-0000"
@@ -150,10 +153,11 @@ export const ContactFormDirect: React.FC<ContactFormDirectProps> = ({
                   </div>
                 )}
                 <div>
-                  <label className="block text-xs font-semibold text-foreground uppercase tracking-wider mb-2">
+                  <label htmlFor={`${id}-email`} className="block text-xs font-semibold text-foreground uppercase tracking-wider mb-2">
                     E-mail
                   </label>
                   <Input
+                    id={`${id}-email`}
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
@@ -165,10 +169,11 @@ export const ContactFormDirect: React.FC<ContactFormDirectProps> = ({
 
               {data.showMessageField !== false && (
                 <div>
-                  <label className="block text-xs font-semibold text-foreground uppercase tracking-wider mb-2">
+                  <label htmlFor={`${id}-message`} className="block text-xs font-semibold text-foreground uppercase tracking-wider mb-2">
                     Mensagem ou Dúvida
                   </label>
                   <Textarea
+                    id={`${id}-message`}
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
                     placeholder="Como podemos te ajudar?"
@@ -178,15 +183,18 @@ export const ContactFormDirect: React.FC<ContactFormDirectProps> = ({
                 </div>
               )}
 
+              {!hasValidWhatsApp && <p role="status" className="text-sm text-destructive">
+                Destino de WhatsApp não configurado. O responsável pelo site precisa corrigir essa configuração antes de publicar o formulário.
+              </p>}
               <Button
                 type="submit"
-                disabled={isSending}
+                disabled={!hasValidWhatsApp}
                 size="lg"
                 className="w-full h-12 text-base font-semibold rounded-lg bg-foreground text-background hover:bg-foreground/90 transition-transform active:scale-95 shadow-sm mt-2"
               >
                 <span className="flex items-center justify-center gap-2">
                   <Send className="size-4" />
-                  {isSending ? "Enviando..." : data.submitButtonText || "Enviar Mensagem"}
+                  {data.submitButtonText || "Abrir WhatsApp"}
                 </span>
               </Button>
             </form>

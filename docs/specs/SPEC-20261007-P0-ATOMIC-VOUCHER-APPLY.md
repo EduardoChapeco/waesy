@@ -1,0 +1,52 @@
+# Spec — Waesy: aceite público, conversão staff e aplicação atômica de voucher
+
+**Data:** 2026-10-07 (America/Sao_Paulo)  
+**Repositório:** `EduardoChapeco/waesy`  
+**Finding groups:** P0 do fluxo público de proposta; PERSIST-F07/F08; W2.2/W2.4, W3.1/W3.4, W4.2, W12.1/W12.2/W12.4, W14.1/W14.2/W14.4.  
+**Autorização:** implementar, testar, commit/push para branch e abrir PR. **Não fazer deploy nem aplicar migration no banco de produção.**
+
+**Decisão de produto recuperada do usuário:** manter Pix/cartão somente como preferência pendente; não gerar código Pix, cobrança nem status pago. O cliente deve saber que a emissão/confirmação externa depende da agência.
+
+## Objetivo e invariantes
+
+Fechar as fronteiras públicas→staff e aplicação de voucher sem declarar reserva, cobrança, pagamento, emissão ou persistência que ainda não ocorreu. Preservar os dados e artefatos recuperados da execução anterior, portando apenas o que não esteja já na `main` e integrando as mudanças posteriores sem substituir arquivos inteiros às cegas.
+
+## Requisitos EARS
+
+- **R1 — Aceite público:** quando o cliente submeter uma proposta, o sistema DEVE validar token público, fingerprint server-driven não nulo e igual ao conteúdo carregado, validade/estado elegíveis, manifesto, opção escolhida existente e preferência permitida; a transação DEVE registrar apenas aceite, snapshot imutável do conteúdo/opção, manifesto e preferência pendente. O BFF NÃO DEVE atualizar `quotes` por fallback nem chamar conversão.
+- **R2 — Idempotência do aceite:** quando a mesma requisição for repetida, o sistema DEVE retornar o aceite existente sem sobrescrever manifesto, opção, preferência, snapshot ou evidência. Se o payload divergir, DEVE falhar sem mutação.
+- **R3 — Conversão operacional:** quando um agente converter proposta aceita, o BFF DEVE exigir `requireStaff()`, derivar tenant/ator da identidade do servidor e rejeitar `storeId` divergente. O RPC SECURITY DEFINER DEVE revalidar membership, tenant, aceite e fingerprint persistido, usando o snapshot imutável aceito e a opção selecionada (não uma proposta editada depois). A operação DEVE ser atômica e idempotente; trip fica `pending_review`, venda `pending`, contrato `draft`, e passageiros vêm do aceite persistido.
+- **R4 — Sem falsa reserva/pagamento:** Pix/cartão e as modalidades visíveis no checkout (`financiamento_bancario`, `cartao_operadora`, `faturado_agencia`) são apenas preferências pendentes e devem permanecer selecionáveis; não gerar código Pix, cobrança, status pago, booking externo, voucher de embarque ou localizador. A conversão staff marca `pending_review`, venda `pending` e contrato `draft`; a emissão/confirmação real depende de ação posterior da agência.
+- **R5 — Legado fechado:** RPCs legados públicos de aceite/conversão NÃO DEVEM permitir que `anon`/`authenticated` contornem o BFF e a checagem staff. Não usar fallback para `quotes` ou conversor legado em caso de erro do caminho canônico.
+- **R6 — Voucher atômico e tenant-scoped:** a aplicação deve validar ator, store, pai e ingestion no mesmo tenant; atualizar viagem, passageiros, itens, voucher e estado OCR/timeline na mesma transação; rollback em qualquer falha; retry idempotente e sem duplicação.
+- **R7 — Voucher bearer conforme DEC-193:** por escolha explícita anterior do usuário, o detentor do link pode ver o voucher operacional completo; o token é capacidade bearer, não identidade. A RPC deve retornar apenas os campos consumidos pela página e da loja vinculada, sem `SELECT` anônimo na tabela e sem dados/settings de outra agência. Excluir texto livre de observações/OCR da projeção pública. Gerar tokens novos com CSPRNG; usar `private/no-store`, `no-referrer`, `noindex`, bypass no service worker e QR local para não compartilhar a URL com terceiros. Não rotacionar tokens persistidos sem inventário e plano de reemissão.
+- **R8 — UX honesta, segura e acessível:** a rota/modal pública deve coletar aceite, manifesto, opção e preferência, informar claramente que a agência revisará e que ainda não há reserva externa/pagamento/emissão, retirar QR/código Pix fictício e links para viagem/carteira inexistentes. Proposta sem fingerprint verificável ou vencida não pode aceitar; o DTO público deve usar allowlist e omitir custos líquidos, credenciais, prompts de IA, observações internas e PII dispensável. Loading, erro, sucesso, teclado, foco e alvo tátil precisam permanecer corretos.
+- **R9 — Evidência:** adicionar regressões positivas e negativas; demonstrar que ao menos os testes de contrato falham na baseline ou por remoção da proteção; executar testes focados, suíte, typecheck, lint/design e build no SHA candidato. Migrations/RLS e browser real ficam rotulados separadamente se não houver Postgres Supabase/browser autenticado.
+- **R10 — Operações internas multi-tenant:** toda listagem e exclusão interna de propostas DEVE exigir `requireStaff()` e derivar `store_id` da identidade do servidor. É proibido escolher a primeira loja, consultar registros com `store_id IS NULL`, aceitar tenant do payload, interpolar busca sem sanitização ou retornar sucesso depois de erro de banco. Fallback legacy só pode consultar o tenant autenticado.
+- **R11 — Publicação explícita:** tokens de propostas não publicadas NÃO DEVEM revelar dados via página pública ou consultor IA. Somente estados `sent`, `approved` e `expired` podem ser lidos publicamente. A equipe deve executar transição explícita para `sent`; esse estado significa publicada para acesso do cliente, não que WhatsApp foi entregue, nem que reserva/pagamento foi confirmado. Criar rascunho não deve disparar WhatsApp; compartilhar requer ação staff após publicação. O backend não deve permitir definir `approved` fora da RPC de aceite.
+- **R12 — Exclusão e evidência:** a exclusão de proposta canônica DEVE ser tenant-scoped e transacional, removendo o espelho `quotes` na mesma operação. Se houver qualquer registro em `travel_proposal_acceptances` (accepted, revoked ou superseded), a exclusão DEVE falhar e preservar o histórico. A exclusão de registro legacy deve exigir staff, verificar que o registro é uma proposta e filtrar por `store_id`; erros de leitura/escrita devem ser propagados.
+- **R13 — Proteção de uso público de IA:** perguntas e histórico do consultor de proposta devem ter limites explícitos de tamanho/quantidade; payload fora dos limites deve ser recusado antes de chamar o provider. Rate limiting por token/IP permanece finding aberto se a infraestrutura apropriada não estiver disponível.
+- **R14 — Leitura pública de contratos:** as policies `contracts_public_verify` (status-only) e `envelopes_token_access` (`USING (true)`) NÃO DEVEM permitir leitura direta pública de contratos nem de todos os envelopes. A API pública DEVE validar o bearer token exato e retornar uma projeção allowlist do contrato/versão; anon/PUBLIC NÃO DEVE ler diretamente `contracts`, `contract_versions`, `signature_envelopes` ou `signature_evidence`. A assinatura genérica legítima já passa por BFF server-side; esse caminho deve continuar sem acesso direto anon. O RPC/endpoint público deve validar o token/estado, usar `search_path` restrito e receber grants mínimos.
+- **R15 — Assinatura pública atômica:** o BFF de assinatura DEVE exigir consentimento explícito também no servidor; o RPC DEVE bloquear a linha por token, conferir versão corrente/estado e gravar status terminal, assinatura, hash e evidência numa transação. Repetição idêntica não duplica evidência; payload divergente ou contrato já concluído falha sem mutação. Derivar timestamp/serial/hash no servidor/banco e nunca confiar em status, IP, UA, serial ou hash declarados pelo cliente.
+- **R16 — Emissão de contrato por proposta:** a emissão DEVE exigir staff e derivar tenant do servidor, verificar que a proposta pertence a esse tenant e criar contrato + versão atômicos. Usar apenas estados admitidos pelo CHECK real de `contracts`; novos tokens devem usar CSPRNG. Falha ao criar a versão não pode retornar sucesso nem deixar contrato parcialmente publicado.
+- **R17 — RLS histórica distinta:** as policies públicas de `travel_contracts` da migration inicial já são removidas por `20261006150000_wave2_rls_financial_transactions.sql`; a correção nova NÃO DEVE reintroduzir acesso público nem duplicar essa alteração. O finding ativo desta microfase é na tabela diferente `contracts`, cuja policy status-only não foi removida nas migrations inspecionadas.
+
+## Implementação e ordenação
+
+- A base atual é `main` SHA `919c86881db1ce83de3feae7fcf7df5aadb58b7d` e a migration mais recente no repositório é `20270113000000_security_advisory_remediation.sql`. Não introduzir migrations com versão anterior ao topo atual; usar versões posteriores e dependências explícitas.
+- Dividir o trabalho em microfases: (A) fingerprint/expiração/opções canônicos + aceite público + regressão; (B1) acesso público/assinatura de contratos + regressão; (B2) conversão staff + SQL/grants; (C) voucher atômico/projeção pública + UI e regressões. Reexecutar preflight e atualizar o ledger em cada uma.
+- Toda chamada a `service_role` permanece server-side. As funções SQL devem ter `search_path` restrito, grants mínimos e validações próprias; `requireStaff()` no BFF não substitui a verificação no SQL.
+
+## Fora de escopo / proibido nesta execução
+
+- Pode fazer commit/push na branch autorizada e abrir PR; não mesclar PR, fazer deploy, aplicar migrations em produção, nem alterar credenciais, billing ou regras de acesso da conta.
+- Não gerar cobrança Pix/cartão, não chamar gateway/operadora real, não inventar descontos/locators/booking.
+- Não declarar integração real, RLS real ou fluxo browser validado usando apenas mocks, build, PR ou SQL estático.
+
+## Critérios de aceite
+
+1. Regressão reproduz o caminho P0 na baseline e passa na versão corrigida.
+2. Testes cobrem token/snapshot inválido, proposta expirada/rejeitada/draft, replay idêntico/diferente, RPC/DB failure, projeção pública sem campos internos, listagem/exclusão sem staff ou com tenant adversarial, preservação do histórico de aceite, conversão anterior legada, rollback de qualquer write e ausência de voucher/pagamento.
+3. Todos os gates aplicáveis do SHA final estão verdes; falhas de CI preexistentes ficam separadas e investigadas.
+4. Ledger contém evidência por nível, limites de integração e status explícito dos findings.
+5. Entrega final é branch/PR; deploy permanece não autorizado nesta microfase.

@@ -1,6 +1,6 @@
 import { createFileRoute, useRouter, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { Save, CheckCircle2, Trash2, Key, BarChart, Calendar, MessageCircle, MapPin, Layers, ShieldCheck, Store, FileText, Truck, RefreshCw, ExternalLink, AlertCircle, Check, Zap, CreditCard, Globe2, Terminal, Bot, Cpu } from "lucide-react";
+import { Save, CheckCircle2, Trash2, Key, BarChart, Calendar, MessageCircle, MapPin, Layers, ShieldCheck, Store, FileText, Truck, RefreshCw, ExternalLink, AlertCircle, Check, Zap, CreditCard, Globe2, Terminal, Bot, Cpu, Plane } from "lucide-react";
 import { toast } from "sonner";
 
 import { PageHeader } from "@/components/commerce/page-header";
@@ -19,6 +19,7 @@ import { getGmbStatus, connectGmb, syncGmbStoreProfile, type GmbLocationDTO } fr
 import { getWorkspaceLinkedInStatus, getLinkedInAuthRedirectUrl, disconnectLinkedInCompanyPage } from "@/services/linkedin-integrations.functions";
 import { Linkedin, Loader2 } from "lucide-react";
 import { listWorkspaceWhatsAppInstances, saveWorkspaceWhatsAppInstance, toggleWorkspaceWhatsAppInstance, type WhatsAppChannelInstanceDTO } from "@/services/whatsapp-channel-instances.functions";
+import { testCurrentInfotravelConnection } from "@/services/infotravel";
 
 export const Route = createFileRoute("/workspace/configuracoes/integracoes")({
   head: () => ({ meta: [{ title: "Integrações | Workspace Waesy" }] }),
@@ -62,6 +63,7 @@ interface IntegrationCardProps {
     label: string;
     type?: string;
     placeholder?: string;
+    required?: boolean;
   }>;
   existingSetting?: any;
   onSave: (provider: string, formData: Record<string, string>, isActive: boolean) => Promise<void>;
@@ -178,7 +180,7 @@ function IntegrationCard({
                     id={`${provider}-${field.key}`}
                     type={field.type || "text"}
                     placeholder={field.placeholder}
-                    required={!existingSetting?.is_active}
+                    required={field.required ?? !existingSetting?.is_active}
                     value={formData[field.key] || ""}
                     onChange={(e) => setFormData({ ...formData, [field.key]: e.target.value })}
                     className="rounded-lg border-border/70 text-xs h-9"
@@ -653,6 +655,13 @@ function UnifiedIntegrationsHubPage() {
     }
   };
 
+  const handleTestInfotravel = async () => {
+    const result = await testCurrentInfotravelConnection();
+    return result.success
+      ? { success: true, message: "Conexão com o conector InfoTravel estabelecida." }
+      : { success: false, message: "Não foi possível validar a conexão InfoTravel. Confira a credencial e os caminhos configurados." };
+  };
+
   // Handlers de Teste Ativo de Conexão
   const handleTestWhatsApp = async (data: Record<string, string>) => {
     const phoneNumberId = data.phone_number_id;
@@ -784,6 +793,11 @@ function UnifiedIntegrationsHubPage() {
             Pagamentos
           </TabsTrigger>
 
+          <TabsTrigger value="travel_gds" className="h-9 text-xs font-semibold rounded-lg gap-2 data-[state=active]:bg-background data-[state=active]:shadow-xs">
+            <Plane className="size-3.5 text-sky-500" />
+            GDS Turismo
+          </TabsTrigger>
+
           <TabsTrigger value="ai_vault" className="h-9 text-xs font-semibold rounded-lg gap-2 data-[state=active]:bg-background data-[state=active]:shadow-xs">
             <Bot className="size-3.5 text-primary" />
             Cofre IA (BYOK)
@@ -819,6 +833,43 @@ function UnifiedIntegrationsHubPage() {
             Mapas
           </TabsTrigger>
         </TabsList>
+
+        {/* GDS InfoTravel: credencial cifrada e contrato de endpoints explícito */}
+        <TabsContent value="travel_gds" className="space-y-4 outline-none">
+          <div className="rounded-lg border border-sky-500/20 bg-sky-500/5 p-4 text-xs text-muted-foreground">
+            <p className="font-semibold text-foreground">InfoTravel / GDS</p>
+            <p className="mt-1">Informe o endpoint homologado pelo provider. O token, usuário e senha são cifrados no servidor; URLs e caminhos de ação ficam somente como metadata operacional.</p>
+          </div>
+          <div className="grid lg:grid-cols-2 gap-6">
+            <IntegrationCard
+              provider="infotravel"
+              title="InfoTravel GDS"
+              description="Busca de hotéis, voos, transfers, atividades, importação e sincronização de reservas."
+              icon={Plane}
+              existingSetting={settings.find((s: any) => s.provider === "infotravel")}
+              onSave={handleSaveIntegration}
+              onDelete={handleDeleteIntegration}
+              onTestConnection={handleTestInfotravel}
+              fields={[
+                { key: "base_url", label: "Base URL do endpoint InfoTravel", placeholder: "https://api.provider.com", required: true },
+                { key: "auth", label: "Autenticação (api_key | bearer | basic | body)", placeholder: "bearer", required: true },
+                { key: "api_key", label: "API Key", type: "password", placeholder: "Chave privada do provider", required: false },
+                { key: "token", label: "Bearer Token", type: "password", placeholder: "Token privado do provider", required: false },
+                { key: "username", label: "Usuário", placeholder: "Usuário da integração", required: false },
+                { key: "password", label: "Senha", type: "password", placeholder: "Senha da integração", required: false },
+                { key: "api_key_header", label: "Header da API Key", placeholder: "x-api-key", required: false },
+                { key: "search_hotels_path", label: "Path — hotéis", placeholder: "/hotels/search", required: false },
+                { key: "search_flights_path", label: "Path — voos", placeholder: "/flights/search", required: false },
+                { key: "search_transfers_path", label: "Path — transfers", placeholder: "/transfers/search", required: false },
+                { key: "search_activities_path", label: "Path — atividades", placeholder: "/activities/search", required: false },
+                { key: "import_booking_path", label: "Path — importar reserva", placeholder: "/bookings/import", required: false },
+                { key: "create_booking_path", label: "Path — criar reserva", placeholder: "/bookings/create", required: false },
+                { key: "run_periodic_sync_path", label: "Path — sincronizar", placeholder: "/bookings/sync", required: false },
+                { key: "test_connection_path", label: "Path — testar conexão", placeholder: "/health", required: false },
+              ]}
+            />
+          </div>
+        </TabsContent>
 
         {/* 0. ABA GATEWAYS & MEIOS DE PAGAMENTO */}
         <TabsContent value="payments_gateways" className="space-y-4 outline-none">

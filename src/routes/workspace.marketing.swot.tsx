@@ -29,16 +29,9 @@ import { generateAiSwotAnalysis } from "@/services/canvas-bmc.functions";
 export const Route = createFileRoute("/workspace/marketing/swot")({
   head: () => ({ meta: [{ title: "Matriz SWOT Estratégica | Waesy" }] }),
   loader: async () => {
-    try {
-      const store = await getStoreSettings().catch(() => null);
-      const dna = store?.id
-        ? await getStoreBrandDna({ data: { storeId: store.id } }).catch(() => null)
-        : null;
-      return { store, initialDna: dna };
-    } catch (err) {
-      console.error("[loader:workspace.marketing.swot] Falha ao carregar dados:", err);
-      return { store: null, initialDna: null };
-    }
+    const store = await getStoreSettings();
+    const dna = store?.id ? await getStoreBrandDna({ data: { storeId: store.id } }) : null;
+    return { store, initialDna: dna };
   },
   component: SwotMatrixPage,
 });
@@ -129,11 +122,11 @@ export function SwotMatrixPage() {
     threats: "",
   });
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const [analysisStatus, setAnalysisStatus] = useState<string>(initialDna?.analysis_status || "not_created");
 
   useEffect(() => {
-    if (initialDna?.swot_analysis) {
-      setSwot(initialDna.swot_analysis);
-    }
+    setSwot(initialDna?.swot_analysis || DEFAULT_SWOT);
+    setAnalysisStatus(initialDna?.analysis_status || "not_created");
   }, [initialDna]);
 
   // ── MANIPULAÇÃO LOCAL DOS QUADRANTES ──────────────────────────────────────
@@ -171,8 +164,11 @@ export function SwotMatrixPage() {
           swot_analysis: swot,
         },
       });
+      setAnalysisStatus("human_edited");
       setLastSaved(new Date());
-      toast.success("Matriz SWOT salva com sucesso!");
+      toast.success("Matriz SWOT salva por edição humana", {
+        description: "Salvar uma matriz não comprova validade de mercado nem desempenho.",
+      });
     } catch (err: any) {
       toast.error(err?.message || "Falha ao salvar Matriz SWOT.");
     } finally {
@@ -189,7 +185,7 @@ export function SwotMatrixPage() {
 
     setIsGenerating(true);
     toast.info("Consultor Estratégico IA operando...", {
-      description: "Avaliando ecossistema local, forças e vulnerabilidades.",
+      description: "Usando dados de cadastro disponíveis; SWOT qualitativa em forma de hipótese.",
     });
 
     try {
@@ -198,8 +194,11 @@ export function SwotMatrixPage() {
       });
 
       setSwot(newSwot);
+      setAnalysisStatus("ai_generated_draft");
       setLastSaved(new Date());
-      toast.success("Matriz SWOT gerada e atualizada com sucesso!");
+      toast.success("Rascunho SWOT gerado", {
+        description: "Revise as hipóteses e fontes antes de usar em decisões; não é previsão de desempenho.",
+      });
     } catch (err: any) {
       toast.error(err?.message || "Falha ao gerar SWOT com IA.");
     } finally {
@@ -335,8 +334,20 @@ export function SwotMatrixPage() {
                 Matriz SWOT Estratégica
               </h1>
               <p className="text-xs text-muted-foreground mt-1">
-                Mapeamento analítico de forças, fraquezas, oportunidades e ameaças da empresa.
+                Rascunho qualitativo. Sem evidência suficiente, os fatores devem permanecer vazios ou ser tratados como hipóteses.
               </p>
+              {analysisStatus === "ai_generated_draft" && (
+                <p className="mt-2 text-xs text-amber-700 dark:text-amber-300">Rascunho de IA · requer revisão humana · não validado por resultados reais.</p>
+              )}
+              {analysisStatus === "legacy_unverified" && (
+                <p className="mt-2 text-xs text-amber-700 dark:text-amber-300">Dados legados sem proveniência verificável; revise antes de usar.</p>
+              )}
+              {analysisStatus === "not_created" && (
+                <p className="mt-2 text-xs text-muted-foreground">Ainda não há análise salva. Os campos vazios não significam ausência de forças ou riscos.</p>
+              )}
+              {analysisStatus === "human_edited" && (
+                <p className="mt-2 text-xs text-emerald-700 dark:text-emerald-300">Matriz editada e salva por pessoa; isso não comprova validação de mercado.</p>
+              )}
             </div>
 
             <div className="flex items-center gap-2 flex-wrap">

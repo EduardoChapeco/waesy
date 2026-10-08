@@ -10,7 +10,7 @@ export const bmcBlockItemSchema = z.object({
   id: z.string(),
   text: z.string().min(1, "Texto não pode ser vazio"),
   evidence: z.string().optional(),
-  confidence: z.number().min(0).max(1).optional(),
+  confidence: z.null().optional(),
 });
 
 export const storeBmcSchema = z.object({
@@ -25,7 +25,7 @@ export const storeBmcSchema = z.object({
   revenue_streams: z.array(bmcBlockItemSchema).default([]),
   generated_by_job_id: z.string().nullable().optional(),
   ai_model: z.string().nullable().optional(),
-  confidence: z.number().min(0).max(1).default(0.95),
+  confidence: z.null().optional(),
   edited_by_human: z.boolean().default(false),
 });
 
@@ -51,8 +51,6 @@ function normalizeBlock(raw: unknown): BmcBlockItem[] {
       return {
         id: String(anyItem.id || `item-${index + 1}`),
         text: String(anyItem.text || anyItem.title || anyItem.content || ""),
-        evidence: anyItem.evidence ? String(anyItem.evidence) : undefined,
-        confidence: typeof anyItem.confidence === "number" ? anyItem.confidence : undefined,
       };
     }
     return { id: `item-${index + 1}`, text: String(item) };
@@ -64,13 +62,13 @@ export const getStoreBmc = createServerFn({ method: "GET" })
   .validator((input?: { storeId?: string }) => input || {})
   .handler(async ({ data }): Promise<BmcFullResponseDTO | null> => {
     const supabase = getServerClient();
-    let targetStoreId = data?.storeId;
-
-    if (!targetStoreId) {
-      const identity = await getServerIdentity().catch(() => null);
-      if (!identity?.store_id) return null;
-      targetStoreId = identity.store_id;
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin", "proprietario", "manager", "gerente", "marketing", "content"]);
+    if (data?.storeId && identity.role !== "platform_admin" && data.storeId !== identity.store_id) {
+      throw new Error("Acesso negado ao BMC de outro workspace.");
     }
+    const targetStoreId = data?.storeId && identity.role === "platform_admin" ? data.storeId : identity.store_id;
+    if (!targetStoreId) return null;
 
     const { data: row, error } = await supabase
       .from("store_business_model_canvas")
@@ -96,7 +94,7 @@ export const getStoreBmc = createServerFn({ method: "GET" })
           customer_segments: [],
           cost_structure: [],
           revenue_streams: [],
-          confidence: 1.0,
+          confidence: null,
           edited_by_human: false,
         },
       };
@@ -118,7 +116,7 @@ export const getStoreBmc = createServerFn({ method: "GET" })
         revenue_streams: normalizeBlock(row.revenue_streams),
         generated_by_job_id: row.generated_by_job_id,
         ai_model: row.ai_model,
-        confidence: Number(row.confidence) || 0.95,
+        confidence: null,
         edited_by_human: Boolean(row.edited_by_human),
       },
     };
@@ -136,10 +134,10 @@ export const saveStoreBmc = createServerFn({ method: "POST" })
     const supabase = getServerClient();
     const identity = await getServerIdentity();
     assertStoreAccess(identity, ["owner", "admin", "proprietario", "manager", "gerente", "marketing", "content"]);
-    let targetStoreId = identity.store_id;
-    if (data.storeId && (identity.role === "platform_admin" || data.storeId === identity.store_id)) {
-      targetStoreId = data.storeId;
+    if (data.storeId && identity.role !== "platform_admin" && data.storeId !== identity.store_id) {
+      throw new Error("Acesso negado ao BMC de outro workspace.");
     }
+    const targetStoreId = data.storeId && identity.role === "platform_admin" ? data.storeId : identity.store_id;
 
     const payload = {
       store_id: targetStoreId,
@@ -154,8 +152,8 @@ export const saveStoreBmc = createServerFn({ method: "POST" })
       revenue_streams: data.bmc.revenue_streams,
       generated_by_job_id: data.bmc.generated_by_job_id ?? null,
       ai_model: data.bmc.ai_model ?? null,
-      confidence: data.bmc.confidence ?? 0.95,
-      edited_by_human: true,
+      confidence: data.bmc.confidence ?? null,
+      edited_by_human: data.bmc.edited_by_human,
       updated_at: new Date().toISOString(),
     };
 
@@ -187,10 +185,10 @@ export const generateAiBmcFromStore = createServerFn({ method: "POST" })
     const supabase = getServerClient();
     const identity = await getServerIdentity();
     assertStoreAccess(identity, ["owner", "admin", "proprietario", "manager", "gerente", "marketing", "content"]);
-    let targetStoreId = identity.store_id;
-    if (data.storeId && (identity.role === "platform_admin" || data.storeId === identity.store_id)) {
-      targetStoreId = data.storeId;
+    if (data.storeId && identity.role !== "platform_admin" && data.storeId !== identity.store_id) {
+      throw new Error("Acesso negado ao BMC de outro workspace.");
     }
+    const targetStoreId = data.storeId && identity.role === "platform_admin" ? data.storeId : identity.store_id;
 
     // Carrega contexto da loja
     const { data: store } = await supabase
@@ -210,31 +208,31 @@ export const generateAiBmcFromStore = createServerFn({ method: "POST" })
       .limit(6);
 
     const storeContext = {
-      name: store?.name || "Empresa Local",
-      category: data.niche || store?.category || "Comércio e Serviços Locais",
-      location: store?.city && store?.state ? `${store.city} - ${store.state}` : "Brasil",
-      description: data.businessDescription || store?.description || "Negócio com presença física e digital no ecossistema Waesy.",
-      archetype: brandDna?.archetype || "O Criador",
+      name: store?.name || "",
+      category: data.niche || store?.category || "",
+      location: store?.city && store?.state ? `${store.city} - ${store.state}` : "",
+      description: data.businessDescription || store?.description || "",
+      archetype: brandDna?.archetype || "",
       topProducts: (topProducts || []).map((p) => p.title || p.name).filter(Boolean),
-      targetAudience: data.targetAudience || "Consumidores locais e regionais com foco em agilidade e confiança",
+      targetAudience: data.targetAudience || "",
     };
 
     const promptSystem = `Você é o Estrategista de Modelos de Negócio do Waesy, mestre na metodologia de Alexander Osterwalder (Business Model Canvas).
-Sua missão é deduzir e estruturar os 9 blocos do BMC oficial para o negócio informado.
-Cada bloco deve conter de 3 a 5 itens objetivos, estratégicos e realistas para a realidade brasileira e economia local.
-Você DEVE fornecer evidência ou justificativa para cada afirmação e uma taxa de confiança (0.0 a 1.0).
+Sua missão é produzir um rascunho de BMC baseado somente nos dados fornecidos. Não invente segmentos, parceiros, custos, canais ou evidências. Campos sem suporte ficam vazios; conclusões não observadas devem ser rotuladas como hipótese.
+Não force quantidade mínima por bloco; use arrays vazios quando os dados forem insuficientes.
+Não gere confiança numérica. Evidência só deve conter trechos fornecidos; não crie citações.
 
 Retorne ESTRITAMENTE um objeto JSON no formato:
 {
-  "key_partners": [{"id": "kp-1", "text": "...", "evidence": "...", "confidence": 0.9}],
-  "key_activities": [{"id": "ka-1", "text": "...", "evidence": "...", "confidence": 0.9}],
-  "key_resources": [{"id": "kr-1", "text": "...", "evidence": "...", "confidence": 0.9}],
-  "value_propositions": [{"id": "vp-1", "text": "...", "evidence": "...", "confidence": 0.95}],
-  "customer_relationships": [{"id": "cr-1", "text": "...", "evidence": "...", "confidence": 0.9}],
-  "channels": [{"id": "ch-1", "text": "...", "evidence": "...", "confidence": 0.9}],
-  "customer_segments": [{"id": "cs-1", "text": "...", "evidence": "...", "confidence": 0.95}],
-  "cost_structure": [{"id": "co-1", "text": "...", "evidence": "...", "confidence": 0.85}],
-  "revenue_streams": [{"id": "rs-1", "text": "...", "evidence": "...", "confidence": 0.9}]
+  "key_partners": [],
+  "key_activities": [],
+  "key_resources": [],
+  "value_propositions": [],
+  "customer_relationships": [],
+  "channels": [],
+  "customer_segments": [],
+  "cost_structure": [],
+  "revenue_streams": []
 }`;
 
     const promptUser = `Dados do Negócio:
@@ -243,7 +241,7 @@ Nicho / Categoria: ${storeContext.category}
 Localização: ${storeContext.location}
 Descrição: ${storeContext.description}
 Arquétipo de Marca: ${storeContext.archetype}
-Produtos / Serviços Principais: ${storeContext.topProducts.join(", ") || "Catálogo próprio"}
+Produtos / Serviços Principais: ${storeContext.topProducts.join(", ") || ""}
 Público Alvo: ${storeContext.targetAudience}
 
 Gere agora o Business Model Canvas completo de 9 blocos com rigor analítico.`;
@@ -270,9 +268,9 @@ Gere agora o Business Model Canvas completo de 9 blocos com rigor analítico.`;
       customer_segments: normalizeBlock(parsed.customer_segments),
       cost_structure: normalizeBlock(parsed.cost_structure),
       revenue_streams: normalizeBlock(parsed.revenue_streams),
-      generated_by_job_id: `bmc-job-${Date.now()}`,
-      ai_model: aiResponse.model || "waesy-ai-orchestrator",
-      confidence: 0.95,
+      generated_by_job_id: null,
+      ai_model: aiResponse.model || null,
+      confidence: null,
       edited_by_human: false,
     };
 
@@ -282,8 +280,6 @@ Gere agora o Business Model Canvas completo de 9 blocos com rigor analítico.`;
         storeId: targetStoreId,
         bmc: result,
       },
-    }).catch((err) => {
-      console.warn("[canvas-bmc] Aviso ao persistir BMC gerado:", err);
     });
 
     return result;
@@ -291,11 +287,20 @@ Gere agora o Business Model Canvas completo de 9 blocos com rigor analítico.`;
 
 // ── GENERATE AI SWOT ANALYSIS FROM STORE ─────────────────────────────────────
 export interface SwotAnalysisDTO {
+  analysis_status: "ai_generated_draft";
+  requires_human_review: true;
   strengths: string[];
   weaknesses: string[];
   opportunities: string[];
   threats: string[];
 }
+
+const SwotAiOutputSchema = z.object({
+  strengths: z.array(z.string().trim().min(1).max(500)).max(20),
+  weaknesses: z.array(z.string().trim().min(1).max(500)).max(20),
+  opportunities: z.array(z.string().trim().min(1).max(500)).max(20),
+  threats: z.array(z.string().trim().min(1).max(500)).max(20),
+}).strict();
 
 export const generateAiSwotAnalysis = createServerFn({ method: "POST" })
   .validator(
@@ -307,40 +312,33 @@ export const generateAiSwotAnalysis = createServerFn({ method: "POST" })
     const supabase = getServerClient();
     const identity = await getServerIdentity();
     assertStoreAccess(identity, ["owner", "admin", "proprietario", "manager", "gerente", "marketing", "content"]);
-    let targetStoreId = identity.store_id;
-    if (data.storeId && (identity.role === "platform_admin" || data.storeId === identity.store_id)) {
-      targetStoreId = data.storeId;
+    if (data.storeId && identity.role !== "platform_admin" && data.storeId !== identity.store_id) {
+      throw new Error("Acesso negado ao BMC de outro workspace.");
     }
+    const targetStoreId = data.storeId && identity.role === "platform_admin" ? data.storeId : identity.store_id;
 
-    const { data: store } = await supabase
+    const { data: store, error: storeError } = await supabase
       .from("stores")
       .select("name, description, category, city, state")
       .eq("id", targetStoreId)
       .maybeSingle();
+    if (storeError) throw new Error(`Falha ao ler dados da loja para SWOT: ${storeError.message}`);
+    if (!store) throw new Error("Loja não encontrada; a SWOT não foi gerada.");
 
-    const brandDna = await getStoreBrandDna({ data: { storeId: targetStoreId } }).catch(() => null);
+    const brandDna = await getStoreBrandDna({ data: { storeId: targetStoreId } });
 
-    const storeName = store?.name || "Empresa";
-    const storeCategory = store?.category || "Comércio & Serviços Locais";
-    const storeLocation = store?.city && store?.state ? `${store.city} - ${store.state}` : "Brasil";
-    const storeDesc = store?.description || "Empresa operando no ecossistema Waesy.";
+    const storeName = store?.name || "";
+    const storeCategory = store?.category || "";
+    const storeLocation = store?.city && store?.state ? `${store.city} - ${store.state}` : "";
+    const storeDesc = store?.description || "";
 
-    const systemPrompt = `Você é o Estrategista Corporativo Chefe do Waesy.
-Sua missão é gerar uma análise de Matriz SWOT (Strengths, Weaknesses, Opportunities, Threats) rigorosa, realista e contextualizada para uma empresa operando no mercado brasileiro.
-
-Diretrizes Obrigatórias:
-1. Retorne estritamente um objeto JSON com as chaves: "strengths", "weaknesses", "opportunities", "threats".
-2. Cada chave deve conter um array de 3 a 5 strings concisas, diretas e profundas (sem jargões prolixos).
-3. "strengths": Diferenciais competitivos reais, qualidade, reputação, atendimento humano, agilidade.
-4. "weaknesses": Gargalos internos, dependência de poucos fornecedores, controle de custos, marketing digital embrionário.
-5. "opportunities": Expansão regional, canais omnichannel, clube de benefícios, digitalização local, convênios.
-6. "threats": Concorrência predatória de grandes marketplaces, flutuação de custos, inflação, mudança de hábitos de consumo.`;
+    const systemPrompt = `Você é um analista que prepara um rascunho SWOT. Use somente as informações efetivamente fornecidas. Não presuma qualidade, reputação, operação, fornecedores, canais, concorrentes, custos ou hábitos de clientes. Itens que sejam inferências devem começar com "Hipótese:"; sem base suficiente, use arrays vazios. Retorne JSON com strengths, weaknesses, opportunities e threats. Este resultado é exploratório e requer revisão humana.`;
 
     const userPrompt = `Empresa: ${storeName}
 Segmento/Categoria: ${storeCategory}
 Localização: ${storeLocation}
 Descrição: ${storeDesc}
-Arquétipo de Marca: ${brandDna?.archetype || "O Prestativo"}
+Arquétipo de Marca: ${brandDna?.archetype || ""}
 
 Gere a análise SWOT estratégica completa em JSON estruturado.`;
 
@@ -351,29 +349,51 @@ Gere a análise SWOT estratégica completa em JSON estruturado.`;
       temperature: 0.4,
     });
 
-    const parsed = aiRes?.parsedJson as any;
+    const parsed = SwotAiOutputSchema.safeParse(aiRes?.parsedJson);
+    if (!parsed.success) {
+      throw new Error("A IA não retornou uma SWOT estruturada válida; nenhum fallback foi aplicado.");
+    }
     const result: SwotAnalysisDTO = {
-      strengths: Array.isArray(parsed?.strengths) ? parsed.strengths.filter((s: any) => typeof s === "string" && s.trim()) : [],
-      weaknesses: Array.isArray(parsed?.weaknesses) ? parsed.weaknesses.filter((s: any) => typeof s === "string" && s.trim()) : [],
-      opportunities: Array.isArray(parsed?.opportunities) ? parsed.opportunities.filter((s: any) => typeof s === "string" && s.trim()) : [],
-      threats: Array.isArray(parsed?.threats) ? parsed.threats.filter((s: any) => typeof s === "string" && s.trim()) : [],
+      analysis_status: "ai_generated_draft",
+      requires_human_review: true,
+      strengths: parsed.data.strengths,
+      weaknesses: parsed.data.weaknesses,
+      opportunities: parsed.data.opportunities,
+      threats: parsed.data.threats,
     };
 
-    // Auto-persiste no brand_dna_profiles
-    try {
-      await supabase
-        .from("brand_dna_profiles")
-        .upsert(
-          {
-            store_id: targetStoreId,
-            swot_analysis: result,
-            updated_at: new Date().toISOString(),
+    const aiMetadata = aiRes as typeof aiRes & { provider?: string; model?: string };
+    const { error: persistError } = await supabase
+      .from("brand_dna_profiles")
+      .upsert(
+        {
+          store_id: targetStoreId,
+          swot_analysis: {
+            strengths: result.strengths,
+            weaknesses: result.weaknesses,
+            opportunities: result.opportunities,
+            threats: result.threats,
           },
-          { onConflict: "store_id" }
-        );
-    } catch (err) {
-      console.warn("[swot] Falha no auto-save:", err);
-    }
+          analysis_status: "ai_generated_draft",
+          edited_by_human: false,
+          confidence: null,
+          source_url: null,
+          source_evidence: {
+            source_type: "store_record_and_brand_dna",
+            store_id: targetStoreId,
+            store_name: storeName,
+            segment: storeCategory,
+            location: storeLocation,
+            description: storeDesc,
+            archetype: brandDna.archetype,
+          },
+          ai_provider: typeof aiMetadata.provider === "string" ? aiMetadata.provider : null,
+          ai_model: typeof aiMetadata.model === "string" ? aiMetadata.model : null,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "store_id" },
+      );
+    if (persistError) throw new Error(`SWOT gerada, mas não foi persistida: ${persistError.message}`);
 
     return result;
   });

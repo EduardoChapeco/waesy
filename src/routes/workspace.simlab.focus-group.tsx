@@ -7,15 +7,13 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { toast } from 'sonner';
-import { SimLabResearchPanel } from '@/components/simlab/simlab-research-panel';
-import { SimlabReviewPanel } from '@/components/simlab/simlab-review-panel';
 import type { SyntheticArchetype, FocusGroupMessage, FocusGroupSession } from '@/types/simlab';
 import { listSyntheticArchetypes, getOrCreateActiveFocusSession, listFocusGroupMessages, sendFocusGroupMessage } from '@/services/simlab.functions';
 import { getSimLabKeyStatus, saveSimLabApiKey } from '@/services/api-orchestrator.functions';
 import { getStoreSettings } from '@/services/store.functions';
 
 export const Route = createFileRoute('/workspace/simlab/focus-group')({
-  head: () => ({ meta: [{ title: 'Console de Amostragem Sintética & Focus Group | Waesy' }] }),
+  head: () => ({ meta: [{ title: 'Focus Group Sintético — Exploração Qualitativa | Waesy' }] }),
   loader: async () => {
     try {
     const store = await getStoreSettings().catch(() => null);
@@ -47,17 +45,7 @@ function FocusGroupPage() {
     poolCount: 0,
   });
 
-  const [statements, setStatements] = useState<FocusGroupMessage[]>([
-    {
-      id: 'stmt-init',
-      session_id: 'default',
-      sender_type: 'squad_scientist',
-      sender_id: 'scientist-arnaldo',
-      sender_name: 'Prof. Dr. Arnaldo (Econometrista Chefe)',
-      content: 'Bancada sintética calibrada segundo os microdados do Censo IBGE 2022, POF e Teoria de Escolha Discreta (McFadden RUM). Submeta hipóteses comerciais com preços e parcelas: o motor decompõe ticket unitário, folga orçamentária familiar e utilidade percebida de cada agente.',
-      created_at: new Date().toISOString(),
-    }
-  ]);
+  const [statements, setStatements] = useState<FocusGroupMessage[]>([]);
 
   const feedEndRef = useRef<HTMLDivElement>(null);
 
@@ -75,8 +63,8 @@ function FocusGroupPage() {
       try {
         await refreshKeyStatus();
 
-        // 1. Carregar arquétipos reais com currículos e balanço patrimonial
-        const rows = await listSyntheticArchetypes();
+        // Perfis sintéticos curados; não são pessoas entrevistadas nem amostra IBGE.
+        const rows = storeId ? await listSyntheticArchetypes({ data: { storeId } }) : [];
         if (rows && rows.length > 0) {
           setAvailablePersonas(rows);
           const initialSelection = rows.slice(0, 3);
@@ -119,13 +107,13 @@ function FocusGroupPage() {
   function handleTogglePersona(p: SyntheticArchetype) {
     if (selectedPersonas.some(x => x.id === p.id)) {
       if (selectedPersonas.length <= 1) {
-        toast.error('A bancada amostral deve possuir no mínimo 1 persona.');
+        toast.error('Selecione ao menos um perfil sintético.');
         return;
       }
       setSelectedPersonas(selectedPersonas.filter(x => x.id !== p.id));
     } else {
       if (selectedPersonas.length >= 5) {
-        toast.error('Limite amostral do console: máximo de 5 personas simultâneas.');
+        toast.error('Limite operacional: máximo de 5 perfis por pergunta neste console.');
         return;
       }
       setSelectedPersonas([...selectedPersonas, p]);
@@ -165,6 +153,10 @@ function FocusGroupPage() {
   async function handleTriggerInquiry(e: React.FormEvent) {
     e.preventDefault();
     if (!inputMessage.trim() || isProcessing) return;
+    if (!session?.id) {
+      toast.error('A sessão do workspace ainda não está pronta. Recarregue e tente novamente.');
+      return;
+    }
 
     const queryText = inputMessage.trim();
     setInputMessage('');
@@ -173,10 +165,10 @@ function FocusGroupPage() {
     // Adiciona feedback otimista da mensagem do moderador
     const tempModMsg: FocusGroupMessage = {
       id: 'mod-' + Date.now(),
-      session_id: session?.id || 'default',
+          session_id: session.id,
       sender_type: 'moderator_user',
-      sender_id: 'moderator',
-      sender_name: 'Moderador de Hipóteses (Operação)',
+          sender_id: 'moderator',
+          sender_name: 'Pesquisador do workspace',
       content: queryText,
       created_at: new Date().toISOString(),
     };
@@ -185,7 +177,7 @@ function FocusGroupPage() {
     try {
       const result = await sendFocusGroupMessage({
         data: {
-          sessionId: session?.id || 'default',
+          sessionId: session.id,
           userMessage: queryText,
           selectedPersonas: selectedPersonas,
         }
@@ -196,9 +188,11 @@ function FocusGroupPage() {
           const filtered = prev.filter(m => m.id !== tempModMsg.id);
           return [...filtered, ...result.newMessages];
         });
-        toast.success(`Pareceres computados para ${selectedPersonas.length} personas.`);
+        toast.success(`Respostas hipotéticas geradas para ${selectedPersonas.length} perfis sintéticos.`);
       }
     } catch (err: any) {
+      setStatements(prev => prev.filter(m => m.id !== tempModMsg.id));
+      setInputMessage(queryText);
       toast.error('Falha ao processar simulação: ' + err.message);
     } finally {
       setIsProcessing(false);
@@ -216,15 +210,12 @@ function FocusGroupPage() {
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-sm font-semibold tracking-tight text-foreground">Focus Group</h1>
-              <Badge variant="outline" className="text-xs font-medium py-0 px-2 border-border/60">
-                Censo IBGE 2022
-              </Badge>
               <Badge variant="secondary" className="text-xs font-medium py-0 px-2 text-primary bg-primary/10 border border-primary/20">
-                SimLab V2
+                Reações sintéticas
               </Badge>
             </div>
             <p className="text-xs text-muted-foreground">
-              Simulação preditiva ancorada em microdados socioeconômicos, currículos e escolha discreta (McFadden RUM).
+              Respostas hipotéticas geradas por IA sobre perfis sintéticos; sem probabilidade de compra ou forecast.
             </p>
           </div>
         </div>
@@ -234,12 +225,12 @@ function FocusGroupPage() {
           {keyStatus.hasActiveKey ? (
             <Badge className="bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 text-xs font-medium py-1 px-3 gap-2 h-8">
               <Cpu className="size-3.5 text-emerald-500" />
-              <span>IA Viva ({keyStatus.activeProvider?.toUpperCase()})</span>
+              <span>Chave configurada ({keyStatus.activeProvider?.toUpperCase()})</span>
             </Badge>
           ) : (
             <Badge className="bg-sky-500/10 text-sky-600 border border-sky-500/20 text-xs font-medium py-1 px-3 gap-2 h-8">
               <Brain className="size-3.5 text-sky-500" />
-              <span>Econometria McFadden (IBGE)</span>
+              <span>Disponibilidade verificada ao enviar</span>
             </Badge>
           )}
 
@@ -309,8 +300,7 @@ function FocusGroupPage() {
           <div className="space-y-3">
             {availablePersonas.map((p) => {
               const isSelected = selectedPersonas.some(x => x.id === p.id);
-              const profession = p.curriculum?.profession_title || 'Profissional autônomo';
-              const surplus = p.financial_sheet?.discretionary_surplus_brl || Math.round(p.median_income_brl * 0.25);
+              const profession = p.curriculum?.profession_title || (p.decision_heuristics as any)?.occupation || 'Ocupação não informada';
 
               return (
                 <div
@@ -333,18 +323,9 @@ function FocusGroupPage() {
                     </Badge>
                   </div>
 
-                  <div className="mt-3 pt-3 border-t border-border/40 grid grid-cols-2 gap-2 text-xs">
-                    <div>
-                      <span className="text-muted-foreground block text-xs">Folga Mensal POF</span>
-                      <span className="font-semibold text-foreground">R$ {surplus.toLocaleString('pt-BR')}</span>
-                    </div>
-                    <div>
-                      <span className="text-muted-foreground block text-xs">Sensibilidade Preço</span>
-                      <div className="flex items-center gap-2 mt-1">
-                        <Progress value={p.price_sensitivity * 10} className="h-1 bg-muted/60" />
-                        <span className="font-semibold text-xs">{p.price_sensitivity}</span>
-                      </div>
-                    </div>
+                  <div className="mt-3 pt-3 border-t border-border/40 space-y-1 text-[10px] text-muted-foreground">
+                    <p>{p.median_income_brl == null ? 'Renda: não informada' : 'Renda: preenchida, origem não verificada'}</p>
+                    <p>Origem: {p.source_profile_type || p.profile_origin || 'desconhecida'} · calibração: {p.calibration_status || 'desconhecida'}</p>
                   </div>
 
                   {/* Ação de Inspecionar Ficha 360° */}
@@ -374,10 +355,17 @@ function FocusGroupPage() {
           </div>
         </aside>
 
-        {/* Painel Central: Trilha de Depoimentos Auditados */}
+        {/* Painel Central: respostas sintéticas com proveniência explícita */}
         <main className="flex-1 flex flex-col bg-background">
           <div className="flex-1 p-6 overflow-y-auto space-y-4 no-scrollbar">
             <div className="rounded-lg border border-border/80 bg-card divide-y divide-border/40 shadow-xs overflow-hidden">
+              {statements.length === 0 && (
+                <div className="p-6 text-center space-y-2">
+                  <MessageSquare className="mx-auto size-5 text-muted-foreground" />
+                  <p className="text-xs font-semibold text-foreground">Nenhuma pergunta ou resposta nesta sessão</p>
+                  <p className="text-[10px] text-muted-foreground">Selecione perfis sintéticos e envie uma pergunta. Se a IA falhar, nenhuma resposta será inventada.</p>
+                </div>
+              )}
               {statements.map((s) => {
                 const isModerator = s.sender_type === 'moderator_user';
                 const isScientist = s.sender_type === 'squad_scientist';
@@ -407,7 +395,7 @@ function FocusGroupPage() {
                               onClick={() => setInspectingPersona(matchedPersona)}
                               className="text-xs text-muted-foreground hover:text-primary underline flex items-center gap-1"
                             >
-                              <span>ver currículo e finanças</span>
+                          <span>ver perfil e proveniência</span>
                             </button>
                           )}
                         </div>
@@ -417,27 +405,9 @@ function FocusGroupPage() {
                         </span>
                       </div>
                       <p className="text-sm text-foreground/90 mt-2 leading-relaxed">
-                        {s.content}
+                      {s.content}
                       </p>
-                      {s.sentiment_score !== null && s.sentiment_score !== undefined && (
-                        <div className="mt-3 flex items-center gap-3">
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs text-muted-foreground font-medium">Receptividade Estimada:</span>
-                            <div className="w-20 bg-muted/60 h-1.5 rounded-sm overflow-hidden">
-                              <div 
-                                className={`h-full rounded-sm ${s.sentiment_score >= 0.75 ? 'bg-emerald-500' : s.sentiment_score >= 0.5 ? 'bg-amber-500' : 'bg-rose-500'}`}
-                                style={{ width: `${Math.round((s.sentiment_score || 0) * 100)}%` }}
-                              />
-                            </div>
-                            <span className="text-xs font-semibold">{Math.round((s.sentiment_score || 0) * 100)}%</span>
-                          </div>
-                          {s.sentiment_score >= 0.75 && (
-                            <Badge variant="outline" className="text-xs py-0 px-2 border-emerald-500/30 text-emerald-600 bg-emerald-500/5">
-                              Alta Probabilidade de Compra
-                            </Badge>
-                          )}
-                        </div>
-                      )}
+                      {isModerator ? <Badge variant="outline" className="mt-2 text-[10px]">Pergunta do pesquisador</Badge> : s.provenance?.record_kind === 'llm_generated_synthetic_qualitative_response' ? <Badge variant="outline" className="mt-2 text-[10px]">Resposta hipotética de IA · não é cliente real</Badge> : <Badge variant="secondary" className="mt-2 text-[10px]">Registro legado · origem desconhecida</Badge>}
                     </div>
                   </div>
                 );
@@ -447,7 +417,7 @@ function FocusGroupPage() {
             {isProcessing && (
               <div className="flex items-center gap-2 text-xs text-muted-foreground py-2 px-1">
                 <span className="size-2 rounded-full bg-primary animate-pulse" />
-                Decompondo ticket, calculando utilidade de McFadden e avaliando comprometimento de renda...
+                Gerando respostas qualitativas para os perfis selecionados...
               </div>
             )}
             <div ref={feedEndRef} />
@@ -459,7 +429,7 @@ function FocusGroupPage() {
               <Input
                 value={inputMessage}
                 onChange={(e) => setInputMessage(e.target.value)}
-                placeholder="Insira a hipótese comercial (ex: 'Pacote Beto Carrero World por R$ 290,00 por pessoa com transporte e ingresso em até 10x sem juros no cartão')"
+                placeholder="Faça uma pergunta sobre a oferta, preço, mensagem ou proposta..."
                 className="flex-1 h-11 rounded-lg text-sm bg-card border-border/80 focus-visible:ring-1 focus-visible:ring-primary min-h-11"
                 disabled={isProcessing}
               />
@@ -468,7 +438,7 @@ function FocusGroupPage() {
                 disabled={isProcessing || !inputMessage.trim()}
                 className="h-11 px-6 rounded-lg font-medium text-xs gap-2 min-h-11 shrink-0"
               >
-                <span>Avaliar Amostra</span>
+                <span>Gerar reações hipotéticas</span>
                 <ArrowRight className="size-3.5" />
               </Button>
             </form>
@@ -476,150 +446,46 @@ function FocusGroupPage() {
         </main>
       </div>
 
-      {/* ── SHEET 1: DOSSIÊ CURRICULAR & BALANÇO FINANCEIRO 360° DA PERSONA ── */}
+      {/* ── SHEET 1: PERFIL SINTÉTICO E PROVENIÊNCIA ── */}
       <Sheet open={!!inspectingPersona} onOpenChange={(open) => !open && setInspectingPersona(null)}>
         <SheetContent side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] overflow-y-auto p-6 space-y-6">
           {inspectingPersona && (
             <>
-              <SheetHeader className="space-y-1">
+              <SheetHeader className="space-y-2">
                 <div className="flex items-center gap-2">
-                  <Badge variant="secondary" className="text-xs font-semibold">
-                    Classe {inspectingPersona.abep_social_class}
-                  </Badge>
-                  <Badge variant="outline" className="text-xs font-medium">
-                    {inspectingPersona.region} · {inspectingPersona.age} anos
-                  </Badge>
+                  <Badge variant="secondary" className="text-xs">Perfil sintético · classe {inspectingPersona.abep_social_class}</Badge>
+                  <Badge variant="outline" className="text-xs">{inspectingPersona.region} · {inspectingPersona.age} anos</Badge>
                 </div>
-                <SheetTitle className="text-base font-bold text-foreground">
-                  {inspectingPersona.display_name}
-                </SheetTitle>
+                <SheetTitle className="text-base font-bold">{inspectingPersona.display_name}</SheetTitle>
                 <SheetDescription className="text-xs text-muted-foreground">
-                  Dossiê demográfico e patrimonial calibrado pelo Censo IBGE 2022 e POF.
+                  Personagem sintético. Origem: {inspectingPersona.source_profile_type || inspectingPersona.profile_origin || "desconhecida"}. Calibração: {inspectingPersona.calibration_status || "desconhecida"}.
                 </SheetDescription>
               </SheetHeader>
 
-              {/* Bloco 1: Currículo & Carreira */}
-              <div className="rounded-lg border border-border/70 p-4 space-y-3 bg-muted/20">
-                <div className="flex items-center gap-2 text-xs font-semibold text-foreground">
-                  <Briefcase className="size-4 text-primary" />
-                  <span>Currículo Profissional e Ocupação</span>
-                </div>
-                <div className="space-y-2 text-xs">
-                  <p className="text-foreground font-medium">
-                    {inspectingPersona.curriculum?.profession_title || 'Profissional Autônomo'}
-                  </p>
-                  <p className="text-muted-foreground text-xs">
-                    Setor: {inspectingPersona.curriculum?.occupation_sector || 'Serviços'} · {inspectingPersona.curriculum?.work_experience_years || 10} anos de atuação
-                  </p>
-                  <p className="text-muted-foreground text-xs">
-                    Formação: {inspectingPersona.curriculum?.education_degree || inspectingPersona.education_level}
-                  </p>
-                  <p className="text-foreground/90 text-xs leading-relaxed pt-1 border-t border-border/40">
-                    {inspectingPersona.curriculum?.career_summary || inspectingPersona.bio}
-                  </p>
-                </div>
+              <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-4 text-xs text-amber-700 dark:text-amber-300">
+                Os atributos abaixo descrevem um perfil de simulação; não são ficha de uma pessoa real, dados de microdados individuais nem evidência de compra.
               </div>
 
-              {/* Bloco 2: Perfil do Domicílio */}
               <div className="rounded-lg border border-border/70 p-4 space-y-3 bg-muted/20">
-                <div className="flex items-center gap-2 text-xs font-semibold text-foreground">
-                  <Home className="size-4 text-primary" />
-                  <span>Estrutura Familiar e Dependentes</span>
-                </div>
-                <div className="grid grid-cols-2 gap-2 text-xs">
-                  <div>
-                    <span className="text-xs text-muted-foreground block">Estrutura</span>
-                    <span className="font-semibold text-foreground capitalize">
-                      {inspectingPersona.household_profile?.family_structure?.replace(/_/g, ' ') || 'Nuclear com filhos'}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="text-xs text-muted-foreground block">Membros no Lar</span>
-                    <span className="font-semibold text-foreground">
-                      {inspectingPersona.household_profile?.total_members || 3} pessoas ({inspectingPersona.household_profile?.dependents_count || 1} dependentes)
-                    </span>
-                  </div>
-                </div>
+                <div className="flex items-center gap-2 text-xs font-semibold"><Briefcase className="size-4 text-primary" /><span>Contexto informado do perfil</span></div>
+                <dl className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                  <div><dt className="text-muted-foreground">Ocupação</dt><dd className="font-medium">{inspectingPersona.curriculum?.profession_title || (inspectingPersona.decision_heuristics as any)?.occupation || "Não informada"}</dd></div>
+                  <div><dt className="text-muted-foreground">Cidade/região</dt><dd className="font-medium">{(inspectingPersona.decision_heuristics as any)?.city || "Não informada"} · {inspectingPersona.region}</dd></div>
+                  <div><dt className="text-muted-foreground">Renda mensal</dt><dd className="font-medium">{inspectingPersona.median_income_brl == null ? "Não informada" : `R$ ${inspectingPersona.median_income_brl.toLocaleString("pt-BR")}`} · fonte não verificada</dd></div>
+                  <div><dt className="text-muted-foreground">Fonte/calibração</dt><dd className="font-medium">{inspectingPersona.source_profile_type || "legada desconhecida"} · {inspectingPersona.calibration_status || "desconhecida"}</dd></div>
+                </dl>
               </div>
 
-              {/* Bloco 3: Balanço Patrimonial & Renda POF */}
-              <div className="rounded-lg border border-border/70 p-4 space-y-3 bg-muted/20">
-                <div className="flex items-center gap-2 text-xs font-semibold text-foreground">
-                  <Wallet className="size-4 text-primary" />
-                  <span>Balanço Mensal e Capacidade Financeira</span>
-                </div>
-                <div className="grid grid-cols-2 gap-3 text-xs">
-                  <div>
-                    <span className="text-xs text-muted-foreground block">Renda Bruta</span>
-                    <span className="font-semibold text-foreground">
-                      R$ {(inspectingPersona.financial_sheet?.gross_monthly_income_brl || inspectingPersona.median_income_brl).toLocaleString('pt-BR')}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="text-xs text-muted-foreground block">Renda Líquida</span>
-                    <span className="font-semibold text-foreground">
-                      R$ {(inspectingPersona.financial_sheet?.net_monthly_income_brl || Math.round(inspectingPersona.median_income_brl * 0.85)).toLocaleString('pt-BR')}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="text-xs text-muted-foreground block">Custos Fixos Essenciais</span>
-                    <span className="font-semibold text-foreground">
-                      R$ {(inspectingPersona.financial_sheet?.essential_fixed_expenses_brl || Math.round(inspectingPersona.median_income_brl * 0.7)).toLocaleString('pt-BR')}
-                    </span>
-                  </div>
-                  <div className="p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
-                    <span className="text-xs text-emerald-700 block font-medium">Folga Discricionária</span>
-                    <span className="font-bold text-emerald-800">
-                      R$ {(inspectingPersona.financial_sheet?.discretionary_surplus_brl || Math.round(inspectingPersona.median_income_brl * 0.25)).toLocaleString('pt-BR')}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="pt-2 border-t border-border/40 grid grid-cols-2 gap-2 text-xs">
-                  <div>
-                    <span className="text-muted-foreground block text-xs">Limite de Cartão</span>
-                    <span className="font-semibold text-foreground">
-                      R$ {(inspectingPersona.financial_sheet?.credit_limit_available_brl || 3000).toLocaleString('pt-BR')}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground block text-xs">Comprometimento Dívida</span>
-                    <span className="font-semibold text-foreground">
-                      {inspectingPersona.financial_sheet?.debt_commitment_percent || 20}%
-                    </span>
-                  </div>
-                </div>
+              <div className="rounded-lg border border-border/70 p-4 space-y-2 bg-muted/20">
+                <h4 className="text-xs font-semibold">Descrição comportamental fornecida ao modelo</h4>
+                <p className="text-xs leading-relaxed text-muted-foreground whitespace-pre-wrap">
+                  {inspectingPersona.bio || (inspectingPersona.decision_heuristics as any)?.profile_text || "Nenhuma descrição comportamental foi fornecida."}
+                </p>
               </div>
 
-              {/* Bloco 4: Heurísticas de Decisão */}
-              <div className="rounded-lg border border-border/70 p-4 space-y-3 bg-muted/20">
-                <div className="flex items-center gap-2 text-xs font-semibold text-foreground">
-                  <Scale className="size-4 text-primary" />
-                  <span>Heurísticas Comportamentais de Compra</span>
-                </div>
-                <div className="space-y-2 text-xs">
-                  <div>
-                    <div className="flex justify-between text-xs mb-1">
-                      <span className="text-muted-foreground">Sensibilidade a Preço</span>
-                      <span className="font-semibold">{inspectingPersona.price_sensitivity} / 10</span>
-                    </div>
-                    <Progress value={inspectingPersona.price_sensitivity * 10} className="h-1.5" />
-                  </div>
-                  <div>
-                    <div className="flex justify-between text-xs mb-1">
-                      <span className="text-muted-foreground">Índice de Cinismo / Ceticismo</span>
-                      <span className="font-semibold">{inspectingPersona.cynicism_index} / 10</span>
-                    </div>
-                    <Progress value={inspectingPersona.cynicism_index * 10} className="h-1.5" />
-                  </div>
-                  <div>
-                    <div className="flex justify-between text-xs mb-1">
-                      <span className="text-muted-foreground">Impulsividade de Compra</span>
-                      <span className="font-semibold">{inspectingPersona.impulsivity_index} / 10</span>
-                    </div>
-                    <Progress value={inspectingPersona.impulsivity_index * 10} className="h-1.5" />
-                  </div>
-                </div>
+              <div className="rounded-lg border border-border/70 p-4 space-y-2 bg-muted/20">
+                <h4 className="text-xs font-semibold">Limitação</h4>
+                <p className="text-xs leading-relaxed text-muted-foreground">Traços numéricos ou informações ausentes não devem ser tratados como observações ou parâmetros calibrados. Respostas geradas por LLM são hipóteses qualitativas, não respostas de clientes.</p>
               </div>
             </>
           )}
@@ -712,7 +578,7 @@ function FocusGroupPage() {
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Chave ativa detectada:</span>
                 <span className={keyStatus.hasActiveKey ? 'text-emerald-600 font-semibold' : 'text-amber-600 font-semibold'}>
-                  {keyStatus.hasActiveKey ? `Sim (${keyStatus.activeProvider?.toUpperCase()})` : 'Não (Operando via McFadden RUM)'}
+                  {keyStatus.hasActiveKey ? `Sim (${keyStatus.activeProvider?.toUpperCase()})` : 'Não (provedor de IA não configurado)'}
                 </span>
               </div>
               <div className="flex justify-between">

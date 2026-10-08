@@ -156,7 +156,9 @@ export const submitStoreInvoicePaymentProof = createServerFn({ method: "POST" })
         action: "invoice_payment_proof_submitted",
         payload_snapshot: { receipt_url: data.receiptUrl, store_id: storeId },
       });
-    } catch {}
+    } catch (auditError) {
+      console.error("[invoices.functions] Falha ao registrar auditoria do comprovante:", auditError);
+    }
 
     return {
       success: true,

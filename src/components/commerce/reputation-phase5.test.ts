@@ -10,11 +10,12 @@ describe("Fase 5: Portal de Reputação & SAC Auditado (Reclame Aqui)", () => {
  expect(manifest.icon).toBe("ShieldCheck");
  });
 
- it("builderRegistry deve registrar reputation_badges_strip", () => {
- const manifest = builderRegistry["reputation_badges_strip"];
- expect(manifest).toBeDefined();
- expect(manifest.name).toBe("Faixa de Selos Auditados");
- expect(manifest.icon).toBe("Award");
+ it("builderRegistry deve registrar reputation_badges_strip sem certificações seed", () => {
+	 const manifest = builderRegistry["reputation_badges_strip"];
+	 expect(manifest).toBeDefined();
+	 expect(manifest.name).toBe("Selos com fonte verificável");
+	 expect(manifest.icon).toBe("Award");
+	 expect(manifest.defaultProps.content).toEqual({});
  });
 
  it("builderRegistry deve registrar reputation_timeline_feed", () => {
@@ -27,8 +28,15 @@ describe("Fase 5: Portal de Reputação & SAC Auditado (Reclame Aqui)", () => {
  it("manifests de reputação devem possuir defaultProps válidas", () => {
  for (const key of ["reputation_score_header", "reputation_badges_strip", "reputation_timeline_feed"]) {
  const m = builderRegistry[key];
- expect(m.defaultProps).toBeDefined();
- expect(m.defaultProps.block_type).toBe(key);
- }
- });
+	 expect(m.defaultProps).toBeDefined();
+	 expect(m.defaultProps.block_type).toBe(key);
+	 expect(m.defaultProps.content).toEqual({});
+	 }
+	 });
+
+	 it("não deve preencher score, certificados ou reclamações com exemplos ao criar blocos", () => {
+	 expect(builderRegistry.reputation_score_header.defaultProps.content).not.toHaveProperty("reputation_score");
+	 expect(builderRegistry.reputation_badges_strip.defaultProps.content).not.toHaveProperty("badges");
+	 expect(builderRegistry.reputation_timeline_feed.defaultProps.content).not.toHaveProperty("complaints");
+	 });
 });

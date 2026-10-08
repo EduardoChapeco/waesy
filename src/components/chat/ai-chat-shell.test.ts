@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import { resolveAiPipelineSteps } from "@/services/ai-conversations.functions";
 import type { AIActivityStep } from "./ai-activity-trail";
 import type { ChatArtifactData } from "./chat-artifact-card";
+import { buildArtifactCsv, getArtifactTableRows } from "./ai-chat-shell";
 
 describe("Prompt 21: Shell de Conversa AI-First com Trilha de Atividade e Artefatos", () => {
   it("resolveAiPipelineSteps gera proposta comercial com artefato e passos reais de atividade", () => {
@@ -81,5 +82,29 @@ describe("Prompt 21: Shell de Conversa AI-First com Trilha de Atividade e Artefa
     expect(artifact.type).toBe("landing_page");
     expect(artifact.version).toBe(2);
     expect(artifact.data?.sections).toHaveLength(3);
+  });
+
+  it("normaliza rows reais do orquestrador e nunca cria uma linha demonstrativa", () => {
+    const rows = getArtifactTableRows({
+      headers: ["Nome", "Origem"],
+      rows: [["Hotel Central", "OpenStreetMap"]],
+    });
+
+    expect(rows).toEqual([["Hotel Central", "OpenStreetMap"]]);
+    expect(getArtifactTableRows({ headers: ["Nome"], rows: [] })).toEqual([]);
+  });
+
+  it("normaliza linhas objeto e exporta CSV RFC com escaping e proteção de fórmula", () => {
+    const csv = buildArtifactCsv({
+      headers: ["Nome", "Observação"],
+      dataRows: [
+        { Nome: "Hotel Central", Observação: "Quarto; vista\nmar" },
+        { Nome: "=HYPERLINK(\"https://waesy.app\")", Observação: "ok" },
+      ],
+    });
+
+    expect(csv).toContain("\uFEFF\"Nome\";\"Observação\"");
+    expect(csv).toContain("\"Hotel Central\";\"Quarto; vista\nmar\"");
+    expect(csv).toContain("\"'=HYPERLINK(\"\"https://waesy.app\"\")\";\"ok\"");
   });
 });

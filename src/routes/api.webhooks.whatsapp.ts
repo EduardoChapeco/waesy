@@ -4,9 +4,9 @@ import { verifyMetaWebhookSignature } from "@/lib/webhook-signature";
 import { decryptSecret } from "@/lib/crypto-vault.server";
 import { encryptConversationMessageForThread, redactWhatsAppWebhookPayload } from "@/lib/conversation-crypto.server";
 import { dispatchWhatsAppInboundFlows, resolveWhatsAppIdentity } from "@/services/whatsapp-automation-runtime.server";
+import { WHATSAPP_CREDENTIAL_PROVIDER, WHATSAPP_META_CHANNEL_PROVIDER } from "@/services/whatsapp-provider-contract";
 import { createHash } from "node:crypto";
 
-const WHATSAPP_PROVIDER = "whatsapp_cloud_api";
 const MAX_WEBHOOK_BODY_BYTES = 1_048_576;
 
 type IntegrationCredential = {
@@ -108,7 +108,7 @@ export const Route = createFileRoute("/api/webhooks/whatsapp")({
        * GET Handler: handshake de validação do Webhook da Meta / WhatsApp Cloud API.
        * A Meta envia: hub.mode, hub.verify_token e hub.challenge.
        */
-      GET: async ({ request }) => {
+      GET: async ({ request }: { request: Request }) => {
         try {
           const url = new URL(request.url);
           const mode = url.searchParams.get("hub.mode");
@@ -134,7 +134,7 @@ export const Route = createFileRoute("/api/webhooks/whatsapp")({
           const { data: storeCreds, error } = await supabase
             .from("integration_credentials")
             .select("store_id, token_payload, public_metadata, secret_payload_encrypted")
-            .eq("provider", WHATSAPP_PROVIDER)
+            .eq("provider", WHATSAPP_CREDENTIAL_PROVIDER)
             .eq("is_active", true);
 
           if (error) {
@@ -165,7 +165,7 @@ export const Route = createFileRoute("/api/webhooks/whatsapp")({
        * POST Handler: ingestão autenticada de mensagens e recibos da Meta.
        * A assinatura deve ser calculada sobre o corpo bruto antes do JSON ser usado.
        */
-      POST: async ({ request }) => {
+      POST: async ({ request }: { request: Request }) => {
         try {
           const contentLength = Number(request.headers.get("content-length") || 0);
           if (Number.isFinite(contentLength) && contentLength > MAX_WEBHOOK_BODY_BYTES) {
@@ -196,7 +196,7 @@ export const Route = createFileRoute("/api/webhooks/whatsapp")({
           const { data: credentials, error: credentialsError } = await supabase
             .from("integration_credentials")
             .select("store_id, token_payload, public_metadata, secret_payload_encrypted")
-            .eq("provider", WHATSAPP_PROVIDER)
+            .eq("provider", WHATSAPP_CREDENTIAL_PROVIDER)
             .eq("is_active", true);
 
           if (credentialsError) {
@@ -285,13 +285,13 @@ export const Route = createFileRoute("/api/webhooks/whatsapp")({
                   .from("whatsapp_channel_instances")
                   .select("id")
                   .eq("store_id", targetStoreId)
-                  .eq("provider", "meta_cloud_api")
+                  .eq("provider", WHATSAPP_META_CHANNEL_PROVIDER)
                   .eq("phone_number_id", phoneNumberId)
                   .maybeSingle();
                 const channelIdentity = await resolveWhatsAppIdentity({
                   storeId: targetStoreId,
                   instanceId: officialInstance?.id || null,
-                  provider: WHATSAPP_PROVIDER,
+                  provider: WHATSAPP_META_CHANNEL_PROVIDER,
                   externalUserId: String(message.from),
                   phone: senderPhone,
                   displayName: customerName,
@@ -327,7 +327,7 @@ export const Route = createFileRoute("/api/webhooks/whatsapp")({
                     p_user_id: null,
                     p_device_type: "mobile",
                     p_metadata: {
-                      channel: WHATSAPP_PROVIDER,
+                      channel: WHATSAPP_META_CHANNEL_PROVIDER,
                       phone_number_id: phoneNumberId,
                       message_id: String(message.id),
                       message_type: messageType,
@@ -409,7 +409,7 @@ export const Route = createFileRoute("/api/webhooks/whatsapp")({
                     delivered_at: occurredAt,
                     payload: {
                       channel: "whatsapp",
-                      provider: WHATSAPP_PROVIDER,
+                      provider: WHATSAPP_META_CHANNEL_PROVIDER,
                       phone_number_id: phoneNumberId,
                       from: senderPhone,
                       message_id: String(message.id),
@@ -423,7 +423,7 @@ export const Route = createFileRoute("/api/webhooks/whatsapp")({
                 await dispatchWhatsAppInboundFlows({
                   storeId: targetStoreId,
                   instanceId: officialInstance?.id || null,
-                  provider: WHATSAPP_PROVIDER,
+                  provider: WHATSAPP_META_CHANNEL_PROVIDER,
                   threadId,
                   identityId: channelIdentity.id,
                   phone: senderPhone,
@@ -538,4 +538,4 @@ export const Route = createFileRoute("/api/webhooks/whatsapp")({
       },
     },
   },
-});
+} as never);

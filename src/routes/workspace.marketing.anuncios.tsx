@@ -25,30 +25,14 @@ import { Mic, MicOff, Send, Wand2 } from "lucide-react";
 export const Route = createFileRoute("/workspace/marketing/anuncios")({
   head: () => ({ meta: [{ title: "Campanhas | Workspace Waesy" }] }),
   loader: async () => {
-    try {
-      const [campaigns, storeTargets, channelsSettings, tierStatus, roiMetrics] = await Promise.all([
-        listAdCampaigns().catch(() => []),
-        getStoreAdTargets().catch(() => ({ products: [], storePhone: null, storeSlug: "" })),
-        getStoreAdChannelsSettings().catch(() => null),
-        getStoreMarketingTierStatus().catch(() => ({ planTier: "free", isMaxUnlocked: false, boostDiscountPercent: 0, externalAdsAllowed: false, aiBuilderAllowed: false, connectedOAuthAccounts: [] })),
-        getMarketingRoiClosedLoopMetrics().catch(() => null),
-      ]);
-      return {
-        campaigns: Array.isArray(campaigns) ? campaigns : [],
-        storeTargets: storeTargets || { products: [], storePhone: null, storeSlug: "" },
-        channelsSettings,
-        tierStatus,
-        roiMetrics,
-      };
-    } catch {
-      return {
-        campaigns: [],
-        storeTargets: { products: [], storePhone: null, storeSlug: "" },
-        channelsSettings: null,
-        tierStatus: { planTier: "free", isMaxUnlocked: false, boostDiscountPercent: 0, externalAdsAllowed: false, aiBuilderAllowed: false, connectedOAuthAccounts: [] },
-        roiMetrics: null,
-      };
-    }
+    const [campaigns, storeTargets, channelsSettings, tierStatus, roiMetrics] = await Promise.all([
+      listAdCampaigns(),
+      getStoreAdTargets(),
+      getStoreAdChannelsSettings(),
+      getStoreMarketingTierStatus(),
+      getMarketingRoiClosedLoopMetrics(),
+    ]);
+    return { campaigns, storeTargets, channelsSettings, tierStatus, roiMetrics };
   },
   errorComponent: WorkspaceAnunciosErrorComponent,
   component: AnunciosWorkspacePage,
@@ -110,6 +94,9 @@ function AnunciosWorkspacePage() {
   const isMetaConnected = Boolean(channelsSettings?.meta_ads?.connected || (tierStatus?.connectedOAuthAccounts || []).some((a: any) => a.platform === "meta_ads" && a.status === "connected"));
   const isGoogleConnected = Boolean(channelsSettings?.google_ads?.connected || (tierStatus?.connectedOAuthAccounts || []).some((a: any) => a.platform === "google_ads" && a.status === "connected"));
   const [selectedCatalogItemId, setSelectedCatalogItemId] = useState<string>("");
+  const [aiDailyBudgetCents, setAiDailyBudgetCents] = useState<number | undefined>();
+  const [aiTargetLocation, setAiTargetLocation] = useState("");
+  const [aiTargetRadiusKm, setAiTargetRadiusKm] = useState<number | undefined>();
   const [aiCreativePreview, setAiCreativePreview] = useState<any>(null);
   const [isGeneratingAiCreative, setIsGeneratingAiCreative] = useState(false);
   const [isPublishingExternal, setIsPublishingExternal] = useState(false);
@@ -215,17 +202,19 @@ function AnunciosWorkspacePage() {
   const [formHeadline, setFormHeadline] = useState("");
   const [formFormat, setFormFormat] = useState<string>("post_patrocinado");
   const [formMediaUrl, setFormMediaUrl] = useState<string>("");
-  const [formLocation, setFormLocation] = useState("Centro Comercial");
-  const [formRadiusKm, setFormRadiusKm] = useState(15);
-  const [formDailyCents, setFormDailyCents] = useState(2000); // R$ 20,00
-  const [formTotalCents, setFormTotalCents] = useState(10000); // R$ 100,00
+  const [formLocation, setFormLocation] = useState("");
+  const [formRadiusKm, setFormRadiusKm] = useState<number | undefined>();
+  const [formDailyCents, setFormDailyCents] = useState<number | undefined>();
+  const [formTotalCents, setFormTotalCents] = useState<number | undefined>();
   const [formObjective, setFormObjective] = useState<"whatsapp_leads" | "direct_sales" | "brand_awareness">("whatsapp_leads");
 
   // Métricas Consolidadas
   const safeCampaigns = Array.isArray(campaigns) ? campaigns : [];
   const totalImpressions = safeCampaigns.reduce((acc, c) => acc + (c?.impressions_count || 0), 0);
   const totalClicks = safeCampaigns.reduce((acc, c) => acc + (c?.clicks_count || 0), 0);
-  const totalSpent = safeCampaigns.reduce((acc, c) => acc + (c?.spent_cents || 0), 0);
+  const totalSpent = safeCampaigns.length > 0 && safeCampaigns.every((c) => c?.spent_cents != null)
+    ? safeCampaigns.reduce((acc, c) => acc + (c.spent_cents ?? 0), 0)
+    : null;
   const avgCtr = totalImpressions > 0 ? ((totalClicks / totalImpressions) * 100).toFixed(1) : "0.0";
 
   const activeCount = safeCampaigns.filter((c) => c?.status === "active").length;
@@ -260,7 +249,7 @@ function AnunciosWorkspacePage() {
       id: "impressions",
       label: "Impressões Totais",
       value: totalImpressions.toLocaleString("pt-BR"),
-      description: "Pessoas únicas alcançadas nas vitrines e feed",
+      description: "Visualizações registradas em eventos de anúncio",
       icon: Eye,
       variant: "primary",
     },
@@ -268,7 +257,7 @@ function AnunciosWorkspacePage() {
       id: "clicks",
       label: "Cliques no Anúncio",
       value: totalClicks.toLocaleString("pt-BR"),
-      description: "Interações de conversão em compras ou WhatsApp",
+      description: "Eventos de clique registrados para as campanhas",
       icon: TrendingUp,
       variant: "success",
     },
@@ -276,15 +265,15 @@ function AnunciosWorkspacePage() {
       id: "ctr",
       label: "CTR Médio",
       value: `${avgCtr}%`,
-      description: "Taxa de clique sobre impressões geradas",
+      description: "Cliques registrados divididos por visualizações registradas",
       icon: Percent,
       variant: "info",
     },
     {
       id: "spent",
-      label: "Investimento Total",
-      value: formatMoney(totalSpent),
-      description: "Saldo consumido em campanhas ativas e encerradas",
+      label: "Gasto real registrado",
+      value: totalSpent == null ? "Não observado" : formatMoney(totalSpent),
+      description: "Valor exibido somente quando informado por fonte de gasto observado",
       icon: DollarSign,
       variant: "warning",
     },
@@ -312,6 +301,12 @@ function AnunciosWorkspacePage() {
       toast.error("Informe o nome da campanha.");
       return;
     }
+    if (!formLocation.trim() || !Number.isInteger(formRadiusKm) || !formRadiusKm ||
+      !Number.isInteger(formDailyCents) || !formDailyCents ||
+      !Number.isInteger(formTotalCents) || !formTotalCents) {
+      toast.error("Informe a localidade, o raio, o orçamento diário e o limite total antes de publicar.");
+      return;
+    }
     setIsSubmitting(true);
     try {
       await createAdCampaign({
@@ -320,18 +315,22 @@ function AnunciosWorkspacePage() {
           headline: formHeadline.trim() || undefined,
           format: formFormat as any,
           media_url: formMediaUrl || undefined,
-          target_location: formLocation.trim() || "Toda a Região",
+          target_location: formLocation.trim(),
           target_radius_km: formRadiusKm,
           daily_budget_cents: formDailyCents,
           total_budget_cents: formTotalCents,
           objective: formObjective,
-          destination_type: formObjective === "whatsapp_leads" ? "whatsapp" : "product",
+          destination_type: "whatsapp",
         },
       });
       toast.success("Campanha criada e ativada com sucesso!");
       setQuickCreateOpen(false);
       setFormTitle("");
       setFormHeadline("");
+      setFormLocation("");
+      setFormRadiusKm(undefined);
+      setFormDailyCents(undefined);
+      setFormTotalCents(undefined);
       router.invalidate();
     } catch (err: any) {
       toast.error(err?.message || "Erro ao criar campanha rápida.");
@@ -374,18 +373,23 @@ function AnunciosWorkspacePage() {
             <div className="space-y-1">
               <div className="flex items-center gap-2">
                 <Badge variant="outline" className="text-xs uppercase tracking-wider font-bold">
-                  Retorno Auditado
+                  Métricas observadas
                 </Badge>
                 <Badge variant={tierStatus?.isMaxUnlocked ? "default" : "secondary"} className="text-xs">
                   Tier {String(tierStatus?.planTier || "free").toUpperCase()} {tierStatus?.boostDiscountPercent ? `(-${tierStatus.boostDiscountPercent}% no Boost)` : ""}
                 </Badge>
               </div>
               <h2 className="text-base font-bold text-foreground">
-                Atribuição de Receita
+                Receita associada por identificador (não causal)
               </h2>
               <p className="text-xs text-muted-foreground">
-                {roiMetrics?.headlineProof || "R$ 0,00 atribuídos (ROI 0%)"} · {roiMetrics?.subProof || "Telemetria sincronizada com checkout e faturas."}
+                {roiMetrics?.headline || "Métricas de pedidos pagos indisponíveis."} {roiMetrics?.spendLabel || "Gasto real não observado; ROI não calculado."}
               </p>
+              {roiMetrics && (
+                <p className="text-xs text-muted-foreground">
+                  Regra: {roiMetrics.attributionRule} Período: {roiMetrics.periodLabel}
+                </p>
+              )}
             </div>
             <div className="flex items-center gap-2">
               {!tierStatus?.isMaxUnlocked && (
@@ -405,7 +409,7 @@ function AnunciosWorkspacePage() {
           {/* ── FASE 3: AI AD BUILDER (2 CLIQUES DO CATÁLOGO PARA META/GOOGLE/VITRINE) ── */}
           <div className="pt-3 border-t border-border/40 flex flex-col sm:flex-row items-stretch sm:items-end gap-3">
             <div className="flex-1 space-y-1">
-              <Label className="text-xs font-semibold">Gerador de Criativo por Catálogo</Label>
+              <Label className="text-xs font-semibold">Gerador de rascunho de criativo por catálogo</Label>
               <Select
                 value={selectedCatalogItemId}
                 onValueChange={(v) => setSelectedCatalogItemId(v)}
@@ -431,7 +435,7 @@ function AnunciosWorkspacePage() {
                   setMaxUpsellOpen(true);
                   return;
                 }
-                const targetId = selectedCatalogItemId || storeTargets?.products?.[0]?.id;
+                const targetId = selectedCatalogItemId;
                 if (!targetId) {
                   toast.error("Cadastre ao menos um produto publicado no catálogo.");
                   return;
@@ -446,7 +450,10 @@ function AnunciosWorkspacePage() {
                     },
                   });
                   setAiCreativePreview(res);
-                  toast.success("Criativo estruturado e Canvas 1080p prontos para publicação.");
+                  setAiDailyBudgetCents(undefined);
+                  setAiTargetLocation("");
+                  setAiTargetRadiusKm(undefined);
+                  toast.success("Rascunho de copy gerado por IA; revise antes de publicar.");
                 } catch (err: any) {
                   toast.error(err?.message || "Falha ao gerar criativo.");
                 } finally {
@@ -455,12 +462,31 @@ function AnunciosWorkspacePage() {
               }}
               className="h-11 rounded-lg text-xs font-semibold px-4"
             >
-              {isGeneratingAiCreative ? "Processando..." : "1. Gerar Anúncio do Catálogo"}
+              {isGeneratingAiCreative ? "Processando..." : "Gerar rascunho do catálogo"}
             </Button>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full">
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold">Orçamento diário escolhido (obrigatório)</Label>
+                <CurrencyField
+                  value={aiDailyBudgetCents}
+                  onChange={(value) => setAiDailyBudgetCents(value)}
+                  placeholder="Informe o valor"
+                  className="h-11 rounded-lg text-sm"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold">Localidade de segmentação (obrigatória)</Label>
+                <Input value={aiTargetLocation} onChange={(event) => setAiTargetLocation(event.target.value)} placeholder="Informe uma localidade" className="h-11 rounded-lg text-sm" />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold">Raio em km (obrigatório)</Label>
+                <Input type="number" min={1} max={100} value={aiTargetRadiusKm ?? ""} onChange={(event) => setAiTargetRadiusKm(event.target.value ? Number(event.target.value) : undefined)} placeholder="Informe o raio" className="h-11 rounded-lg text-sm" />
+              </div>
+            </div>
             {aiCreativePreview && (
               <Button
                 size="sm"
-                disabled={isPublishingExternal}
+                disabled={isPublishingExternal || !Number.isInteger(aiDailyBudgetCents) || !aiDailyBudgetCents || aiDailyBudgetCents < 1000 || !aiTargetLocation.trim() || !Number.isInteger(aiTargetRadiusKm) || !aiTargetRadiusKm || aiTargetRadiusKm < 1 || aiTargetRadiusKm > 100}
                 onClick={async () => {
                   setIsPublishingExternal(true);
                   try {
@@ -468,7 +494,7 @@ function AnunciosWorkspacePage() {
                       data: {
                         platform: activeTab === "google_ads" ? "google_ads" : "meta_ads",
                         campaignTitle: aiCreativePreview.creative.headline,
-                        dailyBudgetCents: aiCreativePreview.creative.suggestedDailyBudgetCents || 2500,
+                        dailyBudgetCents: aiDailyBudgetCents!,
                         durationDays: 7,
                         productId: aiCreativePreview.itemId,
                         headline: aiCreativePreview.creative.headline,
@@ -476,6 +502,8 @@ function AnunciosWorkspacePage() {
                         callToAction: aiCreativePreview.creative.callToActionLabel,
                         imageUrl: aiCreativePreview.imageUrl || undefined,
                         destinationUrl: aiCreativePreview.destinationUrl,
+                        targetLocation: aiTargetLocation.trim(),
+                        targetRadiusKm: aiTargetRadiusKm!,
                       },
                     });
                     toast.success(`Campanha publicada (${pub.externalApiStatus}) e debitada no Invoice Ledger!`);
@@ -489,7 +517,7 @@ function AnunciosWorkspacePage() {
                 }}
                 className="h-11 rounded-lg text-xs font-bold px-4"
               >
-                {isPublishingExternal ? "Publicando..." : "2. Publicar Campanha Agora"}
+                {isPublishingExternal ? "Publicando..." : "Publicar com orçamento escolhido"}
               </Button>
             )}
           </div>
@@ -497,15 +525,15 @@ function AnunciosWorkspacePage() {
           {aiCreativePreview && (
             <div className="p-4 rounded-lg bg-muted/30 border border-border/50 grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-1">
-                <span className="text-xs font-bold uppercase text-muted-foreground">Headline Estruturada</span>
+                <span className="text-xs font-bold uppercase text-muted-foreground">Headline (rascunho de IA; revise antes de usar)</span>
                 <p className="text-xs font-bold text-foreground">{aiCreativePreview.creative.headline}</p>
-                <span className="text-xs font-bold uppercase text-muted-foreground block pt-1">Canvas Spec</span>
+                <span className="text-xs font-bold uppercase text-muted-foreground block pt-1">Prévia de Canvas — rascunho</span>
                 <p className="text-xs font-mono text-muted-foreground">
                   {aiCreativePreview.canvasSpec.width}x{aiCreativePreview.canvasSpec.height} ({aiCreativePreview.canvasSpec.aspectRatio}) • {aiCreativePreview.priceFormatted}
                 </p>
               </div>
               <div className="md:col-span-2 space-y-1">
-                <span className="text-xs font-bold uppercase text-muted-foreground">Copy Persuasiva</span>
+                <span className="text-xs font-bold uppercase text-muted-foreground">Copy gerada por IA — rascunho para revisão</span>
                 <p className="text-xs text-foreground leading-relaxed">{aiCreativePreview.creative.bodyCopy}</p>
               </div>
             </div>
@@ -1120,25 +1148,33 @@ function AnunciosWorkspacePage() {
                       <Badge variant="outline" className="text-xs rounded-md font-medium px-2 py-1">
                         {FORMAT_LABELS[c.format] || c.format}
                       </Badge>
-                      <span className="text-xs text-muted-foreground flex items-center gap-1">
-                        <MapPin className="size-3 text-primary" />
-                        {c.target_location} ({c.target_radius_km} km)
-                      </span>
+                      {(c.target_location || c.target_radius_km != null) && (
+                        <span className="text-xs text-muted-foreground flex items-center gap-1">
+                          <MapPin className="size-3 text-primary" />
+                          {c.target_location || "Localidade não informada"}{c.target_radius_km != null ? ` (${c.target_radius_km} km)` : ""}
+                        </span>
+                      )}
                     </div>
 
                     <h3 className="text-sm font-bold text-foreground truncate">{c.title}</h3>
 
                     <div className="flex items-center gap-x-4 gap-y-1 flex-wrap text-xs text-muted-foreground pt-1">
                       <span>
-                        Diário:{" "}
+                        Orçamento diário planejado:{" "}
                         <strong className="text-foreground font-tabular-nums">
-                          {formatMoney(c.daily_budget_cents)}
+                          {c.daily_budget_cents == null ? "Não informado" : formatMoney(c.daily_budget_cents)}
                         </strong>
                       </span>
                       <span>
-                        Gasto:{" "}
+                        Orçamento total planejado:{" "}
                         <strong className="text-foreground font-tabular-nums">
-                          {formatMoney(c.spent_cents)}
+                          {formatMoney(c.total_budget_cents)}
+                        </strong>
+                      </span>
+                      <span>
+                        Gasto real observado:{" "}
+                        <strong className="text-foreground font-tabular-nums">
+                          {c.spent_cents == null ? "Não observado" : formatMoney(c.spent_cents)}
                         </strong>
                       </span>
                       <span>
@@ -1355,7 +1391,7 @@ function AnunciosWorkspacePage() {
                   </p>
                   <p className="text-xs text-muted-foreground flex items-center gap-1">
                     <MapPin className="size-3" />
-                    <span>{formLocation} ({formRadiusKm} km)</span>
+                    <span>{formLocation || "Localidade não informada"}{formRadiusKm ? ` (${formRadiusKm} km)` : ""}</span>
                   </p>
                 </div>
               </div>
@@ -1371,14 +1407,15 @@ function AnunciosWorkspacePage() {
                   />
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-xs font-semibold">Raio: {formRadiusKm} km</Label>
-                  <input
-                    type="range"
-                    min="1"
-                    max="50"
-                    value={formRadiusKm}
-                    onChange={(e) => setFormRadiusKm(Number(e.target.value))}
-                    className="w-full h-11 accent-primary"
+                  <Label className="text-xs font-semibold">Raio de segmentação (km)</Label>
+                  <Input
+                    type="number"
+                    min={1}
+                    max={100}
+                    value={formRadiusKm ?? ""}
+                    onChange={(e) => setFormRadiusKm(e.target.value ? Number(e.target.value) : undefined)}
+                    placeholder="Informe o raio"
+                    className="h-11 rounded-lg text-sm"
                   />
                 </div>
               </div>
@@ -1389,15 +1426,17 @@ function AnunciosWorkspacePage() {
                   <Label className="text-xs font-semibold">Orçamento Diário</Label>
                   <CurrencyField
                     value={formDailyCents}
-                    onChange={(val) => setFormDailyCents(val || 0)}
+                    onChange={(val) => setFormDailyCents(val)}
+                    placeholder="Informe o valor"
                     className="h-11 rounded-lg text-sm"
                   />
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-xs font-semibold">Limite Total</Label>
+                  <Label className="text-xs font-semibold">Orçamento total planejado</Label>
                   <CurrencyField
                     value={formTotalCents}
-                    onChange={(val) => setFormTotalCents(val || 0)}
+                    onChange={(val) => setFormTotalCents(val)}
+                    placeholder="Informe o valor"
                     className="h-11 rounded-lg text-sm"
                   />
                 </div>
@@ -1407,7 +1446,7 @@ function AnunciosWorkspacePage() {
               <div className="pt-2">
                 <Button
                   type="submit"
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || !formTitle.trim() || !formLocation.trim() || !Number.isInteger(formRadiusKm) || !formRadiusKm || !Number.isInteger(formDailyCents) || !formDailyCents || formDailyCents < 500 || !Number.isInteger(formTotalCents) || !formTotalCents || formTotalCents < 500}
                   className="w-full h-12 rounded-lg text-sm font-bold min-h-11"
                 >
                   {isSubmitting ? (

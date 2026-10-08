@@ -14,7 +14,7 @@ export function TravelTemplateEditorial({ data, className = "" }: SocialTemplate
     subtitle,
     datesOrAvailability,
     highlights = [],
-    priceCents = 249000,
+    priceCents = null,
     maxInstallments = 12,
     installmentCents,
     pricingMode = "per_person",
@@ -23,7 +23,7 @@ export function TravelTemplateEditorial({ data, className = "" }: SocialTemplate
     aspectRatio = "9:16",
     themeGradient = "ocean_blue",
     promoBadge,
-    storeName = "Waesy Turismo",
+    storeName,
   } = data;
 
   const effectiveInstallmentCents = useMemo(() => {
@@ -31,14 +31,11 @@ export function TravelTemplateEditorial({ data, className = "" }: SocialTemplate
     if (priceCents && priceCents > 0 && maxInstallments > 0) {
       return Math.round(priceCents / maxInstallments);
     }
-    return 20750;
+    return null;
   }, [installmentCents, priceCents, maxInstallments]);
 
   const formattedInclusions = useMemo(() => {
-    const list = (highlights && highlights.length > 0
-      ? highlights
-      : ["Aéreo ida e volta", "Hospedagem com café", "Traslados inclusos"]
-    ).slice(0, 4);
+    const list = (highlights || []).slice(0, 4);
 
     return list.map((item) => {
       const lower = item.toLowerCase();
@@ -117,7 +114,7 @@ export function TravelTemplateEditorial({ data, className = "" }: SocialTemplate
               aspectRatio === "1:1" ? "text-2xl" : "text-3xl"
             }`}
           >
-            {datesOrAvailability || subtitle || "Pacote Exclusivo"}
+            {datesOrAvailability || subtitle || "Período não informado"}
           </p>
 
           {/* Inclusões com Ícones */}
@@ -177,17 +174,17 @@ export function TravelTemplateEditorial({ data, className = "" }: SocialTemplate
                   aspectRatio === "1:1" ? "text-2xl" : "text-3xl"
                 }`}
               >
-                {maxInstallments}x
+                {priceCents !== null && priceCents !== undefined ? `${maxInstallments}x` : "Preço"}
               </span>
               <span className={`text-white/80 ${aspectRatio === "1:1" ? "text-sm" : "text-lg"}`}>
-                de
+                {priceCents !== null && priceCents !== undefined ? "de" : "não informado"}
               </span>
               <span
                 className={`font-black text-white tracking-tight font-mono ${
                   aspectRatio === "1:1" ? "text-3xl" : "text-5xl"
                 }`}
               >
-                {formatMoney(effectiveInstallmentCents)}
+                {effectiveInstallmentCents !== null ? formatMoney(effectiveInstallmentCents) : "—"}
               </span>
             </div>
 
@@ -205,7 +202,7 @@ export function TravelTemplateEditorial({ data, className = "" }: SocialTemplate
           <div className="flex items-center gap-2 px-5 py-3 rounded-lg bg-black/40 backdrop-blur-md border border-white/10 text-white/80">
             <ShieldCheck className="size-5 sm:size-6 text-emerald-400 shrink-0" />
             <span className="text-sm sm:text-base font-semibold tracking-tight truncate max-w-52">
-              {storeName || "Waesy Turismo"}
+              {storeName || "Agência não informada"}
             </span>
           </div>
         </div>

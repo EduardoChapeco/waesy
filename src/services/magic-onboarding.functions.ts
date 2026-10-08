@@ -9,7 +9,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
-import { getServerIdentity } from "@/lib/server-access";
+import { assertStoreAccess, getServerIdentity } from "@/lib/server-access";
 import { requireTokensOrTollbooth } from "@/lib/token-tollbooth.server";
 import { ONBOARDING_AI_COST, ONBOARDING_AI_TIME_SAVED_MINUTES } from "@/config/platform-billing.config";
 import {
@@ -79,7 +79,9 @@ export const executeMagicOnboarding = createServerFn({ method: "POST" })
   .handler(async ({ data: input }): Promise<{ success: boolean; result: MagicOnboardingResult; message: string }> => {
     const supabase = getServerClient();
     const identity = await getServerIdentity();
+    if (!identity.id) throw new Error("Autenticação necessária para iniciar onboarding.");
     const storeId = input.store_id || identity.store_id || null;
+    if (storeId) assertStoreAccess(identity, ["owner", "store_owner", "proprietario", "admin", "manager", "gerente"], storeId);
 
     const safeUrl = assertSafeUrl(input.url);
     const domain = safeUrl.hostname.replace(/^www\./, "");
@@ -246,15 +248,19 @@ export const getOnboardingJobStatus = createServerFn({ method: "GET" })
   )
   .handler(async ({ data: input }) => {
     const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    if (!identity.id) throw new Error("Autenticação necessária para consultar jobs de onboarding.");
     const { data: job, error } = await supabase
       .from("ai_async_jobs")
-      .select("id, status, progress_percent, error_message, result, started_at, finished_at")
+      .select("id, store_id, status, progress_percent, error_message, result, started_at, finished_at")
       .eq("id", input.jobId)
+      .eq("user_id", identity.id)
       .maybeSingle();
 
     if (error || !job) {
       throw new Error("Job de onboarding não encontrado.");
     }
+    if (job.store_id) assertStoreAccess(identity, ["owner", "store_owner", "proprietario", "admin", "manager", "gerente", "content"], job.store_id);
 
     return job;
   });
@@ -265,11 +271,20 @@ export const getOnboardingJobStatus = createServerFn({ method: "GET" })
  */
 export async function persistOnboardingForJob(storeId: string, jobId: string) {
   const supabase = getServerClient();
-  const { data: job } = await supabase
+  const identity = await getServerIdentity();
+  assertStoreAccess(identity, ["owner", "store_owner", "proprietario", "admin"], storeId);
+  const { data: job, error } = await supabase
     .from("ai_async_jobs")
-    .select("id, payload, result")
+    .select("id, user_id, store_id, payload, result")
     .eq("id", jobId)
+    .eq("user_id", identity.id)
     .maybeSingle();
+
+  if (error) throw new Error(`Falha ao carregar o job de onboarding: ${error.message}`);
+  if (!job) throw new Error("Job de onboarding não encontrado ou não pertence ao usuário autenticado.");
+  if (job.store_id && job.store_id !== storeId) {
+    throw new Error("O job de onboarding está vinculado a outro workspace.");
+  }
 
   const consolidated = (job?.result as any)?.consolidated || (job?.payload as any)?.consolidated;
   const sourceUrl = (job?.payload as any)?.url || "";
@@ -278,5 +293,5 @@ export async function persistOnboardingForJob(storeId: string, jobId: string) {
     const { persistOnboardingResults } = await import("./onboarding-pipeline.server");
     return await persistOnboardingResults(storeId, consolidated, sourceUrl, jobId);
   }
-  return null;
+  throw new Error("O job de onboarding não possui resultado consolidado válido para persistência.");
 }

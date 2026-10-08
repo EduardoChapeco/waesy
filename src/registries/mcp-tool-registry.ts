@@ -6,6 +6,10 @@ import { publishDomainEvent, DomainEventName } from "@/services/domain-events.fu
 import { calculateBasePriceQuote, CouponRule } from "@/lib/ad-engine/pricing-engine";
 import { getNichePackage } from "@/lib/ad-engine/niche-packages";
 import { _listStockLedger } from "@/services/canonical-stock-ledger.functions";
+import { executeSimLabBatchSimulation } from "@/services/simlab.functions";
+import { executeOrchestrateMarketingPost } from "@/services/squad-content.functions";
+import { executeUnifiedAiCall } from "@/services/api-orchestrator.functions";
+import { captureAndAnalyzeCompetitorLogic } from "@/services/market-radar.functions";
 
 export type McpToolAccessTier = "public" | "store_staff" | "admin_only";
 
@@ -1229,7 +1233,7 @@ export const MCP_TOOL_REGISTRY: Record<string, McpToolRegistryEntry> = {
   simlab_run_survey: {
     name: "simlab_run_survey",
     module: "simulation",
-    description: "Executa simulação econométrica preditiva de oferta contra amostra sintética calibrada pelo Censo IBGE 2022.",
+    description: "Executa a exploração qualitativa persistida do SimLab; não estima vendas nem usa amostra representativa.",
     tier: "store_staff",
     requiredScope: "store:analytics:read",
     permission: { action: "read", resource: "reports" },
@@ -1248,21 +1252,14 @@ export const MCP_TOOL_REGISTRY: Record<string, McpToolRegistryEntry> = {
       required: ["experimentId", "storeId"],
     },
     handler: async (ctx, args) => {
-      return {
-        experimentId: args.experimentId,
-        status: "completed",
-        sampleSize: 500,
-        confidenceScore: 0.94,
-        acceptanceRate: 0.72,
-        recommendedPriceBrl: 49.9,
-      };
+      return executeSimLabBatchSimulation({ experimentId: args.experimentId, storeId: args.storeId });
     },
   },
 
   generate_marketing_post: {
     name: "generate_marketing_post",
     module: "marketing",
-    description: "Dispara o pipeline multi-agente Aria -> Bruno -> Carla -> Diego para criar carrossel editorial em HTML5 1080x1080.",
+    description: "Gera e salva um rascunho de marketing com IA; exige revisão humana e não inclui score de validação SimLab.",
     tier: "store_staff",
     requiredScope: "store:marketing:write",
     permission: { action: "create", resource: "content" },
@@ -1280,20 +1277,17 @@ export const MCP_TOOL_REGISTRY: Record<string, McpToolRegistryEntry> = {
         storeId: { type: "string", description: "UUID da loja" },
         companyName: { type: "string", description: "Nome da marca ou empresa" },
         theme: { type: "string", description: "Tema ou promoção central do post" },
-        targetSin: { type: "string", description: "Pecado capital calibrado" },
+        targetSin: { type: "string", description: "Lente criativa opcional; não é método preditivo" },
       },
       required: ["storeId", "companyName", "theme"],
     },
     handler: async (ctx, args) => {
-      return {
-        _summary: `Carrossel HTML5 1080x1080 gerado com sucesso para ${args.companyName} — tema: ${args.theme}. Pipeline multi-agente concluído.`,
+      return executeOrchestrateMarketingPost({
         storeId: args.storeId,
         companyName: args.companyName,
         theme: args.theme,
-        generatedSlides: 5,
-        format: "carousel_html5_1080x1080",
-        status: "draft_created",
-      };
+        targetSin: args.targetSin,
+      });
     },
   },
 
@@ -1327,13 +1321,37 @@ export const MCP_TOOL_REGISTRY: Record<string, McpToolRegistryEntry> = {
       required: ["storeId", "naturalLanguagePrompt"],
     },
     handler: async (ctx, args) => {
-      const budgetBrl = args.dailyBudgetCents ? args.dailyBudgetCents / 100 : 30.0;
+      const aiResult = await executeUnifiedAiCall({
+        systemPrompt: `Converta o pedido em um rascunho de proposta de campanha em português. Não publique nem altere contas de anúncios. Não invente segmentação, alcance, impressões, CPM, conversões, ROI ou benchmark. Se orçamento, localização, histórico ou objetivo estiver ausente, retorne-o em unknowns. Retorne JSON: {"campaign_name":"...","objective":"...","audience_hypotheses":["..."],"channel_approach":"...","creative_angles":["..."],"measurement_plan":["..."],"unknowns":["..."],"requires_human_review":true}`,
+        userPrompt: JSON.stringify({
+          request: args.naturalLanguagePrompt,
+          channel: args.targetPlatform || null,
+          daily_budget_brl: args.dailyBudgetCents == null ? null : args.dailyBudgetCents / 100,
+        }),
+        responseFormat: "json_object",
+        temperature: 0.3,
+        feature: "mcp_campaign_proposal_draft",
+        storeId: args.storeId,
+      });
+      let parsed: any = aiResult.parsedJson;
+      if (!parsed && aiResult.content) {
+        try { parsed = JSON.parse(aiResult.content); } catch { throw new Error("A IA retornou proposta inválida; nenhuma estimativa de fallback foi criada."); }
+      }
+      const proposal = z.object({
+        campaign_name: z.string().trim().min(1).max(160),
+        objective: z.string().trim().min(1).max(1000),
+        audience_hypotheses: z.array(z.string().trim().min(1).max(300)).max(10),
+        channel_approach: z.string().trim().min(1).max(1500),
+        creative_angles: z.array(z.string().trim().min(1).max(300)).max(10),
+        measurement_plan: z.array(z.string().trim().min(1).max(300)).max(10),
+        unknowns: z.array(z.string().trim().min(1).max(300)).max(20),
+        requires_human_review: z.literal(true),
+      }).strict().parse(parsed);
       return {
-        campaignName: `Campanha AI: ${args.naturalLanguagePrompt.slice(0, 30)}`,
-        platform: args.targetPlatform || "meta_ads",
-        dailyBudgetBrl: budgetBrl,
-        estimatedImpressionsPerDay: Math.round(budgetBrl * 85),
-        targetAudience: "Consumidores locais em raio de 15km",
+        record_kind: "llm_generated_campaign_proposal_draft",
+        proposal,
+        provenance: { provider: aiResult.provider, model: aiResult.model, generated_at: new Date().toISOString() },
+        performance_estimates: null,
       };
     },
   },
@@ -1341,7 +1359,7 @@ export const MCP_TOOL_REGISTRY: Record<string, McpToolRegistryEntry> = {
   analyze_competitor_dna: {
     name: "analyze_competitor_dna",
     module: "marketing",
-    description: "Executa varredura de inteligência competitiva e extração do Brand DNA de um concorrente de mercado.",
+    description: "Captura a página de um concorrente já cadastrado e gera um rascunho qualitativo com fonte e proveniência; não calcula score de posicionamento ou desempenho.",
     tier: "store_staff",
     requiredScope: "store:analytics:read",
     permission: { action: "read", resource: "reports" },
@@ -1349,26 +1367,34 @@ export const MCP_TOOL_REGISTRY: Record<string, McpToolRegistryEntry> = {
     rateLimitBucket: "webmcp_tool_call_staff",
     inputZodSchema: z.object({
       storeId: z.string().uuid(),
-      competitorName: z.string().min(1),
-      segment: z.string().optional(),
+      competitorId: z.string().uuid(),
+      sourceUrl: z.string().url().optional(),
     }),
     inputSchema: {
       type: "object",
       properties: {
         storeId: { type: "string", description: "UUID da loja" },
-        competitorName: { type: "string", description: "Nome do concorrente a ser analisado" },
-        segment: { type: "string", description: "Segmento de atuação" },
+        competitorId: { type: "string", description: "UUID de um concorrente já cadastrado neste workspace" },
+        sourceUrl: { type: "string", description: "URL HTTPS pública opcional para a captura desta análise" },
       },
-      required: ["storeId", "competitorName"],
+      required: ["storeId", "competitorId"],
     },
     handler: async (ctx, args) => {
+      const snapshot = await captureAndAnalyzeCompetitorLogic({
+        competitorId: args.competitorId,
+        storeId: ctx.storeId || args.storeId,
+        sourceUrl: args.sourceUrl,
+      });
       return {
-        competitorName: args.competitorName,
-        segment: args.segment || "Varejo Local",
-        positioningScore: 78,
-        priceTier: "Médio-Alto",
-        strengths: ["Entrega rápida", "Sortimento amplo"],
-        weaknesses: ["Atendimento lento", "Preço premium"],
+        record_kind: "competitor_ai_draft",
+        competitorId: snapshot.competitor_id,
+        sourceUrl: snapshot.source_url,
+        analysisStatus: snapshot.analysis_status,
+        extractedDna: snapshot.extracted_dna,
+        marketingHooks: snapshot.marketing_hooks,
+        pricingSignals: snapshot.pricing_signals,
+        sourceEvidence: snapshot.source_evidence,
+        provenance: { provider: snapshot.ai_provider, model: snapshot.ai_model, capturedAt: snapshot.captured_at },
       };
     },
   },

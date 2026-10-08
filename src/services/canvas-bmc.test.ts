@@ -2,12 +2,12 @@ import { describe, it, expect } from "vitest";
 import { storeBmcSchema, bmcBlockItemSchema } from "./canvas-bmc.functions";
 
 describe("Business Model Canvas (BMC) & Strategic SWOT (BigTech Council)", () => {
-  it("1. Deve validar item individual de bloco do BMC com id e texto", () => {
+  it("1. Valida item de BMC sem inventar confiança estatística", () => {
     const valid = bmcBlockItemSchema.safeParse({
       id: "item-1",
       text: "Fornecedores regionais de laticínios",
       evidence: "Contrato ativo de fornecimento",
-      confidence: 0.95,
+      confidence: null,
     });
     expect(valid.success).toBe(true);
 
@@ -16,6 +16,7 @@ describe("Business Model Canvas (BMC) & Strategic SWOT (BigTech Council)", () =>
       text: "",
     });
     expect(invalid.success).toBe(false);
+    expect(bmcBlockItemSchema.safeParse({ id: "item-3", text: "Texto", confidence: 0.95 }).success).toBe(false);
   });
 
   it("2. Deve validar estrutura completa dos 9 blocos de Osterwalder", () => {
@@ -29,7 +30,7 @@ describe("Business Model Canvas (BMC) & Strategic SWOT (BigTech Council)", () =>
       customer_segments: [{ id: "s1", text: "Famílias e residentes do bairro" }],
       cost_structure: [{ id: "cs1", text: "Custos de insumos e logística urbana" }],
       revenue_streams: [{ id: "rs1", text: "Vendas à vista, PIX e carnê digital" }],
-      confidence: 0.98,
+      confidence: null,
       edited_by_human: true,
     };
 
@@ -54,7 +55,7 @@ describe("Business Model Canvas (BMC) & Strategic SWOT (BigTech Council)", () =>
       expect(parsed.data.key_activities).toEqual([]);
       expect(parsed.data.channels).toEqual([]);
       expect(parsed.data.cost_structure).toEqual([]);
-      expect(parsed.data.confidence).toBe(0.95);
+      expect(parsed.data.confidence).toBeUndefined();
       expect(parsed.data.edited_by_human).toBe(false);
     }
   });

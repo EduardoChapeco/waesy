@@ -1,5 +1,5 @@
 import { createFileRoute, useRouter, Link } from "@tanstack/react-router";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { generateMatchTimeOffers } from "@/services/marketing.functions";
 import { useCartContext } from "@/lib/cart-context";
 import { Button } from "@/components/ui/button";
@@ -10,24 +10,24 @@ import { formatMoney } from "@/lib/money";
 import { addToCart } from "@/services/cart.functions";
 
 export const Route = createFileRoute("/_store/match-time")({
- head: () => ({ meta: [{ title: "Match Time! Ofertas Surpresa" }] }),
+ head: () => ({ meta: [{ title: "Match Time | Produtos" }] }),
  loader: async () => {
    try {
- return await generateMatchTimeOffers();
+ return { state: "ok" as const, offers: await generateMatchTimeOffers() };
    } catch (err) {
      console.error("[loader:_store.match-time] Unhandled loader error:", err);
-     return null as any;
+     return { state: "error" as const, offers: [] };
     }
  },
  component: MatchTimePage,
 });
 
 function MatchTimePage() {
- const initialOffers = Route.useLoaderData();
+ const loadResult = Route.useLoaderData();
  const { refreshCart, isCartUpdating, setIsCartOpen } = useCartContext();
  const router = useRouter();
 
- const [offers, setOffers] = useState<any[]>(initialOffers);
+ const [offers] = useState<any[]>(loadResult.offers);
  const [currentIndex, setCurrentIndex] = useState(0);
  const [direction, setDirection] = useState<"left" | "right" | null>(null);
 
@@ -39,13 +39,16 @@ function MatchTimePage() {
  setDirection(swipeDirection);
 
  if (swipeDirection === "right") {
- // Match! Add to cart with the flash price
+ // The current flow adds the catalog price; no Match Time discount is attached.
  try {
- await addToCart({ data: { variantId: currentOffer.variantId, quantity: 1 } });
+ const result = await addToCart({ data: { variantId: currentOffer.variantId, quantity: 1 } });
+ if (result.status === "error") throw new Error(result.message);
  await refreshCart();
- toast.success("Deu Match! Adicionado ao carrinho com desconto oculto.");
+ toast.success("Adicionado ao carrinho pelo preço exibido.");
  } catch (e: unknown) {
- toast.error("Erro ao adicionar oferta.");
+ setDirection(null);
+ toast.error(e instanceof Error ? e.message : "Erro ao adicionar o produto ao carrinho.");
+ return;
  }
  }
 
@@ -56,16 +59,41 @@ function MatchTimePage() {
  }, 400); // Wait for CSS animation
  };
 
- if (!currentOffer && currentIndex > 0) {
+ if (loadResult.state === "error") {
+ return (
+ <div className="flex flex-col items-center justify-center min-h-[70vh] text-center p-6 space-y-6">
+ <div className="size-24 rounded-full bg-destructive/10 text-destructive flex items-center justify-center">
+ <Layers className="size-12" />
+ </div>
+ <h1 className="text-2xl font-semibold tracking-tight">Não foi possível carregar os produtos</h1>
+ <p className="text-muted-foreground max-w-md">Ocorreu uma falha ao consultar a loja. Isso não significa que não existam produtos disponíveis.</p>
+ <Button onClick={() => router.invalidate()} variant="outline" size="lg">Tentar novamente</Button>
+ </div>
+ );
+ }
+
+ if (offers.length === 0) {
  return (
  <div className="flex flex-col items-center justify-center min-h-[70vh] text-center p-6 space-y-6">
  <div className="size-24 rounded-full bg-primary/10 text-primary flex items-center justify-center">
  <Layers className="size-12" />
  </div>
- <h1 className="text-2xl font-semibold tracking-tight">Acabaram as ofertas de hoje!</h1>
+ <h1 className="text-2xl font-semibold tracking-tight">Nenhum produto disponível agora</h1>
+ <p className="text-muted-foreground max-w-md">Não encontramos produtos ativos com estoque para esta loja. Você pode consultar o catálogo.</p>
+ <Button onClick={() => router.navigate({ to: "/mercado" })} variant="outline" size="lg">Ir para o Catálogo</Button>
+ </div>
+ );
+ }
+
+ if (!currentOffer) {
+ return (
+ <div className="flex flex-col items-center justify-center min-h-[70vh] text-center p-6 space-y-6">
+ <div className="size-24 rounded-full bg-primary/10 text-primary flex items-center justify-center">
+ <Layers className="size-12" />
+ </div>
+ <h1 className="text-2xl font-semibold tracking-tight">Você chegou ao fim</h1>
  <p className="text-muted-foreground max-w-md">
- Você varreu todas as promoções secretas que preparamos para você neste momento. Volte mais
- tarde!
+ Você percorreu todos os produtos exibidos nesta sessão. Volte ao catálogo para continuar navegando.
  </p>
  <div className="flex gap-4">
  <Button onClick={() => router.navigate({ to: "/mercado" })} variant="outline" size="lg">
@@ -117,9 +145,6 @@ function MatchTimePage() {
  </div>
  )}
 
- <div className="absolute top-4 right-4 bg-primary text-primary-foreground font-semibold px-3 py-2 rounded-full text-sm">
- -{currentOffer.discountPercentage}%
- </div>
  </div>
 
  {/* Info */}
@@ -131,11 +156,8 @@ function MatchTimePage() {
  <p className="text-sm text-muted-foreground mt-1">{currentOffer.variantName}</p>
  </div>
  <div className="flex items-end gap-2 mt-auto">
- <span className="text-sm text-muted-foreground line-through">
- {formatMoney(currentOffer.originalPrice)}
- </span>
  <span className="text-2xl font-bold text-primary">
- {formatMoney(currentOffer.matchPrice)}
+ {formatMoney(currentOffer.originalPrice)}
  </span>
  </div>
  </div>
@@ -186,7 +208,7 @@ function MatchTimePage() {
  <p className="text-xs text-muted-foreground mt-6 text-center px-8">
  Deslize ou use os botões.
  <br />
- As ofertas do Match Time só são válidas se adicionadas agora!
+ O valor exibido é o preço original. Esta tela não aplica descontos; condições finais são confirmadas no checkout.
  </p>
  </div>
  );

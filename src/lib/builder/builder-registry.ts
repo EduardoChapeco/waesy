@@ -149,6 +149,11 @@ export const builderRegistry: Record<string, BlockManifest> = {
  overlayOpacity: z.enum(["light", "medium", "dark"]).default("medium"),
  desktopHeight: z.enum(["full", "proportional", "square", "natural"]).default("proportional"),
  }),
+ styleSchema: z.object({
+ showOverlay: z.boolean().default(true),
+ overlayOpacity: z.enum(["light", "medium", "dark"]).default("medium"),
+ desktopHeight: z.enum(["full", "proportional", "square", "natural"]).default("proportional"),
+ }),
 
  inspector: {
  content: [
@@ -276,6 +281,12 @@ export const builderRegistry: Record<string, BlockManifest> = {
  target_date: z.string(),
  expired_message: z.string().optional(),
  }),
+ styleSchema: z.object({
+ backgroundColor: z.string().optional(),
+ textColor: z.string().optional(),
+ boxColor: z.string().optional(),
+ boxTextColor: z.string().optional(),
+ }),
  inspector: {
  content: [
  { name: "title", label: "Título de Urgência", type: "text" },
@@ -401,6 +412,11 @@ export const builderRegistry: Record<string, BlockManifest> = {
  itemsPerRowMobile: z.enum(["1", "2"]).default("2"),
  freeScroll: z.boolean().default(true),
  }),
+ layoutSchema: z.object({
+ itemsPerRowDesktop: z.enum(["3", "4", "5"]).default("4"),
+ itemsPerRowMobile: z.enum(["1", "2"]).default("2"),
+ freeScroll: z.boolean().default(true),
+ }),
  inspector: {
  content: [
  { name: "title", label: "Título da Vitrine", type: "text" },
@@ -463,6 +479,10 @@ export const builderRegistry: Record<string, BlockManifest> = {
  surfaceVariant: z
  .enum(["default", "zine", "ticket", "lambe", "journal", "flat", "muted"])
  .default("default"),
+ text_color: z.string().optional(),
+ }),
+ styleSchema: z.object({
+ surfaceVariant: z.enum(["default", "zine", "ticket", "lambe", "journal", "flat", "muted"]).default("default"),
  text_color: z.string().optional(),
  }),
  inspector: {
@@ -1202,7 +1222,7 @@ export const builderRegistry: Record<string, BlockManifest> = {
  contentSchema: z.object({
  title: z.string().optional(),
  subtitle: z.string().optional(),
- image_url: z.string().url(),
+ image_url: z.string().url().or(z.literal("")),
  mobile_image_url: z.string().optional(),
  hotspots: z.array(
  z.object({
@@ -1408,8 +1428,8 @@ export const builderRegistry: Record<string, BlockManifest> = {
  contentSchema: z.object({
  title: z.string().optional(),
  subtitle: z.string().optional(),
- before_image: z.string().url(),
- after_image: z.string().url(),
+ before_image: z.string().url().or(z.literal("")),
+ after_image: z.string().url().or(z.literal("")),
  before_label: z.string().optional(),
  after_label: z.string().optional(),
  }),
@@ -2051,6 +2071,11 @@ export const builderRegistry: Record<string, BlockManifest> = {
  targetDate: z.string().optional(),
  bgImageUrl: z.string().optional(),
  }),
+ styleSchema: z.object({
+ backgroundColor: z.string().optional(),
+ textColor: z.string().optional(),
+ accentColor: z.string().optional(),
+ }),
  inspector: {
  content: [
  { name: "title", label: "Título da Promoção", type: "text" },
@@ -2560,15 +2585,16 @@ export const builderRegistry: Record<string, BlockManifest> = {
  type: "reputation_score_header",
  version: "1.0.0",
  name: "Score de Reputação & Confiança",
- description: "Nota geral de 0 a 10, índices de resolução e botão de abertura de chamado",
+	 description: "Indicadores de reputação somente quando houver fonte e método verificáveis",
  category: "content",
  icon: "ShieldCheck",
  allowedBuilderProfiles: "all",
  allowedParentTypes: ["container", "section"],
  allowedChildTypes: [],
  contentSchema: z.object({
- company_name: z.string().default("Nome da Empresa"),
- reputation_score: z.number().default(9.2),
+	 company_name: z.string().optional(),
+	 reputation_score: z.number().optional(),
+	 provenance_status: z.enum(["observed_verified", "user_reported", "legacy_unverified"]).optional(),
  }),
  inspector: {
  content: [
@@ -2578,26 +2604,30 @@ export const builderRegistry: Record<string, BlockManifest> = {
  defaultProps: {
  node_type: "block",
  block_type: "reputation_score_header",
- content: {
- company_name: "Nome da Empresa",
- reputation_score: 9.2,
- },
+	 content: {},
  design_tokens: {},
  layout_rules: {},
  },
  },
 
  reputation_badges_strip: {
- type: "reputation_badges_strip",
- version: "1.0.0",
- name: "Faixa de Selos Auditados",
- description: "Selos de certificação, RA1000 e atendimento humanizado",
- category: "content",
- icon: "Award",
- allowedBuilderProfiles: "all",
- allowedParentTypes: ["container", "section"],
- allowedChildTypes: [],
- contentSchema: z.object({}),
+	 type: "reputation_badges_strip",
+	 version: "1.0.0",
+	 name: "Selos com fonte verificável",
+	 description: "Exibe somente selos com proveniência e URL de fonte; não presume certificações",
+	 category: "content",
+	 icon: "Award",
+	 allowedBuilderProfiles: "all",
+	 allowedParentTypes: ["container", "section"],
+	 allowedChildTypes: [],
+	 contentSchema: z.object({
+	 badges: z.array(z.object({
+	 title: z.string().trim().min(1).max(120),
+	 desc: z.string().trim().max(500),
+	 provenance_status: z.enum(["observed_verified", "user_reported", "legacy_unverified"]),
+	 source_url: z.string().url(),
+	 }).strict()).optional(),
+	}),
  inspector: { content: [] },
  defaultProps: {
  node_type: "block",
@@ -2637,7 +2667,7 @@ export const builderRegistry: Record<string, BlockManifest> = {
  type: "reputation_timeline_feed",
  version: "1.0.0",
  name: "Feed Público de Manifestações",
- description: "Timeline de reclamações auditadas com respostas oficiais e avaliações",
+	 description: "Timeline de reclamações conectadas; ausência de registros não significa ausência de manifestações",
  category: "content",
  icon: "MessageSquare",
  allowedBuilderProfiles: "all",

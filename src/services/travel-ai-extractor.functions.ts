@@ -7,6 +7,8 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
+import { requireStaff } from "@/lib/server-access";
+import { enforceRateLimit } from "@/lib/rate-limiter";
 import { executeUnifiedAiCall } from "./api-orchestrator.functions";
 import { getDefaultCity } from "@/lib/brand.config";
 
@@ -46,12 +48,15 @@ export type ExtractedTravelAdDTO = z.infer<typeof ExtractedTravelAdSchema>;
 export type TravelParsedData = ExtractedTravelAdDTO;
 
 export const ParseTravelMediaInputSchema = z.object({
-  fileBase64: z.string().optional(),
-  fileMime: z.string().optional(),
-  fileName: z.string().optional(),
-  rawText: z.string().optional(),
-  destinationHint: z.string().optional(),
-});
+  fileBase64: z.string().max(12_000_000, "Arquivo de mídia excede o limite de 9 MB.").optional(),
+  fileMime: z.string().trim().max(120).optional(),
+  fileName: z.string().max(240).optional(),
+  rawText: z.string().max(100_000, "Texto de extração excede o limite permitido.").optional(),
+  destinationHint: z.string().trim().max(160).optional(),
+}).refine(
+  (value) => Boolean(value.rawText?.trim() || (value.fileBase64 && value.fileMime)),
+  { message: "Informe uma imagem com MIME ou um texto para extração." },
+);
 
 /**
  * 1. Extração Inteligente por Visão Computacional / OCR
@@ -61,6 +66,8 @@ export const ParseTravelMediaInputSchema = z.object({
 export const parseTravelMediaAI = createServerFn({ method: "POST" })
   .validator(ParseTravelMediaInputSchema)
   .handler(async ({ data }): Promise<{ success: boolean; data: ExtractedTravelAdDTO }> => {
+    const identity = await requireStaff();
+    enforceRateLimit(`${identity.store_id}:${identity.id}`, "ai_generation");
     const supabase = getServerClient();
 
     const systemPrompt = `Você é o Agente Especialista de Inteligência de Viagens e Turismo da Plataforma Waesy.

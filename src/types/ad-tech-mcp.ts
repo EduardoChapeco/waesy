@@ -11,22 +11,18 @@ export interface CampaignCreativeMockup {
   headline: string;
   bodyCopy: string;
   callToActionLabel: 'Comprar Agora' | 'Saiba Mais' | 'Garantir Ingresso' | 'Fazer Reserva' | 'Chamar no WhatsApp';
-  destinationUrl: string;
-  recommendedImageUrl: string;
+  destinationUrl: string | null;
+  recommendedImageUrl: string | null;
   displayUrlText?: string;
   sponsorHandle?: string;
 }
 
 export interface CampaignTargetingBlueprint {
-  locationLabel: string;
-  radiusKm: number;
-  ageRange: [number, number];
+  locationLabel: string | null;
+  radiusKm: number | null;
+  ageRange: [number, number] | null;
   interestTags: string[];
-  potentialAudienceReach: {
-    minDailyImpressions: number;
-    maxDailyImpressions: number;
-    estimatedCpaCents: number;
-  };
+  potentialAudienceReach: null;
 }
 
 export interface DynamicRenderableBlock {
@@ -36,7 +32,12 @@ export interface DynamicRenderableBlock {
   metadata: {
     generatedAt: string;
     sourcePrompt: string;
-    modelPersona: 'AdTech-Optimizer-V4';
+    provenance: {
+      source: 'ai_generated_draft';
+      provider: string | null;
+      model: string | null;
+    };
+    planningAssumptions: string[];
   };
   payload: {
     campaignTitle: string;
@@ -46,15 +47,14 @@ export interface DynamicRenderableBlock {
       dailyCents: number;
       durationDays: number;
       totalCents: number;
-      suggestedBiddingStrategy: 'LOWEST_COST_MAX_CONVERSIONS';
+      suggestedBiddingStrategy: 'not_selected';
     };
     targeting: CampaignTargetingBlueprint;
     creative: CampaignCreativeMockup;
     actionButtons: {
       primaryAction: {
-        label: 'Aprovar & Ativar Campanha';
+        label: 'Salvar proposta no Waesy';
         apiEndpoint: '/api/marketing/campaigns/approve';
-        payloadToken: string;
       };
       secondaryAction: {
         label: 'Editar Parâmetros';

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { JsonValueSchema } from "@/types/json-value";
 
 // ============================================================================
 // SCHEMAS & TIPOS CANÔNICOS: SQUADS AGÊNTICOS & ONBOARDING MULTIMODAL & MERCADO
@@ -102,11 +103,11 @@ export type StoreSquadRunDTO = z.infer<typeof StoreSquadRunSchema>;
 
 // BRAND DNA & ARQUÉTIPOS
 export const BrandDnaProfileSchema = z.object({
-  id: z.string().uuid(),
+  id: z.string().uuid().nullable(),
   store_id: z.string().uuid(),
-  archetype: z.string().default("O Herói"),
+  archetype: z.string(),
   archetype_justification: z.string().nullable().optional(),
-  tone_of_voice: z.string().default("Profissional e acolhedor"),
+  tone_of_voice: z.string(),
   tone_rules: z.array(z.string()).default([]),
   content_pillars: z.array(z.string()).default([]),
   forbidden_words: z.array(z.string()).default([]),
@@ -124,8 +125,14 @@ export const BrandDnaProfileSchema = z.object({
     opportunities: z.array(z.string()).default([]),
     threats: z.array(z.string()).default([]),
   }),
-  created_at: z.string().optional(),
-  updated_at: z.string().optional(),
+  source_url: z.string().nullable().optional(),
+  source_evidence: z.record(z.string(), JsonValueSchema).optional(),
+  ai_provider: z.string().nullable().optional(),
+  ai_model: z.string().nullable().optional(),
+  analysis_status: z.enum(["not_created", "legacy_unverified", "ai_generated_draft", "human_edited"]).optional(),
+  edited_by_human: z.boolean().optional(),
+  created_at: z.string().nullable().optional(),
+  updated_at: z.string().nullable().optional(),
 });
 
 export type BrandDnaProfileDTO = z.infer<typeof BrandDnaProfileSchema>;
@@ -150,25 +157,29 @@ export const CompetitorSnapshotSchema = z.object({
   id: z.string().uuid(),
   competitor_id: z.string().uuid(),
   store_id: z.string().uuid(),
-  source_url: z.string(),
-  snapshot_type: z.enum(["full_page", "mobile_hero", "menu_card", "social_grid"]).default("full_page"),
-  screenshot_url: z.string(),
+  source_url: z.string().nullable(),
+  snapshot_type: z.enum(["website", "full_page", "mobile_hero", "menu_card", "social_grid"]).nullable(),
+  screenshot_url: z.string().nullable(),
   extracted_dna: z.object({
-    brand_archetype: z.string().default("Desconhecido"),
+    brand_archetype: z.string(),
     color_palette: z.array(z.string()).default([]),
-    typography: z.string().default("Inter, sans-serif"),
+    typography: z.string(),
     strengths: z.array(z.string()).default([]),
     weaknesses: z.array(z.string()).default([]),
     differentiation_gap: z.string().default(""),
   }),
   marketing_hooks: z.array(z.string()).default([]),
   pricing_signals: z.object({
-    tier: z.enum(["budget", "mid_market", "premium", "luxury"]).default("mid_market"),
-    average_ticket_estimate: z.number().default(0),
-    promotional_intensity: z.enum(["low", "moderate", "aggressive"]).default("moderate"),
+    tier: z.enum(["budget", "mid_market", "premium", "luxury"]).nullable(),
+    average_ticket_estimate: z.number().nonnegative().nullable(),
+    promotional_intensity: z.enum(["low", "moderate", "aggressive"]).nullable(),
   }),
   analyzed_by_agent_id: z.string().nullable().optional(),
-  captured_at: z.string().optional(),
+  analysis_status: z.enum(["legacy_unverified", "ai_generated_draft"]).optional(),
+  source_evidence: z.record(z.string(), JsonValueSchema).optional(),
+  ai_provider: z.string().nullable().optional(),
+  ai_model: z.string().nullable().optional(),
+  captured_at: z.string().nullable().optional(),
 });
 
 export type CompetitorSnapshotDTO = z.infer<typeof CompetitorSnapshotSchema>;

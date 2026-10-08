@@ -9,6 +9,7 @@
  */
 
 import { cleanHtmlText, resolveImageUrl } from "./mechanical-extractor";
+import { validateBrandSourceUrl } from "@/lib/brand-source-url";
 
 export interface ExtractedRecipe {
   title: string;
@@ -30,7 +31,7 @@ export interface ExtractedRecipe {
 export interface ExtractedEvent {
   title: string;
   description: string;
-  startDate: string;
+  startDate?: string;
   endDate?: string;
   venueName?: string;
   address?: string;
@@ -38,7 +39,7 @@ export interface ExtractedEvent {
   state?: string;
   priceMinCents?: number;
   priceMaxCents?: number;
-  isFree: boolean;
+  isFree?: boolean;
   ticketUrl?: string;
   organizerName?: string;
   coverImageUrl?: string;
@@ -186,8 +187,8 @@ export function extractEventFromJsonLd(html: string, sourceUrl: string): Extract
             const title = node.name || node.headline;
             if (title == null || String(title).trim().length === 0) continue;
 
-            const startDate = node.startDate || new Date().toISOString();
-            const endDate = node.endDate;
+            const startDate = typeof node.startDate === "string" ? node.startDate : undefined;
+            const endDate = typeof node.endDate === "string" ? node.endDate : undefined;
 
             // Local
             let venueName: string | undefined;
@@ -214,27 +215,30 @@ export function extractEventFromJsonLd(html: string, sourceUrl: string): Extract
             // Ingressos e Preços
             let priceMinCents: number | undefined;
             let priceMaxCents: number | undefined;
-            let isFree = false;
-            let ticketUrl = node.url || sourceUrl;
+            let isFree: boolean | undefined;
+            let ticketUrl: string | undefined;
 
             const offers = node.offers;
             if (offers) {
               const offerList = Array.isArray(offers) ? offers : [offers];
               for (const off of offerList) {
-                if (off.url) ticketUrl = off.url;
-                if (off.price !== undefined) {
-                  const val = parseFloat(String(off.price));
-                  if (!isNaN(val)) {
+                if (typeof off.url === "string") {
+                  try {
+                    ticketUrl = validateBrandSourceUrl(new URL(off.url, sourceUrl).toString()).toString();
+                  } catch {
+                    // Non-public or unsafe offer URLs are omitted rather than surfaced as ticket links.
+                  }
+                }
+                if (off.price !== undefined && off.price !== null) {
+                  const val = typeof off.price === "number" ? off.price : Number(String(off.price).trim());
+                  if (Number.isFinite(val) && val >= 0) {
                     const cents = Math.round(val * 100);
                     if (cents === 0) isFree = true;
                     if (priceMinCents === undefined || cents < priceMinCents) priceMinCents = cents;
                     if (priceMaxCents === undefined || cents > priceMaxCents) priceMaxCents = cents;
                   }
                 }
-                if (off.isAccessibleForFree === true) {
-                  isFree = true;
-                  priceMinCents = 0;
-                }
+                if (off.isAccessibleForFree === true) isFree = true;
               }
             }
 
@@ -251,12 +255,12 @@ export function extractEventFromJsonLd(html: string, sourceUrl: string): Extract
               "",
               node.description ? `${node.description}\n` : "",
               "### Detalhes do Evento",
-              `- **Data:** ${new Date(startDate).toLocaleString("pt-BR")}`,
+              startDate && Number.isFinite(Date.parse(startDate)) ? `- **Data:** ${new Date(startDate).toLocaleString("pt-BR")}` : "- **Data:** Não informada na fonte",
               endDate ? `- **Término:** ${new Date(endDate).toLocaleString("pt-BR")}` : "",
               venueName ? `- **Local:** ${venueName}` : "",
               address ? `- **Endereço:** ${address}` : "",
               city ? `- **Cidade:** ${city}${state ? ` - ${state}` : ""}` : "",
-              isFree ? "- **Entrada:** Gratuita" : priceMinCents ? `- **Ingressos:** A partir de R$ ${(priceMinCents / 100).toFixed(2).replace(".", ",")}` : "",
+              isFree === true ? "- **Entrada:** Gratuita (declarada na fonte)" : priceMinCents != null && priceMinCents > 0 ? `- **Ingressos:** A partir de R$ ${(priceMinCents / 100).toFixed(2).replace(".", ",")}` : "",
               organizer ? `- **Organização:** ${organizer}` : "",
               ticketUrl ? `\n[Comprar / Reservar Ingressos](${ticketUrl})` : "",
             ].filter(Boolean);
@@ -695,4 +699,3 @@ export function linkRecipeIngredientsToInventory(
     };
   });
 }
-

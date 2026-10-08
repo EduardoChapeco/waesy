@@ -1,4 +1,6 @@
 import { resolveStudioMotionClasses } from "@/lib/builder/motion-runtime";
+import { BuilderAssetRefSchema } from "@/lib/builder/asset-contract";
+import { BuilderAssetCredits } from "@/components/builder/BuilderAssetCredits";
 
 function resolveAnimationClasses(designTokens?: Record<string, any>, layoutRules?: Record<string, any>): string {
  const anim = designTokens?.animation || layoutRules?.animation;
@@ -165,6 +167,7 @@ const componentMap: Record<string, React.FC<any>> = {
   biolink_profile_header: BiolinkProfileSection,
   biolink_action_buttons: BiolinkActionButtonsSection,
   biolink_pix_card: BiolinkPixCardSection,
+  office_contract_viewer: OfficeContractViewer,
   location_map_card: LocationMapCardSection,
   newsletter_capture: NewsletterCaptureSection,
 };
@@ -186,20 +189,36 @@ function createOmniBlockRenderer(blockType: string): React.FC<any> {
  const definition = getSiteBlockByIdStrict(OMNI_BLOCK_RENDERER_IDS[blockType] ?? blockType);
  const OmniComponent = definition?.component as React.ComponentType<any> | undefined;
 
- return function OmniBlockRenderer({ content, node_id, design_tokens }: any) {
+ return function OmniBlockRenderer({ content, node_id, design_tokens, asset_refs }: any) {
   if (!OmniComponent) return null;
   return (
-   <OmniComponent
-    id={node_id}
-    data={content ?? {}}
-    styling={design_tokens?.omniStyling}
-   />
+   <div className="w-full">
+    <OmniComponent
+     id={node_id}
+     data={content ?? {}}
+     styling={design_tokens?.omniStyling}
+    />
+    <BuilderAssetCredits assets={Array.isArray(asset_refs) ? asset_refs : []} />
+   </div>
   );
  };
 }
 
 for (const blockType of Object.keys(OMNI_BLOCK_RENDERER_IDS)) {
- componentMap[`${OMNI_EXPERIENCE_NODE_PREFIX}${blockType}`] = createOmniBlockRenderer(blockType);
+  componentMap[`${OMNI_EXPERIENCE_NODE_PREFIX}${blockType}`] = createOmniBlockRenderer(blockType);
+}
+
+/**
+ * Contrato de cobertura usado pelo Builder CMS e pelos gates de publicação.
+ * Blocos estruturais não precisam de componente leaf; aliases são resolvidos
+ * antes do dispatch e os blocos Omni possuem renderer próprio.
+ */
+export const EXPERIENCE_STRUCTURAL_BLOCK_TYPES = new Set(["section", "container"]);
+export function getExperienceRendererBlockTypes(): string[] {
+  return Object.keys(componentMap);
+}
+export function getExperienceRendererAliases(): Record<string, string> {
+  return { ...BLOCK_TYPE_ALIASES };
 }
 
 // ---------------------------------------------------------------------------
@@ -453,6 +472,16 @@ export function sanitizeNodeProps(rawNode: ExperienceNode): ExperienceNode {
       rawNode.action_bindings && typeof rawNode.action_bindings === "object"
         ? rawNode.action_bindings
         : {},
+    section_anchor_id:
+      typeof rawNode.section_anchor_id === "string" && /^[a-z][a-z0-9_-]{0,63}$/.test(rawNode.section_anchor_id)
+        ? rawNode.section_anchor_id
+        : undefined,
+    asset_refs: Array.isArray(rawNode.asset_refs)
+      ? rawNode.asset_refs.flatMap((asset: unknown) => {
+          const parsed = BuilderAssetRefSchema.safeParse(asset);
+          return parsed.success ? [parsed.data] : [];
+        })
+      : undefined,
     children: Array.isArray(rawNode.children) ? rawNode.children.map(sanitizeNodeProps) : undefined,
   };
 }
@@ -510,9 +539,9 @@ function ExperienceNodeRenderer({
       node.layout_rules as any,
     );
     if (!isEditing) {
-      if (style || className) {
+      if (style || className || (node as any).section_anchor_id) {
         return (
-          <div className={cn(className, animClasses)} style={style}>
+          <div id={(node as any).section_anchor_id} className={cn(className, animClasses)} style={style}>
             {children}
           </div>
         );
@@ -522,6 +551,7 @@ function ExperienceNodeRenderer({
     const isSelected = selectedNodeId === node.id;
     return (
       <div
+        id={(node as any).section_anchor_id}
         className={cn(
           "relative group cursor-pointer transition-all outline-none",
           isSelected
@@ -838,6 +868,7 @@ function ExperienceNodeRenderer({
         layout_rules={layoutRules}
         data_bindings={node.data_bindings}
         action_bindings={node.action_bindings}
+        asset_refs={node.asset_refs}
         isEditing={isEditing}
         // ── Dynamic data ────────────────────────────────────────────────────
         resolvedProducts={resolvedProducts}

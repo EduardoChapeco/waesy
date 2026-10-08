@@ -2,7 +2,6 @@ import { describe, it, expect } from 'vitest';
 import { NicheCalculationEngine } from './niche-calculation-engine';
 import { ConditionalStepEngine } from './conditional-step-engine';
 import { FormFieldEngine } from './form-field-engine';
-import { SimLabV2Engine } from './simlab-v2-engine';
 
 describe('ONDA 6.1: HOMOLOGAÇÃO MULTINICHO E ISOLAMENTO DE JORNADAS', () => {
 
@@ -57,8 +56,8 @@ describe('ONDA 6.1: HOMOLOGAÇÃO MULTINICHO E ISOLAMENTO DE JORNADAS', () => {
  });
 
  // ─── 3. JORNADA EVENTOS ───
- describe('Jornada Eventos (Lotes Dinâmicos -> Subpainel -> Projeção IA)', () => {
- it('deve simular virada de lote para festival e prever consumo médio de chopp', () => {
+ describe('Jornada Eventos (Cálculo Determinístico de Lotes)', () => {
+ it('deve calcular virada de lote e taxas com os dados fornecidos', () => {
  const lot = NicheCalculationEngine.calculateEventLotPrice({
  basePriceCents: 12000, // R$ 120,00
  convenienceTaxPercentage: 10,
@@ -73,16 +72,6 @@ describe('ONDA 6.1: HOMOLOGAÇÃO MULTINICHO E ISOLAMENTO DE JORNADAS', () => {
  expect(lot.totalChargedCents).toBe(18480); // R$ 184,80
  expect(lot.isLotSoldOut).toBe(false);
 
- // Simulação SimLab V2 para o evento
- const simulation = SimLabV2Engine.simulateOffer({
- title: 'Festival Sunset 2026',
- description: 'Open food com amigos e lineup alternativo',
- priceCents: 18480,
- niche: 'eventos',
- });
-
- expect(simulation.overallScore).toBeGreaterThan(0);
- expect(simulation.actionableInsights.length).toBeGreaterThan(0);
  });
  });
 

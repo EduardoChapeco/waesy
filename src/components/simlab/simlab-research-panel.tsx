@@ -1,10 +1,30 @@
 import { useState, useEffect, useCallback } from "react";
-import { Zap, Activity, FileLineChart, BrainCircuit, Users, Search, Rocket, Clock, CheckCircle2, XCircle, AlertTriangle, ChevronRight, RefreshCw, Loader2, History } from "lucide-react";
+import {
+  Zap,
+  Activity,
+  BrainCircuit,
+  Users,
+  Search,
+  Rocket,
+  Clock,
+  CheckCircle2,
+  XCircle,
+  AlertTriangle,
+  ChevronRight,
+  RefreshCw,
+  Loader2,
+  History,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { listResearchSessions, createSimLabExperiment, executeSimLabBatchSimulation, fetchSyntheticArchetypes } from "@/services/simlab.functions";
+import {
+  listResearchSessions,
+  createSimLabExperiment,
+  executeSimLabBatchSimulation,
+  fetchSyntheticArchetypes,
+} from "@/services/simlab.functions";
 import type { SyntheticArchetype } from "@/types/simlab";
 
 export type ResearchTab = "market" | "brand" | "planning";
@@ -24,7 +44,7 @@ const TAB_CONFIG: TabItem[] = [
     label: "Pesquisa de Mercado",
     icon: Search,
     placeholder:
-      "Ex: Vamos lançar um pacote de viagem ou produto exclusivo por R$ 4.200. Qual a aceitação do público e probabilidade real de compra?",
+      "Ex: Vamos lançar um pacote de viagem ou produto exclusivo por R$ 4.200. Que dúvidas e objeções devemos explorar antes de um teste com clientes reais?",
     moduleType: "market_research",
     stimulusType: "product_hypothesis",
   },
@@ -33,7 +53,7 @@ const TAB_CONFIG: TabItem[] = [
     label: "Validação de Marca",
     icon: Activity,
     placeholder:
-      "Ex: Queremos mudar o tom da nossa comunicação para mais descontraído e focado na geração Z. Como as diferentes classes socioeconômicas reagem?",
+      "Ex: Queremos mudar o tom da nossa comunicação para mais descontraído e focado na geração Z. Que aspectos da mensagem podem ser pouco claros ou suscitar dúvidas?",
     moduleType: "brand_audit",
     stimulusType: "brand_tone",
   },
@@ -42,16 +62,13 @@ const TAB_CONFIG: TabItem[] = [
     label: "Plano Estratégico",
     icon: Rocket,
     placeholder:
-      "Ex: Meta: vender 50 pacotes/unidades este mês usando tráfego pago, Instagram ads e WhatsApp com oferta antecipada. Como estruturar?",
+      "Ex: Meta: vender 50 pacotes/unidades este mês usando tráfego pago, Instagram ads e WhatsApp com oferta antecipada. Que hipóteses e riscos operacionais devemos investigar?",
     moduleType: "strategic_planning",
     stimulusType: "campaign_brief",
   },
 ];
 
-const STATUS_CONFIG: Record<
-  string,
-  { label: string; color: string; icon: React.ElementType }
-> = {
+const STATUS_CONFIG: Record<string, { label: string; color: string; icon: React.ElementType }> = {
   queued: { label: "Na fila", color: "text-blue-500", icon: Clock },
   running: { label: "Processando", color: "text-amber-500", icon: Loader2 },
   completed: {
@@ -63,33 +80,6 @@ const STATUS_CONFIG: Record<
   cancelled: { label: "Cancelado", color: "text-muted-foreground", icon: XCircle },
 };
 
-const VERDICT_CONFIG: Record<string, { label: string; color: string }> = {
-  approved: {
-    label: "Aprovado",
-    color: "bg-emerald-500/15 text-emerald-600 border-emerald-500/30",
-  },
-  revise: {
-    label: "Revisar",
-    color: "bg-amber-500/15 text-amber-600 border-amber-500/30",
-  },
-  blocked: {
-    label: "Bloqueado",
-    color: "bg-destructive/15 text-destructive border-destructive/30",
-  },
-  aprovado_para_veiculacao: {
-    label: "Aprovado",
-    color: "bg-emerald-500/15 text-emerald-600 border-emerald-500/30",
-  },
-  revisar_com_ajustes: {
-    label: "Revisar",
-    color: "bg-amber-500/15 text-amber-600 border-amber-500/30",
-  },
-  bloqueado_por_alto_risco: {
-    label: "Bloqueado",
-    color: "bg-destructive/15 text-destructive border-destructive/30",
-  },
-};
-
 export interface SimResearchRun {
   id: string;
   title: string;
@@ -97,14 +87,14 @@ export interface SimResearchRun {
   module_type?: string;
   stimulus_type?: string;
   status: "queued" | "running" | "completed" | "failed" | "cancelled";
-  verdict?: string | null;
   summary_insight?: string;
+  evidence_level?:
+    "exploratory_synthetic" | "observed_association" | "randomized_experiment" | "legacy_unknown";
   execution_results?: Array<{
     persona_name: string;
-    purchase_intent: number;
     feedback: string;
+    response_origin?: string;
   }>;
-  score?: number | null;
   created_at?: string;
 }
 
@@ -136,25 +126,12 @@ function RunHistoryItem({
         <span className="text-xs font-semibold text-foreground truncate flex-1">
           {run.title || run.objective}
         </span>
-        <StatusIcon
-          size={12}
-          className={cn(status.color, isActive && "animate-spin")}
-        />
+        <StatusIcon size={12} className={cn(status.color, isActive && "animate-spin")} />
       </div>
       <div className="flex items-center gap-2 mt-2">
         <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-mono">
           {(run.module_type || "pesquisa").replace("_", " ")}
         </span>
-        {run.verdict && VERDICT_CONFIG[run.verdict] && (
-          <span
-            className={cn(
-              "text-[10px] px-2 py-1 rounded border font-semibold",
-              VERDICT_CONFIG[run.verdict].color,
-            )}
-          >
-            {VERDICT_CONFIG[run.verdict].label}
-          </span>
-        )}
       </div>
     </button>
   );
@@ -166,9 +143,7 @@ function InsightPanel({ run }: { run: SimResearchRun | null }) {
       <div className="h-full flex flex-col items-center justify-center text-center space-y-4 opacity-60 p-6 min-h-[300px]">
         <BrainCircuit size={48} className="text-muted-foreground" />
         <div>
-          <p className="font-bold text-sm text-foreground">
-            Nenhuma simulação selecionada
-          </p>
+          <p className="font-bold text-sm text-foreground">Nenhuma simulação selecionada</p>
           <p className="text-xs text-muted-foreground mt-1">
             Crie uma nova pesquisa ou selecione um item do histórico ao lado.
           </p>
@@ -187,11 +162,10 @@ function InsightPanel({ run }: { run: SimResearchRun | null }) {
           <div className="absolute -top-1 -right-1 w-3 h-3 bg-primary rounded-full animate-ping" />
         </div>
         <div>
-          <p className="font-bold text-sm text-foreground">
-            Injetando estímulos nas personas...
-          </p>
+          <p className="font-bold text-sm text-foreground">Injetando estímulos nas personas...</p>
           <p className="text-xs text-muted-foreground mt-1">
-            Calculando utilidade discreta McFadden e sensibilidade ABEP.
+            Gerando respostas hipotéticas de perfis sintéticos; isso não representa pesquisa
+            observada.
           </p>
         </div>
         <div className="flex gap-1 justify-center pt-2">
@@ -221,57 +195,17 @@ function InsightPanel({ run }: { run: SimResearchRun | null }) {
     );
   }
 
-  const avgScore =
-    run.score ??
-    (run.execution_results && run.execution_results.length > 0
-      ? Math.round(
-          run.execution_results.reduce((acc, curr) => acc + curr.purchase_intent, 0) /
-            run.execution_results.length,
-        )
-      : null);
-
   return (
     <div className="space-y-5 animate-in fade-in zoom-in-95">
-      {/* Score */}
-      {avgScore !== null && (
-        <div className="flex items-center gap-3">
-          <div
-            className={cn(
-              "p-3 rounded-lg border",
-              avgScore > 65
-                ? "bg-emerald-500/15 text-emerald-600 border-emerald-500/30"
-                : "bg-amber-500/15 text-amber-600 border-amber-500/30",
-            )}
-          >
-            <FileLineChart size={24} />
-          </div>
-          <div>
-            <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">
-              Score de Viabilidade de Mercado
-            </p>
-            <span className="text-3xl font-extrabold text-foreground">
-              {avgScore}%
-            </span>
-          </div>
-        </div>
-      )}
-
-      {/* Veredito */}
-      {run.verdict && VERDICT_CONFIG[run.verdict] && (
-        <div>
-          <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold mb-1">
-            Veredito Geral
-          </p>
-          <span
-            className={cn(
-              "inline-block text-xs px-3 py-1 rounded-full border font-bold",
-              VERDICT_CONFIG[run.verdict].color,
-            )}
-          >
-            {VERDICT_CONFIG[run.verdict].label}
-          </span>
-        </div>
-      )}
+      <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-3">
+        <p className="text-xs font-semibold text-foreground">
+          Exploração qualitativa — não é previsão
+        </p>
+        <p className="mt-1 text-[11px] text-muted-foreground">
+          Perfis sintéticos não são clientes entrevistados; não inferimos conversão, aprovação ou
+          viabilidade a partir dessas respostas.
+        </p>
+      </div>
 
       {/* Sumário executivo */}
       {run.summary_insight && (
@@ -285,36 +219,28 @@ function InsightPanel({ run }: { run: SimResearchRun | null }) {
         </div>
       )}
 
-      {/* Feedbacks de Personas */}
+      {/* Feedbacks qualitativos sintéticos ou legados */}
       {run.execution_results && run.execution_results.length > 0 && (
         <div className="space-y-2">
           <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold flex items-center gap-1">
-            <AlertTriangle size={12} className="text-amber-500" /> Reações Preditivas
+            <AlertTriangle size={12} className="text-amber-500" /> Reações hipotéticas
           </p>
           <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
             {run.execution_results.map((res, idx) => (
               <div
                 key={idx}
-                className="flex flex-col gap-1 p-3 bg-background rounded-lg border border-border/60"
+                className="flex flex-col gap-2 p-3 bg-background rounded-lg border border-border/60"
               >
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-foreground">
-                    {res.persona_name}
-                  </span>
-                  <Badge
-                    variant="outline"
-                    className={cn(
-                      "text-[10px] font-mono",
-                      res.purchase_intent > 60
-                        ? "text-emerald-600 border-emerald-500/30"
-                        : "text-amber-600 border-amber-500/30",
-                    )}
-                  >
-                    {res.purchase_intent}% intenção
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-xs font-semibold text-foreground">{res.persona_name}</span>
+                  <Badge variant="outline" className="text-[10px]">
+                    {res.response_origin === "llm_synthetic"
+                      ? "Sintética / IA"
+                      : "Origem não validada"}
                   </Badge>
                 </div>
                 <p className="text-xs text-muted-foreground leading-relaxed">
-                  {res.feedback}
+                  {res.feedback || "Sem resposta disponível."}
                 </p>
               </div>
             ))}
@@ -333,39 +259,38 @@ export function SimLabResearchPanel({ storeId }: { storeId: string }) {
   const [selectedRunId, setSelectedRunId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [personasCount, setPersonasCount] = useState(12);
 
   const currentTab = TAB_CONFIG.find((t) => t.id === activeTab)!;
 
   const loadData = useCallback(async () => {
     try {
+      setLoadError(null);
       const [sessions, archetypes] = await Promise.all([
-        listResearchSessions().catch(() => []),
-        fetchSyntheticArchetypes().catch(() => []),
+        listResearchSessions(),
+        fetchSyntheticArchetypes(),
       ]);
 
-      if (archetypes && archetypes.length > 0) {
-        setPersonasCount(archetypes.length);
-      }
+      setPersonasCount(archetypes.length);
 
-      if (sessions && sessions.length > 0) {
-        const formatted: SimResearchRun[] = sessions.map((s: any) => ({
+      const formatted: SimResearchRun[] = sessions.map((s: any) => ({
           id: s.id,
-          title: s.title || "Pesquisa Sem Título",
+          title: s.title || "Pesquisa sem título",
           objective: s.objective || "",
           module_type: "market_research",
-          status: "completed",
-          verdict: "approved",
-          summary_insight: s.summary_insight,
-          execution_results: s.execution_results,
+          status: s.status === "failed" ? "failed" : s.status === "queued" ? "queued" : s.status === "simulating" || s.status === "synthesizing" ? "running" : "completed",
+          evidence_level: s.evidence_level || "legacy_unknown",
+          summary_insight: s.summary_insight || "Registro histórico sem resumo disponível.",
+          execution_results: Array.isArray(s.execution_results) ? s.execution_results : [],
         }));
-        setRuns(formatted);
-        if (!selectedRunId && formatted[0]) {
-          setSelectedRunId(formatted[0].id);
-        }
+      setRuns(formatted);
+      if (!selectedRunId || !formatted.some((run) => run.id === selectedRunId)) {
+        setSelectedRunId(formatted[0]?.id || null);
       }
     } catch (err) {
       console.warn("Erro ao carregar dados do SimLab Research:", err);
+      setLoadError(err instanceof Error ? err.message : "Erro desconhecido ao carregar dados do SimLab.");
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
@@ -379,8 +304,12 @@ export function SimLabResearchPanel({ storeId }: { storeId: string }) {
   const selectedRun = runs.find((r) => r.id === selectedRunId) || null;
 
   const handleSimulate = async () => {
+    if (!storeId) {
+      toast.error("Selecione um workspace válido antes de iniciar a exploração.");
+      return;
+    }
     if (!prompt.trim()) {
-      toast.error("Descreva a ideia ou pesquisa que deseja validar.");
+      toast.error("Descreva a hipótese ou estímulo que deseja explorar.");
       return;
     }
 
@@ -401,7 +330,7 @@ export function SimLabResearchPanel({ storeId }: { storeId: string }) {
     try {
       const expRes = await createSimLabExperiment({
         data: {
-          storeId: storeId || "default",
+          storeId,
           title: newRun.title,
           objective: prompt.trim(),
           stimulusPayload: {
@@ -413,32 +342,27 @@ export function SimLabResearchPanel({ storeId }: { storeId: string }) {
         },
       });
 
-      const expId = expRes?.experiment?.id || tempId;
+      const expId = expRes?.experiment?.id;
+      if (!expId) throw new Error("O experimento não foi persistido; a execução foi interrompida.");
 
-      const simRes = await executeSimLabBatchSimulation({
-        experimentId: expId,
-        storeId: storeId || "default",
-      });
-
-      toast.success("Simulação concluída e registrada no banco de dados!");
+      const simRes = await executeSimLabBatchSimulation({ experimentId: expId, storeId });
+      toast.success("Exploração qualitativa concluída; não é uma previsão de vendas.");
 
       const updatedRun: SimResearchRun = {
         ...newRun,
         id: expId,
         status: "completed",
-        verdict:
-          simRes.synthesis.synthetic_nps > 20
-            ? "approved"
-            : simRes.synthesis.synthetic_nps >= -10
-              ? "revise"
-              : "blocked",
-        score: Math.round(simRes.synthesis.overall_approval_rate),
-        summary_insight: `NPS Sintético: ${simRes.synthesis.synthetic_nps}. Intervalo de Conversão Estimado: ${simRes.synthesis.estimated_conversion_range[0]}% a ${simRes.synthesis.estimated_conversion_range[1]}%.`,
-        execution_results: simRes.responses.map((r) => ({
-          persona_name: r.persona_id || "Persona",
-          purchase_intent: Math.round(r.choice_probability_percent || 0),
-          feedback: r.natural_speech_verbatim || r.primary_objection || "Sem observações",
-        })),
+        evidence_level: "exploratory_synthetic",
+        summary_insight:
+          simRes.synthesis.limitations?.join(" ") ||
+          "Exploração de respostas sintéticas; valide com pesquisa real antes de tomar decisões.",
+        execution_results: simRes.responses
+          .map((r) => ({
+            persona_name: r.archetype?.display_name || r.archetype_code || "Perfil sintético",
+            feedback: r.verbatim_reaction || r.primary_objection || "",
+            response_origin: r.response_origin || "legacy_unknown",
+          }))
+          .filter((r) => r.feedback.trim().length > 0),
       };
 
       setRuns((prev) => prev.map((r) => (r.id === tempId ? updatedRun : r)));
@@ -447,9 +371,7 @@ export function SimLabResearchPanel({ storeId }: { storeId: string }) {
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Erro na simulação.";
       toast.error(msg);
-      setRuns((prev) =>
-        prev.map((r) => (r.id === tempId ? { ...r, status: "failed" } : r)),
-      );
+      setRuns((prev) => prev.map((r) => (r.id === tempId ? { ...r, status: "failed" } : r)));
     } finally {
       setIsDispatching(false);
     }
@@ -468,14 +390,14 @@ export function SimLabResearchPanel({ storeId }: { storeId: string }) {
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
           </div>
           <p className="text-xs text-muted-foreground">
-            Injete hipóteses, testes A/B ou mudanças de posicionamento para
-            validação com as personas calibradas pelo Censo IBGE.
+            Explore hipóteses qualitativamente com perfis sintéticos não calibrados. Isso não é
+            teste A/B, amostra representativa nem previsão de vendas.
           </p>
         </div>
         <div className="flex items-center gap-3 text-xs text-muted-foreground">
           <Users size={14} className="text-primary" />
           <span className="font-semibold text-foreground">
-            {personasCount} personas ativas
+            {personasCount} perfis sintéticos disponíveis
           </span>
           <Button
             variant="ghost"
@@ -487,10 +409,7 @@ export function SimLabResearchPanel({ storeId }: { storeId: string }) {
             disabled={isRefreshing}
             className="h-8 w-8 rounded-lg"
           >
-            <RefreshCw
-              size={13}
-              className={cn(isRefreshing && "animate-spin text-primary")}
-            />
+            <RefreshCw size={13} className={cn(isRefreshing && "animate-spin text-primary")} />
           </Button>
         </div>
       </div>
@@ -531,14 +450,16 @@ export function SimLabResearchPanel({ storeId }: { storeId: string }) {
 
           {isLoading ? (
             <div className="flex items-center gap-2 text-xs text-muted-foreground p-4 bg-card rounded-lg border border-border/60">
-              <Loader2 size={14} className="animate-spin text-primary" />{" "}
-              Carregando histórico...
+              <Loader2 size={14} className="animate-spin text-primary" /> Carregando histórico...
+            </div>
+          ) : loadError ? (
+            <div role="alert" className="p-5 rounded-lg border border-destructive/30 bg-destructive/5 text-center space-y-1">
+              <p className="text-xs font-medium text-foreground">Não foi possível carregar o histórico</p>
+              <p className="text-[11px] text-muted-foreground">{loadError}</p>
             </div>
           ) : runs.length === 0 ? (
             <div className="p-5 rounded-lg bg-card border border-border/60 text-center space-y-1">
-              <p className="text-xs font-medium text-foreground">
-                Nenhuma pesquisa registrada
-              </p>
+              <p className="text-xs font-medium text-foreground">Nenhuma pesquisa registrada</p>
               <p className="text-[11px] text-muted-foreground">
                 Envie seu primeiro estímulo no formulário ao lado.
               </p>
@@ -568,20 +489,18 @@ export function SimLabResearchPanel({ storeId }: { storeId: string }) {
               )}
               {activeTab === "brand" && (
                 <>
-                  <Activity size={14} className="text-primary" /> Auditoria de Tom e
-                  DNA
+                  <Activity size={14} className="text-primary" /> Auditoria de Tom e DNA
                 </>
               )}
               {activeTab === "planning" && (
                 <>
-                  <Rocket size={14} className="text-primary" /> Briefing de
-                  Estratégia
+                  <Rocket size={14} className="text-primary" /> Briefing de Estratégia
                 </>
               )}
             </h3>
             <p className="text-xs text-muted-foreground leading-relaxed">
-              Descreva a proposta em detalhes. As personas sintéticas reagirão
-              avaliando viabilidade, objeções e atrito de preço.
+              Descreva a hipótese. Perfis sintéticos podem gerar comentários qualitativos, mas não
+              medem intenção de compra nem validam mercado.
             </p>
           </div>
 
@@ -595,16 +514,13 @@ export function SimLabResearchPanel({ storeId }: { storeId: string }) {
           />
 
           <div className="flex items-center justify-between pt-1">
-            <Badge
-              variant="outline"
-              className="text-[10px] text-muted-foreground font-mono"
-            >
+            <Badge variant="outline" className="text-[10px] text-muted-foreground font-mono">
               {currentTab.stimulusType.replace("_", " ")}
             </Badge>
 
             <Button
               type="button"
-              disabled={isDispatching || !prompt.trim()}
+              disabled={isDispatching || !storeId || !prompt.trim()}
               onClick={() => void handleSimulate()}
               className="rounded-lg font-bold gap-2 h-11 min-h-11 px-5 cursor-pointer"
             >
@@ -625,7 +541,7 @@ export function SimLabResearchPanel({ storeId }: { storeId: string }) {
         <div className="lg:col-span-4 rounded-lg border border-border/80 bg-card p-5 shadow-xs min-h-[380px] overflow-y-auto">
           <div className="flex items-center justify-between pb-3 mb-3 border-b border-border/60">
             <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-              Diagnóstico do Modelo
+              Exploração qualitativa
             </span>
             {selectedRun && (
               <span

@@ -155,6 +155,8 @@ export interface ExperienceNode {
 
  sort_order: number;
  is_hidden: boolean;
+ section_anchor_id?: string;
+ asset_refs?: import("@/lib/builder/asset-contract").BuilderAssetRef[];
 
  // Children (hydrated in the tree representation, not persisted in flat rows)
  children?: ExperienceNode[];

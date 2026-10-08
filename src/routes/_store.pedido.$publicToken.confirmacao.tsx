@@ -33,6 +33,7 @@ export const Route = createFileRoute("/_store/pedido/$publicToken/confirmacao")(
 
 function ConfirmationPage() {
   const { order: initialOrder } = ((Route.useLoaderData() as any) || {});
+  const { publicToken } = Route.useParams();
  const [order, setOrder] = useState<any>(initialOrder);
  const [isAuditOpen, setIsAuditOpen] = useState(false);
  const trackedPurchaseRef = useRef<string | null>(null);
@@ -45,7 +46,7 @@ function ConfirmationPage() {
     if (!order?.id) return;
     setIsGeneratingContract(true);
     try {
-      const res = await generateContractFromOrder({ data: { orderId: order.id } });
+      const res = await generateContractFromOrder({ data: { orderId: order.id, publicToken } });
       setContractInfo({ signingUrl: res.signingUrl, whatsappLink: res.whatsappLink });
       toast.success("Contrato digital gerado com sucesso!");
     } catch (err: any) {

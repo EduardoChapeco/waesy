@@ -40,7 +40,7 @@ describe("Fase 8: Verificação E2E e Prova Forense do Onboarding", () => {
   });
 
   describe("2. Concílio de IAs & Consolidação com Juiz Final", () => {
-    it("consolida achados dos squads e mapeia campos nas tabelas canônicas sem mocks", async () => {
+    it("preserva o título da fonte quando o nome proposto pelo modelo não é comprovado literalmente", async () => {
       const mockEvidence: ScrapedEvidence = {
         sourceUrl: "https://padariaestrela.com.br",
         domain: "padariaestrela.com.br",
@@ -159,7 +159,8 @@ describe("Fase 8: Verificação E2E e Prova Forense do Onboarding", () => {
       );
 
       // Verificações estritas
-      expect(consolidated.company_name).toBe("Padaria Estrela do Sul");
+      expect(consolidated.company_name).toBe("Padaria e Confeitaria Estrela do Sul");
+      expect(consolidated.evidence_summary.unconfirmed_fields).toContain("company_name: usando título do site/domínio porque o nome sugerido não foi localizado literalmente");
       expect(consolidated.brand_kit.primary_color).toBe("#78350F");
       expect(consolidated.brand_kit.typography.heading).toBe("Playfair Display");
       expect(consolidated.brand_dna.archetype).toBe("O Cuidador");

@@ -3,6 +3,7 @@ import { z } from "zod";
 import { createHash } from "node:crypto";
 import { getServerClient } from "@/lib/supabase";
 import { enforceRateLimit } from "@/lib/rate-limiter";
+import { BuilderAssetRefSchema, STUDIO_UPLOAD_RIGHTS_ATTESTATION_VERSION, type BuilderAssetRef } from "@/lib/builder/asset-contract";
 
 const ALLOWED_MIME_TYPES = new Set([
   "image/jpeg",
@@ -392,26 +393,56 @@ export const uploadMediaUniversal = createServerFn({ method: "POST" })
       base64Data: z.string().min(1),
       bucket: z.string().default("post-media"),
       folder: z.string().default("uploads"),
+      studioAsset: z.object({
+        usageSlot: z.string().regex(/^[A-Za-z0-9][A-Za-z0-9_-]{0,119}$/),
+        rightsAttested: z.literal(true),
+        altText: z.string().max(500).default(""),
+      }).optional(),
     }),
   )
-  .handler(async ({ data: { fileName, fileType, base64Data, bucket, folder } }) => {
+  .handler(async ({ data: { fileName, fileType, base64Data, bucket, folder, studioAsset } }) => {
+    let studioUploadPath: string | null = null;
+    let studioLedgerId: string | null = null;
+    let storageClient: ReturnType<typeof getServerClient> | null = null;
     try {
       assertAllowedBffBucket(bucket);
       assertSafeFolder(folder);
       validateMimeType(fileType);
-      const { getServerIdentity } = await import("@/lib/server-access");
-      const identity = await getServerIdentity();
+      const { getServerIdentity, requireAdmin } = await import("@/lib/server-access");
+      const identity = studioAsset ? await requireAdmin() : await getServerIdentity();
       if (!identity.id) throw new Error("Faça login para enviar mídia.");
       enforceRateLimit(identity.id, "media_upload");
 
-      const supabase = getServerClient();
+      if (studioAsset && (bucket !== "public_media" || folder !== "builder" || !identity.store_id)) {
+        throw new Error("Upload Studio exige administrador de loja, pasta builder e bucket público aprovado.");
+      }
       const normalizedType = fileType.toLowerCase().split(";")[0].trim();
+      if (studioAsset && !normalizedType.startsWith("image/")) {
+        throw new Error("O ledger Studio aceita somente arquivos de imagem.");
+      }
+      if (studioAsset && !["image/jpeg", "image/png", "image/webp", "image/avif", "image/gif"].includes(normalizedType)) {
+        throw new Error("Para upload Studio, use JPEG, PNG, WEBP, AVIF ou GIF; SVG não é aceito sem sanitização.");
+      }
+      const supabase = getServerClient();
+      storageClient = supabase;
       const ext = extensionForMime(normalizedType);
       const cleanName = `${Date.now()}_${Math.random().toString(36).substring(2, 9)}.${ext}`;
       const tenantNamespace = identity.store_id || identity.id;
       const uniqueName = `${tenantNamespace}/${folder}/${cleanName}`;
 
       const buffer = decodeInlineUpload(base64Data);
+      if (studioAsset) {
+        const validSignature = normalizedType === "image/png"
+          ? buffer.length >= 24 && buffer.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]))
+          : normalizedType === "image/jpeg"
+          ? buffer.length >= 3 && buffer[0] === 0xff && buffer[1] === 0xd8 && buffer[2] === 0xff
+          : normalizedType === "image/webp"
+          ? buffer.length >= 12 && buffer.toString("ascii", 0, 4) === "RIFF" && buffer.toString("ascii", 8, 12) === "WEBP"
+          : normalizedType === "image/gif"
+          ? buffer.length >= 10 && ["GIF87a", "GIF89a"].includes(buffer.toString("ascii", 0, 6))
+          : buffer.length >= 12 && buffer.toString("ascii", 4, 8) === "ftyp" && ["avif", "avis"].includes(buffer.toString("ascii", 8, 12));
+        if (!validSignature) throw new Error("O conteúdo do arquivo não corresponde ao tipo de imagem declarado.");
+      }
       const sha256 = createHash("sha256").update(buffer).digest("hex");
       const dimensions = normalizedType.startsWith("image/") ? inspectImageDimensions(buffer, normalizedType) : { width: null, height: null };
 
@@ -423,14 +454,71 @@ export const uploadMediaUniversal = createServerFn({ method: "POST" })
       if (uploadError) {
         throw new Error(`Erro ao persistir mídia no storage: ${uploadError.message}`);
       }
+      if (studioAsset) studioUploadPath = uniqueName;
 
-      const { data: signedUrlData, error: signedUrlError } = await supabase.storage.from(bucket).createSignedUrl(uniqueName, 60 * 60);
-      if (signedUrlError || !signedUrlData?.signedUrl) throw new Error(`Erro ao gerar URL assinada da mídia: ${signedUrlError?.message || "URL ausente"}`);
+      let url: string;
+      let signedUrl: string | null = null;
+      let assetRef: BuilderAssetRef | null = null;
+      if (studioAsset) {
+        const { data: publicUrlData } = supabase.storage.from(bucket).getPublicUrl(uniqueName);
+        url = publicUrlData.publicUrl;
+        if (!url.startsWith("https://")) throw new Error("O storage não retornou uma URL pública HTTPS para o asset Studio.");
+        const rightsAttestedAt = new Date().toISOString();
+        const { data: ledgerRow, error: ledgerError } = await supabase
+          .from("media_assets")
+          .insert({
+            store_id: identity.store_id!,
+            file_name: fileName,
+            file_size: buffer.byteLength,
+            mime_type: normalizedType,
+            bucket_name: bucket,
+            file_path: uniqueName,
+            public_url: url,
+            uploaded_by: identity.id,
+            studio_usage_slot: studioAsset.usageSlot,
+            rights_attested_at: rightsAttestedAt,
+            rights_attested_by: identity.id,
+            rights_attestation_version: STUDIO_UPLOAD_RIGHTS_ATTESTATION_VERSION,
+          })
+          .select("id")
+          .single();
+        if (ledgerError || !ledgerRow?.id) {
+          throw new Error(`Upload armazenado, mas o registro de proveniência falhou: ${ledgerError?.message || "ledger ausente"}`);
+        }
+        studioLedgerId = ledgerRow.id;
+        assetRef = BuilderAssetRefSchema.parse({
+          asset_id: ledgerRow.id,
+          provider: "upload",
+          source_asset_id: uniqueName,
+          source_url: url,
+          license_id: "user-rights-attestation",
+          usage_slot: studioAsset.usageSlot,
+          alt_text: studioAsset.altText || null,
+          download_event_status: "not-required",
+          byte_size: buffer.byteLength,
+          mime_type: normalizedType,
+          width: dimensions.width,
+          height: dimensions.height,
+          provenance_state: "user-provided",
+          captured_at: rightsAttestedAt,
+          rights_attested_at: rightsAttestedAt,
+          rights_attestation_version: STUDIO_UPLOAD_RIGHTS_ATTESTATION_VERSION,
+          usage_notes: "Admin da loja declarou possuir direitos/autorização e consentimentos necessários; o Waesy não realiza verificação jurídica independente.",
+        });
+        studioUploadPath = null;
+        studioLedgerId = null;
+      } else {
+        const { data: signedUrlData, error: signedUrlError } = await supabase.storage.from(bucket).createSignedUrl(uniqueName, 60 * 60);
+        if (signedUrlError || !signedUrlData?.signedUrl) throw new Error(`Erro ao gerar URL assinada da mídia: ${signedUrlError?.message || "URL ausente"}`);
+        url = signedUrlData.signedUrl;
+        signedUrl = signedUrlData.signedUrl;
+      }
 
       return {
         id: cleanName,
-        url: signedUrlData.signedUrl,
-        signedUrl: signedUrlData.signedUrl,
+        url,
+        signedUrl,
+        assetRef,
         path: uniqueName,
         name: fileName,
         type: normalizedType.startsWith("video/") ? ("video" as const) : ("image" as const),
@@ -442,6 +530,16 @@ export const uploadMediaUniversal = createServerFn({ method: "POST" })
         expiresInSeconds: 60 * 60,
       };
     } catch (e: any) {
+      if (studioLedgerId && storageClient) {
+        try {
+          await storageClient.from("media_assets").delete().eq("id", studioLedgerId);
+        } catch {
+          // Failure to clean metadata must not hide the original upload error.
+        }
+      }
+      if (studioUploadPath && storageClient) {
+        await storageClient.storage.from(bucket).remove([studioUploadPath]).catch(() => undefined);
+      }
       console.error("[storage] uploadMediaUniversal error:", e);
       throw new Error(e.message || "Erro no upload da mídia.");
     }

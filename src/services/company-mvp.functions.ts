@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { setCookie } from "@tanstack/start-server-core";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
-import { getSSRClient, getServerIdentity, assertStoreAccess, STAFF_ROLES } from "@/lib/server-access";
+import { getSSRClient, getServerIdentity, assertStoreAccess, STAFF_ROLES, MANAGER_ROLES } from "@/lib/server-access";
 import { getIdentity } from "./identity.functions";
 import { enrichCnpj } from "@/lib/mining/cnpj-enrichment.engine";
 import { generateSlug, resolveUniqueStoreSlug } from "@/lib/slug-utils";
@@ -78,10 +78,8 @@ export const fastRegisterCompany = createServerFn({ method: "POST" })
     if (!existingProfile) {
       await db.from("profiles").insert({
         id: userId,
-        role: "owner",
+        role: "customer",
       });
-    } else if (existingProfile.role === "customer" || existingProfile.role === "member") {
-      await db.from("profiles").update({ role: "owner" }).eq("id", userId);
     }
 
     // 1. Criar Organização
@@ -145,17 +143,18 @@ export const fastRegisterCompany = createServerFn({ method: "POST" })
     }
 
     // 4. Vincular Usuário como Owner
-    try {
-      await db.from("workspace_members").upsert(
-        {
-          profile_id: userId,
-          store_id: store.id,
-          role: "owner",
-        },
-        { onConflict: "profile_id,store_id" }
-      );
-    } catch (e: any) {
-      console.warn("[fastRegisterCompany] Aviso workspace_members:", e?.message);
+    const { error: membershipError } = await db.from("workspace_members").upsert(
+      {
+        profile_id: userId,
+        store_id: store.id,
+        role: "owner",
+      },
+      { onConflict: "profile_id,store_id" }
+    );
+    if (membershipError) {
+      await db.from("stores").delete().eq("id", store.id);
+      await db.from("organizations").delete().eq("id", org.id);
+      throw new Error("A loja não foi ativada porque o vínculo seguro do proprietário falhou: " + membershipError.message);
     }
 
     // 5. Cadastrar no Guia / Diretório Oficial (Single Source of Truth)
@@ -168,20 +167,12 @@ export const fastRegisterCompany = createServerFn({ method: "POST" })
         state: storePayload.state,
         business_name: resolvedName,
         cnpj: storePayload.cnpj,
-        data_quality_score: enrichedData?.dataQualityScore || 50,
+        data_quality_score: enrichedData?.dataQualityScore ?? null,
         is_crawled: false,
         status: "active",
       });
     } catch (e: any) {
       console.warn("[fastRegisterCompany] Aviso directory_listings:", e?.message);
-    }
-
-    // 6. Elevar role do profile para owner (compatível com constraints SQL e assertStoreAccess)
-    try {
-      await db.from("profiles").update({ role: "owner" }).eq("id", userId);
-      try { await db.rpc("elevate_to_store_owner", { p_user_id: userId }); } catch { /* ignorado */ }
-    } catch (e: any) {
-      console.warn("[fastRegisterCompany] Aviso profile elevate owner:", e?.message);
     }
 
     // 6.1 Persistir Inteligência de Marca e Catálogo (se minerados no onboarding)
@@ -330,8 +321,22 @@ export const updateCompanyLeadStatus = createServerFn({ method: "POST" })
   .validator(UpdateCompanyLeadStatusSchema)
   .handler(async ({ data }) => {
     const supabase = getServerClient();
-    const identity = await getIdentity();
+    const identity = await getServerIdentity();
     if (!identity?.id) throw new Error("Não autenticado");
+
+    const { data: existingDeal } = await supabase
+      .from("deals")
+      .select("id, classified_id")
+      .eq("id", data.dealId)
+      .maybeSingle();
+    if (!existingDeal) throw new Error("Negociação não encontrada.");
+    const { data: classified } = await supabase
+      .from("classifieds")
+      .select("id, store_id")
+      .eq("id", existingDeal.classified_id)
+      .maybeSingle();
+    if (!classified?.store_id) throw new Error("Negociação não pertence a um workspace empresarial.");
+    assertStoreAccess(identity, MANAGER_ROLES, classified.store_id);
 
     const { data: deal, error } = await supabase
       .from("deals")
@@ -340,6 +345,7 @@ export const updateCompanyLeadStatus = createServerFn({ method: "POST" })
         updated_at: new Date().toISOString(),
       })
       .eq("id", data.dealId)
+      .eq("classified_id", classified.id)
       .select()
       .single();
 
@@ -358,7 +364,7 @@ export const getCompanyReceiptData = createServerFn({ method: "GET" })
   .validator(z.object({ dealId: z.string().uuid() }))
   .handler(async ({ data }) => {
     const supabase = getServerClient();
-    const identity = await getIdentity();
+    const identity = await getServerIdentity();
     if (!identity?.id) throw new Error("Não autenticado");
 
     const { data: deal, error } = await supabase
@@ -370,6 +376,11 @@ export const getCompanyReceiptData = createServerFn({ method: "GET" })
     if (error || !deal) {
       throw new Error("Negociação não encontrada");
     }
+    const receiptStoreId = deal.classifieds?.store_id;
+    if (identity.id !== deal.buyer_id) {
+      if (!receiptStoreId) throw new Error("Negociação sem workspace verificável.");
+      assertStoreAccess(identity, STAFF_ROLES, receiptStoreId);
+    }
 
     // Buscar comprador
     const { data: buyer } = await supabase
@@ -378,39 +389,21 @@ export const getCompanyReceiptData = createServerFn({ method: "GET" })
       .eq("id", deal.buyer_id)
       .maybeSingle();
 
-    // Buscar loja
-    let store = null;
-    if (deal.classifieds?.store_id) {
-      const { data: st } = await supabase
-        .from("stores")
-        .select("id, name, cnpj, phone, address, city, state, logo_url")
-        .eq("id", deal.classifieds.store_id)
-        .maybeSingle();
-      store = st;
-    }
-
-    if (!store && identity.store_id) {
-      const { data: st } = await supabase
-        .from("stores")
-        .select("id, name, cnpj, phone, address, city, state, logo_url")
-        .eq("id", identity.store_id)
-        .maybeSingle();
-      store = st;
-    }
+    if (!receiptStoreId) throw new Error("Não é possível emitir recibo empresarial sem loja associada à negociação.");
+    const { data: store } = await supabase
+      .from("stores")
+      .select("id, name, cnpj, phone, address, city, state, logo_url")
+      .eq("id", receiptStoreId)
+      .maybeSingle();
+    if (!store) throw new Error("Workspace associado à negociação não encontrado.");
+    if (!buyer) throw new Error("Perfil do comprador não encontrado; os dados não serão substituídos por valores fictícios.");
 
     const receiptSerial = `REC-${deal.id.slice(0, 8).toUpperCase()}-${new Date().getFullYear()}`;
 
     return {
       deal,
-      buyer: buyer || { full_name: "Cliente", phone: "" },
-      store: store || {
-        name: "Empresa Parceira Waesy",
-        cnpj: "",
-        phone: "",
-        address: "",
-        city: "",
-        logo_url: null,
-      },
+      buyer,
+      store,
       serial: receiptSerial,
       issueDate: new Date().toLocaleDateString("pt-BR", {
         day: "2-digit",
@@ -489,13 +482,22 @@ export const toggleCompanyClassifiedStatus = createServerFn({ method: "POST" })
   .validator(ToggleCompanyClassifiedStatusSchema)
   .handler(async ({ data }) => {
     const supabase = getServerClient();
-    const identity = await getIdentity();
+    const identity = await getServerIdentity();
     if (!identity?.id) throw new Error("Não autenticado");
+
+    const { data: existingClassified } = await supabase
+      .from("classifieds")
+      .select("id, store_id")
+      .eq("id", data.classifiedId)
+      .maybeSingle();
+    if (!existingClassified?.store_id) throw new Error("Anúncio empresarial não encontrado.");
+    assertStoreAccess(identity, MANAGER_ROLES, existingClassified.store_id);
 
     const { data: classified, error } = await supabase
       .from("classifieds")
       .update({ status: data.newStatus, updated_at: new Date().toISOString() })
       .eq("id", data.classifiedId)
+      .eq("store_id", existingClassified.store_id)
       .select()
       .single();
 
@@ -534,42 +536,11 @@ export const registerClassifiedLead = createServerFn({ method: "POST" })
       throw new Error("Anúncio não encontrado para registrar o lead.");
     }
 
-    // 2. Obter ou resolver identidade do comprador
-    let buyerId: string | null = null;
-    try {
-      const identity = await getIdentity();
-      if (identity?.id && identity.id !== classified.author_profile_id) {
-        buyerId = identity.id;
-      }
-    } catch {
-      buyerId = null;
-    }
-
-    // Se não autenticado ou mesmo autor, buscar perfil por telefone ou fallback
-    if (!buyerId && data.buyerPhone) {
-      const cleanPhone = data.buyerPhone.replace(/\D/g, "");
-      if (cleanPhone.length >= 8) {
-        const { data: existingLead } = await supabase
-          .from("profiles")
-          .select("id")
-          .ilike("phone", `%${cleanPhone.slice(-8)}%`)
-          .limit(1)
-          .maybeSingle();
-        if (existingLead) {
-          buyerId = existingLead.id;
-        }
-      }
-    }
-
-    if (!buyerId) {
-      // Fallback seguro: obter profile existente do sistema para satisfazer a FK NOT NULL
-      const { data: fallbackProf } = await supabase
-        .from("profiles")
-        .select("id")
-        .limit(1)
-        .maybeSingle();
-      buyerId = fallbackProf?.id || classified.author_profile_id;
-    }
+    // O buyer_id deve ser a identidade autenticada, nunca uma pessoa encontrada por telefone/fallback.
+    const buyerIdentity = await getServerIdentity();
+    if (!buyerIdentity.id) throw new Error("Entre na sua conta para registrar uma negociação.");
+    if (buyerIdentity.id === classified.author_profile_id) throw new Error("O autor do anúncio não pode registrar interesse como comprador.");
+    const buyerId = buyerIdentity.id;
 
     // 3. Inserir negócio (deal) no banco de dados
     const price = data.proposedPriceCents ?? (classified.price_cents || 0);
@@ -648,24 +619,19 @@ export const registerWorkspaceProWaitlist = createServerFn({ method: "POST" })
   .validator(RegisterWorkspaceProWaitlistSchema)
   .handler(async ({ data }) => {
     const supabase = getServerClient();
-    const identity = await getIdentity();
+    const identity = await getServerIdentity();
     if (!identity?.id) throw new Error("Você precisa estar conectado para entrar na lista.");
-
-    let storeId = identity.store_id;
-    let companyName = identity.name || "Minha Empresa";
-    let whatsapp = "";
-
-    if (storeId) {
-      const { data: st } = await supabase
-        .from("stores")
-        .select("id, name, phone")
-        .eq("id", storeId)
-        .maybeSingle();
-      if (st) {
-        companyName = st.name;
-        whatsapp = st.phone || "";
-      }
-    }
+    const storeId = identity.store_id;
+    if (!storeId) throw new Error("Selecione um workspace empresarial para entrar na lista.");
+    assertStoreAccess(identity, STAFF_ROLES, storeId);
+    const { data: st } = await supabase
+      .from("stores")
+      .select("id, name, phone")
+      .eq("id", storeId)
+      .maybeSingle();
+    if (!st) throw new Error("Workspace não encontrado.");
+    const companyName = st.name;
+    const whatsapp = st.phone || "";
 
     const { data: record, error } = await supabase
       .from("workspace_pro_waitlist")
@@ -701,7 +667,7 @@ export const listCompanyJobApplications = createServerFn({ method: "GET" })
   .validator(ListCompanyJobApplicationsSchema.optional())
   .handler(async ({ data }) => {
     const supabase = getServerClient();
-    const identity = await getIdentity();
+    const identity = await getServerIdentity();
     if (!identity?.id) return { applications: [], total: 0 };
 
     let storeId = identity.store_id;
@@ -717,6 +683,7 @@ export const listCompanyJobApplications = createServerFn({ method: "GET" })
     }
 
     if (!storeId) return { applications: [], total: 0 };
+    assertStoreAccess(identity, STAFF_ROLES, storeId);
 
     // Buscar vagas/anúncios de emprego da empresa em classifieds
     const { data: storeJobs } = await supabase
@@ -805,8 +772,22 @@ export const updateCompanyJobApplicationStatus = createServerFn({ method: "POST"
   .validator(UpdateCompanyJobApplicationStatusSchema)
   .handler(async ({ data }) => {
     const supabase = getServerClient();
-    const identity = await getIdentity();
+    const identity = await getServerIdentity();
     if (!identity?.id) throw new Error("Acesso não autorizado.");
+
+    const { data: application } = await supabase
+      .from("classified_applications")
+      .select("id, classified_id")
+      .eq("id", data.applicationId)
+      .maybeSingle();
+    if (!application) throw new Error("Candidatura não encontrada.");
+    const { data: classified } = await supabase
+      .from("classifieds")
+      .select("id, store_id")
+      .eq("id", application.classified_id)
+      .maybeSingle();
+    if (!classified?.store_id) throw new Error("Candidatura sem vaga empresarial verificável.");
+    assertStoreAccess(identity, MANAGER_ROLES, classified.store_id);
 
     const updatePayload: any = {
       status: data.status,
@@ -820,6 +801,7 @@ export const updateCompanyJobApplicationStatus = createServerFn({ method: "POST"
       .from("classified_applications")
       .update(updatePayload)
       .eq("id", data.applicationId)
+      .eq("classified_id", classified.id)
       .select()
       .maybeSingle();
 
@@ -850,7 +832,8 @@ export const getCompanyCustomFormSettings = createServerFn({ method: "GET" })
   .validator(z.object({ storeId: z.string().uuid().optional() }).optional())
   .handler(async ({ data }) => {
     const supabase = getServerClient();
-    const identity = await getIdentity();
+    const identity = await getServerIdentity();
+    if (!identity.id) throw new Error("Autenticação necessária.");
 
     let targetStoreId = data?.storeId || identity?.store_id;
     if (!targetStoreId && identity?.id) {
@@ -865,6 +848,7 @@ export const getCompanyCustomFormSettings = createServerFn({ method: "GET" })
     }
 
     if (!targetStoreId) return { fields: [] };
+    assertStoreAccess(identity, STAFF_ROLES, targetStoreId);
 
     const { data: store } = await supabase
       .from("stores")
@@ -880,7 +864,7 @@ export const updateCompanyCustomFormSettings = createServerFn({ method: "POST" }
   .validator(UpdateCompanyCustomFormSettingsSchema)
   .handler(async ({ data }) => {
     const supabase = getServerClient();
-    const identity = await getIdentity();
+    const identity = await getServerIdentity();
     if (!identity?.id) throw new Error("Acesso não autorizado.");
 
     let storeId = identity.store_id;
@@ -896,6 +880,7 @@ export const updateCompanyCustomFormSettings = createServerFn({ method: "POST" }
     }
 
     if (!storeId) throw new Error("Nenhuma empresa vinculada ao perfil.");
+    assertStoreAccess(identity, MANAGER_ROLES, storeId);
 
     const { data: store } = await supabase
       .from("stores")
@@ -920,4 +905,3 @@ export const updateCompanyCustomFormSettings = createServerFn({ method: "POST" }
 
     return { success: true, fields: data.fields };
   });
-

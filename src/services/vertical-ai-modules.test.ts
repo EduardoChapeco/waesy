@@ -1,4 +1,13 @@
-import { describe, it, expect } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+vi.mock("@tanstack/react-start", () => ({
+  createServerFn: () => {
+    const chain: any = {};
+    chain.validator = () => chain;
+    chain.handler = () => ({});
+    return chain;
+  },
+}));
+import { executeUnifiedAiCall } from "./api-orchestrator.functions";
 import {
   screenResumeLogic,
   generateJobDescriptionLogic,
@@ -18,231 +27,202 @@ import {
   runComplianceChecklistLogic,
 } from "./vertical-ai-modules.functions";
 
-describe("Vertical AI Modules (PROMPT 11 / Plano #15)", () => {
-  // ── 1. RH ─────────────────────────────────────────────────────────────────
-  describe("Recursos Humanos (RH)", () => {
-    it("1. screenResumeLogic deve pontuar fit e identificar competências", async () => {
+vi.mock("./api-orchestrator.functions", () => ({ executeUnifiedAiCall: vi.fn() }));
+
+const ai = vi.mocked(executeUnifiedAiCall);
+const aiResponse = (parsedJson: unknown) => ({
+  content: JSON.stringify(parsedJson), text: JSON.stringify(parsedJson), provider: "openai" as const, model: "test", parsedJson,
+});
+
+beforeEach(() => {
+  ai.mockImplementation(async ({ feature }) => {
+    if (feature === "rh_screen_resume") return aiResponse({
+      candidateName: null,
+      skillEvidence: [
+        { skill: "CNH A", evidence: "CNH A definitiva" },
+        { skill: "Pontualidade", evidence: "pontualidade" },
+      ],
+    });
+    if (feature === "rh_job_description") return aiResponse({
+      title: "Atendente de Loja", summary: "Rascunho para revisão.",
+      responsibilities: ["Operar caixa", "Atender clientes"], requirements: ["Revisar requisitos com a equipe"], benefits: ["Benefício inventado"],
+    });
+    if (feature === "rh_interview_guide") return aiResponse({
+      jobTitle: "Gerente de Restaurante", questions: [{ category: "Comportamental", question: "Descreva uma situação relevante.", expectedIndicators: ["Contexto e ações relatados"] }],
+    });
+    throw new Error(`Feature inesperada: ${feature}`);
+  });
+});
+
+describe("Vertical AI Modules — grounding, inputs e revisão humana", () => {
+  describe("RH", () => {
+    it("extrai evidência literal do currículo sem produzir score ou decisão automática", async () => {
       const res = await screenResumeLogic({
-        jobTitle: "Entregador Motoboy",
-        requiredSkills: ["CNH A", "Pontualidade", "Conhecimento de rotas"],
-        minExperienceYears: 1,
-        resumeText: "Possuo CNH A definitiva há 3 anos, excelente pontualidade e conhecimento das rotas da cidade.",
+        jobTitle: "Entregador Motoboy", requiredSkills: ["CNH A", "Pontualidade", "Conhecimento de rotas"],
+        minExperienceYears: 1, resumeText: "Possuo CNH A definitiva há 3 anos, excelente pontualidade e conhecimento das rotas da cidade.",
       });
-
       expect(res.success).toBe(true);
-      expect(res.vertical).toBe("rh");
+      expect(res.data.fitScorePct).toBeNull();
+      expect(res.data.fitEvaluation).toBe("not_evaluated");
+      expect(res.data.matchedSkills).toEqual(["CNH A", "Pontualidade"]);
+      expect(res.data.missingSkills).toEqual(["Conhecimento de rotas"]);
+      expect(res.data.recommendation).toBe("requires_human_review");
+      expect(res).not.toHaveProperty("confidence");
+    });
+
+    it("rejeita evidência inventada e falha da IA em vez de usar fallback", async () => {
+      ai.mockResolvedValueOnce(aiResponse({ candidateName: null, skillEvidence: [{ skill: "CNH A", evidence: "texto ausente" }] }));
+      await expect(screenResumeLogic({ jobTitle: "Entregador", requiredSkills: ["CNH A"], resumeText: "Currículo com dados de exemplo.", minExperienceYears: 0 })).rejects.toThrow(/evidência ausente/);
+      ai.mockResolvedValueOnce(aiResponse({ candidateName: "Nome Inventado", skillEvidence: [] }));
+      await expect(screenResumeLogic({ jobTitle: "Entregador", requiredSkills: [], resumeText: "Currículo sem qualquer identificação pessoal.", minExperienceYears: 0 })).rejects.toThrow(/nome ausente/);
+      ai.mockRejectedValueOnce(new Error("sem provedor"));
+      await expect(generateJobDescriptionLogic({ jobTitle: "Atendente" })).rejects.toThrow("sem provedor");
+    });
+
+    it("produz descrição como rascunho, sem semear benefícios não informados", async () => {
+      const res = await generateJobDescriptionLogic({ jobTitle: "Atendente de Loja", department: "Vendas", workplaceType: "presencial", seniority: "junior", keyResponsibilities: ["Operar caixa"] });
+      expect(res.data.benefits).toEqual([]);
+      expect(res.data.contentStatus).toBe("draft");
       expect(res.requires_human_approval).toBe(true);
-      expect(res.data.fitScorePct).toBeGreaterThanOrEqual(60);
-      expect(res.data.matchedSkills).toContain("CNH A");
     });
 
-    it("2. generateJobDescriptionLogic deve estruturar descrição limpa de vaga", async () => {
-      const res = await generateJobDescriptionLogic({
-        jobTitle: "Atendente de Loja",
-        department: "Vendas",
-        workplaceType: "presencial",
-        seniority: "junior",
-        keyResponsibilities: ["Operar caixa", "Atender clientes"],
-      });
-
-      expect(res.success).toBe(true);
-      expect(res.data.title).toContain("Atendente de Loja");
-      expect(res.data.responsibilities.length).toBeGreaterThan(0);
-      expect(res.requires_human_approval).toBe(false);
+    it("valida estrutura de roteiro gerado por IA e o identifica como rascunho", async () => {
+      const res = await generateInterviewGuideLogic({ jobTitle: "Gerente de Restaurante", focusAreas: ["comportamental"] });
+      expect(res.data.questions).toHaveLength(1);
+      expect(res.data.contentStatus).toBe("draft");
     });
 
-    it("3. generateInterviewGuideLogic deve gerar perguntas comportamentais STAR", async () => {
-      const res = await generateInterviewGuideLogic({
-        jobTitle: "Gerente de Restaurante",
-        focusAreas: ["comportamental", "lideranca"],
-      });
-
-      expect(res.success).toBe(true);
-      expect(res.data.questions.length).toBeGreaterThanOrEqual(3);
-      expect(res.data.questions[0].category).toContain("STAR");
-    });
-
-    it("4. generateCandidateSummaryLogic deve gerar síntese com recomendação", async () => {
-      const res = await generateCandidateSummaryLogic({
-        candidateName: "Carlos Silva",
-        interviewNotes: "Demonstrou liderança em crises anteriores e ótima comunicação.",
-        fitScorePct: 85,
-      });
-
-      expect(res.success).toBe(true);
-      expect(res.requires_human_approval).toBe(true);
-      expect(res.data.finalDecisionAdvice).toBe("avancar_proposta");
+    it("resume somente as notas fornecidas e não cria score, highlights ou parecer", async () => {
+      const res = await generateCandidateSummaryLogic({ candidateName: "Carlos Silva", interviewNotes: "Demonstrou liderança em crises anteriores e ótima comunicação." });
+      expect(res.data.executiveSummary).toBe("Demonstrou liderança em crises anteriores e ótima comunicação.");
+      expect(res.data.keyHighlights).toEqual([]);
+      expect(res.data.finalDecisionAdvice).toBe("requires_human_review");
+      expect(res.data.contentStatus).toBe("draft");
     });
   });
 
-  // ── 2. CONTÁBIL & FISCAL ──────────────────────────────────────────────────
-  describe("Contábil & Fiscal", () => {
-    it("5. classifyTransactionLogic deve mapear para plano de contas e centro de custo", async () => {
-      const res = await classifyTransactionLogic({
-        description: "Gasolina para entrega motoboy",
-        amountCents: 15000,
-        isExpense: true,
-      });
-
-      expect(res.success).toBe(true);
-      expect(res.vertical).toBe("contabil");
+  describe("Contábil e fiscal", () => {
+    it("retorna classificação preliminar sem conta contábil nem dedutibilidade presumida", async () => {
+      const res = await classifyTransactionLogic({ description: "Gasolina para entrega motoboy", amountCents: 15000, isExpense: true });
       expect(res.data.category).toBe("Logística e Fretes");
-      expect(res.data.costCenter).toBe("Operação de Entrega");
-    });
-
-    it("6. reconcileReceiptLogic deve aprovar valor exato e apontar divergência", async () => {
-      const matchRes = await reconcileReceiptLogic({
-        transactionId: "TX-123",
-        amountCents: 5000,
-        receiptTextOrId: "REC-999",
-        expectedAmountCents: 5000,
-      });
-      expect(matchRes.data.matched).toBe(true);
-      expect(matchRes.requires_human_approval).toBe(false);
-
-      const divergeRes = await reconcileReceiptLogic({
-        transactionId: "TX-124",
-        amountCents: 4500,
-        receiptTextOrId: "REC-998",
-        expectedAmountCents: 5000,
-      });
-      expect(divergeRes.data.matched).toBe(false);
-      expect(divergeRes.requires_human_approval).toBe(true);
-      expect(divergeRes.data.discrepancyCents).toBe(-500);
-    });
-
-    it("7. auditFiscalInconsistencyLogic deve detectar divergência entre nota e pedido", async () => {
-      const res = await auditFiscalInconsistencyLogic({
-        invoiceNumber: "NF-00123",
-        totalCents: 10000,
-        orderCents: 12000,
-        taxCents: 800,
-      });
-
-      expect(res.success).toBe(true);
-      expect(res.data.hasInconsistencies).toBe(true);
+      expect(res.data.classificationStatus).toBe("keyword_candidate");
+      expect(res.data.accountCode).toBeNull();
+      expect(res.data.taxDeductible).toBeNull();
+      expect(res.data.taxDeductibilityStatus).toBe("not_evaluated");
       expect(res.requires_human_approval).toBe(true);
+      await expect(classifyTransactionLogic({ description: "X", amountCents: -1 })).rejects.toThrow();
     });
 
-    it("8. getFiscalCalendarAlertsLogic deve gerar cronograma com DAS", async () => {
-      const res = await getFiscalCalendarAlertsLogic({
-        referenceMonth: 10,
-        referenceYear: 2026,
-        companyRegime: "simples_nacional",
-      });
+    it("não concilia apenas pelo valor e exige auditoria do vínculo/autenticidade", async () => {
+      const res = await reconcileReceiptLogic({ transactionId: "TX-123", amountCents: 5000, receiptTextOrId: "REC-999", expectedAmountCents: 5000 });
+      expect(res.data.matched).toBe(false);
+      expect(res.data.status).toBe("pendente_auditoria");
+      expect(res.data.auditMessage).toContain("não coincide");
+      expect(res.requires_human_approval).toBe(true);
+      const exact = await reconcileReceiptLogic({ transactionId: "TX-123", amountCents: 5000, receiptTextOrId: "TX-123", expectedAmountCents: 5000 });
+      expect(exact.data.matched).toBe(true);
+      expect(exact.data.status).toBe("pendente_auditoria");
+      expect(exact.requires_human_approval).toBe(true);
+    });
 
-      expect(res.success).toBe(true);
-      expect(res.data.obligations.length).toBeGreaterThanOrEqual(2);
-      expect(res.data.obligations[0].obligationName).toContain("DAS");
+    it("calcula diferença e taxa aritmética sem declarar conformidade tributária", async () => {
+      const res = await auditFiscalInconsistencyLogic({ invoiceNumber: "NF-00123", totalCents: 10000, orderCents: 12000, taxCents: 800 });
+      expect(res.data.hasInconsistencies).toBe(true);
+      expect(res.data.issues).toHaveLength(1);
+      expect(res.data.effectiveTaxRatePct).toBe(8);
+      expect(res.data.complianceStatus).toBe("not_evaluated");
+      const zero = await auditFiscalInconsistencyLogic({ invoiceNumber: "NF-2", totalCents: 0, orderCents: 0, taxCents: 0 });
+      expect(zero.data.effectiveTaxRatePct).toBeNull();
+    });
+
+    it("não fabrica obrigações sem calendário validado para o regime", async () => {
+      const res = await getFiscalCalendarAlertsLogic({ referenceMonth: 10, referenceYear: 2026, companyRegime: "simples_nacional" });
+      expect(res.data.obligations).toEqual([]);
+      expect(res.data.assessmentStatus).toBe("not_evaluated");
+      expect(res.requires_human_approval).toBe(true);
     });
   });
 
-  // ── 3. FINANCEIRO ─────────────────────────────────────────────────────────
-  describe("Gestão Financeira", () => {
-    it("9. parseConversationalExpenseLogic deve extrair quantia e categoria de mensagem livre", async () => {
-      const res = await parseConversationalExpenseLogic({
-        message: "Paguei 180 reais de gasolina pro motoboy ontem",
-      });
-
+  describe("Financeiro", () => {
+    it("extrai valor com unidade e não converte data relativa em vencimento", async () => {
+      const res = await parseConversationalExpenseLogic({ message: "Paguei 180 reais de gasolina pro motoboy ontem" });
       expect(res.success).toBe(true);
       expect(res.data.amountCents).toBe(18000);
       expect(res.data.category).toBe("logistica_entrega");
-      expect(res.requires_human_approval).toBe(true);
+      expect(res.data.dueDate).toBeNull();
+      expect(res.data.dateStatus).toBe("not_provided");
+      expect(res.data.contentStatus).toBe("draft");
     });
 
-    it("10. calculateCashFlowForecastLogic deve calcular saldo projetado e avaliar risco", async () => {
-      const res = await calculateCashFlowForecastLogic({
-        currentBalanceCents: 100000,
-        expectedReceivables7dCents: 50000,
-        expectedPayables7dCents: 20000,
-        expectedReceivables30dCents: 150000,
-        expectedPayables30dCents: 80000,
-      });
+    it("não cria lançamento quando valor é ausente ou ambíguo", async () => {
+      const missing = await parseConversationalExpenseLogic({ message: "Comprei gasolina ontem" });
+      expect(missing.success).toBe(false);
+      expect(missing.data.amountCents).toBeNull();
+      const ambiguous = await parseConversationalExpenseLogic({ message: "Paguei 180 reais e mais 20 reais" });
+      expect(ambiguous.success).toBe(false);
+      expect(ambiguous.data.amountCents).toBeNull();
+    });
 
-      expect(res.success).toBe(true);
+    it("calcula projeção com todos os fluxos explicitamente fornecidos", async () => {
+      const res = await calculateCashFlowForecastLogic({ currentBalanceCents: 100000, expectedReceivables7dCents: 50000, expectedPayables7dCents: 20000, expectedReceivables30dCents: 150000, expectedPayables30dCents: 80000 });
       expect(res.data.projectedBalance7dCents).toBe(130000);
       expect(res.data.liquidityRisk).toBe("baixo");
+      expect(res.data.calculationBasis).toContain("Não estima fluxos ausentes");
+      await expect(calculateCashFlowForecastLogic({ currentBalanceCents: 100000, expectedReceivables7dCents: 50000, expectedPayables7dCents: 20000, expectedReceivables30dCents: 150000 } as never)).rejects.toThrow();
     });
 
-    it("11. generateOverdueReminderCopyLogic deve redigir mensagem amigável com CDC compliance", async () => {
-      const res = await generateOverdueReminderCopyLogic({
-        customerName: "Maria Oliveira",
-        amountCents: 12000,
-        daysOverdue: 2,
-        pixCopyPaste: "00020126580014BR.GOV.BCB.PIX...",
-      });
-
-      expect(res.success).toBe(true);
-      expect(res.data.tone).toBe("amigavel");
-      expect(res.data.cdcCompliant).toBe(true);
+    it("redige cobrança como rascunho sem alegar conformidade CDC", async () => {
+      const res = await generateOverdueReminderCopyLogic({ customerName: "Maria Oliveira", amountCents: 12000, daysOverdue: 2, pixCopyPaste: "PIX-TESTE" });
+      expect(res.data.tone).toBe("informativo");
+      expect(res.data.legalComplianceStatus).toBe("not_evaluated");
+      expect(res.data.contentStatus).toBe("draft");
       expect(res.data.whatsappMessage).toContain("Maria Oliveira");
-      expect(res.data.whatsappMessage).toContain("0002012658");
     });
 
-    it("12. generatePeriodFinancialSummaryLogic deve gerar margens e DRE sintética", async () => {
-      const res = await generatePeriodFinancialSummaryLogic({
-        grossRevenueCents: 1000000, // R$ 10.000,00
-        cmvCents: 400000,          // R$ 4.000,00
-        operatingExpensesCents: 300000, // R$ 3.000,00
-      });
-
-      expect(res.success).toBe(true);
+    it("só calcula margens com todos os campos e explicita que não é EBITDA", async () => {
+      const res = await generatePeriodFinancialSummaryLogic({ grossRevenueCents: 1000000, cmvCents: 400000, operatingExpensesCents: 300000 });
       expect(res.data.grossProfitCents).toBe(600000);
-      expect(res.data.netEbitdaCents).toBe(300000);
-      expect(res.data.grossMarginPct).toBe(60.0);
-      expect(res.data.ebitdaMarginPct).toBe(30.0);
+      expect(res.data.operatingResultCents).toBe(300000);
+      expect(res.data.grossMarginPct).toBe(60);
+      expect(res.data.operatingMarginPct).toBe(30);
+      expect(res.data.calculationBasis).toContain("não equivale a EBITDA");
+      await expect(generatePeriodFinancialSummaryLogic({ grossRevenueCents: 1000000, cmvCents: 400000 } as never)).rejects.toThrow();
     });
   });
 
-  // ── 4. JURÍDICO & GOVERNANÇA ──────────────────────────────────────────────
-  describe("Jurídico & Governança", () => {
-    it("13. reviewContractClauseLogic deve acusar cláusula com multa desproporcional", async () => {
-      const res = await reviewContractClauseLogic({
-        clauseText: "Em caso de rescisão, incidirá multa de 50% sobre o valor total do contrato, sendo irrevogavel e irretratavel.",
-        contractType: "prestacao_servicos",
-      });
-
-      expect(res.success).toBe(true);
-      expect(res.data.riskLevel).toBe("abusiva");
-      expect(res.data.humanSignOffRequired).toBe(true);
+  describe("Jurídico e governança", () => {
+    it("retorna sinais textuais, não classificação jurídica", async () => {
+      const res = await reviewContractClauseLogic({ clauseText: "Em caso de rescisão, incidirá multa de 50% sobre o valor total do contrato, sendo irrevogavel e irretratavel.", contractType: "prestacao_servicos" });
+      expect(res.data.riskLevel).toBe("not_evaluated");
+      expect(res.data.identifiedRisks.length).toBeGreaterThan(0);
+      expect(res.data.suggestedRevision).toBeNull();
+      expect(res.data.legalAssessmentStatus).toBe("not_evaluated");
       expect(res.requires_human_approval).toBe(true);
     });
 
-    it("14. generateNdaDocumentLogic deve gerar acordo com jurisdição e vigência", async () => {
-      const res = await generateNdaDocumentLogic({
-        disclosingPartyName: "Loja Exemplo Ltda",
-        receivingPartyName: "Fornecedor Beta",
-        validityYears: 3,
-        purpose: "Parceria de tecnologia de ponta",
-      });
-
-      expect(res.success).toBe(true);
-      expect(res.data.title).toContain("CONFIDENCIALIDADE");
-      expect(res.data.jurisdictionCity).toBe("Chapecó / SC");
+    it("gera NDA como rascunho sem inventar foro ou prazo padrão", async () => {
+      const res = await generateNdaDocumentLogic({ disclosingPartyName: "Loja Exemplo Ltda", receivingPartyName: "Fornecedor Beta", validityYears: 3, purpose: "Parceria de tecnologia" });
+      expect(res.data.title).toContain("RASCUNHO");
+      expect(res.data.jurisdictionCity).toBeNull();
+      expect(res.data.contentStatus).toBe("draft");
+      await expect(generateNdaDocumentLogic({ disclosingPartyName: "A Ltda", receivingPartyName: "B Ltda", purpose: "Parceria" } as never)).rejects.toThrow();
     });
 
-    it("15. triageLegalDemandLogic deve classificar citação judicial com urgência crítica e prazo de 5 dias", async () => {
-      const res = await triageLegalDemandLogic({
-        demandText: "Citação judicial para contestação em autos de execução",
-        senderType: "judicial",
-      });
-
-      expect(res.success).toBe(true);
-      expect(res.data.urgency).toBe("critica");
-      expect(res.data.fatalDeadlineDays).toBe(5);
+    it("não infere prazo ou urgência pelo remetente", async () => {
+      const res = await triageLegalDemandLogic({ demandText: "Citação judicial para contestação em autos de execução", senderType: "judicial" });
+      expect(res.data.urgency).toBe("not_evaluated");
+      expect(res.data.fatalDeadlineDays).toBeNull();
+      expect(res.data.evaluationStatus).toBe("not_evaluated");
+      expect(res.data.recommendedAction).toContain("documento original");
+      expect(res.requires_human_approval).toBe(true);
     });
 
-    it("16. runComplianceChecklistLogic deve auditar checklist de conformidade LGPD", async () => {
-      const res = await runComplianceChecklistLogic({
-        hasPrivacyPolicy: false,
-        storesCourierGpsData: true,
-        sharesDataWithThirdParties: true,
-      });
-
-      expect(res.success).toBe(true);
-      expect(res.data.complianceScorePct).toBe(40);
-      expect(res.data.lgpdStatus).toBe("inadequado");
+    it("não pontua conformidade LGPD com checklist parcial", async () => {
+      const res = await runComplianceChecklistLogic({ hasPrivacyPolicy: false, storesCourierGpsData: true, sharesDataWithThirdParties: true });
+      expect(res.data.complianceScorePct).toBeNull();
+      expect(res.data.lgpdStatus).toBe("not_evaluated");
       expect(res.data.requiredActions.length).toBeGreaterThan(0);
+      expect(res.requires_human_approval).toBe(true);
     });
   });
 });

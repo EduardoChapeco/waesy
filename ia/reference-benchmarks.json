@@ -14,8 +14,8 @@
         "resumeText": "Possuo CNH A definitiva há 3 anos, excelente pontualidade e conhecimento das rotas da cidade."
       },
       "expectedOutputs": {
-        "minFitScorePct": 60,
         "requiredMatchedSkills": ["CNH A"],
+        "fitEvaluation": "not_evaluated",
         "requiresHumanApproval": true
       }
     },
@@ -32,7 +32,7 @@
       },
       "expectedOutputs": {
         "titleContains": "Atendente de Loja",
-        "requiresHumanApproval": false
+        "requiresHumanApproval": true
       }
     },
     {
@@ -45,7 +45,8 @@
       },
       "expectedOutputs": {
         "minQuestions": 3,
-        "containsStarMethod": true
+        "containsStarMethod": true,
+        "requiresHumanApproval": true
       }
     },
     {
@@ -73,8 +74,8 @@
         "resumeText": "Experiência de 4 anos com React, TypeScript e Tailwind CSS em projetos corporativos."
       },
       "expectedOutputs": {
-        "minFitScorePct": 90,
         "requiredMatchedSkills": ["React", "TypeScript", "Tailwind CSS"],
+        "fitEvaluation": "not_evaluated",
         "requiresHumanApproval": true
       }
     },
@@ -103,7 +104,7 @@
         "expectedAmountCents": 5000
       },
       "expectedOutputs": {
-        "matched": true,
+        "matched": false,
         "discrepancyCents": 0
       }
     },
@@ -148,8 +149,8 @@
         "companyRegime": "simples_nacional"
       },
       "expectedOutputs": {
-        "minObligations": 2,
-        "containsDas": true
+        "expectedSuccess": false,
+        "assessmentStatus": "not_evaluated"
       }
     },
     {
@@ -232,7 +233,7 @@
         "contractType": "prestacao_servicos"
       },
       "expectedOutputs": {
-        "riskLevel": "abusiva",
+        "riskLevel": "not_evaluated",
         "requiresHumanApproval": true
       }
     },
@@ -260,8 +261,8 @@
         "senderType": "judicial"
       },
       "expectedOutputs": {
-        "urgency": "critica",
-        "fatalDeadlineDays": 5
+        "urgency": "not_evaluated",
+        "fatalDeadlineDays": null
       }
     },
     {
@@ -273,8 +274,8 @@
         "senderType": "procon"
       },
       "expectedOutputs": {
-        "urgency": "alta",
-        "fatalDeadlineDays": 10
+        "urgency": "not_evaluated",
+        "fatalDeadlineDays": null
       }
     },
     {
@@ -287,8 +288,8 @@
         "sharesDataWithThirdParties": true
       },
       "expectedOutputs": {
-        "complianceScorePct": 40,
-        "lgpdStatus": "inadequado"
+        "complianceScorePct": null,
+        "lgpdStatus": "not_evaluated"
       }
     }
   ]

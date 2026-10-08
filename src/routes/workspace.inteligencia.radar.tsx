@@ -345,7 +345,7 @@ export function MarketRadarPage() {
                           {dna && (
                             <div className="mt-3 pt-3 border-t border-border/30 flex items-center justify-between text-xs">
                               <span className="text-muted-foreground font-medium">
-                                Arquétipo: <strong className="text-foreground">{dna.brand_archetype}</strong>
+                                Arquétipo hipotético: <strong className="text-foreground">{dna.brand_archetype || "Não inferido"}</strong>
                               </span>
                               <div className="flex items-center gap-2">
                                 {dna.color_palette.slice(0, 4).map((c, idx) => (
@@ -380,11 +380,26 @@ export function MarketRadarPage() {
                             </span>
                           </div>
                           <p className="text-xs text-muted-foreground mt-1">
-                            Última análise forense:{" "}
+                            Última captura da fonte:{" "}
                             {selectedCompetitor.latest_snapshot?.captured_at
                               ? new Date(selectedCompetitor.latest_snapshot.captured_at).toLocaleString("pt-BR")
                               : "Pendente"}
                           </p>
+                          {selectedCompetitor.latest_snapshot?.analysis_status === "ai_generated_draft" && (
+                            <p className="mt-2 text-xs text-amber-700 dark:text-amber-300">
+                              Rascunho de IA · baseado em uma captura pública · requer revisão · não comprova desempenho do concorrente.
+                            </p>
+                          )}
+                          {selectedCompetitor.latest_snapshot?.analysis_status === "legacy_unverified" && (
+                            <p className="mt-2 text-xs text-amber-700 dark:text-amber-300">
+                              Snapshot legado sem proveniência verificável; trate como não validado.
+                            </p>
+                          )}
+                          {selectedCompetitor.latest_snapshot?.source_url && (
+                            <a className="mt-2 block text-xs text-primary underline" href={selectedCompetitor.latest_snapshot.source_url} target="_blank" rel="noreferrer">
+                              Abrir fonte capturada
+                            </a>
+                          )}
                         </div>
 
                         <button
@@ -402,7 +417,7 @@ export function MarketRadarPage() {
                         </button>
                       </div>
 
-                      {/* Dados Forenses do Snapshot */}
+                      {/* Dados observados e rascunho analítico do snapshot */}
                       {selectedCompetitor.latest_snapshot ? (
                         <>
                           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -411,10 +426,12 @@ export function MarketRadarPage() {
                                 Posicionamento de Preço
                               </span>
                               <span className="text-base font-bold text-foreground capitalize mt-1 block">
-                                {selectedCompetitor.latest_snapshot.pricing_signals.tier}
+                                {selectedCompetitor.latest_snapshot.pricing_signals.tier || "Não observado"}
                               </span>
                               <span className="text-xs text-muted-foreground mt-1 block">
-                                Ticket médio ~R$ {selectedCompetitor.latest_snapshot.pricing_signals.average_ticket_estimate},00
+                                {selectedCompetitor.latest_snapshot.pricing_signals.average_ticket_estimate == null
+                                  ? "Ticket médio não observado"
+                                  : `Preço médio calculado de itens visíveis: R$ ${selectedCompetitor.latest_snapshot.pricing_signals.average_ticket_estimate.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`}
                               </span>
                             </div>
 
@@ -423,10 +440,12 @@ export function MarketRadarPage() {
                                 Intensidade Promocional
                               </span>
                               <span className="text-base font-bold text-foreground capitalize mt-1 block">
-                                {selectedCompetitor.latest_snapshot.pricing_signals.promotional_intensity}
+                                {selectedCompetitor.latest_snapshot.pricing_signals.promotional_intensity || "Não observado"}
                               </span>
                               <span className="text-xs text-muted-foreground mt-1 block">
-                                Agressividade em cupons e ofertas
+                                {selectedCompetitor.latest_snapshot.pricing_signals.promotional_intensity
+                                  ? "Interpretação qualitativa da página, não medida de vendas"
+                                  : "Sinais promocionais não observados"}
                               </span>
                             </div>
 
@@ -435,26 +454,26 @@ export function MarketRadarPage() {
                                 Arquétipo Dominante
                               </span>
                               <span className="text-base font-bold text-foreground mt-1 block">
-                                {selectedCompetitor.latest_snapshot.extracted_dna.brand_archetype}
+                                {selectedCompetitor.latest_snapshot.extracted_dna.brand_archetype || "Não inferido"}
                               </span>
                               <span className="text-xs text-muted-foreground mt-1 block">
-                                Psicologia de comunicação
+                                Hipótese de comunicação; não é perfil de clientes observado
                               </span>
                             </div>
                           </div>
 
                           <div className="space-y-3">
                             <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                              Brecha de Mercado (Oportunidade para a Sua Loja)
+                              Hipótese de diferenciação para revisar
                             </h3>
                             <div className="p-4 rounded-lg bg-primary/5 border border-primary/15 text-sm text-foreground leading-relaxed">
-                              {selectedCompetitor.latest_snapshot.extracted_dna.differentiation_gap}
+                              {selectedCompetitor.latest_snapshot.extracted_dna.differentiation_gap || "Não gerada: evidência insuficiente."}
                             </div>
                           </div>
 
                           <div className="space-y-3">
                             <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                              Fraquezas Estratégicas do Concorrente
+                              Sinais que a IA interpretou como possíveis fragilidades (hipóteses)
                             </h3>
                             <div className="space-y-2">
                               {selectedCompetitor.latest_snapshot.extracted_dna.weaknesses.map((w, idx) => (
@@ -471,7 +490,7 @@ export function MarketRadarPage() {
 
                           <div className="space-y-3">
                             <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                              Ganchos de Marketing V4 para Explorar
+                              Rascunhos de mensagens inspirados na captura (não são campanhas validadas)
                             </h3>
                             <div className="space-y-2">
                               {selectedCompetitor.latest_snapshot.marketing_hooks.map((h, idx) => (

@@ -2,7 +2,7 @@ import { createServerFn } from '@tanstack/react-start';
 import { z } from 'zod';
 import { getServerClient } from '@/lib/supabase';
 import { getServerIdentity, assertStoreAccess } from '@/lib/server-access';
-import { logSystemError } from '@/lib/logger';
+import { executeUnifiedAiCall } from '@/services/api-orchestrator.functions';
 
 export type PostFormat = 'single' | 'carousel' | 'story_reels';
 export type VisualTemplate = 'minimal-dark' | 'bold-color' | 'editorial' | 'data-card' | 'testimonial' | 'clean-white';
@@ -12,7 +12,7 @@ export interface SquadPostStrategy {
   slides_count: number;
   template: VisualTemplate;
   theme: string;
-  target_sin: string; // Pecado Capital: 'ganancia', 'orgulho', 'gula', 'inveja', 'preguica'
+  target_sin: string; // Lente criativa opcional; não é validação comportamental.
   title: string;
 }
 
@@ -42,14 +42,26 @@ export interface SquadGeneratedPost {
   caption: string;
   hashtags: string;
   target_sin_trigger?: string | null;
-  simlab_validation_score: number;
+  simlab_validation_score: null;
+  provenance: {
+    record_kind: 'llm_generated_marketing_draft';
+    provider: string;
+    model: string;
+    generated_at: string;
+    human_reviewed: false;
+  };
   status: 'draft' | 'scheduled' | 'published';
   scheduled_for?: string | null;
   created_at: string;
   updated_at: string;
 }
 
-// ─── GERADOR DE HTML5 1080x1080 POR CARLA (DESIGNER AUTOCONTIDO) ──────────────
+// ─── RENDERIZADOR DE TEMPLATE HTML5 1080x1080 ────────────────────────────────
+function escapeHtml(value: string): string {
+  const replacements: Record<string, string> = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" };
+  return value.replace(/[&<>"']/g, (char) => replacements[char] || char);
+}
+
 export function renderSlideHTML5(params: {
   headline: string;
   body: string;
@@ -60,7 +72,8 @@ export function renderSlideHTML5(params: {
   primaryColor?: string;
   cta?: string | null;
 }): string {
-  const { headline, body, slideIndex, totalSlides, companyName, template, primaryColor = '#4f46e5', cta } = params;
+  const { headline, body, slideIndex, totalSlides, companyName, template, cta } = params;
+  const primaryColor = /^#[0-9a-fA-F]{6}$/.test(params.primaryColor || "") ? params.primaryColor! : '#4f46e5';
 
   let bgStyle = 'background: #090d16; color: #f8fafc;';
   let fontImport = '@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800;900&display=swap");';
@@ -159,22 +172,22 @@ export function renderSlideHTML5(params: {
   </style>
 </head>
 <body>
-  <div class="watermark">${companyName}</div>
+  <div class="watermark">${escapeHtml(companyName)}</div>
   <div class="content-box">
     <div class="badge">Dica Estratégica</div>
-    <h1 class="headline">${headline}</h1>
-    <p class="body-text">${body}</p>
-    ${cta ? `<div class="cta-pill">${cta}</div>` : ''}
+    <h1 class="headline">${escapeHtml(headline)}</h1>
+    <p class="body-text">${escapeHtml(body)}</p>
+    ${cta ? `<div class="cta-pill">${escapeHtml(cta)}</div>` : ''}
   </div>
   <div class="footer">
-    <span>@${companyName.toLowerCase().replace(/\s+/g, '')}</span>
+    <span>@${escapeHtml(companyName.toLowerCase().replace(/\s+/g, ''))}</span>
     <span>Slide ${slideIndex} de ${totalSlides}</span>
   </div>
 </body>
 </html>`;
 }
 
-// ─── 1. ORQUESTRAR CRIAÇÃO DE POST COMPLETO (SQUADS V4) ───────────────────────
+// ─── 1. RASCUNHO DE POST GERADO POR IA (SEM SCORE DE VALIDAÇÃO) ──────────────
 export async function executeOrchestrateMarketingPost(data: {
   storeId: string;
   companyName: string;
@@ -182,116 +195,119 @@ export async function executeOrchestrateMarketingPost(data: {
   theme: string;
   targetSin?: string;
 }): Promise<{ success: boolean; post: SquadGeneratedPost }> {
-  // 1. Estratégia por Aria
-  const strategy: SquadPostStrategy = {
-    format: 'carousel',
-    slides_count: 5,
-    template: 'bold-color',
-    theme: data.theme,
-    target_sin: data.targetSin || 'ganancia',
-    title: `${data.theme} — Segredos & Estratégia Prática`,
-  };
+  const identity = await getServerIdentity();
+  assertStoreAccess(identity, ['owner', 'admin', 'manager', 'content'], data.storeId);
 
-  // 2. Redação por Bruno
-  const copy: SquadPostCopy = {
-    slides: [
-      {
-        index: 1,
-        headline: 'O erro que custa 40% das suas vendas todos os meses.',
-        body: 'A maioria dos empresários foca no produto errado e esquece do básico que realmente gera caixa imediato.',
-        badge: 'Alerta',
-      },
-      {
-        index: 2,
-        headline: 'Por que o cliente pesquisa com você e compra no concorrente?',
-        body: 'Não é preço baixo. É a clareza da proposta nos primeiros 3 segundos e a facilidade do checkout sem burocracia.',
-      },
-      {
-        index: 3,
-        headline: 'A regra de ouro da oferta magnética.',
-        body: 'Combine garantia incondicional, prova social irrefutável e parcelamento que cabe com folga no bolso mensal.',
-      },
-      {
-        index: 4,
-        headline: 'O que muda quando você aplica o método.',
-        body: 'Sua taxa de conversão sobe, o custo por lead despenca e sua marca se posiciona como autoridade do segmento.',
-      },
-      {
-        index: 5,
-        headline: 'Quer implementar essa máquina no seu negócio?',
-        body: 'Comente "ESCALAR" abaixo para receber nossa auditoria gratuita em 5 minutos.',
-        cta: 'Comente "ESCALAR"',
-      }
-    ],
-    caption: `Pare de queimar dinheiro em anúncios genéricos que não convertem. 🔥\n\nNeste carrossel, revelamos o passo a passo exato para blindar sua oferta e atrair clientes qualificados todos os dias.\n\nSalve este post para consultar quando for criar sua próxima campanha! 📌`,
-    hashtags: '#marketing #vendas #negocios #crescimento #estrategia #sucesso #empreendedorismo'
-  };
+  const strategy = z.object({
+    format: z.enum(['single', 'carousel', 'story_reels']),
+    slides_count: z.number().int().min(1).max(8),
+    template: z.enum(['minimal-dark', 'bold-color', 'editorial', 'data-card', 'testimonial', 'clean-white']),
+    theme: z.string().trim().min(1).max(240),
+    target_sin: z.string().trim().max(80),
+    title: z.string().trim().min(1).max(240),
+  });
+  const copy = z.object({
+    slides: z.array(z.object({
+      index: z.number().int().positive(),
+      headline: z.string().trim().min(1).max(240),
+      body: z.string().trim().min(1).max(1000),
+      badge: z.string().trim().max(80).optional(),
+      cta: z.string().trim().max(120).nullable().optional(),
+    }).strict()).min(1).max(8),
+    caption: z.string().trim().min(1).max(3000),
+    hashtags: z.string().trim().max(600),
+  }).strict();
+  const schema = z.object({ strategy, copy }).strict();
 
-  // 3. Design HTML5 1080x1080 por Carla
-  const slidesHtml: string[] = copy.slides.map(s => renderSlideHTML5({
-    headline: s.headline,
-    body: s.body,
-    slideIndex: s.index,
-    totalSlides: strategy.slides_count,
+  const inputFacts = {
+    business_name: data.companyName,
+    segment: data.segment || null,
+    campaign_theme: data.theme,
+    creative_lens: data.targetSin || null,
+  };
+  const aiResult = await executeUnifiedAiCall({
+    systemPrompt: `Crie um rascunho de campanha de marketing em português brasileiro. Retorne somente JSON com strategy e copy, incluindo 1 a 8 slides e um slide por item. Use exclusivamente os fatos recebidos.
+Não invente estatísticas, resultados, garantias, depoimentos, certificações, escassez, descontos, preço, entrega, disponibilidade, participação de mercado ou eficácia. Não chame o rascunho de validado, vencedor ou de alta conversão. Quando faltar informação, escreva conteúdo educativo/hipotético sem apresentar a lacuna como fato. A lente criativa, se houver, é apenas uma opção de estilo, não evidência de eficácia. A saída será revisada por uma pessoa antes de ser publicada.`,
+    userPrompt: JSON.stringify(inputFacts),
+    responseFormat: 'json_object',
+    temperature: 0.4,
+    feature: 'squad_marketing_post_draft',
+    storeId: data.storeId,
+  });
+
+  let raw: unknown = aiResult.parsedJson;
+  if (!raw && aiResult.content) {
+    try { raw = JSON.parse(aiResult.content); } catch { throw new Error('A IA retornou conteúdo inválido; nenhum template fixo foi usado como fallback.'); }
+  }
+  const parsed = schema.safeParse(raw);
+  if (!parsed.success) throw new Error('A IA não retornou um rascunho válido; nenhum conteúdo predefinido foi usado.');
+  const { strategy: generatedStrategy, copy: generatedCopy } = parsed.data;
+  if (generatedCopy.slides.length !== generatedStrategy.slides_count) throw new Error('A IA retornou contagem de slides inconsistente; nenhum resultado parcial foi salvo.');
+  if (generatedCopy.slides.some((slide, index) => slide.index !== index + 1)) throw new Error('A IA retornou sequência de slides inválida.');
+
+  const slidesHtml = generatedCopy.slides.map((slide) => renderSlideHTML5({
+    headline: slide.headline,
+    body: slide.body,
+    slideIndex: slide.index,
+    totalSlides: generatedStrategy.slides_count,
     companyName: data.companyName,
-    template: strategy.template,
-    cta: s.cta,
+    template: generatedStrategy.template,
+    cta: slide.cta,
   }));
-
-  // 4. Auditoria de Conformidade e SimLab Pré-check por Diego
-  const simlabScore = 89; // Nota validada pelo SimLab
-
+  const generatedAt = new Date().toISOString();
   const postRecord: SquadGeneratedPost = {
-    id: 'post-' + Date.now(),
+    id: '',
     store_id: data.storeId,
-    title: strategy.title,
-    theme: data.theme,
-    format: strategy.format,
-    slides_count: strategy.slides_count,
-    strategy_data: strategy,
-    copy_data: copy,
+    title: generatedStrategy.title,
+    theme: generatedStrategy.theme,
+    format: generatedStrategy.format,
+    slides_count: generatedStrategy.slides_count,
+    strategy_data: generatedStrategy,
+    copy_data: generatedCopy,
     rendered_slides_html: slidesHtml,
     exported_image_urls: [],
-    caption: copy.caption,
-    hashtags: copy.hashtags,
-    target_sin_trigger: strategy.target_sin,
-    simlab_validation_score: simlabScore,
+    caption: generatedCopy.caption,
+    hashtags: generatedCopy.hashtags,
+    target_sin_trigger: data.targetSin || null,
+    simlab_validation_score: null,
+    provenance: {
+      record_kind: 'llm_generated_marketing_draft',
+      provider: aiResult.provider,
+      model: aiResult.model,
+      generated_at: generatedAt,
+      human_reviewed: false,
+    },
     status: 'draft',
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
+    created_at: generatedAt,
+    updated_at: generatedAt,
   };
 
-  // Persistência no Postgres
-  try {
-    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(data.storeId);
-    if (isUuid) {
-      const db = getServerClient();
-      await db
-        .from('squad_generated_posts')
-        .insert({
-          store_id: data.storeId,
-          title: postRecord.title,
-          theme: postRecord.theme,
-          format: postRecord.format,
-          slides_count: postRecord.slides_count,
-          strategy_data: postRecord.strategy_data,
-          copy_data: postRecord.copy_data,
-          rendered_slides_html: postRecord.rendered_slides_html,
-          caption: postRecord.caption,
-          hashtags: postRecord.hashtags,
-          target_sin_trigger: postRecord.target_sin_trigger,
-          simlab_validation_score: postRecord.simlab_validation_score,
-          status: 'draft',
-        });
-    }
-  } catch (err: any) {
-    console.warn('[squad-content] Post persistence warning:', err.message);
-  }
-
-  return {
-    success: true,
-    post: postRecord,
-  };
+  const db = getServerClient();
+  const { data: saved, error } = await db
+    .from('squad_generated_posts')
+    .insert({
+      store_id: postRecord.store_id,
+      title: postRecord.title,
+      theme: postRecord.theme,
+      format: postRecord.format,
+      slides_count: postRecord.slides_count,
+      strategy_data: postRecord.strategy_data,
+      copy_data: postRecord.copy_data,
+      rendered_slides_html: postRecord.rendered_slides_html,
+      caption: postRecord.caption,
+      hashtags: postRecord.hashtags,
+      target_sin_trigger: postRecord.target_sin_trigger,
+      simlab_validation_score: null,
+      provenance: postRecord.provenance,
+      status: 'draft',
+    })
+    .select('id, created_at, updated_at')
+    .single();
+  if (error || !saved) throw new Error(`O rascunho foi gerado, mas não pôde ser salvo: ${error?.message || 'registro ausente'}`);
+  postRecord.id = saved.id;
+  postRecord.created_at = saved.created_at;
+  postRecord.updated_at = saved.updated_at;
+  return { success: true, post: postRecord };
 }
 
 export const OrchestrateMarketingPostSchema = z.object({
@@ -305,49 +321,27 @@ export const OrchestrateMarketingPostSchema = z.object({
 export const orchestrateMarketingPost = createServerFn({ method: 'POST' })
   .validator(OrchestrateMarketingPostSchema)
   .handler(async ({ data }) => {
-    const identity = await getServerIdentity();
-    assertStoreAccess(identity);
-    if (data.storeId !== identity.store_id && !(identity.role === "platform_admin")) {
-      throw new Error("Acesso não autorizado para esta organização.");
-    }
     return executeOrchestrateMarketingPost(data);
   });
 
 // ─── 2. LISTAR POSTS GERADOS POR SQUADS ───────────────────────────────────────
 export async function executeListSquadGeneratedPosts(data: { storeId: string }): Promise<SquadGeneratedPost[]> {
-  try {
-    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(data.storeId);
-    if (isUuid) {
-      const db = getServerClient();
-      const { data: rows, error } = await db
-        .from('squad_generated_posts')
-        .select('*')
-        .eq('store_id', data.storeId)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      if (rows && rows.length > 0) return rows as SquadGeneratedPost[];
-    }
-    return [];
-  } catch (e: any) {
-    logSystemError({
-      route: 'squad-content.executeListSquadGeneratedPosts',
-      error: e,
-      schemaName: 'public',
-      tableName: 'squad_generated_posts',
-      contractName: 'listSquadGeneratedPosts',
-    });
-    return [];
-  }
+  const identity = await getServerIdentity();
+  assertStoreAccess(identity, ['owner', 'admin', 'manager', 'content'], data.storeId);
+  const db = getServerClient();
+  const { data: rows, error } = await db
+    .from('squad_generated_posts')
+    .select('*')
+    .eq('store_id', data.storeId)
+    .order('created_at', { ascending: false });
+  if (error) throw new Error(`Falha ao carregar posts do workspace: ${error.message}`);
+  return (rows || []).map((row: any) => ({
+    ...row,
+    simlab_validation_score: null,
+    provenance: row.provenance || { record_kind: 'legacy_post', notice: 'Proveniência/validação legada não verificada.' },
+  })) as SquadGeneratedPost[];
 }
 
 export const listSquadGeneratedPosts = createServerFn({ method: 'GET' })
   .validator(z.object({ storeId: z.string().uuid() }))
-  .handler(async ({ data }) => {
-    const identity = await getServerIdentity();
-    assertStoreAccess(identity);
-    if (data.storeId !== identity.store_id && !(identity.role === "platform_admin")) {
-      throw new Error("Acesso não autorizado para esta organização.");
-    }
-    return executeListSquadGeneratedPosts(data);
-  });
+  .handler(async ({ data }) => executeListSquadGeneratedPosts(data));

@@ -59,6 +59,37 @@ describe("Studio template automated quality pipeline", () => {
     ]));
   });
 
+  it.each(["javascript:alert(1)", "data:text/html,<svg/onload=alert(1)>", "blob:https://example.test/id", "//evil.example/path"])("bloqueia publicação com href inseguro: %s", (href) => {
+    const result = auditStudioTemplate(fixture([{
+      id: "hero",
+      type: "hero_minimal_split",
+      config: { title: "Abrir", primaryCta: { label: "Ação", href } },
+    }]));
+    expect(result.findings.map((finding) => finding.ruleId)).toContain("SECURITY_UNSAFE_HREF");
+    expect(getPublicationBlockingFindings(result).map((finding) => finding.ruleId)).toContain("SECURITY_UNSAFE_HREF");
+  });
+
+  it("bloqueia imagem data/blob em vez de omiti-la da auditoria", () => {
+    const result = auditStudioTemplate(fixture([{
+      id: "hero",
+      type: "hero_minimal_split",
+      config: { title: "Imagem inline", imageUrl: "data:image/png;base64,AAAA", imageAlt: "Imagem de teste" },
+    }]));
+    expect(result.findings.map((finding) => finding.ruleId)).toContain("LICENSE_EPHEMERAL_IMAGE");
+    expect(getPublicationBlockingFindings(result).map((finding) => finding.ruleId)).toContain("LICENSE_EPHEMERAL_IMAGE");
+  });
+
+  it("não permite disfarçar images.unsplash.com como asset de upload do usuário", () => {
+    const imageUrl = "https://images.unsplash.com/photo-example";
+    const result = auditStudioTemplate(fixture([{
+      id: "hero",
+      type: "hero_minimal_split",
+      config: { title: "Ambiente", imageUrl, imageAlt: "Espaço com luz natural" },
+      assetRefs: [{ asset_id: "falsely-uploaded", provider: "upload", source_url: imageUrl, provenance_state: "user-provided" }],
+    }]));
+    expect(result.findings.map((finding) => finding.ruleId)).toContain("LICENSE_PROVIDER_MISMATCH");
+  });
+
   it("aprova imagem Unsplash com atribuição verificável e alt, se dentro do orçamento", () => {
     const imageUrl = "https://images.unsplash.com/photo-example";
     const result = auditStudioTemplate(fixture([
@@ -69,10 +100,16 @@ describe("Studio template automated quality pipeline", () => {
         assetRefs: [{
           asset_id: "photo-1",
           provider: "unsplash",
+          source_asset_id: "photo-example",
           source_url: imageUrl,
           source_page_url: "https://unsplash.com/photos/example",
           creator: "Autoria confirmada",
+          creator_profile_url: "https://unsplash.com/@autoria",
           attribution_text: "Foto por Autoria confirmada no Unsplash",
+          license_id: "unsplash-license",
+          license_url: "https://unsplash.com/license",
+          usage_slot: "hero-ambience",
+          download_event_status: "tracked",
           provenance_state: "provider-reported",
           byte_size: 300_000,
         }],
@@ -97,13 +134,53 @@ describe("Studio template automated quality pipeline", () => {
 
   it("gera relatório determinístico por catálogo com resultado de cada template", () => {
     const report = auditAllStudioTemplates();
-    expect(report.summary.total).toBe(9);
-    expect(report.templates).toHaveLength(9);
+    expect(report.summary.total).toBe(12);
+    expect(report.templates).toHaveLength(12);
     expect(report.templates.every((template) => template.findings && template.metrics)).toBe(true);
     expect(report.summary.failed + report.summary.warnings + report.summary.passed).toBe(report.summary.total);
+    expect(report.summary.reviewRequired).toBe(12);
+    expect(report.summary.publishableFailed).toBe(0);
+    expect(report.templates.filter((template) => template.templateId.startsWith("pilot_")).every((template) => template.findings.some((finding) => finding.ruleId === "CONTENT_PLACEHOLDER_UNRESOLVED"))).toBe(true);
   });
 
-  it("expõe findings bloqueantes ao serviço de publicação para um documento Omni", () => {
+  it("bloqueia FAQ/depoimentos vazios e formulário sem destino de lead", () => {
+    const result = auditStudioTemplate(fixture([
+      { id: "faq", type: "faq_clean_accordion", config: { items: [] } },
+      { id: "proof", type: "testimonials_social_proof", config: { testimonials: [] } },
+      { id: "contact", type: "contact_form_direct", config: { whatsappNumber: "" } },
+    ]));
+    expect(result.findings.map((finding) => finding.ruleId)).toEqual(expect.arrayContaining([
+      "CONTENT_FAQ_EMPTY",
+      "CONTENT_SOCIAL_PROOF_EMPTY",
+      "CONTENT_FORM_DESTINATION_MISSING",
+    ]));
+  });
+
+  it("bloqueia planos de pricing sem destino CTA e não usa rota interna genérica", () => {
+    const result = auditStudioTemplate(fixture([{
+      id: "pricing",
+      type: "pricing_three_tiers",
+      config: { tiers: [{ id: "starter", name: "Inicial", ctaLabel: "Contratar" }] },
+    }]));
+    expect(result.findings.map((finding) => finding.ruleId)).toContain("CONTENT_PRICING_CTA_MISSING");
+    expect(getPublicationBlockingFindings(result).map((finding) => finding.ruleId)).toContain("CONTENT_PRICING_CTA_MISSING");
+  });
+
+  it("bloqueia placeholders não resolvidos e âncoras duplicadas ou inválidas", () => {
+    const result = auditStudioTemplate(fixture([
+      { id: "hero", type: "hero_minimal_split", sectionAnchorId: "hero", config: { title: "[[NOME_REAL]]", primaryCta: { label: "Saiba mais", href: "#ausente" } } },
+      { id: "faq", type: "faq_clean_accordion", sectionAnchorId: "hero", config: { title: "Dúvidas", items: [] } },
+    ]));
+    const ruleIds = result.findings.map((finding) => finding.ruleId);
+    expect(ruleIds).toEqual(expect.arrayContaining([
+      "CONTENT_PLACEHOLDER_UNRESOLVED",
+      "LINK_DUPLICATE_SECTION_ANCHOR",
+      "LINK_BROKEN_SECTION_ANCHOR",
+    ]));
+    expect(getPublicationBlockingFindings(result).length).toBeGreaterThanOrEqual(3);
+  });
+
+	it("expõe findings bloqueantes ao serviço de publicação para um documento Omni", () => {
     const page = {
       ...createEmptyOmniPage("publish-gate", "Página de publicação"),
       blocks: [{
@@ -113,6 +190,15 @@ describe("Studio template automated quality pipeline", () => {
       }],
     };
     const result = auditOmniDocument(page);
-    expect(getPublicationBlockingFindings(result).map((finding) => finding.ruleId)).toContain("LICENSE_PROVENANCE_MISSING");
-  });
+	 expect(getPublicationBlockingFindings(result).map((finding) => finding.ruleId)).toContain("LICENSE_PROVENANCE_MISSING");
+	});
+
+	it("bloqueia bloco Omni que não existe no registry canônico", () => {
+	 const page = {
+	   ...createEmptyOmniPage("unknown-block", "Página inválida"),
+	   blocks: [{ id: "unknown", type: "future_block", config: {} }],
+	 };
+	 const result = auditOmniDocument(page);
+	 expect(getPublicationBlockingFindings(result).map((finding) => finding.ruleId)).toContain("BUILDER_UNKNOWN_OMNI_BLOCK");
+	});
 });

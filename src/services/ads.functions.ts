@@ -11,14 +11,14 @@ export type AdCampaign = {
   headline?: string;
   media_url?: string | null;
   format: "post_patrocinado" | "banner_destaque" | "story_patrocinado" | "busca_topo" | "stories_sponsor";
-  target_location: string;
-  target_radius_km: number;
-  daily_budget_cents: number;
+  target_location: string | null;
+  target_radius_km: number | null;
+  daily_budget_cents: number | null;
   total_budget_cents: number;
   status: "active" | "paused" | "completed" | "draft";
   impressions_count: number;
   clicks_count: number;
-  spent_cents: number;
+  spent_cents: number | null;
   created_at: string;
 };
 
@@ -37,18 +37,23 @@ export const listAdCampaigns = createServerFn({ method: "GET" }).handler(async (
 
  if (error) {
  console.error("[ads] Error listing campaigns:", error);
- return [];
+ throw new Error("Não foi possível carregar as campanhas de anúncios.");
  }
 
  // Busca contagem de eventos por campanha
  const campaignIds = (campaigns || []).map((c) => c.id);
- const { data: events } = await supabase
+ const { data: events, error: eventsError } = await supabase
  .from("ad_events")
  .select("campaign_id, event_type")
  .in(
  "campaign_id",
  campaignIds.length > 0 ? campaignIds : ["00000000-0000-0000-0000-000000000000"],
  );
+
+ if (eventsError) {
+   console.error("[ads] Error listing campaign events:", eventsError);
+   throw new Error("Não foi possível carregar as métricas de eventos das campanhas.");
+ }
 
  const eventsCount = new Map<string, { views: number; clicks: number }>();
  (events || []).forEach((e) => {
@@ -79,14 +84,14 @@ export const listAdCampaigns = createServerFn({ method: "GET" }).handler(async (
       headline: c.body || s.headline || "",
       media_url: c.image_url || null,
       format,
-      target_location: s.target_location || "Toda a Região",
-      target_radius_km: s.target_radius_km || 15,
-      daily_budget_cents: s.daily_budget_cents || Math.round(c.budget_cents / 5),
-      total_budget_cents: c.budget_cents,
+      target_location: typeof s.target_location === "string" && s.target_location.trim() ? s.target_location : null,
+      target_radius_km: s.target_radius_km != null && s.target_radius_km !== "" && Number.isFinite(Number(s.target_radius_km)) && Number(s.target_radius_km) > 0 ? Number(s.target_radius_km) : null,
+      daily_budget_cents: s.daily_budget_cents != null && s.daily_budget_cents !== "" && Number.isFinite(Number(s.daily_budget_cents)) && Number(s.daily_budget_cents) > 0 ? Number(s.daily_budget_cents) : null,
+      total_budget_cents: Number(c.budget_cents),
       status: c.status,
       impressions_count: stats.views,
       clicks_count: stats.clicks,
-      spent_cents: Number(s.real_spent_cents ?? 0),
+      spent_cents: s.real_spent_cents != null && s.real_spent_cents !== "" && Number.isFinite(Number(s.real_spent_cents)) ? Number(s.real_spent_cents) : null,
       created_at: c.created_at,
     } as AdCampaign;
   });
@@ -97,7 +102,7 @@ export const getStoreAdTargets = createServerFn({ method: "GET" }).handler(async
  const identity = await getServerIdentity();
  assertStoreAccess(identity, ["owner", "admin", "manager", "content"]);
 
- const { data: products } = await supabase
+ const { data: products, error: productsError } = await supabase
  .from("products")
  .select("id, title, price_cents, status")
  .eq("store_id", identity.store_id)
@@ -105,11 +110,16 @@ export const getStoreAdTargets = createServerFn({ method: "GET" }).handler(async
  .order("created_at", { ascending: false })
  .limit(50);
 
- const { data: store } = await supabase
+ const { data: store, error: storeError } = await supabase
  .from("stores")
  .select("id, name, phone, slug")
  .eq("id", identity.store_id)
  .single();
+
+ if (productsError || storeError || !store) {
+   console.error("[ads] Error loading ad targets:", productsError || storeError);
+   throw new Error("Não foi possível carregar o catálogo ou os dados da loja para anúncios.");
+ }
 
  return {
     storeId: identity.store_id,
@@ -217,6 +227,7 @@ export const createAdCampaign = createServerFn({ method: "POST" })
       });
     } catch (err) {
       console.error("[ads] Erro ao registrar invoice_ledger:", err);
+      throw new Error("A campanha não pôde ser confirmada porque o lançamento de cobrança falhou.");
     }
   }
 
@@ -571,46 +582,32 @@ export const getAdNetworkTreasuryMetrics = createServerFn({ method: "GET" }).han
     throw new Error("Acesso exclusivo para administradores da rede.");
   }
 
-  const { data: campaigns, error } = await supabase
-    .from("ad_campaigns")
-    .select("id, budget_cents, status, created_at, settings");
+  const [{ data: campaigns, error: campaignsError }, { data: ledgerRows, error: ledgerError }] = await Promise.all([
+    supabase.from("ad_campaigns").select("id, status"),
+    supabase.from("ad_ledger").select("entry_type, amount_cents"),
+  ]);
 
-  if (error) {
-    console.error("[ads] Erro ao buscar métricas de tesouraria de ads:", error);
-    return {
-      total_processed_cents: 0,
-      waesy_revenue_cents: 0,
-      external_ad_spend_cents: 0,
-      active_campaigns_count: 0,
-      total_campaigns_count: 0,
-    };
+  if (campaignsError || ledgerError) {
+    console.error("[ads] Erro ao buscar métricas de tesouraria de ads:", campaignsError || ledgerError);
+    throw new Error("Não foi possível carregar as campanhas e lançamentos observados da tesouraria.");
   }
 
-  let totalProcessed = 0;
-  let waesyRevenue = 0;
-  let externalSpend = 0;
-  let activeCount = 0;
-
-  (campaigns || []).forEach((c: any) => {
-    const budget = c.budget_cents || 0;
-    totalProcessed += budget;
-
-    const hasOwn = Boolean(c.settings?.has_own_ad_account);
-    const split = calculateAdBudgetSplit(budget, hasOwn);
-
-    waesyRevenue += split.waesy_revenue_cents;
-    externalSpend += split.external_ad_spend_cents;
-
-    if (c.status === "active") {
-      activeCount++;
-    }
-  });
+  const sumLedgerType = (entryType: string) => (ledgerRows || [])
+    .filter((entry: any) => entry.entry_type === entryType)
+    .reduce((sum: number, entry: any) => {
+      if (entry.amount_cents == null || entry.amount_cents === "") throw new Error("Lançamento sem valor no livro-razão de anúncios.");
+      const amount = Number(entry.amount_cents);
+      if (!Number.isFinite(amount)) throw new Error("Lançamento inválido no livro-razão de anúncios.");
+      return sum + amount;
+    }, 0);
 
   return {
-    total_processed_cents: totalProcessed,
-    waesy_revenue_cents: waesyRevenue,
-    external_ad_spend_cents: externalSpend,
-    active_campaigns_count: activeCount,
+    // Valores registrados no ledger; orçamento de campanha não é tratado como receita ou gasto realizado.
+    total_processed_cents: sumLedgerType("boost_payment"),
+    waesy_revenue_cents: sumLedgerType("waesy_fee_retention"),
+    // O livro-razão de rede não comprova o gasto reportado pela plataforma externa.
+    external_ad_spend_cents: null,
+    active_campaigns_count: (campaigns || []).filter((campaign: any) => campaign.status === "active").length,
     total_campaigns_count: (campaigns || []).length,
   };
 });
@@ -643,12 +640,29 @@ export const listAllNetworkCampaignsAdmin = createServerFn({ method: "GET" })
     const { data, error } = await query;
     if (error) {
       console.error("[ads] Erro ao listar campanhas admin:", error);
-      return [];
+      throw new Error("Não foi possível carregar as campanhas da rede.");
+    }
+
+    const { data: ledgerRows, error: ledgerError } = await supabase
+      .from("ad_ledger")
+      .select("campaign_id, entry_type, amount_cents, routing_mode")
+      .in("campaign_id", (data || []).length ? (data || []).map((campaign: any) => campaign.id) : ["00000000-0000-0000-0000-000000000000"]);
+    if (ledgerError) {
+      console.error("[ads] Erro ao consultar ledger das campanhas admin:", ledgerError);
+      throw new Error("Não foi possível carregar os lançamentos das campanhas da rede.");
     }
 
     return (data || []).map((c: any) => {
-      const hasOwn = Boolean(c.settings?.has_own_ad_account);
-      const split = calculateAdBudgetSplit(c.budget_cents || 0, hasOwn);
+      const campaignLedger = (ledgerRows || []).filter((entry: any) => entry.campaign_id === c.id);
+      const feeEntries = campaignLedger.filter((entry: any) => entry.entry_type === "waesy_fee_retention");
+      const recordedFee = feeEntries.length
+        ? feeEntries.reduce((sum: number, entry: any) => {
+            if (entry.amount_cents == null || entry.amount_cents === "") throw new Error("Lançamento sem valor no livro-razão de anúncios.");
+            const amount = Number(entry.amount_cents);
+            if (!Number.isFinite(amount)) throw new Error("Lançamento inválido no livro-razão de anúncios.");
+            return sum + amount;
+          }, 0)
+        : null;
 
       return {
         id: c.id,
@@ -657,10 +671,10 @@ export const listAllNetworkCampaignsAdmin = createServerFn({ method: "GET" })
         store_slug: c.store?.slug || "",
         title: c.title || "Impulsionamento",
         status: c.status,
-        total_budget_cents: c.budget_cents || 0,
-        waesy_revenue_cents: split.waesy_revenue_cents,
-        external_spend_cents: split.external_ad_spend_cents,
-        routing_mode: split.routing_mode,
+        total_budget_cents: Number(c.budget_cents),
+        waesy_revenue_cents: recordedFee,
+        external_spend_cents: null,
+        routing_mode: campaignLedger[0]?.routing_mode || null,
         created_at: c.created_at,
         ends_at: c.ends_at,
       };
@@ -717,9 +731,11 @@ export async function recordAdCampaignAndLedgerSplit(params: {
 
   if (campaignErr) {
     console.error("[ads] Erro ao registrar ad_campaign:", campaignErr);
+    throw new Error("Não foi possível registrar a campanha de anúncios.");
   }
 
   const campaignId = campaign?.id || null;
+  if (!campaignId) throw new Error("A campanha não retornou um identificador válido.");
 
   // 2. Insere no ad_ledger (Double-entry / Livro-razão)
   const ledgerEntries = [
@@ -758,6 +774,7 @@ export async function recordAdCampaignAndLedgerSplit(params: {
   const { error: ledgerErr } = await supabase.from("ad_ledger").insert(ledgerEntries);
   if (ledgerErr) {
     console.error("[ads] Erro ao registrar entradas no ad_ledger:", ledgerErr);
+    throw new Error("Não foi possível registrar os lançamentos da campanha no livro-razão.");
   }
 
   return {
@@ -895,7 +912,7 @@ export const listAdLedgerEntries = createServerFn({ method: "GET" })
     const { data, error } = await query;
     if (error) {
       console.error("[ads] Erro ao listar lançamentos do ad_ledger:", error);
-      return [];
+      throw new Error("Não foi possível carregar os lançamentos do livro-razão de anúncios.");
     }
 
     return (data || []).map((entry: any) => ({
@@ -1200,8 +1217,8 @@ export const dispatchExternalMetaOrGoogleCampaign = createServerFn({ method: "PO
       callToAction: z.string().default("SHOP_NOW"),
       imageUrl: z.string().optional(),
       destinationUrl: z.string().min(5),
-      targetLocation: z.string().default("Chapecó, SC"),
-      targetRadiusKm: z.number().int().min(1).max(100).default(15),
+      targetLocation: z.string().trim().min(2, "Informe a localidade de segmentação."),
+      targetRadiusKm: z.number().int().min(1).max(100),
     })
   )
   .handler(async ({ data }) => {
@@ -1355,13 +1372,21 @@ export const dispatchExternalMetaOrGoogleCampaign = createServerFn({ method: "PO
  * ============================================================================
  */
 const AiAdCreativeSchema = z.object({
-  headline: z.string(),
-  bodyCopy: z.string(),
-  callToActionLabel: z.string(),
-  badgeText: z.string(),
-  suggestedDailyBudgetCents: z.number().int(),
-  targetInterests: z.array(z.string()),
-});
+  headline: z.string().trim().min(1).max(38),
+  bodyCopy: z.string().trim().min(1).max(200),
+  callToActionLabel: z.string().trim().min(1).max(18),
+  badgeText: z.string().trim().min(1).max(16),
+  targetInterests: z.array(z.string().trim().min(1)).length(3),
+}).strict();
+
+export function parseAiAdCreative(rawText: string) {
+  const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) throw new Error("A resposta da IA não contém JSON válido.");
+  const candidate = JSON.parse(jsonMatch[0]);
+  const validated = AiAdCreativeSchema.safeParse(candidate);
+  if (!validated.success) throw new Error("A resposta da IA não respeitou o formato exigido.");
+  return validated.data;
+}
 
 export const generateAiAdCreativeFromCatalog = createServerFn({ method: "POST" })
   .validator(
@@ -1379,67 +1404,65 @@ export const generateAiAdCreativeFromCatalog = createServerFn({ method: "POST" }
     // Gate Waesy Max
     await assertWaesyMaxTier(supabase, identity.store_id!, identity.isPlatformAdmin);
 
-    let title = "Item em Destaque";
-    let description = "";
-    let priceCents = 0;
-    let imageUrl = "";
-    let destinationUrl = "https://usewaesy.pages.dev";
-
-    const { data: store } = await supabase
+    const { data: store, error: storeError } = await supabase
       .from("stores")
       .select("name, slug, city")
       .eq("id", identity.store_id)
       .maybeSingle();
+    if (storeError || !store) {
+      console.error("[ads] Erro ao carregar loja para criativo:", storeError);
+      throw new Error("Não foi possível carregar a loja para gerar o criativo.");
+    }
 
-    const storeCity = (store as any)?.city || "Chapecó";
+    let title: string;
+    let description: string;
+    let priceCents: number;
+    let imageUrl = "";
+    let destinationUrl: string;
     const storeSlug = store?.slug || identity.store_id;
 
     if (data.itemType === "product") {
-      const { data: prod } = await supabase
+      const { data: prod, error: productError } = await supabase
         .from("products")
         .select("id, title, description, price_cents, product_media(url)")
         .eq("id", data.itemId)
+        .eq("store_id", identity.store_id)
         .maybeSingle();
-
-      if (prod) {
-        title = prod.title;
-        description = prod.description || "";
-        priceCents = prod.price_cents || 0;
-        const mediaArr = (prod as any).product_media || [];
-        imageUrl = mediaArr[0]?.url || "";
-        destinationUrl = `https://usewaesy.pages.dev/loja/${storeSlug}/produto/${prod.id}?utm_source=${data.platform}&utm_medium=cpc`;
+      if (productError || !prod) {
+        console.error("[ads] Produto ausente, inacessível ou erro de consulta:", productError);
+        throw new Error("O produto não existe ou não pertence a esta loja. Selecione um item válido do catálogo.");
       }
+      title = prod.title;
+      description = prod.description || "";
+      priceCents = Number(prod.price_cents);
+      const mediaArr = (prod as any).product_media || [];
+      imageUrl = mediaArr[0]?.url || "";
+      destinationUrl = `https://usewaesy.pages.dev/loja/${storeSlug}/produto/${prod.id}?utm_source=${data.platform}&utm_medium=cpc`;
     } else {
-      const { data: classified } = await supabase
+      const { data: classified, error: classifiedError } = await supabase
         .from("classifieds")
         .select("id, title, content, price_cents, images")
         .eq("id", data.itemId)
+        .eq("store_id", identity.store_id)
         .maybeSingle();
-
-      if (classified) {
-        title = classified.title;
-        description = classified.content || "";
-        priceCents = classified.price_cents || 0;
-        const imgs = Array.isArray(classified.images) ? classified.images : [];
-        imageUrl = (imgs[0] as string) || "";
-        destinationUrl = `https://usewaesy.pages.dev/classificados/${classified.id}?utm_source=${data.platform}&utm_medium=cpc`;
+      if (classifiedError || !classified) {
+        console.error("[ads] Classificado ausente, inacessível ou erro de consulta:", classifiedError);
+        throw new Error("O classificado não existe ou não pertence a esta loja. Selecione um item válido do catálogo.");
       }
+      title = classified.title;
+      description = classified.content || "";
+      priceCents = Number(classified.price_cents);
+      const imgs = Array.isArray(classified.images) ? classified.images : [];
+      imageUrl = (imgs[0] as string) || "";
+      destinationUrl = `https://usewaesy.pages.dev/classificados/${classified.id}?utm_source=${data.platform}&utm_medium=cpc`;
     }
 
     const priceFormatted = priceCents > 0 ? `R$ ${(priceCents / 100).toFixed(2).replace(".", ",")}` : "Consulte";
 
-    let parsedCreative = {
-      headline: `${title.slice(0, 32)} — ${priceFormatted}`,
-      bodyCopy: `Disponível agora em ${storeCity} na ${store?.name || "nossa vitrine"}: ${title}. ${description.slice(0, 120)} Peça direto com atendimento imediato.`,
-      callToActionLabel: data.itemType === "classified" ? "Agendar Visita" : "Pedir Agora",
-      badgeText: `Oferta ${storeCity}`,
-      suggestedDailyBudgetCents: 2500,
-      targetInterests: ["Comércio Local", storeCity, title.split(" ")[0] || "Ofertas"],
-    };
-
     try {
       const { executeUnifiedAiCall } = await import("./api-orchestrator.functions");
-      const prompt = `Gere um anúncio de alta conversão em JSON estrito com as chaves: headline (max 38 caracteres), bodyCopy (max 200 caracteres, persuasivo, direto, sem emojis), callToActionLabel (max 18 caracteres), badgeText (max 16 caracteres), suggestedDailyBudgetCents (inteiro em centavos, ex: 2500) e targetInterests (array de 3 strings). Item: "${title}". Descrição: "${description}". Preço: ${priceFormatted}. Cidade: ${storeCity}.`;
+      const observedCity = typeof store.city === "string" && store.city.trim() ? ` Cidade cadastrada: ${store.city.trim()}.` : "";
+      const prompt = `Crie somente uma sugestão de copy publicitária em JSON estrito com as chaves: headline (máx. 38 caracteres), bodyCopy (máx. 200 caracteres), callToActionLabel (máx. 18 caracteres), badgeText (máx. 16 caracteres) e targetInterests (array de 3 strings). Use apenas os dados comprovados abaixo; não invente benefícios, disponibilidade, urgência, descontos, atendimento, localização ou resultados, nem prometa conversão. Se a informação não estiver nos dados, omita-a. A copy é rascunho para revisão humana. Item: "${title}". Descrição cadastrada: "${description}". Preço cadastrado: ${priceFormatted}.${observedCity}`;
       const aiResult = await executeUnifiedAiCall({
         feature: "marketing_ad_copy",
         prompt,
@@ -1447,37 +1470,32 @@ export const generateAiAdCreativeFromCatalog = createServerFn({ method: "POST" }
       });
 
       const rawText = typeof aiResult === "string" ? aiResult : (aiResult as any)?.text || (aiResult as any)?.content || "";
-      const jsonMatch = rawText.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        const candidate = JSON.parse(jsonMatch[0]);
-        const validated = AiAdCreativeSchema.safeParse(candidate);
-        if (validated.success) {
-          parsedCreative = validated.data;
-        }
-      }
-    } catch (aiErr) {
-      console.warn("[ads] Pool IA fallback estruturado aplicado:", aiErr);
-    }
+      const parsedCreative = parseAiAdCreative(rawText);
 
-    return {
-      itemId: data.itemId,
-      itemType: data.itemType,
-      platform: data.platform,
-      title,
-      priceCents,
-      priceFormatted,
-      imageUrl,
-      destinationUrl,
-      creative: parsedCreative,
-      canvasSpec: {
-        width: 1080,
-        height: data.platform === "meta_instagram" ? 1350 : 1080,
-        aspectRatio: data.platform === "meta_instagram" ? "4:5" : "1:1",
-        overlayHeadline: parsedCreative.headline,
-        overlayPrice: priceFormatted,
-        overlayBadge: parsedCreative.badgeText,
-      },
-    };
+      return {
+        itemId: data.itemId,
+        itemType: data.itemType,
+        platform: data.platform,
+        title,
+        priceCents,
+        priceFormatted,
+        imageUrl,
+        destinationUrl,
+        isDraft: true,
+        creative: parsedCreative,
+        canvasSpec: {
+          width: 1080,
+          height: data.platform === "meta_instagram" ? 1350 : 1080,
+          aspectRatio: data.platform === "meta_instagram" ? "4:5" : "1:1",
+          overlayHeadline: parsedCreative.headline,
+          overlayPrice: priceFormatted,
+          overlayBadge: parsedCreative.badgeText,
+        },
+      };
+    } catch (aiErr) {
+      console.error("[ads] Falha ao gerar/validar copy de anúncio:", aiErr);
+      throw new Error("Não foi possível gerar uma copy válida com IA. Nenhum texto substituto foi criado; tente novamente.");
+    }
   });
 
 /**
@@ -1485,45 +1503,79 @@ export const generateAiAdCreativeFromCatalog = createServerFn({ method: "POST" }
  * 11. FASE 4: DASHBOARD DE ROI & TELEMETRIA E2E (FECHAMENTO DO LOOP V125 + V139)
  * ============================================================================
  */
+export function isPaidOrderAttributedToCampaignWithinPeriod(
+  order: { status?: string; attributed_campaign_id?: string | null; utm_campaign?: string | null; created_at?: string | null },
+  campaign: { id: string; starts_at?: string | null; ends_at?: string | null; created_at?: string | null },
+  now = new Date(),
+) {
+  if (order.status !== "paid") return false;
+  const exactIdMatch = order.attributed_campaign_id === campaign.id ||
+    (!order.attributed_campaign_id && order.utm_campaign === campaign.id);
+  if (!exactIdMatch || !order.created_at) return false;
+  const orderTime = new Date(order.created_at).getTime();
+  const startTime = new Date(campaign.starts_at || campaign.created_at || "").getTime();
+  const endTime = campaign.ends_at ? new Date(campaign.ends_at).getTime() : now.getTime();
+  return Number.isFinite(orderTime) && Number.isFinite(startTime) && Number.isFinite(endTime) &&
+    orderTime >= startTime && orderTime <= endTime;
+}
+
 export const getMarketingRoiClosedLoopMetrics = createServerFn({ method: "GET" }).handler(async () => {
   const supabase = getServerClient();
   const identity = await getServerIdentity();
   assertStoreAccess(identity, ["owner", "admin", "manager", "content"]);
 
   // 1. Campanhas da loja
-  const { data: campaigns } = await supabase
+  const { data: campaigns, error: campaignsError } = await supabase
     .from("ad_campaigns")
     .select("id, title, product_id, budget_cents, status, starts_at, ends_at, created_at, settings")
     .eq("store_id", identity.store_id)
     .order("created_at", { ascending: false });
 
+  if (campaignsError) {
+    console.error("[ads] Erro ao carregar campanhas para métricas:", campaignsError);
+    throw new Error("Não foi possível carregar as campanhas para as métricas.");
+  }
   const campaignList = campaigns || [];
   const campaignIds = campaignList.map((c) => c.id);
 
   // 2. Telemetria de Cliques e Visualizações (V125)
-  const { data: adEvents } = await supabase
+  const { data: adEvents, error: eventsError } = await supabase
     .from("ad_events")
     .select("campaign_id, event_type")
     .in("campaign_id", campaignIds.length > 0 ? campaignIds : ["00000000-0000-0000-0000-000000000000"]);
 
-  // 3. Pedidos Finalizados no Checkout (V139) da Loja
-  const { data: storeOrders } = await supabase
+  if (eventsError) {
+    console.error("[ads] Erro ao carregar eventos para métricas:", eventsError);
+    throw new Error("Não foi possível carregar os eventos das campanhas.");
+  }
+
+  // 3. Somente pedidos pagos da loja; associação exige ID explícito da campanha.
+  const { data: storeOrders, error: ordersError } = await supabase
     .from("orders")
-    .select("id, total_cents, status, origin_channel, attributed_campaign_id, utm_source, utm_campaign, created_at")
+    .select("id, total_cents, status, attributed_campaign_id, utm_campaign, created_at")
     .eq("store_id", identity.store_id)
-    .in("status", ["paid", "completed", "delivered", "preparing", "ready", "confirmed"]);
+    .eq("status", "paid");
+
+  if (ordersError) {
+    console.error("[ads] Erro ao carregar pedidos pagos para métricas:", ordersError);
+    throw new Error("Não foi possível carregar os pedidos pagos para as métricas.");
+  }
 
   const ordersList = storeOrders || [];
 
   // 4. Lançamentos do invoice_ledger (V141/V142)
-  const { data: ledgerRows } = await supabase
+  const { data: ledgerRows, error: ledgerError } = await supabase
     .from("invoice_ledger")
     .select("id, entity_type, entity_id, original_amount_cents, discount_cents, amount_cents, plan_tier, status, description, created_at")
     .eq("store_id", identity.store_id)
     .order("created_at", { ascending: false })
     .limit(30);
 
-  let totalSpendCents = 0;
+  if (ledgerError) {
+    console.error("[ads] Erro ao carregar invoice ledger para métricas:", ledgerError);
+    throw new Error("Não foi possível carregar os lançamentos do livro-razão.");
+  }
+
   let totalAttributedRevenueCents = 0;
   let totalAttributedOrdersCount = 0;
   let totalImpressions = 0;
@@ -1533,67 +1585,57 @@ export const getMarketingRoiClosedLoopMetrics = createServerFn({ method: "GET" }
     const campEvents = (adEvents || []).filter((e) => e.campaign_id === camp.id);
     const views = campEvents.filter((e) => e.event_type === "view").length;
     const clicks = campEvents.filter((e) => e.event_type === "click").length;
-    const spendCents = Number(camp.budget_cents) || 0;
+    const attributedOrders = ordersList.filter((order: any) =>
+      isPaidOrderAttributedToCampaignWithinPeriod(order, camp),
+    );
 
-    // Atribuição determinística: pedidos ligados por attributed_campaign_id ou canal de anúncio no período da campanha
-    const attributedOrders = ordersList.filter((ord: any) => {
-      if (ord.attributed_campaign_id === camp.id) return true;
-      const ordChannel = String(ord.origin_channel || ord.utm_source || "").toLowerCase();
-      const isAdOrder =
-        ordChannel.includes("ad") ||
-        ordChannel.includes("meta") ||
-        ordChannel.includes("google") ||
-        ordChannel.includes("vitrine") ||
-        ordChannel.includes("sponsored");
-      if (!isAdOrder) return false;
-      const ordTime = new Date(ord.created_at).getTime();
-      const startTime = new Date(camp.starts_at || camp.created_at).getTime();
-      return ordTime >= startTime;
-    });
+    const revenueCents = attributedOrders.reduce((acc, order: any) => {
+      if (order.total_cents == null || order.total_cents === "") throw new Error("Pedido pago sem valor; receita não disponível.");
+      const amount = Number(order.total_cents);
+      if (!Number.isFinite(amount)) throw new Error("Pedido pago com valor inválido; receita não disponível.");
+      return acc + amount;
+    }, 0);
 
-    const revenueCents = attributedOrders.reduce((acc, o: any) => acc + (Number(o.total_cents) || 0), 0);
-    const roiPercentage = spendCents > 0 ? Math.round((revenueCents / spendCents) * 100) : 0;
-
-    totalSpendCents += spendCents;
     totalAttributedRevenueCents += revenueCents;
     totalAttributedOrdersCount += attributedOrders.length;
     totalImpressions += views;
     totalClicks += clicks;
 
-    const spendReais = (spendCents / 100).toFixed(2).replace(".", ",");
     const revenueReais = (revenueCents / 100).toFixed(2).replace(".", ",");
+    const periodStart = new Date(camp.starts_at || camp.created_at).toLocaleDateString("pt-BR");
+    const periodEnd = camp.ends_at ? new Date(camp.ends_at).toLocaleDateString("pt-BR") : "até hoje";
 
     return {
       campaignId: camp.id,
       title: camp.title,
       status: camp.status,
-      spendCents,
+      plannedBudgetCents: camp.budget_cents == null ? null : Number(camp.budget_cents),
+      spendCents: null,
       revenueCents,
       ordersCount: attributedOrders.length,
       impressionsCount: views,
       clicksCount: clicks,
-      roiPercentage,
-      proofStatement: `Investimento de R$ ${spendReais} gerou R$ ${revenueReais} em pedidos (ROI ${roiPercentage}%)`,
+      periodLabel: `${periodStart} a ${periodEnd}`,
+      revenueLabel: `R$ ${revenueReais} em pedidos pagos associados por ID exato no período`,
     };
   });
 
-  // V143 Truth Engine: Zero fallback de pedidos não atribuídos. Se não houver vendas atribuídas, retorna estritamente 0.
-
-  const globalRoiPercentage =
-    totalSpendCents > 0 ? Math.round((totalAttributedRevenueCents / totalSpendCents) * 100) : 0;
-
-  const globalSpendReais = (totalSpendCents / 100).toFixed(2).replace(".", ",");
   const globalRevenueReais = (totalAttributedRevenueCents / 100).toFixed(2).replace(".", ",");
+  const periodLabels = campaignRoiBreakdown.map((campaign: any) => campaign.periodLabel);
 
   return {
-    totalSpendCents,
+    totalPlannedBudgetCents: campaignList.every((campaign: any) => campaign.budget_cents != null)
+      ? campaignList.reduce((sum: number, campaign: any) => sum + Number(campaign.budget_cents), 0)
+      : null,
+    totalSpendCents: null,
     totalAttributedRevenueCents,
     totalAttributedOrdersCount,
     totalImpressions,
     totalClicks,
-    globalRoiPercentage,
-    headlineProof: `Este impulsionamento gerou R$ ${globalRevenueReais} em pedidos (ROI ${globalRoiPercentage}%)`,
-    subProof: `Investimento auditado: R$ ${globalSpendReais} em ${campaignList.length} campanha(s) • ${totalAttributedOrdersCount} pedido(s) fechados no Checkout`,
+    headline: `R$ ${globalRevenueReais} em pedidos pagos associados por identificador exato de campanha`,
+    attributionRule: "Somente pedidos com status paid e attributed_campaign_id igual ao ID da campanha (ou, sem esse ID, utm_campaign exatamente igual); created_at deve estar no período da campanha. Associação não comprova causalidade.",
+    periodLabel: periodLabels.length ? `Períodos individuais: ${periodLabels.join("; ")}` : "Sem campanhas no período.",
+    spendLabel: "Gasto real não observado; não há ROI calculado. Orçamentos exibidos são planejados.",
     campaigns: campaignRoiBreakdown,
     invoiceLedgerEntries: ledgerRows || [],
   };

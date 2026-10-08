@@ -4,7 +4,7 @@
 
 - **ID:** SPEC-WAESY-STUDIO-LIBRARY
 - **Data:** 2026-10-06
-- **Status:** EM IMPLEMENTACAO
+- **Status:** EM IMPLEMENTAÇÃO · onda de fábrica/Unsplash em PR de continuação (PR #4 já incorporada à main)
 - **Escopo:** Omni Builder, catálogo Studio, assets, motion, templates por nicho e integração do Omni AST com Experience Renderer.
 
 ## 1. Missão e não-objetivos
@@ -90,11 +90,16 @@ A copy deve ser parametrizada e revisável: problema → promessa → prova → 
 - `ExperienceRenderer` aceita diretamente documentos Omni e mantém o contrato legado `nodes`.
 - Auditoria automatizada percorre todos os templates do catálogo; erros críticos bloqueiam publicação e avisos permanecem no relatório.
 - `npm run audit:studio-templates` gera relatório de qualidade com provenance, acessibilidade e orçamento estático de performance.
+- `StudioTemplateManifestSchema` controla templates AI; a UI gera/aplica/salva drafts e o endpoint nunca aceita revisão declarada pelo cliente.
+- Biblioteca AI é tenant-safe, sem acesso browser direto, e só persiste drafts `review_required`.
+- Integração Unsplash usa a API oficial, hotlink, attribution, evento de seleção e ledger server-side por loja/foto/slot; publicação compara a referência com o ledger antes da auditoria final.
+- 3 pilotos (`gastronomy`, `wellness`, `creators`) não inventam fatos e ficam bloqueados para publicação enquanto `[[placeholders]]` estiverem presentes.
+- Migrations novas são arquivos de schema; sua aplicação e o secret `UNSPLASH_ACCESS_KEY` ainda são passos de release, não confirmados por esta implementação local.
 - Mudanças registradas no roadmap canônico.
 
 ## 7. Backlog priorizado
 
 - **P0:** contrato AST + schemaVersion; registry estrito; Agent/Skills/Knowledge/Tools separados; validação/sanitização.
 - **P1:** CMS independente com collections, queries e bindings; publisher com checkpoint/rollback; provenance de assets.
-- **P2:** biblioteca por nicho e marketplace interno; canais embed/web; motion avançado; CLI e integrações.
+- **P2:** biblioteca por nicho e marketplace interno; canais embed/web; motion avançado; CLI e integrações; workflow de aprovação/versionamento e busca facetada.
 - **P3:** geração em lote com avaliações, aprovação editorial, direitos comerciais e métricas de conversão.

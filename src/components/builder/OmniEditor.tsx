@@ -3,7 +3,7 @@
  * Padrão Wix-Level Builder & Figma / Webflow ergonomics.
  */
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   OmniPageDocument,
   OmniBlockInstance,
@@ -22,8 +22,12 @@ import {
   BLOCK_TO_WIX_CATEGORY,
 } from "./registry";
 import { NicheTemplateDefinition } from "./templates";
-import { STUDIO_TEMPLATE_CATALOG, materializeStudioTemplate } from "@/lib/builder/studio-catalog";
+import { STUDIO_TEMPLATE_CATALOG, getStudioTemplate, materializeStudioManifest, materializeStudioTemplate } from "@/lib/builder/studio-catalog";
+import type { StudioTemplateManifest } from "@/lib/builder/studio-manifest";
+import type { BuilderAssetRef } from "@/lib/builder/asset-contract";
 import { LiveTemplatePreviewModal } from "./LiveTemplatePreviewModal";
+import { StudioTemplateFactory } from "./StudioTemplateFactory";
+import { listStudioTemplateDrafts } from "@/services/studio-template-library.functions";
 
 import {
   Plus,
@@ -76,11 +80,21 @@ const BLOCK_ICONS: Record<string, any> = {
 interface BlockContentFieldsProps {
   selectedBlock: OmniBlockInstance;
   onUpdateConfig: (key: string, value: any) => void;
+  onUpdateAssetRef?: (asset: BuilderAssetRef) => void;
+  onClearAssetRef?: (usageSlot?: string) => void;
+  onUpdateAssetAltText?: (usageSlot: string, altText: string) => void;
+  unsplashUsageSlot?: string;
+  unsplashDefaultQuery?: string;
 }
 
 export const BlockContentFields: React.FC<BlockContentFieldsProps> = ({
   selectedBlock,
   onUpdateConfig,
+  onUpdateAssetRef,
+  onClearAssetRef,
+  onUpdateAssetAltText,
+  unsplashUsageSlot,
+  unsplashDefaultQuery,
 }) => {
   const config = selectedBlock.config as any;
 
@@ -138,10 +152,39 @@ export const BlockContentFields: React.FC<BlockContentFieldsProps> = ({
           <MediaUploader
             value={config.imageUrl || ""}
             onChange={(url) => onUpdateConfig("imageUrl", url)}
-            bucket="store-assets"
+            bucket="public_media"
             folder="builder"
             label="Imagem de Destaque"
+            allowUnsplash={Boolean(unsplashUsageSlot)}
+            unsplashUsageSlot={unsplashUsageSlot}
+            unsplashDefaultQuery={unsplashDefaultQuery}
+            studioAssetUsageSlot={unsplashUsageSlot || `${selectedBlock.id}-hero`}
+            onAssetSelected={(asset) => {
+              onUpdateAssetRef?.(asset);
+              onUpdateConfig("imageAlt", asset.alt_text || "");
+            }}
+            onAssetUploaded={(asset) => {
+              onUpdateAssetRef?.(asset);
+              onUpdateConfig("imageAlt", asset.alt_text || "");
+            }}
+            onAssetCleared={onClearAssetRef}
           />
+          <div>
+            <label className="mb-1 block text-xs font-semibold text-foreground" htmlFor={`image-alt-${selectedBlock.id}`}>
+              Texto alternativo da imagem
+            </label>
+            <Input
+              id={`image-alt-${selectedBlock.id}`}
+              value={config.imageAlt || ""}
+              onChange={(event) => {
+                onUpdateConfig("imageAlt", event.target.value);
+                onUpdateAssetAltText?.(unsplashUsageSlot || `${selectedBlock.id}-hero`, event.target.value);
+              }}
+              maxLength={500}
+              placeholder="Descreva fielmente o que aparece; vazio apenas se decorativa"
+              className="h-9 rounded-lg text-xs"
+            />
+          </div>
         </div>
       )}
 
@@ -159,6 +202,7 @@ export const BlockContentFields: React.FC<BlockContentFieldsProps> = ({
                 const newItem = {
                   id: `g-${Date.now()}`,
                   imageUrl: "",
+                  imageAlt: "",
                   title: "Nova Foto",
                   caption: "",
                 };
@@ -180,6 +224,7 @@ export const BlockContentFields: React.FC<BlockContentFieldsProps> = ({
                     type="button"
                     onClick={() => {
                       const current = config.items || [];
+                      onClearAssetRef?.(`${selectedBlock.id}-gallery-${item.id || idx}`);
                       onUpdateConfig(
                         "items",
                         current.filter((_: any, i: number) => i !== idx)
@@ -197,9 +242,24 @@ export const BlockContentFields: React.FC<BlockContentFieldsProps> = ({
                     current[idx] = { ...current[idx], imageUrl: url };
                     onUpdateConfig("items", current);
                   }}
-                  bucket="store-assets"
+                  bucket="public_media"
                   folder="builder"
                   label="Mídia da Galeria"
+                  studioAssetUsageSlot={`${selectedBlock.id}-gallery-${item.id || idx}`}
+                  onAssetUploaded={onUpdateAssetRef}
+                  onAssetCleared={onClearAssetRef}
+                />
+                <Input
+                  value={item.imageAlt || ""}
+                  onChange={(e) => {
+                    const current = [...(config.items || [])];
+                    current[idx] = { ...current[idx], imageAlt: e.target.value };
+                    onUpdateConfig("items", current);
+                    onUpdateAssetAltText?.(`${selectedBlock.id}-gallery-${item.id || idx}`, e.target.value);
+                  }}
+                  maxLength={500}
+                  placeholder="Texto alternativo da foto"
+                  className="h-8 text-xs"
                 />
                 <Input
                   value={item.title || ""}
@@ -243,6 +303,7 @@ export const BlockContentFields: React.FC<BlockContentFieldsProps> = ({
                   title: "Novo Slide",
                   subtitle: "Descrição do slide em destaque",
                   imageUrl: "",
+                  imageAlt: "",
                   ctaText: "Ver Mais",
                   ctaHref: "#",
                 };
@@ -264,6 +325,7 @@ export const BlockContentFields: React.FC<BlockContentFieldsProps> = ({
                     type="button"
                     onClick={() => {
                       const current = config.slides || [];
+                      onClearAssetRef?.(`${selectedBlock.id}-slide-${slide.id || idx}`);
                       onUpdateConfig(
                         "slides",
                         current.filter((_: any, i: number) => i !== idx)
@@ -281,9 +343,24 @@ export const BlockContentFields: React.FC<BlockContentFieldsProps> = ({
                     current[idx] = { ...current[idx], imageUrl: url };
                     onUpdateConfig("slides", current);
                   }}
-                  bucket="store-assets"
+                  bucket="public_media"
                   folder="builder"
                   label="Imagem do Slide"
+                  studioAssetUsageSlot={`${selectedBlock.id}-slide-${slide.id || idx}`}
+                  onAssetUploaded={onUpdateAssetRef}
+                  onAssetCleared={onClearAssetRef}
+                />
+                <Input
+                  value={slide.imageAlt || ""}
+                  onChange={(e) => {
+                    const current = [...(config.slides || [])];
+                    current[idx] = { ...current[idx], imageAlt: e.target.value };
+                    onUpdateConfig("slides", current);
+                    onUpdateAssetAltText?.(`${selectedBlock.id}-slide-${slide.id || idx}`, e.target.value);
+                  }}
+                  maxLength={500}
+                  placeholder="Texto alternativo do slide"
+                  className="h-8 text-xs"
                 />
                 <Input
                   value={slide.title || ""}
@@ -317,6 +394,7 @@ export const BlockContentFields: React.FC<BlockContentFieldsProps> = ({
                   name: "Nome do Cliente",
                   role: "Empresa / Cidade",
                   avatarUrl: "",
+                  imageAlt: "",
                   rating: 5,
                   comment: "Excelente experiência e atendimento pontual.",
                   verified: true,
@@ -339,6 +417,7 @@ export const BlockContentFields: React.FC<BlockContentFieldsProps> = ({
                     type="button"
                     onClick={() => {
                       const current = config.testimonials || [];
+                      onClearAssetRef?.(`${selectedBlock.id}-testimonial-${t.id || idx}`);
                       onUpdateConfig(
                         "testimonials",
                         current.filter((_: any, i: number) => i !== idx)
@@ -356,11 +435,26 @@ export const BlockContentFields: React.FC<BlockContentFieldsProps> = ({
                     current[idx] = { ...current[idx], avatarUrl: url };
                     onUpdateConfig("testimonials", current);
                   }}
-                  bucket="store-assets"
+                  bucket="public_media"
                   folder="builder"
                   aspect={1}
                   cropShape="round"
                   label="Foto do Cliente"
+                  studioAssetUsageSlot={`${selectedBlock.id}-testimonial-${t.id || idx}`}
+                  onAssetUploaded={onUpdateAssetRef}
+                  onAssetCleared={onClearAssetRef}
+                />
+                <Input
+                  value={t.imageAlt || ""}
+                  onChange={(e) => {
+                    const current = [...(config.testimonials || [])];
+                    current[idx] = { ...current[idx], imageAlt: e.target.value };
+                    onUpdateConfig("testimonials", current);
+                    onUpdateAssetAltText?.(`${selectedBlock.id}-testimonial-${t.id || idx}`, e.target.value);
+                  }}
+                  maxLength={500}
+                  placeholder="Texto alternativo da foto"
+                  className="h-8 text-xs"
                 />
                 <Input
                   value={t.name || ""}
@@ -447,6 +541,9 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
   onBack,
 }) => {
   const [document, setDocument] = useState<OmniPageDocument>(initialDocument);
+  const [activeStudioManifest, setActiveStudioManifest] = useState<StudioTemplateManifest | null>(
+    () => getStudioTemplate(initialDocument.source_template_id ?? "") ?? null,
+  );
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [titleDraft, setTitleDraft] = useState(initialDocument.title);
   const [selectedBlockId, setSelectedBlockId] = useState<string | null>(
@@ -488,6 +585,21 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
   });
 
   const selectedBlock = document.blocks.find((b) => b.id === selectedBlockId);
+  const unsplashDecorativeSlot = activeStudioManifest?.assetSlots.find(
+    (slot) => slot.allowUnsplash && slot.purpose === "decorative",
+  );
+
+  useEffect(() => {
+    const sourceId = initialDocument.source_template_id;
+    if (!sourceId?.startsWith("ai_") || activeStudioManifest) return;
+    let active = true;
+    listStudioTemplateDrafts({ data: {} })
+      .then(({ drafts }) => {
+        if (active) setActiveStudioManifest(drafts.find((draft) => draft.id === sourceId) ?? null);
+      })
+      .catch(() => undefined);
+    return () => { active = false; };
+  }, [initialDocument.source_template_id, activeStudioManifest]);
 
   // ── MANIPULADORES DE ESTADO IMUTÁVEL ──
 
@@ -503,6 +615,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
 
   const handleApplyTemplate = (templateId: string) => {
     const updated = materializeStudioTemplate(document, templateId);
+    setActiveStudioManifest(getStudioTemplate(templateId) ?? null);
     setDocument(updated);
     if (updated.blocks.length > 0) {
       setSelectedBlockId(updated.blocks[0].id);
@@ -510,10 +623,58 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
     toast.success("Template aplicado com sucesso!");
   };
 
+  const handleApplyStudioManifest = (template: StudioTemplateManifest) => {
+    const updated = materializeStudioManifest(document, template);
+    setActiveStudioManifest(template);
+    setDocument(updated);
+    if (updated.blocks.length > 0) setSelectedBlockId(updated.blocks[0].id);
+    toast.success("Template aplicado como rascunho editável. Revise os findings antes de publicar.");
+  };
+
   const handleUpdateConfig = (key: string, value: any) => {
     if (!selectedBlockId) return;
     const updated = updateBlockInPage(document, selectedBlockId, { [key]: value });
     setDocument(updated);
+  };
+
+  const handleUpdateAssetRef = (asset: BuilderAssetRef) => {
+    if (!selectedBlockId) return;
+    setDocument((current) => ({
+      ...current,
+      blocks: current.blocks.map((block) => block.id !== selectedBlockId ? block : {
+        ...block,
+        assetRefs: [
+          ...(block.assetRefs ?? []).filter((existing) => existing.usage_slot !== asset.usage_slot),
+          asset,
+        ],
+      }),
+      updated_at: new Date().toISOString(),
+    }));
+  };
+
+  const handleClearAssetRef = (usageSlot?: string) => {
+    if (!usageSlot) return;
+    if (!selectedBlockId) return;
+    setDocument((current) => ({
+      ...current,
+      blocks: current.blocks.map((block) => block.id !== selectedBlockId ? block : {
+        ...block,
+        assetRefs: (block.assetRefs ?? []).filter((asset) => asset.usage_slot !== usageSlot),
+      }),
+      updated_at: new Date().toISOString(),
+    }));
+  };
+
+  const handleUpdateAssetAltText = (usageSlot: string, altText: string) => {
+    if (!selectedBlockId) return;
+    setDocument((current) => ({
+      ...current,
+      blocks: current.blocks.map((block) => block.id !== selectedBlockId ? block : {
+        ...block,
+        assetRefs: (block.assetRefs ?? []).map((asset) => asset.usage_slot === usageSlot ? { ...asset, alt_text: altText } : asset),
+      }),
+      updated_at: new Date().toISOString(),
+    }));
   };
 
   const handleUpdateStyling = (stylingKey: keyof OmniBlockStyling, value: any) => {
@@ -767,6 +928,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                 </>
               ) : (
                 <div className="space-y-3">
+                  <StudioTemplateFactory onApply={handleApplyStudioManifest} />
                   {STUDIO_TEMPLATE_CATALOG.map((tpl) => (
                     <div
                       key={tpl.id}
@@ -780,6 +942,11 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                           {tpl.badge}
                         </span>
                       </div>
+                      {tpl.status === "review_required" && (
+                        <span className="mb-2 inline-flex rounded bg-amber-100 px-2 py-1 text-xs font-medium text-amber-900 dark:bg-amber-950 dark:text-amber-100">
+                          Revisar conteúdo antes de publicar
+                        </span>
+                      )}
                       <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2 mb-3">
                         {tpl.description}
                       </p>
@@ -930,6 +1097,11 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                 <BlockContentFields
                   selectedBlock={selectedBlock}
                   onUpdateConfig={handleUpdateConfig}
+                  onUpdateAssetRef={handleUpdateAssetRef}
+                  onClearAssetRef={handleClearAssetRef}
+                  onUpdateAssetAltText={handleUpdateAssetAltText}
+                  unsplashUsageSlot={unsplashDecorativeSlot?.id}
+                  unsplashDefaultQuery={unsplashDecorativeSlot?.searchHints[0] ?? activeStudioManifest?.niche.replace(/[-_]/g, " ")}
                 />
               ) : (
                 /* Aba de Estilo Isolado */
@@ -1189,6 +1361,11 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                   <BlockContentFields
                     selectedBlock={selectedBlock}
                     onUpdateConfig={handleUpdateConfig}
+                    onUpdateAssetRef={handleUpdateAssetRef}
+                    onClearAssetRef={handleClearAssetRef}
+                    onUpdateAssetAltText={handleUpdateAssetAltText}
+                    unsplashUsageSlot={unsplashDecorativeSlot?.id}
+                    unsplashDefaultQuery={unsplashDecorativeSlot?.searchHints[0] ?? activeStudioManifest?.niche.replace(/[-_]/g, " ")}
                   />
                 </div>
               ) : (
@@ -1272,6 +1449,10 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
             <SheetTitle className="text-sm font-bold tracking-tight">Modelos de Página</SheetTitle>
           </SheetHeader>
           <div className="flex-1 overflow-y-auto space-y-3">
+            <StudioTemplateFactory onApply={(template) => {
+              handleApplyStudioManifest(template);
+              setIsMobileTemplateOpen(false);
+            }} />
             {STUDIO_TEMPLATE_CATALOG.map((tpl) => (
               <div
                 key={tpl.id}
@@ -1283,6 +1464,11 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                     {tpl.badge}
                   </span>
                 </div>
+                {tpl.status === "review_required" && (
+                  <span className="mb-2 inline-flex rounded bg-amber-100 px-2 py-1 text-xs font-medium text-amber-900 dark:bg-amber-950 dark:text-amber-100">
+                    Revisar antes de publicar
+                  </span>
+                )}
                 <p className="text-xs text-muted-foreground line-clamp-2 mb-3">
                   {tpl.description}
                 </p>

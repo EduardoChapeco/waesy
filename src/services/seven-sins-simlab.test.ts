@@ -1,89 +1,46 @@
 import { describe, it, expect } from "vitest";
-import { generateSevenSinCopyLogic, runSimLabPersonaTestLogic, saveSevenSinHookToStoreLogic, listStoreProductsQuickLogic, SEVEN_SINS_DEFINITIONS } from "./seven-sins-simlab.functions";
+import { RunSimLabPersonaTestSchema, SEVEN_SINS_DEFINITIONS } from "./seven-sins-simlab.functions";
+import { CANONICAL_BRAZIL_ARCHETYPES } from "./simlab.functions";
 
-describe("Seven Sins Canvas & SimLab V2 (Big Tech Council)", () => {
-  const realStoreId = "c6ccd3b2-aa54-42a2-b0fe-251daa5b97f7";
-
-  it("1. Deve ter os 7 pecados capitais canônicos definidos", () => {
-    const keys = Object.keys(SEVEN_SINS_DEFINITIONS);
-    expect(keys).toContain("orgulho");
-    expect(keys).toContain("ganancia");
-    expect(keys).toContain("luxuria");
-    expect(keys).toContain("inveja");
-    expect(keys).toContain("gula");
-    expect(keys).toContain("ira");
-    expect(keys).toContain("preguica");
-    expect(keys.length).toBe(7);
-  });
-
-  it("2. Deve redigir copy estruturada por pecado capital (Orgulho)", async () => {
-    const hook = await generateSevenSinCopyLogic({
-      storeId: realStoreId,
-      sin: "orgulho",
-      productNameFallback: "Combo Executivo Supreme",
-      targetChannel: "whatsapp",
-    });
-
-    expect(hook).toBeDefined();
-    expect(hook.sin).toBe("orgulho");
-    expect(hook.copy_headline).toContain("Combo Executivo Supreme");
-    expect(hook.call_to_action).toBeDefined();
-    expect(hook.recommended_channel).toBe("whatsapp");
-  });
-
-  it("3. Deve redigir copy estruturada por pecado capital (Preguiça / Zero Esforço)", async () => {
-    const hook = await generateSevenSinCopyLogic({
-      storeId: realStoreId,
-      sin: "preguica",
-      productNameFallback: "Pacote Final de Semana Express",
-      targetChannel: "instagram_ad",
-    });
-
-    expect(hook).toBeDefined();
-    expect(hook.sin).toBe("preguica");
-    expect(hook.copy_headline).toContain("Pacote Final de Semana Express");
-    expect(hook.copy_body).toContain("WhatsApp");
-  });
-
-  it("4. Deve simular impacto da copy no SimLab V2 com 5 personas sintéticas", () => {
-    const results = runSimLabPersonaTestLogic({
-      sin: "orgulho",
-      copyHeadline: "Não é para qualquer um: Conheça o padrão oficial",
-      copyBody: "Quem entende de qualidade reconhece à primeira vista.",
-    });
-
-    expect(Array.isArray(results)).toBe(true);
-    expect(results.length).toBeGreaterThanOrEqual(5);
-
-    for (const r of results) {
-      expect(r.persona_id).toBeDefined();
-      expect(r.name).toBeDefined();
-      expect(r.conversion_probability).toBeGreaterThanOrEqual(40);
-      expect(r.conversion_probability).toBeLessThanOrEqual(100);
-      expect(r.reaction_verbatim.length).toBeGreaterThan(10);
+describe("Canvas de gatilhos e contratos qualitativos do SimLab", () => {
+  it("mantém os sete gatilhos criativos sem alegar eficácia preditiva", () => {
+    expect(Object.keys(SEVEN_SINS_DEFINITIONS).sort()).toEqual([
+      "ganancia", "gula", "inveja", "ira", "luxuria", "orgulho", "preguica",
+    ]);
+    for (const definition of Object.values(SEVEN_SINS_DEFINITIONS)) {
+      expect(definition.label.length).toBeGreaterThan(0);
+      expect(definition.subconscious.length).toBeGreaterThan(0);
     }
   });
 
-  it("5. Deve listar produtos rápidos do catálogo para o seletor da loja", async () => {
-    const products = await listStoreProductsQuickLogic({ storeId: realStoreId });
-    expect(Array.isArray(products)).toBe(true);
+  it("aceita entrada textual válida para uma exploração de campanha", () => {
+    const result = RunSimLabPersonaTestSchema.safeParse({
+      storeId: "c6ccd3b2-aa54-42a2-b0fe-251daa5b97f7",
+      sin: "orgulho",
+      copyHeadline: "Conheça a nova coleção",
+      copyBody: "Veja os detalhes do produto e confira se ele atende ao que você procura.",
+    });
+    expect(result.success).toBe(true);
   });
 
-  it("6. Deve salvar o gancho gerado como gatilho oficial no Brand DNA da loja", async () => {
-    const hook = await generateSevenSinCopyLogic({
-      storeId: realStoreId,
-      sin: "luxuria",
-      productNameFallback: "Experiência Gastronômica Sensorial",
-      targetChannel: "instagram_ad",
-    });
+  it("rejeita entrada incompleta/fora do contrato", () => {
+    expect(RunSimLabPersonaTestSchema.safeParse({
+      sin: "orgulho",
+      copyHeadline: "",
+      copyBody: "texto",
+    }).success).toBe(false);
+    expect(RunSimLabPersonaTestSchema.safeParse({
+      sin: "decimo_gatilho",
+      copyHeadline: "Headline",
+      copyBody: "Corpo",
+    }).success).toBe(false);
+  });
 
-    const res = await saveSevenSinHookToStoreLogic({
-      storeId: realStoreId,
-      sin: "luxuria",
-      hook,
-    });
-
-    expect(res.success).toBe(true);
-    expect(res.message).toContain("luxuria");
+  it("identifica todo perfil de seed como sintético e não calibrado", () => {
+    expect(CANONICAL_BRAZIL_ARCHETYPES.length).toBeGreaterThan(0);
+    for (const persona of CANONICAL_BRAZIL_ARCHETYPES) {
+      expect(persona.profile_origin).toBe("seed_catalog_profile");
+      expect(persona.calibration_status).toBe("not_calibrated");
+    }
   });
 });

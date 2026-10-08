@@ -136,6 +136,7 @@ export interface HotelStructure {
 export interface HotelBankDTO {
  id: string;
  store_id: string | null;
+ global_hotel_id?: string | null;
  destination_id?: string | null;
  destination_name?: string | null;
  name: string;
@@ -165,7 +166,19 @@ export interface HotelBankDTO {
  tags?: string[];
  is_active: boolean;
  created_at: string;
- updated_at: string;
+	updated_at: string;
+}
+
+export interface GlobalHotelDTO {
+ id: string;
+ name: string;
+ canonical_slug: string;
+ city: string;
+ state?: string | null;
+ country: string;
+ address?: string | null;
+ stars?: number | null;
+ verified_by_master: boolean;
 }
 
 export interface HotelMediaDTO {
@@ -420,6 +433,27 @@ export const deleteDestination = createServerFn({ method: "POST" })
 
 // ─── 2. SERVIÇOS DO BANCO DE HOTÉIS & RESORTS ───────────────────────────────
 
+export const searchGlobalHotels = createServerFn({ method: "GET" })
+  .validator(z.object({ query: z.string().trim().min(2).max(120) }))
+  .handler(async ({ data }) => {
+    const db = getServerClient();
+    const term = data.query.replace(/[,%]/g, " ").trim();
+    const pattern = `%${term}%`;
+    const { data: rows, error } = await db
+      .from("global_hotels")
+      .select("id, name, canonical_slug, city, state, country, address, stars, verified_by_master")
+      .eq("verified_by_master", true)
+      .or(`name.ilike.${pattern},normalized_name.ilike.${pattern},city.ilike.${pattern}`)
+      .order("name", { ascending: true })
+      .limit(20);
+
+    if (error) {
+      throw new Error(`[travel-catalog:searchGlobalHotels] Falha ao buscar hotéis canônicos: ${error.message}`);
+    }
+
+    return (rows || []) as GlobalHotelDTO[];
+  });
+
 export const ListHotelsBankSchema = z
   .object({
     search: z.string().optional(),
@@ -507,9 +541,10 @@ export const getHotelById = createServerFn({ method: "GET" })
  });
 
 export const createHotel = createServerFn({ method: "POST" })
- .validator(
- z.object({
- destination_id: z.string().uuid().optional().nullable(),
+	 .validator(
+	 z.object({
+	 global_hotel_id: z.string().uuid().optional().nullable(),
+	 destination_id: z.string().uuid().optional().nullable(),
  name: z.string().min(2, "Nome do hotel é obrigatório."),
  city: z.string().min(2, "Cidade é obrigatória."),
  state: z.string().optional().nullable(),
@@ -542,11 +577,12 @@ export const createHotel = createServerFn({ method: "POST" })
  if (!store_id) throw new Error("Nenhuma loja ativa selecionada.");
 
  const { data: inserted, error } = await db
- .from("hotels_bank")
- .insert({
- store_id,
- created_by_profile_id: profile_id,
- destination_id: data.destination_id || null,
+	 .from("hotels_bank")
+	 .insert({
+	 store_id,
+	 created_by_profile_id: profile_id,
+	 global_hotel_id: data.global_hotel_id || null,
+	 destination_id: data.destination_id || null,
  name: data.name.trim(),
  city: data.city.trim(),
  state: data.state?.trim() || null,
@@ -581,10 +617,11 @@ export const createHotel = createServerFn({ method: "POST" })
  });
 
 export const updateHotel = createServerFn({ method: "POST" })
- .validator(
- z.object({
- id: z.string().uuid(),
- destination_id: z.string().uuid().optional().nullable(),
+	 .validator(
+	 z.object({
+	 id: z.string().uuid(),
+	 global_hotel_id: z.string().uuid().optional().nullable(),
+	 destination_id: z.string().uuid().optional().nullable(),
  name: z.string().min(2).optional(),
  city: z.string().optional(),
  state: z.string().optional().nullable(),
@@ -825,4 +862,3 @@ export const saveHotelAmenities = createServerFn({ method: "POST" })
     if (insErr) throw new Error(`Erro ao salvar comodidades: ${insErr.message}`);
     return (inserted || []) as HotelAmenityDTO[];
   });
-

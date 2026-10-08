@@ -14,7 +14,7 @@ function authorized(request: Request): boolean {
 export const Route = createFileRoute("/api/internal/whatsapp-outbox-worker")({
   server: {
     handlers: {
-      POST: async ({ request }) => {
+      POST: async ({ request }: { request: Request }) => {
         if (!authorized(request)) return Response.json({ error: "Unauthorized" }, { status: 401 });
         try {
           const input = await request.json().catch(() => ({}));
@@ -31,4 +31,4 @@ export const Route = createFileRoute("/api/internal/whatsapp-outbox-worker")({
       },
     },
   },
-});
+} as never);

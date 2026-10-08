@@ -1,0 +1,268 @@
+--- PR 1-6 summaries ---
+[1;37m{[m
+  [1;34m"baseRefName"[m[1;37m:[m [32m"main"[m[1;37m,[m
+  [1;34m"headRefName"[m[1;37m:[m [32m"audit/forensic-baseline-fixes"[m[1;37m,[m
+  [1;34m"headRefOid"[m[1;37m:[m [32m"5584f48f4ac2b6031b8f8328cc9cb1ba7f127a41"[m[1;37m,[m
+  [1;34m"mergeStateStatus"[m[1;37m:[m [32m"UNKNOWN"[m[1;37m,[m
+  [1;34m"number"[m[1;37m:[m 1[1;37m,[m
+  [1;34m"state"[m[1;37m:[m [32m"MERGED"[m[1;37m,[m
+  [1;34m"statusCheckRollup"[m[1;37m:[m [1;37m[[m
+    [1;37m{[m
+      [1;34m"__typename"[m[1;37m:[m [32m"CheckRun"[m[1;37m,[m
+      [1;34m"completedAt"[m[1;37m:[m [32m"2026-10-05T20:40:28Z"[m[1;37m,[m
+      [1;34m"conclusion"[m[1;37m:[m [32m"CANCELLED"[m[1;37m,[m
+      [1;34m"detailsUrl"[m[1;37m:[m [32m"https://github.com/EduardoChapeco/waesy/actions/runs/37369638796/job/111963288931"[m[1;37m,[m
+      [1;34m"name"[m[1;37m:[m [32m"5 Quality Gates"[m[1;37m,[m
+      [1;34m"startedAt"[m[1;37m:[m [32m"2026-10-05T20:25:27Z"[m[1;37m,[m
+      [1;34m"status"[m[1;37m:[m [32m"COMPLETED"[m[1;37m,[m
+      [1;34m"workflowName"[m[1;37m:[m [32m"CI Unificado — Waesy Quality Gates"[m
+    [1;37m}[m[1;37m,[m
+    [1;37m{[m
+      [1;34m"__typename"[m[1;37m:[m [32m"CheckRun"[m[1;37m,[m
+      [1;34m"completedAt"[m[1;37m:[m [32m"2026-10-05T20:25:31Z"[m[1;37m,[m
+      [1;34m"conclusion"[m[1;37m:[m [32m"FAILURE"[m[1;37m,[m
+      [1;34m"detailsUrl"[m[1;37m:[m [32m"https://dash.cloudflare.com/?to=/696c624373c7b4b57bb681bd299f4aa8/pages/view/wider/72dce331-31f4-4cb0-a458-f282776c0a50"[m[1;37m,[m
+      [1;34m"name"[m[1;37m:[m [32m"Cloudflare Pages"[m[1;37m,[m
+      [1;34m"startedAt"[m[1;37m:[m [32m"2026-10-05T20:25:31Z"[m[1;37m,[m
+      [1;34m"status"[m[1;37m:[m [32m"COMPLETED"[m[1;37m,[m
+      [1;34m"workflowName"[m[1;37m:[m [32m""[m
+    [1;37m}[m
+  [1;37m][m[1;37m,[m
+  [1;34m"title"[m[1;37m:[m [32m"fix(audit): restore clean install and deterministic test gates"[m
+[1;37m}[m
+[1;37m{[m
+  [1;34m"baseRefName"[m[1;37m:[m [32m"main"[m[1;37m,[m
+  [1;34m"headRefName"[m[1;37m:[m [32m"audit/recursive-p0-remediation"[m[1;37m,[m
+  [1;34m"headRefOid"[m[1;37m:[m [32m"af9853dc87c95f1ee3564079a6df33ddc97268c7"[m[1;37m,[m
+  [1;34m"mergeStateStatus"[m[1;37m:[m [32m"UNKNOWN"[m[1;37m,[m
+  [1;34m"number"[m[1;37m:[m 2[1;37m,[m
+  [1;34m"state"[m[1;37m:[m [32m"MERGED"[m[1;37m,[m
+  [1;34m"statusCheckRollup"[m[1;37m:[m [1;37m[[m
+    [1;37m{[m
+      [1;34m"__typename"[m[1;37m:[m [32m"CheckRun"[m[1;37m,[m
+      [1;34m"completedAt"[m[1;37m:[m [32m"2026-10-05T23:36:53Z"[m[1;37m,[m
+      [1;34m"conclusion"[m[1;37m:[m [32m"FAILURE"[m[1;37m,[m
+      [1;34m"detailsUrl"[m[1;37m:[m [32m"https://github.com/EduardoChapeco/waesy/actions/runs/37389188580/job/112029938299"[m[1;37m,[m
+      [1;34m"name"[m[1;37m:[m [32m"5 Quality Gates"[m[1;37m,[m
+      [1;34m"startedAt"[m[1;37m:[m [32m"2026-10-05T23:33:50Z"[m[1;37m,[m
+      [1;34m"status"[m[1;37m:[m [32m"COMPLETED"[m[1;37m,[m
+      [1;34m"workflowName"[m[1;37m:[m [32m"CI Unificado — Waesy Quality Gates"[m
+    [1;37m}[m[1;37m,[m
+    [1;37m{[m
+      [1;34m"__typename"[m[1;37m:[m [32m"CheckRun"[m[1;37m,[m
+      [1;34m"completedAt"[m[1;37m:[m [32m"2026-10-05T23:33:52Z"[m[1;37m,[m
+      [1;34m"conclusion"[m[1;37m:[m [32m"FAILURE"[m[1;37m,[m
+      [1;34m"detailsUrl"[m[1;37m:[m [32m"https://dash.cloudflare.com/?to=/696c624373c7b4b57bb681bd299f4aa8/pages/view/wider/68b3baad-474b-493a-93b1-86a15e211d8d"[m[1;37m,[m
+      [1;34m"name"[m[1;37m:[m [32m"Cloudflare Pages"[m[1;37m,[m
+      [1;34m"startedAt"[m[1;37m:[m [32m"2026-10-05T23:33:52Z"[m[1;37m,[m
+      [1;34m"status"[m[1;37m:[m [32m"COMPLETED"[m[1;37m,[m
+      [1;34m"workflowName"[m[1;37m:[m [32m""[m
+    [1;37m}[m
+  [1;37m][m[1;37m,[m
+  [1;34m"title"[m[1;37m:[m [32m"Audit Waesy against MagicAI plan and harden AI pool"[m
+[1;37m}[m
+[1;37m{[m
+  [1;34m"baseRefName"[m[1;37m:[m [32m"main"[m[1;37m,[m
+  [1;34m"headRefName"[m[1;37m:[m [32m"feat/whatsapp-wave1-8-complete-release"[m[1;37m,[m
+  [1;34m"headRefOid"[m[1;37m:[m [32m"557e1bf9e24a2ba7b6abf7eb1a92c19a1cc3771c"[m[1;37m,[m
+  [1;34m"mergeStateStatus"[m[1;37m:[m [32m"UNKNOWN"[m[1;37m,[m
+  [1;34m"number"[m[1;37m:[m 3[1;37m,[m
+  [1;34m"state"[m[1;37m:[m [32m"MERGED"[m[1;37m,[m
+  [1;34m"statusCheckRollup"[m[1;37m:[m [1;37m[[m
+    [1;37m{[m
+      [1;34m"__typename"[m[1;37m:[m [32m"CheckRun"[m[1;37m,[m
+      [1;34m"completedAt"[m[1;37m:[m [32m"2026-10-06T18:33:26Z"[m[1;37m,[m
+      [1;34m"conclusion"[m[1;37m:[m [32m"FAILURE"[m[1;37m,[m
+      [1;34m"detailsUrl"[m[1;37m:[m [32m"https://dash.cloudflare.com/?to=/696c624373c7b4b57bb681bd299f4aa8/pages/view/wider/ce2455b2-4e48-45d7-a438-70e734b8306c"[m[1;37m,[m
+      [1;34m"name"[m[1;37m:[m [32m"Cloudflare Pages"[m[1;37m,[m
+      [1;34m"startedAt"[m[1;37m:[m [32m"2026-10-06T18:33:26Z"[m[1;37m,[m
+      [1;34m"status"[m[1;37m:[m [32m"COMPLETED"[m[1;37m,[m
+      [1;34m"workflowName"[m[1;37m:[m [32m""[m
+    [1;37m}[m
+  [1;37m][m[1;37m,[m
+  [1;34m"title"[m[1;37m:[m [32m"feat: complete WhatsApp integration waves 1-8"[m
+[1;37m}[m
+[1;37m{[m
+  [1;34m"baseRefName"[m[1;37m:[m [32m"main"[m[1;37m,[m
+  [1;34m"headRefName"[m[1;37m:[m [32m"feat/waesy-studio-omni-audit"[m[1;37m,[m
+  [1;34m"headRefOid"[m[1;37m:[m [32m"0bc67e435f82b3db80a8284ad0d152935fc2d232"[m[1;37m,[m
+  [1;34m"mergeStateStatus"[m[1;37m:[m [32m"UNKNOWN"[m[1;37m,[m
+  [1;34m"number"[m[1;37m:[m 4[1;37m,[m
+  [1;34m"state"[m[1;37m:[m [32m"MERGED"[m[1;37m,[m
+  [1;34m"statusCheckRollup"[m[1;37m:[m [1;37m[[m
+    [1;37m{[m
+      [1;34m"__typename"[m[1;37m:[m [32m"CheckRun"[m[1;37m,[m
+      [1;34m"completedAt"[m[1;37m:[m [32m"2026-10-06T18:49:38Z"[m[1;37m,[m
+      [1;34m"conclusion"[m[1;37m:[m [32m"FAILURE"[m[1;37m,[m
+      [1;34m"detailsUrl"[m[1;37m:[m [32m"https://github.com/EduardoChapeco/waesy/actions/runs/37514017414/job/112442170272"[m[1;37m,[m
+      [1;34m"name"[m[1;37m:[m [32m"5 Quality Gates"[m[1;37m,[m
+      [1;34m"startedAt"[m[1;37m:[m [32m"2026-10-06T18:47:39Z"[m[1;37m,[m
+      [1;34m"status"[m[1;37m:[m [32m"COMPLETED"[m[1;37m,[m
+      [1;34m"workflowName"[m[1;37m:[m [32m"CI Unificado — Waesy Quality Gates"[m
+    [1;37m}[m[1;37m,[m
+    [1;37m{[m
+      [1;34m"__typename"[m[1;37m:[m [32m"CheckRun"[m[1;37m,[m
+      [1;34m"completedAt"[m[1;37m:[m [32m"2026-10-06T18:48:48Z"[m[1;37m,[m
+      [1;34m"conclusion"[m[1;37m:[m [32m"FAILURE"[m[1;37m,[m
+      [1;34m"detailsUrl"[m[1;37m:[m [32m"https://dash.cloudflare.com/?to=/696c624373c7b4b57bb681bd299f4aa8/pages/view/wider/95ef2b05-53ed-4026-94b7-b2e25c576c14"[m[1;37m,[m
+      [1;34m"name"[m[1;37m:[m [32m"Cloudflare Pages"[m[1;37m,[m
+      [1;34m"startedAt"[m[1;37m:[m [32m"2026-10-06T18:48:48Z"[m[1;37m,[m
+      [1;34m"status"[m[1;37m:[m [32m"COMPLETED"[m[1;37m,[m
+      [1;34m"workflowName"[m[1;37m:[m [32m""[m
+    [1;37m}[m
+  [1;37m][m[1;37m,[m
+  [1;34m"title"[m[1;37m:[m [32m"feat(builder): integrar Omni AST e gates de qualidade Studio"[m
+[1;37m}[m
+[1;37m{[m
+  [1;34m"baseRefName"[m[1;37m:[m [32m"main"[m[1;37m,[m
+  [1;34m"headRefName"[m[1;37m:[m [32m"chore/sync-task-qhMPHRy4"[m[1;37m,[m
+  [1;34m"headRefOid"[m[1;37m:[m [32m"713c0c96f04d5db7e78b667078d40a77d9246f80"[m[1;37m,[m
+  [1;34m"mergeStateStatus"[m[1;37m:[m [32m"BEHIND"[m[1;37m,[m
+  [1;34m"number"[m[1;37m:[m 5[1;37m,[m
+  [1;34m"state"[m[1;37m:[m [32m"OPEN"[m[1;37m,[m
+  [1;34m"statusCheckRollup"[m[1;37m:[m [1;37m[[m
+    [1;37m{[m
+      [1;34m"__typename"[m[1;37m:[m [32m"CheckRun"[m[1;37m,[m
+      [1;34m"completedAt"[m[1;37m:[m [32m"2026-10-06T20:59:10Z"[m[1;37m,[m
+      [1;34m"conclusion"[m[1;37m:[m [32m"SUCCESS"[m[1;37m,[m
+      [1;34m"detailsUrl"[m[1;37m:[m [32m"https://github.com/EduardoChapeco/waesy/actions/runs/37529835087/job/112496083500"[m[1;37m,[m
+      [1;34m"name"[m[1;37m:[m [32m"5 Quality Gates"[m[1;37m,[m
+      [1;34m"startedAt"[m[1;37m:[m [32m"2026-10-06T20:53:21Z"[m[1;37m,[m
+      [1;34m"status"[m[1;37m:[m [32m"COMPLETED"[m[1;37m,[m
+      [1;34m"workflowName"[m[1;37m:[m [32m"CI Unificado — Waesy Quality Gates"[m
+    [1;37m}[m[1;37m,[m
+    [1;37m{[m
+      [1;34m"__typename"[m[1;37m:[m [32m"CheckRun"[m[1;37m,[m
+      [1;34m"completedAt"[m[1;37m:[m [32m"2026-10-06T20:53:27Z"[m[1;37m,[m
+      [1;34m"conclusion"[m[1;37m:[m [32m"FAILURE"[m[1;37m,[m
+      [1;34m"detailsUrl"[m[1;37m:[m [32m"https://dash.cloudflare.com/?to=/696c624373c7b4b57bb681bd299f4aa8/pages/view/wider/78807b22-fd52-48d0-ac38-dd162977d203"[m[1;37m,[m
+      [1;34m"name"[m[1;37m:[m [32m"Cloudflare Pages"[m[1;37m,[m
+      [1;34m"startedAt"[m[1;37m:[m [32m"2026-10-06T20:53:27Z"[m[1;37m,[m
+      [1;34m"status"[m[1;37m:[m [32m"COMPLETED"[m[1;37m,[m
+      [1;34m"workflowName"[m[1;37m:[m [32m""[m
+    [1;37m}[m
+  [1;37m][m[1;37m,[m
+  [1;34m"title"[m[1;37m:[m [32m"chore: sincronizar artefactos completos da auditoria Waesy"[m
+[1;37m}[m
+[1;37m{[m
+  [1;34m"baseRefName"[m[1;37m:[m [32m"main"[m[1;37m,[m
+  [1;34m"headRefName"[m[1;37m:[m [32m"chore/recover-waesy-task-2026-10-06"[m[1;37m,[m
+  [1;34m"headRefOid"[m[1;37m:[m [32m"8e1b2c4972c8bb76c7cf1c59ade41e71c6e2b96d"[m[1;37m,[m
+  [1;34m"mergeStateStatus"[m[1;37m:[m [32m"DIRTY"[m[1;37m,[m
+  [1;34m"number"[m[1;37m:[m 6[1;37m,[m
+  [1;34m"state"[m[1;37m:[m [32m"OPEN"[m[1;37m,[m
+  [1;34m"statusCheckRollup"[m[1;37m:[m [1;37m[[m
+    [1;37m{[m
+      [1;34m"__typename"[m[1;37m:[m [32m"CheckRun"[m[1;37m,[m
+      [1;34m"completedAt"[m[1;37m:[m [32m"2026-10-06T22:08:28Z"[m[1;37m,[m
+      [1;34m"conclusion"[m[1;37m:[m [32m"SUCCESS"[m[1;37m,[m
+      [1;34m"detailsUrl"[m[1;37m:[m [32m"https://github.com/EduardoChapeco/waesy/actions/runs/37538041955/job/112523916164"[m[1;37m,[m
+      [1;34m"name"[m[1;37m:[m [32m"5 Quality Gates"[m[1;37m,[m
+      [1;34m"startedAt"[m[1;37m:[m [32m"2026-10-06T22:02:55Z"[m[1;37m,[m
+      [1;34m"status"[m[1;37m:[m [32m"COMPLETED"[m[1;37m,[m
+      [1;34m"workflowName"[m[1;37m:[m [32m"CI Unificado — Waesy Quality Gates"[m
+    [1;37m}[m[1;37m,[m
+    [1;37m{[m
+      [1;34m"__typename"[m[1;37m:[m [32m"CheckRun"[m[1;37m,[m
+      [1;34m"completedAt"[m[1;37m:[m [32m"2026-10-06T22:03:00Z"[m[1;37m,[m
+      [1;34m"conclusion"[m[1;37m:[m [32m"FAILURE"[m[1;37m,[m
+      [1;34m"detailsUrl"[m[1;37m:[m [32m"https://dash.cloudflare.com/?to=/696c624373c7b4b57bb681bd299f4aa8/pages/view/wider/c8f0ab38-aed4-4109-a937-db7c92f86089"[m[1;37m,[m
+      [1;34m"name"[m[1;37m:[m [32m"Cloudflare Pages"[m[1;37m,[m
+      [1;34m"startedAt"[m[1;37m:[m [32m"2026-10-06T22:03:00Z"[m[1;37m,[m
+      [1;34m"status"[m[1;37m:[m [32m"COMPLETED"[m[1;37m,[m
+      [1;34m"workflowName"[m[1;37m:[m [32m""[m
+    [1;37m}[m
+  [1;37m][m[1;37m,[m
+  [1;34m"title"[m[1;37m:[m [32m"feat: finalize SimLab and provenance hardening"[m
+[1;37m}[m
+--- protection ---
+HTTP/2.0 200 OK
+[1;34mAccess-Control-Allow-Origin[m: *
+[1;34mAccess-Control-Expose-Headers[m: ETag, Link, Location, Retry-After, X-GitHub-OTP, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Used, X-RateLimit-Resource, X-RateLimit-Reset, X-OAuth-Scopes, X-Accepted-OAuth-Scopes, X-Poll-Interval, X-GitHub-Media-Type, X-GitHub-SSO, X-GitHub-Request-Id, Deprecation, Sunset, Warning
+[1;34mCache-Control[m: private, max-age=60, s-maxage=60
+[1;34mContent-Security-Policy[m: default-src 'none'
+[1;34mContent-Type[m: application/json; charset=utf-8
+[1;34mDate[m: Wed, 07 Oct 2026 21:08:27 GMT
+[1;34mEtag[m: W/"eb3da4b663764d293f1febb0f14cfeb68d4d19c33efe5c4a8c0e2d3897515cf4"
+[1;34mGithub-Authentication-Token-Expiration[m: 2026-10-08 03:23:47 UTC
+[1;34mReferrer-Policy[m: origin-when-cross-origin, strict-origin-when-cross-origin
+[1;34mServer[m: github.com
+[1;34mStrict-Transport-Security[m: max-age=31536000; includeSubdomains; preload
+[1;34mVary[m: Accept, Authorization, Cookie, X-GitHub-OTP,Accept-Encoding, Accept, X-Requested-With
+[1;34mX-Accepted-Github-Permissions[m: administration=read
+[1;34mX-Accepted-Oauth-Scopes[m: 
+[1;34mX-Content-Type-Options[m: nosniff
+[1;34mX-Frame-Options[m: deny
+[1;34mX-Github-Api-Version-Selected[m: 2022-11-28
+[1;34mX-Github-Edge-Region[m: iad
+[1;34mX-Github-Media-Type[m: github.v3; format=json
+[1;34mX-Github-Request-Id[m: 8776:1B967C:62C698:14659D2:6AC6B4CB
+[1;34mX-Oauth-Client-Id[m: Iv23liihDZ4fXkesFRWG
+[1;34mX-Oauth-Scopes[m: 
+[1;34mX-Ratelimit-Limit[m: 5000
+[1;34mX-Ratelimit-Remaining[m: 4925
+[1;34mX-Ratelimit-Reset[m: 1791408490
+[1;34mX-Ratelimit-Resource[m: core
+[1;34mX-Ratelimit-Used[m: 75
+[1;34mX-Xss-Protection[m: 0
+
+[1;37m{[m
+  [1;34m"url"[m[1;37m:[m [32m"https://api.github.com/repos/EduardoChapeco/waesy/branches/main/protection"[m[1;37m,[m
+  [1;34m"required_status_checks"[m[1;37m:[m [1;37m{[m
+    [1;34m"url"[m[1;37m:[m [32m"https://api.github.com/repos/EduardoChapeco/waesy/branches/main/protection/required_status_checks"[m[1;37m,[m
+    [1;34m"strict"[m[1;37m:[m [33mtrue[m[1;37m,[m
+    [1;34m"contexts"[m[1;37m:[m [1;37m[[m
+      [32m"5 Quality Gates"[m[1;37m,[m
+      [32m"Cloudflare Pages"[m
+    [1;37m][m[1;37m,[m
+    [1;34m"contexts_url"[m[1;37m:[m [32m"https://api.github.com/repos/EduardoChapeco/waesy/branches/main/protection/required_status_checks/contexts"[m[1;37m,[m
+    [1;34m"checks"[m[1;37m:[m [1;37m[[m
+      [1;37m{[m
+        [1;34m"context"[m[1;37m:[m [32m"5 Quality Gates"[m[1;37m,[m
+        [1;34m"app_id"[m[1;37m:[m 15368
+      [1;37m}[m[1;37m,[m
+      [1;37m{[m
+        [1;34m"context"[m[1;37m:[m [32m"Cloudflare Pages"[m[1;37m,[m
+        [1;34m"app_id"[m[1;37m:[m 85455
+      [1;37m}[m
+    [1;37m][m
+  [1;37m}[m[1;37m,[m
+  [1;34m"required_pull_request_reviews"[m[1;37m:[m [1;37m{[m
+    [1;34m"url"[m[1;37m:[m [32m"https://api.github.com/repos/EduardoChapeco/waesy/branches/main/protection/required_pull_request_reviews"[m[1;37m,[m
+    [1;34m"dismiss_stale_reviews"[m[1;37m:[m [33mtrue[m[1;37m,[m
+    [1;34m"require_code_owner_reviews"[m[1;37m:[m [33mfalse[m[1;37m,[m
+    [1;34m"require_last_push_approval"[m[1;37m:[m [33mfalse[m[1;37m,[m
+    [1;34m"required_approving_review_count"[m[1;37m:[m 0
+  [1;37m}[m[1;37m,[m
+  [1;34m"required_signatures"[m[1;37m:[m [1;37m{[m
+    [1;34m"url"[m[1;37m:[m [32m"https://api.github.com/repos/EduardoChapeco/waesy/branches/main/protection/required_signatures"[m[1;37m,[m
+    [1;34m"enabled"[m[1;37m:[m [33mfalse[m
+  [1;37m}[m[1;37m,[m
+  [1;34m"enforce_admins"[m[1;37m:[m [1;37m{[m
+    [1;34m"url"[m[1;37m:[m [32m"https://api.github.com/repos/EduardoChapeco/waesy/branches/main/protection/enforce_admins"[m[1;37m,[m
+    [1;34m"enabled"[m[1;37m:[m [33mtrue[m
+  [1;37m}[m[1;37m,[m
+  [1;34m"required_linear_history"[m[1;37m:[m [1;37m{[m
+    [1;34m"enabled"[m[1;37m:[m [33mfalse[m
+  [1;37m}[m[1;37m,[m
+  [1;34m"allow_force_pushes"[m[1;37m:[m [1;37m{[m
+    [1;34m"enabled"[m[1;37m:[m [33mfalse[m
+  [1;37m}[m[1;37m,[m
+  [1;34m"allow_deletions"[m[1;37m:[m [1;37m{[m
+    [1;34m"enabled"[m[1;37m:[m [33mfalse[m
+  [1;37m}[m[1;37m,[m
+  [1;34m"block_creations"[m[1;37m:[m [1;37m{[m
+    [1;34m"enabled"[m[1;37m:[m [33mfalse[m
+  [1;37m}[m[1;37m,[m
+  [1;34m"required_conversation_resolution"[m[1;37m:[m [1;37m{[m
+    [1;34m"enabled"[m[1;37m:[m [33mtrue[m
+  [1;37m}[m[1;37m,[m
+  [1;34m"lock_branch"[m[1;37m:[m [1;37m{[m
+    [1;34m"enabled"[m[1;37m:[m [33mfalse[m
+  [1;37m}[m[1;37m,[m
+  [1;34m"allow_fork_syncing"[m[1;37m:[m [1;37m{[m
+    [1;34m"enabled"[m[1;37m:[m [33mfalse[m
+  [1;37m}[m
+[1;37m}[m
+--- rulesets ---
+[1;37m[[m[1;37m][m

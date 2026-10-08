@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { FileText, ShieldCheck, CheckCircle, Download, Calendar, Users, MapPin, Lock, ArrowLeft, DollarSign, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -36,25 +36,37 @@ export const Route = createFileRoute("/_store/contrato/$token")({
 });
 
 function PublicTravelContractSignaturePage() {
- const { contract } = ((Route.useLoaderData?.() as any) || {});
- const [signerName, setSignerName] = useState(contract?.client_name || "");
- const [signerDoc, setSignerDoc] = useState(contract?.client_document || "");
- const [signatureDataUrl, setSignatureDataUrl] = useState<string | null>(null);
+		 const { contract } = ((Route.useLoaderData?.() as any) || {});
+		 const [signerName, setSignerName] = useState(contract?.client_name || "");
+	 const [signerDoc, setSignerDoc] = useState(contract?.client_document || "");
+	 const [signerEmail, setSignerEmail] = useState(contract?.client_email || "");
+	 const [signatureDataUrl, setSignatureDataUrl] = useState<string | null>(null);
  const [acceptedTerms, setAcceptedTerms] = useState(false);
- const [signedCertificate, setSignedCertificate] = useState<string | null>(
- contract?.certificate_serial || null
- );
- const [isExportingPdf, setIsExportingPdf] = useState(false);
+	 const [signedCertificate, setSignedCertificate] = useState<string | null>(
+	 contract?.certificate_serial || null
+	 );
+	 const [isExportingPdf, setIsExportingPdf] = useState(false);
+
+	 useEffect(() => {
+	 setSignerName(contract?.client_name || "");
+	 setSignerDoc(contract?.client_document || "");
+	 setSignerEmail(contract?.client_email || "");
+	 setSignatureDataUrl(null);
+	 setAcceptedTerms(false);
+	 setSignedCertificate(contract?.certificate_serial || null);
+	 }, [contract?.id, contract?.public_token]);
 
  const signMutation = useMutation({
  mutationFn: () =>
  signTravelContract({
- data: {
- token: contract!.public_token,
- signerName,
- signerDocument: signerDoc,
- signatureImage: signatureDataUrl || undefined,
- },
+	 data: {
+	 token: contract!.public_token,
+	 signerName,
+	 signerDocument: signerDoc,
+	 signerEmail,
+	 signatureImage: signatureDataUrl || undefined,
+	 acceptedTerms,
+	 },
  }),
  onSuccess: (res) => {
  setSignedCertificate(res.certificateSerial);
@@ -254,9 +266,9 @@ function PublicTravelContractSignaturePage() {
  <Lock className="size-4 text-primary" />
  <span>Assinar Este Contrato Digitalmente</span>
  </h3>
- <p className="text-xs text-muted-foreground">
- Confira seus dados e assine no quadro abaixo. Sua assinatura possui plena validade jurídica.
- </p>
+	 <p className="text-xs text-muted-foreground">
+	 Confira seus dados e assine no quadro abaixo. A assinatura será registrada com evidências técnicas do envio.
+	 </p>
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -271,17 +283,30 @@ function PublicTravelContractSignaturePage() {
  />
  </div>
 
- <div className="space-y-1">
- <Label className="text-xs font-bold">CPF do Signatário *</Label>
+	 <div className="space-y-1">
+	 <Label className="text-xs font-bold">CPF do Signatário *</Label>
  <Input
  value={signerDoc}
  onChange={(e) => setSignerDoc(e.target.value)}
  placeholder="000.000.000-00"
  className="h-10 text-xs rounded-lg font-mono"
  required
- />
- </div>
- </div>
+	 />
+	 </div>
+	 <div className="space-y-1">
+	 <Label htmlFor="contract-signer-email" className="text-xs font-bold">E-mail do Signatário *</Label>
+	 <Input
+	 id="contract-signer-email"
+	 type="email"
+	 autoComplete="email"
+	 value={signerEmail}
+	 onChange={(e) => setSignerEmail(e.target.value)}
+	 placeholder="voce@exemplo.com"
+	 className="h-10 text-xs rounded-lg"
+	 required
+	 />
+	 </div>
+	 </div>
 
  {/* Quadro de Assinatura Canvas */}
  <div className="space-y-2">
@@ -292,10 +317,11 @@ function PublicTravelContractSignaturePage() {
  {/* Checkbox de Aceite dos Termos */}
  <label className="flex items-start gap-3 cursor-pointer text-xs text-muted-foreground leading-relaxed pt-1">
  <input
- type="checkbox"
- checked={acceptedTerms}
- onChange={(e) => setAcceptedTerms(e.target.checked)}
- className="mt-1 size-4 rounded border-border text-primary focus:ring-primary"
+	 type="checkbox"
+	 checked={acceptedTerms}
+	 onChange={(e) => setAcceptedTerms(e.target.checked)}
+	 required
+	 className="mt-1 size-4 rounded border-border text-primary focus:ring-primary"
  />
  <span>
  Declaro que li e concordo integralmente com todas as cláusulas, valores, políticas de cancelamento e termos deste contrato de viagem.
@@ -304,7 +330,7 @@ function PublicTravelContractSignaturePage() {
 
  <Button
  type="button"
- disabled={signMutation.isPending || !acceptedTerms || !signerName || !signerDoc}
+	 disabled={signMutation.isPending || !acceptedTerms || !signerName || !signerDoc || !signerEmail}
  onClick={() => signMutation.mutate()}
  className="w-full h-12 rounded-lg text-xs font-bold bg-foreground text-background hover:bg-foreground/90 gap-2 cursor-pointer"
  >

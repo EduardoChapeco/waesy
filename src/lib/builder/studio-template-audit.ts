@@ -1,9 +1,12 @@
 import type { BuilderAssetRef } from "./asset-contract";
 import { isAssetPublicationReady } from "./asset-contract";
-import { NICHE_TEMPLATE_MATRIX, type NicheTemplateDefinition } from "./omni-templates";
+import type { OmniBlockStyling } from "@/types/omni-builder";
 import type { OmniBlockInstance, OmniPageDocument } from "@/types/omni-builder";
+import { STUDIO_TEMPLATE_CATALOG } from "./studio-catalog";
+import { getSafeBuilderHref } from "./safe-href";
+import { getSiteBlockByIdStrict } from "@/components/builder/registry";
 
-export type TemplateAuditCategory = "license" | "accessibility" | "performance";
+export type TemplateAuditCategory = "license" | "accessibility" | "performance" | "content" | "security" | "registry";
 export type TemplateAuditSeverity = "error" | "warning" | "info";
 export type TemplateAuditStatus = "pass" | "warn" | "fail";
 
@@ -39,6 +42,13 @@ export interface StudioAuditThresholds {
   maxRemoteAssetBytes: number;
 }
 
+type StudioAuditBlock = Pick<OmniBlockInstance, "type" | "config"> &
+  Partial<Pick<OmniBlockInstance, "id" | "assetRefs" | "isHidden">> & {
+    styling?: OmniBlockStyling;
+    sectionAnchorId?: string;
+  };
+type StudioAuditTemplate = { id: string; name: string; blocks: StudioAuditBlock[]; status?: "ready" | "review_required" };
+
 export const DEFAULT_STUDIO_AUDIT_THRESHOLDS: StudioAuditThresholds = {
   maxSerializedBytes: 250_000,
   maxBlocks: 40,
@@ -49,7 +59,7 @@ export const DEFAULT_STUDIO_AUDIT_THRESHOLDS: StudioAuditThresholds = {
 
 const IMAGE_KEY = /image|photo|avatar|cover|thumbnail|poster|background/i;
 const URL_PATTERN = /^https?:\/\//i;
-const DECORATIVE_OR_EMPTY = /^(?:data:|blob:|#)/i;
+const DECORATIVE_OR_EMPTY = /^#$/i;
 const CONTRAST_TEXT_THRESHOLD = 4.5;
 
 function addFinding(findings: TemplateAuditFinding[], ruleId: string, category: TemplateAuditCategory, severity: TemplateAuditSeverity, path: string, message: string) {
@@ -76,6 +86,24 @@ function collectImageReferences(value: unknown, path: string, result: Array<{ pa
 
 function isExternal(url: string): boolean { return URL_PATTERN.test(url); }
 function assetMatchesUrl(asset: BuilderAssetRef, url: string): boolean { return asset.source_url === url || asset.source_page_url === url; }
+function isUnsplashImageUrl(url: string): boolean {
+  try { return new URL(url).hostname === "images.unsplash.com"; } catch { return false; }
+}
+
+function auditRegistryBlocks(blocks: OmniBlockInstance[], findings: TemplateAuditFinding[]) {
+  blocks.forEach((block, index) => {
+    if (!getSiteBlockByIdStrict(block.type)) {
+      addFinding(
+        findings,
+        "BUILDER_UNKNOWN_OMNI_BLOCK",
+        "registry",
+        "error",
+        `blocks[${index}].type`,
+        `O bloco Omni \"${block.type}\" não existe no registry canônico e não pode ser publicado.`,
+      );
+    }
+  });
+}
 
 function luminance(hex: string): number | null {
   const normalized = hex.trim().replace(/^#/, "");
@@ -120,6 +148,98 @@ function auditActionNames(value: unknown, path: string, findings: TemplateAuditF
   }
 }
 
+function auditSafeNavigationLinks(blocks: OmniBlockInstance[], findings: TemplateAuditFinding[]) {
+  const visit = (value: unknown, path: string) => {
+    if (Array.isArray(value)) {
+      value.forEach((item, index) => visit(item, `${path}[${index}]`));
+      return;
+    }
+    if (!value || typeof value !== "object") return;
+    for (const [key, child] of Object.entries(value as Record<string, unknown>)) {
+      const childPath = `${path}.${key}`;
+      if (/href$/i.test(key) && typeof child === "string" && child.trim() && !getSafeBuilderHref(child)) {
+        addFinding(findings, "SECURITY_UNSAFE_HREF", "security", "error", childPath, "Link não seguro: use uma rota local, âncora, mailto/tel válidos ou URL HTTPS sem credenciais.");
+      }
+      visit(child, childPath);
+    }
+  };
+  blocks.forEach((block, index) => visit(block.config, `blocks[${index}].config`));
+}
+
+function auditContentIntegrity(blocks: OmniBlockInstance[], findings: TemplateAuditFinding[]) {
+  const unresolvedToken = /\[\[[^\]]{2,100}\]\]/u;
+  const visit = (value: unknown, path: string) => {
+    if (typeof value === "string") {
+      if (unresolvedToken.test(value)) {
+        addFinding(findings, "CONTENT_PLACEHOLDER_UNRESOLVED", "content", "error", path, "Texto placeholder permanece no documento. Preencha com informação real ou remova a seção antes de publicar.");
+      }
+      return;
+    }
+    if (Array.isArray(value)) {
+      value.forEach((item, index) => visit(item, `${path}[${index}]`));
+      return;
+    }
+    if (!value || typeof value !== "object") return;
+    for (const [key, child] of Object.entries(value as Record<string, unknown>)) visit(child, path ? `${path}.${key}` : key);
+  };
+
+  blocks.forEach((block, index) => {
+    visit(block.config, `blocks[${index}].config`);
+    if (block.type === "testimonials_social_proof") {
+      const testimonials = Array.isArray(block.config?.testimonials) ? block.config.testimonials : [];
+      if (testimonials.length === 0) addFinding(findings, "CONTENT_SOCIAL_PROOF_EMPTY", "content", "error", `blocks[${index}].config.testimonials`, "Adicione depoimentos reais autorizados ou remova a seção antes de publicar.");
+      else addFinding(findings, "CONTENT_SOCIAL_PROOF_REVIEW", "content", "warning", `blocks[${index}].config.testimonials`, "Confirme que cada depoimento é real, autorizado e fiel; o campo verified não comprova autenticidade.");
+    }
+    if (block.type === "faq_clean_accordion") {
+      const items = Array.isArray(block.config?.items) ? block.config.items : [];
+      if (items.length === 0) addFinding(findings, "CONTENT_FAQ_EMPTY", "content", "error", `blocks[${index}].config.items`, "Adicione respostas verificadas para este negócio ou remova a seção antes de publicar.");
+    }
+    if (block.type === "contact_form_direct") {
+      const whatsappDigits = typeof block.config?.whatsappNumber === "string" ? block.config.whatsappNumber.replace(/\D/g, "") : "";
+      if (!/^\d{10,15}$/.test(whatsappDigits)) addFinding(findings, "CONTENT_FORM_DESTINATION_MISSING", "content", "error", `blocks[${index}].config.whatsappNumber`, "Configure um destino WhatsApp válido; este bloco ainda não envia leads por e-mail/CRM.");
+    }
+    if (["pricing_tables_clean", "pricing_three_tiers"].includes(block.type)) {
+      const tiers = Array.isArray(block.config?.tiers) ? block.config.tiers : [];
+      if (tiers.length === 0) {
+        addFinding(findings, "CONTENT_PRICING_EMPTY", "content", "error", `blocks[${index}].config.tiers`, "Adicione planos reais ou remova a seção de pricing antes de publicar.");
+      } else {
+        tiers.forEach((tier, tierIndex) => {
+          const tierConfig = tier && typeof tier === "object" ? tier as Record<string, unknown> : {};
+          const target = typeof tierConfig.ctaHref === "string" ? tierConfig.ctaHref.trim() : typeof tierConfig.href === "string" ? tierConfig.href.trim() : "";
+          if (!target) addFinding(findings, "CONTENT_PRICING_CTA_MISSING", "content", "error", `blocks[${index}].config.tiers[${tierIndex}].ctaHref`, "Configure um destino CTA seguro para este plano; a publicação não redireciona para uma rota genérica do workspace.");
+        });
+        addFinding(findings, "CONTENT_PRICING_REVIEW", "content", "warning", `blocks[${index}].config.tiers`, "Revise preço, periodicidade, condições e política de reembolso com dados atuais do negócio.");
+      }
+    }
+  });
+}
+
+function auditSectionAnchors(blocks: OmniBlockInstance[], findings: TemplateAuditFinding[]) {
+  const anchors = new Set<string>();
+  blocks.forEach((block, index) => {
+    const anchor = (block as any).sectionAnchorId;
+    if (typeof anchor !== "string" || !anchor) return;
+    if (anchors.has(anchor)) addFinding(findings, "LINK_DUPLICATE_SECTION_ANCHOR", "accessibility", "error", `blocks[${index}].sectionAnchorId`, `Âncora duplicada: ${anchor}.`);
+    anchors.add(anchor);
+  });
+  if (anchors.size === 0) return;
+
+  const visit = (value: unknown, path: string) => {
+    if (Array.isArray(value)) {
+      value.forEach((item, index) => visit(item, `${path}[${index}]`));
+      return;
+    }
+    if (!value || typeof value !== "object") return;
+    for (const [key, child] of Object.entries(value as Record<string, unknown>)) {
+      const childPath = `${path}.${key}`;
+      if (key.toLowerCase() === "href" && typeof child === "string" && child.startsWith("#") && child !== "#" && !anchors.has(child.slice(1))) {
+        addFinding(findings, "LINK_BROKEN_SECTION_ANCHOR", "accessibility", "error", childPath, `O CTA aponta para a âncora inexistente ${child}.`);
+      } else visit(child, childPath);
+    }
+  };
+  blocks.forEach((block, index) => visit(block.config, `blocks[${index}].config`));
+}
+
 function auditBlockAccessibility(block: OmniBlockInstance, index: number, findings: TemplateAuditFinding[]) {
   const config = block.config ?? {};
   const path = `blocks[${index}]`;
@@ -146,6 +266,10 @@ function auditLicenses(blocks: OmniBlockInstance[], findings: TemplateAuditFindi
   const imageReferences: Array<{ path: string; url: string; owner: Record<string, unknown> }> = [];
   blocks.forEach((block, index) => collectImageReferences(block.config, `blocks[${index}].config`, imageReferences));
   for (const image of imageReferences) {
+    if (/^(?:data|blob):/i.test(image.url)) {
+      addFinding(findings, "LICENSE_EPHEMERAL_IMAGE", "license", "error", image.path, "Imagem data:/blob: não é um asset durável com provenance verificável; envie pelo Asset Manager ou selecione uma fonte aprovada.");
+      continue;
+    }
     if (!isExternal(image.url)) {
       addFinding(findings, "LICENSE_LOCAL_ASSET_UNVERIFIED", "license", "warning", image.path, "Asset local/inline sem metadados de licença vinculados; confirme direitos no Asset Manager.");
       continue;
@@ -153,6 +277,7 @@ function auditLicenses(blocks: OmniBlockInstance[], findings: TemplateAuditFindi
     const blockIndex = Number(image.path.match(/^blocks\[(\d+)\]/)?.[1]);
     const matchingAsset = (blocks[blockIndex]?.assetRefs ?? []).find((asset) => assetMatchesUrl(asset, image.url));
     if (!matchingAsset) addFinding(findings, "LICENSE_PROVENANCE_MISSING", "license", "error", image.path, "Imagem remota sem referência de asset vinculada. Registre fornecedor, origem, autoria e licença antes da publicação.");
+    else if (isUnsplashImageUrl(image.url) && matchingAsset.provider !== "unsplash") addFinding(findings, "LICENSE_PROVIDER_MISMATCH", "license", "error", image.path, "URL images.unsplash.com precisa corresponder a um asset Unsplash verificado; não pode ser rotulada como upload/user.");
     else if (!isAssetPublicationReady(matchingAsset)) addFinding(findings, "LICENSE_NOT_PUBLICATION_READY", "license", "error", image.path, "Provenance/licença incompleta para publicação; mantenha o template como rascunho até completar os metadados.");
   }
   blocks.forEach((block, index) => (block.assetRefs ?? []).forEach((asset) => {
@@ -196,14 +321,18 @@ function summarize(templateId: string, templateName: string, blocks: OmniBlockIn
 }
 
 export function auditStudioTemplate(
-  template: Pick<NicheTemplateDefinition, "id" | "name" | "blocks"> | { id: string; name: string; blocks: OmniBlockInstance[] },
+  template: StudioAuditTemplate,
   options: { thresholds?: Partial<StudioAuditThresholds>; theme?: OmniPageDocument["theme"] } = {},
 ): TemplateAuditResult {
   const thresholds = { ...DEFAULT_STUDIO_AUDIT_THRESHOLDS, ...options.thresholds };
   const blocks = template.blocks as OmniBlockInstance[];
   const serializedBytes = new TextEncoder().encode(JSON.stringify({ id: template.id, blocks })).byteLength;
   const findings: TemplateAuditFinding[] = [];
+  auditRegistryBlocks(blocks, findings);
   auditLicenses(blocks, findings);
+  auditContentIntegrity(blocks, findings);
+  auditSafeNavigationLinks(blocks, findings);
+  auditSectionAnchors(blocks, findings);
   blocks.forEach((block, index) => auditBlockAccessibility(block, index, findings));
   auditPerformance(blocks, serializedBytes, thresholds, findings);
   if (options.theme?.textColor && options.theme.backgroundColor) {
@@ -221,15 +350,22 @@ export function getPublicationBlockingFindings(result: TemplateAuditResult): Tem
   return result.findings.filter((finding) => finding.severity === "error");
 }
 
-export function auditAllStudioTemplates(templates: NicheTemplateDefinition[] = NICHE_TEMPLATE_MATRIX): {
+export function auditAllStudioTemplates(templates: StudioAuditTemplate[] = STUDIO_TEMPLATE_CATALOG): {
   generatedAt: string;
-  summary: { total: number; passed: number; warnings: number; failed: number };
+  summary: { total: number; passed: number; warnings: number; failed: number; reviewRequired: number; publishableFailed: number };
   templates: TemplateAuditResult[];
 } {
   const results = templates.map((template) => auditStudioTemplate(template));
   return {
     generatedAt: new Date().toISOString(),
-    summary: { total: results.length, passed: results.filter((result) => result.status === "pass").length, warnings: results.filter((result) => result.status === "warn").length, failed: results.filter((result) => result.status === "fail").length },
+    summary: {
+      total: results.length,
+      passed: results.filter((result) => result.status === "pass").length,
+      warnings: results.filter((result) => result.status === "warn").length,
+      failed: results.filter((result) => result.status === "fail").length,
+      reviewRequired: templates.filter((template) => "status" in template && template.status === "review_required").length,
+      publishableFailed: results.filter((result) => result.status === "fail" && templates.some((template) => template.id === result.templateId && template.status === "ready")).length,
+    },
     templates: results,
   };
 }

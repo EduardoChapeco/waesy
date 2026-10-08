@@ -458,7 +458,9 @@ export const deleteSecretKey = createServerFn({ method: "POST" })
         target_entity_id: input.id,
         action: "VAULT_SECRET_DELETE",
       });
-    } catch {}
+    } catch (auditError) {
+      console.error("[secret-vault] Falha ao registrar auditoria de exclusão:", auditError);
+    }
 
     return { success: true };
   });

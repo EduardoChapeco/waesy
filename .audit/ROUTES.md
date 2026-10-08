@@ -1,6 +1,6 @@
 # ROUTES.md — Inventário de Rotas, Telas, Shells e Nichos (P04)
 
-**Total de Rotas Analisadas:** 405  
+**Total de Rotas Analisadas:** 403
 **Status do Check C27 (Rotas Órfãs/Mortas):** 🟢 0 (Todas as rotas mapeadas possuem componentes ativos no sistema TanStack Router)
 
 ---
@@ -8,56 +8,56 @@
 ## 1. Distribuição por Shell de Navegação
 | Shell | Quantidade de Rotas | Proporção |
 |---|---|---|
-| **Storefront Shell (Responsive B2C)** | 162 | 40.0% |
-| **Workspace Shell (Desktop/Mobile Split)** | 178 | 44.0% |
-| **Admin Master Shell** | 38 | 9.4% |
-| **Headless API / MCP** | 18 | 4.4% |
-| **Mobile Native Shell** | 9 | 2.2% |
+| **Storefront Shell (Responsive B2C)** | 154 | 38.2% |
+| **Mobile Native Shell** | 10 | 2.5% |
+| **Admin Master Shell** | 37 | 9.2% |
+| **Headless API / MCP** | 22 | 5.5% |
+| **Workspace Shell (Desktop/Mobile Split)** | 180 | 44.7% |
 
 ---
 
 ## 2. Distribuição por Nicho de Mercado
 | Nicho | Quantidade de Rotas |
 |---|---|
-| **Núcleo Genérico (Cross-Niche)** | 367 |
-| **Turismo & Viagens** | 29 |
+| **Núcleo Genérico (Cross-Niche)** | 364 |
 | **Eventos & Festas** | 5 |
 | **Gastronomia & Restaurantes** | 4 |
+| **Turismo & Viagens** | 30 |
 
 ---
 
 ## 3. Catálogo Amostral de Rotas Críticas
 | Rota | Arquivo Fonte | Shell | Nicho | Suporte Mobile Nativo |
 |---|---|---|---|---|
-| `/-apple-hig-design/test` | `src/routes/-apple-hig-design.test.ts` | Storefront Shell (Responsive B2C) | Núcleo Genérico (Cross-Niche) | Desktop/Geral |
-| `/-workspace/marketing/anuncios/test` | `src/routes/-workspace.marketing.anuncios.test.ts` | Workspace Shell (Desktop/Mobile Split) | Núcleo Genérico (Cross-Niche) | Sim |
-| `/-_store/marketplace/$storeSlug/test` | `src/routes/-_store.marketplace.$storeSlug.test.ts` | Storefront Shell (Responsive B2C) | Núcleo Genérico (Cross-Niche) | Desktop/Geral |
-| `/-_store/places/$placeSlug/test` | `src/routes/-_store.places.$placeSlug.test.ts` | Storefront Shell (Responsive B2C) | Núcleo Genérico (Cross-Niche) | Desktop/Geral |
-| `/admin-master/ads-network` | `src/routes/admin-master.ads-network.tsx` | Admin Master Shell | Núcleo Genérico (Cross-Niche) | Sim |
-| `/admin-master/algoritmo` | `src/routes/admin-master.algoritmo.tsx` | Admin Master Shell | Núcleo Genérico (Cross-Niche) | Sim |
-| `/admin-master/auditoria-forense` | `src/routes/admin-master.auditoria-forense.tsx` | Admin Master Shell | Núcleo Genérico (Cross-Niche) | Sim |
-| `/admin-master/banners` | `src/routes/admin-master.banners.tsx` | Admin Master Shell | Núcleo Genérico (Cross-Niche) | Sim |
-| `/admin-master/boost-payments` | `src/routes/admin-master.boost-payments.tsx` | Admin Master Shell | Núcleo Genérico (Cross-Niche) | Sim |
-| `/admin-master/botoes` | `src/routes/admin-master.botoes.tsx` | Admin Master Shell | Núcleo Genérico (Cross-Niche) | Sim |
-| `/admin-master/carnes` | `src/routes/admin-master.carnes.tsx` | Admin Master Shell | Núcleo Genérico (Cross-Niche) | Sim |
-| `/admin-master/convite` | `src/routes/admin-master.convite.tsx` | Admin Master Shell | Núcleo Genérico (Cross-Niche) | Sim |
-| `/admin-master/crescimento` | `src/routes/admin-master.crescimento.tsx` | Admin Master Shell | Núcleo Genérico (Cross-Niche) | Sim |
-| `/admin-master/curadoria` | `src/routes/admin-master.curadoria.tsx` | Admin Master Shell | Núcleo Genérico (Cross-Niche) | Sim |
-| `/admin-master/denuncias` | `src/routes/admin-master.denuncias.tsx` | Admin Master Shell | Núcleo Genérico (Cross-Niche) | Sim |
-| `/admin-master/entregadores/auditoria` | `src/routes/admin-master.entregadores.auditoria.tsx` | Admin Master Shell | Núcleo Genérico (Cross-Niche) | Sim |
-| `/admin-master/faturas` | `src/routes/admin-master.faturas.tsx` | Admin Master Shell | Núcleo Genérico (Cross-Niche) | Sim |
-| `/admin-master/hubs` | `src/routes/admin-master.hubs.tsx` | Admin Master Shell | Núcleo Genérico (Cross-Niche) | Sim |
-| `/admin-master/imprensa` | `src/routes/admin-master.imprensa.tsx` | Admin Master Shell | Núcleo Genérico (Cross-Niche) | Sim |
-| `/admin-master` | `src/routes/admin-master.index.tsx` | Admin Master Shell | Núcleo Genérico (Cross-Niche) | Sim |
-| `/admin-master/integracoes` | `src/routes/admin-master.integracoes.tsx` | Admin Master Shell | Núcleo Genérico (Cross-Niche) | Sim |
-| `/admin-master/kyc` | `src/routes/admin-master.kyc.tsx` | Admin Master Shell | Núcleo Genérico (Cross-Niche) | Sim |
-| `/admin-master/logistica` | `src/routes/admin-master.logistica.tsx` | Admin Master Shell | Núcleo Genérico (Cross-Niche) | Sim |
-| `/admin-master/logs` | `src/routes/admin-master.logs.tsx` | Admin Master Shell | Núcleo Genérico (Cross-Niche) | Sim |
-| `/admin-master/lojas` | `src/routes/admin-master.lojas.tsx` | Admin Master Shell | Núcleo Genérico (Cross-Niche) | Sim |
-| `/admin-master/marca` | `src/routes/admin-master.marca.tsx` | Admin Master Shell | Núcleo Genérico (Cross-Niche) | Sim |
-| `/admin-master/mining` | `src/routes/admin-master.mining.tsx` | Admin Master Shell | Núcleo Genérico (Cross-Niche) | Sim |
-| `/admin-master/modulos` | `src/routes/admin-master.modulos.tsx` | Admin Master Shell | Núcleo Genérico (Cross-Niche) | Sim |
-| `/admin-master/onboarding` | `src/routes/admin-master.onboarding.tsx` | Admin Master Shell | Núcleo Genérico (Cross-Niche) | Sim |
-| `/admin-master/portal-completo` | `src/routes/admin-master.portal-completo.tsx` | Admin Master Shell | Núcleo Genérico (Cross-Niche) | Sim |
+| `/acougue` | `src/routes/_store.acougue.tsx` | Storefront Shell (Responsive B2C) | Núcleo Genérico (Cross-Niche) | Sim |
+| `/afiliados` | `src/routes/_store.afiliados.tsx` | Storefront Shell (Responsive B2C) | Núcleo Genérico (Cross-Niche) | Sim |
+| `/agenda` | `src/routes/_store.agenda.tsx` | Storefront Shell (Responsive B2C) | Núcleo Genérico (Cross-Niche) | Sim |
+| `/agendar/$id` | `src/routes/_store.agendar.$id.tsx` | Storefront Shell (Responsive B2C) | Núcleo Genérico (Cross-Niche) | Sim |
+| `/agendar` | `src/routes/_store.agendar.index.tsx` | Storefront Shell (Responsive B2C) | Núcleo Genérico (Cross-Niche) | Sim |
+| `/agendar` | `src/routes/_store.agendar.tsx` | Storefront Shell (Responsive B2C) | Núcleo Genérico (Cross-Niche) | Desktop/Geral |
+| `/bebidas` | `src/routes/_store.bebidas.tsx` | Storefront Shell (Responsive B2C) | Núcleo Genérico (Cross-Niche) | Sim |
+| `/beleza` | `src/routes/_store.beleza.tsx` | Storefront Shell (Responsive B2C) | Núcleo Genérico (Cross-Niche) | Sim |
+| `/bio/$slug` | `src/routes/_store.bio.$slug.tsx` | Storefront Shell (Responsive B2C) | Núcleo Genérico (Cross-Niche) | Desktop/Geral |
+| `/busca` | `src/routes/_store.busca.tsx` | Storefront Shell (Responsive B2C) | Núcleo Genérico (Cross-Niche) | Desktop/Geral |
+| `/buscar` | `src/routes/_store.buscar.tsx` | Storefront Shell (Responsive B2C) | Núcleo Genérico (Cross-Niche) | Sim |
+| `/cadastro` | `src/routes/_store.cadastro.tsx` | Storefront Shell (Responsive B2C) | Núcleo Genérico (Cross-Niche) | Sim |
+| `/cadastroantecipado` | `src/routes/_store.cadastroantecipado.tsx` | Storefront Shell (Responsive B2C) | Núcleo Genérico (Cross-Niche) | Desktop/Geral |
+| `/carrinho` | `src/routes/_store.carrinho.tsx` | Storefront Shell (Responsive B2C) | Núcleo Genérico (Cross-Niche) | Sim |
+| `/casa` | `src/routes/_store.casa.tsx` | Storefront Shell (Responsive B2C) | Núcleo Genérico (Cross-Niche) | Sim |
+| `/categoria/$slug` | `src/routes/_store.categoria.$slug.tsx` | Storefront Shell (Responsive B2C) | Núcleo Genérico (Cross-Niche) | Sim |
+| `/checkout` | `src/routes/_store.checkout.tsx` | Storefront Shell (Responsive B2C) | Núcleo Genérico (Cross-Niche) | Sim |
+| `/classificados/$id` | `src/routes/_store.classificados.$id.tsx` | Storefront Shell (Responsive B2C) | Núcleo Genérico (Cross-Niche) | Desktop/Geral |
+| `/classificados` | `src/routes/_store.classificados.index.tsx` | Storefront Shell (Responsive B2C) | Núcleo Genérico (Cross-Niche) | Sim |
+| `/colecao/$slug` | `src/routes/_store.colecao.$slug.tsx` | Storefront Shell (Responsive B2C) | Núcleo Genérico (Cross-Niche) | Sim |
+| `/concurso/$id` | `src/routes/_store.concurso.$id.tsx` | Storefront Shell (Responsive B2C) | Núcleo Genérico (Cross-Niche) | Sim |
+| `/concursos` | `src/routes/_store.concursos.tsx` | Storefront Shell (Responsive B2C) | Núcleo Genérico (Cross-Niche) | Sim |
+| `/construcao` | `src/routes/_store.construcao.tsx` | Storefront Shell (Responsive B2C) | Núcleo Genérico (Cross-Niche) | Sim |
+| `/conta/agendamentos` | `src/routes/_store.conta.agendamentos.tsx` | Storefront Shell (Responsive B2C) | Núcleo Genérico (Cross-Niche) | Sim |
+| `/conta/atividade` | `src/routes/_store.conta.atividade.tsx` | Storefront Shell (Responsive B2C) | Núcleo Genérico (Cross-Niche) | Sim |
+| `/conta/avaliacoes` | `src/routes/_store.conta.avaliacoes.tsx` | Storefront Shell (Responsive B2C) | Núcleo Genérico (Cross-Niche) | Sim |
+| `/conta/candidaturas` | `src/routes/_store.conta.candidaturas.tsx` | Storefront Shell (Responsive B2C) | Núcleo Genérico (Cross-Niche) | Sim |
+| `/conta/carnes` | `src/routes/_store.conta.carnes.tsx` | Storefront Shell (Responsive B2C) | Núcleo Genérico (Cross-Niche) | Sim |
+| `/conta/classificados` | `src/routes/_store.conta.classificados.index.tsx` | Storefront Shell (Responsive B2C) | Núcleo Genérico (Cross-Niche) | Sim |
+| `/conta/classificados/novo` | `src/routes/_store.conta.classificados.novo.tsx` | Storefront Shell (Responsive B2C) | Núcleo Genérico (Cross-Niche) | Sim |
 
-*(Relatório completo disponível em .audit/ROUTES.json com 100% das 405 rotas)*
+*(Relatório completo disponível em .audit/ROUTES.json com 100% das 403 rotas)*

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { NativeBackButton } from "@/components/ui/native-back-button";
 import { Badge } from "@/components/ui/badge";
 import { PageHeader } from "@/components/commerce/page-header";
+import { ErrorState } from "@/components/state/states";
 import { listStoreAllNdaSignatures } from "@/services/classifieds.functions";
 
 export const Route = createFileRoute("/workspace/captacao/ndas")({
@@ -24,12 +25,15 @@ export const Route = createFileRoute("/workspace/captacao/ndas")({
 function WorkspaceCaptacaoNdasPage() {
   const loaderData = Route.useLoaderData();
 
-  const { data: ndas = loaderData.ndas } = useQuery({
+  const { data: ndas = loaderData.ndas, isError } = useQuery({
     queryKey: ["workspace", "nda-signatures-all"],
     queryFn: () => listStoreAllNdaSignatures(),
     initialData: loaderData.ndas,
   });
 
+  if (isError && ndas.length === 0) {
+    return <ErrorState title="Não foi possível carregar os NDAs" description="O registro de assinaturas está temporariamente indisponível." />;
+  }
   return (
     <div className="w-full max-w-7xl mx-auto space-y-6 pb-20 animate-in fade-in duration-200">
       {/* ── CABEÇALHO & VOLTAR ── */}

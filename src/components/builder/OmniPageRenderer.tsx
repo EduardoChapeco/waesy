@@ -7,6 +7,7 @@
 import React from "react";
 import { OmniPageDocument } from "./types";
 import { getSiteBlockByIdStrict } from "./registry";
+import { BuilderAssetCredits } from "./BuilderAssetCredits";
 
 export interface OmniPageRendererProps {
   document: OmniPageDocument;
@@ -61,12 +62,17 @@ export const OmniPageRenderer: React.FC<OmniPageRendererProps> = ({
         const animClass = getAnimationClass(block.styling?.scrollAnimation);
 
         return (
-          <div key={block.id} className={animClass ? `w-full ${animClass}` : "w-full"}>
+          <div
+            key={block.id}
+            id={block.sectionAnchorId}
+            className={animClass ? `w-full ${animClass}` : "w-full"}
+          >
             <Component
               id={block.id}
               data={block.config}
               styling={block.styling}
             />
+            <BuilderAssetCredits assets={block.assetRefs} />
           </div>
         );
       })}

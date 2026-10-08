@@ -27,7 +27,6 @@ import { GLOBAL_REAL_ESTATE_TYPES_CATALOG, RealEstateTypeDefinition } from "@/li
 import { GLOBAL_HOLIDAYS_CATALOG, HolidayDefinition, getUpcomingMarketingCalendar } from "@/lib/data/holidays-calendar-catalog";
 import { GLOBAL_PROFESSIONS_CATALOG, ProfessionDefinition } from "@/lib/data/professions-catalog";
 import { GLOBAL_ON_DEMAND_SERVICES_CATALOG, OnDemandMarketplaceService } from "@/lib/data/services-catalog";
-import { IBGE_ECONOMIC_CLASSES, BRAZIL_REGIONS_DEMOGRAPHICS, generateSyntheticPopulations } from "@/lib/data/ibge-demographics";
 
 // ── 1. BUSCA DE VEÍCULOS & MOTOS ──
 const searchVehiclesSchema = z.object({
@@ -988,7 +987,7 @@ export const getCentralMarketingCalendar = createServerFn({ method: "GET" })
     };
   });
 
-// ── 18. DEMOGRAFIA BRASILEIRA & GERAÇÃO DE POPULAÇÕES SINTÉTICAS (IBGE) ──
+// ── 18. DEMOGRAFIA: endpoint desativado até existir fonte rastreável ──
 const getDemographicsSchema = z.object({
   region: z.enum(["Sul", "Sudeste", "Centro-Oeste", "Nordeste", "Norte"]).optional(),
   generateCohortCount: z.number().min(0).max(100).optional().default(0),
@@ -996,23 +995,14 @@ const getDemographicsSchema = z.object({
 
 export const getCentralDemographics = createServerFn({ method: "GET" })
   .validator((data: unknown) => getDemographicsSchema.parse(data))
-  .handler(async ({ data }) => {
-    const { region, generateCohortCount } = data;
-
-    const economicClasses = IBGE_ECONOMIC_CLASSES;
-    const regionData = region 
-      ? BRAZIL_REGIONS_DEMOGRAPHICS[region === "Centro-Oeste" ? "Centro_Oeste" : region]
-      : BRAZIL_REGIONS_DEMOGRAPHICS;
-
-    const generatedCohort = generateCohortCount > 0 
-      ? generateSyntheticPopulations(generateCohortCount, { region })
-      : [];
-
+  .handler(async () => {
     return {
-      economic_classes: economicClasses,
-      regional_distribution: regionData,
-      synthetic_cohort: generatedCohort,
-      source: "ibge_canonical" as const,
+      economic_classes: [],
+      regional_distribution: null,
+      synthetic_cohort: [],
+      status: "unavailable_unverified" as const,
+      source: null,
+      limitation: "A matriz estática anterior não possuía linhagem verificável do IBGE/PNAD e a geração de cidadãos artificiais foi desativada. Reative somente com fonte oficial versionada, data de extração, licença, geografia/período e transformações documentadas.",
     };
   });
 

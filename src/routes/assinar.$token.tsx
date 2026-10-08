@@ -15,10 +15,8 @@ import { formatDate } from "@/lib/datetime";
 
 export const Route = createFileRoute("/assinar/$token")({
   validateSearch: (search: Record<string, unknown>): {
-    signed?: string;
     error?: string;
   } => ({
-    signed: typeof search.signed === "string" ? search.signed : undefined,
     error: typeof search.error === "string" ? search.error : undefined,
   }),
   head: () => ({ meta: [{ title: "Assinatura Eletrônica de Documento | Waesy" }] }),
@@ -51,9 +49,7 @@ function SignContractPage() {
   const [consent, setConsent] = useState(false);
   const [signatureImage, setSignatureImage] = useState("");
   const [saveSignatureToProfile, setSaveSignatureToProfile] = useState(false);
-  const [isSignedLocal, setIsSignedLocal] = useState(
-    envelope?.status === "signed" || search?.signed === "true",
-  );
+  const [isSignedLocal, setIsSignedLocal] = useState(envelope?.status === "signed");
 
   useEffect(() => {
     if (search?.error) {
@@ -145,7 +141,10 @@ function SignContractPage() {
   const signMutation = useMutation({
     mutationFn: signContractEnvelope,
     onSuccess: (data) => {
-      toast.success("Documento assinado eletronicamente com sucesso!");
+      const completed = "completed" in data && Boolean(data.completed);
+      toast.success(completed
+        ? "A sua assinatura foi registada; todas as assinaturas exigidas foram concluídas."
+        : "A sua assinatura foi registada; o contrato aguarda as restantes assinaturas.");
       setIsSignedLocal(true);
     },
     onError: (err: any) => {
@@ -231,7 +230,7 @@ function SignContractPage() {
               variant={isSignedLocal ? "default" : "secondary"}
               className="text-xs font-bold uppercase tracking-wider"
             >
-              {isSignedLocal ? "Documento Assinado" : "Aguardando Sua Assinatura"}
+              {isSignedLocal ? "Sua Assinatura Registada" : "Aguardando Sua Assinatura"}
             </Badge>
           </div>
         </div>
@@ -268,10 +267,10 @@ function SignContractPage() {
             <div className="border border-emerald-500/30 bg-emerald-500/5 rounded-lg p-6 text-center space-y-3">
               <CheckCircle2 className="size-10 text-emerald-600 dark:text-emerald-400 mx-auto" />
               <h2 className="text-base font-bold text-foreground">
-                Assinatura Concluída com Sucesso!
+                A sua assinatura foi registada
               </h2>
               <p className="text-xs text-muted-foreground max-w-md mx-auto">
-                Sua manifestação de vontade foi registrada e selada na infraestrutura criptográfica com validade jurídica nacional.
+                A conclusão global depende de todas as assinaturas exigidas. Consulte o certificado público para acompanhar o estado do contrato.
               </p>
               {contract?.verification_code && (
                 <Button asChild size="sm" className="rounded-lg text-xs font-bold gap-2 mt-2 h-10 px-5">
@@ -284,24 +283,26 @@ function SignContractPage() {
             </div>
 
             {/* Folha de Rosto / Protocolo de Auditoria */}
-            <ContractAuditManifest
-              documentTitle={contract?.title || version?.title}
-              category={contract?.category || "general_deal"}
-              verificationCode={contract?.verification_code || "AUTENTICADO"}
-              hashSha256={version?.hash_sha256 || "CÁLCULO CRIPTOGRÁFICO"}
-              sealedAt={version?.sealed_at || new Date().toISOString()}
-              signers={[
-                {
-                  name: envelope.signer_name,
-                  email: envelope.signer_email,
-                  phone: envelope.signer_phone,
-                  role: envelope.signer_role || "party",
-                  status: "signed",
-                  signedAt: envelope.signed_at || new Date().toISOString(),
-                  signatureImageUrl: signatureImage || undefined,
-                },
-              ]}
-            />
+            {contract?.verification_code && (
+              <ContractAuditManifest
+                documentTitle={contract?.title || version?.title}
+                category={contract?.category || "general_deal"}
+                verificationCode={contract.verification_code}
+                hashSha256={version?.hash_sha256}
+                sealedAt={version?.sealed_at}
+                signers={[
+                  {
+                    name: envelope.signer_name,
+                    email: envelope.signer_email,
+                    phone: envelope.signer_phone,
+                    role: envelope.signer_role || "party",
+                    status: "signed",
+                    signedAt: envelope.signed_at || null,
+                    signatureImageUrl: signatureImage || undefined,
+                  },
+                ]}
+              />
+            )}
           </div>
         ) : (
           /* ÁREA DE ASSINATURA TÁTIL, BIOMETRIA E CONSENTIMENTO */
