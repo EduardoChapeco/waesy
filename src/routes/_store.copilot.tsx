@@ -15,7 +15,6 @@ import {
   executeGuestCopilotMessage,
   dispatchAiChatAction,
   deleteAiConversationThread,
-  dispatchAiChatAction,
   toggleAiThreadPinned,
   toggleAiThreadArchived,
 } from "@/services/ai-conversations.functions";
@@ -340,12 +339,13 @@ function CopilotPage() {
   const handleStructuredAction = async (action: AIChatAction) => {
     const payload = action?.payload || {};
     const actionType = action?.action_type;
+    const dispatchable = ["add_to_cart", "request_travel_quote", "submit_legal_demand", "publish_ad"] as const;
 
-    if (["add_to_cart", "request_travel_quote", "submit_legal_demand", "publish_ad"].includes(actionType)) {
+    if ((dispatchable as readonly string[]).includes(actionType)) {
       try {
         const result = await dispatchAiChatAction({
           data: {
-            action_type: actionType,
+            action_type: actionType as (typeof dispatchable)[number],
             payload,
           },
         });

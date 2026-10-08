@@ -141,7 +141,8 @@ function SignContractPage() {
   const signMutation = useMutation({
     mutationFn: signContractEnvelope,
     onSuccess: (data) => {
-      toast.success(data.completed
+      const completed = "completed" in data && Boolean(data.completed);
+      toast.success(completed
         ? "A sua assinatura foi registada; todas as assinaturas exigidas foram concluídas."
         : "A sua assinatura foi registada; o contrato aguarda as restantes assinaturas.");
       setIsSignedLocal(true);
