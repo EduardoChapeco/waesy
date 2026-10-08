@@ -727,17 +727,17 @@ export const getContractById = createServerFn({ method: "GET" })
 // ─── Busca de Envelope Individual por Token de Assinatura ────────────────────
 
 export const getEnvelopeByToken = createServerFn({ method: "GET" })
-  .validator(z.string().min(1))
+  .validator(z.string().trim().min(16).max(240))
   .handler(async ({ data: token }) => {
     const supabase = getServerClient();
     const { data: envelope, error } = await supabase
       .from("signature_envelopes")
       .select(
         `
-        *,
+        id, signing_token, status, signed_at, signer_name, signer_email, signer_phone, signer_role,
         contract_version:contract_version_id (
           id, version_number, title, content_markdown, hash_sha256, sealed_at, signature_fields, page_count,
-          contract:contract_id (id, title, category, verification_code, dispatch_settings, observers)
+          contract:contract_id (id, title, category, verification_code)
         )
         `,
       )
@@ -861,16 +861,27 @@ export const listUserEnvelopesAndContracts = createServerFn({ method: "GET" }).h
 // ─── Assinatura Salva no Perfil do Usuário (1-Click Sign) ────────────────────
 
 export const saveUserSignature = createServerFn({ method: "POST" })
-  .validator(z.object({ signatureImageBase64: z.string() }))
+  .validator(
+    z.object({
+      signatureImageBase64: z
+        .string()
+        .trim()
+        .max(2_000_000)
+        .regex(/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/, "Assinatura inválida."),
+    }),
+  )
   .handler(async ({ data: { signatureImageBase64 } }) => {
     const supabase = getServerClient();
     const identity = await getIdentity();
     if (!identity?.id) throw new Error("Não autenticado");
 
-    await supabase
+    const { data: updatedProfile, error } = await supabase
       .from("profiles")
       .update({ saved_signature_url: signatureImageBase64 })
-      .eq("id", identity.id);
+      .eq("id", identity.id)
+      .select("id")
+      .maybeSingle();
+    if (error || !updatedProfile) throw new Error("Não foi possível salvar sua assinatura.");
 
     return { success: true };
   });
