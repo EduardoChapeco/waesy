@@ -6,9 +6,8 @@ import { type Hotel, type Flight } from "@/services/proposals";
 import { mapApiHotelToCanonical, mapApiFlightToCanonical, mapApiBookingToNormalized, type NormalizedBooking, type ApiHotelAvail, type ApiFlightAvail, type ApiBooking } from "@/types/infotravel";
 
 // ── Erro estruturado para credenciais não configuradas ─────────────────────
-// O conector retorna { error_code: "CREDENTIALS_NOT_CONFIGURED" } com HTTP 200
-// para não gerar toast de erro genérico no frontend — deve exibir um aviso
-// contextual de onboarding no módulo que tentou acionar a busca.
+// O conector retorna códigos estruturados também para respostas HTTP não-2xx;
+// o BFF preserva o código para diferenciar onboarding de indisponibilidade.
 export class InfotravelNotConfiguredError extends Error {
   readonly errorCode = "CREDENTIALS_NOT_CONFIGURED";
   constructor() {
@@ -46,6 +45,13 @@ export const invokeInfotravelConnector = createServerFn({ method: "POST" })
       });
 
       if (error) {
+        // supabase-js pode entregar o corpo estruturado em data ou no contexto
+        // da FunctionsHttpError. Nunca descarte CREDENTIALS_NOT_CONFIGURED.
+        let structured = data as any;
+        if (!structured && (error as any)?.context?.json) {
+          try { structured = await (error as any).context.json(); } catch { /* corpo ausente */ }
+        }
+        if (structured?.error_code) return structured;
         return { error_code: "CONNECTOR_UNAVAILABLE", error: error.message };
       }
 
