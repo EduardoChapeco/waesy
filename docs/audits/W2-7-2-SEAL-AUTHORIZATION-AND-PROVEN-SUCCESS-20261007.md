@@ -1,0 +1,86 @@
+# Ledger de Evidências — W2.7.2: autorização da selagem e sucesso provado
+
+## Snapshot e escopo
+
+- **Data/hora:** 2026-10-07 21:24:28 UTC−03:00 (sessão local; horários de arquivos do sandbox podem aparecer em UTC no host).
+- **Repositório:** `EduardoChapeco/waesy`.
+- **Branch/HEAD:** `audit/full-remediation-continuation-20261007` / `919c86881db1ce83de3feae7fcf7df5aadb58b7d`.
+- **Base remota:** `origin/main` no mesmo SHA `919c86881db1ce83de3feae7fcf7df5aadb58b7d`.
+- **PR/checks:** PRs abertos não relacionados observados: #19, #18, #7, #6 e #5; busca de PR para esta branch = `[]`; branch remota própria = HTTP 404/não existe; checks próprios = não aplicáveis. Nenhum conteúdo remoto foi alterado.
+- **Staging:** `git diff --cached --name-status` vazio.
+- **Worktree antes desta spec/ledger:** 9 ficheiros modificados e 21 não rastreados; `git diff --stat` indicava 576 inserções/272 remoções nos nove ficheiros rastreados. Os 30 paths são anteriores a esta microfase e devem ser copiados byte a byte antes da edição de código.
+- **Paths preexistentes modificados (9):** `docs/design/DECISIONS.md`; `src/components/contracts/contract-audit-manifest.tsx`; `src/integrations/supabase/types.ts`; `src/routes/_store.pedido.$publicToken.confirmacao.tsx`; `src/routes/api.auth.govbr.callback.ts`; `src/routes/assinar.$token.tsx`; `src/routes/verify.document.$code.tsx`; `src/services/contracts.functions.ts`; `src/services/travel-ai-extractor.functions.ts`.
+- **Paths preexistentes não rastreados (21):** `docs/audits/20261007-W2-CONTINUITY-REVALIDATION.md`; `docs/audits/20261007-WAVE-READINESS-W0-W7.md`; `docs/audits/W2-2-ORDER-SERVICE-ROLE-RESTRICTION-20261007.md`; `docs/audits/W2-3-1-GOVBR-PERSISTENCE-CAS-20261007.md`; `docs/audits/W2-6-1-SIGNATURE-FAILURE-SEMANTICS-20261007.md`; `docs/audits/W2-7-1-CANONICAL-SIGNATURE-COMPLETION-20261007.md`; `docs/audits/W2-7-PUBLIC-VERIFICATION-20261007.md`; `docs/specs/SPEC-W2-2-ORDER-SERVICE-ROLE-RESTRICTION-20261007.md`; `docs/specs/SPEC-W2-3-1-GOVBR-PERSISTENCE-CAS-20261007.md`; `docs/specs/SPEC-W2-6-1-SIGNATURE-FAILURE-SEMANTICS-20261007.md`; `docs/specs/SPEC-W2-7-1-CANONICAL-SIGNATURE-COMPLETION-20261007.md`; `docs/specs/SPEC-W2-7-PUBLIC-VERIFICATION-PROJECTION-20261007.md`; `src/lib/contracts/public-verification-projection.ts`; `src/services/contracts-govbr-security.test.ts`; `src/services/contracts-manual-sign-security.test.ts`; `src/services/contracts-ocr-security.test.ts`; `src/services/contracts-order-security.test.ts`; `src/services/contracts-public-verification-security.test.ts`; `src/services/contracts-signature-completion-security.test.ts`; `src/services/travel-ai-extractor-security.test.ts`; `supabase/migrations/20270114000000_contract_signature_completion.sql`.
+- **Ambiente:** Node `v22.13.0`; npm `10.9.2`; Vitest `4.1.10`; TypeScript `5.9.3`; Linux Sandbox. Dependências já presentes no clone; pacote/banco Supabase CLI/Postgres não confirmado nesta microfase.
+- **Leitura obrigatória concluída antes da spec:** `AGENTS.md` B.31; skill `waesy-integrity-auditor`; template do evidence ledger; masterplan (W2); spec W2.7.1; serviço de contratos, rota de assinatura, callback Gov.br, tipos, migração W2.7.1, schema base, testes de assinatura manual/Gov.br/conclusão e guardas de identidade/role.
+- **Ação autorizada:** correção local dedicada do P0 de autorização na selagem e dos falsos sucessos diretamente relacionados, com cópia isolada dos 30 paths, spec, ledger, regressões red/green e gates locais. A continuação autorizou explicitamente aplicar a migration apenas na PostgreSQL local descartável, atualizar o relatório consolidado e copiar as alterações validadas para a branch local; sem alteração remota, commit, PR, merge ou deploy.
+- **Preservação concluída antes da edição de código:** arquivo `/home/ubuntu/work/waesy-w272-preexisting-30.tar.gz` (SHA-256 `6401d2dc88e015f084d88e66f6acdedff0fcc8e45d389f99283d995c441ea7d4`), manifesto com 30 hashes em `/home/ubuntu/work/waesy-w272-preexisting-30.sha256` e worktree detached `/home/ubuntu/work/waesy-w272-isolated` sobre o mesmo HEAD. Os 30 ficheiros foram comparados com `cmp` e passaram; a spec/ledger também foram copiadas e comparadas. `node_modules` é partilhado por symlink para execução de testes; o código-fonte é alterado apenas na worktree isolada.
+- **Escopo ativo:** conforme `docs/specs/SPEC-W2-7-2-SEAL-AUTHORIZATION-AND-PROVEN-SUCCESS-20261007.md`.
+
+## Preflight por microfase
+
+| Onda.microfase | AGENTS/skill/plano lidos | Paths de implementação lidos | Hash inicial | Ação autorizada | Leitura concluída antes de mutar? |
+|---|---|---|---|---|---|
+| W2.7.2 | Sim: B.31, skill, template, W2 masterplan, spec W2.7.1 | `contracts.functions.ts`; `assinar.$token.tsx`; callback Gov.br; tipos; migration W2.7.1; schema base; testes manual/Gov.br/public/completion; `auth-guards.server.ts`; `server-access.ts`; `identity.server.ts`; `identity-core.ts`; caller editor | `919c86881db1ce83de3feae7fcf7df5aadb58b7d` | P0 de creator/tenant e atomicidade da selagem; evidência obrigatória para retries; query string sem autoridade | Sim; a alteração de código ainda não começou |
+
+## Findings e estado inicial
+
+| ID | Severidade | Estado atualizado | Evidência inicial | Causa-raiz | Correção autorizada |
+|---|---|---|---|---|---|
+| W2.7.2-F01 | P0 (falha original mitigada apenas no caminho canónico) | mitigação local e integração fixture aprovadas; não é fecho end-to-end nem aprovação de merge | `sealAndIssueContract` agora usa `requireStaff()` e filtros criador/tenant, e a RPC atomicamente sela a versão e cria envelopes. A revisão independente não confirmou P0 adicional nesse caminho, mas encontrou P1 F05–F09 abaixo. | Falta original de autorização owner/tenant e atomicidade. | Manter a mitigação canónica; tratar os demais writers, hash, grants e operações adjacentes antes de declarar W2.7 fechada. |
+| W2.7.2-F02 | P1 | corrigido em código; testes focados aprovados; integração de assinatura real pendente | Os caminhos manual/Gov.br agora exigem evidência persistida de consentimento/digest/nível antes de sucesso idempotente. | Resposta terminal derivava apenas do status do envelope, sem prova da tentativa. | Falhar fechado em erro/ausência/divergência e reconciliar pela evidência exata. |
+| W2.7.2-F03 | P1 | corrigido em código; regressões aprovadas; browser pendente | `/assinar/$token` já não aceita `?signed=true` como estado funcional; callback remove o marcador. | Query string não confiável alimentava sucesso local. | Derivar assinatura exclusivamente do envelope carregado do servidor. |
+| W2.7.2-F04 | P1 de especificação/validação | mitigação contra snapshot obsoleto aprovada em fixture; sem definição completa do contrato dos campos finais | Sob lock, a RPC compara `p_expected_signature_fields` carregado pelo BFF com o valor persistido, mas escreve `p_signature_fields` (`finalFields`), que pode diferir se o pedido os fornece. | A concorrência do snapshot base é rejeitada, mas a intenção/validação do conjunto final de tags não está completamente especificada nem exercitada quando difere. | Decidir/documentar se tags podem ser alteradas no ato de selar; validar o DTO completo e testar explicitamente esperado≠final, ordenação e duplicações. |
+| W2.7.2-F05 | P1 | confirmado; fora do escopo de implementação desta microfase | `generateContractFromOrder` (`contracts.functions.ts:1297-1485`) e `generateContractFromDeal` (`:1493-1661`) gravam contrato, versão selada e envelopes em chamadas separadas, sem a RPC. O caminho Order aceita token público portador e usa `customer.profile_id`/UUID zero como fallback de `creator_id`; Deal restringe ao comprador/vendedor, mas não exige `store_id`. | Writes posteriores ignoram erros em versão/envelope e podem deixar contrato parcial; semântica actor/tenant/hash diverge do caminho canónico. | Microfase própria: definir actor para token/order/deal, garantir tenant, transação e rollback, alinhar hash/envelopes e testar falha em cada write. |
+| W2.7.2-F06 | P1 | confirmado; hash não prova conteúdo no banco | RPC valida em `20270115000000...sql:33-35` apenas que o valor tem 64 hex e grava o argumento em `:130-134`; não recalcula o SHA-256 a partir da versão bloqueada. Writers Order/Deal calculam só `contentMarkdown`, enquanto o caminho canónico calcula conteúdo + JSON de cláusulas/campos (`contracts.functions.ts:314-323,1434-1439,1607-1611`). Verificação pública deriva autenticidade do formato/estado (`:704-735`; `public-verification-projection.ts:40-42`), sem recomputar os bytes. | Semântica de `hash_sha256` não é única e RPC pode aceitar hash arbitrário de 64 hex fornecido por caller privilegiado. | Definir serialização canónica versionada e recalcular/verificar hash na fronteira confiável; alinhar writers e verificadores; cobrir alteração de conteúdo/cláusulas/tags e hash adulterado. |
+| W2.7.2-F07 | P1 condicional | policies legadas permissivas confirmadas; grants efetivos e exploração API não verificados | `20260813211000_contracts_engine_schema.sql:84-119` cria policies `FOR ALL` para criador/signatário; migration nova restringe EXECUTE da RPC, mas não revoga DML de tabelas. Trigger `20270114000000...sql:275-319` impede envelope em contrato completed e troca de versão, não insert extra durante signing nem mutações de status/assinatura. | Se os grants PostgREST permitirem DML a `authenticated`, writes diretos podem contornar a RPC e alterar envelopes/estado. | Verificar `pg_policies`, grants, RLS e `SET ROLE` em Supabase de teste; revogar DML ou impor guards/triggers de imutabilidade conforme modelo aprovado. |
+| W2.7.2-F08 | P1 | confirmado em inspeção estática; não corrigido nesta PR | `settleContractAndIssueDischarge` (`contracts.functions.ts:1664-1719`) exige apenas identidade e atualiza `contracts` por `id`; não filtra criador/store/papel nem condiciona estado atual. | Um usuário autenticado pode tentar emitir quitação para contrato fora da sua loja; grants/RLS efetivos não foram verificados. | Aplicar autorização tenant/role, condição transacional de estado, prova de todas as assinaturas concluídas e teste negativo A/B. |
+| W2.7.2-F09 | P2 | confirmado; não corrigido nesta PR | `updateContractDraft` (`contracts.functions.ts:196-245`) atualiza metadados do contrato por `id+creator_id` sem store/status; conteúdo da versão só atualiza se `is_sealed=false`. A resposta pós-RPC também é validada no BFF após o commit. | Metadados podem divergir do documento selado; uma resposta perdida após commit pode parecer falha ao cliente e retry não tem reconciliação idempotente própria. | Imutabilizar/corrigir metadados após selagem e definir reconciliação idempotente para timeout pós-commit. |
+
+### Revisão adversarial independente W2.7.2
+
+A revisão focada read-only da W2.7.2 confirmou **nenhum P0 adicional**, mas identificou F05–F09 como blockers/riscos que impedem apresentar este patch como W2.7 fechada ou pronto para merge. O risco de DML direto em F07 depende dos grants reais, ainda não consultados. A suite de segurança é parcialmente estrutural/textual; o PostgreSQL local provou a transação da RPC em schema fixture mínimo, mas não prova RLS/grants, concorrência real em Supabase, hash canónico ou writers alternativos. Foi iniciada também revisão integral dos 35 paths, mas o agente parou antes de produzir relatório; portanto este pacote **não tem sign-off de revisão abrangente** e os restantes paths dependem da revisão humana/CI.
+
+## Matriz de teste
+
+As regressões foram adicionadas antes da implementação e reproduziram a falha na baseline: 3 ficheiros, 7 falhas e 12 aprovações. Após as alterações, a suite de segurança atual terminou com 64 testes aprovados em 10 ficheiros. O teste PostgreSQL usou um schema fixture descartável, não a base completa do produto.
+
+- [x] Regressão vermelha na baseline e regressões verdes no worktree final.
+- [x] Sucesso de selagem com dois signatários; ambas as linhas foram persistidas como `pending`.
+- [x] Criador errado e tenant errado rejeitados em cenários independentes.
+- [x] Divergência do snapshot de `signature_fields` rejeitada sem writes.
+- [x] Falha injetada no segundo envelope reverteu o selo, o estado do contrato e o primeiro envelope.
+- [x] Contrato `completed` e versão obsoleta rejeitados.
+- [x] `npx vitest run src/services/*security.test.ts`: 10 ficheiros, 64 testes aprovados.
+- [x] `npm run typecheck`: exit 0; `npm run build`: exit 0, com avisos de bundler não fatais. O `git diff --check` dos rastreados passou; o `git diff --cached --check` do pacote completo aponta espaços finais em linhas Markdown de specs/ledgers históricos, documentados e não normalizados.
+- [x] `npm test`: 243 ficheiros, 1.581 testes aprovados; revisão adversarial independente concluída, com F05–F09 abertos.
+- [x] Migration executada no PostgreSQL local descartável `waesy_w272_test`; não prova migrations completas, Supabase/RLS, browser, CI nem produção.
+
+## Gates e resultados
+
+| Comando/ambiente | SHA exato | Resultado/exit code | Evidência | O que NÃO prova |
+|---|---|---|---|---|
+| Preflight Git/status e GitHub CLI | `919c86881db1ce83de3feae7fcf7df5aadb58b7d` | concluído; árvore remota própria/PR inexistentes; staged vazio | output terminal desta sessão | Não prova gates ou comportamento remoto de PRs não relacionados. |
+| Regressões W2.7.2 (baseline, Vitest) | `919c86881db1ce83de3feae7fcf7df5aadb58b7d` + 3 ficheiros de teste novos/alterados | **exit 1 — esperado; 7 falhas, 12 aprovações** | `/home/ubuntu/terminal_full_output/2026-10-08_00-27-15_737497_1147.txt` | Prova apenas que os testes estruturais discriminam a baseline; não prova runtime/Postgres. |
+| PostgreSQL transacional | HEAD base + migration/fixture locais | **PASS**; success com 2 signatários, wrong creator, wrong tenant, snapshot obsoleto, completed/stale-version e rollback de insert | `waesy_w272_test`, migration `20270115000000`; script `/tmp/waesy-w272-postgres-test.sql` | Schema fixture descartável; não prova Supabase, RLS, aplicação from-zero ou provider real. |
+| Vitest security regressions | HEAD base + worktree local | **PASS — 10 ficheiros, 64 testes** | `npx vitest run src/services/*security.test.ts` | Testes de código/contratos; não prova browser, CI ou produção. |
+| Suite completa Vitest | HEAD base + worktree local | **PASS — 243 ficheiros, 1.581 testes** | `npm test` | Suite local; não substitui CI no commit final nem integrações reais. |
+| Design lint ratchet | HEAD base + worktree local | **PASS**; débito reduzido em 537; baseline não atualizado | `npm run lint:design` | Não significa débito zero; dashboard mostra 13.755 achados globais. |
+| Typecheck/build | HEAD base + worktree local | **PASS**; typecheck/build exit 0 | `npm run typecheck`; `npm run build` | Build local não demonstra deploy; avisos de bundler permanecem. |
+| Whitespace staged | HEAD base + 35 paths | **WARN**; `git diff --cached --check` lista espaços finais em Markdown legado | `git diff --cached --check` | Nenhum erro de whitespace em código/migration; não foi feita reformatação abrangente de docs preexistentes. |
+
+## Bloqueios, decisões e exclusões
+
+- **Cópia isolada dos 30 paths:** concluída antes de qualquer alteração de código; arquivo e manifesto SHA-256 guardados fora do repositório; comparação byte a byte passou. A árvore original permanece sem alterações de código desta microfase.
+- **Migration:** aplicada somente no PostgreSQL local descartável `waesy_w272_test`; não aplicada em Supabase/produção. A base usou stubs para o schema necessário à RPC, não o conjunto completo de migrations.
+- **Findings W2.7.1 fora do escopo:** backfill concorrente, DML pós-completion, versão histórica no lookup por código, estados visuais distintos `rejected`/`expired`, normalização de hash e demais itens da revisão ficam abertos para microfases seguintes.
+- **Sem alteração externa:** sem commit, push, PR, merge, deploy ou credenciais; o plano é copiar apenas os ficheiros validados para a branch local de continuação.
+- **Revisão adversarial final:** concluída em modo read-only; nenhum P0 adicional foi confirmado, mas F05–F09 constituem blockers/riscos P1/P2. Não equivale a aprovação de merge.
+
+## Fechamento provisório
+
+- Findings com mitigação local demonstrada: F01 no caminho `sealAndIssueContract` (fixture PostgreSQL), F02/F03 em testes de segurança e F04 para stale baseline. Nenhum deles fecha W2.7 end-to-end; F04 mantém decisão sobre campos finais em aberto.
+- Findings ainda abertos: F05 writers alternativos; F06 hash/serialização; F07 DML/grants; F08 quitação cross-tenant; F09 metadados/reconciliação; GOV-ID-01 e demais critérios fora do escopo. W2.7.1 não está fechada globalmente.
+- Alterações de implementação nesta microfase: `src/services/contracts.functions.ts`, `src/integrations/supabase/types.ts`, `src/services/contracts-signature-completion-security.test.ts` e `supabase/migrations/20270115000000_contract_seal_atomic_authorization.sql`; os paths preexistentes foram preservados.
+- Gates pendentes: CI/Cloudflare no SHA publicado; Supabase/RLS/grants, migration completa, hash canónico, browser, owner review, merge e deploy. O utilizador autorizou commit/push/PR draft, mas não merge/deploy.
+- Estado de publicação nesta atualização: 35 paths staged na branch local; commit, push e PR ainda por executar; sem alteração remota.

@@ -2759,3 +2759,19 @@
 - **Decisão adotada:** Criar a migration `20261007000000_builder_versioned_omni_snapshots.sql` com `experience_versions.document_snapshot` e a RPC `persist_omni_document_snapshot`. A RPC bloqueia o documento, valida ator/loja, reaproveita save idêntico, cria versão monotônica, arquiva publicação anterior e atualiza `omni_page_draft`/`omni_page_published` na mesma transação. O BFF Omni passa a exigir a resposta `version_id`/status confirmada; o carregamento prefere a última versão draft.
 - **Fundamentação:** AGENTS.md B.1, B.9, B.25 e B.31; invariantes anti-falso-positivo da skill de integridade; W8.2/W8.3 do masterplan.
 - **Consequências:** O código agora tem contrato de persistência atômica e auditável, mas a migração ainda precisa ser aplicada em banco efêmero/Supabase autorizado e a jornada browser precisa ser executada antes de declarar integração ou produção concluída. Compatibilidade com `settings.omni_page` permanece apenas como fallback de leitura de dados legados.
+
+## DEC-187: Allowlist mínima na verificação pública de contratos
+
+- **Data:** 2026-10-07
+- **Contexto:** A rota pública de verificação usa um BFF com cliente `service_role`, ignora RLS por desenho e propagava dados internos de despacho, observadores, campos de assinatura e contactos pessoais de signatários; o fallback turístico também expunha `metadata.signatures` sem projeção.
+- **Decisão:** A verificação pública devolve apenas os metadados necessários para identificar o documento e o certificado, e resume cada signatário numa allowlist de nome, papel, estado, data de assinatura e nível de autenticação. Campos de contacto, documentos, IP, user-agent, imagem/biometria, campos de assinatura, observadores e dados arbitrários do JSON nunca são propagados. A UI pública deixa de renderizar e-mail/telefone de signatários e observadores.
+- **Fundamentação:** Princípio de minimização de dados da LGPD; AGENTS.md B.1/B.11; Spec `SPEC-W2-7-PUBLIC-VERIFICATION-PROJECTION-20261007.md`.
+- **Consequências:** A microfase reduz a superfície de divulgação; não prova o isolamento global de `service_role`, RLS, autorização por código/hash nem o significado de estados não selados. Estes permanecem no ledger W2 como pendentes.
+
+
+## DEC-193: Conclusão canónica de assinaturas e verificação pública
+- **Data:** 2026-10-07
+- **Contexto:** A verificação pública confundia registo localizado com contrato assinado; os fluxos manual e Gov.br assinavam envelopes sem promover o contrato para `completed`; o utilizador confirmou que qualquer assinatura não concluída, inclusive `rejected` e `expired`, deve ser apresentada como pendente.
+- **Decisão adotada:** `isAuthentic` exige versão exata selada, `sealed_at` válido e SHA-256 canónico. `isFullySigned`/`isValid` exigem autenticidade, `contracts.status = completed`, pelo menos um envelope canónico e todos `signed` com `signed_at` válido. `completed` só é promovido na mesma transação que grava evidência e assina o último envelope exigido. Fallback turístico sem envelopes canónicos continua autêntico quando há hash/selo válidos, mas pendente de reconciliação. Estados ainda não concluídos são mostrados como pendentes, não como erro.
+- **Fundamentação:** Confirmação do utilizador às 20:15:27 -03:00; `AGENTS.md` B.1/B.5/B.9/B.11/B.31; spec `SPEC-W2-7-1-CANONICAL-SIGNATURE-COMPLETION-20261007.md`; princípio anti-falso-positivo da skill de integridade.
+- **Consequências:** Nova migration local cria finalização/promotor transacionais, só concede RPC a `service_role`, bloqueia novas ligações de envelopes a contratos concluídos e faz backfill estrito. A migration deve ser aplicada antes do deploy do código chamador; Postgres/Supabase real, RLS, browser, CI e produção permanecem por validar.
