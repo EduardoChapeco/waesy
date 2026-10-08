@@ -1,9 +1,5 @@
 
 
-## Onda 5 — Validação de contratos e publicação segura
+## Onda 6 — Gates completos desta rodada
 
-Foi implementado `src/lib/builder/registry-contract.ts`, que verifica para cada manifest: versão semver, identidade do tipo, `defaultProps.block_type`, `node_type`, compatibilidade de `contentSchema`/`layoutSchema`/`styleSchema` com defaults e coerência dos campos do Inspector, incluindo opções de selects e subcampos de arrays. O diagnóstico encontrou seis divergências reais: cinco superfícies sem schema explícito e dois defaults vazios rejeitados por URLs estritas. Todas foram corrigidas no registry.
-
-Também foi fechado o próximo gap pendente de publicação Omni: `auditOmniDocument` agora gera finding bloqueante `BUILDER_UNKNOWN_OMNI_BLOCK` quando um bloco não existe no registry canônico, evitando que o renderer público simplesmente o ignore.
-
-**Validação final:** 15 testes focados aprovados, typecheck aprovado e `git diff --check` aprovado.
+Após o commit `a71dd346`, a suíte completa e o build de produção passaram. O client-leak check verificou 493 chunks sem runtime de servidor no cliente. Permanecem fora do escopo local desta validação os testes browser/E2E e a aplicação/verificação das migrations no Supabase remoto.

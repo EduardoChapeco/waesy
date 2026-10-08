@@ -16,7 +16,7 @@ As Ondas 1 e 2 possuem entregas funcionais implementadas e publicadas. As Ondas 
 | 3 | Hub InfoTravel e credenciais por agência | **Parcialmente concluída** | Cliente InfoTravel existente; isolamento por tenant, validação de `agencyId`, erros `CONNECTOR_UNAVAILABLE` e IDs determinísticos implementados | Exercitar chamadas reais com credenciais por agência; confirmar UI de gestão do vault e contratos de configuração |
 | 4 | Reserva, Kanban, contratos e emissão | **Parcialmente concluída** | Estado `reserved_pending_issuance`, retry idempotente no fallback, contrato/voucher gerados no lifecycle | Garantir o status canônico em `travel_bookings`, card explícito no Kanban e cobrança Pix/emissão como transições observáveis |
 | 5 | Builder CMS modular estilo Wix | **Em execução avançada** | Cobertura registry → renderer; `office_contract_viewer` conectado; validação de schemas/defaultProps/Inspector; bloqueio de blocos Omni desconhecidos | Fechar 20 layouts canônicos, versionamento/persistência de contrato e fluxo real editor → save → publish sem substituir árvore existente |
-| 6 | Qualidade, acessibilidade e build limpo | **Parcialmente validada** | Testes focados, typecheck, build de produção e client-leak check aprovados nas rodadas recentes | Rodar gates completos após o incremento atual; adicionar cobertura browser/E2E e verificar migrations em ambiente real |
+| 6 | Qualidade, acessibilidade e build limpo | **Gates locais aprovados; E2E/ambiente real pendentes** | Suíte completa, typecheck, build de produção e client-leak check aprovados nesta rodada; 493 chunks verificados sem runtime de servidor | Adicionar cobertura browser/E2E e verificar migrations em ambiente real |
 
 ## Entregas publicadas nesta execução
 
@@ -24,7 +24,7 @@ As Ondas 1 e 2 possuem entregas funcionais implementadas e publicadas. As Ondas 
 - `1144fbc7`: integração do autocomplete canônico ao painel de hotéis.
 - `c396db60`: endurecimento do InfoTravel e lifecycle de reserva.
 - `f03e32bd`: cobertura automática do registry contra renderer e conexão de `office_contract_viewer`.
-- Incremento atual: validação de manifests e bloqueio de blocos Omni desconhecidos, com 15 testes focados e typecheck aprovados antes da publicação.
+- Incremento atual: validação de manifests e bloqueio de blocos Omni desconhecidos, com 15 testes focados, typecheck, suíte completa, build e client-leak check aprovados antes da publicação.
 
 ## Critérios de aceite versus realidade atual
 
