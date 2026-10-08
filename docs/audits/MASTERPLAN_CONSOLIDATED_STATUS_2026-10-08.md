@@ -11,3 +11,7 @@ Até os gates de migration, RLS, payload real, replay idempotente, browser E2E e
 ## Onda 7 — RPC transacional InfoTravel implementada
 
 A importação e a sincronização agora convergem para `apply_infotravel_booking`, com lock da viagem, validação de tenant, projeções InfoTravel separadas de dados manuais, passageiros, itens de confirmação e contadores sanitizados. A mudança resolve o gap de persistência parcial no código, mas a prova final ainda exige migration e testes SQL/RLS em ambiente autorizado.
+
+## Onda 8 — contrato v1 e mappers versionados
+
+A Edge Function agora usa o envelope `infotravel-v1`, mapeia respostas por ação e rejeita bookings sem identificador com `PROVIDER_SCHEMA_MISMATCH`. Hotéis e voos recebem IDs externos determinísticos para deduplicação e replay. O contrato de produção do provider continua aguardando fixture/sandbox real; a implementação local está preparada para comparar esse payload sem persistir dados desconhecidos.

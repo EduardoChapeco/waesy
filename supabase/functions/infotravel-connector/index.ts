@@ -3,7 +3,7 @@ import {
   ConnectorError,
   buildProviderRequest,
   decryptSecretPayload,
-  normalizeBookingPayload,
+  normalizeProviderPayload,
   parseConnectorRequest,
   parseCredentialPayload,
   parseProviderResponse,
@@ -137,12 +137,9 @@ Deno.serve(async (request) => {
       ? providerData as Record<string, unknown>
       : { data: providerData };
 
-    if (input.action === "import_booking" && input.params.tripId) {
-      await recordEvent(auth.db, auditContext, "success", startedAt);
-      return json({ ...raw, normalized: normalizeBookingPayload(raw) });
-    }
+    const normalized = normalizeProviderPayload(input.action, raw);
     await recordEvent(auth.db, auditContext, "success", startedAt);
-    return json(raw);
+    return json({ ...raw, contract_version: normalized.contract_version, normalized });
   } catch (error) {
     if (error instanceof ConnectorError) {
       if (auditContext) await recordEvent(auditContext.db, auditContext, "error", startedAt, error.code).catch(() => undefined);

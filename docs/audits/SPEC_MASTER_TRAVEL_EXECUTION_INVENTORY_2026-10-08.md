@@ -67,3 +67,11 @@ Foi criada a migration `20261008101500_infotravel_atomic_booking_apply.sql`, man
 A RPC bloqueia a viagem por tenant, atualiza o snapshot principal, substitui somente projeções InfoTravel da mesma reserva, aplica passageiros e itens de confirmação, preserva dados manuais e retorna contadores sanitizados. A importação e o sync agora usam o mesmo helper server-side; o sync deixou de apenas retornar o provider e passou a persistir o snapshot normalizado. O resultado bruto do provider não atravessa mais o boundary da Server Function.
 
 Validação local: 12 testes focados aprovados, typecheck aprovado e diff check aprovado. Validação pendente: aplicar a migration em Supabase, executar RPC contra banco real, testar RLS, replay concorrente e payload InfoTravel real/sandbox.
+
+## Microfase 10 — Onda 8: contrato InfoTravel v1 e mappers versionados
+
+O módulo compartilhado da Edge Function agora declara `INFOTRAVEL_CONTRACT_VERSION = infotravel-v1` e aplica `normalizeProviderPayload` por ação. Foram implementados mappers determinísticos para hotéis e voos, com `external_id` estável, além de normalização de bookings, passageiros, localizadores, datas, cliente e valores.
+
+As ações `import_booking` e `run_periodic_sync` exigem identificador de reserva e retornam erro `PROVIDER_SCHEMA_MISMATCH` quando o provider não cumpre o contrato mínimo. Buscas de hotéis, voos, transfers e atividades retornam envelope versionado com `contract_version`. O conector passa o mapper por todas as ações, em vez de normalizar somente importações com `tripId`.
+
+Validação local: 14 testes focados aprovados, typecheck aprovado e diff check aprovado. A confirmação do contrato real do provider ainda exige fixtures sanitizadas ou sandbox autorizado da InfoTravel; o código não declara que o endpoint externo foi homologado sem essa evidência.

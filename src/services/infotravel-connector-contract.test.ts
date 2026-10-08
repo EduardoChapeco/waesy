@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildProviderRequest,
   decryptSecretPayload,
+  normalizeProviderPayload,
   normalizeBookingPayload,
   parseConnectorRequest,
   validateProviderCredential,
@@ -41,6 +42,17 @@ describe("InfoTravel connector contract", () => {
     expect(normalizeBookingPayload({ id: "BK-1", pnr: "PNR-1", client: { name: "Ana", email: "ana@example.com" }, flights: [] })).toMatchObject({
       booking_id: "BK-1", locator: "PNR-1", client_name: "Ana", client_email: "ana@example.com", passengers: [], flights: [], hotels: [],
     });
+  });
+
+  it("emits the versioned v1 contract and stable external IDs for search results", () => {
+    const first = normalizeProviderPayload("search_hotels", { hotels: [{ name: "Hotel Azul", city: "Recife", price: 120 }] });
+    const second = normalizeProviderPayload("search_hotels", { hotels: [{ name: "Hotel Azul", city: "Recife", price: 120 }] });
+    expect(first).toMatchObject({ contract_version: "infotravel-v1", action: "search_hotels" });
+    expect((first.offers as any[])[0].external_id).toBe((second.offers as any[])[0].external_id);
+  });
+
+  it("rejects import payloads without a booking identifier", () => {
+    expectError(() => normalizeProviderPayload("import_booking", { client: { name: "Ana" }, hotels: [] }), "PROVIDER_SCHEMA_MISMATCH");
   });
 
   it("decrypts the AES-GCM format produced by the application vault", async () => {
