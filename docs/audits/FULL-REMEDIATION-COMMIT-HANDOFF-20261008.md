@@ -3,7 +3,7 @@
 **Data:** 2026-10-08  
 **Branch:** `audit/full-remediation-20261007`  
 **Base da continuidade:** commit R6 `fc8f9fc3`  
-**HEAD deste handoff:** preenchido no commit que acompanha este documento  
+**HEAD revisado neste handoff:** `b09de99f`
 **Escopo:** somente o repositório `EduardoChapeco/waesy`; branches paralelas não foram incorporadas.
 
 ## 1. O que foi consolidado
