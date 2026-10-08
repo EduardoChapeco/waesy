@@ -21,11 +21,10 @@ describe("contract mutation authorization boundary", () => {
     const start = source.indexOf("export const sealAndIssueContract");
     const end = source.indexOf("// ─── Extração Inteligente", start);
     const block = source.slice(start, end);
-    expect(block).toContain("const identity = await requireStaff();");
-    expect(block).toContain('.eq("creator_id", identity.id)');
-    expect(block).toContain('!["draft", "reviewing"].includes(ownedContract.status)');
-    expect(block).toContain("!sealedVersion");
-    expect(block).toContain("!updatedContract");
-    expect(block).toContain("if (envErr)");
+    expect(block).toContain("requireStaff()");
+    expect(block).toContain('.eq("creator_id", actor.id)');
+    expect(block).toContain('.eq("store_id", actor.store_id)');
+    expect(block).toContain('.rpc("seal_and_issue_contract"');
+    expect(block).toContain("rpcError");
   });
 });

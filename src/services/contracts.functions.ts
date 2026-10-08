@@ -3,6 +3,7 @@ import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { requireStaff } from "@/lib/server-access";
 import { enforceRateLimit } from "@/lib/rate-limiter";
+import type { Json } from "@/integrations/supabase/types";
 import { getIdentity } from "./identity.functions";
 import { executeUnifiedAiCall } from "./api-orchestrator.functions";
 import { interpolateContractVariables, autoPositionSignatureFieldsFromContent } from "@/lib/contracts/contract-semantic-dictionary";
@@ -264,58 +265,70 @@ export const sealAndIssueContract = createServerFn({ method: "POST" })
     z.object({
       contractId: z.string().uuid(),
       versionId: z.string().uuid(),
-      signatureFields: z.array(z.any()).optional(),
+      signatureFields: z.array(z.record(z.any())).max(200).optional(),
       signers: z.array(
         z.object({
-          name: z.string().min(2),
-          email: z.string().email(),
-          phone: z.string().optional(),
-          cpf: z.string().optional(),
+          name: z.string().trim().min(2).max(200),
+          email: z.string().trim().email().max(320),
+          phone: z.string().trim().max(40).optional(),
+          cpf: z.string().trim().max(40).optional(),
           role: z.enum(["party", "witness", "guarantor"]).default("party"),
           authLevel: z.enum(["basic", "advanced", "qualified"]).default("basic"),
           dispatchChannel: z.enum(["email", "whatsapp", "sms", "direct_link"]).default("email"),
-          signingOrderIndex: z.number().int().min(1).default(1),
-          colorCode: z.string().default("#2563eb"),
+          signingOrderIndex: z.number().int().min(1).max(50).default(1),
+          colorCode: z.string().trim().regex(/^#[0-9a-fA-F]{6}$/).default("#2563eb"),
           requireFacialBiometrics: z.boolean().default(false),
           requireCpfConfirmation: z.boolean().default(false),
           profileId: z.string().uuid().optional(),
-        }),
-      ),
+        }).strict(),
+      ).min(1).max(50),
     }),
   )
   .handler(async ({ data: input }) => {
     const supabase = getServerClient();
-    const identity = await requireStaff();
-
-    const { data: ownedContract, error: ownershipErr } = await supabase
-      .from("contracts")
-      .select("id, status")
-      .eq("id", input.contractId)
-      .eq("creator_id", identity.id)
-      .maybeSingle();
-    if (ownershipErr || !ownedContract) throw new Error("Contrato não encontrado ou acesso negado.");
-    if (!["draft", "reviewing"].includes(ownedContract.status)) {
-      throw new Error("Somente contratos em rascunho podem ser selados.");
+    const actor = await requireStaff();
+    if (!actor.id || !actor.store_id) {
+      throw new Error("É necessário um contexto de loja autorizado para selar o contrato.");
     }
 
-    // Fetch version
+    // Service-role reads are explicitly constrained to the authenticated creator and tenant.
+    const { data: contract, error: contractError } = await supabase
+      .from("contracts")
+      .select("id, creator_id, store_id, current_version, status")
+      .eq("id", input.contractId)
+      .eq("creator_id", actor.id)
+      .eq("store_id", actor.store_id)
+      .maybeSingle();
+
+    if (contractError || !contract) {
+      throw new Error("Contrato não encontrado ou sem permissão para selar.");
+    }
+
     const { data: version, error: vErr } = await supabase
       .from("contract_versions")
-      .select("*")
+      .select("id, contract_id, version_number, title, content_markdown, clauses, signature_fields, is_sealed, sealed_at, hash_sha256")
       .eq("id", input.versionId)
-      .eq("contract_id", ownedContract.id)
-      .eq("is_sealed", false)
-      .single();
+      .eq("contract_id", contract.id)
+      .maybeSingle();
 
     if (vErr || !version) throw new Error("Versão do contrato não encontrada.");
+    if (contract.current_version !== version.version_number) {
+      throw new Error("A versão solicitada não é a versão corrente do contrato.");
+    }
+    if (!["draft", "reviewing", "sealed"].includes(contract.status)) {
+      throw new Error("O contrato não está num estado que permita iniciar a assinatura.");
+    }
+    if (version.is_sealed || version.sealed_at || version.hash_sha256) {
+      throw new Error("Esta versão já foi selada e não pode receber novos envelopes.");
+    }
 
-    // Atualiza signature_fields se enviados na chamada de selagem
-    const finalFields = input.signatureFields || version.signature_fields || [];
+    const finalFields = input.signatureFields ??
+      (Array.isArray(version.signature_fields) ? version.signature_fields : []);
 
-    // Compute SHA-256 digest string do conteúdo + cláusulas + campos
+    // Hash the exact database snapshot that the transaction below revalidates under row locks.
     const textBuffer = new TextEncoder().encode(
       version.content_markdown +
-        JSON.stringify(version.clauses) +
+        JSON.stringify(version.clauses ?? []) +
         JSON.stringify(finalFields),
     );
     const hashBuffer = await crypto.subtle.digest("SHA-256", textBuffer);
@@ -323,66 +336,75 @@ export const sealAndIssueContract = createServerFn({ method: "POST" })
       .map((b) => b.toString(16).padStart(2, "0"))
       .join("");
 
-    // Seal the version
-    const { data: sealedVersion, error: sealErr } = await supabase
-      .from("contract_versions")
-      .update({
-        is_sealed: true,
-        sealed_at: new Date().toISOString(),
-        hash_sha256: hashHex,
-        signature_fields: finalFields,
-      })
-      .eq("id", version.id)
-      .eq("is_sealed", false)
-      .select("id")
-      .maybeSingle();
-    if (sealErr || !sealedVersion) throw new Error("Não foi possível selar a versão do contrato.");
-
-    // Update contract status
-    const { data: updatedContract, error: contractUpdateErr } = await supabase
-      .from("contracts")
-      .update({
-        status: "signing",
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", ownedContract.id)
-      .eq("creator_id", identity.id)
-      .select("id")
-      .maybeSingle();
-    if (contractUpdateErr || !updatedContract) throw new Error("Não foi possível atualizar o status do contrato.");
-
-    // Create signature envelopes for each signer com suporte multi-canal
-    const envelopesToInsert = input.signers.map((s) => ({
-      contract_version_id: version.id,
-      signer_name: s.name,
-      signer_email: s.email,
-      signer_phone: s.phone || null,
-      signer_cpf: s.cpf || null,
-      signer_role: s.role,
-      auth_level: s.authLevel,
-      dispatch_channel: s.dispatchChannel || "email",
-      signing_order_index: s.signingOrderIndex || 1,
-      color_code: s.colorCode || "#2563eb",
-      require_facial_biometrics: s.requireFacialBiometrics || false,
-      require_cpf_confirmation: s.requireCpfConfirmation || false,
-      signer_profile_id: s.profileId || null,
-      status: "pending",
+    const rpcSigners = input.signers.map((signer) => ({
+      name: signer.name,
+      email: signer.email,
+      phone: signer.phone || null,
+      cpf: signer.cpf || null,
+      role: signer.role,
+      authLevel: signer.authLevel,
+      dispatchChannel: signer.dispatchChannel,
+      signingOrderIndex: signer.signingOrderIndex,
+      colorCode: signer.colorCode,
+      requireFacialBiometrics: signer.requireFacialBiometrics,
+      requireCpfConfirmation: signer.requireCpfConfirmation,
+      profileId: signer.profileId || null,
     }));
 
-    const { data: envelopes, error: envErr } = await supabase
-      .from("signature_envelopes")
-      .insert(envelopesToInsert)
-      .select();
+    const { data: rpcData, error: rpcError } = await supabase.rpc("seal_and_issue_contract", {
+      p_contract_id: contract.id,
+      p_version_id: version.id,
+      p_actor_id: actor.id,
+      p_store_id: actor.store_id,
+      p_expected_content_markdown: version.content_markdown,
+      p_expected_clauses: version.clauses,
+      p_expected_signature_fields: version.signature_fields,
+      p_hash_sha256: hashHex,
+      p_signature_fields: finalFields as Json,
+      p_signers: rpcSigners as Json,
+    });
 
-    if (envErr) throw new Error("Erro ao gerar envelopes de assinatura.");
+    if (rpcError) {
+      console.error("[contracts] Atomic seal RPC failed:", rpcError.code);
+      throw new Error("Não foi possível selar o contrato nem criar os envelopes.");
+    }
+
+    if (!rpcData || typeof rpcData !== "object" || Array.isArray(rpcData)) {
+      throw new Error("A operação de selagem não retornou uma confirmação válida.");
+    }
+    const result = rpcData as Record<string, Json>;
+    const rawEnvelopes = result.envelopes;
+    if (
+      result.status !== "sealed" ||
+      result.contract_id !== contract.id ||
+      result.contract_version_id !== version.id ||
+      result.contract_status !== "signing" ||
+      result.hash_sha256 !== hashHex ||
+      !Array.isArray(rawEnvelopes) ||
+      rawEnvelopes.length !== rpcSigners.length
+    ) {
+      throw new Error("A selagem não foi confirmada com todos os envelopes esperados.");
+    }
+    const envelopes = rawEnvelopes.filter(
+      (item): item is Record<string, Json> =>
+        item !== null && typeof item === "object" && !Array.isArray(item),
+    );
+    if (
+      envelopes.length !== rpcSigners.length ||
+      envelopes.some((env) => typeof env.id !== "string" || typeof env.signing_token !== "string")
+    ) {
+      throw new Error("A selagem não retornou todos os envelopes persistidos.");
+    }
 
     // Monta links de assinatura direta e link de despacho via WhatsApp
     const enrichedEnvelopes = (envelopes || []).map((env) => {
-      const cleanPhone = (env.signer_phone || "").replace(/\D/g, "");
+      const phone = typeof env.signer_phone === "string" ? env.signer_phone : "";
+      const signerName = typeof env.signer_name === "string" ? env.signer_name : "Signatário";
+      const cleanPhone = phone.replace(/\D/g, "");
       const signingUrl = `/assinar/${env.signing_token}`;
       const fullUrl = `https://waesy.com${signingUrl}`;
       const waMsg = encodeURIComponent(
-        `Olá ${env.signer_name}, seu documento "${version.title}" está pronto para assinatura eletrônica jurídica:\n\n${fullUrl}\n\nAbra o link no celular para assinar em poucos toques.`,
+        `Olá ${signerName}, seu documento "${version.title}" está pronto para assinatura eletrônica jurídica:\n\n${fullUrl}\n\nAbra o link no celular para assinar em poucos toques.`,
       );
       const whatsappDirectLink = cleanPhone ? `https://wa.me/${cleanPhone}?text=${waMsg}` : null;
 
@@ -466,6 +488,75 @@ Retorne ESTRITAMENTE um JSON com este formato (sem markdown \`\`\`json):
 
 // ─── Assinatura do Envelope & Registro de Telemetria Forense ─────────────────
 
+interface ContractCompletionResult {
+  contractStatus: string;
+  allRequiredSignaturesSigned: boolean;
+  completed: boolean;
+}
+
+function jsonObject(value: unknown): Record<string, unknown> | null {
+  return typeof value === "object" && value !== null && !Array.isArray(value)
+    ? value as Record<string, unknown>
+    : null;
+}
+
+async function promoteContractAfterSignatures(
+  supabase: ReturnType<typeof getServerClient>,
+  contractVersionId: string,
+): Promise<ContractCompletionResult> {
+  const { data, error } = await supabase.rpc("promote_contract_after_signatures", {
+    p_contract_version_id: contractVersionId,
+  });
+  if (error) throw new Error("Não foi possível confirmar a conclusão das assinaturas.");
+
+  const result = jsonObject(data);
+  if (!result || typeof result.contract_status !== "string") {
+    throw new Error("A resposta de conclusão do contrato é inválida.");
+  }
+  return {
+    contractStatus: result.contract_status,
+    allRequiredSignaturesSigned: result.all_required_signatures_signed === true,
+    completed: result.completed === true,
+  };
+}
+
+async function finalizeContractSignature(
+  supabase: ReturnType<typeof getServerClient>,
+  args: {
+    envelopeId: string;
+    signatureDigest: string;
+    evidencePayload: Json;
+    govBrLevel?: string | null;
+  },
+) {
+  const { data, error } = await supabase.rpc("finalize_contract_signature", {
+    p_envelope_id: args.envelopeId,
+    p_signature_digest: args.signatureDigest,
+    p_evidence_payload: args.evidencePayload,
+    p_gov_br_level: args.govBrLevel ?? null,
+  });
+  if (error) throw new Error("Não foi possível confirmar a assinatura e a evidência.");
+
+  const result = jsonObject(data);
+  if (
+    !result ||
+    result.envelope_status !== "signed" ||
+    typeof result.signed_at !== "string" ||
+    typeof result.contract_status !== "string" ||
+    result.signature_digest !== args.signatureDigest ||
+    typeof result.evidence_id !== "string"
+  ) {
+    throw new Error("A transação não confirmou a assinatura e a conclusão do contrato.");
+  }
+  return {
+    signedAt: result.signed_at,
+    evidenceId: result.evidence_id,
+    contractStatus: result.contract_status,
+    allRequiredSignaturesSigned: result.all_required_signatures_signed === true,
+    completed: result.completed === true,
+  };
+}
+
 export const signContractEnvelope = createServerFn({ method: "POST" })
   .validator(
     z.object({
@@ -513,21 +604,38 @@ export const signContractEnvelope = createServerFn({ method: "POST" })
     }
 
     if (envelope.status === "signed") {
-      return { success: true, message: "Este documento já foi assinado por você." };
+      const { data: evidence, error: evidenceError } = await supabase
+        .from("signature_evidence")
+        .select("id, signature_digest, consent_given")
+        .eq("envelope_id", envelope.id)
+        .eq("consent_given", true)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (evidenceError || !evidence) {
+        throw new Error("O envelope está assinado, mas a evidência persistida não pôde ser confirmada.");
+      }
+      if (!evidence.id || !evidence.signature_digest || !envelope.signed_at) {
+        throw new Error("O envelope assinado não possui evidência completa de consentimento.");
+      }
+      const completion = await promoteContractAfterSignatures(supabase, envelope.contract_version_id);
+      return {
+        success: true,
+        signatureDigest: evidence.signature_digest,
+        signedAt: envelope.signed_at,
+        message: "A assinatura deste envelope já estava registada.",
+        ...completion,
+      };
     }
 
-const digest = `SIG-${envelope.id}-${Date.now()}-${Math.random().toString(36).substring(2, 10)}`;
-    const signedAt = new Date().toISOString();
-
-    // Registra evidência forense de assinatura
-    const { error: evidenceErr } = await supabase.from("signature_evidence").insert({
-      envelope_id: envelope.id,
+    const digest = `SIG-${envelope.id}-${Date.now()}-${Math.random().toString(36).substring(2, 10)}`;
+    const evidencePayload: Json = {
       ip_address: input.ipAddress || "127.0.0.1",
       user_agent: input.userAgent || "Browser",
       screen_resolution: input.screenResolution || null,
       timezone: input.timezone || "America/Sao_Paulo",
-      geo_latitude: input.geoLatitude || null,
-      geo_longitude: input.geoLongitude || null,
+      geo_latitude: input.geoLatitude ?? null,
+      geo_longitude: input.geoLongitude ?? null,
       geo_city: input.geoCity || null,
       geo_state: input.geoState || null,
       auth_method: envelope.auth_level === "advanced" ? "email_otp" : "electronic_consent",
@@ -535,7 +643,6 @@ const digest = `SIG-${envelope.id}-${Date.now()}-${Math.random().toString(36).su
       signature_digest: digest,
       facial_biometrics_hash: input.facialBiometricsHash || null,
       evidence_manifest: {
-        timestamp: new Date().toISOString(),
         signer_email: envelope.signer_email,
         signer_phone: envelope.signer_phone,
         signer_cpf: envelope.signer_cpf,
@@ -543,32 +650,48 @@ const digest = `SIG-${envelope.id}-${Date.now()}-${Math.random().toString(36).su
         signature_image: input.signatureImageBase64 || null,
         face_image: input.faceImageUrl || null,
       },
-    });
-    if (evidenceErr) throw new Error("Não foi possível registrar a evidência da assinatura.");
-
-    // Atualiza somente de pending para signed. Em concorrência, a tentativa
-    // perdedora remove sua evidência e retorna de forma idempotente.
-    const { data: transitioned, error: transitionErr } = await supabase
-      .from("signature_envelopes")
-      .update({
-        status: "signed",
-        signed_at: signedAt,
-      })
-      .eq("id", envelope.id)
-      .eq("status", "pending")
-      .select("id")
-      .maybeSingle();
-
-    if (transitionErr || !transitioned) {
-      await supabase.from("signature_evidence").delete().eq("signature_digest", digest);
-      return { success: true, message: "Este documento já foi assinado por você." };
-    }
-
-    return {
-      success: true,
-      signedAt,
-      signatureDigest: digest,
     };
+
+    try {
+      const finalized = await finalizeContractSignature(supabase, {
+        envelopeId: envelope.id,
+        signatureDigest: digest,
+        evidencePayload,
+      });
+      return { success: true, signatureDigest: digest, ...finalized };
+    } catch {
+      const { data: latestEnvelope, error: stateError } = await supabase
+        .from("signature_envelopes")
+        .select("status, signed_at")
+        .eq("id", envelope.id)
+        .maybeSingle();
+
+      if (stateError) {
+        throw new Error("Não foi possível confirmar o estado da assinatura.");
+      }
+      if (latestEnvelope?.status === "signed" && latestEnvelope.signed_at) {
+        const { data: evidence, error: evidenceError } = await supabase
+          .from("signature_evidence")
+          .select("id, signature_digest, consent_given")
+          .eq("envelope_id", envelope.id)
+          .eq("signature_digest", digest)
+          .eq("consent_given", true)
+          .maybeSingle();
+        if (evidenceError || !evidence) {
+          throw new Error("A evidência desta tentativa não foi confirmada; a assinatura não foi atribuída a este pedido.");
+        }
+        const completion = await promoteContractAfterSignatures(supabase, envelope.contract_version_id);
+        return {
+          success: true,
+          signedAt: latestEnvelope.signed_at,
+          signatureDigest: evidence.signature_digest,
+          message: "A assinatura foi confirmada após uma resposta ambígua.",
+          ...completion,
+        };
+      }
+
+      throw new Error("A assinatura não foi confirmada; o envelope continua pendente.");
+    }
   });
 
 // ─── Verificação Pública Universal (Código ou Hash SHA-256) ──────────────────
@@ -1006,53 +1129,136 @@ const GovBrSealInputSchema = z.object({
 });
 
 export async function signContractWithGovBr(rawInput: unknown) {
-    const input = GovBrSealInputSchema.parse(rawInput);
-    const supabase = getServerClient();
-    const { data: envelope, error: envErr } = await supabase
-      .from("signature_envelopes")
-      .select("*, contract_version:contract_version_id(*)")
-      .eq("signing_token", input.signingToken)
-      .single();
+  const input = GovBrSealInputSchema.parse(rawInput);
+  const supabase = getServerClient();
+  const { data: envelope, error: envErr } = await supabase
+    .from("signature_envelopes")
+    .select("id, contract_version_id, signing_token, status, expires_at, signer_name, signer_cpf, gov_br_verified, gov_br_level, signed_at")
+    .eq("signing_token", input.signingToken)
+    .maybeSingle();
 
-    if (envErr || !envelope) throw new Error("Envelope de assinatura inválido ou expirado.");
+  if (envErr || !envelope) throw new Error("Envelope de assinatura inválido ou expirado.");
+  const alreadyGovBrSigned = envelope.status === "signed" && envelope.gov_br_verified === true;
+  const expiresAt = Date.parse(envelope.expires_at);
+  if (
+    (envelope.status !== "pending" && !alreadyGovBrSigned) ||
+    (envelope.status === "pending" && (!Number.isFinite(expiresAt) || expiresAt <= Date.now()))
+  ) {
+    throw new Error("Envelope não está pendente ou expirou.");
+  }
+  const normalizedInputCpf = input.cpf.replace(/\D/g, "");
+  const normalizedExpectedCpf = envelope.signer_cpf
+    ? envelope.signer_cpf.replace(/\D/g, "")
+    : null;
+  if (normalizedInputCpf.length !== 11) {
+    throw new Error("O CPF recebido da identidade Gov.br é inválido.");
+  }
+  if (
+    envelope.signer_cpf &&
+    (normalizedExpectedCpf === null ||
+      normalizedExpectedCpf.length !== 11 ||
+      normalizedExpectedCpf !== normalizedInputCpf)
+  ) {
+    throw new Error("A identidade Gov.br não corresponde ao signatário deste envelope.");
+  }
 
-    const digest = `GOVBR-${envelope.id}-${Date.now()}`;
-    const signedAt = new Date().toISOString();
+  if (alreadyGovBrSigned) {
+    if (envelope.gov_br_level !== input.govBrLevel || !envelope.signed_at) {
+      throw new Error("A assinatura Gov.br existente não corresponde ao nível solicitado.");
+    }
+    const { data: evidence, error: evidenceError } = await supabase
+      .from("signature_evidence")
+      .select("id, signature_digest, consent_given, gov_br_verified, gov_br_level")
+      .eq("envelope_id", envelope.id)
+      .eq("consent_given", true)
+      .eq("gov_br_verified", true)
+      .eq("gov_br_level", input.govBrLevel)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (evidenceError || !evidence) {
+      throw new Error("A assinatura Gov.br não possui evidência persistida confirmada.");
+    }
+    if (!evidence.id || !evidence.signature_digest) {
+      throw new Error("A evidência Gov.br persistida está incompleta.");
+    }
+    const completion = await promoteContractAfterSignatures(supabase, envelope.contract_version_id);
+    return {
+      success: true,
+      signedAt: envelope.signed_at,
+      digest: evidence.signature_digest,
+      govBrLevel: envelope.gov_br_level,
+      ...completion,
+    };
+  }
 
-    await supabase.from("signature_evidence").insert({
-      envelope_id: envelope.id,
-      ip_address: "127.0.0.1",
-      user_agent: "Gov.br Cidadão (Assinador Avançado)",
-      auth_method: "gov_br_federated",
-      consent_given: true,
-      signature_digest: digest,
-      gov_br_verified: true,
-      gov_br_level: input.govBrLevel,
-      gov_br_raw_claims: {
-        level: input.govBrLevel,
-        cpf: input.cpf || envelope.signer_cpf,
-        name: input.name || envelope.signer_name,
-        authority: "ICP-Brasil / ITI / Gov.br",
-      },
-      evidence_manifest: {
-        timestamp: signedAt,
-        gov_br: true,
-        level: input.govBrLevel,
-        legal_basis: "Art. 4º, II da Lei Federal nº 14.063/2020",
-      },
+  const digest = `GOVBR-${envelope.id}-${crypto.randomUUID()}`;
+  const evidencePayload: Json = {
+    ip_address: "127.0.0.1",
+    user_agent: "Gov.br Cidadão (Assinador Avançado)",
+    auth_method: "gov_br_federated",
+    consent_given: true,
+    signature_digest: digest,
+    gov_br_verified: true,
+    gov_br_raw_claims: {
+      level: input.govBrLevel,
+      cpf: input.cpf,
+      name: input.name,
+      authority: "ICP-Brasil / ITI / Gov.br",
+    },
+    evidence_manifest: {
+      gov_br: true,
+      level: input.govBrLevel,
+      legal_basis: "Art. 4º, II da Lei Federal nº 14.063/2020",
+    },
+  };
+
+  try {
+    const finalized = await finalizeContractSignature(supabase, {
+      envelopeId: envelope.id,
+      signatureDigest: digest,
+      evidencePayload,
+      govBrLevel: input.govBrLevel,
     });
-
-    await supabase
+    return { success: true, digest, govBrLevel: input.govBrLevel, ...finalized };
+  } catch {
+    const { data: currentEnvelope, error: stateError } = await supabase
       .from("signature_envelopes")
-      .update({
-        status: "signed",
-        signed_at: signedAt,
-        gov_br_verified: true,
-        gov_br_level: input.govBrLevel,
-      })
-      .eq("id", envelope.id);
-
-    return { success: true, signedAt, digest };
+      .select("status, signed_at, gov_br_verified, gov_br_level")
+      .eq("id", envelope.id)
+      .maybeSingle();
+    if (stateError) {
+      throw new Error("Não foi possível confirmar o estado da assinatura Gov.br.");
+    }
+    if (
+      currentEnvelope?.status === "signed" &&
+      currentEnvelope.gov_br_verified === true &&
+      currentEnvelope.gov_br_level === input.govBrLevel &&
+      currentEnvelope.signed_at
+    ) {
+      const { data: evidence, error: evidenceError } = await supabase
+        .from("signature_evidence")
+        .select("id, signature_digest, consent_given, gov_br_verified, gov_br_level")
+        .eq("envelope_id", envelope.id)
+        .eq("signature_digest", digest)
+        .eq("consent_given", true)
+        .eq("gov_br_verified", true)
+        .eq("gov_br_level", input.govBrLevel)
+        .maybeSingle();
+      if (evidenceError || !evidence) {
+        throw new Error("A evidência Gov.br desta tentativa não foi confirmada.");
+      }
+      const completion = await promoteContractAfterSignatures(supabase, envelope.contract_version_id);
+      return {
+        success: true,
+        signedAt: currentEnvelope.signed_at,
+        digest: evidence.signature_digest,
+        govBrLevel: input.govBrLevel,
+        ...completion,
+      };
+    }
+    throw new Error("A assinatura Gov.br não foi confirmada; o envelope continua pendente.");
+  }
 }
 
 // ─── Geração Automática de Contrato a partir de Pedido / Venda ────────────────

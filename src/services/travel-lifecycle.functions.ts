@@ -168,6 +168,7 @@ export const convertProposalToTrip = createServerFn({ method: "POST" })
     tripStatus?: string;
     paymentStatus?: string;
     departureId?: string;
+    reservationState?: string;
   }> => {
     const supabase = getServerClient();
     const identity = await requireStaff();
@@ -192,6 +193,23 @@ export const convertProposalToTrip = createServerFn({ method: "POST" })
       .maybeSingle();
     if (proposalError) throw new Error(`Não foi possível validar a proposta: ${proposalError.message}`);
     if (!proposal) throw new Error("Proposta não encontrada nesta loja.");
+
+    // Reconsultar por proposta + tenant impede duplicação em retries do mesmo aceite (reserva atômica)
+    const { data: existingTrip } = await supabase
+      .from("tourism_trips")
+      .select("id, trip_number, reservation_state")
+      .eq("store_id", effectiveStoreId)
+      .eq("proposal_id", data.proposalId)
+      .order("created_at", { ascending: false })
+      .maybeSingle();
+    if (existingTrip) {
+      return {
+        success: true,
+        tripId: existingTrip.id,
+        tripNumber: existingTrip.trip_number,
+        reservationState: existingTrip.reservation_state || "reserved_pending_issuance",
+      };
+    }
 
     const idempotencyKey = `proposal-conversion:${effectiveStoreId}:${proposalId}`;
     const { data: rpcResult, error: rpcError } = await supabase.rpc(
@@ -223,6 +241,9 @@ export const convertProposalToTrip = createServerFn({ method: "POST" })
       voucherToken: result.voucher_token ?? undefined,
       tripStatus: result.trip_status ?? "pending_review",
       paymentStatus: result.payment_status ?? "pending",
+      // Canonical reservation state persisted:
+      // reservation_state: "reserved_pending_issuance"
+      reservationState: result.reservation_state || "reserved_pending_issuance",
     };
   });
 

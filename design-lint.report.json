@@ -1,13 +1,13 @@
 {
   "version": "2.0.0",
-  "timestamp": "2026-10-08T14:52:06.848Z",
+  "timestamp": "2026-10-08T15:30:01.771Z",
   "inspectedFiles": 1987,
-  "totalViolations": 13704,
+  "totalViolations": 13703,
   "summary": {
-    "totalViolations": 13704,
+    "totalViolations": 13703,
     "bySeverity": {
       "P0": 1523,
-      "P1": 9551,
+      "P1": 9550,
       "P2": 1294,
       "P3": 1336
     },
@@ -21,7 +21,7 @@
       "DL-27": 1097,
       "DL-30": 239,
       "DL-26": 87,
-      "DL-01": 920,
+      "DL-01": 919,
       "DL-29": 119,
       "DL-05": 134,
       "DL-23": 452,
@@ -122,9 +122,9 @@
         "P3": 244
       },
       "services": {
-        "total": 259,
+        "total": 258,
         "P0": 0,
-        "P1": 185,
+        "P1": 184,
         "P2": 72,
         "P3": 2
       },
