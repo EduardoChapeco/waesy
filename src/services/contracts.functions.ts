@@ -188,8 +188,24 @@ export const updateContractDraft = createServerFn({ method: "POST" })
   )
   .handler(async ({ data: input }) => {
     const supabase = getServerClient();
-    const identity = await getIdentity();
-    if (!identity?.id) throw new Error("Não autenticado");
+    const identity = await requireStaff();
+
+    const { data: ownedContract, error: ownershipErr } = await supabase
+      .from("contracts")
+      .select("id")
+      .eq("id", input.contractId)
+      .eq("creator_id", identity.id)
+      .maybeSingle();
+    if (ownershipErr || !ownedContract) throw new Error("Contrato não encontrado ou acesso negado.");
+
+    const { data: editableVersion, error: editableVersionErr } = await supabase
+      .from("contract_versions")
+      .select("id")
+      .eq("id", input.versionId)
+      .eq("contract_id", ownedContract.id)
+      .eq("is_sealed", false)
+      .maybeSingle();
+    if (editableVersionErr || !editableVersion) throw new Error("Versão não encontrada ou já selada.");
 
     // 1. Atualiza metadados do contrato se fornecidos
     const contractUpdate: Record<string, any> = { updated_at: new Date().toISOString() };
@@ -199,13 +215,15 @@ export const updateContractDraft = createServerFn({ method: "POST" })
     if (input.observers !== undefined) contractUpdate.observers = input.observers;
     if (input.folderId !== undefined) contractUpdate.folder_id = input.folderId;
 
-    const { error: cErr } = await supabase
+    const { data: updatedDraft, error: cErr } = await supabase
       .from("contracts")
       .update(contractUpdate)
       .eq("id", input.contractId)
-      .eq("creator_id", identity.id);
+      .eq("creator_id", identity.id)
+      .select("id")
+      .maybeSingle();
 
-    if (cErr) {
+    if (cErr || !updatedDraft) {
       console.error("[contracts] Error updating contract draft:", cErr);
       throw new Error("Erro ao atualizar contrato.");
     }
@@ -221,14 +239,16 @@ export const updateContractDraft = createServerFn({ method: "POST" })
     if (input.sourceFileUrl !== undefined) versionUpdate.source_file_url = input.sourceFileUrl;
 
     if (Object.keys(versionUpdate).length > 0) {
-      const { error: vErr } = await supabase
+      const { data: updatedVersion, error: vErr } = await supabase
         .from("contract_versions")
         .update(versionUpdate)
         .eq("id", input.versionId)
         .eq("contract_id", input.contractId)
-        .eq("is_sealed", false);
+        .eq("is_sealed", false)
+        .select("id")
+        .maybeSingle();
 
-      if (vErr) {
+      if (vErr || !updatedVersion) {
         console.error("[contracts] Error updating contract version:", vErr);
         throw new Error("Erro ao atualizar campos do contrato.");
       }
@@ -265,15 +285,26 @@ export const sealAndIssueContract = createServerFn({ method: "POST" })
   )
   .handler(async ({ data: input }) => {
     const supabase = getServerClient();
-    const identity = await getIdentity();
-    if (!identity?.id) throw new Error("Não autenticado");
+    const identity = await requireStaff();
+
+    const { data: ownedContract, error: ownershipErr } = await supabase
+      .from("contracts")
+      .select("id, status")
+      .eq("id", input.contractId)
+      .eq("creator_id", identity.id)
+      .maybeSingle();
+    if (ownershipErr || !ownedContract) throw new Error("Contrato não encontrado ou acesso negado.");
+    if (!["draft", "reviewing"].includes(ownedContract.status)) {
+      throw new Error("Somente contratos em rascunho podem ser selados.");
+    }
 
     // Fetch version
     const { data: version, error: vErr } = await supabase
       .from("contract_versions")
       .select("*")
       .eq("id", input.versionId)
-      .eq("contract_id", input.contractId)
+      .eq("contract_id", ownedContract.id)
+      .eq("is_sealed", false)
       .single();
 
     if (vErr || !version) throw new Error("Versão do contrato não encontrada.");
@@ -293,7 +324,7 @@ export const sealAndIssueContract = createServerFn({ method: "POST" })
       .join("");
 
     // Seal the version
-    await supabase
+    const { data: sealedVersion, error: sealErr } = await supabase
       .from("contract_versions")
       .update({
         is_sealed: true,
@@ -301,16 +332,24 @@ export const sealAndIssueContract = createServerFn({ method: "POST" })
         hash_sha256: hashHex,
         signature_fields: finalFields,
       })
-      .eq("id", version.id);
+      .eq("id", version.id)
+      .eq("is_sealed", false)
+      .select("id")
+      .maybeSingle();
+    if (sealErr || !sealedVersion) throw new Error("Não foi possível selar a versão do contrato.");
 
     // Update contract status
-    await supabase
+    const { data: updatedContract, error: contractUpdateErr } = await supabase
       .from("contracts")
       .update({
         status: "signing",
         updated_at: new Date().toISOString(),
       })
-      .eq("id", input.contractId);
+      .eq("id", ownedContract.id)
+      .eq("creator_id", identity.id)
+      .select("id")
+      .maybeSingle();
+    if (contractUpdateErr || !updatedContract) throw new Error("Não foi possível atualizar o status do contrato.");
 
     // Create signature envelopes for each signer com suporte multi-canal
     const envelopesToInsert = input.signers.map((s) => ({
