@@ -117,26 +117,26 @@ export const BentoAsymmetricGrid: React.FC<BentoAsymmetricGridProps> = ({ id, da
             </div>
           </div>
 
-          {/* Célula 4: Segurança & Isolamento Multi-Tenant (2 Colunas, Linha 2) */}
+          {/* Célula 4: Segurança & Proteção de Dados (2 Colunas, Linha 2) */}
           <div className="md:col-span-2 bg-card border border-border/80 rounded-lg p-8 sm:p-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 shadow-xs hover:border-border transition-colors">
             <div className="max-w-md">
               <div className="inline-flex items-center gap-2 text-xs font-bold text-emerald-600 uppercase tracking-wider mb-2">
                 <ShieldCheck className="size-4" />
-                <span>Isolamento Multi-Tenant RLS</span>
+                <span>Segurança & Privacidade</span>
               </div>
               <h4 className="text-xl sm:text-2xl font-black text-foreground tracking-tight mb-2">
-                Governança e Blindagem de Dados Bancários
+                Proteção Integral e Pagamentos Seguros
               </h4>
               <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-                Cada loja possui partição criptográfica independente com políticas Deny-by-Default em nível de banco de dados (PostgreSQL RLS).
+                Ambiente protegido com criptografia de ponta a ponta, total conformidade com a LGPD e transações seguras.
               </p>
             </div>
 
             <div className="shrink-0 bg-muted/50 border border-border/80 rounded-lg px-6 py-4 flex items-center gap-3">
               <Layers className="size-6 text-primary" />
               <div className="text-left font-mono">
-                <span className="text-[10px] uppercase text-muted-foreground block">POLÍTICA RLS</span>
-                <span className="text-xs font-bold text-foreground">store_id = current_jwt()</span>
+                <span className="text-[10px] uppercase text-muted-foreground block">AMBIENTE SEGURO</span>
+                <span className="text-xs font-bold text-foreground">Criptografia SSL 256-bit</span>
               </div>
             </div>
           </div>

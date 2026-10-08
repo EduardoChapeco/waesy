@@ -178,14 +178,14 @@ export function StudioTemplateFactory({ onApply }: StudioTemplateFactoryProps) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button type="button" variant="outline" className="min-h-11 w-full justify-start gap-2 text-xs">
-          <WandSparkles className="size-3.5" /> Criar template com IA
+          <WandSparkles className="size-3.5" /> Criar modelo com IA
         </Button>
       </DialogTrigger>
       <DialogContent className="max-h-screen max-w-4xl overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Waesy Studio — fábrica de templates</DialogTitle>
+          <DialogTitle>Waesy Studio — Criador de Páginas com IA</DialogTitle>
           <DialogDescription>
-            Gera um manifesto tipado e editável, não código executável. O resultado é um rascunho; dados, assets, acessibilidade, copy e licença ainda precisam de revisão humana.
+            Descreva o seu negócio e objetivos para gerar uma página personalizada e de alto impacto pronta para edição.
           </DialogDescription>
         </DialogHeader>
 
@@ -193,8 +193,8 @@ export function StudioTemplateFactory({ onApply }: StudioTemplateFactoryProps) {
           <form onSubmit={(event) => void handleGenerate(event)} className="space-y-3">
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label htmlFor="studio-niche" className="mb-1 block text-xs font-semibold">Nicho (slug)</label>
-                <Input id="studio-niche" value={niche} maxLength={96} onChange={(event) => setNiche(event.target.value)} required pattern="[a-z0-9]+([-_][a-z0-9]+)*" />
+                <label htmlFor="studio-niche" className="mb-1 block text-xs font-semibold">Nicho ou Segmento</label>
+                <Input id="studio-niche" value={niche} maxLength={96} onChange={(event) => setNiche(event.target.value)} required pattern="[a-z0-9]+([-_][a-z0-9]+)*" placeholder="ex: gastronomia" />
               </div>
               <div>
                 <label htmlFor="studio-goal" className="mb-1 block text-xs font-semibold">Objetivo</label>
@@ -204,24 +204,24 @@ export function StudioTemplateFactory({ onApply }: StudioTemplateFactoryProps) {
               </div>
             </div>
             <div>
-              <label htmlFor="studio-business-name" className="mb-1 block text-xs font-semibold">Nome real do negócio (opcional)</label>
-              <Input id="studio-business-name" value={businessName} maxLength={100} onChange={(event) => setBusinessName(event.target.value)} placeholder="Só será usado se você informar" />
+              <label htmlFor="studio-business-name" className="mb-1 block text-xs font-semibold">Nome do Negócio</label>
+              <Input id="studio-business-name" value={businessName} maxLength={100} onChange={(event) => setBusinessName(event.target.value)} placeholder="Ex.: Bistrô Bella Vita" />
             </div>
             <div>
-              <label htmlFor="studio-business-description" className="mb-1 block text-xs font-semibold">Oferta e contexto</label>
-              <Textarea id="studio-business-description" value={businessDescription} maxLength={1000} onChange={(event) => setBusinessDescription(event.target.value)} rows={3} placeholder="Descreva a oferta sem incluir dados que não deseja enviar ao seu provedor de IA." />
+              <label htmlFor="studio-business-description" className="mb-1 block text-xs font-semibold">Oferta e Diferenciais</label>
+              <Textarea id="studio-business-description" value={businessDescription} maxLength={1000} onChange={(event) => setBusinessDescription(event.target.value)} rows={3} placeholder="Descreva os principais produtos ou serviços e por que os clientes escolhem sua empresa." />
             </div>
             <div>
-              <label htmlFor="studio-audience" className="mb-1 block text-xs font-semibold">Público</label>
-              <Input id="studio-audience" value={audience} maxLength={300} onChange={(event) => setAudience(event.target.value)} placeholder="Ex.: famílias que buscam refeições práticas" />
+              <label htmlFor="studio-audience" className="mb-1 block text-xs font-semibold">Público-Alvo</label>
+              <Input id="studio-audience" value={audience} maxLength={300} onChange={(event) => setAudience(event.target.value)} placeholder="Ex.: Famílias e profissionais que buscam refeições especiais" />
             </div>
             <div>
-              <label htmlFor="studio-facts" className="mb-1 block text-xs font-semibold">Fatos verificáveis (um por linha; rótulo: valor)</label>
-              <Textarea id="studio-facts" value={factsText} maxLength={6000} onChange={(event) => setFactsText(event.target.value)} rows={4} placeholder={'Cidade: Chapecó\nServiço: atendimento com hora marcada\nTelefone: ...'} />
+              <label htmlFor="studio-facts" className="mb-1 block text-xs font-semibold">Informações de Contato e Horários (um por linha)</label>
+              <Textarea id="studio-facts" value={factsText} maxLength={6000} onChange={(event) => setFactsText(event.target.value)} rows={4} placeholder={'Cidade: Chapecó\nHorário: Segunda a Sábado das 11h às 23h\nWhatsApp: (49) 99999-9999'} />
             </div>
             <div>
-              <label htmlFor="studio-visual" className="mb-1 block text-xs font-semibold">Direção visual</label>
-              <Input id="studio-visual" value={visualDirection} maxLength={240} onChange={(event) => setVisualDirection(event.target.value)} placeholder="Ex.: editorial, minimalista, alto contraste" />
+              <label htmlFor="studio-visual" className="mb-1 block text-xs font-semibold">Estilo Visual</label>
+              <Input id="studio-visual" value={visualDirection} maxLength={240} onChange={(event) => setVisualDirection(event.target.value)} placeholder="Ex.: minimalista, sofisticado, cores quentes" />
             </div>
             <fieldset>
               <legend className="mb-1 text-xs font-semibold">Seções desejadas (opcional)</legend>
@@ -236,7 +236,7 @@ export function StudioTemplateFactory({ onApply }: StudioTemplateFactoryProps) {
             </fieldset>
             <Button type="submit" disabled={isGenerating || niche.trim().length < 2} className="w-full gap-2">
               {isGenerating ? <Loader2 className="size-4 animate-spin motion-reduce:animate-none" /> : <WandSparkles className="size-4" />}
-              {isGenerating ? "Gerando e auditando…" : "Gerar rascunho tipado"}
+              {isGenerating ? "Criando e formatando..." : "Criar Modelo"}
             </Button>
           </form>
 
@@ -246,26 +246,25 @@ export function StudioTemplateFactory({ onApply }: StudioTemplateFactoryProps) {
                 <div className="flex items-start justify-between gap-2">
                   <div>
                     <h3 className="text-sm font-semibold">{manifest.name}</h3>
-                    <p className="mt-1 text-xs text-muted-foreground">{manifest.blocks.length} seções · {manifest.version} · revisão obrigatória</p>
+                    <p className="mt-1 text-xs text-muted-foreground">{manifest.blocks.length} seções · Pronto para personalização</p>
                   </div>
-                  <span className="rounded bg-amber-100 px-2 py-1 text-xs font-semibold text-amber-900 dark:bg-amber-950 dark:text-amber-100">RASCUNHO</span>
+                  <span className="rounded bg-primary/10 px-2 py-1 text-xs font-semibold text-primary">PRÉVIA</span>
                 </div>
                 <p className="text-xs leading-relaxed text-muted-foreground">{manifest.description}</p>
                 {qualityReport && (
                   <div className="rounded-md bg-muted/50 p-3">
                     <div className="flex items-center gap-2 text-xs font-semibold">
                       {qualityReport.status === "fail" ? <AlertTriangle className="size-4 text-destructive" /> : <Check className="size-4 text-primary" />}
-                      Auditoria: {qualityReport.status.toUpperCase()} · nota {qualityReport.score}/100
+                      Qualidade do Conteúdo · Pontuação {qualityReport.score}/100
                     </div>
-                    <p className="mt-1 text-xs text-muted-foreground">{qualityReport.findings.filter((finding) => finding.severity === "error").length} bloqueios · {qualityReport.findings.filter((finding) => finding.severity === "warning").length} avisos. Placeholders e falhas críticas bloqueiam publicação.</p>
+                    <p className="mt-1 text-xs text-muted-foreground">{qualityReport.findings.filter((finding) => finding.severity === "error").length} itens para revisar antes de publicar na vitrine.</p>
                     {qualityReport.findings.length > 0 && (
                       <ul className="mt-2 max-h-40 space-y-1 overflow-y-auto text-xs">
                         {qualityReport.findings.slice(0, 8).map((finding, index) => (
                           <li key={`${finding.ruleId}-${index}`} className={finding.severity === "error" ? "text-destructive" : "text-muted-foreground"}>
-                            <strong>{finding.ruleId}</strong>: {finding.message}
+                            {finding.message}
                           </li>
                         ))}
-                        {qualityReport.findings.length > 8 && <li className="text-muted-foreground">…mais {qualityReport.findings.length - 8} verificações</li>}
                       </ul>
                     )}
                   </div>
@@ -276,13 +275,13 @@ export function StudioTemplateFactory({ onApply }: StudioTemplateFactoryProps) {
                     {saved ? "Salvo" : "Salvar na biblioteca"}
                   </Button>
                   <Button type="button" className="min-h-11 gap-2 text-xs" onClick={() => apply(manifest)}>
-                    <FilePlus2 className="size-3.5" /> Aplicar como rascunho
+                    <FilePlus2 className="size-3.5" /> Usar este Modelo
                   </Button>
                 </div>
               </div>
             ) : (
               <div className="rounded-lg border border-dashed p-4 text-xs leading-relaxed text-muted-foreground">
-                Informe os fatos reais e gere uma primeira versão. O fluxo não publica automaticamente, não inventa prova social/preços e não autoriza uso de imagens externas arbitrárias.
+                Preencha as informações do seu negócio ao lado para gerar um modelo exclusivo e otimizado para o seu segmento.
               </div>
             )}
 

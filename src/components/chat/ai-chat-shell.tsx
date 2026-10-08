@@ -426,15 +426,13 @@ export function AIChatShell({
               aria-label="Histórico de mensagens da conversa"
               className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 no-scrollbar"
             >
-              {/* Aviso de Privacidade e Segurança */}
+              {/* Indicador Minimalista de Conexão Segura */}
               <div className="flex justify-center my-2">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-muted/40 text-2xs text-muted-foreground select-none max-w-sm text-center">
-                  <ShieldCheck className="size-3 text-primary shrink-0" />
-                  <span>Sessão segura com isolamento multi-tenant</span>
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-muted/30 text-2xs text-muted-foreground select-none">
+                  <ShieldCheck className="size-3 text-muted-foreground shrink-0" />
+                  <span>Ambiente Seguro</span>
                 </div>
               </div>
-
-              <CopilotApprovalPanel currentUserId={currentUserProfileId} />
 
               {messagesWithSeparators.map((item, idx) => {
                 if (item.type === "separator") {

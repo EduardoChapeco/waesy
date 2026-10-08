@@ -147,7 +147,7 @@ export const BlockContentFields: React.FC<BlockContentFieldsProps> = ({
       {config.imageUrl !== undefined && (
         <div className="pt-2 border-t border-border/40 space-y-2">
           <label className="block text-xs font-semibold text-foreground">
-            Imagem Principal (Upload Real para Storage)
+            Imagem Principal
           </label>
           <MediaUploader
             value={config.imageUrl || ""}
