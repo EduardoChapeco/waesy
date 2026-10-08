@@ -802,29 +802,51 @@ export async function _updateProfile(data: UpdateProfileInput) {
  ? data.username.toLowerCase().trim().replace(/[^a-z0-9_]/g, "")
  : user.email ? user.email.split("@")[0].toLowerCase().replace(/[^a-z0-9_]/g, "") : `user_${user.id.slice(0, 6)}`;
 
- // 1. Reivindicação atômica do Handle para evitar squatting e registrar histórico
- try {
- const { error: claimErr } = await getServerClient().rpc('claim_handle_atomic', {
- p_profile_id: user.id,
- p_new_handle: cleanUsername
- });
- if (claimErr) throw new Error(claimErr.message);
- } catch (claimErr) {
- console.error("[auth] Erro ao reivindicar handle:", claimErr);
- throw new Error(claimErr instanceof Error ? claimErr.message : "Erro ao reservar username.");
+ // 1. Reivindicação atômica do Handle (somente se o username tiver sido alterado)
+ const adminDb = getServerClient();
+ const { data: currentProf } = await adminDb
+  .from("profiles")
+  .select("username")
+  .eq("id", user.id)
+  .maybeSingle();
+
+ const isHandleDifferent = Boolean(
+  cleanUsername &&
+  currentProf?.username &&
+  currentProf.username.toLowerCase() !== cleanUsername.toLowerCase()
+ );
+
+ if (isHandleDifferent) {
+  try {
+   const { error: claimErr } = await adminDb.rpc("claim_handle_atomic", {
+    p_profile_id: user.id,
+    p_new_handle: cleanUsername,
+   });
+   if (claimErr) {
+    console.warn("[auth] claim_handle_atomic retorno:", claimErr.message);
+    if (claimErr.message.includes("em uso") || claimErr.message.includes("30 dias")) {
+     throw new Error(claimErr.message);
+    }
+   }
+  } catch (claimErr) {
+   if (claimErr instanceof Error && (claimErr.message.includes("em uso") || claimErr.message.includes("30 dias"))) {
+    throw claimErr;
+   }
+   console.warn("[auth] Aviso não-bloqueante em claim_handle_atomic:", claimErr);
+  }
  }
 
- // 2. Atualiza metadados no Supabase Auth para refletir na sessão de imediato
+ // 2. Atualiza metadados no Supabase Auth de forma resiliente
  try {
- await supabase.auth.updateUser({
- data: {
- full_name: data.fullName,
- username: cleanUsername,
- avatar_url: data.avatarUrl || undefined,
- },
- });
+  await adminDb.auth.admin.updateUserById(user.id, {
+   user_metadata: {
+    full_name: data.fullName,
+    username: cleanUsername,
+    avatar_url: data.avatarUrl || undefined,
+   },
+  });
  } catch (authErr) {
- console.warn("[auth] updateUser auth metadata warning:", authErr);
+  console.warn("[auth] updateUser metadata warning:", authErr);
  }
 
  // 3. Prepara payload com ID para UPSERT atômico (garante persistência mesmo que a linha não existisse)
@@ -861,10 +883,9 @@ export async function _updateProfile(data: UpdateProfileInput) {
  if (data.featuredBannerLink !== undefined) profileUpdate.featured_banner_link = data.featuredBannerLink || null;
  if (data.isAnonymous !== undefined) profileUpdate.is_anonymous = data.isAnonymous;
  if (data.privacyMode !== undefined) profileUpdate.privacy_mode = data.privacyMode;
- if (data.hideLocation !== undefined) profileUpdate.hide_location = data.hideLocation;
+
 
  // Realiza UPSERT no Supabase com adminDb garantindo bypass de RLS após validação de token
- const adminDb = getServerClient();
  const { error: dbError } = await adminDb
  .from("profiles")
  .upsert(profileUpdate, { onConflict: "id" });

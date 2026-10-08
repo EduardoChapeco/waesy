@@ -175,60 +175,71 @@ function PlaceDetailPage() {
         </Link>
       </nav>
 
-      {/* ── Banner de Capa e Header de Identidade ── */}
+      {/* ── Cabeçalho Canônico do Estabelecimento (Foto 1:1 Squircle + Capa Panorâmica 21:9 ao lado) ── */}
       <section aria-label="Identidade do Estabelecimento" className="flex flex-col gap-6">
-        <div className="relative overflow-hidden rounded-lg border border-border bg-muted">
-          {place.bannerUrl ? (
-            <img
-              src={place.bannerUrl}
-              alt={`Fachada de ${place.name}`}
-              className="h-48 sm:h-64 w-full object-cover"
-              loading="eager"
-            />
-          ) : (
-            <div className="flex h-48 sm:h-64 w-full items-center justify-center bg-accent/40 text-muted-foreground">
-              <Buildings className="size-16 opacity-30" aria-hidden="true" />
-            </div>
-          )}
-
-          <div className="absolute right-4 top-4">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={handleShare} /* focus-visible: */
-              className="h-11 bg-background/80 backdrop-blur-sm px-4 focus-visible:ring-2"
-              aria-label="Compartilhar link deste local"
-            >
-              {copiedShare ? (
-                <>
-                  <Check className="mr-2 size-4 text-primary" aria-hidden="true" />
-                  Link Copiado
-                </>
-              ) : (
-                <>
-                  <ShareNetwork className="mr-2 size-4" aria-hidden="true" />
-                  Compartilhar
-                </>
-              )}
-            </Button>
-          </div>
-        </div>
-
-        {/* Informações Centrais do Local */}
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-border pb-6">
-          <div className="flex items-start gap-4">
-            {place.avatarUrl ? (
-              <img
-                src={place.avatarUrl}
-                alt={place.name}
-                className="size-16 rounded-lg border border-border bg-card object-cover sm:size-20 shrink-0"
-              />
-            ) : (
-              <div className="flex size-16 sm:size-20 items-center justify-center rounded-lg border border-border bg-card shrink-0 text-muted-foreground">
-                <Buildings className="size-8" aria-hidden="true" />
+        <div className="rounded-lg bg-card border border-border/40 p-4 sm:p-6 space-y-4">
+          <div className="flex items-center gap-3 sm:gap-4 w-full">
+            {/* Foto do Estabelecimento em Squircle 1:1 */}
+            <div className="relative group shrink-0">
+              <div className="size-20 sm:size-24 md:size-28 lg:size-32 rounded-lg bg-card border-2 border-border/50 ring-1 ring-border/20 overflow-hidden flex items-center justify-center shadow-xs">
+                {place.avatarUrl ? (
+                  <img
+                    src={place.avatarUrl}
+                    alt={place.name}
+                    className="size-full object-cover select-none"
+                  />
+                ) : (
+                  <div className="flex size-full items-center justify-center text-muted-foreground">
+                    <Buildings className="size-8 sm:size-10 opacity-40" aria-hidden="true" />
+                  </div>
+                )}
               </div>
-            )}
+            </div>
+
+            {/* Capa Panorâmica Canônica 21:9 ao Lado */}
+            <div className="flex-1 min-w-0 h-20 sm:h-24 md:h-28 lg:h-32 rounded-lg border border-border/40 bg-muted/20 relative overflow-hidden flex items-center">
+              {place.bannerUrl ? (
+                <img
+                  src={place.bannerUrl}
+                  alt={`Fachada de ${place.name}`}
+                  className="size-full object-cover select-none rounded-lg"
+                  loading="eager"
+                />
+              ) : (
+                <div className="size-full flex items-center justify-center text-muted-foreground/60 gap-2 text-xs font-medium">
+                  <Buildings className="size-6 text-primary/30" aria-hidden="true" />
+                  <span>Espaço para fachada do estabelecimento</span>
+                </div>
+              )}
+
+              <div className="absolute right-2 top-2 z-10">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleShare}
+                  className="h-9 sm:h-10 bg-background/85 hover:bg-background text-foreground backdrop-blur-md px-3 rounded-lg border border-border/60 text-xs font-semibold focus-visible:ring-2"
+                  aria-label="Compartilhar link deste local"
+                >
+                  {copiedShare ? (
+                    <>
+                      <Check className="mr-2 size-4 text-primary" aria-hidden="true" />
+                      Copiado
+                    </>
+                  ) : (
+                    <>
+                      <ShareNetwork className="mr-2 size-4" aria-hidden="true" />
+                      Compartilhar
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          {/* Informações Centrais do Local */}
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-t border-border/40 pt-4">
+            <div className="flex items-start gap-4">
 
             <div className="flex flex-col gap-2">
               <div className="flex flex-wrap items-center gap-2">
@@ -268,6 +279,7 @@ function PlaceDetailPage() {
               </Link>
             </Button>
           )}
+        </div>
         </div>
       </section>
 

@@ -1,5 +1,16 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-198: Saneamento Definitivo do Salvamento de Perfil (Purga de Coluna Inexistente hide_location), Blindagem contra Reset de Aba e Unificação Panorâmica de Capas
+
+- **Data:** 2026-10-08
+- **Contexto:** Chamado do usuário: (1) "Editar o perfil não salva / Não estou conseguindo salvar nada": Investigação no log e banco revelou que `_updateProfile` tentava gravar a coluna inexistente `hide_location` na tabela `profiles` (coluna pertence exclusivamente a `classifieds`), fazendo o Postgres abortar o upsert com erro `column "hide_location" does not exist`, além da chamada indiscriminada da RPC `claim_handle_atomic` mesmo sem alteração de username; (2) Ao tentar adicionar habilidades em currículo, a tela recarregava e mudava para a primeira aba de perfil ("Identidade"), causado por uma tag `<form>` externa envolvendo todas as abas em `_store.conta.perfil.tsx`; (3) Capas e cabeçalhos de empresas (`canonical-store-profile-view.tsx`) e locais (`_store.places.$placeSlug.tsx`) divergiam do padrão panorâmico canônico de 3 blocos (Foto/Avatar 1:1 squircle + Capa 21:9 com scroll interno + Card de Stats nivelado no final `h-20 sm:h-28 md:h-32`); (4) Necessidade de garantia de upload resiliente com fallback para `cms-media` caso buckets específicos falhem.
+- **Decisão:**
+  1. **Purga de Coluna Inexistente e Handle Resiliente (`auth.functions.ts`):** Removida a atribuição de `hide_location` ao payload de `profiles`. Adicionada verificação prévia de alteração de handle (`isHandleDifferent`), invocando `claim_handle_atomic` somente quando o username de fato mudou, com tratamento defensivo não-bloqueante para dados cadastrais.
+  2. **Eliminação do Form Pai Global (`_store.conta.perfil.tsx`):** Substituída a tag externa `<form onSubmit={handleSubmit}>` por `<div className="space-y-6">`, convertendo botões de salvar para `type="button"` com `onClick={handleSubmit}`, blindando a tela contra submissões e recarregamentos acidentais durante a edição de currículo ou biolinks.
+  3. **Fallback Resiliente de Storage (`storage.functions.ts`):** Adicionado fallback automático para o bucket `cms-media` caso o bucket `banners`, `covers` ou `avatars` apresente falha de provisionamento ou RLS no Supabase.
+  4. **Padronização Panorâmica Canônica de Capas (`canonical-store-profile-view.tsx` & `_store.places.$placeSlug.tsx`):** Unificada a arquitetura visual dos 3 blocos em empresas (Foto 1:1 + Capa 21:9 com scroll + Card de Stats `h-14 sm:h-20 md:h-28 lg:h-32` nivelado na mesma linha) e locais (Foto 1:1 + Capa 21:9 `h-20 sm:h-28 md:h-32` com botão Compartilhar integrado).
+- **Validação:** Typecheck com Exit Code 0 (0 erros TS), Design Lint com 0 novas violações (catraca ativa com redução de 585 violações de débito), compilação do build de produção e sentinela client-leak 100% aprovados.
+
 ## DEC-197: Otimização Reativa de Login, Unificação de Cookies SSR, Memoização de Identidade e Caching de Rotas
 
 - **Data:** 2026-10-08

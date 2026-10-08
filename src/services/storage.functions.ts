@@ -626,16 +626,26 @@ export const uploadProfileMediaDirect = createServerFn({ method: "POST" })
       const base64Content = base64Data.includes(",") ? base64Data.split(",")[1] : base64Data;
       const buffer = Buffer.from(base64Content, "base64");
 
+      let resolvedBucket = bucket;
       let { error: uploadError } = await supabase.storage.from(bucket).upload(uniqueName, buffer, {
         contentType: fileType,
         upsert: true,
       });
 
       if (uploadError) {
-        throw new Error(`Bucket de perfil não provisionado ou indisponível: ${uploadError.message}`);
+        console.warn(`[storage] Bucket ${bucket} indisponível (${uploadError.message}), tentando cms-media...`);
+        const fallbackBucket = "cms-media";
+        const { error: fbErr } = await supabase.storage.from(fallbackBucket).upload(uniqueName, buffer, {
+          contentType: fileType,
+          upsert: true,
+        });
+        if (fbErr) {
+          throw new Error(`Bucket de perfil indisponível: ${uploadError.message || fbErr.message}`);
+        }
+        resolvedBucket = fallbackBucket;
       }
 
-      const { data: publicUrlData } = supabase.storage.from(bucket).getPublicUrl(uniqueName);
+      const { data: publicUrlData } = supabase.storage.from(resolvedBucket).getPublicUrl(uniqueName);
       const publicUrl = publicUrlData.publicUrl;
 
       // Persistência Atômica Imediata no Banco de Dados
