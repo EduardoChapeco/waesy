@@ -43793,6 +43793,34 @@ export type Database = {
       }
     }
     Functions: {
+      finalize_contract_signature: {
+        Args: {
+          p_envelope_id: string
+          p_evidence_payload: Json
+          p_gov_br_level?: string | null
+          p_signature_digest: string
+        }
+        Returns: Json
+      }
+      promote_contract_after_signatures: {
+        Args: { p_contract_version_id: string }
+        Returns: Json
+      }
+      seal_and_issue_contract: {
+        Args: {
+          p_actor_id: string
+          p_contract_id: string
+          p_expected_clauses: Json
+          p_expected_content_markdown: string
+          p_expected_signature_fields: Json
+          p_hash_sha256: string
+          p_signature_fields: Json
+          p_signers: Json
+          p_store_id: string
+          p_version_id: string
+        }
+        Returns: Json
+      }
       acquire_whatsapp_provider_circuit: {
         Args: { p_instance_id: string; p_worker_id: string }
         Returns: {

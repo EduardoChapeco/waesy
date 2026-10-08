@@ -1,6 +1,15 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
+import { requireStaff } from "@/lib/server-access";
+import { enforceRateLimit } from "@/lib/rate-limiter";
+import type { Json } from "@/integrations/supabase/types";
+import {
+  derivePublicVerificationState,
+  projectPublicVerificationVersion,
+  projectPublicTourismVerificationCode,
+  projectTourismVerificationVersion,
+} from "@/lib/contracts/public-verification-projection";
 import { getIdentity } from "./identity.functions";
 import { executeUnifiedAiCall } from "./api-orchestrator.functions";
 import { interpolateContractVariables, autoPositionSignatureFieldsFromContent } from "@/lib/contracts/contract-semantic-dictionary";
@@ -93,8 +102,10 @@ export const createContract = createServerFn({ method: "POST" })
   )
   .handler(async ({ data: input }) => {
     const supabase = getServerClient();
-    const identity = await getIdentity();
-    if (!identity?.id) throw new Error("Não autenticado");
+    const identity = await requireStaff();
+    if (input.storeId && input.storeId !== identity.store_id) {
+      throw new Error("A loja do contrato não corresponde ao tenant autenticado.");
+    }
 
     const isKycVerified = await assertUserKycVerified(identity.id);
     if (!isKycVerified) {
@@ -117,7 +128,7 @@ export const createContract = createServerFn({ method: "POST" })
       .from("contracts")
       .insert({
         deal_id: input.dealId || null,
-        store_id: input.storeId || (identity as any).store_id || null,
+        store_id: identity.store_id,
         entity_type: input.entityType || null,
         entity_id: input.entityId || null,
         folder_id: input.folderId || null,
@@ -240,47 +251,70 @@ export const sealAndIssueContract = createServerFn({ method: "POST" })
     z.object({
       contractId: z.string().uuid(),
       versionId: z.string().uuid(),
-      signatureFields: z.array(z.any()).optional(),
+      signatureFields: z.array(z.record(z.any())).max(200).optional(),
       signers: z.array(
         z.object({
-          name: z.string().min(2),
-          email: z.string().email(),
-          phone: z.string().optional(),
-          cpf: z.string().optional(),
+          name: z.string().trim().min(2).max(200),
+          email: z.string().trim().email().max(320),
+          phone: z.string().trim().max(40).optional(),
+          cpf: z.string().trim().max(40).optional(),
           role: z.enum(["party", "witness", "guarantor"]).default("party"),
           authLevel: z.enum(["basic", "advanced", "qualified"]).default("basic"),
           dispatchChannel: z.enum(["email", "whatsapp", "sms", "direct_link"]).default("email"),
-          signingOrderIndex: z.number().int().min(1).default(1),
-          colorCode: z.string().default("#2563eb"),
+          signingOrderIndex: z.number().int().min(1).max(50).default(1),
+          colorCode: z.string().trim().regex(/^#[0-9a-fA-F]{6}$/).default("#2563eb"),
           requireFacialBiometrics: z.boolean().default(false),
           requireCpfConfirmation: z.boolean().default(false),
           profileId: z.string().uuid().optional(),
-        }),
-      ),
+        }).strict(),
+      ).min(1).max(50),
     }),
   )
   .handler(async ({ data: input }) => {
     const supabase = getServerClient();
-    const identity = await getIdentity();
-    if (!identity?.id) throw new Error("Não autenticado");
+    const actor = await requireStaff();
+    if (!actor.id || !actor.store_id) {
+      throw new Error("É necessário um contexto de loja autorizado para selar o contrato.");
+    }
 
-    // Fetch version
+    // Service-role reads are explicitly constrained to the authenticated creator and tenant.
+    const { data: contract, error: contractError } = await supabase
+      .from("contracts")
+      .select("id, creator_id, store_id, current_version, status")
+      .eq("id", input.contractId)
+      .eq("creator_id", actor.id)
+      .eq("store_id", actor.store_id)
+      .maybeSingle();
+
+    if (contractError || !contract) {
+      throw new Error("Contrato não encontrado ou sem permissão para selar.");
+    }
+
     const { data: version, error: vErr } = await supabase
       .from("contract_versions")
-      .select("*")
+      .select("id, contract_id, version_number, title, content_markdown, clauses, signature_fields, is_sealed, sealed_at, hash_sha256")
       .eq("id", input.versionId)
-      .eq("contract_id", input.contractId)
-      .single();
+      .eq("contract_id", contract.id)
+      .maybeSingle();
 
     if (vErr || !version) throw new Error("Versão do contrato não encontrada.");
+    if (contract.current_version !== version.version_number) {
+      throw new Error("A versão solicitada não é a versão corrente do contrato.");
+    }
+    if (!["draft", "reviewing", "sealed"].includes(contract.status)) {
+      throw new Error("O contrato não está num estado que permita iniciar a assinatura.");
+    }
+    if (version.is_sealed || version.sealed_at || version.hash_sha256) {
+      throw new Error("Esta versão já foi selada e não pode receber novos envelopes.");
+    }
 
-    // Atualiza signature_fields se enviados na chamada de selagem
-    const finalFields = input.signatureFields || version.signature_fields || [];
+    const finalFields = input.signatureFields ??
+      (Array.isArray(version.signature_fields) ? version.signature_fields : []);
 
-    // Compute SHA-256 digest string do conteúdo + cláusulas + campos
+    // Hash the exact database snapshot that the transaction below revalidates under row locks.
     const textBuffer = new TextEncoder().encode(
       version.content_markdown +
-        JSON.stringify(version.clauses) +
+        JSON.stringify(version.clauses ?? []) +
         JSON.stringify(finalFields),
     );
     const hashBuffer = await crypto.subtle.digest("SHA-256", textBuffer);
@@ -288,58 +322,75 @@ export const sealAndIssueContract = createServerFn({ method: "POST" })
       .map((b) => b.toString(16).padStart(2, "0"))
       .join("");
 
-    // Seal the version
-    await supabase
-      .from("contract_versions")
-      .update({
-        is_sealed: true,
-        sealed_at: new Date().toISOString(),
-        hash_sha256: hashHex,
-        signature_fields: finalFields,
-      })
-      .eq("id", version.id);
-
-    // Update contract status
-    await supabase
-      .from("contracts")
-      .update({
-        status: "signing",
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", input.contractId);
-
-    // Create signature envelopes for each signer com suporte multi-canal
-    const envelopesToInsert = input.signers.map((s) => ({
-      contract_version_id: version.id,
-      signer_name: s.name,
-      signer_email: s.email,
-      signer_phone: s.phone || null,
-      signer_cpf: s.cpf || null,
-      signer_role: s.role,
-      auth_level: s.authLevel,
-      dispatch_channel: s.dispatchChannel || "email",
-      signing_order_index: s.signingOrderIndex || 1,
-      color_code: s.colorCode || "#2563eb",
-      require_facial_biometrics: s.requireFacialBiometrics || false,
-      require_cpf_confirmation: s.requireCpfConfirmation || false,
-      signer_profile_id: s.profileId || null,
-      status: "pending",
+    const rpcSigners = input.signers.map((signer) => ({
+      name: signer.name,
+      email: signer.email,
+      phone: signer.phone || null,
+      cpf: signer.cpf || null,
+      role: signer.role,
+      authLevel: signer.authLevel,
+      dispatchChannel: signer.dispatchChannel,
+      signingOrderIndex: signer.signingOrderIndex,
+      colorCode: signer.colorCode,
+      requireFacialBiometrics: signer.requireFacialBiometrics,
+      requireCpfConfirmation: signer.requireCpfConfirmation,
+      profileId: signer.profileId || null,
     }));
 
-    const { data: envelopes, error: envErr } = await supabase
-      .from("signature_envelopes")
-      .insert(envelopesToInsert)
-      .select();
+    const { data: rpcData, error: rpcError } = await supabase.rpc("seal_and_issue_contract", {
+      p_contract_id: contract.id,
+      p_version_id: version.id,
+      p_actor_id: actor.id,
+      p_store_id: actor.store_id,
+      p_expected_content_markdown: version.content_markdown,
+      p_expected_clauses: version.clauses,
+      p_expected_signature_fields: version.signature_fields,
+      p_hash_sha256: hashHex,
+      p_signature_fields: finalFields as Json,
+      p_signers: rpcSigners as Json,
+    });
 
-    if (envErr) throw new Error("Erro ao gerar envelopes de assinatura.");
+    if (rpcError) {
+      console.error("[contracts] Atomic seal RPC failed:", rpcError.code);
+      throw new Error("Não foi possível selar o contrato nem criar os envelopes.");
+    }
+
+    if (!rpcData || typeof rpcData !== "object" || Array.isArray(rpcData)) {
+      throw new Error("A operação de selagem não retornou uma confirmação válida.");
+    }
+    const result = rpcData as Record<string, Json>;
+    const rawEnvelopes = result.envelopes;
+    if (
+      result.status !== "sealed" ||
+      result.contract_id !== contract.id ||
+      result.contract_version_id !== version.id ||
+      result.contract_status !== "signing" ||
+      result.hash_sha256 !== hashHex ||
+      !Array.isArray(rawEnvelopes) ||
+      rawEnvelopes.length !== rpcSigners.length
+    ) {
+      throw new Error("A selagem não foi confirmada com todos os envelopes esperados.");
+    }
+    const envelopes = rawEnvelopes.filter(
+      (item): item is Record<string, Json> =>
+        item !== null && typeof item === "object" && !Array.isArray(item),
+    );
+    if (
+      envelopes.length !== rpcSigners.length ||
+      envelopes.some((env) => typeof env.id !== "string" || typeof env.signing_token !== "string")
+    ) {
+      throw new Error("A selagem não retornou todos os envelopes persistidos.");
+    }
 
     // Monta links de assinatura direta e link de despacho via WhatsApp
     const enrichedEnvelopes = (envelopes || []).map((env) => {
-      const cleanPhone = (env.signer_phone || "").replace(/\D/g, "");
+      const phone = typeof env.signer_phone === "string" ? env.signer_phone : "";
+      const signerName = typeof env.signer_name === "string" ? env.signer_name : "Signatário";
+      const cleanPhone = phone.replace(/\D/g, "");
       const signingUrl = `/assinar/${env.signing_token}`;
       const fullUrl = `https://waesy.com${signingUrl}`;
       const waMsg = encodeURIComponent(
-        `Olá ${env.signer_name}, seu documento "${version.title}" está pronto para assinatura eletrônica jurídica:\n\n${fullUrl}\n\nAbra o link no celular para assinar em poucos toques.`,
+        `Olá ${signerName}, seu documento "${version.title}" está pronto para assinatura eletrônica jurídica:\n\n${fullUrl}\n\nAbra o link no celular para assinar em poucos toques.`,
       );
       const whatsappDirectLink = cleanPhone ? `https://wa.me/${cleanPhone}?text=${waMsg}` : null;
 
@@ -363,31 +414,15 @@ export const sealAndIssueContract = createServerFn({ method: "POST" })
 export const extractContractDataFromOcr = createServerFn({ method: "POST" })
   .validator(
     z.object({
-      imageUrl: z.string().optional(),
-      base64: z.string().optional(),
-      mimeType: z.string().optional().default("image/jpeg"),
+      base64: z.string().max(12_000_000, "Imagem excede o limite de 9 MB."),
+      mimeType: z.string().trim().max(120).default("image/jpeg"),
     }),
   )
   .handler(async ({ data: input }): Promise<OcrContractExtractionResult> => {
-    let imageBase64 = input.base64 || "";
+    const identity = await requireStaff();
+    enforceRateLimit(`${identity.store_id}:${identity.id}`, "ai_generation");
+    const imageBase64 = input.base64;
     let mimeType = input.mimeType || "image/jpeg";
-
-    if (!imageBase64 && input.imageUrl) {
-      try {
-        const res = await fetch(input.imageUrl, { signal: AbortSignal.timeout(10000) });
-        if (!res.ok) throw new Error("Falha ao baixar imagem para OCR.");
-        const cType = res.headers.get("content-type") || "image/jpeg";
-        mimeType = cType.split(";")[0].trim();
-        const buf = await res.arrayBuffer();
-        imageBase64 = Buffer.from(buf).toString("base64");
-      } catch (err: any) {
-        throw new Error(`Erro ao carregar imagem para análise: ${err.message}`);
-      }
-    }
-
-    if (!imageBase64) {
-      throw new Error("Nenhuma imagem fornecida para o OCR.");
-    }
 
     const systemPrompt = `Você é o Agente Especialista em OCR e Extração de Documentos Oficiais Brasileiros da Waesy Platform (Padrão BigTech).
 Sua missão é extrair com precisão cirúrgica os dados de CNH, RG, Passaporte ou contratos comerciais escaneados.
@@ -439,21 +474,90 @@ Retorne ESTRITAMENTE um JSON com este formato (sem markdown \`\`\`json):
 
 // ─── Assinatura do Envelope & Registro de Telemetria Forense ─────────────────
 
+interface ContractCompletionResult {
+  contractStatus: string;
+  allRequiredSignaturesSigned: boolean;
+  completed: boolean;
+}
+
+function jsonObject(value: unknown): Record<string, unknown> | null {
+  return typeof value === "object" && value !== null && !Array.isArray(value)
+    ? value as Record<string, unknown>
+    : null;
+}
+
+async function promoteContractAfterSignatures(
+  supabase: ReturnType<typeof getServerClient>,
+  contractVersionId: string,
+): Promise<ContractCompletionResult> {
+  const { data, error } = await supabase.rpc("promote_contract_after_signatures", {
+    p_contract_version_id: contractVersionId,
+  });
+  if (error) throw new Error("Não foi possível confirmar a conclusão das assinaturas.");
+
+  const result = jsonObject(data);
+  if (!result || typeof result.contract_status !== "string") {
+    throw new Error("A resposta de conclusão do contrato é inválida.");
+  }
+  return {
+    contractStatus: result.contract_status,
+    allRequiredSignaturesSigned: result.all_required_signatures_signed === true,
+    completed: result.completed === true,
+  };
+}
+
+async function finalizeContractSignature(
+  supabase: ReturnType<typeof getServerClient>,
+  args: {
+    envelopeId: string;
+    signatureDigest: string;
+    evidencePayload: Json;
+    govBrLevel?: string | null;
+  },
+) {
+  const { data, error } = await supabase.rpc("finalize_contract_signature", {
+    p_envelope_id: args.envelopeId,
+    p_signature_digest: args.signatureDigest,
+    p_evidence_payload: args.evidencePayload,
+    p_gov_br_level: args.govBrLevel ?? null,
+  });
+  if (error) throw new Error("Não foi possível confirmar a assinatura e a evidência.");
+
+  const result = jsonObject(data);
+  if (
+    !result ||
+    result.envelope_status !== "signed" ||
+    typeof result.signed_at !== "string" ||
+    typeof result.contract_status !== "string" ||
+    result.signature_digest !== args.signatureDigest ||
+    typeof result.evidence_id !== "string"
+  ) {
+    throw new Error("A transação não confirmou a assinatura e a conclusão do contrato.");
+  }
+  return {
+    signedAt: result.signed_at,
+    evidenceId: result.evidence_id,
+    contractStatus: result.contract_status,
+    allRequiredSignaturesSigned: result.all_required_signatures_signed === true,
+    completed: result.completed === true,
+  };
+}
+
 export const signContractEnvelope = createServerFn({ method: "POST" })
   .validator(
     z.object({
-      signingToken: z.string(),
+      signingToken: z.string().trim().min(16).max(240),
       consent: z.boolean(),
-      signatureImageBase64: z.string().optional(),
-      ipAddress: z.string().optional(),
-      userAgent: z.string().optional(),
-      screenResolution: z.string().optional(),
+      signatureImageBase64: z.string().max(2_000_000).optional(),
+      ipAddress: z.string().max(80).optional(),
+      userAgent: z.string().max(500).optional(),
+      screenResolution: z.string().max(80).optional(),
       timezone: z.string().optional(),
-      geoLatitude: z.number().optional(),
-      geoLongitude: z.number().optional(),
-      geoCity: z.string().optional(),
-      geoState: z.string().optional(),
-      faceImageUrl: z.string().optional(),
+      geoLatitude: z.number().finite().gte(-90).lte(90).optional(),
+      geoLongitude: z.number().finite().gte(-180).lte(180).optional(),
+      geoCity: z.string().max(120).optional(),
+      geoState: z.string().max(80).optional(),
+      faceImageUrl: z.string().url().max(2000).optional(),
       facialBiometricsHash: z.string().optional(),
     }),
   )
@@ -471,6 +575,10 @@ export const signContractEnvelope = createServerFn({ method: "POST" })
 
     if (envErr || !envelope) throw new Error("Link de assinatura inválido ou expirado.");
 
+    if (envelope.expires_at && new Date(envelope.expires_at).getTime() <= Date.now()) {
+      throw new Error("O link de assinatura expirou.");
+    }
+
     const identity = await getIdentity();
     if (identity?.id) {
       const isKycVerified = await assertUserKycVerified(identity.id);
@@ -482,20 +590,38 @@ export const signContractEnvelope = createServerFn({ method: "POST" })
     }
 
     if (envelope.status === "signed") {
-      return { success: true, message: "Este documento já foi assinado por você." };
+      const { data: evidence, error: evidenceError } = await supabase
+        .from("signature_evidence")
+        .select("id, signature_digest, consent_given")
+        .eq("envelope_id", envelope.id)
+        .eq("consent_given", true)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (evidenceError || !evidence) {
+        throw new Error("O envelope está assinado, mas a evidência persistida não pôde ser confirmada.");
+      }
+      if (!evidence.id || !evidence.signature_digest || !envelope.signed_at) {
+        throw new Error("O envelope assinado não possui evidência completa de consentimento.");
+      }
+      const completion = await promoteContractAfterSignatures(supabase, envelope.contract_version_id);
+      return {
+        success: true,
+        signatureDigest: evidence.signature_digest,
+        signedAt: envelope.signed_at,
+        message: "A assinatura deste envelope já estava registada.",
+        ...completion,
+      };
     }
 
     const digest = `SIG-${envelope.id}-${Date.now()}-${Math.random().toString(36).substring(2, 10)}`;
-
-    // Registra evidência forense de assinatura
-    await supabase.from("signature_evidence").insert({
-      envelope_id: envelope.id,
+    const evidencePayload: Json = {
       ip_address: input.ipAddress || "127.0.0.1",
       user_agent: input.userAgent || "Browser",
       screen_resolution: input.screenResolution || null,
       timezone: input.timezone || "America/Sao_Paulo",
-      geo_latitude: input.geoLatitude || null,
-      geo_longitude: input.geoLongitude || null,
+      geo_latitude: input.geoLatitude ?? null,
+      geo_longitude: input.geoLongitude ?? null,
       geo_city: input.geoCity || null,
       geo_state: input.geoState || null,
       auth_method: envelope.auth_level === "advanced" ? "email_otp" : "electronic_consent",
@@ -503,7 +629,6 @@ export const signContractEnvelope = createServerFn({ method: "POST" })
       signature_digest: digest,
       facial_biometrics_hash: input.facialBiometricsHash || null,
       evidence_manifest: {
-        timestamp: new Date().toISOString(),
         signer_email: envelope.signer_email,
         signer_phone: envelope.signer_phone,
         signer_cpf: envelope.signer_cpf,
@@ -511,123 +636,200 @@ export const signContractEnvelope = createServerFn({ method: "POST" })
         signature_image: input.signatureImageBase64 || null,
         face_image: input.faceImageUrl || null,
       },
-    });
-
-    // Atualiza status do envelope
-    await supabase
-      .from("signature_envelopes")
-      .update({
-        status: "signed",
-        signed_at: new Date().toISOString(),
-      })
-      .eq("id", envelope.id);
-
-    return {
-      success: true,
-      signedAt: new Date().toISOString(),
-      signatureDigest: digest,
     };
+
+    try {
+      const finalized = await finalizeContractSignature(supabase, {
+        envelopeId: envelope.id,
+        signatureDigest: digest,
+        evidencePayload,
+      });
+      return { success: true, signatureDigest: digest, ...finalized };
+    } catch {
+      const { data: latestEnvelope, error: stateError } = await supabase
+        .from("signature_envelopes")
+        .select("status, signed_at")
+        .eq("id", envelope.id)
+        .maybeSingle();
+
+      if (stateError) {
+        throw new Error("Não foi possível confirmar o estado da assinatura.");
+      }
+      if (latestEnvelope?.status === "signed" && latestEnvelope.signed_at) {
+        const { data: evidence, error: evidenceError } = await supabase
+          .from("signature_evidence")
+          .select("id, signature_digest, consent_given")
+          .eq("envelope_id", envelope.id)
+          .eq("signature_digest", digest)
+          .eq("consent_given", true)
+          .maybeSingle();
+        if (evidenceError || !evidence) {
+          throw new Error("A evidência desta tentativa não foi confirmada; a assinatura não foi atribuída a este pedido.");
+        }
+        const completion = await promoteContractAfterSignatures(supabase, envelope.contract_version_id);
+        return {
+          success: true,
+          signedAt: latestEnvelope.signed_at,
+          signatureDigest: evidence.signature_digest,
+          message: "A assinatura foi confirmada após uma resposta ambígua.",
+          ...completion,
+        };
+      }
+
+      throw new Error("A assinatura não foi confirmada; o envelope continua pendente.");
+    }
   });
 
 // ─── Verificação Pública Universal (Código ou Hash SHA-256) ──────────────────
 
 export const verifyDocumentPublic = createServerFn({ method: "GET" })
-  .validator(z.string())
+  .validator(z.string().trim().min(1).max(256))
   .handler(async ({ data: codeOrHash }) => {
     const supabase = getServerClient();
 
-    // Tenta por verification_code ou por hash_sha256
-    let query = supabase.from("contracts").select(`
-      id, title, category, status, verification_code, created_at, dispatch_settings, observers, is_settled, discharge_hash_sha256, discharge_issued_at,
-      creator:creator_id (id, full_name),
+    // Projeção pública explícita: não selecionar colunas internas ou PII.
+    const buildContractQuery = () => supabase.from("contracts").select(`
+      id, title, category, status, current_version, verification_code, created_at, is_settled, discharge_hash_sha256, discharge_issued_at,
       versions:contract_versions (
-        version_number, hash_sha256, sealed_at, is_sealed, signature_fields, page_count,
-        envelopes:signature_envelopes (
-          signer_name, signer_role, signer_email, signer_phone, status, signed_at, auth_level, color_code
-        )
+        id, version_number, hash_sha256, sealed_at, is_sealed,
+        envelopes:signature_envelopes (signer_name, signer_role, status, signed_at, auth_level)
       )
     `);
+    const findContract = async (lookup: ReturnType<typeof buildContractQuery>) => {
+      const { data, error } = await lookup.maybeSingle();
+      if (error) throw new Error("Não foi possível verificar o documento neste momento.");
+      return data;
+    };
 
     const isHex = /^[0-9a-fA-F]{16,64}$/.test(codeOrHash);
-    if (isHex && codeOrHash.length === 64) {
-      // Busca pelo hash do documento
-      const { data: v } = await supabase
-        .from("contract_versions")
-        .select("contract_id")
-        .eq("hash_sha256", codeOrHash)
-        .maybeSingle();
+    const isSha256 = isHex && codeOrHash.length === 64;
+    const normalizedHash = isSha256 ? codeOrHash.toLowerCase() : codeOrHash;
+    let matchedVersionId: string | null = null;
+    let contract: Awaited<ReturnType<typeof findContract>> = null;
 
-      if (v) {
-        query = query.eq("id", v.contract_id);
+    if (isSha256) {
+      const { data: matchedVersion, error: hashError } = await supabase
+        .from("contract_versions")
+        .select("id, contract_id")
+        .eq("hash_sha256", normalizedHash)
+        .maybeSingle();
+      if (hashError) throw new Error("Não foi possível verificar o documento neste momento.");
+
+      // 64 hex também pode ser um código legado; consulte ambos e rejeite colisão.
+      const contractByCode = await findContract(
+        buildContractQuery().eq("verification_code", codeOrHash),
+      );
+      if (matchedVersion) {
+        const contractByHash = await findContract(
+          buildContractQuery().eq("id", matchedVersion.contract_id),
+        );
+        if (!contractByHash) throw new Error("Não foi possível verificar o documento neste momento.");
+        if (contractByCode && contractByCode.id !== contractByHash.id) {
+          throw new Error("Identificador ambíguo; não foi possível verificar o documento.");
+        }
+        contract = contractByHash;
+        matchedVersionId = matchedVersion.id;
       } else {
-        throw new Error("Documento não reconhecido pelo hash informado.");
+        contract = contractByCode;
       }
     } else {
-      query = query.eq("verification_code", codeOrHash);
+      contract = await findContract(buildContractQuery().eq("verification_code", codeOrHash));
     }
 
-    let { data: contract, error } = await query.maybeSingle();
-
     if (!contract) {
-      // Fallback: busca contratos turísticos na tabela canônica contracts (category='tourism')
-      const { data: tourismContract } = await supabase
-        .from("contracts")
-        .select("*")
-        .eq("category", "tourism")
-        .or(`verification_code.eq.${codeOrHash}`)
-        .maybeSingle();
+      // O filtro textual `.or(...)` interpretava a entrada pública como sintaxe
+      // PostgREST. Cada chave é fixa e o valor é passado como parâmetro eq.
+      const findTourismContract = async (column: string, value: string) => {
+        const { data, error: lookupError } = await supabase
+          .from("contracts")
+          .select("id, title, status, verification_code, created_at, current_version, is_settled, discharge_hash_sha256, discharge_issued_at, metadata")
+          .eq("category", "tourism")
+          .filter(column, "eq", value)
+          .maybeSingle();
+
+        if (lookupError) throw new Error("Não foi possível verificar o documento neste momento.");
+        return data;
+      };
+
+      const serialLookup = /^CERT-[A-Z0-9]{6}-\d{4}$/i.test(codeOrHash)
+        ? codeOrHash.toUpperCase()
+        : codeOrHash;
+      const tourismMatches: Array<NonNullable<Awaited<ReturnType<typeof findTourismContract>>>> = [];
+      for (const [column, value] of [
+        ["verification_code", codeOrHash],
+        ["metadata->>certificate_serial", serialLookup],
+        ["metadata->>content_hash", normalizedHash],
+      ] as const) {
+        const match = await findTourismContract(column, value);
+        if (match && !tourismMatches.some((existing) => existing.id === match.id)) {
+          tourismMatches.push(match);
+        }
+      }
+
+      if (tourismMatches.length > 1) {
+        throw new Error("Identificador ambíguo; não foi possível verificar o documento.");
+      }
+      const tourismContract = tourismMatches[0];
 
       if (tourismContract) {
         const meta = (tourismContract.metadata as Record<string, any>) || {};
-        const matchesCertificate = meta.certificate_serial === codeOrHash;
-        const matchesHash = meta.content_hash === codeOrHash;
-        const matchesToken = tourismContract.verification_code === codeOrHash;
+        const verificationCode = projectPublicTourismVerificationCode(
+          meta,
+          tourismContract.verification_code,
+          codeOrHash,
+        );
+        if (!verificationCode) throw new Error("Documento sem código público verificável.");
 
-        if (matchesCertificate || matchesHash || matchesToken) {
-          return {
-            isValid: true,
-            title: tourismContract.title,
-            category: "tourism",
-            status: tourismContract.status === "signed" ? "sealed" : tourismContract.status,
-            verificationCode: meta.certificate_serial || tourismContract.verification_code,
-            createdAt: tourismContract.created_at,
-            isSettled: Boolean(tourismContract.is_settled),
-            dischargeHash: tourismContract.discharge_hash_sha256 || null,
-            dischargeIssuedAt: tourismContract.discharge_issued_at || null,
-            sealedVersion: {
-              version_number: tourismContract.current_version || 1,
-              hash_sha256: meta.content_hash || null,
-              sealed_at: meta.signed_at || null,
-              is_sealed: Boolean(meta.signed_at),
-              envelopes: (meta.signatures as any[]) || [
-                {
-                  signer_name: meta.client_name || "Signatário",
-                  signer_role: "party",
-                  status: meta.signed_at ? "signed" : "pending",
-                  signed_at: meta.signed_at || null,
-                  auth_level: "advanced",
-                  color_code: "#2563eb",
-                },
-              ],
-            },
-          };
-        }
+        const sealedVersion = projectTourismVerificationVersion(meta, tourismContract.current_version);
+        const verificationState = derivePublicVerificationState(
+          tourismContract.status,
+          sealedVersion,
+          "legacy_metadata",
+        );
+        return {
+          isValid: verificationState.isFullySigned,
+          isAuthentic: verificationState.isAuthentic,
+          isFullySigned: verificationState.isFullySigned,
+          isPending: verificationState.isPending,
+          pendingReason: verificationState.pendingReason,
+          title: tourismContract.title,
+          category: "tourism",
+          status: tourismContract.status,
+          verificationCode,
+          createdAt: tourismContract.created_at,
+          isSettled: verificationState.isAuthentic && Boolean(tourismContract.is_settled),
+          dischargeHash: tourismContract.discharge_hash_sha256 || null,
+          dischargeIssuedAt: tourismContract.discharge_issued_at || null,
+          sealedVersion,
+        };
       }
 
       throw new Error("Documento não encontrado ou sem registro de autenticidade.");
     }
 
+    const versions = (contract.versions as any[]) || [];
+    const selectedVersion = matchedVersionId
+      ? versions.find((version) => version.id === matchedVersionId) || null
+      : versions.find((version) => version.version_number === contract.current_version) || null;
+    if (matchedVersionId && !selectedVersion) {
+      throw new Error("A versão correspondente ao hash não foi encontrada.");
+    }
+
+    const sealedVersion = projectPublicVerificationVersion(selectedVersion);
+    const verificationState = derivePublicVerificationState(contract.status, sealedVersion);
     return {
-      isValid: true,
+      isValid: verificationState.isFullySigned,
+      isAuthentic: verificationState.isAuthentic,
+      isFullySigned: verificationState.isFullySigned,
+      isPending: verificationState.isPending,
+      pendingReason: verificationState.pendingReason,
       title: contract.title,
       category: contract.category,
       status: contract.status,
       verificationCode: contract.verification_code,
       createdAt: contract.created_at,
-      dispatchSettings: contract.dispatch_settings,
-      observers: contract.observers,
-      sealedVersion: (contract.versions as any[])?.find((v) => v.is_sealed) || null,
-      isSettled: Boolean(contract.is_settled),
+      sealedVersion,
+      isSettled: verificationState.isAuthentic && Boolean(contract.is_settled),
       dischargeHash: contract.discharge_hash_sha256 || null,
       dischargeIssuedAt: contract.discharge_issued_at || null,
     };
@@ -948,64 +1150,147 @@ export const getPublicGovBrSigningConfig = createServerFn({ method: "POST" })
   });
 
 // ─── Assinatura Oficial com GOV.BR (Lei 14.063/2020) ──────────────────────────
+// Esta operação é deliberadamente uma função server-only. O callback OAuth é a
+// única fronteira autorizada a chamá-la depois de validar o authorization code.
+const GovBrSealInputSchema = z.object({
+  signingToken: z.string().trim().min(16).max(240),
+  govBrLevel: z.enum(["prata", "ouro"]),
+  cpf: z.string().trim().min(1).max(80),
+  name: z.string().trim().min(1).max(240),
+});
 
-export const signContractWithGovBr = createServerFn({ method: "POST" })
-  .validator(
-    z.object({
-      signingToken: z.string(),
-      govBrLevel: z.enum(["prata", "ouro"]).default("prata"),
-      cpf: z.string().optional(),
-      name: z.string().optional(),
-    }),
-  )
-  .handler(async ({ data: input }) => {
-    const supabase = getServerClient();
-    const { data: envelope, error: envErr } = await supabase
-      .from("signature_envelopes")
-      .select("*, contract_version:contract_version_id(*)")
-      .eq("signing_token", input.signingToken)
-      .single();
+export async function signContractWithGovBr(rawInput: unknown) {
+  const input = GovBrSealInputSchema.parse(rawInput);
+  const supabase = getServerClient();
+  const { data: envelope, error: envErr } = await supabase
+    .from("signature_envelopes")
+    .select("id, contract_version_id, signing_token, status, expires_at, signer_name, signer_cpf, gov_br_verified, gov_br_level, signed_at")
+    .eq("signing_token", input.signingToken)
+    .maybeSingle();
 
-    if (envErr || !envelope) throw new Error("Envelope de assinatura inválido ou expirado.");
+  if (envErr || !envelope) throw new Error("Envelope de assinatura inválido ou expirado.");
+  const alreadyGovBrSigned = envelope.status === "signed" && envelope.gov_br_verified === true;
+  const expiresAt = Date.parse(envelope.expires_at);
+  if (
+    (envelope.status !== "pending" && !alreadyGovBrSigned) ||
+    (envelope.status === "pending" && (!Number.isFinite(expiresAt) || expiresAt <= Date.now()))
+  ) {
+    throw new Error("Envelope não está pendente ou expirou.");
+  }
+  const normalizedInputCpf = input.cpf.replace(/\D/g, "");
+  const normalizedExpectedCpf = envelope.signer_cpf
+    ? envelope.signer_cpf.replace(/\D/g, "")
+    : null;
+  if (normalizedInputCpf.length !== 11) {
+    throw new Error("O CPF recebido da identidade Gov.br é inválido.");
+  }
+  if (
+    envelope.signer_cpf &&
+    (normalizedExpectedCpf === null ||
+      normalizedExpectedCpf.length !== 11 ||
+      normalizedExpectedCpf !== normalizedInputCpf)
+  ) {
+    throw new Error("A identidade Gov.br não corresponde ao signatário deste envelope.");
+  }
 
-    const digest = `GOVBR-${envelope.id}-${Date.now()}`;
-    const signedAt = new Date().toISOString();
+  if (alreadyGovBrSigned) {
+    if (envelope.gov_br_level !== input.govBrLevel || !envelope.signed_at) {
+      throw new Error("A assinatura Gov.br existente não corresponde ao nível solicitado.");
+    }
+    const { data: evidence, error: evidenceError } = await supabase
+      .from("signature_evidence")
+      .select("id, signature_digest, consent_given, gov_br_verified, gov_br_level")
+      .eq("envelope_id", envelope.id)
+      .eq("consent_given", true)
+      .eq("gov_br_verified", true)
+      .eq("gov_br_level", input.govBrLevel)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (evidenceError || !evidence) {
+      throw new Error("A assinatura Gov.br não possui evidência persistida confirmada.");
+    }
+    if (!evidence.id || !evidence.signature_digest) {
+      throw new Error("A evidência Gov.br persistida está incompleta.");
+    }
+    const completion = await promoteContractAfterSignatures(supabase, envelope.contract_version_id);
+    return {
+      success: true,
+      signedAt: envelope.signed_at,
+      digest: evidence.signature_digest,
+      govBrLevel: envelope.gov_br_level,
+      ...completion,
+    };
+  }
 
-    await supabase.from("signature_evidence").insert({
-      envelope_id: envelope.id,
-      ip_address: "127.0.0.1",
-      user_agent: "Gov.br Cidadão (Assinador Avançado)",
-      auth_method: "gov_br_federated",
-      consent_given: true,
-      signature_digest: digest,
-      gov_br_verified: true,
-      gov_br_level: input.govBrLevel,
-      gov_br_raw_claims: {
-        level: input.govBrLevel,
-        cpf: input.cpf || envelope.signer_cpf,
-        name: input.name || envelope.signer_name,
-        authority: "ICP-Brasil / ITI / Gov.br",
-      },
-      evidence_manifest: {
-        timestamp: signedAt,
-        gov_br: true,
-        level: input.govBrLevel,
-        legal_basis: "Art. 4º, II da Lei Federal nº 14.063/2020",
-      },
+  const digest = `GOVBR-${envelope.id}-${crypto.randomUUID()}`;
+  const evidencePayload: Json = {
+    ip_address: "127.0.0.1",
+    user_agent: "Gov.br Cidadão (Assinador Avançado)",
+    auth_method: "gov_br_federated",
+    consent_given: true,
+    signature_digest: digest,
+    gov_br_verified: true,
+    gov_br_raw_claims: {
+      level: input.govBrLevel,
+      cpf: input.cpf,
+      name: input.name,
+      authority: "ICP-Brasil / ITI / Gov.br",
+    },
+    evidence_manifest: {
+      gov_br: true,
+      level: input.govBrLevel,
+      legal_basis: "Art. 4º, II da Lei Federal nº 14.063/2020",
+    },
+  };
+
+  try {
+    const finalized = await finalizeContractSignature(supabase, {
+      envelopeId: envelope.id,
+      signatureDigest: digest,
+      evidencePayload,
+      govBrLevel: input.govBrLevel,
     });
-
-    await supabase
+    return { success: true, digest, govBrLevel: input.govBrLevel, ...finalized };
+  } catch {
+    const { data: currentEnvelope, error: stateError } = await supabase
       .from("signature_envelopes")
-      .update({
-        status: "signed",
-        signed_at: signedAt,
-        gov_br_verified: true,
-        gov_br_level: input.govBrLevel,
-      })
-      .eq("id", envelope.id);
-
-    return { success: true, signedAt, digest };
-  });
+      .select("status, signed_at, gov_br_verified, gov_br_level")
+      .eq("id", envelope.id)
+      .maybeSingle();
+    if (stateError) {
+      throw new Error("Não foi possível confirmar o estado da assinatura Gov.br.");
+    }
+    if (
+      currentEnvelope?.status === "signed" &&
+      currentEnvelope.gov_br_verified === true &&
+      currentEnvelope.gov_br_level === input.govBrLevel &&
+      currentEnvelope.signed_at
+    ) {
+      const { data: evidence, error: evidenceError } = await supabase
+        .from("signature_evidence")
+        .select("id, signature_digest, consent_given, gov_br_verified, gov_br_level")
+        .eq("envelope_id", envelope.id)
+        .eq("signature_digest", digest)
+        .eq("consent_given", true)
+        .eq("gov_br_verified", true)
+        .eq("gov_br_level", input.govBrLevel)
+        .maybeSingle();
+      if (evidenceError || !evidence) {
+        throw new Error("A evidência Gov.br desta tentativa não foi confirmada.");
+      }
+      const completion = await promoteContractAfterSignatures(supabase, envelope.contract_version_id);
+      return {
+        success: true,
+        signedAt: currentEnvelope.signed_at,
+        digest: evidence.signature_digest,
+        govBrLevel: input.govBrLevel,
+        ...completion,
+      };
+    }
+    throw new Error("A assinatura Gov.br não foi confirmada; o envelope continua pendente.");
+  }
+}
 
 // ─── Geração Automática de Contrato a partir de Pedido / Venda ────────────────
 
@@ -1014,22 +1299,62 @@ export const generateContractFromOrder = createServerFn({ method: "POST" })
     z.object({
       orderId: z.string().uuid(),
       templateTitle: z.string().optional(),
+      publicToken: z.string().trim().min(16).max(200).optional(),
     }),
   )
   .handler(async ({ data: input }) => {
     const supabase = getServerClient();
-    const { data: order, error } = await supabase
-      .from("orders")
-      .select(`
+    const identity = await getIdentity().catch(() => null);
+    const authenticatedUserId = identity?.id ?? null;
+    if (!input.publicToken && !authenticatedUserId) {
+      throw new Error("Autenticação ou token público válido é obrigatório.");
+    }
+
+    let staffStoreId: string | null = null;
+    if (!input.publicToken && authenticatedUserId) {
+      try {
+        staffStoreId = (await requireStaff()).store_id;
+      } catch {
+        // Clientes autenticados podem seguir somente pela consulta owner-filtered abaixo.
+      }
+    }
+
+    const createOrderQuery = () =>
+      supabase
+        .from("orders")
+        .select(`
         id, public_token, total_cents, customer_snapshot, items_snapshot, store_id,
         store:store_id (name, slug)
       `)
-      .eq("id", input.orderId)
-      .single();
+      .eq("id", input.orderId);
 
-    if (error || !order) throw new Error("Pedido não encontrado.");
+    const readOrder = async (query: ReturnType<typeof createOrderQuery>) => {
+      const { data, error } = await query.maybeSingle();
+      if (error) throw new Error("Não foi possível consultar o pedido.");
+      return data;
+    };
+
+    let order: Awaited<ReturnType<typeof readOrder>> = null;
+    if (input.publicToken) {
+      order = await readOrder(createOrderQuery().eq("public_token", input.publicToken));
+    } else {
+      if (!authenticatedUserId) {
+        throw new Error("Autenticação ou token público válido é obrigatório.");
+      }
+      if (staffStoreId) {
+        order = await readOrder(createOrderQuery().eq("store_id", staffStoreId));
+      }
+      if (!order) {
+        order = await readOrder(
+          createOrderQuery().filter("customer_snapshot->>profile_id", "eq", authenticatedUserId),
+        );
+      }
+    }
+
+    if (!order) throw new Error("Pedido não encontrado ou sem permissão.");
 
     const customer = (order.customer_snapshot as Record<string, any>) || {};
+
     const clientName = customer.name || "Cliente";
     const clientCpf = customer.cpf || customer.document || "";
     const clientPhone = customer.phone || "";
@@ -1090,7 +1415,7 @@ Data de emissão: {{data_extenso}}`;
     const { data: contract, error: cErr } = await supabase
       .from("contracts")
       .insert({
-        creator_id: customer.profile_id || "00000000-0000-0000-0000-000000000000",
+        creator_id: identity?.id || customer.profile_id || "00000000-0000-0000-0000-000000000000",
         store_id: order.store_id,
         order_id: order.id,
         title,
@@ -1489,5 +1814,3 @@ export const generateContractDocument = createServerFn({ method: "POST" })
       generatedAt: new Date().toISOString(),
     };
   });
-
-

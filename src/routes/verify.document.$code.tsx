@@ -95,35 +95,54 @@ function DocumentVerificationPage() {
 
   const sealed = result.sealedVersion;
   const signers = (sealed?.envelopes || []).map((env: any) => ({
-    name: env.signer_name,
-    email: env.signer_email,
-    phone: env.signer_phone,
+    name: env.signer_name || "Signatário",
     role: env.signer_role || "party",
-    status: env.status || "pending",
-    signedAt: env.signed_at,
+    status: env.status === "signed" ? "signed" : "pending",
+    signedAt: env.signed_at || null,
     authLevel: env.auth_level,
   }));
+  const isFullySigned = result.isFullySigned === true;
+  const isAuthentic = result.isAuthentic === true;
+  const VerificationIcon = isFullySigned ? ShieldCheck : Clock;
+  const verificationTitle = isFullySigned
+    ? "Documento autêntico; assinaturas concluídas"
+    : !isAuthentic
+      ? "Verificação pendente; versão ainda não selada"
+      : result.pendingReason === "legacy"
+        ? "Registo autêntico; conclusão pendente de reconciliação"
+        : result.pendingReason === "completion"
+          ? "Registo autêntico; conclusão pendente"
+          : "Registo autêntico; assinatura pendente";
+  const verificationDescription = isFullySigned
+    ? "O hash da versão selada foi validado e todas as assinaturas exigidas estão registadas no estado completed."
+    : !isAuthentic
+      ? "O registo foi localizado, mas ainda não há uma versão selada com hash válido. A verificação permanece pendente, não falhada."
+      : result.pendingReason === "legacy"
+        ? "O hash e o registo legado foram localizados; a conclusão das assinaturas aguarda reconciliação com envelopes canónicos."
+        : result.pendingReason === "completion"
+          ? "As assinaturas estão registadas, mas a conclusão do contrato ainda não foi confirmada."
+          : "O registo e a versão selada são autênticos; pelo menos uma assinatura continua pendente.";
 
   return (
     <div className="min-h-[100dvh] bg-background text-foreground py-8 px-0 sm:px-4 md:px-0 flex flex-col justify-center items-center animate-in fade-in duration-200">
       <div className="max-w-3xl w-full space-y-6">
-        {/* Banner Superior de Sucesso e Autenticidade */}
+        {/* Estado de autenticidade e conclusão de assinaturas */}
         <div className="bg-card border border-border/80 rounded-lg p-6 md:p-8 space-y-4 shadow-2xs text-center">
-          <div className="size-14 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto border border-emerald-500/20">
-            <ShieldCheck className="size-8" />
+          <div className="size-14 rounded-lg bg-muted text-primary flex items-center justify-center mx-auto border border-border/70">
+            <VerificationIcon className="size-8" />
           </div>
           <div className="space-y-1">
             <h1 className="text-xl font-bold tracking-tight text-foreground">
-              Documento Autêntico e Verificado
+              {verificationTitle}
             </h1>
             <p className="text-xs text-muted-foreground">
-              Registro Criptográfico emitido na plataforma Waesy em conformidade com a MP 2.200-2/2001 e Lei 14.063/2020
+              {verificationDescription}
             </p>
           </div>
         </div>
 
         {/* Banner de Quitação Plena (Se Aplicável) */}
-        {result.isSettled && (
+        {isAuthentic && result.isSettled && (
           <div className="bg-emerald-500/10 border-2 border-emerald-500/30 rounded-lg p-6 space-y-3 text-center sm:text-left flex flex-col sm:flex-row items-center gap-5 shadow-2xs">
             <div className="size-14 rounded-lg bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-500/30">
               <CheckCircle2 className="size-8" />
@@ -162,11 +181,10 @@ function DocumentVerificationPage() {
           documentTitle={result.title}
           category={CATEGORY_LABELS[result.category] || result.category}
           verificationCode={result.verificationCode}
-          hashSha256={sealed?.hash_sha256 || "CÁLCULO CRIPTOGRÁFICO CONCLUÍDO"}
-          sealedAt={sealed?.sealed_at || result.createdAt}
+          hashSha256={isAuthentic ? sealed?.hash_sha256 : null}
+          sealedAt={isAuthentic ? sealed?.sealed_at : null}
           signers={signers}
-          observers={result.observers || []}
-          isSettled={result.isSettled}
+          isSettled={isAuthentic && result.isSettled}
           dischargeHash={result.dischargeHash}
           dischargeIssuedAt={result.dischargeIssuedAt}
         />
