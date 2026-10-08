@@ -223,7 +223,6 @@ export function WaesyCopilotDrawer(_props: { session?: { id?: string; user?: { i
 
           {/* Area de Mensagens */}
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
-            <CopilotApprovalPanel currentUserId={currentUserId} />
             {messages.length === 0 ? (
               <div className="text-center text-xs text-muted-foreground py-12">
                 Nenhuma mensagem enviada. Como posso ajudar você hoje?
@@ -253,11 +252,6 @@ export function WaesyCopilotDrawer(_props: { session?: { id?: string; user?: { i
                     {m.text}
                   </div>
 
-                  {/* Trilha de Atividade da IA */}
-                  {m.activitySteps && m.activitySteps.length > 0 && (
-                    <AIActivityTrail steps={m.activitySteps} executionId={m.executionId} />
-                  )}
-
                   {/* Blocos Estruturados (Generative UI) */}
                   {m.structuredPayload && (
                     <div className="w-full my-2">
@@ -277,6 +271,11 @@ export function WaesyCopilotDrawer(_props: { session?: { id?: string; user?: { i
                         navigate({ to: "/copilot" as any });
                       }}
                     />
+                  )}
+
+                  {/* Trilha de Atividade da IA (Discreta e Colapsada) */}
+                  {m.activitySteps && m.activitySteps.length > 0 && (
+                    <AIActivityTrail steps={m.activitySteps} executionId={m.executionId} />
                   )}
                 </div>
 

@@ -202,6 +202,29 @@ function travelCard(row: Record<string, any>): InternalSearchCard | null {
   };
 }
 
+const PORTUGUESE_STOP_WORDS = new Set([
+  "a", "o", "as", "os", "um", "uma", "uns", "umas",
+  "de", "da", "do", "das", "dos", "em", "na", "no", "nas", "nos",
+  "por", "para", "com", "sem", "sob", "sobre", "entre", "ate", "até",
+  "que", "se", "ou", "e", "mas", "como", "mais", "menos", "muito",
+  "qual", "quais", "quem", "onde", "quando", "quanto", "quantos",
+  "quero", "queria", "gostaria", "preciso", "favor", "por favor",
+  "tem", "temos", "têm", "ter", "está", "estou", "estão",
+  "viagem", "viagens", "viajar", "passeio", "passeios", "turismo",
+  "produto", "produtos", "servico", "servicos", "serviço", "serviços",
+  "coisa", "coisas", "algo", "ver", "olhar", "buscar", "procurar", "achar"
+]);
+
+function extractDiscriminatorTokens(query: string): string[] {
+  return query
+    .toLocaleLowerCase("pt-BR")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .split(/[\s,.;:!?/\\-]+/)
+    .map((t) => t.trim())
+    .filter((token) => token.length >= 3 && !PORTUGUESE_STOP_WORDS.has(token));
+}
+
 async function searchTable(
   db: SupabaseClient,
   table: string,
@@ -217,20 +240,45 @@ async function searchTable(
     return { cards: [], unavailable: true };
   }
 
-  const normalized = query.toLocaleLowerCase("pt-BR");
-  const rows = (data ?? []).filter((row: Record<string, any>) => {
+  const discriminatorTokens = extractDiscriminatorTokens(query);
+
+  const scoredRows = (data ?? []).map((row: Record<string, any>) => {
     if (table === "classifieds" || table === "events" || table === "directory_listings") {
       const status = String(row.status ?? row.visibility ?? "").toLowerCase();
-      if (status && !["active", "published", "approved", "live", "public"].includes(status)) return false;
+      if (status && !["active", "published", "approved", "live", "public"].includes(status)) return null;
     }
-    if (!normalized) return true;
-    const haystack = [row.title, row.name, row.business_name, row.store_name, row.destination_name, row.package_name, row.category, row.description, row.address, row.city, row.state]
-      .filter(Boolean).join(" ").toLocaleLowerCase("pt-BR");
-    return normalized.split(/\s+/).filter((token) => token.length > 2).some((token) => haystack.includes(token));
-  });
+
+    // Se não há tokens discriminatórios na busca do usuário, exibe registros padrão
+    if (discriminatorTokens.length === 0) {
+      return { row, score: 1 };
+    }
+
+    const titleHaystack = [row.title, row.name, row.business_name, row.store_name, row.destination_name, row.package_name]
+      .filter(Boolean).join(" ").toLocaleLowerCase("pt-BR").normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    const locationHaystack = [row.address, row.city, row.state, row.venue, row.destination]
+      .filter(Boolean).join(" ").toLocaleLowerCase("pt-BR").normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    const bodyHaystack = [row.category, row.description, row.summary, row.short_description]
+      .filter(Boolean).join(" ").toLocaleLowerCase("pt-BR").normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+    let score = 0;
+    for (const token of discriminatorTokens) {
+      if (titleHaystack.includes(token)) score += 10;
+      else if (locationHaystack.includes(token)) score += 6;
+      else if (bodyHaystack.includes(token)) score += 2;
+    }
+
+    if (score === 0) return null;
+    return { row, score };
+  }).filter((item): item is { row: Record<string, any>; score: number } => Boolean(item));
+
+  // Ordena por maior relevância discriminatória
+  scoredRows.sort((a, b) => b.score - a.score);
 
   const mapper = kind === "product" ? productCard : kind === "store" ? storeCard : kind === "event" ? eventCard : kind === "travel" ? travelCard : classifiedCard;
-  return { cards: rows.map(mapper).filter((item): item is InternalSearchCard => Boolean(item)).slice(0, 6), unavailable: false };
+  return {
+    cards: scoredRows.map(({ row }) => mapper(row)).filter((item): item is InternalSearchCard => Boolean(item)).slice(0, 6),
+    unavailable: false,
+  };
 }
 
 export function shouldSearchPlatform(prompt: string): boolean {

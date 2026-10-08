@@ -110,8 +110,8 @@ export const SITE_BUILDER_BLOCKS: SiteBuilderBlockDefinition[] = [
     description: "Grade modular com diferenciais de alto impacto.",
     component: BentoAsymmetricGrid as any,
     defaultProps: {
-      sectionTitle: "Engenharia de precisão para operações de alto volume",
-      sectionSubtitle: "Projetado do banco de dados à interface para garantir zero lentidão e disponibilidade absoluta.",
+      sectionTitle: "Tudo o que seu negócio precisa para crescer",
+      sectionSubtitle: "Uma plataforma completa para vender, atender e fidelizar clientes todos os dias com máxima velocidade.",
       cells: [
         {
           id: "cell-1",
@@ -133,7 +133,7 @@ export const SITE_BUILDER_BLOCKS: SiteBuilderBlockDefinition[] = [
           id: "cell-3",
           tag: "SEGURANÇA",
           title: "Conformidade LGPD & Criptografia",
-          description: "Isolamento multi-tenant deny-by-default e assinaturas digitais auditáveis.",
+          description: "Pagamentos protegidos e dados criptografados de ponta a ponta.",
           colSpan: 1,
         },
         {
