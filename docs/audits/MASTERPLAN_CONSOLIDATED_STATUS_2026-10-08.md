@@ -19,3 +19,10 @@ A Edge Function agora usa o envelope `infotravel-v1`, mapeia respostas por açã
 ## Onda 9 — módulos dependentes conectados ao DTO v1
 
 O contrato `infotravel-v1` passou a ser obrigatório no BFF dos consumidores. Ofertas são convertidas para `Hotel`/`Flight`, bookings são convertidos para `NormalizedBooking`, e importação/sync passam pela RPC atômica. O lifecycle de propostas, viagens, passageiros, itens de confirmação, vouchers, embarques e financeiro foi validado como consumidor da raiz canônica `tourism_trips`.
+
+
+## Dossiê end-to-end da execução
+
+A consolidação completa desta rodada está em `docs/audits/MASTERPLAN_END_TO_END_EXECUTION_DOSSIER_2026-10-08.md`, incluindo linha do tempo, diagnóstico do que estava quebrado, entregas efetivas das Ondas 1–9, evidências, matriz end-to-end, riscos e plano das Ondas 10–12. O procedimento operacional para homologação, RLS, fixtures, browser E2E, falhas, replay e rollback está em `docs/audits/INFOTRAVEL_HOMOLOGATION_AND_RELEASE_RUNBOOK_2026-10-08.md`.
+
+O estado continua sendo **implementação de código documentada até a Onda 9; homologação operacional e produção não comprovadas** até que os gates externos sejam executados.
