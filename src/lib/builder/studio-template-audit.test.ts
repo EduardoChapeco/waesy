@@ -180,7 +180,7 @@ describe("Studio template automated quality pipeline", () => {
     expect(getPublicationBlockingFindings(result).length).toBeGreaterThanOrEqual(3);
   });
 
-  it("expõe findings bloqueantes ao serviço de publicação para um documento Omni", () => {
+	it("expõe findings bloqueantes ao serviço de publicação para um documento Omni", () => {
     const page = {
       ...createEmptyOmniPage("publish-gate", "Página de publicação"),
       blocks: [{
@@ -190,6 +190,15 @@ describe("Studio template automated quality pipeline", () => {
       }],
     };
     const result = auditOmniDocument(page);
-    expect(getPublicationBlockingFindings(result).map((finding) => finding.ruleId)).toContain("LICENSE_PROVENANCE_MISSING");
-  });
+	 expect(getPublicationBlockingFindings(result).map((finding) => finding.ruleId)).toContain("LICENSE_PROVENANCE_MISSING");
+	});
+
+	it("bloqueia bloco Omni que não existe no registry canônico", () => {
+	 const page = {
+	   ...createEmptyOmniPage("unknown-block", "Página inválida"),
+	   blocks: [{ id: "unknown", type: "future_block", config: {} }],
+	 };
+	 const result = auditOmniDocument(page);
+	 expect(getPublicationBlockingFindings(result).map((finding) => finding.ruleId)).toContain("BUILDER_UNKNOWN_OMNI_BLOCK");
+	});
 });

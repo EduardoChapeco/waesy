@@ -78,18 +78,14 @@ export function TravelPromoFlyerModal({
   // Auto-binding prioritário dos dados do anúncio aberto
   const resolvedInitialTitle = destinationTitle || initialData?.title || "Destino Especial";
   const resolvedInitialCity = destinationCity || initialData?.destination || resolvedInitialTitle;
-  const resolvedInitialDates = propDatesText !== undefined ? propDatesText : (initialData?.datesText || "Temporada 2026/2027");
-  const resolvedInitialInclusions = propInclusions || initialData?.inclusions || [
-    "Aéreo ida e volta",
-    "Hospedagem com café",
-    "Traslados inclusos",
-  ];
+  const resolvedInitialDates = propDatesText !== undefined ? propDatesText : (initialData?.datesText || "");
+  const resolvedInitialInclusions = propInclusions || initialData?.inclusions || [];
   const resolvedInitialPrice = propPriceCents !== undefined && propPriceCents !== null
     ? propPriceCents
-    : (initialData?.priceCents || 249000);
+    : (initialData?.priceCents ?? null);
   const resolvedInitialInstallments = propInstallments || initialData?.maxInstallments || 12;
   const resolvedInitialBg = propBackgroundImageUrl || initialData?.backgroundImageUrl || "/brand-logo.png";
-  const resolvedStoreName = propStoreName || initialData?.storeName || "Waesy Turismo";
+  const resolvedStoreName = propStoreName || initialData?.storeName || "";
 
   // Estados de edição do Flyer
   const [templateId, setTemplateId] = useState<string>(
@@ -123,7 +119,7 @@ export function TravelPromoFlyerModal({
   const [destination, setDestination] = useState(resolvedInitialCity);
   const [datesText, setDatesText] = useState(resolvedInitialDates || "");
   const [inclusionsText, setInclusionsText] = useState(resolvedInitialInclusions.join(", "));
-  const [priceCents, setPriceCents] = useState<number>(resolvedInitialPrice);
+  const [priceCents, setPriceCents] = useState<number | null>(resolvedInitialPrice);
   const [maxInstallments, setMaxInstallments] = useState<number>(resolvedInitialInstallments);
   const [pricingMode, setPricingMode] = useState<"per_person" | "total_package">(initialData?.pricingMode || "per_person");
   const [storeNameValue, setStoreNameValue] = useState(resolvedStoreName);
@@ -258,7 +254,7 @@ export function TravelPromoFlyerModal({
     inclusions: parsedInclusions,
     priceCents,
     maxInstallments,
-    installmentCents: Math.round(priceCents / (maxInstallments || 1)),
+    installmentCents: priceCents !== null ? Math.round(priceCents / (maxInstallments || 1)) : null,
     pricingMode,
     backgroundImageUrl: safeBgDataUri || bgImageUrl,
     aspectRatio,
@@ -798,7 +794,7 @@ export function TravelPromoFlyerModal({
                     <div className="flex items-center justify-between">
                       <Label className="text-xs font-semibold">Preço Total à Vista</Label>
                       <span className="text-xs font-bold text-primary font-mono">
-                        {formatMoney(priceCents)}
+                        {priceCents !== null ? formatMoney(priceCents) : "Preço não informado"}
                       </span>
                     </div>
 
@@ -807,8 +803,8 @@ export function TravelPromoFlyerModal({
                         <Label className="text-[11px] text-muted-foreground">Valor (em centavos)</Label>
                         <Input
                           type="number"
-                          value={priceCents}
-                          onChange={(e) => setPriceCents(Number(e.target.value) || 0)}
+                          value={priceCents ?? ""}
+                          onChange={(e) => setPriceCents(e.target.value === "" ? null : Number(e.target.value))}
                           className="h-8 text-xs font-mono"
                         />
                       </div>
@@ -821,7 +817,7 @@ export function TravelPromoFlyerModal({
                         >
                           {[1, 2, 3, 4, 5, 6, 8, 10, 12, 15, 18, 24].map((num) => (
                             <option key={num} value={num}>
-                              {num}x de {formatMoney(Math.round(priceCents / num))}
+                              {priceCents !== null ? `${num}x de ${formatMoney(Math.round(priceCents / num))}` : `${num}x — preço não informado`}
                             </option>
                           ))}
                         </select>

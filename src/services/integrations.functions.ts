@@ -176,14 +176,21 @@ export const saveIntegrationCredential = createServerFn({ method: "POST" })
  }
 
  const isWhatsAppCloud = provider === "whatsapp_cloud_api";
+ const isInfotravel = provider === "infotravel";
  const publicMetadata = isWhatsAppCloud
    ? Object.fromEntries(
        Object.entries(tokenPayload).filter(([key]) => ["phone_number_id", "business_account_id", "waba_id"].includes(key)),
      )
-   : {};
+   : isInfotravel
+     ? Object.fromEntries(
+         Object.entries(tokenPayload).filter(([key]) => ["base_url", "auth", "api_key_header", "search_hotels_path", "search_flights_path", "search_transfers_path", "search_activities_path", "import_booking_path", "create_booking_path", "run_periodic_sync_path", "test_connection_path"].includes(key)),
+       )
+     : {};
  const secretPayload = isWhatsAppCloud
    ? Object.fromEntries(Object.entries(tokenPayload).filter(([key]) => !Object.keys(publicMetadata).includes(key)))
-   : tokenPayload;
+   : isInfotravel
+     ? Object.fromEntries(Object.entries(tokenPayload).filter(([key]) => !Object.keys(publicMetadata).includes(key)))
+     : tokenPayload;
 
  const { data: record, error } = await supabase
   .from("integration_credentials")
@@ -191,9 +198,9 @@ export const saveIntegrationCredential = createServerFn({ method: "POST" })
   {
  store_id: identity.store_id,
  provider,
-   token_payload: isWhatsAppCloud ? publicMetadata : tokenPayload,
-   public_metadata: isWhatsAppCloud ? publicMetadata : {},
-   secret_payload_encrypted: isWhatsAppCloud ? encryptSecret(JSON.stringify(secretPayload)) : null,
+   token_payload: isWhatsAppCloud || isInfotravel ? publicMetadata : tokenPayload,
+   public_metadata: isWhatsAppCloud || isInfotravel ? publicMetadata : {},
+   secret_payload_encrypted: isWhatsAppCloud || isInfotravel ? encryptSecret(JSON.stringify(secretPayload)) : null,
  is_active: isActive,
  updated_at: new Date().toISOString(),
  },

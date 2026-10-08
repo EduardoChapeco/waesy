@@ -149,6 +149,11 @@ export const builderRegistry: Record<string, BlockManifest> = {
  overlayOpacity: z.enum(["light", "medium", "dark"]).default("medium"),
  desktopHeight: z.enum(["full", "proportional", "square", "natural"]).default("proportional"),
  }),
+ styleSchema: z.object({
+ showOverlay: z.boolean().default(true),
+ overlayOpacity: z.enum(["light", "medium", "dark"]).default("medium"),
+ desktopHeight: z.enum(["full", "proportional", "square", "natural"]).default("proportional"),
+ }),
 
  inspector: {
  content: [
@@ -276,6 +281,12 @@ export const builderRegistry: Record<string, BlockManifest> = {
  target_date: z.string(),
  expired_message: z.string().optional(),
  }),
+ styleSchema: z.object({
+ backgroundColor: z.string().optional(),
+ textColor: z.string().optional(),
+ boxColor: z.string().optional(),
+ boxTextColor: z.string().optional(),
+ }),
  inspector: {
  content: [
  { name: "title", label: "Título de Urgência", type: "text" },
@@ -401,6 +412,11 @@ export const builderRegistry: Record<string, BlockManifest> = {
  itemsPerRowMobile: z.enum(["1", "2"]).default("2"),
  freeScroll: z.boolean().default(true),
  }),
+ layoutSchema: z.object({
+ itemsPerRowDesktop: z.enum(["3", "4", "5"]).default("4"),
+ itemsPerRowMobile: z.enum(["1", "2"]).default("2"),
+ freeScroll: z.boolean().default(true),
+ }),
  inspector: {
  content: [
  { name: "title", label: "Título da Vitrine", type: "text" },
@@ -463,6 +479,10 @@ export const builderRegistry: Record<string, BlockManifest> = {
  surfaceVariant: z
  .enum(["default", "zine", "ticket", "lambe", "journal", "flat", "muted"])
  .default("default"),
+ text_color: z.string().optional(),
+ }),
+ styleSchema: z.object({
+ surfaceVariant: z.enum(["default", "zine", "ticket", "lambe", "journal", "flat", "muted"]).default("default"),
  text_color: z.string().optional(),
  }),
  inspector: {
@@ -1202,7 +1222,7 @@ export const builderRegistry: Record<string, BlockManifest> = {
  contentSchema: z.object({
  title: z.string().optional(),
  subtitle: z.string().optional(),
- image_url: z.string().url(),
+ image_url: z.string().url().or(z.literal("")),
  mobile_image_url: z.string().optional(),
  hotspots: z.array(
  z.object({
@@ -1408,8 +1428,8 @@ export const builderRegistry: Record<string, BlockManifest> = {
  contentSchema: z.object({
  title: z.string().optional(),
  subtitle: z.string().optional(),
- before_image: z.string().url(),
- after_image: z.string().url(),
+ before_image: z.string().url().or(z.literal("")),
+ after_image: z.string().url().or(z.literal("")),
  before_label: z.string().optional(),
  after_label: z.string().optional(),
  }),
@@ -2050,6 +2070,11 @@ export const builderRegistry: Record<string, BlockManifest> = {
  targetLink: z.string().optional(),
  targetDate: z.string().optional(),
  bgImageUrl: z.string().optional(),
+ }),
+ styleSchema: z.object({
+ backgroundColor: z.string().optional(),
+ textColor: z.string().optional(),
+ accentColor: z.string().optional(),
  }),
  inspector: {
  content: [

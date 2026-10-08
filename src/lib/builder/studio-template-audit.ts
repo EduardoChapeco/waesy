@@ -4,8 +4,9 @@ import type { OmniBlockStyling } from "@/types/omni-builder";
 import type { OmniBlockInstance, OmniPageDocument } from "@/types/omni-builder";
 import { STUDIO_TEMPLATE_CATALOG } from "./studio-catalog";
 import { getSafeBuilderHref } from "./safe-href";
+import { getSiteBlockByIdStrict } from "@/components/builder/registry";
 
-export type TemplateAuditCategory = "license" | "accessibility" | "performance" | "content" | "security";
+export type TemplateAuditCategory = "license" | "accessibility" | "performance" | "content" | "security" | "registry";
 export type TemplateAuditSeverity = "error" | "warning" | "info";
 export type TemplateAuditStatus = "pass" | "warn" | "fail";
 
@@ -87,6 +88,21 @@ function isExternal(url: string): boolean { return URL_PATTERN.test(url); }
 function assetMatchesUrl(asset: BuilderAssetRef, url: string): boolean { return asset.source_url === url || asset.source_page_url === url; }
 function isUnsplashImageUrl(url: string): boolean {
   try { return new URL(url).hostname === "images.unsplash.com"; } catch { return false; }
+}
+
+function auditRegistryBlocks(blocks: OmniBlockInstance[], findings: TemplateAuditFinding[]) {
+  blocks.forEach((block, index) => {
+    if (!getSiteBlockByIdStrict(block.type)) {
+      addFinding(
+        findings,
+        "BUILDER_UNKNOWN_OMNI_BLOCK",
+        "registry",
+        "error",
+        `blocks[${index}].type`,
+        `O bloco Omni \"${block.type}\" não existe no registry canônico e não pode ser publicado.`,
+      );
+    }
+  });
 }
 
 function luminance(hex: string): number | null {
@@ -312,6 +328,7 @@ export function auditStudioTemplate(
   const blocks = template.blocks as OmniBlockInstance[];
   const serializedBytes = new TextEncoder().encode(JSON.stringify({ id: template.id, blocks })).byteLength;
   const findings: TemplateAuditFinding[] = [];
+  auditRegistryBlocks(blocks, findings);
   auditLicenses(blocks, findings);
   auditContentIntegrity(blocks, findings);
   auditSafeNavigationLinks(blocks, findings);
