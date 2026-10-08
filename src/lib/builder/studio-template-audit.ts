@@ -2,8 +2,9 @@ import type { BuilderAssetRef } from "./asset-contract";
 import { isAssetPublicationReady } from "./asset-contract";
 import { NICHE_TEMPLATE_MATRIX, type NicheTemplateDefinition } from "./omni-templates";
 import type { OmniBlockInstance, OmniPageDocument } from "@/types/omni-builder";
+import { getSiteBlockByIdStrict } from "@/components/builder/registry";
 
-export type TemplateAuditCategory = "license" | "accessibility" | "performance";
+export type TemplateAuditCategory = "license" | "accessibility" | "performance" | "registry";
 export type TemplateAuditSeverity = "error" | "warning" | "info";
 export type TemplateAuditStatus = "pass" | "warn" | "fail";
 
@@ -76,6 +77,21 @@ function collectImageReferences(value: unknown, path: string, result: Array<{ pa
 
 function isExternal(url: string): boolean { return URL_PATTERN.test(url); }
 function assetMatchesUrl(asset: BuilderAssetRef, url: string): boolean { return asset.source_url === url || asset.source_page_url === url; }
+
+function auditRegistryBlocks(blocks: OmniBlockInstance[], findings: TemplateAuditFinding[]) {
+  blocks.forEach((block, index) => {
+    if (!getSiteBlockByIdStrict(block.type)) {
+      addFinding(
+        findings,
+        "BUILDER_UNKNOWN_OMNI_BLOCK",
+        "registry",
+        "error",
+        `blocks[${index}].type`,
+        `O bloco Omni \"${block.type}\" não existe no registry canônico e não pode ser publicado.`,
+      );
+    }
+  });
+}
 
 function luminance(hex: string): number | null {
   const normalized = hex.trim().replace(/^#/, "");
@@ -203,6 +219,7 @@ export function auditStudioTemplate(
   const blocks = template.blocks as OmniBlockInstance[];
   const serializedBytes = new TextEncoder().encode(JSON.stringify({ id: template.id, blocks })).byteLength;
   const findings: TemplateAuditFinding[] = [];
+  auditRegistryBlocks(blocks, findings);
   auditLicenses(blocks, findings);
   blocks.forEach((block, index) => auditBlockAccessibility(block, index, findings));
   auditPerformance(blocks, serializedBytes, thresholds, findings);

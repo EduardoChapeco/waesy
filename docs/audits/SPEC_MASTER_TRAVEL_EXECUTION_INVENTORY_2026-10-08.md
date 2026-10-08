@@ -1,15 +1,9 @@
 
 
-## Continuação executada — Onda 5: Builder CMS modular
+## Onda 5 — Validação de contratos e publicação segura
 
-Foi auditado o contrato entre `src/lib/builder/builder-registry.ts`, `BuilderInspector`, `ExperienceRenderer` e os painéis CMS. O primeiro gap real encontrado foi o manifesto `office_contract_viewer`: ele estava descrito no registry e disponível no componente visual, mas não estava conectado ao `componentMap` canônico do renderer. Em produção isso resultava em bloco vazio/fallback silencioso fora do modo de edição.
+Foi implementado `src/lib/builder/registry-contract.ts`, que verifica para cada manifest: versão semver, identidade do tipo, `defaultProps.block_type`, `node_type`, compatibilidade de `contentSchema`/`layoutSchema`/`styleSchema` com defaults e coerência dos campos do Inspector, incluindo opções de selects e subcampos de arrays. O diagnóstico encontrou seis divergências reais: cinco superfícies sem schema explícito e dois defaults vazios rejeitados por URLs estritas. Todas foram corrigidas no registry.
 
-Entregas desta etapa:
+Também foi fechado o próximo gap pendente de publicação Omni: `auditOmniDocument` agora gera finding bloqueante `BUILDER_UNKNOWN_OMNI_BLOCK` quando um bloco não existe no registry canônico, evitando que o renderer público simplesmente o ignore.
 
-- conexão de `office_contract_viewer` ao `ExperienceRenderer`;
-- exportação da cobertura efetiva do renderer e dos aliases estruturais;
-- novo gate que compara automaticamente todos os manifests do registry com structural handlers, aliases e componentes leaf;
-- cobertura dos blocos Omni preservada no mesmo contrato;
-- detecção preventiva de novos blocos órfãos antes da publicação.
-
-**Validação incremental:** renderer + contratos Studio: 6 testes aprovados; typecheck e `git diff --check` passaram. O próximo incremento da Onda 5 deve evoluir esse gate para validar também schemas/defaultProps e registrar a versão do contrato no CMS.
+**Validação final:** 15 testes focados aprovados, typecheck aprovado e `git diff --check` aprovado.
