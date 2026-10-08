@@ -29,6 +29,11 @@ CREATE INDEX IF NOT EXISTS idx_global_hotels_destination
 CREATE INDEX IF NOT EXISTS idx_global_hotels_verified
   ON public.global_hotels (verified_by_master) WHERE verified_by_master = true;
 
+ALTER TABLE public.hotels_bank
+  ADD COLUMN IF NOT EXISTS global_hotel_id UUID REFERENCES public.global_hotels(id) ON DELETE SET NULL;
+CREATE INDEX IF NOT EXISTS idx_hotels_bank_global_hotel_id
+  ON public.hotels_bank (global_hotel_id);
+
 CREATE TABLE IF NOT EXISTS public.hotel_aliases (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   global_hotel_id UUID NOT NULL REFERENCES public.global_hotels(id) ON DELETE CASCADE,

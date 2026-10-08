@@ -136,6 +136,7 @@ export interface HotelStructure {
 export interface HotelBankDTO {
  id: string;
  store_id: string | null;
+ global_hotel_id?: string | null;
  destination_id?: string | null;
  destination_name?: string | null;
  name: string;
@@ -540,9 +541,10 @@ export const getHotelById = createServerFn({ method: "GET" })
  });
 
 export const createHotel = createServerFn({ method: "POST" })
- .validator(
- z.object({
- destination_id: z.string().uuid().optional().nullable(),
+	 .validator(
+	 z.object({
+	 global_hotel_id: z.string().uuid().optional().nullable(),
+	 destination_id: z.string().uuid().optional().nullable(),
  name: z.string().min(2, "Nome do hotel é obrigatório."),
  city: z.string().min(2, "Cidade é obrigatória."),
  state: z.string().optional().nullable(),
@@ -575,11 +577,12 @@ export const createHotel = createServerFn({ method: "POST" })
  if (!store_id) throw new Error("Nenhuma loja ativa selecionada.");
 
  const { data: inserted, error } = await db
- .from("hotels_bank")
- .insert({
- store_id,
- created_by_profile_id: profile_id,
- destination_id: data.destination_id || null,
+	 .from("hotels_bank")
+	 .insert({
+	 store_id,
+	 created_by_profile_id: profile_id,
+	 global_hotel_id: data.global_hotel_id || null,
+	 destination_id: data.destination_id || null,
  name: data.name.trim(),
  city: data.city.trim(),
  state: data.state?.trim() || null,
@@ -614,10 +617,11 @@ export const createHotel = createServerFn({ method: "POST" })
  });
 
 export const updateHotel = createServerFn({ method: "POST" })
- .validator(
- z.object({
- id: z.string().uuid(),
- destination_id: z.string().uuid().optional().nullable(),
+	 .validator(
+	 z.object({
+	 id: z.string().uuid(),
+	 global_hotel_id: z.string().uuid().optional().nullable(),
+	 destination_id: z.string().uuid().optional().nullable(),
  name: z.string().min(2).optional(),
  city: z.string().optional(),
  state: z.string().optional().nullable(),
