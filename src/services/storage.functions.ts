@@ -602,7 +602,7 @@ export const uploadProfileMediaDirect = createServerFn({ method: "POST" })
       base64Data: z.string().min(1),
       fileName: z.string().min(1),
       fileType: z.string().default("image/png"),
-      target: z.enum(["avatar", "cover", "creator_avatar", "creator_cover"]),
+      target: z.enum(["avatar", "cover", "creator_avatar", "creator_cover", "biolink_banner"]),
     }),
   )
   .handler(async ({ data: { base64Data, fileName, fileType, target } }) => {
@@ -617,7 +617,9 @@ export const uploadProfileMediaDirect = createServerFn({ method: "POST" })
           ? "avatars"
           : target === "cover" || target === "creator_cover"
             ? "covers"
-            : "post-media";
+            : target === "biolink_banner"
+              ? "banners"
+              : "post-media";
       const ext = fileName.split(".").pop() || "png";
       const uniqueName = `profiles/${identity.id}/${target}_${Date.now()}.${ext}`;
 

@@ -787,7 +787,15 @@ const UpdateProfileSchema = z.object({
  .or(z.literal(""))
  .refine((v) => !v || isValidCpf(v), { message: "CPF inválido" }),
  birthDate: z.string().optional().or(z.literal("")), // ISO date string
- gender: z.enum(["feminino", "masculino", "outro", "prefiro_nao_dizer"]).optional(),
+ gender: z
+  .preprocess((val) => {
+   if (!val || val === "" || val === "not_informed") return "prefiro_nao_dizer";
+   if (val === "female") return "feminino";
+   if (val === "male") return "masculino";
+   if (val === "other" || val === "non_binary") return "outro";
+   return val;
+  }, z.enum(["feminino", "masculino", "outro", "prefiro_nao_dizer"]))
+  .optional(),
  newsletterOptIn: z.boolean().optional(),
  biolinks: z.array(z.object({
  id: z.string(),

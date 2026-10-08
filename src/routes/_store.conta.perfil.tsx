@@ -19,8 +19,16 @@ import { User, Camera, ExternalLink, Loader2, Image as ImageIcon, Trash2, Check,
 import { Switch } from "@/components/ui/switch";
 import { ProfessionalResumeEditor, ResumeDataDTO } from "@/components/profile/professional-resume-editor";
 
+function normalizeGenderValue(g?: string): "feminino" | "masculino" | "outro" | "prefiro_nao_dizer" {
+  if (!g || g === "not_informed") return "prefiro_nao_dizer";
+  if (g === "female" || g === "feminino") return "feminino";
+  if (g === "male" || g === "masculino") return "masculino";
+  if (g === "other" || g === "non_binary" || g === "outro") return "outro";
+  return "prefiro_nao_dizer";
+}
+
 export const Route = createFileRoute("/_store/conta/perfil")({
-  head: () => ({ meta: [{ title: "Perfil Civil e Identidade | Waesy" }] }),
+  head: () => ({ meta: [{ title: "Meu Perfil | Waesy" }] }),
   validateSearch: (search: Record<string, unknown>): { tab?: string } => ({
     tab: typeof search.tab === "string" ? search.tab : undefined,
   }),
@@ -72,12 +80,14 @@ function ProfileCivilPage() {
 
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
+  const biolinkImageInputRef = useRef<HTMLInputElement>(null);
 
-  // Estados de Recorte de Imagem (1:1 Avatar, 3:1 Capa)
+  // Estados de Recorte de Imagem (1:1 Avatar, 21:9 Capa)
   const [cropperOpen, setCropperOpen] = useState(false);
   const [cropperSrc, setCropperSrc] = useState<string | null>(null);
   const [cropperType, setCropperType] = useState<"avatar" | "cover">("avatar");
   const [isUploadingMedia, setIsUploadingMedia] = useState(false);
+  const [isUploadingBiolinkImage, setIsUploadingBiolinkImage] = useState(false);
 
   const initialResume = profile?.resume_data || {};
   const [formData, setFormData] = useState({
@@ -98,7 +108,7 @@ function ProfileCivilPage() {
     website: profile?.website || "",
     cpf: profile?.cpf ? maskCpf(profile.cpf) : "",
     birthDate: profile?.birthDate || profile?.birth_date || "",
-    gender: profile?.gender || "not_informed",
+    gender: normalizeGenderValue(profile?.gender),
     newsletterOptIn: profile?.newsletterOptIn ?? false,
     isAnonymous: profile?.is_anonymous ?? profile?.isAnonymous ?? false,
     hideLocation: profile?.hide_location ?? profile?.hideLocation ?? false,
@@ -196,6 +206,37 @@ function ProfileCivilPage() {
     e.target.value = "";
   };
 
+  const handleBiolinkImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsUploadingBiolinkImage(true);
+    try {
+      const base64Data = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+
+      const res = await uploadProfileMediaDirect({
+        data: {
+          fileName: `biolink_${Date.now()}.${file.name.split(".").pop() || "png"}`,
+          fileType: file.type || "image/png",
+          base64Data,
+          target: "biolink_banner",
+        },
+      });
+
+      setNewLinkImage(res.publicUrl);
+      toast.success("Imagem de fundo do link enviada com sucesso!");
+    } catch (err: unknown) {
+      toast.error((err instanceof Error ? err.message : String(err)) || "Erro no upload do banner.");
+    } finally {
+      setIsUploadingBiolinkImage(false);
+      e.target.value = "";
+    }
+  };
+
   const handleCropComplete = async (croppedBlob: Blob) => {
     setCropperOpen(false);
     setIsUploadingMedia(true);
@@ -211,7 +252,7 @@ function ProfileCivilPage() {
 
       const res = await uploadProfileMediaDirect({
         data: {
-          fileName: `civil_${type}_${Date.now()}.png`,
+          fileName: `perfil_${type}_${Date.now()}.png`,
           fileType: "image/png",
           base64Data,
           target: type,
@@ -220,10 +261,10 @@ function ProfileCivilPage() {
 
       if (type === "avatar") {
         set("avatarUrl", res.publicUrl);
-        toast.success("Foto de perfil civil atualizada!");
+        toast.success("Foto de perfil atualizada!");
       } else if (type === "cover") {
         set("coverUrl", res.publicUrl);
-        toast.success("Foto de capa civil atualizada!");
+        toast.success("Foto de capa atualizada!");
       }
     } catch (err: unknown) {
       toast.error((err instanceof Error ? err.message : String(err)) || "Erro no upload da imagem.");
@@ -290,10 +331,10 @@ function ProfileCivilPage() {
         },
       });
 
-      toast.success("Conta Civil e preferências salvas com sucesso!");
+      toast.success("Perfil e preferências salvos com sucesso!");
       router.invalidate();
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Erro ao salvar perfil civil";
+      const msg = err instanceof Error ? err.message : "Erro ao salvar perfil";
       toast.error(msg);
     } finally {
       setIsSubmitting(false);
@@ -391,24 +432,24 @@ function ProfileCivilPage() {
         </div>
       </div>
 
-      {/* ── 2. Banner de Claridade de Identidade (The Root Entity Callout) ── */}
+      {/* ── 2. Banner Informativo do Perfil Pessoal ── */}
       <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 sm:p-5 flex items-start gap-4 text-xs text-foreground">
         <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-1">
           <ShieldCheck className="size-5" />
         </div>
         <div className="space-y-1 min-w-0">
           <div className="flex items-center gap-2">
-            <h3 className="font-bold text-foreground text-sm">Conta Civil</h3>
+            <h3 className="font-bold text-foreground text-sm">Perfil Pessoal</h3>
             <Badge variant="outline" className="text-[10px] font-mono border-primary/30 text-primary">
-              Root Transacional
+              Titular da Conta
             </Badge>
           </div>
           <p className="text-muted-foreground leading-relaxed text-[11px] sm:text-xs">
-            Esta é a sua identidade civil como pessoa física. Ela é a responsável legal por{" "}
-            <strong>compras na loja, ingressos nominais, pedidos e assinaturas de contratos</strong>.
-            Para publicar como artista, criador de conteúdo ou operar empresas, utilize o{" "}
+            Estes são os seus dados como usuário na plataforma, utilizados para{" "}
+            <strong>compras, ingressos, pedidos e comunicação com estabelecimentos</strong>.
+            Para alternar e gerenciar lojas, empresas ou projetos profissionais, utilize o{" "}
             <Link to="/conta" className="text-primary font-semibold hover:underline">
-              Alternador de Identidade
+              painel de contas
             </Link>{" "}
             no menu superior.
           </p>
@@ -506,7 +547,7 @@ function ProfileCivilPage() {
                 </div>
 
                 {/* Capa Panorâmica Canônica 21:9 ao lado */}
-                <div className="flex-1 min-w-0 aspect-[21/9] rounded-lg bg-muted/20 relative overflow-hidden flex items-center group border border-border/40">
+                <div className="flex-1 min-w-0 h-20 sm:h-28 md:h-32 rounded-lg bg-muted/20 relative overflow-hidden flex items-center group border border-border/40">
                   {formData.coverUrl ? (
                     <img
                       src={formData.coverUrl}
@@ -561,12 +602,12 @@ function ProfileCivilPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label className="text-xs font-semibold text-foreground">Nome Completo (Civil) *</Label>
+                  <Label className="text-xs font-semibold text-foreground">Nome Completo *</Label>
                   <Input
                     required
                     value={formData.fullName}
                     onChange={(e) => set("fullName", e.target.value)}
-                    placeholder="Seu nome civil completo"
+                    placeholder="Seu nome completo"
                     className="h-11 rounded-lg text-base sm:text-xs bg-background"
                   />
                 </div>
@@ -592,9 +633,8 @@ function ProfileCivilPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
                 {/* CPF com Máscara e Validação */}
                 <div className="space-y-2">
-                  <Label className="text-xs font-semibold text-foreground flex items-center justify-between">
+                  <Label className="text-xs font-semibold text-foreground">
                     <span>CPF (Pessoa Física)</span>
-                    <span className="text-[10px] text-muted-foreground font-mono">Documento Soberano</span>
                   </Label>
                   <Input
                     value={formData.cpf}
@@ -645,16 +685,15 @@ function ProfileCivilPage() {
                 {/* Gênero */}
                 <div className="space-y-2">
                   <Label className="text-xs font-semibold text-foreground">Gênero</Label>
-                  <Select value={formData.gender} onValueChange={(val) => set("gender", val)}>
+                  <Select value={formData.gender} onValueChange={(val) => set("gender", normalizeGenderValue(val))}>
                     <SelectTrigger className="h-11 rounded-lg text-base sm:text-xs bg-background">
                       <SelectValue placeholder="Selecione" />
                     </SelectTrigger>
                     <SelectContent className="rounded-lg">
-                      <SelectItem value="female">Feminino</SelectItem>
-                      <SelectItem value="male">Masculino</SelectItem>
-                      <SelectItem value="non_binary">Não-binário</SelectItem>
-                      <SelectItem value="other">Outro</SelectItem>
-                      <SelectItem value="not_informed">Prefiro não informar</SelectItem>
+                      <SelectItem value="feminino">Feminino</SelectItem>
+                      <SelectItem value="masculino">Masculino</SelectItem>
+                      <SelectItem value="outro">Outro</SelectItem>
+                      <SelectItem value="prefiro_nao_dizer">Prefiro não informar</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -778,7 +817,7 @@ function ProfileCivilPage() {
                   <span>Novo Link</span>
                 </div>
                 <Badge variant="outline" className="text-[10px] font-mono border-primary/30 text-primary">
-                  Botão ou Banner 16:9
+                  Botão ou Banner 21:9
                 </Badge>
               </div>
 
@@ -805,15 +844,50 @@ function ProfileCivilPage() {
               </div>
 
               <div className="space-y-2">
-                <Label className="text-xs font-semibold text-foreground">URL da Imagem de Fundo (Opcional - Proporção 16:9)</Label>
-                <Input
-                  value={newLinkImage}
-                  onChange={(e) => setNewLinkImage(e.target.value)}
-                  placeholder="https://... (deixe em branco para botão minimalista padrão)"
-                  className="h-11 rounded-lg text-base sm:text-xs bg-background font-mono"
-                />
+                <Label className="text-xs font-semibold text-foreground">
+                  Imagem de Fundo / Banner do Botão (Opcional - Proporção 21:9)
+                </Label>
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                  {newLinkImage ? (
+                    <div className="relative h-14 w-32 rounded-lg overflow-hidden border border-border/60 bg-muted shrink-0 group">
+                      <img src={newLinkImage} alt="Banner" className="size-full object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => setNewLinkImage("")}
+                        className="absolute inset-0 bg-black/60 text-white flex items-center justify-center text-[10px] font-bold opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                      >
+                        Remover
+                      </button>
+                    </div>
+                  ) : null}
+                  <div className="flex-1 flex items-center gap-2">
+                    <Input
+                      value={newLinkImage}
+                      onChange={(e) => setNewLinkImage(e.target.value)}
+                      placeholder="Cole o endereço da imagem ou envie do seu dispositivo..."
+                      className="h-11 rounded-lg text-base sm:text-xs bg-background font-mono flex-1"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      disabled={isUploadingBiolinkImage}
+                      onClick={() => biolinkImageInputRef.current?.click()}
+                      className="h-11 px-4 rounded-lg text-xs font-semibold shrink-0 cursor-pointer gap-2"
+                    >
+                      <Camera className="size-3.5" />
+                      <span>{isUploadingBiolinkImage ? "Enviando..." : "Enviar Imagem"}</span>
+                    </Button>
+                    <input
+                      ref={biolinkImageInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleBiolinkImageUpload}
+                    />
+                  </div>
+                </div>
                 <p className="text-[10px] text-muted-foreground">
-                  Se preenchida, o link será exibido como um mini-banner gráfico no topo do perfil público.
+                  Se adicionada, o link será exibido como um card visual destacado no topo do perfil público.
                 </p>
               </div>
 
@@ -1186,8 +1260,8 @@ function ProfileCivilPage() {
           lockAspect={true}
           title={
             cropperType === "avatar"
-              ? "Recortar Foto de Perfil Civil (1:1)"
-              : "Recortar Capa do Perfil Civil (Panorâmica 21:9)"
+              ? "Recortar Foto de Perfil (1:1)"
+              : "Recortar Capa do Perfil (Panorâmica 21:9)"
           }
           onCropComplete={handleCropComplete}
         />
