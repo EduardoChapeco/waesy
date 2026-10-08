@@ -30,7 +30,6 @@ import { searchCentralProfessions, searchCentralOnDemandServices, getCentralMark
 import { GLOBAL_PROFESSIONS_CATALOG } from "@/lib/data/professions-catalog";
 import { GLOBAL_ON_DEMAND_SERVICES_CATALOG } from "@/lib/data/services-catalog";
 import { GLOBAL_MASTER_PRODUCTS_CATALOG } from "@/lib/data/master-products-catalog";
-import { IBGE_ECONOMIC_CLASSES, BRAZIL_REGIONS_DEMOGRAPHICS, generateSyntheticPopulations } from "@/lib/data/ibge-demographics";
 import { getHolidaysForYear } from "@/lib/data/holidays-calendar-catalog";
 
 describe("Fase 14: Central Knowledge Bases, Autopopulation & SimLab Expansion", () => {
@@ -134,42 +133,16 @@ describe("Fase 14: Central Knowledge Bases, Autopopulation & SimLab Expansion", 
     });
   });
 
-  // ── 4. DEMOGRAFIA OFICIAL IBGE & GERAÇÃO SINTÉTICA SIMLAB ──
-  describe("IBGE Demographics & Synthetic Cohorts", () => {
-    it("deve abranger as 6 classes econômicas com somatório de 100% da população", () => {
-      const totalPercentage = IBGE_ECONOMIC_CLASSES.reduce((acc, c) => acc + c.brazil_population_percentage, 0);
-      expect(Math.round(totalPercentage)).toBe(100);
-
-      for (const ec of IBGE_ECONOMIC_CLASSES) {
-        expect(ec.median_monthly_household_income_cents).toBeGreaterThan(0);
-        expect(ec.discretionary_budget_percentage).toBeGreaterThan(0);
-        expect(ec.preferred_payment_methods.length).toBeGreaterThan(0);
-      }
-    });
-
-    it("deve conter distribuição macro-regional com renda per capita em centavos", () => {
-      const regions = ["Sul", "Sudeste", "Centro_Oeste", "Nordeste", "Norte"];
-      for (const reg of regions) {
-        const data = BRAZIL_REGIONS_DEMOGRAPHICS[reg];
-        expect(data).toBeDefined();
-        expect(data.population_ibge_2022).toBeGreaterThan(10000000);
-        expect(data.average_monthly_household_per_capita_cents).toBeGreaterThan(100000);
-        expect(data.ecommerce_penetration_rate).toBeGreaterThan(50);
-      }
-    });
-
-    it("deve gerar coortes sintéticas fiéis às estatísticas do IBGE via generateSyntheticPopulations", () => {
-      const cohort = generateSyntheticPopulations(20, { region: "Sul" });
-      expect(cohort.length).toBe(20);
-
-      for (const citizen of cohort) {
-        expect(citizen.id).toContain("citizen-ibge-sul");
-        expect(citizen.name.split(" ").length).toBeGreaterThanOrEqual(2);
-        expect(citizen.monthly_income_cents).toBeGreaterThan(0);
-        expect(citizen.discretionary_budget_cents).toBeGreaterThan(0);
-        expect(citizen.age).toBeGreaterThanOrEqual(18);
-        expect(citizen.city).toBeDefined();
-      }
+  // ── 4. DEMOGRAFIA COM LINHAGEM VERIFICÁVEL ──
+  describe("Demographic data provenance", () => {
+    it("não apresenta números ou cidadãos sintéticos sem fonte auditável como dados oficiais", async () => {
+      const res = await getCentralDemographics({ data: { region: "Sul", generateCohortCount: 20 } });
+      expect(res.status).toBe("unavailable_unverified");
+      expect(res.source).toBeNull();
+      expect(res.economic_classes).toEqual([]);
+      expect(res.regional_distribution).toBeNull();
+      expect(res.synthetic_cohort).toEqual([]);
+      expect(res.limitation).toContain("linhagem verificável");
     });
   });
 

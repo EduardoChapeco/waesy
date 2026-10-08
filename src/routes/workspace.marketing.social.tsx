@@ -31,19 +31,19 @@ export default function WorkspaceMarketingSocialPage() {
   const { settings } = Route.useLoaderData();
 
   // Formulário State
-  const [ogTitleTemplate, setOgTitleTemplate] = useState(
+  const [ogTitleTemplate, setOgTitleTemplate] = useState<string>(
     settings?.og_title_template || "{item_title} | {store_name}"
   );
-  const [ogDescriptionTemplate, setOgDescriptionTemplate] = useState(
+  const [ogDescriptionTemplate, setOgDescriptionTemplate] = useState<string>(
     settings?.og_description_template ||
-      "Confira {item_title} na {store_name}. Atendimento rápido e direto no WhatsApp!"
+      "Confira {item_title}."
   );
-  const [defaultOgImageUrl, setDefaultOgImageUrl] = useState(
+  const [defaultOgImageUrl, setDefaultOgImageUrl] = useState<string>(
     settings?.default_og_image_url || ""
   );
-  const [whatsappShareTemplate, setWhatsappShareTemplate] = useState(
+  const [whatsappShareTemplate, setWhatsappShareTemplate] = useState<string>(
     settings?.whatsapp_share_template ||
-      "Olá! Encontrei isso na {store_name} e achei que você iria gostar: {item_title} ({item_price}) {item_url}"
+      "Confira {item_title} ({item_price}): {item_url}"
   );
   const [twitterCardType, setTwitterCardType] = useState<"summary_large_image" | "summary">(
     settings?.twitter_card_type || "summary_large_image"
@@ -56,13 +56,15 @@ export default function WorkspaceMarketingSocialPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
 
-  const storeName = settings?.store_name || "Sua Loja";
-  const storeSlug = settings?.store_slug || "loja";
+  const storeName = settings?.store_name || "Nome não informado";
+  const storeSlug = settings?.store_slug || "";
   const previewProduct = {
-    title: "Pacote Exclusivo Fim de Semana",
-    price: "R$ 499,00",
-    description: "Hospedagem completa com café da manhã e passeios inclusos na serra.",
-    url: `https://usewaesy.com/${storeSlug}/pacote-fim-de-semana`,
+    title: "Item de demonstração",
+    price: "Preço de exemplo",
+    description: "Conteúdo ilustrativo para visualizar a prévia.",
+    url: storeSlug
+      ? `https://usewaesy.com/${storeSlug}/item-de-exemplo`
+      : "URL da loja não informada",
     image:
       defaultOgImageUrl ||
       settings?.store_banner_url ||
@@ -72,7 +74,7 @@ export default function WorkspaceMarketingSocialPage() {
 
   // Gerador dinâmico de texto formatado
   const computedTitle = useMemo(() => {
-    const raw = previewScenario === "product" ? ogTitleTemplate : "{store_name} | Loja Oficial";
+    const raw = previewScenario === "product" ? ogTitleTemplate : "{store_name}";
     return raw
       .replace(/{item_title}/g, previewProduct.title)
       .replace(/{store_name}/g, storeName);
@@ -82,7 +84,7 @@ export default function WorkspaceMarketingSocialPage() {
     const raw =
       previewScenario === "product"
         ? ogDescriptionTemplate
-        : "Descubra ofertas exclusivas, catálogo completo e compre direto com facilidade.";
+        : "Confira a página de {store_name}.";
     return raw
       .replace(/{item_title}/g, previewProduct.title)
       .replace(/{item_description}/g, previewProduct.description)
@@ -122,6 +124,10 @@ export default function WorkspaceMarketingSocialPage() {
   };
 
   const handleCopyTestLink = () => {
+    if (!storeSlug) {
+      toast.error("O slug da loja não foi informado; não há um link real para copiar.");
+      return;
+    }
     navigator.clipboard.writeText(previewProduct.url);
     setCopiedLink(true);
     toast.success("Link de teste copiado!");
@@ -135,11 +141,11 @@ export default function WorkspaceMarketingSocialPage() {
 
   const insertVariable = (variable: string, target: "title" | "description" | "whatsapp") => {
     if (target === "title") {
-      setOgTitleTemplate((prev: any) => `${prev} ${variable}`);
+      setOgTitleTemplate((prev) => `${prev} ${variable}`);
     } else if (target === "description") {
-      setOgDescriptionTemplate((prev: any) => `${prev} ${variable}`);
+      setOgDescriptionTemplate((prev) => `${prev} ${variable}`);
     } else {
-      setWhatsappShareTemplate((prev: any) => `${prev} ${variable}`);
+      setWhatsappShareTemplate((prev) => `${prev} ${variable}`);
     }
   };
 
@@ -294,18 +300,18 @@ export default function WorkspaceMarketingSocialPage() {
               <div className="flex items-center gap-2">
                 <MessageCircle className="w-4 h-4 text-emerald-500" />
                 <h2 className="text-base font-semibold text-foreground">
-                  Mensagem Automática para WhatsApp
+                  Mensagem para compartilhamento via WhatsApp
                 </h2>
               </div>
               <Badge variant="outline" className="text-xs text-emerald-600 bg-emerald-500/10 border-emerald-200">
-                1-Clique
+                Prévia
               </Badge>
             </div>
 
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label className="text-xs font-medium text-foreground">
-                  Texto Padrão de Disparo
+                  Texto padrão para compartilhar
                 </Label>
                 <div className="flex flex-wrap gap-1">
                   <button
@@ -339,7 +345,7 @@ export default function WorkspaceMarketingSocialPage() {
                 className="text-sm rounded-lg font-sans"
               />
               <p className="text-xs text-muted-foreground">
-                Esse texto é pré-preenchido quando clientes ou vendedores clicam no botão de compartilhar via WhatsApp.
+                Esse texto é apenas pré-preenchido ao abrir o compartilhamento via WhatsApp; não é enviado automaticamente.
               </p>
             </div>
 
@@ -362,7 +368,7 @@ export default function WorkspaceMarketingSocialPage() {
               <div className="flex items-center gap-2">
                 <Eye className="w-4 h-4 text-primary" />
                 <h2 className="text-base font-semibold text-foreground">
-                  Simulador de Prévia Real
+                  Simulador de prévia (demonstração)
                 </h2>
               </div>
               <div className="flex gap-1 bg-muted p-1 rounded-lg text-xs">
@@ -532,11 +538,12 @@ export default function WorkspaceMarketingSocialPage() {
 
             {/* Quick Actions */}
             <div className="pt-2 border-t border-border/40 flex items-center justify-between text-xs">
-              <span className="text-muted-foreground">Link Canônico de Demonstração:</span>
+              <span className="text-muted-foreground">Link de demonstração:</span>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={handleCopyTestLink}
+                disabled={!storeSlug}
                 className="h-8 gap-2 text-xs text-primary"
               >
                 {copiedLink ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}

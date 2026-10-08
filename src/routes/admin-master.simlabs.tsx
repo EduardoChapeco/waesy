@@ -1,92 +1,101 @@
-/**
- * admin-master.simlabs.tsx — SimLabs: Laboratório de Personas Sintéticas & IA
- * Simulação de Mercado, Intenção de Compra de Personas e Testes Cognitivos de Produtos.
- * Padrão Apple HIG Silencioso, Anti-Pill e Mobile-First.
- */
-
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useTransition } from "react";
-import { Brain, Users, Play, CheckCircle, Sliders, Plus, ChartBar, Target, Lightbulb } from "@phosphor-icons/react";
-import { listSimLabPersonas, listResearchSessions, createSimLabPersona, runSimLabResearch } from "@/services/simlab.functions";
+import { AlertTriangle, Brain, ChartBar, Play, Plus, Users } from "lucide-react";
 import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { getStoreSettings } from "@/services/store.functions";
+import { listSimLabPersonas, listResearchSessions, createSimLabPersona, runSimLabResearch } from "@/services/simlab.functions";
 
 export const Route = createFileRoute("/admin-master/simlabs")({
-  head: () => ({ meta: [{ title: "SimLabs e Personas Sintéticas | Waesy" }] }),
+  head: () => ({ meta: [{ title: "SimLab — Personas Sintéticas e Experimentos | Waesy" }] }),
   loader: async () => {
-    try {
-      const [personas, sessions] = await Promise.all([
-        listSimLabPersonas().catch(() => []),
-        listResearchSessions().catch(() => []),
-      ]);
-      return { personas, sessions };
-    } catch {
-      return { personas: [], sessions: [] };
-    }
+    const store = await getStoreSettings().catch(() => null);
+    const [personas, sessions] = await Promise.all([
+      listSimLabPersonas().catch(() => []),
+      listResearchSessions().catch(() => []),
+    ]);
+    return { personas, sessions, storeId: store?.id || "" };
   },
   component: AdminSimLabsPage,
 });
 
 function AdminSimLabsPage() {
-  const { personas, sessions } = ((Route.useLoaderData?.() as any) || {});
+  const { personas = [], sessions = [], storeId = "" } = (Route.useLoaderData?.() as any) || {};
   const [activeTab, setActiveTab] = useState<"sessions" | "personas" | "new_sim">("sessions");
   const [isPending, startTransition] = useTransition();
 
-  // Form Simulação
   const [title, setTitle] = useState("");
   const [objective, setObjective] = useState("");
   const [personasCount, setPersonasCount] = useState("5");
 
-  // Form Persona
   const [name, setName] = useState("");
-  const [archetype, setArchetype] = useState("");
-  const [neighborhood, setNeighborhood] = useState("Centro");
-  const [promptPersona, setPromptPersona] = useState("");
+  const [socialClass, setSocialClass] = useState("");
+  const [age, setAge] = useState("");
+  const [city, setCity] = useState("");
+  const [state, setState] = useState("");
+  const [occupation, setOccupation] = useState("");
+  const [medianIncome, setMedianIncome] = useState("");
+  const [profileDescription, setProfileDescription] = useState("");
 
-  const handleRunSimulation = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!title || !objective) return;
-
+  const handleRunSimulation = (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!storeId) return toast.error("Nenhum workspace ativo foi identificado.");
+    if (!title.trim() || !objective.trim()) return;
     startTransition(async () => {
       try {
-        await runSimLabResearch({
+        const result = await runSimLabResearch({
           data: {
-            title,
-            objective,
-            simulated_personas_count: parseInt(personasCount) || 5,
+            storeId,
+            title: title.trim(),
+            objective: objective.trim(),
+            simulated_personas_count: Number(personasCount),
           },
         });
-        toast.success("Simulação de mercado executada com sucesso!");
+        toast.success("Exploração qualitativa concluída", {
+          description: `Foram geradas ${result.responsesCount} respostas hipotéticas; não é previsão de vendas.`,
+        });
         setTitle("");
         setObjective("");
         setActiveTab("sessions");
-      } catch (err: any) {
-        toast.error(err.message || "Erro ao executar simulação");
+        window.location.reload();
+      } catch (error) {
+        toast.error("Não foi possível executar o SimLab", { description: error instanceof Error ? error.message : "Erro inesperado." });
       }
     });
   };
 
-  const handleCreatePersona = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!name || !archetype || !promptPersona) return;
-
+  const handleCreatePersona = (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!storeId) return toast.error("Nenhum workspace ativo foi identificado.");
     startTransition(async () => {
       try {
         await createSimLabPersona({
           data: {
-            name,
-            archetype,
-            neighborhood,
-            prompt_persona: promptPersona,
-            habits: ["compras locais", "mobile", "pix"],
+            storeId,
+            name: name.trim(),
+            socialClass: socialClass as "A1" | "A2" | "B1" | "B2" | "C1" | "C2" | "D_E",
+            age: Number(age),
+            city: city.trim(),
+            state: state.trim().toUpperCase(),
+            occupation: occupation.trim(),
+            medianIncomeBrl: medianIncome.trim() ? Number(medianIncome) : null,
+            prompt_persona: profileDescription.trim(),
+            habits: [],
           },
         });
-        toast.success("Persona sintética criada com sucesso!");
+        toast.success("Perfil sintético salvo no workspace", { description: "Calibração: não validada. Nenhum dado de pessoa real foi criado." });
         setName("");
-        setArchetype("");
-        setPromptPersona("");
-        setActiveTab("personas");
-      } catch (err: any) {
-        toast.error(err.message || "Erro ao criar persona");
+        setSocialClass("");
+        setAge("");
+        setCity("");
+        setState("");
+        setOccupation("");
+        setMedianIncome("");
+        setProfileDescription("");
+        window.location.reload();
+      } catch (error) {
+        toast.error("Não foi possível criar o perfil", { description: error instanceof Error ? error.message : "Erro inesperado." });
       }
     });
   };
@@ -94,207 +103,83 @@ function AdminSimLabsPage() {
   return (
     <div className="min-h-[100dvh] bg-background p-4 sm:p-6">
       <div className="mx-auto max-w-6xl space-y-6">
-        {/* Header Apple HIG */}
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-border/60 pb-4">
+        <header className="flex flex-col gap-3 border-b border-border/60 pb-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
-            <div className="flex size-11 items-center justify-center rounded-lg bg-primary/10 text-primary shrink-0">
-              <Brain className="size-6" />
-            </div>
+            <div className="flex size-11 items-center justify-center rounded-lg bg-primary/10 text-primary"><Brain className="size-6" /></div>
             <div>
-              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
-                SimLabs: Inteligência Sintética
-              </h1>
-              <p className="text-xs text-muted-foreground">
-                Simulações de mercado calibradas com microdados populacionais e testes de elasticidade.
-              </p>
+              <h1 className="text-xl font-bold tracking-tight">SimLab</h1>
+              <p className="text-xs text-muted-foreground">Exploração qualitativa sintética + análise de resultados observados</p>
             </div>
           </div>
+          <p className="text-[10px] text-muted-foreground">Workspace: {storeId ? "ativo" : "não identificado"}</p>
+        </header>
 
-          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar max-w-full pb-1">
-            <button
-              onClick={() => setActiveTab("sessions")}
-              className={`rounded-lg px-4 h-11 text-xs font-semibold shrink-0 transition-all cursor-pointer ${
-                activeTab === "sessions"
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-muted/40 text-muted-foreground hover:text-foreground hover:bg-muted/60"
-              }`}
-            >
-              <ChartBar className="mr-2 inline size-4" />
-              Pesquisas ({sessions?.length || 0})
+        <nav className="flex gap-2 overflow-x-auto border-b border-border/60 pb-3">
+          {([
+            ["sessions", `Histórico (${sessions.length})`, ChartBar],
+            ["personas", `Perfis (${personas.length})`, Users],
+            ["new_sim", "Nova exploração", Play],
+          ] as const).map(([tab, label, Icon]) => (
+            <button key={tab} onClick={() => setActiveTab(tab)} className={`h-10 shrink-0 rounded-lg px-4 text-xs font-semibold ${activeTab === tab ? "bg-primary text-primary-foreground" : "bg-muted/40 text-muted-foreground"}`}>
+              <Icon className="mr-2 inline size-4" />{label}
             </button>
-            <button
-              onClick={() => setActiveTab("personas")}
-              className={`rounded-lg px-4 h-11 text-xs font-semibold shrink-0 transition-all cursor-pointer ${
-                activeTab === "personas"
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-muted/40 text-muted-foreground hover:text-foreground hover:bg-muted/60"
-              }`}
-            >
-              <Users className="mr-2 inline size-4" />
-              Personas ({personas?.length || 0})
-            </button>
-            <button
-              onClick={() => setActiveTab("new_sim")}
-              className={`rounded-lg px-4 h-11 text-xs font-semibold shrink-0 transition-all cursor-pointer ${
-                activeTab === "new_sim"
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-muted/40 text-muted-foreground hover:text-foreground hover:bg-muted/60"
-              }`}
-            >
-              <Play className="mr-2 inline size-4" />
-              Nova Simulação
-            </button>
-          </div>
-        </div>
+          ))}
+        </nav>
 
-        {/* Tab 1: Pesquisas e Insights */}
         {activeTab === "sessions" && (
-          <div className="space-y-4">
-            {(!sessions || sessions.length === 0) ? (
-              <div className="rounded-lg border border-border/80 bg-card p-8 sm:p-12 text-center">
-                <Brain className="mx-auto size-8 text-muted-foreground" />
-                <p className="mt-3 text-sm font-bold text-foreground">Nenhuma pesquisa simulada executada</p>
-                <p className="mt-1 text-xs text-muted-foreground">Inicie uma nova simulação para testar propostas com o conselho sintético.</p>
-              </div>
-            ) : (
-              sessions.map((session: any) => (
-                <div key={session.id} className="rounded-lg border border-border/80 bg-card p-5 sm:p-6 space-y-4">
-                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                      <span className="rounded-md font-medium text-[11px] px-2 py-1 bg-primary/10 text-primary border border-primary/20">
-                        Sessão Preditiva
-                      </span>
-                      <h2 className="mt-2 text-base sm:text-lg font-bold text-foreground">{session.title}</h2>
-                      <p className="text-xs text-muted-foreground">{session.objective}</p>
-                    </div>
-
-                    <span className="rounded-md font-medium text-[11px] px-3 py-1 border border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 self-start sm:self-auto">
-                      Concluída
-                    </span>
-                  </div>
-
-                  {/* Summary Box */}
-                  <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 text-xs text-foreground">
-                    <div className="flex items-center gap-2 font-bold text-primary mb-1">
-                      <Lightbulb className="size-4" />
-                      Síntese Preditiva da População Sintética
-                    </div>
-                    <p className="leading-relaxed text-muted-foreground">{session.summary_insight}</p>
-                  </div>
-
-                  {/* Personas Feedback */}
-                  {session.execution_results && session.execution_results.length > 0 && (
-                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                      {session.execution_results.map((res: any, idx: number) => (
-                        <div key={idx} className="rounded-lg border border-border/80 bg-background p-4 space-y-1">
-                          <div className="flex items-center justify-between">
-                            <span className="text-xs font-bold text-foreground">{res.persona_name}</span>
-                            <span className="rounded-md font-medium text-[10px] px-2 py-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-                              {res.purchase_intent}% intenção
-                            </span>
-                          </div>
-                          <p className="text-[11px] text-muted-foreground leading-snug">{res.feedback}</p>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+          <section className="space-y-4">
+            {!sessions.length ? <div className="rounded-lg border border-border p-8 text-center text-xs text-muted-foreground">Nenhuma execução registrada neste workspace.</div> : sessions.map((session: any) => (
+              <article key={session.id} className="rounded-lg border border-border/80 bg-card p-5 space-y-4">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div><Badge variant="outline">{session.evidence_level === "exploratory_synthetic" ? "Exploração sintética" : "Legado · origem não verificada"}</Badge><h2 className="mt-2 text-sm font-bold">{session.title}</h2><p className="text-xs text-muted-foreground">{session.objective}</p></div>
+                  <Badge variant={session.status === "completed" ? "secondary" : "outline"}>{session.status}</Badge>
                 </div>
-              ))
-            )}
-          </div>
-        )}
-
-        {/* Tab 2: Personas */}
-        {activeTab === "personas" && (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {(personas || []).map((persona: any) => (
-              <div key={persona.id} className="rounded-lg border border-border/80 bg-card p-4 sm:p-5 flex flex-col justify-between">
-                <div>
-                  <div className="flex items-center gap-3">
-                    <div className="flex size-10 items-center justify-center rounded-lg bg-primary/10 text-primary shrink-0">
-                      <Users className="size-5" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <h3 className="text-sm font-bold text-foreground truncate">{persona.name}</h3>
-                      <p className="text-xs text-muted-foreground truncate">{persona.archetype}</p>
-                    </div>
-                  </div>
-
-                  <div className="mt-4 space-y-1 border-t border-border/60 pt-3 text-xs text-muted-foreground">
-                    <div className="flex justify-between"><span>Região:</span> <span className="font-medium text-foreground">{persona.neighborhood}</span></div>
-                    <div className="flex justify-between"><span>Idade:</span> <span className="font-medium text-foreground">{persona.age_range} anos</span></div>
-                    <div className="flex justify-between"><span>Estrato Social:</span> <span className="font-medium text-foreground">Classe {persona.income_level}</span></div>
-                  </div>
-                </div>
-
-                <p className="mt-3 rounded-lg bg-muted/40 p-3 text-[11px] text-muted-foreground line-clamp-3 italic border border-border/40">
-                  "{persona.prompt_persona}"
-                </p>
-              </div>
+                <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-3 text-xs text-muted-foreground">{session.summary_insight}</div>
+                {session.execution_results?.length > 0 && <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">{session.execution_results.map((item: any, index: number) => <div key={index} className="rounded-lg border border-border/60 p-3 space-y-2"><div className="flex items-center justify-between gap-2"><strong className="text-xs">{item.persona_name}</strong><Badge variant="outline" className="text-[10px]">{item.response_origin === "llm_synthetic" ? "IA · sintético" : "origem desconhecida"}</Badge></div><p className="text-xs text-muted-foreground">{item.feedback}</p></div>)}</div>}
+              </article>
             ))}
-          </div>
+          </section>
         )}
 
-        {/* Tab 3: Nova Simulação */}
-        {activeTab === "new_sim" && (
-          <div className="rounded-lg border border-border/80 bg-card p-5 sm:p-6">
-            <h2 className="text-base font-bold text-foreground">Nova Simulação de Mercado</h2>
-            <p className="text-xs text-muted-foreground mt-1">
-              O esquadrão de personas sintéticas avaliará o apelo da oferta, barreiras de fricção e intenção de compra.
-            </p>
-
-            <form onSubmit={handleRunSimulation} className="mt-5 space-y-4">
-              <div className="space-y-2">
-                <label className="text-xs font-semibold text-foreground">Título do Experimento</label>
-                <input
-                  type="text"
-                  placeholder="Ex: Lançamento de Combo Noturno com Frete Grátis"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  className="w-full h-11 rounded-lg border border-input bg-background px-4 text-xs text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none"
-                  required
-                />
+        {activeTab === "personas" && (
+          <section className="space-y-5">
+            <form onSubmit={handleCreatePersona} className="rounded-lg border border-border/80 bg-card p-5 space-y-4">
+              <div><h2 className="text-sm font-bold">Criar perfil sintético privado</h2><p className="mt-1 text-xs text-muted-foreground">A descrição e os atributos são premissas fornecidas por você; o perfil não representa uma pessoa real e não é calibrado automaticamente.</p></div>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                <Field label="Nome fictício"><input value={name} onChange={(event) => setName(event.target.value)} required maxLength={120} /></Field>
+                <Field label="Classe ABEP informada"><select value={socialClass} onChange={(event) => setSocialClass(event.target.value)} required><option value="">Selecione…</option>{["A1", "A2", "B1", "B2", "C1", "C2", "D_E"].map((item) => <option key={item} value={item}>{item}</option>)}</select></Field>
+                <Field label="Idade"><input type="number" min="18" max="100" value={age} onChange={(event) => setAge(event.target.value)} required /></Field>
+                <Field label="Cidade"><input value={city} onChange={(event) => setCity(event.target.value)} required maxLength={120} /></Field>
+                <Field label="UF"><input value={state} onChange={(event) => setState(event.target.value.toUpperCase())} required minLength={2} maxLength={2} placeholder="SC" /></Field>
+                <Field label="Ocupação (informada)"><input value={occupation} onChange={(event) => setOccupation(event.target.value)} required maxLength={160} /></Field>
+                <Field label="Renda mensal (opcional)"><input type="number" min="0" step="0.01" value={medianIncome} onChange={(event) => setMedianIncome(event.target.value)} placeholder="Deixe vazio se desconhecida" /></Field>
               </div>
-
-              <div className="space-y-2">
-                <label className="text-xs font-semibold text-foreground">Hipótese / Objetivo do Teste</label>
-                <textarea
-                  rows={3}
-                  placeholder="Ex: Validar se consumidores das classes C e D aceitariam pagar R$ 89,90 pelo combo com entrega garantida..."
-                  value={objective}
-                  onChange={(e) => setObjective(e.target.value)}
-                  className="w-full rounded-lg border border-input bg-background p-4 text-xs text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none"
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-xs font-semibold text-foreground">Amostragem Demográfica</label>
-                <select
-                  value={personasCount}
-                  onChange={(e) => setPersonasCount(e.target.value)}
-                  className="w-full h-11 rounded-lg border border-input bg-background px-4 text-xs text-foreground focus:border-primary focus:outline-none cursor-pointer"
-                >
-                  <option value="3">3 Personas (Sonda Rápida)</option>
-                  <option value="5">5 Personas (Padrão Calibrado)</option>
-                  <option value="10">10 Personas (Aprofundado IBGE/ABEP)</option>
-                </select>
-              </div>
-
-              <div className="flex justify-end pt-2">
-                <button
-                  type="submit"
-                  disabled={isPending}
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-6 h-11 text-xs font-bold text-primary-foreground hover:bg-primary/90 disabled:opacity-50 cursor-pointer"
-                >
-                  <Play className="size-4" />
-                  {isPending ? "Simulando Amostra..." : "Executar Experimento IA"}
-                </button>
-              </div>
+              <div className="space-y-2"><label className="text-xs font-semibold">Descrição para o modelo</label><textarea value={profileDescription} onChange={(event) => setProfileDescription(event.target.value)} required minLength={10} maxLength={2000} rows={4} className="w-full rounded-lg border border-input bg-background p-3 text-xs" placeholder="Preferências, contexto e comportamento hipotético; indique o que é suposição." /></div>
+              <Button type="submit" disabled={isPending || !storeId} className="gap-2"><Plus className="size-4" />Salvar perfil não calibrado</Button>
             </form>
-          </div>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {personas.map((persona: any) => <article key={persona.id} className="rounded-lg border border-border/80 bg-card p-4 space-y-3"><div className="flex items-start justify-between gap-2"><div><h3 className="text-sm font-bold">{persona.display_name}</h3><p className="text-xs text-muted-foreground">{persona.code}</p></div><Badge variant="outline" className="text-[10px]">{persona.calibration_status || "desconhecida"}</Badge></div><p className="text-xs text-muted-foreground">{persona.region} · {persona.age_range_label} · Classe informada {persona.abep_social_class} · Renda {persona.median_income_brl == null ? "desconhecida" : `R$ ${persona.median_income_brl}`}</p><p className="rounded-lg bg-muted/40 p-3 text-[11px] text-muted-foreground">{persona.bio || "Sem descrição adicional."}</p></article>)}
+            </div>
+          </section>
+        )}
+
+        {activeTab === "new_sim" && (
+          <section className="rounded-lg border border-border/80 bg-card p-5 space-y-4">
+            <div><h2 className="text-sm font-bold">Nova exploração qualitativa</h2><p className="mt-1 text-xs text-muted-foreground">Gera comentários hipotéticos de perfis sintéticos. Não produz intenção percentual, conversão, NPS, elasticidade ou recomendação automática de investimento.</p></div>
+            <form onSubmit={handleRunSimulation} className="space-y-4">
+              <Field label="Título do experimento"><input value={title} onChange={(event) => setTitle(event.target.value)} required maxLength={160} placeholder="Ex.: mensagem de lançamento da nova oferta" /></Field>
+              <div className="space-y-2"><label className="text-xs font-semibold">Hipótese, descrição e contexto</label><textarea value={objective} onChange={(event) => setObjective(event.target.value)} rows={4} required maxLength={4000} className="w-full rounded-lg border border-input bg-background p-3 text-xs" placeholder="Descreva o produto, a mensagem, a região pretendida e o que deseja explorar qualitativamente." /></div>
+              <Field label="Perfis curados a consultar (não é amostra probabilística)"><select value={personasCount} onChange={(event) => setPersonasCount(event.target.value)}>{[3, 5, 10, 12, 20, 50].map((count) => <option key={count} value={count}>{count} perfis sintéticos</option>)}</select></Field>
+              <Button type="submit" disabled={isPending || !storeId} className="gap-2"><Play className="size-4" />{isPending ? "Gerando reações…" : "Executar exploração"}</Button>
+              {!storeId && <p className="flex items-center gap-2 text-xs text-amber-600"><AlertTriangle className="size-4" />Sem workspace ativo; execução desabilitada.</p>}
+            </form>
+          </section>
         )}
       </div>
     </div>
   );
+}
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return <div className="space-y-2"><label className="text-xs font-semibold">{label}</label><div className="[&_input]:h-10 [&_input]:w-full [&_input]:rounded-lg [&_input]:border [&_input]:border-input [&_input]:bg-background [&_input]:px-3 [&_input]:text-xs [&_select]:h-10 [&_select]:w-full [&_select]:rounded-lg [&_select]:border [&_select]:border-input [&_select]:bg-background [&_select]:px-3 [&_select]:text-xs">{children}</div></div>;
 }

@@ -326,7 +326,7 @@ export function SquadsWorkspacePage() {
                               Entrega Aguardando Sua Aprovação
                             </span>
                             <span className="text-xs text-muted-foreground block">
-                              Diagnóstico concluído ({squad.latest_run.output_artifacts?.pending_approval_items?.length || 1} item pendente).
+                              Rascunho para revisão humana ({squad.latest_run.output_artifacts?.pending_approval_items?.length || 0} itens). Estado da loja não avaliado.
                             </span>
                           </div>
                         </div>
@@ -539,10 +539,10 @@ export function SquadsWorkspacePage() {
                 {/* Parecer Executivo */}
                 <div className="space-y-2">
                   <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    Diagnóstico Estruturado
+                    {selectedRunArtifacts.run.output_artifacts?.assessment_status === "not_evaluated" ? "Estado da avaliação" : "Diagnóstico Estruturado"}
                   </h4>
                   <div className="p-4 rounded-lg bg-muted/20 border border-border/40 text-foreground leading-relaxed">
-                    {selectedRunArtifacts.run.output_artifacts?.executive_summary || "Diagnóstico concluído com sucesso."}
+                    {selectedRunArtifacts.run.output_artifacts?.executive_summary || "Nenhum parecer está disponível para esta execução."}
                   </div>
                 </div>
 
@@ -560,11 +560,6 @@ export function SquadsWorkspacePage() {
                         >
                           <div className="flex items-center justify-between">
                             <span className="font-bold text-foreground text-xs">{item.title}</span>
-                            {item.confidence_score && (
-                              <span className="text-xs font-mono px-2 py-1 rounded bg-primary/10 text-primary font-bold">
-                                {item.confidence_score}% Confiança
-                              </span>
-                            )}
                           </div>
                           <p className="text-xs text-muted-foreground leading-relaxed">
                             {item.description}
@@ -603,7 +598,11 @@ export function SquadsWorkspacePage() {
                 <div className="p-4 rounded-lg bg-muted/10 border border-border/30 text-xs text-muted-foreground space-y-1">
                   <div className="flex items-center justify-between">
                     <span>Tokens Processados:</span>
-                    <strong className="text-foreground font-mono">{selectedRunArtifacts.run.total_tokens_consumed || 1250}</strong>
+                    <strong className="text-foreground font-mono">
+                      {typeof selectedRunArtifacts.run.total_tokens_consumed === "number"
+                        ? selectedRunArtifacts.run.total_tokens_consumed.toLocaleString()
+                        : "Não informado"}
+                    </strong>
                   </div>
                   <div className="flex items-center justify-between">
                     <span>Origem do Disparo:</span>

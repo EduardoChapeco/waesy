@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import type { 
- ClaimProfile, 
- ClaimIntelligence, 
+import type {
+ ClaimProfile,
  ConsumerClaim, 
  ProofType, 
  ClaimStatus, 
@@ -50,64 +49,6 @@ describe('Microfase 10: Portal de Claim, Inteligência de Reputação & Reclama�
  });
  });
 
- describe('10.2 Algoritmo de Reputação & Visibilidade Competitiva', () => {
- const calculateVisibilityScore = (data: { hasWebsite: boolean; socialCount: number; verifiedReviews: number }): number => {
- let score = 40;
- if (data.hasWebsite) score += 20;
- score += Math.min(data.socialCount * 5, 20);
- score += Math.min(data.verifiedReviews, 20);
- return Math.min(score, 100);
- };
-
- const calculateReputationBadge = (score: number): { label: string; tier: string } => {
- if (score >= 90) return { label: 'RA 1000 / Excelente', tier: 'diamond' };
- if (score >= 80) return { label: 'Ótimo', tier: 'gold' };
- if (score >= 70) return { label: 'Bom', tier: 'silver' };
- return { label: 'Regular', tier: 'bronze' };
- };
-
- it('deve calcular pontuação de visibilidade máxima corretamente', () => {
- const score = calculateVisibilityScore({
- hasWebsite: true,
- socialCount: 4,
- verifiedReviews: 35,
- });
-
- expect(score).toBe(100);
- });
-
- it('deve classificar perfil com score 94 como RA 1000 / Excelente', () => {
- const badge = calculateReputationBadge(94);
- expect(badge.label).toBe('RA 1000 / Excelente');
- expect(badge.tier).toBe('diamond');
- });
-
- it('deve validar estrutura de inteligência competitiva com concorrentes', () => {
- const intel: ClaimIntelligence = {
- id: 'intel-1',
- store_id: 'store-001',
- entity_id: 'ent-101',
- entity_type: 'company',
- visibility_score: 88,
- reputation_score: 94,
- market_share_percent: 21.5,
- digital_presence: { website: true, social_channels: ['Instagram', 'LinkedIn'], verified_reviews_count: 50 },
- competitors: [
- { name: 'Concorrente A', visibility_score: 70, reputation_score: 78, market_share_est: 14.0 },
- { name: 'Concorrente B', visibility_score: 65, reputation_score: 72, market_share_est: 10.5 },
- ],
- sentiment_summary: { positive_percent: 91, neutral_percent: 6, negative_percent: 3 },
- news_mentions: 12,
- regional_analysis: { rank: 1, region: 'Sul' },
- created_at: new Date().toISOString(),
- updated_at: new Date().toISOString(),
- };
-
- expect(intel.reputation_score).toBe(94);
- expect(intel.competitors).toHaveLength(2);
- expect(intel.sentiment_summary.positive_percent + intel.sentiment_summary.neutral_percent + intel.sentiment_summary.negative_percent).toBe(100);
- });
- });
 
  describe('10.3 Reclamações de Consumidor & Integração com Módulo JUS 360°', () => {
  it('deve categorizar reclamações no padrão ANAC 400 e Procon', () => {

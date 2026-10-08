@@ -11,6 +11,43 @@ import {
 } from "./mcp-server.functions";
 import { MCP_TOOL_REGISTRY, getAllMcpTools, getMcpToolsByModule } from "@/registries/mcp-tool-registry";
 
+vi.mock("@/services/market-radar.functions", () => ({
+  captureAndAnalyzeCompetitorLogic: vi.fn(async () => ({
+    id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+    competitor_id: "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+    store_id: "a1111111-1111-4111-8111-111111111111",
+    source_url: "https://public.example.test",
+    snapshot_type: "full_page",
+    screenshot_url: null,
+    extracted_dna: { brand_archetype: "", color_palette: [], typography: "", strengths: [], weaknesses: [], differentiation_gap: "" },
+    marketing_hooks: [],
+    pricing_signals: { tier: null, average_ticket_estimate: null, promotional_intensity: null },
+    analyzed_by_agent_id: null,
+    analysis_status: "ai_generated_draft",
+    source_evidence: { source_url: "https://public.example.test" },
+    ai_provider: "test-provider",
+    ai_model: "test-model",
+    captured_at: new Date().toISOString(),
+  })),
+}));
+
+vi.mock("@/services/api-orchestrator.functions", () => ({
+  executeUnifiedAiCall: vi.fn(async () => ({
+    parsedJson: {
+      campaign_name: "Campanha de teste",
+      objective: "Explorar uma hipótese de comunicação informada pelo usuário.",
+      audience_hypotheses: ["Hipótese a validar; não representa dado de audiência."],
+      channel_approach: "Rascunho sujeito à configuração real do canal.",
+      creative_angles: ["Ângulo qualitativo para revisão humana."],
+      measurement_plan: ["Validar com resultados observados."],
+      unknowns: ["Alcance e performance não foram estimados."],
+      requires_human_review: true,
+    },
+    provider: "test-provider",
+    model: "test-model",
+  })),
+}));
+
 describe("MCP Server & WebMCP Autonomous Surface Suite", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -115,25 +152,26 @@ describe("MCP Server & WebMCP Autonomous Surface Suite", () => {
       expect(data.options[0].modal).toContain("MotoLink");
     });
 
-    it("should execute analyze_competitor_dna and return brand intelligence", async () => {
+    it("should execute analyze_competitor_dna with a registered source and return a draft without fabricated scores", async () => {
       const result = await executeMcpToolCall({
         tool: "analyze_competitor_dna",
         storeId: "a1111111-1111-4111-8111-111111111111",
         arguments: {
           storeId: "a1111111-1111-4111-8111-111111111111",
-          competitorName: "Concorrente Express",
-          segment: "Restaurante",
+          competitorId: "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
         },
       });
 
       expect(result.status).toBe("success");
       const data = result.content[0].data;
-      expect(data.competitorName).toBe("Concorrente Express");
-      expect(data.positioningScore).toBeGreaterThan(50);
-      expect(data.strengths.length).toBeGreaterThan(0);
+      expect(data.record_kind).toBe("competitor_ai_draft");
+      expect(data.analysisStatus).toBe("ai_generated_draft");
+      expect(data.positioningScore).toBeUndefined();
+      expect(data.pricingSignals.average_ticket_estimate).toBeNull();
+      expect(data.provenance.model).toBe("test-model");
     });
 
-    it("should execute generate_ad_campaign_proposal and calculate audience reach", async () => {
+    it("should execute generate_ad_campaign_proposal without reporting budget-derived impressions as data", async () => {
       const result = await executeMcpToolCall({
         tool: "generate_ad_campaign_proposal",
         storeId: "a1111111-1111-4111-8111-111111111111",
@@ -146,8 +184,11 @@ describe("MCP Server & WebMCP Autonomous Surface Suite", () => {
 
       expect(result.status).toBe("success");
       const data = result.content[0].data;
-      expect(data.dailyBudgetBrl).toBe(50.0);
-      expect(data.estimatedImpressionsPerDay).toBeGreaterThan(1000);
+      expect(data.record_kind).toBe("llm_generated_campaign_proposal_draft");
+      expect(data.estimatedImpressionsPerDay).toBeUndefined();
+      expect(data.performance_estimates).toBeNull();
+      expect(data.provenance.model).toBe("test-model");
+      expect(data.proposal.requires_human_review).toBe(true);
     });
 
     it("should execute scheduling_list_available_slots and return calendar slots", async () => {

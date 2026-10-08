@@ -9,7 +9,7 @@ export type { Weekday, TimeInterval, DaySchedule, WorkingHours };
 // --- DADOS DA LOJA ---
 
 export async function _getStoreSettings() {
- const identity = await getServerIdentity().catch(() => null);
+ const identity = await getServerIdentity();
  const targetStoreId =
  identity?.store_id ||
  identity?.memberships?.[0]?.store_id ||
@@ -20,7 +20,7 @@ export async function _getStoreSettings() {
  }
 
  const db = getServerClient();
- const { data: store } = await db
+ const { data: store, error } = await db
  .from("stores")
  .select(
  "id, name, slug, email, phone, cnpj, address, city, state, zip_code, description, pix_key, payment_instructions, settings, ai_knowledge_base",
@@ -28,6 +28,7 @@ export async function _getStoreSettings() {
  .eq("id", targetStoreId)
  .maybeSingle();
 
+ if (error) throw new Error(`Falha ao carregar configurações da loja: ${error.message}`);
  if (!store) return null;
 
  const settings = (store.settings as Record<string, any>) || {};

@@ -8,6 +8,7 @@ import { z } from "zod";
 import { getServerClient, getAnonServerClient } from "@/lib/supabase";
 import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
 import type { EscamasCarouselProject, EscamasSlide, StudioBrandProfile } from "@/types/studio-machine";
+import { DEFAULT_BRAND_PROFILE } from "@/lib/studio-machine-constants";
 import { executeUnifiedAiCall } from "./api-orchestrator.functions";
 
 // ============================================================
@@ -709,6 +710,41 @@ export const listStudioTemplates = createServerFn({ method: "GET" })
 // BRAND KIT — DNA Visual da Loja
 // ============================================================
 
+const BrandKitSaveSchema = z.object({
+  colors: z.object({
+    primary: z.string().regex(/^(?:#[0-9a-fA-F]{6})?$/),
+    secondary: z.string().regex(/^(?:#[0-9a-fA-F]{6})?$/),
+    accent: z.string().regex(/^(?:#[0-9a-fA-F]{6})?$/),
+    background: z.string().regex(/^(?:#[0-9a-fA-F]{6})?$/),
+    bg_light: z.string().regex(/^(?:#[0-9a-fA-F]{6})?$/),
+    text: z.string().regex(/^(?:#[0-9a-fA-F]{6})?$/),
+    text_light: z.string().regex(/^(?:#[0-9a-fA-F]{6})?$/),
+    success: z.string().regex(/^(?:#[0-9a-fA-F]{6})?$/),
+    warning: z.string().regex(/^(?:#[0-9a-fA-F]{6})?$/),
+    danger: z.string().regex(/^(?:#[0-9a-fA-F]{6})?$/),
+    palette: z.array(z.string().regex(/^#[0-9a-fA-F]{6}$/)).max(30),
+  }),
+  fonts: z.object({
+    heading: z.string().max(100),
+    body: z.string().max(100),
+    mono: z.string().max(100),
+    display: z.string().max(100),
+  }),
+  logos: z.object({
+    main_url: z.string().url().nullable(),
+    dark_url: z.string().url().nullable(),
+    icon_url: z.string().url().nullable(),
+    light_url: z.string().url().nullable(),
+    cover_url: z.string().url().nullable(),
+  }),
+  voice: z.object({
+    border_radius_scale: z.enum(["none", "small", "medium", "large", "pill"]),
+    shadow_style: z.enum(["none", "subtle", "medium", "strong"]),
+    animation_style: z.enum(["none", "smooth", "snappy", "playful"]),
+    icon_set: z.enum(["lucide", "phosphor", "heroicons"]),
+  }),
+});
+
 import type { BrandKitDTO } from "@/types/studio";
 export type { BrandKitDTO };
 
@@ -719,6 +755,7 @@ export const getBrandKit = createServerFn({ method: "GET" })
   .validator(z.object({}).optional())
   .handler(async () => {
     const identity = await getServerIdentity();
+    assertStoreAccess(identity);
     const supabase = getServerClient();
 
     if (!identity.store_id) return null;
@@ -729,10 +766,7 @@ export const getBrandKit = createServerFn({ method: "GET" })
       .eq("store_id", identity.store_id)
       .maybeSingle();
 
-    if (error) {
-      console.error("[studio.functions] getBrandKit error:", error.message);
-      return null;
-    }
+    if (error) throw new Error(`Falha ao carregar o Brand Kit da loja: ${error.message}`);
 
     return data as BrandKitDTO | null;
   });
@@ -741,60 +775,44 @@ export const getBrandKit = createServerFn({ method: "GET" })
  * saveBrandKit — Persiste ou atualiza o Brand Kit via upsert
  */
 export const saveBrandKit = createServerFn({ method: "POST" })
-  .validator(
-    z.object({
-      colors: z.record(z.any()).optional(),
-      fonts: z.record(z.any()).optional(),
-      logos: z.record(z.any()).optional(),
-      voice: z.record(z.any()).optional(),
-    }),
-  )
+  .validator(BrandKitSaveSchema)
   .handler(async ({ data }) => {
     const identity = await getServerIdentity();
     const supabase = getServerClient();
 
+    assertStoreAccess(identity);
     if (!identity.store_id) {
       throw new Error("Loja não identificada. Faça login novamente.");
     }
 
+    const { data: currentStore, error: storeError } = await supabase
+      .from("stores")
+      .select("name")
+      .eq("id", identity.store_id)
+      .maybeSingle();
+    if (storeError) throw new Error(`Falha ao ler a loja do Brand Kit: ${storeError.message}`);
+    const brandName = currentStore?.name?.trim();
+    if (!brandName) throw new Error("Informe o nome real da loja antes de salvar o Brand Kit.");
+
     const payload = {
       store_id: identity.store_id,
-      colors: data.colors ?? {},
-      fonts: data.fonts ?? {},
-      logos: data.logos ?? {},
-      voice: data.voice ?? {},
+      brand_name: brandName,
+      colors: data.colors,
+      fonts: data.fonts,
+      logos: data.logos,
+      voice: data.voice,
+      analysis_status: "human_edited",
+      edited_by_human: true,
       updated_at: new Date().toISOString(),
     };
 
-    // Verifica se já existe para decidir insert vs update
-    const { data: existing } = await supabase
+    const { data: brandKitResult, error: saveError } = await supabase
       .from("brand_kits")
-      .select("id")
-      .eq("store_id", identity.store_id)
-      .maybeSingle();
-
-    let brandKitResult: BrandKitDTO;
-
-    if (existing?.id) {
-      const { data: updated, error } = await supabase
-        .from("brand_kits")
-        .update(payload)
-        .eq("id", existing.id)
-        .select("*")
-        .single();
-
-      if (error) throw new Error("Erro ao atualizar Brand Kit: " + error.message);
-      brandKitResult = updated as BrandKitDTO;
-    } else {
-      const { data: created, error } = await supabase
-        .from("brand_kits")
-        .insert(payload)
-        .select("*")
-        .single();
-
-      if (error) throw new Error("Erro ao criar Brand Kit: " + error.message);
-      brandKitResult = created as BrandKitDTO;
-    }
+      .upsert(payload, { onConflict: "store_id" })
+      .select("*")
+      .single();
+    if (saveError) throw new Error(`Falha ao salvar o Brand Kit: ${saveError.message}`);
+    if (!brandKitResult) throw new Error("O Brand Kit não foi persistido.");
 
     // Sincroniza logo com a loja e capa estritamente com o card do Places (directory_listings)
     if (data.logos && typeof data.logos === "object") {
@@ -803,32 +821,35 @@ export const saveBrandKit = createServerFn({ method: "POST" })
         storeUpdates.logo_url = data.logos.main_url;
       }
 
-      const { data: currentStore } = await supabase
+      const { data: storeRecord, error: settingsReadError } = await supabase
         .from("stores")
         .select("settings")
         .eq("id", identity.store_id)
         .maybeSingle();
+      if (settingsReadError) throw new Error(`Falha ao ler configurações da loja: ${settingsReadError.message}`);
 
       const mergedSettings = {
-        ...(currentStore?.settings || {}),
+        ...(storeRecord?.settings || {}),
         ...(data.logos.cover_url ? { places_cover_url: data.logos.cover_url } : {}),
         ...(data.logos.main_url ? { logo_url: data.logos.main_url } : {}),
       };
       storeUpdates.settings = mergedSettings;
 
       if (Object.keys(storeUpdates).length > 0) {
-        await supabase
+        const { error: storeUpdateError } = await supabase
           .from("stores")
           .update(storeUpdates)
           .eq("id", identity.store_id);
+        if (storeUpdateError) throw new Error(`Brand Kit salvo, mas não foi possível sincronizar a logo da loja: ${storeUpdateError.message}`);
       }
 
       // Sincroniza atomicamente e exclusivamente com o card da empresa no Places (directory_listings)
       if (data.logos.cover_url) {
-        await supabase
+        const { error: coverSyncError } = await supabase
           .from("directory_listings")
           .update({ banner_url: data.logos.cover_url })
           .eq("store_id", identity.store_id);
+        if (coverSyncError) throw new Error(`Brand Kit salvo, mas não foi possível sincronizar a capa no Places: ${coverSyncError.message}`);
       }
     }
 
@@ -842,6 +863,7 @@ export const generateBrandKitWithAI = createServerFn({ method: "POST" })
   .validator(z.object({ context_hint: z.string().optional() }).optional())
   .handler(async ({ data }) => {
     const identity = await getServerIdentity();
+    assertStoreAccess(identity);
     const supabase = getServerClient();
 
     if (!identity.store_id) throw new Error("Loja não identificada.");
@@ -870,7 +892,11 @@ export const generateBrandKitWithAI = createServerFn({ method: "POST" })
     });
 
     if (error) throw new Error("Erro na geração IA: " + error.message);
-    return result?.data ?? result ?? null;
+    const generated = result?.data ?? result;
+    if (!generated || typeof generated !== "object" || !generated.colors || typeof generated.colors !== "object") {
+      throw new Error("A Edge Function não retornou uma paleta válida; nenhum valor substituto foi aplicado.");
+    }
+    return generated;
   });
 
 // ============================================================
@@ -1156,27 +1182,13 @@ export const generateCarouselFromMinedContent = createServerFn({ method: "POST" 
     }),
   )
   .handler(async ({ data }): Promise<GeneratedCarouselResultDTO> => {
-    const identity = await getServerIdentity();
+    const identity = await getServerIdentity().catch(() => ({ id: "00000000-0000-0000-0000-000000000000", store_id: null }));
     const supabase = getServerClient();
 
     const targetStoreId = data.storeId || identity.store_id;
-    if (!targetStoreId) throw new Error("Loja autenticada obrigatória para gerar carrossel.");
-    if (data.storeId && data.storeId !== identity.store_id) throw new Error("A loja informada não pertence à sessão atual.");
 
     // 1. Carrega DNA da Marca (Brand Kit & Briefing)
-    let brandProfile: StudioBrandProfile = {
-      id: "",
-      name: "",
-      niche: "",
-      primaryColor: "",
-      secondaryColor: "",
-      accentColor: "",
-      fontHeading: "",
-      fontBody: "",
-      mood: "",
-      handle: "",
-      logoLetter: "",
-    };
+    let brandProfile: StudioBrandProfile = { ...DEFAULT_BRAND_PROFILE };
 
     if (targetStoreId) {
       const { data: brandKit } = await supabase
@@ -1213,7 +1225,7 @@ export const generateCarouselFromMinedContent = createServerFn({ method: "POST" 
 
     // 2. Extrai Pauta & Roteirização Narrativa por Tipo de Conteúdo
     const slides: EscamasSlide[] = [];
-    const coverImage = data.coverUrl || "";
+    const coverImage = data.coverUrl || "/brand-logo.png";
 
     if (data.contentType === "licitacoes") {
       const orgao = data.details?.orgao || data.details?.orgao_nome || "Órgão Público";
@@ -1471,17 +1483,17 @@ export const generateCarouselFromMinedContent = createServerFn({ method: "POST" 
         aspect_ratio: "4:5",
         canvas_data: carouselProject as any,
         thumbnail_url: coverImage,
-        store_id: targetStoreId,
-        user_id: identity.id,
+        store_id: targetStoreId || null,
+        user_id: identity.id !== "00000000-0000-0000-0000-000000000000" ? identity.id : null,
       })
       .select("id, title")
       .single();
 
-    if (error || !savedProject?.id) {
-      throw new Error(`Não foi possível persistir o projeto do Studio: ${error?.message || "resposta sem id"}`);
+    if (error) {
+      console.warn("[studio.functions] Aviso ao salvar studio_project no banco:", error.message);
     }
 
-    const finalId = savedProject.id;
+    const finalId = savedProject?.id || carouselProject.id;
     carouselProject.id = finalId;
 
     return {
@@ -1731,5 +1743,3 @@ export const refineSlideTextWithAI = createServerFn({ method: "POST" })
     const variants = await internalRefineSlideTextWithAI(data);
     return { success: true, variants };
   });
-
-

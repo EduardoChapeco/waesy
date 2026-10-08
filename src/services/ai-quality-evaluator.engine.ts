@@ -102,7 +102,13 @@ function scoreResult(benchmark: any, output: any): { passed: boolean; scores: Ru
   let completeness = 5.0;
   let latency = 5.0;
 
-  if (output.success === false) {
+  if (expected.expectedSuccess !== undefined && output.success !== expected.expectedSuccess) {
+    passed = false;
+    compliance -= 1.0;
+    notes.push(`Estado de execução (${output.success}) diverge do esperado (${expected.expectedSuccess})`);
+  }
+
+  if (output.success === false && expected.expectedSuccess !== false) {
     passed = false;
     faithfulness = 1.0;
     completeness = 1.0;
@@ -162,6 +168,14 @@ function scoreResult(benchmark: any, output: any): { passed: boolean; scores: Ru
     passed = false;
     compliance -= 1.0;
     notes.push(`Nível de risco jurídico divergente: obteve '${data.riskLevel}', esperava '${expected.riskLevel}'`);
+  }
+
+  for (const field of ["fitEvaluation", "assessmentStatus", "legalAssessmentStatus", "lgpdStatus"] as const) {
+    if (expected[field] !== undefined && data[field] !== expected[field]) {
+      passed = false;
+      compliance -= 1.0;
+      notes.push(`Estado ${field} (${data[field]}) diverge do esperado (${expected[field]})`);
+    }
   }
 
   if (expected.urgency && data.urgency !== expected.urgency) {

@@ -116,7 +116,7 @@ export function WaesyCopilotDrawer({ session }: { session?: any }) {
   };
 
   const handleDrawerAction = async (action: AIChatAction) => {
-    if (["add_to_cart", "request_travel_quote", "submit_legal_demand", "publish_ad"].includes(action.action_type)) {
+    if (["add_to_cart", "submit_legal_demand", "publish_ad"].includes(action.action_type)) {
       try {
         const result = await dispatchAiChatAction({
           data: {

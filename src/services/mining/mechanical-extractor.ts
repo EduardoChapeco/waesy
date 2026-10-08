@@ -11,6 +11,7 @@
 
 import { getRandomUserAgent, cleanHtmlText } from "@/lib/mining/scraper-utils";
 import { globalCrawlerCircuitBreaker } from "@/lib/mining/crawler-circuit-breaker";
+import { validateBrandSourceUrl } from "@/lib/brand-source-url";
 export { cleanHtmlText };
 
 export interface MechanicalExtractionResult {
@@ -40,10 +41,13 @@ export interface MechanicalExtractionResult {
     endDate?: string;
     venue?: string;
     location?: string;
+    address?: string;
+    city?: string;
+    state?: string;
     priceMin?: number;
     priceMax?: number;
     ticketUrl?: string;
-    isFree?: boolean;
+    isFree?: boolean | null;
     organizerName?: string;
   };
   municipalData?: {
@@ -243,11 +247,36 @@ function extractFromJsonLd(html: string, sourceUrl: string): Partial<MechanicalE
           const description = item.description || "";
           const startDate = item.startDate;
           const endDate = item.endDate;
-          const location = item.location?.name || item.location?.address?.addressLocality || "";
-          const venue = item.location?.name || "";
+          const locationAddress = typeof item.location?.address === "object" ? item.location.address : undefined;
+          const location = item.location?.name || locationAddress?.streetAddress || locationAddress?.addressLocality || "";
+          const venue = item.location?.name || undefined;
+          const city = typeof locationAddress?.addressLocality === "string" ? locationAddress.addressLocality : undefined;
+          const state = typeof locationAddress?.addressRegion === "string" ? locationAddress.addressRegion : undefined;
+          const address = typeof locationAddress?.streetAddress === "string" ? locationAddress.streetAddress : undefined;
           const image = resolveJsonLdImage(item.image);
-          const ticketUrl = item.offers?.url || item.url || sourceUrl;
-          const price = item.offers?.price ? parseFloat(item.offers.price) : undefined;
+          const offers = Array.isArray(item.offers) ? item.offers : item.offers ? [item.offers] : [];
+          const prices: number[] = [];
+          let ticketUrl: string | undefined;
+          let isFree: boolean | undefined;
+          for (const offer of offers) {
+            if (typeof offer?.url === "string") {
+              try {
+                ticketUrl = validateBrandSourceUrl(new URL(offer.url, sourceUrl).toString()).toString();
+              } catch {
+                // Ignore unsafe/non-public URLs; the page URL is provenance, not a ticket link.
+              }
+            }
+            if (offer?.price !== undefined && offer.price !== null) {
+              const parsedPrice = typeof offer.price === "number" ? offer.price : Number(String(offer.price).trim());
+              if (Number.isFinite(parsedPrice) && parsedPrice >= 0) {
+                prices.push(parsedPrice);
+                if (parsedPrice === 0) isFree = true;
+              }
+            }
+            if (offer?.isAccessibleForFree === true) isFree = true;
+          }
+          const priceMin = prices.length ? Math.min(...prices) : undefined;
+          const priceMax = prices.length ? Math.max(...prices) : undefined;
 
           if (title) {
             const body = description.replace(/<[^>]+>/g, "\n\n").trim();
@@ -257,7 +286,7 @@ function extractFromJsonLd(html: string, sourceUrl: string): Partial<MechanicalE
               lead: cleanHtmlText(description).slice(0, 300),
               bodyMarkdown: body,
               bodyText: cleanHtmlText(body),
-              publishedAt: startDate || new Date().toISOString(),
+              publishedAt: typeof startDate === "string" ? startDate : undefined,
               coverImageUrl: image || undefined,
               galleryImages: image ? [image] : [],
               wordCount: words,
@@ -265,12 +294,17 @@ function extractFromJsonLd(html: string, sourceUrl: string): Partial<MechanicalE
               method: "json_ld",
               contentType: "eventos",
               eventData: {
-                startDate,
-                endDate,
+                startDate: typeof startDate === "string" ? startDate : undefined,
+                endDate: typeof endDate === "string" ? endDate : undefined,
                 venue,
                 location,
-                priceMin: price,
+                address,
+                city,
+                state,
+                priceMin,
+                priceMax,
                 ticketUrl,
+                isFree,
               },
             };
           }

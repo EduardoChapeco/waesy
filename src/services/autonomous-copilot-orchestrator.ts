@@ -320,8 +320,8 @@ export function fragmentAndOptimizePrompt(
 /**
  * 2. Hash Determinístico de Consulta para o Banco de Cache
  */
-export function hashQueryTask(task: FragmentedPromptTask): string {
-  const norm = `${task.domain}:${task.targetQuery.toLowerCase().trim()}:${task.city || ""}:${task.state || ""}`;
+export function hashQueryTask(task: FragmentedPromptTask, scope = "global"): string {
+  const norm = `${scope}:${task.domain}:${task.targetQuery.toLowerCase().trim()}:${task.city || ""}:${task.state || ""}`;
   return crypto.createHash("sha256").update(norm).digest("hex");
 }
 
@@ -392,9 +392,14 @@ export async function executeAutonomousCopilotTask(
   const startTime = Date.now();
   const taskId = crypto.randomUUID();
   const task = fragmentAndOptimizePrompt(prompt, { city: context.activeCity, state: context.activeState });
-  const queryHash = hashQueryTask(task);
   const supabase = getServerClient();
   const identity = await getServerIdentity().catch(() => null);
+  const queryScope = context.storeId
+    ? `store:${context.storeId}`
+    : identity?.id
+      ? `user:${identity.id}`
+      : "public";
+  const queryHash = hashQueryTask(task, queryScope);
 
   await startCopilotExecution({
     executionId: taskId,
@@ -478,6 +483,14 @@ export async function executeAutonomousCopilotTask(
       tokensUsed: 0,
     });
 
+    const cacheDuration = Date.now() - startTime;
+    await persistActivitySteps(supabase, taskId, task.domain, context.storeId, steps, cacheDuration);
+    await completeCopilotExecution(
+      { executionId: taskId },
+      "completed",
+      { domain: task.domain, stepsCount: steps.length, queryHash, cacheHit: true, durationMs: cacheDuration },
+    ).catch((error) => console.warn("[copilot-execution] cache completion telemetry unavailable", error));
+
     return {
       success: true,
       taskId,
@@ -487,7 +500,7 @@ export async function executeAutonomousCopilotTask(
       tokensSaved: 4500,
       steps,
       artifact: cachedData.artifact,
-      durationMs: Date.now() - startTime,
+      durationMs: cacheDuration,
       fsmPhase: "COMPLETED",
     };
   }

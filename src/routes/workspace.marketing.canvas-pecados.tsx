@@ -24,7 +24,7 @@ export function SevenSinsCanvasPage() {
   const storeId = store?.id || "";
 
   const [selectedSin, setSelectedSin] = useState<SinType>("orgulho");
-  const [productName, setProductName] = useState("Combo Executivo Especial");
+  const [productName, setProductName] = useState("");
   const [selectedProductId, setSelectedProductId] = useState<string>("");
   const [productsList, setProductsList] = useState<Array<{ id: string; title: string; price_cents: number | null }>>([]);
   const [targetChannel, setTargetChannel] = useState<
@@ -53,6 +53,14 @@ export function SevenSinsCanvasPage() {
 
   // ── GERAR COPY AUTOMÁTICA DO PECADO SELECIONADO ───────────────────────────
   async function handleGenerateCopy(sinToUse = selectedSin) {
+    if (!storeId) {
+      setFeedback({ type: "error", message: "Nenhum workspace ativo foi identificado." });
+      return;
+    }
+    if (!selectedProductId && !productName.trim()) {
+      setFeedback({ type: "error", message: "Selecione um produto do catálogo ou informe o nome do produto." });
+      return;
+    }
     setGenerating(true);
     setPersonaResults([]);
     try {
@@ -68,7 +76,7 @@ export function SevenSinsCanvasPage() {
       setGeneratedHook(hook);
       setFeedback({
         type: "success",
-        message: `Copy gerada com sucesso com base no gatilho "${sinToUse}"!`,
+        message: `Rascunho de copy criado com a lente criativa "${sinToUse}". Revise todos os fatos antes de publicar.`,
       });
     } catch (err) {
       console.error("Erro ao gerar copy dos 7 pecados:", err);
@@ -115,6 +123,7 @@ export function SevenSinsCanvasPage() {
     try {
       const results = await runSimLabPersonaTest({
         data: {
+          storeId,
           sin: generatedHook.sin,
           copyHeadline: generatedHook.copy_headline,
           copyBody: generatedHook.copy_body,
@@ -159,17 +168,17 @@ export function SevenSinsCanvasPage() {
             <div>
               <div className="flex items-center gap-2">
                 <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary border border-primary/20">
-                  Framework Psicológico de Alta Conversão • V4 Company
+                  Lente criativa • requer revisão humana
                 </span>
                 <span className="text-xs text-muted-foreground font-mono">
-                  SimLab V2 Enabled
+                  SimLab qualitativo
                 </span>
               </div>
               <h1 className="text-2xl font-semibold tracking-tight mt-1 text-foreground">
-                Canvas de Conversão e 7 Pecados
+                Canvas de campanha e gatilhos criativos
               </h1>
               <p className="text-sm text-muted-foreground mt-1">
-                Crie anúncios e mensagens de WhatsApp ativando os 7 gatilhos subconscientes de compra e teste antes com personas sintéticas.
+                Gere rascunhos com diferentes lentes criativas. Reações sintéticas são exploratórias e não preveem conversões.
               </p>
             </div>
 
@@ -177,11 +186,11 @@ export function SevenSinsCanvasPage() {
               <button
                 type="button"
                 onClick={() => handleGenerateCopy()}
-                disabled={generating}
+                disabled={generating || !storeId || (!selectedProductId && !productName.trim())}
                 className="h-11 px-5 inline-flex items-center justify-center gap-2 rounded-lg text-sm font-medium bg-primary text-primary-foreground shadow-sm hover:opacity-95 transition-opacity"
               >
                 <RefreshCw className={`w-4 h-4 ${generating ? "animate-spin" : ""}`} />
-                {generating ? "Redigindo..." : "Redigir Copy do Pecado"}
+                {generating ? "Gerando rascunho..." : "Gerar rascunho de copy"}
               </button>
             </div>
           </div>
@@ -213,10 +222,10 @@ export function SevenSinsCanvasPage() {
         </div>
       )}
 
-      {/* ── SELETOR DE PECADOS (GRADE DOS 7 GATILHOS) ── */}
+      {/* ── LENTES CRIATIVAS OPCIONAIS ── */}
       <div className="max-w-7xl mx-auto px-0 sm:px-0 mt-6">
         <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
-          Alavanca Subconsciente
+          Lente criativa
         </h2>
 
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
@@ -228,10 +237,7 @@ export function SevenSinsCanvasPage() {
                 <button
                   key={sinKey}
                   type="button"
-                  onClick={() => {
-                    setSelectedSin(sinKey);
-                    handleGenerateCopy(sinKey);
-                  }}
+                  onClick={() => setSelectedSin(sinKey)}
                   className={`p-4 rounded-lg border text-left transition-all ${
                     isSelected
                       ? "bg-card border-primary shadow-sm ring-1 ring-primary/30"
@@ -301,7 +307,8 @@ export function SevenSinsCanvasPage() {
                   setProductName(e.target.value);
                   setSelectedProductId("");
                 }}
-                placeholder="Ex: Combo Smash Burger Duplo, Pacote Gramado 4 Dias"
+                placeholder="Selecione um produto ou informe seu nome real"
+                required
                 className="flex-1 h-11 px-4 rounded-lg border border-border/60 bg-background text-sm text-foreground focus:ring-1 focus:ring-primary outline-none"
               />
             </div>
@@ -316,16 +323,16 @@ export function SevenSinsCanvasPage() {
               onChange={(e) => setTargetChannel(e.target.value as any)}
               className="w-full h-11 px-3 rounded-lg border border-border/60 bg-background text-sm text-foreground focus:ring-1 focus:ring-primary outline-none"
             >
-              <option value="whatsapp">WhatsApp (Conversão Direta)</option>
+              <option value="whatsapp">WhatsApp</option>
               <option value="instagram_ad">Instagram / Meta Ads</option>
               <option value="push_notification">Notificação Push</option>
-              <option value="storefront_banner">Banner da Vitrine Digital</option>
+              <option value="storefront_banner">Banner da vitrine</option>
             </select>
           </div>
         </div>
       </div>
 
-      {/* ── SEÇÃO DA COPY GERADA & SIMLAB V2 ── */}
+      {/* ── RASCUNHO E EXPLORAÇÃO QUALITATIVA ── */}
       <div className="max-w-7xl mx-auto px-0 sm:px-0 mt-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* Coluna Esquerda: A Peça de Copy Pronta */}
@@ -344,8 +351,8 @@ export function SevenSinsCanvasPage() {
             {generatedHook ? (
               <div className="bg-card border border-border/50 rounded-lg p-6 shadow-xs space-y-5">
                 <div>
-                  <span className="text-xs text-muted-foreground uppercase font-semibold tracking-wider block">
-                    Headline de Alto Impacto
+                      <span className="text-xs text-muted-foreground uppercase font-semibold tracking-wider block">
+                    Rascunho de headline
                   </span>
                   <p className="text-lg font-bold tracking-tight text-foreground mt-1">
                     &ldquo;{generatedHook.copy_headline}&rdquo;
@@ -415,7 +422,7 @@ export function SevenSinsCanvasPage() {
                     className="w-full sm:w-1/2 h-11 inline-flex items-center justify-center gap-2 rounded-lg text-xs font-semibold bg-foreground text-background hover:opacity-90 transition-opacity"
                   >
                     <Users className="w-4 h-4" />
-                    {simulating ? "Simulando..." : "Testar no SimLab V2"}
+                    {simulating ? "Gerando respostas…" : "Explorar reações sintéticas"}
                   </button>
                 </div>
               </div>
@@ -424,37 +431,30 @@ export function SevenSinsCanvasPage() {
                 <Target className="w-8 h-8 mx-auto text-muted-foreground mb-2 opacity-60" />
                 <p className="text-sm font-medium text-foreground">Nenhuma copy gerada ainda</p>
                 <p className="text-xs text-muted-foreground mt-1 mb-4">
-                  Clique no botão &ldquo;Redigir Copy do Pecado&rdquo; no topo para gerar a primeira versão.
+                  Informe um produto real e gere um rascunho baseado somente nos fatos disponíveis.
                 </p>
                 <button
                   type="button"
                   onClick={() => handleGenerateCopy()}
+                  disabled={generating || !storeId || (!selectedProductId && !productName.trim())}
                   className="h-10 px-4 inline-flex items-center gap-2 rounded-lg text-xs font-medium bg-primary text-primary-foreground"
                 >
                   <RefreshCw className="w-3.5 h-3.5" />
-                  Gerar Agora
+                  Gerar rascunho
                 </button>
               </div>
             )}
           </div>
 
-          {/* Coluna Direita: Feedback das Personas Sintéticas do SimLab V2 */}
+          {/* Coluna Direita: respostas hipotéticas do mesmo runtime SimLab */}
           <div className="lg:col-span-6 space-y-6">
             <div className="flex items-center justify-between">
               <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-                Relatório SimLab
+                Reações qualitativas sintéticas
               </h2>
               {personaResults.length > 0 && (
                 <span className="text-xs text-muted-foreground font-mono">
-                  Média:{" "}
-                  <strong className="text-foreground">
-                    {Math.round(
-                      personaResults.reduce((acc, p) => acc + p.conversion_probability, 0) /
-                        personaResults.length
-                    )}
-                    %
-                  </strong>{" "}
-                  conversão
+                  {personaResults.length} respostas hipotéticas · sem forecast
                 </span>
               )}
             </div>
@@ -477,24 +477,13 @@ export function SevenSinsCanvasPage() {
                         </div>
                       </div>
 
-                      <div className="text-right">
-                        <span
-                          className={`text-xs font-bold px-3 py-1 rounded-full ${
-                            p.conversion_probability >= 80
-                              ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
-                              : p.conversion_probability >= 65
-                              ? "bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20"
-                              : "bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20"
-                          }`}
-                        >
-                          {p.conversion_probability}% propensão
-                        </span>
-                      </div>
+                      <span className="rounded-full border border-border px-2 py-1 text-[10px]">IA · resposta sintética</span>
                     </div>
 
                     <div className="p-3 rounded-lg bg-muted/20 border border-border/30 text-xs text-foreground italic leading-relaxed">
-                      {p.reaction_verbatim}
+                      {p.reaction_qualitative}
                     </div>
+                    <p className="text-[10px] text-muted-foreground">Origem: {p.profile_origin} · calibração: {p.calibration_status}. Não é depoimento de cliente.</p>
 
                     {p.primary_objection && (
                       <div className="flex items-start gap-2 text-xs text-muted-foreground pt-1">
@@ -515,9 +504,9 @@ export function SevenSinsCanvasPage() {
             ) : (
               <div className="bg-card/40 border border-border/40 rounded-lg p-12 text-center text-muted-foreground">
                 <Users className="w-8 h-8 mx-auto text-muted-foreground mb-2 opacity-50" />
-                <p className="text-sm font-medium">Nenhum teste de persona executado</p>
+                <p className="text-sm font-medium">Nenhuma exploração qualitativa executada</p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Após redigir a copy, clique no botão &ldquo;Testar no SimLab V2&rdquo; para simular o comportamento de 5 perfis demográficos sintéticos.
+                  Após redigir a copy, gere respostas hipotéticas de perfis sintéticos. O resultado não estima conversão nem representa clientes reais.
                 </p>
               </div>
             )}

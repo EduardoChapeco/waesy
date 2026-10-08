@@ -61,7 +61,7 @@ const DEFAULT_BMC: StoreBmcDTO = {
   customer_segments: [],
   cost_structure: [],
   revenue_streams: [],
-  confidence: 1.0,
+  confidence: null,
   edited_by_human: false,
 };
 
@@ -155,7 +155,7 @@ export function BusinessModelCanvasPage() {
     const newItem: BmcBlockItem = {
       id: `${key}-${Date.now()}`,
       text,
-      confidence: 1.0,
+      confidence: null,
     };
 
     setBmc((prev) => ({
@@ -207,8 +207,8 @@ export function BusinessModelCanvasPage() {
     }
 
     setIsGenerating(true);
-    toast.info("Estrategista de Negócios IA em operação...", {
-      description: "Analisando nicho, catálogo e arquétipo da empresa.",
+    toast.info("Gerando rascunho com IA...", {
+      description: "A IA usa os dados cadastrados; conclusões e hipóteses precisam de revisão humana.",
     });
 
     try {
@@ -219,7 +219,7 @@ export function BusinessModelCanvasPage() {
       });
       setBmc(generated);
       setLastSaved(new Date());
-      toast.success("Business Model Canvas estruturado com sucesso!");
+      toast.success("Rascunho do BMC gerado. Revise os itens antes de usar como decisão.");
     } catch (err: any) {
       toast.error(err?.message || "Falha ao gerar BMC com IA. Verifique as credenciais no cofre.");
     } finally {
@@ -343,6 +343,11 @@ export function BusinessModelCanvasPage() {
                 {bmc.edited_by_human && (
                   <Badge variant="outline" className="text-xs">
                     Revisado por Humano
+                  </Badge>
+                )}
+                {!bmc.edited_by_human && Object.keys(BLOCKS_META).some((key) => ((bmc as any)[key] || []).length > 0) && (
+                  <Badge variant="destructive" className="text-xs">
+                    Rascunho de IA — não validado
                   </Badge>
                 )}
               </div>

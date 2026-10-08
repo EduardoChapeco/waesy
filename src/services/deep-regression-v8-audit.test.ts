@@ -5,7 +5,7 @@
  */
 
 import { describe, it, expect } from "vitest";
-import { DEFAULT_BRAND_PALETTE, DEFAULT_BRAND_SEVEN_SINS, DEFAULT_BRAND_SWOT } from "./market-radar.functions";
+import { EMPTY_BRAND_PALETTE, EMPTY_BRAND_SEVEN_SINS, EMPTY_BRAND_SWOT } from "./market-radar.functions";
 import { summarizeCashEntries } from "@/lib/cash";
 import type { UniversalOcrResult } from "./multimodal-ocr.functions";
 
@@ -72,19 +72,13 @@ describe("Master Prompt V8 — Deep Regression & Structural Audit", () => {
   });
 
   describe("Fase 3: Sincronização BFF e Integridade de Brand DNA", () => {
-    it("deve fornecer paleta e SWOT completos sem objetos vazios como fallback", () => {
-      expect(DEFAULT_BRAND_PALETTE.primary).toBeDefined();
-      expect(DEFAULT_BRAND_PALETTE.secondary).toBeDefined();
-      expect(DEFAULT_BRAND_PALETTE.background).toBeDefined();
-      expect(DEFAULT_BRAND_PALETTE.text).toBeDefined();
-
-      expect(DEFAULT_BRAND_SWOT.strengths.length).toBeGreaterThan(0);
-      expect(DEFAULT_BRAND_SWOT.weaknesses.length).toBeGreaterThan(0);
-      expect(DEFAULT_BRAND_SWOT.opportunities.length).toBeGreaterThan(0);
-      expect(DEFAULT_BRAND_SWOT.threats.length).toBeGreaterThan(0);
-
-      expect(DEFAULT_BRAND_SEVEN_SINS.orgulho).toBeDefined();
-      expect(DEFAULT_BRAND_SEVEN_SINS.ganancia).toBeDefined();
+    it("mantém Brand DNA sem observações vazio, em vez de apresentar conteúdo seed como dado da loja", () => {
+      expect(Object.values(EMPTY_BRAND_PALETTE).every((color) => color === "")).toBe(true);
+      expect(EMPTY_BRAND_SWOT.strengths).toEqual([]);
+      expect(EMPTY_BRAND_SWOT.weaknesses).toEqual([]);
+      expect(EMPTY_BRAND_SWOT.opportunities).toEqual([]);
+      expect(EMPTY_BRAND_SWOT.threats).toEqual([]);
+      expect(EMPTY_BRAND_SEVEN_SINS).toEqual({});
     });
   });
 

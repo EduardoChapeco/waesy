@@ -444,7 +444,7 @@ export function WorkspaceAllToolsDialog({
         },
       });
       setMcpBlock(block);
-      toast.success("Rascunho estruturado recebido. Revise os dados antes de salvar; nenhuma publicação foi realizada.");
+      toast.success("Rascunho de copy gerado. Revise os fatos; não há estimativa de alcance nem publicação externa.");
     } catch (err: any) {
       toast.error(err?.message || "Falha ao orquestrar comando com IA.");
     } finally {
@@ -548,7 +548,7 @@ export function WorkspaceAllToolsDialog({
                   handleExecuteAiCommand();
                 }
               }}
-              placeholder="Pesquisar ferramentas ou ditar comando (ex: 'Criar anúncio de R$ 50 para o produto X')..."
+              placeholder="Pesquisar ferramentas ou ditar campanha (ex: Instagram, R$ 50/dia, 7 dias, produto X)..."
               className="h-10 pl-10 pr-20 text-xs sm:text-sm rounded-lg bg-card border-border/60 focus-visible:ring-1 focus-visible:ring-primary shadow-xs"
               autoFocus
             />
@@ -597,7 +597,7 @@ export function WorkspaceAllToolsDialog({
                     Orquestrar com IA (MCP): &quot;{searchQuery}&quot;
                   </p>
                   <p className="text-[10px] text-muted-foreground truncate">
-                    Gera anúncio com criativo do produto, orçamento e segmentação
+                    Gera rascunho de copy; informe canal e orçamento. Sem previsão de alcance ou publicação externa.
                   </p>
                 </div>
               </div>

@@ -1,10 +1,15 @@
-import { beforeAll, describe, it, expect } from "vitest";
+import { afterAll, beforeAll, describe, it, expect } from "vitest";
 import { LinkedInRawProfileSchema, translateLinkedInToWaesyResume, getLinkedInMasterCredentials, saveLinkedInMasterCredentials, getLinkedInAuthRedirectUrl, parseAndImportLinkedInJson, syndicateJobToLinkedIn, getWorkspaceLinkedInStatus, getJobSyndicationLogs, searchTalentHunterPool, disconnectLinkedInCompanyPage, assertWorkspacePlanPro } from "./linkedin-integrations.functions";
 import { encryptSecret, decryptSecret, maskSecret } from "@/lib/crypto-vault.server";
 
 describe("LinkedIn Omni-Bridge & B2B Syndication Test Suite", () => {
+  const originalVaultKey = process.env.VAULT_MASTER_KEY;
   beforeAll(() => {
-    process.env.VAULT_MASTER_KEY = "waesy-test-vault-master-key-at-least-32-chars";
+    process.env.VAULT_MASTER_KEY = "waesy-vitest-only-master-key-not-for-production";
+  });
+  afterAll(() => {
+    if (originalVaultKey === undefined) delete process.env.VAULT_MASTER_KEY;
+    else process.env.VAULT_MASTER_KEY = originalVaultKey;
   });
 
   // Test 1: Crypto Vault AES-256-GCM

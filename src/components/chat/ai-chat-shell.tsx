@@ -52,7 +52,6 @@ export interface ChatThreadItem {
   unreadCount?: number;
   isPinned?: boolean;
   isArchived?: boolean;
-  assignedToProfileId?: string;
   metadata?: Record<string, any>;
   workingMemory?: Record<string, any>;
 }
@@ -60,7 +59,6 @@ export interface ChatThreadItem {
 export interface ChatMessageItem {
   id: string;
   threadId: string;
-  clientMessageId?: string;
   executionId?: string;
   senderId?: string;
   senderName: string;
@@ -91,7 +89,7 @@ export interface AIChatShellProps {
   onDeleteThread?: (threadId: string) => void;
   onTogglePinThread?: (threadId: string) => void;
   onToggleArchiveThread?: (threadId: string) => void;
-  onAction?: (action: AIChatAction) => void;
+  onStructuredAction?: (action: AIChatAction) => void | Promise<void>;
   isSending?: boolean;
   isStreaming?: boolean;
   currentUserProfileId?: string;
@@ -110,7 +108,7 @@ export function AIChatShell({
   onDeleteThread,
   onTogglePinThread,
   onToggleArchiveThread,
-  onAction,
+  onStructuredAction,
   isSending = false,
   isStreaming = false,
   currentUserProfileId,
@@ -492,8 +490,12 @@ export function AIChatShell({
                         <ChatArtifactCard
                           artifact={msg.artifact}
                           onOpenBuilder={(art) => {
-                            setActiveArtifact(art);
-                            setShowContextPanel(true);
+                            const data = art.data || {};
+                            const docId = data.experience_document_id || data.documentId;
+                            const query = docId
+                              ? `doc=${encodeURIComponent(String(docId))}`
+                              : `artifactId=${encodeURIComponent(String(art.id))}`;
+                            window.location.assign(`/workspace/builder?${query}`);
                           }}
                         />
                       </div>
@@ -505,7 +507,7 @@ export function AIChatShell({
                         <StructuredMessageView
                           payload={msg.structuredPayload as any}
                           isStaff={msg.isStaffOrAI}
-                          onActionSelect={onAction}
+                          onActionClick={onStructuredAction}
                         />
                       </div>
                     )}
@@ -729,6 +731,56 @@ export function AIChatShell({
   );
 }
 
+export function getArtifactTableRows(data: Record<string, any> = {}): unknown[][] {
+  const rawRows = Array.isArray(data.dataRows)
+    ? data.dataRows
+    : Array.isArray(data.rows)
+      ? data.rows
+      : [];
+  const headers = Array.isArray(data.headers) ? data.headers : [];
+
+  return rawRows.map((row: unknown) => {
+    if (Array.isArray(row)) return row;
+    if (row && typeof row === "object") {
+      const record = row as Record<string, unknown>;
+      return headers.length ? headers.map((header: string) => record[header] ?? "") : Object.values(record);
+    }
+    return [row];
+  });
+}
+
+export function artifactCellToText(value: unknown): string {
+  if (value == null) return "";
+  if (typeof value === "string") return value;
+  if (typeof value === "number" || typeof value === "boolean" || typeof value === "bigint") return String(value);
+  try {
+    return JSON.stringify(value);
+  } catch {
+    return String(value);
+  }
+}
+
+export function buildArtifactCsv(data: Record<string, any> = {}): string {
+  const rows = getArtifactTableRows(data);
+  const sourceHeaders = Array.isArray(data.headers)
+    ? data.headers.map((header: unknown) => artifactCellToText(header))
+    : [];
+  const columnCount = Math.max(sourceHeaders.length, ...rows.map((row) => row.length), 1);
+  const headers = sourceHeaders.length
+    ? sourceHeaders
+    : Array.from({ length: columnCount }, (_, index) => `Coluna ${index + 1}`);
+
+  const escapeCell = (value: unknown): string => {
+    let text = artifactCellToText(value);
+    const looksNumeric = /^[-+]?\d+(?:[.,]\d+)?$/.test(text.trim());
+    if (!looksNumeric && /^[=+\-@]/.test(text)) text = `'${text}`;
+    return `"${text.replace(/"/g, '""')}"`;
+  };
+
+  const matrix = [headers, ...rows.map((row) => Array.from({ length: headers.length }, (_, index) => row[index] ?? ""))];
+  return `\uFEFF${matrix.map((row) => row.map(escapeCell).join(";")).join("\r\n")}`;
+}
+
 function ArtifactViewerContent({
   artifact,
   onClose,
@@ -737,18 +789,8 @@ function ArtifactViewerContent({
   onClose: () => void;
 }) {
   const handleDownloadCsv = () => {
-    const headers = artifact.data?.headers || ["Categoria", "Qtd", "Valor", "Status"];
-    const rows = artifact.data?.dataRows || artifact.data?.rows || [];
-    const serializeCell = (cell: unknown) => cell === null || typeof cell === "undefined" ? "" : typeof cell === "object" ? JSON.stringify(cell) : String(cell);
-    const csvContent =
-      "data:text/csv;charset=utf-8," +
-      [
-        headers.map(serializeCell).join(";"),
-        ...(Array.isArray(rows) && Array.isArray(rows[0])
-          ? rows.map((r: unknown[]) => r.map(serializeCell).join(";"))
-          : []),
-      ].join("\n");
-    const encodedUri = encodeURI(csvContent);
+    const csvContent = buildArtifactCsv(artifact.data || {});
+    const encodedUri = `data:text/csv;charset=utf-8,${encodeURIComponent(csvContent)}`;
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
     link.setAttribute("download", `${(artifact.title || "tabela").toLowerCase().replace(/\s+/g, "_")}.csv`);
@@ -760,6 +802,14 @@ function ArtifactViewerContent({
   const handlePrint = () => {
     window.print();
   };
+
+  const tableHeaders = Array.isArray(artifact.data?.headers)
+    ? artifact.data.headers.map((header: unknown) => artifactCellToText(header))
+    : [];
+  const tableRows = getArtifactTableRows(artifact.data || {});
+  const visibleHeaders = tableHeaders.length
+    ? tableHeaders
+    : ["Item", "Valor", "Status"].slice(0, Math.max(tableRows[0]?.length || 3, 1));
 
   return (
     <div className="space-y-4">
@@ -860,7 +910,7 @@ function ArtifactViewerContent({
           <div className="flex items-center justify-between border-b border-border/40 pb-2">
             <span className="font-bold text-2xs uppercase tracking-wider text-primary">Tabela de Dados</span>
             <Badge variant="outline" className="text-2xs font-mono">
-              {Array.isArray(artifact.data?.rows) ? artifact.data.rows.length : artifact.data?.dataRows?.length || 0} registros
+              {tableRows.length} registros
             </Badge>
           </div>
 
@@ -868,7 +918,7 @@ function ArtifactViewerContent({
             <table className="w-full text-2xs text-left border-collapse">
               <thead className="bg-muted/40 border-b border-border/60">
                 <tr>
-                  {(artifact.data?.headers || ["Item", "Valor", "Status"]).map((h: string, idx: number) => (
+                  {visibleHeaders.map((h: string, idx: number) => (
                     <th key={idx} className="p-2 font-semibold text-foreground whitespace-nowrap">
                       {h}
                     </th>
@@ -876,19 +926,21 @@ function ArtifactViewerContent({
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/30">
-                {(artifact.data?.dataRows || artifact.data?.rows || []).map((row: unknown[], rIdx: number) => (
+                {tableRows.length > 0 ? tableRows.map((row, rIdx) => (
                   <tr key={rIdx} className="hover:bg-muted/20">
-                    {Array.isArray(row) ? (
-                      row.map((cell: unknown, cIdx: number) => (
-                        <td key={cIdx} className="p-2 whitespace-nowrap text-muted-foreground">
-                          {cell === null || typeof cell === "undefined" ? "" : typeof cell === "object" ? JSON.stringify(cell) : String(cell)}
-                        </td>
-                      ))
-                    ) : (
-                      <td className="p-2 text-muted-foreground">{String(row)}</td>
-                    )}
+                    {Array.from({ length: visibleHeaders.length }, (_, cIdx) => (
+                      <td key={cIdx} className="p-2 whitespace-nowrap text-muted-foreground">
+                        {artifactCellToText(row[cIdx])}
+                      </td>
+                    ))}
                   </tr>
-                ))}
+                )) : (
+                  <tr>
+                    <td colSpan={visibleHeaders.length} className="p-3 text-center text-muted-foreground">
+                      Nenhum registro retornado.
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>

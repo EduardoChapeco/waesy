@@ -12,14 +12,13 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
-import { getServerIdentity } from "@/lib/server-access";
+import { assertStoreAccess, getServerIdentity } from "@/lib/server-access";
 import { extractContentMechanically } from "../mining/mechanical-extractor";
 import { curateWithEditorialSquad } from "../mining/editorial-squad";
+import { validateBrandSourceUrl } from "@/lib/brand-source-url";
 
 const mineEventSchema = z.object({
   url: z.string().url(),
-  target_city: z.string().default("Chapecó"),
-  target_state: z.string().default("SC"),
   target_store_id: z.string().uuid().optional(),
   generate_news_coverage: z.boolean().default(true),
 });
@@ -33,42 +32,44 @@ export const mineAndPublishExternalEvent = createServerFn({ method: "POST" })
     const supabase = getServerClient();
     const identity = await getServerIdentity();
 
-    // 1. Identifica a loja raiz oficial Waesy (se não fornecida)
-    let storeId = data.target_store_id;
-    if (!storeId) {
-      const { data: rootStore } = await supabase
-        .from("stores")
-        .select("id")
-        .eq("is_platform_root", true)
-        .maybeSingle();
-
-      storeId = rootStore?.id;
-    }
-
-    if (!storeId) {
-      const { data: fallbackStore } = await supabase.from("stores").select("id").limit(1).single();
-      storeId = fallbackStore?.id;
-    }
-
-    if (!storeId) {
-      throw new Error("Nenhuma loja válida encontrada para ancorar o evento.");
-    }
+    const storeId = data.target_store_id || identity.store_id;
+    if (!identity.id) throw new Error("Autenticação necessária para minerar eventos.");
+    if (!storeId) throw new Error("Selecione um workspace para salvar o evento extraído.");
+    assertStoreAccess(identity, ["owner", "store_owner", "proprietario", "admin", "manager", "gerente"], storeId);
 
     // 2. Extrai dados mecanicamente via JSON-LD e seletores
-    const extracted = await extractContentMechanically(data.url);
+    const sourceUrl = validateBrandSourceUrl(data.url).toString();
+    const extracted = await extractContentMechanically(sourceUrl);
     if (!extracted.title || extracted.title === "Sem título") {
       throw new Error("Não foi possível extrair o título do evento.");
     }
 
     // Identifica plataforma de origem
     let externalSource = "outro";
-    if (data.url.includes("sympla.com")) externalSource = "sympla";
-    else if (data.url.includes("eventbrite.com")) externalSource = "eventbrite";
-    else if (data.url.includes("bluticket.com")) externalSource = "bluticket";
-    else if (data.url.includes("ingressonacional.com")) externalSource = "ingressonacional";
+    if (sourceUrl.includes("sympla.com")) externalSource = "sympla";
+    else if (sourceUrl.includes("eventbrite.com")) externalSource = "eventbrite";
+    else if (sourceUrl.includes("bluticket.com")) externalSource = "bluticket";
+    else if (sourceUrl.includes("ingressonacional.com")) externalSource = "ingressonacional";
 
-    const eventDate = extracted.eventData?.startDate || new Date(Date.now() + 86400000 * 7).toISOString();
-    const venue = extracted.eventData?.venue || extracted.eventData?.location || `${data.target_city} - Centro`;
+    const candidateStartDate = extracted.eventData?.startDate;
+    const parsedStart = candidateStartDate ? Date.parse(candidateStartDate) : Number.NaN;
+    const eventDate = Number.isFinite(parsedStart) ? new Date(parsedStart).toISOString() : null;
+    const candidateEndDate = extracted.eventData?.endDate;
+    const parsedEnd = candidateEndDate ? Date.parse(candidateEndDate) : Number.NaN;
+    const endDate = Number.isFinite(parsedEnd) && (!eventDate || parsedEnd > parsedStart)
+      ? new Date(parsedEnd).toISOString()
+      : null;
+    const venue = extracted.eventData?.venue || extracted.eventData?.address || null;
+    const city = extracted.eventData?.city?.trim() || null;
+    const state = extracted.eventData?.state?.trim() || null;
+    const observedPriceMin = extracted.eventData?.isFree === true
+      ? 0
+      : extracted.eventData?.priceMin != null && Number.isFinite(extracted.eventData.priceMin) && extracted.eventData.priceMin >= 0
+        ? Math.round(extracted.eventData.priceMin * 100)
+        : null;
+    const observedPriceMax = extracted.eventData?.priceMax != null && Number.isFinite(extracted.eventData.priceMax) && extracted.eventData.priceMax >= 0
+      ? Math.round(extracted.eventData.priceMax * 100)
+      : null;
 
     // 3. Insere ou atualiza o evento na tabela events
     const { data: eventRow, error: eventErr } = await supabase
@@ -79,22 +80,36 @@ export const mineAndPublishExternalEvent = createServerFn({ method: "POST" })
           title: extracted.title,
           description: extracted.lead || extracted.bodyText.slice(0, 500),
           event_date: eventDate,
-          end_date: extracted.eventData?.endDate || null,
+          end_date: endDate,
           location: venue,
           venue: venue,
-          city: data.target_city,
-          state: data.target_state,
+          city,
+          state,
           cover_image: extracted.coverImageUrl || null,
           is_external: true,
           external_source: externalSource,
-          external_ticket_url: extracted.eventData?.ticketUrl || data.url,
-          price_min_cents: extracted.eventData?.priceMin ? Math.round(extracted.eventData.priceMin * 100) : 0,
-          price_max_cents: extracted.eventData?.priceMax ? Math.round(extracted.eventData.priceMax * 100) : null,
-          status: "published",
+          source_url: sourceUrl,
+          external_ticket_url: extracted.eventData?.ticketUrl || null,
+          price_min_cents: observedPriceMin,
+          price_max_cents: observedPriceMax,
+          field_provenance: {
+            record_kind: "mechanical_event_extraction",
+            overall_status: "draft_unreviewed",
+            source_url: "validated_public_source",
+            event_date: eventDate ? "observed_in_source" : "not_observed",
+            end_date: endDate ? "observed_in_source" : "not_observed",
+            city: city ? "observed_in_source" : "not_observed",
+            state: state ? "observed_in_source" : "not_observed",
+            venue: venue ? "observed_in_source" : "not_observed",
+            price: observedPriceMin != null || observedPriceMax != null ? "observed_in_source" : "not_observed",
+            ticket_url: extracted.eventData?.ticketUrl ? "observed_public_offer_url" : "not_observed",
+            captured_at: new Date().toISOString(),
+          },
+          status: "draft",
         },
-        { onConflict: "external_ticket_url" }
+        { onConflict: "store_id,source_url" }
       )
-      .select("id, title, event_date, location, venue")
+      .select("id, title, event_date, location, venue, city, state, external_ticket_url, source_url, status")
       .single();
 
     if (eventErr || !eventRow) {
@@ -102,16 +117,17 @@ export const mineAndPublishExternalEvent = createServerFn({ method: "POST" })
     }
 
     let newsArticleId: string | null = null;
+    let newsGenerationError: string | null = null;
 
     // 4. Se solicitado, aciona o Squad Editorial para redigir matéria jornalística de cobertura
     if (data.generate_news_coverage) {
       try {
         const curated = await curateWithEditorialSquad({
-          rawTitle: `Evento confirmado: ${extracted.title}`,
-          rawText: `${extracted.bodyMarkdown}\n\nLocal: ${extracted.eventData?.venue || data.target_city}.\nData: ${new Date(eventDate).toLocaleDateString("pt-BR")}.\nIngressos disponíveis em: ${data.url}`,
+          rawTitle: extracted.title,
+          rawText: `${extracted.bodyMarkdown}\n\nLocal extraído: ${[venue, city, state].filter(Boolean).join(", ") || "não informado na fonte"}.\nData extraída: ${eventDate ? new Date(eventDate).toLocaleDateString("pt-BR") : "não informada na fonte"}.\nFonte pública: ${sourceUrl}\nLink de ingresso extraído: ${extracted.eventData?.ticketUrl || "não identificado"}`,
           sourceName: externalSource.toUpperCase(),
-          sourceUrl: data.url,
-          city: data.target_city,
+          sourceUrl,
+          city: city || "não informada na fonte",
           tone: "pop_viral",
         });
 
@@ -121,7 +137,7 @@ export const mineAndPublishExternalEvent = createServerFn({ method: "POST" })
           .from("news_articles")
           .insert({
             store_id: storeId,
-            author_profile_id: identity.userId || null,
+            author_profile_id: identity.id,
             title: curated.title,
             slug,
             kicker: "AGENDA CULTURAL",
@@ -130,14 +146,13 @@ export const mineAndPublishExternalEvent = createServerFn({ method: "POST" })
             cover_media_url: extracted.coverImageUrl || null,
             cover_media_type: "image",
             category: "cultura",
-            tags: [...curated.tags, "eventos", data.target_city.toLowerCase()],
+            tags: [...curated.tags, "eventos"],
             reading_time_minutes: curated.reading_time_minutes,
-            status: "published",
-            published_at: new Date().toISOString(),
-            source_url: data.url,
+            status: "draft",
+            published_at: null,
+            source_url: sourceUrl,
             source_type: "curated_event",
-            curation_status: "approved",
-            quality_score: 95,
+            curation_status: "pending_review",
           })
           .select("id")
           .single();
@@ -146,7 +161,7 @@ export const mineAndPublishExternalEvent = createServerFn({ method: "POST" })
           newsArticleId = newsRow.id;
 
           // Cria vínculo bidirecional entre notícia e evento
-          await supabase.from("event_news_relations").upsert(
+          const { error: relationError } = await supabase.from("event_news_relations").upsert(
             {
               event_id: eventRow.id,
               news_article_id: newsRow.id,
@@ -154,8 +169,15 @@ export const mineAndPublishExternalEvent = createServerFn({ method: "POST" })
             },
             { onConflict: "event_id,news_article_id" }
           );
+          if (relationError) {
+            newsGenerationError = `Rascunho editorial salvo, mas a relação com o evento falhou: ${relationError.message}`;
+          }
+        } else if (newsErr) {
+          newsGenerationError = newsErr.message;
+          console.warn("[mineAndPublishExternalEvent] Falha ao persistir rascunho editorial:", newsErr.message);
         }
       } catch (err) {
+        newsGenerationError = err instanceof Error ? err.message : "Falha desconhecida ao gerar matéria.";
         console.warn("[mineAndPublishExternalEvent] Aviso na geração da notícia de cobertura:", err);
       }
     }
@@ -163,7 +185,10 @@ export const mineAndPublishExternalEvent = createServerFn({ method: "POST" })
     return {
       success: true,
       event: eventRow,
+      event_status: "draft_pending_human_review",
       news_article_id: newsArticleId,
+      news_article_status: newsArticleId ? "draft_pending_human_review" : "not_created",
+      news_generation_error: newsGenerationError,
     };
   });
 
@@ -220,7 +245,8 @@ export const getEventRsvpStatus = createServerFn({ method: "GET" })
   });
 
 const listEventsSchema = z.object({
-  city: z.string().optional().default("Chapecó"),
+  city: z.string().trim().min(2).max(100).optional(),
+  storeId: z.string().uuid().optional(),
   category: z.string().optional(),
   limit: z.number().int().min(1).max(50).default(20),
 });
@@ -231,6 +257,15 @@ const listEventsSchema = z.object({
 export const listExternalEvents = createServerFn({ method: "GET" })
   .validator((input: unknown) => listEventsSchema.parse(input))
   .handler(async ({ data }) => {
+    const identity = await getServerIdentity();
+    if (!identity.id) throw new Error("Autenticação necessária para listar eventos do workspace.");
+    const storeId = data.storeId || identity.store_id;
+    const isPlatformAdmin = identity.role === "platform_admin" || identity.role === "master";
+    if (storeId) {
+      assertStoreAccess(identity, ["owner", "store_owner", "proprietario", "admin", "manager", "gerente", "content"], storeId);
+    } else if (!isPlatformAdmin) {
+      throw new Error("Nenhum workspace ativo foi informado.");
+    }
     const supabase = getServerClient();
 
     let query = supabase
@@ -248,9 +283,11 @@ export const listExternalEvents = createServerFn({ method: "GET" })
         cover_image,
         is_external,
         external_source,
+        source_url,
         external_ticket_url,
         price_min_cents,
         price_max_cents,
+        field_provenance,
         rsvp_going_count,
         rsvp_interested_count,
         rsvp_not_going_count,
@@ -264,9 +301,11 @@ export const listExternalEvents = createServerFn({ method: "GET" })
           )
         )
       `)
-      .eq("status", "published")
+      .in("status", ["draft", "published"])
       .order("event_date", { ascending: true })
       .limit(data.limit);
+
+    if (storeId) query = query.eq("store_id", storeId);
 
     if (data.city) {
       query = query.ilike("city", `%${data.city}%`);
@@ -279,5 +318,15 @@ export const listExternalEvents = createServerFn({ method: "GET" })
     const { data: rows, error } = await query;
     if (error) throw new Error(`Falha ao listar eventos: ${error.message}`);
 
-    return rows || [];
+    return (rows || []).map((row) => {
+      const safeUrl = (value: unknown): string | null => {
+        if (typeof value !== "string") return null;
+        try { return validateBrandSourceUrl(value).toString(); } catch { return null; }
+      };
+      return {
+        ...row,
+        source_url: safeUrl(row.source_url),
+        external_ticket_url: safeUrl(row.external_ticket_url),
+      };
+    });
   });

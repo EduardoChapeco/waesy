@@ -1,8 +1,8 @@
 {
-  "timestamp": "2026-10-02T21:48:47.180Z",
-  "totalFiles": 1797,
-  "totalImported": 1501,
-  "unreferencedCount": 84,
+  "timestamp": "2026-10-06T20:58:22.948Z",
+  "totalFiles": 1922,
+  "totalImported": 1569,
+  "unreferencedCount": 91,
   "unreferencedFiles": [
     "src/components/ad-engine/public/listing-empty-state.tsx",
     "src/components/admin/builder/builder-add-panel-3col.tsx",
@@ -22,6 +22,7 @@
     "src/components/commerce/return-modal.tsx",
     "src/components/proposals/ProposalStudio.tsx",
     "src/components/studio/StudioToolbar.tsx",
+    "src/components/studio/StudioUnsplashPicker.tsx",
     "src/components/ui/aspect-ratio.tsx",
     "src/components/ui/breadcrumb.tsx",
     "src/components/ui/chart.tsx",
@@ -47,18 +48,22 @@
     "src/integrations/supabase/types.ts",
     "src/lib/ad-engine/niche-archetype-matrix.ts",
     "src/lib/auth-guards.server.ts",
+    "src/lib/client-start-server-core-shim.ts",
     "src/lib/constants/status.ts",
     "src/lib/engines/kds.engine.ts",
     "src/lib/fiscal/ncm-registry.ts",
+    "src/lib/identity.server.ts",
     "src/lib/legal-consent.server.ts",
     "src/lib/loader-observability.ts",
     "src/lib/media/gallery-manager.ts",
+    "src/lib/mining/regional-sources-catalog.ts",
+    "src/lib/mining/sitemap-crawler.engine.ts",
     "src/lib/mining/social-content-miner.engine.ts",
     "src/lib/module-registry.ts",
     "src/lib/policies/cancellation-policy-registry.ts",
     "src/lib/pricing/price-calculator.ts",
     "src/lib/pricing.ts",
-    "src/lib/simlab/simulator.ts",
+    "src/lib/session.ts",
     "src/lib/strategic-frameworks.ts",
     "src/lib/tourism/formatters.ts",
     "src/lib/upload-helper.ts",
@@ -70,13 +75,13 @@
     "src/services/claim.functions.ts",
     "src/services/classifieds-workspace-bridge.functions.ts",
     "src/services/customer.functions.ts",
+    "src/services/document-artifacts.functions.ts",
     "src/services/fulfillment.functions.ts",
     "src/services/ibge-market-intelligence.functions.ts",
     "src/services/machine.functions.ts",
     "src/services/marketing-engagement.functions.ts",
     "src/services/match-time.functions.ts",
     "src/services/mining/ai-curator-gate.ts",
-    "src/services/mining/specialized-extractors.ts",
     "src/services/nexus-operations.functions.ts",
     "src/services/reaccommodation.ts",
     "src/services/rooming.ts",
@@ -85,8 +90,10 @@
     "src/services/ticket.functions.ts",
     "src/services/timeline.functions.ts",
     "src/services/tourism-operations.functions.ts",
+    "src/services/travel-financial.functions.ts",
+    "src/services/travel-operator-sync.functions.ts",
     "src/services/trips.ts",
-    "src/services/upsell.functions.ts",
+    "src/services/whatsapp-contact-identity.functions.ts",
     "src/utils/storage-helper.ts"
   ],
   "duplicateComponentsCount": 23,
@@ -138,6 +145,62 @@
       "paths": [
         "src/components/proposals/ProposalStudio.tsx",
         "src/components/tourism/proposals/ProposalStudio.tsx"
+      ]
+    },
+    {
+      "componentName": "StudioFormatPicker",
+      "count": 2,
+      "paths": [
+        "src/components/studio/StudioFormatPicker.tsx",
+        "src/components/tourism/studio/StudioFormatPicker.tsx"
+      ]
+    },
+    {
+      "componentName": "StudioFrame",
+      "count": 2,
+      "paths": [
+        "src/components/studio/StudioFrame.tsx",
+        "src/components/tourism/studio/StudioFrame.tsx"
+      ]
+    },
+    {
+      "componentName": "StudioMapWidget",
+      "count": 2,
+      "paths": [
+        "src/components/studio/StudioMapWidget.tsx",
+        "src/components/tourism/studio/StudioMapWidget.tsx"
+      ]
+    },
+    {
+      "componentName": "StudioSidebar",
+      "count": 2,
+      "paths": [
+        "src/components/studio/StudioSidebar.tsx",
+        "src/components/tourism/studio/StudioSidebar.tsx"
+      ]
+    },
+    {
+      "componentName": "StudioTemplatePicker",
+      "count": 2,
+      "paths": [
+        "src/components/studio/StudioTemplatePicker.tsx",
+        "src/components/tourism/studio/StudioTemplatePicker.tsx"
+      ]
+    },
+    {
+      "componentName": "StudioToolbar",
+      "count": 2,
+      "paths": [
+        "src/components/studio/StudioToolbar.tsx",
+        "src/components/tourism/studio/StudioToolbar.tsx"
+      ]
+    },
+    {
+      "componentName": "StudioUnsplashPicker",
+      "count": 2,
+      "paths": [
+        "src/components/studio/StudioUnsplashPicker.tsx",
+        "src/components/tourism/studio/StudioUnsplashPicker.tsx"
       ]
     },
     {
@@ -218,62 +281,6 @@
       "paths": [
         "src/components/studio/sections/SectionTravelers.tsx",
         "src/components/tourism/studio/sections/SectionTravelers.tsx"
-      ]
-    },
-    {
-      "componentName": "StudioFormatPicker",
-      "count": 2,
-      "paths": [
-        "src/components/studio/StudioFormatPicker.tsx",
-        "src/components/tourism/studio/StudioFormatPicker.tsx"
-      ]
-    },
-    {
-      "componentName": "StudioFrame",
-      "count": 2,
-      "paths": [
-        "src/components/studio/StudioFrame.tsx",
-        "src/components/tourism/studio/StudioFrame.tsx"
-      ]
-    },
-    {
-      "componentName": "StudioMapWidget",
-      "count": 2,
-      "paths": [
-        "src/components/studio/StudioMapWidget.tsx",
-        "src/components/tourism/studio/StudioMapWidget.tsx"
-      ]
-    },
-    {
-      "componentName": "StudioSidebar",
-      "count": 2,
-      "paths": [
-        "src/components/studio/StudioSidebar.tsx",
-        "src/components/tourism/studio/StudioSidebar.tsx"
-      ]
-    },
-    {
-      "componentName": "StudioTemplatePicker",
-      "count": 2,
-      "paths": [
-        "src/components/studio/StudioTemplatePicker.tsx",
-        "src/components/tourism/studio/StudioTemplatePicker.tsx"
-      ]
-    },
-    {
-      "componentName": "StudioToolbar",
-      "count": 2,
-      "paths": [
-        "src/components/studio/StudioToolbar.tsx",
-        "src/components/tourism/studio/StudioToolbar.tsx"
-      ]
-    },
-    {
-      "componentName": "StudioUnsplashPicker",
-      "count": 2,
-      "paths": [
-        "src/components/studio/StudioUnsplashPicker.tsx",
-        "src/components/tourism/studio/StudioUnsplashPicker.tsx"
       ]
     }
   ],

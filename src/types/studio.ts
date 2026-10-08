@@ -2,6 +2,8 @@
  * WAESY STUDIO 3.0 - Types & Canvas Schema
  */
 
+import type { JsonValue } from "@/types/json-value";
+
 export type StudioAspectRatio = "1:1" | "4:5" | "9:16" | "16:9" | "1.91:1";
 
 export interface StudioDimensions {
@@ -171,6 +173,7 @@ export interface BrandKitVoiceDTO {
 export interface BrandKitDTO {
   id?: string;
   store_id?: string | null;
+  brand_name?: string;
   company_name?: string;
   archetype?: string;
   archetype_justification?: string;
@@ -192,6 +195,11 @@ export interface BrandKitDTO {
     threats: string[];
   };
   seven_sins_triggers?: Record<string, string>;
+  source_url?: string | null;
+  source_evidence?: Record<string, JsonValue>;
+  ai_provider?: string | null;
+  ai_model?: string | null;
+  analysis_status?: string;
   edited_by_human?: boolean;
   updated_at?: string;
 }
