@@ -325,7 +325,7 @@ export function ChatArtifactCard({
         >
           <ExternalLink className="size-3.5" aria-hidden="true" />
           <span>
-            {artifact.type === "landing_page" || artifact.type === "biolink"
+            {artifact.type === "landing_page"
               ? "Abrir no Editor"
               : artifact.type === "spreadsheet"
               ? "Visualizar Dados"
