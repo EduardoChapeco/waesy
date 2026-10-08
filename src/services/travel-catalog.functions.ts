@@ -165,7 +165,19 @@ export interface HotelBankDTO {
  tags?: string[];
  is_active: boolean;
  created_at: string;
- updated_at: string;
+	updated_at: string;
+}
+
+export interface GlobalHotelDTO {
+ id: string;
+ name: string;
+ canonical_slug: string;
+ city: string;
+ state?: string | null;
+ country: string;
+ address?: string | null;
+ stars?: number | null;
+ verified_by_master: boolean;
 }
 
 export interface HotelMediaDTO {
@@ -419,6 +431,27 @@ export const deleteDestination = createServerFn({ method: "POST" })
  });
 
 // ─── 2. SERVIÇOS DO BANCO DE HOTÉIS & RESORTS ───────────────────────────────
+
+export const searchGlobalHotels = createServerFn({ method: "GET" })
+  .validator(z.object({ query: z.string().trim().min(2).max(120) }))
+  .handler(async ({ data }) => {
+    const db = getServerClient();
+    const term = data.query.replace(/[,%]/g, " ").trim();
+    const pattern = `%${term}%`;
+    const { data: rows, error } = await db
+      .from("global_hotels")
+      .select("id, name, canonical_slug, city, state, country, address, stars, verified_by_master")
+      .eq("verified_by_master", true)
+      .or(`name.ilike.${pattern},normalized_name.ilike.${pattern},city.ilike.${pattern}`)
+      .order("name", { ascending: true })
+      .limit(20);
+
+    if (error) {
+      throw new Error(`[travel-catalog:searchGlobalHotels] Falha ao buscar hotéis canônicos: ${error.message}`);
+    }
+
+    return (rows || []) as GlobalHotelDTO[];
+  });
 
 export const ListHotelsBankSchema = z
   .object({
@@ -825,4 +858,3 @@ export const saveHotelAmenities = createServerFn({ method: "POST" })
     if (insErr) throw new Error(`Erro ao salvar comodidades: ${insErr.message}`);
     return (inserted || []) as HotelAmenityDTO[];
   });
-
