@@ -38,35 +38,7 @@ export const TestimonialsSocialProof: React.FC<TestimonialsSocialProofProps> = (
     color: styling?.textColor || undefined,
   };
 
-  const testimonials = data.testimonials && data.testimonials.length > 0 ? data.testimonials : [
-    {
-      id: "t-1",
-      name: "Carolina Mendes",
-      role: "Mendes & Associados",
-      avatarUrl: "",
-      rating: 5,
-      comment: "A plataforma transformou nossa presença digital. O site transmite sobriedade e segurança, e a captação de novos clientes aumentou significativamente.",
-      verified: true,
-    },
-    {
-      id: "t-2",
-      name: "Rodrigo Silveira",
-      role: "NeoLog",
-      avatarUrl: "",
-      rating: 5,
-      comment: "A velocidade e o design limpo superaram qualquer ferramenta que usamos antes. Sem poluição visual, direto ao ponto.",
-      verified: true,
-    },
-    {
-      id: "t-3",
-      name: "Mariana Vasconcelos",
-      role: "Viva Turismo",
-      avatarUrl: "",
-      rating: 5,
-      comment: "Nossas lâminas de roteiros ficaram impecáveis. Os viajantes elogiam a clareza e facilidade de fechar contratos diretamente pelo celular.",
-      verified: true,
-    },
-  ];
+  const testimonials = data.testimonials ?? [];
 
   return (
     <section
@@ -87,8 +59,12 @@ export const TestimonialsSocialProof: React.FC<TestimonialsSocialProofProps> = (
           )}
         </div>
 
-        {/* Grade de Depoimentos */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Grade de depoimentos fornecidos pelo negócio */}
+        {testimonials.length === 0 ? (
+          <p role="note" className="mx-auto max-w-xl rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
+            Nenhum depoimento foi adicionado. Inclua somente relatos reais e autorizados antes de publicar.
+          </p>
+        ) : <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {testimonials.map((t) => (
             <div
               key={t.id}
@@ -140,7 +116,7 @@ export const TestimonialsSocialProof: React.FC<TestimonialsSocialProofProps> = (
               </div>
             </div>
           ))}
-        </div>
+        </div>}
       </div>
     </section>
   );

@@ -7,6 +7,8 @@ import { toast } from "sonner";
 import { ImageCropperDialog } from "@/components/ui/image-cropper-dialog";
 import { uploadMediaUniversal } from "@/services/storage.functions";
 import { cn } from "@/lib/utils";
+import { UnsplashAssetPicker } from "@/components/builder/UnsplashAssetPicker";
+import { BuilderAssetRefSchema, type BuilderAssetRef } from "@/lib/builder/asset-contract";
 
 interface MediaUploaderProps {
   value: string;
@@ -18,6 +20,13 @@ interface MediaUploaderProps {
   aspect?: number;
   cropShape?: "rect" | "round";
   lockAspect?: boolean;
+  allowUnsplash?: boolean;
+  unsplashUsageSlot?: string;
+  unsplashDefaultQuery?: string;
+  onAssetSelected?: (asset: BuilderAssetRef) => void;
+  onAssetCleared?: (usageSlot?: string) => void;
+  studioAssetUsageSlot?: string;
+  onAssetUploaded?: (asset: BuilderAssetRef) => void;
 }
 
 const PRESET_DEMO_IMAGES: Array<{ label: string; url: string }> = [];
@@ -32,12 +41,40 @@ export function MediaUploader({
   aspect,
   cropShape = "rect",
   lockAspect = true,
+  allowUnsplash = false,
+  unsplashUsageSlot = "builder-image",
+  unsplashDefaultQuery,
+  onAssetSelected,
+  onAssetCleared,
+  studioAssetUsageSlot,
+  onAssetUploaded,
 }: MediaUploaderProps) {
  const [isUploading, setIsUploading] = useState(false);
  const [activeMode, setActiveMode] = useState<"upload" | "url">("upload");
  const [showPresets, setShowPresets] = useState(false);
  const [hasImageError, setHasImageError] = useState(false);
+ const [rightsAttested, setRightsAttested] = useState(false);
  const fileInputRef = useRef<HTMLInputElement>(null);
+
+ const handleManualValueChange = (nextValue: string) => {
+   onChange(nextValue);
+   onAssetCleared?.(studioAssetUsageSlot);
+ };
+
+ const getStudioAssetPayload = (fileType: string) => {
+   if (!studioAssetUsageSlot) return undefined;
+   if (!fileType.toLowerCase().startsWith("image/")) throw new Error("O Omni Builder aceita somente imagens neste campo.");
+   if (!rightsAttested) throw new Error("Confirme os direitos e consentimentos necessários antes de enviar esta imagem.");
+   return { usageSlot: studioAssetUsageSlot, rightsAttested: true as const, altText: "" };
+ };
+
+ const notifyStudioAssetUploaded = (assetValue: unknown) => {
+   if (!studioAssetUsageSlot) return;
+   const parsed = BuilderAssetRefSchema.safeParse(assetValue);
+   if (!parsed.success) throw new Error("O servidor não retornou proveniência válida para esta imagem; ela não foi vinculada ao template.");
+   onAssetUploaded?.(parsed.data);
+   setRightsAttested(false);
+ };
 
  React.useEffect(() => {
  setHasImageError(false);
@@ -62,6 +99,17 @@ export function MediaUploader({
  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
  const file = e.target.files?.[0];
  if (!file) return;
+
+ if (studioAssetUsageSlot && !file.type.toLowerCase().startsWith("image/")) {
+   toast.error("Este campo do template aceita imagens, não vídeos ou documentos.");
+   if (fileInputRef.current) fileInputRef.current.value = "";
+   return;
+ }
+ if (studioAssetUsageSlot && !rightsAttested) {
+   toast.error("Confirme que possui direitos e consentimentos para uso público desta imagem.");
+   if (fileInputRef.current) fileInputRef.current.value = "";
+   return;
+ }
 
  if (file.type.startsWith("image/")) {
  // SVGs e GIFs não devem ser cropados
@@ -96,16 +144,18 @@ export function MediaUploader({
  const res = await uploadMediaUniversal({
  data: {
  fileName: file.name,
- fileType: file.type || "application/octet-stream",
- base64Data,
- bucket,
- folder: "builder",
- },
- });
+		 fileType: file.type || "application/octet-stream",
+		 base64Data,
+		 bucket,
+		 folder,
+		 studioAsset: getStudioAssetPayload(file.type || "application/octet-stream"),
+		 },
+		 });
 
- if (res?.url) {
- onChange(res.url);
- toast.success("Mídia carregada com sucesso!");
+		 if (res?.url) {
+		 handleManualValueChange(res.url);
+		 notifyStudioAssetUploaded(res.assetRef);
+		 toast.success("Mídia carregada com sucesso!");
  } else {
  throw new Error("URL de resposta não encontrada.");
  }
@@ -135,16 +185,18 @@ export function MediaUploader({
  const res = await uploadMediaUniversal({
  data: {
  fileName,
- fileType: "image/png",
- base64Data: croppedBase64,
- bucket,
- folder: "builder",
- },
- });
+		 fileType: "image/png",
+		 base64Data: croppedBase64,
+		 bucket,
+		 folder,
+		 studioAsset: getStudioAssetPayload("image/png"),
+		 },
+		 });
 
- if (res?.url) {
- onChange(res.url);
- toast.success("Imagem recortada e salva com sucesso!");
+		 if (res?.url) {
+		 handleManualValueChange(res.url);
+		 notifyStudioAssetUploaded(res.assetRef);
+		 toast.success("Imagem recortada e salva com sucesso!");
  } else {
  throw new Error("URL da imagem recortada não retornada.");
  }
@@ -167,9 +219,21 @@ export function MediaUploader({
  {value ? "Mídia ativa" : "Vazio"}
  </span>
  </label>
- )}
+	 )}
 
- {/* ── 1. PREVIEW DO ARQUIVO ATIVO (SE HOUVER) ── */}
+	 {studioAssetUsageSlot && (
+	   <label className="flex items-start gap-2 rounded-md border border-border p-2 text-xs leading-relaxed text-muted-foreground">
+	     <input
+	       type="checkbox"
+	       checked={rightsAttested}
+	       onChange={(event) => setRightsAttested(event.target.checked)}
+	       className="mt-1 size-4 shrink-0"
+	     />
+	     <span>Confirmo que minha loja possui direitos e autorizações/consentimentos necessários para usar esta imagem publicamente. O arquivo ficará acessível no bucket público de mídia mesmo antes de publicar a página.</span>
+	   </label>
+	 )}
+
+	 {/* ── 1. PREVIEW DO ARQUIVO ATIVO (SE HOUVER) ── */}
  {value ? (
  <div className="relative rounded-lg overflow-hidden border border-border/80 bg-muted/30 group transition-all">
  <div className="h-32 w-full flex items-center justify-center p-1 bg-[radial-gradient(#00000010_1px,transparent_1px)] dark:bg-[radial-gradient(#ffffff10_1px,transparent_1px)] [background-size:12px_12px]">
@@ -209,7 +273,7 @@ export function MediaUploader({
  variant="destructive"
  size="icon"
  className="h-8 w-8 rounded-lg cursor-pointer"
- onClick={() => onChange("")}
+ onClick={() => handleManualValueChange("")}
  title="Remover mídia"
  >
  <X className="size-4" />
@@ -237,7 +301,7 @@ export function MediaUploader({
  </div>
  <div className="text-center space-y-1">
  <p className="text-xs font-bold text-foreground">Clique para enviar arquivo</p>
- <p className="text-[10px] text-muted-foreground">PNG, JPG, WEBP, GIF ou MP4</p>
+		 <p className="text-[10px] text-muted-foreground">{studioAssetUsageSlot ? "PNG, JPG, WEBP, AVIF ou GIF" : "PNG, JPG, WEBP, GIF ou MP4"}</p>
  </div>
  </>
  )}
@@ -252,7 +316,7 @@ export function MediaUploader({
  className="h-8 pl-7 pr-2 text-xs bg-background rounded-lg border-border/70 font-sans"
  placeholder="Cole a URL da imagem (https://...)"
  value={value || ""}
- onChange={(e) => onChange(e.target.value)}
+ onChange={(e) => handleManualValueChange(e.target.value)}
  />
  <LinkIcon className="size-3.5 absolute left-2 top-2.5 text-muted-foreground pointer-events-none" />
  </div>
@@ -296,10 +360,22 @@ export function MediaUploader({
  )}
  </div>
 
+ {allowUnsplash && (
+   <UnsplashAssetPicker
+     usageSlot={unsplashUsageSlot}
+     defaultQuery={unsplashDefaultQuery}
+     onSelect={(asset) => {
+       onChange(asset.source_url ?? "");
+       onAssetSelected?.(asset);
+       setShowPresets(false);
+     }}
+   />
+ )}
+
  {/* Hidden File Input */}
- <input
- type="file"
- accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm"
+	 <input
+	 type="file"
+		 accept={studioAssetUsageSlot ? "image/jpeg,image/png,image/webp,image/avif,image/gif" : "image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm"}
  className="hidden"
  ref={fileInputRef}
  onChange={handleFileSelect}

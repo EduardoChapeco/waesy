@@ -1,18 +1,28 @@
 {
-  "generatedAt": "2026-10-06T18:29:06.171Z",
+  "generatedAt": "2026-10-08T12:06:15.637Z",
   "summary": {
-    "total": 9,
-    "passed": 9,
-    "warnings": 0,
-    "failed": 0
+    "total": 12,
+    "passed": 0,
+    "warnings": 3,
+    "failed": 9,
+    "reviewRequired": 12,
+    "publishableFailed": 0
   },
   "templates": [
     {
       "templateId": "template_legal_jus",
       "templateName": "Advocacia & Jurídico",
-      "status": "pass",
-      "score": 100,
-      "findings": [],
+      "status": "warn",
+      "score": 95,
+      "findings": [
+        {
+          "ruleId": "CONTENT_SOCIAL_PROOF_REVIEW",
+          "category": "content",
+          "severity": "warning",
+          "path": "blocks[2].config.testimonials",
+          "message": "Confirme que cada depoimento é real, autorizado e fiel; o campo verified não comprova autenticidade."
+        }
+      ],
       "metrics": {
         "blockCount": 5,
         "serializedBytes": 3051,
@@ -29,9 +39,17 @@
     {
       "templateId": "template_gastronomy",
       "templateName": "Gastronomia Autoral & Restaurante",
-      "status": "pass",
-      "score": 100,
-      "findings": [],
+      "status": "warn",
+      "score": 95,
+      "findings": [
+        {
+          "ruleId": "CONTENT_SOCIAL_PROOF_REVIEW",
+          "category": "content",
+          "severity": "warning",
+          "path": "blocks[2].config.testimonials",
+          "message": "Confirme que cada depoimento é real, autorizado e fiel; o campo verified não comprova autenticidade."
+        }
+      ],
       "metrics": {
         "blockCount": 4,
         "serializedBytes": 2152,
@@ -48,9 +66,38 @@
     {
       "templateId": "template_tourism",
       "templateName": "Turismo & Viagens",
-      "status": "pass",
-      "score": 100,
-      "findings": [],
+      "status": "fail",
+      "score": 35,
+      "findings": [
+        {
+          "ruleId": "CONTENT_PRICING_CTA_MISSING",
+          "category": "content",
+          "severity": "error",
+          "path": "blocks[2].config.tiers[0].ctaHref",
+          "message": "Configure um destino CTA seguro para este plano; a publicação não redireciona para uma rota genérica do workspace."
+        },
+        {
+          "ruleId": "CONTENT_PRICING_CTA_MISSING",
+          "category": "content",
+          "severity": "error",
+          "path": "blocks[2].config.tiers[1].ctaHref",
+          "message": "Configure um destino CTA seguro para este plano; a publicação não redireciona para uma rota genérica do workspace."
+        },
+        {
+          "ruleId": "CONTENT_PRICING_CTA_MISSING",
+          "category": "content",
+          "severity": "error",
+          "path": "blocks[2].config.tiers[2].ctaHref",
+          "message": "Configure um destino CTA seguro para este plano; a publicação não redireciona para uma rota genérica do workspace."
+        },
+        {
+          "ruleId": "CONTENT_PRICING_REVIEW",
+          "category": "content",
+          "severity": "warning",
+          "path": "blocks[2].config.tiers",
+          "message": "Revise preço, periodicidade, condições e política de reembolso com dados atuais do negócio."
+        }
+      ],
       "metrics": {
         "blockCount": 4,
         "serializedBytes": 2723,
@@ -67,9 +114,31 @@
     {
       "templateId": "template_creators",
       "templateName": "Criadores & Cursos",
-      "status": "pass",
-      "score": 100,
-      "findings": [],
+      "status": "fail",
+      "score": 55,
+      "findings": [
+        {
+          "ruleId": "CONTENT_PRICING_CTA_MISSING",
+          "category": "content",
+          "severity": "error",
+          "path": "blocks[2].config.tiers[0].ctaHref",
+          "message": "Configure um destino CTA seguro para este plano; a publicação não redireciona para uma rota genérica do workspace."
+        },
+        {
+          "ruleId": "CONTENT_PRICING_CTA_MISSING",
+          "category": "content",
+          "severity": "error",
+          "path": "blocks[2].config.tiers[1].ctaHref",
+          "message": "Configure um destino CTA seguro para este plano; a publicação não redireciona para uma rota genérica do workspace."
+        },
+        {
+          "ruleId": "CONTENT_PRICING_REVIEW",
+          "category": "content",
+          "severity": "warning",
+          "path": "blocks[2].config.tiers",
+          "message": "Revise preço, periodicidade, condições e política de reembolso com dados atuais do negócio."
+        }
+      ],
       "metrics": {
         "blockCount": 4,
         "serializedBytes": 2827,
@@ -86,9 +155,17 @@
     {
       "templateId": "template_real_estate",
       "templateName": "Imóveis & Temporada",
-      "status": "pass",
-      "score": 100,
-      "findings": [],
+      "status": "fail",
+      "score": 80,
+      "findings": [
+        {
+          "ruleId": "CONTENT_FORM_DESTINATION_MISSING",
+          "category": "content",
+          "severity": "error",
+          "path": "blocks[3].config.whatsappNumber",
+          "message": "Configure um destino WhatsApp válido; este bloco ainda não envia leads por e-mail/CRM."
+        }
+      ],
       "metrics": {
         "blockCount": 4,
         "serializedBytes": 2334,
@@ -105,9 +182,24 @@
     {
       "templateId": "template_services_wellness",
       "templateName": "Estética & Saúde",
-      "status": "pass",
-      "score": 100,
-      "findings": [],
+      "status": "fail",
+      "score": 75,
+      "findings": [
+        {
+          "ruleId": "CONTENT_SOCIAL_PROOF_REVIEW",
+          "category": "content",
+          "severity": "warning",
+          "path": "blocks[2].config.testimonials",
+          "message": "Confirme que cada depoimento é real, autorizado e fiel; o campo verified não comprova autenticidade."
+        },
+        {
+          "ruleId": "CONTENT_FORM_DESTINATION_MISSING",
+          "category": "content",
+          "severity": "error",
+          "path": "blocks[4].config.whatsappNumber",
+          "message": "Configure um destino WhatsApp válido; este bloco ainda não envia leads por e-mail/CRM."
+        }
+      ],
       "metrics": {
         "blockCount": 5,
         "serializedBytes": 2920,
@@ -124,9 +216,17 @@
     {
       "templateId": "template_creator_biolink",
       "templateName": "Link na Bio - Creator Pro",
-      "status": "pass",
-      "score": 100,
-      "findings": [],
+      "status": "fail",
+      "score": 80,
+      "findings": [
+        {
+          "ruleId": "CONTENT_FORM_DESTINATION_MISSING",
+          "category": "content",
+          "severity": "error",
+          "path": "blocks[3].config.whatsappNumber",
+          "message": "Configure um destino WhatsApp válido; este bloco ainda não envia leads por e-mail/CRM."
+        }
+      ],
       "metrics": {
         "blockCount": 4,
         "serializedBytes": 2617,
@@ -143,9 +243,17 @@
     {
       "templateId": "template_clinic_premium",
       "templateName": "Landing Page - Clínica Premium",
-      "status": "pass",
-      "score": 100,
-      "findings": [],
+      "status": "warn",
+      "score": 95,
+      "findings": [
+        {
+          "ruleId": "CONTENT_SOCIAL_PROOF_REVIEW",
+          "category": "content",
+          "severity": "warning",
+          "path": "blocks[1].config.testimonials",
+          "message": "Confirme que cada depoimento é real, autorizado e fiel; o campo verified não comprova autenticidade."
+        }
+      ],
       "metrics": {
         "blockCount": 5,
         "serializedBytes": 3930,
@@ -162,12 +270,409 @@
     {
       "templateId": "template_dark_kitchen",
       "templateName": "Catálogo - Dark Kitchen Express",
-      "status": "pass",
-      "score": 100,
-      "findings": [],
+      "status": "fail",
+      "score": 35,
+      "findings": [
+        {
+          "ruleId": "CONTENT_PRICING_CTA_MISSING",
+          "category": "content",
+          "severity": "error",
+          "path": "blocks[2].config.tiers[0].ctaHref",
+          "message": "Configure um destino CTA seguro para este plano; a publicação não redireciona para uma rota genérica do workspace."
+        },
+        {
+          "ruleId": "CONTENT_PRICING_CTA_MISSING",
+          "category": "content",
+          "severity": "error",
+          "path": "blocks[2].config.tiers[1].ctaHref",
+          "message": "Configure um destino CTA seguro para este plano; a publicação não redireciona para uma rota genérica do workspace."
+        },
+        {
+          "ruleId": "CONTENT_PRICING_CTA_MISSING",
+          "category": "content",
+          "severity": "error",
+          "path": "blocks[2].config.tiers[2].ctaHref",
+          "message": "Configure um destino CTA seguro para este plano; a publicação não redireciona para uma rota genérica do workspace."
+        },
+        {
+          "ruleId": "CONTENT_PRICING_REVIEW",
+          "category": "content",
+          "severity": "warning",
+          "path": "blocks[2].config.tiers",
+          "message": "Revise preço, periodicidade, condições e política de reembolso com dados atuais do negócio."
+        }
+      ],
       "metrics": {
         "blockCount": 4,
         "serializedBytes": 2954,
+        "imageReferences": 0,
+        "externalImageReferences": 0,
+        "assetsWithProvenance": 0
+      },
+      "limitations": [
+        "Auditoria de performance é estática: não executa navegador, rede, Lighthouse nem mede LCP/INP/CLS/TTFB.",
+        "Contraste só é calculado quando foreground e background são cores hex opacas explícitas; gradientes e imagens exigem revisão visual.",
+        "Metadados fornecidos pelo usuário/provedor são evidência de provenance, não uma opinião jurídica sobre licença."
+      ]
+    },
+    {
+      "templateId": "pilot_gastronomy_orders",
+      "templateName": "Gastronomia — Cardápio, pedido e reserva",
+      "status": "fail",
+      "score": 0,
+      "findings": [
+        {
+          "ruleId": "CONTENT_PLACEHOLDER_UNRESOLVED",
+          "category": "content",
+          "severity": "error",
+          "path": "blocks[0].config.title",
+          "message": "Texto placeholder permanece no documento. Preencha com informação real ou remova a seção antes de publicar."
+        },
+        {
+          "ruleId": "CONTENT_PLACEHOLDER_UNRESOLVED",
+          "category": "content",
+          "severity": "error",
+          "path": "blocks[0].config.subtitle",
+          "message": "Texto placeholder permanece no documento. Preencha com informação real ou remova a seção antes de publicar."
+        },
+        {
+          "ruleId": "CONTENT_PLACEHOLDER_UNRESOLVED",
+          "category": "content",
+          "severity": "error",
+          "path": "blocks[1].config.cells[0].title",
+          "message": "Texto placeholder permanece no documento. Preencha com informação real ou remova a seção antes de publicar."
+        },
+        {
+          "ruleId": "CONTENT_PLACEHOLDER_UNRESOLVED",
+          "category": "content",
+          "severity": "error",
+          "path": "blocks[1].config.cells[0].description",
+          "message": "Texto placeholder permanece no documento. Preencha com informação real ou remova a seção antes de publicar."
+        },
+        {
+          "ruleId": "CONTENT_PLACEHOLDER_UNRESOLVED",
+          "category": "content",
+          "severity": "error",
+          "path": "blocks[1].config.cells[1].title",
+          "message": "Texto placeholder permanece no documento. Preencha com informação real ou remova a seção antes de publicar."
+        },
+        {
+          "ruleId": "CONTENT_PLACEHOLDER_UNRESOLVED",
+          "category": "content",
+          "severity": "error",
+          "path": "blocks[1].config.cells[1].description",
+          "message": "Texto placeholder permanece no documento. Preencha com informação real ou remova a seção antes de publicar."
+        },
+        {
+          "ruleId": "CONTENT_PLACEHOLDER_UNRESOLVED",
+          "category": "content",
+          "severity": "error",
+          "path": "blocks[1].config.cells[2].title",
+          "message": "Texto placeholder permanece no documento. Preencha com informação real ou remova a seção antes de publicar."
+        },
+        {
+          "ruleId": "CONTENT_PLACEHOLDER_UNRESOLVED",
+          "category": "content",
+          "severity": "error",
+          "path": "blocks[1].config.cells[2].description",
+          "message": "Texto placeholder permanece no documento. Preencha com informação real ou remova a seção antes de publicar."
+        },
+        {
+          "ruleId": "CONTENT_PLACEHOLDER_UNRESOLVED",
+          "category": "content",
+          "severity": "error",
+          "path": "blocks[2].config.items[0].title",
+          "message": "Texto placeholder permanece no documento. Preencha com informação real ou remova a seção antes de publicar."
+        },
+        {
+          "ruleId": "CONTENT_PLACEHOLDER_UNRESOLVED",
+          "category": "content",
+          "severity": "error",
+          "path": "blocks[2].config.items[0].caption",
+          "message": "Texto placeholder permanece no documento. Preencha com informação real ou remova a seção antes de publicar."
+        },
+        {
+          "ruleId": "CONTENT_PLACEHOLDER_UNRESOLVED",
+          "category": "content",
+          "severity": "error",
+          "path": "blocks[2].config.items[1].title",
+          "message": "Texto placeholder permanece no documento. Preencha com informação real ou remova a seção antes de publicar."
+        },
+        {
+          "ruleId": "CONTENT_PLACEHOLDER_UNRESOLVED",
+          "category": "content",
+          "severity": "error",
+          "path": "blocks[2].config.items[1].caption",
+          "message": "Texto placeholder permanece no documento. Preencha com informação real ou remova a seção antes de publicar."
+        },
+        {
+          "ruleId": "CONTENT_PLACEHOLDER_UNRESOLVED",
+          "category": "content",
+          "severity": "error",
+          "path": "blocks[3].config.items[0].answer",
+          "message": "Texto placeholder permanece no documento. Preencha com informação real ou remova a seção antes de publicar."
+        },
+        {
+          "ruleId": "CONTENT_PLACEHOLDER_UNRESOLVED",
+          "category": "content",
+          "severity": "error",
+          "path": "blocks[3].config.items[1].answer",
+          "message": "Texto placeholder permanece no documento. Preencha com informação real ou remova a seção antes de publicar."
+        },
+        {
+          "ruleId": "CONTENT_PLACEHOLDER_UNRESOLVED",
+          "category": "content",
+          "severity": "error",
+          "path": "blocks[3].config.items[2].answer",
+          "message": "Texto placeholder permanece no documento. Preencha com informação real ou remova a seção antes de publicar."
+        },
+        {
+          "ruleId": "CONTENT_FORM_DESTINATION_MISSING",
+          "category": "content",
+          "severity": "error",
+          "path": "blocks[4].config.whatsappNumber",
+          "message": "Configure um destino WhatsApp válido; este bloco ainda não envia leads por e-mail/CRM."
+        }
+      ],
+      "metrics": {
+        "blockCount": 5,
+        "serializedBytes": 2624,
+        "imageReferences": 0,
+        "externalImageReferences": 0,
+        "assetsWithProvenance": 0
+      },
+      "limitations": [
+        "Auditoria de performance é estática: não executa navegador, rede, Lighthouse nem mede LCP/INP/CLS/TTFB.",
+        "Contraste só é calculado quando foreground e background são cores hex opacas explícitas; gradientes e imagens exigem revisão visual.",
+        "Metadados fornecidos pelo usuário/provedor são evidência de provenance, não uma opinião jurídica sobre licença."
+      ]
+    },
+    {
+      "templateId": "pilot_wellness_booking",
+      "templateName": "Bem-estar — Serviços e agendamento",
+      "status": "fail",
+      "score": 0,
+      "findings": [
+        {
+          "ruleId": "CONTENT_PLACEHOLDER_UNRESOLVED",
+          "category": "content",
+          "severity": "error",
+          "path": "blocks[0].config.title",
+          "message": "Texto placeholder permanece no documento. Preencha com informação real ou remova a seção antes de publicar."
+        },
+        {
+          "ruleId": "CONTENT_PLACEHOLDER_UNRESOLVED",
+          "category": "content",
+          "severity": "error",
+          "path": "blocks[0].config.subtitle",
+          "message": "Texto placeholder permanece no documento. Preencha com informação real ou remova a seção antes de publicar."
+        },
+        {
+          "ruleId": "CONTENT_PLACEHOLDER_UNRESOLVED",
+          "category": "content",
+          "severity": "error",
+          "path": "blocks[1].config.cells[0].title",
+          "message": "Texto placeholder permanece no documento. Preencha com informação real ou remova a seção antes de publicar."
+        },
+        {
+          "ruleId": "CONTENT_PLACEHOLDER_UNRESOLVED",
+          "category": "content",
+          "severity": "error",
+          "path": "blocks[1].config.cells[0].description",
+          "message": "Texto placeholder permanece no documento. Preencha com informação real ou remova a seção antes de publicar."
+        },
+        {
+          "ruleId": "CONTENT_PLACEHOLDER_UNRESOLVED",
+          "category": "content",
+          "severity": "error",
+          "path": "blocks[1].config.cells[1].title",
+          "message": "Texto placeholder permanece no documento. Preencha com informação real ou remova a seção antes de publicar."
+        },
+        {
+          "ruleId": "CONTENT_PLACEHOLDER_UNRESOLVED",
+          "category": "content",
+          "severity": "error",
+          "path": "blocks[1].config.cells[1].description",
+          "message": "Texto placeholder permanece no documento. Preencha com informação real ou remova a seção antes de publicar."
+        },
+        {
+          "ruleId": "CONTENT_PLACEHOLDER_UNRESOLVED",
+          "category": "content",
+          "severity": "error",
+          "path": "blocks[1].config.cells[2].title",
+          "message": "Texto placeholder permanece no documento. Preencha com informação real ou remova a seção antes de publicar."
+        },
+        {
+          "ruleId": "CONTENT_PLACEHOLDER_UNRESOLVED",
+          "category": "content",
+          "severity": "error",
+          "path": "blocks[1].config.cells[2].description",
+          "message": "Texto placeholder permanece no documento. Preencha com informação real ou remova a seção antes de publicar."
+        },
+        {
+          "ruleId": "CONTENT_PLACEHOLDER_UNRESOLVED",
+          "category": "content",
+          "severity": "error",
+          "path": "blocks[2].config.items[0].title",
+          "message": "Texto placeholder permanece no documento. Preencha com informação real ou remova a seção antes de publicar."
+        },
+        {
+          "ruleId": "CONTENT_PLACEHOLDER_UNRESOLVED",
+          "category": "content",
+          "severity": "error",
+          "path": "blocks[2].config.items[0].caption",
+          "message": "Texto placeholder permanece no documento. Preencha com informação real ou remova a seção antes de publicar."
+        },
+        {
+          "ruleId": "CONTENT_PLACEHOLDER_UNRESOLVED",
+          "category": "content",
+          "severity": "error",
+          "path": "blocks[2].config.items[1].title",
+          "message": "Texto placeholder permanece no documento. Preencha com informação real ou remova a seção antes de publicar."
+        },
+        {
+          "ruleId": "CONTENT_PLACEHOLDER_UNRESOLVED",
+          "category": "content",
+          "severity": "error",
+          "path": "blocks[2].config.items[1].caption",
+          "message": "Texto placeholder permanece no documento. Preencha com informação real ou remova a seção antes de publicar."
+        },
+        {
+          "ruleId": "CONTENT_PLACEHOLDER_UNRESOLVED",
+          "category": "content",
+          "severity": "error",
+          "path": "blocks[3].config.items[0].answer",
+          "message": "Texto placeholder permanece no documento. Preencha com informação real ou remova a seção antes de publicar."
+        },
+        {
+          "ruleId": "CONTENT_PLACEHOLDER_UNRESOLVED",
+          "category": "content",
+          "severity": "error",
+          "path": "blocks[3].config.items[1].answer",
+          "message": "Texto placeholder permanece no documento. Preencha com informação real ou remova a seção antes de publicar."
+        },
+        {
+          "ruleId": "CONTENT_PLACEHOLDER_UNRESOLVED",
+          "category": "content",
+          "severity": "error",
+          "path": "blocks[3].config.items[2].answer",
+          "message": "Texto placeholder permanece no documento. Preencha com informação real ou remova a seção antes de publicar."
+        },
+        {
+          "ruleId": "CONTENT_FORM_DESTINATION_MISSING",
+          "category": "content",
+          "severity": "error",
+          "path": "blocks[4].config.whatsappNumber",
+          "message": "Configure um destino WhatsApp válido; este bloco ainda não envia leads por e-mail/CRM."
+        }
+      ],
+      "metrics": {
+        "blockCount": 5,
+        "serializedBytes": 2659,
+        "imageReferences": 0,
+        "externalImageReferences": 0,
+        "assetsWithProvenance": 0
+      },
+      "limitations": [
+        "Auditoria de performance é estática: não executa navegador, rede, Lighthouse nem mede LCP/INP/CLS/TTFB.",
+        "Contraste só é calculado quando foreground e background são cores hex opacas explícitas; gradientes e imagens exigem revisão visual.",
+        "Metadados fornecidos pelo usuário/provedor são evidência de provenance, não uma opinião jurídica sobre licença."
+      ]
+    },
+    {
+      "templateId": "pilot_creator_course_enrollment",
+      "templateName": "Criadores — Curso, mentoria e inscrição",
+      "status": "fail",
+      "score": 0,
+      "findings": [
+        {
+          "ruleId": "CONTENT_PLACEHOLDER_UNRESOLVED",
+          "category": "content",
+          "severity": "error",
+          "path": "blocks[0].config.title",
+          "message": "Texto placeholder permanece no documento. Preencha com informação real ou remova a seção antes de publicar."
+        },
+        {
+          "ruleId": "CONTENT_PLACEHOLDER_UNRESOLVED",
+          "category": "content",
+          "severity": "error",
+          "path": "blocks[0].config.subtitle",
+          "message": "Texto placeholder permanece no documento. Preencha com informação real ou remova a seção antes de publicar."
+        },
+        {
+          "ruleId": "CONTENT_PLACEHOLDER_UNRESOLVED",
+          "category": "content",
+          "severity": "error",
+          "path": "blocks[1].config.cells[0].title",
+          "message": "Texto placeholder permanece no documento. Preencha com informação real ou remova a seção antes de publicar."
+        },
+        {
+          "ruleId": "CONTENT_PLACEHOLDER_UNRESOLVED",
+          "category": "content",
+          "severity": "error",
+          "path": "blocks[1].config.cells[0].description",
+          "message": "Texto placeholder permanece no documento. Preencha com informação real ou remova a seção antes de publicar."
+        },
+        {
+          "ruleId": "CONTENT_PLACEHOLDER_UNRESOLVED",
+          "category": "content",
+          "severity": "error",
+          "path": "blocks[1].config.cells[1].title",
+          "message": "Texto placeholder permanece no documento. Preencha com informação real ou remova a seção antes de publicar."
+        },
+        {
+          "ruleId": "CONTENT_PLACEHOLDER_UNRESOLVED",
+          "category": "content",
+          "severity": "error",
+          "path": "blocks[1].config.cells[1].description",
+          "message": "Texto placeholder permanece no documento. Preencha com informação real ou remova a seção antes de publicar."
+        },
+        {
+          "ruleId": "CONTENT_PLACEHOLDER_UNRESOLVED",
+          "category": "content",
+          "severity": "error",
+          "path": "blocks[1].config.cells[2].title",
+          "message": "Texto placeholder permanece no documento. Preencha com informação real ou remova a seção antes de publicar."
+        },
+        {
+          "ruleId": "CONTENT_PLACEHOLDER_UNRESOLVED",
+          "category": "content",
+          "severity": "error",
+          "path": "blocks[1].config.cells[2].description",
+          "message": "Texto placeholder permanece no documento. Preencha com informação real ou remova a seção antes de publicar."
+        },
+        {
+          "ruleId": "CONTENT_PLACEHOLDER_UNRESOLVED",
+          "category": "content",
+          "severity": "error",
+          "path": "blocks[2].config.items[0].answer",
+          "message": "Texto placeholder permanece no documento. Preencha com informação real ou remova a seção antes de publicar."
+        },
+        {
+          "ruleId": "CONTENT_PLACEHOLDER_UNRESOLVED",
+          "category": "content",
+          "severity": "error",
+          "path": "blocks[2].config.items[1].answer",
+          "message": "Texto placeholder permanece no documento. Preencha com informação real ou remova a seção antes de publicar."
+        },
+        {
+          "ruleId": "CONTENT_PLACEHOLDER_UNRESOLVED",
+          "category": "content",
+          "severity": "error",
+          "path": "blocks[2].config.items[2].answer",
+          "message": "Texto placeholder permanece no documento. Preencha com informação real ou remova a seção antes de publicar."
+        },
+        {
+          "ruleId": "CONTENT_FORM_DESTINATION_MISSING",
+          "category": "content",
+          "severity": "error",
+          "path": "blocks[3].config.whatsappNumber",
+          "message": "Configure um destino WhatsApp válido; este bloco ainda não envia leads por e-mail/CRM."
+        }
+      ],
+      "metrics": {
+        "blockCount": 4,
+        "serializedBytes": 1970,
         "imageReferences": 0,
         "externalImageReferences": 0,
         "assetsWithProvenance": 0

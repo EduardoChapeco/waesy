@@ -12,6 +12,8 @@ import { getServerClient, SupabaseUnconfiguredError } from "@/lib/supabase";
 import { OmniPageDocumentSchema, OmniPageDocument, createEmptyOmniPage } from "@/types/omni-builder";
 import { applyTemplateToPage } from "@/lib/builder/omni-templates";
 import { auditOmniDocument, getPublicationBlockingFindings } from "@/lib/builder/studio-template-audit";
+import { matchesUnsplashSelectionLedger } from "@/lib/builder/unsplash-api";
+import { matchesStudioUploadAssetLedger } from "@/lib/builder/asset-contract";
 
 // ── 1. SALVAMENTO ATÔMICO DO DOCUMENTO NO SUPABASE ──
 export const saveOmniPageDocument = createServerFn({ method: "POST" })
@@ -161,6 +163,49 @@ export const publishOmniPageDocument = createServerFn({ method: "POST" })
         throw new Error("Loja ativa não identificada.");
       }
 
+      const db = getServerClient();
+      const unsplashRefs = input.document.blocks.flatMap((block) => block.assetRefs ?? []).filter((asset) => asset.provider === "unsplash");
+      if (unsplashRefs.length > 0) {
+        if (unsplashRefs.some((asset) => !asset.source_asset_id || !asset.usage_slot)) {
+          throw new Error("Publicação bloqueada: referência Unsplash sem foto ou slot de uso verificado.");
+        }
+        const photoIds = Array.from(new Set(unsplashRefs.map((asset) => asset.source_asset_id as string)));
+        const { data: ledgerRows, error: ledgerError } = await db
+          .from("unsplash_studio_selections")
+          .select("photo_id, usage_slot, image_url, photo_page_url, creator_name, creator_profile_url, license_id, license_url")
+          .eq("store_id", identity.store_id)
+          .in("photo_id", photoIds);
+        if (ledgerError) throw new Error("Não foi possível verificar o ledger Unsplash. A publicação falhou de forma segura; confira se as migrations estão aplicadas.");
+        const unverifiable = unsplashRefs.filter((asset) => !ledgerRows?.some((row) => matchesUnsplashSelectionLedger(asset, row)));
+        if (unverifiable.length > 0) {
+          throw new Error(`Publicação bloqueada: ${unverifiable.length} asset(s) Unsplash não correspondem a uma seleção e tracking verificados nesta loja. Selecione novamente pelo picker oficial.`);
+        }
+      }
+
+      const studioUploadRefs = input.document.blocks
+        .flatMap((block) => block.assetRefs ?? [])
+        .filter((asset) => asset.provider === "upload");
+      if (studioUploadRefs.length > 0) {
+        if (studioUploadRefs.some((asset) => !asset.asset_id || !asset.source_asset_id || !asset.usage_slot)) {
+          throw new Error("Publicação bloqueada: upload Studio sem ID, caminho ou slot de uso verificável.");
+        }
+        const assetIds = Array.from(new Set(studioUploadRefs.map((asset) => asset.asset_id)));
+        const { data: uploadLedgerRows, error: uploadLedgerError } = await db
+          .from("media_assets")
+          .select("id, store_id, bucket_name, file_path, public_url, mime_type, studio_usage_slot, rights_attested_at, rights_attested_by, rights_attestation_version")
+          .eq("store_id", identity.store_id)
+          .in("id", assetIds);
+        if (uploadLedgerError) {
+          throw new Error("Não foi possível verificar o ledger de uploads Studio. A publicação falhou de forma segura; confira se a migration de provenance está aplicada.");
+        }
+        const unverifiableUploads = studioUploadRefs.filter((asset) =>
+          !uploadLedgerRows?.some((row) => matchesStudioUploadAssetLedger(asset, row, identity.store_id!)),
+        );
+        if (unverifiableUploads.length > 0) {
+          throw new Error(`Publicação bloqueada: ${unverifiableUploads.length} upload(s) não correspondem ao ledger de direitos desta loja. Reenvie pelo MediaUploader do Omni Studio.`);
+        }
+      }
+
       const audit = auditOmniDocument(input.document);
       const blockingFindings = getPublicationBlockingFindings(audit);
       if (blockingFindings.length > 0) {
@@ -171,7 +216,6 @@ export const publishOmniPageDocument = createServerFn({ method: "POST" })
         throw new Error(`Publicação bloqueada pela auditoria do Waesy Studio: ${summary}`);
       }
 
-      const db = getServerClient();
       const { data: result, error: persistErr } = await db.rpc("persist_omni_document_snapshot", {
         p_document_id: input.documentId,
         p_store_id: identity.store_id,

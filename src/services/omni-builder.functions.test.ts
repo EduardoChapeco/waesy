@@ -6,6 +6,10 @@ const serviceFile = fs.readFileSync(
   path.resolve(process.cwd(), "src/services/omni-builder.functions.ts"),
   "utf8",
 );
+const editorFile = fs.readFileSync(
+  path.resolve(process.cwd(), "src/components/builder/OmniEditor.tsx"),
+  "utf8",
+);
 const migrationFile = fs.readFileSync(
   path.resolve(
     process.cwd(),
@@ -38,6 +42,25 @@ describe("Omni Builder — persistência versionada W8.2/W8.3", () => {
     expect(body).toContain('result.version_status !== "published"');
     expect(body).toContain("version_id: result.version_id");
     expect(body).not.toContain('.from("experience_documents")');
+  });
+
+  it("publish valida uploads Studio no ledger por ID e tenant antes de persistir", () => {
+    const body = functionBody("publishOmniPageDocument");
+    expect(body).toContain('.from("media_assets")');
+    expect(body).toContain('.eq("store_id", identity.store_id)');
+    expect(body).toContain('.in("id", assetIds)');
+    expect(body).toContain("matchesStudioUploadAssetLedger(asset, row, identity.store_id!)");
+    expect(body.indexOf("unverifiableUploads.length > 0")).toBeLessThan(body.indexOf("const audit = auditOmniDocument"));
+  });
+
+  it("OmniEditor vincula uploads por slot e grava/remover assetRefs no AST", () => {
+    expect(editorFile).toContain('bucket="public_media"');
+    expect(editorFile).toContain('studioAssetUsageSlot={unsplashUsageSlot || `${selectedBlock.id}-hero`}');
+    expect(editorFile).toContain("onAssetUploaded={onUpdateAssetRef}");
+    expect(editorFile).toContain("const handleUpdateAssetRef = (asset: BuilderAssetRef)");
+    expect(editorFile).toContain("existing.usage_slot !== asset.usage_slot");
+    expect(editorFile).toContain("const handleClearAssetRef = (usageSlot?: string)");
+    expect(editorFile).toContain("asset.usage_slot !== usageSlot");
   });
 
   it("get reidrata primeiro a versão draft persistida e mantém fallback legado explícito", () => {
