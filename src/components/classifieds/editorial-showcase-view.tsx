@@ -1038,7 +1038,7 @@ export function EditorialShowcaseView({
                                 <Play className="size-4 fill-white text-white ml-1" />
                               </div>
                             </div>
-                            <span className="absolute top-2 right-1.5 px-2 py-1 rounded-md bg-black/70 text-[9px] font-bold text-white uppercase tracking-wider backdrop-blur-xs font-mono">
+                            <span className="absolute top-2 right-1.5 px-2 py-1 rounded-md bg-black/70 text-xs font-bold text-white uppercase tracking-wider backdrop-blur-xs font-mono">
                               Vídeo
                             </span>
                           </div>
@@ -1051,7 +1051,7 @@ export function EditorialShowcaseView({
                               loading="lazy"
                             />
                             {isGif && (
-                              <span className="absolute top-2 right-1.5 px-2 py-1 rounded-md bg-foreground/80 text-background text-[9px] font-bold uppercase tracking-wider backdrop-blur-xs font-mono">
+                              <span className="absolute top-2 right-1.5 px-2 py-1 rounded-md bg-foreground/80 text-background text-xs font-bold uppercase tracking-wider backdrop-blur-xs font-mono">
                                 GIF
                               </span>
                             )}
@@ -2204,7 +2204,7 @@ export function EditorialShowcaseView({
                               <div className="flex items-center gap-2">
                                 {opt.label && <p className="text-xs font-bold text-foreground">{opt.label}</p>}
                                 {isSelected && (
-                                  <span className="text-[9px] font-bold text-primary bg-primary/10 px-2 py-0.2 rounded-full">
+                                  <span className="text-xs font-bold text-primary bg-primary/10 px-2 py-1 rounded-full">
                                     Selecionada
                                   </span>
                                 )}

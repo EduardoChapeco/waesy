@@ -27,6 +27,10 @@ import { getPublicEvents } from "@/services/events.functions";
 import { listPublicArticles, type NewsArticleDTO } from "@/services/news.functions";
 import { getMuralFeed, type MuralFeedResponse } from "@/services/social.functions";
 import { getAllPublicConcursos, type RaffleDTO } from "@/services/invite.functions";
+import { getMarketplaceFeed, type FlashOfferDTO } from "@/services/marketplace.functions";
+import { listUnifiedListings } from "@/services/unified-listing.functions";
+import { OfferCard } from "@/components/commerce/offer-card";
+import type { UnifiedListing } from "@/types/unified-ad-engine";
 
 const CANONICAL_PILLARS = [
   {
@@ -34,6 +38,11 @@ const CANONICAL_PILLARS = [
     title: "Places (Lista Telefônica)",
     to: "/diretorio",
     isPlacesBadge: true,
+  },
+  {
+    slug: "marketplace",
+    title: "Marketplace",
+    to: "/marketplace",
   },
   {
     slug: "classificados",
@@ -78,16 +87,17 @@ const CANONICAL_PILLARS = [
 ];
 
 const DISCOVERY_CATEGORIES: FilterChipOption[] = [
-  { id: "todos", label: "Todos os Anúncios", emoji: "" },
-  { id: "places", label: "Places (Lista Telefônica)", emoji: "" },
-  { id: "classificados", label: "Classificados", emoji: "️" },
-  { id: "feed", label: "Feed", emoji: "" },
-  { id: "noticias", label: "Notícias", emoji: "" },
-  { id: "empregos", label: "Empregos", emoji: "" },
-  { id: "eventos", label: "Eventos", emoji: "️" },
-  { id: "agenda", label: "Agenda", emoji: "" },
-  { id: "afiliados", label: "Afiliados", emoji: "" },
-  { id: "concursos", label: "Concursos de Sorte", emoji: "" },
+  { id: "todos", label: "Todos os Anúncios", icon: Tag },
+  { id: "places", label: "Places (Lista Telefônica)", icon: MapPin },
+  { id: "marketplace", label: "Marketplace de Empresas", icon: Storefront },
+  { id: "classificados", label: "Classificados", icon: Tag },
+  { id: "feed", label: "Feed", icon: Rss },
+  { id: "noticias", label: "Notícias", icon: Newspaper },
+  { id: "empregos", label: "Empregos", icon: Briefcase },
+  { id: "eventos", label: "Eventos", icon: Ticket },
+  { id: "agenda", label: "Agenda", icon: CalendarDots },
+  { id: "afiliados", label: "Afiliados", icon: Target },
+  { id: "concursos", label: "Concursos de Sorte", icon: Target },
 ];
 
 export const Route = createFileRoute("/_store/explorar")({
@@ -117,6 +127,8 @@ export const Route = createFileRoute("/_store/explorar")({
         newsArticles,
         feedResponse,
         concursos,
+        marketplaceFeed,
+        workspaceListings,
       ] = await Promise.all([
         listActiveBanners({ data: { placement: "home", city: filteredCity } }).catch(() => []),
         listActiveBanners({ data: { placement: "home_middle", city: filteredCity } }).catch(() => []),
@@ -129,7 +141,38 @@ export const Route = createFileRoute("/_store/explorar")({
         listPublicArticles({ data: { limit: 6, city: filteredCity } }).catch(() => []),
         getMuralFeed({ data: { limit: 8 } }).catch(() => ({ items: [] })),
         getAllPublicConcursos({ data: { filter: "all" } }).catch(() => []),
+        getMarketplaceFeed().catch(() => ({ sections: [], allProducts: [] })),
+        listUnifiedListings({ data: { origin: "workspace", limit: 36 } }).catch(() => []),
       ]);
+
+      const directWorkspaceProducts = (workspaceListings || []).map((item: UnifiedListing) => {
+        const origPrice = item.compare_at_cents || item.price_cents;
+        const price = item.price_cents;
+        const discount = origPrice > price ? Math.round(((origPrice - price) / origPrice) * 100) : 0;
+        return {
+          id: item.id,
+          title: item.title,
+          slug: item.slug || item.id,
+          store_id: item.store_id,
+          store_name: item.store_name || "Loja Credenciada",
+          price_cents: price,
+          original_price_cents: origPrice,
+          discount_percent: discount,
+          mechanic_label: discount > 0 ? `${discount}% OFF` : "Verificado",
+          cover_image: item.cover_url || item.media_urls?.[0] || "",
+          selling_unit: item.selling_unit || "un",
+          in_stock: item.is_unlimited_stock || (item.stock_quantity ?? 1) > 0,
+          has_flash_offer: discount > 0,
+        };
+      });
+
+      const combinedMap = new Map<string, any>();
+      for (const p of directWorkspaceProducts) {
+        if (p.id) combinedMap.set(p.id, p);
+      }
+      for (const p of (marketplaceFeed?.allProducts || [])) {
+        if (p.id && !combinedMap.has(p.id)) combinedMap.set(p.id, p);
+      }
 
       return {
         banners: banners || [],
@@ -143,10 +186,11 @@ export const Route = createFileRoute("/_store/explorar")({
         newsArticles: newsArticles || [],
         feedPosts: (feedResponse as MuralFeedResponse)?.items || [],
         concursos: concursos || [],
+        marketplaceProducts: Array.from(combinedMap.values()),
         activeCity: filteredCity,
       };
     } catch (err) {
-      console.error("[loader:_store.index] Unhandled loader error:", err);
+      console.error("[loader:_store.explorar] Unhandled loader error:", err);
       return {
         banners: [],
         middleBanners: [],
@@ -159,6 +203,8 @@ export const Route = createFileRoute("/_store/explorar")({
         newsArticles: [],
         feedPosts: [],
         concursos: [],
+        marketplaceProducts: [],
+        activeCity: undefined,
       };
     }
   },
@@ -178,6 +224,7 @@ function CommunityHomePage() {
     newsArticles = [],
     feedPosts = [],
     concursos = [],
+    marketplaceProducts = [],
   } = ((Route.useLoaderData?.() as any) || {});
 
   // Estado dos 3 Modos Canônicos de Visualização (Feed, Grid, List) e Filtros
@@ -230,6 +277,15 @@ function CommunityHomePage() {
         (p.address || "").toLowerCase().includes(term)
     );
   }, [placesListings, term]);
+
+  const filteredMarketplaceProducts = useMemo(() => {
+    if (!term) return marketplaceProducts;
+    return marketplaceProducts.filter(
+      (m: any) =>
+        (m.title || "").toLowerCase().includes(term) ||
+        (m.store_name || "").toLowerCase().includes(term)
+    );
+  }, [marketplaceProducts, term]);
 
   const filteredClassifieds = useMemo(() => {
     if (!term) return classifieds;
@@ -294,6 +350,7 @@ function CommunityHomePage() {
   // Total de itens combinados
   const totalResults =
     filteredPlaces.length +
+    filteredMarketplaceProducts.length +
     filteredClassifieds.length +
     filteredFeed.length +
     filteredNews.length +
@@ -306,7 +363,7 @@ function CommunityHomePage() {
   const unifiedItems = useMemo(() => {
     const list: Array<{
       id: string;
-      pillar: "places" | "classifieds" | "feed" | "noticias" | "empregos" | "eventos" | "agenda" | "afiliados" | "concursos";
+      pillar: "places" | "marketplace" | "classifieds" | "feed" | "noticias" | "empregos" | "eventos" | "agenda" | "afiliados" | "concursos";
       badge: string;
       title: string;
       image?: string | null;
@@ -315,6 +372,22 @@ function CommunityHomePage() {
       location?: string;
       phone?: string;
     }> = [];
+
+    // 0. MARKETPLACE (PRODUTOS DE EMPRESAS VERIFICADAS)
+    if (activeCategory === "todos" || activeCategory === "marketplace") {
+      filteredMarketplaceProducts.forEach((item: any) => {
+        list.push({
+          id: `mkt-${item.id}`,
+          pillar: "marketplace",
+          badge: item.store_name || "Marketplace",
+          title: item.title,
+          image: item.cover_image || null,
+          to: `/produto/${item.slug || item.id}`,
+          priceOrDate: item.price_cents ? formatMoney(item.price_cents) : undefined,
+          location: item.store_name || "Empresa Verificada",
+        });
+      });
+    }
 
     // 1. PLACES (LISTA TELEFÔNICA)
     if (activeCategory === "todos" || activeCategory === "places") {
@@ -562,7 +635,7 @@ function CommunityHomePage() {
           if (mode === "empresas") {
             setActiveCategory("places");
           } else if (mode === "marketplace") {
-            setActiveCategory("todos");
+            setActiveCategory("marketplace");
           } else {
             setActiveCategory("classificados");
           }
@@ -673,6 +746,36 @@ function CommunityHomePage() {
                 })}
               </HorizontalRail>
             </section>
+          )}
+
+          {/* MARKETPLACE PRODUTOS & OFERTAS DE EMPRESAS HOMOLOGADAS */}
+          {(activeCategory === "todos" || activeCategory === "marketplace") && (
+            filteredMarketplaceProducts.length > 0 ? (
+              <section aria-label="Marketplace de Empresas" className="space-y-2">
+                <HorizontalRail
+                  title="Marketplace"
+                  badge="Empresas Verificadas"
+                  actionLabel="Ver vitrine completa"
+                  actionTo="/marketplace"
+                >
+                  {filteredMarketplaceProducts.map((offer: any) => (
+                    <div key={offer.id} className="min-w-64 sm:min-w-72 max-w-xs shrink-0 snap-start">
+                      <OfferCard {...offer} />
+                    </div>
+                  ))}
+                </HorizontalRail>
+              </section>
+            ) : activeCategory === "marketplace" ? (
+              <div className="py-16 text-center space-y-3 bg-card rounded-lg border border-border/60 p-8">
+                <Storefront className="size-10 text-muted-foreground/40 mx-auto" />
+                <h2 className="text-sm font-bold text-foreground">
+                  Nenhum produto anunciado por empresas no momento
+                </h2>
+                <p className="text-xs text-muted-foreground max-w-sm mx-auto">
+                  Novos produtos de empresas parceiras serão listados em breve.
+                </p>
+              </div>
+            ) : null
           )}
 
           {/* CLASSIFICADOS */}
@@ -1157,7 +1260,7 @@ function CommunityHomePage() {
                             phone: item.phone || "",
                             message: `Olá! Vi o anúncio "${item.title}" no Waesy.`,
                             storeId: null,
-                            entityType: item.pillar,
+                            entityType: (item.pillar === "marketplace" ? "product" : item.pillar) as any,
                             entityId: item.id,
                             entityTitle: item.title,
                           })
@@ -1246,7 +1349,7 @@ function CommunityHomePage() {
                               phone: item.phone || "",
                               message: `Olá! Vi o anúncio "${item.title}" no Waesy.`,
                               storeId: null,
-                              entityType: item.pillar,
+                              entityType: (item.pillar === "marketplace" ? "product" : item.pillar) as any,
                               entityId: item.id,
                               entityTitle: item.title,
                             })

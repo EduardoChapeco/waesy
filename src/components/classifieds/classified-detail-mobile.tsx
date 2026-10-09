@@ -612,7 +612,7 @@ export function ClassifiedDetailMobile({
                   </div>
                 )}
 
-                {(attrs.accepts_trade || attrs.accepts_financing || negotiable) && onOpenProposalModal && (
+                {(attrs.accepts_trade || attrs.accepts_financing || attrs.negotiable) && onOpenProposalModal && (
                   <Button
                     type="button"
                     variant="outline"

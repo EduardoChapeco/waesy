@@ -1116,7 +1116,7 @@ function SpecializedClassifiedEditor({
       if (travelGuests) ctx["capacidade_hóspedes"] = travelGuests;
       if (travelTransportType) ctx["transporte"] = travelTransportType === "flight" ? "Aéreo" : travelTransportType === "bus" ? "Rodoviário" : travelTransportType;
       if (travelDepartureCity) ctx["cidade_saída"] = travelDepartureCity;
-      if (travelStoryHighlights?.length) ctx["destaques"] = travelStoryHighlights.map((s) => s.caption);
+      if (travelStoryHighlights?.length) ctx["destaques"] = travelStoryHighlights.map((s) => s.title);
       if (travelItineraryDays?.length) {
         ctx["roteiro_dias"] = travelItineraryDays.map((d) => `Dia ${d.day_number}: ${d.title}`).join("; ");
       }
@@ -1130,7 +1130,7 @@ function SpecializedClassifiedEditor({
       if (hospAmenities?.length) ctx["comodidades"] = hospAmenities;
     } else if (niche.id === "servico") {
       if (serviceArea) ctx["área_atuação"] = serviceArea;
-      if (serviceModality) ctx["modalidade"] = serviceModality === "remote" ? "Online / Remoto" : "Presencial";
+      if (serviceModality) ctx["modalidade"] = serviceModality === "remoto" ? "Online / Remoto" : serviceModality === "domicilio" ? "A Domicílio" : "Presencial";
       if (serviceDuration) ctx["duração_estimada"] = `${serviceDuration} minutos`;
       if (serviceSpecialty) ctx["especialidade"] = serviceSpecialty;
       if (serviceProfessionalCouncil) ctx["conselho_profissional"] = serviceProfessionalCouncil;
@@ -1583,6 +1583,9 @@ function SpecializedClassifiedEditor({
   );
   const [billingCycle, setBillingCycle] = useState<"monthly" | "quarterly" | "semiannual" | "yearly">("monthly");
   const [setupFeeCents, setSetupFeeCents] = useState<number | undefined>(undefined);
+  const [trialDays, setTrialDays] = useState<number | undefined>(
+    initialData?.trial_days ?? undefined
+  );
   const [recurringFeatures, setRecurringFeatures] = useState<string[]>(() => {
     if (Array.isArray(initialData?.recurring_features) && initialData.recurring_features.length > 0) {
       return initialData.recurring_features;

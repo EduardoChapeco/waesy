@@ -225,7 +225,7 @@ export function TravelBookingDossierModal({
       <DialogContent className="sm:max-w-xl p-5 sm:p-6 rounded-lg max-h-[92vh] overflow-y-auto">
         <DialogHeader className="space-y-1 pb-3 border-b border-border/40">
           <div className="flex items-center gap-2">
-            <Badge variant="outline" className="text-[10px] font-bold uppercase tracking-wider text-primary border-primary/25 bg-primary/10">
+            <Badge variant="outline" className="text-xs font-bold uppercase tracking-wider text-primary border-primary/25 bg-primary/10">
               {isAirplane ? "Cotação Aérea Sob Medida" : "Dossiê de Interesse"}
             </Badge>
           </div>
@@ -271,14 +271,14 @@ export function TravelBookingDossierModal({
                 <Users className="size-3.5 text-primary" />
                 <span>Passageiros e Viajantes</span>
               </Label>
-              <span className="text-[11px] font-mono text-muted-foreground">
+              <span className="text-xs font-mono text-muted-foreground">
                 Total: {adultsCount + childrenCount} viajante(s)
               </span>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
-                <Label className="text-[11px] text-muted-foreground font-medium">Adultos (+12 anos)</Label>
+                <Label className="text-xs text-muted-foreground font-medium">Adultos (+12 anos)</Label>
                 <div className="flex items-center gap-2">
                   <Input
                     type="number"
@@ -292,7 +292,7 @@ export function TravelBookingDossierModal({
               </div>
 
               <div className="space-y-1">
-                <Label className="text-[11px] text-muted-foreground font-medium">Crianças e Bebês (0 a 11 anos)</Label>
+                <Label className="text-xs text-muted-foreground font-medium">Crianças e Bebês (0 a 11 anos)</Label>
                 <div className="flex items-center gap-2">
                   <Input
                     type="number"
@@ -310,14 +310,14 @@ export function TravelBookingDossierModal({
             {childrenCount > 0 && (
               <div className="pt-2 border-t border-border/40 space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-semibold text-foreground">
+                  <span className="text-xs font-semibold text-foreground">
                     Idade de Cada Criança (Cia aérea e hotel diferenciam colo 0-23m e 2-11 anos):
                   </span>
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                   {Array.from({ length: childrenCount }).map((_, idx) => (
                     <div key={idx} className="space-y-1">
-                      <span className="text-[10px] text-muted-foreground font-medium">
+                      <span className="text-xs text-muted-foreground font-medium">
                         Criança {idx + 1}:
                       </span>
                       <Input
@@ -349,7 +349,7 @@ export function TravelBookingDossierModal({
                   <button
                     type="button"
                     onClick={() => setDateMode("confirmed")}
-                    className={`px-2 py-1 rounded-lg text-[10px] font-bold cursor-pointer transition-all ${
+                    className={`px-2 py-1 rounded-lg text-xs font-bold cursor-pointer transition-all ${
                       dateMode === "confirmed"
                         ? "bg-primary text-primary-foreground shadow-2xs"
                         : "text-muted-foreground hover:text-foreground"
@@ -360,7 +360,7 @@ export function TravelBookingDossierModal({
                   <button
                     type="button"
                     onClick={() => setDateMode("flexible")}
-                    className={`px-2 py-1 rounded-lg text-[10px] font-bold cursor-pointer transition-all ${
+                    className={`px-2 py-1 rounded-lg text-xs font-bold cursor-pointer transition-all ${
                       dateMode === "flexible"
                         ? "bg-primary text-primary-foreground shadow-2xs"
                         : "text-muted-foreground hover:text-foreground"
@@ -374,7 +374,7 @@ export function TravelBookingDossierModal({
 
             {dateMode === "confirmed" && departureOptions.length > 0 ? (
               <div className="space-y-2">
-                <Label className="text-[11px] text-muted-foreground font-medium">Selecione uma saída confirmada do pacote:</Label>
+                <Label className="text-xs text-muted-foreground font-medium">Selecione uma saída confirmada do pacote:</Label>
                 <select
                   value={selectedDepartureId}
                   onChange={(e) => setSelectedDepartureId(e.target.value)}
@@ -390,7 +390,7 @@ export function TravelBookingDossierModal({
             ) : (
               <div className="space-y-3">
                 <div className="space-y-1">
-                  <Label className="text-[11px] text-muted-foreground font-medium">
+                  <Label className="text-xs text-muted-foreground font-medium">
                     Mês, Temporada ou Período Pretendido:
                   </Label>
                   <Input
@@ -403,7 +403,7 @@ export function TravelBookingDossierModal({
 
                 <div className="grid grid-cols-2 gap-2">
                   <div className="space-y-1">
-                    <Label className="text-[10px] text-muted-foreground">Data Inicial (Opcional)</Label>
+                    <Label className="text-xs text-muted-foreground">Data Inicial (Opcional)</Label>
                     <Input
                       type="date"
                       value={departureDate}
@@ -412,7 +412,7 @@ export function TravelBookingDossierModal({
                     />
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-[10px] text-muted-foreground">Data Final (Opcional)</Label>
+                    <Label className="text-xs text-muted-foreground">Data Final (Opcional)</Label>
                     <Input
                       type="date"
                       value={returnDate}
@@ -445,7 +445,7 @@ export function TravelBookingDossierModal({
                   <Star className="size-3.5 text-primary" />
                   <span>Perguntas da Agência (Formulário de Interesse)</span>
                 </Label>
-                <span className="text-[10px] font-mono text-primary font-bold">
+                <span className="text-xs font-mono text-primary font-bold">
                   Personalizado
                 </span>
               </div>
@@ -532,7 +532,7 @@ export function TravelBookingDossierModal({
             )}
           </Button>
 
-          <p className="text-[11px] text-muted-foreground text-center flex items-center justify-center gap-1">
+          <p className="text-xs text-muted-foreground text-center flex items-center justify-center gap-1">
             <ShieldCheck className="size-3.5 text-emerald-600" />
             <span>Seu lead é registrado no CRM da agência e enviado direto para atendimento.</span>
           </p>

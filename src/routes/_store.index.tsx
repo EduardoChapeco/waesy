@@ -26,6 +26,8 @@ import { formatRelativeTime } from "@/lib/datetime";
 import { listActiveBanners, type BannerDTO } from "@/services/banner.functions";
 import { listHomeHeroCards, listHeroSquircleCards, listEditorialHotpages, type HotpageDTO } from "@/services/hotpage.functions";
 import { getMarketplaceFeed, type FlashOfferDTO } from "@/services/marketplace.functions";
+import { listUnifiedListings } from "@/services/unified-listing.functions";
+import type { UnifiedListing } from "@/types/unified-ad-engine";
 import { getPublicDirectory, type DirectoryListingDTO } from "@/services/directory.functions";
 import { getPublicClassifieds } from "@/services/classifieds.functions";
 import { listPublicJobs, type JobItemDTO } from "@/services/jobs.functions";
@@ -144,6 +146,7 @@ export const Route = createFileRoute("/_store/")({
         newsArticles,
         feedResponse,
         concursos,
+        workspaceListings,
       ] = await Promise.all([
         listActiveBanners({ data: { placement: "home", city: filteredCity } }).catch(() => []),
         listActiveBanners({ data: { placement: "home_middle", city: filteredCity } }).catch(() => []),
@@ -159,7 +162,37 @@ export const Route = createFileRoute("/_store/")({
         listPublicArticles({ data: { limit: 6, city: filteredCity } }).catch(() => []),
         getMuralFeed({ data: { limit: 8 } }).catch(() => ({ items: [] })),
         getAllPublicConcursos({ data: { filter: "all" } }).catch(() => []),
+        listUnifiedListings({ data: { origin: "workspace", limit: 36 } }).catch(() => []),
       ]);
+
+      const directWorkspaceProducts = (workspaceListings || []).map((item: UnifiedListing) => {
+        const origPrice = item.compare_at_cents || item.price_cents;
+        const price = item.price_cents;
+        const discount = origPrice > price ? Math.round(((origPrice - price) / origPrice) * 100) : 0;
+        return {
+          id: item.id,
+          title: item.title,
+          slug: item.slug || item.id,
+          store_id: item.store_id,
+          store_name: item.store_name || "Loja Credenciada",
+          price_cents: price,
+          original_price_cents: origPrice,
+          discount_percent: discount,
+          mechanic_label: discount > 0 ? `${discount}% OFF` : "Verificado",
+          cover_image: item.cover_url || item.media_urls?.[0] || "",
+          selling_unit: item.selling_unit || "un",
+          in_stock: item.is_unlimited_stock || (item.stock_quantity ?? 1) > 0,
+          has_flash_offer: discount > 0,
+        };
+      });
+
+      const combinedMap = new Map<string, any>();
+      for (const p of directWorkspaceProducts) {
+        if (p.id) combinedMap.set(p.id, p);
+      }
+      for (const p of (marketplaceFeed?.allProducts || [])) {
+        if (p.id && !combinedMap.has(p.id)) combinedMap.set(p.id, p);
+      }
 
       return {
         banners: banners || [],
@@ -168,7 +201,7 @@ export const Route = createFileRoute("/_store/")({
         heroCards: heroCards || [],
         heroSquircleCards: heroSquircleCards || [],
         editorialHotpages: editorialHotpages || [],
-        marketplaceProducts: (marketplaceFeed?.allProducts as FlashOfferDTO[]) || [],
+        marketplaceProducts: Array.from(combinedMap.values()) as FlashOfferDTO[],
         placesListings: placesListings || [],
         classifieds: classifieds || [],
         jobs: jobs || [],
@@ -380,7 +413,7 @@ function CommunityMarketplaceView({ data }: { data: any }) {
           badge: item.store_name || "Marketplace",
           title: item.title,
           image: item.cover_image || null,
-          to: "/marketplace",
+          to: `/produto/${item.slug || item.id}`,
           priceOrDate: item.price_cents ? formatMoney(item.price_cents) : undefined,
           location: item.store_name || "Empresa Verificada",
         });
@@ -775,32 +808,55 @@ function CommunityMarketplaceView({ data }: { data: any }) {
           {/* MARKETPLACE PRODUTOS & OFERTAS DE EMPRESAS HOMOLOGADAS */}
           {(activeCategory === "todos" || activeCategory === "marketplace") && (
             filteredMarketplaceProducts.length > 0 ? (
-              <section aria-label="Marketplace de Empresas" className="space-y-2">
-                <HorizontalRail
-                  title="Marketplace"
-                  badge="Empresas Verificadas"
-                  actionLabel="Ver vitrine completa"
-                  actionTo="/marketplace"
-                  leadCard={
-                    <HitsLeadCard
-                      title="Marketplace Local"
-                      subtitle="Produtos e serviços com nota fiscal e garantia de empresas parceiras"
-                      badge="Homologado"
-                      actionLabel="Explorar"
-                      actionTo="/marketplace"
-                      gradient="from-emerald-700 via-teal-700 to-cyan-800"
-                      className="h-80 w-52 sm:w-60"
-                      ariaLabel="Explorar vitrine de produtos e empresas"
-                    />
-                  }
-                >
-                  {filteredMarketplaceProducts.map((offer: any) => (
-                    <div key={offer.id} className="min-w-64 sm:min-w-72 max-w-xs shrink-0 snap-start">
-                      <OfferCard {...offer} />
+              activeCategory === "marketplace" ? (
+                <section aria-label="Catálogo de Produtos de Empresas" className="space-y-4">
+                  <div className="flex items-center justify-between px-1">
+                    <div className="flex items-center gap-2">
+                      <span className="size-6 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-xs">
+                        <Storefront size={14} weight="bold" />
+                      </span>
+                      <h2 className="text-sm sm:text-base font-bold text-foreground leading-tight">
+                        Produtos Anunciados por Empresas
+                      </h2>
                     </div>
-                  ))}
-                </HorizontalRail>
-              </section>
+                    <span className="text-xs font-mono text-muted-foreground">
+                      {filteredMarketplaceProducts.length} {filteredMarketplaceProducts.length === 1 ? "produto" : "produtos"}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+                    {filteredMarketplaceProducts.map((offer: any) => (
+                      <OfferCard key={offer.id} {...offer} />
+                    ))}
+                  </div>
+                </section>
+              ) : (
+                <section aria-label="Marketplace de Empresas" className="space-y-2">
+                  <HorizontalRail
+                    title="Marketplace"
+                    badge="Empresas Verificadas"
+                    actionLabel="Ver vitrine completa"
+                    actionTo="/marketplace"
+                    leadCard={
+                      <HitsLeadCard
+                        title="Marketplace Local"
+                        subtitle="Produtos e serviços com nota fiscal e garantia de empresas parceiras"
+                        badge="Homologado"
+                        actionLabel="Explorar"
+                        actionTo="/marketplace"
+                        gradient="from-emerald-700 via-teal-700 to-cyan-800"
+                        className="h-80 w-52 sm:w-60"
+                        ariaLabel="Explorar vitrine de produtos e empresas"
+                      />
+                    }
+                  >
+                    {filteredMarketplaceProducts.map((offer: any) => (
+                      <div key={offer.id} className="min-w-64 sm:min-w-72 max-w-xs shrink-0 snap-start">
+                        <OfferCard {...offer} />
+                      </div>
+                    ))}
+                  </HorizontalRail>
+                </section>
+              )
             ) : activeCategory === "marketplace" ? (
               <div className="py-16 text-center space-y-3 bg-card rounded-lg border border-border/60 p-8">
                 <Storefront className="size-10 text-muted-foreground/40 mx-auto" />

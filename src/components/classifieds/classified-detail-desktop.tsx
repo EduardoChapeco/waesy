@@ -527,7 +527,7 @@ export function ClassifiedDetailDesktop({
                   )}
 
                   {/* Negociação e Troca Automotiva */}
-                  {(attrs.accepts_trade || attrs.accepts_financing || negotiable) && (
+                  {(attrs.accepts_trade || attrs.accepts_financing || attrs.negotiable) && (
                     <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 flex items-center justify-between gap-4">
                       <div className="space-y-1">
                         <span className="text-xs font-bold text-foreground block">Condições Especiais de Negociação</span>

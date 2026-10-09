@@ -359,6 +359,7 @@ function AdvancedMarketplacePage() {
                 </span>
               </div>
 
+              {productCards.length === 0 ? (
                 <div className="py-12 text-center bg-card rounded-lg border border-border/60 p-6 space-y-3">
                   <EmptyState
                     title="Nenhum produto encontrado"
@@ -394,6 +395,7 @@ function AdvancedMarketplacePage() {
               </h2>
             </div>
 
+            {productCards.length === 0 ? (
               <div className="py-12 text-center bg-card rounded-lg border border-border/60 p-6 space-y-3">
                 <EmptyState
                   title="Nenhum produto encontrado"
