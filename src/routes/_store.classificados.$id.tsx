@@ -163,7 +163,7 @@ function ClassifiedDetailPage() {
     chosenTemplate === "instagram" ||
     chosenTemplate === "instagram_resort";
   const isTravelDefaultEditorial =
-    (!chosenTemplate || chosenTemplate === "standard") &&
+    !chosenTemplate &&
     (detail.niche?.id === "travel" ||
       classified?.category === "travel" ||
       classified?.category === "viagem" ||

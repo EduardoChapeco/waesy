@@ -1266,22 +1266,30 @@ function SpecializedClassifiedEditor({
   });
 
   // Template de Exibição (6 Modelos Canônicos + Auto-Theming Inteligente)
+  const defaultNicheTemplateStyle = useMemo<ClassifiedTemplateStyle>(() => {
+    if (niche.id === "veiculo") return "automotivo";
+    if (niche.id === "imovel") return "imobiliario";
+    if (niche.id === "viagem" || niche.id === "hospedagem") return "resort_hotel";
+    if (niche.id === "servico") return "servicos_agenda";
+    if (niche.id === "mercado") return "conveniencia";
+    return "standard";
+  }, [niche.id]);
+
   const [templateStyle, setTemplateStyle] = useState<ClassifiedTemplateStyle>(
-    (initialData?.attributes?.template_style as ClassifiedTemplateStyle) ||
-    (niche.id === "veiculo"
-      ? "automotivo"
-      : niche.id === "imovel"
-      ? "imobiliario"
-      : niche.id === "viagem" || niche.id === "hospedagem"
-      ? "resort_hotel"
-      : niche.id === "servico"
-      ? "servicos_agenda"
-      : "standard")
+    (initialData?.attributes?.template_style as ClassifiedTemplateStyle) || defaultNicheTemplateStyle
   );
+
+  // Sincroniza o template quando o usuário troca o nicho ativo (se não for edição com template explícito inicial)
+  useEffect(() => {
+    if (!initialData?.attributes?.template_style) {
+      setTemplateStyle(defaultNicheTemplateStyle);
+    }
+  }, [defaultNicheTemplateStyle, initialData]);
+
   const [displayMode, setDisplayMode] = useState<ClassifiedDisplayMode>(
     (initialData?.attributes?.display_mode as ClassifiedDisplayMode) || "tabs"
   );
-  const [isTemplateStyleOpen, setIsTemplateStyleOpen] = useState(false);
+  const [isTemplateStyleOpen, setIsTemplateStyleOpen] = useState(true);
 
   // Qualificação de Leads & SDR IA (Para Anunciantes Civis / Pessoa Física)
   const defaultNicheInquiry = useMemo(() => {
@@ -2226,6 +2234,11 @@ function SpecializedClassifiedEditor({
           setTravelBoardingGateways(initialData.attributes.flight_details.boarding_gateways);
         }
       }
+      if (Array.isArray(initialData.attributes.lodgings) && initialData.attributes.lodgings.length > 0) {
+        setTravelLodgings(initialData.attributes.lodgings);
+      } else if (Array.isArray(initialData.attributes.hotels) && initialData.attributes.hotels.length > 0) {
+        setTravelLodgings(initialData.attributes.hotels);
+      }
 
       // Equipamento
       if (initialData.attributes.equipment_period) setEquipmentPeriod(initialData.attributes.equipment_period);
@@ -2587,6 +2600,16 @@ function SpecializedClassifiedEditor({
           cabin_category: travelCabinCategory,
           embarkation_port: travelEmbarkationPort,
         };
+        const validTravelLodgings = travelLodgings.filter((l) => l.name.trim() !== "");
+        attributes.lodgings = validTravelLodgings;
+        attributes.hotels = validTravelLodgings;
+        if (validTravelLodgings.length > 0) {
+          attributes.hotel_name = validTravelLodgings[0].name;
+          attributes.hotel_description = validTravelLodgings[0].description;
+          attributes.hotel_address = validTravelLodgings[0].address;
+          attributes.hotel_stars = validTravelLodgings[0].stars;
+          attributes.hotel_amenities = validTravelLodgings[0].amenities;
+        }
       } else if (niche.id === "equipamento") {
         attributes.equipment_period = equipmentPeriod;
         attributes.deposit_cents = equipmentDepositCents || 0;
@@ -2704,7 +2727,7 @@ function SpecializedClassifiedEditor({
         attributes.food_delivery_modes = foodDeliveryModes;
       } else if (niche.id === "mercado") {
         attributes.niche = "mercado";
-        attributes.template_style = "conveniencia";
+        attributes.template_style = templateStyle || "conveniencia";
         attributes.grocery_department = groceryDepartment;
         attributes.sub_category = grocerySubCategory;
         attributes.unit_type = groceryUnitType;
@@ -3698,16 +3721,41 @@ function SpecializedClassifiedEditor({
 
       {currentStep === 5 ? (
         <div className="space-y-4 max-w-5xl mx-auto">
-          {/* Header do Preview com Alternador de Dispositivo sem Emojis */}
-          <div className="flex items-center justify-between gap-3 p-3 rounded-lg bg-card border border-border/60">
-            <div className="flex items-center gap-2">
+          {/* Header do Preview com Alternador de Layout e Dispositivo */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 rounded-lg bg-card border border-border/60">
+            <div className="flex items-center gap-2 flex-wrap">
               <span className="text-xs font-bold text-foreground uppercase tracking-wider">
                 Visualização do Comprador
               </span>
+              <div className="flex items-center gap-1 bg-muted p-0.5 rounded-lg text-xs">
+                {[
+                  { id: "standard", label: "Padrão" },
+                  { id: "editorial", label: "Editorial" },
+                  { id: "automotivo", label: "Auto" },
+                  { id: "imobiliario", label: "Imóvel" },
+                  { id: "resort_hotel", label: "Resort" },
+                  { id: "servicos_agenda", label: "Serviço" },
+                  ...(niche.id === "mercado" ? [{ id: "conveniencia", label: "Mercado" }] : []),
+                ].map((t) => (
+                  <button
+                    key={t.id}
+                    type="button"
+                    onClick={() => setTemplateStyle(t.id as any)}
+                    className={cn(
+                      "px-2.5 py-1 text-xs font-semibold rounded-md transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                      templateStyle === t.id
+                        ? "bg-primary text-primary-foreground font-bold shadow-xs"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    {t.label}
+                  </button>
+                ))}
+              </div>
             </div>
 
             {/* Alternador Limpo: Mobile vs Desktop (Sem Emojis) */}
-            <div className="flex items-center bg-muted p-1 rounded-lg text-xs font-semibold">
+            <div className="flex items-center self-end sm:self-auto bg-muted p-1 rounded-lg text-xs font-semibold">
               <button
                 type="button"
                 onClick={() => setPreviewDevice("mobile")}
@@ -3745,7 +3793,7 @@ function SpecializedClassifiedEditor({
                   : "max-w-5xl"
               )}
             >
-              {niche.id === "mercado" || templateStyle === "conveniencia" ? (
+              {templateStyle === "conveniencia" || niche.id === "mercado" ? (
                 <ConvenienceShowcaseView
                   classified={livePreviewClassified}
                   previewData={{
@@ -3809,7 +3857,7 @@ function SpecializedClassifiedEditor({
                   compact={previewDevice === "mobile"}
                   onEdit={() => setCurrentStep(2)}
                 />
-              ) : templateStyle === "editorial" || ((!templateStyle || templateStyle === "standard") && niche.id === "viagem") ? (
+              ) : templateStyle === "editorial" || (templateStyle as string) === "instagram" || (templateStyle as string) === "instagram_resort" || (!templateStyle && niche.id === "viagem") ? (
                 <EditorialShowcaseView
                   classified={livePreviewClassified}
                   isOwner={true}
@@ -3828,6 +3876,7 @@ function SpecializedClassifiedEditor({
                   onEdit={() => setCurrentStep(2)}
                 />
               )}
+
             </div>
           </div>
 
@@ -9404,31 +9453,72 @@ function SpecializedClassifiedEditor({
  <main
  className={`md:col-span-7 ${mobileTab === "preview" ? "block" : "hidden md:block"} sticky top-0`}
  >
-        {templateStyle === "editorial" || (templateStyle as string) === "instagram" ? (
-          <div className="bg-card rounded-lg overflow-hidden border border-border/60">
-            <div className="bg-muted/40 px-4 py-2 flex items-center justify-between text-xs border-b border-border/40">
-              <span className="font-semibold flex items-center gap-2 text-muted-foreground">
+        <div className="bg-card rounded-lg overflow-hidden border border-border/60">
+          <div className="bg-muted/40 px-3 py-2 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 border-b border-border/40 text-xs">
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className="font-semibold flex items-center gap-1.5 text-foreground shrink-0">
                 <Eye className="size-4 text-primary" />
-                Prévia ao vivo
+                <span>Prévia ao vivo</span>
               </span>
+              <div className="flex items-center gap-1 bg-background/80 p-0.5 rounded-lg border border-border/50">
+                {[
+                  { id: "standard", label: "Padrão" },
+                  { id: "editorial", label: "Editorial" },
+                  { id: "automotivo", label: "Auto" },
+                  { id: "imobiliario", label: "Imóvel" },
+                  { id: "resort_hotel", label: "Resort" },
+                  { id: "servicos_agenda", label: "Serviço" },
+                  ...(niche.id === "mercado" ? [{ id: "conveniencia", label: "Mercado" }] : []),
+                ].map((tpl) => (
+                  <button
+                    key={tpl.id}
+                    type="button"
+                    onClick={() => setTemplateStyle(tpl.id as any)}
+                    className={cn(
+                      "px-2 py-0.5 text-xs font-semibold rounded transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                      templateStyle === tpl.id
+                        ? "bg-primary text-primary-foreground font-bold shadow-xs"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    {tpl.label}
+                  </button>
+                ))}
+              </div>
             </div>
-            <div className="max-h-screen overflow-y-auto">
-              <EditorialShowcaseView
-                classified={livePreviewClassified}
-                isOwner={false}
-              />
+
+            <div className="flex items-center gap-1 bg-background p-0.5 rounded-lg border border-border/50 self-end sm:self-auto">
+              <button
+                type="button"
+                onClick={() => setPreviewDevice("mobile")}
+                className={cn(
+                  "px-2.5 py-1 text-xs font-bold rounded-md transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                  previewDevice === "mobile"
+                    ? "bg-primary text-primary-foreground shadow-xs"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                Mobile
+              </button>
+              <button
+                type="button"
+                onClick={() => setPreviewDevice("desktop")}
+                className={cn(
+                  "px-2.5 py-1 text-xs font-bold rounded-md transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                  previewDevice === "desktop"
+                    ? "bg-primary text-primary-foreground shadow-xs"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                Desktop
+              </button>
             </div>
           </div>
-        ) : niche.id === "mercado" || templateStyle === "conveniencia" ? (
-          <div className="bg-card rounded-lg overflow-hidden border border-border/60">
-            <div className="bg-muted/40 px-4 py-2 flex items-center justify-between text-xs border-b border-border/40">
-              <span className="font-semibold flex items-center gap-2 text-muted-foreground">
-                <Eye className="size-4 text-primary" />
-                Prévia ao vivo · Mercado & Perecíveis
-              </span>
-            </div>
-            <div className="max-h-screen overflow-y-auto">
+
+          <div className="max-h-[calc(100vh-140px)] overflow-y-auto">
+            {templateStyle === "conveniencia" || niche.id === "mercado" ? (
               <ConvenienceShowcaseView
+                classified={livePreviewClassified}
                 previewData={{
                   title: title || "Produto de Mercado / Conveniência",
                   description: description,
@@ -9436,7 +9526,12 @@ function SpecializedClassifiedEditor({
                   images: images,
                   locationName: locationName || "São Miguel do Oeste - SC",
                   whatsapp: whatsapp,
-                  storeName: "Sua Loja",
+                  storeName: selectedStore?.name || "Sua Loja",
+                  storeSlug: selectedStore?.slug,
+                  storeLogo: selectedStore?.logo_url,
+                  authorName: !selectedStore ? (userProfile?.full_name || "Você") : undefined,
+                  authorAvatar: !selectedStore ? (userProfile?.avatar_url || undefined) : undefined,
+                  authorId: !selectedStore ? userProfile?.id : undefined,
                   volume: convenienceVolume,
                   unitType: groceryUnitType,
                   estimatedWeightPerUnit: groceryEstimatedWeightPerUnit,
@@ -9453,6 +9548,7 @@ function SpecializedClassifiedEditor({
                   prepOptions: groceryPrepOptions,
                   deliveryEstimate: groceryDeliveryEstimate,
                   deliveryFeeCents: groceryDeliveryFeeCents,
+                  readyDelivery: readyDelivery,
                   acceptsPix,
                   pixDiscountPercent,
                   acceptsCard,
@@ -9481,47 +9577,17 @@ function SpecializedClassifiedEditor({
                     badge_text: groceryOrderBumpBadge || "Oferta Relâmpago",
                   } : undefined,
                 }}
-                isOwner={false}
-                previewDevice="desktop"
-                compact={false}
+                isOwner={true}
+                previewDevice={previewDevice}
+                compact={previewDevice === "mobile"}
+                onEdit={() => setCurrentStep(2)}
               />
-            </div>
-          </div>
-        ) : (
-          <div className="bg-card rounded-lg overflow-hidden border border-border/60">
-            <div className="bg-muted/40 px-4 py-2 flex items-center justify-between text-xs border-b border-border/40">
-              <span className="font-semibold flex items-center gap-2 text-muted-foreground">
-                <Eye className="size-4 text-primary" />
-                Prévia ao vivo · {templateStyle}
-              </span>
-              <div className="flex items-center gap-1 bg-background p-1 rounded-lg border border-border/50">
-                <button
-                  type="button"
-                  onClick={() => setPreviewDevice("mobile")}
-                  className={cn(
-                    "px-3 py-1 text-xs font-bold rounded-md transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-                    previewDevice === "mobile"
-                      ? "bg-primary text-primary-foreground shadow-xs"
-                      : "text-muted-foreground hover:text-foreground"
-                  )}
-                >
-                  Mobile
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPreviewDevice("desktop")}
-                  className={cn(
-                    "px-3 py-1 text-xs font-bold rounded-md transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-                    previewDevice === "desktop"
-                      ? "bg-primary text-primary-foreground shadow-xs"
-                      : "text-muted-foreground hover:text-foreground"
-                  )}
-                >
-                  Desktop
-                </button>
-              </div>
-            </div>
-            <div className="max-h-screen overflow-y-auto">
+            ) : templateStyle === "editorial" || (templateStyle as string) === "instagram" || (templateStyle as string) === "instagram_resort" || (!templateStyle && niche.id === "viagem") ? (
+              <EditorialShowcaseView
+                classified={livePreviewClassified}
+                isOwner={false}
+              />
+            ) : (
               <UniversalClassifiedShowcase
                 classified={livePreviewClassified}
                 previewViewport={previewDevice}
@@ -9531,9 +9597,9 @@ function SpecializedClassifiedEditor({
                 onOpenProposalModal={() => toast.info("Modo de Pré-visualização: O envio de propostas estará ativo após a publicação do anúncio.")}
                 onEdit={() => setCurrentStep(2)}
               />
-            </div>
+            )}
           </div>
-        )}
+        </div>
  </main>
  </div>
       )}
