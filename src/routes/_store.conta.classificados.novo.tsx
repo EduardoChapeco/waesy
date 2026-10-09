@@ -1343,9 +1343,6 @@ function SpecializedClassifiedEditor({
   const [travelArrivalTime, setTravelArrivalTime] = useState(
     initialData?.attributes?.flight_details?.arrival_time || ""
   );
-  const [travelMaxInstallments, setTravelMaxInstallments] = useState(
-    initialData?.attributes?.max_installments ?? 1
-  );
   const [travelStoryHighlights, setTravelStoryHighlights] = useState<StoryHighlight[]>(
     initialData?.attributes?.story_highlights || []
   );
@@ -1575,7 +1572,9 @@ function SpecializedClassifiedEditor({
   // Specialized: Formas de Pagamento & Cancelamento (Zero Hardcoded)
   const [acceptsPix, setAcceptsPix] = useState(true);
   const [acceptsCard, setAcceptsCard] = useState(false);
-  const [maxInstallments, setMaxInstallments] = useState(12);
+  const [maxInstallments, setMaxInstallments] = useState(
+    initialData?.attributes?.max_installments ?? 12
+  );
   const [cardInterestFree, setCardInterestFree] = useState(true);
   const [acceptsBoleto, setAcceptsBoleto] = useState(false);
   const [boletoDueDays, setBoletoDueDays] = useState(3);
@@ -2451,7 +2450,7 @@ function SpecializedClassifiedEditor({
         attributes.destination_city = travelDestinationCity;
         attributes.departure_date = travelDepartureDate;
         attributes.return_date = travelReturnDate;
-        attributes.max_installments = travelMaxInstallments;
+        attributes.max_installments = maxInstallments;
         attributes.bio_bullets = travelBioBullets.map((b) => b.trim()).filter(Boolean);
         attributes.departure_options = travelDepartureOptions;
         attributes.flight_details = {
@@ -3138,7 +3137,7 @@ function SpecializedClassifiedEditor({
         accepts_pix: acceptsPix,
         pix_discount_percent: pixDiscountPercent,
         accepts_card: acceptsCard,
-        max_installments: acceptsCard ? (niche.id === "viagem" ? Number(travelMaxInstallments) || 1 : Number(maxInstallments) || 1) : 1,
+        max_installments: acceptsCard ? Number(maxInstallments) || 1 : 1,
         card_interest_free: cardInterestFree,
         accepts_boleto: acceptsBoleto,
         boleto_due_days: boletoDueDays,
@@ -3340,7 +3339,6 @@ function SpecializedClassifiedEditor({
     acceptsPix,
     pixDiscountPercent,
     acceptsCard,
-    travelMaxInstallments,
     maxInstallments,
     tradeNotes,
     acceptsFinancing,
@@ -4337,10 +4335,10 @@ function SpecializedClassifiedEditor({
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="0">️ Voo Direto (sem escala)</SelectItem>
-                              <SelectItem value="1"> 1 Conexão</SelectItem>
-                              <SelectItem value="2"> 2 Conexões</SelectItem>
-                              <SelectItem value="3"> 3+ Conexões</SelectItem>
+                              <SelectItem value="0">Voo Direto (sem escala)</SelectItem>
+                              <SelectItem value="1">1 Conexão</SelectItem>
+                              <SelectItem value="2">2 Conexões</SelectItem>
+                              <SelectItem value="3">3+ Conexões</SelectItem>
                             </SelectContent>
                           </Select>
                         </div>
@@ -4393,7 +4391,7 @@ function SpecializedClassifiedEditor({
                           <Input value={travelDepartureCity} onChange={(e) => setTravelDepartureCity(e.target.value)} placeholder="Ex: Chapecó, SC" className="h-11 rounded-lg text-xs bg-background" />
                         </div>
                         <div className="space-y-2">
-                          <Label className="text-xs font-medium">Cidade de Destino da Viagem</Label>
+                          <Label className="text-xs font-medium">Cidade de Destino da Viagem (sincronizada)</Label>
                           <Input value={travelDestinationCity} onChange={(e) => setTravelDestinationCity(e.target.value)} placeholder="Ex: Beto Carrero / Penha, SC" className="h-11 rounded-lg text-xs bg-background" />
                         </div>
                         <div className="space-y-2">
@@ -4414,57 +4412,6 @@ function SpecializedClassifiedEditor({
                         </div>
                       </div>
 
-                      {/* Badges de Meios de Pagamento Aceitos na Prévia */}
-                      <div className="flex flex-wrap gap-2 pt-1">
-                        {acceptsPix && (
-                          <Badge variant="secondary" className="text-xs font-medium gap-1 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
-                            <QrCode className="size-3 text-emerald-600" />
-                            <span>PIX {pixDiscountPercent > 0 ? `(${pixDiscountPercent}% off)` : ""}</span>
-                          </Badge>
-                        )}
-                        {acceptsCard && (
-                          <Badge variant="secondary" className="text-xs font-medium gap-1 bg-blue-500/10 text-blue-700 dark:text-blue-300">
-                            <CreditCard className="size-3 text-blue-600" />
-                            <span>Cartão até {maxInstallments}x</span>
-                          </Badge>
-                        )}
-                        {acceptsBoleto && (
-                          <Badge variant="secondary" className="text-xs font-medium gap-1 bg-muted/60 text-foreground">
-                            <Receipt className="size-3 text-muted-foreground" />
-                            <span>Boleto à vista</span>
-                          </Badge>
-                        )}
-                        {acceptsBoletoInstallments && (
-                          <Badge variant="secondary" className="text-xs font-medium gap-1 bg-amber-500/10 text-amber-800 dark:text-amber-200">
-                            <FileSpreadsheet className="size-3 text-amber-600" />
-                            <span>Boleto até {maxBoletoInstallments}x</span>
-                          </Badge>
-                        )}
-                        {acceptsCarne && (
-                          <Badge variant="secondary" className="text-xs font-medium gap-1 bg-primary/10 text-primary">
-                            <BookOpenCheck className="size-3 text-primary" />
-                            <span>Carnê da Loja até {maxCarneInstallments}x</span>
-                          </Badge>
-                        )}
-                        {acceptsCash && (
-                          <Badge variant="secondary" className="text-xs font-medium gap-1 bg-slate-500/10 text-slate-700 dark:text-slate-300">
-                            <Banknote className="size-3 text-slate-600" />
-                            <span>Dinheiro</span>
-                          </Badge>
-                        )}
-                        {acceptsTrade && (
-                          <Badge variant="secondary" className="text-xs font-medium gap-1 bg-amber-500/10 text-amber-700 dark:text-amber-300">
-                            <RefreshCw className="size-3 text-amber-600" />
-                            <span>Aceita Troca</span>
-                          </Badge>
-                        )}
-                        {acceptsFinancing && (
-                          <Badge variant="secondary" className="text-xs font-medium gap-1 bg-indigo-500/10 text-indigo-700 dark:text-indigo-300">
-                            <Landmark className="size-3 text-indigo-600" />
-                            <span>Financiamento</span>
-                          </Badge>
-                        )}
-                      </div>
 
                       {/* Embarques na Rota (Gateways) */}
                       <div className="space-y-2">
@@ -4877,16 +4824,16 @@ function SpecializedClassifiedEditor({
                   <div className="flex items-center gap-2 flex-wrap pt-1">
                     <span className="text-xs text-muted-foreground font-medium">Sugestões rápidas:</span>
                     {[
-                      " All Inclusive",
-                      " Café da Manhã Incluso",
-                      "️ Aéreo Ida e Volta",
-                      " Transfer In/Out",
-                      "️ Pé na Areia",
-                      " Piscina Aquecida",
-                      "⭐ Suíte com Vista",
-                      "️ Ingressos Inclusos",
-                      " Wi-Fi Alta Velocidade",
-                      " Open Bar Nacional",
+                      "All Inclusive",
+                      "Café da Manhã Incluso",
+                      "Aéreo Ida e Volta",
+                      "Transfer In/Out",
+                      "Pé na Areia",
+                      "Piscina Aquecida",
+                      "Suíte com Vista",
+                      "Ingressos Inclusos",
+                      "Wi-Fi Alta Velocidade",
+                      "Open Bar Nacional",
                     ].map((sug) => (
                       <button
                         key={sug}
@@ -4909,35 +4856,7 @@ function SpecializedClassifiedEditor({
                   </div>
                 </div>
 
-                {/* 2.5 — Parcelamento */}
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Label className="text-xs text-foreground font-medium flex items-center gap-2">
-                      <CreditCard className="size-4 text-primary" />
-                      <span>Máximo de Parcelas</span>
-                    </Label>
-                    <span className="text-xs font-black text-primary font-mono">{travelMaxInstallments}x</span>
-                  </div>
-                  <input
-                    type="range"
-                    min={1}
-                    max={24}
-                    step={1}
-                    value={travelMaxInstallments}
-                    onChange={(e) => setTravelMaxInstallments(Number(e.target.value))}
-                    className="w-full h-2 rounded-full accent-primary cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                    aria-label="Máximo de parcelas"
-                  />
-                  <div className="flex justify-between text-xs text-muted-foreground font-mono">
-                    <span>1x</span>
-                    <span>6x</span>
-                    <span>12x</span>
-                    <span>18x</span>
-                    <span>24x</span>
-                  </div>
-                </div>
-
-                {/* 2.6 — Story Highlights */}
+                {/* 2.5 — Story Highlights */}
                 <div className="space-y-2">
                   <p className="text-xs text-muted-foreground/75 font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                     <ImagePlus className="size-4 text-primary" />
@@ -9297,15 +9216,15 @@ function SpecializedClassifiedEditor({
                   </div>
 
                   <div>
-                    <span className="text-[10px] uppercase font-bold text-muted-foreground block">Título Sugerido</span>
-                    <h4 className="text-xs sm:text-sm font-bold text-foreground mt-0.5 leading-snug">
+                    <span className="text-xs uppercase font-semibold text-muted-foreground block">Título Sugerido</span>
+                    <h4 className="text-sm font-bold text-foreground mt-0.5 leading-snug">
                       {copilotSuggestions.version1.title}
                     </h4>
                   </div>
 
                   <div>
-                    <span className="text-[10px] uppercase font-bold text-muted-foreground block mb-1">Descrição Comercial</span>
-                    <p className="text-xs text-muted-foreground leading-relaxed whitespace-pre-line bg-background/60 p-3 rounded-md border border-border/40 max-h-48 overflow-y-auto">
+                    <span className="text-xs uppercase font-semibold text-muted-foreground block mb-1">Descrição Comercial</span>
+                    <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed whitespace-pre-line bg-background/60 p-3 rounded-md border border-border/40 max-h-48 overflow-y-auto">
                       {copilotSuggestions.version1.description}
                     </p>
                   </div>
@@ -9338,15 +9257,15 @@ function SpecializedClassifiedEditor({
                   </div>
 
                   <div>
-                    <span className="text-[10px] uppercase font-bold text-muted-foreground block">Título Sugerido</span>
-                    <h4 className="text-xs sm:text-sm font-bold text-foreground mt-0.5 leading-snug">
+                    <span className="text-xs uppercase font-semibold text-muted-foreground block">Título Sugerido</span>
+                    <h4 className="text-sm font-bold text-foreground mt-0.5 leading-snug">
                       {copilotSuggestions.version2.title}
                     </h4>
                   </div>
 
                   <div>
-                    <span className="text-[10px] uppercase font-bold text-muted-foreground block mb-1">Descrição com Storytelling</span>
-                    <p className="text-xs text-muted-foreground leading-relaxed whitespace-pre-line bg-background/60 p-3 rounded-md border border-border/40 max-h-48 overflow-y-auto">
+                    <span className="text-xs uppercase font-semibold text-muted-foreground block mb-1">Descrição com Storytelling</span>
+                    <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed whitespace-pre-line bg-background/60 p-3 rounded-md border border-border/40 max-h-48 overflow-y-auto">
                       {copilotSuggestions.version2.description}
                     </p>
                   </div>
@@ -9357,12 +9276,12 @@ function SpecializedClassifiedEditor({
             {/* Tags Sugeridas */}
             {copilotSuggestions?.suggestedTags && copilotSuggestions.suggestedTags.length > 0 && (
               <div className="p-3 rounded-lg bg-muted/30 border border-border/40 space-y-1.5">
-                <span className="text-[10px] uppercase font-bold text-muted-foreground block">
+                <span className="text-xs uppercase font-semibold text-muted-foreground block">
                   Palavras-chave de Descoberta Sugeridas
                 </span>
                 <div className="flex flex-wrap gap-1.5">
                   {copilotSuggestions.suggestedTags.map((tag, idx) => (
-                    <Badge key={idx} variant="secondary" className="text-[10px] font-mono">
+                    <Badge key={idx} variant="secondary" className="text-xs font-mono">
                       #{tag}
                     </Badge>
                   ))}
