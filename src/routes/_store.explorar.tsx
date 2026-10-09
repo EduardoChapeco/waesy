@@ -88,7 +88,7 @@ const CANONICAL_PILLARS = [
 
 const DISCOVERY_CATEGORIES: FilterChipOption[] = [
   { id: "todos", label: "Todos os Anúncios", icon: Tag },
-  { id: "places", label: "Places (Lista Telefônica)", icon: MapPin },
+  { id: "places", label: "Guia de Lugares", icon: MapPin },
   { id: "marketplace", label: "Marketplace de Empresas", icon: Storefront },
   { id: "classificados", label: "Classificados", icon: Tag },
   { id: "feed", label: "Feed", icon: Rss },

@@ -146,7 +146,7 @@ function StoreCartPage() {
                     </h2>
                   </div>
                   {selectedStoreId === cart.storeId && (
-                    <span className="text-[11px] font-semibold text-primary">Selecionado</span>
+                    <span className="text-xs font-semibold text-primary">Selecionado</span>
                   )}
                 </div>
 

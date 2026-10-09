@@ -206,14 +206,14 @@ export function MobileNav({ session, userRole }: MobileNavProps) {
             to="/"
             aria-label="Início"
             className={cn(
-              "h-12 rounded-lg flex flex-col items-center justify-center gap-1 transition-all active:scale-95 cursor-pointer touch-manipulation",
+              "h-12 rounded-lg flex flex-col items-center justify-center gap-0.5 transition-all active:scale-95 cursor-pointer touch-manipulation",
               isHomeActive
                 ? "text-primary font-bold"
                 : "text-muted-foreground hover:text-foreground"
             )}
           >
             <Home className="size-5" strokeWidth={isHomeActive ? 2.5 : 2} />
-            <span className="text-[10px] tracking-tight leading-none">Início</span>
+            <span className="text-xs font-medium tracking-tight leading-none">Início</span>
           </Link>
 
           {/* TAB 2: EXPLORAR / BUSCA */}
@@ -221,14 +221,14 @@ export function MobileNav({ session, userRole }: MobileNavProps) {
             to="/explorar"
             aria-label="Explorar"
             className={cn(
-              "h-12 rounded-lg flex flex-col items-center justify-center gap-1 transition-all active:scale-95 cursor-pointer touch-manipulation",
+              "h-12 rounded-lg flex flex-col items-center justify-center gap-0.5 transition-all active:scale-95 cursor-pointer touch-manipulation",
               isSearchActive
                 ? "text-primary font-bold"
                 : "text-muted-foreground hover:text-foreground"
             )}
           >
             <Search className="size-5" strokeWidth={isSearchActive ? 2.5 : 2} />
-            <span className="text-[10px] tracking-tight leading-none">Explorar</span>
+            <span className="text-xs font-medium tracking-tight leading-none">Explorar</span>
           </Link>
 
           {/* TAB 3: BOTÃO CENTRAL [+] DE CRIAÇÃO RÁPIDA (FAB CONTEXTUAL) */}
@@ -245,14 +245,14 @@ export function MobileNav({ session, userRole }: MobileNavProps) {
             to={isAuthenticated ? "/conta/conversas" : "/entrar"}
             aria-label="Mensagens"
             className={cn(
-              "h-12 rounded-lg flex flex-col items-center justify-center gap-1 transition-all active:scale-95 cursor-pointer touch-manipulation relative",
+              "h-12 rounded-lg flex flex-col items-center justify-center gap-0.5 transition-all active:scale-95 cursor-pointer touch-manipulation relative",
               isMessagesActive
                 ? "text-primary font-bold"
                 : "text-muted-foreground hover:text-foreground"
             )}
           >
             <MessageCircle className="size-5" strokeWidth={isMessagesActive ? 2.5 : 2} />
-            <span className="text-[10px] tracking-tight leading-none">Mensagens</span>
+            <span className="text-xs font-medium tracking-tight leading-none">Mensagens</span>
           </Link>
 
           {/* TAB 5: MENU HUB GLOBAL (SUPER APP PATTERN) */}
@@ -261,7 +261,7 @@ export function MobileNav({ session, userRole }: MobileNavProps) {
             onClick={() => setIsMenuHubOpen(true)}
             aria-label="Menu principal"
             className={cn(
-              "h-12 rounded-lg flex flex-col items-center justify-center gap-1 transition-all active:scale-95 cursor-pointer touch-manipulation relative",
+              "h-12 rounded-lg flex flex-col items-center justify-center gap-0.5 transition-all active:scale-95 cursor-pointer touch-manipulation relative",
               isMenuHubOpen
                 ? "text-primary font-bold"
                 : "text-muted-foreground hover:text-foreground"
@@ -276,7 +276,7 @@ export function MobileNav({ session, userRole }: MobileNavProps) {
                 <span className="absolute -top-1 -right-1 size-2 rounded-full bg-amber-500" />
               )}
             </div>
-            <span className="text-[10px] tracking-tight leading-none">Menu</span>
+            <span className="text-xs font-medium tracking-tight leading-none">Menu</span>
           </button>
         </nav>
       </div>

@@ -157,7 +157,7 @@ export function NativeMobileHeader({
               {badge && <div className="shrink-0">{badge}</div>}
             </div>
             {subtitle && (
-              <div className="text-[11px] text-muted-foreground truncate leading-tight mt-1">
+              <div className="text-xs text-muted-foreground truncate leading-tight mt-0.5">
                 {subtitle}
               </div>
             )}
