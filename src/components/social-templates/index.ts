@@ -10,4 +10,8 @@ export * from "./imoveis/RealEstateLuxuryDarkGlass";
 export * from "./turismo/TravelCurvedEditorial";
 export * from "./turismo/TravelPassportBoarding";
 export * from "./turismo/TravelImmersiveStory";
+export * from "./imoveis/RealEstateSeasonRentalGrid";
+export * from "./varejo/RetailSupermarketClassicFlyer";
+export * from "./varejo/RetailSupermarket2x1Promo";
+export * from "./varejo/RetailSupermarketMeatPromo";
 export * from "./cta-engine";

@@ -1,5 +1,13 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-202: Expansão de Templates Sociais Multicategoria (Varejo Encarte Lambe-Lambe, 2x1, Açougue e Aluguel Temporada) e Motor de Mini-Vídeos
+- **Data:** 2026-10-09
+- **Contexto:** Demandou-se ampliação da biblioteca de templates do estúdio para cobrir formatos culturais e comerciais indispensáveis: (1) Encartes de supermercado lambe-lambe com explosão splash amarela/vermelha de preços; (2) Tabloides 2x1 com desconto online em ciano internacional; (3) Açougue e churrasco estilo tabloide de carnes El Zonda; (4) Aluguel de temporada e pousada estilo americano clássico em creme e verde com grid 4 fotos; (5) Exportação de mini-vídeos animados graváveis para Reels/Stories (MP4/WebM).
+- **Decisão:** (1) **Templates Especializados de Alta Conversão:** Criados `RetailSupermarketClassicFlyer`, `RetailSupermarket2x1Promo`, `RetailSupermarketMeatPromo` e `RealEstateSeasonRentalGrid`, todos integrados ao catálogo dinâmico de templates (`registry.ts`); (2) **Engine de Mini-Vídeos no Navegador via MediaRecorder:** Implementada a função `handleDownloadVideo` capturando o canvas com stream de 30 FPS, efeito de zoom cinematográfico (Ken Burns), fade in inicial e barra de progresso em vídeo MP4/WebM nativo de 3 segundos diretamente no dispositivo do cliente, sem requisições pesadas a servidores externos; (3) **Validação Rigorosa:** Verificação de design lint sem regressões em todos os arquivos modificados e `npm run typecheck` finalizado com Exit Code 0.
+- **Fundamentação:** AGENTS.md B.1, B.4, B.6, B.8, B.9, B.11, B.22, B.28; WCAG 2.2 AA.
+- **Consequências:** Estúdio de criação agora atende supermercados, atacados, padarias, açougues, imóveis de temporada e turismo, permitindo download instantâneo de imagens Ultra HD e vídeos animados.
+
+
 ## DEC-201: Estúdio de Flyers Promocionais Fullscreen, Priorização Semântica por Nicho e Modo Motion
 - **Data:** 2026-10-09
 - **Contexto:** Identificou-se que a engine geradora de flyers e stories promocionais (`TravelPromoFlyerModal`) sofria de compressão visual extrema no desktop (espremida em um container modal centralizado de 512px por conflito com o primitivo `DialogContent`), além de carregar inicialmente templates de imóveis ("Fachada Dominante", "Agendar Visita") em anúncios de Turismo (excursões, viagens rodoviárias e pacotes), quebrando a usabilidade do anunciante e impedindo a visualização da arte na proporção 9:16 Ultra HD.
