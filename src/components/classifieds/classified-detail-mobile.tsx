@@ -575,19 +575,19 @@ export function ClassifiedDetailMobile({
             {templateStyle === "automotivo" && (
               <div className="rounded-lg border border-border/60 bg-muted/20 p-3 grid grid-cols-2 gap-2 text-xs">
                 <div>
-                  <span className="text-[10px] uppercase font-bold text-muted-foreground block">Ano/Mod</span>
+                  <span className="text-xs uppercase font-semibold text-muted-foreground block">Ano/Mod</span>
                   <span className="font-bold text-foreground">{attrs.year_fab || attrs.year_model ? `${attrs.year_fab || ""}/${attrs.year_model || ""}` : "Consulte"}</span>
                 </div>
                 <div>
-                  <span className="text-[10px] uppercase font-bold text-muted-foreground block">KM</span>
+                  <span className="text-xs uppercase font-semibold text-muted-foreground block">KM</span>
                   <span className="font-bold text-foreground">{attrs.mileage_km != null ? `${Number(attrs.mileage_km).toLocaleString("pt-BR")} km` : "Consulte"}</span>
                 </div>
                 <div>
-                  <span className="text-[10px] uppercase font-bold text-muted-foreground block">Câmbio</span>
+                  <span className="text-xs uppercase font-semibold text-muted-foreground block">Câmbio</span>
                   <span className="font-bold text-foreground">{attrs.transmission || "Manual"}</span>
                 </div>
                 <div>
-                  <span className="text-[10px] uppercase font-bold text-muted-foreground block">Combustível</span>
+                  <span className="text-xs uppercase font-semibold text-muted-foreground block">Combustível</span>
                   <span className="font-bold text-foreground">{attrs.fuel_type || "Flex"}</span>
                 </div>
               </div>
@@ -596,19 +596,19 @@ export function ClassifiedDetailMobile({
             {templateStyle === "imobiliario" && (
               <div className="rounded-lg border border-border/60 bg-muted/20 p-3 grid grid-cols-2 gap-2 text-xs">
                 <div>
-                  <span className="text-[10px] uppercase font-bold text-muted-foreground block">Área Útil</span>
+                  <span className="text-xs uppercase font-semibold text-muted-foreground block">Área Útil</span>
                   <span className="font-bold text-foreground">{attrs.area_sqm ? `${attrs.area_sqm} m²` : "Consulte"}</span>
                 </div>
                 <div>
-                  <span className="text-[10px] uppercase font-bold text-muted-foreground block">Quartos</span>
+                  <span className="text-xs uppercase font-semibold text-muted-foreground block">Quartos</span>
                   <span className="font-bold text-foreground">{attrs.bedrooms || 0} qtos</span>
                 </div>
                 <div>
-                  <span className="text-[10px] uppercase font-bold text-muted-foreground block">Vagas</span>
+                  <span className="text-xs uppercase font-semibold text-muted-foreground block">Vagas</span>
                   <span className="font-bold text-foreground">{attrs.parking_spots || 0} vagas</span>
                 </div>
                 <div>
-                  <span className="text-[10px] uppercase font-bold text-muted-foreground block">Condomínio</span>
+                  <span className="text-xs uppercase font-semibold text-muted-foreground block">Condomínio</span>
                   <span className="font-bold text-foreground">{attrs.condo_cents ? formatMoney(attrs.condo_cents) : "Isento"}</span>
                 </div>
               </div>
@@ -617,19 +617,19 @@ export function ClassifiedDetailMobile({
             {templateStyle === "resort_hotel" && (
               <div className="rounded-lg border border-border/60 bg-muted/20 p-3 grid grid-cols-2 gap-2 text-xs">
                 <div>
-                  <span className="text-[10px] uppercase font-bold text-muted-foreground block">Hóspedes</span>
+                  <span className="text-xs uppercase font-semibold text-muted-foreground block">Hóspedes</span>
                   <span className="font-bold text-foreground">{attrs.max_guests || attrs.guests_text || "Consulte"} máx</span>
                 </div>
                 <div>
-                  <span className="text-[10px] uppercase font-bold text-muted-foreground block">Refeição</span>
+                  <span className="text-xs uppercase font-semibold text-muted-foreground block">Refeição</span>
                   <span className="font-bold text-foreground">{attrs.meal_plan || "Café Incluso"}</span>
                 </div>
                 <div>
-                  <span className="text-[10px] uppercase font-bold text-muted-foreground block">Check-in</span>
+                  <span className="text-xs uppercase font-semibold text-muted-foreground block">Check-in</span>
                   <span className="font-bold text-foreground">{attrs.checkin_time || "14h"}</span>
                 </div>
                 <div>
-                  <span className="text-[10px] uppercase font-bold text-muted-foreground block">Taxa Limpeza</span>
+                  <span className="text-xs uppercase font-semibold text-muted-foreground block">Taxa Limpeza</span>
                   <span className="font-bold text-foreground">{attrs.cleaning_fee_cents ? formatMoney(attrs.cleaning_fee_cents) : "Isenta"}</span>
                 </div>
               </div>
@@ -638,19 +638,19 @@ export function ClassifiedDetailMobile({
             {templateStyle === "servicos_agenda" && (
               <div className="rounded-lg border border-border/60 bg-muted/20 p-3 grid grid-cols-2 gap-2 text-xs">
                 <div>
-                  <span className="text-[10px] uppercase font-bold text-muted-foreground block">Duração</span>
+                  <span className="text-xs uppercase font-semibold text-muted-foreground block">Duração</span>
                   <span className="font-bold text-foreground">{attrs.service_duration_minutes ? `${attrs.service_duration_minutes} min` : "Sob demanda"}</span>
                 </div>
                 <div>
-                  <span className="text-[10px] uppercase font-bold text-muted-foreground block">Modalidade</span>
+                  <span className="text-xs uppercase font-semibold text-muted-foreground block">Modalidade</span>
                   <span className="font-bold text-foreground">{attrs.modality === "remote" ? "Online" : "Presencial"}</span>
                 </div>
                 <div>
-                  <span className="text-[10px] uppercase font-bold text-muted-foreground block">Agenda</span>
+                  <span className="text-xs uppercase font-semibold text-muted-foreground block">Agenda</span>
                   <span className="font-bold text-foreground">{attrs.booking_enabled ? "Ativo" : "Sob Consulta"}</span>
                 </div>
                 <div>
-                  <span className="text-[10px] uppercase font-bold text-muted-foreground block">Região</span>
+                  <span className="text-xs uppercase font-semibold text-muted-foreground block">Região</span>
                   <span className="font-bold text-foreground">{attrs.service_area || "Local"}</span>
                 </div>
               </div>

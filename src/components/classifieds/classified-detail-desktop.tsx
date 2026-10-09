@@ -488,19 +488,19 @@ export function ClassifiedDetailDesktop({
               {templateStyle === "automotivo" && (
                 <div className="rounded-lg border border-border/60 bg-muted/20 p-4 grid grid-cols-2 sm:grid-cols-4 gap-3">
                   <div>
-                    <span className="text-[10px] uppercase font-bold text-muted-foreground block">Ano / Modelo</span>
+                    <span className="text-xs uppercase font-semibold text-muted-foreground block">Ano / Modelo</span>
                     <span className="text-sm font-bold text-foreground">{attrs.year_fab || attrs.year_model ? `${attrs.year_fab || ""}/${attrs.year_model || ""}` : "Ano sob consulta"}</span>
                   </div>
                   <div>
-                    <span className="text-[10px] uppercase font-bold text-muted-foreground block">Quilometragem</span>
+                    <span className="text-xs uppercase font-semibold text-muted-foreground block">Quilometragem</span>
                     <span className="text-sm font-bold text-foreground">{attrs.mileage_km != null ? `${Number(attrs.mileage_km).toLocaleString("pt-BR")} km` : "Não informada"}</span>
                   </div>
                   <div>
-                    <span className="text-[10px] uppercase font-bold text-muted-foreground block">Câmbio</span>
+                    <span className="text-xs uppercase font-semibold text-muted-foreground block">Câmbio</span>
                     <span className="text-sm font-bold text-foreground">{attrs.transmission || "Manual"}</span>
                   </div>
                   <div>
-                    <span className="text-[10px] uppercase font-bold text-muted-foreground block">Combustível</span>
+                    <span className="text-xs uppercase font-semibold text-muted-foreground block">Combustível</span>
                     <span className="text-sm font-bold text-foreground">{attrs.fuel_type || "Flex"}</span>
                   </div>
                 </div>
@@ -509,19 +509,19 @@ export function ClassifiedDetailDesktop({
               {templateStyle === "imobiliario" && (
                 <div className="rounded-lg border border-border/60 bg-muted/20 p-4 grid grid-cols-2 sm:grid-cols-4 gap-3">
                   <div>
-                    <span className="text-[10px] uppercase font-bold text-muted-foreground block">Área Útil</span>
+                    <span className="text-xs uppercase font-semibold text-muted-foreground block">Área Útil</span>
                     <span className="text-sm font-bold text-foreground">{attrs.area_sqm ? `${attrs.area_sqm} m²` : "Consulte"}</span>
                   </div>
                   <div>
-                    <span className="text-[10px] uppercase font-bold text-muted-foreground block">Quartos / Suítes</span>
+                    <span className="text-xs uppercase font-semibold text-muted-foreground block">Quartos / Suítes</span>
                     <span className="text-sm font-bold text-foreground">{attrs.bedrooms || 0} qtos {attrs.suites ? `(${attrs.suites} suítes)` : ""}</span>
                   </div>
                   <div>
-                    <span className="text-[10px] uppercase font-bold text-muted-foreground block">Vagas</span>
+                    <span className="text-xs uppercase font-semibold text-muted-foreground block">Vagas</span>
                     <span className="text-sm font-bold text-foreground">{attrs.parking_spots || 0} vagas</span>
                   </div>
                   <div>
-                    <span className="text-[10px] uppercase font-bold text-muted-foreground block">Condomínio</span>
+                    <span className="text-xs uppercase font-semibold text-muted-foreground block">Condomínio</span>
                     <span className="text-sm font-bold text-foreground">{attrs.condo_cents ? formatMoney(attrs.condo_cents) : "Incluso/Isento"}</span>
                   </div>
                 </div>
@@ -530,19 +530,19 @@ export function ClassifiedDetailDesktop({
               {templateStyle === "resort_hotel" && (
                 <div className="rounded-lg border border-border/60 bg-muted/20 p-4 grid grid-cols-2 sm:grid-cols-4 gap-3">
                   <div>
-                    <span className="text-[10px] uppercase font-bold text-muted-foreground block">Capacidade</span>
+                    <span className="text-xs uppercase font-semibold text-muted-foreground block">Capacidade</span>
                     <span className="text-sm font-bold text-foreground">{attrs.max_guests || attrs.guests_text || "Consulte"} hóspedes</span>
                   </div>
                   <div>
-                    <span className="text-[10px] uppercase font-bold text-muted-foreground block">Regime / Refeição</span>
+                    <span className="text-xs uppercase font-semibold text-muted-foreground block">Regime / Refeição</span>
                     <span className="text-sm font-bold text-foreground">{attrs.meal_plan || "Café da Manhã"}</span>
                   </div>
                   <div>
-                    <span className="text-[10px] uppercase font-bold text-muted-foreground block">Check-in</span>
+                    <span className="text-xs uppercase font-semibold text-muted-foreground block">Check-in</span>
                     <span className="text-sm font-bold text-foreground">{attrs.checkin_time || "A partir das 14h"}</span>
                   </div>
                   <div>
-                    <span className="text-[10px] uppercase font-bold text-muted-foreground block">Taxa de Limpeza</span>
+                    <span className="text-xs uppercase font-semibold text-muted-foreground block">Taxa de Limpeza</span>
                     <span className="text-sm font-bold text-foreground">{attrs.cleaning_fee_cents ? formatMoney(attrs.cleaning_fee_cents) : "Isenta"}</span>
                   </div>
                 </div>
@@ -551,19 +551,19 @@ export function ClassifiedDetailDesktop({
               {templateStyle === "servicos_agenda" && (
                 <div className="rounded-lg border border-border/60 bg-muted/20 p-4 grid grid-cols-2 sm:grid-cols-4 gap-3">
                   <div>
-                    <span className="text-[10px] uppercase font-bold text-muted-foreground block">Duração</span>
+                    <span className="text-xs uppercase font-semibold text-muted-foreground block">Duração</span>
                     <span className="text-sm font-bold text-foreground">{attrs.service_duration_minutes ? `${attrs.service_duration_minutes} min` : "Sob demanda"}</span>
                   </div>
                   <div>
-                    <span className="text-[10px] uppercase font-bold text-muted-foreground block">Modalidade</span>
+                    <span className="text-xs uppercase font-semibold text-muted-foreground block">Modalidade</span>
                     <span className="text-sm font-bold text-foreground">{attrs.modality === "remote" ? "Online / Remoto" : "Presencial"}</span>
                   </div>
                   <div>
-                    <span className="text-[10px] uppercase font-bold text-muted-foreground block">Agendamento</span>
+                    <span className="text-xs uppercase font-semibold text-muted-foreground block">Agendamento</span>
                     <span className="text-sm font-bold text-foreground">{attrs.booking_enabled ? "Ativo" : "Sob Consulta"}</span>
                   </div>
                   <div>
-                    <span className="text-[10px] uppercase font-bold text-muted-foreground block">Região</span>
+                    <span className="text-xs uppercase font-semibold text-muted-foreground block">Região</span>
                     <span className="text-sm font-bold text-foreground">{attrs.service_area || "Atendimento Local"}</span>
                   </div>
                 </div>

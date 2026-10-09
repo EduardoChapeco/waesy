@@ -1,18 +1,18 @@
 {
   "version": "2.0.0",
-  "timestamp": "2026-10-09T11:16:43.555Z",
-  "totalViolations": 13689,
+  "timestamp": "2026-10-09T11:19:57.325Z",
+  "totalViolations": 13657,
   "filesInspected": 1988,
   "filesWithViolations": 860,
   "bySeverity": {
     "P0": 1524,
-    "P1": 9553,
+    "P1": 9521,
     "P2": 1277,
     "P3": 1335
   },
   "byRule": {
     "DL-18": 1226,
-    "DL-02": 4572,
+    "DL-02": 4540,
     "DL-14": 2215,
     "DL-28": 292,
     "DL-15": 1521,
@@ -37,9 +37,9 @@
   },
   "byModule": {
     "components/app": {
-      "total": 6081,
+      "total": 6049,
       "P0": 635,
-      "P1": 4258,
+      "P1": 4226,
       "P2": 620,
       "P3": 568
     },
