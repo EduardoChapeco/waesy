@@ -83,6 +83,11 @@ import { OfficeContractViewer } from "./dynamic-sections/office-contract-viewer"
 import { TravelHotelSlider } from "./dynamic-sections/travel-hotel-slider";
 import { TravelItineraryTimeline } from "./dynamic-sections/travel-itinerary-timeline";
 import { TravelPackageHero } from "./dynamic-sections/travel-package-hero";
+import { DynamicBookingHero } from "./dynamic-sections/dynamic-booking-hero";
+import { CategoryIconGrid } from "./dynamic-sections/category-icon-grid";
+import { DynamicProductCarousel } from "./dynamic-sections/dynamic-product-carousel";
+import { TravelProductDetail } from "./dynamic-sections/travel-product-detail";
+import { CustomerTravelPortal } from "./dynamic-sections/customer-travel-portal";
 import { TrackView } from "./analytics-provider";
 
 // ---------------------------------------------------------------------------
@@ -101,6 +106,11 @@ const BLOCK_TYPE_ALIASES: Record<string, string> = {
   property_schedule_visit: "contact_form",
   property_virtual_tour: "video_section",
   biolink_featured_product: "product_rail",
+  booking_hero: "dynamic_booking_hero",
+  travel_category_grid: "category_icon_grid",
+  travel_package_carousel: "dynamic_product_carousel",
+  hotel_detail_view: "travel_product_detail",
+  my_trips_portal: "customer_travel_portal",
 };
 
 const componentMap: Record<string, React.FC<any>> = {
@@ -109,6 +119,11 @@ const componentMap: Record<string, React.FC<any>> = {
   travel_hotel_slider: TravelHotelSlider,
   travel_itinerary_timeline: TravelItineraryTimeline,
   travel_package_hero: TravelPackageHero,
+  dynamic_booking_hero: DynamicBookingHero,
+  category_icon_grid: CategoryIconGrid,
+  dynamic_product_carousel: DynamicProductCarousel,
+  travel_product_detail: TravelProductDetail,
+  customer_travel_portal: CustomerTravelPortal,
   rich_text: RichText,
   bento_grid: BentoGrid,
   countdown_timer: CountdownTimer,
@@ -234,6 +249,9 @@ const STORE_PROFILE_BLOCKS = new Set([
   "tourism_services_grid",
   "property_features_grid",
   "biolink_action_buttons",
+  "dynamic_booking_hero",
+  "travel_product_detail",
+  "customer_travel_portal",
 ]);
 
 // ---------------------------------------------------------------------------
@@ -248,6 +266,7 @@ const PRODUCT_DATA_BLOCKS = new Set([
   "food_menu_tabs",
   "chef_special_banner",
   "service_pricing_table",
+  "dynamic_product_carousel",
 ]);
 
 // ---------------------------------------------------------------------------

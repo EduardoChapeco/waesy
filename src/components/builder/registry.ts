@@ -43,6 +43,11 @@ import { RoutineSteps } from "@/components/commerce/dynamic-sections/routine-ste
 import { TourismQuoteHero } from "@/components/commerce/dynamic-sections/tourism-quote-hero";
 import { TourismDestinationsCarouselSection } from "@/components/commerce/dynamic-sections/tourism-destinations-carousel";
 import { TourismServicesGrid } from "@/components/commerce/dynamic-sections/tourism-services-grid";
+import { DynamicBookingHeroSection } from "@/components/commerce/dynamic-sections/dynamic-booking-hero";
+import { CategoryIconGridSection } from "@/components/commerce/dynamic-sections/category-icon-grid";
+import { DynamicProductCarouselSection } from "@/components/commerce/dynamic-sections/dynamic-product-carousel";
+import { TravelProductDetailSection } from "@/components/commerce/dynamic-sections/travel-product-detail";
+import { CustomerTravelPortalSection } from "@/components/commerce/dynamic-sections/customer-travel-portal";
 
 import {
   BiolinkProfileSection,
@@ -456,6 +461,74 @@ export const SITE_BUILDER_BLOCKS: SiteBuilderBlockDefinition[] = [
   }),
 
   // ── 6. TURISMO & VIAGENS ──
+  createClassicOmniBlock({
+    id: "dynamic_booking_hero",
+    name: "Motor de Busca & Reserva de Viagens",
+    category: "tourism",
+    description: "Hero com abas (Pacotes, Hospedagens, Voos, Carros), busca de origem/destino e micro-cards de benefícios.",
+    component: DynamicBookingHeroSection,
+    defaultProps: {
+      headline: "Encontre sua próxima viagem dos sonhos",
+      subheadline: "Pacotes completos com passagens aéreas, hospedagem e passeios exclusivos.",
+      badgeText: "Tarifas Especiais 2026/2027",
+      defaultTab: "packages",
+      destinationsList: ["Gramado & Canela", "Maceió All Inclusive", "Porto Seguro", "Mendoza & Vinhedos", "Cancún", "Cruzeiro Costa"],
+    },
+  }),
+
+  createClassicOmniBlock({
+    id: "category_icon_grid",
+    name: "Bento Grid de Serviços de Viagem",
+    category: "tourism",
+    description: "Grade de botões em pílula/card para atalhos rápidos com badges promocionais estilo aplicativo nativo.",
+    component: CategoryIconGridSection,
+    defaultProps: {
+      title: "Explore por Categoria",
+      subtitle: "Serviços e comodidades sob medida para a sua jornada",
+      columns: 6,
+    },
+  }),
+
+  createClassicOmniBlock({
+    id: "dynamic_product_carousel",
+    name: "Carrossel de Pacotes Imperdíveis",
+    category: "tourism",
+    description: "Carrossel snap scroll com cards verticais, badge de economia real, datas e parcelamento destacado.",
+    component: DynamicProductCarouselSection,
+    defaultProps: {
+      title: "Pacotes Imperdíveis em Destaque",
+      subtitle: "Os destinos mais desejados com os melhores preços e condições de pagamento.",
+      filterCategory: "Pacotes",
+    },
+  }),
+
+  createClassicOmniBlock({
+    id: "travel_product_detail",
+    name: "Página de Detalhes do Pacote/Hotel (70/30)",
+    category: "tourism",
+    description: "Galeria Masonry, sumário de comodidades e barra lateral fixa (Sticky Sidebar) com cálculo e reserva.",
+    component: TravelProductDetailSection,
+    defaultProps: {
+      title: "Resort All Inclusive & Praia Privativa",
+      location: "Porto de Galinhas, PE",
+      stars: 5,
+      ratingScore: 9.4,
+      reviewsCount: 382,
+    },
+  }),
+
+  createClassicOmniBlock({
+    id: "customer_travel_portal",
+    name: "Portal do Viajante B2C (Minhas Viagens & Vouchers)",
+    category: "tourism",
+    description: "Área do cliente para consulta de reservas ativas, bilhetes aéreos, download de voucher e suporte direto.",
+    component: CustomerTravelPortalSection,
+    defaultProps: {
+      title: "Minhas Viagens & Vouchers",
+      subtitle: "Acompanhe seus pacotes confirmados, vouchers de hospedagem e cartões de embarque.",
+    },
+  }),
+
   createClassicOmniBlock({
     id: "tourism_quote_hero",
     name: "Cotação de Viagens & Destinos",

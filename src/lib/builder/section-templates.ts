@@ -442,6 +442,214 @@ export const sectionTemplates: Record<string, SectionTemplate> = {
  ],
  },
 
+  dynamic_booking_hero: {
+    id: "dynamic_booking_hero",
+    name: "Motor de Busca & Reserva de Viagens (Decolar/CVC)",
+    description: "Hero com abas (Pacotes, Hospedagens, Voos, Carros), busca de origem/destino e micro-cards de benefícios.",
+    category: "tourism",
+    previewImageUrl: "",
+    nodes: [
+      {
+        id: genId("section"),
+        node_type: "section",
+        block_type: "section",
+        parent_id: null,
+      },
+      {
+        id: genId("container"),
+        node_type: "container",
+        block_type: "container",
+        parent_id: genId("section"),
+        layout_rules: {
+          maxWidth: "full",
+          display: "flex",
+          flexDirection: "col",
+          gap: "md",
+          paddingX: "none",
+          paddingY: "none",
+        },
+      },
+      {
+        id: genId("booking_hero"),
+        node_type: "composition",
+        block_type: "dynamic_booking_hero",
+        parent_id: genId("container"),
+        content: {
+          headline: "Encontre sua próxima viagem dos sonhos",
+          subheadline: "Pacotes completos com passagens aéreas, hospedagem e passeios exclusivos.",
+          badgeText: "Tarifas Especiais 2026/2027",
+          defaultTab: "packages",
+          destinationsList: ["Gramado & Canela", "Maceió All Inclusive", "Porto Seguro", "Mendoza & Vinhedos", "Cancún", "Cruzeiro Costa"],
+        },
+      },
+    ],
+  },
+
+  category_icon_grid: {
+    id: "category_icon_grid",
+    name: "Bento Grid de Serviços de Viagem",
+    description: "Grade de botões em pílula/card para atalhos rápidos com badges promocionais estilo aplicativo nativo.",
+    category: "tourism",
+    previewImageUrl: "",
+    nodes: [
+      {
+        id: genId("section"),
+        node_type: "section",
+        block_type: "section",
+        parent_id: null,
+      },
+      {
+        id: genId("container"),
+        node_type: "container",
+        block_type: "container",
+        parent_id: genId("section"),
+        layout_rules: {
+          maxWidth: "xl",
+          display: "flex",
+          flexDirection: "col",
+          gap: "md",
+          paddingX: "md",
+          paddingY: "lg",
+        },
+      },
+      {
+        id: genId("category_grid"),
+        node_type: "composition",
+        block_type: "category_icon_grid",
+        parent_id: genId("container"),
+        content: {
+          title: "Explore por Categoria",
+          subtitle: "Serviços e comodidades sob medida para a sua jornada",
+          columns: 6,
+        },
+      },
+    ],
+  },
+
+  dynamic_product_carousel: {
+    id: "dynamic_product_carousel",
+    name: "Carrossel de Pacotes Imperdíveis",
+    description: "Carrossel snap scroll com cards verticais, badge de economia real, datas e parcelamento destacado.",
+    category: "tourism",
+    previewImageUrl: "",
+    nodes: [
+      {
+        id: genId("section"),
+        node_type: "section",
+        block_type: "section",
+        parent_id: null,
+      },
+      {
+        id: genId("container"),
+        node_type: "container",
+        block_type: "container",
+        parent_id: genId("section"),
+        layout_rules: {
+          maxWidth: "xl",
+          display: "flex",
+          flexDirection: "col",
+          gap: "md",
+          paddingX: "md",
+          paddingY: "xl",
+        },
+      },
+      {
+        id: genId("travel_carousel"),
+        node_type: "composition",
+        block_type: "dynamic_product_carousel",
+        parent_id: genId("container"),
+        content: {
+          title: "Pacotes Imperdíveis em Destaque",
+          subtitle: "Os destinos mais desejados com os melhores preços e condições de pagamento.",
+          filterCategory: "Pacotes",
+        },
+      },
+    ],
+  },
+
+  travel_product_detail: {
+    id: "travel_product_detail",
+    name: "Página de Detalhes do Pacote/Hotel (70/30)",
+    description: "Galeria Masonry, sumário de comodidades e barra lateral fixa (Sticky Sidebar) com cálculo e reserva.",
+    category: "tourism",
+    previewImageUrl: "",
+    nodes: [
+      {
+        id: genId("section"),
+        node_type: "section",
+        block_type: "section",
+        parent_id: null,
+      },
+      {
+        id: genId("container"),
+        node_type: "container",
+        block_type: "container",
+        parent_id: genId("section"),
+        layout_rules: {
+          maxWidth: "xl",
+          display: "flex",
+          flexDirection: "col",
+          gap: "md",
+          paddingX: "md",
+          paddingY: "lg",
+        },
+      },
+      {
+        id: genId("product_detail"),
+        node_type: "composition",
+        block_type: "travel_product_detail",
+        parent_id: genId("container"),
+        content: {
+          title: "Resort All Inclusive & Praia Privativa",
+          location: "Porto de Galinhas, PE",
+          stars: 5,
+          ratingScore: 9.4,
+          reviewsCount: 382,
+        },
+      },
+    ],
+  },
+
+  customer_travel_portal: {
+    id: "customer_travel_portal",
+    name: "Portal do Viajante B2C (Minhas Viagens & Vouchers)",
+    description: "Área do cliente para consulta de reservas ativas, bilhetes aéreos, download de voucher e suporte direto.",
+    category: "tourism",
+    previewImageUrl: "",
+    nodes: [
+      {
+        id: genId("section"),
+        node_type: "section",
+        block_type: "section",
+        parent_id: null,
+      },
+      {
+        id: genId("container"),
+        node_type: "container",
+        block_type: "container",
+        parent_id: genId("section"),
+        layout_rules: {
+          maxWidth: "xl",
+          display: "flex",
+          flexDirection: "col",
+          gap: "md",
+          paddingX: "md",
+          paddingY: "xl",
+        },
+      },
+      {
+        id: genId("travel_portal"),
+        node_type: "composition",
+        block_type: "customer_travel_portal",
+        parent_id: genId("container"),
+        content: {
+          title: "Minhas Viagens & Vouchers",
+          subtitle: "Acompanhe seus pacotes confirmados, vouchers de hospedagem e cartões de embarque.",
+        },
+      },
+    ],
+  },
+
  // ── 4. GASTRONOMIA & FOOD ──
  food_menu_streamlined: {
  id: "food_menu_streamlined",

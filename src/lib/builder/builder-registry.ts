@@ -2376,6 +2376,204 @@ export const builderRegistry: Record<string, BlockManifest> = {
  },
  },
 
+ // ── Bloco: dynamic_booking_hero ──
+ dynamic_booking_hero: {
+ type: "dynamic_booking_hero",
+ version: "2.0.0",
+ name: "Motor de Reservas Decolar / CVC (Hero Booking Widget)",
+ description: "Caixa flutuante com abas de serviços, busca inteligente de origem/destino e micro-cards de benefícios",
+ category: "commerce",
+ icon: "Plane",
+ allowedBuilderProfiles: "all",
+ allowedParentTypes: ["container", "section"],
+ allowedChildTypes: "none",
+ contentSchema: z.object({
+ title: z.string().default("Sua Próxima Viagem Inesquecível Começa Aqui"),
+ subtitle: z.string().default("Pacotes completos, passagens aéreas e resorts exclusivos com a melhor assessoria."),
+ badge: z.string().default("Tarifas Exclusivas de Agência"),
+ bgImageUrl: z.string().optional(),
+ defaultOrigin: z.string().default("São Paulo, SP"),
+ defaultDestination: z.string().default("Maceió, AL"),
+ whatsappPhone: z.string().optional(),
+ showBenefitsBar: z.boolean().default(true),
+ }),
+ inspector: {
+ content: [
+ { name: "title", label: "Título Principal", type: "text" },
+ { name: "subtitle", label: "Subtítulo / Proposta", type: "textarea" },
+ { name: "badge", label: "Etiqueta / Badge", type: "text" },
+ { name: "bgImageUrl", label: "Imagem de Fundo", type: "image" },
+ { name: "defaultOrigin", label: "Origem Padrão", type: "text" },
+ { name: "defaultDestination", label: "Destino Padrão", type: "text" },
+ { name: "whatsappPhone", label: "WhatsApp da Agência", type: "text" },
+ { name: "showBenefitsBar", label: "Exibir Barra de Benefícios", type: "boolean" },
+ ],
+ },
+ defaultProps: {
+ node_type: "composition",
+ block_type: "dynamic_booking_hero",
+ content: {
+ title: "Sua Próxima Viagem Inesquecível Começa Aqui",
+ subtitle: "Pacotes completos, passagens aéreas e resorts exclusivos com a melhor assessoria.",
+ badge: "Tarifas Exclusivas de Agência",
+ bgImageUrl: "",
+ defaultOrigin: "São Paulo, SP",
+ defaultDestination: "Maceió, AL",
+ showBenefitsBar: true,
+ },
+ },
+ },
+
+ // ── Bloco: category_icon_grid ──
+ category_icon_grid: {
+ type: "category_icon_grid",
+ version: "2.0.0",
+ name: "Grade de Categorias & Serviços (Bento App)",
+ description: "Grid visual de ícones com badges de desconto (Passagens, Hospedagens, Pacotes, Seguros e Carros)",
+ category: "commerce",
+ icon: "LayoutGrid",
+ allowedBuilderProfiles: "all",
+ allowedParentTypes: ["container", "section"],
+ allowedChildTypes: "none",
+ contentSchema: z.object({
+ headline: z.string().default("Descubra Todos os Serviços Para Sua Viagem"),
+ subheadline: z.string().default("Selecione a categoria desejada para encontrar condições e descontos imperdíveis"),
+ }),
+ inspector: {
+ content: [
+ { name: "headline", label: "Título da Grade", type: "text" },
+ { name: "subheadline", label: "Subtítulo", type: "textarea" },
+ ],
+ },
+ defaultProps: {
+ node_type: "composition",
+ block_type: "category_icon_grid",
+ content: {
+ headline: "Descubra Todos os Serviços Para Sua Viagem",
+ subheadline: "Selecione a categoria desejada para encontrar condições e descontos imperdíveis",
+ },
+ },
+ },
+
+ // ── Bloco: dynamic_product_carousel ──
+ dynamic_product_carousel: {
+ type: "dynamic_product_carousel",
+ version: "2.0.0",
+ name: "Carrossel de Pacotes Imperdíveis (Snap Scroll)",
+ description: "Carrossel horizontal com cards verticais completos, tags de noites, economia e destaque tipográfico de preço",
+ category: "commerce",
+ icon: "Luggage",
+ allowedBuilderProfiles: "all",
+ allowedParentTypes: ["container", "section"],
+ allowedChildTypes: "none",
+ contentSchema: z.object({
+ headline: z.string().default("Pacotes Imperdíveis"),
+ subheadline: z.string().default("Aproveite combinações exclusivas de passagens aéreas e hotéis selecionados"),
+ tagline: z.string().default("Viagens em Destaque"),
+ whatsappPhone: z.string().optional(),
+ }),
+ inspector: {
+ content: [
+ { name: "headline", label: "Título do Carrossel", type: "text" },
+ { name: "subheadline", label: "Subtítulo", type: "textarea" },
+ { name: "tagline", label: "Tagline", type: "text" },
+ { name: "whatsappPhone", label: "WhatsApp de Vendas", type: "text" },
+ ],
+ },
+ defaultProps: {
+ node_type: "composition",
+ block_type: "dynamic_product_carousel",
+ content: {
+ headline: "Pacotes Imperdíveis",
+ subheadline: "Aproveite combinações exclusivas de passagens aéreas e hotéis selecionados",
+ tagline: "Viagens em Destaque",
+ },
+ },
+ },
+
+ // ── Bloco: travel_product_detail ──
+ travel_product_detail: {
+ type: "travel_product_detail",
+ version: "2.0.0",
+ name: "Página Detalhada de Viagem (70/30 com Sticky Sidebar)",
+ description: "Layout de alta conversão estilo Decolar com resumo superior, galeria masonry, comodidades e sidebar fixa",
+ category: "commerce",
+ icon: "Hotel",
+ allowedBuilderProfiles: "all",
+ allowedParentTypes: ["container", "section"],
+ allowedChildTypes: "none",
+ contentSchema: z.object({
+ hotelName: z.string().default("Rede Andrade Porto Mar"),
+ destinationCity: z.string().default("Maceió, Brasil"),
+ starsCount: z.number().default(3),
+ reviewScore: z.number().default(8.0),
+ nightsCount: z.number().default(7),
+ pricePerPersonCents: z.number().default(165900),
+ totalPriceCents: z.number().default(331800),
+ savedAmountCents: z.number().default(37800),
+ whatsappPhone: z.string().optional(),
+ }),
+ inspector: {
+ content: [
+ { name: "hotelName", label: "Nome do Hotel / Pacote", type: "text" },
+ { name: "destinationCity", label: "Cidade / Destino", type: "text" },
+ { name: "starsCount", label: "Estrelas", type: "number" },
+ { name: "reviewScore", label: "Nota de Avaliação", type: "number" },
+ { name: "nightsCount", label: "Quantidade de Noites", type: "number" },
+ { name: "pricePerPersonCents", label: "Preço por Pessoa (Centavos)", type: "number" },
+ { name: "totalPriceCents", label: "Preço Total (Centavos)", type: "number" },
+ { name: "whatsappPhone", label: "WhatsApp de Reserva", type: "text" },
+ ],
+ },
+ defaultProps: {
+ node_type: "composition",
+ block_type: "travel_product_detail",
+ content: {
+ hotelName: "Rede Andrade Porto Mar",
+ destinationCity: "Maceió, Brasil",
+ starsCount: 3,
+ reviewScore: 8.0,
+ nightsCount: 7,
+ pricePerPersonCents: 165900,
+ totalPriceCents: 331800,
+ savedAmountCents: 37800,
+ },
+ },
+ },
+
+ // ── Bloco: customer_travel_portal ──
+ customer_travel_portal: {
+ type: "customer_travel_portal",
+ version: "2.0.0",
+ name: "Portal Minhas Viagens & Vouchers B2C",
+ description: "Área do cliente final com bilhetes no formato de cartão, download de voucher PDF e suporte direto",
+ category: "commerce",
+ icon: "Ticket",
+ allowedBuilderProfiles: "all",
+ allowedParentTypes: ["container", "section"],
+ allowedChildTypes: "none",
+ contentSchema: z.object({
+ headline: z.string().default("Minhas Viagens & Vouchers"),
+ subheadline: z.string().default("Acesse seus comprovantes, passagens aéreas e detalhes da sua reserva"),
+ whatsappPhone: z.string().optional(),
+ }),
+ inspector: {
+ content: [
+ { name: "headline", label: "Título do Portal", type: "text" },
+ { name: "subheadline", label: "Subtítulo", type: "textarea" },
+ { name: "whatsappPhone", label: "WhatsApp de Suporte", type: "text" },
+ ],
+ },
+ defaultProps: {
+ node_type: "composition",
+ block_type: "customer_travel_portal",
+ content: {
+ headline: "Minhas Viagens & Vouchers",
+ subheadline: "Acesse seus comprovantes, passagens aéreas e detalhes da sua reserva",
+ },
+ },
+ },
+
 
  portal_contracts: {
  type: "portal_contracts",
