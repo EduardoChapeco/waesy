@@ -15,6 +15,7 @@ import {
   dispatchAiChatAction,
   type AiExecutionResult,
 } from "@/services/ai-conversations.functions";
+import { CopilotMessageRenderer } from "@/components/chat/copilot-message-renderer";
 import { AIActivityTrail, type AIActivityStep } from "@/components/chat/ai-activity-trail";
 import { ChatArtifactCard, type ChatArtifactData } from "@/components/chat/chat-artifact-card";
 import { StructuredMessageView, type AIChatAction } from "@/components/chat/structured-message-view";
@@ -249,7 +250,7 @@ export function WaesyCopilotDrawer(_props: { session?: { id?: string; user?: { i
                         : "bg-muted text-foreground border border-border/60"
                     }`}
                   >
-                    {m.text}
+                    <CopilotMessageRenderer content={m.text} isUser={m.role === "user"} />
                   </div>
 
                   {/* Blocos Estruturados (Generative UI) */}

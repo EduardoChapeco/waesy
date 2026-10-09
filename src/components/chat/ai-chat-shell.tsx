@@ -24,6 +24,7 @@ import {
   Table as TableIcon,
   Calendar,
   Trash2,
+  Compass,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -38,6 +39,7 @@ import { ChatArtifactCard, type ChatArtifactData } from "./chat-artifact-card";
 import { ChatComposer, type QuotedMessage } from "./chat-composer";
 import { StructuredMessageView, type AIChatAction } from "./structured-message-view";
 import { CopilotApprovalPanel } from "./copilot-approval-panel";
+import { CopilotMessageRenderer } from "./copilot-message-renderer";
 import type { CopilotFsmPhase, CopilotFsmExecutionState } from "@/types/copilot-fsm";
 
 export type ThreadType = "store" | "direct_p2p" | "support" | "project" | "ai_assistant";
@@ -485,7 +487,7 @@ export function AIChatShell({
                           msg.status === "failed" && "border border-destructive/50 bg-destructive/10 text-destructive"
                         )}
                       >
-                        <p className="whitespace-pre-wrap break-words">{msg.text}</p>
+                        <CopilotMessageRenderer content={msg.text} isUser={isUser} />
 
                         {/* Rodapé da Bolha: Horário e Status */}
                         <div className="flex items-center justify-end gap-1 mt-1 font-mono text-2xs opacity-80">
@@ -527,10 +529,12 @@ export function AIChatShell({
                           onOpenBuilder={(art) => {
                             const data = art.data || {};
                             const docId = data.experience_document_id || data.documentId;
-                            const query = docId
-                              ? `doc=${encodeURIComponent(String(docId))}`
-                              : `artifactId=${encodeURIComponent(String(art.id))}`;
-                            window.location.assign(`/workspace/builder?${query}`);
+                            if (docId) {
+                              window.location.assign(`/workspace/builder?doc=${encodeURIComponent(String(docId))}`);
+                            } else {
+                              setActiveArtifact(art);
+                              setShowContextPanel(true);
+                            }
                           }}
                         />
                       </div>
@@ -861,8 +865,69 @@ function ArtifactViewerContent({
         </div>
       )}
 
-      {/* 1. Viewer de Proposta Comercial / Documento */}
-      {(artifact.type === "proposal" || artifact.type === "document") && (
+      {/* 0. Viewer de Roteiro Turístico / Viagem */}
+      {(artifact.type === "itinerary" || artifact.type === "travel_itinerary" || Boolean(artifact.data?.destination)) && (
+        <div className="space-y-3 rounded-lg border border-border/50 bg-card p-3.5 text-xs">
+          <div className="flex items-center justify-between border-b border-border/40 pb-2">
+            <div className="flex items-center gap-1.5 text-primary font-bold text-2xs uppercase tracking-wider">
+              <Compass className="size-3.5" />
+              <span>Roteiro de Viagem</span>
+            </div>
+            {artifact.data?.daysCount && (
+              <Badge variant="outline" className="text-2xs font-mono h-4">
+                {artifact.data.daysCount} dias
+              </Badge>
+            )}
+          </div>
+
+          <div>
+            <h5 className="font-bold text-sm text-foreground">
+              {artifact.data?.destination || artifact.title}
+            </h5>
+            {artifact.data?.estimated_budget_cents && (
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Estimativa: <span className="font-mono font-bold text-primary">{formatMoney(artifact.data.estimated_budget_cents / 100)}</span>
+              </p>
+            )}
+          </div>
+
+          {Array.isArray(artifact.data?.days) && artifact.data.days.length > 0 && (
+            <div className="space-y-2 pt-1 max-h-60 overflow-y-auto no-scrollbar pr-1">
+              {artifact.data.days.map((d: any, idx: number) => (
+                <div key={idx} className="rounded-md border border-border/40 bg-muted/20 p-2.5 text-xs space-y-1">
+                  <span className="font-bold text-foreground text-2xs uppercase tracking-wider block text-primary">
+                    Dia {d.day}: {d.title}
+                  </span>
+                  <ul className="space-y-0.5 text-2xs text-muted-foreground">
+                    {d.activities?.map((act: string, aIdx: number) => (
+                      <li key={aIdx} className="flex items-start gap-1.5">
+                        <span className="text-primary font-bold">•</span>
+                        <span>{act}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div className="pt-2 flex items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="flex-1 h-11 rounded-md text-xs font-semibold cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+              onClick={handlePrint}
+            >
+              <Printer className="size-3.5 mr-2" />
+              <span>Imprimir / Salvar PDF</span>
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* 1. Viewer de Proposta Comercial / Documento (Quando não for roteiro) */}
+      {!(artifact.type === "itinerary" || artifact.type === "travel_itinerary" || Boolean(artifact.data?.destination)) && (artifact.type === "proposal" || artifact.type === "document") && (
         <div className="space-y-3 rounded-lg border border-border/50 bg-card p-3 text-xs">
           <div className="flex items-center justify-between border-b border-border/40 pb-2">
             <span className="font-bold text-2xs uppercase tracking-wider text-primary">Proposta Executiva</span>

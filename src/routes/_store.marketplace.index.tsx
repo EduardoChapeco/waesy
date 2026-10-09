@@ -321,47 +321,11 @@ function AdvancedMarketplacePage() {
           </section>
         )}
 
-        {/* ── 4. Seletor de Sub-Marketplaces e Vitrines Especializadas ── */}
-        <section aria-label="Vitrines por Nicho" className="space-y-2.5">
-          <div className="flex items-center justify-between px-1">
-            <span className="text-xs font-mono font-bold uppercase tracking-wider text-muted-foreground/80">
-              Vitrines por Nicho
-            </span>
-            <span className="text-2xs text-muted-foreground font-mono">
-              14 subnichos ativos
-            </span>
-          </div>
-
-          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
-            {MARKETPLACE_NICHES.map((niche) => {
-              const Icon = niche.icon;
-              const isSelected = activeNiche === niche.id;
-
-              return (
-                <button
-                  key={niche.id}
-                  type="button"
-                  onClick={() => handleNicheChange(niche.id)}
-                  className={cn(
-                    "inline-flex items-center gap-2 h-9 px-3.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors shrink-0 cursor-pointer",
-                    isSelected
-                      ? "bg-primary text-primary-foreground font-bold shadow-xs"
-                      : "bg-card border border-border/70 text-muted-foreground hover:text-foreground hover:bg-muted/60"
-                  )}
-                >
-                  <Icon size={14} weight={isSelected ? "fill" : "regular"} className="shrink-0" />
-                  <span>{niche.label}</span>
-                </button>
-              );
-            })}
-          </div>
-        </section>
-
-        {/* ── 5. Barra de Controle de Descoberta (Busca + Modos Feed/Grid/List) ── */}
+        {/* ── 4. Barra de Controle de Descoberta (Busca + Modos Feed/Grid/List) ── */}
         <DiscoveryControlBar
           search={searchTerm}
           onSearchChange={handleSearchChange}
-          searchPlaceholder="Buscar produtos em todas as vitrines comerciais..."
+          searchPlaceholder="Buscar produtos..."
           categories={NICHE_FILTER_CHIPS}
           activeCategory={activeNiche}
           onSelectCategory={handleNicheChange}
@@ -369,7 +333,7 @@ function AdvancedMarketplacePage() {
           onViewModeChange={handleViewModeChange}
         />
 
-        {/* ── 6. Feed Dinâmico CMS & Catálogo de Produtos ── */}
+        {/* ── 5. Feed Dinâmico CMS & Catálogo de Produtos ── */}
         {viewMode === "feed" ? (
           <div className="space-y-8">
             {/* Seções CMS Dinâmicas Configuradas no Admin Master (Random Shuffle, Flash Deals, Rails, Bento, Banners) */}
@@ -386,7 +350,7 @@ function AdvancedMarketplacePage() {
                   </span>
                   <h2 className="text-sm sm:text-base font-bold text-foreground leading-tight">
                     {activeNiche === "todos"
-                      ? "Destaques das Lojas Locais"
+                      ? "Destaques Locais"
                       : `Produtos em ${activeNicheConfig.label}`}
                   </h2>
                 </div>
@@ -398,8 +362,8 @@ function AdvancedMarketplacePage() {
               {productCards.length === 0 ? (
                 <div className="py-12 text-center bg-card rounded-lg border border-border/60 p-6">
                   <EmptyState
-                    title="Nenhum produto cadastrado neste nicho"
-                    description="As lojas deste segmento estão atualizando seus estoques. Experimente selecionar outro nicho ou buscar pelo nome do item."
+                    title="Nenhum produto encontrado"
+                    description="Tente buscar por outro termo ou explorar outras categorias."
                   />
                 </div>
               ) : (

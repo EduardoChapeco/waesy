@@ -269,12 +269,15 @@ export function AppShell({ children, session, brandSettings }: AppShellProps) {
     location.pathname.startsWith("/destaques/") ||
     location.pathname.startsWith("/admin-master");
 
+  const isCopilotPage = location.pathname.startsWith("/copilot");
+
   const shouldRenderGlobalNativeMobileHeader =
     isCleanMobileAppPage &&
     !isProfilePage &&
     !isFormPage &&
     !isDetailPage &&
-    !hasCustomPageMobileHeader;
+    !hasCustomPageMobileHeader &&
+    !isCopilotPage;
 
   return (
     <div className="h-[100dvh] w-full max-w-full bg-background text-foreground selection:bg-primary selection:text-primary-foreground font-sans antialiased relative flex flex-col overflow-hidden">
@@ -305,18 +308,22 @@ export function AppShell({ children, session, brandSettings }: AppShellProps) {
         {/* Viewport Central com Container Canônico Único + Container Query Anti-Jank */}
         <main
           ref={mainRef}
-          className={`main-container-query flex-1 flex flex-col min-w-0 h-full w-full max-w-full overflow-y-auto no-scrollbar overflow-x-hidden ${
-            isFeedPage || isCleanMobileAppPage
-              ? "px-4 sm:px-6 md:px-8 pt-0 md:pt-3 pb-24 md:pb-8"
+          className={`main-container-query flex-1 flex flex-col min-w-0 h-full w-full max-w-full ${
+            isCopilotPage
+              ? "p-0 m-0 overflow-hidden"
+              : isFeedPage || isCleanMobileAppPage
+              ? "overflow-y-auto no-scrollbar overflow-x-hidden px-4 sm:px-6 md:px-8 pt-0 md:pt-3 pb-24 md:pb-8"
               : isFormPage
-              ? "px-4 sm:px-6 md:px-8 pt-0 md:pt-4 pb-20 md:pb-8"
+              ? "overflow-y-auto no-scrollbar overflow-x-hidden px-4 sm:px-6 md:px-8 pt-0 md:pt-4 pb-20 md:pb-8"
               : isDetailPage
-              ? "px-4 sm:px-6 md:px-8 py-0 md:py-3 pb-20 md:pb-8"
-              : "px-4 sm:px-6 md:px-8 pt-0 md:pt-3 pb-24 md:pb-8"
+              ? "overflow-y-auto no-scrollbar overflow-x-hidden px-4 sm:px-6 md:px-8 py-0 md:py-3 pb-20 md:pb-8"
+              : "overflow-y-auto no-scrollbar overflow-x-hidden px-4 sm:px-6 md:px-8 pt-0 md:pt-3 pb-24 md:pb-8"
           }`}
         >
           <div className={`w-full mx-auto flex flex-col items-stretch min-w-0 flex-1 ${
-            isFeedPage
+            isCopilotPage
+              ? "size-full max-w-none overflow-hidden"
+              : isFeedPage
               ? "max-w-2xl"
               : isFormPage 
               ? "max-w-7xl" 
@@ -327,8 +334,8 @@ export function AppShell({ children, session, brandSettings }: AppShellProps) {
         </main>
       </div>
 
-      {/* Mobile Bottom Navigation com Botão Criar Flutuante & Action Sheet (Ocultado em páginas de detalhe para liberar a barra de compra/conversão) */}
-      {isCompact && !isDetailPage && <MobileNav session={session} userRole={session?.role} />}
+      {/* Mobile Bottom Navigation com Botão Criar Flutuante & Action Sheet (Ocultado em páginas de detalhe e no copilot para manter o input de chat acessível) */}
+      {isCompact && !isDetailPage && !isCopilotPage && <MobileNav session={session} userRole={session?.role} />}
 
       {/* Waesy Copilot Drawer Global Flutuante */}
       <WaesyCopilotDrawer session={session} />

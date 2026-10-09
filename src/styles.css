@@ -1243,3 +1243,23 @@ img[loading="lazy"] {
     transition-duration: 0.01ms;
   }
 }
+
+/* ==========================================================================
+ * COPILOT RICH MESSAGE TOKENS — Marca-texto e sublinhado canônico
+ * ========================================================================== */
+.copilot-highlight,
+mark.copilot-highlight {
+  background-color: color-mix(in srgb, var(--primary) 22%, transparent);
+  color: var(--foreground);
+  padding: 0.125rem 0.25rem;
+  border-radius: var(--radius-sm, 0.25rem);
+  font-weight: 500;
+}
+
+.copilot-underline,
+u.copilot-underline {
+  text-decoration-line: underline;
+  text-decoration-color: color-mix(in srgb, var(--primary) 65%, transparent);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+}

@@ -183,8 +183,8 @@ export function ContextSidebar({ config, session }: ContextSidebarProps) {
                             e.stopPropagation();
                             setIsMarketplacesOpen((prev) => !prev);
                           }}
-                          title={isMarketplacesOpen ? "Recolher subnichos" : "Expandir subnichos"}
-                          aria-label={isMarketplacesOpen ? "Recolher subnichos" : "Expandir subnichos"}
+                          title={isMarketplacesOpen ? "Recolher categorias" : "Expandir categorias"}
+                          aria-label={isMarketplacesOpen ? "Recolher categorias" : "Expandir categorias"}
                           className="flex items-center gap-1 px-2 py-1 rounded-md text-2xs font-mono font-bold bg-muted/80 hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                         >
                           <span>14</span>

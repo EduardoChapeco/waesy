@@ -2818,3 +2818,17 @@
 - **Decisão adotada:** Na branch/PR desta remediação, remover leitura direta pública das tabelas de contratos/envelopes/evidências; preservar leitura e assinatura somente por BFF/RPC com token bearer exato e projeção allowlist. Preservar a assinatura pública por token, mas realizá-la numa transação idempotente com consentimento validado no servidor, hash/serial gerados de forma criptograficamente segura e status válidos segundo o schema. A emissão a partir de proposta exige staff e tenant autenticado. Não aplicar migrations em produção, não fazer deploy e não afirmar validade jurídica do mecanismo técnico.
 - **Fundamentação:** AGENTS.md B.1, B.5, B.9, B.10 e B.31; W2.2/W2.3/W2.4, W12.4 e W14.1/W14.4; SPEC-20261007-P0-ATOMIC-VOUCHER-APPLY R14–R17; autorização do usuário às 16:03:24 de 2026-10-07.
 - **Consequências:** A jornada legítima de leitura/assinatura deve continuar via token bearer e apenas pelos campos necessários. RLS/grants reais, Postgres/Supabase, browser, revisão jurídica e produção permanecem pendentes até validação no ambiente autorizado.
+
+
+## DEC-200: Redesign Minimalista do Copilot, Remoção de Jargões Técnicos e Desduplicação de Vitrines
+
+- **Data:** 2026-10-08
+- **Contexto:** Módulo Waesy Copilot apresentava input deslocado fora do fold, renderização com markdown cru (`** **`), trilha de tarefas prolixa e quebra 404 em artefatos turísticos ao redirecionar para rota de CMS inexistente. Telas públicas de Marketplace e Eventos apresentavam seções duplicadas de categorias ("Vitrines por Nicho" / "14 subnichos ativos") e textos explicativos redundantes.
+- **Decisão adotada:**
+  1. Criação do componente canônico `CopilotMessageRenderer` com suporte rico a markdown (bold, italic, listas, tabelas, sublinhado, marca-texto `.copilot-highlight` e lousa interativa/quadro digital `BlackboardBlock`).
+  2. Redesign ultra-minimalista da trilha de execução `AIActivityTrail` (micro-pílula compacta durante execução e linha discreta com contagem de etapas e tempo ao concluir).
+  3. Prevenção de 404 em artefatos turísticos: substituição de redirect para `/workspace/cms/paginas` por modal nativo in-place `Dialog` em `ChatArtifactCard` e renderizador de itinerário em `AIChatShell`.
+  4. Fixação do compositor de chat no rodapé sem rolagem da página inteira no `app-shell` e no drawer `WaesyCopilotDrawer`.
+  5. Desduplicação e higienização visual: remoção da seção duplicada de categorias em `_store.marketplace.index.tsx` e `_store.eventos.tsx`, eliminação de textos técnicos ("Vitrines por Nicho", "14 subnichos ativos", "0 produtos") e subtítulo prolixo em `_store.classificados.index.tsx`.
+- **Fundamentação:** AGENTS.md B.1 a B.12, B.6, B.8 (proibição de textos explicativos redundantes), piso WCAG 2.2 AA.
+- **Consequências:** Interface silenciosa, limpa e responsiva; zero quebras 404 em artefatos; renderização visual elegante e unificada.
