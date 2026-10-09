@@ -12,10 +12,11 @@ import { CitySelect } from "@/components/ui/city-select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { NativeMobileHeader } from "@/components/navigation";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { User, Camera, ExternalLink, Loader2, Image as ImageIcon, Trash2, Check, Briefcase, Link as LinkIcon, ShieldCheck, Eye, EyeOff, Building2, ShieldAlert, Phone, Calendar, Lock, Plus } from "lucide-react";
+import { User, Camera, ExternalLink, Loader2, Image as ImageIcon, Trash2, Check, Briefcase, Link as LinkIcon, ShieldCheck, Eye, EyeOff, Building2, ShieldAlert, Phone, Calendar, Lock, Plus, Info } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { ProfessionalResumeEditor, ResumeDataDTO } from "@/components/profile/professional-resume-editor";
 
@@ -77,6 +78,7 @@ function ProfileCivilPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showCivilInfo, setShowCivilInfo] = useState(false);
 
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
@@ -432,28 +434,32 @@ function ProfileCivilPage() {
         </div>
       </div>
 
-      {/* ── 2. Banner Informativo do Perfil Pessoal ── */}
-      <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 sm:p-5 flex items-start gap-4 text-xs text-foreground">
-        <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-1">
-          <ShieldCheck className="size-5" />
-        </div>
-        <div className="space-y-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <h3 className="font-bold text-foreground text-sm">Perfil Pessoal</h3>
-            <Badge variant="outline" className="text-[10px] font-mono border-primary/30 text-primary">
-              Titular da Conta
-            </Badge>
+      {/* ── 2. Banner de Claridade de Identidade (Conta Civil Pessoal) ── */}
+      <div className="rounded-lg border border-border/60 bg-muted/30 p-4 sm:p-5 flex items-start justify-between gap-4 text-xs text-foreground">
+        <div className="flex items-start gap-3 min-w-0">
+          <div className="size-9 rounded-lg bg-card border border-border/50 text-foreground flex items-center justify-center shrink-0 mt-0.5">
+            <ShieldCheck className="size-5 text-primary" />
           </div>
-          <p className="text-muted-foreground leading-relaxed text-[11px] sm:text-xs">
-            Estes são os seus dados como usuário na plataforma, utilizados para{" "}
-            <strong>compras, ingressos, pedidos e comunicação com estabelecimentos</strong>.
-            Para alternar e gerenciar lojas, empresas ou projetos profissionais, utilize o{" "}
-            <Link to="/conta" className="text-primary font-semibold hover:underline">
-              painel de contas
-            </Link>{" "}
-            no menu superior.
-          </p>
+          <div className="space-y-1 min-w-0">
+            <div className="flex items-center gap-2">
+              <h3 className="font-bold text-foreground text-sm">Conta Civil</h3>
+              <Badge variant="secondary" className="text-[10px] font-medium text-muted-foreground">
+                Perfil Oficial
+              </Badge>
+            </div>
+            <p className="text-muted-foreground leading-relaxed text-[11px] sm:text-xs">
+              Sua identidade pessoal para compras na loja, reservas, contratos e pedidos na comunidade.
+            </p>
+          </div>
         </div>
+        <button
+          type="button"
+          onClick={() => setShowCivilInfo(true)}
+          aria-label="Entender a Conta Civil"
+          className="size-11 min-h-11 min-w-11 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors cursor-pointer shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+        >
+          <Info className="size-5" />
+        </button>
       </div>
 
       {/* ── 3. Formulário de Perfil Civil com 3 Abas Estritas ── */}
@@ -1266,6 +1272,45 @@ function ProfileCivilPage() {
           onCropComplete={handleCropComplete}
         />
       )}
+
+      {/* Modal Explicativo: O que é a Conta Civil */}
+      <Dialog open={showCivilInfo} onOpenChange={setShowCivilInfo}>
+        <DialogContent className="max-w-md rounded-lg p-6 space-y-4">
+          <DialogHeader>
+            <div className="flex items-center gap-2 text-primary">
+              <ShieldCheck className="size-5" />
+              <DialogTitle className="text-base font-bold">O que é a Conta Civil?</DialogTitle>
+            </div>
+            <DialogDescription className="text-xs text-muted-foreground">
+              Entenda como sua identidade oficial opera no ecossistema Waesy.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-3 text-xs text-muted-foreground leading-relaxed">
+            <p>
+              A <strong>Conta Civil</strong> é o seu perfil pessoal oficial como cidadão. É através dela que você realiza compras, agenda serviços, adquire ingressos nominais e fecha negociações com segurança jurídica.
+            </p>
+            <div className="rounded-lg border border-border/50 bg-muted/30 p-3 space-y-1.5">
+              <p className="font-semibold text-foreground">Como se conecta com seus outros perfis:</p>
+              <ul className="list-disc list-inside space-y-1 pl-1">
+                <li>Você pode criar ou gerenciar empresas e negócios locais sem misturar os dados pessoais.</li>
+                <li>Seus anúncios de desapego nos classificados são vinculados com procedência verificada.</li>
+                <li>Para alternar para uma empresa ou perfil de criador, use o menu de contas no topo.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="pt-2 flex justify-end">
+            <Button
+              type="button"
+              onClick={() => setShowCivilInfo(false)}
+              className="h-11 px-6 rounded-lg text-xs font-semibold"
+            >
+              Entendi
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

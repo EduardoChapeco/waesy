@@ -101,7 +101,7 @@ describe("Omni-Block Engine & State Tree Audit (MASTER PROMPT V129)", () => {
   });
 
   it("6. Deve conter todos os 8 blocos canônicos da Omni-Block Library registrados", () => {
-    expect(SITE_BUILDER_BLOCKS.length).toBe(8);
+    expect(SITE_BUILDER_BLOCKS.length).toBeGreaterThanOrEqual(8);
 
     const blockIds = SITE_BUILDER_BLOCKS.map((b) => b.id);
     expect(blockIds).toContain("hero_minimal_split");
@@ -112,6 +112,8 @@ describe("Omni-Block Engine & State Tree Audit (MASTER PROMPT V129)", () => {
     expect(blockIds).toContain("testimonials_social_proof");
     expect(blockIds).toContain("contact_form_direct");
     expect(blockIds).toContain("faq_clean_accordion");
+    expect(blockIds).toContain("food_menu_streamlined");
+    expect(blockIds).toContain("product_grid");
 
     const heroDef = getSiteBlockById("hero_minimal_split");
     expect(heroDef.name).toBe("Apresentação");
@@ -235,16 +237,25 @@ describe("Omni-Block Engine & State Tree Audit (MASTER PROMPT V129)", () => {
   it("13. Deve validar a taxonomia de categorias estilo Wix (V133 Benchmark)", async () => {
     const { BLOCK_TO_WIX_CATEGORY, WIX_CATEGORY_CONFIG } = await import("./registry");
 
-    expect(WIX_CATEGORY_CONFIG.length).toBe(5);
+    expect(WIX_CATEGORY_CONFIG.length).toBeGreaterThanOrEqual(5);
     const categoryIds = WIX_CATEGORY_CONFIG.map((c) => c.id);
-    expect(categoryIds).toEqual(["all", "basic", "layout", "sections", "interactive"]);
+    expect(categoryIds).toContain("all");
+    expect(categoryIds).toContain("hero");
+    expect(categoryIds).toContain("gastronomy");
+    expect(categoryIds).toContain("commerce");
+    expect(categoryIds).toContain("gallery");
+    expect(categoryIds).toContain("services");
+    expect(categoryIds).toContain("tourism");
+    expect(categoryIds).toContain("biolink");
+    expect(categoryIds).toContain("faq");
 
-    // Todos os 8 blocos registrados devem ter categoria mapeada
+    // Todos os blocos registrados devem ter categoria mapeada
     const registeredBlockIds = SITE_BUILDER_BLOCKS.map((b) => b.id);
+    const validCategories = WIX_CATEGORY_CONFIG.map((c) => c.id).filter((id) => id !== "all");
     for (const blockId of registeredBlockIds) {
       const category = BLOCK_TO_WIX_CATEGORY[blockId];
       expect(category).toBeDefined();
-      expect(["basic", "layout", "sections", "interactive"]).toContain(category);
+      expect(validCategories).toContain(category);
     }
   });
 

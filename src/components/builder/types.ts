@@ -16,7 +16,17 @@ export interface SiteBuilderBlockDefinition<T = any> {
   description: string;
   capabilities?: Array<"responsive" | "cms" | "motion" | "media" | "form" | "commerce">;
   sourceOfTruth?: "waesy" | "external";
-  component: React.ComponentType<{ id: string; data: T; styling?: OmniBlockStyling; className?: string }>;
+  component: React.ComponentType<{
+    id: string;
+    data: T;
+    styling?: OmniBlockStyling;
+    className?: string;
+    isEditing?: boolean;
+    products?: any[];
+    categories?: any[];
+    collections?: any[];
+    storeData?: any;
+  }>;
   defaultProps: T;
   defaultStyling?: OmniBlockStyling;
 }

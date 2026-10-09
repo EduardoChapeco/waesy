@@ -12,11 +12,17 @@ import { BuilderAssetCredits } from "./BuilderAssetCredits";
 export interface OmniPageRendererProps {
   document: OmniPageDocument;
   className?: string;
+  products?: any[];
+  categories?: any[];
+  storeData?: any;
 }
 
 export const OmniPageRenderer: React.FC<OmniPageRendererProps> = ({
   document,
   className = "",
+  products = [],
+  categories = [],
+  storeData = null,
 }) => {
   if (!document || !document.blocks || document.blocks.length === 0) {
     return null;
@@ -71,6 +77,9 @@ export const OmniPageRenderer: React.FC<OmniPageRendererProps> = ({
               id={block.id}
               data={block.config}
               styling={block.styling}
+              products={products}
+              categories={categories}
+              storeData={storeData}
             />
             <BuilderAssetCredits assets={block.assetRefs} />
           </div>

@@ -230,7 +230,7 @@ export function CreatorProfileSheetEditor({
             )}
           </div>
         }
-        description="Defina sua identidade visual, nicho de atuação e canais para curar vitrines e monetizar."
+        description="Defina sua identidade visual, segmento de atuação e canais para curar vitrines."
         footer={
           <div className="flex items-center justify-end gap-3 w-full">
             <Button
@@ -426,17 +426,17 @@ export function CreatorProfileSheetEditor({
                   </div>
                 </div>
 
-                {/* Nicho / Categoria via SELECT CANÔNICO */}
+                {/* Categoria / Segmento via SELECT CANÔNICO */}
                 <div className="space-y-2">
                   <Label className="text-xs font-medium">
-                    Nicho Principal de Atuação (Selecione no catálogo) *
+                    Segmento Principal *
                   </Label>
                   <CreatorNicheSelect
                     value={category}
                     onValueChange={(val) => setCategory(val)}
                   />
                   <p className="text-[11px] text-muted-foreground">
-                    Segmenta sua vitrine nas buscas da plataforma e atrai parcerias de lojas do mesmo nicho.
+                    Segmenta sua vitrine nas buscas e parcerias da plataforma.
                   </p>
                 </div>
 

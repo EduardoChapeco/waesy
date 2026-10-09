@@ -101,6 +101,9 @@ function BuilderEditorPage() {
         onSave={handleSaveOmni}
         onPublish={handlePublishOmni}
         onBack={() => navigate({ to: "/workspace/cms/paginas" })}
+        products={initialData.products}
+        categories={initialData.categories}
+        collections={initialData.collections}
       />
     </div>
   );

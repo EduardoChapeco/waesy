@@ -54,6 +54,17 @@ import {
   Mail,
   HelpCircle,
   CheckCircle2,
+  UtensilsCrossed,
+  ShoppingBag,
+  Video,
+  Calendar,
+  Compass,
+  Share2,
+  Award,
+  Clock,
+  MapPin,
+  Sparkles,
+  SlidersHorizontal,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -67,14 +78,59 @@ export type { WixBlockCategory } from "./registry";
 
 
 const BLOCK_ICONS: Record<string, any> = {
+  // Hero
   hero_minimal_split: LayoutTemplate,
   hero_interactive_carousel: Image,
-  bento_asymmetric_4: Layers,
+  split_banner: LayoutTemplate,
+
+  // Gastronomia
+  food_menu_streamlined: UtensilsCrossed,
+  food_menu_tabs: UtensilsCrossed,
+  chef_special_banner: Sparkles,
+  table_order_comanda: Tag,
+  table_booking_card: Calendar,
+  restaurant_hours_delivery: Clock,
+
+  // Catálogo
+  product_grid: ShoppingBag,
+  curated_hits_rail: Sparkles,
+  product_rail: ShoppingBag,
+  flash_sale_hero: Tag,
+
+  // Mídia & Galeria
   media_gallery_mosaic: Image,
+  gallery_grid: Image,
+  before_after_slider: SlidersHorizontal,
+  video_section: Video,
+  stories_ring: Image,
+
+  // Serviços
+  booking_calendar: Calendar,
+  service_pricing_table: Tag,
+  specialist_team_grid: Award,
+  routine_steps: SlidersHorizontal,
   pricing_three_tiers: Tag,
+
+  // Turismo
+  tourism_quote_hero: Compass,
+  tourism_destinations_carousel: Compass,
+  tourism_services_grid: Compass,
+
+  // BioLink & Social
+  biolink_profile_header: Share2,
+  biolink_action_buttons: Share2,
+  biolink_pix_card: Tag,
+  bento_asymmetric_4: Layers,
+  trust_badges: Award,
+  timeline_history: Clock,
   testimonials_social_proof: MessageSquare,
-  contact_form_direct: Mail,
+
+  // Contato & FAQ
   faq_clean_accordion: HelpCircle,
+  contact_form_direct: Mail,
+  location_map_card: MapPin,
+  store_hours: Clock,
+  store_contact: Mail,
 };
 
 interface BlockContentFieldsProps {
@@ -523,6 +579,171 @@ export const BlockContentFields: React.FC<BlockContentFieldsProps> = ({
           />
         </div>
       )}
+
+      {/* 9. Campos de Identificação Comercial (Nome da Loja / Horários) */}
+      {config.storeName !== undefined && (
+        <div className="pt-2 border-t border-border/40">
+          <label className="block text-xs font-semibold text-foreground mb-1">
+            Nome do Estabelecimento
+          </label>
+          <Input
+            value={config.storeName || ""}
+            onChange={(e) => onUpdateConfig("storeName", e.target.value)}
+            className="h-9 rounded-lg text-xs"
+          />
+        </div>
+      )}
+
+      {config.openingHoursText !== undefined && (
+        <div>
+          <label className="block text-xs font-semibold text-foreground mb-1">
+            Horário de Funcionamento
+          </label>
+          <Input
+            value={config.openingHoursText || ""}
+            onChange={(e) => onUpdateConfig("openingHoursText", e.target.value)}
+            className="h-9 rounded-lg text-xs"
+          />
+        </div>
+      )}
+
+      {/* 10. Botões de Ação Personalizados */}
+      {config.buttonText !== undefined && (
+        <div className="pt-2 border-t border-border/40 space-y-2">
+          <label className="block text-xs font-semibold text-foreground">
+            Botão de Ação
+          </label>
+          <Input
+            value={config.buttonText || ""}
+            onChange={(e) => onUpdateConfig("buttonText", e.target.value)}
+            placeholder="Texto do Botão"
+            className="h-9 rounded-lg text-xs"
+          />
+          {config.buttonLink !== undefined && (
+            <Input
+              value={config.buttonLink || ""}
+              onChange={(e) => onUpdateConfig("buttonLink", e.target.value)}
+              placeholder="Link (#produtos)"
+              className="h-9 rounded-lg text-xs"
+            />
+          )}
+        </div>
+      )}
+
+      {/* 11. Mesa & Wi-Fi de Autoatendimento */}
+      {config.tableNumber !== undefined && (
+        <div className="pt-2 border-t border-border/40 space-y-2">
+          <label className="block text-xs font-semibold text-foreground">
+            Número da Mesa / Comanda
+          </label>
+          <Input
+            value={config.tableNumber || ""}
+            onChange={(e) => onUpdateConfig("tableNumber", e.target.value)}
+            className="h-9 rounded-lg text-xs font-mono"
+          />
+          {config.wifiName !== undefined && (
+            <Input
+              value={config.wifiName || ""}
+              onChange={(e) => onUpdateConfig("wifiName", e.target.value)}
+              placeholder="Nome da Rede Wi-Fi"
+              className="h-9 rounded-lg text-xs"
+            />
+          )}
+        </div>
+      )}
+
+      {/* 12. Prato Estrela do Chef */}
+      {config.dishName !== undefined && (
+        <div className="pt-2 border-t border-border/40 space-y-2">
+          <label className="block text-xs font-semibold text-foreground">
+            Nome do Prato Estrela
+          </label>
+          <Input
+            value={config.dishName || ""}
+            onChange={(e) => onUpdateConfig("dishName", e.target.value)}
+            className="h-9 rounded-lg text-xs"
+          />
+          {config.description !== undefined && (
+            <Textarea
+              value={config.description || ""}
+              onChange={(e) => onUpdateConfig("description", e.target.value)}
+              placeholder="Descrição dos ingredientes"
+              rows={2}
+              className="text-xs resize-none"
+            />
+          )}
+        </div>
+      )}
+
+      {/* 13. BioLink (Handle, Nome, Bio) */}
+      {config.handle !== undefined && (
+        <div className="pt-2 border-t border-border/40 space-y-2">
+          <label className="block text-xs font-semibold text-foreground">
+            @Handle / Identificador BioLink
+          </label>
+          <Input
+            value={config.handle || ""}
+            onChange={(e) => onUpdateConfig("handle", e.target.value)}
+            placeholder="@seunome"
+            className="h-9 rounded-lg text-xs font-mono"
+          />
+          {config.bio !== undefined && (
+            <Textarea
+              value={config.bio || ""}
+              onChange={(e) => onUpdateConfig("bio", e.target.value)}
+              placeholder="Mini biografia"
+              rows={2}
+              className="text-xs resize-none"
+            />
+          )}
+        </div>
+      )}
+
+      {/* 14. Chave Pix */}
+      {config.pixKey !== undefined && (
+        <div className="pt-2 border-t border-border/40 space-y-2">
+          <label className="block text-xs font-semibold text-foreground">
+            Chave Pix para Pagamento Rápido
+          </label>
+          <Input
+            value={config.pixKey || ""}
+            onChange={(e) => onUpdateConfig("pixKey", e.target.value)}
+            placeholder="contato@empresa.com.br"
+            className="h-9 rounded-lg text-xs font-mono"
+          />
+          {config.beneficiaryName !== undefined && (
+            <Input
+              value={config.beneficiaryName || ""}
+              onChange={(e) => onUpdateConfig("beneficiaryName", e.target.value)}
+              placeholder="Nome do Beneficiário"
+              className="h-9 rounded-lg text-xs"
+            />
+          )}
+        </div>
+      )}
+
+      {/* 15. Endereço Físico */}
+      {config.address !== undefined && (
+        <div className="pt-2 border-t border-border/40 space-y-2">
+          <label className="block text-xs font-semibold text-foreground">
+            Endereço & Cidade
+          </label>
+          <Input
+            value={config.address || ""}
+            onChange={(e) => onUpdateConfig("address", e.target.value)}
+            placeholder="Rua, Número, Bairro"
+            className="h-9 rounded-lg text-xs"
+          />
+          {config.cityState !== undefined && (
+            <Input
+              value={config.cityState || ""}
+              onChange={(e) => onUpdateConfig("cityState", e.target.value)}
+              placeholder="Cidade - UF"
+              className="h-9 rounded-lg text-xs"
+            />
+          )}
+        </div>
+      )}
     </div>
   );
 };
@@ -532,6 +753,10 @@ interface OmniEditorProps {
   onSave?: (document: OmniPageDocument) => Promise<void> | void;
   onPublish?: (document: OmniPageDocument) => Promise<void> | void;
   onBack?: () => void;
+  products?: any[];
+  categories?: any[];
+  collections?: any[];
+  storeData?: any;
 }
 
 export const OmniEditor: React.FC<OmniEditorProps> = ({
@@ -539,6 +764,10 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
   onSave,
   onPublish,
   onBack,
+  products = [],
+  categories = [],
+  collections = [],
+  storeData = null,
 }) => {
   const [document, setDocument] = useState<OmniPageDocument>(initialDocument);
   const [activeStudioManifest, setActiveStudioManifest] = useState<StudioTemplateManifest | null>(
@@ -1060,7 +1289,16 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                       </div>
                     )}
 
-                    <Component id={block.id} data={block.config} styling={block.styling} />
+                    <Component
+                      id={block.id}
+                      data={block.config}
+                      styling={block.styling}
+                      isEditing={true}
+                      products={products}
+                      categories={categories}
+                      collections={collections}
+                      storeData={storeData}
+                    />
                   </div>
                 );
               })
@@ -1209,7 +1447,16 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                     </div>
                   )}
 
-                  <Component id={block.id} data={block.config} styling={block.styling} />
+                  <Component
+                    id={block.id}
+                    data={block.config}
+                    styling={block.styling}
+                    isEditing={true}
+                    products={products}
+                    categories={categories}
+                    collections={collections}
+                    storeData={storeData}
+                  />
                 </div>
               );
             })}

@@ -3,8 +3,8 @@ import { Link } from "@tanstack/react-router";
 export function AnnouncementBar({ content }: { content: Record<string, unknown> }) {
  const text = String(content.text || "");
  const link = content.link ? String(content.link) : null;
- const bgColor = String(content.bg_color || "#000000");
- const textColor = String(content.text_color || "#ffffff");
+ const bgColor = String(content.bg_color || "var(--primary)");
+ const textColor = String(content.text_color || "var(--primary-foreground)");
 
  if (!text) return null;
 

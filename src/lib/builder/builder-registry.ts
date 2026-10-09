@@ -2298,7 +2298,7 @@ export const builderRegistry: Record<string, BlockManifest> = {
  content: {
  title: "Sua Próxima Viagem Inesquecível Começa Aqui",
  subtitle: "Roteiros exclusivos, cruzeiros, passagens aéreas e pacotes completos com assessoria VIP.",
- badge: "✈️ Agência Boutique de Turismo",
+ badge: "Agência Boutique de Turismo",
  bgImageUrl: "",
  whatsappPhone: "",
  },

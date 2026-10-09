@@ -9,9 +9,12 @@ import { Button } from "@/components/ui/button";
 export const Route = createFileRoute("/_store/paginas/$slug")({
   loader: async ({ params }) => {
     try {
-      const res = await getPublicExperienceDocumentBySlug({
-        data: { slug: params.slug, document_type: "storefront" },
-      });
+      const [res, catalogRes] = await Promise.all([
+        getPublicExperienceDocumentBySlug({
+          data: { slug: params.slug, document_type: "storefront" },
+        }),
+        import("@/services/catalog.functions").then(m => m.listPublishedProducts({ data: { limit: 20 } })).catch(() => ({ status: "error", data: [] })),
+      ]);
 
       if (res.status === "not_found" || res.status === "unconfigured") {
         throw notFound();
@@ -21,16 +24,19 @@ export const Route = createFileRoute("/_store/paginas/$slug")({
         throw new Error("Erro ao carregar a página.");
       }
 
+      const products = catalogRes?.status === "ok" && Array.isArray(catalogRes.data) ? catalogRes.data : [];
+
       return {
         document: res.data.document,
         tree: res.data.tree,
+        products,
       };
     } catch (err) {
       if (isNotFound(err) || isRedirect(err)) {
         throw err;
       }
       console.error("[loader:_store.paginas.$slug] Unhandled error:", err);
-      return { document: null, tree: null };
+      return { document: null, tree: null, products: [] };
     }
   },
   head: ({ loaderData }) => {
@@ -71,7 +77,7 @@ export const Route = createFileRoute("/_store/paginas/$slug")({
         >
           <AlertCircle className="size-12 text-destructive mx-auto mb-4" />
           <h2 className="font-semibold text-2xl mb-2 text-foreground">Erro no Carregamento</h2>
-          <p className="font-sans text-muted-foreground mb-6">{error instanceof Error ? error.message : String(error)}</p>
+          <p className="font-sans text-muted-foreground mb-6">{error.message}</p>
           <Button asChild className="w-full">
             <Link to="/">Voltar para o Início</Link>
           </Button>
@@ -100,7 +106,7 @@ export const Route = createFileRoute("/_store/paginas/$slug")({
 });
 
 function PublicPage() {
-  const { document, tree } = ((Route.useLoaderData?.() as any) || {});
+  const { document, tree, products } = ((Route.useLoaderData?.() as any) || {});
 
   if (!document) {
     return (
@@ -123,11 +129,13 @@ function PublicPage() {
     );
   }
 
-  const publishedOmniPage = document?.settings?.omni_page_published;
-  if (publishedOmniPage?.blocks && Array.isArray(publishedOmniPage.blocks) && publishedOmniPage.blocks.length > 0) {
+  if (document?.settings?.omni_page?.blocks && Array.isArray(document.settings.omni_page.blocks) && document.settings.omni_page.blocks.length > 0) {
     return (
       <main className="w-full flex flex-col gap-0 min-h-[100dvh] bg-background">
-        <OmniPageRenderer document={publishedOmniPage} />
+        <OmniPageRenderer
+          document={document.settings.omni_page}
+          products={products}
+        />
       </main>
     );
   }

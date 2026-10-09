@@ -18,7 +18,7 @@ export interface BusinessSegment {
 }
 
 export const BUSINESS_CATEGORIES = [
- { id: "todas", label: "Todos os Segmentos" },
+ { id: "todas", label: "Todos" },
  { id: "alimentacao", label: "Gastronomia e Delivery" },
  { id: "varejo", label: "Varejo e Comércio" },
  { id: "servicos", label: "Serviços, Saúde e Beleza" },

@@ -156,16 +156,20 @@ function ClassifiedDetailPage() {
     );
   }
 
-  if (
-    detail.niche?.id === "travel" ||
-    classified?.category === "travel" ||
-    classified?.category === "viagem" ||
-    classified?.category === "tourism" ||
-    classified?.attributes?.template_style === "editorial" ||
-    classified?.attributes?.template_style === "immersive" ||
-    classified?.attributes?.template_style === "instagram" ||
-    classified?.attributes?.template_style === "instagram_resort"
-  ) {
+  const chosenTemplate = classified?.attributes?.template_style as string | undefined;
+  const isEditorialStyle =
+    chosenTemplate === "editorial" ||
+    chosenTemplate === "immersive" ||
+    chosenTemplate === "instagram" ||
+    chosenTemplate === "instagram_resort";
+  const isTravelDefaultEditorial =
+    (!chosenTemplate || chosenTemplate === "standard") &&
+    (detail.niche?.id === "travel" ||
+      classified?.category === "travel" ||
+      classified?.category === "viagem" ||
+      classified?.category === "tourism");
+
+  if (isEditorialStyle || isTravelDefaultEditorial) {
     return (
       <>
         <ProductTelemetry

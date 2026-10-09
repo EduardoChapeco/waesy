@@ -773,33 +773,45 @@ function CommunityMarketplaceView({ data }: { data: any }) {
           )}
 
           {/* MARKETPLACE PRODUTOS & OFERTAS DE EMPRESAS HOMOLOGADAS */}
-          {(activeCategory === "todos" || activeCategory === "marketplace") && filteredMarketplaceProducts.length > 0 && (
-            <section aria-label="Marketplace de Empresas" className="space-y-2">
-              <HorizontalRail
-                title="Marketplace"
-                badge="Empresas Verificadas"
-                actionLabel="Ver vitrine completa"
-                actionTo="/marketplace"
-                leadCard={
-                  <HitsLeadCard
-                    title="Marketplace Local"
-                    subtitle="Produtos e serviços com nota fiscal e garantia de empresas parceiras"
-                    badge="Homologado"
-                    actionLabel="Explorar"
-                    actionTo="/marketplace"
-                    gradient="from-emerald-700 via-teal-700 to-cyan-800"
-                    className="h-80 w-52 sm:w-60"
-                    ariaLabel="Explorar vitrine de produtos e empresas"
-                  />
-                }
-              >
-                {filteredMarketplaceProducts.map((offer: any) => (
-                  <div key={offer.id} className="min-w-64 sm:min-w-72 max-w-xs shrink-0 snap-start">
-                    <OfferCard {...offer} />
-                  </div>
-                ))}
-              </HorizontalRail>
-            </section>
+          {(activeCategory === "todos" || activeCategory === "marketplace") && (
+            filteredMarketplaceProducts.length > 0 ? (
+              <section aria-label="Marketplace de Empresas" className="space-y-2">
+                <HorizontalRail
+                  title="Marketplace"
+                  badge="Empresas Verificadas"
+                  actionLabel="Ver vitrine completa"
+                  actionTo="/marketplace"
+                  leadCard={
+                    <HitsLeadCard
+                      title="Marketplace Local"
+                      subtitle="Produtos e serviços com nota fiscal e garantia de empresas parceiras"
+                      badge="Homologado"
+                      actionLabel="Explorar"
+                      actionTo="/marketplace"
+                      gradient="from-emerald-700 via-teal-700 to-cyan-800"
+                      className="h-80 w-52 sm:w-60"
+                      ariaLabel="Explorar vitrine de produtos e empresas"
+                    />
+                  }
+                >
+                  {filteredMarketplaceProducts.map((offer: any) => (
+                    <div key={offer.id} className="min-w-64 sm:min-w-72 max-w-xs shrink-0 snap-start">
+                      <OfferCard {...offer} />
+                    </div>
+                  ))}
+                </HorizontalRail>
+              </section>
+            ) : activeCategory === "marketplace" ? (
+              <div className="py-16 text-center space-y-3 bg-card rounded-lg border border-border/60 p-8">
+                <Storefront className="size-10 text-muted-foreground/40 mx-auto" />
+                <h2 className="text-sm font-bold text-foreground">
+                  Nenhum produto anunciado por empresas no momento
+                </h2>
+                <p className="text-xs text-muted-foreground max-w-sm mx-auto">
+                  Novos produtos de empresas parceiras serão listados em breve.
+                </p>
+              </div>
+            ) : null
           )}
 
           {/* CLASSIFICADOS */}
@@ -1260,11 +1272,13 @@ function CommunityMarketplaceView({ data }: { data: any }) {
             </section>
           )}
 
-          {/* 9. SCROLL INFINITO PROCEDURAL (Trilhos Contínuos de Descoberta Vertical) */}
-          <ProceduralInfiniteFeed
-            initialExcludedStoreIds={filteredPlaces.map((p: any) => p.store_id || p.id).filter(Boolean)}
-            initialExcludedProductIds={[]}
-          />
+          {/* 9. SCROLL INFINITO PROCEDURAL (Trilhos Contínuos de Descoberta Vertical - apenas na visão geral) */}
+          {activeCategory === "todos" && (
+            <ProceduralInfiniteFeed
+              initialExcludedStoreIds={filteredPlaces.map((p: any) => p.store_id || p.id).filter(Boolean)}
+              initialExcludedProductIds={[]}
+            />
+          )}
         </div>
       )}
 

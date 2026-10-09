@@ -136,19 +136,15 @@ function ConvitePage() {
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="space-y-1">
               <div className="flex items-center gap-2 flex-wrap">
-                <Badge className="font-mono text-xs uppercase px-3 py-1 rounded-lg bg-primary/15 text-primary border border-primary/30 flex items-center gap-1">
-                  <Star className="size-3" />
+                <Badge variant="secondary" className="font-mono text-xs px-2.5 py-0.5 rounded-md flex items-center gap-1">
+                  <Star className="size-3 text-amber-500" />
                   <span>Membro Fundador</span>
                 </Badge>
 
-                {overview.isAmbassadorActive ? (
-                  <Badge className="font-mono text-xs uppercase px-3 py-1 rounded-lg bg-emerald-500/20 text-emerald-500 border border-emerald-500/30 flex items-center gap-1">
+                {overview.isAmbassadorActive && (
+                  <Badge className="font-mono text-xs px-2.5 py-0.5 rounded-md bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
                     <Flame className="size-3" />
                     <span>Embaixador Ativo</span>
-                  </Badge>
-                ) : (
-                  <Badge variant="outline" className="font-mono text-xs text-muted-foreground">
-                    Embaixador Mensal (Meta: {overview.monthlyConversions}/{overview.monthlyGoal})
                   </Badge>
                 )}
 
@@ -165,9 +161,9 @@ function ConvitePage() {
             <div className="flex items-baseline gap-2 bg-muted/40 px-4 py-3 rounded-lg border border-border/50">
               <Trophy className="size-5 text-amber-500" />
               <span className="text-2xl sm:text-3xl font-black font-mono text-foreground">
-                {overview.totalPoints}
+                {overview.totalTokens ?? overview.totalPoints}
               </span>
-              <span className="text-xs font-mono text-muted-foreground uppercase">pontos</span>
+              <span className="text-xs font-mono text-muted-foreground uppercase">Tokens</span>
             </div>
           </div>
 
@@ -231,8 +227,8 @@ function ConvitePage() {
               <span className="text-xl font-bold font-mono text-foreground">{overview.conversions}</span>
             </div>
             <div className="col-span-2 sm:col-span-1 rounded-lg border border-border/60 bg-muted/30 p-4 text-center">
-              <span className="text-[11px] font-mono text-muted-foreground uppercase block">Pontos por Amigo</span>
-              <span className="text-xl font-bold font-mono text-emerald-600">+100 pts</span>
+              <span className="text-[11px] font-mono text-muted-foreground uppercase block">Tokens por Amigo</span>
+              <span className="text-xl font-bold font-mono text-emerald-600">+100 Tokens</span>
             </div>
           </div>
         </section>
@@ -321,7 +317,7 @@ function ConvitePage() {
                     <div className="flex items-center gap-3 pt-1 text-xs font-mono text-muted-foreground">
                       <span>
                         {raffle.pointsCost > 0
-                          ? `Custo: ${raffle.pointsCost} pontos por cupom`
+                          ? `Custo: ${raffle.tokensCost ?? raffle.pointsCost} Tokens por cupom`
                           : "Participação: Gratuita para membros cadastrados"}
                       </span>
                       {overview && (
@@ -360,7 +356,7 @@ function ConvitePage() {
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-lg sm:text-xl font-bold text-foreground">Prêmios e Vouchers Resgatáveis</h2>
-              <p className="text-xs text-muted-foreground">Troque seus pontos acumulados por benefícios na região.</p>
+              <p className="text-xs text-muted-foreground">Troque seus Tokens acumulados por benefícios na região.</p>
             </div>
             <Badge variant="outline" className="font-mono text-xs">
               {rewards.length} disponíveis
@@ -369,7 +365,9 @@ function ConvitePage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {rewards.map((reward: InviteRewardDTO) => {
-              const canClaim = overview && overview.totalPoints >= reward.pointsRequired;
+              const currentBalance = overview?.totalTokens ?? overview?.totalPoints ?? 0;
+              const cost = reward.tokensRequired ?? reward.pointsRequired;
+              const canClaim = overview && currentBalance >= cost;
               const isOutOfStock = reward.stock !== null && reward.stock <= 0;
 
               return (
@@ -380,7 +378,7 @@ function ConvitePage() {
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="text-base font-black font-mono text-foreground">
-                        {reward.pointsRequired} pts
+                        {cost} Tokens
                       </span>
                       {reward.stock !== null && (
                         <span className="text-[10px] font-mono text-muted-foreground">
@@ -410,7 +408,7 @@ function ConvitePage() {
                       ? "Faça login para resgatar"
                       : canClaim
                       ? "Resgatar Recompensa"
-                      : `Faltam ${reward.pointsRequired - (overview?.totalPoints || 0)} pts`}
+                      : `Faltam ${cost - currentBalance} Tokens`}
                   </Button>
                 </div>
               );
@@ -464,7 +462,7 @@ function ConvitePage() {
 
                   <div className="text-right">
                     <span className="text-xs font-black font-mono text-foreground block">
-                      {ambassador.totalPoints} pts
+                      {ambassador.totalTokens ?? ambassador.totalPoints} Tokens
                     </span>
                   </div>
                 </div>

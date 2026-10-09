@@ -662,7 +662,7 @@ function WorkspaceSitesHubPage() {
  onClick={() => setTemplateNicheFilter(cat)}
  className="h-7 text-xs rounded-lg capitalize cursor-pointer"
  >
- {cat === "all" ? "Todos os Nichos" : cat}
+ {cat === "all" ? "Todos" : cat}
  </Button>
  ))}
  </div>

@@ -2340,6 +2340,12 @@ export const getPublicExperienceDocumentBySlug = createServerFn({ method: "GET" 
     setSellerRefCookie(doc.owner_id);
   }
 
+  // Suporte a Documento Moderno Omni-Builder
+  const omniDoc = (doc.settings as any)?.omni_page;
+  if (omniDoc?.blocks && Array.isArray(omniDoc.blocks) && omniDoc.blocks.length > 0) {
+    return { status: "ok" as const, data: { document: doc as ExperienceDocument, tree: [] } };
+  }
+
  // 2. Get the latest PUBLISHED version
  const { data: versions, error: versionsError } = await db
  .from("experience_versions")
