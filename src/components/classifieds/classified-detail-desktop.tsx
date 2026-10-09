@@ -8,7 +8,7 @@ import { formatRelativeTime } from "@/lib/datetime";
 import { trackAndOpenWhatsApp } from "@/lib/whatsapp";
 import { FavoriteButton } from "@/components/common/favorite-button";
 import { MapLibreCanvas } from "@/components/mobility/maplibre-canvas";
-import { resolveClassifiedNiche, getClassifiedPrimaryCtaLabel, isClassifiedConversational, getClassifiedPaymentMethods } from "@/lib/classifieds/semantics";
+import { resolveClassifiedNiche, getClassifiedPrimaryCtaLabel, isClassifiedConversational, getClassifiedPaymentMethods, isNichePaymentApplicable } from "@/lib/classifieds/semantics";
 import { resolveClassifiedDetailedSpecs } from "@/lib/classifieds/canonical-specs-resolver";
 import { NicheSpecificationsDisplay } from "@/components/common/niche-specifications-display";
 import { LeadFormModal } from "@/components/leads/lead-form-modal";
@@ -148,14 +148,15 @@ export function ClassifiedDetailDesktop({
   const offeredEquity = attrs.offered_equity_percent ? `${attrs.offered_equity_percent}%` : null;
 
   // Formas de pagamento
-  const acceptsPix = attrs.accepts_pix !== false;
+  const isPaymentAllowed = isNichePaymentApplicable(classified);
+  const acceptsPix = isPaymentAllowed && (attrs.accepts_pix !== false && (attrs.accepts_pix === true || paymentMethodsList.some((p) => p.id === "pix")));
   const pixDiscountPercent = Number(attrs.pix_discount_percent) || 0;
-  const acceptsCard = attrs.accepts_card !== false;
+  const acceptsCard = isPaymentAllowed && (attrs.accepts_card === true || paymentMethodsList.some((p) => p.id === "card"));
   const cardInterestFree = Boolean(attrs.card_interest_free);
-  const acceptsBoleto = Boolean(attrs.accepts_boleto);
-  const acceptsCarne = Boolean(attrs.accepts_carne);
-  const acceptsFinancing = Boolean(attrs.accepts_financing);
-  const acceptsTrade = Boolean(attrs.accepts_trade);
+  const acceptsBoleto = isPaymentAllowed && Boolean(attrs.accepts_boleto);
+  const acceptsCarne = isPaymentAllowed && Boolean(attrs.accepts_carne);
+  const acceptsFinancing = isPaymentAllowed && Boolean(attrs.accepts_financing);
+  const acceptsTrade = isPaymentAllowed && Boolean(attrs.accepts_trade);
 
   // Vendedor
   const author = classified.profiles as any;
@@ -461,7 +462,7 @@ export function ClassifiedDetailDesktop({
               {[
                 { id: "overview", label: "Visão Geral" },
                 { id: "specs", label: "Especificações" },
-                { id: "payments", label: "Pagamento & Financiamento" },
+                ...(isPaymentAllowed && paymentMethodsList.length > 0 ? [{ id: "payments", label: "Pagamento & Financiamento" }] : []),
                 { id: "seller", label: "Anunciante" },
                 ...(!classified.hide_location && !attrs.hide_location && classified.location_lat && classified.location_lng ? [{ id: "map", label: "Localização" }] : []),
               ].map((t) => (
@@ -1017,7 +1018,7 @@ export function ClassifiedDetailDesktop({
               )}
 
               {/* Formas de Pagamento Rápidas (Exibidas apenas em modo de abas quando a aba de pagamentos não está visível) */}
-              {displayMode === "tabs" && activeTab !== "payments" && (
+              {isPaymentAllowed && displayMode === "tabs" && activeTab !== "payments" && (
                 <div className="flex flex-wrap gap-2 pt-2">
                   {acceptsPix && (
                     <span className="inline-flex items-center gap-1 px-3 py-1 rounded-md text-xs font-semibold bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">

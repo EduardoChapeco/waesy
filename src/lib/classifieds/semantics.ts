@@ -1329,6 +1329,22 @@ export function getClassifiedFeatureCards(classified: any): ClassifiedFeatureCar
   return cards;
 }
 
+/**
+ * Determina se o nicho semântico opera com transações financeiras / métodos de pagamento.
+ * Vagas de emprego ("job" / "vaga") e doações solidárias ("donation" / "doacao") NUNCA cobram ou exigem formas de pagamento.
+ */
+export function isNichePaymentApplicable(nicheIdOrClassified: string | any): boolean {
+  if (!nicheIdOrClassified) return true;
+  let resolvedId = "";
+  if (typeof nicheIdOrClassified === "string") {
+    resolvedId = nicheIdOrClassified.toLowerCase();
+  } else {
+    const n = resolveClassifiedNiche(nicheIdOrClassified);
+    resolvedId = n?.id || "";
+  }
+  return resolvedId !== "job" && resolvedId !== "vaga" && resolvedId !== "donation" && resolvedId !== "doacao";
+}
+
 export interface ClassifiedPaymentMethodItem {
   id: string;
   label: string;
@@ -1341,9 +1357,12 @@ export interface ClassifiedPaymentMethodItem {
 /**
  * Retorna os métodos de pagamento estruturados do anúncio.
  * Em classificados e serviços C2C, os métodos são informativos (is_informative_only = true).
+ * Para vagas de emprego ("job") e doações ("donation"), retorna imediatamente vazio.
  */
 export function getClassifiedPaymentMethods(classified: any): ClassifiedPaymentMethodItem[] {
   if (!classified) return [];
+  if (!isNichePaymentApplicable(classified)) return [];
+
   const attrs = classified.attributes || {};
   const paymentMethods = Array.isArray(attrs.payment_methods) ? attrs.payment_methods : [];
   const acceptedMethods = Array.isArray(attrs.accepted_payment_methods) ? attrs.accepted_payment_methods : [];

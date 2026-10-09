@@ -8,7 +8,7 @@ import { trackAndOpenWhatsApp } from "@/lib/whatsapp";
 import { FavoriteButton } from "@/components/common/favorite-button";
 import { NativeBackButton } from "@/components/navigation";
 import { MapLibreCanvas } from "@/components/mobility/maplibre-canvas";
-import { resolveClassifiedNiche, getClassifiedPrimaryCtaLabel, isClassifiedConversational, getClassifiedPaymentMethods } from "@/lib/classifieds/semantics";
+import { resolveClassifiedNiche, getClassifiedPrimaryCtaLabel, isClassifiedConversational, getClassifiedPaymentMethods, isNichePaymentApplicable } from "@/lib/classifieds/semantics";
 import { resolveClassifiedDetailedSpecs } from "@/lib/classifieds/canonical-specs-resolver";
 import { NicheSpecificationsDisplay } from "@/components/common/niche-specifications-display";
 import { LeadFormModal } from "@/components/leads/lead-form-modal";
@@ -149,9 +149,10 @@ export function ClassifiedDetailMobile({
   const offeredEquity = attrs.offered_equity_percent ? `${attrs.offered_equity_percent}%` : null;
 
   // Condições comerciais
-  const acceptsPix = attrs.accepts_pix !== false;
+  const isPaymentAllowed = isNichePaymentApplicable(classified);
+  const acceptsPix = isPaymentAllowed && (attrs.accepts_pix !== false && (attrs.accepts_pix === true || paymentMethodsList.some((p) => p.id === "pix")));
   const pixDiscountPercent = Number(attrs.pix_discount_percent) || 0;
-  const acceptsCard = attrs.accepts_card !== false;
+  const acceptsCard = isPaymentAllowed && (attrs.accepts_card === true || paymentMethodsList.some((p) => p.id === "card"));
   const cardInterestFree = Boolean(attrs.card_interest_free);
 
   // Vendedor e Contato
@@ -548,7 +549,7 @@ export function ClassifiedDetailMobile({
             {[
               { id: "overview", label: "Visão Geral" },
               { id: "specs", label: "Specs" },
-              { id: "payments", label: "Pagamento" },
+              ...(isPaymentAllowed && paymentMethodsList.length > 0 ? [{ id: "payments", label: "Pagamento" }] : []),
               { id: "seller", label: "Vendedor" },
               ...(!classified.hide_location && !attrs.hide_location && classified.location_lat && classified.location_lng ? [{ id: "map", label: "Mapa" }] : []),
             ].map((t) => (

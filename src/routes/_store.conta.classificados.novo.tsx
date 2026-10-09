@@ -41,7 +41,7 @@ import { analyzeCommercialPointPotential, auditCnpjWithSimLabs } from "@/service
 import { lookupCnpj } from "@/services/public-apis.functions";
 import { CANONICAL_VEHICLE_BRANDS, CANONICAL_TRANSMISSIONS, CANONICAL_FUELS, CANONICAL_VEHICLE_COLORS, CANONICAL_VEHICLE_OPTIONS, CANONICAL_VEHICLE_PROVENANCE, CANONICAL_GOODS_SEGMENTS, CANONICAL_ITEM_CONDITIONS, CANONICAL_SMARTPHONE_BRANDS, CANONICAL_COMPUTER_TYPES, CANONICAL_COMPUTER_BRANDS, CANONICAL_PROCESSORS, CANONICAL_RAM_OPTIONS, CANONICAL_STORAGE_OPTIONS, CANONICAL_APPLIANCE_TYPES, CANONICAL_APPLIANCE_BRANDS, CANONICAL_VOLTAGES, CANONICAL_GAME_CONSOLES, CANONICAL_FASHION_CATEGORIES, CANONICAL_FASHION_SIZES, CANONICAL_FOOD_SUBNICHES, CANONICAL_SERVICE_SUBNICHES, CANONICAL_BUSINESS_TYPES, CANONICAL_BUSINESS_SEGMENTS, CANONICAL_SALE_REASONS, CANONICAL_EMPLOYEES_RANGES, CANONICAL_COMMERCIAL_POINT_TYPES, CANONICAL_INVESTMENT_MODELS, CANONICAL_PROJECT_STAGES, CANONICAL_USE_OF_FUNDS, CANONICAL_GROCERY_DEPARTMENTS, CANONICAL_UNIT_TYPES, CANONICAL_STORAGE_TEMPERATURES, CANONICAL_MEAT_CUT_OPTIONS, CANONICAL_BAKERY_PREP_OPTIONS, GroceryFreshPricing, GroceryRipenessConfig, ProgressiveDiscountTier, OrderBumpOffer, RipenessStage, DEFAULT_RIPENESS_LABELS } from "@/lib/classifieds/canonical-taxonomy";
 import { CANONICAL_EDUCATION_LEVELS, CANONICAL_EXPERIENCE_LEVELS, CANONICAL_JOB_REGIMES, CANONICAL_WORKPLACE_MODELS, CANONICAL_WORK_SCHEDULES, CANONICAL_SALARY_RANGES, CANONICAL_JOB_BENEFITS, SUGGESTED_JOB_SKILLS, getEducationLabel, getExperienceLabel, getRegimeLabel, getWorkplaceModelLabel } from "@/lib/classifieds/canonical-hiring";
-import { resolveClassifiedNiche, getNicheDefaultInquiryConfig } from "@/lib/classifieds/semantics";
+import { resolveClassifiedNiche, getNicheDefaultInquiryConfig, isNichePaymentApplicable } from "@/lib/classifieds/semantics";
 import { z } from "zod";
 
 const ClassifiedSearchSchema = z.object({
@@ -349,7 +349,15 @@ function NovoClassificadoPage() {
         try {
           const saved = sessionStorage.getItem("waesy_ai_prefill");
           if (saved) {
-            setInitialData(JSON.parse(saved));
+            const parsed = JSON.parse(saved);
+            const savedNiche = parsed?.attributes?.niche || parsed?.category;
+            // Se o usuário navegou explicitamente com ?tipo=x e o prefill é incompatível, descarta prefill residual
+            if (selectedType && savedNiche && savedNiche !== selectedType && savedNiche !== "goods") {
+              sessionStorage.removeItem("waesy_ai_prefill");
+              setInitialData(null);
+            } else {
+              setInitialData(parsed);
+            }
             setIsLoadingEdit(false);
             return;
           }
@@ -1676,13 +1684,20 @@ function SpecializedClassifiedEditor({
   const [newFeatureInput, setNewFeatureInput] = useState("");
 
   // Specialized: Formas de Pagamento & Cancelamento (Zero Hardcoded)
-  const [acceptsPix, setAcceptsPix] = useState(true);
-  const [acceptsCard, setAcceptsCard] = useState(false);
+  const isPaymentAllowed = isNichePaymentApplicable(niche.id);
+  const [acceptsPix, setAcceptsPix] = useState(
+    isPaymentAllowed ? (initialData?.attributes?.accepts_pix ?? true) : false
+  );
+  const [acceptsCard, setAcceptsCard] = useState(
+    isPaymentAllowed ? (initialData?.attributes?.accepts_card ?? false) : false
+  );
   const [maxInstallments, setMaxInstallments] = useState(
     initialData?.attributes?.max_installments ?? 12
   );
   const [cardInterestFree, setCardInterestFree] = useState(true);
-  const [acceptsBoleto, setAcceptsBoleto] = useState(false);
+  const [acceptsBoleto, setAcceptsBoleto] = useState(
+    isPaymentAllowed ? Boolean(initialData?.attributes?.accepts_boleto) : false
+  );
   const [boletoDueDays, setBoletoDueDays] = useState(3);
   const [acceptsBoletoInstallments, setAcceptsBoletoInstallments] = useState(false);
   const [maxBoletoInstallments, setMaxBoletoInstallments] = useState(12);
@@ -1693,8 +1708,12 @@ function SpecializedClassifiedEditor({
   const [carneGraceDays, setCarneGraceDays] = useState(30);
   const [carneMinDownPaymentCents, setCarneMinDownPaymentCents] = useState<number | undefined>(undefined);
   const [carneNotes, setCarneNotes] = useState("");
-  const [acceptsCash, setAcceptsCash] = useState(true);
-  const [acceptsTrade, setAcceptsTrade] = useState(false);
+  const [acceptsCash, setAcceptsCash] = useState(
+    isPaymentAllowed && niche.id !== "digital" ? (initialData?.attributes?.accepts_cash ?? true) : false
+  );
+  const [acceptsTrade, setAcceptsTrade] = useState(
+    isPaymentAllowed && niche.id !== "digital" ? Boolean(initialData?.attributes?.accepts_trade) : false
+  );
   const [cancellationPolicy, setCancellationPolicy] = useState<"flexible" | "moderate" | "strict" | "negotiable">("flexible");
 
   // ── Modo Conveniência & Fast Delivery (Bebidas, Mercado, Lanches) ──
@@ -2491,8 +2510,8 @@ function SpecializedClassifiedEditor({
         carne_grace_days: acceptsCarne ? carneGraceDays : undefined,
         carne_min_down_payment_cents: acceptsCarne ? carneMinDownPaymentCents : undefined,
         carne_notes: acceptsCarne ? carneNotes.trim() : undefined,
-        accepts_cash: niche.id === "digital" ? false : acceptsCash,
-        accepts_trade: niche.id === "digital" ? false : acceptsTrade,
+        accepts_cash: isPaymentAllowed && niche.id !== "digital" ? acceptsCash : false,
+        accepts_trade: isPaymentAllowed && niche.id !== "digital" ? acceptsTrade : false,
         trade_notes: acceptsTrade ? tradeNotes.trim() : undefined,
         accepts_financing: acceptsFinancing,
         financing_notes: acceptsFinancing ? financingNotes.trim() : undefined,
@@ -2519,17 +2538,19 @@ function SpecializedClassifiedEditor({
           accepts_financing: acceptsFinancing,
           financing_notes: financingNotes,
         },
-        accepted_payment_methods: [
-          ...(acceptsPix ? ["pix"] : []),
-          ...(acceptsCard ? ["cartao_credito"] : []),
-          ...(acceptsBoleto ? ["boleto"] : []),
-          ...(acceptsBoletoInstallments ? ["boleto_parcelado"] : []),
-          ...(acceptsCarne ? ["carne_digital"] : []),
-          ...(acceptsCash ? ["dinheiro"] : []),
-          ...(acceptsTrade ? ["permuta"] : []),
-          ...(acceptsFinancing ? ["financiamento"] : []),
-        ],
-        installments_available: acceptsCard || acceptsBoletoInstallments || acceptsCarne,
+        accepted_payment_methods: isPaymentAllowed
+          ? [
+              ...(acceptsPix ? ["pix"] : []),
+              ...(acceptsCard ? ["cartao_credito"] : []),
+              ...(acceptsBoleto ? ["boleto"] : []),
+              ...(acceptsBoletoInstallments ? ["boleto_parcelado"] : []),
+              ...(acceptsCarne ? ["carne_digital"] : []),
+              ...(acceptsCash ? ["dinheiro"] : []),
+              ...(acceptsTrade ? ["permuta"] : []),
+              ...(acceptsFinancing ? ["financiamento"] : []),
+            ]
+          : [],
+        installments_available: isPaymentAllowed ? (acceptsCard || acceptsBoletoInstallments || acceptsCarne) : false,
         cancellation_policy: cancellationPolicy,
         max_installments: acceptsCard ? Number(maxInstallments) || 1 : (acceptsCarne ? Number(maxCarneInstallments) || 1 : (acceptsBoletoInstallments ? Number(maxBoletoInstallments) || 1 : 1)),
         free_shipping_local: niche.id === "desapego" ? freeShippingLocal : false,
@@ -2817,20 +2838,22 @@ function SpecializedClassifiedEditor({
           setup_fee_cents: niche.id === "assinatura" ? setupFeeCents ?? undefined : undefined,
           trial_days: niche.id === "assinatura" ? trialDays ?? undefined : undefined,
           recurring_features: niche.id === "assinatura" && recurringFeatures.length > 0 ? recurringFeatures : undefined,
-          accepts_card: acceptsCard,
-          max_installments: acceptsCard ? parseInt(String(maxInstallments)) || 1 : undefined,
-          accepts_trade: acceptsTrade,
-          accepted_payment_methods: [
-            ...(acceptsPix ? ["pix"] : []),
-            ...(acceptsCard ? ["cartao_credito"] : []),
-            ...(acceptsBoleto ? ["boleto"] : []),
-            ...(acceptsBoletoInstallments ? ["boleto_parcelado"] : []),
-            ...(acceptsCarne ? ["carne_digital"] : []),
-            ...(acceptsCash ? ["dinheiro"] : []),
-            ...(acceptsTrade ? ["permuta"] : []),
-            ...(acceptsFinancing ? ["financiamento"] : []),
-          ],
-          installments_available: acceptsCard || acceptsBoletoInstallments || acceptsCarne,
+          accepts_card: isPaymentAllowed ? acceptsCard : false,
+          max_installments: isPaymentAllowed && acceptsCard ? parseInt(String(maxInstallments)) || 1 : undefined,
+          accepts_trade: isPaymentAllowed ? acceptsTrade : false,
+          accepted_payment_methods: isPaymentAllowed
+            ? [
+                ...(acceptsPix ? ["pix"] : []),
+                ...(acceptsCard ? ["cartao_credito"] : []),
+                ...(acceptsBoleto ? ["boleto"] : []),
+                ...(acceptsBoletoInstallments ? ["boleto_parcelado"] : []),
+                ...(acceptsCarne ? ["carne_digital"] : []),
+                ...(acceptsCash ? ["dinheiro"] : []),
+                ...(acceptsTrade ? ["permuta"] : []),
+                ...(acceptsFinancing ? ["financiamento"] : []),
+              ]
+            : [],
+          installments_available: isPaymentAllowed ? (acceptsCard || acceptsBoletoInstallments || acceptsCarne) : false,
           cancellation_policy: cancellationPolicy,
           store_id: selectedStoreId || undefined,
           sub_category: niche.id === "desapego" ? desapegoCategory : undefined,
@@ -2843,13 +2866,13 @@ function SpecializedClassifiedEditor({
           max_discount_pct: maxDiscountPct,
           feed_media: feedMedia,
           feed_images: feedMedia,
-          payment_settings: {
+          payment_settings: isPaymentAllowed ? {
             pix_key: pixKey.trim(),
             pix_key_type: pixKeyType,
             pix_receiver_name: pixReceiverName.trim(),
             payment_link: paymentLink.trim(),
             payment_instructions: paymentInstructions.trim(),
-          },
+          } : undefined,
           price_cents:
             pricingType === "free" || niche.id === "doacao"
               ? 0
@@ -3629,7 +3652,11 @@ function SpecializedClassifiedEditor({
             { step: 1, label: "Categoria", short: "Categoria" },
             { step: 2, label: "Fotos e Mídia", short: "Mídia" },
             { step: 3, label: "Informações", short: "Info" },
-            { step: 4, label: "Preço e Pagamento", short: "Preço" },
+            {
+              step: 4,
+              label: niche.id === "vaga" ? "Remuneração" : niche.id === "doacao" ? "Disponibilidade" : "Preço e Pagamento",
+              short: niche.id === "vaga" ? "Salário" : niche.id === "doacao" ? "Doação" : "Preço",
+            },
             { step: 5, label: "Prévia e Publicar", short: "Publicar" },
           ].map((s) => {
             const isCurrent = currentStep === s.step;
@@ -4073,12 +4100,25 @@ function SpecializedClassifiedEditor({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="fixed">Preço Fixo Definido (R$)</SelectItem>
-                    <SelectItem value="starting_at">A partir de... (Preço Inicial)</SelectItem>
-                    <SelectItem value="price_range">Faixa de Preço (Mínimo e Máximo)</SelectItem>
-                    <SelectItem value="on_quote">Sob Orçamento / Cotação Personalizada</SelectItem>
-                    <SelectItem value="exchange_only">Troca / Permuta Direta (Sem valor)</SelectItem>
-                    <SelectItem value="free">Gratuito / Doação Solidária (R$ 0)</SelectItem>
+                    {niche.id === "vaga" ? (
+                      <>
+                        <SelectItem value="fixed">Salário Fixo Mensal (R$)</SelectItem>
+                        <SelectItem value="starting_at">A partir de... (Piso Salarial)</SelectItem>
+                        <SelectItem value="price_range">Faixa Salarial (Mínimo e Máximo)</SelectItem>
+                        <SelectItem value="on_quote">A Combinar / A Negociar na Entrevista</SelectItem>
+                      </>
+                    ) : niche.id === "doacao" ? (
+                      <SelectItem value="free">Gratuito / Doação Solidária (R$ 0)</SelectItem>
+                    ) : (
+                      <>
+                        <SelectItem value="fixed">Preço Fixo Definido (R$)</SelectItem>
+                        <SelectItem value="starting_at">A partir de... (Preço Inicial)</SelectItem>
+                        <SelectItem value="price_range">Faixa de Preço (Mínimo e Máximo)</SelectItem>
+                        <SelectItem value="on_quote">Sob Orçamento / Cotação Personalizada</SelectItem>
+                        <SelectItem value="exchange_only">Troca / Permuta Direta (Sem valor)</SelectItem>
+                        <SelectItem value="free">Gratuito / Doação Solidária (R$ 0)</SelectItem>
+                      </>
+                    )}
                   </SelectContent>
                 </Select>
               </div>
@@ -8417,7 +8457,7 @@ function SpecializedClassifiedEditor({
               )}
 
               {/* Formas de Pagamento (LISTA ESTRUTURADA ESPAÇOSA - ZERO TRUNCATION - 1x = À VISTA) */}
-              {niche.id !== "vaga" && (
+              {isPaymentAllowed && (
                 <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60">
                   <div className="flex items-center justify-between pb-3 border-b border-border/40">
                     <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
