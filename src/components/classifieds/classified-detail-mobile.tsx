@@ -334,7 +334,7 @@ export function ClassifiedDetailMobile({
 
             {/* Contador Numérico Discreto no Canto */}
             {images.length > 1 && (
-              <div className="absolute bottom-3 right-3 px-2 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-[10px] font-mono font-medium pointer-events-none z-10">
+              <div className="absolute bottom-3 right-3 px-2 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-xs font-mono font-medium pointer-events-none z-10">
                 {activeImage + 1}/{images.length}
               </div>
             )}
@@ -412,16 +412,16 @@ export function ClassifiedDetailMobile({
         {/* Preço & Badges */}
         <div className="space-y-2">
           <div className="flex flex-wrap items-center gap-2">
-            <Badge variant="outline" className="text-[10px] font-semibold text-primary border-primary/30 bg-primary/10">
+            <Badge variant="outline" className="text-xs font-semibold text-primary border-primary/30 bg-primary/10">
               {niche.shortLabel || niche.title}
             </Badge>
             {classified.condition && (
-              <Badge variant="secondary" className="text-[10px] font-medium">
+              <Badge variant="secondary" className="text-xs font-medium">
                 {classified.condition === "new" ? "Novo" : classified.condition === "refurbished" ? "Revisado" : "Usado"}
               </Badge>
             )}
             {attrs.delivery_available && (
-              <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded-md">
+              <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded-md">
                 <Truck className="size-3" /> Entrega
               </span>
             )}
@@ -436,7 +436,7 @@ export function ClassifiedDetailMobile({
               </div>
             ) : isInvestmentOpportunity ? (
               <div className="space-y-1">
-                <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider block">Aporte Solicitado</span>
+                <span className="text-xs uppercase font-bold text-muted-foreground tracking-wider block">Aporte Solicitado</span>
                 <span className="text-2xl font-extrabold text-foreground font-mono">
                   {targetInvestment > 0 ? formatMoney(targetInvestment) : (priceCents > 0 ? formatMoney(priceCents) : "A combinar")}
                 </span>
@@ -487,7 +487,7 @@ export function ClassifiedDetailMobile({
               <span className="text-xs font-semibold text-foreground truncate">
                 {classified.store_name || author?.full_name || "Anunciante Comunitário"}
               </span>
-              <div className="flex items-center gap-1 text-[11px] text-emerald-600 dark:text-emerald-400">
+              <div className="flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400">
                 <ShieldCheck className="size-3 shrink-0" />
                 <span>Perfil Verificado Waesy</span>
               </div>
@@ -529,7 +529,7 @@ export function ClassifiedDetailMobile({
               <FileText className="size-4 shrink-0" />
               <span>{attrs?.inquiry_config?.title || "Formulário de Contato & Cotação"}</span>
             </div>
-            <p className="text-[11px] text-muted-foreground leading-relaxed">
+            <p className="text-xs text-muted-foreground leading-relaxed">
               {attrs?.inquiry_config?.subtitle || "Envie suas preferências diretamente para a equipe ou vendedor deste anúncio."}
             </p>
             <Button
@@ -573,86 +573,202 @@ export function ClassifiedDetailMobile({
         {(displayMode === "continuous_list" || activeTab === "overview") && (
           <>
             {templateStyle === "automotivo" && (
-              <div className="rounded-lg border border-border/60 bg-muted/20 p-3 grid grid-cols-2 gap-2 text-xs">
-                <div>
-                  <span className="text-xs uppercase font-semibold text-muted-foreground block">Ano/Mod</span>
-                  <span className="font-bold text-foreground">{attrs.year_fab || attrs.year_model ? `${attrs.year_fab || ""}/${attrs.year_model || ""}` : "Consulte"}</span>
+              <div className="space-y-3">
+                <div className="rounded-lg border border-border/60 bg-muted/20 p-3 grid grid-cols-2 gap-2 text-xs">
+                  <div>
+                    <span className="text-xs uppercase font-semibold text-muted-foreground block">Ano/Mod</span>
+                    <span className="font-bold text-foreground">{attrs.year_fab || attrs.year_model ? `${attrs.year_fab || ""}/${attrs.year_model || ""}` : "Consulte"}</span>
+                  </div>
+                  <div>
+                    <span className="text-xs uppercase font-semibold text-muted-foreground block">KM</span>
+                    <span className="font-bold text-foreground">{attrs.mileage_km != null ? `${Number(attrs.mileage_km).toLocaleString("pt-BR")} km` : "Consulte"}</span>
+                  </div>
+                  <div>
+                    <span className="text-xs uppercase font-semibold text-muted-foreground block">Câmbio</span>
+                    <span className="font-bold text-foreground">{attrs.transmission || "Manual"}</span>
+                  </div>
+                  <div>
+                    <span className="text-xs uppercase font-semibold text-muted-foreground block">Combustível</span>
+                    <span className="font-bold text-foreground">{attrs.fuel_type || "Flex"}</span>
+                  </div>
                 </div>
-                <div>
-                  <span className="text-xs uppercase font-semibold text-muted-foreground block">KM</span>
-                  <span className="font-bold text-foreground">{attrs.mileage_km != null ? `${Number(attrs.mileage_km).toLocaleString("pt-BR")} km` : "Consulte"}</span>
-                </div>
-                <div>
-                  <span className="text-xs uppercase font-semibold text-muted-foreground block">Câmbio</span>
-                  <span className="font-bold text-foreground">{attrs.transmission || "Manual"}</span>
-                </div>
-                <div>
-                  <span className="text-xs uppercase font-semibold text-muted-foreground block">Combustível</span>
-                  <span className="font-bold text-foreground">{attrs.fuel_type || "Flex"}</span>
-                </div>
+
+                {Array.isArray(attrs.features) && attrs.features.length > 0 && (
+                  <div className="rounded-lg border border-border/50 bg-card p-3 space-y-2">
+                    <span className="text-xs uppercase font-bold text-muted-foreground tracking-wider block">
+                      Opcionais & Equipamentos
+                    </span>
+                    <div className="flex flex-wrap gap-2">
+                      {attrs.features.map((feat: string, idx: number) => (
+                        <span
+                          key={idx}
+                          className="inline-flex items-center gap-2 px-3 py-1 rounded-lg text-xs font-semibold bg-muted/60 text-foreground border border-border/50"
+                        >
+                          <Check className="size-3 text-primary shrink-0" />
+                          <span>{feat}</span>
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {(attrs.accepts_trade || attrs.accepts_financing || negotiable) && onOpenProposalModal && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={onOpenProposalModal}
+                    className="w-full h-11 min-h-11 text-xs font-bold rounded-lg border-primary/30 text-primary bg-primary/5 hover:bg-primary/10 active:scale-95 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  >
+                    Enviar Proposta / Veículo na Troca
+                  </Button>
+                )}
               </div>
             )}
 
             {templateStyle === "imobiliario" && (
-              <div className="rounded-lg border border-border/60 bg-muted/20 p-3 grid grid-cols-2 gap-2 text-xs">
-                <div>
-                  <span className="text-xs uppercase font-semibold text-muted-foreground block">Área Útil</span>
-                  <span className="font-bold text-foreground">{attrs.area_sqm ? `${attrs.area_sqm} m²` : "Consulte"}</span>
+              <div className="space-y-3">
+                <div className="rounded-lg border border-border/60 bg-muted/20 p-3 grid grid-cols-2 gap-2 text-xs">
+                  <div>
+                    <span className="text-xs uppercase font-semibold text-muted-foreground block">Área Útil</span>
+                    <span className="font-bold text-foreground">{attrs.area_sqm ? `${attrs.area_sqm} m²` : "Consulte"}</span>
+                  </div>
+                  <div>
+                    <span className="text-xs uppercase font-semibold text-muted-foreground block">Quartos</span>
+                    <span className="font-bold text-foreground">{attrs.bedrooms || 0} qtos {attrs.suites ? `(${attrs.suites} suítes)` : ""}</span>
+                  </div>
+                  <div>
+                    <span className="text-xs uppercase font-semibold text-muted-foreground block">Vagas</span>
+                    <span className="font-bold text-foreground">{attrs.parking_spots || 0} vagas</span>
+                  </div>
+                  <div>
+                    <span className="text-xs uppercase font-semibold text-muted-foreground block">Condomínio</span>
+                    <span className="font-bold text-foreground">{attrs.condo_cents ? formatMoney(attrs.condo_cents) : "Isento"}</span>
+                  </div>
                 </div>
-                <div>
-                  <span className="text-xs uppercase font-semibold text-muted-foreground block">Quartos</span>
-                  <span className="font-bold text-foreground">{attrs.bedrooms || 0} qtos</span>
-                </div>
-                <div>
-                  <span className="text-xs uppercase font-semibold text-muted-foreground block">Vagas</span>
-                  <span className="font-bold text-foreground">{attrs.parking_spots || 0} vagas</span>
-                </div>
-                <div>
-                  <span className="text-xs uppercase font-semibold text-muted-foreground block">Condomínio</span>
-                  <span className="font-bold text-foreground">{attrs.condo_cents ? formatMoney(attrs.condo_cents) : "Isento"}</span>
-                </div>
+
+                {Array.isArray(attrs.amenities) && attrs.amenities.length > 0 && (
+                  <div className="rounded-lg border border-border/50 bg-card p-3 space-y-2">
+                    <span className="text-xs uppercase font-bold text-muted-foreground tracking-wider block">
+                      Comodidades do Imóvel & Condomínio
+                    </span>
+                    <div className="flex flex-wrap gap-2">
+                      {attrs.amenities.map((amenity: string, idx: number) => (
+                        <span
+                          key={idx}
+                          className="inline-flex items-center gap-2 px-3 py-1 rounded-lg text-xs font-semibold bg-muted/60 text-foreground border border-border/50"
+                        >
+                          <Check className="size-3 text-primary shrink-0" />
+                          <span>{amenity}</span>
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => handleStartNativeChat("Olá, gostaria de agendar uma visita para este imóvel.")}
+                  className="w-full h-11 min-h-11 text-xs font-bold rounded-lg border-primary/30 text-primary bg-primary/5 hover:bg-primary/10 active:scale-95 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                >
+                  Agendar Visita ao Imóvel
+                </Button>
               </div>
             )}
 
             {templateStyle === "resort_hotel" && (
-              <div className="rounded-lg border border-border/60 bg-muted/20 p-3 grid grid-cols-2 gap-2 text-xs">
-                <div>
-                  <span className="text-xs uppercase font-semibold text-muted-foreground block">Hóspedes</span>
-                  <span className="font-bold text-foreground">{attrs.max_guests || attrs.guests_text || "Consulte"} máx</span>
+              <div className="space-y-3">
+                <div className="rounded-lg border border-border/60 bg-muted/20 p-3 grid grid-cols-2 gap-2 text-xs">
+                  <div>
+                    <span className="text-xs uppercase font-semibold text-muted-foreground block">Hóspedes</span>
+                    <span className="font-bold text-foreground">{attrs.max_guests || attrs.guests_text || "Consulte"} máx</span>
+                  </div>
+                  <div>
+                    <span className="text-xs uppercase font-semibold text-muted-foreground block">Refeição</span>
+                    <span className="font-bold text-foreground">{attrs.meal_plan || "Café Incluso"}</span>
+                  </div>
+                  <div>
+                    <span className="text-xs uppercase font-semibold text-muted-foreground block">Check-in</span>
+                    <span className="font-bold text-foreground">{attrs.checkin_time || "14h"}</span>
+                  </div>
+                  <div>
+                    <span className="text-xs uppercase font-semibold text-muted-foreground block">Taxa Limpeza</span>
+                    <span className="font-bold text-foreground">{attrs.cleaning_fee_cents ? formatMoney(attrs.cleaning_fee_cents) : "Isenta"}</span>
+                  </div>
                 </div>
-                <div>
-                  <span className="text-xs uppercase font-semibold text-muted-foreground block">Refeição</span>
-                  <span className="font-bold text-foreground">{attrs.meal_plan || "Café Incluso"}</span>
-                </div>
-                <div>
-                  <span className="text-xs uppercase font-semibold text-muted-foreground block">Check-in</span>
-                  <span className="font-bold text-foreground">{attrs.checkin_time || "14h"}</span>
-                </div>
-                <div>
-                  <span className="text-xs uppercase font-semibold text-muted-foreground block">Taxa Limpeza</span>
-                  <span className="font-bold text-foreground">{attrs.cleaning_fee_cents ? formatMoney(attrs.cleaning_fee_cents) : "Isenta"}</span>
-                </div>
+
+                {Array.isArray(attrs.amenities) && attrs.amenities.length > 0 && (
+                  <div className="rounded-lg border border-border/50 bg-card p-3 space-y-2">
+                    <span className="text-xs uppercase font-bold text-muted-foreground tracking-wider block">
+                      Estrutura da Acomodação
+                    </span>
+                    <div className="flex flex-wrap gap-2">
+                      {attrs.amenities.map((amenity: string, idx: number) => (
+                        <span
+                          key={idx}
+                          className="inline-flex items-center gap-2 px-3 py-1 rounded-lg text-xs font-semibold bg-muted/60 text-foreground border border-border/50"
+                        >
+                          <Check className="size-3 text-primary shrink-0" />
+                          <span>{amenity}</span>
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {onOpenBookingModal && (
+                  <Button
+                    type="button"
+                    onClick={() => onOpenBookingModal()}
+                    className="w-full h-11 min-h-11 text-xs font-bold rounded-lg bg-primary text-primary-foreground shadow-xs active:scale-95 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  >
+                    Consultar Calendário & Reservar
+                  </Button>
+                )}
               </div>
             )}
 
             {templateStyle === "servicos_agenda" && (
-              <div className="rounded-lg border border-border/60 bg-muted/20 p-3 grid grid-cols-2 gap-2 text-xs">
-                <div>
-                  <span className="text-xs uppercase font-semibold text-muted-foreground block">Duração</span>
-                  <span className="font-bold text-foreground">{attrs.service_duration_minutes ? `${attrs.service_duration_minutes} min` : "Sob demanda"}</span>
+              <div className="space-y-3">
+                <div className="rounded-lg border border-border/60 bg-muted/20 p-3 grid grid-cols-2 gap-2 text-xs">
+                  <div>
+                    <span className="text-xs uppercase font-semibold text-muted-foreground block">Duração</span>
+                    <span className="font-bold text-foreground">{attrs.service_duration_minutes ? `${attrs.service_duration_minutes} min` : "Sob demanda"}</span>
+                  </div>
+                  <div>
+                    <span className="text-xs uppercase font-semibold text-muted-foreground block">Modalidade</span>
+                    <span className="font-bold text-foreground">{attrs.modality === "remote" ? "Online" : "Presencial"}</span>
+                  </div>
+                  <div>
+                    <span className="text-xs uppercase font-semibold text-muted-foreground block">Agenda</span>
+                    <span className="font-bold text-foreground">{attrs.booking_enabled ? "Ativo" : "Sob Consulta"}</span>
+                  </div>
+                  <div>
+                    <span className="text-xs uppercase font-semibold text-muted-foreground block">Região</span>
+                    <span className="font-bold text-foreground">{attrs.service_area || "Local"}</span>
+                  </div>
                 </div>
-                <div>
-                  <span className="text-xs uppercase font-semibold text-muted-foreground block">Modalidade</span>
-                  <span className="font-bold text-foreground">{attrs.modality === "remote" ? "Online" : "Presencial"}</span>
-                </div>
-                <div>
-                  <span className="text-xs uppercase font-semibold text-muted-foreground block">Agenda</span>
-                  <span className="font-bold text-foreground">{attrs.booking_enabled ? "Ativo" : "Sob Consulta"}</span>
-                </div>
-                <div>
-                  <span className="text-xs uppercase font-semibold text-muted-foreground block">Região</span>
-                  <span className="font-bold text-foreground">{attrs.service_area || "Local"}</span>
-                </div>
+
+                {(attrs.professional_council || attrs.specialty) && (
+                  <div className="rounded-lg border border-border/50 bg-card p-3 space-y-1">
+                    <span className="text-xs uppercase font-bold text-muted-foreground tracking-wider block">
+                      Credenciamento
+                    </span>
+                    <p className="text-xs text-foreground font-medium">
+                      {attrs.specialty ? `${attrs.specialty}` : ""}
+                      {attrs.specialty && attrs.professional_council ? " · " : ""}
+                      {attrs.professional_council ? `Registro: ${attrs.professional_council}` : ""}
+                    </p>
+                  </div>
+                )}
+
+                <Button
+                  type="button"
+                  onClick={() => handleStartNativeChat("Olá, gostaria de consultar a disponibilidade de horários para este atendimento.")}
+                  className="w-full h-11 min-h-11 text-xs font-bold rounded-lg bg-primary text-primary-foreground shadow-xs active:scale-95 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                >
+                  Consultar Agenda & Horários
+                </Button>
               </div>
             )}
           </>
@@ -698,7 +814,7 @@ export function ClassifiedDetailMobile({
               <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
                 Pagamento & Financiamento
               </h2>
-              <span className="text-[10px] text-muted-foreground font-mono">Condições</span>
+              <span className="text-xs text-muted-foreground font-mono">Condições</span>
             </div>
             <div className="rounded-lg border border-border/50 bg-card p-4 space-y-3">
               <div className="flex flex-wrap gap-1.5">
@@ -710,7 +826,7 @@ export function ClassifiedDetailMobile({
                     <pm.icon className="size-3 text-primary shrink-0" />
                     <span>{pm.label}</span>
                     {pm.badge && (
-                      <span className="text-[10px] font-mono text-muted-foreground">({pm.badge})</span>
+                      <span className="text-xs font-mono text-muted-foreground">({pm.badge})</span>
                     )}
                   </span>
                 ))}
@@ -732,7 +848,7 @@ export function ClassifiedDetailMobile({
                     onChange={(e) => setSimulatedInstallments(Number(e.target.value))}
                     className="w-full h-2 rounded-full accent-primary cursor-pointer"
                   />
-                  <div className="flex justify-between text-[10px] text-muted-foreground font-mono">
+                  <div className="flex justify-between text-xs text-muted-foreground font-mono">
                     <span>1x</span>
                     <span>{Math.min(24, Math.max(1, maxInstallments))}x</span>
                   </div>
@@ -761,7 +877,7 @@ export function ClassifiedDetailMobile({
         {/* ── 7. COMPROMISSO DE SEGURANÇA ── */}
         <div className="rounded-lg border border-border/40 bg-muted/20 p-3 flex items-start gap-3 text-muted-foreground">
           <ShieldCheck className="size-4 text-primary shrink-0 mt-1" />
-          <div className="text-[11px] leading-snug space-y-1">
+          <div className="text-xs leading-snug space-y-1">
             <span className="font-semibold text-foreground block">Dica de Segurança</span>
             <span>Nunca faça transferências antecipadas fora da plataforma. Prefira locais públicos para entregas.</span>
           </div>
@@ -776,29 +892,29 @@ export function ClassifiedDetailMobile({
           {isDonation ? (
             <div className="flex items-center gap-2">
               <span className="text-base font-extrabold text-emerald-600 font-mono">Gratuito</span>
-              <Badge variant="outline" className="text-[9px] font-bold text-emerald-600 border-emerald-500/30 bg-emerald-500/10">
+              <Badge variant="outline" className="text-xs font-bold text-emerald-600 border-emerald-500/30 bg-emerald-500/10">
                 Doação
               </Badge>
             </div>
           ) : isInvestmentOpportunity ? (
             <div className="flex flex-col">
-              <span className="text-[9px] uppercase font-bold text-muted-foreground tracking-wider">Aporte</span>
-              <span className="text-base font-extrabold text-foreground font-mono truncate">
+              <span className="text-xs uppercase font-bold text-muted-foreground tracking-wider">Aporte</span>
+              <span className="text-base font-extrabold text-foreground font-mono">
                 {targetInvestment > 0 ? formatMoney(targetInvestment) : "A combinar"}
               </span>
             </div>
           ) : (
             <div className="flex flex-col">
               <div className="flex items-baseline gap-1">
-                <span className="text-base sm:text-lg font-extrabold text-foreground font-mono truncate">
+                <span className="text-base sm:text-lg font-extrabold text-foreground font-mono">
                   {priceCents > 0 ? formatMoney(priceCents) : "Sob Consulta"}
                 </span>
                 {niche.priceSuffix && (
-                  <span className="text-[10px] text-muted-foreground shrink-0">{niche.priceSuffix}</span>
+                  <span className="text-xs text-muted-foreground shrink-0">{niche.priceSuffix}</span>
                 )}
               </div>
               {priceCents > 0 && maxInstallments > 1 && (
-                <span className="text-[10px] text-muted-foreground font-mono truncate">
+                <span className="text-xs text-muted-foreground font-mono">
                   até {maxInstallments}x de {formatMoney(installmentCents)}
                 </span>
               )}

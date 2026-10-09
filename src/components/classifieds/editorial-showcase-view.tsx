@@ -1152,26 +1152,44 @@ export function EditorialShowcaseView({
                     )}
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2 text-muted-foreground">
-                    <div>Regime: <strong className="text-foreground">{attrs.meal_plan || "Consulte"}</strong></div>
-                    <div>Transporte: <strong className="text-foreground">{transportType === "bus" ? "Ônibus Leito / Terrestre" : transportType === "cruise" ? "Cruzeiro Marítimo" : "Aéreo"}</strong></div>
-                    <div>Saída: <strong className="text-foreground">{attrs.departure_date ? formatDate(attrs.departure_date) : attrs.dates_text || "A combinar"}</strong></div>
-                    <div>Retorno: <strong className="text-foreground">{attrs.return_date ? formatDate(attrs.return_date) : "Conforme roteiro"}</strong></div>
-                    <div>Vagas / Grupo: <strong className="text-foreground">{attrs.guests_text || "Grupo Confirmado"}</strong></div>
-                    <div>Cancelamento: <strong className="text-foreground capitalize">{cancellationPolicy === "flexible" ? "Flexível" : cancellationPolicy === "moderate" ? "Moderado" : "Especial de Grupo"}</strong></div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm text-muted-foreground">
+                    <div className="flex items-center justify-between p-3 rounded-lg bg-background/50 border border-border/30">
+                      <span>Regime:</span>
+                      <strong className="text-foreground">{attrs.meal_plan || "Consulte"}</strong>
+                    </div>
+                    <div className="flex items-center justify-between p-3 rounded-lg bg-background/50 border border-border/30">
+                      <span>Transporte:</span>
+                      <strong className="text-foreground">{transportType === "bus" ? "Ônibus Leito / Terrestre" : transportType === "cruise" ? "Cruzeiro Marítimo" : "Aéreo"}</strong>
+                    </div>
+                    <div className="flex items-center justify-between p-3 rounded-lg bg-background/50 border border-border/30">
+                      <span>Saída:</span>
+                      <strong className="text-foreground">{attrs.departure_date ? formatDate(attrs.departure_date) : attrs.dates_text || "A combinar"}</strong>
+                    </div>
+                    <div className="flex items-center justify-between p-3 rounded-lg bg-background/50 border border-border/30">
+                      <span>Retorno:</span>
+                      <strong className="text-foreground">{attrs.return_date ? formatDate(attrs.return_date) : "Conforme roteiro"}</strong>
+                    </div>
+                    <div className="flex items-center justify-between p-3 rounded-lg bg-background/50 border border-border/30">
+                      <span>Vagas / Grupo:</span>
+                      <strong className="text-foreground">{attrs.guests_text || "Grupo Confirmado"}</strong>
+                    </div>
+                    <div className="flex items-center justify-between p-3 rounded-lg bg-background/50 border border-border/30">
+                      <span>Cancelamento:</span>
+                      <strong className="text-foreground capitalize">{cancellationPolicy === "flexible" ? "Flexível" : cancellationPolicy === "moderate" ? "Moderado" : "Especial de Grupo"}</strong>
+                    </div>
                   </div>
 
                   {/* Bullets / Itens Inclusos (bio_bullets ou inclusions) */}
                   {(bioBullets.length > 0 || (Array.isArray(attrs.inclusions) && attrs.inclusions.length > 0)) && (
                     <div className="pt-3 border-t border-border/30 space-y-2">
-                      <span className="font-bold text-foreground block text-xs">
+                      <span className="font-bold text-foreground block text-sm">
                         O que está incluso neste pacote:
                       </span>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                         {(bioBullets.length > 0 ? bioBullets : attrs.inclusions).map((item: string, i: number) => (
-                          <div key={i} className="flex items-start gap-2 p-2 rounded-lg bg-background/60 border border-border/30">
+                          <div key={i} className="flex items-start gap-2 p-3 rounded-lg bg-background/60 border border-border/30">
                             <CheckCircle2 className="size-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-1" />
-                            <span className="text-xs text-foreground/90 font-medium leading-tight">{item}</span>
+                            <span className="text-xs sm:text-sm text-foreground/90 font-medium leading-snug">{item}</span>
                           </div>
                         ))}
                       </div>
@@ -1644,7 +1662,8 @@ export function EditorialShowcaseView({
                   )}
 
                   {/* Recursos Inclusos na Assinatura */}
-                  {Array.isArray(classified.recurring_features || attrs.recurring_features) &&
+                  {(classified.pricing_model === "recurring" || nicheId.includes("assinatura")) &&
+                    Array.isArray(classified.recurring_features || attrs.recurring_features) &&
                     (classified.recurring_features || attrs.recurring_features).length > 0 && (
                       <div className="p-4 rounded-lg bg-muted/20 border border-border/30 space-y-2">
                         <h4 className="font-bold text-xs text-foreground uppercase tracking-wider flex items-center gap-2">
@@ -2289,29 +2308,29 @@ export function EditorialShowcaseView({
             return (
               <div className={`grid ${gridCols} gap-3 sm:gap-4 py-4 border-t border-b border-border/40`}>
                 <div>
-                  <p className="text-xs uppercase tracking-widest text-muted-foreground font-semibold">
+                  <p className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">
                     {heroHighlight.primaryLabel}
                   </p>
-                  <p className="text-base sm:text-lg font-black text-foreground mt-1 leading-tight truncate">
+                  <p className="text-sm sm:text-base font-bold text-foreground mt-1 leading-snug break-words">
                     {heroHighlight.primaryValue}
                   </p>
                 </div>
                 {heroHighlight.secondaryLabel && heroHighlight.secondaryValue && (
                   <div>
-                    <p className="text-xs uppercase tracking-widest text-muted-foreground font-semibold">
+                    <p className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">
                       {heroHighlight.secondaryLabel}
                     </p>
-                    <p className="text-base sm:text-lg font-black text-foreground mt-1 leading-tight truncate">
+                    <p className="text-sm sm:text-base font-bold text-foreground mt-1 leading-snug break-words">
                       {heroHighlight.secondaryValue}
                     </p>
                   </div>
                 )}
                 {heroHighlight.tertiaryLabel && heroHighlight.tertiaryValue && (
                   <div>
-                    <p className="text-xs uppercase tracking-widest text-muted-foreground font-semibold">
+                    <p className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">
                       {heroHighlight.tertiaryLabel}
                     </p>
-                    <p className="text-base sm:text-lg font-black text-foreground mt-1 leading-tight truncate">
+                    <p className="text-sm sm:text-base font-bold text-foreground mt-1 leading-snug break-words">
                       {heroHighlight.tertiaryValue}
                     </p>
                   </div>

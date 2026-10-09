@@ -486,85 +486,241 @@ export function ClassifiedDetailDesktop({
           {(displayMode === "continuous_list" || activeTab === "overview") && (
             <>
               {templateStyle === "automotivo" && (
-                <div className="rounded-lg border border-border/60 bg-muted/20 p-4 grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  <div>
-                    <span className="text-xs uppercase font-semibold text-muted-foreground block">Ano / Modelo</span>
-                    <span className="text-sm font-bold text-foreground">{attrs.year_fab || attrs.year_model ? `${attrs.year_fab || ""}/${attrs.year_model || ""}` : "Ano sob consulta"}</span>
+                <div className="space-y-4">
+                  <div className="rounded-lg border border-border/60 bg-muted/20 p-4 grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div>
+                      <span className="text-xs uppercase font-semibold text-muted-foreground block">Ano / Modelo</span>
+                      <span className="text-sm font-bold text-foreground">{attrs.year_fab || attrs.year_model ? `${attrs.year_fab || ""}/${attrs.year_model || ""}` : "Ano sob consulta"}</span>
+                    </div>
+                    <div>
+                      <span className="text-xs uppercase font-semibold text-muted-foreground block">Quilometragem</span>
+                      <span className="text-sm font-bold text-foreground">{attrs.mileage_km != null ? `${Number(attrs.mileage_km).toLocaleString("pt-BR")} km` : "Não informada"}</span>
+                    </div>
+                    <div>
+                      <span className="text-xs uppercase font-semibold text-muted-foreground block">Câmbio</span>
+                      <span className="text-sm font-bold text-foreground">{attrs.transmission || "Manual"}</span>
+                    </div>
+                    <div>
+                      <span className="text-xs uppercase font-semibold text-muted-foreground block">Combustível</span>
+                      <span className="text-sm font-bold text-foreground">{attrs.fuel_type || "Flex"}</span>
+                    </div>
                   </div>
-                  <div>
-                    <span className="text-xs uppercase font-semibold text-muted-foreground block">Quilometragem</span>
-                    <span className="text-sm font-bold text-foreground">{attrs.mileage_km != null ? `${Number(attrs.mileage_km).toLocaleString("pt-BR")} km` : "Não informada"}</span>
-                  </div>
-                  <div>
-                    <span className="text-xs uppercase font-semibold text-muted-foreground block">Câmbio</span>
-                    <span className="text-sm font-bold text-foreground">{attrs.transmission || "Manual"}</span>
-                  </div>
-                  <div>
-                    <span className="text-xs uppercase font-semibold text-muted-foreground block">Combustível</span>
-                    <span className="text-sm font-bold text-foreground">{attrs.fuel_type || "Flex"}</span>
-                  </div>
+
+                  {/* Opcionais do Veículo */}
+                  {Array.isArray(attrs.features) && attrs.features.length > 0 && (
+                    <div className="rounded-lg border border-border/50 bg-card p-4 space-y-3">
+                      <span className="text-xs uppercase font-bold text-muted-foreground tracking-wider block">
+                        Opcionais & Equipamentos de Série
+                      </span>
+                      <div className="flex flex-wrap gap-2">
+                        {attrs.features.map((feat: string, idx: number) => (
+                          <span
+                            key={idx}
+                            className="inline-flex items-center gap-2 px-3 py-1 rounded-lg text-xs font-semibold bg-muted/60 text-foreground border border-border/50"
+                          >
+                            <Check className="size-3 text-primary shrink-0" />
+                            <span>{feat}</span>
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Negociação e Troca Automotiva */}
+                  {(attrs.accepts_trade || attrs.accepts_financing || negotiable) && (
+                    <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 flex items-center justify-between gap-4">
+                      <div className="space-y-1">
+                        <span className="text-xs font-bold text-foreground block">Condições Especiais de Negociação</span>
+                        <p className="text-xs text-muted-foreground">
+                          {attrs.accepts_trade ? "Aceita veículo na troca como parte do pagamento." : "Simulação de financiamento e propostas comerciais disponíveis."}
+                        </p>
+                      </div>
+                      {onOpenProposalModal && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={onOpenProposalModal}
+                          className="h-11 min-h-11 px-4 text-xs font-bold rounded-lg border-primary/40 text-primary hover:bg-primary/10 shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                        >
+                          Enviar Proposta / Troca
+                        </Button>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
 
               {templateStyle === "imobiliario" && (
-                <div className="rounded-lg border border-border/60 bg-muted/20 p-4 grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  <div>
-                    <span className="text-xs uppercase font-semibold text-muted-foreground block">Área Útil</span>
-                    <span className="text-sm font-bold text-foreground">{attrs.area_sqm ? `${attrs.area_sqm} m²` : "Consulte"}</span>
+                <div className="space-y-4">
+                  <div className="rounded-lg border border-border/60 bg-muted/20 p-4 grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div>
+                      <span className="text-xs uppercase font-semibold text-muted-foreground block">Área Útil</span>
+                      <span className="text-sm font-bold text-foreground">{attrs.area_sqm ? `${attrs.area_sqm} m²` : "Consulte"}</span>
+                    </div>
+                    <div>
+                      <span className="text-xs uppercase font-semibold text-muted-foreground block">Quartos / Suítes</span>
+                      <span className="text-sm font-bold text-foreground">{attrs.bedrooms || 0} qtos {attrs.suites ? `(${attrs.suites} suítes)` : ""}</span>
+                    </div>
+                    <div>
+                      <span className="text-xs uppercase font-semibold text-muted-foreground block">Vagas de Garagem</span>
+                      <span className="text-sm font-bold text-foreground">{attrs.parking_spots || 0} vagas</span>
+                    </div>
+                    <div>
+                      <span className="text-xs uppercase font-semibold text-muted-foreground block">Condomínio</span>
+                      <span className="text-sm font-bold text-foreground">{attrs.condo_cents ? formatMoney(attrs.condo_cents) : "Incluso/Isento"}</span>
+                    </div>
                   </div>
-                  <div>
-                    <span className="text-xs uppercase font-semibold text-muted-foreground block">Quartos / Suítes</span>
-                    <span className="text-sm font-bold text-foreground">{attrs.bedrooms || 0} qtos {attrs.suites ? `(${attrs.suites} suítes)` : ""}</span>
-                  </div>
-                  <div>
-                    <span className="text-xs uppercase font-semibold text-muted-foreground block">Vagas</span>
-                    <span className="text-sm font-bold text-foreground">{attrs.parking_spots || 0} vagas</span>
-                  </div>
-                  <div>
-                    <span className="text-xs uppercase font-semibold text-muted-foreground block">Condomínio</span>
-                    <span className="text-sm font-bold text-foreground">{attrs.condo_cents ? formatMoney(attrs.condo_cents) : "Incluso/Isento"}</span>
+
+                  {/* Comodidades do Imóvel / Condomínio */}
+                  {Array.isArray(attrs.amenities) && attrs.amenities.length > 0 && (
+                    <div className="rounded-lg border border-border/50 bg-card p-4 space-y-3">
+                      <span className="text-xs uppercase font-bold text-muted-foreground tracking-wider block">
+                        Comodidades do Imóvel & Condomínio
+                      </span>
+                      <div className="flex flex-wrap gap-2">
+                        {attrs.amenities.map((amenity: string, idx: number) => (
+                          <span
+                            key={idx}
+                            className="inline-flex items-center gap-2 px-3 py-1 rounded-lg text-xs font-semibold bg-muted/60 text-foreground border border-border/50"
+                          >
+                            <Check className="size-3 text-primary shrink-0" />
+                            <span>{amenity}</span>
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Agendamento de Visita */}
+                  <div className="rounded-lg border border-border/60 bg-muted/20 p-4 flex items-center justify-between gap-4">
+                    <div className="space-y-1">
+                      <span className="text-xs font-bold text-foreground block">Agendamento de Visita</span>
+                      <p className="text-xs text-muted-foreground">Conheça o imóvel presencialmente ou solicite um tour por vídeo com o anunciante.</p>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleStartNativeChat("Olá, gostaria de agendar uma visita para este imóvel.")}
+                      className="h-11 min-h-11 px-4 text-xs font-bold rounded-lg border-primary/40 text-primary hover:bg-primary/10 shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    >
+                      Agendar Visita
+                    </Button>
                   </div>
                 </div>
               )}
 
               {templateStyle === "resort_hotel" && (
-                <div className="rounded-lg border border-border/60 bg-muted/20 p-4 grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  <div>
-                    <span className="text-xs uppercase font-semibold text-muted-foreground block">Capacidade</span>
-                    <span className="text-sm font-bold text-foreground">{attrs.max_guests || attrs.guests_text || "Consulte"} hóspedes</span>
+                <div className="space-y-4">
+                  <div className="rounded-lg border border-border/60 bg-muted/20 p-4 grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div>
+                      <span className="text-xs uppercase font-semibold text-muted-foreground block">Capacidade</span>
+                      <span className="text-sm font-bold text-foreground">{attrs.max_guests || attrs.guests_text || "Consulte"} hóspedes</span>
+                    </div>
+                    <div>
+                      <span className="text-xs uppercase font-semibold text-muted-foreground block">Regime / Refeição</span>
+                      <span className="text-sm font-bold text-foreground">{attrs.meal_plan || "Café da Manhã"}</span>
+                    </div>
+                    <div>
+                      <span className="text-xs uppercase font-semibold text-muted-foreground block">Check-in</span>
+                      <span className="text-sm font-bold text-foreground">{attrs.checkin_time || "A partir das 14h"}</span>
+                    </div>
+                    <div>
+                      <span className="text-xs uppercase font-semibold text-muted-foreground block">Taxa de Limpeza</span>
+                      <span className="text-sm font-bold text-foreground">{attrs.cleaning_fee_cents ? formatMoney(attrs.cleaning_fee_cents) : "Isenta"}</span>
+                    </div>
                   </div>
-                  <div>
-                    <span className="text-xs uppercase font-semibold text-muted-foreground block">Regime / Refeição</span>
-                    <span className="text-sm font-bold text-foreground">{attrs.meal_plan || "Café da Manhã"}</span>
-                  </div>
-                  <div>
-                    <span className="text-xs uppercase font-semibold text-muted-foreground block">Check-in</span>
-                    <span className="text-sm font-bold text-foreground">{attrs.checkin_time || "A partir das 14h"}</span>
-                  </div>
-                  <div>
-                    <span className="text-xs uppercase font-semibold text-muted-foreground block">Taxa de Limpeza</span>
-                    <span className="text-sm font-bold text-foreground">{attrs.cleaning_fee_cents ? formatMoney(attrs.cleaning_fee_cents) : "Isenta"}</span>
-                  </div>
+
+                  {/* Comodidades de Hospedagem */}
+                  {Array.isArray(attrs.amenities) && attrs.amenities.length > 0 && (
+                    <div className="rounded-lg border border-border/50 bg-card p-4 space-y-3">
+                      <span className="text-xs uppercase font-bold text-muted-foreground tracking-wider block">
+                        Estrutura & Lazer da Acomodação
+                      </span>
+                      <div className="flex flex-wrap gap-2">
+                        {attrs.amenities.map((amenity: string, idx: number) => (
+                          <span
+                            key={idx}
+                            className="inline-flex items-center gap-2 px-3 py-1 rounded-lg text-xs font-semibold bg-muted/60 text-foreground border border-border/50"
+                          >
+                            <Check className="size-3 text-primary shrink-0" />
+                            <span>{amenity}</span>
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Ação de Reserva */}
+                  {onOpenBookingModal && (
+                    <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 flex items-center justify-between gap-4">
+                      <div className="space-y-1">
+                        <span className="text-xs font-bold text-foreground block">Reserva de Diárias</span>
+                        <p className="text-xs text-muted-foreground">Consulte disponibilidade de calendário e reserve diretamente.</p>
+                      </div>
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={() => onOpenBookingModal()}
+                        className="h-11 min-h-11 px-4 text-xs font-bold rounded-lg bg-primary text-primary-foreground shadow-xs shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      >
+                        Reservar Estadia
+                      </Button>
+                    </div>
+                  )}
                 </div>
               )}
 
               {templateStyle === "servicos_agenda" && (
-                <div className="rounded-lg border border-border/60 bg-muted/20 p-4 grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  <div>
-                    <span className="text-xs uppercase font-semibold text-muted-foreground block">Duração</span>
-                    <span className="text-sm font-bold text-foreground">{attrs.service_duration_minutes ? `${attrs.service_duration_minutes} min` : "Sob demanda"}</span>
+                <div className="space-y-4">
+                  <div className="rounded-lg border border-border/60 bg-muted/20 p-4 grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div>
+                      <span className="text-xs uppercase font-semibold text-muted-foreground block">Duração</span>
+                      <span className="text-sm font-bold text-foreground">{attrs.service_duration_minutes ? `${attrs.service_duration_minutes} min` : "Sob demanda"}</span>
+                    </div>
+                    <div>
+                      <span className="text-xs uppercase font-semibold text-muted-foreground block">Modalidade</span>
+                      <span className="text-sm font-bold text-foreground">{attrs.modality === "remote" ? "Online / Remoto" : "Presencial"}</span>
+                    </div>
+                    <div>
+                      <span className="text-xs uppercase font-semibold text-muted-foreground block">Agendamento</span>
+                      <span className="text-sm font-bold text-foreground">{attrs.booking_enabled ? "Ativo" : "Sob Consulta"}</span>
+                    </div>
+                    <div>
+                      <span className="text-xs uppercase font-semibold text-muted-foreground block">Região</span>
+                      <span className="text-sm font-bold text-foreground">{attrs.service_area || "Atendimento Local"}</span>
+                    </div>
                   </div>
-                  <div>
-                    <span className="text-xs uppercase font-semibold text-muted-foreground block">Modalidade</span>
-                    <span className="text-sm font-bold text-foreground">{attrs.modality === "remote" ? "Online / Remoto" : "Presencial"}</span>
-                  </div>
-                  <div>
-                    <span className="text-xs uppercase font-semibold text-muted-foreground block">Agendamento</span>
-                    <span className="text-sm font-bold text-foreground">{attrs.booking_enabled ? "Ativo" : "Sob Consulta"}</span>
-                  </div>
-                  <div>
-                    <span className="text-xs uppercase font-semibold text-muted-foreground block">Região</span>
-                    <span className="text-sm font-bold text-foreground">{attrs.service_area || "Atendimento Local"}</span>
+
+                  {/* Informações Profissionais */}
+                  {(attrs.professional_council || attrs.specialty) && (
+                    <div className="rounded-lg border border-border/50 bg-card p-4 space-y-1">
+                      <span className="text-xs uppercase font-bold text-muted-foreground tracking-wider block">
+                        Credenciamento Profissional
+                      </span>
+                      <p className="text-xs text-foreground font-medium">
+                        {attrs.specialty ? `${attrs.specialty}` : ""}
+                        {attrs.specialty && attrs.professional_council ? " · " : ""}
+                        {attrs.professional_council ? `Registro: ${attrs.professional_council}` : ""}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Agendamento de Horário */}
+                  <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 flex items-center justify-between gap-4">
+                    <div className="space-y-1">
+                      <span className="text-xs font-bold text-foreground block">Agendamento Online</span>
+                      <p className="text-xs text-muted-foreground">Consulte a grade de atendimento e reserve seu horário com o profissional.</p>
+                    </div>
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={() => handleStartNativeChat("Olá, gostaria de consultar a disponibilidade de horários para este atendimento.")}
+                      className="h-11 min-h-11 px-4 text-xs font-bold rounded-lg bg-primary text-primary-foreground shadow-xs shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    >
+                      Consultar Agenda
+                    </Button>
                   </div>
                 </div>
               )}
@@ -611,7 +767,7 @@ export function ClassifiedDetailDesktop({
                         <QrCode className="size-3.5" />
                         <span>PIX</span>
                       </div>
-                      <p className="text-[11px] text-muted-foreground">
+                      <p className="text-xs text-muted-foreground">
                         {pixDiscountPercent > 0 ? `${pixDiscountPercent}% de desconto imediato` : "Aprovação instantânea"}
                       </p>
                     </div>
@@ -623,7 +779,7 @@ export function ClassifiedDetailDesktop({
                         <CreditCard className="size-3.5" />
                         <span>Cartão de Crédito</span>
                       </div>
-                      <p className="text-[11px] text-muted-foreground">
+                      <p className="text-xs text-muted-foreground">
                         Até {maxInstallments}x {cardInterestFree ? "sem juros" : "no cartão"}
                       </p>
                     </div>
@@ -635,7 +791,7 @@ export function ClassifiedDetailDesktop({
                         <Receipt className="size-3.5 text-muted-foreground" />
                         <span>Boleto Bancário</span>
                       </div>
-                      <p className="text-[11px] text-muted-foreground">
+                      <p className="text-xs text-muted-foreground">
                         {attrs.boleto_due_days ? `Vencimento em ${attrs.boleto_due_days} dias` : "À vista sob consulta"}
                       </p>
                     </div>
@@ -647,7 +803,7 @@ export function ClassifiedDetailDesktop({
                         <FileSpreadsheet className="size-3.5" />
                         <span>Carnê Digital</span>
                       </div>
-                      <p className="text-[11px] text-muted-foreground">
+                      <p className="text-xs text-muted-foreground">
                         Até {attrs.max_carne_installments || 12}x facilitado
                       </p>
                     </div>
@@ -659,7 +815,7 @@ export function ClassifiedDetailDesktop({
                         <Landmark className="size-3.5" />
                         <span>Financiamento</span>
                       </div>
-                      <p className="text-[11px] text-muted-foreground">
+                      <p className="text-xs text-muted-foreground">
                         {attrs.financing_notes || "Bancos parceiros / cartas contempladas"}
                       </p>
                     </div>
@@ -671,7 +827,7 @@ export function ClassifiedDetailDesktop({
                         <RefreshCw className="size-3.5 text-muted-foreground" />
                         <span>Aceita Troca / Permuta</span>
                       </div>
-                      <p className="text-[11px] text-muted-foreground">
+                      <p className="text-xs text-muted-foreground">
                         {attrs.trade_notes || "Propostas sujeitas a avaliação"}
                       </p>
                     </div>
@@ -695,7 +851,7 @@ export function ClassifiedDetailDesktop({
                     onChange={(e) => setSimulatedInstallments(Number(e.target.value))}
                     className="w-full h-2 rounded-full accent-primary cursor-pointer"
                   />
-                  <div className="flex justify-between text-[10px] text-muted-foreground font-mono">
+                  <div className="flex justify-between text-xs text-muted-foreground font-mono">
                     <span>1x (à vista)</span>
                     <span>{Math.min(24, Math.max(1, maxInstallments))}x</span>
                   </div>

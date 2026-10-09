@@ -1091,37 +1091,58 @@ function SpecializedClassifiedEditor({
     if (niche.id === "veiculo") {
       if (vehicleBrand) ctx["marca"] = vehicleBrand;
       if (vehicleModel) ctx["modelo"] = vehicleModel;
+      if (vehicleVersion) ctx["versão"] = vehicleVersion;
       if (vehicleYearModel) ctx["ano_modelo"] = vehicleYearModel;
+      if (vehicleYearFab) ctx["ano_fabricação"] = vehicleYearFab;
       if (vehicleKm) ctx["quilometragem"] = `${vehicleKm} km`;
-      if (vehicleTransmission) ctx["cambio"] = vehicleTransmission;
-      if (vehicleFuel) ctx["combustivel"] = vehicleFuel;
+      if (vehicleTransmission) ctx["câmbio"] = vehicleTransmission;
+      if (vehicleFuel) ctx["combustível"] = vehicleFuel;
       if (vehicleColor) ctx["cor"] = vehicleColor;
       if (vehicleFeatures?.length) ctx["opcionais"] = vehicleFeatures;
     } else if (niche.id === "imovel") {
       ctx["tipo_negocio"] = reDealType === "aluguel" ? "Locação" : "Venda";
       if (rePropertyType) ctx["tipo_imovel"] = rePropertyType;
-      if (reAreaSqm) ctx["area_util"] = `${reAreaSqm} m²`;
+      if (reAreaSqm) ctx["área_útil"] = `${reAreaSqm} m²`;
       if (reBedrooms) ctx["quartos"] = reBedrooms;
-      if (reSuites) ctx["suites"] = reSuites;
+      if (reSuites) ctx["suítes"] = reSuites;
       if (reParking) ctx["vagas"] = reParking;
+      if (reCondoCents) ctx["condomínio"] = formatMoney(reCondoCents);
+      if (reIptuCents) ctx["iptu"] = formatMoney(reIptuCents);
       if (reAmenities?.length) ctx["comodidades"] = reAmenities;
     } else if (niche.id === "viagem") {
       if (travelDestinationCity) ctx["destino"] = travelDestinationCity;
-      if (travelDuration) ctx["duracao"] = travelDuration;
+      if (travelDuration) ctx["duração"] = travelDuration;
       if (travelMealPlan) ctx["regime"] = travelMealPlan;
-      if (travelGuests) ctx["capacidade_hospedes"] = travelGuests;
+      if (travelGuests) ctx["capacidade_hóspedes"] = travelGuests;
+      if (travelTransportType) ctx["transporte"] = travelTransportType === "flight" ? "Aéreo" : travelTransportType === "bus" ? "Rodoviário" : travelTransportType;
+      if (travelDepartureCity) ctx["cidade_saída"] = travelDepartureCity;
       if (travelStoryHighlights?.length) ctx["destaques"] = travelStoryHighlights.map((s) => s.caption);
+      if (travelItineraryDays?.length) {
+        ctx["roteiro_dias"] = travelItineraryDays.map((d) => `Dia ${d.day_number}: ${d.title}`).join("; ");
+      }
     } else if (niche.id === "hospedagem") {
-      if (hospPropertyType) ctx["tipo_espaco"] = hospPropertyType;
-      if (hospGuests) ctx["capacidade_hospedes"] = hospGuests;
+      if (hospPropertyType) ctx["tipo_espaço"] = hospPropertyType;
+      if (hospGuests) ctx["capacidade_hóspedes"] = hospGuests;
       if (hospBedrooms) ctx["quartos"] = hospBedrooms;
+      if (hospCheckinTime) ctx["check_in"] = hospCheckinTime;
+      if (hospCheckoutTime) ctx["check_out"] = hospCheckoutTime;
+      if (hospCleaningFeeCents) ctx["taxa_limpeza"] = formatMoney(hospCleaningFeeCents);
       if (hospAmenities?.length) ctx["comodidades"] = hospAmenities;
     } else if (niche.id === "servico") {
-      if (serviceArea) ctx["area_atuacao"] = serviceArea;
+      if (serviceArea) ctx["área_atuação"] = serviceArea;
       if (serviceModality) ctx["modalidade"] = serviceModality === "remote" ? "Online / Remoto" : "Presencial";
-      if (serviceDuration) ctx["duracao_estimada"] = `${serviceDuration} minutos`;
+      if (serviceDuration) ctx["duração_estimada"] = `${serviceDuration} minutos`;
+      if (serviceSpecialty) ctx["especialidade"] = serviceSpecialty;
+      if (serviceProfessionalCouncil) ctx["conselho_profissional"] = serviceProfessionalCouncil;
+    } else if (niche.id === "vaga") {
+      if (jobRole) ctx["cargo"] = jobRole;
+      if (jobMinEducation) ctx["escolaridade"] = jobMinEducation;
+      if (jobExperienceLevel) ctx["experiência"] = jobExperienceLevel;
+      if (jobModel) ctx["modelo_trabalho"] = jobModel;
+      if (jobRegime) ctx["regime_contratação"] = jobRegime;
+      if (jobSalaryRange) ctx["salário"] = jobSalaryRange;
     } else if (niche.id === "desapego") {
-      if (itemCondition) ctx["condicao"] = itemCondition;
+      if (itemCondition) ctx["condição"] = itemCondition;
       if (phoneBrand) ctx["marca_aparelho"] = phoneBrand;
       if (phoneModel) ctx["modelo_aparelho"] = phoneModel;
     }
@@ -1562,11 +1583,12 @@ function SpecializedClassifiedEditor({
   );
   const [billingCycle, setBillingCycle] = useState<"monthly" | "quarterly" | "semiannual" | "yearly">("monthly");
   const [setupFeeCents, setSetupFeeCents] = useState<number | undefined>(undefined);
-  const [trialDays, setTrialDays] = useState<number>(0);
-  const [recurringFeatures, setRecurringFeatures] = useState<string[]>([
-    "Acesso completo ao serviço",
-    "Suporte prioritário via WhatsApp",
-  ]);
+  const [recurringFeatures, setRecurringFeatures] = useState<string[]>(() => {
+    if (Array.isArray(initialData?.recurring_features) && initialData.recurring_features.length > 0) {
+      return initialData.recurring_features;
+    }
+    return [];
+  });
   const [newFeatureInput, setNewFeatureInput] = useState("");
 
   // Specialized: Formas de Pagamento & Cancelamento (Zero Hardcoded)
@@ -2693,9 +2715,9 @@ function SpecializedClassifiedEditor({
           title: title.trim(),
           pricing_model: niche.id === "assinatura" ? "recurring" : pricingModel,
           billing_cycle: niche.id === "assinatura" ? billingCycle : undefined,
-          setup_fee_cents: setupFeeCents ?? undefined,
-          trial_days: trialDays ?? undefined,
-          recurring_features: recurringFeatures.length > 0 ? recurringFeatures : undefined,
+          setup_fee_cents: niche.id === "assinatura" ? setupFeeCents ?? undefined : undefined,
+          trial_days: niche.id === "assinatura" ? trialDays ?? undefined : undefined,
+          recurring_features: niche.id === "assinatura" && recurringFeatures.length > 0 ? recurringFeatures : undefined,
           accepts_card: acceptsCard,
           max_installments: acceptsCard ? parseInt(String(maxInstallments)) || 1 : undefined,
           accepts_trade: acceptsTrade,
@@ -3714,6 +3736,7 @@ function SpecializedClassifiedEditor({
               ) : (
                 <UniversalClassifiedShowcase
                   classified={livePreviewClassified}
+                  previewViewport={previewDevice}
                   isOwner={true}
                   canManage={true}
                   onOpenBookingModal={() => toast.info("Modo de Pré-visualização: As reservas estarão ativas após a publicação do anúncio.")}
@@ -8040,14 +8063,15 @@ function SpecializedClassifiedEditor({
               )}
 
               {/* Formas de Pagamento (LISTA ESTRUTURADA ESPAÇOSA - ZERO TRUNCATION - 1x = À VISTA) */}
-              <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60">
-                <div className="flex items-center justify-between pb-3 border-b border-border/40">
-                  <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
-                    <CreditCard className="size-4 text-primary shrink-0" />
-                    <span>Formas de Pagamento Aceitas</span>
+              {niche.id !== "vaga" && (
+                <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60">
+                  <div className="flex items-center justify-between pb-3 border-b border-border/40">
+                    <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
+                      <CreditCard className="size-4 text-primary shrink-0" />
+                      <span>Formas de Pagamento Aceitas</span>
+                    </div>
+                    <span className="text-xs text-muted-foreground font-mono">Ative as opções aceitas</span>
                   </div>
-                  <span className="text-xs text-muted-foreground font-mono">Ative as opções aceitas</span>
-                </div>
 
                 {/* Lista Vertical Espaçosa e Descomplicada */}
                 <div className="space-y-3">
@@ -8554,6 +8578,7 @@ function SpecializedClassifiedEditor({
                   </Select>
                 </div>
               </div>
+            )}
 
               {/* Seção: Localização */}
               <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60">
@@ -9147,10 +9172,37 @@ function SpecializedClassifiedEditor({
                 <Eye className="size-4 text-primary" />
                 Prévia ao vivo · {templateStyle}
               </span>
+              <div className="flex items-center gap-1 bg-background p-1 rounded-lg border border-border/50">
+                <button
+                  type="button"
+                  onClick={() => setPreviewDevice("mobile")}
+                  className={cn(
+                    "px-3 py-1 text-xs font-bold rounded-md transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                    previewDevice === "mobile"
+                      ? "bg-primary text-primary-foreground shadow-xs"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  Mobile
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPreviewDevice("desktop")}
+                  className={cn(
+                    "px-3 py-1 text-xs font-bold rounded-md transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                    previewDevice === "desktop"
+                      ? "bg-primary text-primary-foreground shadow-xs"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  Desktop
+                </button>
+              </div>
             </div>
             <div className="max-h-screen overflow-y-auto">
               <UniversalClassifiedShowcase
                 classified={livePreviewClassified}
+                previewViewport={previewDevice}
                 isOwner={true}
                 canManage={true}
                 onOpenBookingModal={() => toast.info("Modo de Pré-visualização: As reservas estarão ativas após a publicação do anúncio.")}
