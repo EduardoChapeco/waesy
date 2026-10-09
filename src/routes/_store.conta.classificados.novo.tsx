@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate, useSearch, Link, redirect } from "@tansta
 import { useState, useMemo, useEffect, useRef } from "react";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Tag, Car, Home as HomeIcon, Briefcase, Wrench, Sliders, ArrowLeft, ChevronRight, Eye, EyeOff, Edit3, ImagePlus, MapPin, MessageCircle, ShieldCheck, Check, Loader2, Phone, FileText, DollarSign, Layers, ChevronLeft, Building, Key, Truck, Package, CreditCard, QrCode, RefreshCw, Banknote, DownloadCloud, FileArchive, Search, Utensils, Plane, Thermometer, CreditCard as CreditCardIcon, PlusCircle, Coins, Wand2, Bot, BadgePercent, Landmark, Info, Trash2, Plus, Bus, Ship, Train, Navigation, Route as RouteIcon, Users, Calendar, Clock, ChevronDown, ChevronUp, X, CheckCircle, GraduationCap, Award, SlidersHorizontal, Store as StoreIcon, Star, Lock, ShieldAlert, FileSpreadsheet, Receipt, BookOpenCheck, Zap, Apple, Flame, Croissant, Milk, Wine, Palette } from 'lucide-react';
+import { Tag, Car, Home as HomeIcon, Briefcase, Wrench, Sliders, ArrowLeft, ChevronRight, Eye, EyeOff, Edit3, ImagePlus, MapPin, MessageCircle, ShieldCheck, Check, Loader2, Phone, FileText, DollarSign, Layers, ChevronLeft, Building, Building2, Key, Truck, Package, CreditCard, QrCode, RefreshCw, Banknote, DownloadCloud, FileArchive, Search, Utensils, Plane, Thermometer, CreditCard as CreditCardIcon, PlusCircle, Coins, Wand2, Bot, BadgePercent, Landmark, Info, Trash2, Plus, Bus, Ship, Train, Navigation, Route as RouteIcon, Users, Calendar, Clock, ChevronDown, ChevronUp, X, CheckCircle, GraduationCap, Award, SlidersHorizontal, Store as StoreIcon, Star, Lock, ShieldAlert, FileSpreadsheet, Receipt, BookOpenCheck, Zap, Apple, Flame, Croissant, Milk, Wine, Palette } from 'lucide-react';
 import { StoryHighlightUploader, type StoryHighlight } from "@/components/classifieds/story-highlight-uploader";
 import { ItineraryDayEditor, type ItineraryDay } from "@/components/classifieds/itinerary-day-editor";
 import { WeatherWidget } from "@/components/classifieds/weather-widget";
@@ -100,6 +100,27 @@ function ContaClassificadoNovoErrorComponent({ error }: { error: any }) {
       </div>
     </div>
   );
+}
+
+export interface TravelLodging {
+  id: string;
+  name: string;
+  type?: "hotel" | "pousada" | "resort" | "flat" | "hostel" | "outro";
+  stars?: number;
+  city?: string;
+  state?: string;
+  address?: string;
+  description?: string;
+  regime?: string; // All Inclusive, Café da Manhã, etc.
+  checkin_time?: string;
+  checkout_time?: string;
+  room_category?: string;
+  amenities?: string[];
+  photos?: string[];
+  cover_photo_url?: string;
+  booking_code?: string;
+  website?: string;
+  phone?: string;
 }
 
 // ─── 1. Taxonomia Canônica de Tipos ────────────
@@ -1480,6 +1501,59 @@ function SpecializedClassifiedEditor({
     );
   const handleRemoveDeparture = (id: string) =>
     setTravelDepartureOptions((prev) => prev.filter((d) => d.id !== id));
+
+  // ── Hospedagens da Viagem (Hotéis / Resorts / Pousadas) ──
+  const [travelLodgings, setTravelLodgings] = useState<TravelLodging[]>(() => {
+    if (Array.isArray(initialData?.attributes?.lodgings) && initialData.attributes.lodgings.length > 0) {
+      return initialData.attributes.lodgings;
+    }
+    if (Array.isArray(initialData?.attributes?.hotels) && initialData.attributes.hotels.length > 0) {
+      return initialData.attributes.hotels;
+    }
+    if (initialData?.attributes?.hotel_name) {
+      return [{
+        id: crypto.randomUUID(),
+        name: initialData.attributes.hotel_name,
+        type: "hotel",
+        city: initialData.attributes.destination_city || "",
+        regime: initialData.attributes.meal_plan || "Café da Manhã",
+        description: initialData.attributes.hotel_description || "",
+        amenities: initialData.attributes.hotel_amenities || [],
+        address: initialData.attributes.hotel_address || "",
+        stars: initialData.attributes.hotel_stars || 4,
+        checkin_time: initialData.attributes.checkin_time || "14:00",
+        checkout_time: initialData.attributes.checkout_time || "11:00",
+      }];
+    }
+    return [];
+  });
+
+  const handleAddTravelLodging = () => {
+    const newLodging: TravelLodging = {
+      id: crypto.randomUUID(),
+      name: "",
+      type: "hotel",
+      stars: 4,
+      city: travelDestinationCity || "",
+      regime: travelMealPlan || "Café da Manhã",
+      amenities: [],
+      photos: [],
+      checkin_time: "14:00",
+      checkout_time: "11:00",
+    };
+    setTravelLodgings((prev) => [...prev, newLodging]);
+  };
+
+  const handleUpdateTravelLodging = (id: string, patch: Partial<TravelLodging>) => {
+    setTravelLodgings((prev) =>
+      prev.map((l) => (l.id === id ? { ...l, ...patch } : l))
+    );
+  };
+
+  const handleRemoveTravelLodging = (id: string) => {
+    setTravelLodgings((prev) => prev.filter((l) => l.id !== id));
+  };
+
   const [travelBioBullets, setTravelBioBullets] = useState<string[]>(() => {
     if (Array.isArray(initialData?.attributes?.bio_bullets) && initialData.attributes.bio_bullets.length > 0) {
       return initialData.attributes.bio_bullets;
@@ -3224,6 +3298,14 @@ function SpecializedClassifiedEditor({
         story_highlights: travelStoryHighlights,
         itinerary_days: travelItineraryDays,
         bio_bullets: generatedBioBullets,
+        // Hospedagem do Pacote de Turismo
+        lodgings: travelLodgings.filter((l) => l.name.trim() !== ""),
+        hotels: travelLodgings.filter((l) => l.name.trim() !== ""),
+        hotel_name: travelLodgings[0]?.name || undefined,
+        hotel_description: travelLodgings[0]?.description || undefined,
+        hotel_address: travelLodgings[0]?.address || undefined,
+        hotel_stars: travelLodgings[0]?.stars || undefined,
+        hotel_amenities: travelLodgings[0]?.amenities || undefined,
         // Hospedagem
         deal_type: niche.id === "hospedagem" ? "temporada" : niche.id === "imovel" ? reDealType : undefined,
         rental_period: niche.id === "hospedagem" ? "diaria" : undefined,
@@ -4879,7 +4961,228 @@ function SpecializedClassifiedEditor({
                   </div>
                 </div>
 
-                {/* 2.5 — Story Highlights */}
+                {/* 2.5 — Hospedagem & Hotel do Pacote */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs text-muted-foreground/75 font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                        <Building2 className="size-4 text-primary" />
+                        <span>Hospedagem & Hotel do Pacote</span>
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Adicione os dados da acomodação (resort, hotel, pousada). Suporta múltiplos hotéis ou estadias combinadas.
+                      </p>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={handleAddTravelLodging}
+                      className="h-11 min-h-11 text-xs font-semibold rounded-lg gap-1 border-primary/30 text-primary hover:bg-primary/5 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    >
+                      <Plus className="size-4" />
+                      <span>Adicionar Hotel / Hospedagem</span>
+                    </Button>
+                  </div>
+
+                  {travelLodgings.length === 0 && (
+                    <div className="p-4 rounded-lg border border-dashed border-border/70 text-center space-y-2 bg-muted/10">
+                      <p className="text-xs text-muted-foreground">
+                        Nenhuma hospedagem cadastrada para este pacote.
+                      </p>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={handleAddTravelLodging}
+                        className="h-11 min-h-11 text-xs font-semibold rounded-lg gap-2 border-primary/40 text-primary hover:bg-primary/5 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      >
+                        <Plus className="size-4" />
+                        <span>Cadastrar Hotel / Pousada</span>
+                      </Button>
+                    </div>
+                  )}
+
+                  <div className="space-y-4">
+                    {travelLodgings.map((lodging, idx) => (
+                      <div key={lodging.id} className="p-4 rounded-lg border border-border/70 bg-card space-y-3 shadow-xs">
+                        <div className="flex items-center justify-between pb-2 border-b border-border/40">
+                          <div className="flex items-center gap-2">
+                            <span className="size-6 rounded-full bg-primary/10 text-primary font-bold text-xs flex items-center justify-center font-mono">
+                              {idx + 1}
+                            </span>
+                            <span className="text-xs font-bold text-foreground">
+                              {lodging.name ? lodging.name : `Hospedagem ${idx + 1}`}
+                            </span>
+                            {lodging.stars ? (
+                              <Badge variant="outline" className="text-xs font-bold text-amber-600 dark:text-amber-400 border-amber-500/30">
+                                {lodging.stars} estrelas
+                              </Badge>
+                            ) : null}
+                          </div>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleRemoveTravelLodging(lodging.id)}
+                            className="size-11 min-h-11 min-w-11 p-0 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive"
+                            title="Remover Hospedagem"
+                            aria-label="Remover Hospedagem"
+                          >
+                            <Trash2 className="size-4" />
+                          </Button>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                          <div className="sm:col-span-2 space-y-1">
+                            <Label className="text-xs font-medium text-foreground">Nome do Hotel / Pousada / Resort *</Label>
+                            <Input
+                              value={lodging.name}
+                              onChange={(e) => handleUpdateTravelLodging(lodging.id, { name: e.target.value })}
+                              placeholder="Ex: Nannai Muro Alto Resort ou Hotel Costa Brava"
+                              className="h-11 rounded-lg text-xs bg-background"
+                            />
+                          </div>
+
+                          <div className="space-y-1">
+                            <Label className="text-xs font-medium text-foreground">Tipo de Hospedagem</Label>
+                            <Select
+                              value={lodging.type || "hotel"}
+                              onValueChange={(v: any) => handleUpdateTravelLodging(lodging.id, { type: v })}
+                            >
+                              <SelectTrigger className="h-11 rounded-lg text-xs bg-background">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="resort">Resort</SelectItem>
+                                <SelectItem value="hotel">Hotel</SelectItem>
+                                <SelectItem value="pousada">Pousada</SelectItem>
+                                <SelectItem value="flat">Flat / Apart-hotel</SelectItem>
+                                <SelectItem value="hostel">Hostel</SelectItem>
+                                <SelectItem value="outro">Outro</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                          <div className="space-y-1">
+                            <Label className="text-xs font-medium text-foreground">Regime de Alimentação</Label>
+                            <Select
+                              value={lodging.regime || "Café da Manhã"}
+                              onValueChange={(v) => handleUpdateTravelLodging(lodging.id, { regime: v })}
+                            >
+                              <SelectTrigger className="h-11 rounded-lg text-xs bg-background">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="All Inclusive">All Inclusive (Tudo Incluso)</SelectItem>
+                                <SelectItem value="Pensão Completa">Pensão Completa</SelectItem>
+                                <SelectItem value="Meia Pensão">Meia Pensão</SelectItem>
+                                <SelectItem value="Café da Manhã">Café da Manhã Incluso</SelectItem>
+                                <SelectItem value="Só Hospedagem">Só Hospedagem</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+
+                          <div className="space-y-1">
+                            <Label className="text-xs font-medium text-foreground">Classificação (Estrelas)</Label>
+                            <Select
+                              value={String(lodging.stars || 4)}
+                              onValueChange={(v) => handleUpdateTravelLodging(lodging.id, { stars: Number(v) })}
+                            >
+                              <SelectTrigger className="h-11 rounded-lg text-xs bg-background">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="5">5 Estrelas (Luxo)</SelectItem>
+                                <SelectItem value="4">4 Estrelas (Superior)</SelectItem>
+                                <SelectItem value="3">3 Estrelas (Conforto)</SelectItem>
+                                <SelectItem value="2">2 Estrelas (Econômico)</SelectItem>
+                                <SelectItem value="1">1 Estrela (Simples)</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+
+                          <div className="space-y-1">
+                            <Label className="text-xs font-medium text-foreground">Categoria do Quarto / Acomodação</Label>
+                            <Input
+                              value={lodging.room_category || ""}
+                              onChange={(e) => handleUpdateTravelLodging(lodging.id, { room_category: e.target.value })}
+                              placeholder="Ex: Suíte Standard, Bangalô Luxo..."
+                              className="h-11 rounded-lg text-xs bg-background"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div className="space-y-1">
+                            <Label className="text-xs font-medium text-foreground">Cidade / Destino da Hospedagem</Label>
+                            <Input
+                              value={lodging.city || ""}
+                              onChange={(e) => handleUpdateTravelLodging(lodging.id, { city: e.target.value })}
+                              placeholder="Ex: Porto de Galinhas, PE"
+                              className="h-11 rounded-lg text-xs bg-background"
+                            />
+                          </div>
+
+                          <div className="space-y-1">
+                            <Label className="text-xs font-medium text-foreground">Endereço / Localização Exata</Label>
+                            <Input
+                              value={lodging.address || ""}
+                              onChange={(e) => handleUpdateTravelLodging(lodging.id, { address: e.target.value })}
+                              placeholder="Ex: Av. Beira Mar, 1200 - Centro"
+                              className="h-11 rounded-lg text-xs bg-background"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                          <div className="space-y-1">
+                            <Label className="text-xs font-medium text-foreground">Horário Check-in</Label>
+                            <Input
+                              value={lodging.checkin_time || "14:00"}
+                              onChange={(e) => handleUpdateTravelLodging(lodging.id, { checkin_time: e.target.value })}
+                              placeholder="14:00"
+                              className="h-11 rounded-lg text-xs bg-background font-mono"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-xs font-medium text-foreground">Horário Check-out</Label>
+                            <Input
+                              value={lodging.checkout_time || "11:00"}
+                              onChange={(e) => handleUpdateTravelLodging(lodging.id, { checkout_time: e.target.value })}
+                              placeholder="11:00"
+                              className="h-11 rounded-lg text-xs bg-background font-mono"
+                            />
+                          </div>
+                          <div className="space-y-1 sm:col-span-2">
+                            <Label className="text-xs font-medium text-foreground">Código de Reserva / Voucher (Opcional)</Label>
+                            <Input
+                              value={lodging.booking_code || ""}
+                              onChange={(e) => handleUpdateTravelLodging(lodging.id, { booking_code: e.target.value })}
+                              placeholder="Ex: HTR-88291"
+                              className="h-11 rounded-lg text-xs bg-background font-mono"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="space-y-1">
+                          <Label className="text-xs font-medium text-foreground">Descrição da Estrutura & Lazer do Hotel</Label>
+                          <Textarea
+                            value={lodging.description || ""}
+                            onChange={(e) => handleUpdateTravelLodging(lodging.id, { description: e.target.value })}
+                            placeholder="Descreva as piscinas, restaurantes, localização em relação à praia ou pontos turísticos..."
+                            rows={2}
+                            className="text-xs rounded-lg bg-background resize-none"
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 2.6 — Story Highlights */}
                 <div className="space-y-2">
                   <p className="text-xs text-muted-foreground/75 font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                     <ImagePlus className="size-4 text-primary" />

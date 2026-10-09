@@ -725,6 +725,32 @@ export function ClassifiedDetailMobile({
                     Consultar Calendário & Reservar
                   </Button>
                 )}
+
+                {/* Detalhes de Hospedagens Combinadas Mobile */}
+                {Array.isArray(attrs.lodgings) && attrs.lodgings.length > 0 && (
+                  <div className="space-y-2 pt-2 border-t border-border/40">
+                    <span className="text-xs uppercase font-bold text-muted-foreground tracking-wider block">
+                      Acomodações Selecionadas ({attrs.lodgings.length})
+                    </span>
+                    <div className="space-y-2">
+                      {attrs.lodgings.map((lodging: any, lIdx: number) => (
+                        <div key={lodging.id || lIdx} className="p-3 rounded-lg border border-border/60 bg-card space-y-2">
+                          <div className="flex items-center justify-between">
+                            <h5 className="font-bold text-xs text-foreground truncate">{lodging.name}</h5>
+                            {lodging.stars ? (
+                              <span className="text-xs font-bold text-amber-600 dark:text-amber-400">{lodging.stars} estrelas</span>
+                            ) : null}
+                          </div>
+                          <p className="text-xs text-muted-foreground truncate">{lodging.city || lodging.address || "Localização privilegiada"}</p>
+                          <div className="text-xs flex justify-between pt-1 border-t border-border/30 text-muted-foreground">
+                            <span>Regime: <strong className="text-foreground">{lodging.regime || "Café"}</strong></span>
+                            <span>Check-in: <strong className="text-foreground font-mono">{lodging.checkin_time || "14:00"}</strong></span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 

@@ -298,6 +298,29 @@ export function EditorialShowcaseView({
     flightDetails?.destination ||
     "";
 
+  // ── Hospedagens Cadastradas no Pacote de Turismo ──
+  const travelLodgings = React.useMemo(() => {
+    if (Array.isArray(attrs.lodgings) && attrs.lodgings.length > 0) return attrs.lodgings;
+    if (Array.isArray(attrs.hotels) && attrs.hotels.length > 0) return attrs.hotels;
+    if (attrs.hotel_details) return Array.isArray(attrs.hotel_details) ? attrs.hotel_details : [attrs.hotel_details];
+    if (attrs.hotel_name) {
+      return [{
+        id: "primary-hotel",
+        name: attrs.hotel_name,
+        type: attrs.hotel_type || "hotel",
+        stars: attrs.hotel_stars || 4,
+        city: attrs.destination_city || destinationCity || "",
+        address: attrs.hotel_address || "",
+        regime: attrs.meal_plan || "Café da Manhã",
+        description: attrs.hotel_description || "",
+        amenities: attrs.hotel_amenities || attrs.amenities || [],
+        checkin_time: attrs.checkin_time || "14:00",
+        checkout_time: attrs.checkout_time || "11:00",
+      }];
+    }
+    return [];
+  }, [attrs, destinationCity]);
+
   // ── Estatísticas do Topo (Polimórficas por Nicho — Zero Fake Fallback) ──
   const getHeaderStats = () => {
     const list: { label: string; val: string }[] = [];
@@ -1210,6 +1233,119 @@ export function EditorialShowcaseView({
                           </li>
                         ))}
                       </ul>
+                    </div>
+                  )}
+
+                  {/* Hospedagem & Acomodação do Pacote (Nicho Turismo / Viagem) */}
+                  {travelLodgings.length > 0 ? (
+                    <div className="pt-3 border-t border-border/30 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-foreground block text-sm flex items-center gap-2">
+                          <Building2 className="size-4 text-primary" />
+                          <span>Hospedagem & Acomodação ({travelLodgings.length} {travelLodgings.length > 1 ? "opções" : "hotel"})</span>
+                        </span>
+                        {attrs.meal_plan && (
+                          <Badge variant="outline" className="text-xs font-bold text-primary border-primary/25 bg-primary/5">
+                            {attrs.meal_plan}
+                          </Badge>
+                        )}
+                      </div>
+
+                      <div className="space-y-3">
+                        {travelLodgings.map((lodging: any, lIdx: number) => (
+                          <div
+                            key={lodging.id || lIdx}
+                            className="p-4 rounded-lg bg-background border border-border/60 space-y-3 shadow-xs"
+                          >
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-border/40">
+                              <div className="flex items-center gap-2">
+                                <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                                  <Building2 className="size-4" />
+                                </div>
+                                <div>
+                                  <h5 className="font-bold text-sm text-foreground leading-tight">
+                                    {lodging.name || "Hospedagem Confirmada"}
+                                  </h5>
+                                  <p className="text-xs text-muted-foreground">
+                                    {lodging.city || lodging.address || destinationCity || "Localização privilegiada"}
+                                    {lodging.type ? ` • ${lodging.type.toUpperCase()}` : ""}
+                                  </p>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-2 flex-wrap">
+                                {lodging.stars ? (
+                                  <span className="text-xs font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2 py-1 rounded-full border border-amber-500/20">
+                                    {lodging.stars} estrelas
+                                  </span>
+                                ) : null}
+                                {lodging.room_category ? (
+                                  <Badge variant="outline" className="text-xs font-semibold">
+                                    {lodging.room_category}
+                                  </Badge>
+                                ) : null}
+                              </div>
+                            </div>
+
+                            {/* Informações Rápidas: Regime, Check-in, Check-out, Voucher */}
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                              <div className="p-2 rounded-lg bg-muted/30 border border-border/40">
+                                <span className="text-muted-foreground block text-xs">Regime</span>
+                                <strong className="text-foreground text-xs">{lodging.regime || attrs.meal_plan || "Café da Manhã"}</strong>
+                              </div>
+                              <div className="p-2 rounded-lg bg-muted/30 border border-border/40">
+                                <span className="text-muted-foreground block text-xs">Check-in</span>
+                                <strong className="text-foreground text-xs font-mono">{lodging.checkin_time || "14:00"}</strong>
+                              </div>
+                              <div className="p-2 rounded-lg bg-muted/30 border border-border/40">
+                                <span className="text-muted-foreground block text-xs">Check-out</span>
+                                <strong className="text-foreground text-xs font-mono">{lodging.checkout_time || "11:00"}</strong>
+                              </div>
+                              <div className="p-2 rounded-lg bg-muted/30 border border-border/40">
+                                <span className="text-muted-foreground block text-xs">Reserva / Status</span>
+                                <strong className="text-foreground text-xs">{lodging.booking_code ? `Cód: ${lodging.booking_code}` : "Incluso no Pacote"}</strong>
+                              </div>
+                            </div>
+
+                            {lodging.address && (
+                              <p className="text-xs text-muted-foreground flex items-center gap-2 pt-1">
+                                <MapPin className="size-4 text-primary shrink-0" />
+                                <span>{lodging.address}</span>
+                              </p>
+                            )}
+
+                            {lodging.description && (
+                              <p className="text-xs text-foreground/80 leading-relaxed pt-1 whitespace-pre-line bg-muted/20 p-3 rounded-lg border border-border/30">
+                                {lodging.description}
+                              </p>
+                            )}
+
+                            {Array.isArray(lodging.amenities) && lodging.amenities.length > 0 && (
+                              <div className="flex flex-wrap gap-2 pt-1">
+                                {lodging.amenities.map((am: string, aIdx: number) => (
+                                  <span
+                                    key={aIdx}
+                                    className="inline-flex items-center gap-1 px-3 py-1 rounded-md text-xs font-medium bg-muted/60 text-foreground border border-border/40"
+                                  >
+                                    <Check className="size-3 text-emerald-600 shrink-0" />
+                                    <span>{am}</span>
+                                  </span>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="pt-3 border-t border-border/30 space-y-2">
+                      <span className="font-bold text-foreground block text-sm flex items-center gap-2">
+                        <Building2 className="size-4 text-primary" />
+                        <span>Hospedagem</span>
+                      </span>
+                      <div className="p-3 rounded-lg bg-background/50 border border-border/40 text-xs text-muted-foreground flex items-center justify-between">
+                        <span>Acomodação selecionada e homologada pela agência.</span>
+                        <strong className="text-foreground">{attrs.meal_plan || "Inclusa no pacote"}</strong>
+                      </div>
                     </div>
                   )}
                 </div>
