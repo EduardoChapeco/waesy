@@ -356,18 +356,23 @@ export async function getServerIdentity(): Promise<ServerIdentity> {
  ? memberships.find((m) => m.store_id === activeStoreId)
  : null;
 
- if (activeContext === "creator") {
+ if (activeContext === "civil") {
+ // Zero-Trust Civil Root: contexto civil pessoal NUNCA carrega store_id ativo
  activeStoreId = null;
- } else if (matchedMembership) {
- activeStoreId = matchedMembership.store_id;
- activeContext = "store";
- } else if (isPlatformAdmin && activeStoreId) {
- activeContext = "store";
+ } else if (activeContext === "creator") {
+ // Contexto de Criador: opera com personas de conteúdo e afiliação sem tenant de loja
+ activeStoreId = null;
  } else if (activeContext === "store") {
+ if (matchedMembership) {
+ activeStoreId = matchedMembership.store_id;
+ } else if (isPlatformAdmin && activeStoreId) {
+ // Admin master com permissão de impersonação/acesso à loja ativa
+ } else {
  activeStoreId = memberships[0]?.store_id || null;
+ }
  } else {
  activeStoreId = null;
- activeContext = activeContext || "civil";
+ activeContext = "civil";
  }
 
  const currentMembership = activeStoreId

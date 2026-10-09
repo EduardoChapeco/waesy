@@ -331,14 +331,20 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
  };
 
  const confirmSwitchToPersonal = () => {
- setShowPersonalSwitchModal(false);
- toast.info(`Alternando para o perfil de ${userDisplayName}...`);
- navigate({ to: targetPersonalPath as any });
+   setShowPersonalSwitchModal(false);
+   if (typeof window !== "undefined") {
+     window.document.cookie = "waesy_active_context=civil; path=/; max-age=31536000; SameSite=Lax";
+     window.document.cookie = "waesy_active_tenant=; path=/; max-age=0; SameSite=Lax";
+     window.document.cookie = "waesy_active_creator=; path=/; max-age=0; SameSite=Lax";
+     window.document.cookie = "waesy_store_id=; path=/; max-age=0; SameSite=Lax";
+   }
+   toast.success(`Alternando para o perfil de ${userDisplayName}...`);
+   window.location.href = targetPersonalPath || "/conta";
  };
 
  const requestSwitchToPersonal = (destination = "/conta") => {
- setTargetPersonalPath(destination);
- setShowPersonalSwitchModal(true);
+   setTargetPersonalPath(destination);
+   setShowPersonalSwitchModal(true);
  };
 
  const NavLinks = ({ isMobile = false }: { isMobile?: boolean }) => (
@@ -484,14 +490,15 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
  <span>Ajuda</span>
  </Link>
 
- <Link
- to="/conta"
- className="flex items-center gap-1 text-primary hover:underline px-2 py-1 font-bold"
- title="Voltar ao marketplace"
+ <button
+ type="button"
+ onClick={() => requestSwitchToPersonal("/")}
+ className="flex items-center gap-1 text-primary hover:underline px-2 py-1 font-bold cursor-pointer"
+ title="Voltar ao marketplace (Super App)"
  >
  <span>Super App</span>
  <ArrowUpRight className="size-3" />
- </Link>
+ </button>
  </div>
  </div>
  </aside>
@@ -650,14 +657,15 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
 
                 <DropdownMenuSeparator className="bg-border" />
 
-                <DropdownMenuItem asChild className="rounded-lg cursor-pointer text-xs font-semibold text-foreground flex items-center justify-between">
-                  <Link to="/conta">
-                    <div className="flex items-center gap-2">
-                      <UserCircle className="size-3.5 text-primary" />
-                      <span>Conta Pessoal</span>
-                    </div>
-                    <ArrowUpRight className="size-3 text-muted-foreground" />
-                  </Link>
+                <DropdownMenuItem
+                  onClick={() => requestSwitchToPersonal("/conta")}
+                  className="rounded-lg cursor-pointer text-xs font-semibold text-foreground flex items-center justify-between"
+                >
+                  <div className="flex items-center gap-2">
+                    <UserCircle className="size-3.5 text-primary" />
+                    <span>Conta Pessoal</span>
+                  </div>
+                  <ArrowUpRight className="size-3 text-muted-foreground" />
                 </DropdownMenuItem>
 
                 <DropdownMenuSeparator className="bg-border" />

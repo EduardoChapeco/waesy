@@ -11,6 +11,7 @@ import { PWAInstallBanner } from "@/components/commerce/pwa-install-banner";
 import { OfflineIndicator } from "./offline-indicator";
 import { WaesyCopilotDrawer } from "@/components/chat/waesy-copilot-drawer";
 import { NativeMobileHeader } from "@/components/navigation/native-mobile-header";
+import { ActiveContextBanner } from "./context-banner";
 import { useWindowSizeClass } from "@/hooks/use-mobile";
 
 function resolveCleanMobileTitle(pathname: string, fallbackTitle?: string): string {
@@ -294,6 +295,9 @@ export function AppShell({ children, session, brandSettings }: AppShellProps) {
           mobileOnly
         />
       )}
+
+      {/* ── Banner Global de Contexto Não-Civil (Aviso de Identidade Ativa) ── */}
+      <ActiveContextBanner session={session} />
 
       {/* ── Corpo Principal com Scrolls Independentes (Sidebar fixa + Main independente) ── */}
       <div className="flex-1 flex min-w-0 w-full max-w-full relative overflow-hidden">

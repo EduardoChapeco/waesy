@@ -314,7 +314,7 @@ function AccountDashboardPage() {
               role: isMasterAdmin ? "platform_admin" : (session?.role || session?.user?.role),
             }}
             personas={creatorProfiles.map((cp: any) => ({
-              id: cp.id || cp.handle,
+              id: cp.handle || cp.id,
               name: cp.stage_name || cp.name || cp.handle,
               handle: cp.handle,
               avatarUrl: cp.avatar_url,

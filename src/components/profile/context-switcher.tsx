@@ -119,6 +119,7 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
       window.document.cookie = "waesy_active_context=civil; path=/; max-age=31536000; SameSite=Lax";
       window.document.cookie = "waesy_active_tenant=; path=/; max-age=0; SameSite=Lax";
       window.document.cookie = "waesy_active_creator=; path=/; max-age=0; SameSite=Lax";
+      window.document.cookie = "waesy_store_id=; path=/; max-age=0; SameSite=Lax";
     }
 
     const state: ActiveContextState = {
@@ -137,10 +138,12 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
 
   // ── 2. Alternar para uma Persona de Criador ──
   const handleSwitchToCreator = (persona: CreatorPersona) => {
+    const handleClean = persona.handle || "criador";
     if (typeof window !== "undefined") {
       window.document.cookie = "waesy_active_context=creator; path=/; max-age=31536000; SameSite=Lax";
-      window.document.cookie = `waesy_active_creator=${persona.id}; path=/; max-age=31536000; SameSite=Lax`;
+      window.document.cookie = `waesy_active_creator=${encodeURIComponent(handleClean)}; path=/; max-age=31536000; SameSite=Lax`;
       window.document.cookie = "waesy_active_tenant=; path=/; max-age=0; SameSite=Lax";
+      window.document.cookie = "waesy_store_id=; path=/; max-age=0; SameSite=Lax";
     }
 
     const state: ActiveContextState = {

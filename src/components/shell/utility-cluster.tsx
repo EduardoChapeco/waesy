@@ -2,7 +2,7 @@ import { NotificationsPopover } from "@/components/notifications/notifications-p
 import { cn } from "@/lib/utils";
 import React, { useState } from "react";
 import { Link, useRouter } from "@tanstack/react-router";
-import { Search, ShoppingBag, Bell, LogOut, User, Store, Check, Plus, LayoutDashboard, Settings, Package, Tag, Bookmark, Edit3, ArrowUpRight, ShieldAlert, Shield, MessageSquare, Ticket, Calendar, Award, ChevronRight, HelpCircle, Lock, RefreshCw, Layers, Bike } from "lucide-react";
+import { Search, ShoppingBag, Bell, LogOut, User, Store, Check, Plus, LayoutDashboard, Settings, Package, Tag, Bookmark, Edit3, ArrowUpRight, ShieldAlert, Shield, MessageSquare, Ticket, Calendar, Award, ChevronRight, HelpCircle, Lock, RefreshCw, Layers, Bike, DollarSign, TrendingUp, Building2, Sparkles, ArrowRightLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
@@ -100,23 +100,54 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
     staleTime: 60_000,
   });
 
-  const activeContext = typeof window !== "undefined"
+  const rawContext = typeof window !== "undefined"
     ? (document.cookie.match(/waesy_active_context=([^;]+)/)?.[1] as any) || "civil"
     : "civil";
-  const activeCreatorId = typeof window !== "undefined"
+  const rawCreator = typeof window !== "undefined"
     ? document.cookie.match(/waesy_active_creator=([^;]+)/)?.[1] || null
     : null;
+  const rawTenant = typeof window !== "undefined"
+    ? document.cookie.match(/waesy_active_tenant=([^;]+)/)?.[1] || null
+    : null;
+
+  // Sanitização anti-fantasma (Auto-heal B7)
+  let activeContext: "civil" | "store" | "creator" = rawContext;
+  let activeCreatorId: string | null = null;
+
+  if (activeContext === "creator") {
+    if (creatorProfiles.length === 0) {
+      activeContext = "civil";
+      if (typeof window !== "undefined") {
+        window.document.cookie = "waesy_active_context=civil; path=/; max-age=31536000; SameSite=Lax";
+        window.document.cookie = "waesy_active_creator=; path=/; max-age=0; SameSite=Lax";
+      }
+    } else {
+      const decodedRaw = rawCreator ? decodeURIComponent(rawCreator) : "";
+      const matched = creatorProfiles.find((cp: any) => cp.handle === decodedRaw || cp.id === decodedRaw);
+      if (matched?.handle) {
+        activeCreatorId = matched.handle;
+        if (decodedRaw === matched.id && typeof window !== "undefined") {
+          window.document.cookie = `waesy_active_creator=${encodeURIComponent(matched.handle)}; path=/; max-age=31536000; SameSite=Lax`;
+        }
+      } else {
+        activeCreatorId = creatorProfiles[0]?.handle || userHandle;
+      }
+    }
+  }
+
+  const activeStoreName = memberships.find((m: any) => m.store_id === (activeStoreId || rawTenant))?.name || "Minha Empresa";
 
   const handleSwitchCreator = (persona: any) => {
-    const handleOrId = persona.id || persona.handle;
+    const handleClean = persona.handle || persona.stage_name || "criador";
     if (typeof window !== "undefined") {
       window.document.cookie = "waesy_active_context=creator; path=/; max-age=31536000; SameSite=Lax";
-      window.document.cookie = `waesy_active_creator=${encodeURIComponent(handleOrId)}; path=/; max-age=31536000; SameSite=Lax`;
+      window.document.cookie = `waesy_active_creator=${encodeURIComponent(handleClean)}; path=/; max-age=31536000; SameSite=Lax`;
       window.document.cookie = "waesy_active_tenant=; path=/; max-age=0; SameSite=Lax";
+      window.document.cookie = "waesy_store_id=; path=/; max-age=0; SameSite=Lax";
     }
-    toast.success(`Contexto ativo: @${persona.handle}`);
+    toast.success(`Contexto ativo: @${handleClean}`);
     setIsAccountOpen(false);
-    router.navigate({ to: "/conta/criadores" });
+    window.location.href = "/conta/criadores";
   };
 
   const handleSwitchCivil = () => {
@@ -124,10 +155,11 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
       window.document.cookie = "waesy_active_context=civil; path=/; max-age=31536000; SameSite=Lax";
       window.document.cookie = "waesy_active_tenant=; path=/; max-age=0; SameSite=Lax";
       window.document.cookie = "waesy_active_creator=; path=/; max-age=0; SameSite=Lax";
+      window.document.cookie = "waesy_store_id=; path=/; max-age=0; SameSite=Lax";
     }
     toast.success(`Contexto ativo: ${userName} (Conta Civil)`);
     setIsAccountOpen(false);
-    router.navigate({ to: "/conta" });
+    window.location.href = "/conta";
   };
 
   const handleSwitchStore = async (storeId: string) => {
@@ -276,7 +308,7 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
                         {activeContext === "creator"
                           ? `Criador: @${activeCreatorId || "ativo"}`
                           : activeContext === "store"
-                          ? "Empresa Ativa"
+                          ? `Empresa: ${activeStoreName}`
                           : "Conta Civil Pessoal"}
                       </span>
                     </div>
@@ -284,7 +316,7 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
                       <button
                         type="button"
                         onClick={handleSwitchCivil}
-                        className="text-xs font-bold text-primary hover:underline px-2 py-1 rounded cursor-pointer shrink-0"
+                        className="text-xs font-bold text-primary hover:underline px-2 py-1 rounded cursor-pointer shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                       >
                         Voltar ao Civil
                       </button>
@@ -292,212 +324,429 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
                   </div>
                 </div>
 
-                {/* Links de Navegação com Alvo de Toque de 44px */}
+                {/* Conteúdo Contextual do Drawer com Alvo de Toque Canônico de 44px */}
                 <div className="flex-1 overflow-y-auto p-3 space-y-1">
-                  <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider px-3 py-1">
-                    Minha Conta
-                  </div>
+                  {/* ── CONTEXTO 1: MODO CRIADOR ATIVO ── */}
+                  {activeContext === "creator" && (
+                    <>
+                      <div className="text-xs font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider px-3 py-1 flex items-center gap-1.5">
+                        <Sparkles className="size-3.5" />
+                        <span>Painel do Criador (@{activeCreatorId || "ativo"})</span>
+                      </div>
 
-                  <Link
-                    to="/conta"
-                    onClick={() => setIsAccountOpen(false)}
-                    className="w-full h-11 min-h-11 px-3 rounded-lg flex items-center justify-between hover:bg-muted/60 transition-colors text-xs font-bold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                  >
-                    <div className="flex items-center gap-3">
-                      <User className="size-4 text-muted-foreground" />
-                      <span>Painel Geral</span>
-                    </div>
-                    <ChevronRight className="size-4 text-muted-foreground/60" />
-                  </Link>
-
-                  <Link
-                    to="/conta/perfil"
-                    onClick={() => setIsAccountOpen(false)}
-                    className="w-full h-11 min-h-11 px-3 rounded-lg flex items-center justify-between hover:bg-muted/60 transition-colors text-xs font-medium text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                  >
-                    <div className="flex items-center gap-3">
-                      <Edit3 className="size-4 text-muted-foreground" />
-                      <span>Perfil & Identidade</span>
-                    </div>
-                    <ChevronRight className="size-4 text-muted-foreground/60" />
-                  </Link>
-
-                  <Link
-                    to="/conta/pedidos"
-                    onClick={() => setIsAccountOpen(false)}
-                    className="w-full h-11 min-h-11 px-3 rounded-lg flex items-center justify-between hover:bg-muted/60 transition-colors text-xs font-medium text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                  >
-                    <div className="flex items-center gap-3">
-                      <ShoppingBag className="size-4 text-muted-foreground" />
-                      <span>Meus Pedidos</span>
-                    </div>
-                    <ChevronRight className="size-4 text-muted-foreground/60" />
-                  </Link>
-
-                  <Link
-                    to="/conta/ingressos"
-                    onClick={() => setIsAccountOpen(false)}
-                    className="w-full h-11 min-h-11 px-3 rounded-lg flex items-center justify-between hover:bg-muted/60 transition-colors text-xs font-medium text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                  >
-                    <div className="flex items-center gap-3">
-                      <Ticket className="size-4 text-muted-foreground" />
-                      <span>Ingressos & Eventos</span>
-                    </div>
-                    <ChevronRight className="size-4 text-muted-foreground/60" />
-                  </Link>
-
-                  <Link
-                    to="/conta/agendamentos"
-                    onClick={() => setIsAccountOpen(false)}
-                    className="w-full h-11 min-h-11 px-3 rounded-lg flex items-center justify-between hover:bg-muted/60 transition-colors text-xs font-medium text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                  >
-                    <div className="flex items-center gap-3">
-                      <Calendar className="size-4 text-muted-foreground" />
-                      <span>Agendamentos</span>
-                    </div>
-                    <ChevronRight className="size-4 text-muted-foreground/60" />
-                  </Link>
-
-                  <Link
-                    to="/conta/trocas"
-                    onClick={() => setIsAccountOpen(false)}
-                    className="w-full h-11 min-h-11 px-3 rounded-lg flex items-center justify-between hover:bg-muted/60 transition-colors text-xs font-medium text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                  >
-                    <div className="flex items-center gap-3">
-                      <RefreshCw className="size-4 text-muted-foreground" />
-                      <span>Trocas & Negociações</span>
-                    </div>
-                    <ChevronRight className="size-4 text-muted-foreground/60" />
-                  </Link>
-
-                  <Link
-                    to="/conta/classificados"
-                    onClick={() => setIsAccountOpen(false)}
-                    className="w-full h-11 min-h-11 px-3 rounded-lg flex items-center justify-between hover:bg-muted/60 transition-colors text-xs font-medium text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                  >
-                    <div className="flex items-center gap-3">
-                      <Layers className="size-4 text-muted-foreground" />
-                      <span>Meus Anúncios</span>
-                    </div>
-                    <ChevronRight className="size-4 text-muted-foreground/60" />
-                  </Link>
-
-                  <Link
-                    to="/conta/salvos"
-                    onClick={() => setIsAccountOpen(false)}
-                    className="w-full h-11 min-h-11 px-3 rounded-lg flex items-center justify-between hover:bg-muted/60 transition-colors text-xs font-medium text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                  >
-                    <div className="flex items-center gap-3">
-                      <Bookmark className="size-4 text-muted-foreground" />
-                      <span>Salvos & Favoritos</span>
-                    </div>
-                    <ChevronRight className="size-4 text-muted-foreground/60" />
-                  </Link>
-
-                  <Link
-                    to="/conta/seguranca"
-                    onClick={() => setIsAccountOpen(false)}
-                    className="w-full h-11 min-h-11 px-3 rounded-lg flex items-center justify-between hover:bg-muted/60 transition-colors text-xs font-medium text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                  >
-                    <div className="flex items-center gap-3">
-                      <Lock className="size-4 text-muted-foreground" />
-                      <span>Segurança & Acesso</span>
-                    </div>
-                    <ChevronRight className="size-4 text-muted-foreground/60" />
-                  </Link>
-
-                  <Link
-                    to="/conta/suporte"
-                    onClick={() => setIsAccountOpen(false)}
-                    className="w-full h-11 min-h-11 px-3 rounded-lg flex items-center justify-between hover:bg-muted/60 transition-colors text-xs font-medium text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                  >
-                    <div className="flex items-center gap-3">
-                      <HelpCircle className="size-4 text-muted-foreground" />
-                      <span>Suporte & Ajuda</span>
-                    </div>
-                    <ChevronRight className="size-4 text-muted-foreground/60" />
-                  </Link>
-
-                  {/* Seção Gestão de Negócios / Lojas */}
-                  <div className="pt-3 border-t border-border/40 mt-2">
-                    <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider px-3 py-1">
-                      Gestão de Negócios
-                    </div>
-
-                    {isPlatformAdmin && (
                       <Link
-                        to="/admin-master"
+                        to="/conta/criadores"
                         onClick={() => setIsAccountOpen(false)}
-                        className="w-full h-11 min-h-11 px-3 rounded-lg flex items-center justify-between bg-primary/10 text-primary hover:bg-primary/20 border border-primary/20 transition-colors text-xs font-bold mb-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                        className="w-full h-11 min-h-11 px-3 rounded-lg flex items-center justify-between hover:bg-muted/60 transition-colors text-xs font-bold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                       >
                         <div className="flex items-center gap-3">
-                          <ShieldAlert className="size-4" />
-                          <span>Painel Global Master</span>
+                          <Award className="size-4 text-amber-500" />
+                          <span>Minha Vitrine & Personas</span>
                         </div>
-                        <ArrowUpRight className="size-4" />
+                        <ChevronRight className="size-4 text-muted-foreground/60" />
                       </Link>
-                    )}
 
-                    {memberships.length > 0 || isPlatformAdmin ? (
+                      <Link
+                        to="/afiliados"
+                        onClick={() => setIsAccountOpen(false)}
+                        className="w-full h-11 min-h-11 px-3 rounded-lg flex items-center justify-between hover:bg-muted/60 transition-colors text-xs font-medium text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      >
+                        <div className="flex items-center gap-3">
+                          <Tag className="size-4 text-muted-foreground" />
+                          <span>Links de Afiliado & Vitrines</span>
+                        </div>
+                        <ChevronRight className="size-4 text-muted-foreground/60" />
+                      </Link>
+
+                      <Link
+                        to="/conta/financas"
+                        onClick={() => setIsAccountOpen(false)}
+                        className="w-full h-11 min-h-11 px-3 rounded-lg flex items-center justify-between hover:bg-muted/60 transition-colors text-xs font-medium text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      >
+                        <div className="flex items-center gap-3">
+                          <DollarSign className="size-4 text-muted-foreground" />
+                          <span>Comissões & Repasses</span>
+                        </div>
+                        <ChevronRight className="size-4 text-muted-foreground/60" />
+                      </Link>
+
+                      <Link
+                        to="/conta/metricas"
+                        onClick={() => setIsAccountOpen(false)}
+                        className="w-full h-11 min-h-11 px-3 rounded-lg flex items-center justify-between hover:bg-muted/60 transition-colors text-xs font-medium text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      >
+                        <div className="flex items-center gap-3">
+                          <TrendingUp className="size-4 text-muted-foreground" />
+                          <span>Métricas & Audiência</span>
+                        </div>
+                        <ChevronRight className="size-4 text-muted-foreground/60" />
+                      </Link>
+
+                      <Link
+                        to="/mural"
+                        onClick={() => setIsAccountOpen(false)}
+                        className="w-full h-11 min-h-11 px-3 rounded-lg flex items-center justify-between hover:bg-muted/60 transition-colors text-xs font-medium text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      >
+                        <div className="flex items-center gap-3">
+                          <Layers className="size-4 text-muted-foreground" />
+                          <span>Mural de Campanhas</span>
+                        </div>
+                        <ChevronRight className="size-4 text-muted-foreground/60" />
+                      </Link>
+
+                      <Link
+                        to="/conta/seguranca"
+                        onClick={() => setIsAccountOpen(false)}
+                        className="w-full h-11 min-h-11 px-3 rounded-lg flex items-center justify-between hover:bg-muted/60 transition-colors text-xs font-medium text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      >
+                        <div className="flex items-center gap-3">
+                          <Lock className="size-4 text-muted-foreground" />
+                          <span>Segurança da Conta</span>
+                        </div>
+                        <ChevronRight className="size-4 text-muted-foreground/60" />
+                      </Link>
+
+                      <Link
+                        to="/conta/suporte"
+                        onClick={() => setIsAccountOpen(false)}
+                        className="w-full h-11 min-h-11 px-3 rounded-lg flex items-center justify-between hover:bg-muted/60 transition-colors text-xs font-medium text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      >
+                        <div className="flex items-center gap-3">
+                          <HelpCircle className="size-4 text-muted-foreground" />
+                          <span>Suporte ao Criador</span>
+                        </div>
+                        <ChevronRight className="size-4 text-muted-foreground/60" />
+                      </Link>
+
+                      <div className="pt-4 mt-3 border-t border-border/40">
+                        <button
+                          type="button"
+                          onClick={handleSwitchCivil}
+                          className="w-full h-11 min-h-11 px-3 rounded-lg flex items-center justify-center gap-2 bg-muted/60 hover:bg-muted text-foreground transition-colors text-xs font-bold cursor-pointer border border-border/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                        >
+                          <ArrowRightLeft className="size-4 text-primary" />
+                          <span>Voltar para Minha Conta Pessoal ({userName})</span>
+                        </button>
+                      </div>
+                    </>
+                  )}
+
+                  {/* ── CONTEXTO 2: MODO EMPRESA ATIVO ── */}
+                  {activeContext === "store" && (
+                    <>
+                      <div className="text-xs font-bold text-primary uppercase tracking-wider px-3 py-1 flex items-center gap-1.5">
+                        <Building2 className="size-3.5" />
+                        <span>Gestão: {activeStoreName}</span>
+                      </div>
+
                       <Link
                         to="/workspace"
                         onClick={() => setIsAccountOpen(false)}
-                        className="w-full h-11 min-h-11 px-3 rounded-lg flex items-center justify-between bg-foreground text-background hover:bg-foreground/90 transition-colors text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                        className="w-full h-11 min-h-11 px-3 rounded-lg flex items-center justify-between bg-primary/10 text-primary hover:bg-primary/20 border border-primary/20 transition-colors text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                       >
                         <div className="flex items-center gap-3">
                           <LayoutDashboard className="size-4" />
-                          <span>Acessar Workspace</span>
+                          <span>Acessar Painel Workspace</span>
                         </div>
                         <ArrowUpRight className="size-4" />
                       </Link>
-                    ) : (
+
                       <Link
-                        to="/criar-negocio"
+                        to="/workspace/catalogo/produtos"
                         onClick={() => setIsAccountOpen(false)}
-                        className="w-full h-11 min-h-11 px-3 rounded-lg flex items-center justify-between bg-primary text-primary-foreground hover:bg-primary/90 transition-colors text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                        className="w-full h-11 min-h-11 px-3 rounded-lg flex items-center justify-between hover:bg-muted/60 transition-colors text-xs font-medium text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                       >
                         <div className="flex items-center gap-3">
-                          <Plus className="size-4" />
-                          <span>Criar Minha Empresa</span>
+                          <Package className="size-4 text-muted-foreground" />
+                          <span>Catálogo & Produtos</span>
                         </div>
-                        <ArrowUpRight className="size-4" />
+                        <ChevronRight className="size-4 text-muted-foreground/60" />
                       </Link>
-                    )}
 
-                    {memberships.length > 0 && (
-                      <div className="space-y-1 mt-2">
-                        {memberships.slice(0, 3).map((m: any) => {
-                          const isCurrent = m.store_id === activeStoreId;
-                          return (
-                            <button
-                              key={m.store_id}
-                              type="button"
-                              disabled={isSwitching}
-                              onClick={() => handleSwitchStore(m.store_id)}
-                              className={cn(
-                                "w-full h-11 min-h-11 px-3 rounded-lg flex items-center justify-between transition-colors cursor-pointer text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-                                isCurrent
-                                  ? "bg-primary/10 text-primary font-bold"
-                                  : "hover:bg-muted/60 text-foreground font-medium"
-                              )}
-                            >
-                              <div className="flex items-center gap-2 min-w-0">
-                                <Store className="size-4 text-primary shrink-0" />
-                                <span className="truncate">{m.name || "Minha Loja"}</span>
-                              </div>
-                              {isCurrent ? (
-                                <span className="text-xs font-bold text-primary px-2 py-1 rounded bg-primary/20 shrink-0">
-                                  Ativa
-                                </span>
-                              ) : (
-                                <ArrowUpRight className="size-3.5 text-muted-foreground/70 shrink-0" />
-                              )}
-                            </button>
-                          );
-                        })}
+                      <Link
+                        to="/workspace/pedidos"
+                        onClick={() => setIsAccountOpen(false)}
+                        className="w-full h-11 min-h-11 px-3 rounded-lg flex items-center justify-between hover:bg-muted/60 transition-colors text-xs font-medium text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      >
+                        <div className="flex items-center gap-3">
+                          <ShoppingBag className="size-4 text-muted-foreground" />
+                          <span>Pedidos Recebidos</span>
+                        </div>
+                        <ChevronRight className="size-4 text-muted-foreground/60" />
+                      </Link>
+
+                      <Link
+                        to="/workspace/financeiro/caixa"
+                        onClick={() => setIsAccountOpen(false)}
+                        className="w-full h-11 min-h-11 px-3 rounded-lg flex items-center justify-between hover:bg-muted/60 transition-colors text-xs font-medium text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      >
+                        <div className="flex items-center gap-3">
+                          <DollarSign className="size-4 text-muted-foreground" />
+                          <span>Financeiro & Caixa</span>
+                        </div>
+                        <ChevronRight className="size-4 text-muted-foreground/60" />
+                      </Link>
+
+                      <Link
+                        to="/perfil-da-loja"
+                        onClick={() => setIsAccountOpen(false)}
+                        className="w-full h-11 min-h-11 px-3 rounded-lg flex items-center justify-between hover:bg-muted/60 transition-colors text-xs font-medium text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      >
+                        <div className="flex items-center gap-3">
+                          <Store className="size-4 text-muted-foreground" />
+                          <span>Perfil Público no Marketplace</span>
+                        </div>
+                        <ChevronRight className="size-4 text-muted-foreground/60" />
+                      </Link>
+
+                      <Link
+                        to="/conta/suporte"
+                        onClick={() => setIsAccountOpen(false)}
+                        className="w-full h-11 min-h-11 px-3 rounded-lg flex items-center justify-between hover:bg-muted/60 transition-colors text-xs font-medium text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      >
+                        <div className="flex items-center gap-3">
+                          <HelpCircle className="size-4 text-muted-foreground" />
+                          <span>Suporte Corporativo</span>
+                        </div>
+                        <ChevronRight className="size-4 text-muted-foreground/60" />
+                      </Link>
+
+                      <div className="pt-4 mt-3 border-t border-border/40">
+                        <button
+                          type="button"
+                          onClick={handleSwitchCivil}
+                          className="w-full h-11 min-h-11 px-3 rounded-lg flex items-center justify-center gap-2 bg-muted/60 hover:bg-muted text-foreground transition-colors text-xs font-bold cursor-pointer border border-border/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                        >
+                          <ArrowRightLeft className="size-4 text-primary" />
+                          <span>Voltar para Minha Conta Pessoal ({userName})</span>
+                        </button>
                       </div>
-                    )}
-                  </div>
+                    </>
+                  )}
+
+                  {/* ── CONTEXTO 3: CONTA CIVIL PESSOAL (ROOT TRANSACIONAL PADRÃO) ── */}
+                  {activeContext === "civil" && (
+                    <>
+                      <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider px-3 py-1">
+                        Minha Conta Pessoal
+                      </div>
+
+                      <Link
+                        to="/conta"
+                        onClick={() => setIsAccountOpen(false)}
+                        className="w-full h-11 min-h-11 px-3 rounded-lg flex items-center justify-between hover:bg-muted/60 transition-colors text-xs font-bold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      >
+                        <div className="flex items-center gap-3">
+                          <User className="size-4 text-muted-foreground" />
+                          <span>Painel Geral</span>
+                        </div>
+                        <ChevronRight className="size-4 text-muted-foreground/60" />
+                      </Link>
+
+                      <Link
+                        to="/conta/perfil"
+                        onClick={() => setIsAccountOpen(false)}
+                        className="w-full h-11 min-h-11 px-3 rounded-lg flex items-center justify-between hover:bg-muted/60 transition-colors text-xs font-medium text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      >
+                        <div className="flex items-center gap-3">
+                          <Edit3 className="size-4 text-muted-foreground" />
+                          <span>Perfil & Identidade</span>
+                        </div>
+                        <ChevronRight className="size-4 text-muted-foreground/60" />
+                      </Link>
+
+                      <Link
+                        to="/conta/pedidos"
+                        onClick={() => setIsAccountOpen(false)}
+                        className="w-full h-11 min-h-11 px-3 rounded-lg flex items-center justify-between hover:bg-muted/60 transition-colors text-xs font-medium text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      >
+                        <div className="flex items-center gap-3">
+                          <ShoppingBag className="size-4 text-muted-foreground" />
+                          <span>Meus Pedidos</span>
+                        </div>
+                        <ChevronRight className="size-4 text-muted-foreground/60" />
+                      </Link>
+
+                      <Link
+                        to="/conta/ingressos"
+                        onClick={() => setIsAccountOpen(false)}
+                        className="w-full h-11 min-h-11 px-3 rounded-lg flex items-center justify-between hover:bg-muted/60 transition-colors text-xs font-medium text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      >
+                        <div className="flex items-center gap-3">
+                          <Ticket className="size-4 text-muted-foreground" />
+                          <span>Ingressos & Eventos</span>
+                        </div>
+                        <ChevronRight className="size-4 text-muted-foreground/60" />
+                      </Link>
+
+                      <Link
+                        to="/conta/agendamentos"
+                        onClick={() => setIsAccountOpen(false)}
+                        className="w-full h-11 min-h-11 px-3 rounded-lg flex items-center justify-between hover:bg-muted/60 transition-colors text-xs font-medium text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      >
+                        <div className="flex items-center gap-3">
+                          <Calendar className="size-4 text-muted-foreground" />
+                          <span>Agendamentos</span>
+                        </div>
+                        <ChevronRight className="size-4 text-muted-foreground/60" />
+                      </Link>
+
+                      <Link
+                        to="/conta/trocas"
+                        onClick={() => setIsAccountOpen(false)}
+                        className="w-full h-11 min-h-11 px-3 rounded-lg flex items-center justify-between hover:bg-muted/60 transition-colors text-xs font-medium text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      >
+                        <div className="flex items-center gap-3">
+                          <RefreshCw className="size-4 text-muted-foreground" />
+                          <span>Trocas & Negociações</span>
+                        </div>
+                        <ChevronRight className="size-4 text-muted-foreground/60" />
+                      </Link>
+
+                      <Link
+                        to="/conta/classificados"
+                        onClick={() => setIsAccountOpen(false)}
+                        className="w-full h-11 min-h-11 px-3 rounded-lg flex items-center justify-between hover:bg-muted/60 transition-colors text-xs font-medium text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      >
+                        <div className="flex items-center gap-3">
+                          <Layers className="size-4 text-muted-foreground" />
+                          <span>Meus Anúncios</span>
+                        </div>
+                        <ChevronRight className="size-4 text-muted-foreground/60" />
+                      </Link>
+
+                      <Link
+                        to="/conta/salvos"
+                        onClick={() => setIsAccountOpen(false)}
+                        className="w-full h-11 min-h-11 px-3 rounded-lg flex items-center justify-between hover:bg-muted/60 transition-colors text-xs font-medium text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      >
+                        <div className="flex items-center gap-3">
+                          <Bookmark className="size-4 text-muted-foreground" />
+                          <span>Salvos & Favoritos</span>
+                        </div>
+                        <ChevronRight className="size-4 text-muted-foreground/60" />
+                      </Link>
+
+                      <Link
+                        to="/conta/seguranca"
+                        onClick={() => setIsAccountOpen(false)}
+                        className="w-full h-11 min-h-11 px-3 rounded-lg flex items-center justify-between hover:bg-muted/60 transition-colors text-xs font-medium text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      >
+                        <div className="flex items-center gap-3">
+                          <Lock className="size-4 text-muted-foreground" />
+                          <span>Segurança & Acesso</span>
+                        </div>
+                        <ChevronRight className="size-4 text-muted-foreground/60" />
+                      </Link>
+
+                      <Link
+                        to="/conta/suporte"
+                        onClick={() => setIsAccountOpen(false)}
+                        className="w-full h-11 min-h-11 px-3 rounded-lg flex items-center justify-between hover:bg-muted/60 transition-colors text-xs font-medium text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      >
+                        <div className="flex items-center gap-3">
+                          <HelpCircle className="size-4 text-muted-foreground" />
+                          <span>Suporte & Ajuda</span>
+                        </div>
+                        <ChevronRight className="size-4 text-muted-foreground/60" />
+                      </Link>
+
+                      {/* Seção Gestão & Negócios */}
+                      <div className="pt-3 border-t border-border/40 mt-2">
+                        <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider px-3 py-1">
+                          Gestão & Outros Perfis
+                        </div>
+
+                        {isPlatformAdmin && (
+                          <Link
+                            to="/admin-master"
+                            onClick={() => setIsAccountOpen(false)}
+                            className="w-full h-11 min-h-11 px-3 rounded-lg flex items-center justify-between bg-primary/10 text-primary hover:bg-primary/20 border border-primary/20 transition-colors text-xs font-bold mb-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                          >
+                            <div className="flex items-center gap-3">
+                              <ShieldAlert className="size-4" />
+                              <span>Painel Global Master</span>
+                            </div>
+                            <ArrowUpRight className="size-4" />
+                          </Link>
+                        )}
+
+                        {creatorProfiles.length > 0 && (
+                          <button
+                            type="button"
+                            onClick={() => handleSwitchCreator(creatorProfiles[0])}
+                            className="w-full h-11 min-h-11 px-3 rounded-lg flex items-center justify-between bg-amber-500/10 text-amber-700 dark:text-amber-400 hover:bg-amber-500/20 border border-amber-500/20 transition-colors text-xs font-bold mb-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                          >
+                            <div className="flex items-center gap-3">
+                              <Award className="size-4 text-amber-500" />
+                              <span>Alternar para @{creatorProfiles[0].handle} (Criador)</span>
+                            </div>
+                            <ArrowUpRight className="size-4" />
+                          </button>
+                        )}
+
+                        {memberships.length > 0 || isPlatformAdmin ? (
+                          <Link
+                            to="/workspace"
+                            onClick={() => setIsAccountOpen(false)}
+                            className="w-full h-11 min-h-11 px-3 rounded-lg flex items-center justify-between bg-foreground text-background hover:bg-foreground/90 transition-colors text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                          >
+                            <div className="flex items-center gap-3">
+                              <LayoutDashboard className="size-4" />
+                              <span>Acessar Workspace</span>
+                            </div>
+                            <ArrowUpRight className="size-4" />
+                          </Link>
+                        ) : (
+                          <Link
+                            to="/criar-negocio"
+                            onClick={() => setIsAccountOpen(false)}
+                            className="w-full h-11 min-h-11 px-3 rounded-lg flex items-center justify-between bg-primary text-primary-foreground hover:bg-primary/90 transition-colors text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                          >
+                            <div className="flex items-center gap-3">
+                              <Plus className="size-4" />
+                              <span>Criar Minha Empresa</span>
+                            </div>
+                            <ArrowUpRight className="size-4" />
+                          </Link>
+                        )}
+
+                        {memberships.length > 0 && (
+                          <div className="space-y-1 mt-2">
+                            {memberships.slice(0, 3).map((m: any) => {
+                              const isCurrent = m.store_id === activeStoreId;
+                              return (
+                                <button
+                                  key={m.store_id}
+                                  type="button"
+                                  disabled={isSwitching}
+                                  onClick={() => handleSwitchStore(m.store_id)}
+                                  className={cn(
+                                    "w-full h-11 min-h-11 px-3 rounded-lg flex items-center justify-between transition-colors cursor-pointer text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                                    isCurrent
+                                      ? "bg-primary/10 text-primary font-bold"
+                                      : "hover:bg-muted/60 text-foreground font-medium"
+                                  )}
+                                >
+                                  <div className="flex items-center gap-2 min-w-0">
+                                    <Store className="size-4 text-primary shrink-0" />
+                                    <span className="truncate">{m.name || "Minha Loja"}</span>
+                                  </div>
+                                  {isCurrent ? (
+                                    <span className="text-xs font-bold text-primary px-2 py-1 rounded bg-primary/20 shrink-0">
+                                      Ativa
+                                    </span>
+                                  ) : (
+                                    <ArrowUpRight className="size-3.5 text-muted-foreground/70 shrink-0" />
+                                  )}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    </>
+                  )}
                 </div>
 
                 {/* Footer Fixo: Sair */}
