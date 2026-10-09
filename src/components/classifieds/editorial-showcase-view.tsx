@@ -3269,6 +3269,7 @@ export function EditorialShowcaseView({
       <TravelPromoFlyerModal
         isOpen={isPromoFlyerOpen}
         onClose={() => setIsPromoFlyerOpen(false)}
+        niche={isTravel ? "turismo" : (nicheId || "turismo")}
         destinationTitle={classified.title || attrs.destination_city || "Destino Turístico"}
         destinationCity={attrs.destination_city || attrs.destination}
         datesText={attrs.dates_text}

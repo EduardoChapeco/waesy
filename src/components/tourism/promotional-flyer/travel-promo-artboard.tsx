@@ -34,6 +34,7 @@ interface TravelPromoArtboardProps {
   artboardRef?: React.Ref<HTMLDivElement>;
   scale?: number;
   className?: string;
+  isAnimated?: boolean;
 }
 
 export function TravelPromoArtboard({
@@ -41,6 +42,7 @@ export function TravelPromoArtboard({
   artboardRef,
   scale = 1,
   className = "",
+  isAnimated = false,
 }: TravelPromoArtboardProps) {
   const { aspectRatio = "9:16", templateId = "travel_editorial" } = data;
 
@@ -64,6 +66,30 @@ export function TravelPromoArtboard({
 
   const TemplateComponent = templateDefinition.component;
 
+  const content = (
+    <TemplateComponent
+      data={{
+        title: data.title,
+        subtitle: data.datesText,
+        destinationOrLocation: data.destination,
+        datesOrAvailability: data.datesText,
+        highlights: data.inclusions,
+        priceCents: data.priceCents,
+        originalPriceCents: data.originalPriceCents,
+        maxInstallments: data.maxInstallments,
+        installmentCents: data.installmentCents,
+        pricingMode: data.pricingMode,
+        paymentMethodsLabel: data.paymentMethodsLabel,
+        backgroundImageUrl: data.backgroundImageUrl,
+        aspectRatio,
+        themeGradient: data.themeGradient,
+        promoBadge: data.promoBadge,
+        storeName: data.storeName,
+        ctaLabel: data.ctaLabel,
+      }}
+    />
+  );
+
   return (
     <div
       ref={artboardRef}
@@ -76,27 +102,16 @@ export function TravelPromoArtboard({
       }}
       className={`relative overflow-hidden bg-[#0a192f] text-white select-none ${className}`}
     >
-      <TemplateComponent
-        data={{
-          title: data.title,
-          subtitle: data.datesText,
-          destinationOrLocation: data.destination,
-          datesOrAvailability: data.datesText,
-          highlights: data.inclusions,
-          priceCents: data.priceCents,
-          originalPriceCents: data.originalPriceCents,
-          maxInstallments: data.maxInstallments,
-          installmentCents: data.installmentCents,
-          pricingMode: data.pricingMode,
-          paymentMethodsLabel: data.paymentMethodsLabel,
-          backgroundImageUrl: data.backgroundImageUrl,
-          aspectRatio,
-          themeGradient: data.themeGradient,
-          promoBadge: data.promoBadge,
-          storeName: data.storeName,
-          ctaLabel: data.ctaLabel,
-        }}
-      />
+      {isAnimated ? (
+        <div
+          key={`${templateId}-${aspectRatio}`}
+          className="w-full h-full transition-all duration-300 ease-out animate-in fade-in zoom-in-95"
+        >
+          {content}
+        </div>
+      ) : (
+        content
+      )}
     </div>
   );
 }

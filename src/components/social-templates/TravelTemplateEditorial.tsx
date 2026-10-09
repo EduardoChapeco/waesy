@@ -4,7 +4,7 @@
  */
 
 import React, { useMemo } from "react";
-import { Plane, Coffee, Car, Utensils, Compass, Sun, Snowflake, Anchor, ShieldCheck, Star } from "lucide-react";
+import { Plane, Coffee, Car, Utensils, Compass, Sun, Snowflake, Anchor, ShieldCheck, Star, ArrowRight } from "lucide-react";
 import { formatMoney } from "@/lib/money";
 import type { SocialTemplateProps } from "./types";
 
@@ -24,6 +24,7 @@ export function TravelTemplateEditorial({ data, className = "" }: SocialTemplate
     themeGradient = "ocean_blue",
     promoBadge,
     storeName,
+    ctaLabel,
   } = data;
 
   const effectiveInstallmentCents = useMemo(() => {
@@ -149,9 +150,9 @@ export function TravelTemplateEditorial({ data, className = "" }: SocialTemplate
           </div>
         </div>
 
-        {/* Bloco Inferior: Preço em Frosted Glass & Selo da Loja */}
+        {/* Bloco Inferior: Preço em Frosted Glass & Selo da Loja & CTA */}
         <div
-          className={`w-full flex items-end justify-between ${
+          className={`w-full flex items-end justify-between gap-6 ${
             aspectRatio === "1:1" ? "pb-4" : "pb-8"
           }`}
         >
@@ -198,12 +199,23 @@ export function TravelTemplateEditorial({ data, className = "" }: SocialTemplate
             </div>
           </div>
 
-          {/* Selo da Agência / Loja */}
-          <div className="flex items-center gap-2 px-5 py-3 rounded-lg bg-black/40 backdrop-blur-md border border-white/10 text-white/80">
-            <ShieldCheck className="size-5 sm:size-6 text-emerald-400 shrink-0" />
-            <span className="text-sm sm:text-base font-semibold tracking-tight truncate max-w-52">
-              {storeName || "Agência não informada"}
-            </span>
+          {/* Lado Direito Inferior: Selo da Agência e Botão CTA */}
+          <div className="flex flex-col items-end gap-4 shrink-0">
+            {/* Selo da Agência / Loja */}
+            <div className="flex items-center gap-2 px-5 py-3 rounded-lg bg-black/40 backdrop-blur-md border border-white/10 text-white/80">
+              <ShieldCheck className="size-5 sm:size-6 text-emerald-400 shrink-0" />
+              <span className="text-sm sm:text-base font-semibold tracking-tight truncate max-w-52">
+                {storeName || "Agência não informada"}
+              </span>
+            </div>
+
+            {/* Botão de Chamada para Ação */}
+            <div className="bg-amber-400 hover:bg-amber-300 text-slate-950 px-8 py-5 rounded-lg shadow-xl flex items-center gap-3 transition-transform active:scale-95">
+              <span className="text-xl font-black tracking-wide">
+                {ctaLabel || "Garantir Vaga"}
+              </span>
+              <ArrowRight className="size-6 text-slate-950" />
+            </div>
           </div>
         </div>
       </div>

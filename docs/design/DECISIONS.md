@@ -1,5 +1,13 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-201: Estúdio de Flyers Promocionais Fullscreen, Priorização Semântica por Nicho e Modo Motion
+- **Data:** 2026-10-09
+- **Contexto:** Identificou-se que a engine geradora de flyers e stories promocionais (`TravelPromoFlyerModal`) sofria de compressão visual extrema no desktop (espremida em um container modal centralizado de 512px por conflito com o primitivo `DialogContent`), além de carregar inicialmente templates de imóveis ("Fachada Dominante", "Agendar Visita") em anúncios de Turismo (excursões, viagens rodoviárias e pacotes), quebrando a usabilidade do anunciante e impedindo a visualização da arte na proporção 9:16 Ultra HD.
+- **Decisão:** (1) **Desacoplamento de Tamanho Canônico no Primitivo Dialog:** Introduzida variante `size="screen"` em `src/components/ui/dialog.tsx`, permitindo renderização verdadeiramente edge-to-edge estilo Apple Studio / Canva sem colisão de centralização desktop; (2) **Auto-Binding e Priorização Estrita por Nicho:** Prop `niche` propagada a partir das vitrines (`editorial-showcase-view.tsx`), garantindo que templates nativos do nicho (Turismo: "Curvatura Orgânica", "Boarding Pass", "Full-Bleed Nature & Glass", "Clássico Waesy") e CTAs pertinentes ("Garantir Vaga", "Reservar Pacote") apareçam selecionados e no topo da lista; (3) **Modo Motion de Pré-Visualização Dinâmica:** Adicionado botão alternador no cabeçalho do estúdio e animação fluida CSS nativa em `TravelPromoArtboard`, preservando exportação ultra HD estática para PNG em resolução 1080x1920 sem travas ou conflitos de dependências externas; (4) **Validação Automatizada:** `npm.cmd run typecheck` finalizado com Exit Code 0 e zero erros de tipo.
+- **Fundamentação:** AGENTS.md B.1, B.4, B.6, B.8, B.9, B.11, B.22, B.28; WCAG 2.2 AA.
+- **Consequências:** Estúdio de criação de stories e flyers 100% responsivo, respirável, sem distorção ou compressão de tela, com templates e CTAs perfeitamente sincronizados com o anúncio aberto.
+
+
 ## DEC-200: Personalização Semântica Estrita dos Fluxos de Onboarding / Reserva / Lead Inquiry por Nicho
 - **Data:** 2026-10-09
 - **Contexto:** Identificou-se que o formulário de manifesto de interesse / lead inquiry (`LeadFormModal`) exibia perguntas genéricas herdadas de modelos automotivos ("Possui item ou veículo para entrada / permuta?", "Qual seu prazo para fechar negócio?") em anúncios de Turismo (excursões, roteiros, pacotes) e outros nichos que não possuem permuta de bens, quebrando completamente a experiência do usuário e gerando estranheza cognitiva.

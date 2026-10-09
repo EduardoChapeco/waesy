@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Download, ImagePlus, Star, Palette, Check, Loader2, ArrowLeft, Sliders, Type, ImageIcon, ShieldCheck, Maximize2, RefreshCw, Dices } from "lucide-react";
+import { Download, ImagePlus, Star, Palette, Check, Loader2, ArrowLeft, Sliders, Type, ImageIcon, ShieldCheck, Maximize2, RefreshCw, Dices, Play, Sparkles } from "lucide-react";
 import { TravelPromoArtboard, type TravelPromoData, type PromoAspectRatio } from "./travel-promo-artboard";
 import { uploadClassifiedMedia } from "@/lib/classifieds/upload-classified-media";
 import { convertToCorsSafeDataUri, preloadImage } from "@/lib/canvas/cors-safe-image";
@@ -39,6 +39,7 @@ export interface TravelPromoFlyerModalProps {
     templateId?: string;
     niche?: string;
   };
+  niche?: string;
   destinationTitle?: string;
   destinationCity?: string;
   datesText?: string | null;
@@ -57,6 +58,7 @@ export function TravelPromoFlyerModal({
   isOpen,
   onClose,
   initialData,
+  niche: propNiche,
   destinationTitle,
   destinationCity,
   datesText: propDatesText,
@@ -68,6 +70,7 @@ export function TravelPromoFlyerModal({
   onAttachToClassified,
   onApplyImageToClassified,
 }: TravelPromoFlyerModalProps) {
+  const effectiveNiche = propNiche || initialData?.niche || "turismo";
   const isModalOpen = open !== undefined ? open : (isOpen ?? false);
   const handleModalClose = (val: boolean) => {
     if (onOpenChange) onOpenChange(val);
@@ -89,25 +92,25 @@ export function TravelPromoFlyerModal({
 
   // Estados de edição do Flyer
   const [templateId, setTemplateId] = useState<string>(
-    () => initialData?.templateId || getDefaultTemplateForNiche(initialData?.niche).id
+    () => initialData?.templateId || getDefaultTemplateForNiche(effectiveNiche).id
   );
   const [aspectRatio, setAspectRatio] = useState<PromoAspectRatio>("9:16");
 
   // Motor Dinâmico de CTAs
   const availableCTAs = useMemo(() => {
-    return getDynamicCTAsForNiche(initialData?.niche || (templateId.startsWith("imoveis") ? "imoveis" : "turismo"));
-  }, [initialData?.niche, templateId]);
+    return getDynamicCTAsForNiche(effectiveNiche || (templateId.startsWith("imoveis") ? "imoveis" : "turismo"));
+  }, [effectiveNiche, templateId]);
 
-  const [ctaLabel, setCtaLabel] = useState<string>(() => availableCTAs[0] || "Agendar Visita");
+  const [ctaLabel, setCtaLabel] = useState<string>(() => availableCTAs[0] || "Garantir Vaga");
 
   const handleShuffleLayout = () => {
-    const next = getNextTemplateInNiche(templateId, initialData?.niche);
+    const next = getNextTemplateInNiche(templateId, effectiveNiche);
     setTemplateId(next.id);
     toast.info(`Layout alternado para: ${next.name}`);
   };
 
   const handleCycleCTA = () => {
-    const next = getNextCTAOption(ctaLabel, initialData?.niche || (templateId.startsWith("imoveis") ? "imoveis" : "turismo"));
+    const next = getNextCTAOption(ctaLabel, effectiveNiche || (templateId.startsWith("imoveis") ? "imoveis" : "turismo"));
     setCtaLabel(next);
     toast.success(`CTA alterado para: "${next}"`);
   };
@@ -137,6 +140,7 @@ export function TravelPromoFlyerModal({
   const [containerSize, setContainerSize] = useState<{ width: number; height: number }>({ width: 600, height: 700 });
   const [activeTab, setActiveTab] = useState<string>("template");
   const [isMobileControlsOpen, setIsMobileControlsOpen] = useState<boolean>(false);
+  const [isAnimatedPreview, setIsAnimatedPreview] = useState<boolean>(false);
 
   // Sincronização e auto-binding quando propriedades externas mudam
   useEffect(() => {
@@ -361,7 +365,7 @@ export function TravelPromoFlyerModal({
 
   return (
     <Dialog open={isModalOpen} onOpenChange={handleModalClose}>
-      <DialogContent className="max-w-none w-screen max-w-full h-[100dvh] p-0 border-0 rounded-none bg-background flex flex-col overflow-hidden outline-none [&>button]:hidden z-50">
+      <DialogContent size="screen" className="p-0 border-0 rounded-none bg-background flex flex-col overflow-hidden outline-none [&>button]:hidden z-50">
         {/* ── 1. Top Bar Estúdio (Apple Studio / Canva Ergonomics) ── */}
         <header className="h-14 px-3 sm:px-6 border-b border-border/80 bg-card/95 backdrop-blur-md flex items-center justify-between z-20 shrink-0 select-none">
           <div className="flex items-center gap-2 sm:gap-4 min-w-0">
@@ -444,6 +448,26 @@ export function TravelPromoFlyerModal({
               <span className="hidden sm:inline">Trocar Layout</span>
             </Button>
 
+            {/* Preview Dinâmico com Efeito Motion */}
+            <Button
+              type="button"
+              variant={isAnimatedPreview ? "default" : "outline"}
+              size="sm"
+              onClick={() => {
+                setIsAnimatedPreview(!isAnimatedPreview);
+                if (!isAnimatedPreview) {
+                  toast.success("Modo Motion Ativo: Micro-animações de entrada renderizadas!");
+                }
+              }}
+              className={`h-9 px-3 rounded-lg text-xs gap-1.5 font-semibold cursor-pointer transition-all ${
+                isAnimatedPreview ? "bg-amber-500 text-slate-950 font-bold" : "border-border/80 text-foreground"
+              }`}
+              title="Alternar modo de animação dinâmica para pré-visualização"
+            >
+              <Sparkles className="size-3.5" />
+              <span className="hidden md:inline">{isAnimatedPreview ? "Animação Ativa" : "Modo Motion"}</span>
+            </Button>
+
             {/* Botão Mobile para Abrir Controles */}
             <Button
               type="button"
@@ -511,7 +535,7 @@ export function TravelPromoFlyerModal({
                   height: `${artDimensions.height}px`,
                 }}
               >
-                <TravelPromoArtboard data={promoData} />
+                <TravelPromoArtboard data={promoData} isAnimated={isAnimatedPreview} />
               </div>
             </div>
 
@@ -584,7 +608,16 @@ export function TravelPromoFlyerModal({
                       </button>
                     </div>
                     <div className="grid grid-cols-1 gap-2">
-                      {getAllSocialTemplates().map((t) => (
+                      {getAllSocialTemplates()
+                        .slice()
+                        .sort((a, b) => {
+                          const aMatch = a.niche === effectiveNiche || (effectiveNiche.startsWith("turis") && a.niche === "turismo") || (effectiveNiche.startsWith("imov") && a.niche === "imoveis");
+                          const bMatch = b.niche === effectiveNiche || (effectiveNiche.startsWith("turis") && b.niche === "turismo") || (effectiveNiche.startsWith("imov") && b.niche === "imoveis");
+                          if (aMatch && !bMatch) return -1;
+                          if (!aMatch && bMatch) return 1;
+                          return 0;
+                        })
+                        .map((t) => (
                         <button
                           key={t.id}
                           type="button"
