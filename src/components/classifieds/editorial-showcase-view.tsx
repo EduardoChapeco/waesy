@@ -3287,6 +3287,7 @@ export function EditorialShowcaseView({
           initialForm={classified.lead_form || null}
           classifiedId={classified.id}
           classifiedTitle={classified.title}
+          nicheId={nicheId}
           isOpen={isLeadFormModalOpen}
           onOpenChange={setIsLeadFormModalOpen}
           civilInquiryConfig={classified?.attributes?.inquiry_config}

@@ -1161,6 +1161,7 @@ export function ClassifiedDetailDesktop({
           formId={classified.form_id || null}
           initialForm={classified.lead_form || null}
           civilInquiryConfig={attrs?.inquiry_config || null}
+          nicheId={niche.id}
           currentProfile={currentProfile || null}
           classifiedId={classified.id}
           classifiedTitle={classified.title}

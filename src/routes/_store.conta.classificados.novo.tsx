@@ -41,8 +41,7 @@ import { analyzeCommercialPointPotential, auditCnpjWithSimLabs } from "@/service
 import { lookupCnpj } from "@/services/public-apis.functions";
 import { CANONICAL_VEHICLE_BRANDS, CANONICAL_TRANSMISSIONS, CANONICAL_FUELS, CANONICAL_VEHICLE_COLORS, CANONICAL_VEHICLE_OPTIONS, CANONICAL_VEHICLE_PROVENANCE, CANONICAL_GOODS_SEGMENTS, CANONICAL_ITEM_CONDITIONS, CANONICAL_SMARTPHONE_BRANDS, CANONICAL_COMPUTER_TYPES, CANONICAL_COMPUTER_BRANDS, CANONICAL_PROCESSORS, CANONICAL_RAM_OPTIONS, CANONICAL_STORAGE_OPTIONS, CANONICAL_APPLIANCE_TYPES, CANONICAL_APPLIANCE_BRANDS, CANONICAL_VOLTAGES, CANONICAL_GAME_CONSOLES, CANONICAL_FASHION_CATEGORIES, CANONICAL_FASHION_SIZES, CANONICAL_FOOD_SUBNICHES, CANONICAL_SERVICE_SUBNICHES, CANONICAL_BUSINESS_TYPES, CANONICAL_BUSINESS_SEGMENTS, CANONICAL_SALE_REASONS, CANONICAL_EMPLOYEES_RANGES, CANONICAL_COMMERCIAL_POINT_TYPES, CANONICAL_INVESTMENT_MODELS, CANONICAL_PROJECT_STAGES, CANONICAL_USE_OF_FUNDS, CANONICAL_GROCERY_DEPARTMENTS, CANONICAL_UNIT_TYPES, CANONICAL_STORAGE_TEMPERATURES, CANONICAL_MEAT_CUT_OPTIONS, CANONICAL_BAKERY_PREP_OPTIONS, GroceryFreshPricing, GroceryRipenessConfig, ProgressiveDiscountTier, OrderBumpOffer, RipenessStage, DEFAULT_RIPENESS_LABELS } from "@/lib/classifieds/canonical-taxonomy";
 import { CANONICAL_EDUCATION_LEVELS, CANONICAL_EXPERIENCE_LEVELS, CANONICAL_JOB_REGIMES, CANONICAL_WORKPLACE_MODELS, CANONICAL_WORK_SCHEDULES, CANONICAL_SALARY_RANGES, CANONICAL_JOB_BENEFITS, SUGGESTED_JOB_SKILLS, getEducationLabel, getExperienceLabel, getRegimeLabel, getWorkplaceModelLabel } from "@/lib/classifieds/canonical-hiring";
-// (ChevronDown, ChevronUp merged into main lucide import above)
-import { resolveClassifiedNiche } from "@/lib/classifieds/semantics";
+import { resolveClassifiedNiche, getNicheDefaultInquiryConfig } from "@/lib/classifieds/semantics";
 import { z } from "zod";
 
 const ClassifiedSearchSchema = z.object({
@@ -1285,24 +1284,24 @@ function SpecializedClassifiedEditor({
   const [isTemplateStyleOpen, setIsTemplateStyleOpen] = useState(false);
 
   // Qualificação de Leads & SDR IA (Para Anunciantes Civis / Pessoa Física)
+  const defaultNicheInquiry = useMemo(() => {
+    return getNicheDefaultInquiryConfig(niche.id, { acceptsTrade: niche.id === "veiculo" });
+  }, [niche.id]);
+
   const [civilInquiryEnabled, setCivilInquiryEnabled] = useState<boolean>(
     initialData?.attributes?.inquiry_config?.enabled ?? false
   );
   const [civilInquiryTitle, setCivilInquiryTitle] = useState<string>(
-    initialData?.attributes?.inquiry_config?.title || "Tenho Interesse neste Anúncio"
+    initialData?.attributes?.inquiry_config?.title || defaultNicheInquiry.title
   );
   const [civilInquirySubtitle, setCivilInquirySubtitle] = useState<string>(
-    initialData?.attributes?.inquiry_config?.subtitle || "Responda algumas perguntas rápidas para receber atendimento ou proposta personalizada."
+    initialData?.attributes?.inquiry_config?.subtitle || defaultNicheInquiry.subtitle
   );
   const [civilInquiryActivateSdr, setCivilInquiryActivateSdr] = useState<boolean>(
     initialData?.attributes?.inquiry_config?.activate_sdr_ai ?? true
   );
   const [civilInquiryQuestions, setCivilInquiryQuestions] = useState<CivilInquiryQuestion[]>(
-    initialData?.attributes?.inquiry_config?.questions || [
-      { id: "q1", label: "Qual seu prazo para fechar negócio?", type: "select", options: ["Imediato / Esta semana", "Próximos 15 a 30 dias", "Apenas pesquisando valores"], required: true },
-      { id: "q2", label: "Possui item ou veículo para entrada / permuta?", type: "select", options: ["Não, pagamento à vista / financiado", "Sim, gostaria de avaliar troca"], required: false },
-      { id: "q3", label: "Mensagem ou proposta personalizada", type: "textarea", placeholder: "Descreva sua proposta ou melhor horário para contato...", required: false }
-    ]
+    initialData?.attributes?.inquiry_config?.questions || defaultNicheInquiry.questions
   );
   const [newQuestionLabel, setNewQuestionLabel] = useState("");
   const [newQuestionType, setNewQuestionType] = useState<"text" | "select" | "currency" | "textarea">("text");
@@ -9080,7 +9079,24 @@ function SpecializedClassifiedEditor({
 
                       {/* Lista de Perguntas */}
                       <div className="space-y-2">
-                        <Label className="text-xs font-semibold text-foreground">Perguntas de Qualificação ({civilInquiryQuestions.length})</Label>
+                        <div className="flex items-center justify-between">
+                          <Label className="text-xs font-semibold text-foreground">Perguntas de Qualificação ({civilInquiryQuestions.length})</Label>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              setCivilInquiryTitle(defaultNicheInquiry.title);
+                              setCivilInquirySubtitle(defaultNicheInquiry.subtitle);
+                              setCivilInquiryQuestions(defaultNicheInquiry.questions);
+                              toast.success(`Formulário restaurado para o padrão do nicho "${niche.title}"`);
+                            }}
+                            className="h-11 min-h-11 px-3 text-xs text-primary hover:bg-primary/10 gap-2 rounded-lg cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                          >
+                            <RefreshCw className="size-4" />
+                            <span>Padrão do Nicho</span>
+                          </Button>
+                        </div>
                         <div className="space-y-2">
                           {civilInquiryQuestions.map((q, idx) => (
                             <div key={q.id || idx} className="p-3 rounded-lg border border-border/60 bg-background space-y-2">

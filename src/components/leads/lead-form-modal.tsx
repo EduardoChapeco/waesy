@@ -9,12 +9,14 @@ import { LeadFormDTO, getPublicLeadFormBySlug } from "@/services/lead-forms.func
 import { CivilInquiryConfig } from "@/types/unified-ad-engine";
 import { LeadFormRenderer } from "./lead-form-renderer";
 import { Loader2 } from "lucide-react";
+import { getNicheDefaultInquiryConfig } from "@/lib/classifieds/semantics";
 
 interface LeadFormModalProps {
   formSlug?: string | null;
   formId?: string | null;
   initialForm?: LeadFormDTO | null;
   civilInquiryConfig?: CivilInquiryConfig | null;
+  nicheId?: string | null;
   currentProfile?: { full_name?: string | null; phone?: string | null; email?: string | null } | null;
   classifiedId?: string | null;
   classifiedTitle?: string | null;
@@ -28,6 +30,7 @@ export function LeadFormModal({
   formSlug,
   initialForm,
   civilInquiryConfig,
+  nicheId,
   currentProfile,
   classifiedId,
   classifiedTitle,
@@ -43,14 +46,36 @@ export function LeadFormModal({
   // Inicializa a partir de configuração civil quando habilitado
   useEffect(() => {
     if (civilInquiryConfig?.enabled) {
+      const nicheDefaults = getNicheDefaultInquiryConfig(nicheId || "goods");
+      
+      // Detecção de vazamento de template genérico antigo:
+      // Se o anúncio for de nicho não-automotivo/não-imóvel mas possuir a pergunta genérica sobre veículo/permuta,
+      // higienizamos automaticamente para as perguntas semânticas do nicho correspondente.
+      const isMismatchNiche = nicheId && !["vehicle", "veiculo", "real_estate_sale", "imovel"].includes(nicheId.toLowerCase());
+      const hasGenericTradeQuestion = (civilInquiryConfig.questions || []).some((q) =>
+        q.label.toLowerCase().includes("veículo para entrada") || q.label.toLowerCase().includes("permuta")
+      );
+
+      const effectiveTitle = (isMismatchNiche && civilInquiryConfig.title === "Tenho Interesse neste Anúncio")
+        ? nicheDefaults.title
+        : (civilInquiryConfig.title || nicheDefaults.title);
+
+      const effectiveSubtitle = (civilInquiryConfig as any).subtitle || nicheDefaults.subtitle;
+
+      const effectiveQuestions = (hasGenericTradeQuestion && isMismatchNiche)
+        ? nicheDefaults.questions
+        : (civilInquiryConfig.questions && civilInquiryConfig.questions.length > 0
+          ? civilInquiryConfig.questions
+          : nicheDefaults.questions);
+
       const virtualForm: LeadFormDTO = {
         id: "civil-form",
         store_id: "",
-        niche_id: "geral",
-        title: civilInquiryConfig.title || "Tenho Interesse neste Anúncio",
+        niche_id: nicheId || "geral",
+        title: effectiveTitle,
         slug: `civil-${classifiedId || "direct"}`,
-        headline: civilInquiryConfig.title || "Tenho Interesse",
-        subheadline: (civilInquiryConfig as any).subtitle || "Responda algumas perguntas rápidas para receber proposta personalizada.",
+        headline: effectiveTitle,
+        subheadline: effectiveSubtitle,
         submit_button_text: "Enviar Mensagem",
         after_submit_action: (civilInquiryConfig as any).activate_sdr_ai ? "start_sdr_chat" : "show_success_message",
         whatsapp_target_phone: null,
@@ -62,7 +87,7 @@ export function LeadFormModal({
         submissions_count: 0,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
-        fields: (civilInquiryConfig.questions || []).map((q, idx) => ({
+        fields: effectiveQuestions.map((q, idx) => ({
           id: q.id,
           form_id: "civil-form",
           field_key: `civil_q_${idx}_${q.id}`,
@@ -76,7 +101,7 @@ export function LeadFormModal({
       };
       setForm(virtualForm);
     }
-  }, [civilInquiryConfig, classifiedId]);
+  }, [civilInquiryConfig, classifiedId, nicheId]);
 
   // Busca o formulário se apenas o slug tiver sido fornecido
   useEffect(() => {

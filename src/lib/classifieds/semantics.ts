@@ -1966,3 +1966,431 @@ export function getClassifiedPrimaryCtaLabel(classified: any): string {
 
   return Number(classified.price_cents || 0) > 0 ? "Comprar Agora" : "Fazer Proposta";
 }
+
+/**
+ * Retorna as perguntas de qualificação e configuração padrão do fluxo de interesse (Onboarding / Lead Inquiry)
+ * estritamente customizadas e personalizadas por nicho semântico.
+ * 
+ * Regra Inviolável (Anti-Generalização):
+ * - NUNCA perguntar sobre entrada/permuta/veículo para Turismo, Gastronomia, Doações, Vagas, Assinaturas ou Serviços.
+ * - Cada nicho deve refletir seu processo real de decisão e compra.
+ */
+export function getNicheDefaultInquiryConfig(nicheIdOrClassified: string | any, options?: { acceptsTrade?: boolean }): {
+  title: string;
+  subtitle: string;
+  questions: Array<{
+    id: string;
+    label: string;
+    type: "text" | "phone" | "select" | "checkbox" | "textarea";
+    required?: boolean;
+    options?: string[];
+    placeholder?: string;
+  }>;
+} {
+  const nicheKey = typeof nicheIdOrClassified === "string" 
+    ? nicheIdOrClassified.toLowerCase() 
+    : resolveClassifiedNiche(nicheIdOrClassified).id;
+
+  // 1. Viagem / Turismo
+  if (nicheKey === "travel" || nicheKey === "viagem" || nicheKey === "turismo") {
+    return {
+      title: "Reserva & Atendimento do Pacote",
+      subtitle: "Informe seus dados e preferências para confirmarmos vagas e disponibilidade da viagem.",
+      questions: [
+        {
+          id: "q1",
+          label: "Quantas vagas ou passageiros viajarão?",
+          type: "select",
+          options: ["1 pessoa (Individual)", "2 pessoas (Casal / Dupla)", "3 a 4 pessoas (Família)", "5 ou mais (Grupo)"],
+          required: true,
+        },
+        {
+          id: "q2",
+          label: "Qual a data ou período de embarque de sua preferência?",
+          type: "select",
+          options: ["Data principal divulgada no anúncio", "Próximo final de semana", "Próximo mês / Férias", "Consultar outras datas"],
+          required: true,
+        },
+        {
+          id: "q3",
+          label: "Dúvidas sobre roteiro, embarque ou solicitações especiais",
+          type: "textarea",
+          placeholder: "Ex: Embarque com crianças, alimentação especial, preferência de quarto ou assento...",
+          required: false,
+        },
+      ],
+    };
+  }
+
+  // 2. Hospedagem & Temporada
+  if (nicheKey === "hospitality_stay" || nicheKey === "hospedagem" || nicheKey === "temporada") {
+    return {
+      title: "Consulta de Disponibilidade & Estadia",
+      subtitle: "Preencha para verificar disponibilidade do imóvel e receber cotação personalizada.",
+      questions: [
+        {
+          id: "q1",
+          label: "Quantos hóspedes (adultos e crianças)?",
+          type: "select",
+          options: ["1 a 2 hóspedes", "3 a 4 hóspedes", "5 a 8 hóspedes", "Mais de 8 hóspedes"],
+          required: true,
+        },
+        {
+          id: "q2",
+          label: "Qual o período pretendido para estadia?",
+          type: "select",
+          options: ["Próximo final de semana", "Feriado prolongado", "Férias / Temporada", "Datas sob consulta"],
+          required: true,
+        },
+        {
+          id: "q3",
+          label: "Informações adicionais ou necessidades",
+          type: "textarea",
+          placeholder: "Ex: Viajando com pets, horário previsto de check-in, necessidade de berço...",
+          required: false,
+        },
+      ],
+    };
+  }
+
+  // 3. Imóveis — Venda
+  if (nicheKey === "real_estate_sale" || nicheKey === "imovel") {
+    const hasTrade = options?.acceptsTrade ?? false;
+    const questions: any[] = [
+      {
+        id: "q1",
+        label: "Qual seu prazo para fechar negócio ou mudar?",
+        type: "select",
+        options: ["Imediato / Este mês", "Próximos 3 a 6 meses", "Planejamento / Investimento futuro"],
+        required: true,
+      },
+      {
+        id: "q2",
+        label: "Qual a forma de pagamento pretendida?",
+        type: "select",
+        options: hasTrade 
+          ? ["Recurso próprio / À vista", "Financiamento bancário / FGTS", "Possuo imóvel ou veículo para permuta", "Carta de crédito / Consórcio"]
+          : ["Recurso próprio / À vista", "Financiamento bancário / FGTS", "Carta de crédito / Consórcio"],
+        required: true,
+      },
+      {
+        id: "q3",
+        label: "Deseja agendar uma visita presencial?",
+        type: "select",
+        options: ["Sim, durante a semana em horário comercial", "Sim, final de semana", "Apenas tirar dúvidas por enquanto"],
+        required: false,
+      },
+      {
+        id: "q4",
+        label: "Mensagem ou proposta personalizada",
+        type: "textarea",
+        placeholder: "Descreva sua dúvida, proposta ou melhor horário para contato...",
+        required: false,
+      },
+    ];
+    return {
+      title: "Tenho Interesse neste Imóvel",
+      subtitle: "Preencha para receber atendimento com corretor ou agendar sua visita.",
+      questions,
+    };
+  }
+
+  // 4. Imóveis — Locação
+  if (nicheKey === "real_estate_rent") {
+    return {
+      title: "Interesse em Locação",
+      subtitle: "Envie suas preferências para agendar visita e conhecer as condições de locação.",
+      questions: [
+        {
+          id: "q1",
+          label: "Para quando pretende mudar?",
+          type: "select",
+          options: ["Imediato / Próximos 15 dias", "Próximo mês", "Apenas pesquisando valores"],
+          required: true,
+        },
+        {
+          id: "q2",
+          label: "Garantia locatícia de preferência",
+          type: "select",
+          options: ["Seguro Fiança", "Caução", "Fiador", "A combinar com o proprietário"],
+          required: true,
+        },
+        {
+          id: "q3",
+          label: "Deseja agendar visita?",
+          type: "select",
+          options: ["Sim, quanto antes", "Prefiro receber vídeo ou fotos adicionais primeiro", "Apenas tirar dúvidas"],
+          required: false,
+        },
+      ],
+    };
+  }
+
+  // 5. Veículos & Automotivo
+  if (nicheKey === "vehicle" || nicheKey === "veiculo") {
+    const hasTrade = options?.acceptsTrade ?? true;
+    return {
+      title: "Interesse no Veículo",
+      subtitle: "Envie seus dados para agendar test-drive, simular financiamento ou fazer proposta.",
+      questions: [
+        {
+          id: "q1",
+          label: "Qual seu prazo para fechar negócio?",
+          type: "select",
+          options: ["Imediato / Esta semana", "Próximos 15 a 30 dias", "Pesquisando opções"],
+          required: true,
+        },
+        {
+          id: "q2",
+          label: "Como pretende realizar a compra?",
+          type: "select",
+          options: hasTrade
+            ? ["Pagamento à vista (PIX / Transferência)", "Financiamento bancário", "Tenho veículo para entrar na troca", "Consórcio contemplado"]
+            : ["Pagamento à vista (PIX / Transferência)", "Financiamento bancário", "Consórcio contemplado"],
+          required: true,
+        },
+        {
+          id: "q3",
+          label: "Deseja agendar test-drive ou vistoria?",
+          type: "select",
+          options: ["Sim, gostaria de ver o veículo pessoalmente", "Gostaria de simular as parcelas primeiro", "Apenas proposta direta"],
+          required: false,
+        },
+        {
+          id: "q4",
+          label: "Mensagem ou detalhes da proposta",
+          type: "textarea",
+          placeholder: "Ex: Dados do veículo de troca (modelo/ano) ou melhor horário para ligação...",
+          required: false,
+        },
+      ],
+    };
+  }
+
+  // 6. Serviços & Profissionais Autônomos
+  if (nicheKey === "service" || nicheKey === "servico") {
+    return {
+      title: "Solicitação de Orçamento & Atendimento",
+      subtitle: "Descreva a sua necessidade para que o profissional prepare um orçamento sem compromisso.",
+      questions: [
+        {
+          id: "q1",
+          label: "Para quando você precisa do serviço?",
+          type: "select",
+          options: ["Urgente / Hoje mesmo", "Esta semana", "Próximas 2 semanas", "Apenas cotação futura"],
+          required: true,
+        },
+        {
+          id: "q2",
+          label: "Onde o serviço será realizado?",
+          type: "select",
+          options: ["No meu endereço / Domicílio", "No estabelecimento do profissional", "Remoto / Online"],
+          required: true,
+        },
+        {
+          id: "q3",
+          label: "Descreva o que precisa ser feito",
+          type: "textarea",
+          placeholder: "Detalhe o serviço, medidas, problemas ou dúvidas para agilizar o orçamento...",
+          required: true,
+        },
+      ],
+    };
+  }
+
+  // 7. Equipamentos / Locação
+  if (nicheKey === "equipment" || nicheKey === "equipamento") {
+    return {
+      title: "Solicitação de Locação de Equipamento",
+      subtitle: "Informe as datas e o local para cálculo da diária e frete.",
+      questions: [
+        {
+          id: "q1",
+          label: "Por quantos dias precisará do equipamento?",
+          type: "select",
+          options: ["1 diária", "Fim de semana (2 a 3 dias)", "1 semana", "15 a 30 dias (Mensal)"],
+          required: true,
+        },
+        {
+          id: "q2",
+          label: "Necessita de entrega e retirada no local?",
+          type: "select",
+          options: ["Sim, solicitar frete / entrega na obra ou evento", "Não, farei a retirada no balcão"],
+          required: true,
+        },
+        {
+          id: "q3",
+          label: "Observações ou data prevista",
+          type: "textarea",
+          placeholder: "Informe a data do evento/serviço e endereço se houver entrega...",
+          required: false,
+        },
+      ],
+    };
+  }
+
+  // 8. Gastronomia / Alimentação
+  if (nicheKey === "food" || nicheKey === "gastronomia" || nicheKey === "alimentacao") {
+    return {
+      title: "Pedido & Encomenda Gastronômica",
+      subtitle: "Envie seus dados e preferências para confirmar pedido ou encomenda especial.",
+      questions: [
+        {
+          id: "q1",
+          label: "Forma de recebimento desejada",
+          type: "select",
+          options: ["Entrega rápida (Delivery)", "Retirada no balcão", "Consumo no local"],
+          required: true,
+        },
+        {
+          id: "q2",
+          label: "Para quando é o pedido?",
+          type: "select",
+          options: ["Para agora (Pronta entrega)", "Agendado para hoje mais tarde", "Encomenda para outra data"],
+          required: true,
+        },
+        {
+          id: "q3",
+          label: "Observações, ponto de preparo ou restrições alimentares",
+          type: "textarea",
+          placeholder: "Ex: Sem cebola, ponto da carne, troco para quanto ou horário de retirada...",
+          required: false,
+        },
+      ],
+    };
+  }
+
+  // 9. Vagas de Emprego
+  if (nicheKey === "job" || nicheKey === "vaga" || nicheKey === "emprego") {
+    return {
+      title: "Candidatura à Vaga de Emprego",
+      subtitle: "Preencha suas informações para que o recrutador analise seu perfil profissional.",
+      questions: [
+        {
+          id: "q1",
+          label: "Qual sua disponibilidade para início?",
+          type: "select",
+          options: ["Imediato", "Em 15 dias (cumprindo aviso)", "A combinar"],
+          required: true,
+        },
+        {
+          id: "q2",
+          label: "Possui experiência comprovada na função?",
+          type: "select",
+          options: ["Sim, mais de 2 anos", "Sim, entre 6 meses e 2 anos", "Pouca experiência, mas busco oportunidade", "Primeiro emprego na área"],
+          required: true,
+        },
+        {
+          id: "q3",
+          label: "Resumo profissional ou link do currículo / LinkedIn",
+          type: "textarea",
+          placeholder: "Conte brevemente sobre suas principais experiências ou cole o link do seu currículo...",
+          required: true,
+        },
+      ],
+    };
+  }
+
+  // 10. Doações Solidárias
+  if (nicheKey === "donation" || nicheKey === "doacao") {
+    return {
+      title: "Solicitação de Doação Solidária",
+      subtitle: "Este item é 100% gratuito. Combine a retirada com respeito e pontualidade.",
+      questions: [
+        {
+          id: "q1",
+          label: "Você tem como buscar o item no local?",
+          type: "select",
+          options: ["Sim, posso retirar pessoalmente", "Posso enviar um entregador / frete por minha conta", "A combinar com o doador"],
+          required: true,
+        },
+        {
+          id: "q2",
+          label: "Quando você pode fazer a retirada?",
+          type: "select",
+          options: ["Hoje mesmo", "Amanhã", "Final de semana", "A combinar"],
+          required: true,
+        },
+        {
+          id: "q3",
+          label: "Mensagem para o doador",
+          type: "textarea",
+          placeholder: "Apresente-se com gentileza e combine os detalhes...",
+          required: false,
+        },
+      ],
+    };
+  }
+
+  // 11. Negócios, Empresas & M&A
+  if (nicheKey === "business" || nicheKey === "negocios" || nicheKey === "empresa") {
+    return {
+      title: "Solicitação de Informações do Negócio",
+      subtitle: "Envie sua manifestação de interesse para receber o dossiê confidencial do empreendimento.",
+      questions: [
+        {
+          id: "q1",
+          label: "Qual seu perfil como investidor ou comprador?",
+          type: "select",
+          options: ["Investidor / Empreendedor individual", "Empresa buscando expansão / M&A", "Grupo de investimentos / Fundo", "Apenas avaliando mercado"],
+          required: true,
+        },
+        {
+          id: "q2",
+          label: "Capacidade de aporte e pagamento",
+          type: "select",
+          options: ["Recurso próprio disponível", "Busco financiamento / Linhas de crédito", "Tenho imóvel comercial como parte do pagamento", "A definir"],
+          required: true,
+        },
+        {
+          id: "q3",
+          label: "Mensagem ou dúvidas preliminares",
+          type: "textarea",
+          placeholder: "Descreva seu interesse, se já atua no ramo e disponibilidade para reunião confidencial...",
+          required: false,
+        },
+      ],
+    };
+  }
+
+  // 12. Padrão: Desapegos & Produtos Físicos (Geral)
+  const acceptsTrade = options?.acceptsTrade ?? false;
+  const questions: Array<{
+    id: string;
+    label: string;
+    type: "text" | "phone" | "select" | "checkbox" | "textarea";
+    required?: boolean;
+    options?: string[];
+    placeholder?: string;
+  }> = [
+    {
+      id: "q1",
+      label: "Qual seu prazo para fechar negócio?",
+      type: "select",
+      options: ["Imediato / Esta semana", "Próximos 15 dias", "Apenas pesquisando valores"],
+      required: true,
+    },
+    ...(acceptsTrade
+      ? [{
+          id: "q2",
+          label: "Gostaria de avaliar permuta ou troca?",
+          type: "select" as const,
+          options: ["Não, pagamento integral à vista", "Sim, gostaria de propor troca"],
+          required: false,
+        }]
+      : []),
+    {
+      id: "q3",
+      label: "Mensagem ou proposta personalizada",
+      type: "textarea",
+      placeholder: "Descreva sua dúvida, proposta ou melhor horário para contato...",
+      required: false,
+    },
+  ];
+
+  return {
+    title: "Tenho Interesse neste Produto",
+    subtitle: "Responda algumas perguntas rápidas para receber atendimento ou proposta personalizada.",
+    questions,
+  };
+}
