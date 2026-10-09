@@ -3499,8 +3499,8 @@ function SpecializedClassifiedEditor({
           {[
             { step: 1, label: "Categoria", short: "Categoria" },
             { step: 2, label: "Fotos e Mídia", short: "Mídia" },
-            { step: 3, label: "Especificações", short: "Specs" },
-            { step: 4, label: "Condições Comerciais", short: "Comercial" },
+            { step: 3, label: "Informações", short: "Info" },
+            { step: 4, label: "Preço e Pagamento", short: "Preço" },
             { step: 5, label: "Prévia e Publicar", short: "Publicar" },
           ].map((s) => {
             const isCurrent = currentStep === s.step;
@@ -4157,9 +4157,6 @@ function SpecializedClassifiedEditor({
                     <Key className="size-4 text-primary shrink-0" />
                     <span>2. Detalhes da Viagem</span>
                   </div>
-                  <Badge variant="outline" className="text-xs font-mono text-muted-foreground">
-                    Vitrine Imersiva
-                  </Badge>
                 </div>
 
                 {/* 2.1 — Resumo Rápido: Duração, Regime, Hóspedes */}
@@ -4890,9 +4887,6 @@ function SpecializedClassifiedEditor({
                     <ImagePlus className="size-4 text-primary shrink-0" />
                     <span>Destaques Visuais</span>
                   </div>
-                  <Badge variant="outline" className="text-xs font-mono text-primary bg-primary/10 border-primary/30">
-                    Vitrine Imersiva
-                  </Badge>
                 </div>
                                 <StoryHighlightUploader
                   highlights={travelStoryHighlights}

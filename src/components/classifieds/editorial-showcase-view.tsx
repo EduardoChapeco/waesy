@@ -425,7 +425,7 @@ export function EditorialShowcaseView({
     if (nicheId.includes("desapego")) {
       return { tab2: "Ficha Técnica", tab3: "Acessórios & Garantia", tab4: "Entrega & Pagamento" };
     }
-    return { tab2: "Especificações", tab3: "Diferenciais", tab4: "Condições Comerciais" };
+    return { tab2: "Especificações", tab3: "Diferenciais", tab4: "Pagamento" };
   };
 
   const tabLabels = getTabLabels();

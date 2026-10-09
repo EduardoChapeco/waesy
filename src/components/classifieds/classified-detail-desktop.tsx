@@ -599,7 +599,6 @@ export function ClassifiedDetailDesktop({
                   <CreditCard className="size-4 text-primary" />
                   <h2 className="text-sm font-bold text-foreground">Pagamento & Financiamento</h2>
                 </div>
-                <Badge variant="outline" className="text-[10px] font-mono">Condições Comerciais</Badge>
               </div>
 
               {/* Formas aceitas */}
