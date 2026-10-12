@@ -4,7 +4,8 @@
   "repository": "EduardoChapeco/waesy",
   "candidate": {
     "pullRequest": 29,
-    "head": "d0530a51",
+    "codeBaseline": "cad8e3da",
+    "evidenceHead": "f307f51f",
     "checks": ["5 Quality Gates=SUCCESS", "Cloudflare Pages=SUCCESS"],
     "productionCertified": false
   },
