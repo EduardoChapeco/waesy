@@ -1,5 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { z } from 'zod';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 
 describe('ONDA 3: CONTRATOS BDD & ZOD SCHEMAS DAS SERVER FUNCTIONS', () => {
 
@@ -172,6 +174,14 @@ describe('ONDA 3: CONTRATOS BDD & ZOD SCHEMAS DAS SERVER FUNCTIONS', () => {
  reason: "Cliente solicitou atendimento técnico especializado em integrações.",
  };
  expect(HandoverSchema.safeParse(payload).success).toBe(true);
+ });
+
+ it('não deve inferir a primeira loja para ticket sem contexto de tenant', () => {
+ const source = readFileSync(resolve(process.cwd(), 'src/services/support-tickets.functions.ts'), 'utf8');
+ const customerTicketBlock = source.slice(source.indexOf('export const createCustomerTicket'));
+ expect(customerTicketBlock).toContain('const effectiveStoreId = storeId || identity.store_id');
+ expect(customerTicketBlock).toContain('Loja de destino não identificada.');
+ expect(customerTicketBlock).not.toContain('.from("stores").select("id").limit(1)');
  });
  });
 });

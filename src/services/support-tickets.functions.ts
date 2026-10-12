@@ -481,15 +481,12 @@ export const createCustomerTicket = createServerFn({ method: "POST" })
 
     if (!identity.id) throw new Error("Você precisa estar autenticado para abrir um chamado.");
 
-    // Derivar store_id
-    const targetStoreId = storeId || identity.store_id;
-    if (!targetStoreId) {
-      // Se não especificado, buscar a primeira loja disponível ou loja ativa
-      const { data: anyStore } = await supabase.from("stores").select("id").limit(1).single();
-      if (!anyStore) throw new Error("Loja de destino não encontrada.");
+    // O tenant precisa vir do payload explícito ou do contexto resolvido.
+    // Nunca inferir uma loja arbitrária para um usuário autenticado.
+    const effectiveStoreId = storeId || identity.store_id;
+    if (!effectiveStoreId) {
+      throw new Error("Loja de destino não identificada.");
     }
-
-    const effectiveStoreId = targetStoreId || (await supabase.from("stores").select("id").limit(1).single()).data?.id;
 
     // 1. Inserir ticket na tabela canônica support_tickets
     const { data: ticket, error: ticketErr } = await supabase
@@ -663,4 +660,3 @@ export const getSupportTicketDetailsFn = getSupportTicketDetails;
 export const createSupportTicketFn = createSupportTicket;
 export const addSupportTicketMessageFn = addSupportTicketMessage;
 export const updateSupportTicketStatusFn = updateSupportTicketStatus;
-

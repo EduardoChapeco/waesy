@@ -218,3 +218,9 @@ O validador `npm run check:candidate-baseline` passou com worktree limpo no head
 No head de evidência `97acc3fb`, os gates locais de W1 passaram: `check:schema` encontrou 500 migrations, 621 tabelas declaradas e 213 funções, com versões únicas; `check:bff` encontrou 500 migrations, 632 tabelas declaradas, 495 tabelas referenciadas e zero contratos sem declaração local. O ledger estrutural também passou com as 18 fases presentes.
 
 A evidência foi registrada em [`W1-LOCAL-SCHEMA-EVIDENCE-20261012.md`](./W1-LOCAL-SCHEMA-EVIDENCE-20261012.md). W1 permanece `blocked` para promoção porque ainda falta replay from-zero, segunda aplicação, catálogo efetivo, RLS/JWT/grants e testes cross-tenant em Postgres autorizado.
+
+## 12. Execução W2 — correção local de fallback de tenant
+
+Foi corrigido um finding confirmado em `createCustomerTicket`: quando não havia `storeId` no payload nem `identity.store_id`, o fluxo consultava a primeira loja e associava o ticket a um tenant arbitrário. O código agora exige contexto explícito e falha com `Loja de destino não identificada.` sem consultar uma loja de fallback.
+
+A evidência está em [`W2-LOCAL-SECURITY-FIX-20261012.md`](./W2-LOCAL-SECURITY-FIX-20261012.md). A validação focal passou com 13 testes e `npm run typecheck` passou. O scan ainda encontrou fallbacks em outros domínios — builder, upsell, cart, tourism lifecycle, master e mining — que permanecem abertos para revisão individual. W2 continua parcial e não certificada sem Postgres/JWT/RLS, concorrência e provider.
