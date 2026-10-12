@@ -33,6 +33,9 @@ jobs:
       - name: Gate 0c — Production Dependency Security Audit
         run: npm run audit:dependencies
 
+      - name: Gate 0d — W0-W17 Release Evidence Ledger
+        run: npm run check:release-ledger
+
       - name: Gate 0 — Migration Schema Consistency
         run: npm run check:schema
 

@@ -1,0 +1,37 @@
+{
+  "schemaVersion": "1.0.0",
+  "updatedAt": "2026-10-12T19:38:00Z",
+  "repository": "EduardoChapeco/waesy",
+  "candidate": {
+    "pullRequest": 29,
+    "head": "d0530a51",
+    "checks": ["5 Quality Gates=SUCCESS", "Cloudflare Pages=SUCCESS"],
+    "productionCertified": false
+  },
+  "statusDefinitions": {
+    "open": "Ainda não executado ou sem implementação suficiente",
+    "partial": "Há evidência local, mas faltam gates do ambiente correspondente",
+    "blocked": "Não pode avançar sem autoridade, ambiente, decisão ou evidência anterior",
+    "verified": "Critérios e evidências exigidos para esta fase foram satisfeitos"
+  },
+  "phases": [
+    {"id":"W0","name":"Freeze e rebaseline","status":"partial","priority":"P0","evidence":["worktree limpo","SHA d0530a51","git diff --check","PR #29 mergeable"],"gap":"manifesto hash-locked, ownership e aprovação formal do candidato"},
+    {"id":"W1","name":"Ledger, schema, migrations e governança","status":"blocked","priority":"P0","evidence":["check:schema PASS","check:bff PASS","audit de dependências PASS","CI PASS"],"gap":"replay from-zero, segunda aplicação, catálogo Postgres, types fingerprint e ruleset negativo"},
+    {"id":"W2","name":"Segurança, identidade, RLS e quota","status":"partial","priority":"P0","evidence":["implementações locais e testes estruturais"],"gap":"JWT/RLS/grants reais, cross-tenant A/B, concorrência, quota RPC e provider preauthorization"},
+    {"id":"W3","name":"Schema, tipos, contratos BFF e paginação","status":"blocked","priority":"P0","evidence":["check:bff PASS","typecheck PASS"],"gap":"schema aplicado, types gerados/fingerprint, 19 relações e fixtures de paginação real"},
+    {"id":"W4","name":"Lifecycle, FSM, chat, turismo, OCR e builder","status":"partial","priority":"P0","evidence":["testes locais e gates canônicos PASS"],"gap":"CAS, transações/sagas, dedupe, fault injection, OCR unique e read-after-write"},
+    {"id":"W5","name":"Boundary Copilot e operações síncronas","status":"partial","priority":"P0","evidence":["código e testes locais"],"gap":"boundary único, idempotência, custo, secret selection e retry real"},
+    {"id":"W6","name":"SSE, provider e cobrança","status":"partial","priority":"P0","evidence":["código e testes locais"],"gap":"AbortSignal ponta a ponta, consumidor/reconnect, 429/5xx, provider sandbox e ledger de custo"},
+    {"id":"W7","name":"WhatsApp/webhooks/outbox ou definição de escopo","status":"blocked","priority":"P1","evidence":[],"gap":"resolver conflito de nomenclatura W7/W11 e definir fonte primária/owner"},
+    {"id":"W8","name":"Builder, CMS e publish","status":"partial","priority":"P1","evidence":["auditorias estruturais e gates locais"],"gap":"owner/tenant server-side, snapshot, publish idempotente, rollback e read-after-write"},
+    {"id":"W9","name":"Mídia, Storage e workers","status":"partial","priority":"P1","evidence":["código e testes locais"],"gap":"bucket/policy/path tenant, MIME/SVG, asset ledger, worker e upload→download E2E"},
+    {"id":"W10","name":"Rotas, UX, acessibilidade e browser E2E","status":"open","priority":"P1","evidence":["route inventory e design lint local"],"gap":"Chromium desktop/mobile por role/tenant, deep-link/reload, axe, teclado e estados de erro"},
+    {"id":"W11","name":"Turismo, vouchers, contratos e booking","status":"partial","priority":"P0","evidence":["inventários e testes locais"],"gap":"RPC/locks, voucher, OCR, provider callback, PII e replay/expiração"},
+    {"id":"W12","name":"OCR, booking, comissão, documentos e providers","status":"open","priority":"P0","evidence":[],"gap":"M12.0–M12.7, providers/Storage e evidência de integração"},
+    {"id":"W13","name":"Observabilidade e rastreabilidade","status":"blocked","priority":"P1","evidence":[],"gap":"relatório primário, correlation_id, dashboards, alertas e redaction"},
+    {"id":"W14","name":"Performance e capacidade","status":"blocked","priority":"P1","evidence":["route budget local"],"gap":"p95/p99, carga controlada, pool, filas, cold start, SLO e capacity plan"},
+    {"id":"W15","name":"Segurança ofensiva e supply chain","status":"partial","priority":"P0","evidence":["npm audit 0 produção","CI e lockfile únicos","gates locais PASS"],"gap":"SAST/secret scan, SSRF/XSS/IDOR/CSRF/replay/prompt injection e SBOM"},
+    {"id":"W16","name":"LGPD, privacidade, DR e backup","status":"open","priority":"P0","evidence":[],"gap":"data map, retenção, direitos do titular, backup/restore, RTO/RPO e runbook"},
+    {"id":"W17","name":"Release, staging, produção e pós-release","status":"partial","priority":"P0","evidence":["CI SUCCESS no candidato","Cloudflare Pages SUCCESS no candidato","PR CLEAN/MERGEABLE"],"gap":"staging, smoke, secrets/bindings, migration autorizada, rollback e monitoramento 24h/7d"}
+  ]
+}

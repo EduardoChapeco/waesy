@@ -1,20 +1,20 @@
 # Waesy — Backlog completo de prontidão para produção
 
-**Data:** 2026-10-12  
-**Candidato:** `5d8fdbe` / PR #29  
-**Estado:** `BLOCKED / STOP-SHIP` até os gates externos serem comprovados  
+**Data:** 2026-10-12
+**Candidato:** `d0530a51` / PR #29
+**Estado:** `MERGEABLE / CLEAN` nos checks de CI e Cloudflare Pages; `BLOCKED / STOP-SHIP` para banco, integrações, staging e produção até os gates externos serem comprovados
 **Regra:** este documento é um plano de execução e evidência; itens não comprovados permanecem abertos.
 
 ## 1. Situação do candidato
 
-O candidato foi consolidado no commit `5d8fdbe` e enviado ao PR #29. A árvore local está limpa e os gates locais foram aprovados:
+O candidato foi consolidado no commit `d0530a51` e enviado ao PR #29. A árvore local está limpa e os gates locais foram aprovados:
 
 - 282 arquivos de teste / 1.768 testes;
 - `check:schema`: 500 migrations e versões únicas;
 - `check:bff`: 0 contratos de tabela faltantes;
 - `typecheck` e `git diff --check`: aprovados.
 
-O PR ainda não pode ser promovido: o check **Cloudflare Pages falhou** e o merge da branch protegida exige os dois checks obrigatórios. Nenhum deploy ou migration remoto foi executado pelo agente.
+O PR tem **CI e Cloudflare Pages verdes no mesmo candidato** e está mergeable. Nenhuma migration remota, alteração de RLS/secrets ou promoção para produção foi executada pelo agente.
 
 ## 2. Fases obrigatórias antes de produção
 

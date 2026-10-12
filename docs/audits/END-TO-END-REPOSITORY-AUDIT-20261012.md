@@ -189,3 +189,20 @@ Após a publicação da correção no branch do PR #29, os dois checks obrigató
 | Estado do PR | `MERGEABLE` / `CLEAN`; PR continua aberto para revisão |
 
 Isso resolve o bloqueio reproduzível de lockfile/Pages identificado no snapshot anterior. **Não altera** o status dos gates que exigem ambiente autorizado: replay Postgres/Supabase, RLS/JWT/grants, concorrência/read-after-write, provider/Storage/worker, browser E2E, staging, smoke de produção e rollback.
+
+## 9. Execução das próximas fases — ledger W0–W17
+
+Foi criado o ledger machine-readable [`W0-W17-RELEASE-LEDGER-20261012.json`](./W0-W17-RELEASE-LEDGER-20261012.json), com as 18 fases W0–W17, prioridade, status, evidências e gap explícito. O validador `npm run check:release-ledger` foi adicionado ao CI como Gate 0d.
+
+Resultado atual do ledger:
+
+- 18 fases válidas e presentes;
+- 10 `partial`;
+- 5 `blocked`;
+- 3 `open`;
+- 0 fases declaradas `verified` indevidamente;
+- 12 fases P0 continuam não verificadas e impedem certificação de produção.
+
+O `npm run audit:all` também foi executado localmente: **30 checks conformes e 13 checks abertos**. Os achados abertos são principalmente dívida mensurável de design, `any`, testes com dados sintéticos, duplicações e placeholders; não foram tratados como 13 blockers de release sem revisão individual.
+
+O ledger permite evolução contínua sem mascarar bloqueios: `npm run check:release-ledger -- --require-release` continuará falhando enquanto existir qualquer P0 não verificado. O modo padrão valida a estrutura e mantém o CI informativo sem declarar produção.
