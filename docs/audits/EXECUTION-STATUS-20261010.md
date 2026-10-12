@@ -76,3 +76,10 @@ O commit `5d8fdbe` foi consolidado na branch `chore/production-remediation-5d8fd
 Foi criado o backlog completo em `docs/audits/PRODUCTION-READINESS-BACKLOG-20261012.md`, cobrindo replay de banco, RLS/JWT, RPCs concorrentes, Copilot/SSE, ecommerce, turismo, Storage, CMS, browser/E2E, observabilidade, performance, segurança ofensiva, LGPD, DR/backup, supply chain, staging, produção e pós-release. O documento também registra melhorias futuras não bloqueantes e critérios objetivos para fechar cada fase.
 
 Nenhum deploy ou migration remoto foi executado. O candidato continua `BLOCKED / STOP-SHIP` até haver evidência externa no mesmo SHA.
+
+
+## Bloqueio recorrente do release — PR #29 (2026-10-12)
+
+Após a nova execução dos checks, `5 Quality Gates` concluiu com `SUCCESS`, enquanto `Cloudflare Pages` concluiu com `FAILURE` no candidato atual. O PR está sem conflito textual (`MERGEABLE`), mas a proteção de `main` mantém o merge bloqueado por causa do check obrigatório vermelho.
+
+O registro detalhado de evidência e as fases de desbloqueio R1–R5 estão em `docs/audits/RELEASE-BLOCKERS-20261012.md`. A sequência exigida é: capturar o log original do Pages, classificar a causa, reproduzir deterministicamente, corrigir de forma isolada, obter ambos os checks verdes no mesmo SHA e só então fazer merge protegido. Nenhum merge forçado, deploy ou migration remota deve ser executado enquanto o Pages estiver vermelho.
