@@ -151,11 +151,12 @@ describe("Milestone 3 — Copilot 13-Phase FSM & Resilience Engine", () => {
       const fsm = new CopilotStateMachine("RECEIVED");
       fsm.transition("UNDERSTANDING", "Parsing");
       fsm.transition("RUNNING", "Direct dispatch");
+      fsm.transition("VALIDATING", "Validating output");
       fsm.transition("COMPLETED", "Done");
 
       const snap = fsm.snapshot;
       expect(snap.currentPhase).toBe("COMPLETED");
-      expect(snap.history).toHaveLength(4); // Inicial + 3 transições
+      expect(snap.history).toHaveLength(5); // Inicial + 4 transições
       expect(snap.history[1].from).toBe("RECEIVED");
       expect(snap.history[1].to).toBe("UNDERSTANDING");
       expect(snap.history[1].reason).toBe("Parsing");

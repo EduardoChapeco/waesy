@@ -127,8 +127,7 @@ export function createKeysetPaginatedResult<T extends { id: string; created_at?:
 export interface PostgrestQueryBuilderLike {
   order(column: string, options?: { ascending?: boolean }): this;
   limit(count: number): this;
-  lt(column: string, value: unknown): this;
-  gt(column: string, value: unknown): this;
+  or(filters: string): this;
 }
 
 /**
@@ -157,13 +156,23 @@ export function applyPostgrestKeysetFilter<TQuery extends PostgrestQueryBuilderL
   let q = query.limit(safeLimit + 1);
 
   if (decoded) {
-    if (sortOrder === 'desc') {
-      q = q.lt(sortColumn, decoded.sortValue);
-    } else {
-      q = q.gt(sortColumn, decoded.sortValue);
+    if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(sortColumn)) {
+      throw new Error('sortColumn inválida para paginação keyset');
     }
+
+    const sortValue = String(decoded.sortValue);
+    const id = decoded.id;
+    if (/[(),]/.test(sortValue) || /[(),]/.test(id)) {
+      throw new Error('cursor keyset contém valores inválidos');
+    }
+
+    const operator = sortOrder === 'desc' ? 'lt' : 'gt';
+    q = q.or(
+      `${sortColumn}.${operator}.${sortValue},and(${sortColumn}.eq.${sortValue},id.${operator}.${id})`,
+    );
   }
 
   q = q.order(sortColumn, { ascending: sortOrder === 'asc' });
+  q = q.order('id', { ascending: sortOrder === 'asc' });
   return q;
 }

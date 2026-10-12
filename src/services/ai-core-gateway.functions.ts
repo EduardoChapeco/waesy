@@ -53,6 +53,7 @@ export interface AIGatewayRequest {
   module?: string;
   promptVersion?: string;
   bypassCache?: boolean;
+  signal?: AbortSignal;
 }
 
 export interface AIGatewayResponse {
@@ -260,11 +261,15 @@ async function callProviderLowLevel(
     responseFormat?: "json_object" | "text";
     images?: Array<{ mimeType: string; base64: string }>;
     timeoutMs?: number;
+    signal?: AbortSignal;
   }
 ): Promise<{ text: string; inputTokens: number; outputTokens: number; rawJson?: any }> {
   const timeout = options?.timeoutMs || 15000;
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeout);
+  const abortParent = () => controller.abort();
+  options?.signal?.addEventListener("abort", abortParent, { once: true });
+  if (options?.signal?.aborted) controller.abort();
 
   try {
     if (provider === "groq") {
@@ -473,6 +478,7 @@ async function callProviderLowLevel(
     throw new Error(`Provedor ${provider} não suporta chamada direta síncrona.`);
   } finally {
     clearTimeout(timer);
+    options?.signal?.removeEventListener("abort", abortParent);
   }
 }
 
@@ -692,6 +698,7 @@ export async function executeAiCoreGateway(request: AIGatewayRequest): Promise<A
             responseFormat: request.constraints?.responseFormat,
             images: request.images,
             timeoutMs: request.constraints?.timeoutMs,
+            signal: request.signal,
           }
         );
 

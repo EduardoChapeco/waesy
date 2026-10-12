@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { readFile } from "node:fs/promises";
 
-const migrationPath = new URL("../../supabase/migrations/20270114000000_contract_signature_completion.sql", import.meta.url);
+const migrationPath = new URL("../../supabase/migrations/20270114000001_contract_signature_completion.sql", import.meta.url);
 const sealMigrationPath = new URL("../../supabase/migrations/20270115000000_contract_seal_atomic_authorization.sql", import.meta.url);
 const servicePath = new URL("./contracts.functions.ts", import.meta.url);
 const typesPath = new URL("../integrations/supabase/types.ts", import.meta.url);

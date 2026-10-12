@@ -116,6 +116,9 @@ describe("Milestone 3 — Copilot Chat State Machine Resilience (13 Fases & MCP)
 
     it("bloqueia transições ilegais que violam o grafo de estados", () => {
       expect(canTransitionCopilotPhase("RECEIVED", "COMPLETED")).toBe(false);
+      expect(canTransitionCopilotPhase("UNDERSTANDING", "COMPLETED")).toBe(false);
+      expect(canTransitionCopilotPhase("RUNNING", "COMPLETED")).toBe(false);
+      expect(canTransitionCopilotPhase("PARTIAL_RESULT", "COMPLETED")).toBe(false);
       expect(canTransitionCopilotPhase("COMPLETED", "RUNNING")).toBe(false);
       expect(canTransitionCopilotPhase("FAILED_FINAL", "RUNNING")).toBe(false);
       expect(canTransitionCopilotPhase("CANCELLED", "COMPLETED")).toBe(false);

@@ -128,8 +128,22 @@ BEGIN
       SELECT public.consume_store_tokens_scoped(v_job.store_id, v_job.quota_tokens, 'heavy_ia_llm', 'Cobrança de job AI concluído', jsonb_build_object('job_id', v_job.id)) INTO v_charge;
       IF COALESCE((v_charge->>'success')::boolean, false) IS NOT TRUE THEN RAISE EXCEPTION 'quota insuficiente para concluir job'; END IF;
     END IF;
-    UPDATE public.ai_async_jobs SET status = 'completed', result = p_result, quota_charged = (v_job.quota_tokens = 0 OR true), progress_percent = 100, finished_at = now(), updated_at = now() WHERE id = v_job.id;
-    RETURN jsonb_build_object('status', 'completed', 'job_id', v_job.id, 'quota_charged', (v_job.quota_tokens > 0));
+    UPDATE public.ai_async_jobs
+       SET status = 'completed',
+           result = p_result,
+           quota_charged = (
+             v_job.quota_tokens = 0
+             OR EXISTS (SELECT 1 FROM public.ai_job_charges c WHERE c.job_id = v_job.id)
+           ),
+           progress_percent = 100,
+           finished_at = now(),
+           updated_at = now()
+     WHERE id = v_job.id;
+    RETURN jsonb_build_object(
+      'status', 'completed',
+      'job_id', v_job.id,
+      'quota_charged', (v_job.quota_tokens = 0 OR EXISTS (SELECT 1 FROM public.ai_job_charges c WHERE c.job_id = v_job.id))
+    );
   END IF;
   UPDATE public.ai_async_jobs SET status = CASE WHEN attempt_count < max_attempts THEN 'failed_retryable' ELSE 'failed' END, error_message = p_error_message, updated_at = now() WHERE id = v_job.id;
   RETURN jsonb_build_object('status', CASE WHEN v_job.attempt_count < v_job.max_attempts THEN 'failed_retryable' ELSE 'failed' END, 'job_id', v_job.id);

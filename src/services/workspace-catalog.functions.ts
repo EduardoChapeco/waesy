@@ -12,6 +12,16 @@ import { getServerClient } from "@/lib/supabase";
 import { withDataPayload } from "./cart-helpers";
 import { purgeEdgeCacheTags, CACHE_TAGS } from "@/lib/cache/edge-cache";
 
+async function rollbackWorkspaceProduct(
+  db: ReturnType<typeof getServerClient>,
+  productId: string,
+): Promise<void> {
+  await db.from("product_variants").delete().eq("product_id", productId);
+  await db.from("product_media").delete().eq("product_id", productId);
+  const { error } = await db.from("products").delete().eq("id", productId);
+  if (error) throw error;
+}
+
 // ---------------------------------------------------------------------------
 // Schemas Zod de Validação
 // ---------------------------------------------------------------------------
@@ -39,7 +49,7 @@ export const createWorkspaceProductInputSchema = z.object({
         priceOverrideCents: z.number().int().min(0).optional().nullable(),
         stockOnHand: z.number().int().min(0).default(0),
         allowBackorder: z.boolean().default(false),
-      })
+      }),
     )
     .default([]),
 });
@@ -48,7 +58,12 @@ export const updateWorkspaceProductInputSchema = z.object({
   productId: z.string().uuid(),
   storeId: z.string().uuid().optional(),
   title: z.string().min(2).max(200).optional(),
-  slug: z.string().min(2).max(200).regex(/^[a-z0-9-]+$/).optional(),
+  slug: z
+    .string()
+    .min(2)
+    .max(200)
+    .regex(/^[a-z0-9-]+$/)
+    .optional(),
   description: z.string().max(5000).optional().nullable(),
   priceCents: z.number().int().min(0).optional(),
   compareAtCents: z.number().int().min(0).optional().nullable(),
@@ -111,7 +126,7 @@ export const listWorkspaceProductsFn = createServerFn({ method: "POST" })
         category_id,
         product_media (url, alt, sort_order),
         product_variants (id, sku, price_override_cents, stock_on_hand, allow_backorder)
-      `
+      `,
       )
       .eq("store_id", targetStoreId);
 
@@ -141,7 +156,8 @@ export const listWorkspaceProductsFn = createServerFn({ method: "POST" })
     const items = rows || [];
     const hasMore = items.length > data.limit;
     const returnItems = hasMore ? items.slice(0, data.limit) : items;
-    const nextCursor = hasMore && returnItems.length > 0 ? returnItems[returnItems.length - 1].created_at : null;
+    const nextCursor =
+      hasMore && returnItems.length > 0 ? returnItems[returnItems.length - 1].created_at : null;
 
     return {
       products: returnItems.map((p: any) => {
@@ -149,7 +165,10 @@ export const listWorkspaceProductsFn = createServerFn({ method: "POST" })
           ? [...p.product_media].sort((a: any, b: any) => (a.sort_order || 0) - (b.sort_order || 0))
           : [];
         const variants = Array.isArray(p.product_variants) ? p.product_variants : [];
-        const totalStock = variants.reduce((acc: number, v: any) => acc + (Number(v.stock_on_hand) || 0), 0);
+        const totalStock = variants.reduce(
+          (acc: number, v: any) => acc + (Number(v.stock_on_hand) || 0),
+          0,
+        );
 
         return {
           id: p.id,
@@ -212,28 +231,42 @@ export const createWorkspaceProductFn = createServerFn({ method: "POST" })
 
     const productId = newProduct.id;
 
-    // 2. Inserir mídias se fornecidas
-    if (data.mediaUrls.length > 0) {
-      const mediaInserts = data.mediaUrls.map((url, idx) => ({
-        product_id: productId,
-        url,
-        sort_order: idx,
-      }));
-      await db.from("product_media").insert(mediaInserts);
-    }
+    try {
+      // 2. Inserir mídias se fornecidas
+      if (data.mediaUrls.length > 0) {
+        const mediaInserts = data.mediaUrls.map((url, idx) => ({
+          product_id: productId,
+          url,
+          sort_order: idx,
+        }));
+        const { error: mediaError } = await db.from("product_media").insert(mediaInserts);
+        if (mediaError) throw new Error(`Falha ao registrar mídias: ${mediaError.message}`);
+      }
 
-    // 3. Inserir variantes se fornecidas
-    if (data.variants.length > 0) {
-      const variantInserts = data.variants.map((v) => ({
-        product_id: productId,
-        sku: v.sku,
-        attributes: v.attributes,
-        price_override_cents: v.priceOverrideCents || null,
-        stock_on_hand: v.stockOnHand,
-        allow_backorder: v.allowBackorder,
-        status: "active",
-      }));
-      await db.from("product_variants").insert(variantInserts);
+      // 3. Inserir variantes se fornecidas
+      if (data.variants.length > 0) {
+        const variantInserts = data.variants.map((v) => ({
+          product_id: productId,
+          sku: v.sku,
+          attributes: v.attributes,
+          price_override_cents: v.priceOverrideCents || null,
+          stock_on_hand: v.stockOnHand,
+          allow_backorder: v.allowBackorder,
+          status: "active",
+        }));
+        const { error: variantError } = await db.from("product_variants").insert(variantInserts);
+        if (variantError) throw new Error(`Falha ao registrar variantes: ${variantError.message}`);
+      }
+    } catch (error) {
+      try {
+        await rollbackWorkspaceProduct(db, productId);
+      } catch (rollbackError) {
+        console.error(
+          "[workspace-catalog] Falha ao compensar produto parcialmente criado:",
+          rollbackError,
+        );
+      }
+      throw error;
     }
 
     purgeEdgeCacheTags([CACHE_TAGS.catalog(targetStoreId)]);
@@ -300,14 +333,21 @@ export const updateWorkspaceProductFn = createServerFn({ method: "POST" })
 
     // 3. Atualizar mídias se fornecidas
     if (data.mediaUrls !== undefined) {
-      await db.from("product_media").delete().eq("product_id", data.productId);
+      const { error: mediaDeleteError } = await db
+        .from("product_media")
+        .delete()
+        .eq("product_id", data.productId);
+      if (mediaDeleteError)
+        throw new Error(`Falha ao substituir mídias: ${mediaDeleteError.message}`);
       if (data.mediaUrls.length > 0) {
         const mediaInserts = data.mediaUrls.map((url, idx) => ({
           product_id: data.productId,
           url,
           sort_order: idx,
         }));
-        await db.from("product_media").insert(mediaInserts);
+        const { error: mediaInsertError } = await db.from("product_media").insert(mediaInserts);
+        if (mediaInsertError)
+          throw new Error(`Falha ao registrar mídias: ${mediaInsertError.message}`);
       }
     }
 
@@ -382,7 +422,7 @@ export const getWorkspaceProductDetailFn = createServerFn({ method: "POST" })
         created_at,
         product_media (id, url, sort_order),
         product_variants (id, sku, price_override_cents, stock_on_hand, allow_backorder, attributes)
-      `
+      `,
       )
       .eq("id", data.productId)
       .eq("store_id", targetStoreId)
@@ -394,7 +434,9 @@ export const getWorkspaceProductDetailFn = createServerFn({ method: "POST" })
 
     const rowData: any = row;
     const media = Array.isArray(rowData.product_media)
-      ? [...rowData.product_media].sort((a: any, b: any) => (a.sort_order || 0) - (b.sort_order || 0))
+      ? [...rowData.product_media].sort(
+          (a: any, b: any) => (a.sort_order || 0) - (b.sort_order || 0),
+        )
       : [];
 
     return {
@@ -409,13 +451,15 @@ export const getWorkspaceProductDetailFn = createServerFn({ method: "POST" })
       categoryId: rowData.category_id,
       createdAt: rowData.created_at,
       mediaUrls: media.map((m: any) => m.url),
-      variants: (Array.isArray(rowData.product_variants) ? rowData.product_variants : []).map((v: any) => ({
-        id: v.id,
-        sku: v.sku,
-        attributes: v.attributes || {},
-        priceOverrideCents: v.price_override_cents ? Number(v.price_override_cents) : null,
-        stockOnHand: Number(v.stock_on_hand || 0),
-        allowBackorder: Boolean(v.allow_backorder),
-      })),
+      variants: (Array.isArray(rowData.product_variants) ? rowData.product_variants : []).map(
+        (v: any) => ({
+          id: v.id,
+          sku: v.sku,
+          attributes: v.attributes || {},
+          priceOverrideCents: v.price_override_cents ? Number(v.price_override_cents) : null,
+          stockOnHand: Number(v.stock_on_hand || 0),
+          allowBackorder: Boolean(v.allow_backorder),
+        }),
+      ),
     };
   });

@@ -75,7 +75,7 @@ Há uma **inconsistência de nomenclatura que precisa ser registrada**: no maste
 ### O que o HEAD efetivamente cobre
 
 - `src/services/travel-proposal.functions.ts` foi alterado no commit `fe0417ae`; `src/services/travel-proposal-public-acceptance.test.ts` testa que aceite persiste via `record_public_travel_proposal_acceptance`, propaga falha do RPC, rejeita snapshot/opção inválida e preserva replay idempotente reportado pelo RPC (linhas observadas 95-219).
-- A migration `20270114000000_p0_public_travel_proposal_acceptance.sql` adiciona o contrato de aceite público; o teste garante que aceite não chama conversão automaticamente.
+- A migration `20270114000002_p0_public_travel_proposal_acceptance.sql` adiciona o contrato de aceite público; o teste garante que aceite não chama conversão automaticamente.
 - `src/services/travel-proposal-conversion-flow.test.ts` cobre a separação staff/conversão e chamadas RPC em mocks.
 - Rotas e UI alteradas: `src/routes/_store.proposta.$token.tsx`, `src/routes/workspace.turismo.propostas.$id.tsx`, `src/routes/workspace.turismo.propostas.index.tsx` e `src/components/tourism/studio/travel-proposal-checkout-modal.tsx`.
 
@@ -90,7 +90,7 @@ Há uma **inconsistência de nomenclatura que precisa ser registrada**: no maste
 ## 5. Contratos, documentos e vouchers públicos
 
 - `src/services/travel-contract.functions.ts` e `src/services/travel-contract-public-access.test.ts` mostram o desenho atual: leitura pública por `get_public_travel_contract_by_token`, assinatura por `sign_public_travel_contract`, consentimento explícito, user-agent/IP e criação staff por RPC. O teste (linhas 112-285) verifica que não há SELECT direto anon, consentimento é obrigatório e a migration remove policies amplas/revoga privilégios.
-- `supabase/migrations/20270115000000_p0_secure_public_contract_access.sql` e `20270117000000_p0_secure_public_voucher_access.sql` são artefatos fortes de intenção de segurança, mas não evidência de aplicação. O contrato público precisa de teste direto com token de outro tenant, token revogado/expirado, versão/hash alterado, replay de assinatura e rate limit/retention.
+- `supabase/migrations/20270115000002_p0_secure_public_contract_access.sql` e `20270117000000_p0_secure_public_voucher_access.sql` são artefatos fortes de intenção de segurança, mas não evidência de aplicação. O contrato público precisa de teste direto com token de outro tenant, token revogado/expirado, versão/hash alterado, replay de assinatura e rate limit/retention.
 - O acesso por token em `travel-lifecycle.functions.ts` contém buscas em `tourism_vouchers`, `travel_proposals` e `travel_contracts` (linhas observadas aproximadamente 1230-1374). Como o server client usa `service_role`, cada filtro de token/estado/store e cada retorno de PII deve ser validado por RPC/DB, não por confiança em RLS.
 - Para documentos OCR, `travel-canonical-pipeline.functions.ts` recebe conteúdo, calcula hash e cria ingestion; a existência de `content_sha256` sem unique/ON CONFLICT permanece risco de duplicidade. Não foi verificado Storage, MIME, tamanho, malware scanning, retenção ou vínculo de objeto à loja.
 
