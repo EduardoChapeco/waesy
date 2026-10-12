@@ -67,3 +67,12 @@ Foi adicionada `supabase/migrations/20270124000000_atomic_ai_conversation_exchan
 ## Estado executivo após a rodada
 
 O estado continua `partial / blocked-for-promotion`. Nenhuma migration foi aplicada remotamente e nenhum deploy foi executado. Próximos gates prioritários: (1) replay from-zero/segunda aplicação em Postgres autorizado com RLS/JWT e fault injection da nova RPC; (2) consumidor SSE do Copilot no frontend; (3) contratos transacionais de turismo/W12; (4) freeze/rebaseline de candidato limpo antes de merge.
+
+
+## Atualização documental — PR #29 e backlog de produção (2026-10-12)
+
+O commit `5d8fdbe` foi consolidado na branch `chore/production-remediation-5d8fdbe` e no PR #29. O check `5 Quality Gates` concluiu com sucesso. O check obrigatório `Cloudflare Pages` concluiu com **falha**, portanto o merge permanece bloqueado pela proteção de `main`. O erro do Pages deve ser diagnosticado e reexecutado no mesmo SHA antes de qualquer promoção.
+
+Foi criado o backlog completo em `docs/audits/PRODUCTION-READINESS-BACKLOG-20261012.md`, cobrindo replay de banco, RLS/JWT, RPCs concorrentes, Copilot/SSE, ecommerce, turismo, Storage, CMS, browser/E2E, observabilidade, performance, segurança ofensiva, LGPD, DR/backup, supply chain, staging, produção e pós-release. O documento também registra melhorias futuras não bloqueantes e critérios objetivos para fechar cada fase.
+
+Nenhum deploy ou migration remoto foi executado. O candidato continua `BLOCKED / STOP-SHIP` até haver evidência externa no mesmo SHA.
