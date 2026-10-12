@@ -5,7 +5,7 @@
   "candidate": {
     "pullRequest": 29,
     "codeBaseline": "cad8e3da",
-    "evidenceHead": "pending-local-commit",
+    "evidenceHead": "10db249d",
     "checks": [
       "5 Quality Gates=SUCCESS",
       "Cloudflare Pages=SUCCESS"
