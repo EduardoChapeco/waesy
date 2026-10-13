@@ -1,0 +1,16 @@
+--- a/src/services/builder.functions.ts
++++ b/src/services/builder.functions.ts
+@@ -2354,6 +2354,12 @@ export const getPublicExperienceDocumentBySlug = createServerFn({ method: "GET"
+       if (doc?.owner_id) {
+         const { setSellerRefCookie } = await import("@/lib/session");
+         setSellerRefCookie(doc.owner_id);
+       }
+ 
++      // Suporte a Documento Moderno Omni-Builder
++      const omniDoc = (doc.settings as any)?.omni_page;
++      if (omniDoc?.blocks && Array.isArray(omniDoc.blocks) && omniDoc.blocks.length > 0) {
++        return { status: "ok" as const, data: { document: doc as ExperienceDocument, tree: [] } };
++      }
++
+       // 2. Get the latest PUBLISHED version
+       const { data: versions, error: versionsError } = await db

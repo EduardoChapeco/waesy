@@ -152,6 +152,8 @@ describe("Master Prompt V140: Hybrid Checkout, Classifieds Bypass & Omni-Cart Ma
       const mockClassified = {
         id: "ad-200",
         title: "Sofá Retrátil 3 Lugares",
+        price_cents: 120000,
+        category: "goods",
         accepts_pix: true,
         accepts_cash: true,
         attributes: {

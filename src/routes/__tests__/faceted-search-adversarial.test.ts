@@ -8,12 +8,12 @@ import {
 describe("Adversarial Stress Test: FacetedSearch & Boundary Edge Cases", () => {
   describe("1. Facets State Boundary Handling (null, undefined, empty arrays)", () => {
     it("handles null facets safely without runtime exceptions", () => {
-      const facets: FacetedSearchFacets | null = null;
+      const facets = null as FacetedSearchFacets | null;
       expect(facets).toBeNull();
       // Verifies optional chaining safety
-      const categories = facets?.categories ?? [];
-      const niches = facets?.niches ?? [];
-      const priceRange = facets?.price_range ?? null;
+      const categories = (facets as FacetedSearchFacets | null)?.categories ?? [];
+      const niches = (facets as FacetedSearchFacets | null)?.niches ?? [];
+      const priceRange = (facets as FacetedSearchFacets | null)?.price_range ?? null;
       expect(categories).toEqual([]);
       expect(niches).toEqual([]);
       expect(priceRange).toBeNull();

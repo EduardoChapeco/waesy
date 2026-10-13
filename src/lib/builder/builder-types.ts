@@ -204,7 +204,16 @@ export interface InspectorField {
 }
 
 export type BlockCategory =
- "layout" | "content" | "media" | "commerce" | "social" | "forms" | "marketing";
+  | "layout"
+  | "content"
+  | "media"
+  | "commerce"
+  | "social"
+  | "forms"
+  | "marketing"
+  | "tourism"
+  | "gastronomy"
+  | "services";
 
 export interface BlockManifest {
  type: BlockType;

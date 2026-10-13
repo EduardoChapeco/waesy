@@ -59,10 +59,6 @@ const CATEGORY_TREE: CategoryDefinition[] = [
       { id: "tourism_roteiros", label: "Detalhes de Hospedagem & Vouchers", templateIds: ["travel_product_detail", "customer_travel_portal", "tourism_itinerary_timeline"] },
     ],
   },
- { id: "tourism_destinos", label: "Destinos e Pacotes", templateIds: ["tourism_destinations_carousel", "tourism_services_grid"] },
- { id: "tourism_roteiros", label: "Roteiros e Detalhes", templateIds: ["tourism_itinerary_timeline", "tourism_traveler_info"] },
- ],
- },
  {
  id: "gastronomy",
  label: "Gastronomia e Food",
