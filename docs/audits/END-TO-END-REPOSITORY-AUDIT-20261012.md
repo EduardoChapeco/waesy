@@ -270,3 +270,11 @@ Isso fecha a validação de integração do candidato para esta correção. Não
 Foi implementado o `npm run check:migration-inventory`, agora executado no CI como Gate 0e. O subgate analisou 500 migrations SQL e confirmou nomes válidos, versões únicas, arquivos não vazios e hash ordenado reproduzível. `check:schema` e `check:bff` também passaram no mesmo candidato.
 
 Este avanço reduz o risco de árvore de migrations não determinística, mas não fecha o replay de Postgres. W1 continua `blocked` para promoção até haver banco descartável autorizado, replay from-zero, segunda aplicação, snapshot de catálogo/policies/grants/functions e testes negativos RLS/JWT.
+
+## 16. W5 — isolamento do fingerprint do AI Core Gateway
+
+**Evidência:** `docs/audits/W5-AI-GATEWAY-FINGERPRINT-ISOLATION-20261013.md`
+
+O fingerprint do cache e da deduplicação in-flight passou a incluir tenant/usuário, workspace, módulo, versão do prompt, constraints, contexto e hash do conteúdo das imagens. Isso impede que solicitações semanticamente diferentes colidam por compartilharem somente prompt e temperatura.
+
+A suíte do gateway passou com 7/7 testes, incluindo regressões entre tenants e contratos diferentes; typecheck passou. W5 permanece parcial enquanto cache/quota distribuídos e retries reais não forem validados em staging autorizado.

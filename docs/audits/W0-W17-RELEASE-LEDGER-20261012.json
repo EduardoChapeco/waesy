@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "updatedAt": "2026-10-13T01:53:30Z",
+  "updatedAt": "2026-10-13T09:15:00Z",
   "repository": "EduardoChapeco/waesy",
   "candidate": {
     "pullRequest": 29,
@@ -88,9 +88,10 @@
       "status": "partial",
       "priority": "P0",
       "evidence": [
-        "código e testes locais"
+        "código e testes locais",
+        "W5-AI-GATEWAY-FINGERPRINT-ISOLATION-20261013.md: fingerprint canônico inclui tenant, contrato, contexto e imagens; 7 testes focais e typecheck PASS"
       ],
-      "gap": "boundary único, idempotência, custo, secret selection e retry real"
+      "gap": "boundary único, idempotência, custo, secret selection e retry real; falta validação distribuída de cache/quota"
     },
     {
       "id": "W6",
