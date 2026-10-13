@@ -230,3 +230,25 @@ A evidência está em [`W2-LOCAL-SECURITY-FIX-20261012.md`](./W2-LOCAL-SECURITY-
 Foram removidos os fallbacks arbitrários de primeira loja em `builder.functions.ts`, `upsell.functions.ts` e `cart.functions.ts`. O builder agora exige tenant explícito para administrador global; Order Bump e cross-sell exigem `storeId`; e a criação de carrinho falha sem contexto explícito ou tenant resolvido.
 
 A evidência reproduzível está em [`BUILDER-UPSELL-CART-TENANT-FIX-20261012.md`](./BUILDER-UPSELL-CART-TENANT-FIX-20261012.md). A validação passou com 17 testes focais, typecheck, scan sem ocorrências de `firstStore`/`defaultStore` nos três domínios e `git diff --check`. Os fallbacks restantes em turismo lifecycle, master e mining não foram alterados neste ciclo.
+
+## 13. Correção dos fallbacks restantes — travel lifecycle, master e mining
+
+**Commit:** `1a0a6baa3c3c12d9c331fb7adf751888437b2643`
+**Evidência:** `docs/audits/TRAVEL-MASTER-MINING-TENANT-FIX-20261012.md`
+
+Foi concluída a remoção dos fallbacks que inferiam tenant sem ação explícita:
+
+- **Travel lifecycle:** listagem, confirmação e criação manual passaram a exigir staff e `identity.store_id`; updates de confirmação também filtram pelo tenant; `storeId` de outro tenant é rejeitado.
+- **Master:** `resolvePlatformRootStore` deixou de promover a primeira loja registrada; sem raiz explicitamente configurada, retorna `null`. A criação da raiz permanece apenas no fluxo administrativo explícito.
+- **Mining:** curadoria individual e em lote deixaram de buscar `rootStore`/`anyStore`; aprovação sem tenant falha antes da RPC.
+
+### Evidência local desta fase
+
+| Validação | Resultado |
+|---|---:|
+| Regressões de fallback + travel | **14/14 PASS** |
+| `npm run typecheck` | **PASS** |
+| `git diff --check` | **PASS** |
+| Scan focado dos três handlers | **PASS** |
+
+A remoção não certifica por si só RLS/Postgres, browser, staging ou produção; esses gates continuam explicitamente pendentes no ledger.
