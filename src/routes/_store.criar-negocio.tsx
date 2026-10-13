@@ -329,7 +329,7 @@ function CriarNegocioPage() {
  };
 
  const stepsList = [
- { number: 1, label: "Nicho" },
+ { number: 1, label: "Segmento" },
  { number: 2, label: "Identificação" },
  { number: 3, label: "Identidade Visual" },
  { number: 4, label: "Operação" },
@@ -474,7 +474,7 @@ function CriarNegocioPage() {
  <div className="space-y-6">
  <div className="text-center max-w-2xl mx-auto space-y-2 py-4">
  <Badge className="bg-primary/10 text-primary border-primary/20 text-xs font-bold px-3 py-1">
- Etapa 1 • Escolha seu Nicho
+ Etapa 1 • Escolha seu Segmento
  </Badge>
  <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
  Criar Negócio
@@ -669,7 +669,7 @@ function CriarNegocioPage() {
  onClick={() => setStep(1)}
  className="rounded-lg text-xs font-bold gap-1"
  >
- <ArrowLeft className="size-3.5" /> Escolher outro nicho
+ <ArrowLeft className="size-3.5" /> Escolher outro segmento
  </Button>
  <Button
  onClick={() => {
@@ -1330,7 +1330,7 @@ function CriarNegocioPage() {
  <span>Configuração Automática</span>
  </p>
  <p className="text-[11px] leading-relaxed">
- Ao concluir o cadastro, o seu PDV, controle de estoque e catálogo já nascem pré-configurados para o nicho de <strong>{selectedSegment.title}</strong>.
+ Ao concluir o cadastro, o seu PDV, controle de estoque e catálogo já nascem pré-configurados para o segmento de <strong>{selectedSegment.title}</strong>.
  </p>
  </div>
  </div>

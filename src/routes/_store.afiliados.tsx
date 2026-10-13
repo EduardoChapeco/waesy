@@ -2,13 +2,15 @@ import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Copy, Share2, Users, ShieldCheck, CheckCircle2, Clock, ExternalLink, Target, Coins, Lock, Eye, EyeOff, ShoppingBag, Store, Layers, ArrowRight, TrendingUp, SlidersHorizontal, Star, Ticket, ChevronRight, Check, PenSquare, Globe, Tag, Percent, ArrowUp, ArrowDown, Calendar, Plus, Trash2, MessageCircle, Send, Image as ImageIcon } from "lucide-react";
+import { Copy, Share2, Users, ShieldCheck, CheckCircle2, Clock, ExternalLink, Target, Coins, Lock, Eye, EyeOff, ShoppingBag, Store, Layers, ArrowRight, TrendingUp, SlidersHorizontal, Star, Ticket, ChevronRight, Check, PenSquare, Globe, Tag, Percent, ArrowUp, ArrowDown, Calendar, Plus, Trash2, MessageCircle, Send, Image as ImageIcon, Edit3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CreatorNicheSelect } from "@/components/profile/creator-niche-select";
+import { CreatorProfileSheetEditor, CreatorProfileSheetData } from "@/components/profile/creator-profile-sheet-editor";
+import { getCreatorNicheLabel } from "@/lib/constants/creator-niches";
 import { ImageUpload } from "@/components/ui/image-upload";
 import { NativeMobileHeader } from "@/components/navigation/native-mobile-header";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -116,10 +118,10 @@ function AfiliadosPage() {
   const [activeTab, setActiveTab] = useState<string>("dashboard");
   const [copiedLink, setCopiedLink] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSavingCreator, setIsSavingCreator] = useState(false);
   const [isUpdatingPrivacy, setIsUpdatingPrivacy] = useState(false);
   const [isSavingShowcase, setIsSavingShowcase] = useState(false);
   const [isStorePickerOpen, setIsStorePickerOpen] = useState(false);
+  const [isProfileEditorOpen, setIsProfileEditorOpen] = useState(false);
 
   // Auto-preenche handle a partir do username do perfil
   const defaultHandle =
@@ -135,17 +137,6 @@ function AfiliadosPage() {
   const [onboardingCategory, setOnboardingCategory] = useState("Geral");
   const [onboardingAnonymize, setOnboardingAnonymize] = useState(true);
 
-  // Form states para Edição de Criador
-  const [creatorStageName, setCreatorStageName] = useState(
-    overview?.creatorProfile?.stage_name || overview?.partner?.display_name || loaderProfile?.full_name || ""
-  );
-  const [creatorBio, setCreatorBio] = useState(
-    overview?.creatorProfile?.bio || overview?.partner?.bio || ""
-  );
-  const [creatorCategory, setCreatorCategory] = useState(
-    overview?.creatorProfile?.category || "Geral"
-  );
-
   // Estados do CMS de Vitrine (Banner, Ordem de Seções, Lojas Conectadas)
   const [bannerUrl, setBannerUrl] = useState(creator?.banner_url || "");
   const [bannerTitle, setBannerTitle] = useState(creator?.banner_title || "");
@@ -157,13 +148,6 @@ function AfiliadosPage() {
     creator?.partner_store_ids || []
   );
 
-  const [creatorAvatarUrl, setCreatorAvatarUrl] = useState(
-    overview?.creatorProfile?.avatar_url || ""
-  );
-  const [creatorCoverUrl, setCreatorCoverUrl] = useState(
-    overview?.creatorProfile?.cover_url || ""
-  );
-
   useEffect(() => {
     if (creator) {
       if (creator.banner_url !== undefined) setBannerUrl(creator.banner_url || "");
@@ -171,11 +155,6 @@ function AfiliadosPage() {
       if (creator.banner_link !== undefined) setBannerLink(creator.banner_link || "");
       if (creator.showcase_order) setShowcaseOrder(creator.showcase_order);
       if (creator.partner_store_ids) setConnectedStoreIds(creator.partner_store_ids);
-      if (creator.stage_name) setCreatorStageName(creator.stage_name);
-      if (creator.bio) setCreatorBio(creator.bio);
-      if (creator.category) setCreatorCategory(creator.category);
-      if (creator.avatar_url !== undefined) setCreatorAvatarUrl(creator.avatar_url || "");
-      if (creator.cover_url !== undefined) setCreatorCoverUrl(creator.cover_url || "");
     }
   }, [creator]);
 
@@ -319,35 +298,6 @@ function AfiliadosPage() {
     }
   };
 
-  const handleSaveCreator = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!referralHandle) return;
-
-    setIsSavingCreator(true);
-    try {
-      await upsertCreatorProfile({
-        data: {
-          handle: referralHandle,
-          stageName: creatorStageName.trim() || partner?.display_name || "Criador Waesy",
-          bio: creatorBio.trim() || undefined,
-          category: creatorCategory,
-          avatarUrl: creatorAvatarUrl || undefined,
-          coverUrl: creatorCoverUrl || undefined,
-          socialLinks: creator?.social_links || {},
-          pinnedProducts: creator?.pinned_products || [],
-        },
-      });
-
-      toast.success("Perfil público de criador atualizado com sucesso!");
-      await queryClient.invalidateQueries({ queryKey: ["my-affiliate-overview"] });
-      router.invalidate();
-    } catch (err: any) {
-      toast.error(err?.message || "Erro ao salvar alterações.");
-    } finally {
-      setIsSavingCreator(false);
-    }
-  };
-
   const handleTogglePrivacy = async (newAnonymous: boolean, newMode: "public" | "unlisted" | "private") => {
     setIsUpdatingPrivacy(true);
     try {
@@ -434,6 +384,17 @@ function AfiliadosPage() {
 
           {partner && (
             <div className="flex items-center gap-2 shrink-0">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setIsProfileEditorOpen(true)}
+                className="h-11 min-h-11 px-3 rounded-lg text-xs gap-2 focus-visible:ring-2 focus-visible:ring-primary"
+              >
+                <Edit3 className="size-4" />
+                <span className="hidden sm:inline">Editar Perfil</span>
+              </Button>
+
               <Button asChild variant="outline" size="sm" className="h-11 min-h-11 px-3 rounded-lg text-xs gap-2 focus-visible:ring-2 focus-visible:ring-primary">
                 <Link to="/u/$username" params={{ username: referralHandle }}>
                   <Globe className="size-4" />
@@ -1293,81 +1254,63 @@ function AfiliadosPage() {
               {/* ─── TAB 5: IDENTIDADE & CONFIGURAÇÕES ─────────────── */}
               <TabsContent value="settings" className="space-y-4 sm:space-y-6 mt-0">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-                  {/* Edição do Perfil de Criador */}
-                  <div className="p-4 sm:p-6 rounded-lg border border-border/60 bg-card space-y-3 sm:space-y-4">
-                    <div>
-                      <h3 className="text-sm font-bold text-foreground">Perfil Público da Marca</h3>
-                      <p className="text-xs text-muted-foreground">
-                        Como seus seguidores e lojas parceiras enxergam você na comunidade.
-                      </p>
+                  {/* Perfil Público da Marca / Criador (Canônico) */}
+                  <div className="p-4 sm:p-6 rounded-lg border border-border/60 bg-card space-y-4">
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <h3 className="text-sm font-bold text-foreground">Perfil Público da Marca</h3>
+                        <p className="text-xs text-muted-foreground">
+                          Como seus seguidores e lojas parceiras enxergam você na comunidade.
+                        </p>
+                      </div>
+                      <Badge variant="outline" className="text-xs font-mono shrink-0">
+                        @{referralHandle}
+                      </Badge>
                     </div>
 
-                    <form onSubmit={handleSaveCreator} className="space-y-3 sm:space-y-4">
-                      {/* Avatar e Capa da Marca */}
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pb-2 border-b border-border/40">
-                        <div className="space-y-2">
-                          <Label className="text-xs font-semibold text-foreground">Foto do Perfil / Logo (1:1)</Label>
-                          <ImageUpload
-                            value={creatorAvatarUrl}
-                            onChange={(url) => setCreatorAvatarUrl(url)}
-                            onRemove={() => setCreatorAvatarUrl("")}
-                            aspectPreset="square"
-                            bucket="cms-media"
-                            helperText="Quadrado 1:1"
-                          />
+                    {/* Visualização de Resumo da Identidade */}
+                    <div className="p-4 rounded-lg bg-muted/20 border border-border/40 space-y-3">
+                      <div className="flex items-center gap-3">
+                        <div className="size-12 rounded-lg bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-base uppercase shrink-0 overflow-hidden">
+                          {creator?.avatar_url ? (
+                            <img src={creator.avatar_url} alt={referralHandle} className="size-full object-cover" />
+                          ) : (
+                            referralHandle.slice(0, 2)
+                          )}
                         </div>
 
-                        <div className="space-y-2">
-                          <Label className="text-xs font-semibold text-foreground">Capa da Marca (Panorâmica)</Label>
-                          <ImageUpload
-                            value={creatorCoverUrl}
-                            onChange={(url) => setCreatorCoverUrl(url)}
-                            onRemove={() => setCreatorCoverUrl("")}
-                            aspectPreset="widescreen"
-                            bucket="cms-media"
-                            helperText="Formato 16:9 widescreen"
-                          />
+                        <div className="min-w-0 flex-1 space-y-1">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <h4 className="text-sm font-bold text-foreground truncate">
+                              {creator?.stage_name || partner?.display_name || loaderProfile?.full_name || referralHandle}
+                            </h4>
+                            <Badge variant="secondary" className="text-xs bg-muted/60">
+                              {getCreatorNicheLabel(creator?.category || partner?.category || "geral")}
+                            </Badge>
+                          </div>
+                          {creator?.bio ? (
+                            <p className="text-xs text-muted-foreground line-clamp-2">{creator.bio}</p>
+                          ) : (
+                            <p className="text-xs text-muted-foreground italic">Nenhuma biografia configurada.</p>
+                          )}
                         </div>
                       </div>
 
-                      <div className="space-y-1">
-                        <Label className="text-xs font-medium">Nome de Apresentação Pública</Label>
-                        <Input
-                          value={creatorStageName}
-                          onChange={(e) => setCreatorStageName(e.target.value)}
-                          className="h-10 sm:h-11 rounded-lg text-xs"
-                          required
-                        />
-                      </div>
+                      {creator?.cover_url && (
+                        <div className="aspect-video w-full rounded-md overflow-hidden border border-border/30 bg-muted/30">
+                          <img src={creator.cover_url} alt="Capa da marca" className="size-full object-cover" />
+                        </div>
+                      )}
+                    </div>
 
-                      <div className="space-y-1">
-                        <Label className="text-xs font-medium">Bio Pública</Label>
-                        <Input
-                          value={creatorBio}
-                          onChange={(e) => setCreatorBio(e.target.value)}
-                          placeholder="Foco de conteúdo, atuação regional..."
-                          className="h-10 sm:h-11 rounded-lg text-xs"
-                        />
-                      </div>
-
-                      <div className="space-y-1">
-                        <Label className="text-xs font-medium">Nicho Principal</Label>
-                        <Input
-                          value={creatorCategory}
-                          onChange={(e) => setCreatorCategory(e.target.value)}
-                          placeholder="Ex: Geral, Gastronomia, Viagens, Moda"
-                          className="h-10 sm:h-11 rounded-lg text-xs"
-                        />
-                      </div>
-
-                      <Button
-                        type="submit"
-                        disabled={isSavingCreator}
-                        className="w-full h-11 min-h-11 rounded-lg text-xs font-semibold mt-2"
-                      >
-                        {isSavingCreator ? "Salvando..." : "Salvar Alterações"}
-                      </Button>
-                    </form>
+                    <Button
+                      type="button"
+                      onClick={() => setIsProfileEditorOpen(true)}
+                      className="w-full h-11 min-h-11 rounded-lg text-xs font-semibold gap-2"
+                    >
+                      <Edit3 className="size-4" />
+                      <span>Editar Perfil de Marca</span>
+                    </Button>
                   </div>
 
                   {/* Privacidade do Perfil */}
@@ -1626,7 +1569,7 @@ function AfiliadosPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label className="text-xs font-medium">Nicho de Atuação (Selecione no catálogo)</Label>
+                    <Label className="text-xs font-medium">Segmento de Atuação</Label>
                     <CreatorNicheSelect
                       value={onboardingCategory}
                       onValueChange={(val) => setOnboardingCategory(val)}
@@ -1795,7 +1738,7 @@ function AfiliadosPage() {
                     <span className="font-bold text-foreground">{onboardingName}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Nicho:</span>
+                    <span className="text-muted-foreground">Segmento:</span>
                     <span className="font-bold text-foreground">{onboardingCategory}</span>
                   </div>
                   <div className="flex justify-between">
@@ -1829,6 +1772,30 @@ function AfiliadosPage() {
           </div>
         )}
       </div>
+
+      {/* Editor Canônico de Perfil de Criador & Marca (Unificado para toda a plataforma) */}
+      <CreatorProfileSheetEditor
+        open={isProfileEditorOpen}
+        onOpenChange={setIsProfileEditorOpen}
+        initialData={{
+          handle: referralHandle,
+          stageName: creator?.stage_name || partner?.display_name || loaderProfile?.full_name || referralHandle,
+          bio: creator?.bio || "",
+          category: creator?.category || partner?.category || "geral",
+          avatarUrl: creator?.avatar_url || "",
+          coverUrl: creator?.cover_url || "",
+          socialLinks: creator?.social_links || {},
+          pinnedProducts: creator?.pinned_products || [],
+          privacyMode: privacyMode,
+          isAnonymous: isAnonymous,
+        }}
+        isNew={false}
+        onSuccess={async () => {
+          await queryClient.invalidateQueries({ queryKey: ["my-affiliate-overview"] });
+          await queryClient.invalidateQueries({ queryKey: ["my-creator-profiles-list"] });
+          router.invalidate();
+        }}
+      />
     </div>
   );
 }

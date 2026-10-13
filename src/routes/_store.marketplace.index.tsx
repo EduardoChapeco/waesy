@@ -321,11 +321,11 @@ function AdvancedMarketplacePage() {
           </section>
         )}
 
-        {/* ── 4. Barra de Controle de Descoberta (Busca + Modos Feed/Grid/List) ── */}
+        {/* ── 4. Barra Unificada de Descoberta e Categorias (Busca + Modos Feed/Grid/List) ── */}
         <DiscoveryControlBar
           search={searchTerm}
           onSearchChange={handleSearchChange}
-          searchPlaceholder="Buscar produtos..."
+          searchPlaceholder="Buscar produtos em todas as vitrines comerciais..."
           categories={NICHE_FILTER_CHIPS}
           activeCategory={activeNiche}
           onSelectCategory={handleNicheChange}
@@ -350,8 +350,8 @@ function AdvancedMarketplacePage() {
                   </span>
                   <h2 className="text-sm sm:text-base font-bold text-foreground leading-tight">
                     {activeNiche === "todos"
-                      ? "Destaques Locais"
-                      : `Produtos em ${activeNicheConfig.label}`}
+                      ? "Destaques das Lojas Locais"
+                      : activeNicheConfig.label}
                   </h2>
                 </div>
                 <span className="text-xs font-mono text-muted-foreground">
@@ -360,11 +360,23 @@ function AdvancedMarketplacePage() {
               </div>
 
               {productCards.length === 0 ? (
-                <div className="py-12 text-center bg-card rounded-lg border border-border/60 p-6">
+                <div className="py-12 text-center bg-card rounded-lg border border-border/60 p-6 space-y-3">
                   <EmptyState
                     title="Nenhum produto encontrado"
-                    description="Tente buscar por outro termo ou explorar outras categorias."
+                    description=""
                   />
+                  {(activeNiche !== "todos" || searchTerm.trim()) && (
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        handleNicheChange("todos");
+                        handleSearchChange("");
+                      }}
+                      className="h-11 px-4 text-xs font-semibold rounded-lg cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    >
+                      Limpar filtros
+                    </Button>
+                  )}
                 </div>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
@@ -384,11 +396,23 @@ function AdvancedMarketplacePage() {
             </div>
 
             {productCards.length === 0 ? (
-              <div className="py-12 text-center bg-card rounded-lg border border-border/60 p-6">
+              <div className="py-12 text-center bg-card rounded-lg border border-border/60 p-6 space-y-3">
                 <EmptyState
                   title="Nenhum produto encontrado"
-                  description="Verifique os termos de busca ou selecione outro nicho no menu superior."
+                  description=""
                 />
+                {(activeNiche !== "todos" || searchTerm.trim()) && (
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      handleNicheChange("todos");
+                      handleSearchChange("");
+                    }}
+                    className="h-11 px-4 text-xs font-semibold rounded-lg cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  >
+                    Limpar filtros
+                  </Button>
+                )}
               </div>
             ) : viewMode === "list" ? (
               <div className="flex flex-col gap-3">

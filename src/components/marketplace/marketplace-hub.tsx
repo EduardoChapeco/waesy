@@ -181,20 +181,16 @@ export function MarketplaceHub({ initialNiche = "todos", offers = [] }: Marketpl
             </div>
             <div className="max-w-md">
               <h3 className="text-base font-semibold text-foreground">
-                Nenhuma oferta ativa no nicho selecionado
+                Nenhuma oferta encontrada
               </h3>
-              <p className="text-xs text-muted-foreground mt-1">
-                As empresas locais estão atualizando seus catálogos no Workspace. Você pode
-                navegar por outras vitrines ou buscar nos classificados avulsos.
-              </p>
             </div>
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setSelectedNiche("todos")} // focus-visible:ring-2
-              className="h-11 px-4 text-xs font-medium focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+              onClick={() => setSelectedNiche("todos")}
+              className="h-11 px-4 text-xs font-semibold rounded-lg focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none cursor-pointer"
             >
-              Ver Todas as Vitrines
+              Ver todas as ofertas
             </Button>
           </div>
         ) : (

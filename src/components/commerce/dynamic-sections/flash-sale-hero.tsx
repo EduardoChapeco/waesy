@@ -42,7 +42,7 @@ export const FlashSaleHero: React.FC<FlashSaleHeroProps> = (props) => {
  props.discountBadge ||
  content.badge ||
  content.discountBadge ||
- "🔥 Oferta por Tempo Limitado";
+ "Oferta por Tempo Limitado";
  const discountPercentage =
  props.discountPercentage ||
  props.discountBadge ||

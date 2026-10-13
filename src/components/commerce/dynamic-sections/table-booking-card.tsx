@@ -43,11 +43,11 @@ export function TableBookingSection({
 
  const message = encodeURIComponent(
  `Olá! Gostaria de reservar uma mesa no restaurante:\n\n` +
- `👤 Nome: ${name || "Cliente"}\n` +
- `👥 Pessoas: ${guests}\n` +
- `📅 Data: ${date || "A definir"}\n` +
+ `Nome: ${name || "Cliente"}\n` +
+ `Pessoas: ${guests}\n` +
+ `Data: ${date || "A definir"}\n` +
  `⏰ Horário: ${time}\n` +
- (notes ? `📝 Observações: ${notes}\n` : "") +
+ (notes ? `Observações: ${notes}\n` : "") +
  `\nPoderiam confirmar a disponibilidade? Obrigado!`
  );
 

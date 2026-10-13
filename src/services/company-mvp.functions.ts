@@ -585,7 +585,7 @@ export const registerClassifiedLead = createServerFn({ method: "POST" })
     try {
       const destinationUrl = classified.store_id
         ? `/workspace/comercial?dealId=${deal.id}`
-        : `/_store/conta/negociacoes`;
+        : `/conta/negociacoes`;
 
       await supabase.from("notifications").insert({
         user_id: classified.author_profile_id,

@@ -145,7 +145,10 @@ export const getMyInviteOverview = createServerFn({ method: "GET" })
       p_type: "user",
     });
 
-    const code = codeData || `WAESY-${identity.id.substring(0, 6).toUpperCase()}`;
+    let code = codeData || `WAESY-${identity.id.substring(0, 6).toUpperCase()}`;
+    if (code.startsWith("WIDER-")) {
+      code = code.replace(/^WIDER-/, "WAESY-");
+    }
 
     // 2. Busca link e métricas
     const { data: linkData } = await supabase
@@ -342,10 +345,10 @@ export const claimReward = createServerFn({ method: "POST" })
     const userPoints = score?.total_points || 0;
     if (userPoints < reward.pointsRequired && userPoints < reward.points_required) {
       const needed = reward.points_required - userPoints;
-      throw new Error(`Saldo insuficiente. Você precisa de mais ${needed} pontos para resgatar.`);
+      throw new Error(`Saldo insuficiente. Você precisa de mais ${needed} Tokens para resgatar.`);
     }
 
-    // 3. Deduz pontos atomicamente e reduz estoque
+    // 3. Deduz Tokens atomicamente e reduz estoque
     const required = reward.points_required;
     const { error: updErr } = await supabase
       .from("invite_scores")
@@ -355,7 +358,7 @@ export const claimReward = createServerFn({ method: "POST" })
       })
       .eq("user_id", identity.id);
 
-    if (updErr) throw new Error("Falha ao debitar pontos do resgate.");
+    if (updErr) throw new Error("Falha ao debitar Tokens do resgate.");
 
     if (reward.stock !== null) {
       await supabase
@@ -467,7 +470,7 @@ export const participateInRaffle = createServerFn({ method: "POST" })
       throw new Error(`Você já atingiu o limite de ${maxAllowed} cupons para este concurso de sorte.`);
     }
 
-    // 3. Checa pontos se o concurso tiver custo de pontos
+    // 3. Checa Tokens se o concurso tiver custo de Tokens
     const cost = raffle.points_cost || 0;
     let currentPoints = 0;
     if (cost > 0) {
@@ -479,7 +482,7 @@ export const participateInRaffle = createServerFn({ method: "POST" })
 
       currentPoints = score?.total_points || 0;
       if (currentPoints < cost) {
-        throw new Error(`Pontos insuficientes. São necessários ${cost} pontos para gerar um cupom.`);
+        throw new Error(`Tokens insuficientes. São necessários ${cost} Tokens para gerar um cupom.`);
       }
     }
 

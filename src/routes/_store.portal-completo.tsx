@@ -313,7 +313,7 @@ function PortalCompletoPage() {
               </div>
 
               <div className="space-y-2">
-                <Label className="text-xs font-medium text-foreground">Nicho Principal de Interesse</Label>
+                <Label className="text-xs font-medium text-foreground">Segmento de Interesse</Label>
                 <Select value={niche} onValueChange={setNiche}>
                   <SelectTrigger className="h-11 rounded-lg text-xs bg-background">
                     <SelectValue />

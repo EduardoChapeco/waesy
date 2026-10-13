@@ -62,6 +62,11 @@ export type BlockType =
  | "tourism_quote_hero"
  | "tourism_services_grid"
  | "tourism_destinations_carousel"
+ | "dynamic_booking_hero"
+ | "category_icon_grid"
+ | "dynamic_product_carousel"
+ | "travel_product_detail"
+ | "customer_travel_portal"
  // Food & Restaurant blocks
  | "food_menu_streamlined"
  | "food_menu_tabs"

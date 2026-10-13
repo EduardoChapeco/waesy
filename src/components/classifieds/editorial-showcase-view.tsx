@@ -298,6 +298,29 @@ export function EditorialShowcaseView({
     flightDetails?.destination ||
     "";
 
+  // ── Hospedagens Cadastradas no Pacote de Turismo ──
+  const travelLodgings = React.useMemo(() => {
+    if (Array.isArray(attrs.lodgings) && attrs.lodgings.length > 0) return attrs.lodgings;
+    if (Array.isArray(attrs.hotels) && attrs.hotels.length > 0) return attrs.hotels;
+    if (attrs.hotel_details) return Array.isArray(attrs.hotel_details) ? attrs.hotel_details : [attrs.hotel_details];
+    if (attrs.hotel_name) {
+      return [{
+        id: "primary-hotel",
+        name: attrs.hotel_name,
+        type: attrs.hotel_type || "hotel",
+        stars: attrs.hotel_stars || 4,
+        city: attrs.destination_city || destinationCity || "",
+        address: attrs.hotel_address || "",
+        regime: attrs.meal_plan || "Café da Manhã",
+        description: attrs.hotel_description || "",
+        amenities: attrs.hotel_amenities || attrs.amenities || [],
+        checkin_time: attrs.checkin_time || "14:00",
+        checkout_time: attrs.checkout_time || "11:00",
+      }];
+    }
+    return [];
+  }, [attrs, destinationCity]);
+
   // ── Estatísticas do Topo (Polimórficas por Nicho — Zero Fake Fallback) ──
   const getHeaderStats = () => {
     const list: { label: string; val: string }[] = [];
@@ -425,7 +448,7 @@ export function EditorialShowcaseView({
     if (nicheId.includes("desapego")) {
       return { tab2: "Ficha Técnica", tab3: "Acessórios & Garantia", tab4: "Entrega & Pagamento" };
     }
-    return { tab2: "Especificações", tab3: "Diferenciais", tab4: "Condições Comerciais" };
+    return { tab2: "Especificações", tab3: "Diferenciais", tab4: "Pagamento" };
   };
 
   const tabLabels = getTabLabels();
@@ -1038,7 +1061,7 @@ export function EditorialShowcaseView({
                                 <Play className="size-4 fill-white text-white ml-1" />
                               </div>
                             </div>
-                            <span className="absolute top-2 right-1.5 px-2 py-1 rounded-md bg-black/70 text-[9px] font-bold text-white uppercase tracking-wider backdrop-blur-xs font-mono">
+                            <span className="absolute top-2 right-1.5 px-2 py-1 rounded-md bg-black/70 text-xs font-bold text-white uppercase tracking-wider backdrop-blur-xs font-mono">
                               Vídeo
                             </span>
                           </div>
@@ -1051,7 +1074,7 @@ export function EditorialShowcaseView({
                               loading="lazy"
                             />
                             {isGif && (
-                              <span className="absolute top-2 right-1.5 px-2 py-1 rounded-md bg-foreground/80 text-background text-[9px] font-bold uppercase tracking-wider backdrop-blur-xs font-mono">
+                              <span className="absolute top-2 right-1.5 px-2 py-1 rounded-md bg-foreground/80 text-background text-xs font-bold uppercase tracking-wider backdrop-blur-xs font-mono">
                                 GIF
                               </span>
                             )}
@@ -1152,26 +1175,44 @@ export function EditorialShowcaseView({
                     )}
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2 text-muted-foreground">
-                    <div>Regime: <strong className="text-foreground">{attrs.meal_plan || "Consulte"}</strong></div>
-                    <div>Transporte: <strong className="text-foreground">{transportType === "bus" ? "Ônibus Leito / Terrestre" : transportType === "cruise" ? "Cruzeiro Marítimo" : "Aéreo"}</strong></div>
-                    <div>Saída: <strong className="text-foreground">{attrs.departure_date ? formatDate(attrs.departure_date) : attrs.dates_text || "A combinar"}</strong></div>
-                    <div>Retorno: <strong className="text-foreground">{attrs.return_date ? formatDate(attrs.return_date) : "Conforme roteiro"}</strong></div>
-                    <div>Vagas / Grupo: <strong className="text-foreground">{attrs.guests_text || "Grupo Confirmado"}</strong></div>
-                    <div>Cancelamento: <strong className="text-foreground capitalize">{cancellationPolicy === "flexible" ? "Flexível" : cancellationPolicy === "moderate" ? "Moderado" : "Especial de Grupo"}</strong></div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm text-muted-foreground">
+                    <div className="flex items-center justify-between p-3 rounded-lg bg-background/50 border border-border/30">
+                      <span>Regime:</span>
+                      <strong className="text-foreground">{attrs.meal_plan || "Consulte"}</strong>
+                    </div>
+                    <div className="flex items-center justify-between p-3 rounded-lg bg-background/50 border border-border/30">
+                      <span>Transporte:</span>
+                      <strong className="text-foreground">{transportType === "bus" ? "Ônibus Leito / Terrestre" : transportType === "cruise" ? "Cruzeiro Marítimo" : "Aéreo"}</strong>
+                    </div>
+                    <div className="flex items-center justify-between p-3 rounded-lg bg-background/50 border border-border/30">
+                      <span>Saída:</span>
+                      <strong className="text-foreground">{attrs.departure_date ? formatDate(attrs.departure_date) : attrs.dates_text || "A combinar"}</strong>
+                    </div>
+                    <div className="flex items-center justify-between p-3 rounded-lg bg-background/50 border border-border/30">
+                      <span>Retorno:</span>
+                      <strong className="text-foreground">{attrs.return_date ? formatDate(attrs.return_date) : "Conforme roteiro"}</strong>
+                    </div>
+                    <div className="flex items-center justify-between p-3 rounded-lg bg-background/50 border border-border/30">
+                      <span>Vagas / Grupo:</span>
+                      <strong className="text-foreground">{attrs.guests_text || "Grupo Confirmado"}</strong>
+                    </div>
+                    <div className="flex items-center justify-between p-3 rounded-lg bg-background/50 border border-border/30">
+                      <span>Cancelamento:</span>
+                      <strong className="text-foreground capitalize">{cancellationPolicy === "flexible" ? "Flexível" : cancellationPolicy === "moderate" ? "Moderado" : "Especial de Grupo"}</strong>
+                    </div>
                   </div>
 
                   {/* Bullets / Itens Inclusos (bio_bullets ou inclusions) */}
                   {(bioBullets.length > 0 || (Array.isArray(attrs.inclusions) && attrs.inclusions.length > 0)) && (
                     <div className="pt-3 border-t border-border/30 space-y-2">
-                      <span className="font-bold text-foreground block text-xs">
+                      <span className="font-bold text-foreground block text-sm">
                         O que está incluso neste pacote:
                       </span>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                         {(bioBullets.length > 0 ? bioBullets : attrs.inclusions).map((item: string, i: number) => (
-                          <div key={i} className="flex items-start gap-2 p-2 rounded-lg bg-background/60 border border-border/30">
+                          <div key={i} className="flex items-start gap-2 p-3 rounded-lg bg-background/60 border border-border/30">
                             <CheckCircle2 className="size-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-1" />
-                            <span className="text-xs text-foreground/90 font-medium leading-tight">{item}</span>
+                            <span className="text-xs sm:text-sm text-foreground/90 font-medium leading-snug">{item}</span>
                           </div>
                         ))}
                       </div>
@@ -1192,6 +1233,119 @@ export function EditorialShowcaseView({
                           </li>
                         ))}
                       </ul>
+                    </div>
+                  )}
+
+                  {/* Hospedagem & Acomodação do Pacote (Nicho Turismo / Viagem) */}
+                  {travelLodgings.length > 0 ? (
+                    <div className="pt-3 border-t border-border/30 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-foreground block text-sm flex items-center gap-2">
+                          <Building2 className="size-4 text-primary" />
+                          <span>Hospedagem & Acomodação ({travelLodgings.length} {travelLodgings.length > 1 ? "opções" : "hotel"})</span>
+                        </span>
+                        {attrs.meal_plan && (
+                          <Badge variant="outline" className="text-xs font-bold text-primary border-primary/25 bg-primary/5">
+                            {attrs.meal_plan}
+                          </Badge>
+                        )}
+                      </div>
+
+                      <div className="space-y-3">
+                        {travelLodgings.map((lodging: any, lIdx: number) => (
+                          <div
+                            key={lodging.id || lIdx}
+                            className="p-4 rounded-lg bg-background border border-border/60 space-y-3 shadow-xs"
+                          >
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-border/40">
+                              <div className="flex items-center gap-2">
+                                <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                                  <Building2 className="size-4" />
+                                </div>
+                                <div>
+                                  <h5 className="font-bold text-sm text-foreground leading-tight">
+                                    {lodging.name || "Hospedagem Confirmada"}
+                                  </h5>
+                                  <p className="text-xs text-muted-foreground">
+                                    {lodging.city || lodging.address || destinationCity || "Localização privilegiada"}
+                                    {lodging.type ? ` • ${lodging.type.toUpperCase()}` : ""}
+                                  </p>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-2 flex-wrap">
+                                {lodging.stars ? (
+                                  <span className="text-xs font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2 py-1 rounded-full border border-amber-500/20">
+                                    {lodging.stars} estrelas
+                                  </span>
+                                ) : null}
+                                {lodging.room_category ? (
+                                  <Badge variant="outline" className="text-xs font-semibold">
+                                    {lodging.room_category}
+                                  </Badge>
+                                ) : null}
+                              </div>
+                            </div>
+
+                            {/* Informações Rápidas: Regime, Check-in, Check-out, Voucher */}
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                              <div className="p-2 rounded-lg bg-muted/30 border border-border/40">
+                                <span className="text-muted-foreground block text-xs">Regime</span>
+                                <strong className="text-foreground text-xs">{lodging.regime || attrs.meal_plan || "Café da Manhã"}</strong>
+                              </div>
+                              <div className="p-2 rounded-lg bg-muted/30 border border-border/40">
+                                <span className="text-muted-foreground block text-xs">Check-in</span>
+                                <strong className="text-foreground text-xs font-mono">{lodging.checkin_time || "14:00"}</strong>
+                              </div>
+                              <div className="p-2 rounded-lg bg-muted/30 border border-border/40">
+                                <span className="text-muted-foreground block text-xs">Check-out</span>
+                                <strong className="text-foreground text-xs font-mono">{lodging.checkout_time || "11:00"}</strong>
+                              </div>
+                              <div className="p-2 rounded-lg bg-muted/30 border border-border/40">
+                                <span className="text-muted-foreground block text-xs">Reserva / Status</span>
+                                <strong className="text-foreground text-xs">{lodging.booking_code ? `Cód: ${lodging.booking_code}` : "Incluso no Pacote"}</strong>
+                              </div>
+                            </div>
+
+                            {lodging.address && (
+                              <p className="text-xs text-muted-foreground flex items-center gap-2 pt-1">
+                                <MapPin className="size-4 text-primary shrink-0" />
+                                <span>{lodging.address}</span>
+                              </p>
+                            )}
+
+                            {lodging.description && (
+                              <p className="text-xs text-foreground/80 leading-relaxed pt-1 whitespace-pre-line bg-muted/20 p-3 rounded-lg border border-border/30">
+                                {lodging.description}
+                              </p>
+                            )}
+
+                            {Array.isArray(lodging.amenities) && lodging.amenities.length > 0 && (
+                              <div className="flex flex-wrap gap-2 pt-1">
+                                {lodging.amenities.map((am: string, aIdx: number) => (
+                                  <span
+                                    key={aIdx}
+                                    className="inline-flex items-center gap-1 px-3 py-1 rounded-md text-xs font-medium bg-muted/60 text-foreground border border-border/40"
+                                  >
+                                    <Check className="size-3 text-emerald-600 shrink-0" />
+                                    <span>{am}</span>
+                                  </span>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="pt-3 border-t border-border/30 space-y-2">
+                      <span className="font-bold text-foreground block text-sm flex items-center gap-2">
+                        <Building2 className="size-4 text-primary" />
+                        <span>Hospedagem</span>
+                      </span>
+                      <div className="p-3 rounded-lg bg-background/50 border border-border/40 text-xs text-muted-foreground flex items-center justify-between">
+                        <span>Acomodação selecionada e homologada pela agência.</span>
+                        <strong className="text-foreground">{attrs.meal_plan || "Inclusa no pacote"}</strong>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -1644,7 +1798,8 @@ export function EditorialShowcaseView({
                   )}
 
                   {/* Recursos Inclusos na Assinatura */}
-                  {Array.isArray(classified.recurring_features || attrs.recurring_features) &&
+                  {(classified.pricing_model === "recurring" || nicheId.includes("assinatura")) &&
+                    Array.isArray(classified.recurring_features || attrs.recurring_features) &&
                     (classified.recurring_features || attrs.recurring_features).length > 0 && (
                       <div className="p-4 rounded-lg bg-muted/20 border border-border/30 space-y-2">
                         <h4 className="font-bold text-xs text-foreground uppercase tracking-wider flex items-center gap-2">
@@ -2185,7 +2340,7 @@ export function EditorialShowcaseView({
                               <div className="flex items-center gap-2">
                                 {opt.label && <p className="text-xs font-bold text-foreground">{opt.label}</p>}
                                 {isSelected && (
-                                  <span className="text-[9px] font-bold text-primary bg-primary/10 px-2 py-0.2 rounded-full">
+                                  <span className="text-xs font-bold text-primary bg-primary/10 px-2 py-1 rounded-full">
                                     Selecionada
                                   </span>
                                 )}
@@ -2289,29 +2444,29 @@ export function EditorialShowcaseView({
             return (
               <div className={`grid ${gridCols} gap-3 sm:gap-4 py-4 border-t border-b border-border/40`}>
                 <div>
-                  <p className="text-xs uppercase tracking-widest text-muted-foreground font-semibold">
+                  <p className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">
                     {heroHighlight.primaryLabel}
                   </p>
-                  <p className="text-base sm:text-lg font-black text-foreground mt-1 leading-tight truncate">
+                  <p className="text-sm sm:text-base font-bold text-foreground mt-1 leading-snug break-words">
                     {heroHighlight.primaryValue}
                   </p>
                 </div>
                 {heroHighlight.secondaryLabel && heroHighlight.secondaryValue && (
                   <div>
-                    <p className="text-xs uppercase tracking-widest text-muted-foreground font-semibold">
+                    <p className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">
                       {heroHighlight.secondaryLabel}
                     </p>
-                    <p className="text-base sm:text-lg font-black text-foreground mt-1 leading-tight truncate">
+                    <p className="text-sm sm:text-base font-bold text-foreground mt-1 leading-snug break-words">
                       {heroHighlight.secondaryValue}
                     </p>
                   </div>
                 )}
                 {heroHighlight.tertiaryLabel && heroHighlight.tertiaryValue && (
                   <div>
-                    <p className="text-xs uppercase tracking-widest text-muted-foreground font-semibold">
+                    <p className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">
                       {heroHighlight.tertiaryLabel}
                     </p>
-                    <p className="text-base sm:text-lg font-black text-foreground mt-1 leading-tight truncate">
+                    <p className="text-sm sm:text-base font-bold text-foreground mt-1 leading-snug break-words">
                       {heroHighlight.tertiaryValue}
                     </p>
                   </div>
@@ -3114,6 +3269,7 @@ export function EditorialShowcaseView({
       <TravelPromoFlyerModal
         isOpen={isPromoFlyerOpen}
         onClose={() => setIsPromoFlyerOpen(false)}
+        niche={isTravel ? "turismo" : (nicheId || "turismo")}
         destinationTitle={classified.title || attrs.destination_city || "Destino Turístico"}
         destinationCity={attrs.destination_city || attrs.destination}
         datesText={attrs.dates_text}
@@ -3132,6 +3288,7 @@ export function EditorialShowcaseView({
           initialForm={classified.lead_form || null}
           classifiedId={classified.id}
           classifiedTitle={classified.title}
+          nicheId={nicheId}
           isOpen={isLeadFormModalOpen}
           onOpenChange={setIsLeadFormModalOpen}
           civilInquiryConfig={classified?.attributes?.inquiry_config}

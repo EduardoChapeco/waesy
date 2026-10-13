@@ -196,7 +196,7 @@ export function GlobalMenuHub({
                     {username ? `@${username}` : userEmail}
                   </p>
                   {isAdmin && (
-                    <span className="inline-flex items-center gap-1 text-[10px] font-bold text-primary bg-primary/10 px-2 py-1 rounded-full mt-1">
+                    <span className="inline-flex items-center gap-1 text-xs font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full mt-1">
                       <Shield className="size-3" />
                       Admin Master
                     </span>
@@ -247,7 +247,7 @@ export function GlobalMenuHub({
 
           {/* ── 2. ATIVIDADE (Silent WhatsApp List) ── */}
           <div className="space-y-1">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground px-1">
+            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground px-1">
               Atividade
             </span>
             <div className="rounded-lg border border-border/70 bg-card divide-y divide-border/40 overflow-hidden">
@@ -268,7 +268,7 @@ export function GlobalMenuHub({
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
                       {item.badge && (
-                        <Badge className="bg-primary text-primary-foreground text-[10px] font-bold h-5 px-2">
+                        <Badge className="bg-primary text-primary-foreground text-xs font-bold h-5 px-2">
                           {item.badge}
                         </Badge>
                       )}
@@ -282,7 +282,7 @@ export function GlobalMenuHub({
 
           {/* ── 3. SERVIÇOS (Silent WhatsApp List) ── */}
           <div className="space-y-1">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground px-1">
+            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground px-1">
               Ecossistema
             </span>
             <div className="rounded-lg border border-border/70 bg-card divide-y divide-border/40 overflow-hidden">
@@ -310,7 +310,7 @@ export function GlobalMenuHub({
 
           {/* ── 4. OPERAÇÃO (Silent WhatsApp List) ── */}
           <div className="space-y-1">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground px-1">
+            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground px-1">
               Operação
             </span>
             <div className="rounded-lg border border-border/70 bg-card divide-y divide-border/40 overflow-hidden">

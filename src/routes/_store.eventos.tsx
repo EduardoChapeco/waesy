@@ -26,25 +26,17 @@ const SearchSchema = z.object({
   data: z.string().optional(),
 });
 
-const EVENT_SUBCATEGORIES_BUTTONS = [
+const BASE_EVENT_CATEGORIES: FilterChipOption[] = [
   { id: "todos", label: "Todos os Eventos", icon: LucideTicket },
   { id: "shows", label: "Shows de Rock e Pop", icon: LucideMusic },
   { id: "sertanejo", label: "Sertanejo e Baladas", icon: LucideFlame },
   { id: "pagode", label: "Samba e Pagode", icon: LucidePartyPopper },
   { id: "gastronomico", label: "Gastronomia e Feiras", icon: LucideUtensils },
   { id: "teatro", label: "Teatro e Stand-up", icon: LucideTheater },
-  { id: "feiras", label: "Bazaares e Pets", icon: LucideShoppingBag },
+  { id: "feiras", label: "Feiras e Bazaares", icon: LucideShoppingBag },
   { id: "workshops", label: "Cursos e Workshops", icon: LucideGraduationCap },
   { id: "infantil", label: "Infantil e Família", icon: LucideSmile },
   { id: "gratis", label: "Entrada Gratuita", icon: LucideTag },
-];
-
-const EVENT_CATEGORIES: FilterChipOption[] = [
-  { id: "todos", label: "Todas Categorias", icon: LucideTag },
-  { id: "shows", label: "Shows e Festivais", icon: Ticket },
-  { id: "gastronomico", label: "Gastronomia e Feiras", icon: ForkKnife },
-  { id: "feiras", label: "Bazaares e Pets", icon: LucideShoppingBag },
-  { id: "workshops", label: "Cursos e Workshops", icon: GraduationCap },
 ];
 
 const PRESET_DATE_FILTERS = [
@@ -447,6 +439,15 @@ function EventosPage() {
     return counts;
   }, [events]);
 
+  const eventCategories: FilterChipOption[] = useMemo(() => {
+    return BASE_EVENT_CATEGORIES.map((cat) => ({
+      id: cat.id,
+      label: cat.label,
+      icon: cat.icon,
+      count: eventsCountBySubcategory[cat.id] || 0,
+    }));
+  }, [eventsCountBySubcategory]);
+
   // Trilhos Temáticos Dinâmicos para o Modo Feed
   const feedThematicRails = useMemo(() => {
     if (!filteredEvents || filteredEvents.length === 0) return [];
@@ -589,8 +590,21 @@ function EventosPage() {
         </section>
       )}
 
-      {/* ── 3. Filtro de Data & Calendário Canônico (Apple / Airbnb HIG) ── */}
-      <section aria-label="Programação por Data" className="space-y-2 pt-1">
+      {/* ── 3. Barra de Controle de Descoberta & Categorias Unificadas ── */}
+      <DiscoveryControlBar
+        search={searchQuery}
+        onSearchChange={setSearchQuery}
+        searchPlaceholder="Buscar show, festival, teatro, local, artista..."
+        categories={eventCategories}
+        activeCategory={selectedCategory}
+        onSelectCategory={(cat) => setSelectedCategory(cat === selectedCategory && cat !== "todos" ? "todos" : cat)}
+        viewMode={viewMode}
+        onViewModeChange={setViewMode}
+        allowedViewModes={["feed", "grid", "list"]}
+      />
+
+      {/* ── 4. Filtro de Data & Calendário Canônico ── */}
+      <section aria-label="Programação por Data" className="space-y-2">
         <div role="tablist" aria-label="Filtro de Data" className="flex items-center gap-2 overflow-x-auto tab-list no-scrollbar pb-1 snap-x snap-mandatory">
           {/* Popover com Calendário Interativo */}
           <Popover>
@@ -643,7 +657,7 @@ function EventosPage() {
                 key={pill.id}
                 type="button"
                 onClick={() => setSelectedDateFilter(pill.id)}
-                className={`h-11 px-3 rounded-lg text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer shrink-0 snap-start whitespace-nowrap ${
+                className={`h-11 px-3.5 rounded-lg text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer shrink-0 snap-start whitespace-nowrap ${
                   isSelected
                     ? "bg-foreground text-background font-bold shadow-xs"
                     : "bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -666,25 +680,12 @@ function EventosPage() {
             </button>
           )}
 
-          {/* Badge sutil com total de eventos filtrados */}
+          {/* Contador de eventos */}
           <span className="text-xs font-mono text-muted-foreground ml-auto pr-1">
             {filteredEvents.length} {filteredEvents.length === 1 ? "evento" : "eventos"}
           </span>
         </div>
       </section>
-
-      {/* ── 4. DiscoveryControlBar (Busca em Tempo Real & Modos de Visualização) ── */}
-      <DiscoveryControlBar
-        search={searchQuery}
-        onSearchChange={setSearchQuery}
-        searchPlaceholder="Buscar show, festival, teatro, local, artista..."
-        categories={EVENT_CATEGORIES}
-        activeCategory={selectedCategory}
-        onSelectCategory={setSelectedCategory}
-        viewMode={viewMode}
-        onViewModeChange={setViewMode}
-        allowedViewModes={["feed", "grid", "list"]}
-      />
 
       {/* ── 5. Estados de Carregamento, Erro e Vazio ── */}
       {isLoading && (
@@ -701,32 +702,31 @@ function EventosPage() {
       )}
 
       {!isLoading && !isError && filteredEvents.length === 0 && (
-        <div className="py-20 text-center space-y-3 bg-muted/20 rounded-lg p-8 border border-border/40">
-          <CalendarBlank size={36} className="text-muted-foreground/50 mx-auto" />
+        <div className="py-20 text-center space-y-3 bg-card rounded-lg p-8 border border-border/50">
+          <CalendarBlank size={36} className="text-muted-foreground/40 mx-auto" />
           <h2 className="text-sm font-semibold text-foreground">
-            Nenhum evento agendado para {activeDateLabel}
+            Nenhum evento encontrado
           </h2>
-          <p className="text-xs text-muted-foreground max-w-sm mx-auto">
-            Tente selecionar outro dia no calendário acima ou limpar os filtros de busca.
-          </p>
-          <div className="pt-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                setSelectedDateFilter("all");
-                setSelectedCategory("todos");
-                setSearchQuery("");
-              }}
-              className="rounded-lg text-xs font-bold h-11 px-4"
-            >
-              Ver Todos os Eventos
-            </Button>
-          </div>
+          {(selectedDateFilter !== "all" || selectedCategory !== "todos" || searchQuery.trim()) && (
+            <div className="pt-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setSelectedDateFilter("all");
+                  setSelectedCategory("todos");
+                  setSearchQuery("");
+                }}
+                className="rounded-lg text-xs font-semibold h-11 px-4 cursor-pointer focus-visible:ring-2"
+              >
+                Limpar filtros
+              </Button>
+            </div>
+          )}
         </div>
       )}
 
-      {/* ── 6. Renderização dos Modos de Visualização ── */}
+      {/* ── 7. Renderização dos Modos de Visualização ── */}
 
       {/* MODO 1: FEED DE TRILHOS TEMÁTICOS & MOTOR PROCEDURAL INFINITE FEED */}
       {!isLoading && !isError && filteredEvents.length > 0 && viewMode === "feed" && (

@@ -51,7 +51,7 @@ export const Route = createFileRoute("/workspace/simulacao")({
 });
 
 const NICHES = [
-  { id: "all", label: "Todos os Nichos" },
+  { id: "all", label: "Todos" },
   { id: "eventos", label: "Eventos e Festas" },
   { id: "gastronomia", label: "Gastronomia e Restaurante" },
   { id: "moda", label: "Moda e Vestuário" },

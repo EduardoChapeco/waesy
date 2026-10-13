@@ -1,34 +1,34 @@
 # LINT_DASHBOARD.md — Painel Canônico de Saúde Visual e Catraca
 
-> Gerado automaticamente pelo Design Lint V2 em: `2026-10-12T01:28:32.845Z`
+> Gerado automaticamente pelo Design Lint V2 em: `2026-10-13T18:11:23.905Z`
 
 ## 1. Resumo Executivo
 
 | Métrica | Atual | Baseline Congelada | Status Catraca |
 | :--- | :--- | :--- | :--- |
-| **Total de Arquivos** | 1996 | 1854 | Estável |
-| **Arquivos com Débito** | 858 | 879 | Monitorado |
-| **Total de Violações** | **13702** | **14292** | PASS (<= Baseline) |
-| **P0 (Bloqueia Entrega)** | **1524** | 1558 | PASS |
-| **P1 (Bloqueia Merge)** | **9548** | 10033 | PASS |
-| **P2 (Fila de Correção)** | 1294 | 1333 | Acompanhamento |
-| **P3 (Polimento)** | 1336 | 1368 | Acompanhamento |
+| **Total de Arquivos** | 2010 | 1988 | Estável |
+| **Arquivos com Débito** | 876 | 860 | Monitorado |
+| **Total de Violações** | **13974** | **13657** | FAIL (Regressão) |
+| **P0 (Bloqueia Entrega)** | **1531** | 1524 | FAIL |
+| **P1 (Bloqueia Merge)** | **9708** | 9521 | FAIL |
+| **P2 (Fila de Correção)** | 1374 | 1277 | Acompanhamento |
+| **P3 (Polimento)** | 1361 | 1335 | Acompanhamento |
 
 ## 2. Débito Visual por Módulo
 
 | Módulo | Total | P0 | P1 | P2 | P3 |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| `components/app` | 6089 | 635 | 4261 | 625 | 568 |
+| `components/app` | 6300 | 642 | 4355 | 715 | 588 |
 | `routes/workspace` | 2364 | 451 | 1523 | 114 | 276 |
-| `routes/store` | 1690 | 162 | 1128 | 156 | 244 |
-| `components/tourism` | 1350 | 96 | 1001 | 183 | 70 |
+| `routes/store` | 1703 | 162 | 1153 | 145 | 243 |
+| `components/tourism` | 1357 | 96 | 1006 | 183 | 72 |
 | `routes/admin` | 1040 | 90 | 779 | 51 | 120 |
-| `components/ui` | 277 | 23 | 218 | 7 | 29 |
+| `components/ui` | 279 | 23 | 220 | 7 | 29 |
 | `services` | 258 | 0 | 184 | 72 | 2 |
-| `lib` | 256 | 1 | 219 | 36 | 0 |
+| `lib` | 255 | 1 | 219 | 35 | 0 |
 | `routes/other` | 163 | 15 | 121 | 18 | 9 |
 | `components/builder` | 135 | 42 | 57 | 19 | 17 |
-| `components/chat` | 46 | 4 | 41 | 0 | 1 |
+| `components/chat` | 86 | 4 | 75 | 2 | 5 |
 | `hooks` | 17 | 5 | 8 | 4 | 0 |
 | `styles` | 9 | 0 | 0 | 9 | 0 |
 | `routes/api` | 6 | 0 | 6 | 0 | 0 |
@@ -38,26 +38,26 @@
 
 | Regra | Descrição Sumária | Severidade | Ocorrências |
 | :--- | :--- | :--- | :--- |
-| **DL-02** | Diretriz do Catálogo | `P1` | 4573 |
-| **DL-14** | Diretriz do Catálogo | `P1` | 2217 |
-| **DL-15** | Diretriz do Catálogo | `P0` | 1521 |
-| **DL-18** | Diretriz do Catálogo | `P1` | 1227 |
-| **DL-27** | Diretriz do Catálogo | `P3` | 1097 |
-| **DL-01** | Diretriz do Catálogo | `P1` | 919 |
-| **DL-07** | Diretriz do Catálogo | `P2` | 485 |
-| **DL-23** | Diretriz do Catálogo | `P2` | 452 |
+| **DL-02** | Diretriz do Catálogo | `P1` | 4547 |
+| **DL-14** | Diretriz do Catálogo | `P1` | 2232 |
+| **DL-15** | Diretriz do Catálogo | `P0` | 1528 |
+| **DL-18** | Diretriz do Catálogo | `P1` | 1256 |
+| **DL-27** | Diretriz do Catálogo | `P3` | 1117 |
+| **DL-01** | Diretriz do Catálogo | `P1` | 950 |
+| **DL-07** | Diretriz do Catálogo | `P2` | 515 |
+| **DL-23** | Diretriz do Catálogo | `P2` | 441 |
 | **DL-28** | Diretriz do Catálogo | `P1` | 292 |
-| **DL-30** | Diretriz do Catálogo | `P3` | 239 |
+| **DL-30** | Diretriz do Catálogo | `P3` | 244 |
+| **DL-03** | Diretriz do Catálogo | `P1` | 232 |
 | **DL-05** | Diretriz do Catálogo | `P1` | 134 |
-| **DL-03** | Diretriz do Catálogo | `P1` | 120 |
-| **DL-29** | Diretriz do Catálogo | `P2` | 119 |
-| **DL-08** | Diretriz do Catálogo | `P2` | 114 |
-| **DL-26** | Diretriz do Catálogo | `P2` | 87 |
-| **DL-12** | Diretriz do Catálogo | `P1` | 34 |
+| **DL-29** | Diretriz do Catálogo | `P2` | 120 |
+| **DL-08** | Diretriz do Catálogo | `P2` | 115 |
+| **DL-26** | Diretriz do Catálogo | `P2` | 90 |
+| **DL-09** | Diretriz do Catálogo | `P2` | 64 |
+| **DL-12** | Diretriz do Catálogo | `P1` | 33 |
 | **DL-25** | Diretriz do Catálogo | `P2` | 23 |
 | **DL-11** | Diretriz do Catálogo | `P1` | 21 |
 | **DL-13** | Diretriz do Catálogo | `P1` | 11 |
-| **DL-09** | Diretriz do Catálogo | `P2` | 8 |
 | **DL-06** | Diretriz do Catálogo | `P2` | 4 |
 | **DL-04** | Diretriz do Catálogo | `P0` | 3 |
 | **DL-24** | Diretriz do Catálogo | `P2` | 2 |

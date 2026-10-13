@@ -67,7 +67,7 @@ export function WeatherWidget({ city, className, compact = false }: WeatherWidge
           <Sun className="size-4 text-amber-500" />
           <span>Clima Previsto</span>
         </h4>
-        <span className="text-[10px] text-muted-foreground font-medium truncate max-w-[120px]">
+        <span className="text-xs text-muted-foreground font-medium truncate max-w-[120px]">
           {city}
         </span>
       </div>
@@ -95,12 +95,12 @@ export function WeatherWidget({ city, className, compact = false }: WeatherWidge
         <div className="grid grid-cols-3 gap-2 text-center">
           {days.map((w, idx) => (
             <div key={idx} className="p-2 rounded-lg bg-background border border-border/30">
-              <span className="text-[10.5px] text-muted-foreground block">{w.day}</span>
+              <span className="text-xs text-muted-foreground block">{w.day}</span>
               <span className="font-extrabold text-sm text-foreground my-1 block">
                 {w.maxTempC}°
               </span>
               {!compact && (
-                <span className="text-[9px] text-muted-foreground/70 block">
+                <span className="text-xs text-muted-foreground/70 block">
                   mín {w.minTempC}°
                 </span>
               )}

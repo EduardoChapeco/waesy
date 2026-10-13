@@ -250,6 +250,7 @@ export interface UniversalClassifiedShowcaseProps {
   isBooking?: boolean;
   isBuyingDirect?: boolean;
   isDownloadingDigital?: boolean;
+  previewViewport?: "mobile" | "desktop" | "auto";
 }
 
 export type ClassifiedTemplateStyle =

@@ -29,17 +29,17 @@ const SearchSchema = z.object({
 type OfertasSearch = z.infer<typeof SearchSchema>;
 
 const NICHE_CHIPS = [
-  { id: "todos", label: "Todas as Ofertas", emoji: "⚡" },
-  { id: "gastronomia", label: "Gastronomia", emoji: "🍔" },
-  { id: "mercado", label: "Mercado", emoji: "🛒" },
-  { id: "farmacia", label: "Farmácia", emoji: "💊" },
-  { id: "moda", label: "Moda", emoji: "👗" },
-  { id: "eletronicos", label: "Eletrônicos", emoji: "💻" },
-  { id: "beleza", label: "Beleza", emoji: "💄" },
-  { id: "pet", label: "Pet Shop", emoji: "🐾" },
-  { id: "acougue", label: "Açougue", emoji: "🥩" },
-  { id: "bebidas", label: "Bebidas", emoji: "🍻" },
-  { id: "casa", label: "Casa", emoji: "🏠" },
+  { id: "todos", label: "Todas as Ofertas" },
+  { id: "gastronomia", label: "Gastronomia" },
+  { id: "mercado", label: "Mercado" },
+  { id: "farmacia", label: "Farmácia" },
+  { id: "moda", label: "Moda" },
+  { id: "eletronicos", label: "Eletrônicos" },
+  { id: "beleza", label: "Beleza" },
+  { id: "pet", label: "Pet Shop" },
+  { id: "acougue", label: "Açougue" },
+  { id: "bebidas", label: "Bebidas" },
+  { id: "casa", label: "Casa" },
 ];
 
 export const Route = createFileRoute("/_store/ofertas")({
@@ -158,13 +158,12 @@ function OfertasPage() {
               type="button"
               id={`chip-ofertas-${chip.id}`}
               onClick={() => handleNicheChange(chip.id)}
-              className={`snap-start shrink-0 h-9 px-4 rounded-full text-xs font-semibold inline-flex items-center gap-2 whitespace-nowrap transition-all cursor-pointer select-none ${
+              className={`snap-start shrink-0 h-11 min-h-11 px-4 rounded-full text-xs font-semibold inline-flex items-center gap-2 whitespace-nowrap transition-all cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                 activeNiche === chip.id
                   ? "bg-foreground text-background shadow-xs"
                   : "bg-card text-muted-foreground border border-border/60 hover:text-foreground hover:border-border"
               }`}
             >
-              {chip.emoji ? <span>{chip.emoji}</span> : null}
               <span>{chip.label}</span>
             </button>
           ))}

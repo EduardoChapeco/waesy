@@ -1534,9 +1534,9 @@ export function ConvenienceShowcaseView({
                     )}
                     <div className="min-w-0">
                       <p className="text-xs font-bold text-foreground truncate">{orderBumpOffer.target_title}</p>
-                      <div className="flex items-center gap-2 text-[11px] font-mono">
+                      <div className="flex items-center gap-2 text-xs font-mono">
                         {orderBumpOffer.original_price_cents && (
-                          <span className="line-through text-muted-foreground text-[10px]">
+                          <span className="line-through text-muted-foreground text-xs">
                             {formatMoney(orderBumpOffer.original_price_cents)}
                           </span>
                         )}
@@ -1569,7 +1569,7 @@ export function ConvenienceShowcaseView({
             <div className="space-y-2">
               <Label className="text-xs font-bold text-foreground flex items-center justify-between">
                 <span>Forma de Recebimento</span>
-                <span className="text-[11px] font-medium text-muted-foreground">
+                <span className="text-xs font-medium text-muted-foreground">
                   {orderDeliveryMode === "pickup" ? "Sem taxa de frete" : `Taxa: ${formatMoney(deliveryFeeCents)}`}
                 </span>
               </Label>
@@ -1619,7 +1619,7 @@ export function ConvenienceShowcaseView({
                     <Clock3 className="size-3.5 text-primary" />
                     <span>Despacho Sob Demanda via MotoLink</span>
                   </p>
-                  <p className="text-[11px] text-muted-foreground">
+                  <p className="text-xs text-muted-foreground">
                     A loja prepara o pedido e aloca o entregador autônomo assim que confirmado ({deliveryEstimate}).
                   </p>
                 </div>
@@ -1627,7 +1627,7 @@ export function ConvenienceShowcaseView({
 
               {orderDeliveryMode === "scheduled" && (
                 <div className="p-3 rounded-lg bg-muted/20 border border-border/40 space-y-2">
-                  <Label className="text-[11px] font-semibold text-foreground flex items-center gap-2">
+                  <Label className="text-xs font-semibold text-foreground flex items-center gap-2">
                     <Calendar className="size-3.5 text-primary" />
                     <span>Selecione o Melhor Horário</span>
                   </Label>
@@ -1657,7 +1657,7 @@ export function ConvenienceShowcaseView({
                     <Store className="size-3.5" />
                     <span>Retirada no Balcão da Loja (Taxa Grátis)</span>
                   </p>
-                  <p className="text-[11px] opacity-90">
+                  <p className="text-xs opacity-90">
                     O pedido fica reservado para você retirar em: <strong>{locationName}</strong>.
                   </p>
                 </div>
@@ -1698,7 +1698,7 @@ export function ConvenienceShowcaseView({
                     <QrCode className="size-4" />
                     <span className="text-xs">Pix</span>
                     {pixDiscountPercent > 0 && (
-                      <span className="text-[9px] font-bold text-emerald-600 bg-emerald-500/20 px-1 rounded">
+                      <span className="text-xs font-bold text-emerald-600 bg-emerald-500/20 px-1 rounded">
                         -{pixDiscountPercent}%
                       </span>
                     )}
@@ -1718,7 +1718,7 @@ export function ConvenienceShowcaseView({
                   >
                     <CreditCard className="size-4" />
                     <span className="text-xs">Cartão</span>
-                    <span className="text-[9px] text-muted-foreground">Na entrega</span>
+                    <span className="text-xs text-muted-foreground">Na entrega</span>
                   </button>
                 )}
 
@@ -1735,14 +1735,14 @@ export function ConvenienceShowcaseView({
                   >
                     <Banknote className="size-4" />
                     <span className="text-xs">Dinheiro</span>
-                    <span className="text-[9px] text-muted-foreground">Espécie</span>
+                    <span className="text-xs text-muted-foreground">Espécie</span>
                   </button>
                 )}
               </div>
 
               {orderPaymentMethod === "cash" && (
                 <div className="space-y-1 pt-1">
-                  <Label className="text-[11px] text-muted-foreground">
+                  <Label className="text-xs text-muted-foreground">
                     Precisa de troco para quanto? (Opcional)
                   </Label>
                   <Input
@@ -1871,14 +1871,14 @@ export function ConvenienceShowcaseView({
                         </div>
                         <div className="min-w-0">
                           <p className="text-xs font-bold text-foreground truncate">{st.name}</p>
-                          <p className="text-[10px] text-muted-foreground truncate">
+                          <p className="text-xs text-muted-foreground truncate">
                             {st.city ? `${st.city}${st.state ? ` - ${st.state}` : ""}` : "Loja Waesy"}
                           </p>
                         </div>
                       </div>
 
                       {isCurrent ? (
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-primary">
+                        <span className="text-xs font-bold uppercase tracking-wider text-primary">
                           Vinculada
                         </span>
                       ) : (

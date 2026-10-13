@@ -86,7 +86,8 @@ function NotificationsPage() {
       markReadMutation.mutate(item.id);
     }
     if (item.linkUrl) {
-      navigate({ to: item.linkUrl });
+      const canonicalUrl = item.linkUrl.replace(/^\/_store\//, "/");
+      navigate({ to: canonicalUrl as any });
     }
   };
 

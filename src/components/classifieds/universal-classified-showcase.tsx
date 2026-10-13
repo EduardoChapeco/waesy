@@ -18,8 +18,14 @@ export type { UniversalClassifiedShowcaseProps };
  */
 export function UniversalClassifiedShowcase(props: UniversalClassifiedShowcaseProps) {
   const isDesktop = useIsDesktop(1024);
+  const effectiveIsDesktop =
+    props.previewViewport === "mobile"
+      ? false
+      : props.previewViewport === "desktop"
+      ? true
+      : isDesktop;
 
-  if (!isDesktop) {
+  if (!effectiveIsDesktop) {
     return <ClassifiedDetailMobile {...props} />;
   }
 

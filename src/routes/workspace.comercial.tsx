@@ -1639,7 +1639,7 @@ function WorkspaceComercialPage() {
 
                     {/* Top Nichos de Afinidade */}
                     <div className="space-y-2">
-                      <span className="text-xs font-bold text-foreground">Nichos de Maior Afinidade</span>
+                      <span className="text-xs font-bold text-foreground">Categorias de Maior Afinidade</span>
                       {customer360Data?.customer?.behavioral_profile?.top_niches?.length > 0 ? (
                         <div className="grid grid-cols-2 gap-2">
                           {(customer360Data?.customer?.behavioral_profile?.top_niches || []).map((n: any, idx: number) => (
