@@ -703,7 +703,7 @@ function AgendaPadronizadaPage() {
                         </div>
                       )}
                       <div className="absolute top-2.5 left-2.5">
-                        <Badge className="bg-background/95 backdrop-blur-md text-foreground font-mono text-xs uppercase font-bold px-2 py-0.5 rounded-md border border-border/40">
+                        <Badge className="bg-background/95 backdrop-blur-md text-foreground font-mono text-xs uppercase font-bold px-2 py-1 rounded-md border border-border/40">
                           {item.badge}
                         </Badge>
                       </div>
@@ -777,7 +777,7 @@ function AgendaPadronizadaPage() {
                       </div>
                     )}
                     <div className="absolute top-2.5 left-2.5">
-                      <Badge className="bg-background/95 backdrop-blur-md text-foreground font-mono text-xs uppercase font-bold px-2 py-0.5 rounded-md border border-border/40">
+                      <Badge className="bg-background/95 backdrop-blur-md text-foreground font-mono text-xs uppercase font-bold px-2 py-1 rounded-md border border-border/40">
                         {item.badge}
                       </Badge>
                     </div>

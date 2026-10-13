@@ -237,7 +237,7 @@ function CustomerOrderDetailPage() {
               variant="outline"
               size="sm"
               onClick={() => setCompanionOpen(true)}
-              className="rounded-lg text-xs font-semibold gap-2 h-8.5 px-3 cursor-pointer border-emerald-500/30 text-emerald-700 dark:text-emerald-400 bg-emerald-500/5 hover:bg-emerald-500/10"
+              className="rounded-lg text-xs font-semibold gap-2 h-11 min-h-11 px-3 cursor-pointer border-emerald-500/30 text-emerald-700 dark:text-emerald-400 bg-emerald-500/5 hover:bg-emerald-500/10 focus-visible:ring-2 focus-visible:ring-primary"
             >
               <Smartphone className="size-3.5" />
               <span className="hidden sm:inline">Resumo 9:16</span>
@@ -262,7 +262,7 @@ function CustomerOrderDetailPage() {
             </h1>
             <Badge
               variant={getStatusVariant(order.status)}
-              className="text-xs font-mono font-semibold px-2.5 py-0.5 rounded-full"
+              className="text-xs font-mono font-semibold px-3 py-1 rounded-full"
             >
               {translateStatus(order.status)}
             </Badge>

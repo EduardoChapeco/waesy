@@ -554,7 +554,7 @@ function BookingIndexPage() {
                     className="min-w-0 flex-1 space-y-2 pl-1 block"
                   >
                     <div className="flex items-center gap-2 flex-wrap">
-                      <Badge variant="outline" className="text-xs font-mono font-bold uppercase px-2 py-0.5 rounded-md">
+                      <Badge variant="outline" className="text-xs font-mono font-bold uppercase px-2 py-1 rounded-md">
                         {service.category || "Geral"}
                       </Badge>
                       {service.duration_minutes && (
