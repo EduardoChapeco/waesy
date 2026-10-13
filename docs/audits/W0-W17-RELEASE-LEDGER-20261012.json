@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "updatedAt": "2026-10-13T09:45:00Z",
+  "updatedAt": "2026-10-13T16:00:00Z",
   "repository": "EduardoChapeco/waesy",
   "candidate": {
     "pullRequest": 29,
@@ -55,9 +55,10 @@
         "implementações locais e testes estruturais",
         "W2-LOCAL-SECURITY-FIX-20261012.md: fallback de primeira loja removido; 13 testes focais e typecheck PASS",
         "BUILDER-UPSELL-CART-TENANT-FIX-20261012.md: três fallbacks removidos; 17 testes focais, typecheck e scan PASS",
-        "TRAVEL-MASTER-MINING-TENANT-FIX-20261012.md: fallbacks removidos; 14 testes focais e typecheck PASS"
+        "TRAVEL-MASTER-MINING-TENANT-FIX-20261012.md: fallbacks removidos; 14 testes focais e typecheck PASS",
+        "W2-CHAT-COMMERCE-TENANT-FIX-20261013.md: resolver sem fallback arbitrário; 14 testes focais e typecheck PASS"
       ],
-      "gap": "JWT/RLS/grants reais, cross-tenant A/B, concorrência, quota RPC, provider preauthorization e revisão dos fallbacks em turismo lifecycle, master e mining"
+      "gap": "JWT/RLS/grants reais, cross-tenant A/B, concorrência, quota RPC, provider preauthorization; revisão de outros resolvers públicos e prova real de RLS/JWT/grants"
     },
     {
       "id": "W3",
@@ -88,7 +89,8 @@
       "status": "partial",
       "priority": "P0",
       "evidence": [
-        "código e testes locais"
+        "código e testes locais",
+        "W5-AI-GATEWAY-FINGERPRINT-ISOLATION-20261013.md: fingerprint canônico inclui tenant, contrato, contexto e imagens; 7 testes focais e typecheck PASS"
       ],
       "gap": "boundary único, idempotência, custo, secret selection e retry real"
     },
@@ -101,7 +103,7 @@
         "código e testes locais",
         "W6-RESILIENT-CLIENT-ABORT-20261013.md: backoff cancelável, abort externo 499 e 10 testes de compliance PASS"
       ],
-      "gap": "consumidor/reconnect, 429/5xx reais, provider sandbox e ledger de custo distribuído"
+      "gap": "AbortSignal ponta a ponta, consumidor/reconnect, 429/5xx, provider sandbox e ledger de custo"
     },
     {
       "id": "W7",

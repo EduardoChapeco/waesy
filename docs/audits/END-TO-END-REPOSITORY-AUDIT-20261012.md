@@ -271,10 +271,22 @@ Foi implementado o `npm run check:migration-inventory`, agora executado no CI co
 
 Este avanço reduz o risco de árvore de migrations não determinística, mas não fecha o replay de Postgres. W1 continua `blocked` para promoção até haver banco descartável autorizado, replay from-zero, segunda aplicação, snapshot de catálogo/policies/grants/functions e testes negativos RLS/JWT.
 
-## 17. W6 — abort ponta a ponta no cliente resiliente
+## 15. W2 — chat commerce sem fallback arbitrário de tenant
+
+**Evidência:** `docs/audits/W2-CHAT-COMMERCE-TENANT-FIX-20261013.md`
+
+`resolveMerchantForCategory` deixou de selecionar a primeira loja da tabela quando não havia merchant preferido nem correspondência por segmento. O resolver agora retorna `null` sem correspondência, e a regressão cobre esse comportamento. A suíte focal passou com 14/14 testes e o typecheck passou.
+
+W2 continua parcial: RLS/JWT/grants efetivos, testes A/B cross-tenant, concorrência e quota/provider ainda exigem ambiente de integração autorizado.
+
+## W5 — isolamento do fingerprint do AI Core Gateway
+
+**Evidência:** `docs/audits/W5-AI-GATEWAY-FINGERPRINT-ISOLATION-20261013.md`
+
+O fingerprint do cache e da deduplicação in-flight inclui tenant/usuário, workspace, módulo, versão do prompt, constraints, contexto e hash do conteúdo das imagens. A suíte do gateway passou com 7/7 testes e o typecheck passou.
+
+## W6 — abort ponta a ponta no cliente resiliente
 
 **Evidência:** `docs/audits/W6-RESILIENT-CLIENT-ABORT-20261013.md`
 
-O cliente de retry agora cancela o backoff quando o chamador aborta, retorna `499 Client Closed Request` e não inicia tentativas adicionais. O timeout interno permanece separado do cancelamento externo. A suíte de compliance passou com 10/10 testes e o typecheck passou.
-
-W6 permanece parcial enquanto consumidores/reconnect, respostas 429/5xx reais, provider sandbox e ledger de custo distribuído não forem validados em staging autorizado.
+O cliente de retry cancela o backoff quando o chamador aborta, retorna `499 Client Closed Request` e não inicia tentativas adicionais. A suíte de compliance passou com 10/10 testes e o typecheck passou.

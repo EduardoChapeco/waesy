@@ -233,15 +233,45 @@ export const CANONICAL_TASK_ROUTES: Record<AITaskType, RouteCandidate[]> = {
 // Motor de Hash e Impressão Digital (Cache & Dedup)
 // ============================================================
 
+function canonicalizeFingerprintValue(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(canonicalizeFingerprintValue);
+  if (value && typeof value === "object") {
+    return Object.fromEntries(
+      Object.entries(value as Record<string, unknown>)
+        .sort(([left], [right]) => left.localeCompare(right))
+        .map(([key, entry]) => [key, canonicalizeFingerprintValue(entry)]),
+    );
+  }
+  return value;
+}
+
 function generateFingerprint(req: AIGatewayRequest): string {
-  const normPayload = {
+  const normPayload = canonicalizeFingerprintValue({
     task: req.task,
     prompt: req.prompt.trim(),
     systemPrompt: req.systemPrompt?.trim() || "",
-    format: req.constraints?.responseFormat || "text",
-    temperature: req.constraints?.temperature ?? 0.7,
-    imagesCount: req.images?.length || 0,
-  };
+    promptVersion: req.promptVersion || "v1.0",
+    module: req.module || "",
+    constraints: {
+      maxTokens: req.constraints?.maxTokens ?? 1024,
+      temperature: req.constraints?.temperature ?? 0.7,
+      responseFormat: req.constraints?.responseFormat || "text",
+      minQualityScore: req.constraints?.minQualityScore ?? null,
+      maxCostUsd: req.constraints?.maxCostUsd ?? null,
+    },
+    authContext: {
+      userId: req.authContext?.userId || null,
+      workspaceId: req.authContext?.workspaceId || null,
+      storeId: req.authContext?.storeId || null,
+      userRole: req.authContext?.userRole || null,
+      plan: req.authContext?.plan || null,
+    },
+    context: req.context || {},
+    images: (req.images || []).map((image) => ({
+      mimeType: image.mimeType,
+      contentHash: crypto.createHash("sha256").update(image.base64).digest("hex"),
+    })),
+  });
   return crypto.createHash("sha256").update(JSON.stringify(normPayload)).digest("hex");
 }
 
