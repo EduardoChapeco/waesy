@@ -107,18 +107,14 @@ export function assertStoreAccess(
 
   // Enforce that user actually has an authorized membership in the effective store
   const targetMembership = (identity.memberships || []).find(
-    (m) => m.store_id === (identity as any).store_id
+    (m) => m.store_id === (identity as any).store_id,
   );
 
   const effectiveRole = targetMembership?.role || identity.role;
 
-  if (!targetMembership && !targetStoreId && (allowedRoles as readonly string[]).includes(identity.role)) {
-    return;
-  }
-
   if (!targetMembership || !(allowedRoles as readonly string[]).includes(effectiveRole)) {
     throw new Error(
-      `Unauthorized: Insufficient permissions for store ${(identity as any).store_id}. Required one of: ${allowedRoles.join(", ")}`
+      `Unauthorized: Insufficient permissions for store ${(identity as any).store_id}. Required one of: ${allowedRoles.join(", ")}`,
     );
   }
 
@@ -146,4 +142,3 @@ export function assertManagerAccess(
 ): asserts identity is ServerIdentity & { id: string; store_id: string } {
   assertStoreAccess(identity, MANAGER_ROLES, targetStoreId);
 }
-

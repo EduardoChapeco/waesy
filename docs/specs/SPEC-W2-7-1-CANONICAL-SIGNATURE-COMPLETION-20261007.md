@@ -35,7 +35,7 @@ A microfase W2.7 já reduziu a resposta pública por allowlist, mas o BFF ainda 
 - `src/services/contracts-manual-sign-security.test.ts`
 - `src/services/contracts-govbr-security.test.ts`
 - `src/services/contracts-signature-completion-security.test.ts` (novo)
-- `supabase/migrations/20270114000000_contract_signature_completion.sql` (nova; ordenada após a migration existente mais recente `20270113000000`)
+- `supabase/migrations/20270114000001_contract_signature_completion.sql` (nova; ordenada após a migration existente mais recente `20270113000000`)
 - `docs/design/DECISIONS.md`
 - `docs/specs/SPEC-W2-7-1-CANONICAL-SIGNATURE-COMPLETION-20261007.md`
 - `docs/audits/W2-7-1-CANONICAL-SIGNATURE-COMPLETION-20261007.md`

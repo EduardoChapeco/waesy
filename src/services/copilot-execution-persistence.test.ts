@@ -79,4 +79,10 @@ describe("Copilot persistent execution", () => {
     expect((await resumeCopilotExecution("own")).execution).toEqual(execution);
     expect(writes[0].payload).toMatchObject({ resume_count: 3, status: "running" });
   });
+
+  it("não reabre execução terminal durante resume", async () => {
+    execution = { id: "done", resume_count: 4, current_phase: "COMPLETED", status: "completed" };
+    expect((await resumeCopilotExecution("done")).execution).toEqual(execution);
+    expect(writes).toHaveLength(0);
+  });
 });

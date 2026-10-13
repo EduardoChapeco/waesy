@@ -231,6 +231,7 @@ export const getDeliveryByToken = createServerFn({ method: "GET" })
  if (error || !magicLink) {
  return null;
  }
+ if (magicLink.expires_at && new Date(magicLink.expires_at).getTime() <= Date.now()) return null;
 
  const isDelivered = Boolean(magicLink.delivery_confirmed_at);
 
@@ -294,12 +295,15 @@ export const recordDeliveryProof = createServerFn({ method: "POST" })
  // Localiza o magic link
  const { data: link } = await supabase
  .from("delivery_magic_links")
- .select("id, fulfillment_id, store_id")
+ .select("id, fulfillment_id, store_id, expires_at, used_at, delivery_confirmed_at")
  .eq("token", input.token)
  .maybeSingle();
 
- if (!link) {
+ if (!link || (link.expires_at && new Date(link.expires_at).getTime() <= Date.now()) || link.used_at || link.delivery_confirmed_at) {
  throw new Error("Link de entrega não encontrado ou expirado.");
+ }
+ if (!input.storagePath.startsWith(`delivery/${link.id}/`)) {
+ throw new Error("Comprovante de entrega fora do namespace autorizado.");
  }
 
  const { data: proof, error } = await supabase
@@ -327,11 +331,21 @@ export const getDeliveryProofsByOrderId = createServerFn({ method: "GET" })
  .validator(z.object({ orderId: z.string() }))
  .handler(async ({ data: { orderId } }) => {
  const supabase = getServerClient();
+ const identity = await getServerIdentity();
+ assertStoreAccess(identity, ["owner", "admin", "manager", "support"]);
 
+ const { data: links, error: linksError } = await supabase
+ .from("delivery_magic_links")
+ .select("id")
+ .eq("fulfillment_id", orderId)
+ .eq("store_id", identity.store_id);
+ if (linksError) throw new Error("Falha ao validar entrega");
+ const linkIds = (links || []).map((link) => link.id);
+ if (linkIds.length === 0) return [];
  const { data: proofs, error } = await supabase
  .from("delivery_proofs")
- .select("*")
- .eq("fulfillment_id", orderId)
+ .select("id, magic_link_id, fulfillment_id, proof_type, storage_path, latitude, longitude, captured_at")
+ .in("magic_link_id", linkIds)
  .order("captured_at", { ascending: false });
 
  if (error) {
@@ -354,9 +368,17 @@ export const confirmDeliveryByPin = createServerFn({ method: "POST" })
  )
  .handler(async ({ data: { token, pin, proofPhotoUrl, latitude, longitude } }) => {
  const supabase = getServerClient();
+ const { data: existingLink } = await supabase
+  .from("delivery_magic_links")
+  .select("id, fulfillment_id, expires_at, used_at, delivery_confirmed_at")
+  .eq("token", token)
+  .maybeSingle();
+ if (!existingLink || (existingLink.expires_at && new Date(existingLink.expires_at).getTime() <= Date.now()) || existingLink.used_at || existingLink.delivery_confirmed_at) {
+  throw new Error("Link de entrega não encontrado ou expirado.");
+ }
  const expectedPin = token.slice(-4);
 
- if (expectedPin.toLowerCase() !== pin.toLowerCase() && pin !== "1234") {
+ if (expectedPin.toLowerCase() !== pin.toLowerCase()) {
  throw new Error("PIN de confirmação inválido. Solicite o código de 4 dígitos ao cliente.");
  }
 
@@ -368,11 +390,14 @@ export const confirmDeliveryByPin = createServerFn({ method: "POST" })
  used_at: now,
  })
  .eq("token", token)
+ .is("used_at", null)
+ .is("delivery_confirmed_at", null)
  .select("id, fulfillment_id")
  .single();
 
  if (error) {
  console.error("[dispatch] Error confirming delivery in DB:", error);
+ throw new Error("Não foi possível confirmar a entrega.");
  }
 
  // Atualiza status do pedido real para 'delivered'
@@ -392,6 +417,9 @@ export const confirmDeliveryByPin = createServerFn({ method: "POST" })
 
  // Se houver foto do comprovante, grava na tabela delivery_proofs
  if (proofPhotoUrl && link) {
+ if (!proofPhotoUrl.startsWith(`delivery/${link.id}/`)) {
+  throw new Error("Comprovante de entrega fora do namespace autorizado.");
+ }
  try {
  await supabase
  .from("delivery_proofs")
@@ -682,4 +710,3 @@ export const getDeliveryTrackingForOrder = createServerFn({ method: "GET" })
       return { tracking: null };
     }
   });
-

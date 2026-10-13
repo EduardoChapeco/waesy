@@ -11,7 +11,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import crypto from "node:crypto";
-import { getServerIdentity, getSSRClient, assertOwnerAccess } from "@/lib/server-access";
+import { getServerIdentity, getSSRClient, assertOwnerAccess, getGuestSession } from "@/lib/server-access";
 import { getServerClient, SupabaseUnconfiguredError } from "@/lib/supabase";
 import { logSystemError } from "@/lib/logger";
 import { getCurrentIdentity, withDataPayload } from "./cart-helpers";
@@ -302,6 +302,22 @@ export const processCheckout = createServerFn({ method: "POST" })
  // Ensure anti-hijacking by extracting the actual current identity
  const identity = await getCurrentIdentity();
  const affiliateId = req ? readCookieFromRequest(req, "waesy_affiliate_id") : null;
+
+ const { data: ownedCart, error: cartOwnershipError } = await db
+  .from("carts")
+  .select("id, customer_id, session_token, status")
+  .eq("id", params.cartId)
+  .maybeSingle();
+ if (cartOwnershipError || !ownedCart || ownedCart.status !== "active") {
+  throw new Error("Carrinho não encontrado ou indisponível.");
+ }
+ const guestSession = identity.customer_id ? null : await getGuestSession();
+ const ownsCart = identity.customer_id
+  ? ownedCart.customer_id === identity.customer_id
+  : Boolean(guestSession && ownedCart.session_token === guestSession && !ownedCart.customer_id);
+ if (!ownsCart) {
+  throw new Error("Carrinho não pertence à sessão atual.");
+ }
 
   // Zero-Trust Barreira por Inadimplência no CPF / Conta (Waesy Go)
   if (identity?.customer_id || params.customerDocument) {

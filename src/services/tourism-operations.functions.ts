@@ -103,8 +103,8 @@ export const listExperienceSeatReservations = createServerFn({ method: "GET" })
  .handler(async ({ data }) => {
  const supabase = getAnonServerClient();
  const { data: reservations, error } = await supabase
- .from("trip_seat_reservations")
- .select("seat_number, status, passenger_name")
+  .from("trip_seat_reservations")
+  .select("seat_number, status")
  .eq("experience_id", data.experience_id)
  .in("status", ["reserved", "confirmed", "boarded"]);
 
@@ -118,6 +118,8 @@ export const listExperienceSeatReservations = createServerFn({ method: "GET" })
 export const reserveExperienceSeat = createServerFn({ method: "POST" })
  .validator(reserveSeatSchema)
  .handler(async ({ data }) => {
+ const identity = await getServerIdentity();
+ assertStoreAccess(identity);
  const supabase = getServerClient();
 
  // Checa se o assento já está ocupado
@@ -148,7 +150,12 @@ export const reserveExperienceSeat = createServerFn({ method: "POST" })
  .select()
  .single();
 
- if (error) throw new Error(`Falha ao reservar assento: ${error.message}`);
+ if (error) {
+  if (error.code === "23505") {
+   throw new Error(`A poltrona ${data.seat_number} já está ocupada.`);
+  }
+  throw new Error(`Falha ao reservar assento: ${error.message}`);
+ }
  return reservation;
  });
 

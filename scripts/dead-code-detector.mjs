@@ -1,23 +1,33 @@
+#!/usr/bin/env node
 /**
- * @fileoverview DETECTOR DETERMINISTICO DE CODIGO MORTO, ORFAOS E COMPONENTES DUPLICADOS
- * Analisa o grafo de dependencias a partir dos pontos de entrada (rotas, shells, testes)
- * e detecta arquivos desvinculados ou componentes com nomes duplicados no repositorio.
+ * @fileoverview Detector determinístico de código morto e duplicação exata.
+ *
+ * O grafo considera rotas, testes, registries, server functions e módulos
+ * carregados dinamicamente como entrypoints. Colisões de basename são apenas
+ * informativas: dois componentes com o mesmo nome podem ser implementações
+ * válidas em verticais diferentes; somente conteúdo idêntico é duplicação.
  */
 
 import fs from "node:fs";
 import path from "node:path";
+import crypto from "node:crypto";
 
 const ROOT_DIR = process.cwd();
 const SRC_DIR = path.resolve(ROOT_DIR, "src");
 const REPORT_PATH = path.resolve(ROOT_DIR, "dead-code.report.json");
+const ALLOWLIST_PATH = path.resolve(ROOT_DIR, ".audit/dead-code-allowlist.json");
 
-// Arquivos que sao pontos de entrada raiz ou excecoes conhecidas
 const ENTRY_POINTS_PATTERNS = [
   "src/router.tsx",
   "src/routeTree.gen.ts",
   "src/routes/",
   "src/app/",
   "src/test/",
+  "src/services/",
+  "src/plugins/",
+  "src/server.ts",
+  "src/integrations/supabase/client.ts",
+  "src/config/route-registry.ts",
   ".test.ts",
   ".test.tsx",
   "src/registries/",
@@ -28,162 +38,166 @@ const ENTRY_POINTS_PATTERNS = [
 
 function isEntryPoint(filePath) {
   const norm = filePath.replace(/\\/g, "/");
-  return ENTRY_POINTS_PATTERNS.some((pat) => norm.includes(pat));
+  return ENTRY_POINTS_PATTERNS.some((pattern) => norm.includes(pattern));
 }
 
 function getAllSourceFiles(dir) {
   let files = [];
-  const entries = fs.readdirSync(dir, { withFileTypes: true });
-
-  for (const entry of entries) {
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
     const fullPath = path.join(dir, entry.name);
     if (entry.isDirectory()) {
       if (["node_modules", ".git", "dist", "legacy_quarantine"].includes(entry.name)) continue;
       files = files.concat(getAllSourceFiles(fullPath));
-    } else if (entry.isFile() && (entry.name.endsWith(".ts") || entry.name.endsWith(".tsx"))) {
+    } else if (entry.isFile() && (/\.tsx?$/.test(entry.name))) {
       files.push(fullPath);
     }
   }
-
   return files;
 }
 
 function extractImports(filePath) {
   const content = fs.readFileSync(filePath, "utf8");
   const imports = new Set();
-  const importRegex = /(?:import|export)\s+(?:(?:[\w*\s{},]*)\s+from\s+)?['"]([^'"]+)['"]/g;
-
-  let match;
-  while ((match = importRegex.exec(content)) !== null) {
-    const importPath = match[1];
-    if (importPath.startsWith(".") || importPath.startsWith("@/")) {
-      imports.add(importPath);
+  const patterns = [
+    /(?:import|export)\s+(?:(?:[\w*\s{},]*)\s+from\s+)?["']([^"']+)["']/g,
+    /import\(\s*["']([^"']+)["']\s*\)/g,
+    /require\(\s*["']([^"']+)["']\s*\)/g,
+  ];
+  for (const pattern of patterns) {
+    for (const match of content.matchAll(pattern)) {
+      const importPath = match[1];
+      if (importPath.startsWith(".") || importPath.startsWith("@/")) imports.add(importPath);
     }
   }
+  return [...imports];
+}
 
-  return Array.from(imports);
+function resolveImport(importer, importPath, fileSet) {
+  const importerPath = importer.replace(/\\/g, "/");
+  const base = importPath.startsWith("@/")
+    ? path.resolve(ROOT_DIR, "src", importPath.slice(2))
+    : path.resolve(path.dirname(importerPath), importPath);
+  const resolved = base.replace(/\\/g, "/");
+  const candidates = [resolved, `${resolved}.ts`, `${resolved}.tsx`, `${resolved}/index.ts`, `${resolved}/index.tsx`];
+  return candidates.find((candidate) => fileSet.has(candidate));
 }
 
 function detectDuplicateComponents(allFiles) {
   const componentMap = new Map();
-  const duplicates = [];
-
   for (const file of allFiles) {
     const norm = file.replace(/\\/g, "/");
     if (!norm.includes("/components/")) continue;
-
     const baseName = path.basename(file, path.extname(file));
     if (["index", "types", "utils", "constants"].includes(baseName.toLowerCase())) continue;
-
-    if (!componentMap.has(baseName)) {
-      componentMap.set(baseName, []);
-    }
+    if (!componentMap.has(baseName)) componentMap.set(baseName, []);
     componentMap.get(baseName).push(path.relative(ROOT_DIR, file).replace(/\\/g, "/"));
   }
 
-  for (const [name, paths] of componentMap.entries()) {
-    if (paths.length > 1) {
-      duplicates.push({ componentName: name, count: paths.length, paths });
+  const exactDuplicates = [];
+  const nameCollisions = [];
+  for (const [componentName, paths] of componentMap) {
+    if (paths.length < 2) continue;
+    const hashes = new Map();
+    for (const relativePath of paths) {
+      const content = fs.readFileSync(path.resolve(ROOT_DIR, relativePath), "utf8");
+      const hash = crypto.createHash("sha256").update(content).digest("hex");
+      if (!hashes.has(hash)) hashes.set(hash, []);
+      hashes.get(hash).push(relativePath);
+    }
+    const duplicateGroups = [...hashes.values()].filter((group) => group.length > 1);
+    if (duplicateGroups.length) {
+      exactDuplicates.push({ componentName, count: duplicateGroups.flat().length, paths: duplicateGroups.flat() });
+    } else {
+      nameCollisions.push({ componentName, count: paths.length, paths });
     }
   }
-
-  return duplicates;
+  return { exactDuplicates, nameCollisions };
 }
 
 export function auditDeadCode(options = {}) {
   const allFiles = getAllSourceFiles(SRC_DIR);
-  const fileSet = new Set(allFiles.map((f) => f.replace(/\\/g, "/")));
-
+  const fileSet = new Set(allFiles.map((file) => file.replace(/\\/g, "/")));
   const importedSet = new Set();
 
   for (const file of allFiles) {
-    const normFile = file.replace(/\\/g, "/");
-    const fileDir = path.dirname(normFile);
-    const imports = extractImports(file);
-
-    for (const imp of imports) {
-      let resolved = "";
-      if (imp.startsWith("@/")) {
-        resolved = path.resolve(ROOT_DIR, "src", imp.slice(2)).replace(/\\/g, "/");
-      } else {
-        resolved = path.resolve(fileDir, imp).replace(/\\/g, "/");
-      }
-
-      const candidates = [
-        resolved,
-        resolved + ".ts",
-        resolved + ".tsx",
-        resolved + "/index.ts",
-        resolved + "/index.tsx",
-      ];
-
-      for (const cand of candidates) {
-        if (fileSet.has(cand)) {
-          importedSet.add(cand);
-          break;
-        }
-      }
+    const normalized = file.replace(/\\/g, "/");
+    for (const importPath of extractImports(file)) {
+      const resolved = resolveImport(normalized, importPath, fileSet);
+      if (resolved) importedSet.add(resolved);
     }
   }
 
-  const unreferenced = [];
-  for (const file of allFiles) {
-    const normFile = file.replace(/\\/g, "/");
-    if (!isEntryPoint(normFile) && !importedSet.has(normFile)) {
-      unreferenced.push(path.relative(ROOT_DIR, file).replace(/\\/g, "/"));
-    }
-  }
-
+  const discoveredUnreferencedFiles = allFiles
+    .map((file) => file.replace(/\\/g, "/"))
+    .filter((file) => !isEntryPoint(file) && !importedSet.has(file))
+    .map((file) => path.relative(ROOT_DIR, file).replace(/\\/g, "/"));
+  const allowlist = fs.existsSync(ALLOWLIST_PATH)
+    ? JSON.parse(fs.readFileSync(ALLOWLIST_PATH, "utf8"))
+    : { entries: {} };
+  const repositoryRelativeFiles = new Set(allFiles.map((file) => path.relative(ROOT_DIR, file).replace(/\\/g, "/")));
+  const allowlistUnknownFiles = Object.keys(allowlist.entries || {}).filter((file) => !repositoryRelativeFiles.has(file));
+  const intentionalUnreferencedFiles = discoveredUnreferencedFiles.filter((file) => allowlist.entries?.[file]);
+  const unreferencedFiles = discoveredUnreferencedFiles.filter((file) => !allowlist.entries?.[file]);
   const duplicates = detectDuplicateComponents(allFiles);
-
+  const shouldFail = options.strict && (unreferencedFiles.length > 0 || duplicates.exactDuplicates.length > 0 || allowlistUnknownFiles.length > 0);
   const report = {
     timestamp: new Date().toISOString(),
     totalFiles: allFiles.length,
     totalImported: importedSet.size,
-    unreferencedCount: unreferenced.length,
-    unreferencedFiles: unreferenced,
-    duplicateComponentsCount: duplicates.length,
-    duplicateComponents: duplicates,
-    status: unreferenced.length > 0 && options.strict ? "FAIL" : "PASS",
+    discoveredUnreferencedCount: discoveredUnreferencedFiles.length,
+    intentionalUnreferencedCount: intentionalUnreferencedFiles.length,
+    intentionalUnreferencedFiles,
+    allowlistUnknownCount: allowlistUnknownFiles.length,
+    allowlistUnknownFiles,
+    unreferencedCount: unreferencedFiles.length,
+    unreferencedFiles,
+    duplicateComponentsCount: duplicates.exactDuplicates.length,
+    duplicateComponents: duplicates.exactDuplicates,
+    nameCollisionCount: duplicates.nameCollisions.length,
+    nameCollisions: duplicates.nameCollisions,
+    status: shouldFail ? "FAIL" : "PASS",
   };
-
   fs.writeFileSync(REPORT_PATH, JSON.stringify(report, null, 2), "utf8");
-
   return report;
 }
 
-if (process.argv[1] && process.argv[1].endsWith("dead-code-detector.mjs")) {
-  const isStrict = process.argv.includes("--strict");
-  const isCi = process.argv.includes("--ci");
-
+if (process.argv[1]?.endsWith("dead-code-detector.mjs")) {
+  const strict = process.argv.includes("--strict") || process.argv.includes("--ci");
+  const report = auditDeadCode({ strict });
   console.log("======================================================================");
   console.log("WAESY DEAD CODE & DUPLICATES DETECTOR (CI Gate 5)");
   console.log("======================================================================");
-
-  const report = auditDeadCode({ strict: isStrict });
-  console.log(`Arquivos inspecionados:       ${report.totalFiles}`);
-  console.log(`Arquivos ativamente ligados:  ${report.totalImported}`);
-  console.log(`Arquivos orfaos detectados:   ${report.unreferencedCount}`);
-  console.log(`Componentes duplicados:       ${report.duplicateComponentsCount}`);
-  console.log(`Relatorio salvo em:           ${REPORT_PATH}`);
-
+  console.log(`Arquivos inspecionados:          ${report.totalFiles}`);
+  console.log(`Arquivos ativamente ligados:     ${report.totalImported}`);
+  console.log(`Arquivos orfaos detectados:      ${report.unreferencedCount}`);
+  console.log(`Superficies intencionais:        ${report.intentionalUnreferencedCount}`);
+  console.log(`Entradas obsoletas no ledger:   ${report.allowlistUnknownCount}`);
+  console.log(`Duplicacoes exatas:               ${report.duplicateComponentsCount}`);
+  console.log(`Colisoes de basename informativas: ${report.nameCollisionCount}`);
+  console.log(`Relatorio salvo em:               ${REPORT_PATH}`);
   if (report.duplicateComponentsCount > 0) {
-    console.log("\nComponentes com nomes coincidentes em caminhos distintos:");
-    report.duplicateComponents.slice(0, 10).forEach((d) => {
-      console.log(`  - ${d.componentName} (${d.count}x): ${d.paths.join(", ")}`);
-    });
+    console.log("\nDuplicacoes exatas:");
+    for (const duplicate of report.duplicateComponents.slice(0, 10)) {
+      console.log(`  - ${duplicate.componentName}: ${duplicate.paths.join(", ")}`);
+    }
   }
-
   if (report.unreferencedCount > 0) {
     console.log("\nPrimeiros orfaos encontrados:");
-    report.unreferencedFiles.slice(0, 15).forEach((f) => console.log(`  - ${f}`));
+    for (const file of report.unreferencedFiles.slice(0, 15)) console.log(`  - ${file}`);
   }
-
-  if (isStrict && (report.unreferencedCount > 0 || report.duplicateComponentsCount > 0)) {
-    console.error("\nFALHA CI: Encontrados orfaos ou duplicacoes em modo estrito!");
+  if (report.allowlistUnknownCount > 0) {
+    console.log("\nEntradas obsoletas no ledger:");
+    for (const file of report.allowlistUnknownFiles) console.log(`  - ${file}`);
+  }
+  if (report.nameCollisionCount > 0) {
+    console.log("\nColisoes de nome (nao sao duplicacao exata):");
+    for (const collision of report.nameCollisions.slice(0, 10)) {
+      console.log(`  - ${collision.componentName} (${collision.count}x): ${collision.paths.join(", ")}`);
+    }
+  }
+  if (report.status === "FAIL") {
+    console.error("\nFALHA CI: Encontrados arquivos sem referência ou duplicações exatas.");
     process.exit(1);
-  } else {
-    console.log("\nSUCESSO: Auditoria de codigo morto e duplicacoes concluida.");
-    process.exit(0);
   }
+  console.log("\nSUCESSO: Auditoria de codigo morto e duplicacoes concluida.");
 }

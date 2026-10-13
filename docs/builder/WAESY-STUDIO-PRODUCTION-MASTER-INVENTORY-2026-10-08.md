@@ -79,7 +79,7 @@ As entregas abaixo pertencem à branch/PR aberta; **não significam que estejam 
 
 **Migrations Studio adicionadas:**
 
-- `20270114000000_studio_template_library.sql` — biblioteca privada/versionada por loja.
+- `20270114000003_studio_template_library.sql` — biblioteca privada/versionada por loja.
 - `20270114010000_unsplash_studio_selection_ledger.sql` — ledger server-side das escolhas oficiais Unsplash.
 - `20270114020000_studio_upload_asset_rights_ledger.sql` — attestation/provenance de uploads Studio e políticas tenant-scoped.
 

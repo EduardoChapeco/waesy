@@ -48,7 +48,7 @@ async function getOrCreateCartId(
  .maybeSingle();
  if (existing) return existing.id;
 
- // 2. Resolve store_id com fallback resiliente
+ // 2. Resolve store_id somente por contexto explícito ou tenant resolvido
  let storeId = preferredStoreId;
  if (!storeId) {
  try {
@@ -57,17 +57,8 @@ async function getOrCreateCartId(
  } catch {}
  }
 
- if (!storeId) {
- const { data: defaultStore } = await supabase
- .from("stores")
- .select("id")
- .limit(1)
- .maybeSingle();
- storeId = defaultStore?.id || null;
- }
-
   if (!storeId) {
-    throw new Error("Nenhuma loja disponível no momento.");
+    throw new Error("Nenhum contexto de loja identificado para o carrinho.");
   }
 
   // 3. Create a new cart for this store
@@ -1170,7 +1161,7 @@ export const getCartCrossSellItems = createServerFn({ method: "GET" })
   .validator(
     withDataPayload(
       z.object({
-        storeId: z.string().uuid().optional(),
+        storeId: z.string().uuid(),
         currentVariantIds: z.array(z.string()).default([]),
       })
     )
@@ -1178,18 +1169,7 @@ export const getCartCrossSellItems = createServerFn({ method: "GET" })
   .handler(async ({ data: { storeId, currentVariantIds = [] } }) => {
     try {
       const db = getServerClient();
-      let targetStoreId = storeId;
-
-      if (!targetStoreId) {
-        const { data: firstStore } = await db
-          .from("stores")
-          .select("id")
-          .limit(1)
-          .maybeSingle();
-        targetStoreId = firstStore?.id;
-      }
-
-      if (!targetStoreId) return [] as CrossSellItemDTO[];
+      const targetStoreId = storeId;
 
       // 1. Consulta produtos ativos da mesma loja diferentes dos que já estão no carrinho
       const { data: products, error } = await db

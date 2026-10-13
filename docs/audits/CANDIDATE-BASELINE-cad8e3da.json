@@ -1,0 +1,26 @@
+{
+  "schemaVersion": "1.0.0",
+  "generatedAt": "2026-10-12T19:46:29Z",
+  "repository": "EduardoChapeco/waesy",
+  "pullRequest": 29,
+  "remoteBranch": "chore/production-remediation-5d8fdbe",
+  "sourceCommit": "cad8e3da3183f2df3cd2be8c0f66b71fbd11de84",
+  "sourceTree": "ac64f95f106536e60201ec0d580cd06d1db9f6fc",
+  "baseCommit": "98c0d2c2f8c01793a327a12f814c17d9de5e2afb",
+  "trackedFileCount": 4593,
+  "trackedIndexManifestSha256": "2442bf28a31b693f992a4d9e4edc926c40f9cef0e731327d58254f8c0f6bc0c7",
+  "preflight": {
+    "worktreeClean": true,
+    "diffCheck": true,
+    "nodeMajor": 20,
+    "lockfilePolicy": "package-lock.json only",
+    "requiredChecks": ["5 Quality Gates", "Cloudflare Pages"],
+    "externalCertification": false
+  },
+  "ownership": {
+    "codeOwner": "Waesy engineering owner",
+    "releaseApprover": "pending human approval",
+    "databaseOperator": "pending authorized environment",
+    "status": "candidate frozen for evidence; not production certified"
+  }
+}

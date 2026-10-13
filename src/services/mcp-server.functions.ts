@@ -49,6 +49,7 @@ export interface McpToolCallRequest {
   arguments: Record<string, any>;
   storeId?: string;
   authToken?: string;
+  signal?: AbortSignal;
 }
 
 export interface McpToolCallResult {
@@ -306,6 +307,9 @@ async function logMcpAudit(
 // ─── 7. DESPACHAR EXECUÇÃO DE TOOL VIA PROTOCOLO MCP (COM AI-GUARDS) ──────────
 export async function executeMcpToolCall(data: McpToolCallRequest): Promise<McpToolCallResult> {
   const startTime = Date.now();
+  if (data.signal?.aborted) {
+    throw new Error("Execução MCP cancelada pelo cliente.");
+  }
   const toolEntry = getMcpToolByName(data.tool);
 
   if (!toolEntry) {

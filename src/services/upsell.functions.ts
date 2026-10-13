@@ -148,25 +148,14 @@ export interface OrderBumpOfferDTO {
 export const getActiveOrderBumpForCart = createServerFn({ method: "GET" })
   .validator(
     z.object({
-      storeId: z.string().uuid().optional(),
+      storeId: z.string().uuid(),
       cartProductIds: z.array(z.string().uuid()).default([]),
     })
   )
   .handler(async ({ data: { storeId, cartProductIds } }): Promise<OrderBumpOfferDTO | null> => {
     try {
       const supabase = getServerClient();
-      let targetStoreId = storeId;
-
-      if (!targetStoreId) {
-        const { data: firstStore } = await supabase
-          .from("stores")
-          .select("id")
-          .limit(1)
-          .maybeSingle();
-        targetStoreId = firstStore?.id;
-      }
-
-      if (!targetStoreId) return null;
+      const targetStoreId = storeId;
 
       // 1. Busca regra onde o trigger_product_id esta no carrinho
       let selectedRule: any = null;

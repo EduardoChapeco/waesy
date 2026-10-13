@@ -1,9 +1,10 @@
 {
-  "timestamp": "2026-10-08T15:30:37.922Z",
-  "totalFiles": 1986,
-  "totalImported": 1593,
-  "unreferencedCount": 92,
-  "unreferencedFiles": [
+  "timestamp": "2026-10-12T01:29:09.012Z",
+  "totalFiles": 1995,
+  "totalImported": 1597,
+  "discoveredUnreferencedCount": 58,
+  "intentionalUnreferencedCount": 58,
+  "intentionalUnreferencedFiles": [
     "src/components/ad-engine/public/listing-empty-state.tsx",
     "src/components/admin/builder/builder-add-panel-3col.tsx",
     "src/components/admin/builder/builder-canvas.tsx",
@@ -39,21 +40,16 @@
     "src/components/ui/sidebar.tsx",
     "src/components/ui/toggle-group.tsx",
     "src/components/workspace/notification-bell.tsx",
-    "src/config/route-registry.ts",
     "src/hooks/tourism/use-lead-detail.ts",
     "src/hooks/use-classifieds-draft.ts",
     "src/hooks/use-picking.ts",
     "src/hooks/use-pwa-telemetry.ts",
-    "src/integrations/supabase/client.ts",
     "src/lib/ad-engine/niche-archetype-matrix.ts",
-    "src/lib/auth-guards.server.ts",
     "src/lib/client-start-server-core-shim.ts",
     "src/lib/constants/status.ts",
     "src/lib/contracts/public-verification-projection.ts",
     "src/lib/engines/kds.engine.ts",
     "src/lib/fiscal/ncm-registry.ts",
-    "src/lib/identity.server.ts",
-    "src/lib/legal-consent.server.ts",
     "src/lib/loader-observability.ts",
     "src/lib/media/gallery-manager.ts",
     "src/lib/mining/regional-sources-catalog.ts",
@@ -63,42 +59,19 @@
     "src/lib/policies/cancellation-policy-registry.ts",
     "src/lib/pricing/price-calculator.ts",
     "src/lib/pricing.ts",
-    "src/lib/session.ts",
     "src/lib/strategic-frameworks.ts",
     "src/lib/tourism/formatters.ts",
     "src/lib/upload-helper.ts",
-    "src/plugins/env-injector.ts",
-    "src/server.ts",
-    "src/services/ai-media-jobs.functions.ts",
-    "src/services/ai-pool.ts",
-    "src/services/ai.functions.ts",
-    "src/services/billing.functions.ts",
-    "src/services/claim.functions.ts",
-    "src/services/classifieds-workspace-bridge.functions.ts",
-    "src/services/customer.functions.ts",
-    "src/services/document-artifacts.functions.ts",
-    "src/services/fulfillment.functions.ts",
-    "src/services/ibge-market-intelligence.functions.ts",
-    "src/services/machine.functions.ts",
-    "src/services/marketing-engagement.functions.ts",
-    "src/services/match-time.functions.ts",
-    "src/services/mining/ai-curator-gate.ts",
-    "src/services/nexus-operations.functions.ts",
-    "src/services/reaccommodation.ts",
-    "src/services/rooming.ts",
-    "src/services/seller.functions.ts",
-    "src/services/service-orders.functions.ts",
-    "src/services/ticket.functions.ts",
-    "src/services/timeline.functions.ts",
-    "src/services/tourism-operations.functions.ts",
-    "src/services/travel-financial.functions.ts",
-    "src/services/travel-operator-sync.functions.ts",
-    "src/services/trips.ts",
-    "src/services/whatsapp-contact-identity.functions.ts",
     "src/utils/storage-helper.ts"
   ],
-  "duplicateComponentsCount": 23,
-  "duplicateComponents": [
+  "allowlistUnknownCount": 0,
+  "allowlistUnknownFiles": [],
+  "unreferencedCount": 0,
+  "unreferencedFiles": [],
+  "duplicateComponentsCount": 0,
+  "duplicateComponents": [],
+  "nameCollisionCount": 23,
+  "nameCollisions": [
     {
       "componentName": "classified-form",
       "count": 2,
@@ -146,6 +119,62 @@
       "paths": [
         "src/components/proposals/ProposalStudio.tsx",
         "src/components/tourism/proposals/ProposalStudio.tsx"
+      ]
+    },
+    {
+      "componentName": "StudioFormatPicker",
+      "count": 2,
+      "paths": [
+        "src/components/studio/StudioFormatPicker.tsx",
+        "src/components/tourism/studio/StudioFormatPicker.tsx"
+      ]
+    },
+    {
+      "componentName": "StudioFrame",
+      "count": 2,
+      "paths": [
+        "src/components/studio/StudioFrame.tsx",
+        "src/components/tourism/studio/StudioFrame.tsx"
+      ]
+    },
+    {
+      "componentName": "StudioMapWidget",
+      "count": 2,
+      "paths": [
+        "src/components/studio/StudioMapWidget.tsx",
+        "src/components/tourism/studio/StudioMapWidget.tsx"
+      ]
+    },
+    {
+      "componentName": "StudioSidebar",
+      "count": 2,
+      "paths": [
+        "src/components/studio/StudioSidebar.tsx",
+        "src/components/tourism/studio/StudioSidebar.tsx"
+      ]
+    },
+    {
+      "componentName": "StudioTemplatePicker",
+      "count": 2,
+      "paths": [
+        "src/components/studio/StudioTemplatePicker.tsx",
+        "src/components/tourism/studio/StudioTemplatePicker.tsx"
+      ]
+    },
+    {
+      "componentName": "StudioToolbar",
+      "count": 2,
+      "paths": [
+        "src/components/studio/StudioToolbar.tsx",
+        "src/components/tourism/studio/StudioToolbar.tsx"
+      ]
+    },
+    {
+      "componentName": "StudioUnsplashPicker",
+      "count": 2,
+      "paths": [
+        "src/components/studio/StudioUnsplashPicker.tsx",
+        "src/components/tourism/studio/StudioUnsplashPicker.tsx"
       ]
     },
     {
@@ -226,62 +255,6 @@
       "paths": [
         "src/components/studio/sections/SectionTravelers.tsx",
         "src/components/tourism/studio/sections/SectionTravelers.tsx"
-      ]
-    },
-    {
-      "componentName": "StudioFormatPicker",
-      "count": 2,
-      "paths": [
-        "src/components/studio/StudioFormatPicker.tsx",
-        "src/components/tourism/studio/StudioFormatPicker.tsx"
-      ]
-    },
-    {
-      "componentName": "StudioFrame",
-      "count": 2,
-      "paths": [
-        "src/components/studio/StudioFrame.tsx",
-        "src/components/tourism/studio/StudioFrame.tsx"
-      ]
-    },
-    {
-      "componentName": "StudioMapWidget",
-      "count": 2,
-      "paths": [
-        "src/components/studio/StudioMapWidget.tsx",
-        "src/components/tourism/studio/StudioMapWidget.tsx"
-      ]
-    },
-    {
-      "componentName": "StudioSidebar",
-      "count": 2,
-      "paths": [
-        "src/components/studio/StudioSidebar.tsx",
-        "src/components/tourism/studio/StudioSidebar.tsx"
-      ]
-    },
-    {
-      "componentName": "StudioTemplatePicker",
-      "count": 2,
-      "paths": [
-        "src/components/studio/StudioTemplatePicker.tsx",
-        "src/components/tourism/studio/StudioTemplatePicker.tsx"
-      ]
-    },
-    {
-      "componentName": "StudioToolbar",
-      "count": 2,
-      "paths": [
-        "src/components/studio/StudioToolbar.tsx",
-        "src/components/tourism/studio/StudioToolbar.tsx"
-      ]
-    },
-    {
-      "componentName": "StudioUnsplashPicker",
-      "count": 2,
-      "paths": [
-        "src/components/studio/StudioUnsplashPicker.tsx",
-        "src/components/tourism/studio/StudioUnsplashPicker.tsx"
       ]
     }
   ],

@@ -51,6 +51,17 @@ describe("Fase 1: Estabilização do Builder & Resiliência Defensiva", () => {
  expect(resolved).toBe("target-store-123");
  });
 
+ it("resolveStoreContext deve rejeitar platform_admin sem tenant-alvo", async () => {
+ const adminIdentity = {
+ id: "user-admin",
+ role: "platform_admin",
+ store_id: null,
+ memberships: [],
+ };
+
+ await expect(resolveStoreContext(adminIdentity)).rejects.toThrow("Nenhum contexto de loja válido");
+ });
+
  it("resolveStoreContext deve usar identity.store_id como fallback primário", async () => {
  const staffIdentity = {
  id: "user-staff",
