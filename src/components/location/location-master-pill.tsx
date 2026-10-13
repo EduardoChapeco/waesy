@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { MapLibreCanvas } from "@/components/mobility/maplibre-canvas";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
+import { useWindowSizeClass } from "@/hooks/use-mobile";
 import { findClosestCanonicalCity } from "@/lib/constants/cities";
 import { toast } from "sonner";
 
@@ -435,6 +437,7 @@ export function LocationPickerModal({
  onSelectLocation: (loc: LocationState) => void;
  onTriggerGPS: () => void;
 }) {
+ const { isCompact } = useWindowSizeClass();
  const [activeTab, setActiveTab] = useState<"quick" | "map">("quick");
  const [cep, setCep] = useState("");
  const [isSearchingCep, setIsSearchingCep] = useState(false);
@@ -530,56 +533,38 @@ export function LocationPickerModal({
  });
  };
 
- return (
- <Dialog open={open} onOpenChange={onOpenChange}>
- <DialogContent
- className={`p-0 overflow-hidden bg-background transition-opacity duration-200 motion-reduce:transition-none ${
- activeTab === "map"
- ? "max-w-4xl w-full h-overlay-max rounded-lg flex flex-col"
- : "max-w-xl rounded-lg"
- }`}
- >
- <DialogHeader className="p-4 sm:p-6 pb-3 bg-muted/20 shrink-0">
- <div className="flex items-center justify-between">
- <DialogTitle className="flex items-center gap-2 text-base sm:text-lg font-black tracking-tight">
- <MapPin className="size-5 text-primary" />
- <span>Selecione sua Localização</span>
- </DialogTitle>
+  const tabToggleButtons = (
+    <div className="flex items-center gap-1 bg-muted/80 p-1 rounded-lg">
+      <button
+        type="button"
+        onClick={() => setActiveTab("quick")}
+        className={`h-11 min-h-11 min-w-11 px-3 py-2 rounded-lg text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-colors motion-reduce:transition-none ${
+          activeTab === "quick"
+            ? "bg-background text-foreground"
+            : "text-muted-foreground hover:text-foreground"
+        }`}
+      >
+        Cidades / CEP
+      </button>
+      <button
+        type="button"
+        onClick={() => setActiveTab("map")}
+        className={`flex items-center gap-2 h-11 min-h-11 min-w-11 px-3 py-2 rounded-lg text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-colors motion-reduce:transition-none ${
+          activeTab === "map"
+            ? "bg-primary text-primary-foreground"
+            : "text-muted-foreground hover:text-foreground"
+        }`}
+      >
+        <Compass className="size-3.5" />
+        <span>Pin no Mapa</span>
+      </button>
+    </div>
+  );
 
- {/* Toggle Tabs */}
- <div className="flex items-center gap-1 bg-muted/80 p-1 rounded-lg ">
- <button
- type="button"
- onClick={() => setActiveTab("quick")}
- className={`h-11 min-h-11 min-w-11 px-3 py-2 rounded-lg text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-colors motion-reduce:transition-none ${
- activeTab === "quick"
- ? "bg-background text-foreground "
- : "text-muted-foreground hover:text-foreground"
- }`}
- >
- Cidades / CEP
- </button>
- <button
- type="button"
- onClick={() => setActiveTab("map")}
- className={`flex items-center gap-2 h-11 min-h-11 min-w-11 px-3 py-2 rounded-lg text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-colors motion-reduce:transition-none ${
- activeTab === "map"
- ? "bg-primary text-primary-foreground "
- : "text-muted-foreground hover:text-foreground"
- }`}
- >
- <Compass className="size-3.5" />
- <span>Pin no Mapa</span>
- </button>
- </div>
- </div>
- <DialogDescription className="text-xs text-muted-foreground mt-1">
- Filtre produtos, comércios, eventos e classificados de acordo com a sua região.
- </DialogDescription>
- </DialogHeader>
-
- {/* TAB 1: QUICK CITIES & CEP */}
- {activeTab === "quick" && (
+  const modalTabsContent = (
+    <>
+      {/* TAB 1: QUICK CITIES & CEP */}
+      {activeTab === "quick" && (
  <div className="p-6 space-y-6 overflow-y-auto no-scrollbar">
  {/* Quick GPS button */}
  <Button
@@ -750,7 +735,66 @@ export function LocationPickerModal({
  </div>
  </div>
  )}
- </DialogContent>
- </Dialog>
- );
+    </>
+  );
+
+  if (isCompact) {
+    return (
+      <Sheet open={open} onOpenChange={onOpenChange}>
+        <SheetContent
+          side="bottom"
+          className="p-0 overflow-hidden bg-background max-h-overlay-max flex flex-col rounded-t-lg border-t border-border outline-none"
+        >
+          {/* iOS Grab Handle */}
+          <div className="pt-3 pb-1 flex justify-center shrink-0">
+            <div className="w-12 h-1.5 rounded-full bg-muted-foreground/30" />
+          </div>
+
+          <SheetHeader className="p-4 sm:p-6 pb-3 bg-muted/20 shrink-0 text-left">
+            <div className="flex items-center justify-between">
+              <SheetTitle className="flex items-center gap-2 text-base sm:text-lg font-black tracking-tight">
+                <MapPin className="size-5 text-primary" />
+                <span>Selecione sua Localização</span>
+              </SheetTitle>
+              {tabToggleButtons}
+            </div>
+            <SheetDescription className="text-xs text-muted-foreground mt-1">
+              Filtre produtos, comércios, eventos e classificados de acordo com a sua região.
+            </SheetDescription>
+          </SheetHeader>
+
+          <div className="flex-1 overflow-y-auto no-scrollbar flex flex-col min-h-0">
+            {modalTabsContent}
+          </div>
+        </SheetContent>
+      </Sheet>
+    );
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent
+        className={`p-0 overflow-hidden bg-background transition-opacity duration-200 motion-reduce:transition-none ${
+          activeTab === "map"
+            ? "max-w-4xl w-full h-overlay-max rounded-lg flex flex-col"
+            : "max-w-xl rounded-lg"
+        }`}
+      >
+        <DialogHeader className="p-4 sm:p-6 pb-3 bg-muted/20 shrink-0">
+          <div className="flex items-center justify-between">
+            <DialogTitle className="flex items-center gap-2 text-base sm:text-lg font-black tracking-tight">
+              <MapPin className="size-5 text-primary" />
+              <span>Selecione sua Localização</span>
+            </DialogTitle>
+            {tabToggleButtons}
+          </div>
+          <DialogDescription className="text-xs text-muted-foreground mt-1">
+            Filtre produtos, comércios, eventos e classificados de acordo com a sua região.
+          </DialogDescription>
+        </DialogHeader>
+
+        {modalTabsContent}
+      </DialogContent>
+    </Dialog>
+  );
 }

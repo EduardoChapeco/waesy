@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
+import { useWindowSizeClass } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Copy, Check, Share2, MessageCircle, Mail, Send, ExternalLink } from "lucide-react";
@@ -23,6 +25,7 @@ export function ShareModal({
  imageUrl,
 }: ShareModalProps) {
  const [copied, setCopied] = useState(false);
+ const { isCompact } = useWindowSizeClass();
 
  // Normaliza para URL canônica pública
  const canonicalUrl =
@@ -88,112 +91,135 @@ export function ShareModal({
  window.location.href = `mailto:?subject=${subject}&body=${body}`;
  };
 
- return (
- <Dialog open={open} onOpenChange={onOpenChange}>
- <DialogContent className="sm:max-w-md sm:rounded-lg sm:p-6 p-5">
- <DialogHeader className="space-y-1">
- <DialogTitle className="text-lg font-bold flex items-center gap-2">
- <Share2 className="size-5 text-primary" />
- <span>Compartilhar Conteúdo</span>
- </DialogTitle>
- <DialogDescription className="text-xs text-muted-foreground">
- Envie este link para amigos, redes sociais ou copie para sua área de transferência.
- </DialogDescription>
- </DialogHeader>
+  const shareContent = (
+    <div className="space-y-5 py-2">
+      {/* Card de Preview */}
+      <div className="rounded-lg p-4 bg-muted/20 flex gap-3 items-center">
+        {imageUrl && (
+          <img
+            src={imageUrl}
+            alt={title}
+            className="size-12 rounded-lg object-cover shrink-0"
+          />
+        )}
+        <div className="min-w-0 flex-1">
+          <h4 className="text-xs font-bold text-foreground truncate">{title}</h4>
+          <p className="text-xs text-muted-foreground truncate font-mono mt-1">
+            {canonicalUrl}
+          </p>
+        </div>
+      </div>
 
- <div className="space-y-5 py-2">
- {/* Card de Preview */}
- <div className=" rounded-lg p-4 bg-muted/20 flex gap-3 items-center">
- {imageUrl && (
- <img
- src={imageUrl}
- alt={title}
- className="size-12 rounded-lg object-cover shrink-0"
- />
- )}
- <div className="min-w-0 flex-1">
- <h4 className="text-xs font-bold text-foreground truncate">{title}</h4>
- <p className="text-[11px] text-muted-foreground truncate font-mono mt-1">
- {canonicalUrl}
- </p>
- </div>
- </div>
+      {/* Botões Rápidos de Compartilhamento Social */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
+        <button
+          type="button"
+          onClick={shareWhatsApp}
+          className="flex flex-col items-center justify-center p-3 rounded-lg bg-card hover:bg-muted/40 transition-colors gap-2 group cursor-pointer min-h-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          <div className="size-9 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center group-hover:scale-105 transition-transform">
+            <MessageCircle className="size-5" />
+          </div>
+          <span className="text-xs font-semibold text-foreground">WhatsApp</span>
+        </button>
 
- {/* Botões Rápidos de Compartilhamento Social */}
- <div className="grid grid-cols-4 gap-2 text-center">
- <button
- type="button"
- onClick={shareWhatsApp}
- className="flex flex-col items-center justify-center p-3 rounded-lg bg-card hover:bg-muted/40 transition-colors gap-2 group cursor-pointer"
- >
- <div className="size-9 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center group-hover:scale-105 transition-transform">
- <MessageCircle className="size-5" />
- </div>
- <span className="text-[11px] font-semibold text-foreground">WhatsApp</span>
- </button>
+        <button
+          type="button"
+          onClick={shareTelegram}
+          className="flex flex-col items-center justify-center p-3 rounded-lg bg-card hover:bg-muted/40 transition-colors gap-2 group cursor-pointer min-h-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          <div className="size-9 rounded-full bg-sky-500/10 text-sky-600 dark:text-sky-400 flex items-center justify-center group-hover:scale-105 transition-transform">
+            <Send className="size-4" />
+          </div>
+          <span className="text-xs font-semibold text-foreground">Telegram</span>
+        </button>
 
- <button
- type="button"
- onClick={shareTelegram}
- className="flex flex-col items-center justify-center p-3 rounded-lg bg-card hover:bg-muted/40 transition-colors gap-2 group cursor-pointer"
- >
- <div className="size-9 rounded-full bg-sky-500/10 text-sky-600 dark:text-sky-400 flex items-center justify-center group-hover:scale-105 transition-transform">
- <Send className="size-4" />
- </div>
- <span className="text-[11px] font-semibold text-foreground">Telegram</span>
- </button>
+        <button
+          type="button"
+          onClick={shareTwitter}
+          className="flex flex-col items-center justify-center p-3 rounded-lg bg-card hover:bg-muted/40 transition-colors gap-2 group cursor-pointer min-h-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          <div className="size-9 rounded-full bg-foreground/10 text-foreground flex items-center justify-center group-hover:scale-105 transition-transform">
+            <span className="font-bold text-xs font-mono">X</span>
+          </div>
+          <span className="text-xs font-semibold text-foreground">Twitter / X</span>
+        </button>
 
- <button
- type="button"
- onClick={shareTwitter}
- className="flex flex-col items-center justify-center p-3 rounded-lg bg-card hover:bg-muted/40 transition-colors gap-2 group cursor-pointer"
- >
- <div className="size-9 rounded-full bg-foreground/10 text-foreground flex items-center justify-center group-hover:scale-105 transition-transform">
- <span className="font-bold text-xs font-mono">X</span>
- </div>
- <span className="text-[11px] font-semibold text-foreground">Twitter / X</span>
- </button>
+        <button
+          type="button"
+          onClick={shareEmail}
+          className="flex flex-col items-center justify-center p-3 rounded-lg bg-card hover:bg-muted/40 transition-colors gap-2 group cursor-pointer min-h-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          <div className="size-9 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center group-hover:scale-105 transition-transform">
+            <Mail className="size-4" />
+          </div>
+          <span className="text-xs font-semibold text-foreground">Email</span>
+        </button>
+      </div>
 
- <button
- type="button"
- onClick={shareEmail}
- className="flex flex-col items-center justify-center p-3 rounded-lg bg-card hover:bg-muted/40 transition-colors gap-2 group cursor-pointer"
- >
- <div className="size-9 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center group-hover:scale-105 transition-transform">
- <Mail className="size-4" />
- </div>
- <span className="text-[11px] font-semibold text-foreground">Email</span>
- </button>
- </div>
+      {/* Campo Copiar Link */}
+      <div className="space-y-2">
+        <label className="text-xs font-semibold text-foreground">Link Direto</label>
+        <div className="flex items-center gap-2">
+          <Input
+            readOnly
+            value={canonicalUrl}
+            className="h-11 min-h-11 rounded-lg text-xs bg-background font-mono text-muted-foreground selection:bg-primary/20"
+          />
+          <Button
+            type="button"
+            onClick={handleCopyLink}
+            size="sm"
+            className="h-11 min-h-11 px-4 rounded-lg text-xs font-bold gap-2 shrink-0 focus-visible:ring-2 focus-visible:ring-primary"
+          >
+            {copied ? (
+              <Check className="size-4 text-emerald-400" />
+            ) : (
+              <Copy className="size-4" />
+            )}
+            <span>{copied ? "Copiado!" : "Copiar"}</span>
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
 
- {/* Campo Copiar Link */}
- <div className="space-y-2">
- <label className="text-xs font-semibold text-foreground">Link Direto</label>
- <div className="flex items-center gap-2">
- <Input
- readOnly
- value={canonicalUrl}
- className="h-10 rounded-lg text-xs bg-background font-mono text-muted-foreground selection:bg-primary/20"
- />
- <Button
- type="button"
- onClick={handleCopyLink}
- size="sm"
- className="h-10 px-4 rounded-lg text-xs font-bold gap-2 shrink-0"
- >
- {copied ? (
- <Check className="size-4 text-emerald-400" />
- ) : (
- <Copy className="size-4" />
- )}
- <span>{copied ? "Copiado!" : "Copiar"}</span>
- </Button>
- </div>
- </div>
- </div>
- </DialogContent>
- </Dialog>
- );
+  if (isCompact) {
+    return (
+      <Sheet open={open} onOpenChange={onOpenChange}>
+        <SheetContent side="bottom" className="p-5 rounded-t-lg border-t border-border bg-background flex flex-col gap-4 outline-none">
+          <div className="w-12 h-1.5 rounded-full bg-muted-foreground/30 mx-auto -mt-2 mb-2 shrink-0" />
+          <SheetHeader className="space-y-1 text-left">
+            <SheetTitle className="text-lg font-bold flex items-center gap-2">
+              <Share2 className="size-5 text-primary" />
+              <span>Compartilhar Conteúdo</span>
+            </SheetTitle>
+            <SheetDescription className="text-xs text-muted-foreground">
+              Envie este link para amigos, redes sociais ou copie para sua área de transferência.
+            </SheetDescription>
+          </SheetHeader>
+          {shareContent}
+        </SheetContent>
+      </Sheet>
+    );
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-md sm:rounded-lg sm:p-6 p-5">
+        <DialogHeader className="space-y-1">
+          <DialogTitle className="text-lg font-bold flex items-center gap-2">
+            <Share2 className="size-5 text-primary" />
+            <span>Compartilhar Conteúdo</span>
+          </DialogTitle>
+          <DialogDescription className="text-xs text-muted-foreground">
+            Envie este link para amigos, redes sociais ou copie para sua área de transferência.
+          </DialogDescription>
+        </DialogHeader>
+        {shareContent}
+      </DialogContent>
+    </Dialog>
+  );
 }
 
 /**

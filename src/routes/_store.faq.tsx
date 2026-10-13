@@ -31,6 +31,13 @@ function Page() {
         title="Dúvidas"
         fallbackHref="/"
       />
+      {/* ── Cabeçalho Inpage Desktop (Apple HIG) ── */}
+      <div className="hidden md:flex items-center justify-between border-b border-border/40 pb-4 pt-2 mb-6 max-w-3xl mx-auto px-4 md:px-6">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">Dúvidas Frequentes</h1>
+          <p className="text-xs text-muted-foreground mt-1">Perguntas comuns sobre pedidos, entregas e funcionamento da plataforma</p>
+        </div>
+      </div>
       <div className="mx-auto max-w-3xl px-4 py-6 md:px-6 md:py-10 space-y-6">
  {!faqs || faqs.length === 0 ? (
  <EmptyState title="Nenhuma pergunta publicada" />

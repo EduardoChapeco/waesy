@@ -876,7 +876,7 @@ function ClassificadosIndex() {
         <EmptyState
           icon={Tag}
           title={searchTerm ? "Nenhum anúncio encontrado" : "Você ainda não possui anúncios ativos"}
-          description={searchTerm ? "Tente buscar por outro termo ou ajuste os filtros." : "Clique no botão abaixo para publicar seu primeiro anúncio gratuito."}
+          description={searchTerm ? "Tente buscar por outro termo ou ajuste os filtros." : "Publique seu primeiro anúncio gratuito para começar a vender."}
           action={
             <Button asChild size="default" className="h-11 min-h-11 px-6 rounded-lg font-bold mt-2 focus-visible:ring-2 focus-visible:ring-primary">
               <Link to="/conta/classificados/novo">

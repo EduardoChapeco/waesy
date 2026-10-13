@@ -194,7 +194,7 @@ function CustomerReviewsPage() {
       : null;
 
   return (
-    <div className="w-full max-w-2xl mx-auto pb-24 px-4 sm:px-6">
+    <div className="w-full max-w-2xl mx-auto pb-24 px-0 sm:px-4 md:px-0">
       {/* ── 1. Native Mobile Header (Apple HIG / PWA Nativo) ── */}
       <NativeMobileHeader
         title="Avaliações"

@@ -85,6 +85,58 @@ function resolveCleanMobileTitle(pathname: string, fallbackTitle?: string): stri
   return seg.charAt(0).toUpperCase() + seg.slice(1).replace(/-/g, " ");
 }
 
+/**
+ * Determina se a rota ativa renderiza seu próprio NativeMobileHeader ou cabeçalho dedicado,
+ * impedindo a renderização duplicada de cabeçalho global pelo AppShell.
+ */
+export function checkHasCustomPageMobileHeader(pathname: string): boolean {
+  const clean = pathname.replace(/\/+$/, "") || "/";
+
+  const exactCustomRoutes = new Set([
+    "/conta",
+    "/agenda",
+    "/afiliados",
+    "/classificados",
+    "/diretorio",
+    "/imoveis",
+    "/servicos",
+    "/eventos",
+    "/empregos",
+    "/agendar",
+    "/turismo",
+    "/faq",
+  ]);
+
+  if (exactCustomRoutes.has(clean)) return true;
+
+  const prefixCustomRoutes = [
+    "/doacoes",
+    "/ofertas",
+    "/redefinir-senha",
+    "/destaques",
+    "/admin-master",
+    "/conta/atividade",
+    "/conta/avaliacoes",
+    "/conta/enderecos",
+    "/conta/entregador",
+    "/conta/financas",
+    "/conta/salvos",
+    "/conta/trocas",
+    "/conta/conversas",
+    "/conta/agendamentos",
+    "/conta/classificados",
+    "/conta/negociacoes",
+    "/conta/comissoes",
+    "/conta/curriculo",
+    "/conta/empresa",
+    "/conta/ingressos",
+    "/conta/notificacoes",
+    "/conta/pedidos",
+  ];
+
+  return prefixCustomRoutes.some((prefix) => clean === prefix || clean.startsWith(`${prefix}/`));
+}
+
 export interface AppShellProps {
  children: ReactNode;
  session?: any;
@@ -238,37 +290,7 @@ export function AppShell({ children, session, brandSettings }: AppShellProps) {
   const isFeedPage = location.pathname.startsWith("/feed");
   // isMarketingLanding removido (V99/FASE 1) — LP agora em /cadastroantecipado.
 
-  const hasCustomPageMobileHeader =
-    location.pathname === "/conta" ||
-    location.pathname === "/conta/" ||
-    location.pathname === "/agenda" ||
-    location.pathname === "/afiliados" ||
-    location.pathname === "/classificados" ||
-    location.pathname === "/diretorio" ||
-    location.pathname === "/diretorio/" ||
-    location.pathname === "/imoveis" ||
-    location.pathname === "/servicos" ||
-    location.pathname === "/eventos" ||
-    location.pathname === "/empregos" ||
-    location.pathname === "/empregos/" ||
-    location.pathname === "/agendar" ||
-    location.pathname === "/agendar/" ||
-    location.pathname === "/turismo" ||
-    location.pathname === "/turismo/" ||
-    location.pathname.startsWith("/doacoes") ||
-    location.pathname.startsWith("/ofertas") ||
-    location.pathname.startsWith("/conta/conversas") ||
-    location.pathname.startsWith("/conta/agendamentos") ||
-    location.pathname.startsWith("/conta/classificados") ||
-    location.pathname.startsWith("/conta/negociacoes") ||
-    location.pathname.startsWith("/conta/comissoes") ||
-    location.pathname.startsWith("/conta/curriculo") ||
-    location.pathname.startsWith("/conta/empresa") ||
-    location.pathname.startsWith("/conta/ingressos") ||
-    location.pathname.startsWith("/conta/notificacoes") ||
-    location.pathname.startsWith("/conta/pedidos") ||
-    location.pathname.startsWith("/destaques/") ||
-    location.pathname.startsWith("/admin-master");
+  const hasCustomPageMobileHeader = checkHasCustomPageMobileHeader(location.pathname);
 
   const isCopilotPage = location.pathname.startsWith("/copilot");
 

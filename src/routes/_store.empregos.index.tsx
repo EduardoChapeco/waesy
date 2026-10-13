@@ -123,6 +123,13 @@ function JobsMasterPage() {
           searchPlaceholder="Buscar cargo, empresa ou vaga..."
         />
       </div>
+      {/* ── Cabeçalho Inpage Desktop (Apple HIG) ── */}
+      <div className="hidden md:flex items-center justify-between pt-2 pb-4 border-b border-border/40">
+        <div>
+          <h1 className="text-xl font-bold tracking-tight text-foreground">Vagas & Oportunidades</h1>
+          <p className="text-xs text-muted-foreground mt-1">Encontre vagas de trabalho, estágios e carreiras em empresas locais</p>
+        </div>
+      </div>
  {/* ── 1. Banners Contextuais de Empregos ── */}
  {banners && banners.length > 0 && (
  <BannerHeroCarousel banners={banners} className="w-full" />

@@ -414,7 +414,7 @@ function AfiliadosPage() {
       </div>
 
       {/* Container Principal com Respiro Anti-Claustrofobia (V117 px-4 sm:px-5) */}
-      <div className="max-w-5xl mx-auto px-4 sm:px-5 md:px-6 py-3 sm:py-6">
+      <div className="max-w-5xl mx-auto px-0 sm:px-4 md:px-0 py-3 sm:py-6">
         {isLoading && !partner ? (
           <div className="max-w-md mx-auto py-20 text-center space-y-4">
             <div className="size-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center mx-auto animate-pulse">
@@ -790,8 +790,8 @@ function AfiliadosPage() {
                         className="absolute inset-0 w-full h-full object-cover"
                       />
                     ) : (
-                      <div className="absolute inset-0 bg-muted/40">
-                        Insira a URL de uma imagem abaixo para visualizar o banner em 16:9
+                      <div className="absolute inset-0 bg-muted/40 flex items-center justify-center text-xs text-muted-foreground p-4 text-center">
+                        URL do banner (proporção 16:9)
                       </div>
                     )}
                     <div className="absolute inset-0 bg-background/80" />
@@ -879,7 +879,7 @@ function AfiliadosPage() {
                       <Store className="size-6 text-muted-foreground mx-auto" />
                       <p className="text-xs font-semibold text-foreground">Nenhuma loja conectada ainda</p>
                       <p className="text-xs text-muted-foreground">
-                        Clique no botão acima para conectar as lojas parceiras da sua cidade à sua vitrine.
+                        Conecte lojas parceiras para enriquecer sua vitrine.
                       </p>
                     </div>
                   ) : (
@@ -1220,7 +1220,7 @@ function AfiliadosPage() {
                   <h3 className="text-sm font-bold text-foreground">Histórico de Indicações Recentes</h3>
                   {referrals.length === 0 ? (
                     <p className="text-xs text-muted-foreground text-center py-6">
-                      Nenhuma indicação registrada ainda. Compartilhe seu link exclusivo para começar.
+                      Nenhuma indicação registrada.
                     </p>
                   ) : (
                     <div className="divide-y divide-border/40">

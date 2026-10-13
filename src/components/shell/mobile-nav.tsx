@@ -167,118 +167,116 @@ export function MobileNav({ session, userRole }: MobileNavProps) {
 
   return (
     <>
-      {/* ── 1. SMART FLOATING CART BUTTON (Discreto acima da TabBar) ── */}
-      {hasCartItems && (
-        <button
-          type="button"
-          onClick={() => setIsCartOpen(true)}
-          aria-label={`Ver carrinho com ${totalCartItems} itens`}
-          className="md:hidden fixed inset-x-3.5 z-40 max-w-sm mx-auto h-12 rounded-lg bg-primary text-primary-foreground px-4 flex items-center justify-between shadow-lg border border-primary/20 active:scale-[0.98] transition-all cursor-pointer animate-in slide-in-from-bottom-2 fade-in duration-200 mobile-nav-hide-on-keyboard"
-          style={{ bottom: "max(calc(env(safe-area-inset-bottom) + 72px), 76px)" }}
-        >
-          <div className="flex items-center gap-3 min-w-0">
-            <span className="size-6 rounded-full bg-primary-foreground text-primary text-xs font-black flex items-center justify-center shrink-0">
-              {totalCartItems > 99 ? "99+" : totalCartItems}
-            </span>
-            <span className="text-xs sm:text-sm font-bold truncate">
-              Ver Sacola / Carrinho
-            </span>
-          </div>
+      {/* ── 2. BOTTOM NAVIGATION DOCK (APPLE HIG - SAFE AREA RESILIENT) ── */}
+      <div className="md:hidden fixed bottom-0 inset-x-0 z-40 pb-safe select-none pointer-events-none mobile-nav-hide-on-keyboard pb-16">
+        <div className="px-2 pb-2 pointer-events-auto max-w-lg mx-auto space-y-2">
+          {/* ── 1. SMART FLOATING CART BUTTON (Discreto acima da TabBar) ── */}
+          {hasCartItems && (
+            <button
+              type="button"
+              onClick={() => setIsCartOpen(true)}
+              aria-label={`Ver carrinho com ${totalCartItems} itens`}
+              className="w-full h-12 rounded-lg bg-primary text-primary-foreground px-4 flex items-center justify-between border border-primary/20 active:scale-95 transition-transform cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 motion-reduce:transition-none"
+            >
+              <div className="flex items-center gap-3 min-w-0">
+                <span className="size-6 rounded-full bg-primary-foreground text-primary text-xs font-black flex items-center justify-center shrink-0">
+                  {totalCartItems > 99 ? "99+" : totalCartItems}
+                </span>
+                <span className="text-xs sm:text-sm font-bold truncate">
+                  Ver Sacola / Carrinho
+                </span>
+              </div>
 
-          <div className="flex items-center gap-2 shrink-0 text-xs sm:text-sm font-black">
-            {cartSubtotal > 0 && <span>{formatCents(cartSubtotal)}</span>}
-            <ArrowRight className="size-4" />
-          </div>
-        </button>
-      )}
+              <div className="flex items-center gap-2 shrink-0 text-xs sm:text-sm font-black">
+                {cartSubtotal > 0 && <span>{formatCents(cartSubtotal)}</span>}
+                <ArrowRight className="size-4" />
+              </div>
+            </button>
+          )}
 
-      {/* ── 2. BOTTOM NAVIGATION BAR CANÔNICA (A REGRA DOS 5 - APPLE HIG) ── */}
-      <div
-        className="md:hidden fixed inset-x-2.5 z-40 max-w-lg mx-auto select-none mobile-nav-hide-on-keyboard"
-        style={{ bottom: "max(calc(env(safe-area-inset-bottom) + 6px), 10px)" }}
-      >
-        <nav
-          aria-label="Navegação principal móvel"
-          className="grid grid-cols-5 items-center p-2 bg-background border border-border rounded-lg transition-all duration-200"
-        >
-          {/* TAB 1: INÍCIO */}
-          <Link
-            to="/"
-            aria-label="Início"
-            className={cn(
-              "h-12 rounded-lg flex flex-col items-center justify-center gap-0.5 transition-all active:scale-95 cursor-pointer touch-manipulation",
-              isHomeActive
-                ? "text-primary font-bold"
-                : "text-muted-foreground hover:text-foreground"
-            )}
+          <nav
+            aria-label="Navegação principal móvel"
+            className="flex items-center justify-between p-2 bg-background border border-border rounded-lg"
           >
-            <Home className="size-5" strokeWidth={isHomeActive ? 2.5 : 2} />
-            <span className="text-xs font-medium tracking-tight leading-none">Início</span>
-          </Link>
-
-          {/* TAB 2: EXPLORAR / BUSCA */}
-          <Link
-            to="/explorar"
-            aria-label="Explorar"
-            className={cn(
-              "h-12 rounded-lg flex flex-col items-center justify-center gap-0.5 transition-all active:scale-95 cursor-pointer touch-manipulation",
-              isSearchActive
-                ? "text-primary font-bold"
-                : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            <Search className="size-5" strokeWidth={isSearchActive ? 2.5 : 2} />
-            <span className="text-xs font-medium tracking-tight leading-none">Explorar</span>
-          </Link>
-
-          {/* TAB 3: BOTÃO CENTRAL [+] DE CRIAÇÃO RÁPIDA (FAB CONTEXTUAL) */}
-          <div className="flex items-center justify-center">
-            <QuickCreateModal
-              isAuthenticated={isAuthenticated}
-              session={session}
-              asNavButton={true}
-            />
-          </div>
-
-          {/* TAB 4: MENSAGENS / ATENDIMENTO */}
-          <Link
-            to={isAuthenticated ? "/conta/conversas" : "/entrar"}
-            aria-label="Mensagens"
-            className={cn(
-              "h-12 rounded-lg flex flex-col items-center justify-center gap-0.5 transition-all active:scale-95 cursor-pointer touch-manipulation relative",
-              isMessagesActive
-                ? "text-primary font-bold"
-                : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            <MessageCircle className="size-5" strokeWidth={isMessagesActive ? 2.5 : 2} />
-            <span className="text-xs font-medium tracking-tight leading-none">Mensagens</span>
-          </Link>
-
-          {/* TAB 5: MENU HUB GLOBAL (SUPER APP PATTERN) */}
-          <button
-            type="button"
-            onClick={() => setIsMenuHubOpen(true)}
-            aria-label="Menu principal"
-            className={cn(
-              "h-12 rounded-lg flex flex-col items-center justify-center gap-0.5 transition-all active:scale-95 cursor-pointer touch-manipulation relative",
-              isMenuHubOpen
-                ? "text-primary font-bold"
-                : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            <div className="relative">
-              <Menu className="size-5" strokeWidth={isMenuHubOpen ? 2.5 : 2} />
-              {activeOrdersCount > 0 && (
-                <span className="absolute -top-1 -right-1 size-2 rounded-full bg-amber-500 animate-ping" />
+            {/* TAB 1: INÍCIO */}
+            <Link
+              to="/"
+              aria-label="Início"
+              className={cn(
+                "flex-1 h-12 rounded-lg flex flex-col items-center justify-center gap-1 transition-colors active:scale-95 cursor-pointer touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
+                isHomeActive
+                  ? "text-primary font-bold"
+                  : "text-muted-foreground hover:text-foreground"
               )}
-              {activeOrdersCount > 0 && (
-                <span className="absolute -top-1 -right-1 size-2 rounded-full bg-amber-500" />
+            >
+              <Home className="size-5" strokeWidth={isHomeActive ? 2.5 : 2} />
+              <span className="text-xs font-semibold tracking-tight leading-none">Início</span>
+            </Link>
+
+            {/* TAB 2: EXPLORAR / BUSCA */}
+            <Link
+              to="/explorar"
+              aria-label="Explorar"
+              className={cn(
+                "flex-1 h-12 rounded-lg flex flex-col items-center justify-center gap-1 transition-colors active:scale-95 cursor-pointer touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
+                isSearchActive
+                  ? "text-primary font-bold"
+                  : "text-muted-foreground hover:text-foreground"
               )}
+            >
+              <Search className="size-5" strokeWidth={isSearchActive ? 2.5 : 2} />
+              <span className="text-xs font-semibold tracking-tight leading-none">Explorar</span>
+            </Link>
+
+            {/* TAB 3: BOTÃO CENTRAL [+] DE CRIAÇÃO RÁPIDA (FAB CONTEXTUAL) */}
+            <div className="flex-1 flex items-center justify-center">
+              <QuickCreateModal
+                isAuthenticated={isAuthenticated}
+                session={session}
+                asNavButton={true}
+              />
             </div>
-            <span className="text-xs font-medium tracking-tight leading-none">Menu</span>
-          </button>
-        </nav>
+
+            {/* TAB 4: MENSAGENS / ATENDIMENTO */}
+            <Link
+              to={isAuthenticated ? "/conta/conversas" : "/entrar"}
+              aria-label="Mensagens"
+              className={cn(
+                "flex-1 h-12 rounded-lg flex flex-col items-center justify-center gap-1 transition-colors active:scale-95 cursor-pointer touch-manipulation relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
+                isMessagesActive
+                  ? "text-primary font-bold"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              <MessageCircle className="size-5" strokeWidth={isMessagesActive ? 2.5 : 2} />
+              <span className="text-xs font-semibold tracking-tight leading-none">Mensagens</span>
+            </Link>
+
+            {/* TAB 5: MENU HUB GLOBAL (SUPER APP PATTERN) */}
+            <button
+              type="button"
+              onClick={() => setIsMenuHubOpen(true)}
+              aria-label="Menu principal"
+              className={cn(
+                "flex-1 h-12 rounded-lg flex flex-col items-center justify-center gap-1 transition-colors active:scale-95 cursor-pointer touch-manipulation relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
+                isMenuHubOpen
+                  ? "text-primary font-bold"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              <div className="relative">
+                <Menu className="size-5" strokeWidth={isMenuHubOpen ? 2.5 : 2} />
+                {activeOrdersCount > 0 && (
+                  <span className="absolute -top-1 -right-1 size-2 rounded-full bg-amber-500 animate-ping" />
+                )}
+                {activeOrdersCount > 0 && (
+                  <span className="absolute -top-1 -right-1 size-2 rounded-full bg-amber-500" />
+                )}
+              </div>
+              <span className="text-xs font-semibold tracking-tight leading-none">Menu</span>
+            </button>
+          </nav>
+        </div>
       </div>
 
       {/* ── 3. MODAL / BOTTOM SHEET DO MENU HUB GLOBAL ── */}
