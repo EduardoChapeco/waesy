@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "updatedAt": "2026-10-13T16:00:00Z",
+  "updatedAt": "2026-10-13T16:15:00Z",
   "repository": "EduardoChapeco/waesy",
   "candidate": {
     "pullRequest": 29,
@@ -187,7 +187,8 @@
       "evidence": [
         "npm audit 0 produção",
         "CI e lockfile únicos",
-        "gates locais PASS"
+        "gates locais PASS",
+        "W15-SECRET-SCAN-20261013.md: 4.602 arquivos rastreados, 0 findings não allowlisted e Gate 0f no CI"
       ],
       "gap": "SAST/secret scan, SSRF/XSS/IDOR/CSRF/replay/prompt injection e SBOM"
     },

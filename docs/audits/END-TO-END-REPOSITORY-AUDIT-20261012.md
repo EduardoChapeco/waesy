@@ -290,3 +290,9 @@ O fingerprint do cache e da deduplicação in-flight inclui tenant/usuário, wor
 **Evidência:** `docs/audits/W6-RESILIENT-CLIENT-ABORT-20261013.md`
 
 O cliente de retry cancela o backoff quando o chamador aborta, retorna `499 Client Closed Request` e não inicia tentativas adicionais. A suíte de compliance passou com 10/10 testes e o typecheck passou.
+
+## W15 — secret scan de alta confiança
+
+**Evidência:** `docs/audits/W15-SECRET-SCAN-20261013.md`
+
+O Gate 0f analisou 4.602 arquivos rastreados e encontrou zero padrões de segredo não allowlisted. A única exceção é um fixture explícito de teste com motivo registrado.

@@ -23,6 +23,7 @@
     "audit:buttons": "node scripts/audit/audit-interactive-buttons.mjs",
     "audit:buttons:test": "node scripts/audit/audit-interactive-buttons.test.mjs",
     "audit:dependencies": "npm audit --omit=dev --audit-level=high",
+    "audit:secrets": "node scripts/audit/scan-secrets.mjs",
     "check:candidate-baseline": "node scripts/audit/validate-candidate-baseline.mjs",
     "check:release-ledger": "node scripts/audit/validate-release-ledger.mjs",
     "deploy": "node scripts/preflight-release.mjs && npm run check:canonical && npm run typecheck && npm test && npm run build && npx wrangler pages deploy dist --project-name usewaesy --no-bundle",

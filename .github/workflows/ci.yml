@@ -38,6 +38,9 @@ jobs:
       - name: Gate 0c — Production Dependency Security Audit
         run: npm run audit:dependencies
 
+      - name: Gate 0f — High-Confidence Secret Scan
+        run: npm run audit:secrets
+
       - name: Gate 0d — W0-W17 Release Evidence Ledger
         run: npm run check:release-ledger
 
