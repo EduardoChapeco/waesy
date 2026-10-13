@@ -171,6 +171,11 @@ describe("Prompt 22: O Chat como Aplicativo (Comércio, Serviços, Agenda, Orça
     expect(resolvedByCategory?.storeName).toBe("Boutique Elegance Moda");
   });
 
+  it("não seleciona uma loja arbitrária quando a categoria não tem merchant", async () => {
+    const resolved = await resolveMerchantForCategory("categoria-inexistente");
+    expect(resolved).toBeNull();
+  });
+
   // ============================================================================
   // Teste 2: FASE E / FLUXO 1 — Compra em Mercado (Recálculo no Servidor + Idempotência)
   // ============================================================================
