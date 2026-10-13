@@ -8,7 +8,7 @@
 2. **3 pilotos** (`studio-pilot-templates.ts`): Gastronomia, Bem-estar/Agendamento e Criador/Curso. Os três são `review_required`; seus placeholders são intencionais e o gate de publicação os bloqueia até serem substituídos por fatos reais.
 3. **Factory UI** (`StudioTemplateFactory.tsx`): brief em PT, fatos com rótulo/valor, objetivo, direção visual e seleção de seções; geração e auditoria ficam explícitas, e a pessoa pode aplicar como rascunho ou salvar na biblioteca privada da loja.
 4. **Geração server-side** (`studio-template-generation.functions.ts`): autenticação administrativa, limite de payload e rate limit local por loja/usuário, chamada pelo orquestrador IA já existente, parsing JSON e Zod antes de qualquer retorno. O cliente não envia código executável nem pode marcar a própria revisão como concluída.
-5. **Biblioteca privada** (`studio-template-library.functions.ts` + migration `20270114000000_studio_template_library.sql`): salvar/listar drafts no tenant, sem acesso direto por browser/anon/authenticated. Só drafts AI não revisados podem ser armazenados por essa API.
+5. **Biblioteca privada** (`studio-template-library.functions.ts` + migration `20270114000003_studio_template_library.sql`): salvar/listar drafts no tenant, sem acesso direto por browser/anon/authenticated. Só drafts AI não revisados podem ser armazenados por essa API.
 6. **Auditoria e publicação**: verificações estáticas de provenance/licença, alt/actions/anchors, placeholders editoriais e orçamento de estrutura/bytes. O gate de publicação continua no backend. Core Web Vitals/Lighthouse não são inferidos da auditoria estática.
 7. **Unsplash via API oficial**: picker opt-in apenas em slots explicitamente `decorative-only`; busca, seleção humana, download tracking, hotlink, autoria/creditos e ledger verificado no servidor. Veja `UNSPLASH-API-INTEGRATION.md`.
 8. **Preview/renderers**: templates customizados são materializados em uma cópia de Omni AST versionada; a origem fica na página, os `assetRefs` acompanham o Experience Renderer e os créditos aparecem no renderer público.
@@ -26,7 +26,7 @@
 ## Configuração de ambiente e banco
 
 - Aplicar as migrations versionadas usando o fluxo normal de schema do projeto:
-  - `20270114000000_studio_template_library.sql`
+  - `20270114000003_studio_template_library.sql`
   - `20270114010000_unsplash_studio_selection_ledger.sql`
 - Não há migration aplicada automaticamente por este código nem confirmação de deploy/produção nesta mudança.
 - Para Unsplash, configurar `UNSPLASH_ACCESS_KEY` como secret **privado** do backend/worker. Opcionalmente configurar `UNSPLASH_APP_NAME` com o nome registrado da aplicação para os links de referral. Não usar prefixos `VITE_`; não escrever valores em `.env.example`, logs, relatórios, HTML ou source maps.

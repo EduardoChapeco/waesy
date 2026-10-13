@@ -895,8 +895,8 @@ export const adminTriggerPasswordReset = createServerFn({ method: "POST" })
 // ============================================================
 
 /**
- * Localiza de forma resiliente a loja matriz/raiz da plataforma.
- * Se nenhuma loja tiver is_platform_root=true, seleciona a loja padrão e a marca como matriz.
+ * Localiza somente a loja matriz/raiz explicitamente configurada.
+ * Ausência de raiz retorna null para que o chamador use defaults ou inicialização explícita.
  */
 export async function resolvePlatformRootStore(db: any) {
   // 1. Tenta buscar por is_platform_root=true ou slugs canônicos
@@ -908,21 +908,6 @@ export async function resolvePlatformRootStore(db: any) {
     .maybeSingle();
 
   if (store) return store;
-
-  // 2. Fallback de resiliência: primeira store registrada
-  const { data: firstStore } = await db
-    .from("stores")
-    .select("id, name, address, city, state, settings, is_platform_root, slug")
-    .order("created_at", { ascending: true })
-    .limit(1)
-    .maybeSingle();
-
-  if (firstStore) {
-    try {
-      await db.from("stores").update({ is_platform_root: true }).eq("id", firstStore.id);
-    } catch {}
-    return { ...firstStore, is_platform_root: true };
-  }
 
   return null;
 }

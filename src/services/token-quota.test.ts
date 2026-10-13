@@ -37,14 +37,21 @@ describe("Token Quota Engine (Épico 4 / REQ-TOK-01 a REQ-TOK-06)", () => {
 
     const validConsume = ConsumeTokensSchema.safeParse({
       operation: "site_generation_full",
+      idempotencyKey: "site-generation-test-001",
       metadata: { siteId: "test-site-123" },
     });
     expect(validConsume.success).toBe(true);
 
     const invalidConsume = ConsumeTokensSchema.safeParse({
       operation: "doc_generation_pdf",
+      idempotencyKey: "doc-generation-test-001",
       customTokenAmount: -50,
     });
     expect(invalidConsume.success).toBe(false);
+  });
+
+  it("deve rejeitar consumo sem chave determinística de idempotência", () => {
+    const parsed = ConsumeTokensSchema.safeParse({ operation: "copilot_chat_turn" });
+    expect(parsed.success).toBe(false);
   });
 });

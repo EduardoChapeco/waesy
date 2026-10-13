@@ -57,6 +57,39 @@ describe("V144 Omni-Integration Compliance & Resilient Synchronization Suite", (
         globalThis.fetch = originalFetch;
       }
     });
+
+    it("aborta durante o backoff e não inicia uma nova tentativa", async () => {
+      let callCount = 0;
+      const fakeFetch = vi.fn().mockImplementation(async () => {
+        callCount++;
+        return new Response(JSON.stringify({ error: "rate limit exceeded" }), {
+          status: 429,
+          headers: { "Content-Type": "application/json" },
+        });
+      });
+      const controller = new AbortController();
+      const originalFetch = globalThis.fetch;
+      globalThis.fetch = fakeFetch;
+
+      try {
+        const result = await fetchWithExponentialBackoff("https://api.fake.com/endpoint", {
+          signal: controller.signal,
+        }, {
+          maxRetries: 3,
+          baseDelayMs: 5_000,
+          maxDelayMs: 5_000,
+          onRetry: () => controller.abort(),
+        });
+
+        expect(result.ok).toBe(false);
+        expect(result.status).toBe(499);
+        expect(result.statusText).toBe("Client Closed Request");
+        expect(result.retriesAttempted).toBe(1);
+        expect(callCount).toBe(1);
+      } finally {
+        globalThis.fetch = originalFetch;
+      }
+    });
   });
 
   describe("2. Webhook Ingestion & Idempotency Engine", () => {
@@ -176,4 +209,3 @@ describe("V144 Omni-Integration Compliance & Resilient Synchronization Suite", (
     });
   });
 });
-

@@ -242,4 +242,31 @@ describe("PROMPT 27 — Núcleo de IA e Pool de Chaves 2.0 (Porta Única, Custo,
     expect(response.metadata.callId.startsWith("call_")).toBe(true);
     expect(response.metadata.promptVersion).toBe("v1.0");
   });
+
+  it("Fase 7: Fingerprint isola tenant, versão, limites e conteúdo das imagens", async () => {
+    const baseRequest = {
+      task: "chat" as const,
+      prompt: "Explique a política de entrega.",
+      systemPrompt: "Responda de forma objetiva.",
+      bypassCache: true,
+      authContext: { userId: "user-a", workspaceId: "workspace-a", storeId: "store-a" },
+      constraints: { maxTokens: 256, temperature: 0.2 },
+      images: [{ mimeType: "image/png", base64: "image-a" }],
+    };
+
+    const first = await executeAiCoreGateway(baseRequest);
+    const differentTenant = await executeAiCoreGateway({
+      ...baseRequest,
+      authContext: { userId: "user-b", workspaceId: "workspace-b", storeId: "store-b" },
+    });
+    const differentContract = await executeAiCoreGateway({
+      ...baseRequest,
+      promptVersion: "v2.0",
+      constraints: { maxTokens: 512, temperature: 0.2 },
+      images: [{ mimeType: "image/png", base64: "image-b" }],
+    });
+
+    expect(first.metadata.fingerprint).not.toBe(differentTenant.metadata.fingerprint);
+    expect(first.metadata.fingerprint).not.toBe(differentContract.metadata.fingerprint);
+  });
 });

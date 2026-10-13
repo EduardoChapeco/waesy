@@ -47,7 +47,7 @@ Fora de escopo: aplicar migration, aceder ou alterar Supabase, push/PR/merge, CI
 
 ## Paths e limites
 
-Alterações específicas desta microfase incluem `supabase/migrations/20270114000000_contract_signature_completion.sql`, `src/lib/contracts/public-verification-projection.ts`, `src/services/contracts.functions.ts`, `src/routes/verify.document.$code.tsx`, `src/routes/assinar.$token.tsx`, `src/components/contracts/contract-audit-manifest.tsx`, `src/integrations/supabase/types.ts`, testes focused, `docs/specs/SPEC-W2-7-1-CANONICAL-SIGNATURE-COMPLETION-20261007.md` e `docs/design/DECISIONS.md`. Alguns desses paths já continham alterações W2 anteriores; a implementação não os apresenta como diff isolado.
+Alterações específicas desta microfase incluem `supabase/migrations/20270114000001_contract_signature_completion.sql`, `src/lib/contracts/public-verification-projection.ts`, `src/services/contracts.functions.ts`, `src/routes/verify.document.$code.tsx`, `src/routes/assinar.$token.tsx`, `src/components/contracts/contract-audit-manifest.tsx`, `src/integrations/supabase/types.ts`, testes focused, `docs/specs/SPEC-W2-7-1-CANONICAL-SIGNATURE-COMPLETION-20261007.md` e `docs/design/DECISIONS.md`. Alguns desses paths já continham alterações W2 anteriores; a implementação não os apresenta como diff isolado.
 
 A migration tem de ser aplicada e validada em ambiente Postgres autorizado antes de publicar/deployar o código que invoca as RPCs. A classificação pública não fecha a auditoria ampla de `service_role`, RLS, grants ou autorização. Permanecem sem prova de integração: lock/concorrência real, transação/rollback, trigger/backfill, callback Gov.br, UX em browser e CI.
 

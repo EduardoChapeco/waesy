@@ -42,4 +42,4 @@ Fontes oficiais consultadas:
 
 ## Estado das migrations do Waesy Studio
 
-As migrations Studio desta PR usam versões únicas e ordenadas: `20270114000000_studio_template_library.sql`, `20270114010000_unsplash_studio_selection_ledger.sql` e `20270114020000_studio_upload_asset_rights_ledger.sql`. A migration de upload é incremental sobre `media_assets`. Os três IDs duplicados em `main` foram normalizados nos arquivos do branch conforme a tabela acima; a verificação remota continua pendente e é obrigatória antes da aplicação em qualquer ambiente.
+As migrations Studio desta PR usam versões únicas e ordenadas: `20270114000003_studio_template_library.sql`, `20270114010000_unsplash_studio_selection_ledger.sql` e `20270114020000_studio_upload_asset_rights_ledger.sql`. A migration de upload é incremental sobre `media_assets`. Os três IDs duplicados em `main` foram normalizados nos arquivos do branch conforme a tabela acima; a verificação remota continua pendente e é obrigatória antes da aplicação em qualquer ambiente.

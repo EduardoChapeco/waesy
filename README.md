@@ -1,5 +1,11 @@
 # Waesy
 
+## Estado operacional e fonte de verdade — 2026-10-12
+
+Este README preserva o **briefing histórico do produto**. O escopo atual da árvore é maior e inclui Marketplace, Workspace/ERP, turismo, Copilot/IA, CMS/Studio, CRM, financeiro e integrações. Para execução e release, a fonte operacional é a matriz `W0–W17` em [`docs/audits/END-TO-END-REPOSITORY-AUDIT-20261012.md`](docs/audits/END-TO-END-REPOSITORY-AUDIT-20261012.md), complementada por [`docs/audits/PRODUCTION-READINESS-BACKLOG-20261012.md`](docs/audits/PRODUCTION-READINESS-BACKLOG-20261012.md).
+
+Os rótulos **“implementado”, “homologado” e “produção” não são equivalentes**: uma fase só pode ser promovida a produção após evidência do código no SHA candidato, replay de migrations, schema/RLS/JWT/grants, testes negativos cross-tenant, browser E2E, providers/Storage/worker, staging, smoke e rollback. Fases antigas F01–F24/S25–S29 permanecem como histórico de produto até serem reconciliadas com W0–W17.
+
 Crie um novo projeto chamado “Waesy Commerce”. Leia integralmente este briefing antes de editar. As imagens anexadas são referências visuais; “Waesy-logo.jpg” é a marca real a ser usada. Não copie conteúdo, fotos de produtos ou identidade de terceiros.
 
 OBJETIVO

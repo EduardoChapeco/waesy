@@ -273,7 +273,7 @@ describe("isolamento público e assinatura de contratos", () => {
 
   it("migration remove leitura ampla e limita acesso às tabelas por RPC", () => {
     const migration = readFileSync(
-      new URL("../../supabase/migrations/20270115000000_p0_secure_public_contract_access.sql", import.meta.url),
+      new URL("../../supabase/migrations/20270115000002_p0_secure_public_contract_access.sql", import.meta.url),
       "utf8",
     );
     expect(migration).toMatch(/DROP POLICY IF EXISTS\s+"contracts_public_verify"/i);

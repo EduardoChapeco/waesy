@@ -101,6 +101,9 @@ export async function resumeCopilotExecution(executionId: string): Promise<{ exe
   const { data: execution } = await scoped.from("copilot_executions").select("*").eq("id", executionId).maybeSingle().throwOnError();
   if (!execution) return { execution: null, steps: [] };
   const { data: steps } = await scoped.from("copilot_execution_steps").select("*").eq("execution_id", executionId).order("sequence_no", { ascending: true }).throwOnError();
+  if (["COMPLETED", "FAILED_FINAL", "CANCELLED"].includes(String(execution.current_phase))) {
+    return { execution: execution ?? null, steps: steps ?? [] };
+  }
   await getServerClient().from("copilot_executions").update({ resume_count: Number(execution.resume_count || 0) + 1, status: "running", updated_at: new Date().toISOString() }).eq("id", executionId).throwOnError();
   return { execution: execution ?? null, steps: steps ?? [] };
 }

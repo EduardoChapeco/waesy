@@ -6,8 +6,27 @@ import { enforceRateLimit } from "@/lib/rate-limiter";
 import type { Json } from "@/integrations/supabase/types";
 import { getIdentity } from "./identity.functions";
 import { executeUnifiedAiCall } from "./api-orchestrator.functions";
-import { interpolateContractVariables, autoPositionSignatureFieldsFromContent } from "@/lib/contracts/contract-semantic-dictionary";
+import {
+  interpolateContractVariables,
+  autoPositionSignatureFieldsFromContent,
+} from "@/lib/contracts/contract-semantic-dictionary";
 import { assertUserKycVerified } from "./kyc.functions";
+
+async function rollbackGeneratedContract(
+  supabase: ReturnType<typeof getServerClient>,
+  contractId: string,
+): Promise<void> {
+  const { data: versions } = await supabase
+    .from("contract_versions")
+    .select("id")
+    .eq("contract_id", contractId);
+  const versionIds = (versions || []).map((version: { id: string }) => version.id);
+  if (versionIds.length > 0) {
+    await supabase.from("signature_envelopes").delete().in("contract_version_id", versionIds);
+    await supabase.from("contract_versions").delete().in("id", versionIds);
+  }
+  await supabase.from("contracts").delete().eq("id", contractId);
+}
 
 export const ContractCategoryEnum = z.enum([
   "real_estate_rental",
@@ -197,7 +216,8 @@ export const updateContractDraft = createServerFn({ method: "POST" })
       .eq("id", input.contractId)
       .eq("creator_id", identity.id)
       .maybeSingle();
-    if (ownershipErr || !ownedContract) throw new Error("Contrato não encontrado ou acesso negado.");
+    if (ownershipErr || !ownedContract)
+      throw new Error("Contrato não encontrado ou acesso negado.");
 
     const { data: editableVersion, error: editableVersionErr } = await supabase
       .from("contract_versions")
@@ -206,7 +226,8 @@ export const updateContractDraft = createServerFn({ method: "POST" })
       .eq("contract_id", ownedContract.id)
       .eq("is_sealed", false)
       .maybeSingle();
-    if (editableVersionErr || !editableVersion) throw new Error("Versão não encontrada ou já selada.");
+    if (editableVersionErr || !editableVersion)
+      throw new Error("Versão não encontrada ou já selada.");
 
     // 1. Atualiza metadados do contrato se fornecidos
     const contractUpdate: Record<string, any> = { updated_at: new Date().toISOString() };
@@ -266,22 +287,31 @@ export const sealAndIssueContract = createServerFn({ method: "POST" })
       contractId: z.string().uuid(),
       versionId: z.string().uuid(),
       signatureFields: z.array(z.record(z.any())).max(200).optional(),
-      signers: z.array(
-        z.object({
-          name: z.string().trim().min(2).max(200),
-          email: z.string().trim().email().max(320),
-          phone: z.string().trim().max(40).optional(),
-          cpf: z.string().trim().max(40).optional(),
-          role: z.enum(["party", "witness", "guarantor"]).default("party"),
-          authLevel: z.enum(["basic", "advanced", "qualified"]).default("basic"),
-          dispatchChannel: z.enum(["email", "whatsapp", "sms", "direct_link"]).default("email"),
-          signingOrderIndex: z.number().int().min(1).max(50).default(1),
-          colorCode: z.string().trim().regex(/^#[0-9a-fA-F]{6}$/).default("#2563eb"),
-          requireFacialBiometrics: z.boolean().default(false),
-          requireCpfConfirmation: z.boolean().default(false),
-          profileId: z.string().uuid().optional(),
-        }).strict(),
-      ).min(1).max(50),
+      signers: z
+        .array(
+          z
+            .object({
+              name: z.string().trim().min(2).max(200),
+              email: z.string().trim().email().max(320),
+              phone: z.string().trim().max(40).optional(),
+              cpf: z.string().trim().max(40).optional(),
+              role: z.enum(["party", "witness", "guarantor"]).default("party"),
+              authLevel: z.enum(["basic", "advanced", "qualified"]).default("basic"),
+              dispatchChannel: z.enum(["email", "whatsapp", "sms", "direct_link"]).default("email"),
+              signingOrderIndex: z.number().int().min(1).max(50).default(1),
+              colorCode: z
+                .string()
+                .trim()
+                .regex(/^#[0-9a-fA-F]{6}$/)
+                .default("#2563eb"),
+              requireFacialBiometrics: z.boolean().default(false),
+              requireCpfConfirmation: z.boolean().default(false),
+              profileId: z.string().uuid().optional(),
+            })
+            .strict(),
+        )
+        .min(1)
+        .max(50),
     }),
   )
   .handler(async ({ data: input }) => {
@@ -306,7 +336,9 @@ export const sealAndIssueContract = createServerFn({ method: "POST" })
 
     const { data: version, error: vErr } = await supabase
       .from("contract_versions")
-      .select("id, contract_id, version_number, title, content_markdown, clauses, signature_fields, is_sealed, sealed_at, hash_sha256")
+      .select(
+        "id, contract_id, version_number, title, content_markdown, clauses, signature_fields, is_sealed, sealed_at, hash_sha256",
+      )
       .eq("id", input.versionId)
       .eq("contract_id", contract.id)
       .maybeSingle();
@@ -322,7 +354,8 @@ export const sealAndIssueContract = createServerFn({ method: "POST" })
       throw new Error("Esta versão já foi selada e não pode receber novos envelopes.");
     }
 
-    const finalFields = input.signatureFields ??
+    const finalFields =
+      input.signatureFields ??
       (Array.isArray(version.signature_fields) ? version.signature_fields : []);
 
     // Hash the exact database snapshot that the transaction below revalidates under row locks.
@@ -496,7 +529,7 @@ interface ContractCompletionResult {
 
 function jsonObject(value: unknown): Record<string, unknown> | null {
   return typeof value === "object" && value !== null && !Array.isArray(value)
-    ? value as Record<string, unknown>
+    ? (value as Record<string, unknown>)
     : null;
 }
 
@@ -613,7 +646,9 @@ export const signContractEnvelope = createServerFn({ method: "POST" })
         .limit(1)
         .maybeSingle();
       if (evidenceError || !evidence) {
-        throw new Error("O envelope está assinado, mas a evidência persistida não pôde ser confirmada.");
+        throw new Error(
+          "O envelope está assinado, mas a evidência persistida não pôde ser confirmada.",
+        );
       }
       if (!evidence.id || !evidence.signature_digest || !envelope.signed_at) {
         throw new Error("O envelope assinado não possui evidência completa de consentimento.");
@@ -678,7 +713,9 @@ export const signContractEnvelope = createServerFn({ method: "POST" })
           .eq("consent_given", true)
           .maybeSingle();
         if (evidenceError || !evidence) {
-          throw new Error("A evidência desta tentativa não foi confirmada; a assinatura não foi atribuída a este pedido.");
+          throw new Error(
+            "A evidência desta tentativa não foi confirmada; a assinatura não foi atribuída a este pedido.",
+          );
         }
         const completion = await promoteContractAfterSignatures(supabase, envelope.contract_version_id);
         return {
@@ -734,7 +771,9 @@ export const verifyDocumentPublic = createServerFn({ method: "GET" })
       // Fallback: busca contratos turísticos na tabela canônica contracts (category='tourism')
       const { data: tourismContract } = await supabase
         .from("contracts")
-        .select("id, title, status, verification_code, created_at, current_version, is_settled, discharge_hash_sha256, discharge_issued_at, metadata")
+        .select(
+          "id, title, status, verification_code, created_at, current_version, is_settled, discharge_hash_sha256, discharge_issued_at, metadata",
+        )
         .eq("category", "tourism")
         .or(`verification_code.eq.${codeOrHash}`)
         .maybeSingle();
@@ -802,11 +841,13 @@ export const listContracts = createServerFn({ method: "GET" }).handler(async () 
 
   const { data, error } = await supabase
     .from("contracts")
-    .select(`
+    .select(
+      `
       id, title, category, status, created_at, updated_at, verification_code, dispatch_settings,
       creator:creator_id (id, full_name),
       deal:deal_id (id, status, proposed_price_cents)
-    `)
+    `,
+    )
     .eq("creator_id", identity.id)
     .order("created_at", { ascending: false });
 
@@ -829,7 +870,8 @@ export const getContractById = createServerFn({ method: "GET" })
 
     const { data: contract, error } = await supabase
       .from("contracts")
-      .select(`
+      .select(
+        `
         *,
         creator:creator_id (id, full_name, avatar_url),
         deal:deal_id (*),
@@ -837,7 +879,8 @@ export const getContractById = createServerFn({ method: "GET" })
           *,
           envelopes:signature_envelopes (*)
         )
-      `)
+      `,
+      )
       .eq("id", contractId)
       .eq("creator_id", identity.id)
       .single();
@@ -942,7 +985,8 @@ export const listUserEnvelopesAndContracts = createServerFn({ method: "GET" }).h
 
     const { data: envelopes, error } = await supabase
       .from("signature_envelopes")
-      .select(`
+      .select(
+        `
         id, status, signing_token, signed_at, created_at, gov_br_verified,
         contract_version:contract_version_id (
           hash_sha256,
@@ -951,7 +995,8 @@ export const listUserEnvelopesAndContracts = createServerFn({ method: "GET" }).h
             store:store_id (name)
           )
         )
-      `)
+      `,
+      )
       .eq("signer_profile_id", identity.id)
       .order("created_at", { ascending: false });
 
@@ -1037,12 +1082,14 @@ export const getPublicGovBrSigningConfig = createServerFn({ method: "POST" })
     // 1. Busca o envelope e o contrato para identificar a loja emitente
     const { data: envelope, error: envErr } = await supabase
       .from("signature_envelopes")
-      .select(`
+      .select(
+        `
         id, signing_token, status,
         contract_version:contract_version_id (
           contract:contract_id (id, store_id)
         )
-      `)
+      `,
+      )
       .eq("signing_token", signingToken)
       .maybeSingle();
 
@@ -1094,14 +1141,10 @@ export const getPublicGovBrSigningConfig = createServerFn({ method: "POST" })
 
     const env = (payload.environment || "production").toLowerCase().trim();
     const ssoBase =
-      env === "staging"
-        ? "https://sso.staging.acesso.gov.br"
-        : "https://sso.acesso.gov.br";
+      env === "staging" ? "https://sso.staging.acesso.gov.br" : "https://sso.acesso.gov.br";
 
     const callbackUrl =
-      payload.redirect_uri ||
-      payload.redirectUri ||
-      "https://waesy.com/api/auth/govbr/callback";
+      payload.redirect_uri || payload.redirectUri || "https://waesy.com/api/auth/govbr/callback";
 
     // URL canônica de autorização OAuth2 do Gov.br
     const authUrl = `${ssoBase}/authorize?response_type=code&client_id=${encodeURIComponent(
@@ -1133,7 +1176,9 @@ export async function signContractWithGovBr(rawInput: unknown) {
   const supabase = getServerClient();
   const { data: envelope, error: envErr } = await supabase
     .from("signature_envelopes")
-    .select("id, contract_version_id, signing_token, status, expires_at, signer_name, signer_cpf, gov_br_verified, gov_br_level, signed_at")
+    .select(
+      "id, contract_version_id, signing_token, status, expires_at, signer_name, signer_cpf, gov_br_verified, gov_br_level, signed_at",
+    )
     .eq("signing_token", input.signingToken)
     .maybeSingle();
 
@@ -1147,9 +1192,7 @@ export async function signContractWithGovBr(rawInput: unknown) {
     throw new Error("Envelope não está pendente ou expirou.");
   }
   const normalizedInputCpf = input.cpf.replace(/\D/g, "");
-  const normalizedExpectedCpf = envelope.signer_cpf
-    ? envelope.signer_cpf.replace(/\D/g, "")
-    : null;
+  const normalizedExpectedCpf = envelope.signer_cpf ? envelope.signer_cpf.replace(/\D/g, "") : null;
   if (normalizedInputCpf.length !== 11) {
     throw new Error("O CPF recebido da identidade Gov.br é inválido.");
   }
@@ -1276,10 +1319,12 @@ export const generateContractFromOrder = createServerFn({ method: "POST" })
     const identity = await getIdentity().catch(() => null);
     let orderQuery = supabase
       .from("orders")
-      .select(`
+      .select(
+        `
         id, public_token, total_cents, customer_snapshot, items_snapshot, store_id,
         store:store_id (name, slug)
-      `)
+      `,
+      )
       .eq("id", input.orderId);
 
     if (input.publicToken) {
@@ -1305,9 +1350,15 @@ export const generateContractFromOrder = createServerFn({ method: "POST" })
 
     // Formata tabela de itens a partir de items_snapshot
     const items = Array.isArray(order.items_snapshot) ? order.items_snapshot : [];
-    const itemsTable = items.length > 0
-      ? items.map((it: any) => `• ${it.quantity || 1}x ${it.title || it.name || "Item"} — R$ ${(Number(it.price_cents || it.total_cents || 0) / 100).toFixed(2)}`).join("\n")
-      : "• Produtos e serviços descritos no pedido de venda.";
+    const itemsTable =
+      items.length > 0
+        ? items
+            .map(
+              (it: any) =>
+                `• ${it.quantity || 1}x ${it.title || it.name || "Item"} — R$ ${(Number(it.price_cents || it.total_cents || 0) / 100).toFixed(2)}`,
+            )
+            .join("\n")
+        : "• Produtos e serviços descritos no pedido de venda.";
 
     const valorTotalFormatado = `R$ ${(Number(order.total_cents || 0) / 100).toFixed(2)}`;
     const dataExtenso = new Intl.DateTimeFormat("pt-BR", { dateStyle: "long" }).format(new Date());
@@ -1363,7 +1414,7 @@ Data de emissão: {{data_extenso}}`;
         order_id: order.id,
         title,
         category: "general_deal",
-        status: "signing",
+        status: "draft",
         current_version: 1,
       })
       .select()
@@ -1374,47 +1425,86 @@ Data de emissão: {{data_extenso}}`;
       throw new Error("Erro ao gerar contrato para o pedido.");
     }
 
-    // Calcula hash SHA-256 e sela a versão
+    // Calcula hash SHA-256 e prepara a versão; só marca signing após o envelope.
     const textBuffer = new TextEncoder().encode(contentMarkdown);
     const hashBuffer = await crypto.subtle.digest("SHA-256", textBuffer);
     const hashHex = Array.from(new Uint8Array(hashBuffer))
       .map((b) => b.toString(16).padStart(2, "0"))
       .join("");
 
-    // Auto-posiciona inteligentemente as tags de assinatura para o cliente e empresa
     const autoFields = autoPositionSignatureFieldsFromContent(contentMarkdown, 1, 2);
+    let version: any;
+    let envelope: any;
+    try {
+      const versionResult = await supabase
+        .from("contract_versions")
+        .insert({
+          contract_id: contract.id,
+          version_number: 1,
+          title,
+          content_markdown: contentMarkdown,
+          hash_sha256: hashHex,
+          signature_fields: autoFields,
+          page_count: 1,
+          is_sealed: false,
+          sealed_at: null,
+        })
+        .select()
+        .single();
+      if (versionResult.error || !versionResult.data) {
+        throw new Error(
+          `Falha ao criar versão: ${versionResult.error?.message || "resposta vazia"}`,
+        );
+      }
+      version = versionResult.data;
 
-    const { data: version } = await supabase
-      .from("contract_versions")
-      .insert({
-        contract_id: contract.id,
-        version_number: 1,
-        title,
-        content_markdown: contentMarkdown,
-        hash_sha256: hashHex,
-        signature_fields: autoFields,
-        page_count: 1,
-        is_sealed: true,
-        sealed_at: new Date().toISOString(),
-      })
-      .select()
-      .single();
+      const envelopeResult = await supabase
+        .from("signature_envelopes")
+        .insert({
+          contract_version_id: version.id,
+          signer_name: clientName,
+          signer_email: clientEmail || "cliente@waesy.com",
+          signer_phone: clientPhone || null,
+          signer_cpf: clientCpf || null,
+          signer_profile_id: customer.profile_id || null,
+          dispatch_channel: clientPhone ? "whatsapp" : "email",
+          status: "pending",
+        })
+        .select()
+        .single();
+      if (envelopeResult.error || !envelopeResult.data) {
+        throw new Error(
+          `Falha ao criar envelope: ${envelopeResult.error?.message || "resposta vazia"}`,
+        );
+      }
+      envelope = envelopeResult.data;
 
-    // Cria o envelope de assinatura para o cliente
-    const { data: envelope } = await supabase
-      .from("signature_envelopes")
-      .insert({
-        contract_version_id: version.id,
-        signer_name: clientName,
-        signer_email: clientEmail || "cliente@waesy.com",
-        signer_phone: clientPhone || null,
-        signer_cpf: clientCpf || null,
-        signer_profile_id: customer.profile_id || null,
-        dispatch_channel: clientPhone ? "whatsapp" : "email",
-        status: "pending",
-      })
-      .select()
-      .single();
+      const [sealResult, statusResult] = await Promise.all([
+        supabase
+          .from("contract_versions")
+          .update({ is_sealed: true, sealed_at: new Date().toISOString() })
+          .eq("id", version.id),
+        supabase
+          .from("contracts")
+          .update({ status: "signing", updated_at: new Date().toISOString() })
+          .eq("id", contract.id),
+      ]);
+      if (sealResult.error || statusResult.error) {
+        throw new Error(
+          `Falha ao finalizar contrato: ${sealResult.error?.message || statusResult.error?.message}`,
+        );
+      }
+    } catch (error) {
+      try {
+        await rollbackGeneratedContract(supabase, contract.id);
+      } catch (rollbackError) {
+        console.error(
+          "[contracts] Falha ao compensar contrato parcialmente gerado:",
+          rollbackError,
+        );
+      }
+      throw error;
+    }
 
     const cleanPhone = clientPhone.replace(/\D/g, "");
     const signingUrl = `/assinar/${envelope.signing_token}`;
@@ -1446,13 +1536,15 @@ export const generateContractFromDeal = createServerFn({ method: "POST" })
 
     const { data: deal, error: dErr } = await supabase
       .from("deals")
-      .select(`
+      .select(
+        `
         id, classified_id, buyer_id, seller_id, proposed_price_cents, installments_count,
         deal_type, terms, start_date, end_date, nights_count,
         classified:classified_id (id, title, category, location_name, attributes),
         buyer:buyer_id (id, full_name, phone, email, document),
         seller:seller_id (id, full_name, phone, email, document)
-      `)
+      `,
+      )
       .eq("id", input.dealId)
       .single();
 
@@ -1536,13 +1628,13 @@ Assinatura do Vendedor: ${seller.full_name || "Vendedor"}`;
         deal_id: deal.id,
         title,
         category,
-        status: "signing",
+        status: "draft",
         current_version: 1,
       })
       .select()
       .single();
 
-    if (cErr) {
+    if (cErr || !contract) {
       console.error("[contracts] Erro ao criar contrato para negociação:", cErr);
       throw new Error("Erro ao criar contrato para a negociação.");
     }
@@ -1552,40 +1644,80 @@ Assinatura do Vendedor: ${seller.full_name || "Vendedor"}`;
     const hashHex = Array.from(new Uint8Array(hashBuffer))
       .map((b) => b.toString(16).padStart(2, "0"))
       .join("");
-
     const autoFields = autoPositionSignatureFieldsFromContent(contentMarkdown, 1, 2);
-
-    const { data: version } = await supabase
-      .from("contract_versions")
-      .insert({
-        contract_id: contract.id,
-        version_number: 1,
-        title,
-        content_markdown: contentMarkdown,
-        hash_sha256: hashHex,
-        signature_fields: autoFields,
-        page_count: 1,
-        is_sealed: true,
-        sealed_at: new Date().toISOString(),
-      })
-      .select()
-      .single();
-
     const otherParty = identity.id === deal.buyer_id ? seller : buyer;
-    const { data: envelope } = await supabase
-      .from("signature_envelopes")
-      .insert({
-        contract_version_id: version.id,
-        signer_name: otherParty.full_name || "Contraparte",
-        signer_email: otherParty.email || "contato@waesy.com",
-        signer_phone: otherParty.phone || null,
-        signer_cpf: otherParty.document || null,
-        signer_profile_id: otherParty.id || null,
-        dispatch_channel: otherParty.phone ? "whatsapp" : "email",
-        status: "pending",
-      })
-      .select()
-      .single();
+    let version: any;
+    let envelope: any;
+    try {
+      const versionResult = await supabase
+        .from("contract_versions")
+        .insert({
+          contract_id: contract.id,
+          version_number: 1,
+          title,
+          content_markdown: contentMarkdown,
+          hash_sha256: hashHex,
+          signature_fields: autoFields,
+          page_count: 1,
+          is_sealed: false,
+          sealed_at: null,
+        })
+        .select()
+        .single();
+      if (versionResult.error || !versionResult.data) {
+        throw new Error(
+          `Falha ao criar versão: ${versionResult.error?.message || "resposta vazia"}`,
+        );
+      }
+      version = versionResult.data;
+
+      const envelopeResult = await supabase
+        .from("signature_envelopes")
+        .insert({
+          contract_version_id: version.id,
+          signer_name: otherParty.full_name || "Contraparte",
+          signer_email: otherParty.email || "contato@waesy.com",
+          signer_phone: otherParty.phone || null,
+          signer_cpf: otherParty.document || null,
+          signer_profile_id: otherParty.id || null,
+          dispatch_channel: otherParty.phone ? "whatsapp" : "email",
+          status: "pending",
+        })
+        .select()
+        .single();
+      if (envelopeResult.error || !envelopeResult.data) {
+        throw new Error(
+          `Falha ao criar envelope: ${envelopeResult.error?.message || "resposta vazia"}`,
+        );
+      }
+      envelope = envelopeResult.data;
+
+      const [sealResult, statusResult] = await Promise.all([
+        supabase
+          .from("contract_versions")
+          .update({ is_sealed: true, sealed_at: new Date().toISOString() })
+          .eq("id", version.id),
+        supabase
+          .from("contracts")
+          .update({ status: "signing", updated_at: new Date().toISOString() })
+          .eq("id", contract.id),
+      ]);
+      if (sealResult.error || statusResult.error) {
+        throw new Error(
+          `Falha ao finalizar contrato: ${sealResult.error?.message || statusResult.error?.message}`,
+        );
+      }
+    } catch (error) {
+      try {
+        await rollbackGeneratedContract(supabase, contract.id);
+      } catch (rollbackError) {
+        console.error(
+          "[contracts] Falha ao compensar contrato parcialmente gerado:",
+          rollbackError,
+        );
+      }
+      throw error;
+    }
 
     const cleanPhone = (otherParty.phone || "").replace(/\D/g, "");
     const signingUrl = `/assinar/${envelope.signing_token}`;
@@ -1662,7 +1794,10 @@ export const settleContractAndIssueDischarge = createServerFn({ method: "POST" }
   });
 
 // ─── 9. BANCO CENTRALIZADO DE MODELOS DE CONTRATOS & MINUTAS JURÍDICAS ────────
-import { ADVANCED_CONTRACT_TEMPLATES, ContractTemplateDefinition } from "@/lib/data/advanced-contract-templates";
+import {
+  ADVANCED_CONTRACT_TEMPLATES,
+  ContractTemplateDefinition,
+} from "@/lib/data/advanced-contract-templates";
 
 const listContractTemplatesSchema = z.object({
   category: z.string().optional(),
@@ -1710,7 +1845,7 @@ export const listContractTemplates = createServerFn({ method: "GET" })
         (t) =>
           t.title.toLowerCase().includes(cleanQuery) ||
           t.summary.toLowerCase().includes(cleanQuery) ||
-          t.legal_framework.toLowerCase().includes(cleanQuery)
+          t.legal_framework.toLowerCase().includes(cleanQuery),
       );
     }
 

@@ -20,6 +20,8 @@ jobs:
     steps:
       - name: Checkout Codebase
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Node.js 20.x
         uses: actions/setup-node@v4
@@ -29,6 +31,27 @@ jobs:
 
       - name: Install Dependencies
         run: npm ci --prefer-offline
+
+      - name: Gate 0a — Candidate Baseline Manifest
+        run: npm run check:candidate-baseline
+
+      - name: Gate 0c — Production Dependency Security Audit
+        run: npm run audit:dependencies
+
+      - name: Gate 0f — High-Confidence Secret Scan
+        run: npm run audit:secrets
+
+      - name: Gate 0d — W0-W17 Release Evidence Ledger
+        run: npm run check:release-ledger
+
+      - name: Gate 0 — Migration Schema Consistency
+        run: npm run check:schema
+
+      - name: Gate 0e — Migration Inventory Integrity
+        run: npm run check:migration-inventory
+
+      - name: Gate 0b — BFF Table Contract Consistency
+        run: npm run check:bff
 
       - name: Gate 1 — TypeScript Strict Typecheck
         run: npm run typecheck

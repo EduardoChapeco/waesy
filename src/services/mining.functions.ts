@@ -828,18 +828,9 @@ export const curateMineArticle = createServerFn({ method: "POST" })
  const identity = await getServerIdentity();
  if (!identity?.id) throw new Error("Não autenticado");
 
- let storeId = data.store_id || identity.store_id;
+ const storeId = data.store_id || identity.store_id;
  if (!storeId && data.action === "approve") {
- const { data: rootStore } = await supabase
- .from("stores")
- .select("id")
- .eq("is_platform_root", true)
- .maybeSingle();
- storeId = rootStore?.id;
- if (!storeId) {
- const { data: anyStore } = await supabase.from("stores").select("id").limit(1).maybeSingle();
- storeId = anyStore?.id;
- }
+   throw new Error("Tenant obrigatório para aprovar artigo minerado.");
  }
 
  const result = await supabase.rpc("process_mined_article", {
@@ -879,18 +870,9 @@ export const batchCurateMineArticlesFn = createServerFn({ method: "POST" })
     const identity = await getServerIdentity();
     if (!identity?.id) throw new Error("Não autenticado");
 
-    let storeId = data.store_id || identity.store_id;
+    const storeId = data.store_id || identity.store_id;
     if (!storeId && data.action === "approve") {
-      const { data: rootStore } = await supabase
-        .from("stores")
-        .select("id")
-        .eq("is_platform_root", true)
-        .maybeSingle();
-      storeId = rootStore?.id;
-      if (!storeId) {
-        const { data: anyStore } = await supabase.from("stores").select("id").limit(1).maybeSingle();
-        storeId = anyStore?.id;
-      }
+      throw new Error("Tenant obrigatório para aprovar artigos minerados.");
     }
 
     let processedCount = 0;

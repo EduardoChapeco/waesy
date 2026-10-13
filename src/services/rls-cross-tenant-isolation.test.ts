@@ -88,6 +88,18 @@ describe("Segurança Multi-Tenant & RLS Isolation — R51", () => {
       }).not.toThrow();
       expect(identityOperatorTenantA.store_id).toBe(tenantA_Id);
     });
+
+    it("nega role privilegiada quando não existe membership verificável", () => {
+      const identityWithoutMembership: ServerIdentity = {
+        id: "user-without-membership",
+        role: "owner",
+        store_id: tenantA_Id,
+        memberships: [],
+      };
+      expect(() => assertStoreAccess(identityWithoutMembership, ["owner"])).toThrow(
+        /Insufficient permissions/,
+      );
+    });
   });
 
   describe("3. Escopos de Papéis e Recursos (R52)", () => {
@@ -168,7 +180,7 @@ describe("Segurança Multi-Tenant & RLS Isolation — R51", () => {
 
     it("sanitiza mensagens de erro prevenindo vazamento de credenciais ou SQL bruto", () => {
       const internalDbError = new Error(
-        'relation "public.secret_credentials" does not exist at postgres://user:password123@aws-pooler:5432'
+        'relation "public.secret_credentials" does not exist at postgres://user:password123@aws-pooler:5432',
       );
 
       const sanitizeErrorMessage = (err: unknown): string => {
@@ -186,4 +198,3 @@ describe("Segurança Multi-Tenant & RLS Isolation — R51", () => {
     });
   });
 });
-

@@ -96,8 +96,7 @@ describe('keyset-pagination (Plano 5 — S17)', () => {
       const mockQuery = {
         limit: vi.fn().mockReturnThis(),
         order: vi.fn().mockReturnThis(),
-        lt: vi.fn().mockReturnThis(),
-        gt: vi.fn().mockReturnThis(),
+        or: vi.fn().mockReturnThis(),
       };
 
       const cursor = encodeCursor({ sortValue: '2026-10-01', id: 'abc' });
@@ -109,8 +108,29 @@ describe('keyset-pagination (Plano 5 — S17)', () => {
       });
 
       expect(mockQuery.limit).toHaveBeenCalledWith(26); // 25 + 1
-      expect(mockQuery.lt).toHaveBeenCalledWith('created_at', '2026-10-01');
+      expect(mockQuery.or).toHaveBeenCalledWith(
+        'created_at.lt.2026-10-01,and(created_at.eq.2026-10-01,id.lt.abc)',
+      );
       expect(mockQuery.order).toHaveBeenCalledWith('created_at', { ascending: false });
+      expect(mockQuery.order).toHaveBeenCalledWith('id', { ascending: false });
+    });
+
+    it('deve usar o id como desempate na ordenação ascendente', () => {
+      const mockQuery = {
+        limit: vi.fn().mockReturnThis(),
+        order: vi.fn().mockReturnThis(),
+        or: vi.fn().mockReturnThis(),
+      };
+      const cursor = encodeCursor({ sortValue: 10, id: 'item-10' });
+      applyPostgrestKeysetFilter(mockQuery as any, {
+        cursor,
+        sortColumn: 'price_cents',
+        sortOrder: 'asc',
+      });
+      expect(mockQuery.or).toHaveBeenCalledWith(
+        'price_cents.gt.10,and(price_cents.eq.10,id.gt.item-10)',
+      );
+      expect(mockQuery.order).toHaveBeenCalledWith('id', { ascending: true });
     });
   });
 });

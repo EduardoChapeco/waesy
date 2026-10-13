@@ -2921,11 +2921,11 @@ Lista obtida diretamente da API GitHub para cada PR, não inferida dos findings.
 | `supabase/migrations/20270111000001_remove_unvalidated_bmc_confidence.sql` | `added` | 56 | 0 |
 | `supabase/migrations/20270112000000_brand_kit_provenance_and_human_review.sql` | `added` | 35 | 0 |
 | `supabase/migrations/20270112000001_chat_message_idempotency.sql` | `renamed` | 0 | 0 |
-| `supabase/migrations/20270113000000_brand_kits_contract_and_provenance.sql` | `added` | 40 | 0 |
+| `supabase/migrations/20270113010000_brand_kits_contract_and_provenance.sql` | `added` | 40 | 0 |
 | `supabase/migrations/20270114000000_competitor_snapshot_provenance.sql` | `added` | 24 | 0 |
-| `supabase/migrations/20270115000000_external_event_source_provenance.sql` | `added` | 6 | 0 |
-| `supabase/migrations/20270116000000_simlab_tenant_integrity_and_rbac.sql` | `added` | 122 | 0 |
-| `supabase/migrations/20270117000000_remove_event_and_mining_fake_defaults.sql` | `added` | 34 | 0 |
+| `supabase/migrations/20270115000001_external_event_source_provenance.sql` | `added` | 6 | 0 |
+| `supabase/migrations/20270116000001_simlab_tenant_integrity_and_rbac.sql` | `added` | 122 | 0 |
+| `supabase/migrations/20270117000001_remove_event_and_mining_fake_defaults.sql` | `added` | 34 | 0 |
 
 ## 11. Checklist de execução para o próximo agente
 

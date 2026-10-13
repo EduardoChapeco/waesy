@@ -49,7 +49,7 @@
 ## Checklist antes de habilitar em produção
 
 1. Registrar a aplicação e confirmar com Unsplash que o fluxo SaaS/comercial está alinhado às diretrizes/review atuais; **não** inferir aprovação a partir do código.
-2. Aplicar as migrations `20270114000000_studio_template_library.sql` e `20270114010000_unsplash_studio_selection_ledger.sql` pelo processo de banco do projeto.
+2. Aplicar as migrations `20270114000003_studio_template_library.sql` e `20270114010000_unsplash_studio_selection_ledger.sql` pelo processo de banco do projeto.
 3. Criar o secret privado `UNSPLASH_ACCESS_KEY` no ambiente server/worker e definir `UNSPLASH_APP_NAME` somente se o nome correspondente estiver registrado.
 4. Executar a suíte de testes, build, CI, smoke test autenticado de busca/seleção, verificar hotlink/atribuição na página publicada e testar que tracking com erro e metadata forjada são bloqueados.
 5. Promover somente templates revisados; os 3 pilotos atuais continuam com placeholders intencionais e **não** devem ser publicados sem substituição por fatos verdadeiros.

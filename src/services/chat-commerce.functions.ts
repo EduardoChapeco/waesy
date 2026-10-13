@@ -289,7 +289,8 @@ export const saveUserCommercePreferences = createServerFn({ method: "POST" })
 
 /**
  * Resolução semântica de loja preferida do cliente para uma categoria específica.
- * Sem preferência, retorna a primeira loja ativa no segmento correspondente.
+ * Sem preferência explícita, retorna somente uma loja encontrada no segmento correspondente.
+ * Nunca seleciona uma loja arbitrária fora da categoria solicitada.
  */
 export async function resolveMerchantForCategory(
   category: string,
@@ -309,27 +310,16 @@ export async function resolveMerchantForCategory(
     }
   }
 
-  // Fallback para loja ativa com correspondência no segmento
-  const { data: defaultStore } = await db
+  // Resolução semântica por segmento; ausência de correspondência é explícita.
+  const { data: categoryStore } = await db
     .from("stores")
     .select("id, name, segment")
     .ilike("segment", `%${category}%`)
     .limit(1)
     .maybeSingle();
 
-  if (defaultStore !== null && defaultStore !== undefined) {
-    return { storeId: defaultStore.id, storeName: defaultStore.name };
-  }
-
-  // Fallback geral de loja primária
-  const { data: anyStore } = await db
-    .from("stores")
-    .select("id, name")
-    .limit(1)
-    .maybeSingle();
-
-  if (anyStore !== null && anyStore !== undefined) {
-    return { storeId: anyStore.id, storeName: anyStore.name };
+  if (categoryStore !== null && categoryStore !== undefined) {
+    return { storeId: categoryStore.id, storeName: categoryStore.name };
   }
 
   return null;
