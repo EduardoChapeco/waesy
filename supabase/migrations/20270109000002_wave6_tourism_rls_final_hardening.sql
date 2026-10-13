@@ -13,7 +13,10 @@ begin;
 alter table public.booking_appointments enable row level security;
 drop policy if exists "Customers can create appointments" on public.booking_appointments;
 drop policy if exists "Customers can read own appointments" on public.booking_appointments;
+drop policy if exists "Customers read own appointments" on public.booking_appointments;
+drop policy if exists "Customers create own appointments" on public.booking_appointments;
 drop policy if exists "Store staff can manage appointments" on public.booking_appointments;
+drop policy if exists "Booking staff manage store appointments" on public.booking_appointments;
 
 create policy "Customers read own appointments"
   on public.booking_appointments for select to authenticated
@@ -36,9 +39,13 @@ create policy "Booking staff manage store appointments"
 
 -- O pivot canônico usa profile_id, não user_id.
 drop policy if exists "Customers can view their own support tickets" on public.support_tickets;
+drop policy if exists "Customers can view own support tickets" on public.support_tickets;
 drop policy if exists "Customers can create support tickets" on public.support_tickets;
+drop policy if exists "Customers can create own support tickets" on public.support_tickets;
 drop policy if exists "Workspace members can view support tickets" on public.support_tickets;
+drop policy if exists "Workspace members can view scoped support tickets" on public.support_tickets;
 drop policy if exists "Workspace members can update support tickets" on public.support_tickets;
+drop policy if exists "Workspace managers can update scoped support tickets" on public.support_tickets;
 
 create policy "Customers can view own support tickets"
   on public.support_tickets for select to authenticated
