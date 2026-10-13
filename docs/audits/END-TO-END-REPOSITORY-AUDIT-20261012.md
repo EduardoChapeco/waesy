@@ -270,3 +270,11 @@ Isso fecha a validação de integração do candidato para esta correção. Não
 Foi implementado o `npm run check:migration-inventory`, agora executado no CI como Gate 0e. O subgate analisou 500 migrations SQL e confirmou nomes válidos, versões únicas, arquivos não vazios e hash ordenado reproduzível. `check:schema` e `check:bff` também passaram no mesmo candidato.
 
 Este avanço reduz o risco de árvore de migrations não determinística, mas não fecha o replay de Postgres. W1 continua `blocked` para promoção até haver banco descartável autorizado, replay from-zero, segunda aplicação, snapshot de catálogo/policies/grants/functions e testes negativos RLS/JWT.
+
+## 15. W2 — chat commerce sem fallback arbitrário de tenant
+
+**Evidência:** `docs/audits/W2-CHAT-COMMERCE-TENANT-FIX-20261013.md`
+
+`resolveMerchantForCategory` deixou de selecionar a primeira loja da tabela quando não havia merchant preferido nem correspondência por segmento. O resolver agora retorna `null` sem correspondência, e a regressão cobre esse comportamento. A suíte focal passou com 14/14 testes e o typecheck passou.
+
+W2 continua parcial: RLS/JWT/grants efetivos, testes A/B cross-tenant, concorrência e quota/provider ainda exigem ambiente de integração autorizado.
