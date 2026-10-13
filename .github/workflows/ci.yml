@@ -44,6 +44,9 @@ jobs:
       - name: Gate 0 — Migration Schema Consistency
         run: npm run check:schema
 
+      - name: Gate 0e — Migration Inventory Integrity
+        run: npm run check:migration-inventory
+
       - name: Gate 0b — BFF Table Contract Consistency
         run: npm run check:bff
 

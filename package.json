@@ -36,6 +36,7 @@
     "check:cycles": "node scripts/check-circular-deps.mjs",
     "check:bff": "node scripts/check-bff-table-contracts.mjs",
     "check:schema": "node scripts/check-schema-consolidation.mjs",
+    "check:migration-inventory": "node scripts/audit/validate-migration-inventory.mjs",
     "check:types-ssot": "node scripts/check-type-duplications.mjs",
     "check:route-budget": "node scripts/route-budget-guard.mjs",
     "check:tokens": "node scripts/token-sync.mjs --check",
