@@ -270,3 +270,11 @@ Isso fecha a validação de integração do candidato para esta correção. Não
 Foi implementado o `npm run check:migration-inventory`, agora executado no CI como Gate 0e. O subgate analisou 500 migrations SQL e confirmou nomes válidos, versões únicas, arquivos não vazios e hash ordenado reproduzível. `check:schema` e `check:bff` também passaram no mesmo candidato.
 
 Este avanço reduz o risco de árvore de migrations não determinística, mas não fecha o replay de Postgres. W1 continua `blocked` para promoção até haver banco descartável autorizado, replay from-zero, segunda aplicação, snapshot de catálogo/policies/grants/functions e testes negativos RLS/JWT.
+
+## 18. W15 — secret scan de alta confiança
+
+**Evidência:** `docs/audits/W15-SECRET-SCAN-20261013.md`
+
+Foi criado um scanner determinístico integrado ao CI como Gate 0f. Ele analisou 4.602 arquivos rastreados e encontrou zero padrões de segredo não allowlisted. A única exceção é um fixture explícito de teste que prova redaction de chave falsa.
+
+W15 continua parcial: ainda faltam SAST/DAST, varredura histórica/rotação de credenciais, testes SSRF/XSS/IDOR/CSRF/replay/prompt injection e SBOM.
