@@ -589,57 +589,7 @@ function EventosPage() {
         </section>
       )}
 
-      {/* ── 3. Subcategorias de Eventos ── */}
-      <section aria-label="Subcategorias de Eventos" className="space-y-2">
-        {selectedCategory !== "todos" && (
-          <div className="flex justify-end pb-1">
-            <button
-              type="button"
-              onClick={() => setSelectedCategory("todos")}
-              className="min-h-11 inline-flex items-center py-2 px-3 text-xs font-medium text-primary hover:underline cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
-            >
-              Limpar filtro de categoria
-            </button>
-          </div>
-        )}
-
-        {/* Trilho de Botões Ergonômicos com Contadores */}
-        <div role="tablist" aria-label="Categorias" className="flex items-center gap-2 overflow-x-auto tab-list no-scrollbar pb-1 snap-x snap-mandatory">
-          {EVENT_SUBCATEGORIES_BUTTONS.map((sub) => {
-            const isSelected = selectedCategory === sub.id;
-            const count = eventsCountBySubcategory[sub.id] || 0;
-
-            return (
-              <button
-                key={sub.id}
-                type="button"
-                onClick={() => setSelectedCategory(isSelected && sub.id !== "todos" ? "todos" : sub.id)}
-                className={`h-11 px-4 rounded-lg text-xs font-semibold flex items-center gap-2 shrink-0 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer select-none snap-start whitespace-nowrap ${
-                  isSelected
-                    ? "bg-foreground text-background font-bold"
-                    : "bg-card border border-border/70 text-muted-foreground hover:text-foreground hover:bg-muted/60 hover:border-foreground/20"
-                }`}
-              >
-                <sub.icon className="size-4 shrink-0" />
-                <span>{sub.label}</span>
-                {count > 0 && (
-                  <span
-                    className={`text-xs font-mono px-2 py-1 rounded-md ${
-                      isSelected
-                        ? "bg-background/20 text-background font-bold"
-                        : "bg-muted text-muted-foreground"
-                    }`}
-                  >
-                    {count}
-                  </span>
-                )}
-              </button>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* ── 4. Filtro de Data & Calendário Canônico (Apple / Airbnb HIG) ── */}
+      {/* ── 3. Filtro de Data & Calendário Canônico (Apple / Airbnb HIG) ── */}
       <section aria-label="Programação por Data" className="space-y-2 pt-1">
         <div role="tablist" aria-label="Filtro de Data" className="flex items-center gap-2 overflow-x-auto tab-list no-scrollbar pb-1 snap-x snap-mandatory">
           {/* Popover com Calendário Interativo */}
@@ -723,7 +673,7 @@ function EventosPage() {
         </div>
       </section>
 
-      {/* ── 5. DiscoveryControlBar (Busca em Tempo Real & Modos de Visualização) ── */}
+      {/* ── 4. DiscoveryControlBar (Busca em Tempo Real & Modos de Visualização) ── */}
       <DiscoveryControlBar
         search={searchQuery}
         onSearchChange={setSearchQuery}
@@ -736,7 +686,7 @@ function EventosPage() {
         allowedViewModes={["feed", "grid", "list"]}
       />
 
-      {/* ── 6. Estados de Carregamento, Erro e Vazio ── */}
+      {/* ── 5. Estados de Carregamento, Erro e Vazio ── */}
       {isLoading && (
         <div className="flex justify-center py-24">
           <CircleNotch size={32} className="animate-spin motion-reduce:animate-none text-muted-foreground" />
@@ -776,7 +726,7 @@ function EventosPage() {
         </div>
       )}
 
-      {/* ── 7. Renderização dos Modos de Visualização ── */}
+      {/* ── 6. Renderização dos Modos de Visualização ── */}
 
       {/* MODO 1: FEED DE TRILHOS TEMÁTICOS & MOTOR PROCEDURAL INFINITE FEED */}
       {!isLoading && !isError && filteredEvents.length > 0 && viewMode === "feed" && (

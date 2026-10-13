@@ -713,7 +713,9 @@ function cleanAddressSegment(text: string): string {
       {/* CONTRATO DE DESIGN CANÔNICO: FOTO 1:1 AO LADO DA CAPA 21:9 NA MESMA LINHA — PROIBIDO ALTERAR ESTA ESTRUTURA */}
       <div className="rounded-lg bg-card border border-border/40 p-4 sm:p-6 space-y-4">
         {/* Linha Superior Canônica: Foto 1:1 Squircle + Capa 21:9 com Scroll Interno de Banners ao Lado */}
-        <div className="flex items-center gap-3 sm:gap-5 w-full">
+        <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-3 sm:gap-4 w-full">
+          {/* Lado Esquerdo: Foto da Empresa 1:1 + Capa Panorâmica 21:9 com Scroll Interno */}
+          <div className="flex flex-row items-center gap-3 sm:gap-4 flex-1 min-w-0">
           {/* Foto da Empresa em Squircle 1:1 */}
           <div className="relative group shrink-0">
             <div className="size-20 sm:size-28 md:size-32 rounded-lg bg-card border-2 border-border/50 ring-1 ring-border/20 overflow-hidden flex items-center justify-center shadow-xs">
@@ -801,27 +803,29 @@ function cleanAddressSegment(text: string): string {
               </div>
             )}
           </div>
-        </div>
-
-        {/* Faixa de Contadores (Seguidores / Seguindo / Curtidas) */}
-        <div className="flex items-center justify-between sm:justify-start gap-6 sm:gap-8 pt-1">
-          <div className="text-left">
-            <span className="block text-sm sm:text-base font-bold text-foreground font-mono">
-              {store.followers_count || store.followersCount || 0}
-            </span>
-            <span className="text-xs text-muted-foreground">Seguidores</span>
           </div>
-          <div className="text-left">
-            <span className="block text-sm sm:text-base font-bold text-foreground font-mono">
-              {store.following_count || store.followingCount || 0}
-            </span>
-            <span className="text-xs text-muted-foreground">Seguindo</span>
-          </div>
-          <div className="text-left">
-            <span className="block text-sm sm:text-base font-bold text-foreground font-mono">
-              {store.likes_count || (Array.isArray(posts) ? posts.reduce((acc: number, p: any) => acc + (p.likes_count || p.likes || 0), 0) : 0)}
-            </span>
-            <span className="text-xs text-muted-foreground">Curtidas</span>
+          {/* Stats no Final (Seguidores, Seguindo, Curtidas) Nivelado na Mesma Linha */}
+          <div className="h-14 sm:h-20 md:h-28 lg:h-32 lg:min-w-60 shrink-0 bg-background/90 backdrop-blur-md rounded-lg border border-border/50 p-2 sm:p-4 flex flex-col justify-center">
+            <div className="grid grid-cols-3 gap-2 text-center w-full">
+              <div>
+                <p className="text-sm sm:text-base md:text-lg font-black text-foreground font-mono">
+                  {store.followers_count || store.followersCount || 0}
+                </p>
+                <p className="text-xs text-muted-foreground font-medium truncate">Seguidores</p>
+              </div>
+              <div>
+                <p className="text-sm sm:text-base md:text-lg font-black text-foreground font-mono">
+                  {store.following_count || store.followingCount || 0}
+                </p>
+                <p className="text-xs text-muted-foreground font-medium truncate">Seguindo</p>
+              </div>
+              <div>
+                <p className="text-sm sm:text-base md:text-lg font-black text-foreground font-mono">
+                  {store.likes_count || (Array.isArray(posts) ? posts.reduce((acc: number, p: any) => acc + (p.likes_count || p.likes || 0), 0) : 0)}
+                </p>
+                <p className="text-xs text-muted-foreground font-medium truncate">Curtidas</p>
+              </div>
+            </div>
           </div>
         </div>
 

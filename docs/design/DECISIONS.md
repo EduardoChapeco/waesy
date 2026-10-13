@@ -1,5 +1,27 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-198: Saneamento Definitivo do Salvamento de Perfil (Purga de Coluna Inexistente hide_location), Blindagem contra Reset de Aba e Unificação Panorâmica de Capas
+
+- **Data:** 2026-10-08
+- **Contexto:** Chamado do usuário: (1) "Editar o perfil não salva / Não estou conseguindo salvar nada": Investigação no log e banco revelou que `_updateProfile` tentava gravar a coluna inexistente `hide_location` na tabela `profiles` (coluna pertence exclusivamente a `classifieds`), fazendo o Postgres abortar o upsert com erro `column "hide_location" does not exist`, além da chamada indiscriminada da RPC `claim_handle_atomic` mesmo sem alteração de username; (2) Ao tentar adicionar habilidades em currículo, a tela recarregava e mudava para a primeira aba de perfil ("Identidade"), causado por uma tag `<form>` externa envolvendo todas as abas em `_store.conta.perfil.tsx`; (3) Capas e cabeçalhos de empresas (`canonical-store-profile-view.tsx`) e locais (`_store.places.$placeSlug.tsx`) divergiam do padrão panorâmico canônico de 3 blocos (Foto/Avatar 1:1 squircle + Capa 21:9 com scroll interno + Card de Stats nivelado no final `h-20 sm:h-28 md:h-32`); (4) Necessidade de garantia de upload resiliente com fallback para `cms-media` caso buckets específicos falhem.
+- **Decisão:**
+  1. **Purga de Coluna Inexistente e Handle Resiliente (`auth.functions.ts`):** Removida a atribuição de `hide_location` ao payload de `profiles`. Adicionada verificação prévia de alteração de handle (`isHandleDifferent`), invocando `claim_handle_atomic` somente quando o username de fato mudou, com tratamento defensivo não-bloqueante para dados cadastrais.
+  2. **Eliminação do Form Pai Global (`_store.conta.perfil.tsx`):** Substituída a tag externa `<form onSubmit={handleSubmit}>` por `<div className="space-y-6">`, convertendo botões de salvar para `type="button"` com `onClick={handleSubmit}`, blindando a tela contra submissões e recarregamentos acidentais durante a edição de currículo ou biolinks.
+  3. **Fallback Resiliente de Storage (`storage.functions.ts`):** Adicionado fallback automático para o bucket `cms-media` caso o bucket `banners`, `covers` ou `avatars` apresente falha de provisionamento ou RLS no Supabase.
+  4. **Padronização Panorâmica Canônica de Capas (`canonical-store-profile-view.tsx` & `_store.places.$placeSlug.tsx`):** Unificada a arquitetura visual dos 3 blocos em empresas (Foto 1:1 + Capa 21:9 com scroll + Card de Stats `h-14 sm:h-20 md:h-28 lg:h-32` nivelado na mesma linha) e locais (Foto 1:1 + Capa 21:9 `h-20 sm:h-28 md:h-32` com botão Compartilhar integrado).
+- **Validação:** Typecheck com Exit Code 0 (0 erros TS), Design Lint com 0 novas violações (catraca ativa com redução de 585 violações de débito), compilação do build de produção e sentinela client-leak 100% aprovados.
+
+## DEC-197: Otimização Reativa de Login, Unificação de Cookies SSR, Memoização de Identidade e Caching de Rotas
+
+- **Data:** 2026-10-08
+- **Contexto:** Relato de lentidão crítica após o login: o sistema demorava para transitar para o estado logado e carregar as informações do usuário. Identificou-se: (1) Incompatibilidade de cookies entre `supabase.ts` (`storageKey: 'waesy-auth-token'`) e `supabase-ssr.server.ts` (esperava `sb-*-auth-token`), impedindo sincronização imediata da sessão entre browser e worker; (2) `_store.entrar.tsx` utilizava `window.location.replace` e `window.location.href`, forçando o descarte completo do DOM e o download de 490+ chunks JS do Cloudflare; (3) Cascata de até 6 roundtrips sequenciais de banco por request em `getServerIdentity()` e `getUserSession()`; (4) `defaultStaleTime: 0` no TanStack Router causava invalidação agressiva e waterfalls de requisições de loaders a cada clique.
+- **Decisão:**
+  1. **Unificação e Compatibilidade de Cookies (`supabase-ssr.server.ts` & `identity.server.ts`):** Unificado o `storageKey` do SSR para `waesy-auth-token`, mantendo fallback retrocompatível para cookies legados `sb-*-auth-token`.
+  2. **Transição Reativa SPA (`_store.entrar.tsx`):** Substituídos os hard-reloads por `await router.invalidate()` seguido de `navigate({ to: destination, replace: true })`, garantindo que a reatividade do TanStack Router atualize os estados de autenticação em memória instantaneamente.
+  3. **Memoização e Paralelização (`identity.server.ts` & `auth.functions.ts`):** Paralelizada a consulta de perfis e workspace members em 1 roundtrip único, atachado o perfil e usuário à `ServerIdentity`, e refatorado `getUserSession` para consumir a identidade memoizada em 0ms.
+  4. **StaleTime de Rotas (`router.tsx`, `_store.tsx`, `_store.index.tsx`):** Configurado `defaultStaleTime: 10_000` globalmente no router e `staleTime: 15_000` nas rotas principais da vitrine, eliminando refetches em cascata durante navegação normal.
+- **Validação:** Typecheck com Exit Code 0, Design Lint com 0 novas violações (catraca respeitada), e build de produção aprovado com sucesso.
+
 ## DEC-196: Saneamento do Editor de Perfil, Validação de Gênero Zod, Adição de Habilidades sem Reset de Aba, Upload de Biolinks e Altura Canônica de Capas
 
 - **Data:** 2026-10-08
@@ -2796,3 +2818,17 @@
 - **Decisão adotada:** Na branch/PR desta remediação, remover leitura direta pública das tabelas de contratos/envelopes/evidências; preservar leitura e assinatura somente por BFF/RPC com token bearer exato e projeção allowlist. Preservar a assinatura pública por token, mas realizá-la numa transação idempotente com consentimento validado no servidor, hash/serial gerados de forma criptograficamente segura e status válidos segundo o schema. A emissão a partir de proposta exige staff e tenant autenticado. Não aplicar migrations em produção, não fazer deploy e não afirmar validade jurídica do mecanismo técnico.
 - **Fundamentação:** AGENTS.md B.1, B.5, B.9, B.10 e B.31; W2.2/W2.3/W2.4, W12.4 e W14.1/W14.4; SPEC-20261007-P0-ATOMIC-VOUCHER-APPLY R14–R17; autorização do usuário às 16:03:24 de 2026-10-07.
 - **Consequências:** A jornada legítima de leitura/assinatura deve continuar via token bearer e apenas pelos campos necessários. RLS/grants reais, Postgres/Supabase, browser, revisão jurídica e produção permanecem pendentes até validação no ambiente autorizado.
+
+
+## DEC-200: Redesign Minimalista do Copilot, Remoção de Jargões Técnicos e Desduplicação de Vitrines
+
+- **Data:** 2026-10-08
+- **Contexto:** Módulo Waesy Copilot apresentava input deslocado fora do fold, renderização com markdown cru (`** **`), trilha de tarefas prolixa e quebra 404 em artefatos turísticos ao redirecionar para rota de CMS inexistente. Telas públicas de Marketplace e Eventos apresentavam seções duplicadas de categorias ("Vitrines por Nicho" / "14 subnichos ativos") e textos explicativos redundantes.
+- **Decisão adotada:**
+  1. Criação do componente canônico `CopilotMessageRenderer` com suporte rico a markdown (bold, italic, listas, tabelas, sublinhado, marca-texto `.copilot-highlight` e lousa interativa/quadro digital `BlackboardBlock`).
+  2. Redesign ultra-minimalista da trilha de execução `AIActivityTrail` (micro-pílula compacta durante execução e linha discreta com contagem de etapas e tempo ao concluir).
+  3. Prevenção de 404 em artefatos turísticos: substituição de redirect para `/workspace/cms/paginas` por modal nativo in-place `Dialog` em `ChatArtifactCard` e renderizador de itinerário em `AIChatShell`.
+  4. Fixação do compositor de chat no rodapé sem rolagem da página inteira no `app-shell` e no drawer `WaesyCopilotDrawer`.
+  5. Desduplicação e higienização visual: remoção da seção duplicada de categorias em `_store.marketplace.index.tsx` e `_store.eventos.tsx`, eliminação de textos técnicos ("Vitrines por Nicho", "14 subnichos ativos", "0 produtos") e subtítulo prolixo em `_store.classificados.index.tsx`.
+- **Fundamentação:** AGENTS.md B.1 a B.12, B.6, B.8 (proibição de textos explicativos redundantes), piso WCAG 2.2 AA.
+- **Consequências:** Interface silenciosa, limpa e responsiva; zero quebras 404 em artefatos; renderização visual elegante e unificada.

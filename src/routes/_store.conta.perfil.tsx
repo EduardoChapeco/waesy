@@ -15,7 +15,8 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { User, Camera, ExternalLink, Loader2, Image as ImageIcon, Trash2, Check, Briefcase, Link as LinkIcon, ShieldCheck, Eye, EyeOff, Building2, ShieldAlert, Phone, Calendar, Lock, Plus } from "lucide-react";
+import { User, Camera, ExternalLink, Loader2, Image as ImageIcon, Trash2, Check, Briefcase, Link as LinkIcon, ShieldCheck, Eye, EyeOff, Building2, ShieldAlert, Phone, Calendar, Lock, Plus, Sparkles } from "lucide-react";
+import { ImageUpload } from "@/components/ui/image-upload";
 import { Switch } from "@/components/ui/switch";
 import { ProfessionalResumeEditor, ResumeDataDTO } from "@/components/profile/professional-resume-editor";
 
@@ -112,6 +113,8 @@ function ProfileCivilPage() {
     newsletterOptIn: profile?.newsletterOptIn ?? false,
     isAnonymous: profile?.is_anonymous ?? profile?.isAnonymous ?? false,
     hideLocation: profile?.hide_location ?? profile?.hideLocation ?? false,
+    featuredBannerUrl: profile?.featured_banner_url || profile?.featuredBannerUrl || "",
+    featuredBannerLink: profile?.featured_banner_link || profile?.featuredBannerLink || "",
   });
 
   // Perfil Profissional / Currículo (Padrão Executivo Waesy)
@@ -305,6 +308,8 @@ function ProfileCivilPage() {
           isAnonymous: formData.isAnonymous,
           privacyMode: formData.isAnonymous ? "unlisted" : "public",
           hideLocation: formData.hideLocation,
+          featuredBannerUrl: formData.featuredBannerUrl?.trim() || undefined,
+          featuredBannerLink: formData.featuredBannerLink?.trim() || undefined,
           biolinks: biolinks.map((b) => ({
             id: b.id,
             label: b.label.trim(),
@@ -456,8 +461,8 @@ function ProfileCivilPage() {
         </div>
       </div>
 
-      {/* ── 3. Formulário de Perfil Civil com 3 Abas Estritas ── */}
-      <form onSubmit={handleSubmit} className="space-y-6">
+      {/* ── 3. Formulário de Perfil Civil com 4 Abas ── */}
+      <div className="space-y-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <div className="flex items-center overflow-x-auto no-scrollbar pb-1">
             <TabsList className="bg-transparent p-0 gap-2 h-auto flex flex-nowrap">
@@ -982,6 +987,56 @@ function ProfileCivilPage() {
               )}
             </div>
 
+            {/* Mini-Banner de Destaque / Evento do Perfil */}
+            <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60">
+              <div className="flex items-center justify-between pb-3 border-b border-border/40">
+                <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
+                  <Sparkles className="size-4 text-primary shrink-0" />
+                  <span>Banner de Destaque / Evento</span>
+                </div>
+                <Badge variant="outline" className="text-[10px] font-mono border-primary/30 text-primary">
+                  Panorâmico 21:9
+                </Badge>
+              </div>
+
+              <div className="space-y-3">
+                <p className="text-xs text-muted-foreground">
+                  Exibido em posição nobre abaixo da sua bio no perfil público, ideal para divulgar uma campanha, evento, portfólio ou comunicado especial.
+                </p>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start">
+                  <div className="space-y-1">
+                    <Label className="text-xs font-semibold text-foreground">Imagem do Banner (21:9)</Label>
+                    <ImageUpload
+                      value={formData.featuredBannerUrl}
+                      onChange={(url) => set("featuredBannerUrl", url)}
+                      onRemove={() => set("featuredBannerUrl", "")}
+                      aspectPreset="banner"
+                      bucket="banners"
+                      helperText="Banner promocional oficial (21:9)"
+                    />
+                  </div>
+                  <div className="space-y-3">
+                    <div className="space-y-1">
+                      <Label className="text-xs font-semibold text-foreground">Link de Destino do Banner (URL)</Label>
+                      <Input
+                        value={formData.featuredBannerLink}
+                        onChange={(e) => set("featuredBannerLink", e.target.value)}
+                        placeholder="https://... (ao clicar, abre esta página)"
+                        className="h-11 rounded-lg text-base sm:text-xs bg-background font-mono"
+                      />
+                    </div>
+                    {formData.featuredBannerUrl && (
+                      <div className="p-3 rounded-lg bg-muted/20 border border-border/50 text-xs text-muted-foreground space-y-1">
+                        <p className="font-semibold text-foreground">Banner Configurado</p>
+                        <p className="text-[11px]">Salve o perfil para que este banner passe a aparecer na sua página pública.</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
             {/* Prévia Fiel ao Perfil Público */}
             {biolinks.length > 0 && (
               <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60">
@@ -1207,7 +1262,8 @@ function ProfileCivilPage() {
         {/* ── Botão Salvar Principal (Desktop: Alinhado à Direita | Mobile: Espaçado) ── */}
         <div className="flex items-center justify-end gap-3 pt-2 w-full">
           <Button
-            type="submit"
+            type="button"
+            onClick={handleSubmit}
             disabled={isSubmitting}
             className="w-full sm:w-auto rounded-lg px-6 h-11 text-xs font-bold bg-primary text-primary-foreground gap-2 cursor-pointer shadow-xs active:scale-98"
           >
@@ -1228,7 +1284,8 @@ function ProfileCivilPage() {
         {/* ── Barra de Ação Flutuante Mobile (<640px) para Salvar sem Rolar a Página Toda ── */}
         <div className="sm:hidden fixed bottom-0 left-0 right-0 p-3 pb-safe bg-background border-t border-border/40 z-30">
           <Button
-            type="submit"
+            type="button"
+            onClick={handleSubmit}
             disabled={isSubmitting}
             className="w-full rounded-lg h-11 text-xs font-bold bg-primary text-primary-foreground gap-2 cursor-pointer active:scale-95"
           >
@@ -1245,7 +1302,7 @@ function ProfileCivilPage() {
             )}
           </Button>
         </div>
-      </form>
+      </div>
 
       {/* Modal de Recorte de Imagem (1:1 Avatar, 21:9 Capa) */}
       {cropperSrc && (

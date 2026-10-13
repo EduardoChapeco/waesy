@@ -14,7 +14,7 @@ import {
   ChevronUp,
   Square,
   Clock,
-  Coins,
+  Sparkles,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -45,7 +45,7 @@ const STEP_LABELS: Record<AIActivityStepType, string> = {
   skill: "Skill",
   tool: "Ferramenta",
   search: "Pesquisa",
-  database: "Banco de Dados",
+  database: "Dados",
   squad: "Esquadrão",
   model: "Modelo",
   thought: "Raciocínio",
@@ -101,147 +101,136 @@ export function AIActivityTrail({
   const runningStep = visibleSteps.find((s) => s.status === "running");
   const failedStep = visibleSteps.find((s) => s.status === "failed");
   const hasError = Boolean(failedStep);
+  const isCurrentlyWorking = Boolean(isStreaming || runningStep);
 
-  const toggleExpanded = () => {
-    setIsExpanded((prev) => !prev);
-  };
+  const totalDuration = visibleSteps.reduce((acc, s) => acc + (s.durationMs || 0), 0);
 
   return (
-    <section
+    <div
       role="region"
-      aria-label="Trilha de execução do Copilot"
-      aria-live="polite"
-      className={cn(
-        "rounded-lg border border-border/40 bg-muted/20 overflow-hidden text-xs transition-colors",
-        hasError && "border-destructive/40 bg-destructive/5",
-        className
-      )}
+      aria-label="Trilha de execução e fontes"
+      className={cn("my-1.5 transition-all text-2xs", className)}
     >
-      {/* ── Cabeçalho do Rastreio / Resumo ── */}
-      <div className="flex items-center justify-between p-2 gap-2">
-        <Button
-          type="button"
-          variant="ghost"
-          onClick={toggleExpanded}
-          className="flex items-center gap-2 text-left flex-1 min-w-0 font-normal text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 rounded-md cursor-pointer h-auto p-0 justify-start"
-          aria-expanded={isExpanded}
-        >
-          <div className="size-5 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">
-            {isStreaming || runningStep ? (
-              <Loader2 className="size-3 animate-spin motion-reduce:animate-none" />
-            ) : hasError ? (
-              <AlertCircle className="size-3 text-destructive" />
-            ) : (
-              <CheckCircle2 className="size-3 text-primary" />
-            )}
-          </div>
-
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2">
-              <span className="text-2xs text-muted-foreground truncate">
-                {runningStep
-                  ? runningStep.label
-                  : hasError
-                  ? "Consulta com alerta"
-                  : completedCount > 1
-                  ? `${completedCount} fontes e ações consultadas`
-                  : "Consulta ao ecossistema"}
+      {/* ── CARD EM EXECUÇÃO ATIVA: Minimalista, moderno com pulse sutil ── */}
+      {isCurrentlyWorking ? (
+        <div className="flex items-center justify-between gap-2.5 px-3 py-2 rounded-lg bg-primary/5 border border-primary/20 text-foreground animate-in fade-in duration-200">
+          <div className="flex items-center gap-2 min-w-0 flex-1">
+            <div className="size-4 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
+              <Loader2 className="size-3 text-primary animate-spin motion-reduce:animate-none" />
+            </div>
+            <div className="min-w-0 flex-1 flex items-center gap-1.5 flex-wrap">
+              <span className="font-semibold text-foreground truncate">
+                {runningStep ? runningStep.label : "Processando requisição..."}
               </span>
+              {runningStep?.detail && (
+                <span className="text-muted-foreground truncate hidden sm:inline text-3xs font-mono">
+                  • {runningStep.detail}
+                </span>
+              )}
             </div>
           </div>
 
-          <div className="flex items-center gap-1 shrink-0">
-            {isExpanded ? (
-              <ChevronUp className="size-3.5 text-muted-foreground" />
-            ) : (
-              <ChevronDown className="size-3.5 text-muted-foreground" />
-            )}
-          </div>
-        </Button>
-
-        {isStreaming && onCancel && (
-          <Button
+          {onCancel && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={onCancel}
+              className="h-6 px-2 text-3xs font-semibold text-destructive hover:bg-destructive/10 rounded shrink-0 gap-1 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-destructive"
+              title="Cancelar execução"
+            >
+              <Square className="size-2.5 fill-destructive" />
+              <span>Parar</span>
+            </Button>
+          )}
+        </div>
+      ) : (
+        /* ── RESUMO CONCLUÍDO: Linha minimalista e silenciosa (Linear / Perplexity Style) ── */
+        <div className="space-y-1.5">
+          <button
             type="button"
-            variant="ghost"
-            size="sm"
-            onClick={onCancel} /* focus-visible:ring-2 */
-            className="h-7 px-2 text-2xs font-semibold text-destructive hover:bg-destructive/10 rounded-md shrink-0 gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive/40"
-            title="Cancelar processamento em execução"
+            onClick={() => setIsExpanded((prev) => !prev)}
+            className="group flex items-center gap-2 text-left py-1 px-2 -ml-2 rounded-md hover:bg-muted/40 transition-colors cursor-pointer text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary/40"
+            aria-expanded={isExpanded}
           >
-            <Square className="size-3 fill-destructive" />
-            <span>Cancelar</span>
-          </Button>
-        )}
-      </div>
+            <div className="size-3.5 rounded-full bg-muted flex items-center justify-center shrink-0 text-primary">
+              {hasError ? (
+                <AlertCircle className="size-3 text-destructive" />
+              ) : (
+                <CheckCircle2 className="size-3 text-primary" />
+              )}
+            </div>
 
-      {/* ── Lista Detalhada de Passos Recarregável ── */}
-      {isExpanded && (
-        <div className="border-t border-border/40 divide-y divide-border/20 bg-background/50 px-3 py-2 space-y-2">
-          {visibleSteps.map((step, idx) => {
-            const Icon = STEP_ICONS[step.type] || Zap;
+            <span className="text-2xs font-medium text-muted-foreground group-hover:text-foreground transition-colors">
+              {hasError
+                ? "Consulta concluída com alertas"
+                : completedCount > 1
+                ? `${completedCount} etapas e fontes consultadas`
+                : "1 etapa concluída"}
+              {totalDuration > 0 && (
+                <span className="text-muted-foreground/60 font-mono text-3xs ml-1.5">
+                  ({totalDuration}ms)
+                </span>
+              )}
+            </span>
 
-            return (
-              <div
-                key={step.id || idx}
-                className={cn(
-                  "flex items-start justify-between gap-3 pt-2 text-xs",
-                  step.status === "failed" && "text-destructive"
-                )}
-              >
-                <div className="flex items-start gap-2 min-w-0 flex-1">
+            {isExpanded ? (
+              <ChevronUp className="size-3 text-muted-foreground/60 group-hover:text-foreground" />
+            ) : (
+              <ChevronDown className="size-3 text-muted-foreground/60 group-hover:text-foreground" />
+            )}
+          </button>
+
+          {/* ── TIMELINE VERTICAL MINIMALISTA EXPANDIDA ── */}
+          {isExpanded && (
+            <div className="relative pl-4 ml-1.5 border-l border-border/40 space-y-2 py-1 animate-in fade-in slide-in-from-top-1 duration-150">
+              {visibleSteps.map((step, idx) => {
+                const Icon = STEP_ICONS[step.type] || Zap;
+
+                return (
                   <div
-                    className={cn(
-                      "size-5 rounded-md flex items-center justify-center shrink-0 mt-1 border",
-                      step.status === "completed" && "bg-primary/10 border-primary/20 text-primary",
-                      step.status === "running" && "bg-muted border-border/60 text-foreground",
-                      step.status === "failed" && "bg-destructive/10 border-destructive/30 text-destructive",
-                      step.status === "cancelled" && "bg-muted border-border/40 text-muted-foreground"
-                    )}
+                    key={step.id || idx}
+                    className="relative flex items-start justify-between gap-3 text-2xs group"
                   >
-                    {step.status === "running" ? (
-                      <Loader2 className="size-3 animate-spin motion-reduce:animate-none" />
-                    ) : (
-                      <Icon className="size-3" />
-                    )}
-                  </div>
+                    {/* Marcador na linha */}
+                    <div className="absolute -left-[1.3125rem] top-1 size-2 rounded-full border border-background bg-border group-hover:bg-primary transition-colors" />
 
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-foreground truncate">
-                        {step.label}
-                      </span>
-                      <span className="text-2xs text-muted-foreground">
-                        {STEP_LABELS[step.type]}
-                      </span>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <Icon className="size-3 text-primary shrink-0" />
+                        <span className="font-semibold text-foreground truncate">
+                          {step.label}
+                        </span>
+                        <span className="text-3xs uppercase tracking-wider text-muted-foreground font-mono bg-muted/60 px-1 py-0.2 rounded">
+                          {STEP_LABELS[step.type]}
+                        </span>
+                      </div>
+
+                      {step.detail && (
+                        <p className="text-3xs text-muted-foreground font-mono mt-0.5 truncate">
+                          {step.detail}
+                        </p>
+                      )}
                     </div>
 
-                    {step.detail && (
-                      <p className="text-2xs text-muted-foreground font-mono mt-1 break-all">
-                        {step.detail}
-                      </p>
-                    )}
+                    <div className="shrink-0 font-mono text-3xs text-muted-foreground/75 flex items-center gap-1.5">
+                      {step.durationMs !== undefined && (
+                        <span>{step.durationMs}ms</span>
+                      )}
+                      {step.status === "completed" && (
+                        <CheckCircle2 className="size-3 text-primary" />
+                      )}
+                      {step.status === "failed" && (
+                        <AlertCircle className="size-3 text-destructive" />
+                      )}
+                    </div>
                   </div>
-                </div>
-
-                <div className="flex items-center gap-2 shrink-0 font-mono text-2xs text-muted-foreground">
-                  {step.durationMs !== undefined && (
-                    <span>{step.durationMs}ms</span>
-                  )}
-                  {step.status === "completed" && (
-                    <CheckCircle2 className="size-3.5 text-primary" />
-                  )}
-                  {step.status === "failed" && (
-                    <AlertCircle className="size-3.5 text-destructive" />
-                  )}
-                  {step.status === "cancelled" && (
-                    <span className="text-muted-foreground">Cancelado</span>
-                  )}
-                </div>
-              </div>
-            );
-          })}
+                );
+              })}
+            </div>
+          )}
         </div>
       )}
-    </section>
+    </div>
   );
 }

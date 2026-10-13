@@ -214,8 +214,8 @@ function StepByStepAuthPage() {
  }
  }
  toast.success("Acesso autorizado.");
- // Portal sempre vai para /workspace
- window.location.replace("/workspace");
+ await router.invalidate();
+ navigate({ to: "/workspace", replace: true });
  return;
  } else if (res.status === "rate_limited" || res.status === "error") {
  toast.error(res.message);
@@ -289,9 +289,9 @@ function StepByStepAuthPage() {
  }
  }
  toast.success("Sessão iniciada.");
- // Redireciona para home (/) por padrão, ou returnUrl se especificado
  const destination = returnUrl && returnUrl !== "/entrar" ? returnUrl : "/";
- window.location.replace(destination);
+ await router.invalidate();
+ navigate({ to: destination as any, replace: true });
  return;
  } else if (res.status === "rate_limited" || res.status === "error") {
  toast.error(res.message);
@@ -357,8 +357,8 @@ function StepByStepAuthPage() {
  }
 
  toast.success("Conta criada com sucesso.");
- await getUserSession().catch(() => null);
- window.location.href = returnUrl || "/";
+ await router.invalidate();
+ navigate({ to: (returnUrl || "/") as any, replace: true });
  } catch (err: any) {
  const rawMsg = err?.message || err?.error?.message || (typeof err === "string" ? err : "");
  const cleanMsg = rawMsg.replace(/^Error:\s*/, "").replace(/^\[auth\]\s*/, "");
