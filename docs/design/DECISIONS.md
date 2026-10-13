@@ -1,6 +1,18 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
-## DEC-195: Voucher público token-bound e conversão staff atômica — fechamento P0
+## DEC-196: Saneamento do Editor de Perfil, Validação de Gênero Zod, Adição de Habilidades sem Reset de Aba, Upload de Biolinks e Altura Canônica de Capas
+
+- **Data:** 2026-10-08
+- **Contexto:** Relato de quebras críticas em `/conta/perfil`: (1) Salvamento de perfil falhava com erro de validação Zod (`Invalid enum value. Expected 'feminino' | 'masculino' | 'outro' | 'prefiro_nao_dizer', received 'not_informed'`) devido à divergência de enum entre o formulário e `auth.functions.ts`; (2) Ao clicar em "+ Adicionar" na seção de habilidades em currículo, a página resetava para a aba inicial de identidade porque o botão disparava o submit do `<form>` pai devido a uma tag `<form>` aninhada e falta de `type="button"`; (3) A aba Links havia regredido para input simples de texto sem botão de upload para o bucket Supabase; (4) Capas de empresas e no editor de perfil de usuário estavam desproporcionais/gigantes ao lado do avatar (utilizando `aspect-[21/9]` solto em container flexível de 800px+ gerando altura de mais de 300px); (5) Presença de termos técnicos e jargões na UI como "Documento Soberano", "Nome Completo (Civil)" e "Conta Civil".
+- **Decisão:** 
+  1. **Tolerância e Pré-processamento no Zod (`auth.functions.ts`):** Adicionado `z.preprocess` no schema de perfil aceitando variações em português, inglês e vazias (`female` -> `feminino`, `male` -> `masculino`, `not_informed` -> `prefiro_nao_dizer`), e Select alinhado com valores canônicos.
+  2. **Eliminação de Form Aninhado (`professional-resume-editor.tsx`):** Removida a tag `<form>` interna de adicionar habilidade, substituindo por `<div>`, input com interceptação de Enter e botão explícito `type="button"` com `e.preventDefault()`, preservando a aba ativa.
+  3. **Restauração de Upload de Banners de Biolink (`storage.functions.ts` & `_store.conta.perfil.tsx`):** Adicionado `target: "biolink_banner"` em `uploadProfileMediaDirect` com upload direto para o bucket `banners`, preview da miniatura e botões de envio/remoção na aba Links.
+  4. **Padronização Vertical Canônica de Capas:** Alinhada a altura do container de capa ao lado do avatar em `h-20 sm:h-28 md:h-32` com `object-cover` no editor de usuário (`_store.conta.perfil.tsx`), na página de empresas (`canonical-store-profile-view.tsx`) e no criador (`creator-profile-sheet-editor.tsx`), mantendo nivelamento horizontal idêntico ao perfil público de membro.
+  5. **Purificação de Nomenclatura Comercial:** Removido o badge "Documento Soberano", substituído "Nome Completo (Civil)" por "Nome Completo" e "Conta Civil" por "Perfil Pessoal (Titular da Conta)".
+- **Validação:** Typecheck com Exit Code 0, Design Lint com redução de 590 violações, testes Vitest verdes, build de produção aprovado, PR #27 criado e squash-merged na `main`, e deploy ativo no Cloudflare Pages (`https://usewaesy.pages.dev`).
+
+
 
 - **Data:** 2026-10-07
 - **Contexto:** A retomada da auditoria do fluxo de turismo encontrou leitura pública direta de vouchers, conversão BFF com fallback legado/writes parciais e contratos de aceite/conversão sem fronteira suficientemente explícita entre intenção do cliente e operação staff.
