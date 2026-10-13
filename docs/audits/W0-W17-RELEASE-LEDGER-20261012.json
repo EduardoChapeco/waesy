@@ -1,14 +1,14 @@
 {
   "schemaVersion": "1.0.0",
-  "updatedAt": "2026-10-13T16:15:00Z",
+  "updatedAt": "2026-10-13T16:26:00Z",
   "repository": "EduardoChapeco/waesy",
   "candidate": {
     "pullRequest": 29,
     "codeBaseline": "cad8e3da",
-    "evidenceHead": "fb5c72244b152299d6a7f5d5f5013d9d46ff82e2",
+    "evidenceHead": "182f0a609edbe9d07f78a6b9f9fa9a9573a77732",
     "checks": [
-      "5 Quality Gates=SUCCESS",
-      "Cloudflare Pages=SUCCESS"
+      "CI Unificado=SUCCESS nos PRs #32/#33/#28",
+      "Cloudflare Pages=SUCCESS nos PRs #32/#33/#28"
     ],
     "productionCertified": false
   },
@@ -42,7 +42,8 @@
         "check:bff PASS",
         "audit de dependências PASS",
         "CI PASS",
-        "W1-MIGRATION-INVENTORY-GATE-20261012.md: 500 SQL, nomes/versões/arquivos vazios PASS; hash de inventário e Gate 0e no CI"
+        "W1-MIGRATION-INVENTORY-GATE-20261012.md: 500 SQL, nomes/versões/arquivos vazios PASS; hash de inventário e Gate 0e no CI",
+        "SUPABASE-AUTHORIZED-EVIDENCE-20261013.md: projeto ACTIVE_HEALTHY, 258 migrations registradas, 585/585 tabelas públicas com RLS, 1.098 policies; replay ainda pendente"
       ],
       "gap": "replay from-zero, segunda aplicação, catálogo Postgres, types fingerprint e ruleset negativo"
     },
@@ -56,7 +57,8 @@
         "W2-LOCAL-SECURITY-FIX-20261012.md: fallback de primeira loja removido; 13 testes focais e typecheck PASS",
         "BUILDER-UPSELL-CART-TENANT-FIX-20261012.md: três fallbacks removidos; 17 testes focais, typecheck e scan PASS",
         "TRAVEL-MASTER-MINING-TENANT-FIX-20261012.md: fallbacks removidos; 14 testes focais e typecheck PASS",
-        "W2-CHAT-COMMERCE-TENANT-FIX-20261013.md: resolver sem fallback arbitrário; 14 testes focais e typecheck PASS"
+        "W2-CHAT-COMMERCE-TENANT-FIX-20261013.md: resolver sem fallback arbitrário; 14 testes focais e typecheck PASS",
+        "SUPABASE-AUTHORIZED-EVIDENCE-20261013.md: 585/585 tabelas públicas com RLS; matriz JWT/RLS cross-tenant ainda pendente"
       ],
       "gap": "JWT/RLS/grants reais, cross-tenant A/B, concorrência, quota RPC, provider preauthorization; revisão de outros resolvers públicos e prova real de RLS/JWT/grants"
     },
@@ -208,7 +210,8 @@
       "evidence": [
         "CI SUCCESS no candidato",
         "Cloudflare Pages SUCCESS no candidato",
-        "PR CLEAN/MERGEABLE"
+        "PR CLEAN/MERGEABLE",
+        "PRs #32, #33 e #28 MERGED; CI e Cloudflare Pages SUCCESS nos heads revisados"
       ],
       "gap": "staging, smoke, secrets/bindings, migration autorizada, rollback e monitoramento 24h/7d"
     }
