@@ -28,4 +28,30 @@ describe("Tenant fallback security contracts", () => {
     expect(cart).not.toContain('.from("stores").select("id").limit(1)');
     expect(cart).toContain("storeId: z.string().uuid(),");
   });
+
+  it("travel lifecycle não deve inferir loja para leitura ou escrita", () => {
+    const travel = source("travel-lifecycle.functions.ts");
+    expect(travel).not.toContain("firstStore");
+    expect(travel).toContain("const identity = await requireStaff();");
+    expect(travel).toContain('.eq("store_id", effectiveStoreId);');
+    expect(travel).toContain("A viagem pertence a outra loja; acesso negado.");
+  });
+
+  it("master não deve promover a primeira loja a raiz da plataforma", () => {
+    const master = source("master.functions.ts");
+    expect(master).not.toContain("firstStore");
+    expect(master).toContain("Ausência de raiz retorna null");
+  });
+
+  it("mining exige tenant para aprovar artigos", () => {
+    const mining = source("mining.functions.ts");
+    const curation = mining.slice(
+      mining.indexOf("export const curateMineArticle"),
+      mining.indexOf("export const aiRewriteMinedArticle"),
+    );
+    expect(curation).not.toContain("anyStore");
+    expect(curation).not.toContain("rootStore");
+    expect(curation).toContain("Tenant obrigatório para aprovar artigo minerado.");
+    expect(curation).toContain("Tenant obrigatório para aprovar artigos minerados.");
+  });
 });

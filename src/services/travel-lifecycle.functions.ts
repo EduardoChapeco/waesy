@@ -298,12 +298,8 @@ export const listStoreTrips = createServerFn({ method: "GET" })
  )
  .handler(async ({ data }): Promise<TourismTripDTO[]> => {
  const supabase = getServerClient();
- const identity = await getServerIdentity().catch(() => null);
- let effectiveStoreId = identity?.store_id;
-    if (!effectiveStoreId) {
-      const { data: firstStore } = await supabase.from("stores").select("id").limit(1).maybeSingle();
-      effectiveStoreId = firstStore?.id;
-    }
+ const identity = await requireStaff();
+ const effectiveStoreId = identity.store_id;
 
  let q = supabase
  .from("tourism_trips")
@@ -355,12 +351,8 @@ export const saveConfirmationItem = createServerFn({ method: "POST" })
  )
  .handler(async ({ data }): Promise<{ success: boolean; id: string }> => {
  const supabase = getServerClient();
- const identity = await getServerIdentity().catch(() => null);
- let effectiveStoreId = identity?.store_id;
-    if (!effectiveStoreId) {
-      const { data: firstStore } = await supabase.from("stores").select("id").limit(1).maybeSingle();
-      effectiveStoreId = firstStore?.id;
-    }
+ const identity = await requireStaff();
+ const effectiveStoreId = identity.store_id;
 
  if (data.id) {
  const { error } = await supabase
@@ -374,7 +366,8 @@ export const saveConfirmationItem = createServerFn({ method: "POST" })
  notes: data.notes || null,
  updated_at: new Date().toISOString(),
  })
- .eq("id", data.id);
+ .eq("id", data.id)
+ .eq("store_id", effectiveStoreId);
 
  if (error) throw new Error("Erro ao atualizar localizador: " + error.message);
  return { success: true, id: data.id };
@@ -500,11 +493,10 @@ export const createManualTrip = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     const supabase = getServerClient();
-    const identity = await getServerIdentity().catch(() => null);
-    let effectiveStoreId = data.storeId || identity?.store_id;
-    if (!effectiveStoreId) {
-      const { data: firstStore } = await supabase.from("stores").select("id").limit(1).maybeSingle();
-      effectiveStoreId = firstStore?.id;
+    const identity = await requireStaff();
+    const effectiveStoreId = identity.store_id;
+    if (data.storeId && data.storeId !== effectiveStoreId) {
+      throw new Error("A viagem pertence a outra loja; acesso negado.");
     }
 
     const tripNumber = `TRIP-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
