@@ -278,3 +278,9 @@ Este avanço reduz o risco de árvore de migrations não determinística, mas n�
 `resolveMerchantForCategory` deixou de selecionar a primeira loja da tabela quando não havia merchant preferido nem correspondência por segmento. O resolver agora retorna `null` sem correspondência, e a regressão cobre esse comportamento. A suíte focal passou com 14/14 testes e o typecheck passou.
 
 W2 continua parcial: RLS/JWT/grants efetivos, testes A/B cross-tenant, concorrência e quota/provider ainda exigem ambiente de integração autorizado.
+
+## W5 — isolamento do fingerprint do AI Core Gateway
+
+**Evidência:** `docs/audits/W5-AI-GATEWAY-FINGERPRINT-ISOLATION-20261013.md`
+
+O fingerprint do cache e da deduplicação in-flight inclui tenant/usuário, workspace, módulo, versão do prompt, constraints, contexto e hash do conteúdo das imagens. A suíte do gateway passou com 7/7 testes e o typecheck passou.
