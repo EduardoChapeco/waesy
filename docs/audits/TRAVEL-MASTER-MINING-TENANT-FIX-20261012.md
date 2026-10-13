@@ -51,4 +51,4 @@ Nenhum handler corrigido pode inferir silenciosamente um tenant a partir da orde
 
 ## Pendências externas
 
-A correção ainda requer confirmação dos checks do GitHub Actions/Cloudflare Pages no SHA publicado e, para certificação de produção, replay autorizado de RLS/Postgres, browser E2E e smoke de staging.
+Os checks do GitHub Actions e do Cloudflare Pages foram confirmados como **SUCCESS** no head publicado do PR #29. Para certificação de produção, ainda faltam replay autorizado de RLS/Postgres, browser E2E e smoke de staging.

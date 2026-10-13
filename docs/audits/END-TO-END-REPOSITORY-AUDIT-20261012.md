@@ -252,3 +252,12 @@ Foi concluída a remoção dos fallbacks que inferiam tenant sem ação explíci
 | Scan focado dos três handlers | **PASS** |
 
 A remoção não certifica por si só RLS/Postgres, browser, staging ou produção; esses gates continuam explicitamente pendentes no ledger.
+
+### Checks externos pós-publicação
+
+No head publicado do PR #29, os dois checks obrigatórios ficaram verdes:
+
+- GitHub Actions — `CI Unificado — Waesy Quality Gates`: **SUCCESS**
+- Cloudflare Pages: **SUCCESS**
+
+Isso fecha a validação de integração do candidato para esta correção. Não equivale à certificação de produção: replay autorizado de Postgres/RLS, browser E2E, staging, smoke, rollback e monitoramento continuam pendentes.
