@@ -224,3 +224,9 @@ A evidência foi registrada em [`W1-LOCAL-SCHEMA-EVIDENCE-20261012.md`](./W1-LOC
 Foi corrigido um finding confirmado em `createCustomerTicket`: quando não havia `storeId` no payload nem `identity.store_id`, o fluxo consultava a primeira loja e associava o ticket a um tenant arbitrário. O código agora exige contexto explícito e falha com `Loja de destino não identificada.` sem consultar uma loja de fallback.
 
 A evidência está em [`W2-LOCAL-SECURITY-FIX-20261012.md`](./W2-LOCAL-SECURITY-FIX-20261012.md). A validação focal passou com 13 testes e `npm run typecheck` passou. O scan ainda encontrou fallbacks em outros domínios — builder, upsell, cart, tourism lifecycle, master e mining — que permanecem abertos para revisão individual. W2 continua parcial e não certificada sem Postgres/JWT/RLS, concorrência e provider.
+
+## 13. Execução — correção de fallbacks em builder, upsell e cart
+
+Foram removidos os fallbacks arbitrários de primeira loja em `builder.functions.ts`, `upsell.functions.ts` e `cart.functions.ts`. O builder agora exige tenant explícito para administrador global; Order Bump e cross-sell exigem `storeId`; e a criação de carrinho falha sem contexto explícito ou tenant resolvido.
+
+A evidência reproduzível está em [`BUILDER-UPSELL-CART-TENANT-FIX-20261012.md`](./BUILDER-UPSELL-CART-TENANT-FIX-20261012.md). A validação passou com 17 testes focais, typecheck, scan sem ocorrências de `firstStore`/`defaultStore` nos três domínios e `git diff --check`. Os fallbacks restantes em turismo lifecycle, master e mining não foram alterados neste ciclo.

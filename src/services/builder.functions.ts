@@ -534,13 +534,8 @@ export async function resolveStoreContext(
     return identity.store_id;
   }
 
-  // 4. Administrador global sem loja fixada: busca a primeira loja cadastrada
-  if (isGlobalAdmin) {
-    const db = getServerClient();
-    const { data: firstStore } = await db.from("stores").select("id").limit(1).maybeSingle();
-    if (firstStore?.id) return firstStore.id;
-  }
-
+  // Administrador global também precisa declarar o tenant-alvo.
+  // Nunca inferir uma loja arbitrária para uma operação de escrita/leitura.
   throw new Error("Nenhum contexto de loja válido encontrado para a operação do builder.");
 }
 

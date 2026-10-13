@@ -155,7 +155,11 @@ export function CheckoutPage() {
           cartProductIds,
         },
       }),
-    enabled: Boolean(cart?.items && cart.items.length > 0),
+    enabled: Boolean(
+      cart?.items &&
+        cart.items.length > 0 &&
+        (storeProfile?.id || cart?.storeId),
+    ),
   });
 
   // ── V10: Multi-Nicho Dynamic Checkout States ──

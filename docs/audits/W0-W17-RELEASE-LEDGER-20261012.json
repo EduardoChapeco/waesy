@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "updatedAt": "2026-10-12T23:30:39Z",
+  "updatedAt": "2026-10-13T00:48:11Z",
   "repository": "EduardoChapeco/waesy",
   "candidate": {
     "pullRequest": 29,
@@ -52,9 +52,10 @@
       "priority": "P0",
       "evidence": [
         "implementações locais e testes estruturais",
-        "W2-LOCAL-SECURITY-FIX-20261012.md: fallback de primeira loja removido; 13 testes focais e typecheck PASS"
+        "W2-LOCAL-SECURITY-FIX-20261012.md: fallback de primeira loja removido; 13 testes focais e typecheck PASS",
+        "BUILDER-UPSELL-CART-TENANT-FIX-20261012.md: três fallbacks removidos; 17 testes focais, typecheck e scan PASS"
       ],
-      "gap": "JWT/RLS/grants reais, cross-tenant A/B, concorrência, quota RPC, provider preauthorization e revisão dos fallbacks restantes"
+      "gap": "JWT/RLS/grants reais, cross-tenant A/B, concorrência, quota RPC, provider preauthorization e revisão dos fallbacks em turismo lifecycle, master e mining"
     },
     {
       "id": "W3",
@@ -73,7 +74,8 @@
       "status": "partial",
       "priority": "P0",
       "evidence": [
-        "testes locais e gates canônicos PASS"
+        "testes locais e gates canônicos PASS",
+        "BUILDER-UPSELL-CART-TENANT-FIX-20261012.md: builder exige tenant explícito para admin global"
       ],
       "gap": "CAS, transações/sagas, dedupe, fault injection, OCR unique e read-after-write"
     },
