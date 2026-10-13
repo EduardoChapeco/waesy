@@ -54,4 +54,15 @@ describe("Tenant fallback security contracts", () => {
     expect(curation).toContain("Tenant obrigatório para aprovar artigo minerado.");
     expect(curation).toContain("Tenant obrigatório para aprovar artigos minerados.");
   });
+
+  it("chat commerce não deve escolher uma loja fora da categoria", () => {
+    const chat = source("chat-commerce.functions.ts");
+    const resolver = chat.slice(
+      chat.indexOf("export async function resolveMerchantForCategory"),
+      chat.indexOf("// ==============================================================================\n// 4. FASE B"),
+    );
+    expect(resolver).not.toContain("defaultStore");
+    expect(resolver).not.toContain("anyStore");
+    expect(resolver).toContain("Resolução semântica por segmento; ausência de correspondência é explícita.");
+  });
 });

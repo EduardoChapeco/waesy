@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "updatedAt": "2026-10-13T10:00:00Z",
+  "updatedAt": "2026-10-13T16:05:00Z",
   "repository": "EduardoChapeco/waesy",
   "candidate": {
     "pullRequest": 29,
@@ -55,9 +55,10 @@
         "implementações locais e testes estruturais",
         "W2-LOCAL-SECURITY-FIX-20261012.md: fallback de primeira loja removido; 13 testes focais e typecheck PASS",
         "BUILDER-UPSELL-CART-TENANT-FIX-20261012.md: três fallbacks removidos; 17 testes focais, typecheck e scan PASS",
-        "TRAVEL-MASTER-MINING-TENANT-FIX-20261012.md: fallbacks removidos; 14 testes focais e typecheck PASS"
+        "TRAVEL-MASTER-MINING-TENANT-FIX-20261012.md: fallbacks removidos; 14 testes focais e typecheck PASS",
+        "W2-CHAT-COMMERCE-TENANT-FIX-20261013.md: resolver sem fallback arbitrário; 14 testes focais e typecheck PASS"
       ],
-      "gap": "JWT/RLS/grants reais, cross-tenant A/B, concorrência, quota RPC, provider preauthorization e revisão dos fallbacks em turismo lifecycle, master e mining"
+      "gap": "JWT/RLS/grants reais, cross-tenant A/B, concorrência, quota RPC, provider preauthorization; revisão de outros resolvers públicos e prova real de RLS/JWT/grants"
     },
     {
       "id": "W3",
@@ -88,7 +89,8 @@
       "status": "partial",
       "priority": "P0",
       "evidence": [
-        "código e testes locais"
+        "código e testes locais",
+        "W5-AI-GATEWAY-FINGERPRINT-ISOLATION-20261013.md: fingerprint canônico inclui tenant, contrato, contexto e imagens; 7 testes focais e typecheck PASS"
       ],
       "gap": "boundary único, idempotência, custo, secret selection e retry real"
     },
@@ -187,7 +189,7 @@
         "gates locais PASS",
         "W15-SECRET-SCAN-20261013.md: 4.602 arquivos rastreados, 0 findings não allowlisted e Gate 0f no CI"
       ],
-      "gap": "SAST/DAST, secret history/rotation, SSRF/XSS/IDOR/CSRF/replay/prompt injection e SBOM"
+      "gap": "SAST/secret scan, SSRF/XSS/IDOR/CSRF/replay/prompt injection e SBOM"
     },
     {
       "id": "W16",
