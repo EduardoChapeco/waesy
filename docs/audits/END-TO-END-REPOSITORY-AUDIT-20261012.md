@@ -284,3 +284,9 @@ W2 continua parcial: RLS/JWT/grants efetivos, testes A/B cross-tenant, concorrê
 **Evidência:** `docs/audits/W5-AI-GATEWAY-FINGERPRINT-ISOLATION-20261013.md`
 
 O fingerprint do cache e da deduplicação in-flight inclui tenant/usuário, workspace, módulo, versão do prompt, constraints, contexto e hash do conteúdo das imagens. A suíte do gateway passou com 7/7 testes e o typecheck passou.
+
+## W6 — abort ponta a ponta no cliente resiliente
+
+**Evidência:** `docs/audits/W6-RESILIENT-CLIENT-ABORT-20261013.md`
+
+O cliente de retry cancela o backoff quando o chamador aborta, retorna `499 Client Closed Request` e não inicia tentativas adicionais. A suíte de compliance passou com 10/10 testes e o typecheck passou.
