@@ -1,11 +1,11 @@
 {
   "schemaVersion": "1.0.0",
-  "updatedAt": "2026-10-13T01:15:00Z",
+  "updatedAt": "2026-10-13T01:53:30Z",
   "repository": "EduardoChapeco/waesy",
   "candidate": {
     "pullRequest": 29,
     "codeBaseline": "cad8e3da",
-    "evidenceHead": "1a0a6baa3c3c12d9c331fb7adf751888437b2643",
+    "evidenceHead": "fb5c72244b152299d6a7f5d5f5013d9d46ff82e2",
     "checks": [
       "5 Quality Gates=SUCCESS",
       "Cloudflare Pages=SUCCESS"
@@ -41,7 +41,8 @@
         "check:schema PASS",
         "check:bff PASS",
         "audit de dependências PASS",
-        "CI PASS"
+        "CI PASS",
+        "W1-MIGRATION-INVENTORY-GATE-20261012.md: 500 SQL, nomes/versões/arquivos vazios PASS; hash de inventário e Gate 0e no CI"
       ],
       "gap": "replay from-zero, segunda aplicação, catálogo Postgres, types fingerprint e ruleset negativo"
     },

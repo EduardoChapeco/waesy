@@ -261,3 +261,12 @@ No head publicado do PR #29, os dois checks obrigatórios ficaram verdes:
 - Cloudflare Pages: **SUCCESS**
 
 Isso fecha a validação de integração do candidato para esta correção. Não equivale à certificação de produção: replay autorizado de Postgres/RLS, browser E2E, staging, smoke, rollback e monitoramento continuam pendentes.
+
+## 14. W1 — gate determinístico do inventário de migrations
+
+**Commit:** `fb5c72244b152299d6a7f5d5f5013d9d46ff82e2`
+**Evidência:** `docs/audits/W1-MIGRATION-INVENTORY-GATE-20261012.md`
+
+Foi implementado o `npm run check:migration-inventory`, agora executado no CI como Gate 0e. O subgate analisou 500 migrations SQL e confirmou nomes válidos, versões únicas, arquivos não vazios e hash ordenado reproduzível. `check:schema` e `check:bff` também passaram no mesmo candidato.
+
+Este avanço reduz o risco de árvore de migrations não determinística, mas não fecha o replay de Postgres. W1 continua `blocked` para promoção até haver banco descartável autorizado, replay from-zero, segunda aplicação, snapshot de catálogo/policies/grants/functions e testes negativos RLS/JWT.
