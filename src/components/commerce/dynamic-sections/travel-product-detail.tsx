@@ -350,3 +350,7 @@ export const TravelProductDetail: React.FC<TravelProductDetailProps> = ({
     </div>
   );
 };
+
+// Export alias for compatibility with builder registry
+export const TravelProductDetailSection = TravelProductDetail;
+

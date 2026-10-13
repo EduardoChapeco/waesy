@@ -403,3 +403,7 @@ export const DynamicBookingHero: React.FC<DynamicBookingHeroProps> = ({
     </section>
   );
 };
+
+// Export alias for compatibility with builder registry
+export const DynamicBookingHeroSection = DynamicBookingHero;
+

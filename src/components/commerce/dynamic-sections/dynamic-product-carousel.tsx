@@ -293,3 +293,7 @@ export const DynamicProductCarousel: React.FC<DynamicProductCarouselProps> = ({
     </section>
   );
 };
+
+// Export alias for compatibility with builder registry
+export const DynamicProductCarouselSection = DynamicProductCarousel;
+

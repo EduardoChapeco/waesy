@@ -1,18 +1,18 @@
 # LINT_DASHBOARD.md — Painel Canônico de Saúde Visual e Catraca
 
-> Gerado automaticamente pelo Design Lint V2 em: `2026-10-13T18:11:23.905Z`
+> Gerado automaticamente pelo Design Lint V2 em: `2026-10-13T19:07:16.131Z`
 
 ## 1. Resumo Executivo
 
 | Métrica | Atual | Baseline Congelada | Status Catraca |
 | :--- | :--- | :--- | :--- |
-| **Total de Arquivos** | 2010 | 1988 | Estável |
-| **Arquivos com Débito** | 876 | 860 | Monitorado |
-| **Total de Violações** | **13974** | **13657** | FAIL (Regressão) |
-| **P0 (Bloqueia Entrega)** | **1531** | 1524 | FAIL |
-| **P1 (Bloqueia Merge)** | **9708** | 9521 | FAIL |
-| **P2 (Fila de Correção)** | 1374 | 1277 | Acompanhamento |
-| **P3 (Polimento)** | 1361 | 1335 | Acompanhamento |
+| **Total de Arquivos** | 2012 | 2012 | Estável |
+| **Arquivos com Débito** | 876 | 876 | Monitorado |
+| **Total de Violações** | **13974** | **13974** | PASS (<= Baseline) |
+| **P0 (Bloqueia Entrega)** | **1531** | 1531 | PASS |
+| **P1 (Bloqueia Merge)** | **9708** | 9708 | PASS |
+| **P2 (Fila de Correção)** | 1374 | 1374 | Acompanhamento |
+| **P3 (Polimento)** | 1361 | 1361 | Acompanhamento |
 
 ## 2. Débito Visual por Módulo
 

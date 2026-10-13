@@ -288,3 +288,7 @@ export const CustomerTravelPortal: React.FC<CustomerTravelPortalProps> = ({
     </section>
   );
 };
+
+// Export alias for compatibility with builder registry
+export const CustomerTravelPortalSection = CustomerTravelPortal;
+

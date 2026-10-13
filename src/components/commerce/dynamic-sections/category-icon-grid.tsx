@@ -174,3 +174,7 @@ export const CategoryIconGrid: React.FC<CategoryIconGridProps> = ({
     </section>
   );
 };
+
+// Export alias for compatibility with builder registry
+export const CategoryIconGridSection = CategoryIconGrid;
+

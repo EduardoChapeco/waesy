@@ -43,11 +43,11 @@ import { RoutineSteps } from "@/components/commerce/dynamic-sections/routine-ste
 import { TourismQuoteHero } from "@/components/commerce/dynamic-sections/tourism-quote-hero";
 import { TourismDestinationsCarouselSection } from "@/components/commerce/dynamic-sections/tourism-destinations-carousel";
 import { TourismServicesGrid } from "@/components/commerce/dynamic-sections/tourism-services-grid";
-import { DynamicBookingHeroSection } from "@/components/commerce/dynamic-sections/dynamic-booking-hero";
-import { CategoryIconGridSection } from "@/components/commerce/dynamic-sections/category-icon-grid";
-import { DynamicProductCarouselSection } from "@/components/commerce/dynamic-sections/dynamic-product-carousel";
-import { TravelProductDetailSection } from "@/components/commerce/dynamic-sections/travel-product-detail";
-import { CustomerTravelPortalSection } from "@/components/commerce/dynamic-sections/customer-travel-portal";
+import { DynamicBookingHero } from "@/components/commerce/dynamic-sections/dynamic-booking-hero";
+import { CategoryIconGrid } from "@/components/commerce/dynamic-sections/category-icon-grid";
+import { DynamicProductCarousel } from "@/components/commerce/dynamic-sections/dynamic-product-carousel";
+import { TravelProductDetail } from "@/components/commerce/dynamic-sections/travel-product-detail";
+import { CustomerTravelPortal } from "@/components/commerce/dynamic-sections/customer-travel-portal";
 
 import {
   BiolinkProfileSection,
@@ -466,7 +466,7 @@ export const SITE_BUILDER_BLOCKS: SiteBuilderBlockDefinition[] = [
     name: "Motor de Busca & Reserva de Viagens",
     category: "tourism",
     description: "Hero com abas (Pacotes, Hospedagens, Voos, Carros), busca de origem/destino e micro-cards de benefícios.",
-    component: DynamicBookingHeroSection,
+    component: DynamicBookingHero,
     defaultProps: {
       headline: "Encontre sua próxima viagem dos sonhos",
       subheadline: "Pacotes completos com passagens aéreas, hospedagem e passeios exclusivos.",
@@ -481,7 +481,7 @@ export const SITE_BUILDER_BLOCKS: SiteBuilderBlockDefinition[] = [
     name: "Bento Grid de Serviços de Viagem",
     category: "tourism",
     description: "Grade de botões em pílula/card para atalhos rápidos com badges promocionais estilo aplicativo nativo.",
-    component: CategoryIconGridSection,
+    component: CategoryIconGrid,
     defaultProps: {
       title: "Explore por Categoria",
       subtitle: "Serviços e comodidades sob medida para a sua jornada",
@@ -494,7 +494,7 @@ export const SITE_BUILDER_BLOCKS: SiteBuilderBlockDefinition[] = [
     name: "Carrossel de Pacotes Imperdíveis",
     category: "tourism",
     description: "Carrossel snap scroll com cards verticais, badge de economia real, datas e parcelamento destacado.",
-    component: DynamicProductCarouselSection,
+    component: DynamicProductCarousel,
     defaultProps: {
       title: "Pacotes Imperdíveis em Destaque",
       subtitle: "Os destinos mais desejados com os melhores preços e condições de pagamento.",
@@ -507,7 +507,7 @@ export const SITE_BUILDER_BLOCKS: SiteBuilderBlockDefinition[] = [
     name: "Página de Detalhes do Pacote/Hotel (70/30)",
     category: "tourism",
     description: "Galeria Masonry, sumário de comodidades e barra lateral fixa (Sticky Sidebar) com cálculo e reserva.",
-    component: TravelProductDetailSection,
+    component: TravelProductDetail,
     defaultProps: {
       title: "Resort All Inclusive & Praia Privativa",
       location: "Porto de Galinhas, PE",
@@ -522,7 +522,7 @@ export const SITE_BUILDER_BLOCKS: SiteBuilderBlockDefinition[] = [
     name: "Portal do Viajante B2C (Minhas Viagens & Vouchers)",
     category: "tourism",
     description: "Área do cliente para consulta de reservas ativas, bilhetes aéreos, download de voucher e suporte direto.",
-    component: CustomerTravelPortalSection,
+    component: CustomerTravelPortal,
     defaultProps: {
       title: "Minhas Viagens & Vouchers",
       subtitle: "Acompanhe seus pacotes confirmados, vouchers de hospedagem e cartões de embarque.",
