@@ -123,7 +123,7 @@ export interface TravelLodging {
 }
 
 // ─── 1. Taxonomia Canônica de Tipos ────────────
-export type ClassifiedNicheType =
+type ClassifiedNicheType =
   | "viagem"
   | "equipamento"
   | "doacao"

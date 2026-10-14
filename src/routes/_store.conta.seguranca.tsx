@@ -4,7 +4,7 @@ import { getUserSecurityAuditLogs, getUserRegisteredDevices, revokeUserDevice, t
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Shield, Smartphone, Laptop, Clock, Trash2, CheckCircle2, AlertTriangle, Activity, RefreshCw, Loader2 } from "lucide-react";
+import { Shield, ShieldCheck, Smartphone, Laptop, Clock, Trash2, CheckCircle2, AlertTriangle, Activity, RefreshCw, Loader2 } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { NativeMobileHeader } from "@/components/navigation/native-mobile-header";
 

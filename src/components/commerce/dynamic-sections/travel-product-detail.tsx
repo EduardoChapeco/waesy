@@ -22,6 +22,7 @@ import {
   ArrowRight,
   Maximize2,
   Navigation,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -201,7 +202,8 @@ export const TravelProductDetail: React.FC<TravelProductDetailProps> = ({
               type="button"
               variant="secondary"
               size="sm"
-              className="h-9 px-3 rounded-xl text-xs font-bold bg-background/90 hover:bg-background text-foreground backdrop-blur-md shadow-md gap-1.5 cursor-pointer"
+              onClick={() => setSelectedImage(mainPhotoUrl || galleryPhotos[0] || null)}
+              className="h-9 px-3 rounded-xl text-xs font-bold bg-background/90 hover:bg-background text-foreground backdrop-blur-md shadow-md gap-1.5 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
               <Maximize2 className="size-3.5" />
               <span>Ver todas as fotos</span>
@@ -230,7 +232,8 @@ export const TravelProductDetail: React.FC<TravelProductDetailProps> = ({
                 <span>{destinationCity}</span>
                 <button
                   type="button"
-                  className="font-bold text-primary hover:underline cursor-pointer ml-1"
+                  onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(destinationCity || hotelName)}`, "_blank", "noopener,noreferrer")}
+                  className="font-bold text-primary hover:underline cursor-pointer ml-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-sm"
                 >
                   Ver no mapa
                 </button>
@@ -347,6 +350,31 @@ export const TravelProductDetail: React.FC<TravelProductDetailProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Modal de Ampliação de Foto */}
+      {selectedImage && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          className="fixed inset-0 z-50 bg-background/80 flex items-center justify-center p-4 backdrop-blur-sm"
+          onClick={() => setSelectedImage(null)}
+        >
+          <div
+            className="relative max-w-4xl max-h-screen overflow-hidden rounded-lg bg-card border border-border"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <img src={selectedImage} alt={hotelName} className="w-full h-auto object-contain max-h-[80vh]" />
+            <button
+              type="button"
+              onClick={() => setSelectedImage(null)}
+              className="absolute top-3 right-3 size-11 flex items-center justify-center bg-background/80 hover:bg-background text-foreground rounded-full border border-border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary cursor-pointer"
+              aria-label="Fechar galeria"
+            >
+              <X className="size-4" aria-hidden="true" />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
