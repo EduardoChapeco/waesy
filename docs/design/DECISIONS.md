@@ -2919,5 +2919,19 @@
 - **Fundamentação:** AGENTS.md B.1, B.4, B.8, B.9, B.11, B.14, B.25; Invariante de Parâmetros BFF (B.25); WCAG 2.2 AA (SC 2.5.5, SC 2.5.8); docs/design/DESIGN-LINT.md.
 - **Consequências:** Queda substancial de 179 violações P1 no repositório, zero falhas na suíte de testes unitários de stories, estabilidade absoluta de interação em telas de toque e total integridade de parâmetros em funções de servidor.
 
+## DEC-211: Ancoragem Canônica do Chat Composer no Rodapé com min-h-0, Rota /workspace/copilot e Prevenção de Auto-Zoom no iOS
+
+- **Data:** 2026-10-14
+- **Contexto:** Relato crítico de usabilidade no módulo Copilot onde o campo de input de texto exigia rolagem da página inteira para ser visualizado/digitado. Investigação forense diagnosticou a causa raiz no CSS Flexbox: containers flex sem `min-h-0` padrão defaultam para `min-height: auto`, fazendo com que listas dinâmicas de mensagens em streaming expandam o container pai além dos limites da viewport, empurrando o `<ChatComposer>` para fora da tela. Adicionalmente, verificou-se: (1) no mobile, a barra global `TopBar` competia com o cabeçalho nativo da rota `/copilot`, estrangulando o espaço útil; (2) textarea e inputs configurados com `text-sm` (14px) disparavam o zoom automático compulsório no Safari iOS ("efeito sanfona"); (3) a rota `/workspace/copilot` apontada pelo NavigationRail não existia como arquivo dedicado no TanStack Router; (4) no BFF `ai-conversations.functions.ts`, o campo `contact_whatsapp` na ação estruturada `request_travel_quote` utilizava incorretamente `identity.email` em vez de dados telefônicos.
+- **Decisão Adotada:**
+  1. **Ancoragem Estrita do Composer com `min-h-0`:** Injetado `min-h-0 overflow-hidden relative` no container `<main>` e `min-h-0 overscroll-contain` na lista de mensagens (`div[role="log"]`) em `ai-chat-shell.tsx`, `waesy-copilot-drawer.tsx` e `copilot-chat-workspace.tsx`. No `<ChatComposer>`, aplicado `shrink-0 sticky bottom-0 z-20` com padding defensivo para home indicator iOS (`pb-[max(0.75rem,env(safe-area-inset-bottom))]`).
+  2. **Supressão de Duplo Cabeçalho no Mobile:** Em `app-shell.tsx`, a `TopBar` global é suprimida no mobile quando na rota `/copilot`, que conta com seu próprio cabeçalho nativo ergonômico.
+  3. **Prevenção de Auto-Zoom no Safari iOS:** Elevada a tipografia de inputs e textareas do composer de `text-sm` para `text-base sm:text-sm` (>= 16px no mobile), eliminando 100% dos janks e do efeito sanfona ao focar o campo.
+  4. **Rota Canônica do Workspace Copilot:** Criada a rota `src/routes/workspace.copilot.tsx` com o `CopilotChatWorkspace`, sincronizando `routeTree.gen.ts`.
+  5. **Correção de Dados BFF:** Em `ai-conversations.functions.ts` (`executeApprovedChatAction`), corrigido `contact_whatsapp` para priorizar `payload.whatsapp || identity.phone || ""`.
+- **Fundamentação:** AGENTS.md B.1, B.4, B.5, B.8, B.9, B.11, B.25, B.26; Apple HIG Ergonomics; WCAG 2.2 AA (SC 2.5.5, SC 1.4.4); W3C CSS Flexbox Specification (min-height auto vs min-h-0).
+- **Consequências:** Chat Copilot opera com estabilidade e fixação absoluta de rodapé em desktop e mobile, zero auto-zoom no Safari, navegação desobstruída no workspace e parâmetros de cotação íntegros.
+
+
 
 

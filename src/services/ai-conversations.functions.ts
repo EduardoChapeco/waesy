@@ -2684,7 +2684,13 @@ async function executeApprovedChatAction(
           trip_type: "air_package",
           flexible_dates: true,
           contact_name: contactName,
-          contact_whatsapp: String(identity.email || ""),
+          contact_whatsapp: String(
+            (payload as any).whatsapp ||
+            (payload as any).contact_whatsapp ||
+            (identity as any).phone ||
+            (identity as any).whatsapp ||
+            ""
+          ),
           contact_email: contactEmail,
           special_notes: typeof payload.notes === "string" ? payload.notes : undefined,
         },

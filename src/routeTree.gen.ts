@@ -118,6 +118,7 @@ import { Route as WorkspaceIndexRouteImport } from './routes/workspace.index'
 import { Route as WorkspaceAutomacoesRouteImport } from './routes/workspace.automacoes'
 import { Route as WorkspaceAvaliacoesRouteImport } from './routes/workspace.avaliacoes'
 import { Route as WorkspaceComercialRouteImport } from './routes/workspace.comercial'
+import { Route as WorkspaceCopilotRouteImport } from './routes/workspace.copilot'
 import { Route as WorkspaceCrmRouteImport } from './routes/workspace.crm'
 import { Route as WorkspaceDesignSystemRouteImport } from './routes/workspace.design-system'
 import { Route as WorkspaceLicitacoesRouteImport } from './routes/workspace.licitacoes'
@@ -958,6 +959,11 @@ const WorkspaceAvaliacoesRoute = WorkspaceAvaliacoesRouteImport.update({
 const WorkspaceComercialRoute = WorkspaceComercialRouteImport.update({
   id: '/comercial',
   path: '/comercial',
+  getParentRoute: () => WorkspaceRoute,
+} as any)
+const WorkspaceCopilotRoute = WorkspaceCopilotRouteImport.update({
+  id: '/copilot',
+  path: '/copilot',
   getParentRoute: () => WorkspaceRoute,
 } as any)
 const WorkspaceCrmRoute = WorkspaceCrmRouteImport.update({
@@ -2664,6 +2670,7 @@ export interface FileRoutesByFullPath {
   '/workspace/automacoes': typeof WorkspaceAutomacoesRoute
   '/workspace/avaliacoes': typeof WorkspaceAvaliacoesRoute
   '/workspace/comercial': typeof WorkspaceComercialRoute
+  '/workspace/copilot': typeof WorkspaceCopilotRoute
   '/workspace/crm': typeof WorkspaceCrmRoute
   '/workspace/design-system': typeof WorkspaceDesignSystemRoute
   '/workspace/licitacoes': typeof WorkspaceLicitacoesRoute
@@ -3060,6 +3067,7 @@ export interface FileRoutesByTo {
   '/workspace/automacoes': typeof WorkspaceAutomacoesRoute
   '/workspace/avaliacoes': typeof WorkspaceAvaliacoesRoute
   '/workspace/comercial': typeof WorkspaceComercialRoute
+  '/workspace/copilot': typeof WorkspaceCopilotRoute
   '/workspace/crm': typeof WorkspaceCrmRoute
   '/workspace/design-system': typeof WorkspaceDesignSystemRoute
   '/workspace/licitacoes': typeof WorkspaceLicitacoesRoute
@@ -3464,6 +3472,7 @@ export interface FileRoutesById {
   '/workspace/automacoes': typeof WorkspaceAutomacoesRoute
   '/workspace/avaliacoes': typeof WorkspaceAvaliacoesRoute
   '/workspace/comercial': typeof WorkspaceComercialRoute
+  '/workspace/copilot': typeof WorkspaceCopilotRoute
   '/workspace/crm': typeof WorkspaceCrmRoute
   '/workspace/design-system': typeof WorkspaceDesignSystemRoute
   '/workspace/licitacoes': typeof WorkspaceLicitacoesRoute
@@ -3871,6 +3880,7 @@ export interface FileRouteTypes {
     | '/workspace/automacoes'
     | '/workspace/avaliacoes'
     | '/workspace/comercial'
+    | '/workspace/copilot'
     | '/workspace/crm'
     | '/workspace/design-system'
     | '/workspace/licitacoes'
@@ -4267,6 +4277,7 @@ export interface FileRouteTypes {
     | '/workspace/automacoes'
     | '/workspace/avaliacoes'
     | '/workspace/comercial'
+    | '/workspace/copilot'
     | '/workspace/crm'
     | '/workspace/design-system'
     | '/workspace/licitacoes'
@@ -4670,6 +4681,7 @@ export interface FileRouteTypes {
     | '/workspace/automacoes'
     | '/workspace/avaliacoes'
     | '/workspace/comercial'
+    | '/workspace/copilot'
     | '/workspace/crm'
     | '/workspace/design-system'
     | '/workspace/licitacoes'
@@ -5780,6 +5792,13 @@ declare module '@tanstack/react-router' {
       path: '/comercial'
       fullPath: '/workspace/comercial'
       preLoaderRoute: typeof WorkspaceComercialRouteImport
+      parentRoute: typeof WorkspaceRoute
+    }
+    '/workspace/copilot': {
+      id: '/workspace/copilot'
+      path: '/copilot'
+      fullPath: '/workspace/copilot'
+      preLoaderRoute: typeof WorkspaceCopilotRouteImport
       parentRoute: typeof WorkspaceRoute
     }
     '/workspace/crm': {
@@ -8390,6 +8409,7 @@ interface WorkspaceRouteChildren {
   WorkspaceAutomacoesRoute: typeof WorkspaceAutomacoesRoute
   WorkspaceAvaliacoesRoute: typeof WorkspaceAvaliacoesRoute
   WorkspaceComercialRoute: typeof WorkspaceComercialRoute
+  WorkspaceCopilotRoute: typeof WorkspaceCopilotRoute
   WorkspaceCrmRoute: typeof WorkspaceCrmRoute
   WorkspaceDesignSystemRoute: typeof WorkspaceDesignSystemRoute
   WorkspaceLicitacoesRoute: typeof WorkspaceLicitacoesRoute
@@ -8561,6 +8581,7 @@ const WorkspaceRouteChildren: WorkspaceRouteChildren = {
   WorkspaceAutomacoesRoute: WorkspaceAutomacoesRoute,
   WorkspaceAvaliacoesRoute: WorkspaceAvaliacoesRoute,
   WorkspaceComercialRoute: WorkspaceComercialRoute,
+  WorkspaceCopilotRoute: WorkspaceCopilotRoute,
   WorkspaceCrmRoute: WorkspaceCrmRoute,
   WorkspaceDesignSystemRoute: WorkspaceDesignSystemRoute,
   WorkspaceLicitacoesRoute: WorkspaceLicitacoesRoute,

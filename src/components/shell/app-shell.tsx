@@ -304,8 +304,8 @@ export function AppShell({ children, session, brandSettings }: AppShellProps) {
 
   return (
     <div className="h-dvh w-full max-w-full bg-background text-foreground selection:bg-primary selection:text-primary-foreground font-sans antialiased relative flex flex-col overflow-hidden">
-      {/* ── Barra de Topo Horizontal (Ocultada no Mobile em Telas Nativas de App, Perfil, Formulário e Afiliados) ── */}
-      <div className={isProfilePage || isFormPage || isCleanMobileAppPage || isDetailPage ? "hidden md:block" : ""}>
+      {/* ── Barra de Topo Horizontal (Ocultada no Mobile em Telas Nativas de App, Perfil, Formulário, Copilot e Afiliados) ── */}
+      <div className={isProfilePage || isFormPage || isCleanMobileAppPage || isDetailPage || isCopilotPage ? "hidden md:block" : ""}>
         <TopBar
           session={session}
           brandSettings={brandSettings}
@@ -336,7 +336,7 @@ export function AppShell({ children, session, brandSettings }: AppShellProps) {
           ref={mainRef}
           className={`main-container-query flex-1 flex flex-col min-w-0 h-full w-full max-w-full ${
             isCopilotPage
-              ? "p-0 m-0 overflow-hidden"
+              ? "p-0 m-0 overflow-hidden min-h-0"
               : isFeedPage || isCleanMobileAppPage
               ? "overflow-y-auto no-scrollbar overflow-x-hidden px-4 sm:px-6 md:px-8 pt-0 md:pt-3 pb-24 md:pb-8"
               : isFormPage
@@ -348,7 +348,7 @@ export function AppShell({ children, session, brandSettings }: AppShellProps) {
         >
           <div className={`w-full mx-auto flex flex-col items-stretch min-w-0 flex-1 ${
             isCopilotPage
-              ? "size-full max-w-none overflow-hidden"
+              ? "size-full max-w-none overflow-hidden min-h-0"
               : isFeedPage
               ? "max-w-2xl"
               : isFormPage 

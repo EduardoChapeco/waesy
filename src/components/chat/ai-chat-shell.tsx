@@ -338,14 +338,14 @@ export function AIChatShell({
       {/* ── COLUNA 2: STREAM DE CONVERSA PRINCIPAL ── */}
       <main
         className={cn(
-          "flex-1 flex flex-col h-full bg-background transition-colors min-w-0",
+          "flex-1 flex flex-col h-full min-h-0 bg-background transition-colors min-w-0 overflow-hidden relative",
           showMobileChat === false && "hidden md:flex"
         )}
       >
         {activeThread ? (
           <>
             {/* Cabeçalho da Conversa Ativa */}
-            <header className="flex items-center justify-between px-3 py-2 border-b border-border/40 bg-background/80 backdrop-blur-md sticky top-0 z-10 gap-2">
+            <header className="flex items-center justify-between px-3 py-2 border-b border-border/40 bg-background/80 backdrop-blur-md sticky top-0 z-10 gap-2 shrink-0">
               <div className="flex items-center gap-2 min-w-0">
                 {/* Botão Voltar para Mobile */}
                 <Button
@@ -426,7 +426,7 @@ export function AIChatShell({
               role="log"
               aria-live="polite"
               aria-label="Histórico de mensagens da conversa"
-              className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 no-scrollbar"
+              className="flex-1 min-h-0 overflow-y-auto p-3 sm:p-4 space-y-3 no-scrollbar overscroll-contain"
             >
               {/* Indicador Minimalista de Conexão Segura */}
               <div className="flex justify-center my-2">
@@ -596,6 +596,7 @@ export function AIChatShell({
               isSending={isSending}
               replyTo={replyTo}
               onCancelReply={() => setReplyTo(null)}
+              className="shrink-0 sticky bottom-0 z-20"
             />
           </>
         ) : (

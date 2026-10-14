@@ -113,7 +113,7 @@ export function ChatComposer({
     <footer
       aria-label="Área de composição de mensagem"
       className={cn(
-        "border-t border-border/40 bg-background/95 backdrop-blur-md pb-4",
+        "shrink-0 border-t border-border/40 bg-background/95 backdrop-blur-md pb-3 sm:pb-4 pb-[max(0.75rem,env(safe-area-inset-bottom))]",
         className
       )}
     >
@@ -191,7 +191,7 @@ export function ChatComposer({
               disabled={disabled || isSending}
               placeholder={placeholder}
               rows={1}
-              className="w-full bg-transparent text-sm text-foreground placeholder:text-muted-foreground resize-none outline-none leading-relaxed min-h-7 max-h-36"
+              className="w-full bg-transparent text-base sm:text-sm text-foreground placeholder:text-muted-foreground resize-none outline-none leading-relaxed min-h-7 max-h-36"
               aria-label="Mensagem para enviar"
             />
           )}

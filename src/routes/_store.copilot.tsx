@@ -497,7 +497,7 @@ function CopilotPage() {
   };
 
   return (
-    <div className="h-full flex-1 w-full flex flex-col bg-background">
+    <div className="h-full flex-1 w-full flex flex-col min-h-0 overflow-hidden bg-background">
       <AIChatShell
         threads={threads}
         activeThreadId={activeThreadId}
@@ -514,7 +514,7 @@ function CopilotPage() {
         isSending={isSending}
         isStreaming={isSending}
         currentUserProfileId={effectiveUserId || undefined}
-        className="h-full border-none rounded-none"
+        className="h-full min-h-0 border-none rounded-none"
       />
     </div>
   );

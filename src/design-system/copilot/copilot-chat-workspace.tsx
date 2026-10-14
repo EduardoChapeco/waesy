@@ -74,7 +74,7 @@ export function CopilotChatWorkspace({
       )}
 
       {/* Message Stream */}
-      <div className="flex-1 overflow-y-auto native-scroll p-4 md:p-6 space-y-4">
+      <div className="flex-1 min-h-0 overflow-y-auto native-scroll p-4 md:p-6 space-y-4">
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full text-center py-12 max-w-md mx-auto space-y-4">
             <div className="size-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
@@ -160,7 +160,7 @@ export function CopilotChatWorkspace({
       {/* Composer Toolbar & Input */}
       <form
         onSubmit={handleSubmit}
-        className="p-3 md:p-4 border-t border-border/50 bg-card/80 backdrop-blur-xs shrink-0"
+        className="p-3 md:p-4 border-t border-border/50 bg-card/80 backdrop-blur-xs shrink-0 sticky bottom-0 z-10"
       >
         <div className="relative flex items-center w-full max-w-4xl mx-auto rounded-lg border border-border/80 bg-background focus-within:border-primary/80 focus-within:ring-2 focus-within:ring-ring transition-all">
           <input
@@ -169,7 +169,7 @@ export function CopilotChatWorkspace({
             onChange={(e) => setInputText(e.target.value)}
             placeholder={placeholder}
             disabled={isLoading}
-            className="flex-1 min-h-12 px-4 bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none select-text"
+            className="flex-1 min-h-12 px-4 bg-transparent text-base sm:text-sm text-foreground placeholder:text-muted-foreground focus:outline-none select-text"
           />
 
           <div className="flex items-center gap-1 pr-2 shrink-0">
