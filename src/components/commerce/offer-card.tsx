@@ -238,7 +238,7 @@ export function OfferCard({
             className="relative size-full object-contain group-hover:scale-105 transition-transform duration-300 motion-reduce:transition-none"
             loading="lazy"
             onError={(e) => {
-              (e.currentTarget as HTMLElement).src = "/banner-placeholder.png";
+              (e.currentTarget as HTMLImageElement).src = "/banner-placeholder.png";
             }}
           />
 

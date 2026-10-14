@@ -80,6 +80,7 @@ export default function WorkspaceDashboardPage() {
   const semantics = getNicheSemantics(activeStore);
 
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [metricsPeriod, setMetricsPeriod] = useState<string>("today");
   const [isOpenNow, setIsOpenNow] = useState(() => {
     const pauseUntil = activeStore?.settings?.emergency_pause_until;
     if (!pauseUntil) return true;

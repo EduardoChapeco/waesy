@@ -66,6 +66,7 @@ export function DataTable<T>({
   page = 1,
   pageSize = 10,
   totalItems,
+  onPageChange,
   onRowClick,
   className,
 }: DataTableProps<T>) {
