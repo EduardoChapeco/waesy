@@ -121,6 +121,9 @@ export function BoostBottomSheet({
               <img
                 src={targetItem.imageUrl}
                 alt={targetItem.title}
+                onError={(e) => {
+                  (e.currentTarget as HTMLElement).style.display = "none";
+                }}
                 className="size-full object-cover"
               />
             ) : (
@@ -136,7 +139,7 @@ export function BoostBottomSheet({
                 {formatMoney(targetItem.priceCents)}
               </p>
             )}
-            <p className="text-[10px] text-muted-foreground">
+            <p className="text-2xs text-muted-foreground">
               {targetItem.locationCity || "Toda a Região"}
             </p>
           </div>
@@ -145,14 +148,14 @@ export function BoostBottomSheet({
         {/* ── Canais de Exibição (Waesy + Instagram + Google) ── */}
         {!paymentResult && (
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-[11px] text-muted-foreground font-medium">Veiculação:</span>
-            <Badge variant="outline" className="text-[10px] gap-2 py-1 px-3 bg-background font-medium border-primary/30 text-foreground">
+            <span className="text-xs text-muted-foreground font-medium">Veiculação:</span>
+            <Badge variant="outline" className="text-2xs gap-2 py-1 px-3 bg-background font-medium border-primary/30 text-foreground">
               <Star className="size-3 text-primary" /> Waesy Vitrine
             </Badge>
-            <Badge variant="outline" className="text-[10px] gap-2 py-1 px-3 bg-background font-medium border-pink-500/30 text-foreground">
+            <Badge variant="outline" className="text-2xs gap-2 py-1 px-3 bg-background font-medium border-pink-500/30 text-foreground">
               <Instagram className="size-3 text-pink-500" /> Instagram Feed
             </Badge>
-            <Badge variant="outline" className="text-[10px] gap-2 py-1 px-3 bg-background font-medium border-blue-500/30 text-foreground">
+            <Badge variant="outline" className="text-2xs gap-2 py-1 px-3 bg-background font-medium border-blue-500/30 text-foreground">
               <Globe className="size-3 text-blue-500" /> Google Search
             </Badge>
           </div>
@@ -174,7 +177,7 @@ export function BoostBottomSheet({
                     key={plan.days}
                     type="button"
                     onClick={() => setSelectedDays(plan.days)}
-                    className={`min-h-[64px] p-3 rounded-lg border text-center flex flex-col items-center justify-center transition-all cursor-pointer active:scale-97 select-none ${
+                    className={`min-h-16 p-3 rounded-lg border text-center flex flex-col items-center justify-center transition-all cursor-pointer active:scale-97 select-none ${
                       isSelected
                         ? "border-amber-500 bg-amber-500/12 ring-2 ring-amber-500/20 shadow-xs"
                         : "border-border/60 bg-card hover:bg-muted/30"
@@ -184,7 +187,7 @@ export function BoostBottomSheet({
                     <span className="font-mono text-xs font-black text-amber-700 dark:text-amber-400 mt-1">
                       {formatMoney(plan.priceCents)}
                     </span>
-                    <span className="text-[9px] text-muted-foreground font-mono mt-1">
+                    <span className="text-2xs text-muted-foreground font-mono mt-1">
                       {plan.dailyEstimate}
                     </span>
                   </button>
@@ -203,7 +206,7 @@ export function BoostBottomSheet({
                   {currentPlan.estimatedReach}
                 </span>
               </div>
-              <p className="text-[11px] text-muted-foreground leading-relaxed">
+              <p className="text-xs text-muted-foreground leading-relaxed">
                 Prioridade máxima no topo das buscas, selo dourado de destaque e ativação de leilão local.
               </p>
             </div>
@@ -217,6 +220,9 @@ export function BoostBottomSheet({
                   <img
                     src={`data:image/png;base64,${paymentResult.pixQrCode}`}
                     alt="QR Code PIX"
+                    onError={(e) => {
+                      (e.currentTarget as HTMLElement).style.display = "none";
+                    }}
                     className="size-full object-contain"
                   />
                 </div>
@@ -253,7 +259,7 @@ export function BoostBottomSheet({
               </Button>
             )}
 
-            <div className="text-center text-[11px] text-muted-foreground">
+            <div className="text-center text-xs text-muted-foreground">
               Assim que o banco confirmar o pagamento, seu anúncio entra em destaque automaticamente.
             </div>
           </div>
@@ -286,7 +292,7 @@ export function BoostBottomSheet({
               if (onResetPayment) onResetPayment();
               onOpenChange(false);
             }}
-            className="w-full h-10 rounded-lg text-xs font-semibold text-muted-foreground hover:text-foreground"
+            className="w-full h-11 min-h-11 rounded-lg text-xs font-semibold text-muted-foreground hover:text-foreground"
           >
             Fechar Janela
           </Button>
@@ -298,7 +304,7 @@ export function BoostBottomSheet({
   if (isMobile) {
     return (
       <Sheet open={open} onOpenChange={onOpenChange}>
-        <SheetContent side="bottom" className="rounded-t-lg p-0 max-h-[90dvh] bg-card border-t border-border/70 overflow-y-auto no-scrollbar">
+        <SheetContent side="bottom" className="rounded-t-2xl p-0 max-h-screen bg-card border-t border-border/70 overflow-y-auto no-scrollbar overscroll-contain">
           {content}
         </SheetContent>
       </Sheet>

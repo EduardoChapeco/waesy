@@ -53,7 +53,7 @@ export function EnterpriseLandingView({ initialSettings }: EnterpriseLandingView
   };
 
   return (
-    <div className="w-full min-h-[100dvh] bg-background text-foreground flex flex-col selection:bg-primary/20 overflow-x-hidden">
+    <div className="w-full min-h-dvh bg-background text-foreground flex flex-col selection:bg-primary/20 overflow-x-hidden">
       {/* ── 1. HEADER ENTERPRISE (APPLE HIG & STRIPE STANDARD - TOPO ÚNICO) ── */}
       <header className="sticky top-0 z-50 w-full bg-background/85 backdrop-blur-xl border-b border-border/60">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
@@ -66,7 +66,7 @@ export function EnterpriseLandingView({ initialSettings }: EnterpriseLandingView
               <span className="font-extrabold text-base tracking-tight text-foreground leading-none">
                 waesy
               </span>
-              <span className="text-[10px] text-muted-foreground font-semibold tracking-wider uppercase">
+              <span className="text-xs text-muted-foreground font-semibold tracking-wider uppercase">
                 Enterprise
               </span>
             </div>
@@ -124,7 +124,7 @@ export function EnterpriseLandingView({ initialSettings }: EnterpriseLandingView
               asChild
               variant="ghost"
               size="sm"
-              className="hidden sm:inline-flex text-xs font-semibold rounded-lg text-muted-foreground hover:text-foreground h-9 px-3 gap-2"
+              className="hidden sm:inline-flex text-xs font-semibold rounded-lg text-muted-foreground hover:text-foreground h-11 min-h-11 px-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary gap-2"
             >
               <Link to="/explorar">
                 <Store className="size-3.5" />
@@ -138,7 +138,7 @@ export function EnterpriseLandingView({ initialSettings }: EnterpriseLandingView
                   asChild
                   variant="outline"
                   size="sm"
-                  className="text-xs font-bold rounded-lg border-border/80 hover:bg-muted text-foreground h-9 px-3 gap-2 shadow-2xs cursor-pointer"
+                  className="text-xs font-bold rounded-lg border-border/80 hover:bg-muted text-foreground h-11 min-h-11 px-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary gap-2 shadow-2xs cursor-pointer"
                 >
                   <Link to="/workspace">
                     <LayoutDashboard className="size-3.5 text-primary" />
@@ -152,11 +152,11 @@ export function EnterpriseLandingView({ initialSettings }: EnterpriseLandingView
                 >
                   <Avatar className="size-7 rounded-lg">
                     {userAvatar && <AvatarImage src={userAvatar} alt={userName} />}
-                    <AvatarFallback className="text-[11px] font-bold bg-primary/10 text-primary">
+                    <AvatarFallback className="text-xs font-bold bg-primary/10 text-primary">
                       {userInitial}
                     </AvatarFallback>
                   </Avatar>
-                  <span className="text-xs font-semibold max-w-[90px] truncate hidden md:inline">
+                  <span className="text-xs font-semibold max-w-24 truncate hidden md:inline">
                     {userName || "Conta"}
                   </span>
                 </Link>
@@ -167,7 +167,7 @@ export function EnterpriseLandingView({ initialSettings }: EnterpriseLandingView
                   asChild
                   variant="outline"
                   size="sm"
-                  className="text-xs font-bold rounded-lg border-border/80 hover:bg-muted text-foreground h-9 px-4 gap-2 shadow-2xs cursor-pointer"
+                  className="text-xs font-bold rounded-lg border-border/80 hover:bg-muted text-foreground h-11 min-h-11 px-5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary gap-2 shadow-2xs cursor-pointer"
                 >
                   <Link to="/entrar">
                     <LogIn className="size-3.5 text-primary" />
@@ -178,7 +178,7 @@ export function EnterpriseLandingView({ initialSettings }: EnterpriseLandingView
                 <Button
                   asChild
                   size="sm"
-                  className="rounded-lg text-xs font-bold bg-foreground text-background hover:bg-foreground/90 h-9 px-4 gap-2 shadow-xs cursor-pointer"
+                  className="rounded-lg text-xs font-bold bg-foreground text-background hover:bg-foreground/90 h-11 min-h-11 px-5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary gap-2 shadow-xs cursor-pointer"
                 >
                   <Link to="/criar-negocio">
                     <span>Criar Negócio</span>
@@ -193,17 +193,17 @@ export function EnterpriseLandingView({ initialSettings }: EnterpriseLandingView
               <SheetTrigger asChild>
                 <button
                   type="button"
-                  className="lg:hidden size-9 rounded-lg border border-border/70 flex items-center justify-center text-foreground hover:bg-muted/60 transition-colors"
+                  className="lg:hidden size-11 min-h-11 rounded-lg border border-border/70 flex items-center justify-center text-foreground hover:bg-muted/60 transition-colors"
                   aria-label="Abrir menu de navegação"
                 >
                   <Menu className="size-4.5" />
                 </button>
               </SheetTrigger>
-              <SheetContent side="right" className="w-[85vw] max-w-sm p-6 bg-background flex flex-col justify-between">
+              <SheetContent side="right" className="w-5/6 max-w-sm p-6 bg-background flex flex-col justify-between overscroll-contain">
                 <div className="space-y-6 pt-4">
                   <div className="flex items-center justify-between pb-4 border-b border-border/60">
                     <span className="font-extrabold text-lg tracking-tight">waesy</span>
-                    <Badge variant="outline" className="text-[10px] uppercase font-mono">
+                    <Badge variant="outline" className="text-xs uppercase font-mono">
                       Menu
                     </Badge>
                   </div>
@@ -268,18 +268,18 @@ export function EnterpriseLandingView({ initialSettings }: EnterpriseLandingView
                           <span className="text-xs font-bold truncate text-foreground">
                             {userName || "Membro Waesy"}
                           </span>
-                          <span className="text-[10px] text-muted-foreground truncate">
+                          <span className="text-xs text-muted-foreground truncate">
                             Sessão Ativa
                           </span>
                         </div>
                       </div>
-                      <Button asChild className="w-full h-10 rounded-lg text-xs font-bold gap-2">
+                      <Button asChild className="w-full h-11 min-h-11 rounded-lg text-xs font-bold gap-2">
                         <Link to="/workspace">
                           <LayoutDashboard className="size-4" />
                           <span>Acessar Workspace</span>
                         </Link>
                       </Button>
-                      <Button asChild variant="outline" className="w-full h-10 rounded-lg text-xs font-semibold gap-2">
+                      <Button asChild variant="outline" className="w-full h-11 min-h-11 rounded-lg text-xs font-semibold gap-2">
                         <Link to="/conta">
                           <User className="size-4 text-muted-foreground" />
                           <span>Gerenciar Minha Conta</span>
@@ -288,13 +288,13 @@ export function EnterpriseLandingView({ initialSettings }: EnterpriseLandingView
                     </>
                   ) : (
                     <>
-                      <Button asChild className="w-full h-11 rounded-lg text-xs font-bold gap-2">
+                      <Button asChild className="w-full h-11 min-h-11 rounded-lg text-xs font-bold gap-2">
                         <Link to="/criar-negocio">
                           <span>Criar Meu Negócio</span>
                           <ArrowRight className="size-4" />
                         </Link>
                       </Button>
-                      <Button asChild variant="outline" className="w-full h-11 rounded-lg text-xs font-bold gap-2">
+                      <Button asChild variant="outline" className="w-full h-11 min-h-11 rounded-lg text-xs font-bold gap-2">
                         <Link to="/entrar">
                           <LogIn className="size-4 text-primary" />
                           <span>Acessar Painel Logado</span>
@@ -316,7 +316,7 @@ export function EnterpriseLandingView({ initialSettings }: EnterpriseLandingView
           <span>O Sistema Operacional Definitivo para Negócios Regionais</span>
         </div>
 
-        <h1 className="text-3xl sm:text-6xl lg:text-7xl font-extrabold text-foreground tracking-tight leading-[1.12] max-w-4xl mx-auto [text-wrap:balance]">
+        <h1 className="text-3xl sm:text-6xl lg:text-7xl font-extrabold text-foreground tracking-tight leading-tight max-w-4xl mx-auto [text-wrap:balance]">
           A plataforma unificada de comércio, ERP e inteligência para sua região.
         </h1>
 
@@ -415,7 +415,7 @@ export function EnterpriseLandingView({ initialSettings }: EnterpriseLandingView
                     <ShoppingBag className="size-4 text-primary" />
                     <span>Frente de Caixa (PDV)</span>
                   </div>
-                  <p className="text-[11px] text-muted-foreground">
+                  <p className="text-xs text-muted-foreground">
                     Operação veloz em tablets e desktops, com comandas, mesas e emissão de recibos.
                   </p>
                 </div>
@@ -424,7 +424,7 @@ export function EnterpriseLandingView({ initialSettings }: EnterpriseLandingView
                     <Users className="size-4 text-primary" />
                     <span>RH e Recrutamento (ATS)</span>
                   </div>
-                  <p className="text-[11px] text-muted-foreground">
+                  <p className="text-xs text-muted-foreground">
                     Gestão de colaboradores, holerites, ponto e triagem autônoma de candidatos.
                   </p>
                 </div>
@@ -480,7 +480,7 @@ export function EnterpriseLandingView({ initialSettings }: EnterpriseLandingView
             </div>
 
             <div className="pt-4 border-t border-border/40">
-              <span className="text-[11px] text-muted-foreground font-mono">Zero código necessário</span>
+              <span className="text-xs text-muted-foreground font-mono">Zero código necessário</span>
             </div>
           </div>
 
@@ -553,7 +553,7 @@ export function EnterpriseLandingView({ initialSettings }: EnterpriseLandingView
                     <Search className="size-4 text-emerald-600" />
                     <span>Google Meu Negócio e Meta</span>
                   </div>
-                  <p className="text-[11px] text-muted-foreground">
+                  <p className="text-xs text-muted-foreground">
                     Sincronização contínua de horários, produtos e avaliações dos clientes.
                   </p>
                 </div>
@@ -562,7 +562,7 @@ export function EnterpriseLandingView({ initialSettings }: EnterpriseLandingView
                     <Newspaper className="size-4 text-emerald-600" />
                     <span>Imprensa e Notícias Locais</span>
                   </div>
-                  <p className="text-[11px] text-muted-foreground">
+                  <p className="text-xs text-muted-foreground">
                     Veiculação de comunicados e artigos patrocinados na rede de notícias regional.
                   </p>
                 </div>
@@ -611,7 +611,7 @@ export function EnterpriseLandingView({ initialSettings }: EnterpriseLandingView
             <Button
               size="lg"
               onClick={() => setIsFounderSheetOpen(true)}
-              className="w-full sm:w-auto h-12 px-8 rounded-lg text-xs sm:text-sm font-bold bg-primary text-primary-foreground hover:bg-primary/90 shadow-md cursor-pointer"
+              className="w-full sm:w-auto h-12 px-8 rounded-lg text-xs sm:text-sm font-bold bg-primary text-primary-foreground hover:bg-primary/90 border border-border/80 cursor-pointer"
             >
               <Star className="size-4 mr-2" />
               <span>Garantir Meu Título de Fundador</span>

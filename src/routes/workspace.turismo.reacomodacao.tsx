@@ -386,7 +386,7 @@ export default function ReaccommodationPage() {
 
       {/* Sheet de Novo Caso Ampliada (size="wide" -> 70% viewport) */}
       <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-        <SheetContent size="wide" className="w-full max-sm:!max-w-full max-sm:!w-screen sm:max-w-3xl lg:max-w-[70vw] p-0 flex flex-col h-full bg-card overflow-hidden">
+        <SheetContent size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl p-0 flex flex-col h-full overscroll-contain bg-card overflow-hidden">
           <SheetHeader className="px-6 py-4 border-b border-border/60 bg-muted/20 shrink-0">
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-lg bg-muted text-foreground">

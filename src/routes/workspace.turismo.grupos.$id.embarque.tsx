@@ -470,7 +470,7 @@ function GroupTourBoardingPage() {
    <SheetContent
      side="right"
      size="wide"
-     className="w-full max-sm:!max-w-full max-sm:!w-screen sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] p-6 flex flex-col justify-between overflow-y-auto"
+     className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl p-6 flex flex-col justify-between overflow-y-auto"
    >
      <div>
        <SheetHeader>

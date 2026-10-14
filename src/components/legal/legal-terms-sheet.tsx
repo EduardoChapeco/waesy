@@ -71,7 +71,7 @@ export function LegalTermsSheet({
 
  return (
  <Sheet open={isOpen} onOpenChange={onOpenChange}>
- <SheetContent side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] flex flex-col justify-between overflow-hidden p-0">
+ <SheetContent side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl flex flex-col justify-between overflow-hidden overscroll-contain p-0">
  {/* Header Fixo */}
  <div className="p-5 pb-3 border-b border-border/40 space-y-3 bg-card">
  <div className="flex items-center justify-between">
@@ -90,7 +90,7 @@ export function LegalTermsSheet({
  </div>
 
  {currentDoc?.version && (
- <Badge variant="outline" className="text-[10px] font-mono font-bold bg-primary/5 text-primary border-primary/20">
+ <Badge variant="outline" className="text-xs font-mono font-bold bg-primary/5 text-primary border-primary/20">
  v{currentDoc.version}
  </Badge>
  )}
@@ -118,7 +118,7 @@ export function LegalTermsSheet({
  setHasScrolledToBottom(false);
  if (scrollContainerRef.current) scrollContainerRef.current.scrollTop = 0;
  }}
- className={`px-3 py-2 rounded-lg font-semibold transition-all whitespace-nowrap cursor-pointer text-xs ${
+ className={`px-3 py-2 rounded-lg font-semibold transition-all whitespace-nowrap cursor-pointer text-xs h-11 min-h-11 inline-flex items-center justify-center focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring ${
  isSelected
  ? "bg-primary text-primary-foreground shadow-xs"
  : "bg-muted/50 text-muted-foreground hover:text-foreground hover:bg-muted"
@@ -132,7 +132,7 @@ export function LegalTermsSheet({
 
  {/* Barra de Progresso de Leitura */}
  <div className="space-y-1 pt-1">
- <div className="flex items-center justify-between text-[10px] font-mono">
+ <div className="flex items-center justify-between text-xs font-mono">
  <span className="text-muted-foreground">Progresso de leitura deste documento:</span>
  <span className={hasScrolledToBottom ? "text-emerald-500 font-bold" : "text-primary font-bold"}>
  {hasScrolledToBottom ? "100% (Leitura Concluída)" : `${scrollProgress}%`}
@@ -167,7 +167,7 @@ export function LegalTermsSheet({
  <ShieldCheck className="size-4 text-primary shrink-0" />
  Resumo do Documento
  </p>
- <p className="text-muted-foreground text-[11px] leading-relaxed">
+ <p className="text-muted-foreground text-xs leading-relaxed">
  {currentDoc.summary}
  </p>
  </div>
@@ -223,7 +223,7 @@ export function LegalTermsSheet({
  {/* Box de Encerramento */}
  <div className="p-4 rounded-lg bg-muted/30 border border-border/40 text-center space-y-1 mt-6">
  <p className="font-bold text-foreground text-xs">Fim do Documento Oficial</p>
- <p className="text-[11px] text-muted-foreground">
+ <p className="text-xs text-muted-foreground">
  Registrado e auditado sob a legislação brasileira (LGPD Lei nº 13.709/2018 e Marco Civil Lei nº 12.965/2014).
  </p>
  </div>
@@ -241,7 +241,7 @@ export function LegalTermsSheet({
  asChild
  variant="ghost"
  size="sm"
- className="text-xs text-muted-foreground hover:text-foreground h-9"
+ className="text-xs text-muted-foreground hover:text-foreground h-11 min-h-11"
  >
  <Link to={selectedSlug === "privacidade" ? "/privacidade" : "/termos"} target="_blank">
  <ExternalLink className="size-3.5 mr-1" />
@@ -255,7 +255,7 @@ export function LegalTermsSheet({
  if (onAccept) onAccept();
  onOpenChange(false);
  }}
- className="text-xs font-bold h-9 px-6 bg-primary text-primary-foreground rounded-lg"
+ className="text-xs font-bold h-11 min-h-11 px-6 bg-primary text-primary-foreground rounded-lg"
  >
  Fechar e Continuar
  </Button>

@@ -297,12 +297,12 @@ function FrotaEntregasPage() {
  <h2 className="text-sm font-bold text-foreground">Despachos Ativos ({dispatches.length})</h2>
  <Sheet open={isOpen} onOpenChange={setIsOpen}>
  <SheetTrigger asChild>
- <Button className="rounded-lg h-10 px-4 font-semibold text-xs bg-foreground text-background hover:opacity-90 gap-2 cursor-pointer">
+ <Button className="rounded-lg h-11 min-h-11 px-4 font-semibold text-xs bg-foreground text-background hover:opacity-90 gap-2 cursor-pointer">
  <Plus className="size-4" />
  <span>Novo Despacho</span>
  </Button>
  </SheetTrigger>
- <SheetContent side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] flex flex-col p-0 gap-0 overflow-hidden bg-card border-l border-border">
+ <SheetContent side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl flex flex-col p-0 gap-0 overflow-hidden overscroll-contain bg-card border-l border-border">
  <SheetHeader className="p-6 pb-4 border-b border-border/60 bg-card">
  <SheetTitle className="text-base font-semibold text-foreground">
  Despachar Pedido para Entrega
@@ -528,12 +528,12 @@ function FrotaEntregasPage() {
 
  <Sheet open={isPriceModalOpen} onOpenChange={setIsPriceModalOpen}>
  <SheetTrigger asChild>
- <Button className="rounded-lg h-10 px-4 font-semibold text-xs bg-foreground text-background hover:opacity-90 gap-2 cursor-pointer">
+ <Button className="rounded-lg h-11 min-h-11 px-4 font-semibold text-xs bg-foreground text-background hover:opacity-90 gap-2 cursor-pointer">
  <Plus className="size-4" />
  <span>Adicionar Tabela de Tarifa</span>
  </Button>
  </SheetTrigger>
- <SheetContent side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] flex flex-col p-0 gap-0 overflow-hidden bg-card border-l border-border">
+ <SheetContent side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl flex flex-col p-0 gap-0 overflow-hidden overscroll-contain bg-card border-l border-border">
  <SheetHeader className="p-6 pb-4 border-b border-border/60 bg-card">
  <SheetTitle className="text-base font-semibold text-foreground">
  Nova Tabela de Tarifa de Mobilidade / Frete

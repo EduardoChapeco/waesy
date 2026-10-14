@@ -8,6 +8,7 @@ import { ClassifiedImportModal } from "@/components/workspace/classified-import-
 import { PageHeader } from "@/components/commerce/page-header";
 import { ModuleTourModal, ModuleTourTrigger, type TourSlide } from "@/components/ui/module-tour-modal";
 import { WorkspaceCanonicalToolbar } from "@/components/workspace/workspace-canonical-toolbar";
+import { StatTile, SegmentedControl } from "@/design-system/components";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CurrencyField } from "@/components/ui/currency-field";
@@ -50,133 +51,134 @@ export const Route = createFileRoute("/workspace/catalogo/produtos/")({
 });
 
 function EditablePriceCell({
- productId,
- initialCents,
- onSave,
+  productId,
+  initialCents,
+  onSave,
 }: {
- productId: string;
- initialCents: number;
- onSave: (val: number) => Promise<boolean>;
+  productId: string;
+  initialCents: number;
+  onSave: (val: number) => Promise<boolean>;
 }) {
- const [editing, setEditing] = useState(false);
- const [centsVal, setCentsVal] = useState<number | undefined>(initialCents);
- const [isSaving, setIsSaving] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [centsVal, setCentsVal] = useState<number | undefined>(initialCents);
+  const [isSaving, setIsSaving] = useState(false);
 
- const save = async () => {
- setIsSaving(true);
- const finalCents = centsVal ?? initialCents;
- if (finalCents >= 0) {
- const ok = await onSave(finalCents);
- if (ok) {
- setEditing(false);
- } else {
- setCentsVal(initialCents);
- }
- } else {
- setCentsVal(initialCents);
- }
- setIsSaving(false);
- setEditing(false);
- };
+  const save = async () => {
+    setIsSaving(true);
+    const finalCents = centsVal ?? initialCents;
+    if (finalCents >= 0) {
+      const ok = await onSave(finalCents);
+      if (ok) {
+        setEditing(false);
+      } else {
+        setCentsVal(initialCents);
+      }
+    } else {
+      setCentsVal(initialCents);
+    }
+    setIsSaving(false);
+    setEditing(false);
+  };
 
- if (editing) {
- return (
- <div className="flex items-center gap-1 w-28">
- <CurrencyField
- compact
- autoFocus
- value={centsVal}
- onChange={(c) => setCentsVal(c)}
- onEnter={save}
- onBlur={save}
- disabled={isSaving}
- className="h-7 text-xs font-mono font-bold"
- />
- </div>
- );
- }
+  if (editing) {
+    return (
+      <div className="flex items-center gap-1 w-32">
+        <CurrencyField
+          compact
+          autoFocus
+          value={centsVal}
+          onChange={(c) => setCentsVal(c)}
+          onEnter={save}
+          onBlur={save}
+          disabled={isSaving}
+          className="h-11 min-h-11 text-xs font-mono tabular-nums font-bold"
+        />
+      </div>
+    );
+  }
 
- return (
- <div
- onClick={() => {
- setCentsVal(initialCents);
- setEditing(true);
- }}
- className="font-bold text-sm text-foreground cursor-text hover:bg-muted/50 p-1 rounded -ml-1 transition-colors border border-transparent hover:border-border"
- title="Clique para editar com máscara"
- >
- {formatMoney(initialCents)}
- </div>
- );
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        setCentsVal(initialCents);
+        setEditing(true);
+      }}
+      className="font-bold text-sm font-mono tabular-nums text-foreground cursor-text hover:bg-muted/50 p-2 rounded-lg transition-colors border border-transparent hover:border-border min-h-11 inline-flex items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
+      title="Clique para editar com máscara"
+    >
+      {formatMoney(initialCents)}
+    </button>
+  );
 }
 
 function EditableStockCell({
- productId,
- initialStock,
- onSave,
+  productId,
+  initialStock,
+  onSave,
 }: {
- productId: string;
- initialStock: number;
- onSave: (val: number) => Promise<boolean>;
+  productId: string;
+  initialStock: number;
+  onSave: (val: number) => Promise<boolean>;
 }) {
- const [editing, setEditing] = useState(false);
- const [val, setVal] = useState(String(initialStock ?? 0));
- const [isSaving, setIsSaving] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [val, setVal] = useState(String(initialStock ?? 0));
+  const [isSaving, setIsSaving] = useState(false);
 
- const save = async () => {
- setIsSaving(true);
- const qty = parseInt(val, 10);
- if (!isNaN(qty) && qty >= 0) {
- const ok = await onSave(qty);
- if (ok) {
- setEditing(false);
- } else {
- setVal(String(initialStock ?? 0));
- }
- } else {
- setVal(String(initialStock ?? 0));
- }
- setIsSaving(false);
- setEditing(false);
- };
+  const save = async () => {
+    setIsSaving(true);
+    const qty = parseInt(val, 10);
+    if (!isNaN(qty) && qty >= 0) {
+      const ok = await onSave(qty);
+      if (ok) {
+        setEditing(false);
+      } else {
+        setVal(String(initialStock ?? 0));
+      }
+    } else {
+      setVal(String(initialStock ?? 0));
+    }
+    setIsSaving(false);
+    setEditing(false);
+  };
 
- if (editing) {
- return (
- <div className="flex items-center gap-1 w-20">
- <Input
- type="number"
- min={0}
- autoFocus
- value={val}
- onChange={(e) => setVal(e.target.value)}
- onKeyDown={(e) => {
- if (e.key === "Enter") save();
- if (e.key === "Escape") {
- setVal(String(initialStock ?? 0));
- setEditing(false);
- }
- }}
- onBlur={save}
- disabled={isSaving}
- className="h-7 text-xs font-mono font-bold"
- />
- </div>
- );
- }
+  if (editing) {
+    return (
+      <div className="flex items-center gap-1 w-24">
+        <Input
+          type="number"
+          min={0}
+          autoFocus
+          value={val}
+          onChange={(e) => setVal(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") save();
+            if (e.key === "Escape") {
+              setVal(String(initialStock ?? 0));
+              setEditing(false);
+            }
+          }}
+          onBlur={save}
+          disabled={isSaving}
+          className="h-11 min-h-11 text-xs font-mono tabular-nums font-bold"
+        />
+      </div>
+    );
+  }
 
- return (
- <div
- onClick={() => setEditing(true)}
- className="font-mono text-xs cursor-text hover:bg-muted/50 px-2 py-1 rounded transition-colors border border-transparent hover:border-border inline-flex items-center gap-1"
- title="Clique para editar estoque"
- >
- <span className={initialStock > 0 ? "text-foreground font-semibold" : "text-destructive font-bold"}>
- {initialStock ?? 0} un
- </span>
- </div>
- );
+  return (
+    <button
+      type="button"
+      onClick={() => setEditing(true)}
+      className="font-mono tabular-nums text-xs cursor-text hover:bg-muted/50 px-3 py-2 rounded-lg transition-colors border border-transparent hover:border-border inline-flex items-center gap-1 min-h-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
+      title="Clique para editar estoque"
+    >
+      <span className={initialStock > 0 ? "text-foreground font-semibold" : "text-destructive font-bold"}>
+        {initialStock ?? 0} un
+      </span>
+    </button>
+  );
 }
-
 
 const CATALOGO_TOUR_SLIDES: TourSlide[] = [
   {
@@ -407,33 +409,48 @@ function AdminProductsPage() {
 
  return (
     <div className="space-y-6">
-      {/* Abas Principais do Catálogo (Estilo Apple HIG / Omnichannel) */}
-      <div className="flex items-center gap-2 p-1 rounded-lg bg-muted/40 border border-border/60 w-fit">
-        <button
-          type="button"
-          onClick={() => setMainTab("products")}
-          className={cn(
-            "px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer",
-            mainTab === "products"
-              ? "bg-background text-foreground shadow-2xs font-black"
-              : "text-muted-foreground hover:text-foreground hover:bg-muted/40",
-          )}
-        >
-          {semantics.catalogTitle}
-        </button>
-        <button
-          type="button"
-          onClick={() => setMainTab("complements")}
-          className={cn(
-            "px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer",
-            mainTab === "complements"
-              ? "bg-background text-foreground shadow-2xs font-black"
-              : "text-muted-foreground hover:text-foreground hover:bg-muted/40",
-          )}
-        >
-          {semantics.modifiersLabel || "Complementos & Adicionais"}
-        </button>
+      {/* Abas Principais do Catálogo via SegmentedControl */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <SegmentedControl
+          options={[
+            { id: "products", label: semantics.catalogTitle, icon: <Package className="size-4" /> },
+            { id: "complements", label: semantics.modifiersLabel || "Complementos & Adicionais", icon: <Layers className="size-4" /> },
+          ]}
+          value={mainTab}
+          onChange={(val) => setMainTab(val as any)}
+        />
       </div>
+
+      {mainTab === "products" && (
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <StatTile
+            label="Total no Catálogo"
+            value={products.length}
+            sublabel="Itens cadastrados"
+            trend="neutral"
+          />
+          <StatTile
+            label="Itens Publicados"
+            value={products.filter((p) => p.status === "published").length}
+            sublabel="Visíveis na vitrine e PDV"
+            trend="up"
+            trendValue="Ativos"
+          />
+          <StatTile
+            label="Rascunhos"
+            value={products.filter((p) => p.status === "draft").length}
+            sublabel="Em edição / não listados"
+            trend="neutral"
+          />
+          <StatTile
+            label="Estoque Baixo"
+            value={products.filter((p) => ((p as any).stock ?? 0) <= 5 && p.status !== "archived").length}
+            sublabel="Abaixo de 5 unidades"
+            trend={products.filter((p) => ((p as any).stock ?? 0) <= 5 && p.status !== "archived").length > 0 ? "down" : "neutral"}
+            trendValue={products.filter((p) => ((p as any).stock ?? 0) <= 5 && p.status !== "archived").length > 0 ? "Repor" : "OK"}
+          />
+        </div>
+      )}
 
       {mainTab === "complements" ? (
         <CatalogComplementsTab store={store} />
@@ -502,7 +519,7 @@ function AdminProductsPage() {
  <Button
  variant="outline"
  size="sm"
- className="text-xs flex-1 sm:flex-none justify-center"
+ className="text-xs h-11 min-h-11 px-4 flex-1 sm:flex-none justify-center focus-visible:ring-2 focus-visible:ring-ring"
  disabled={isProcessing}
  onClick={() => handleBulkAction("published")}
  >
@@ -512,7 +529,7 @@ function AdminProductsPage() {
  <Button
  variant="outline"
  size="sm"
- className="text-xs flex-1 sm:flex-none justify-center"
+ className="text-xs h-11 min-h-11 px-4 flex-1 sm:flex-none justify-center focus-visible:ring-2 focus-visible:ring-ring"
  disabled={isProcessing}
  onClick={() => handleBulkAction("draft")}
  >
@@ -522,7 +539,7 @@ function AdminProductsPage() {
  <Button
  variant="outline"
  size="sm"
- className="text-xs flex-1 sm:flex-none justify-center"
+ className="text-xs h-11 min-h-11 px-4 flex-1 sm:flex-none justify-center focus-visible:ring-2 focus-visible:ring-ring"
  disabled={isProcessing}
  onClick={() => handleBulkAction("archived")}
  >
@@ -532,7 +549,7 @@ function AdminProductsPage() {
  <Button
  variant="destructive"
  size="sm"
- className="text-xs flex-1 sm:flex-none justify-center"
+ className="text-xs h-11 min-h-11 px-4 flex-1 sm:flex-none justify-center focus-visible:ring-2 focus-visible:ring-ring"
  disabled={isProcessing}
  onClick={() => handleBulkAction("delete")}
  >
@@ -653,7 +670,7 @@ function AdminProductsPage() {
  onSave={(cents) => handleUpdatePrice(product.id, cents)}
  />
  {product.compare_at_cents ? (
- <span className="text-xs text-muted-foreground line-through">
+ <span className="text-xs text-muted-foreground line-through font-mono tabular-nums">
  {formatMoney(product.compare_at_cents)}
  </span>
  ) : null}
@@ -674,7 +691,8 @@ function AdminProductsPage() {
  </div>
 
  {/* VISÃO DESKTOP: DataGrid / Tabela de Alta Densidade */}
- <div className="hidden md:block rounded-lg overflow-hidden bg-surface-paper border border-border/40 shadow-2xs">
+ <div className="hidden md:flex flex-col rounded-xl overflow-hidden bg-card border border-border/70 shadow-2xs flex-1 min-h-0">
+            <div className="overflow-x-auto overflow-y-auto native-scroll flex-1 flex-1 min-h-0">
  <Table>
  <TableHeader>
  <TableRow className="bg-muted/30">
@@ -804,6 +822,7 @@ function AdminProductsPage() {
  })}
  </TableBody>
  </Table>
+ </div>
  </div>
  </div>
  )}

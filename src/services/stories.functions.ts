@@ -68,10 +68,15 @@ export const getRankedStoriesFeed = createServerFn({ method: "GET" })
  .optional(),
  )
  .handler(async ({ data }) => {
+ const { niche, storeId, city } = data || {};
  const supabase = getServerClient();
  const identity = await getCurrentIdentity().catch(() => ({ customer_id: null, store_id: null }));
 
- const targetNiche = data?.niche && data.niche !== "todos" ? data.niche.toLowerCase() : null;
+ const normalizeCityName = (val?: string | null) =>
+  val ? val.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : "";
+
+ const targetNiche = niche && niche !== "todos" ? niche.toLowerCase() : null;
+ const targetCity = normalizeCityName(city);
 
  // 1. Identificar lojas seguidas pelo usuário logado
  const followedStoreIds = new Set<string>();
@@ -91,8 +96,8 @@ export const getRankedStoriesFeed = createServerFn({ method: "GET" })
  id, store_id, author_profile_id, creator_id, media_url, link_url, link_cta,
  duration_seconds, is_long_format, niche, hashtags, seo_keywords,
  product_id, is_sponsored, campaign_id, created_at, expires_at,
- stores ( id, name, slug, logo_url, rating ),
- creator_profiles ( id, handle, name, avatar_url, is_official_ambassador, ambassador_badge_label, niche ),
+ stores ( id, name, slug, logo_url, rating, city ),
+ creator_profiles ( id, handle, name, avatar_url, is_official_ambassador, ambassador_badge_label, niche, city ),
  products ( id, title, price_cents, image_url )
  `)
  .eq("status", "active")
@@ -100,8 +105,8 @@ export const getRankedStoriesFeed = createServerFn({ method: "GET" })
  .order("created_at", { ascending: false })
  .limit(80);
 
- if (data?.storeId) {
- query = query.eq("store_id", data.storeId);
+ if (storeId) {
+ query = query.eq("store_id", storeId);
  } else if (targetNiche && targetNiche !== "geral") {
  query = query.eq("niche", targetNiche);
  }
@@ -117,6 +122,12 @@ export const getRankedStoriesFeed = createServerFn({ method: "GET" })
  const groupMap = new Map<string, StoryGroupDTO>();
 
  (rows || []).forEach((row: any) => {
+ if (targetCity) {
+ const entityCity = normalizeCityName(row.creator_profiles?.city || row.stores?.city);
+ if (entityCity && entityCity !== targetCity) {
+ return;
+ }
+ }
  const isCreatorStory = !!row.creator_profiles;
  const groupId = isCreatorStory
  ? `creator_${row.creator_profiles.id}`
@@ -232,25 +243,35 @@ export const createStory = createServerFn({ method: "POST" })
  }),
  )
  .handler(async ({ data }) => {
+ const {
+  mediaUrl,
+  linkUrl,
+  linkCta,
+  durationSeconds = 15,
+  niche = "geral",
+  hashtags = [],
+  productId,
+  targetStoreId,
+ } = data;
  const supabase = getServerClient();
  const identity = await getServerIdentity();
 
- const isLong = data.durationSeconds > 60;
- const storeId = data.targetStoreId || identity.store_id;
+ const isLong = durationSeconds > 60;
+ const storeId = targetStoreId || identity.store_id;
 
  const { data: newStory, error } = await supabase
  .from("stories")
  .insert({
  store_id: storeId,
  author_profile_id: identity.id,
- media_url: data.mediaUrl,
- link_url: data.linkUrl || null,
- link_cta: data.linkCta || null,
- duration_seconds: data.durationSeconds,
+ media_url: mediaUrl,
+ link_url: linkUrl || null,
+ link_cta: linkCta || null,
+ duration_seconds: durationSeconds,
  is_long_format: isLong,
- niche: data.niche,
- hashtags: data.hashtags,
- product_id: data.productId || null,
+ niche,
+ hashtags,
+ product_id: productId || null,
  status: "active",
  expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
  })
@@ -275,12 +296,13 @@ export const recordStoryTelemetry = createServerFn({ method: "POST" })
  }),
  )
  .handler(async ({ data }) => {
+ const { storyId, eventType, watchTimeSeconds = 0 } = data;
  const supabase = getAnonServerClient();
 
  const { error } = await supabase.from("story_analytics_events").insert({
- story_id: data.storyId,
- event_type: data.eventType,
- watch_time_seconds: data.watchTimeSeconds,
+ story_id: storyId,
+ event_type: eventType,
+ watch_time_seconds: watchTimeSeconds,
  });
 
  if (error) {
@@ -300,6 +322,7 @@ export const toggleAmbassadorStatus = createServerFn({ method: "POST" })
  }),
  )
  .handler(async ({ data }) => {
+ const { creatorId, isOfficialAmbassador, ambassadorBadgeLabel = "Embaixador Oficial" } = data;
  const supabase = getServerClient();
  const identity = await getServerIdentity();
 
@@ -310,12 +333,12 @@ export const toggleAmbassadorStatus = createServerFn({ method: "POST" })
  const { data: updated, error } = await supabase
  .from("creator_profiles")
  .update({
- is_official_ambassador: data.isOfficialAmbassador,
- ambassador_badge_label: data.ambassadorBadgeLabel,
+ is_official_ambassador: isOfficialAmbassador,
+ ambassador_badge_label: ambassadorBadgeLabel,
  verified_by_admin_id: identity.id,
  updated_at: new Date().toISOString(),
  })
- .eq("id", data.creatorId)
+ .eq("id", creatorId)
  .select()
  .single();
 

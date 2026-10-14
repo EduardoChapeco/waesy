@@ -285,14 +285,15 @@ export async function _updateOrderStatus(
 
 export const listOrders = createServerFn({ method: "GET" })
   .validator((input?: { limit?: number; cursor?: string | null }) => input || {})
-  .handler(async ({ data: input }) => {
+  .handler(async ({ data }) => {
     try {
+      const { limit, cursor } = data || {};
       const identity = await getServerIdentity();
       assertStoreAccess(identity, ["owner", "admin", "manager", "seller"]);
       if (!identity.store_id) return [];
 
-      const data = await _listOrders(identity.store_id, input);
-      return data || [];
+      const result = await _listOrders(identity.store_id, { limit, cursor });
+      return result || [];
     } catch (e: unknown) {
       if (e instanceof SupabaseUnconfiguredError) throw e;
       console.error("[order.functions] listOrders:", e instanceof Error ? e.message : String(e));
@@ -326,13 +327,13 @@ export const updateOrderStatus = createServerFn({ method: "POST" })
  }),
  ),
  )
- .handler(async ({ data: params }) => {
+ .handler(async ({ data: { orderId, status } }) => {
  try {
  const identity = await getServerIdentity();
  assertStoreAccess(identity, ["owner", "admin", "manager", "seller"]);
  if (!identity.store_id) throw new Error("Contexto de loja inválido");
 
- return await _updateOrderStatus(params.orderId, params.status, identity.store_id);
+ return await _updateOrderStatus(orderId, status, identity.store_id);
  } catch (e: unknown) {
  if (e instanceof SupabaseUnconfiguredError) throw e;
  console.error(
@@ -1303,7 +1304,7 @@ export const getLiveOperationalDashboard = createServerFn({ method: "GET" }).han
 
 export const requestTableBill = createServerFn({ method: "POST" })
  .validator(withDataPayload(z.object({ tableNumber: z.string(), orderId: z.string().optional() })))
- .handler(async ({ data }) => {
+ .handler(async ({ data: { tableNumber, orderId } }) => {
  const identity = await getServerIdentity().catch(() => null);
  const targetStoreId = identity?.store_id || null;
  const db = getServerClient();
@@ -1314,12 +1315,12 @@ export const requestTableBill = createServerFn({ method: "POST" })
  updated_at: new Date().toISOString(),
  });
 
- if (data.orderId) {
- query = query.eq("id", data.orderId);
+ if (orderId) {
+ query = query.eq("id", orderId);
  } else if (targetStoreId) {
  query = query
  .eq("store_id", targetStoreId)
- .eq("table_identifier", `Mesa ${data.tableNumber.padStart(2, "0")}`)
+ .eq("table_identifier", `Mesa ${tableNumber.padStart(2, "0")}`)
  .not("status", "in", '("cancelled","refunded","paid","completed")');
  }
 
@@ -1349,16 +1350,16 @@ export const addItemsToTableComanda = createServerFn({ method: "POST" })
  }),
  ),
  )
- .handler(async ({ data }) => {
+ .handler(async ({ data: { tableNumber, orderId, items } }) => {
  const identity = await getServerIdentity();
  assertStoreAccess(identity, ["owner", "admin", "manager", "seller"]);
 
  const db = getServerClient();
- const cleanTable = data.tableNumber.trim().replace(/^Mesa\s+/i, "");
+ const cleanTable = tableNumber.trim().replace(/^Mesa\s+/i, "");
  const tableId = `Mesa ${cleanTable}`;
 
  // 1. Achar ou criar a comanda ativa
- let targetOrderId = data.orderId;
+ let targetOrderId = orderId;
  if (!targetOrderId) {
  const { data: existing } = await db
  .from("orders")
@@ -1395,7 +1396,7 @@ export const addItemsToTableComanda = createServerFn({ method: "POST" })
  }
 
  // 2. Inserir os order_items
- const itemsToInsert = data.items.map((it) => ({
+ const itemsToInsert = items.map((it) => ({
  order_id: targetOrderId,
  variant_id: it.variantId || null,
  product_title: it.productTitle,

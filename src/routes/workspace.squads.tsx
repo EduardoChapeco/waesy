@@ -163,7 +163,7 @@ function SquadsPage() {
               <textarea
                 value={promptInput}
                 onChange={(e) => setPromptInput(e.target.value)}
-                className="w-full p-3 rounded-lg bg-muted/20 border border-border/60 text-xs min-h-[90px] focus:outline-none focus:ring-1 focus:ring-primary"
+                className="w-full p-3 rounded-lg bg-muted/20 border border-border/60 text-base sm:text-xs min-h-24 focus:outline-none focus:ring-1 focus:ring-primary"
                 placeholder="Insira a demanda inicial para o squad processar..."
               />
             </div>
@@ -226,7 +226,7 @@ function SquadsPage() {
                       <p className="text-xs text-muted-foreground">
                         <strong>Objetivo:</strong> {h.objective}
                       </p>
-                      <div className="p-3 rounded-lg bg-muted/40 font-mono text-xs whitespace-pre-wrap max-h-[160px] overflow-y-auto">
+                      <div className="p-3 rounded-lg bg-muted/40 font-mono text-xs whitespace-pre-wrap max-h-40 overflow-y-auto">
                         {h.workCompleted.output}
                       </div>
                     </div>

@@ -43,7 +43,7 @@ export function WorkspaceAccessDenied({
   const roleLabel = ROLE_LABELS[role.toLowerCase()] || role;
 
   return (
-    <div className="min-h-[70vh] flex items-center justify-center p-4">
+    <div className="flex-1 min-h-96 flex items-center justify-center p-4">
       <div className="max-w-md w-full p-6 sm:p-8 rounded-lg border border-border/70 bg-card text-center space-y-5 shadow-xs">
         {/* Ícone de Escudo em Camada Suave */}
         <div className="size-14 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center mx-auto border border-amber-500/20">
@@ -63,19 +63,19 @@ export function WorkspaceAccessDenied({
         {/* Pílulas de Contexto da Loja e Cargo */}
         <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
           {storeName && (
-            <Badge variant="outline" className="text-[11px] font-medium gap-1 py-1 px-3 rounded-lg border-border/80">
+            <Badge variant="outline" className="text-xs font-medium gap-1 py-1 px-3 rounded-lg border-border/80">
               <Store className="size-3 text-muted-foreground" />
               <span>{storeName}</span>
             </Badge>
           )}
-          <Badge variant="secondary" className="text-[11px] font-semibold py-1 px-3 rounded-lg">
+          <Badge variant="secondary" className="text-xs font-semibold py-1 px-3 rounded-lg">
             Cargo: {roleLabel}
           </Badge>
         </div>
 
         {/* Diagnóstico Discreto da Rota Solicitada */}
         {path && (
-          <div className="p-3 rounded-lg bg-muted/40 border border-border/50 text-[11px] font-mono text-muted-foreground truncate">
+          <div className="p-3 rounded-lg bg-muted/40 border border-border/50 text-xs font-mono text-muted-foreground truncate">
             {path}
           </div>
         )}
@@ -84,7 +84,7 @@ export function WorkspaceAccessDenied({
         <div className="pt-2">
           <Button
             asChild
-            className="w-full h-11 rounded-lg text-xs font-bold gap-2 cursor-pointer shadow-xs"
+            className="w-full h-11 min-h-11 rounded-lg text-xs font-bold gap-2 cursor-pointer shadow-xs focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
           >
             <Link to="/workspace">
               <ArrowLeft className="size-4" />

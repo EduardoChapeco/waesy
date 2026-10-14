@@ -54,7 +54,7 @@ export function CartSheet() {
           side="right"
           size="wide"
           className={cn(
-            "w-full sm:max-w-lg md:max-w-xl flex flex-col p-0 bg-background/95 backdrop-blur-md border-l border-border/60",
+            "w-full sm:max-w-lg md:max-w-xl flex flex-col p-0 bg-background/95 backdrop-blur-md border-l border-border/60 overscroll-contain",
             totalItemCount > 0
               ? "max-sm:inset-0 max-sm:h-dvh max-sm:w-full max-sm:rounded-none max-sm:border-none"
               : "max-sm:inset-x-0 max-sm:bottom-0 max-sm:max-h-full max-sm:rounded-t-lg"
@@ -171,6 +171,9 @@ export function CartSheet() {
                           <img
                             src={storeCart.storeLogoUrl}
                             alt={storeCart.storeName}
+                            onError={(e) => {
+                              (e.currentTarget as HTMLElement).style.display = "none";
+                            }}
                             className="size-7 rounded-lg object-cover"
                           />
                         ) : (
@@ -208,6 +211,9 @@ export function CartSheet() {
                               <img
                                 src={item.coverUrl}
                                 alt={item.productTitle}
+                                onError={(e) => {
+                                  (e.currentTarget as HTMLElement).style.display = "none";
+                                }}
                                 className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                               />
                             ) : (
@@ -425,7 +431,14 @@ function CartCrossSellSection({
             <div className="flex items-center gap-2 min-w-0">
               <div className="size-11 rounded-lg overflow-hidden bg-muted/30 shrink-0 flex items-center justify-center">
                 {item.coverUrl ? (
-                  <img src={item.coverUrl} alt={item.title} className="size-full object-cover" />
+                  <img
+                    src={item.coverUrl}
+                    alt={item.title}
+                    onError={(e) => {
+                      (e.currentTarget as HTMLElement).style.display = "none";
+                    }}
+                    className="size-full object-cover"
+                  />
                 ) : (
                   <Package className="size-5 text-muted-foreground/40" />
                 )}

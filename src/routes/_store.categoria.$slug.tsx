@@ -1,10 +1,13 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { ChevronRight } from "lucide-react";
+import { useMemo } from "react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { ChevronRight, Store } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/state/states";
-import { ProductCard } from "@/components/commerce/product-card";
+import { OfferCard } from "@/design-system/primitives/card";
+import { CategoryBubbleCarousel } from "@/design-system/patterns/discovery-patterns";
 import { listPublishedProducts, listPublishedCategories } from "@/services/catalog.functions";
+import { formatMoney } from "@/lib/money";
 import type { CategoryDTO, ProductCardDTO } from "@/types/catalog";
 
 export const Route = createFileRoute("/_store/categoria/$slug")({
@@ -74,12 +77,23 @@ export const Route = createFileRoute("/_store/categoria/$slug")({
 
 function CategoryPage() {
   const { productsResult, categoriesResult, slug } = ((Route.useLoaderData?.() as any) || {});
+  const navigate = useNavigate();
 
   const categories: CategoryDTO[] = Array.isArray(categoriesResult) ? categoriesResult : [];
-
   const category: CategoryDTO | undefined = categories.find((c: CategoryDTO) => c.slug === slug);
-
   const products: ProductCardDTO[] = productsResult?.status === "ok" ? productsResult.data : [];
+
+  const bubbleItems = useMemo(
+    () => [
+      { id: "all", label: "Todas", icon: <Store className="size-5" /> },
+      ...categories.map((c: CategoryDTO) => ({
+        id: c.slug,
+        label: c.name,
+        imageUrl: (c as any).image_url || (c as any).icon_url || undefined,
+      })),
+    ],
+    [categories]
+  );
 
   return (
     <div className="mx-auto max-w-screen-xl px-0 sm:px-4 py-3 sm:py-8 md:px-6 md:py-12 space-y-5">
@@ -88,51 +102,38 @@ function CategoryPage() {
         aria-label="Navegação estrutural"
         className="flex items-center gap-2 text-xs text-muted-foreground overflow-x-auto no-scrollbar py-1 table-wrapper"
       >
-        <Link to="/" className="hover:text-foreground whitespace-nowrap">
+        <Link
+          to="/"
+          className="hover:text-foreground whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
+        >
           Início
         </Link>
         <ChevronRight className="size-3 shrink-0" aria-hidden />
-        <Link to="/mercado" className="hover:text-foreground whitespace-nowrap">
+        <Link
+          to="/mercado"
+          className="hover:text-foreground whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
+        >
           Catálogo
         </Link>
         <ChevronRight className="size-3 shrink-0" aria-hidden />
         <span className="text-foreground font-semibold truncate">{category?.name ?? slug}</span>
       </nav>
 
-      {/* Sibling Categories Chips Rail (1-Tap Fast Navigation) */}
+      {/* Carrossel de Categorias Irmãs Canônico Waesy DS 4.0 */}
       {categories.length > 0 && (
-        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1 table-wrapper">
-          <Button
-            asChild
-            variant="outline"
-            size="sm"
-            className="rounded-full text-xs font-semibold h-11 px-4 border-border/80 text-muted-foreground hover:text-foreground shrink-0"
-          >
-            <Link to="/mercado">
-              Todas
-            </Link>
-          </Button>
-          {categories.map((c: CategoryDTO) => {
-            const isActive = c.slug === slug;
-            return (
-              <Button
-                key={c.id}
-                asChild
-                variant={isActive ? "default" : "outline"}
-                size="sm"
-                className={`rounded-full text-xs font-semibold h-11 px-4 shrink-0 transition-colors motion-reduce:transition-none ${
-                  isActive
-                    ? "shadow-xs font-bold"
-                    : "border-border/80 text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                <Link to={"/categoria/$slug" as any} params={{ slug: c.slug } as any}>
-                  {c.name}
-                </Link>
-              </Button>
-            );
-          })}
-        </div>
+        <section aria-label="Navegação por Categorias" className="py-1">
+          <CategoryBubbleCarousel
+            items={bubbleItems}
+            selectedId={slug ?? "all"}
+            onSelect={(selectedId) => {
+              if (selectedId === "all") {
+                navigate({ to: "/mercado" });
+              } else {
+                navigate({ to: "/categoria/$slug", params: { slug: selectedId } });
+              }
+            }}
+          />
+        </section>
       )}
 
       {/* Título Limpo & Contagem */}
@@ -150,16 +151,35 @@ function CategoryPage() {
           <EmptyState
             title="Nenhum produto nesta categoria"
             action={
-              <Button asChild className="rounded-lg">
+              <Button asChild className="h-11 min-h-11 px-5 rounded-lg font-semibold text-xs cursor-pointer">
                 <Link to="/mercado">Ver todos os produtos</Link>
               </Button>
             }
           />
         ) : (
-          <div className="grid grid-cols-2 gap-3 sm:gap-4 sm:grid-cols-3 lg:grid-cols-4">
-            {products.map((product: ProductCardDTO) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {products.map((product: ProductCardDTO) => {
+              const formattedPrice = formatMoney(product.priceCents);
+              const formattedOriginal =
+                product.compareAtCents && product.compareAtCents > product.priceCents
+                  ? formatMoney(product.compareAtCents)
+                  : undefined;
+
+              return (
+                <OfferCard
+                  key={product.id}
+                  title={product.title}
+                  price={formattedPrice}
+                  originalPrice={formattedOriginal}
+                  imageUrl={product.coverUrl ?? undefined}
+                  category={category?.name}
+                  ctaText="Ver Produto"
+                  onCtaClick={() =>
+                    navigate({ to: "/produto/$slug", params: { slug: product.slug } })
+                  }
+                />
+              );
+            })}
           </div>
         )}
       </div>

@@ -104,7 +104,7 @@ export function ProductDetailMobile({
   const currentMediaIndex = mediaList.findIndex((m: any) => m.id === activeMedia?.id);
 
   return (
-    <div className="w-full min-h-[100dvh] bg-background text-foreground pb-28 select-none">
+    <div className="w-full min-h-dvh bg-background text-foreground pb-28 select-none">
       {/* ── 1. HERO EDGE-TO-EDGE NO TOPO (Sem Header, toca nos limites do display) ── */}
       <div className="relative w-full aspect-square bg-muted/20 overflow-hidden">
         {activeMedia ? (
@@ -123,24 +123,30 @@ export function ProductDetailMobile({
                 alt=""
                 aria-hidden="true"
                 className="absolute inset-0 size-full object-cover blur-2xl opacity-35 scale-110 pointer-events-none select-none"
+                onError={(e) => {
+                  (e.currentTarget as HTMLElement).style.display = "none";
+                }}
               />
               <img
                 src={activeMedia.url}
                 alt={activeMedia.alt || product.title}
                 className="relative size-full object-contain select-none"
+                onError={(e) => {
+                  (e.currentTarget as HTMLElement).style.display = "none";
+                }}
               />
             </div>
           )
         ) : (
           <div className="size-full flex flex-col items-center justify-center text-muted-foreground gap-2">
-            <Package className="size-12 stroke-[1.5]" />
+            <Package className="size-12 stroke-1" />
             <span className="text-xs">Sem foto do produto</span>
           </div>
         )}
 
         {/* Contador de Fotos */}
         {mediaList.length > 1 && (
-          <div className="absolute bottom-3 right-3 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-[11px] font-mono font-medium pointer-events-none">
+          <div className="absolute bottom-3 right-3 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-2xs font-mono font-medium pointer-events-none">
             {(currentMediaIndex >= 0 ? currentMediaIndex : 0) + 1} / {mediaList.length}
           </div>
         )}
@@ -203,20 +209,20 @@ export function ProductDetailMobile({
         <div className="space-y-2">
           <div className="flex flex-wrap items-center gap-2">
             {product.categories?.[0] && (
-              <Badge variant="outline" className="text-[10px] font-semibold text-primary border-primary/30 bg-primary/10">
+              <Badge variant="outline" className="text-2xs font-semibold text-primary border-primary/30 bg-primary/10">
                 {product.categories[0].name}
               </Badge>
             )}
             {isBackorder ? (
-              <Badge variant="outline" className="text-[10px] font-semibold text-amber-600 border-amber-500/30 bg-amber-500/10">
+              <Badge variant="outline" className="text-2xs font-semibold text-amber-600 border-amber-500/30 bg-amber-500/10">
                 Sob Encomenda
               </Badge>
             ) : isOutOfStock ? (
-              <Badge variant="destructive" className="text-[10px] font-semibold">
+              <Badge variant="destructive" className="text-2xs font-semibold">
                 Esgotado
               </Badge>
             ) : (
-              <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded-md">
+              <span className="inline-flex items-center gap-1 text-2xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded-md">
                 <Check className="size-3" /> Em Estoque
               </span>
             )}
@@ -266,7 +272,7 @@ export function ProductDetailMobile({
                       <button
                         type="button"
                         onClick={() => setSizeGuideOpen(true)}
-                        className="text-[11px] font-semibold text-primary hover:underline cursor-pointer"
+                        className="text-2xs font-semibold text-primary hover:underline cursor-pointer"
                       >
                         Guia de Tamanhos
                       </button>
@@ -330,7 +336,7 @@ export function ProductDetailMobile({
                 <div key={og.id} className="space-y-2">
                   <div className="flex justify-between items-baseline">
                     <span className="text-xs font-bold text-foreground">{og.displayName}</span>
-                    <span className="text-[10px] text-muted-foreground font-medium">
+                    <span className="text-2xs text-muted-foreground font-medium">
                       {isMultiple ? `Até ${og.maxSelections} opções` : "Escolha 1"}
                     </span>
                   </div>
@@ -346,7 +352,7 @@ export function ProductDetailMobile({
                           type="button"
                           onClick={() => handleToggle(val.id)}
                           className={cn(
-                            "w-full flex items-center justify-between p-3 rounded-lg border text-left transition-all active:scale-[0.99] cursor-pointer",
+                            "w-full flex items-center justify-between p-3 rounded-lg border text-left transition-all active:scale-95 cursor-pointer",
                             isSelected
                               ? "border-primary bg-primary/5 ring-1 ring-primary/40"
                               : "border-border/60 bg-card hover:bg-muted/20"
@@ -363,7 +369,7 @@ export function ProductDetailMobile({
                               )}
                             >
                               {isSelected && (
-                                isMultiple ? <Check className="size-2.5 stroke-[3]" /> : <span className="size-1.5 bg-primary-foreground rounded-full" />
+                                isMultiple ? <Check className="size-2.5 stroke-2" /> : <span className="size-1.5 bg-primary-foreground rounded-full" />
                               )}
                             </div>
                             <span className="text-xs font-semibold text-foreground truncate">{val.label}</span>
@@ -391,7 +397,7 @@ export function ProductDetailMobile({
               <span className="text-xs font-semibold text-foreground truncate">
                 {(product as any).store?.name || product.brand || "Loja Oficial Waesy"}
               </span>
-              <div className="flex items-center gap-1 text-[11px] text-emerald-600 dark:text-emerald-400">
+              <div className="flex items-center gap-1 text-2xs text-emerald-600 dark:text-emerald-400">
                 <ShieldCheck className="size-3 shrink-0" />
                 <span>Loja Oficial Verificada</span>
               </div>
@@ -403,7 +409,7 @@ export function ProductDetailMobile({
             variant={isFollowingStore ? "secondary" : "outline"}
             size="sm"
             onClick={handleToggleFollow}
-            className="h-9 px-3 rounded-lg text-xs font-bold shrink-0 cursor-pointer active:scale-95"
+            className="h-11 min-h-11 px-4 rounded-lg text-xs font-bold shrink-0 cursor-pointer active:scale-95"
           >
             {isFollowingStore ? "Seguindo" : "+ Seguir"}
           </Button>
@@ -420,12 +426,12 @@ export function ProductDetailMobile({
               placeholder="Digite seu CEP"
               value={zipcode}
               onChange={(e) => setZipcode(e.target.value)}
-              className="h-10 text-xs rounded-lg bg-muted/30"
+              className="h-11 min-h-11 text-base sm:text-xs rounded-lg bg-muted/30"
             />
             <Button
               type="submit"
               size="sm"
-              className="h-10 font-bold px-4 rounded-lg shrink-0 cursor-pointer"
+              className="h-11 min-h-11 font-bold px-4 rounded-lg shrink-0 cursor-pointer"
               disabled={loadingShipping}
             >
               {loadingShipping ? <Loader2 className="size-4 animate-spin" /> : "Calcular"}
@@ -439,7 +445,7 @@ export function ProductDetailMobile({
                   <div key={rate.id || idx} className="flex justify-between items-center text-xs p-3 rounded-lg border border-border/50 bg-muted/20">
                     <div>
                       <p className="font-bold text-foreground">{rate.service_name || rate.name || rate.provider}</p>
-                      <p className="text-[10px] text-muted-foreground">Prazo: {rate.estimated_days} dias úteis</p>
+                      <p className="text-2xs text-muted-foreground">Prazo: {rate.estimated_days} dias úteis</p>
                     </div>
                     <span className="font-bold text-foreground font-mono">
                       {rate.price_cents === 0 ? <span className="text-emerald-600">Grátis</span> : formatMoney(rate.price_cents)}
@@ -489,7 +495,7 @@ export function ProductDetailMobile({
         {/* ── 8. SELOS DE CONFIANÇA ── */}
         <div className="rounded-lg border border-border/40 bg-muted/20 p-3 flex items-start gap-3 text-muted-foreground">
           <ShieldCheck className="size-4 text-primary shrink-0 mt-1" />
-          <div className="text-[11px] leading-snug space-y-1">
+          <div className="text-2xs leading-snug space-y-1">
             <span className="font-semibold text-foreground block">Compra Segura Waesy</span>
             <span>Seu pagamento fica protegido até a confirmação de entrega do produto.</span>
           </div>
@@ -497,7 +503,7 @@ export function ProductDetailMobile({
       </div>
 
       {/* ── 9. STICKY BOTTOM ACTION BAR (Native-First: Nielsen Norman & Apple HIG) ── */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-md border-t border-border/50 px-4 py-3 pb-[calc(0.65rem+env(safe-area-inset-bottom))] flex items-center justify-between gap-3 shadow-[0_-4px_16px_rgba(0,0,0,0.06)] mobile-nav-hide-on-keyboard">
+      <div className="fixed bottom-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-md border-t border-border/50 px-4 py-3 safe-bottom flex items-center justify-between gap-3 mobile-nav-hide-on-keyboard">
         {/* Seletor de Quantidade Mobile */}
         <div className="flex items-center rounded-lg bg-secondary/80 border border-border/60 h-11 px-1 shrink-0">
           <button

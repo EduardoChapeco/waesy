@@ -88,7 +88,7 @@ export function LeadCommissionCalculatorSheet({
 
   return (
     <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <SheetContent side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] bg-card border-l border-border p-6 overflow-y-auto space-y-6 select-none">
+      <SheetContent side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl bg-card border-l border-border p-6 overflow-y-auto overscroll-contain space-y-6 select-none">
         <SheetHeader className="space-y-1">
           <div className="flex items-center gap-2">
             <Calculator className="size-5 text-primary" />
@@ -109,7 +109,7 @@ export function LeadCommissionCalculatorSheet({
               type="number"
               value={grossSale}
               onChange={(e) => setGrossSale(parseFloat(e.target.value) || 0)}
-              className="h-11 rounded-lg font-mono text-sm font-bold min-h-11"
+              className="h-11 rounded-lg font-mono text-base sm:text-sm font-bold min-h-11"
             />
           </div>
 
@@ -119,7 +119,7 @@ export function LeadCommissionCalculatorSheet({
               type="number"
               value={operatorCost}
               onChange={(e) => setOperatorCost(parseFloat(e.target.value) || 0)}
-              className="h-11 rounded-lg font-mono text-sm min-h-11"
+              className="h-11 rounded-lg font-mono text-base sm:text-sm min-h-11"
             />
           </div>
         </div>
@@ -140,7 +140,7 @@ export function LeadCommissionCalculatorSheet({
                 }`}
               >
                 <span className="block capitalize">{m.replace("_", " ")}</span>
-                <span className="text-[10px] opacity-70">{(GATEWAY_RATES[m].rate * 100).toFixed(2)}% taxa</span>
+                <span className="text-xs opacity-70">{(GATEWAY_RATES[m].rate * 100).toFixed(2)}% taxa</span>
               </button>
             ))}
           </div>
@@ -150,14 +150,14 @@ export function LeadCommissionCalculatorSheet({
         <div className="space-y-2 p-4 rounded-lg bg-muted/30 border border-border">
           <div className="flex items-center justify-between">
             <Label className="text-xs font-bold text-foreground">Comissão do Consultor</Label>
-            <div className="flex items-center gap-1 text-[11px]">
+            <div className="flex items-center gap-1 text-xs">
               <button
                 type="button"
                 onClick={() => {
                   setCommissionType("margin");
                   setCommissionPercent(20);
                 }}
-                className={`px-2 py-1 rounded-md font-bold ${
+                className={`px-3 py-1 rounded-md font-bold min-h-11 h-11 inline-flex items-center justify-center ${
                   commissionType === "margin" ? "bg-primary text-primary-foreground" : "text-muted-foreground"
                 }`}
               >
@@ -169,7 +169,7 @@ export function LeadCommissionCalculatorSheet({
                   setCommissionType("gross");
                   setCommissionPercent(3);
                 }}
-                className={`px-2 py-1 rounded-md font-bold ${
+                className={`px-3 py-1 rounded-md font-bold min-h-11 h-11 inline-flex items-center justify-center ${
                   commissionType === "gross" ? "bg-primary text-primary-foreground" : "text-muted-foreground"
                 }`}
               >
@@ -183,7 +183,7 @@ export function LeadCommissionCalculatorSheet({
               type="number"
               value={commissionPercent}
               onChange={(e) => setCommissionPercent(parseFloat(e.target.value) || 0)}
-              className="h-10 rounded-lg font-mono text-sm font-bold w-24 min-h-11"
+              className="h-11 rounded-lg font-mono text-base sm:text-sm font-bold w-24 min-h-11"
             />
             <span className="text-xs text-muted-foreground">
               {commissionType === "margin"
@@ -198,7 +198,7 @@ export function LeadCommissionCalculatorSheet({
           <div className="p-4 rounded-lg bg-card border border-border/80 space-y-1">
             <div className="flex items-center justify-between text-xs text-muted-foreground">
               <span>Margem Bruta</span>
-              <Badge variant="outline" className="text-[10px] font-mono">
+              <Badge variant="outline" className="text-xs font-mono">
                 {calculations.marginPercent.toFixed(1)}%
               </Badge>
             </div>

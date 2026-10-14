@@ -9,6 +9,7 @@ import { OverlaysFamily } from "@/components/design-system/overlays-family";
 import { NavigationFamily } from "@/components/design-system/navigation-family";
 import { MediaShowcaseFamily } from "@/components/design-system/media-showcase-family";
 import { ViewportsFamily } from "@/components/design-system/viewports-family";
+import { DS4Showcase } from "@/components/design-system/ds4-showcase";
 import type { DesignSystemStateMode } from "@/components/design-system/design-system-types";
 
 export const Route = createFileRoute("/workspace/design-system")({
@@ -28,6 +29,9 @@ function WorkspaceDesignSystemPage() {
 
       <Tabs value={tab} onValueChange={setTab} className="flex flex-col gap-6">
         <TabsList className="flex flex-wrap h-auto gap-1 p-1 bg-muted/50 rounded-lg w-fit">
+          <TabsTrigger value="ds4" className="h-11 px-4 text-xs font-bold text-primary">
+            Waesy 4.0
+          </TabsTrigger>
           <TabsTrigger value="overview" className="h-11 px-4 text-xs">
             Visão Geral
           </TabsTrigger>
@@ -54,7 +58,12 @@ function WorkspaceDesignSystemPage() {
           </TabsTrigger>
         </TabsList>
 
+        <TabsContent value="ds4" className="flex flex-col gap-8 outline-none">
+          <DS4Showcase />
+        </TabsContent>
+
         <TabsContent value="overview" className="flex flex-col gap-8 outline-none">
+          <DS4Showcase />
           <NavigationFamily mode={mode} />
           <ActionsFamily mode={mode} />
           <FormsFamily mode={mode} />

@@ -123,7 +123,7 @@ export function LeadFlightGridSheet({
       <SheetContent
         side="right"
         size="wide"
-        className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] bg-card border-l border-border p-6 overflow-y-auto space-y-6 select-none"
+        className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl bg-card border-l border-border p-6 overflow-y-auto overscroll-contain space-y-6 select-none"
       >
         <SheetHeader className="space-y-1">
           <div className="flex items-center gap-2">
@@ -147,7 +147,7 @@ export function LeadFlightGridSheet({
               variant="outline"
               size="sm"
               onClick={handleAddSegment}
-              className="h-8 rounded-lg text-xs gap-2 min-h-11"
+              className="h-11 rounded-lg text-xs gap-2 min-h-11"
             >
               <Plus className="size-3.5" /> Adicionar Trecho
             </Button>
@@ -160,7 +160,7 @@ export function LeadFlightGridSheet({
                 className="p-4 rounded-lg border border-border/80 bg-muted/20 space-y-3 relative group"
               >
                 <div className="flex items-center justify-between">
-                  <Badge variant="outline" className="text-[10px] font-mono font-bold">
+                  <Badge variant="outline" className="text-xs font-mono font-bold">
                     Trecho #{idx + 1}
                   </Badge>
                   {segments.length > 1 && (
@@ -169,7 +169,7 @@ export function LeadFlightGridSheet({
                       variant="ghost"
                       size="sm"
                       onClick={() => handleRemoveSegment(idx)}
-                      className="h-7 w-7 p-0 rounded-lg text-muted-foreground hover:text-destructive"
+                      className="h-11 min-h-11 w-11 p-0 rounded-lg text-muted-foreground hover:text-destructive flex items-center justify-center"
                     >
                       <Trash2 className="size-3.5" />
                     </Button>
@@ -178,7 +178,7 @@ export function LeadFlightGridSheet({
 
                 <div className="grid grid-cols-3 gap-2">
                   <div className="space-y-1">
-                    <Label className="text-[10px] text-muted-foreground">Origem (IATA)</Label>
+                    <Label className="text-xs text-muted-foreground">Origem (IATA)</Label>
                     <Input
                       value={seg.originIata}
                       onChange={(e) => {
@@ -188,11 +188,11 @@ export function LeadFlightGridSheet({
                         );
                       }}
                       maxLength={3}
-                      className="h-9 font-mono font-bold uppercase rounded-lg"
+                      className="h-11 min-h-11 font-mono text-base sm:text-xs font-bold uppercase rounded-lg"
                     />
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-[10px] text-muted-foreground">Destino (IATA)</Label>
+                    <Label className="text-xs text-muted-foreground">Destino (IATA)</Label>
                     <Input
                       value={seg.destinationIata}
                       onChange={(e) => {
@@ -202,11 +202,11 @@ export function LeadFlightGridSheet({
                         );
                       }}
                       maxLength={3}
-                      className="h-9 font-mono font-bold uppercase rounded-lg"
+                      className="h-11 min-h-11 font-mono text-base sm:text-xs font-bold uppercase rounded-lg"
                     />
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-[10px] text-muted-foreground">Nº Voo</Label>
+                    <Label className="text-xs text-muted-foreground">Nº Voo</Label>
                     <Input
                       value={seg.flightNumber}
                       onChange={(e) => {
@@ -215,14 +215,14 @@ export function LeadFlightGridSheet({
                           prev.map((s, i) => (i === idx ? { ...s, flightNumber: val } : s))
                         );
                       }}
-                      className="h-9 font-mono rounded-lg"
+                      className="h-11 min-h-11 font-mono text-base sm:text-xs rounded-lg"
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-2">
                   <div className="space-y-1">
-                    <Label className="text-[10px] text-muted-foreground">Companhia Aérea</Label>
+                    <Label className="text-xs text-muted-foreground">Companhia Aérea</Label>
                     <Input
                       value={seg.airlineName}
                       onChange={(e) => {
@@ -231,11 +231,11 @@ export function LeadFlightGridSheet({
                           prev.map((s, i) => (i === idx ? { ...s, airlineName: val } : s))
                         );
                       }}
-                      className="h-9 text-xs rounded-lg"
+                      className="h-11 min-h-11 text-base sm:text-xs rounded-lg"
                     />
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-[10px] text-muted-foreground">Localizador (PNR)</Label>
+                    <Label className="text-xs text-muted-foreground">Localizador (PNR)</Label>
                     <Input
                       value={seg.recordLocator}
                       onChange={(e) => {
@@ -244,14 +244,14 @@ export function LeadFlightGridSheet({
                           prev.map((s, i) => (i === idx ? { ...s, recordLocator: val } : s))
                         );
                       }}
-                      className="h-9 font-mono font-bold uppercase rounded-lg"
+                      className="h-11 min-h-11 font-mono text-base sm:text-xs font-bold uppercase rounded-lg"
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-2">
                   <div className="space-y-1">
-                    <Label className="text-[10px] text-muted-foreground">Partida (Data/Hora)</Label>
+                    <Label className="text-xs text-muted-foreground">Partida (Data/Hora)</Label>
                     <Input
                       type="datetime-local"
                       value={seg.departureAt}
@@ -261,11 +261,11 @@ export function LeadFlightGridSheet({
                           prev.map((s, i) => (i === idx ? { ...s, departureAt: val } : s))
                         );
                       }}
-                      className="h-9 text-xs rounded-lg"
+                      className="h-11 min-h-11 text-base sm:text-xs rounded-lg"
                     />
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-[10px] text-muted-foreground">Franquia Bagagem</Label>
+                    <Label className="text-xs text-muted-foreground">Franquia Bagagem</Label>
                     <Input
                       value={seg.baggage}
                       onChange={(e) => {
@@ -274,7 +274,7 @@ export function LeadFlightGridSheet({
                           prev.map((s, i) => (i === idx ? { ...s, baggage: val } : s))
                         );
                       }}
-                      className="h-9 text-xs rounded-lg"
+                      className="h-11 min-h-11 text-base sm:text-xs rounded-lg"
                     />
                   </div>
                 </div>

@@ -221,19 +221,27 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
 
-  /* ── W3C DTCG Token Mappings (Fase S23) ──────────────── */
-  --color-surface-canvas: var(--surface-canvas);
-  --color-surface-card: var(--surface-card);
+  /* ── W3C DTCG Token Mappings (Design System 4.0) ──────────────── */
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
   --color-surface-subtle: var(--surface-subtle);
+  --color-surface-hover: var(--surface-hover);
+  --color-surface-active: var(--surface-active);
+  --color-surface-card: var(--surface-card);
   --color-surface-muted: var(--surface-muted);
   --color-text-primary: var(--text-primary);
   --color-text-secondary: var(--text-secondary);
+  --color-text-tertiary: var(--text-tertiary);
+  --color-text-disabled: var(--text-disabled);
   --color-text-muted: var(--text-muted);
   --color-text-inverse: var(--text-inverse);
   --color-border-default: var(--border-default);
   --color-border-subtle: var(--border-subtle);
+  --color-border-strong: var(--border-strong);
   --color-border-control: var(--border-control);
   --color-border-focus: var(--border-focus);
+  --color-accent-soft: var(--accent-soft);
 
   /* ── Motion ──────────────────────────────────────────── */
   --duration-fast: 150ms;
@@ -320,21 +328,48 @@
   --input: oklch(0.93 0 0);
   --ring: var(--magic-accent-primary);
 
+  /* ── Waesy Design System 4.0 Semantic Tokens ───────────────────────── */
+  --canvas: var(--background);
+  --surface: var(--card);
+  --surface-raised: var(--card);
+  --surface-subtle: oklch(0.98 0 0);
+  --surface-hover: oklch(0.96 0 0);
+  --surface-active: oklch(0.92 0 0);
+
+  --text-primary: var(--foreground);
+  --text-secondary: oklch(0.40 0 0);
+  --text-tertiary: oklch(0.55 0 0);
+  --text-disabled: oklch(0.70 0 0);
+  --text-inverse: var(--primary-foreground);
+  --text-muted: var(--muted-foreground);
+
+  --border-subtle: oklch(0.95 0 0);
+  --border-default: var(--border);
+  --border-strong: oklch(0.75 0 0);
+  --border-control: var(--input);
+  --border-focus: var(--ring);
+
+  --accent-soft: rgba(124, 58, 237, 0.10);
+
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 24px;
+  --radius-pill: 9999px;
+
+  --elevation-0: none;
+  --elevation-1: none;
+  --elevation-2: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --elevation-3: 0 4px 12px rgba(0, 0, 0, 0.06);
+  --elevation-4: 0 16px 40px rgba(0, 0, 0, 0.12);
+
   /* ── W3C DTCG Canonical Tokens Parity (Fase S23 / tokens.json) ───────── */
   --surface-canvas: var(--background);
   --surface-card: var(--card);
   --surface-subtle: var(--muted);
   --surface-muted: var(--muted);
-
-  --text-primary: var(--foreground);
-  --text-secondary: var(--muted-foreground);
-  --text-muted: var(--muted-foreground);
-  --text-inverse: var(--primary-foreground);
-
-  --border-default: var(--border);
-  --border-subtle: var(--border);
-  --border-control: var(--input);
-  --border-focus: var(--ring);
 
   --feedback-danger: var(--destructive);
   --feedback-warning: var(--warning);
@@ -389,6 +424,28 @@
     --border: oklch(0.22 0 0);
     --input: oklch(0.22 0 0);
     --ring: #a78bfa;
+
+    /* ── Waesy DS 4.0 Semantic Tokens Dark ── */
+    --canvas: oklch(0.10 0 0);
+    --surface: oklch(0.14 0 0);
+    --surface-raised: oklch(0.18 0 0);
+    --surface-subtle: oklch(0.16 0 0);
+    --surface-hover: oklch(0.20 0 0);
+    --surface-active: oklch(0.24 0 0);
+
+    --text-primary: oklch(0.96 0 0);
+    --text-secondary: oklch(0.70 0 0);
+    --text-tertiary: oklch(0.55 0 0);
+    --text-disabled: oklch(0.40 0 0);
+    --text-inverse: oklch(0.10 0 0);
+
+    --border-subtle: oklch(0.20 0 0);
+    --border-default: oklch(0.25 0 0);
+    --border-strong: oklch(0.38 0 0);
+    --border-control: oklch(0.22 0 0);
+    --border-focus: #a78bfa;
+
+    --accent-soft: rgba(167, 139, 250, 0.15);
   }
 }
 
@@ -420,6 +477,28 @@
   --border: oklch(0.25 0 0);
   --input: oklch(0.25 0 0);
   --ring: #a78bfa;
+
+  /* ── Waesy DS 4.0 Semantic Tokens Dark ── */
+  --canvas: oklch(0.10 0 0);
+  --surface: oklch(0.14 0 0);
+  --surface-raised: oklch(0.18 0 0);
+  --surface-subtle: oklch(0.16 0 0);
+  --surface-hover: oklch(0.20 0 0);
+  --surface-active: oklch(0.24 0 0);
+
+  --text-primary: oklch(0.96 0 0);
+  --text-secondary: oklch(0.70 0 0);
+  --text-tertiary: oklch(0.55 0 0);
+  --text-disabled: oklch(0.40 0 0);
+  --text-inverse: oklch(0.10 0 0);
+
+  --border-subtle: oklch(0.20 0 0);
+  --border-default: oklch(0.25 0 0);
+  --border-strong: oklch(0.38 0 0);
+  --border-control: oklch(0.25 0 0);
+  --border-focus: #a78bfa;
+
+  --accent-soft: rgba(167, 139, 250, 0.15);
 }
 
 /* Theme selector bridge: existing .dark remains supported. */
@@ -437,6 +516,28 @@
   --border: oklch(0.25 0 0);
   --input: oklch(0.25 0 0);
   --ring: #a78bfa;
+
+  /* ── Waesy DS 4.0 Semantic Tokens Dark ── */
+  --canvas: oklch(0.10 0 0);
+  --surface: oklch(0.14 0 0);
+  --surface-raised: oklch(0.18 0 0);
+  --surface-subtle: oklch(0.16 0 0);
+  --surface-hover: oklch(0.20 0 0);
+  --surface-active: oklch(0.24 0 0);
+
+  --text-primary: oklch(0.96 0 0);
+  --text-secondary: oklch(0.70 0 0);
+  --text-tertiary: oklch(0.55 0 0);
+  --text-disabled: oklch(0.40 0 0);
+  --text-inverse: oklch(0.10 0 0);
+
+  --border-subtle: oklch(0.20 0 0);
+  --border-default: oklch(0.25 0 0);
+  --border-strong: oklch(0.38 0 0);
+  --border-control: oklch(0.25 0 0);
+  --border-focus: #a78bfa;
+
+  --accent-soft: rgba(167, 139, 250, 0.15);
 }
 
 /* ===========================================================================
@@ -735,6 +836,124 @@
 }
 @utility pr-safe {
   padding-right: env(safe-area-inset-right);
+}
+
+/* ── Anti-Jank Protocol & Viewport Lock (WAESY DESIGN SYSTEM 4.0) ────────── */
+@utility native-scroll {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  scrollbar-width: thin;
+}
+
+@utility viewport-lock {
+  height: 100dvh;
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+}
+
+@utility safe-area-top {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+@utility safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+@utility touch-target {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+@utility no-touch-select {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+@utility no-overscroll {
+  overscroll-behavior: none;
+}
+
+@utility keyboard-safe {
+  height: 100dvh;
+  max-height: 100dvh;
+}
+
+/* ── Desktop & Mobile Shell System ───────────────────────────────────────── */
+@utility desktop-shell {
+  display: flex;
+  width: 100%;
+  height: 100dvh;
+  overflow: hidden;
+  background-color: var(--canvas);
+}
+
+@utility desktop-rail {
+  width: 64px;
+  flex-shrink: 0;
+  height: 100%;
+  border-right: 1px solid var(--border-subtle);
+  background-color: var(--canvas);
+  overflow-y: auto;
+}
+
+@utility desktop-master-panel {
+  width: 320px;
+  flex-shrink: 0;
+  height: 100%;
+  border-right: 1px solid var(--border-subtle);
+  background-color: var(--surface);
+  overflow-y: auto;
+}
+
+@utility desktop-workspace {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  overflow-y: auto;
+  background-color: var(--canvas);
+}
+
+@utility mobile-shell {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100dvh;
+  overflow: hidden;
+  background-color: var(--canvas);
+}
+
+/* ── Typography & Layout Tokens (Zero Colchetes DL-02) ───────────────────── */
+@utility text-2xs {
+  font-size: 0.6875rem;
+  line-height: 0.875rem;
+}
+
+@utility text-3xs {
+  font-size: 0.625rem;
+  line-height: 0.75rem;
+}
+
+@utility aspect-4-3 {
+  aspect-ratio: 4 / 3;
+}
+
+@utility max-h-modal {
+  max-height: 85dvh;
+}
+
+@utility max-h-sheet {
+  max-height: 92dvh;
+}
+
+@utility max-w-desktop {
+  max-width: 90rem;
+}
+
+@utility min-w-18 {
+  min-width: 4.5rem;
 }
 
 /* ── Tipografia canônica ─────────────────────────────────────────────────── */

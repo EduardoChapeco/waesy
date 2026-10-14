@@ -87,17 +87,17 @@ export function DealDeliveryTrackingCard({ dealId, orderId }: DealDeliveryTracki
               <h4 className="text-xs sm:text-sm font-bold text-foreground">
                 Waesy Go • Entrega Expressa
               </h4>
-              <Badge variant="outline" className={`text-[10px] font-semibold ${statusConfig.color}`}>
+              <Badge variant="outline" className={`text-xs font-semibold ${statusConfig.color}`}>
                 {statusConfig.label}
               </Badge>
               {hasLiveGps && (
-                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/25 px-2 py-1 rounded-full">
+                <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/25 px-2 py-1 rounded-full">
                   <span className="size-1.5 rounded-full bg-emerald-500 animate-ping inline-block" />
                   GPS Ao Vivo
                 </span>
               )}
             </div>
-            <p className="text-[11px] text-muted-foreground mt-1">
+            <p className="text-xs text-muted-foreground mt-1">
               Despachado por <strong className="text-foreground">{dispatch.store?.name || "Lojista"}</strong>
             </p>
           </div>
@@ -108,7 +108,7 @@ export function DealDeliveryTrackingCard({ dealId, orderId }: DealDeliveryTracki
           <div className="flex items-center gap-2 bg-card border border-primary/20 px-3 py-2 rounded-lg self-start sm:self-auto shadow-2xs">
             <KeyRound className="size-4 text-primary shrink-0" />
             <div className="text-left">
-              <span className="text-[9px] uppercase font-bold text-muted-foreground block">
+              <span className="text-xs uppercase font-bold text-muted-foreground block">
                 PIN de Recebimento
               </span>
               <span className="font-mono text-sm font-black text-primary tracking-widest">
@@ -124,22 +124,22 @@ export function DealDeliveryTrackingCard({ dealId, orderId }: DealDeliveryTracki
         <div className={`p-3 rounded-lg border text-center transition-all ${
           statusConfig.step >= 1 ? "bg-primary/10 border-primary/30 text-foreground font-semibold" : "bg-muted/20 border-border/40 text-muted-foreground opacity-60"
         }`}>
-          <div className="text-[10px] uppercase font-bold mb-1">1. Despachado</div>
-          <span className="text-[11px]">Loja acionou motoboy</span>
+          <div className="text-xs uppercase font-bold mb-1">1. Despachado</div>
+          <span className="text-xs">Loja acionou motoboy</span>
         </div>
 
         <div className={`p-3 rounded-lg border text-center transition-all ${
           statusConfig.step >= 3 ? "bg-primary/10 border-primary/30 text-foreground font-semibold" : "bg-muted/20 border-border/40 text-muted-foreground opacity-60"
         }`}>
-          <div className="text-[10px] uppercase font-bold mb-1">2. Em Trânsito</div>
-          <span className="text-[11px]">A caminho do endereço</span>
+          <div className="text-xs uppercase font-bold mb-1">2. Em Trânsito</div>
+          <span className="text-xs">A caminho do endereço</span>
         </div>
 
         <div className={`p-3 rounded-lg border text-center transition-all ${
           statusConfig.step >= 4 ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-400 font-bold" : "bg-muted/20 border-border/40 text-muted-foreground opacity-60"
         }`}>
-          <div className="text-[10px] uppercase font-bold mb-1">3. Entregue</div>
-          <span className="text-[11px]">Pacote recebido</span>
+          <div className="text-xs uppercase font-bold mb-1">3. Entregue</div>
+          <span className="text-xs">Pacote recebido</span>
         </div>
       </div>
 
@@ -150,7 +150,7 @@ export function DealDeliveryTrackingCard({ dealId, orderId }: DealDeliveryTracki
             <Radio className="size-4 text-emerald-600 animate-pulse shrink-0" />
             <div>
               <p className="font-bold text-foreground">Sinal do Motoboy Conectado</p>
-              <p className="text-[11px] text-muted-foreground">
+              <p className="text-xs text-muted-foreground">
                 Última atualização de localização recebida via GPS.
               </p>
             </div>
@@ -172,10 +172,10 @@ export function DealDeliveryTrackingCard({ dealId, orderId }: DealDeliveryTracki
         <div className="flex items-start gap-2">
           <MapPin className="size-4 text-primary shrink-0 mt-1" />
           <div className="min-w-0">
-            <span className="text-muted-foreground block text-[10px] uppercase font-medium">Endereço de Entrega</span>
+            <span className="text-muted-foreground block text-xs uppercase font-medium">Endereço de Entrega</span>
             <p className="font-semibold text-foreground truncate">{dispatch.deliveryAddress || "Endereço cadastrado"}</p>
             {dispatch.deliveryNeighborhood && (
-              <p className="text-[11px] text-muted-foreground">{dispatch.deliveryNeighborhood} — {dispatch.deliveryCity}</p>
+              <p className="text-xs text-muted-foreground">{dispatch.deliveryNeighborhood} — {dispatch.deliveryCity}</p>
             )}
           </div>
         </div>
@@ -184,10 +184,10 @@ export function DealDeliveryTrackingCard({ dealId, orderId }: DealDeliveryTracki
           <div className="flex items-start gap-2 sm:border-l sm:border-border/40 sm:pl-3">
             <ShieldCheck className="size-4 text-emerald-600 shrink-0 mt-1" />
             <div className="min-w-0">
-              <span className="text-muted-foreground block text-[10px] uppercase font-medium">Entregador Responsável</span>
+              <span className="text-muted-foreground block text-xs uppercase font-medium">Entregador Responsável</span>
               <p className="font-semibold text-foreground truncate">{dispatch.courierName}</p>
               {dispatch.courierPhone && (
-                <a href={`tel:${dispatch.courierPhone}`} className="text-[11px] text-primary hover:underline inline-flex items-center gap-1">
+                <a href={`tel:${dispatch.courierPhone}`} className="text-xs text-primary hover:underline inline-flex items-center gap-1">
                   <Phone className="size-3" />
                   <span>{dispatch.courierPhone}</span>
                 </a>
@@ -218,7 +218,7 @@ export function DealDeliveryTrackingCard({ dealId, orderId }: DealDeliveryTracki
 
       {/* Ação: Abrir link opaco de rastreamento completo */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-1">
-        <span className="text-[11px] text-muted-foreground">
+        <span className="text-xs text-muted-foreground">
           Informe o PIN ao entregador no ato da entrega para confirmar o recebimento.
         </span>
 

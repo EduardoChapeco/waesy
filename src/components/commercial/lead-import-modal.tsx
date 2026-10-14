@@ -105,7 +105,7 @@ export function LeadImportModal({ isOpen, onClose, onSuccess }: LeadImportModalP
 
   return (
     <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <SheetContent side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] bg-card border-l border-border p-4 sm:p-6 overflow-y-auto flex flex-col justify-between">
+      <SheetContent side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl bg-card border-l border-border p-4 sm:p-6 overflow-y-auto overscroll-contain flex flex-col justify-between">
         <div className="space-y-4">
           <SheetHeader className="space-y-1">
             <SheetTitle className="text-base font-bold text-foreground flex items-center gap-2">
@@ -119,7 +119,7 @@ export function LeadImportModal({ isOpen, onClose, onSuccess }: LeadImportModalP
 
           {step === "paste" ? (
             <div className="space-y-4 py-2">
-              <div className="bg-muted/40 p-3 rounded-lg border border-border/80 text-[11px] font-mono text-muted-foreground space-y-1">
+              <div className="bg-muted/40 p-3 rounded-lg border border-border/80 text-xs font-mono text-muted-foreground space-y-1">
                 <p className="font-bold text-foreground">Exemplo aceito (separado por vírgula, ponto-e-vírgula ou tab):</p>
                 <p>Mariana Souza; (11) 98765-4321; mariana@email.com; Maceió; 4500; 2</p>
                 <p>Carlos Eduardo; (49) 99123-4567; carlos@empresa.com; Gramado; 2800; 1</p>
@@ -130,7 +130,7 @@ export function LeadImportModal({ isOpen, onClose, onSuccess }: LeadImportModalP
                 value={rawText}
                 onChange={(e) => setRawText(e.target.value)}
                 rows={8}
-                className="font-mono text-xs rounded-lg bg-background/50 border-border"
+                className="font-mono text-base sm:text-xs rounded-lg bg-background/50 border-border"
               />
 
               <div className="flex justify-between items-center text-xs text-muted-foreground">
@@ -143,7 +143,7 @@ export function LeadImportModal({ isOpen, onClose, onSuccess }: LeadImportModalP
                       `João Paulo da Silva; (11) 99887-1122; joao@exemplo.com; Porto Seguro; 3200; 2\nAna Clara Santos; (48) 98877-3344; ana@exemplo.com; Santiago; 6500; 1\nRoberto Lima; (21) 97766-5544; roberto@exemplo.com; Cancún; 8900; 2`
                     )
                   }
-                  className="text-[11px] h-7 rounded-lg"
+                  className="text-xs h-11 min-h-11 rounded-lg"
                 >
                   Carregar Exemplo
                 </Button>
@@ -159,7 +159,7 @@ export function LeadImportModal({ isOpen, onClose, onSuccess }: LeadImportModalP
                   variant="ghost"
                   size="sm"
                   onClick={() => setStep("paste")}
-                  className="text-xs h-7 text-muted-foreground"
+                  className="text-xs h-11 min-h-11 text-muted-foreground"
                 >
                   Voltar à edição
                 </Button>
@@ -170,7 +170,7 @@ export function LeadImportModal({ isOpen, onClose, onSuccess }: LeadImportModalP
                   <div key={i} className="p-3 flex items-center justify-between hover:bg-muted/30">
                     <div className="space-y-1">
                       <p className="font-bold text-foreground">{lead.fullName}</p>
-                      <p className="text-[11px] text-muted-foreground">
+                      <p className="text-xs text-muted-foreground">
                         {lead.phone || "Sem fone"} · {lead.email || "Sem e-mail"}
                       </p>
                     </div>
@@ -179,7 +179,7 @@ export function LeadImportModal({ isOpen, onClose, onSuccess }: LeadImportModalP
                         R$ {((lead.estimatedValue || 0) / 100).toFixed(2)}
                       </span>
                       {lead.destination && (
-                        <p className="text-[10px] text-muted-foreground uppercase">{lead.destination}</p>
+                        <p className="text-xs text-muted-foreground uppercase">{lead.destination}</p>
                       )}
                     </div>
                   </div>

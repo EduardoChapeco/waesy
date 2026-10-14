@@ -87,7 +87,7 @@ export function ProductDetailDesktop({
           <div className="w-full flex gap-3 items-start">
             {/* Strip vertical de miniaturas */}
             {mediaList.length > 1 && (
-              <div className="flex flex-col gap-2 w-16 shrink-0 max-h-[500px] overflow-y-auto no-scrollbar pr-1">
+              <div className="flex flex-col gap-2 w-16 shrink-0 max-h-128 overflow-y-auto no-scrollbar pr-1">
                 {mediaList.map((m: ProductMediaDTO) => {
                   const isVideo = m.mediaType === "video";
                   const active = activeMedia?.id === m.id;
@@ -99,7 +99,7 @@ export function ProductDetailDesktop({
                       className={cn(
                         "relative aspect-square w-14 shrink-0 rounded-lg overflow-hidden border transition-all duration-200 cursor-pointer",
                         active
-                          ? "border-primary ring-2 ring-primary/20 scale-[1.03]"
+                          ? "border-primary ring-2 ring-primary/20 scale-105"
                           : "border-border/60 hover:border-primary/50 bg-secondary"
                       )}
                     >
@@ -123,7 +123,7 @@ export function ProductDetailDesktop({
 
             {/* Viewport Principal de Imagem */}
             <div className="flex-1 w-full relative">
-              <div className="relative w-full aspect-[4/3] md:aspect-square overflow-hidden bg-secondary rounded-lg border border-border/50">
+              <div className="relative w-full aspect-4-3 md:aspect-square overflow-hidden bg-secondary rounded-lg border border-border/50">
                 {activeMedia ? (
                   activeMedia.mediaType === "video" ? (
                     <video
@@ -138,6 +138,9 @@ export function ProductDetailDesktop({
                       alt={activeMedia.alt ?? product.title}
                       loading="eager"
                       className="size-full object-cover"
+                      onError={(e) => {
+                        (e.currentTarget as HTMLElement).style.display = "none";
+                      }}
                     />
                   )
                 ) : (
@@ -304,7 +307,7 @@ export function ProductDetailDesktop({
                     <div key={og.id} className="space-y-2">
                       <div className="flex justify-between items-baseline text-xs">
                         <span className="font-bold text-foreground">{og.displayName}</span>
-                        <span className="text-[11px] text-muted-foreground">
+                        <span className="text-2xs text-muted-foreground">
                           {isMultiple ? `Até ${og.maxSelections} opções` : "Escolha 1"}
                         </span>
                       </div>
@@ -337,7 +340,7 @@ export function ProductDetailDesktop({
                                   )}
                                 >
                                   {isSelected && (
-                                    isMultiple ? <Check className="size-2.5 stroke-[3]" /> : <span className="size-1.5 bg-primary-foreground rounded-full" />
+                                    isMultiple ? <Check className="size-2.5 stroke-2" /> : <span className="size-1.5 bg-primary-foreground rounded-full" />
                                   )}
                                 </div>
                                 <span className="text-xs font-semibold text-foreground truncate">{val.label}</span>
@@ -425,7 +428,7 @@ export function ProductDetailDesktop({
                   <span>Calcular Frete e Prazo</span>
                 </div>
                 {storeLocation && (
-                  <span className="text-[10px] text-muted-foreground font-mono">{storeLocation}</span>
+                  <span className="text-2xs text-muted-foreground font-mono">{storeLocation}</span>
                 )}
               </div>
               <form onSubmit={handleCalculateShipping} className="flex gap-2">
@@ -433,9 +436,9 @@ export function ProductDetailDesktop({
                   placeholder="Digite seu CEP"
                   value={zipcode}
                   onChange={(e) => setZipcode(e.target.value)}
-                  className="h-10 text-xs rounded-lg bg-muted/30"
+                  className="h-11 min-h-11 text-base sm:text-xs rounded-lg bg-muted/30"
                 />
-                <Button type="submit" size="sm" className="h-10 font-bold px-4 rounded-lg shrink-0 cursor-pointer" disabled={loadingShipping}>
+                <Button type="submit" size="sm" className="h-11 min-h-11 font-bold px-4 rounded-lg shrink-0 cursor-pointer" disabled={loadingShipping}>
                   {loadingShipping ? <Loader2 className="size-4 animate-spin" /> : "Calcular"}
                 </Button>
               </form>
@@ -447,7 +450,7 @@ export function ProductDetailDesktop({
                       <div key={rate.id || idx} className="flex justify-between items-center text-xs p-3 rounded-lg border border-border/50 bg-muted/20">
                         <div>
                           <p className="font-bold text-foreground">{rate.service_name || rate.name || rate.provider}</p>
-                          <p className="text-[10px] text-muted-foreground">Prazo: {rate.estimated_days} dias úteis</p>
+                          <p className="text-2xs text-muted-foreground">Prazo: {rate.estimated_days} dias úteis</p>
                         </div>
                         <span className="font-bold text-foreground font-mono">
                           {rate.price_cents === 0 ? <span className="text-emerald-600">Grátis</span> : formatMoney(rate.price_cents)}
@@ -472,11 +475,11 @@ export function ProductDetailDesktop({
                     <h3 className="font-bold text-xs text-foreground truncate">
                       {(product as any).store?.name || product.brand || "Loja Parceira"}
                     </h3>
-                    <Badge variant="outline" className="text-[9px] bg-primary/10 text-primary border-primary/20 py-0 px-2 rounded">
+                    <Badge variant="outline" className="text-2xs bg-primary/10 text-primary border-primary/20 py-0 px-2 rounded">
                       Oficial
                     </Badge>
                   </div>
-                  <p className="text-[11px] text-muted-foreground truncate mt-1">
+                  <p className="text-2xs text-muted-foreground truncate mt-1">
                     {(product as any).store?.city ? `${(product as any).store.city} - ${(product as any).store.state || "SC"}` : "Loja Verificada Waesy"}
                   </p>
                 </div>

@@ -154,7 +154,7 @@ export function KanbanColumnCustomizerModal({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="p-5 max-h-[60vh] overflow-y-auto no-scrollbar space-y-3">
+        <div className="p-5 max-h-96 sm:max-h-128 overflow-y-auto no-scrollbar space-y-3">
           {stages.map((stage, idx) => (
             <div
               key={stage.stage_key}
@@ -189,7 +189,7 @@ export function KanbanColumnCustomizerModal({
                 <Input
                   value={stage.title}
                   onChange={(e) => handleTitleChange(idx, e.target.value)}
-                  className="h-8 text-xs font-semibold rounded-lg bg-background border-border/60 flex-1 min-w-[120px]"
+                  className="h-11 min-h-11 text-base sm:text-xs font-semibold rounded-lg bg-background border-border/60 flex-1 min-w-28"
                   placeholder="Nome da coluna"
                 />
               </div>
@@ -264,7 +264,7 @@ export function KanbanColumnCustomizerModal({
             size="sm"
             onClick={handleReset}
             disabled={isSaving}
-            className="h-9 px-3 rounded-lg text-xs font-semibold text-muted-foreground hover:text-foreground gap-2 cursor-pointer shadow-none"
+            className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold text-muted-foreground hover:text-foreground gap-2 cursor-pointer shadow-none focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
           >
             <RotateCcw className="size-3" />
             <span>Restaurar Padrão</span>
@@ -277,7 +277,7 @@ export function KanbanColumnCustomizerModal({
               size="sm"
               onClick={() => onOpenChange(false)}
               disabled={isSaving}
-              className="h-9 px-3 rounded-lg text-xs font-semibold cursor-pointer"
+              className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold cursor-pointer focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
             >
               Cancelar
             </Button>
@@ -286,7 +286,7 @@ export function KanbanColumnCustomizerModal({
               size="sm"
               onClick={handleSave}
               disabled={isSaving}
-              className="h-9 px-4 rounded-lg text-xs font-bold bg-primary text-primary-foreground gap-2 cursor-pointer shadow-xs"
+              className="h-11 min-h-11 px-4 rounded-lg text-xs font-bold bg-primary text-primary-foreground gap-2 cursor-pointer shadow-xs focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
             >
               <Check className="size-3.5" />
               <span>{isSaving ? "Salvando..." : "Salvar Alterações"}</span>

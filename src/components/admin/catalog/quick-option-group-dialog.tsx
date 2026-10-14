@@ -284,7 +284,7 @@ export function QuickOptionGroupDialog({
  {/* SIDE SHEET (Edição em Profundidade / Side Panel) */}
  <Sheet open={open} onOpenChange={onOpenChange}>
  <SheetContent
- side="right" size="wide" className="sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] w-full flex flex-col p-0 gap-0 overflow-hidden bg-card border-l border-border"
+ side="right" size="wide" className="sm:max-w-3xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl w-full flex flex-col p-0 gap-0 overflow-hidden overscroll-contain bg-card border-l border-border"
  >
  <SheetHeader className="p-6 pb-4 border-b border-border/80 bg-muted/20">
  <div className="flex items-center gap-3">

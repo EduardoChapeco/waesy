@@ -426,13 +426,13 @@ export function PostCreationDrawer({
 
  return (
  <Drawer open={open} onOpenChange={onOpenChange}>
- <DrawerContent className="h-[100dvh] max-h-[100dvh] rounded-none sm:rounded-lg sm:h-auto sm:max-h-[90vh] border-none sm: bg-background p-0 flex flex-col overflow-hidden max-w-2xl mx-auto ">
+ <DrawerContent className="h-dvh max-h-dvh rounded-none sm:rounded-2xl sm:h-auto sm:max-h-full border-none bg-background p-0 flex flex-col overflow-hidden max-w-2xl mx-auto overscroll-contain">
  {/* ── Top Header Fixo (Silêncio Operacional) ── */}
  <DrawerHeader className="p-4 flex items-center justify-between shrink-0 bg-background/95 backdrop-blur-md">
  <div className="flex items-center gap-3">
  <button
  onClick={() => onOpenChange(false)}
- className="size-10 rounded-lg flex items-center justify-center hover:bg-muted active:scale-95 transition-all text-muted-foreground hover:text-foreground cursor-pointer"
+ className="size-11 min-h-11 min-w-11 rounded-lg flex items-center justify-center hover:bg-muted active:scale-95 transition-all text-muted-foreground hover:text-foreground cursor-pointer"
  aria-label="Fechar"
  >
  <X size={20} weight="bold" />
@@ -445,7 +445,7 @@ export function PostCreationDrawer({
  <Button
  onClick={handlePublish}
  disabled={isSubmitting || isUploadingMedia}
- className="bg-primary text-primary-foreground font-bold rounded-lg h-10 sm:h-11 px-6 text-sm hover:scale-102 active:scale-98 transition-all shadow-xs cursor-pointer"
+ className="bg-primary text-primary-foreground font-bold rounded-lg h-11 min-h-11 px-6 text-sm hover:scale-102 active:scale-98 transition-all shadow-xs cursor-pointer"
  >
  {isSubmitting ? (
  <>
@@ -469,7 +469,7 @@ export function PostCreationDrawer({
  key={fmt.id}
  type="button"
  onClick={() => setActiveFormat(fmt.id)}
- className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all cursor-pointer min-h-[38px] ${
+ className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all cursor-pointer min-h-11 ${
  isActive
  ? "bg-foreground text-background shadow-xs scale-102"
  : "bg-card text-muted-foreground hover:text-foreground hover:bg-card/80 border border-border/50"
@@ -495,7 +495,7 @@ export function PostCreationDrawer({
  </Avatar>
  <div>
  <p className="text-xs font-bold text-foreground leading-none">{userName}</p>
- <p className="text-[11px] text-muted-foreground mt-1">Mural Comunitário</p>
+ <p className="text-xs text-muted-foreground mt-1">Mural Comunitário</p>
  </div>
  </div>
 
@@ -514,7 +514,7 @@ export function PostCreationDrawer({
  ? "Compartilhe uma sequência de fotos ou momentos... (use ==texto== para destacar)"
  : "O que está acontecendo na comunidade? (use ==texto== para destacar ou cole com Ctrl+V)"
  }
- className="w-full border-none shadow-none focus-visible:ring-0 resize-none text-sm p-0 min-h-[110px] placeholder:text-muted-foreground/60 leading-relaxed bg-transparent"
+ className="w-full border-none shadow-none focus-visible:ring-0 resize-none text-base sm:text-sm p-0 min-h-28 placeholder:text-muted-foreground/60 leading-relaxed bg-transparent"
  />
 
  {/* Previews de Mídia */}
@@ -536,13 +536,16 @@ export function PostCreationDrawer({
  <img
  src={media.url}
  alt="Upload preview"
+ onError={(e) => {
+   (e.currentTarget as HTMLElement).style.display = "none";
+ }}
  className="size-full object-cover"
  />
  )}
  <button
  type="button"
  onClick={() => handleRemoveMedia(idx)}
- className="absolute top-1.5 right-1.5 size-6 rounded-full bg-black/70 text-white flex items-center justify-center hover:bg-destructive transition-colors cursor-pointer"
+ className="absolute top-1.5 right-1.5 size-8 min-h-8 min-w-8 rounded-full bg-black/70 text-white flex items-center justify-center hover:bg-destructive transition-colors cursor-pointer"
  aria-label="Remover mídia"
  >
  <Trash size={12} weight="bold" />
@@ -565,7 +568,7 @@ export function PostCreationDrawer({
  >
  <div className="flex items-center justify-between text-xs text-muted-foreground font-bold">
  <span className="flex items-center gap-2 text-primary">
- <span className="size-5 rounded-full bg-primary/10 flex items-center justify-center text-[10px]">
+ <span className="size-5 rounded-full bg-primary/10 flex items-center justify-center text-2xs">
  {index + 1}
  </span>
  Card #{index + 1}
@@ -584,7 +587,7 @@ export function PostCreationDrawer({
  value={node.text}
  onChange={(e) => handleUpdateThreadNode(index, e.target.value)}
  placeholder={`Ponto ${index + 1} da sua reflexão...`}
- className="border-none shadow-none focus-visible:ring-0 resize-none text-xs p-0 min-h-[60px] bg-transparent"
+ className="border-none shadow-none focus-visible:ring-0 resize-none text-base sm:text-xs p-0 min-h-16 bg-transparent"
  />
  </div>
  ))}
@@ -595,7 +598,7 @@ export function PostCreationDrawer({
  variant="outline"
  size="sm"
  onClick={handleAddThreadNode}
- className="w-full rounded-lg text-xs font-bold border-dashed border-border gap-2 h-10 hover:border-primary/50"
+ className="w-full rounded-lg text-xs font-bold border-dashed border-border gap-2 h-11 min-h-11 hover:border-primary/50"
  >
  <Plus size={14} weight="bold" /> Adicionar Card à Sequência
  </Button>
@@ -655,7 +658,7 @@ export function PostCreationDrawer({
  value={locationName}
  onChange={(e) => setLocationName(e.target.value)}
  placeholder="Localização..."
- className="h-full border-none shadow-none focus-visible:ring-0 text-sm p-0 w-32 bg-transparent"
+ className="h-full border-none shadow-none focus-visible:ring-0 text-base sm:text-sm p-0 w-32 bg-transparent"
  />
  </div>
  </div>

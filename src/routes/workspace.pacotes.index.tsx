@@ -209,7 +209,7 @@ function WorkspacePackagesPage() {
  <SheetContent
  side="right"
  size="wide"
- className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] max-sm:!h-[100dvh] max-sm:!inset-0 max-sm:!rounded-none border-l p-0 overflow-y-auto no-scrollbar bg-card flex flex-col justify-between"
+ className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl max-sm:h-dvh max-sm:inset-0 max-sm:rounded-none border-l p-0 overflow-y-auto overscroll-contain no-scrollbar bg-card flex flex-col justify-between"
  >
  <div className="p-6 space-y-4">
  <SheetHeader className="pb-3 border-b border-border/60">

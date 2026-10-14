@@ -369,7 +369,7 @@ export function ProfessionalResumeEditor({
  <div className="space-y-1">
  <div className="flex items-center justify-between">
  <Label className="text-xs font-bold text-muted-foreground">Título Profissional (Headline)</Label>
- <span className="text-[10px] font-mono text-muted-foreground">
+ <span className="text-xs font-mono text-muted-foreground">
  {(resumeData.headline || "").length}/120
  </span>
  </div>
@@ -518,7 +518,7 @@ export function ProfessionalResumeEditor({
  <p className="text-xs font-semibold text-foreground/80 truncate">
  {exp.company} {exp.employment_type && `• ${exp.employment_type}`}
  </p>
- <p className="text-[11px] font-mono text-muted-foreground">
+ <p className="text-xs font-mono text-muted-foreground">
  {exp.start_date || "Data inicial"} – {exp.is_current ? "Atualmente" : exp.end_date || "Presente"}
  {exp.location && ` • ${exp.location}`}
  </p>
@@ -597,7 +597,7 @@ export function ProfessionalResumeEditor({
  <p className="text-xs font-semibold text-foreground/80 truncate">
  {[edu.degree, edu.field_of_study].filter(Boolean).join(" em ")}
  </p>
- <p className="text-[11px] font-mono text-muted-foreground">
+ <p className="text-xs font-mono text-muted-foreground">
  {edu.start_date ? `${edu.start_date} – ` : ""}
  {edu.end_date || "Presente"}
  </p>
@@ -671,7 +671,7 @@ export function ProfessionalResumeEditor({
  <p className="text-xs font-semibold text-foreground/80 truncate">
  {cert.issuer}
  </p>
- <p className="text-[11px] font-mono text-muted-foreground">
+ <p className="text-xs font-mono text-muted-foreground">
  Emitido em {cert.issue_date || "Data a definir"}
  </p>
  {cert.credential_url && (
@@ -679,7 +679,7 @@ export function ProfessionalResumeEditor({
  href={cert.credential_url}
  target="_blank"
  rel="noopener noreferrer"
- className="inline-flex items-center gap-1 text-[11px] font-bold text-primary hover:underline pt-1"
+ className="inline-flex items-center gap-1 text-xs font-bold text-primary hover:underline pt-1"
  >
  <span>Exibir Credencial</span>
  <ExternalLink className="size-3" />
@@ -750,7 +750,7 @@ export function ProfessionalResumeEditor({
                 </div>
                 <div className="space-y-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <Badge variant="outline" className="text-[10px] font-mono font-bold text-primary border-primary/30">
+                    <Badge variant="outline" className="text-xs font-mono font-bold text-primary border-primary/30">
                       {lic.council}/{lic.uf || "BR"}
                     </Badge>
                     <h4 className="text-xs font-bold text-foreground font-mono">
@@ -762,7 +762,7 @@ export function ProfessionalResumeEditor({
                       {lic.specialty}
                     </p>
                   )}
-                  <div className="flex items-center gap-2 text-[11px] text-muted-foreground pt-1">
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground pt-1">
                     <span className="inline-flex items-center gap-1 text-emerald-600 font-medium">
                       <CheckCircle2 className="size-3" />
                       <span>Ativo</span>
@@ -776,7 +776,7 @@ export function ProfessionalResumeEditor({
                       href={lic.document_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-[11px] font-bold text-primary hover:underline pt-1"
+                      className="inline-flex items-center gap-1 text-xs font-bold text-primary hover:underline pt-1"
                     >
                       <span>Ver Comprovante Anexo</span>
                       <ExternalLink className="size-3" />
@@ -943,7 +943,7 @@ export function ProfessionalResumeEditor({
  <span className="text-xs font-bold text-foreground block truncate">
  {vol.role} • {vol.organization}
  </span>
- <span className="text-[10px] text-muted-foreground block font-mono">
+ <span className="text-xs text-muted-foreground block font-mono">
  {vol.cause || "Causa social"}
  </span>
  </div>
@@ -1044,7 +1044,7 @@ export function ProfessionalResumeEditor({
  >
  <div>
  <h4 className="text-xs font-bold text-foreground">{lang.name}</h4>
- <span className="text-[11px] font-mono text-muted-foreground capitalize">
+ <span className="text-xs font-mono text-muted-foreground capitalize">
  {PROFICIENCY_LABELS[lang.proficiency] || lang.proficiency}
  </span>
  </div>
@@ -1245,7 +1245,7 @@ export function ProfessionalResumeEditor({
         <DialogContent className="sm:max-w-xl sm:rounded-lg p-0 overflow-hidden bg-background border border-border">
           <DialogHeader className="p-6 pb-4 border-b border-border/40">
             <div className="flex items-center gap-3">
-              <div className="size-10 rounded-lg bg-[#0A66C2] text-white flex items-center justify-center shrink-0">
+              <div className="size-10 rounded-lg bg-primary text-white flex items-center justify-center shrink-0">
                 <Linkedin className="size-5 fill-current" />
               </div>
               <div>
@@ -1262,7 +1262,7 @@ export function ProfessionalResumeEditor({
               onClick={() => setLinkedInActiveTab("oauth")}
               className={`px-4 py-3 text-xs font-bold border-b-2 transition-colors cursor-pointer ${
                 linkedInActiveTab === "oauth"
-                  ? "border-[#0A66C2] text-[#0A66C2]"
+                  ? "border-primary text-primary"
                   : "border-transparent text-muted-foreground hover:text-foreground"
               }`}
             >
@@ -1273,7 +1273,7 @@ export function ProfessionalResumeEditor({
               onClick={() => setLinkedInActiveTab("json")}
               className={`px-4 py-3 text-xs font-bold border-b-2 transition-colors cursor-pointer ${
                 linkedInActiveTab === "json"
-                  ? "border-[#0A66C2] text-[#0A66C2]"
+                  ? "border-primary text-primary"
                   : "border-transparent text-muted-foreground hover:text-foreground"
               }`}
             >
@@ -1281,10 +1281,10 @@ export function ProfessionalResumeEditor({
             </button>
           </div>
 
-          <div className="p-6 space-y-4 max-h-[60vh] overflow-y-auto no-scrollbar">
+          <div className="p-6 space-y-4 max-h-96 overscroll-contain overflow-y-auto no-scrollbar">
             {linkedInActiveTab === "oauth" ? (
               <div className="space-y-4 text-center py-4">
-                <div className="size-16 rounded-lg bg-[#0A66C2]/10 text-[#0A66C2] flex items-center justify-center mx-auto border border-[#0A66C2]/20">
+                <div className="size-16 rounded-lg bg-primary/10 text-primary flex items-center justify-center mx-auto border border-primary/20">
                   <Linkedin className="size-8 fill-current" />
                 </div>
                 <div className="space-y-2 max-w-sm mx-auto">
@@ -1298,7 +1298,7 @@ export function ProfessionalResumeEditor({
                   type="button"
                   onClick={handleStartLinkedInOAuth}
                   disabled={isConnectingLinkedIn}
-                  className="w-full h-11 rounded-lg font-bold text-xs gap-2 bg-[#0A66C2] hover:bg-[#084e96] text-white shadow-xs cursor-pointer"
+                  className="w-full h-11 rounded-lg font-bold text-xs gap-2 bg-primary hover:bg-primary/90 text-white shadow-xs cursor-pointer"
                 >
                   {isConnectingLinkedIn ? (
                     <>
@@ -1320,7 +1320,7 @@ export function ProfessionalResumeEditor({
                   <button
                     type="button"
                     onClick={handleLoadExampleLinkedInJson}
-                    className="text-[11px] font-semibold text-primary hover:underline cursor-pointer"
+                    className="text-xs font-semibold text-primary hover:underline cursor-pointer"
                   >
                     Usar exemplo de teste
                   </button>
@@ -1333,7 +1333,7 @@ export function ProfessionalResumeEditor({
                     setLinkedInPreview(null);
                   }}
                   placeholder="Cole aqui o JSON do perfil ou exportação do LinkedIn..."
-                  className="h-32 text-xs font-mono rounded-lg bg-background border-border resize-none"
+                  className="h-32 text-base sm:text-xs font-mono rounded-lg bg-background border-border resize-none"
                 />
 
                 {!linkedInPreview ? (
@@ -1341,7 +1341,7 @@ export function ProfessionalResumeEditor({
                     type="button"
                     onClick={handleParseLinkedInJson}
                     disabled={isParsingLinkedIn || !linkedInJsonText.trim()}
-                    className="w-full h-10 rounded-lg font-bold text-xs gap-2 bg-foreground text-background hover:bg-foreground/90 cursor-pointer"
+                    className="w-full h-11 min-h-11 rounded-lg font-bold text-xs gap-2 bg-foreground text-background hover:bg-foreground/90 cursor-pointer"
                   >
                     {isParsingLinkedIn ? (
                       <>
@@ -1364,7 +1364,7 @@ export function ProfessionalResumeEditor({
                           Dados Extraídos com Sucesso!
                         </span>
                       </div>
-                      <Badge variant="outline" className="text-[10px] border-emerald-500/40 text-emerald-600 font-mono">
+                      <Badge variant="outline" className="text-xs border-emerald-500/40 text-emerald-600 font-mono">
                         {linkedInPreview.experiences?.length || 0} cargos
                       </Badge>
                     </div>
@@ -1463,7 +1463,7 @@ function AvailabilityEditSheet({
 
  return (
  <Sheet open={open} onOpenChange={onOpenChange}>
- <SheetContent side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] p-0 flex flex-col h-full bg-background overflow-hidden border-l border-border">
+ <SheetContent side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl p-0 flex flex-col h-full bg-background overflow-hidden overscroll-contain border-l border-border">
  <div className="p-6 pb-4 border-b border-border/40 shrink-0">
  <SheetTitle className="text-base font-bold">Objetivos Profissionais</SheetTitle>
  <SheetDescription className="text-xs text-muted-foreground">
@@ -1730,7 +1730,7 @@ function ExperienceEditSheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] p-0 flex flex-col h-full bg-background overflow-hidden border-l border-border">
+      <SheetContent side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl p-0 flex flex-col h-full bg-background overflow-hidden overscroll-contain border-l border-border">
         <div className="p-6 pb-4 border-b border-border/40 shrink-0">
           <SheetTitle className="text-base font-bold">
             {item ? "Editar Experiência" : "Nova Experiência"}
@@ -1769,7 +1769,7 @@ function ExperienceEditSheet({
                     >
                       {s.logo_url && <img src={s.logo_url} alt="" className="size-5 rounded-md object-cover" />}
                       <span className="font-bold">{s.name}</span>
-                      <Badge variant="secondary" className="text-[9px] ml-auto">Empresa Waesy</Badge>
+                      <Badge variant="secondary" className="text-xs ml-auto">Empresa Waesy</Badge>
                     </button>
                   ))}
                 </div>
@@ -1840,7 +1840,7 @@ function ExperienceEditSheet({
                 <Label className="text-xs font-bold flex items-center gap-2">
                   <span>Mídias e Portfólio do Cargo</span>
                 </Label>
-                <span className="text-[10px] text-muted-foreground">Fotos do local, certificados, projetos</span>
+                <span className="text-xs text-muted-foreground">Fotos do local, certificados, projetos</span>
               </div>
               <MediaUploader
                 value={mediaUrls}
@@ -1860,12 +1860,12 @@ function ExperienceEditSheet({
                   <Building2 className="size-3.5 text-primary" />
                   <span>Avaliação e Salário (Comunidade de Talentos)</span>
                 </Label>
-                <span className="text-[10px] text-muted-foreground font-mono">Opcional</span>
+                <span className="text-xs text-muted-foreground font-mono">Opcional</span>
               </div>
 
               {/* Campo de Salário */}
               <div className="space-y-2">
-                <Label className="text-[11px] font-medium text-foreground/80">
+                <Label className="text-xs font-medium text-foreground/80">
                   Remuneração / Salário Mensal (R$)
                 </Label>
                 <CurrencyField
@@ -1879,7 +1879,7 @@ function ExperienceEditSheet({
               {/* Motivo de Saída (se não for trabalho atual) */}
               {!isCurrent && (
                 <div className="space-y-2">
-                  <Label className="text-[11px] font-medium text-foreground/80">
+                  <Label className="text-xs font-medium text-foreground/80">
                     Motivo da Saída
                   </Label>
                   <Select value={exitReason} onValueChange={setExitReason}>
@@ -1902,7 +1902,7 @@ function ExperienceEditSheet({
 
               {/* Avaliação em Estrelas (1 a 5) */}
               <div className="space-y-2">
-                <Label className="text-[11px] font-medium text-foreground/80">
+                <Label className="text-xs font-medium text-foreground/80">
                   Como você avalia sua experiência trabalhando nesta empresa?
                 </Label>
                 <div className="flex items-center gap-2">
@@ -1947,7 +1947,7 @@ function ExperienceEditSheet({
 
               {/* Review / Feedback Cultural */}
               <div className="space-y-2">
-                <Label className="text-[11px] font-medium text-foreground/80">
+                <Label className="text-xs font-medium text-foreground/80">
                   Comentário sobre ambiente, cultura ou liderança
                 </Label>
                 <Textarea
@@ -1955,7 +1955,7 @@ function ExperienceEditSheet({
                   onChange={(e) => setReviewText(e.target.value)}
                   rows={2}
                   placeholder="O que os futuros candidatos deveriam saber sobre o clima organizacional?"
-                  className="rounded-lg text-xs resize-none"
+                  className="rounded-lg text-base sm:text-xs resize-none"
                 />
               </div>
 
@@ -2312,7 +2312,7 @@ function EducationEditSheet({
 
  return (
  <Sheet open={open} onOpenChange={onOpenChange}>
- <SheetContent side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] p-0 flex flex-col h-full bg-background overflow-hidden border-l border-border">
+ <SheetContent side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl p-0 flex flex-col h-full bg-background overflow-hidden overscroll-contain border-l border-border">
  <div className="p-6 pb-4 border-b border-border/40 shrink-0">
  <SheetTitle className="text-base font-bold">
  {item ? "Editar Formação" : "Nova Formação"}
@@ -2469,7 +2469,7 @@ function CertificationEditSheet({
 
  return (
  <Sheet open={open} onOpenChange={onOpenChange}>
- <SheetContent side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] p-0 flex flex-col h-full bg-background overflow-hidden border-l border-border">
+ <SheetContent side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl p-0 flex flex-col h-full bg-background overflow-hidden overscroll-contain border-l border-border">
  <div className="p-6 pb-4 border-b border-border/40 shrink-0">
  <SheetTitle className="text-base font-bold">
  {item ? "Editar Certificação" : "Nova Certificação"}
@@ -2635,7 +2635,7 @@ function ProjectEditSheet({
  return (
  <>
  <Sheet open={open} onOpenChange={onOpenChange}>
- <SheetContent side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] p-0 flex flex-col h-full bg-background overflow-hidden border-l border-border">
+ <SheetContent side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl p-0 flex flex-col h-full bg-background overflow-hidden overscroll-contain border-l border-border">
  <div className="p-6 pb-4 border-b border-border/40 shrink-0">
  <SheetTitle className="text-base font-bold">
  {item ? "Editar Projeto" : "Novo Projeto"}
@@ -2712,7 +2712,7 @@ function ProjectEditSheet({
  ))}
  </div>
  ) : (
- <p className="text-[11px] text-muted-foreground italic">
+ <p className="text-xs text-muted-foreground italic">
  Nenhuma imagem anexada. Adicione capturas de tela do seu trabalho.
  </p>
  )}
@@ -2801,7 +2801,7 @@ function VolunteeringEditSheet({
 
  return (
  <Sheet open={open} onOpenChange={onOpenChange}>
- <SheetContent side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] p-0 flex flex-col h-full bg-background overflow-hidden border-l border-border">
+ <SheetContent side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl p-0 flex flex-col h-full bg-background overflow-hidden overscroll-contain border-l border-border">
  <div className="p-6 pb-4 border-b border-border/40 shrink-0">
  <SheetTitle className="text-base font-bold">
  {item ? "Editar Voluntariado" : "Novo Voluntariado"}
@@ -2899,7 +2899,7 @@ function CausesEditSheet({
 
  return (
  <Sheet open={open} onOpenChange={onOpenChange}>
- <SheetContent side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] p-0 flex flex-col h-full bg-background overflow-hidden border-l border-border">
+ <SheetContent side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl p-0 flex flex-col h-full bg-background overflow-hidden overscroll-contain border-l border-border">
  <div className="p-6 pb-4 border-b border-border/40 shrink-0">
  <SheetTitle className="text-base font-bold">Causas que Você Apoia</SheetTitle>
  <SheetDescription className="text-xs text-muted-foreground">
@@ -2987,7 +2987,7 @@ function LanguageEditSheet({
 
  return (
  <Sheet open={open} onOpenChange={onOpenChange}>
- <SheetContent side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] p-0 flex flex-col h-full bg-background overflow-hidden border-l border-border">
+ <SheetContent side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl p-0 flex flex-col h-full bg-background overflow-hidden overscroll-contain border-l border-border">
  <div className="p-6 pb-4 border-b border-border/40 shrink-0">
  <SheetTitle className="text-base font-bold">
  {item ? "Editar Idioma" : "Novo Idioma"}

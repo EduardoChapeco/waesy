@@ -208,7 +208,7 @@ export function NewClientWizard({
  <Sheet open={isOpen} onOpenChange={onClose}>
  <SheetContent
   size="wide"
-  className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] p-0 flex flex-col h-full bg-background"
+  className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl p-0 flex flex-col h-full bg-background overscroll-contain"
  >
  {/* Header com Stepper */}
  <SheetHeader className="p-6 pb-4 border-b border-border">
@@ -238,7 +238,7 @@ export function NewClientWizard({
  : "bg-muted text-muted-foreground opacity-60"
  }`}
  >
- <div className="size-4 rounded-full flex items-center justify-center text-[10px] font-bold">
+ <div className="size-4 rounded-full flex items-center justify-center text-xs font-bold">
  {idx < step ? <Check className="size-3" /> : idx + 1}
  </div>
  <span className="truncate">{s}</span>
@@ -265,7 +265,7 @@ export function NewClientWizard({
  >
  <User className="size-7 mb-2" />
  <span className="font-bold text-sm">Pessoa Física (B2C)</span>
- <span className="text-[11px] text-muted-foreground">Passageiro, cliente individual</span>
+ <span className="text-xs text-muted-foreground">Passageiro, cliente individual</span>
  </button>
 
  <button
@@ -279,7 +279,7 @@ export function NewClientWizard({
  >
  <Building2 className="size-7 mb-2" />
  <span className="font-bold text-sm">Empresa (PJ / B2B)</span>
- <span className="text-[11px] text-muted-foreground">Conta corporativa, agência parceira</span>
+ <span className="text-xs text-muted-foreground">Conta corporativa, agência parceira</span>
  </button>
  </div>
 
@@ -365,7 +365,7 @@ export function NewClientWizard({
  placeholder="(49) 99999-9999"
  className="h-10 rounded-lg text-xs bg-background font-mono"
  />
- <span className="text-[10px] text-muted-foreground">
+ <span className="text-xs text-muted-foreground">
  Utilizado para envio de orçamentos, itinerários e contratos com 1-clique.
  </span>
  </div>
@@ -402,7 +402,7 @@ export function NewClientWizard({
  ))}
  </SelectContent>
  </Select>
- <span className="text-[10px] text-muted-foreground">
+ <span className="text-xs text-muted-foreground">
  O consultor responsável receberá notificações prioritárias sobre este cliente.
  </span>
  </div>
@@ -543,7 +543,7 @@ export function NewClientWizard({
  onClick={() => handleRemoveTag(t)}
  >
  <span>{t}</span>
- <span className="text-[10px] opacity-60">×</span>
+ <span className="text-xs opacity-60">×</span>
  </Badge>
  ))}
  </div>
@@ -556,7 +556,7 @@ export function NewClientWizard({
  key={st}
  type="button"
  onClick={() => handleAddTag(st)}
- className="text-[10px] px-2 py-1 rounded-full bg-muted/60 text-muted-foreground hover:bg-primary/10 hover:text-primary transition-colors cursor-pointer"
+ className="text-xs px-2 py-1 rounded-full bg-muted/60 text-muted-foreground hover:bg-primary/10 hover:text-primary transition-colors cursor-pointer"
  >
  + {st}
  </button>
@@ -591,7 +591,7 @@ export function NewClientWizard({
  {legalName && (
  <p className="text-xs text-muted-foreground font-mono">{legalName}</p>
  )}
- <Badge variant="outline" className="mt-1 text-[10px] font-bold uppercase">
+ <Badge variant="outline" className="mt-1 text-xs font-bold uppercase">
  {kind === "company" ? "Empresa (B2B)" : "Pessoa Física (B2C)"}
  </Badge>
  </div>
@@ -599,25 +599,25 @@ export function NewClientWizard({
 
  <div className="grid grid-cols-2 gap-3 pt-2 border-t border-primary/15 text-xs">
  <div>
- <span className="text-muted-foreground text-[10px] block">Documento</span>
+ <span className="text-muted-foreground text-xs block">Documento</span>
  <span className="font-semibold text-foreground font-mono">
  {document || "Não informado"}
  </span>
  </div>
  <div>
- <span className="text-muted-foreground text-[10px] block">Contato</span>
+ <span className="text-muted-foreground text-xs block">Contato</span>
  <span className="font-semibold text-foreground font-mono">
  {phone || email || "Não informado"}
  </span>
  </div>
  <div>
- <span className="text-muted-foreground text-[10px] block">Localização</span>
+ <span className="text-muted-foreground text-xs block">Localização</span>
  <span className="font-semibold text-foreground">
  {city ? `${city} - ${state || "UF"}` : "Não informada"}
  </span>
  </div>
  <div>
- <span className="text-muted-foreground text-[10px] block">Canal de Aquisição</span>
+ <span className="text-muted-foreground text-xs block">Canal de Aquisição</span>
  <span className="font-semibold text-foreground capitalize">
  {CANAIS_AQUISICAO.find((c) => c.value === channel)?.label || channel}
  </span>
@@ -626,10 +626,10 @@ export function NewClientWizard({
 
  {tags.length > 0 && (
  <div className="pt-2 border-t border-primary/15">
- <span className="text-muted-foreground text-[10px] block mb-1">Tags</span>
+ <span className="text-muted-foreground text-xs block mb-1">Tags</span>
  <div className="flex flex-wrap gap-1">
  {tags.map((t) => (
- <Badge key={t} variant="secondary" className="text-[10px]">
+ <Badge key={t} variant="secondary" className="text-xs">
  {t}
  </Badge>
  ))}

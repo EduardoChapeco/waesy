@@ -134,7 +134,7 @@ export function NewTaskModal({
       <SheetContent
         side="right"
         size="wide"
-        className="sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] w-full max-sm:!h-[100dvh] max-sm:!inset-0 max-sm:!rounded-none border-l p-0 flex flex-col bg-card"
+        className="border-l p-0 flex flex-col bg-card overscroll-contain max-sm:inset-0 max-sm:h-dvh max-sm:rounded-none"
       >
         {/* Header */}
         <SheetHeader className="px-6 py-5 border-b border-border/60 bg-muted/20 shrink-0">

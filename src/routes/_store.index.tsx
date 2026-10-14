@@ -12,6 +12,8 @@ import { NewsCard } from "@/components/news/news-card";
 import { DiscoveryControlBar, type ViewModeType, type FilterChipOption } from "@/components/commerce/discovery-control-bar";
 import { VitrineEngineSelector } from "@/components/commerce/vitrine-engine-selector";
 import type { VitrineEngineMode } from "@/types/marketplace-compliance";
+import { CategoryBubbleCarousel, HorizontalProductShelf } from "@/design-system/patterns/discovery-patterns";
+import { EntityCard } from "@/design-system/primitives/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatMoney } from "@/lib/money";
@@ -296,6 +298,18 @@ function CommunityMarketplaceView({ data }: { data: any }) {
       };
     }).filter((card) => (card as any).isActive !== false);
   }, [heroCards]);
+
+  // Bolhas de descoberta do Design System 4.0
+  const discoveryBubbleItems = useMemo(() => {
+    return DISCOVERY_CATEGORIES.map((cat) => {
+      const IconComp = cat.icon;
+      return {
+        id: cat.id,
+        label: cat.label,
+        icon: IconComp ? <IconComp className="size-5" /> : undefined,
+      };
+    });
+  }, []);
 
   // Filtragem contextual por termo de busca
   const term = search.trim().toLowerCase();
@@ -611,6 +625,9 @@ function CommunityMarketplaceView({ data }: { data: any }) {
                     alt={card.title}
                     className="absolute inset-0 size-full object-cover group-hover:scale-105 transition-transform duration-300 motion-reduce:transition-none"
                     loading="eager"
+                    onError={(e) => {
+                      (e.currentTarget as HTMLElement).style.display = "none";
+                    }}
                   />
                 ) : (
                   <div className="absolute inset-0 size-full bg-muted/40 border border-border/40 flex items-center justify-center">
@@ -687,6 +704,15 @@ function CommunityMarketplaceView({ data }: { data: any }) {
         }}
       />
 
+      {/* ── 2.9. NAVEGAÇÃO RÁPIDA POR CATEGORIA (CategoryBubbleCarousel - Waesy DS 4.0) ── */}
+      <section aria-label="Navegação por Categorias" className="px-1">
+        <CategoryBubbleCarousel
+          items={discoveryBubbleItems}
+          selectedId={activeCategory}
+          onSelect={(id) => setActiveCategory(id)}
+        />
+      </section>
+
       {/* ── 3. BARRA DE CONTROLE CANÔNICA (DiscoveryControlBar: Busca + Categorias + Feed/Grid/List) ── */}
       <DiscoveryControlBar
         search={search}
@@ -744,6 +770,9 @@ function CommunityMarketplaceView({ data }: { data: any }) {
                               alt={item.business_name || undefined}
                               className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300 motion-reduce:transition-none"
                               loading="lazy"
+                              onError={(e) => {
+                                (e.currentTarget as HTMLElement).style.display = "none";
+                              }}
                             />
                           ) : (
                             <div className="size-full bg-muted/50 flex items-center justify-center">
@@ -772,7 +801,7 @@ function CommunityMarketplaceView({ data }: { data: any }) {
                         </div>
                       </Link>
 
-                      <div className="px-4 pb-3 pt-0 flex items-center justify-between gap-2 border-t border-border/30 mt-auto h-10">
+                      <div className="px-4 py-1 flex items-center justify-between gap-2 border-t border-border/30 mt-auto min-h-11">
                         <div className="flex items-center gap-1 text-xs font-bold text-amber-500">
                           <Star size={13} weight="fill" />
                           <span>{item.rating ? Number(item.rating).toFixed(1) : null}</span>
@@ -792,9 +821,9 @@ function CommunityMarketplaceView({ data }: { data: any }) {
                                 niche: item.category || undefined,
                               })
                             }
-                            className="inline-flex items-center gap-1 text-xs text-muted-foreground/75 font-bold text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 cursor-pointer"
+                            className="inline-flex items-center gap-1.5 h-11 min-h-11 px-3 rounded-md text-xs font-bold text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 cursor-pointer transition-colors"
                           >
-                            <WhatsappLogo size={14} weight="bold" />
+                            <WhatsappLogo size={16} weight="bold" />
                             <span>WhatsApp</span>
                           </button>
                         )}
@@ -832,30 +861,28 @@ function CommunityMarketplaceView({ data }: { data: any }) {
                 </section>
               ) : (
                 <section aria-label="Marketplace de Empresas" className="space-y-2">
-                  <HorizontalRail
-                    title="Marketplace"
-                    badge="Empresas Verificadas"
-                    actionLabel="Ver vitrine completa"
-                    actionTo="/marketplace"
-                    leadCard={
-                      <HitsLeadCard
-                        title="Marketplace Local"
-                        subtitle="Produtos e serviços com nota fiscal e garantia de empresas parceiras"
-                        badge="Homologado"
-                        actionLabel="Explorar"
-                        actionTo="/marketplace"
-                        gradient="from-emerald-700 via-teal-700 to-cyan-800"
-                        className="h-80 w-52 sm:w-60"
-                        ariaLabel="Explorar vitrine de produtos e empresas"
-                      />
-                    }
+                  <HorizontalProductShelf
+                    title="Marketplace de Empresas"
+                    subtitle="Produtos e serviços com nota fiscal e garantia de empresas parceiras"
+                    viewAllLabel="Ver vitrine completa"
+                    onViewAll={() => navigate({ to: "/marketplace" })}
                   >
+                    <HitsLeadCard
+                      title="Marketplace Local"
+                      subtitle="Produtos e serviços com nota fiscal e garantia de empresas parceiras"
+                      badge="Homologado"
+                      actionLabel="Explorar"
+                      actionTo="/marketplace"
+                      gradient="from-emerald-700 via-teal-700 to-cyan-800"
+                      className="h-80 w-52 sm:w-60 shrink-0"
+                      ariaLabel="Explorar vitrine de produtos e empresas"
+                    />
                     {filteredMarketplaceProducts.map((offer: any) => (
                       <div key={offer.id} className="min-w-64 sm:min-w-72 max-w-xs shrink-0 snap-start">
                         <OfferCard {...offer} />
                       </div>
                     ))}
-                  </HorizontalRail>
+                  </HorizontalProductShelf>
                 </section>
               )
             ) : activeCategory === "marketplace" ? (
@@ -915,6 +942,9 @@ function CommunityMarketplaceView({ data }: { data: any }) {
                             alt={item.title}
                             className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300 motion-reduce:transition-none"
                             loading="lazy"
+                            onError={(e) => {
+                              (e.currentTarget as HTMLElement).style.display = "none";
+                            }}
                           />
                         ) : (
                           <div className="size-full bg-muted/50 flex items-center justify-center">
@@ -929,15 +959,23 @@ function CommunityMarketplaceView({ data }: { data: any }) {
                       </div>
 
                       <div className="p-3 space-y-1 flex-1 flex flex-col justify-between">
-                        <p className="font-bold text-sm text-foreground line-clamp-2 group-hover:text-primary transition-colors">
-                          {item.title}
-                        </p>
-                        <p className="text-xs font-black text-foreground font-mono">
-                          {priceDisplay}
-                        </p>
-                        <p className="text-xs text-muted-foreground truncate">
-                          {item.location_name || item.location_text || "Na sua região"}
-                        </p>
+                        <div>
+                          <p className="font-bold text-sm text-foreground line-clamp-2 group-hover:text-primary transition-colors">
+                            {item.title}
+                          </p>
+                          <p className="text-xs font-black text-foreground font-mono mt-1">
+                            {priceDisplay}
+                          </p>
+                          <p className="text-xs text-muted-foreground truncate">
+                            {item.location_name || item.location_text || "Na sua região"}
+                          </p>
+                        </div>
+
+                        <div className="pt-2">
+                          <span className="w-full h-11 min-h-11 px-4 inline-flex items-center justify-center rounded-md bg-secondary text-secondary-foreground text-xs font-bold group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                            Ver Anúncio
+                          </span>
+                        </div>
                       </div>
                     </Link>
                   );
@@ -1094,6 +1132,9 @@ function CommunityMarketplaceView({ data }: { data: any }) {
                               alt={job.company_name}
                               className="size-full object-cover group-hover:scale-105 transition-transform duration-300"
                               loading="lazy"
+                              onError={(e) => {
+                                (e.currentTarget as HTMLElement).style.display = "none";
+                              }}
                             />
                           ) : (
                             <Briefcase size={20} className="text-muted-foreground/30" />
@@ -1164,6 +1205,9 @@ function CommunityMarketplaceView({ data }: { data: any }) {
                             alt={ev.title}
                             className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300 motion-reduce:transition-none"
                             loading="lazy"
+                            onError={(e) => {
+                              (e.currentTarget as HTMLElement).style.display = "none";
+                            }}
                           />
                         ) : (
                           <div className="size-full bg-muted/50 flex items-center justify-center">
@@ -1224,6 +1268,9 @@ function CommunityMarketplaceView({ data }: { data: any }) {
                             alt={ev.title}
                             className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300 motion-reduce:transition-none"
                             loading="lazy"
+                            onError={(e) => {
+                              (e.currentTarget as HTMLElement).style.display = "none";
+                            }}
                           />
                         ) : (
                           <div className="size-full bg-muted/50 flex items-center justify-center">
@@ -1284,6 +1331,9 @@ function CommunityMarketplaceView({ data }: { data: any }) {
                         src={middleBanners[0].image_url}
                         alt={middleBanners[0].title || "Destaque"}
                         className="size-full object-cover group-hover:scale-102 transition-transform duration-300 motion-reduce:transition-none"
+                        onError={(e) => {
+                          (e.currentTarget as HTMLElement).style.display = "none";
+                        }}
                       />
                     )}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
@@ -1318,7 +1368,7 @@ function CommunityMarketplaceView({ data }: { data: any }) {
                       Indique empresas para a plataforma e receba comissões e benefícios na sua conta.
                     </p>
                   </div>
-                  <Button asChild size="sm" className="h-10 px-5 rounded-lg text-xs font-bold shrink-0 cursor-pointer">
+                  <Button asChild size="sm" className="h-11 min-h-11 px-5 rounded-lg text-xs font-bold shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
                     <Link to="/afiliados">
                       <span>Conhecer Afiliados</span>
                       <ArrowRight size={13} className="ml-2" />
@@ -1369,6 +1419,9 @@ function CommunityMarketplaceView({ data }: { data: any }) {
                           alt={item.title}
                           className="size-full object-cover group-hover:scale-105 transition-transform duration-300 motion-reduce:transition-none"
                           loading="lazy"
+                          onError={(e) => {
+                            (e.currentTarget as HTMLElement).style.display = "none";
+                          }}
                         />
                       ) : (
                         <div className="size-full bg-muted/40 flex items-center justify-center">
@@ -1406,7 +1459,7 @@ function CommunityMarketplaceView({ data }: { data: any }) {
                   </Link>
 
                   {item.phone && (
-                    <div className="p-3 pt-0 flex justify-end">
+                    <div className="px-3 pb-2 pt-0 flex justify-end">
                       <button
                         type="button"
                         onClick={() =>
@@ -1419,9 +1472,9 @@ function CommunityMarketplaceView({ data }: { data: any }) {
                             entityTitle: item.title,
                           })
                         }
-                        className="inline-flex items-center gap-1 text-xs text-muted-foreground/75 font-bold text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 cursor-pointer"
+                        className="inline-flex items-center gap-1.5 h-11 min-h-11 px-3 rounded-md text-xs font-bold text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 cursor-pointer transition-colors"
                       >
-                        <WhatsappLogo size={14} weight="bold" />
+                        <WhatsappLogo size={16} weight="bold" />
                         <span>WhatsApp</span>
                       </button>
                     </div>
@@ -1449,73 +1502,75 @@ function CommunityMarketplaceView({ data }: { data: any }) {
             </div>
           ) : (
             <>
-              {/* ── MOBILE EXCLUSIVO (< 768px): WhatsApp List Pattern ── */}
-              <div className="block md:hidden divide-y divide-border/30 rounded-lg border border-border/50 bg-card overflow-hidden">
+              {/* ── MOBILE EXCLUSIVO (< 768px): Lista Canônica com EntityCard ── */}
+              <div className="block md:hidden space-y-2">
                 {unifiedItems.map((item) => (
-                  <div
+                  <EntityCard
                     key={item.id}
-                    className="p-3 flex items-center justify-between gap-3 hover:bg-muted/40 transition-colors group"
-                  >
-                    <Link
-                      to={item.to as any}
-                      className="flex items-center gap-3 min-w-0 flex-1 cursor-pointer"
-                    >
+                    title={item.title}
+                    subtitle={item.location || undefined}
+                    onClick={() => {
+                      navigate({ to: item.to as any });
+                    }}
+                    avatarSlot={
                       <div className="size-12 rounded-lg bg-muted/30 border border-border/40 shrink-0 overflow-hidden flex items-center justify-center">
                         {item.image ? (
-                          <img src={item.image} alt={item.title} className="size-full object-cover" loading="lazy" />
+                          <img
+                            src={item.image}
+                            alt={item.title}
+                            className="size-full object-cover"
+                            loading="lazy"
+                            onError={(e) => {
+                              (e.currentTarget as HTMLElement).style.display = "none";
+                            }}
+                          />
                         ) : (
                           <Tag size={20} className="text-muted-foreground/40" />
                         )}
                       </div>
-
-                      <div className="min-w-0 flex-1 space-y-1">
-                        <div className="flex items-center gap-2">
-                          <Badge variant="outline" className="text-xs font-mono px-1 py-0 h-4 text-muted-foreground border-border/50">
-                            {item.badge}
-                          </Badge>
-                          {item.priceOrDate && (
-                            <span className="font-mono font-bold text-xs text-foreground truncate">
-                              {item.priceOrDate}
-                            </span>
-                          )}
-                        </div>
-                        <p className="font-bold text-xs text-foreground truncate group-hover:text-primary transition-colors">
-                          {item.title}
-                        </p>
-                        {item.location && (
-                          <p className="text-xs text-muted-foreground/75 truncate flex items-center gap-1">
-                            <MapPin size={11} className="shrink-0 text-muted-foreground" />
-                            <span className="truncate">{item.location}</span>
-                          </p>
+                    }
+                    statusSlot={
+                      item.badge ? (
+                        <Badge variant="outline" className="text-2xs font-mono px-1.5 py-0 h-4 text-muted-foreground border-border/50">
+                          {item.badge}
+                        </Badge>
+                      ) : undefined
+                    }
+                    metadataSlot={
+                      item.priceOrDate ? (
+                        <span className="font-mono font-bold text-xs text-foreground truncate">
+                          {item.priceOrDate}
+                        </span>
+                      ) : undefined
+                    }
+                    actionSlot={
+                      <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
+                        {item.phone && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              trackAndOpenWhatsApp({
+                                phone: item.phone || "",
+                                message: `Olá! Vi o anúncio "${item.title}" no Waesy.`,
+                                storeId: null,
+                                entityType: item.pillar as any,
+                                entityId: item.id,
+                                entityTitle: item.title,
+                              });
+                            }}
+                            className="size-11 min-h-11 min-w-11 rounded-lg flex items-center justify-center text-muted-foreground hover:text-emerald-600 hover:bg-emerald-500/10 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            title="WhatsApp"
+                            aria-label={`Conversar no WhatsApp sobre ${item.title}`}
+                          >
+                            <WhatsappLogo size={20} weight="bold" />
+                          </button>
                         )}
+                        <span className="size-11 min-h-11 min-w-11 rounded-lg flex items-center justify-center text-muted-foreground/60">
+                          <ArrowRight size={16} />
+                        </span>
                       </div>
-                    </Link>
-
-                    <div className="flex items-center gap-1 shrink-0">
-                      {item.phone && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            trackAndOpenWhatsApp({
-                              phone: item.phone || "",
-                              message: `Olá! Vi o anúncio "${item.title}" no Waesy.`,
-                              storeId: null,
-                              entityType: item.pillar as any,
-                              entityId: item.id,
-                              entityTitle: item.title,
-                            });
-                          }}
-                          className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors cursor-pointer"
-                          title="WhatsApp"
-                        >
-                          <WhatsappLogo size={18} weight="bold" />
-                        </button>
-                      )}
-                      <Link to={item.to as any} className="p-2 text-muted-foreground/60 hover:text-foreground cursor-pointer">
-                        <ArrowRight size={16} className="transition-transform group-hover:translate-x-0.5" />
-                      </Link>
-                    </div>
-                  </div>
+                    }
+                  />
                 ))}
               </div>
 
@@ -1536,6 +1591,9 @@ function CommunityMarketplaceView({ data }: { data: any }) {
                           alt={item.title}
                           className="size-full object-cover group-hover:scale-105 transition-transform duration-300 motion-reduce:transition-none"
                           loading="lazy"
+                          onError={(e) => {
+                            (e.currentTarget as HTMLElement).style.display = "none";
+                          }}
                         />
                       ) : (
                         <div className="size-full bg-muted/40 flex items-center justify-center">
@@ -1583,9 +1641,9 @@ function CommunityMarketplaceView({ data }: { data: any }) {
                                   entityTitle: item.title,
                                 })
                               }
-                              className="h-8 px-3 rounded-lg text-xs gap-2 border-border/50 hover:bg-muted/50 cursor-pointer"
+                              className="h-11 min-h-11 px-4 rounded-lg text-xs gap-2 border-border/50 hover:bg-muted/50 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                             >
-                              <WhatsappLogo size={15} weight="bold" />
+                              <WhatsappLogo size={16} weight="bold" />
                               <span>WhatsApp</span>
                             </Button>
                           )}
@@ -1594,7 +1652,7 @@ function CommunityMarketplaceView({ data }: { data: any }) {
                             asChild
                             variant="outline"
                             size="sm"
-                            className="h-8 px-4 rounded-lg text-xs font-semibold hover:bg-muted cursor-pointer"
+                            className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold hover:bg-muted cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                           >
                             <Link to={item.to as any}>
                               <span>Ver</span>
@@ -1637,6 +1695,9 @@ function CommunityMarketplaceView({ data }: { data: any }) {
                   src={footerBanners[0].image_url}
                   alt={footerBanners[0].title || "Divulgue sua empresa"}
                   className="size-full object-cover group-hover:scale-102 transition-transform duration-300 motion-reduce:transition-none"
+                  onError={(e) => {
+                    (e.currentTarget as HTMLElement).style.display = "none";
+                  }}
                 />
               )}
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent" />
@@ -1672,13 +1733,13 @@ function CommunityMarketplaceView({ data }: { data: any }) {
             </div>
 
             <div className="flex flex-wrap items-center gap-3 pt-1">
-              <Button asChild className="h-10 px-5 rounded-lg font-bold text-xs bg-foreground text-background hover:bg-foreground/90 cursor-pointer">
+              <Button asChild className="h-11 min-h-11 px-5 rounded-lg font-bold text-xs bg-foreground text-background hover:bg-foreground/90 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
                 <Link to="/criar-negocio">
-                  <Storefront size={15} weight="bold" className="mr-2" />
+                  <Storefront size={16} weight="bold" className="mr-2" />
                   Cadastrar Empresa
                 </Link>
               </Button>
-              <Button asChild variant="outline" className="h-10 px-5 rounded-lg font-bold text-xs border-border/80 hover:bg-muted/60 cursor-pointer">
+              <Button asChild variant="outline" className="h-11 min-h-11 px-5 rounded-lg font-bold text-xs border-border/80 hover:bg-muted/60 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
                 <Link to="/portal-completo">
                   Conhecer o Sistema Pro
                 </Link>

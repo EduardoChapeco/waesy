@@ -180,8 +180,8 @@ export function DiscoveryControlBar({
               <X size={14} weight="bold" />
             </button>
           ) : (
-            <kbd className="hidden sm:inline-flex items-center gap-1 pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 select-none rounded border border-border/80 bg-muted/50 px-2 py-1 font-mono text-[10px] font-medium text-muted-foreground/80">
-              <span className="text-[11px]">⌘</span>K
+            <kbd className="hidden sm:inline-flex items-center gap-1 pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 select-none rounded border border-border/80 bg-muted/50 px-2 py-1 font-mono text-2xs font-medium text-muted-foreground/80">
+              <span className="text-2xs">⌘</span>K
             </kbd>
           )}
         </div>
@@ -225,7 +225,7 @@ export function DiscoveryControlBar({
           variant="outline"
           onClick={handleOpenFilterEngine}
           className={cn(
-            "h-11 min-w-[44px] px-4 rounded-lg border border-border/70 text-xs sm:text-sm font-semibold flex items-center gap-2 shrink-0 cursor-pointer shadow-2xs transition-all active:scale-95",
+            "h-11 min-w-11 px-4 rounded-lg border border-border/70 text-xs sm:text-sm font-semibold flex items-center gap-2 shrink-0 cursor-pointer shadow-2xs transition-all active:scale-95",
             computedActiveCount > 0
               ? "bg-primary/10 border-primary/40 text-primary font-bold"
               : "bg-card hover:bg-muted/50 text-foreground"
@@ -236,7 +236,7 @@ export function DiscoveryControlBar({
           <SlidersHorizontal size={16} weight="bold" className="shrink-0" />
           <span>{filterLabel}</span>
           {computedActiveCount > 0 && (
-            <span className="size-5 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center shrink-0">
+            <span className="size-5 rounded-full bg-primary text-primary-foreground text-2xs font-bold flex items-center justify-center shrink-0">
               {computedActiveCount}
             </span>
           )}
@@ -307,7 +307,7 @@ export function DiscoveryControlBar({
           aria-label="Filtros e Visualização"
           className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-xs animate-in fade-in duration-150"
         >
-          <div className="w-full h-[100dvh] sm:h-auto sm:max-h-[88dvh] sm:max-w-lg bg-background sm:rounded-lg flex flex-col overflow-hidden shadow-2xl">
+          <div className="w-full h-dvh sm:h-auto sm:max-h-full sm:max-w-lg bg-background sm:rounded-lg flex flex-col overflow-hidden shadow-2xl">
             <div className="px-4 h-14 border-b border-border/60 flex items-center justify-between shrink-0">
               <span className="text-base font-bold text-foreground">
                 Filtros e Ordenação
@@ -509,7 +509,7 @@ export function DiscoveryControlBar({
                   {chip.count !== undefined && chip.count > 0 && (
                     <span
                       className={cn(
-                        "text-[10px] px-2 py-1 rounded-md font-mono",
+                        "text-2xs px-2 py-1 rounded-md font-mono",
                         isActive ? "bg-background/20 text-background" : "bg-muted text-muted-foreground"
                       )}
                     >
@@ -517,7 +517,7 @@ export function DiscoveryControlBar({
                     </span>
                   )}
                   {chip.badge && (
-                    <span className="text-[9px] px-2 py-0.2 rounded-full bg-primary text-primary-foreground font-bold uppercase tracking-wider">
+                    <span className="text-2xs px-2 py-0.5 rounded-full bg-primary text-primary-foreground font-bold uppercase tracking-wider">
                       {chip.badge}
                     </span>
                   )}

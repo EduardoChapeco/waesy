@@ -282,7 +282,7 @@ export default function TableReservationsPage() {
  Nova Reserva
  </Button>
  </SheetTrigger>
- <SheetContent side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] md:max-w-3xl lg:max-w-[70vw] border-l p-6 overflow-y-auto no-scrollbar bg-card">
+ <SheetContent side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl border-l p-6 overflow-y-auto overscroll-contain no-scrollbar bg-card">
  <SheetHeader className="pb-4 border-b border-border/70 mb-4">
  <SheetTitle className="font-bold flex items-center gap-2">
  <Utensils className="size-5 text-primary" />
@@ -381,7 +381,7 @@ export default function TableReservationsPage() {
  }}
  className={cn(
  "relative flex flex-col items-center justify-center gap-2 rounded-lg border-2 transition-all cursor-pointer group",
- "p-4 min-h-[110px] text-center",
+ "p-4 min-h-28 text-center",
  style.border,
  style.bg,
  table.shape === "round" && "rounded-full aspect-square",
@@ -505,7 +505,7 @@ export default function TableReservationsPage() {
  <TableCell>
  <ReservationStatusBadge status={r.status} />
  </TableCell>
- <TableCell className="max-w-[180px] truncate text-xs text-muted-foreground">
+ <TableCell className="max-w-44 truncate text-xs text-muted-foreground">
  {r.special_requests ? (
  <span className="flex items-center gap-1">
  <MessageSquare className="size-3 shrink-0" />
@@ -578,7 +578,7 @@ export default function TableReservationsPage() {
 
  {/* Sheet Lateral: Detalhe da Mesa Clicada */}
  <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
- <SheetContent size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] md:max-w-3xl lg:max-w-[70vw] flex flex-col gap-0">
+ <SheetContent size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl flex flex-col gap-0 overscroll-contain">
  {selectedTable && (() => {
  const { status, reservation } = tableStatuses[selectedTable.id] ?? { status: "free" as TableStatus };
  const style = TABLE_STATUS_STYLE[status];

@@ -777,7 +777,7 @@ export default function WorkspaceDestinationsPage() {
  <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
  <SheetContent
  side="right"
- className="w-full max-sm:!max-w-full max-sm:!w-screen sm:max-w-3xl lg:max-w-4xl flex flex-col p-0 gap-0 overflow-hidden bg-card border-l border-border"
+ className="w-full sm:max-w-3xl lg:max-w-4xl flex flex-col p-0 gap-0 overflow-hidden bg-card border-l border-border"
  >
  {/* Header */}
  <SheetHeader className="p-5 pb-4 border-b border-border/80 bg-muted/20">
@@ -1803,7 +1803,7 @@ export default function WorkspaceDestinationsPage() {
  <Sheet open={!!previewModalDest} onOpenChange={() => setPreviewModalDest(null)}>
  <SheetContent
  side="right"
- className="w-full max-sm:!max-w-full max-sm:!w-screen sm:max-w-2xl md:max-w-3xl flex flex-col p-0 gap-0 overflow-hidden bg-card border-l border-border"
+ className="w-full sm:max-w-2xl md:max-w-3xl flex flex-col p-0 gap-0 overflow-hidden bg-card border-l border-border"
  >
  <SheetHeader className="p-4 border-b border-border flex flex-row items-center justify-between">
  <div>

@@ -1831,7 +1831,7 @@ function WorkspaceTripDetailPage() {
         <SheetContent
           side="right"
           size="wide"
-          className="w-full max-sm:!max-w-full max-sm:!w-screen sm:max-w-3xl md:max-w-4xl lg:max-w-2xl xl:max-w-2xl p-6 overflow-y-auto"
+          className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl p-6 overflow-y-auto"
         >
           <SheetHeader className="pb-4 border-b border-border/60">
             <SheetTitle className="text-sm font-bold text-foreground">

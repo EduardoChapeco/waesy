@@ -1931,7 +1931,7 @@ function PdvTerminal() {
 
       {/* ── SHEET DESLIZANTE DO TICKET MOBILE ── */}
       <Sheet open={mobileTicketOpen} onOpenChange={setMobileTicketOpen}>
-        <SheetContent side="bottom" className="h-[85vh] p-0 flex flex-col rounded-t-lg border-t border-border bg-card">
+        <SheetContent side="bottom" className="h-5/6 max-h-screen p-0 flex flex-col rounded-t-lg border-t border-border bg-card overscroll-contain">
           <SheetHeader className="sr-only">
             <SheetTitle>Ticket de Venda</SheetTitle>
             <SheetDescription>Itens e finalização do pedido</SheetDescription>

@@ -128,7 +128,7 @@ export function EventoSubpaineis({ eventId }: EventoSubpaineisProps) {
               <span>Novo Subpainel</span>
             </Button>
           </SheetTrigger>
-          <SheetContent side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] p-6">
+          <SheetContent side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl p-6 overscroll-contain">
             <SheetHeader>
               <SheetTitle className="text-lg font-bold">Ativar Ponto Operacional</SheetTitle>
               <SheetDescription className="text-xs text-muted-foreground">

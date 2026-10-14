@@ -84,7 +84,7 @@ export function MasterCatalogSearchDialog({
       <SheetContent
         side="right"
         size="wide"
-        className="w-full max-sm:!max-w-full max-sm:!w-screen sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] flex flex-col p-0 gap-0 overflow-hidden bg-card border-l border-border"
+        className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl flex flex-col p-0 gap-0 overflow-hidden bg-card border-l border-border"
       >
         {/* Cabeçalho */}
         <SheetHeader className="p-5 pb-4 border-b border-border/80 bg-muted/20 shrink-0">

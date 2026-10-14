@@ -303,7 +303,7 @@ export function AppShell({ children, session, brandSettings }: AppShellProps) {
     !isCopilotPage;
 
   return (
-    <div className="h-[100dvh] w-full max-w-full bg-background text-foreground selection:bg-primary selection:text-primary-foreground font-sans antialiased relative flex flex-col overflow-hidden">
+    <div className="h-dvh w-full max-w-full bg-background text-foreground selection:bg-primary selection:text-primary-foreground font-sans antialiased relative flex flex-col overflow-hidden">
       {/* ── Barra de Topo Horizontal (Ocultada no Mobile em Telas Nativas de App, Perfil, Formulário e Afiliados) ── */}
       <div className={isProfilePage || isFormPage || isCleanMobileAppPage || isDetailPage ? "hidden md:block" : ""}>
         <TopBar
@@ -353,7 +353,7 @@ export function AppShell({ children, session, brandSettings }: AppShellProps) {
               ? "max-w-2xl"
               : isFormPage 
               ? "max-w-7xl" 
-              : "max-w-7xl 2xl:max-w-[1440px]"
+              : "max-w-7xl 2xl:max-w-desktop"
           }`}>
             {children}
           </div>

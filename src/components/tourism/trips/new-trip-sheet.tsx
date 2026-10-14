@@ -108,11 +108,11 @@ export function NewTripSheet({
       <SheetContent
         side="right"
         size="wide"
-        className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] p-0 flex flex-col bg-background border-l border-border/80 overflow-hidden"
+        className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl p-0 flex flex-col bg-background border-l border-border/80 overflow-hidden overscroll-contain"
       >
         <SheetHeader className="p-6 pb-4 border-b border-border/60 bg-muted/20 shrink-0">
           <div className="flex items-center gap-2 mb-1">
-            <Badge variant="outline" className="text-[10px] font-mono font-bold bg-primary/10 text-primary border-primary/20">
+            <Badge variant="outline" className="text-xs font-mono font-bold bg-primary/10 text-primary border-primary/20">
               Operações de Turismo
             </Badge>
           </div>
@@ -128,7 +128,7 @@ export function NewTripSheet({
         <div className="flex-1 overflow-y-auto p-6 space-y-6 text-xs">
           {/* 1. DADOS DA VIAGEM */}
           <div className="space-y-4">
-            <div className="flex items-center gap-2 pb-1 border-b border-border/40 font-bold text-foreground uppercase tracking-wider text-[11px]">
+            <div className="flex items-center gap-2 pb-1 border-b border-border/40 font-bold text-foreground uppercase tracking-wider text-xs">
               <MapPin className="size-3.5 text-primary" />
               <span>Dados do Roteiro e Destino</span>
             </div>
@@ -225,7 +225,7 @@ export function NewTripSheet({
 
           {/* 2. DADOS DO CLIENTE / PASSAGEIRO PRINCIPAL */}
           <div className="space-y-4">
-            <div className="flex items-center gap-2 pb-1 border-b border-border/40 font-bold text-foreground uppercase tracking-wider text-[11px]">
+            <div className="flex items-center gap-2 pb-1 border-b border-border/40 font-bold text-foreground uppercase tracking-wider text-xs">
               <User className="size-3.5 text-primary" />
               <span>Passageiro Principal / Contratante</span>
             </div>
@@ -274,7 +274,7 @@ export function NewTripSheet({
 
           {/* 3. LOGÍSTICA & FORNECEDORES (VOOS & HOSPEDAGEM) */}
           <div className="space-y-4">
-            <div className="flex items-center gap-2 pb-1 border-b border-border/40 font-bold text-foreground uppercase tracking-wider text-[11px]">
+            <div className="flex items-center gap-2 pb-1 border-b border-border/40 font-bold text-foreground uppercase tracking-wider text-xs">
               <Hotel className="size-3.5 text-primary" />
               <span>Hospedagem e Localizadores de Voo</span>
             </div>

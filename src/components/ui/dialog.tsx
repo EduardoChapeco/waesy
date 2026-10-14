@@ -49,7 +49,7 @@ const DialogContent = React.forwardRef<
     lg: "sm:max-w-2xl",
     xl: "sm:max-w-4xl",
     full: "sm:max-w-5xl sm:h-overlay-max",
-    screen: "fixed inset-0 z-50 flex flex-col w-screen h-[100dvh] max-w-none rounded-none border-none bg-background p-0 overflow-hidden",
+    screen: "fixed inset-0 z-50 flex flex-col w-screen h-dvh max-w-none rounded-none border-none bg-background p-0 overflow-hidden",
   }[size];
 
   return (
@@ -59,10 +59,10 @@ const DialogContent = React.forwardRef<
         ref={ref}
         className={cn(
           isScreen
-            ? "fixed inset-0 z-50 flex flex-col w-screen h-[100dvh] max-w-none rounded-none border-none bg-background p-0 overflow-hidden duration-150"
+            ? "fixed inset-0 z-50 flex flex-col w-screen h-dvh max-w-none rounded-none border-none bg-background p-0 overflow-hidden duration-150"
             : isForceCompact
-            ? "fixed inset-0 z-50 flex flex-col w-full h-full max-w-none rounded-none border-none bg-background p-4 sm:p-6 overflow-y-auto no-scrollbar duration-150"
-            : "fixed inset-auto left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 flex flex-col w-full max-h-overlay-max rounded-lg border border-border bg-background p-6 overflow-y-auto no-scrollbar duration-150",
+            ? "fixed inset-0 z-50 flex flex-col w-full h-full max-w-none rounded-none border-none bg-background p-4 sm:p-6 overflow-y-auto no-scrollbar duration-150 overscroll-contain"
+            : "fixed inset-auto left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 flex flex-col w-full max-h-overlay-max rounded-lg border border-border bg-background p-6 overflow-y-auto no-scrollbar duration-150 overscroll-contain",
           !isForceCompact && !isScreen && sizeClasses,
           "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
           className,

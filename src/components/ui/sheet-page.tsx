@@ -41,12 +41,12 @@ export function SheetPage({
 
  const sizeClasses = {
     sm: "w-full sm:max-w-xl md:max-w-2xl",
-    default: "w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw]",
-    lg: "w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw]",
-    xl: "w-full sm:max-w-3xl md:max-w-5xl lg:max-w-[70vw] xl:max-w-[70vw]",
-    "2xl": "w-full sm:max-w-3xl md:max-w-5xl lg:max-w-[70vw] xl:max-w-[70vw]",
-    wide: "w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw]",
-    "70": "w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw]",
+    default: "w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl",
+    lg: "w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl",
+    xl: "w-full sm:max-w-3xl md:max-w-5xl lg:max-w-5xl xl:max-w-6xl",
+    "2xl": "w-full sm:max-w-3xl md:max-w-5xl lg:max-w-6xl xl:max-w-7xl",
+    wide: "w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl",
+    "70": "w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl",
     full: "w-screen max-w-full",
  }[size];
 
@@ -55,13 +55,13 @@ export function SheetPage({
  <SheetContent
  side={side}
  className={cn(
- "w-full h-full flex flex-col p-0 bg-background z-50",
+ "w-full h-full flex flex-col p-0 bg-background z-50 overscroll-contain",
  sizeClasses,
  className,
  )}
  >
  {/* Header Fixo */}
- <SheetHeader className="px-6 py-4.5 text-left bg-card/60 shrink-0">
+ <SheetHeader className="px-6 py-4 text-left bg-card/60 shrink-0">
  <SheetTitle className="text-lg font-bold tracking-tight text-foreground flex items-center gap-2">
  {title}
  </SheetTitle>

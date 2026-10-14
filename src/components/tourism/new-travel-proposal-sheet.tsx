@@ -18,6 +18,7 @@ import { listHotelsBank, type HotelBankDTO } from "@/services/travel-catalog.fun
 import { createTravelProposal, type ProposalCanvasFormat } from "@/services/travel-proposal.functions";
 import { TRAVEL_PACKAGE_TEMPLATES, type TravelPackageTemplate } from "@/lib/tourism-templates";
 import { CANONICAL_DESTINATIONS, type CanonicalDestination } from "@/lib/destinations-catalog";
+import { TravelIntentCard } from "@/design-system/travel";
 
 export interface ProposalRoomItem {
  id: string;
@@ -519,7 +520,7 @@ export function NewTravelProposalSheet({
  <SheetContent
  side="right"
  size="wide"
- className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] flex flex-col p-0 gap-0 overflow-hidden bg-card border-l border-border shadow-2xl"
+ className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl flex flex-col p-0 gap-0 overflow-hidden overscroll-contain bg-card border-l border-border shadow-2xl"
  >
  {/* Header Limpo, Humano e Silencioso (Anti-AI Design) */}
  <SheetHeader className="p-6 pb-4 border-b border-border/70 bg-card">
@@ -588,7 +589,7 @@ export function NewTravelProposalSheet({
  {customerId ? (
  <Badge
  variant="secondary"
- className="bg-primary/10 text-primary border-primary/20 text-[10px] font-bold"
+ className="bg-primary/10 text-primary border-primary/20 text-xs font-bold"
  >
  ✓ Vinculado ao CRM
  </Badge>
@@ -598,7 +599,7 @@ export function NewTravelProposalSheet({
  variant="ghost"
  size="sm"
  onClick={() => setIsQuickCreateOpen(!isQuickCreateOpen)}
- className="h-7 px-2 text-[11px] font-bold text-primary hover:text-primary/80 hover:bg-primary/5"
+ className="h-7 px-2 text-xs font-bold text-primary hover:text-primary/80 hover:bg-primary/5"
  >
  <UserPlus className="mr-1 size-3.5" />
  {isQuickCreateOpen ? "Cancelar Cadastro" : "+ Criar Cliente Rápido"}
@@ -623,7 +624,7 @@ export function NewTravelProposalSheet({
  </div>
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
  <div className="space-y-1 sm:col-span-2">
- <Label className="text-[11px] font-semibold">Nome Completo *</Label>
+ <Label className="text-xs font-semibold">Nome Completo *</Label>
  <Input
  placeholder="Ex: Carlos Eduardo Silveira"
  value={quickFullName}
@@ -632,7 +633,7 @@ export function NewTravelProposalSheet({
  />
  </div>
  <div className="space-y-1">
- <Label className="text-[11px] font-semibold">WhatsApp / Telefone *</Label>
+ <Label className="text-xs font-semibold">WhatsApp / Telefone *</Label>
  <Input
  placeholder="(49) 99999-9999"
  value={quickPhone}
@@ -641,7 +642,7 @@ export function NewTravelProposalSheet({
  />
  </div>
  <div className="space-y-1">
- <Label className="text-[11px] font-semibold">E-mail</Label>
+ <Label className="text-xs font-semibold">E-mail</Label>
  <Input
  type="email"
  placeholder="cliente@email.com"
@@ -651,7 +652,7 @@ export function NewTravelProposalSheet({
  />
  </div>
  <div className="space-y-1 sm:col-span-2">
- <Label className="text-[11px] font-semibold">CPF / Passaporte (Opcional)</Label>
+ <Label className="text-xs font-semibold">CPF / Passaporte (Opcional)</Label>
  <Input
  placeholder="000.000.000-00"
  value={quickDocument}
@@ -713,7 +714,7 @@ export function NewTravelProposalSheet({
  {/* Dropdown de Resultados */}
  {isCustomerDropdownOpen && customerSearch.trim().length >= 1 && (
  <div className="absolute left-0 right-0 top-10 z-50 rounded-lg bg-card border border-border shadow-xl overflow-hidden animate-in fade-in-50 zoom-in-95">
- <div className="p-2 border-b border-border/60 bg-muted/40 flex items-center justify-between text-[11px] text-muted-foreground font-bold">
+ <div className="p-2 border-b border-border/60 bg-muted/40 flex items-center justify-between text-xs text-muted-foreground font-bold">
  <span>Resultados da Carteira ({crmCustomers.length})</span>
  <button
  type="button"
@@ -740,13 +741,13 @@ export function NewTravelProposalSheet({
  <p className="text-xs font-bold text-foreground group-hover:text-primary transition-colors truncate">
  {c.fullName || c.name || c.full_name}
  </p>
- <p className="text-[11px] text-muted-foreground truncate">
+ <p className="text-xs text-muted-foreground truncate">
  {c.document && `Doc: ${c.document} • `}
  {c.phone && `Whats: ${c.phone} • `}
  {c.email}
  </p>
  </div>
- <Badge variant="outline" className="text-[10px] shrink-0">
+ <Badge variant="outline" className="text-xs shrink-0">
  Selecionar
  </Badge>
  </button>
@@ -773,7 +774,7 @@ export function NewTravelProposalSheet({
  variant="ghost"
  size="sm"
  onClick={handleUnlinkCustomer}
- className="h-6 px-2 text-[11px] text-muted-foreground hover:text-destructive"
+ className="h-11 min-h-11 px-3 text-xs text-muted-foreground hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive"
  >
  Desvincular
  </Button>
@@ -783,7 +784,7 @@ export function NewTravelProposalSheet({
  {/* Campos Manuais do Cliente */}
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
  <div className="space-y-1">
- <Label className="text-[11px] font-bold">Nome do Passageiro / Cliente *</Label>
+ <Label className="text-xs font-bold">Nome do Passageiro / Cliente *</Label>
  <Input
  placeholder="Nome completo do passageiro"
  value={customerName}
@@ -793,7 +794,7 @@ export function NewTravelProposalSheet({
  />
  </div>
  <div className="space-y-1">
- <Label className="text-[11px] font-bold">WhatsApp do Passageiro *</Label>
+ <Label className="text-xs font-bold">WhatsApp do Passageiro *</Label>
  <Input
  placeholder="(49) 99999-9999"
  value={customerWhatsapp}
@@ -803,7 +804,7 @@ export function NewTravelProposalSheet({
  />
  </div>
  <div className="space-y-1">
- <Label className="text-[11px] font-bold">E-mail para Envio da Proposta</Label>
+ <Label className="text-xs font-bold">E-mail para Envio da Proposta</Label>
  <Input
  type="email"
  placeholder="cliente@email.com"
@@ -813,7 +814,7 @@ export function NewTravelProposalSheet({
  />
  </div>
  <div className="space-y-1">
- <Label className="text-[11px] font-bold">CPF / Documento (Opcional)</Label>
+ <Label className="text-xs font-bold">CPF / Documento (Opcional)</Label>
  <Input
  placeholder="000.000.000-00"
  value={customerDocument}
@@ -832,7 +833,7 @@ export function NewTravelProposalSheet({
  <span>Destino e Datas da Viagem</span>
  </div>
  {nightsCount !== null && (
- <Badge variant="outline" className="text-[10px] font-semibold text-muted-foreground border-border/80">
+ <Badge variant="outline" className="text-xs font-semibold text-muted-foreground border-border/80">
  {nightsCount} {nightsCount === 1 ? "noite" : "noites"}
  </Badge>
  )}
@@ -840,9 +841,9 @@ export function NewTravelProposalSheet({
 
  <div className="space-y-2">
  <div className="flex items-center justify-between">
- <Label className="text-[11px] font-bold">Destino Principal da Viagem *</Label>
+ <Label className="text-xs font-bold">Destino Principal da Viagem *</Label>
  {selectedCanonicalDest && (
- <Badge variant="outline" className="text-[9px] font-mono text-primary border-primary/30 font-bold">
+ <Badge variant="outline" className="text-xs font-mono text-primary border-primary/30 font-bold">
  ✈️ Gateway: {selectedCanonicalDest.iata} ({selectedCanonicalDest.state})
  </Badge>
  )}
@@ -867,7 +868,7 @@ export function NewTravelProposalSheet({
 
  {/* Chips de Destinos Oficiais */}
  <div className="space-y-1 pt-1">
- <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">
+ <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">
  Destinos Mais Procurados (1 Toque):
  </span>
  <div className="flex flex-wrap gap-2 max-h-24 overflow-y-auto no-scrollbar pr-1">
@@ -881,7 +882,7 @@ export function NewTravelProposalSheet({
  if (!title) setTitle(`Pacote Exclusivo: ${dest.name}`);
  }}
  className={cn(
- "text-[10px] font-medium px-2 py-1 rounded-lg border transition-all cursor-pointer flex items-center gap-1",
+ "text-xs font-medium px-2 py-1 rounded-lg border transition-all cursor-pointer flex items-center gap-1",
  destinationCity === dest.name || selectedCanonicalDest?.id === dest.id
  ? "bg-primary text-primary-foreground border-primary font-bold shadow-2xs"
  : "bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground border-border/60"
@@ -889,7 +890,7 @@ export function NewTravelProposalSheet({
  >
  <span>{dest.name}</span>
  <span className={cn(
- "text-[8px] font-mono font-black px-1 rounded",
+ "text-xs font-mono font-black px-1 rounded",
  destinationCity === dest.name || selectedCanonicalDest?.id === dest.id
  ? "bg-white/20 text-white"
  : "bg-muted text-foreground"
@@ -912,15 +913,15 @@ export function NewTravelProposalSheet({
  />
  <div className="min-w-0 flex-1">
  <div className="flex items-center gap-2">
- <h4 className="text-[11px] font-bold text-foreground truncate">{selectedCanonicalDest.name}</h4>
- <Badge variant="secondary" className="text-[8px] font-mono font-bold bg-primary/10 text-primary">
+ <h4 className="text-xs font-bold text-foreground truncate">{selectedCanonicalDest.name}</h4>
+ <Badge variant="secondary" className="text-xs font-mono font-bold bg-primary/10 text-primary">
  {selectedCanonicalDest.iata}
  </Badge>
  </div>
- <p className="text-[10px] text-primary font-medium mt-1">
+ <p className="text-xs text-primary font-medium mt-1">
  ☀️ <strong>Melhor época:</strong> {selectedCanonicalDest.bestSeason}
  </p>
- <p className="text-[10px] text-muted-foreground line-clamp-1">
+ <p className="text-xs text-muted-foreground line-clamp-1">
  🍽️ {selectedCanonicalDest.gastronomyTip}
  </p>
  </div>
@@ -930,7 +931,7 @@ export function NewTravelProposalSheet({
  </div>
 
  <div className="space-y-1">
- <Label className="text-[11px] font-bold">Título da Proposta (Opcional)</Label>
+ <Label className="text-xs font-bold">Título da Proposta (Opcional)</Label>
  <Input
  placeholder="Ex: Férias em Família em Gramado & Rota dos Vinhedos"
  value={title}
@@ -941,7 +942,7 @@ export function NewTravelProposalSheet({
 
  <div className="grid grid-cols-2 gap-3">
  <div className="space-y-1">
- <Label className="text-[11px] font-bold">Data de Embarque / Ida</Label>
+ <Label className="text-xs font-bold">Data de Embarque / Ida</Label>
  <Input
  type="date"
  value={travelStartDate}
@@ -950,7 +951,7 @@ export function NewTravelProposalSheet({
  />
  </div>
  <div className="space-y-1">
- <Label className="text-[11px] font-bold">Data de Retorno / Volta</Label>
+ <Label className="text-xs font-bold">Data de Retorno / Volta</Label>
  <Input
  type="date"
  value={travelEndDate}
@@ -959,6 +960,21 @@ export function NewTravelProposalSheet({
  />
  </div>
  </div>
+
+ {/* Preview Dinâmico de Intenção de Viagem */}
+ {destinationCity && (
+ <TravelIntentCard
+ origin="Chapecó (XAP)"
+ originCode="XAP"
+ destination={destinationCity}
+ destinationCode={selectedCanonicalDest?.iata || undefined}
+ dates={travelStartDate ? (travelEndDate ? `${travelStartDate} até ${travelEndDate}${nightsCount ? ` (${nightsCount} noites)` : ""}` : `A partir de ${travelStartDate}`) : "A definir"}
+ passengers={`${totalGuests} passageiro${totalGuests !== 1 ? "s" : ""} (${totalAdults} adt${totalChildren > 0 ? `, ${totalChildren} chd` : ""})`}
+ travelClass="Econômica"
+ baggage="Mala de mão inclusa"
+ className="mt-3 bg-muted/20 border-border/60"
+ />
+ )}
  </div>
 
  {/* Card 3: Distribuição de Quartos & Hóspedes (Zero AI-Smell, 100% Dinâmico) */}
@@ -968,7 +984,7 @@ export function NewTravelProposalSheet({
  <BedDouble className="size-4 text-primary" />
  <span>Quartos e Hóspedes</span>
  </div>
- <span className="text-[11px] font-medium text-muted-foreground">
+ <span className="text-xs font-medium text-muted-foreground">
  {rooms.length} {rooms.length === 1 ? "quarto" : "quartos"} • {totalAdults} {totalAdults === 1 ? "adulto" : "adultos"}
  {totalChildren > 0 && `, ${totalChildren} ${totalChildren === 1 ? "criança" : "crianças"}`}
  </span>
@@ -990,7 +1006,7 @@ export function NewTravelProposalSheet({
  <select
  value={room.roomType || "Casal"}
  onChange={(e) => handleUpdateRoomType(room.id, e.target.value)}
- className="h-7 rounded-lg border border-border/60 bg-background px-2 text-[11px] text-muted-foreground font-medium cursor-pointer"
+ className="h-11 min-h-11 rounded-lg border border-border/60 bg-background px-3 text-base sm:text-xs text-muted-foreground font-medium cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
  >
  <option value="Casal">1 Cama de Casal</option>
  <option value="Duplo Solteiro">2 Camas de Solteiro</option>
@@ -1004,7 +1020,7 @@ export function NewTravelProposalSheet({
  <button
  type="button"
  onClick={() => handleRemoveRoom(room.id)}
- className="text-[11px] text-muted-foreground hover:text-destructive flex items-center gap-1 transition-colors cursor-pointer"
+ className="text-xs text-muted-foreground hover:text-destructive flex items-center gap-1 transition-colors cursor-pointer"
  >
  <Trash2 className="size-3" />
  <span>Remover</span>
@@ -1017,8 +1033,8 @@ export function NewTravelProposalSheet({
  {/* Adultos */}
  <div className="p-3 rounded-lg bg-background border border-border/50 flex items-center justify-between">
  <div>
- <p className="text-[11px] font-bold text-foreground">Adultos</p>
- <p className="text-[9px] text-muted-foreground">+12 anos</p>
+ <p className="text-xs font-bold text-foreground">Adultos</p>
+ <p className="text-xs text-muted-foreground">+12 anos</p>
  </div>
  <div className="flex items-center gap-2">
  <Button
@@ -1048,8 +1064,8 @@ export function NewTravelProposalSheet({
  {/* Crianças */}
  <div className="p-3 rounded-lg bg-background border border-border/50 flex items-center justify-between">
  <div>
- <p className="text-[11px] font-bold text-foreground">Crianças</p>
- <p className="text-[9px] text-muted-foreground">0 a 11 anos</p>
+ <p className="text-xs font-bold text-foreground">Crianças</p>
+ <p className="text-xs text-muted-foreground">0 a 11 anos</p>
  </div>
  <div className="flex items-center gap-2">
  <Button
@@ -1080,13 +1096,13 @@ export function NewTravelProposalSheet({
  {/* Idade de cada criança (se houver) */}
  {room.children > 0 && (
  <div className="p-3 rounded-lg bg-background/60 border border-border/40 space-y-2">
- <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider block">
+ <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block">
  Idade de cada criança no check-in:
  </span>
  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
  {Array.from({ length: room.children }).map((_, cIdx) => (
  <div key={cIdx} className="space-y-1">
- <Label className="text-[10px] text-muted-foreground">
+ <Label className="text-xs text-muted-foreground">
  Criança {cIdx + 1}
  </Label>
  <select
@@ -1138,7 +1154,7 @@ export function NewTravelProposalSheet({
  <span>Hospedagem e Resort (Banco Oficial)</span>
  </div>
  {selectedHotel && (
- <Badge variant="secondary" className="text-[10px] font-bold bg-emerald-500/10 text-emerald-600">
+ <Badge variant="secondary" className="text-xs font-bold bg-emerald-500/10 text-emerald-600">
  {selectedHotel.stars ? `${selectedHotel.stars}★ ` : ""}{selectedHotel.regime_options?.[0] || "Regime sob consulta"}
  </Badge>
  )}
@@ -1149,7 +1165,7 @@ export function NewTravelProposalSheet({
  <div className="flex items-center justify-between">
  <div>
  <h4 className="text-xs font-bold text-foreground">{selectedHotel.name}</h4>
- <p className="text-[10px] text-muted-foreground">
+ <p className="text-xs text-muted-foreground">
  {selectedHotel.city}, {selectedHotel.state || selectedHotel.country}
  </p>
  </div>
@@ -1159,7 +1175,7 @@ export function NewTravelProposalSheet({
  setSelectedHotel(null);
  setHotelSearch("");
  }}
- className="text-[11px] text-muted-foreground hover:text-destructive transition-colors cursor-pointer"
+ className="text-xs text-muted-foreground hover:text-destructive transition-colors cursor-pointer"
  >
  Trocar Hotel
  </button>
@@ -1167,7 +1183,7 @@ export function NewTravelProposalSheet({
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
  <div className="space-y-1">
- <Label className="text-[10px] text-muted-foreground">Regime Alimentar</Label>
+ <Label className="text-xs text-muted-foreground">Regime Alimentar</Label>
  <select
  value={selectedHotelRegime}
  onChange={(e) => setSelectedHotelRegime(e.target.value)}
@@ -1180,7 +1196,7 @@ export function NewTravelProposalSheet({
  </div>
 
  <div className="space-y-1">
- <Label className="text-[10px] text-muted-foreground">Categoria de Quarto</Label>
+ <Label className="text-xs text-muted-foreground">Categoria de Quarto</Label>
  <Input
  placeholder="Ex: Suíte Luxo Vista Mar"
  value={selectedHotelRoomType}
@@ -1192,7 +1208,7 @@ export function NewTravelProposalSheet({
  </div>
  ) : (
  <div className="relative space-y-2">
- <Label className="text-[11px] font-bold">Buscar Hotel no Banco da Agência</Label>
+ <Label className="text-xs font-bold">Buscar Hotel no Banco da Agência</Label>
  <div className="relative">
  <Input
  placeholder="Digite o nome do hotel, resort ou cidade..."
@@ -1222,11 +1238,11 @@ export function NewTravelProposalSheet({
  >
  <div>
  <p className="font-bold text-foreground text-xs">{h.name}</p>
- <p className="text-[10px] text-muted-foreground">
+ <p className="text-xs text-muted-foreground">
  {h.city}, {h.state || h.country} {h.stars ? `• ${h.stars}★` : ""}
  </p>
  </div>
- <Badge variant="outline" className="text-[9px] font-mono">
+ <Badge variant="outline" className="text-xs font-mono">
  {h.regime_options?.[0] || "Regime sob consulta"}
  </Badge>
  </button>
@@ -1234,7 +1250,7 @@ export function NewTravelProposalSheet({
  </div>
  )}
  </div>
- <p className="text-[10px] text-muted-foreground">
+ <p className="text-xs text-muted-foreground">
  Selecione um hotel parceiro do banco ou deixe em branco para usar acomodação avulsa.
  </p>
  </div>
@@ -1248,7 +1264,7 @@ export function NewTravelProposalSheet({
  <Tag className="size-4 text-primary" />
  <span>Transfers, Passeios e Atrativos Inclusos</span>
  </div>
- <span className="text-[10px] text-muted-foreground">
+ <span className="text-xs text-muted-foreground">
  {selectedProposalTags.length} selecionado(s)
  </span>
  </div>
@@ -1269,7 +1285,7 @@ export function NewTravelProposalSheet({
  key={tag}
  type="button"
  onClick={() => toggleProposalTag(tag)}
- className={`text-[11px] px-3 py-1 rounded-lg border transition-all cursor-pointer flex items-center gap-2 ${
+ className={`text-xs px-3 py-1 rounded-lg border transition-all cursor-pointer flex items-center gap-2 ${
  isSelected
  ? "bg-primary text-primary-foreground border-primary font-bold shadow-2xs"
  : "bg-muted/40 hover:bg-muted text-muted-foreground border-border/70"
@@ -1297,7 +1313,7 @@ export function NewTravelProposalSheet({
  .map((customTag) => (
  <span
  key={customTag}
- className="text-[11px] px-3 py-1 rounded-lg border bg-primary text-primary-foreground border-primary font-bold shadow-2xs flex items-center gap-2"
+ className="text-xs px-3 py-1 rounded-lg border bg-primary text-primary-foreground border-primary font-bold shadow-2xs flex items-center gap-2"
  >
  <span>✓</span>
  <span>{customTag}</span>
@@ -1363,14 +1379,14 @@ export function NewTravelProposalSheet({
  <DollarSign className="size-4 text-emerald-600 dark:text-emerald-400" />
  <span>Orçamento e Parcelamento</span>
  </div>
- <Badge variant="outline" className="text-[10px] font-mono text-muted-foreground">
+ <Badge variant="outline" className="text-xs font-mono text-muted-foreground">
  Personalizado
  </Badge>
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
  <div className="space-y-1">
- <Label className="text-[11px] font-bold">Valor Total do Pacote (R$)</Label>
+ <Label className="text-xs font-bold">Valor Total do Pacote (R$)</Label>
  <CurrencyField
  value={basePriceCents}
  onChange={setBasePriceCents}
@@ -1380,7 +1396,7 @@ export function NewTravelProposalSheet({
  </div>
 
  <div className="space-y-1">
- <Label className="text-[11px] font-bold">Modalidade de Preço</Label>
+ <Label className="text-xs font-bold">Modalidade de Preço</Label>
  <select
  value={pricingModel}
  onChange={(e) => setPricingModel(e.target.value as any)}
@@ -1395,7 +1411,7 @@ export function NewTravelProposalSheet({
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
  <div className="space-y-1">
- <Label className="text-[11px] font-bold">Entrada Inicial (R$, Opcional)</Label>
+ <Label className="text-xs font-bold">Entrada Inicial (R$, Opcional)</Label>
  <CurrencyField
  value={downPaymentCents}
  onChange={setDownPaymentCents}
@@ -1405,7 +1421,7 @@ export function NewTravelProposalSheet({
  </div>
 
  <div className="space-y-1">
- <Label className="text-[11px] font-bold">Máximo de Parcelas no Cartão</Label>
+ <Label className="text-xs font-bold">Máximo de Parcelas no Cartão</Label>
  <select
  value={installmentsCount}
  onChange={(e) => setInstallmentsCount(Number(e.target.value))}
@@ -1421,7 +1437,7 @@ export function NewTravelProposalSheet({
  </div>
 
  {basePriceCents && basePriceCents > 0 && (
- <div className="p-3 rounded-lg bg-muted/30 border border-border/50 text-[11px] space-y-1 text-muted-foreground">
+ <div className="p-3 rounded-lg bg-muted/30 border border-border/50 text-xs space-y-1 text-muted-foreground">
  <p className="font-semibold text-foreground flex items-center justify-between">
  <span>Projeção para o Cliente:</span>
  <span className="text-primary font-bold font-mono">
@@ -1455,7 +1471,7 @@ export function NewTravelProposalSheet({
 
  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
  <div className="space-y-1">
- <Label className="text-[11px] font-bold">Moeda da Cotação</Label>
+ <Label className="text-xs font-bold">Moeda da Cotação</Label>
  <select
  value={currency}
  onChange={(e) => setCurrency(e.target.value)}
@@ -1467,7 +1483,7 @@ export function NewTravelProposalSheet({
  </select>
  </div>
  <div className="space-y-1">
- <Label className="text-[11px] font-bold">Validade da Proposta</Label>
+ <Label className="text-xs font-bold">Validade da Proposta</Label>
  <select
  value={validUntilDays}
  onChange={(e) => setValidUntilDays(Number(e.target.value))}
@@ -1480,7 +1496,7 @@ export function NewTravelProposalSheet({
  </select>
  </div>
  <div className="space-y-1">
- <Label className="text-[11px] font-bold">Tema Visual da Lâmina</Label>
+ <Label className="text-xs font-bold">Tema Visual da Lâmina</Label>
  <select
  value={templateTheme}
  onChange={(e) => setTemplateTheme(e.target.value)}
@@ -1494,7 +1510,7 @@ export function NewTravelProposalSheet({
  </div>
 
  <div className="space-y-1 pt-1">
- <Label className="text-[11px] font-bold">Observações Internas (Não visível ao passageiro)</Label>
+ <Label className="text-xs font-bold">Observações Internas (Não visível ao passageiro)</Label>
  <Textarea
  placeholder="Notas internas da agência, operadora cotada, margem de comissão, etc..."
  value={initialNotes}
@@ -1511,7 +1527,7 @@ export function NewTravelProposalSheet({
  <div className="space-y-4 text-xs">
  <div className="p-4 rounded-lg bg-muted/30 border border-border/70 space-y-1">
  <p className="font-bold text-foreground">Biblioteca de Pacotes e Roteiros de Sucesso</p>
- <p className="text-muted-foreground text-[11px]">
+ <p className="text-muted-foreground text-xs">
  Selecione um pacote pré-formatado para clonar voos, hotéis, roteiro dia a dia, inclusões e exclusões em 1 clique.
  </p>
  </div>
@@ -1526,17 +1542,17 @@ export function NewTravelProposalSheet({
  <div className="flex items-start justify-between gap-3">
  <div className="space-y-1 min-w-0">
  <div className="flex items-center gap-2">
- <Badge variant="secondary" className="text-[9px] font-bold">
+ <Badge variant="secondary" className="text-xs font-bold">
  {tpl.badge}
  </Badge>
- <span className="text-[11px] text-muted-foreground">
+ <span className="text-xs text-muted-foreground">
  🌙 {tpl.durationNights} Noites • {tpl.durationDays} Dias
  </span>
  </div>
  <h4 className="font-bold text-sm text-foreground group-hover:text-primary transition-colors">
  {tpl.title}
  </h4>
- <p className="text-[11px] text-muted-foreground line-clamp-2">
+ <p className="text-xs text-muted-foreground line-clamp-2">
  {tpl.subtitle}
  </p>
  </div>
@@ -1553,7 +1569,7 @@ export function NewTravelProposalSheet({
  </Button>
  </div>
 
- <div className="pt-2 border-t border-border/40 flex items-center justify-between text-[11px] text-muted-foreground">
+ <div className="pt-2 border-t border-border/40 flex items-center justify-between text-xs text-muted-foreground">
  <span>Destino: <strong>{tpl.destinationCity}</strong></span>
  <span>
  Preço sugerido:{" "}
@@ -1576,7 +1592,7 @@ export function NewTravelProposalSheet({
  <ScanText className="size-4" />
  <span>Assistente de Extração de Texto (PDF / WhatsApp)</span>
  </div>
- <p className="text-muted-foreground text-[11px]">
+ <p className="text-muted-foreground text-xs">
  Cole a cotação recebida da sua operadora ou consolidadora de viagens ou cole o texto do WhatsApp para a IA estruturar o roteiro.
  </p>
  </div>
@@ -1623,11 +1639,11 @@ Incluso Maria Fumaça e traslados.`}
  <Check className="size-4 text-primary" />
  Dados Identificados pela IA:
  </span>
- <Badge variant="outline" className="text-[10px] text-primary border-primary/30">
+ <Badge variant="outline" className="text-xs text-primary border-primary/30">
  Sucesso
  </Badge>
  </div>
- <div className="space-y-1 text-[11px] text-muted-foreground">
+ <div className="space-y-1 text-xs text-muted-foreground">
  <p>• Destino: <strong className="text-foreground">{ocrExtractedData.destinationCity}</strong></p>
  <p>• Título Sugerido: <strong className="text-foreground">{ocrExtractedData.title}</strong></p>
  <p>• Passageiros: <strong className="text-foreground">{ocrExtractedData.adults} Adultos</strong></p>

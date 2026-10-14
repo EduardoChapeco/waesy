@@ -401,7 +401,7 @@ function AutomacoesWorkflowsPage() {
 
       {/* ── Sheet: Criar Novo Workflow ── */}
       <Sheet open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-        <SheetContent side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] flex flex-col justify-between overflow-y-auto">
+        <SheetContent side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl flex flex-col justify-between overflow-y-auto overscroll-contain">
           <div>
             <SheetHeader className="pb-4">
               <SheetTitle>Novo Workflow</SheetTitle>

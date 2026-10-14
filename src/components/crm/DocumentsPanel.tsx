@@ -185,17 +185,17 @@ export function DocumentsPanel({
  <div className="flex items-center gap-2">
  <span className="font-bold text-xs text-foreground">{typeLabel}</span>
  {isExpired && (
- <Badge variant="destructive" className="text-[10px] font-bold py-0 h-4">
+ <Badge variant="destructive" className="text-xs font-bold py-0 h-4">
  VENCIDO
  </Badge>
  )}
  {isSoon && (
- <Badge variant="secondary" className="text-[10px] font-bold bg-amber-500/20 text-amber-700 dark:text-amber-400 py-0 h-4">
+ <Badge variant="secondary" className="text-xs font-bold bg-amber-500/20 text-amber-700 dark:text-amber-400 py-0 h-4">
  VENCE EM BREVE
  </Badge>
  )}
  {!isExpired && !isSoon && doc.expires_at && (
- <Badge variant="outline" className="text-[10px] font-semibold text-emerald-600 border-emerald-500/30 py-0 h-4">
+ <Badge variant="outline" className="text-xs font-semibold text-emerald-600 border-emerald-500/30 py-0 h-4">
  VÁLIDO
  </Badge>
  )}
@@ -217,10 +217,10 @@ export function DocumentsPanel({
  </p>
  )}
 
- <div className="grid grid-cols-2 gap-2 mt-2 pt-2 border-t border-border/50 text-[11px] text-muted-foreground">
+ <div className="grid grid-cols-2 gap-2 mt-2 pt-2 border-t border-border/50 text-xs text-muted-foreground">
  {doc.issued_at && (
  <div>
- <span className="text-[10px] block text-muted-foreground/80">Emissão</span>
+ <span className="text-xs block text-muted-foreground/80">Emissão</span>
  <span className="font-medium text-foreground">
  {new Date(doc.issued_at + "T00:00:00").toLocaleDateString("pt-BR")}
  </span>
@@ -229,7 +229,7 @@ export function DocumentsPanel({
 
  {doc.expires_at && (
  <div>
- <span className="text-[10px] block text-muted-foreground/80">Validade</span>
+ <span className="text-xs block text-muted-foreground/80">Validade</span>
  <span className={`font-bold ${isExpired ? "text-destructive" : isSoon ? "text-amber-600" : "text-foreground"}`}>
  {new Date(doc.expires_at + "T00:00:00").toLocaleDateString("pt-BR")}
  </span>
@@ -238,7 +238,7 @@ export function DocumentsPanel({
  </div>
 
  {doc.notes && (
- <p className="text-[11px] text-muted-foreground italic mt-2 bg-muted/30 p-2 rounded-lg">
+ <p className="text-xs text-muted-foreground italic mt-2 bg-muted/30 p-2 rounded-lg">
  "{doc.notes}"
  </p>
  )}

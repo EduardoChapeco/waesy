@@ -348,7 +348,7 @@ export default function WorkspaceEventosPage() {
 
         {/* ── 3. SHEET DE CADASTRO DE EVENTO & LOTES ── */}
         <Sheet open={isOpen} onOpenChange={setIsOpen}>
-          <SheetContent side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] p-0 overflow-y-auto no-scrollbar flex flex-col h-full bg-background border-l border-border">
+          <SheetContent side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl p-0 overflow-y-auto overscroll-contain no-scrollbar flex flex-col h-full bg-background border-l border-border">
             <SheetHeader className="px-6 py-4 bg-muted/20 border-b border-border/60 text-left shrink-0">
               <SheetTitle className="text-lg font-bold">Novo Evento e Lotes de Ingressos</SheetTitle>
               <SheetDescription className="text-xs text-muted-foreground">

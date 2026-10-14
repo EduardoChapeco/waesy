@@ -205,13 +205,13 @@ export function FloatingCommunityDock({ session }: FloatingCommunityDockProps) {
  type="button"
  onClick={() => setActiveFormat(fmt.id as PostType)}
  className={cn(
- "px-3 py-1 rounded-lg text-[11px] font-bold flex items-center gap-1 transition-all cursor-pointer shrink-0",
+ "px-3 py-2 min-h-11 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shrink-0",
  isSelected
  ? "bg-foreground text-background shadow-xs"
  : "bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground"
  )}
  >
- <Icon size={12} weight="bold" />
+ <Icon size={14} weight="bold" />
  <span>{fmt.label}</span>
  </button>
  );
@@ -225,13 +225,13 @@ export function FloatingCommunityDock({ session }: FloatingCommunityDockProps) {
  value={newsTitle}
  onChange={(e) => setNewsTitle(e.target.value)}
  placeholder="Manchete Editorial..."
- className="h-8 text-xs font-bold bg-background border-border/60"
+ className="h-11 min-h-11 text-base sm:text-xs font-bold bg-background border-border/60"
  />
  <Input
  value={newsSource}
  onChange={(e) => setNewsSource(e.target.value)}
  placeholder="Fonte / Veículo (ex: Waesy News, G1)..."
- className="h-7 text-[11px] bg-background border-border/60"
+ className="h-11 min-h-11 text-base sm:text-xs bg-background border-border/60"
  />
  </div>
  )}
@@ -243,13 +243,13 @@ export function FloatingCommunityDock({ session }: FloatingCommunityDockProps) {
  value={travelOrigin}
  onChange={(e) => setTravelOrigin(e.target.value)}
  placeholder="Origem (ex: Chapecó)"
- className="h-7 text-[11px] bg-background border-border/60"
+ className="h-11 min-h-11 text-base sm:text-xs bg-background border-border/60"
  />
  <Input
  value={travelDestination}
  onChange={(e) => setTravelDestination(e.target.value)}
  placeholder="Destino"
- className="h-7 text-[11px] bg-background border-border/60"
+ className="h-11 min-h-11 text-base sm:text-xs bg-background border-border/60"
  />
  </div>
  )}
@@ -259,7 +259,7 @@ export function FloatingCommunityDock({ session }: FloatingCommunityDockProps) {
  value={content}
  onChange={(e) => setContent(e.target.value)}
  placeholder="O que está acontecendo na comunidade?"
- className="border-none shadow-none focus-visible:ring-0 resize-none text-xs p-1 min-h-[75px] bg-transparent placeholder:text-muted-foreground/60 leading-relaxed"
+ className="border-none shadow-none focus-visible:ring-0 resize-none text-base sm:text-sm p-1 min-h-20 bg-transparent placeholder:text-muted-foreground/60 leading-relaxed"
  />
 
  {/* Mídias Anexadas */}
@@ -270,13 +270,20 @@ export function FloatingCommunityDock({ session }: FloatingCommunityDockProps) {
  key={idx}
  className="relative size-16 rounded-lg overflow-hidden bg-muted border border-border/60 shrink-0 group"
  >
- <img src={media.url} alt="Preview" className="size-full object-cover" />
+ <img
+ src={media.url}
+ alt="Preview"
+ onError={(e) => {
+   (e.currentTarget as HTMLElement).style.display = "none";
+ }}
+ className="size-full object-cover"
+ />
  <button
  type="button"
  onClick={() => handleRemoveMedia(idx)}
- className="absolute top-1 right-1 size-5 rounded-full bg-black/70 text-white flex items-center justify-center hover:bg-destructive transition-colors cursor-pointer"
+ className="absolute top-1 right-1 size-8 rounded-full bg-black/70 text-white flex items-center justify-center hover:bg-destructive transition-colors cursor-pointer"
  >
- <Trash size={10} weight="bold" />
+ <Trash size={12} weight="bold" />
  </button>
  </div>
  ))}
@@ -299,23 +306,23 @@ export function FloatingCommunityDock({ session }: FloatingCommunityDockProps) {
  size="sm"
  onClick={() => fileInputRef.current?.click()}
  disabled={isUploading || mediaPreviews.length >= 6}
- className="h-8 px-3 rounded-lg text-xs font-bold text-muted-foreground hover:text-foreground gap-2 cursor-pointer"
+ className="h-11 min-h-11 px-3 rounded-lg text-xs font-bold text-muted-foreground hover:text-foreground gap-2 cursor-pointer"
  >
  {isUploading ? (
- <CircleNotch size={13} className="animate-spin text-primary" />
+ <CircleNotch size={14} className="animate-spin text-primary" />
  ) : (
- <ImageSquare size={15} weight="bold" className="text-primary" />
+ <ImageSquare size={16} weight="bold" className="text-primary" />
  )}
  <span>Foto/Vídeo</span>
  </Button>
 
- <div className="flex items-center gap-1 bg-muted/40 px-2 py-1 rounded-lg">
- <MapPin size={11} className="text-muted-foreground" />
+ <div className="flex items-center gap-1 bg-muted/40 px-2 h-11 rounded-lg border border-border/40">
+ <MapPin size={14} className="text-muted-foreground shrink-0" />
  <Input
  value={locationName}
  onChange={(e) => setLocationName(e.target.value)}
  placeholder="Local..."
- className="h-6 border-none shadow-none focus-visible:ring-0 text-[10px] p-0 w-20 bg-transparent"
+ className="h-full border-none shadow-none focus-visible:ring-0 text-base sm:text-xs p-0 w-28 bg-transparent"
  />
  </div>
  </div>
@@ -324,11 +331,11 @@ export function FloatingCommunityDock({ session }: FloatingCommunityDockProps) {
  onClick={handlePublish}
  disabled={isSubmitting || isUploading || (!content.trim() && mediaUrls.length === 0 && !newsTitle.trim())}
  size="sm"
- className="bg-primary text-primary-foreground font-bold rounded-lg h-8 px-4 text-xs hover:scale-102 active:scale-98 transition-all cursor-pointer shadow-xs"
+ className="bg-primary text-primary-foreground font-bold rounded-lg h-11 min-h-11 px-4 text-xs hover:scale-102 active:scale-98 transition-all cursor-pointer shadow-xs"
  >
  {isSubmitting ? (
  <>
- <CircleNotch size={12} className="animate-spin mr-1" />
+ <CircleNotch size={14} className="animate-spin mr-1" />
  <span>Publicando...</span>
  </>
  ) : (

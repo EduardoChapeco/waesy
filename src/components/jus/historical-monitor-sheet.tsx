@@ -161,7 +161,7 @@ export function HistoricalMonitorSheet({
  return (
  <Sheet open={open} onOpenChange={onOpenChange}>
  <SheetContent
- side="right" size="wide" className="w-full max-w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] lg:max-w-3xl p-0 flex flex-col h-[100dvh] bg-background border-l border-border"
+ side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl p-0 flex flex-col h-dvh overscroll-contain bg-background border-l border-border"
  >
  {/* Topo do Sheet */}
  <SheetHeader className="p-6 border-b border-border/80 bg-card/40">

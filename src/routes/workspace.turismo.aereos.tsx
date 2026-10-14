@@ -318,7 +318,7 @@ export default function FlightsPage() {
 
       {/* Sheet Lateral Ampliada (size="wide" -> 70% viewport) */}
       <Sheet open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <SheetContent size="wide" className="w-full max-sm:!max-w-full max-sm:!w-screen p-0 flex flex-col h-full bg-card overflow-hidden">
+        <SheetContent size="wide" className="w-full sm:max-w-4xl p-0 flex flex-col h-full bg-card overflow-hidden">
           <SheetHeader className="px-6 py-4 border-b border-border/60 bg-muted/20 shrink-0">
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-lg bg-primary/10 text-primary">

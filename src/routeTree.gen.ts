@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as StoreRouteImport } from './routes/_store'
 import { Route as AdminMasterRouteImport } from './routes/admin-master'
+import { Route as DesignSystemRouteImport } from './routes/design-system'
 import { Route as HomeRouteImport } from './routes/home'
 import { Route as SitemapNewsDotxmlRouteImport } from './routes/sitemap-news[.]xml'
 import { Route as SitemapProductsDotxmlRouteImport } from './routes/sitemap-products[.]xml'
@@ -420,6 +421,11 @@ const StoreRoute = StoreRouteImport.update({
 const AdminMasterRoute = AdminMasterRouteImport.update({
   id: '/admin-master',
   path: '/admin-master',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DesignSystemRoute = DesignSystemRouteImport.update({
+  id: '/design-system',
+  path: '/design-system',
   getParentRoute: () => rootRouteImport,
 } as any)
 const HomeRoute = HomeRouteImport.update({
@@ -2560,6 +2566,7 @@ const WorkspaceTurismoGruposIdEmbarqueRoute =
 export interface FileRoutesByFullPath {
   '/': typeof StoreIndexRoute
   '/admin-master': typeof AdminMasterRouteWithChildren
+  '/design-system': typeof DesignSystemRoute
   '/home': typeof HomeRoute
   '/sitemap-news.xml': typeof SitemapNewsDotxmlRoute
   '/sitemap-products.xml': typeof SitemapProductsDotxmlRoute
@@ -2962,6 +2969,7 @@ export interface FileRoutesByFullPath {
   '/workspace/turismo/grupos/$id/embarque': typeof WorkspaceTurismoGruposIdEmbarqueRoute
 }
 export interface FileRoutesByTo {
+  '/design-system': typeof DesignSystemRoute
   '/home': typeof HomeRoute
   '/sitemap-news.xml': typeof SitemapNewsDotxmlRoute
   '/sitemap-products.xml': typeof SitemapProductsDotxmlRoute
@@ -3360,6 +3368,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_store': typeof StoreRouteWithChildren
   '/admin-master': typeof AdminMasterRouteWithChildren
+  '/design-system': typeof DesignSystemRoute
   '/home': typeof HomeRoute
   '/sitemap-news.xml': typeof SitemapNewsDotxmlRoute
   '/sitemap-products.xml': typeof SitemapProductsDotxmlRoute
@@ -3767,6 +3776,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin-master'
+    | '/design-system'
     | '/home'
     | '/sitemap-news.xml'
     | '/sitemap-products.xml'
@@ -4169,6 +4179,7 @@ export interface FileRouteTypes {
     | '/workspace/turismo/grupos/$id/embarque'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/design-system'
     | '/home'
     | '/sitemap-news.xml'
     | '/sitemap-products.xml'
@@ -4566,6 +4577,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/_store'
     | '/admin-master'
+    | '/design-system'
     | '/home'
     | '/sitemap-news.xml'
     | '/sitemap-products.xml'
@@ -4972,6 +4984,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   StoreRoute: typeof StoreRouteWithChildren
   AdminMasterRoute: typeof AdminMasterRouteWithChildren
+  DesignSystemRoute: typeof DesignSystemRoute
   HomeRoute: typeof HomeRoute
   SitemapNewsDotxmlRoute: typeof SitemapNewsDotxmlRoute
   SitemapProductsDotxmlRoute: typeof SitemapProductsDotxmlRoute
@@ -5031,6 +5044,13 @@ declare module '@tanstack/react-router' {
       path: '/admin-master'
       fullPath: '/admin-master'
       preLoaderRoute: typeof AdminMasterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/design-system': {
+      id: '/design-system'
+      path: '/design-system'
+      fullPath: '/design-system'
+      preLoaderRoute: typeof DesignSystemRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/home': {
@@ -8758,6 +8778,7 @@ const ApiWebhooksWhatsappRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   StoreRoute: StoreRouteWithChildren,
   AdminMasterRoute: AdminMasterRouteWithChildren,
+  DesignSystemRoute: DesignSystemRoute,
   HomeRoute: HomeRoute,
   SitemapNewsDotxmlRoute: SitemapNewsDotxmlRoute,
   SitemapProductsDotxmlRoute: SitemapProductsDotxmlRoute,

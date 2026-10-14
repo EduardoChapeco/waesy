@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { Layers, Type, Image as ImageIcon, Square, Download, Send, RefreshCw, Palette } from 'lucide-react';
+import { Layers, Type, Image as ImageIcon, Square, Download, Send, RefreshCw, Palette, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
 export interface CanvasLayer {
  id: string;
- type: 'text' | 'shape' | 'image';
+ type: 'text' | 'shape' | 'image' | 'sticker';
  text?: string;
  fontSize?: number;
  color?: string;
@@ -14,6 +14,7 @@ export interface CanvasLayer {
  width?: number;
  height?: number;
  imageUrl?: string;
+ stickerEmoji?: string;
 }
 
 interface StudioCanvasProps {
@@ -69,6 +70,20 @@ export function StudioCanvas({ onExportToHero, className = '', aspectRatio, back
  setSelectedLayerId(newL.id);
  };
 
+ const addStickerLayer = (stickerText: string = "⭐ DESTAQUE") => {
+   const newL: CanvasLayer = {
+     id: 'l-' + Date.now(),
+     type: 'sticker',
+     text: stickerText,
+     fontSize: 16,
+     color: '#f59e0b',
+     x: 60,
+     y: 160,
+   };
+   setLayers((prev) => [...prev, newL]);
+   setSelectedLayerId(newL.id);
+ };
+
   const handleExport = () => {
     try {
       const width = aspect === '16:9' ? 1200 : aspect === '9:16' ? 720 : 1080;
@@ -89,7 +104,7 @@ export function StudioCanvas({ onExportToHero, className = '', aspectRatio, back
 
         // 3. Renderiza cada camada real com fidelidade tipográfica
         for (const l of layers) {
-          if (l.type === 'text' && l.text) {
+          if ((l.type === 'text' || l.type === 'sticker') && l.text) {
             ctx.fillStyle = l.color || '#ffffff';
             const scaledFontSize = Math.round((l.fontSize || 18) * scale);
             ctx.font = `bold ${scaledFontSize}px Inter, -apple-system, BlinkMacSystemFont, sans-serif`;
@@ -143,10 +158,21 @@ export function StudioCanvas({ onExportToHero, className = '', aspectRatio, back
  variant="outline"
  size="sm"
  onClick={addTextLayer}
- className="min-h-10 px-3 rounded-lg text-xs flex items-center gap-2"
+ className="h-11 min-h-11 px-4 rounded-lg text-xs flex items-center gap-2 cursor-pointer"
  >
- <Type className="w-4 h-4" />
+ <Type className="size-4" />
  Adicionar Texto
+ </Button>
+
+ <Button
+ type="button"
+ variant="outline"
+ size="sm"
+ onClick={() => addStickerLayer("⭐ DESTAQUE")}
+ className="h-11 min-h-11 px-4 rounded-lg text-xs flex items-center gap-2 cursor-pointer"
+ >
+ <Sparkles className="size-4 text-amber-500" />
+ Adicionar Sticker
  </Button>
 
  {onExportToHero && (
@@ -154,9 +180,9 @@ export function StudioCanvas({ onExportToHero, className = '', aspectRatio, back
  type="button"
  size="sm"
  onClick={handleExport}
- className="min-h-10 px-4 rounded-lg bg-primary text-primary-foreground font-semibold text-xs flex items-center gap-2 shadow-md"
+ className="h-11 min-h-11 px-4 rounded-lg bg-primary text-primary-foreground font-semibold text-xs flex items-center gap-2 shadow-md cursor-pointer"
  >
- <Send className="w-3.5 h-3.5" />
+ <Send className="size-3.5" />
  Aplicar ao Hero Banner
  </Button>
  )}
@@ -164,11 +190,11 @@ export function StudioCanvas({ onExportToHero, className = '', aspectRatio, back
  </div>
 
  {/* Canvas Area */}
- <div className="flex justify-center items-center p-6 bg-muted/20 rounded-lg overflow-hidden min-h-[300px]">
+ <div className="flex justify-center items-center p-6 bg-muted/20 rounded-lg overflow-hidden min-h-72">
  <div
  style={{ backgroundColor: bgColor }}
  className={'w-full max-w-2xl rounded-lg relative shadow-2xl overflow-hidden border border-white/10 ' + (
- aspect === '16:9' ? 'aspect-video' : aspect === '9:16' ? 'aspect-[9/16] max-w-xs' : 'aspect-square max-w-sm'
+ aspect === '16:9' ? 'aspect-video' : aspect === '9:16' ? 'aspect-9/16 max-w-xs' : 'aspect-square max-w-sm'
  )}
  >
  {layers.map((l) => (
@@ -204,7 +230,7 @@ export function StudioCanvas({ onExportToHero, className = '', aspectRatio, back
  prev.map((l) => (l.id === selectedLayerId ? { ...l, text: val } : l))
  );
  }}
- className="h-8 max-w-xs text-xs rounded-lg"
+ className="h-11 min-h-11 max-w-xs text-base sm:text-xs rounded-lg"
  />
  <div className="flex items-center gap-2">
  <span className="text-muted-foreground">Cor:</span>
@@ -217,7 +243,7 @@ export function StudioCanvas({ onExportToHero, className = '', aspectRatio, back
  prev.map((l) => (l.id === selectedLayerId ? { ...l, color: val } : l))
  );
  }}
- className="w-6 h-6 rounded cursor-pointer bg-transparent"
+ className="size-7 rounded cursor-pointer bg-transparent border border-border"
  />
  </div>
  </div>

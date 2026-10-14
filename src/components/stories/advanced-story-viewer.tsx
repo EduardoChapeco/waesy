@@ -245,7 +245,7 @@ export function AdvancedStoryViewer({
 
  {/* ── Frame Central do Story (Proporção 9:16 Responsiva) ── */}
  <div
- className="relative w-full max-w-[420px] h-full sm:h-[92vh] sm:max-h-[840px] sm:rounded-lg overflow-hidden bg-zinc-950 border border-white/10 shadow-2xl flex flex-col justify-between"
+ className="relative w-full max-w-sm md:max-w-md h-full sm:h-5/6 sm:max-h-full sm:rounded-2xl overflow-hidden bg-zinc-950 border border-white/10 shadow-2xl flex flex-col justify-between"
  onPointerDown={handlePointerDown}
  onPointerUp={handlePointerUp}
  >
@@ -271,6 +271,9 @@ export function AdvancedStoryViewer({
  <img
  src={currentGroup.entityAvatarUrl}
  alt={currentGroup.entityName}
+ onError={(e) => {
+   (e.currentTarget as HTMLElement).style.display = "none";
+ }}
  className="size-full object-cover"
  />
  ) : (
@@ -287,20 +290,20 @@ export function AdvancedStoryViewer({
  </span>
 
  {currentGroup.isOfficialAmbassador && (
- <Badge className="bg-gradient-to-r from-purple-500 to-indigo-600 text-white text-[9px] font-black px-2 py-0.2 rounded-md border-0">
+ <Badge className="bg-gradient-to-r from-purple-500 to-indigo-600 text-white text-2xs font-black px-2 py-0.5 rounded-md border-0">
  <SealCheck size={11} weight="fill" className="mr-1" />
  {currentGroup.ambassadorBadgeLabel || "Embaixador"}
  </Badge>
  )}
 
  {currentStory.is_sponsored && (
- <Badge className="bg-amber-500/90 text-black text-[9px] font-black px-2 py-0.2 rounded-md">
+ <Badge className="bg-amber-500 text-black text-2xs font-black px-2 py-0.5 rounded-md">
  Patrocinado
  </Badge>
  )}
  </div>
 
- <div className="flex items-center gap-2 text-[11px] text-white/70">
+ <div className="flex items-center gap-2 text-xs text-white/70">
  {currentGroup.entityHandle && <span>{currentGroup.entityHandle}</span>}
  <span>•</span>
  <span>Há 3h</span>
@@ -339,6 +342,9 @@ export function AdvancedStoryViewer({
  <img
  src={currentStory.media_url}
  alt="Story"
+ onError={(e) => {
+   (e.currentTarget as HTMLElement).style.display = "none";
+ }}
  className="size-full object-cover"
  loading="eager"
  />
@@ -380,7 +386,7 @@ export function AdvancedStoryViewer({
  e.stopPropagation();
  handleNext();
  }}
- className="w-full h-10 rounded-lg text-white/80 hover:text-white hover:bg-white/10 text-xs font-semibold"
+ className="w-full h-11 min-h-11 rounded-lg text-white/80 hover:text-white hover:bg-white/10 text-xs font-semibold"
  >
  Pular em {longPromptCountdown}s...
  </Button>
@@ -398,6 +404,9 @@ export function AdvancedStoryViewer({
  <img
  src={currentStory.product_info.image_url}
  alt={currentStory.product_info.title}
+ onError={(e) => {
+   (e.currentTarget as HTMLElement).style.display = "none";
+ }}
  className="size-10 rounded-lg object-cover shrink-0"
  />
  ) : (
@@ -421,7 +430,7 @@ export function AdvancedStoryViewer({
  <Button
  size="sm"
  asChild
- className="h-8 rounded-lg bg-white text-black font-bold text-xs px-3 shrink-0"
+ className="h-11 min-h-11 rounded-lg bg-white text-black font-bold text-xs px-4 shrink-0 flex items-center justify-center"
  >
  <a href={`/produto/${currentStory.product_info.id}`}>Comprar</a>
  </Button>
@@ -432,7 +441,7 @@ export function AdvancedStoryViewer({
  {currentStory.link_url && (
  <Button
  asChild
- className="w-full h-11 rounded-lg bg-white/20 hover:bg-white/30 text-white backdrop-blur-xl border border-white/20 font-bold text-xs flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
+ className="w-full h-11 min-h-11 rounded-lg bg-white/20 hover:bg-white/30 text-white backdrop-blur-xl border border-white/20 font-bold text-xs flex items-center justify-center gap-2 transition-all active:scale-95"
  >
  <a href={currentStory.link_url} target="_blank" rel="noopener noreferrer">
  <span>{currentStory.link_cta || "Acessar Oferta"}</span>
@@ -443,7 +452,7 @@ export function AdvancedStoryViewer({
 
  {/* Hashtags e Badge de Co-Publicação */}
  {currentStory.collab_info && (
- <div className="flex items-center gap-2 text-[11px] text-white/80 font-medium">
+ <div className="flex items-center gap-2 text-xs text-white/80 font-medium">
  <Handshake size={13} weight="bold" className="text-purple-300" />
  <span>Publicado em parceria com {currentStory.collab_info.creator_name}</span>
  </div>

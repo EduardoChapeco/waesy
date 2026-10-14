@@ -517,7 +517,7 @@ export function WorkspaceAllToolsDialog({
 
  return (
  <Dialog open={open} onOpenChange={onOpenChange}>
- <DialogContent className="sm:max-w-4xl max-h-[90vh] p-0 rounded-lg border border-border/80 bg-background/98 backdrop-blur-2xl shadow-2xl overflow-hidden flex flex-col">
+ <DialogContent className="sm:max-w-4xl max-h-5/6 sm:max-h-160 p-0 rounded-lg border border-border/80 bg-background/98 backdrop-blur-2xl shadow-2xl overflow-hidden flex flex-col">
  {/* ── 1. Top Header com Busca Ampla (Padrão Meta Studio) ── */}
  <div className="p-4 sm:p-6 pb-4 border-b border-border/60 bg-muted/15 shrink-0 space-y-3">
  <div className="flex items-center justify-between">
@@ -529,7 +529,7 @@ export function WorkspaceAllToolsDialog({
  Todas as Ferramentas
  </DialogTitle>
  </div>
- <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider hidden sm:inline">
+ <span className="text-2xs font-mono text-muted-foreground uppercase tracking-wider hidden sm:inline">
  Workspace • {activeStore?.name || "Waesy"}
  </span>
  </div>
@@ -549,7 +549,7 @@ export function WorkspaceAllToolsDialog({
                 }
               }}
               placeholder="Pesquisar ferramentas ou ditar campanha (ex: Instagram, R$ 50/dia, 7 dias, produto X)..."
-              className="h-10 pl-10 pr-20 text-xs sm:text-sm rounded-lg bg-card border-border/60 focus-visible:ring-1 focus-visible:ring-primary shadow-xs"
+              className="h-11 min-h-11 pl-10 pr-20 text-base sm:text-sm rounded-lg bg-card border-border/60 focus-visible:ring-1 focus-visible:ring-primary shadow-xs"
               autoFocus
             />
             <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">

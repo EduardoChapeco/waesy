@@ -87,7 +87,7 @@ function PeakHoursHeatmap({ peakHoursMap }: { peakHoursMap: Record<string, numbe
  <div
  key={hour}
  className={cn(
- "flex flex-col items-center justify-center rounded-lg px-2 py-2 min-w-[48px] transition-all",
+ "flex flex-col items-center justify-center rounded-lg px-2 py-2 min-w-12 transition-all",
  getIntensity(count),
  )}
  title={`${hour}h — ${count} pedidos`}

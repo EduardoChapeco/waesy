@@ -545,7 +545,7 @@ export default function TurismoRadarPage() {
         <SheetContent
           side="right"
           size="wide"
-          className="w-full max-sm:!max-w-full max-sm:!w-screen sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] p-0 flex flex-col bg-background border-l border-border overflow-hidden"
+          className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl p-0 flex flex-col bg-background border-l border-border overflow-hidden overscroll-contain"
         >
           <SheetHeader className="p-6 pb-4 border-b border-border/70 bg-muted/20 shrink-0">
             <div className="flex items-center gap-2 mb-1">
@@ -740,7 +740,7 @@ export default function TurismoRadarPage() {
         <SheetContent
           side="right"
           size="wide"
-          className="w-full max-sm:!max-w-full max-sm:!w-screen sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] p-0 flex flex-col bg-background border-l border-border overflow-hidden"
+          className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl p-0 flex flex-col bg-background border-l border-border overflow-hidden overscroll-contain"
         >
           <SheetHeader className="p-6 pb-4 border-b border-border/70 bg-muted/20 shrink-0">
             <SheetTitle className="text-lg font-bold text-foreground flex items-center gap-2">

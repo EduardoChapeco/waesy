@@ -325,10 +325,10 @@ function MobilityPage() {
  <span>Clique no mapa para marcar {pinMode === "origin" ? "a Origem" : "o Destino"}</span>
  <button
  onClick={() => setPinMode(null)}
- className="ml-2 p-1 hover:bg-background/20 rounded-full transition-colors"
+ className="ml-2 size-11 min-h-11 min-w-11 hover:bg-background/20 rounded-lg flex items-center justify-center transition-colors focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
  aria-label="Cancelar seleção no mapa"
  >
- <X className="size-3.5" />
+ <X className="size-4" />
  </button>
  </div>
  )}
@@ -409,7 +409,7 @@ function MobilityPage() {
  value={originText}
  onChange={(e) => setOriginText(e.target.value)}
  placeholder={activeTabConfig.placeholderOrigin}
- className="h-11 pl-9 pr-10 rounded-lg bg-muted/20 border-border/70 text-xs font-medium focus-visible:ring-1 focus-visible:ring-primary"
+ className="h-11 min-h-11 pl-9 pr-12 rounded-lg bg-muted/20 border-border/70 text-base sm:text-xs font-medium focus-visible:ring-2 focus-visible:ring-primary"
  />
  <button
  type="button"
@@ -417,9 +417,9 @@ function MobilityPage() {
  disabled={isLocatingGPS}
  title="Usar minha localização GPS atual"
  aria-label="Usar minha localização GPS atual"
- className="absolute right-2 size-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
+ className="absolute right-0 top-0 size-11 min-h-11 min-w-11 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors focus-visible:ring-2 focus-visible:ring-primary cursor-pointer"
  >
- <RotateCw className={`size-3.5 ${isLocatingGPS ? "animate-spin text-primary" : ""}`} />
+ <RotateCw className={`size-4 ${isLocatingGPS ? "animate-spin text-primary" : ""}`} />
  </button>
  </div>
  </div>
@@ -437,20 +437,20 @@ function MobilityPage() {
  value={destinationText}
  onChange={(e) => setDestinationText(e.target.value)}
  placeholder={activeTabConfig.placeholderDest}
- className="h-11 pl-9 pr-10 rounded-lg bg-muted/20 border-border/70 text-xs font-medium focus-visible:ring-1 focus-visible:ring-primary"
+ className="h-11 min-h-11 pl-9 pr-12 rounded-lg bg-muted/20 border-border/70 text-base sm:text-xs font-medium focus-visible:ring-2 focus-visible:ring-primary"
  />
  <button
  type="button"
  onClick={() => setPinMode("destination")}
  title="Marcar ponto de destino no mapa"
  aria-label="Marcar ponto de destino no mapa"
- className={`absolute right-2 size-7 rounded-lg flex items-center justify-center transition-colors ${
+ className={`absolute right-0 top-0 size-11 min-h-11 min-w-11 rounded-lg flex items-center justify-center transition-colors focus-visible:ring-2 focus-visible:ring-primary cursor-pointer ${
  pinMode === "destination"
  ? "bg-primary text-primary-foreground"
  : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
  }`}
  >
- <Crosshair className="size-3.5" />
+ <Crosshair className="size-4" />
  </button>
  </div>
  </div>
@@ -592,7 +592,7 @@ function MobilityPage() {
  <button
  type="button"
  onClick={() => setShowDetails(!showDetails)}
- className="w-full flex items-center justify-between text-xs font-semibold text-muted-foreground hover:text-foreground pt-1"
+ className="w-full h-11 min-h-11 px-2 flex items-center justify-between text-xs font-semibold text-muted-foreground hover:text-foreground focus-visible:ring-2 focus-visible:ring-primary rounded-lg transition-colors cursor-pointer"
  >
  <span className="flex items-center gap-2">
  <MapPin className="size-3.5" />
@@ -610,7 +610,7 @@ function MobilityPage() {
  value={buildingNumber}
  onChange={(e) => setBuildingNumber(e.target.value)}
  placeholder="Ex: 500"
- className="h-11 min-h-11 px-3 rounded-lg bg-background text-xs border border-border/60 focus-visible:ring-2 focus-visible:ring-primary"
+ className="h-11 min-h-11 px-3 rounded-lg bg-background text-base sm:text-xs border border-border/60 focus-visible:ring-2 focus-visible:ring-primary"
  />
  </div>
  <div>
@@ -619,7 +619,7 @@ function MobilityPage() {
  value={complement}
  onChange={(e) => setComplement(e.target.value)}
  placeholder="Ex: Apto 102"
- className="h-11 min-h-11 px-3 rounded-lg bg-background text-xs border border-border/60 focus-visible:ring-2 focus-visible:ring-primary"
+ className="h-11 min-h-11 px-3 rounded-lg bg-background text-base sm:text-xs border border-border/60 focus-visible:ring-2 focus-visible:ring-primary"
  />
  </div>
  </div>
@@ -630,7 +630,7 @@ function MobilityPage() {
  value={referencePoint}
  onChange={(e) => setReferencePoint(e.target.value)}
  placeholder="Ex: Em frente à praça"
- className="h-11 min-h-11 px-3 rounded-lg bg-background text-xs border border-border/60 focus-visible:ring-2 focus-visible:ring-primary"
+ className="h-11 min-h-11 px-3 rounded-lg bg-background text-base sm:text-xs border border-border/60 focus-visible:ring-2 focus-visible:ring-primary"
  />
  </div>
 
@@ -641,7 +641,7 @@ function MobilityPage() {
  value={recipientName}
  onChange={(e) => setRecipientName(e.target.value)}
  placeholder="Nome"
- className="h-11 min-h-11 px-3 rounded-lg bg-background text-xs border border-border/60 focus-visible:ring-2 focus-visible:ring-primary"
+ className="h-11 min-h-11 px-3 rounded-lg bg-background text-base sm:text-xs border border-border/60 focus-visible:ring-2 focus-visible:ring-primary"
  />
  </div>
  <div>
@@ -650,7 +650,7 @@ function MobilityPage() {
  value={recipientPhone}
  onChange={(e) => setRecipientPhone(e.target.value)}
  placeholder="(49) 99999-9999"
- className="h-11 min-h-11 px-3 rounded-lg bg-background text-xs border border-border/60 focus-visible:ring-2 focus-visible:ring-primary"
+ className="h-11 min-h-11 px-3 rounded-lg bg-background text-base sm:text-xs border border-border/60 focus-visible:ring-2 focus-visible:ring-primary"
  />
  </div>
  </div>
@@ -728,10 +728,10 @@ function MobilityPage() {
  </div>
  <button
  onClick={() => setShowPwaBanner(false)}
- className="text-muted-foreground hover:text-foreground"
+ className="size-11 min-h-11 min-w-11 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
  aria-label="Fechar banner PWA"
  >
- <X className="size-3.5" />
+ <X className="size-4" />
  </button>
  </div>
 

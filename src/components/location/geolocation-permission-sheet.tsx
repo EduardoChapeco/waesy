@@ -112,7 +112,7 @@ export function GeolocationPermissionSheet() {
  return (
  <Sheet open={open} onOpenChange={(val) => !val && handleDismiss()}>
  <SheetContent
- side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] p-6 flex flex-col justify-between overflow-y-auto no-scrollbar bg-card text-foreground border-border/60 sm:rounded-l-lg rounded-none"
+ side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl p-6 flex flex-col justify-between overflow-y-auto overscroll-contain no-scrollbar bg-card text-foreground border-border/60 sm:rounded-l-lg rounded-none"
  >
  <div className="space-y-6">
  {/* Header com Ícone de Pin */}
@@ -140,7 +140,7 @@ export function GeolocationPermissionSheet() {
  </div>
  <div>
  <h4 className="text-xs font-bold text-foreground">Mostrar negócios e eventos próximos</h4>
- <p className="text-[11px] text-muted-foreground">
+ <p className="text-xs text-muted-foreground">
  Encontre lojas, delivery e atrações no seu bairro.
  </p>
  </div>
@@ -152,7 +152,7 @@ export function GeolocationPermissionSheet() {
  </div>
  <div>
  <h4 className="text-xs font-bold text-foreground">Personalizar seu feed local</h4>
- <p className="text-[11px] text-muted-foreground">
+ <p className="text-xs text-muted-foreground">
  Receba ofertas e novidades mais relevantes para você.
  </p>
  </div>
@@ -164,7 +164,7 @@ export function GeolocationPermissionSheet() {
  </div>
  <div>
  <h4 className="text-xs font-bold text-foreground">Conectar com a sua comunidade</h4>
- <p className="text-[11px] text-muted-foreground">
+ <p className="text-xs text-muted-foreground">
  Interaja em classificados e no mural comunitário.
  </p>
  </div>
@@ -197,7 +197,7 @@ export function GeolocationPermissionSheet() {
  </div>
 
  {/* Aviso de Privacidade */}
- <div className="flex items-start gap-2 p-3 rounded-lg bg-muted/20 border border-border/30 text-[11px] text-muted-foreground">
+ <div className="flex items-start gap-2 p-3 rounded-lg bg-muted/20 border border-border/30 text-xs text-muted-foreground">
  <ShieldCheck className="size-4 text-emerald-500 shrink-0 mt-1" />
  <span>
  Sua privacidade é importante. Você pode alterar ou desativar isso a qualquer momento.
@@ -211,7 +211,7 @@ export function GeolocationPermissionSheet() {
  type="button"
  disabled={isVerifying}
  onClick={handleAllowLocation}
- className="w-full h-11 rounded-lg font-bold text-xs gap-2 cursor-pointer bg-foreground text-background hover:bg-foreground/90 transition-all active:scale-[0.98]"
+ className="w-full h-11 rounded-lg font-bold text-xs gap-2 cursor-pointer bg-foreground text-background hover:bg-foreground/90 transition-all active:opacity-90"
  >
  {isVerifying ? (
  <>
@@ -231,7 +231,7 @@ export function GeolocationPermissionSheet() {
  variant="ghost"
  onClick={handleDismiss}
  disabled={isVerifying}
- className="w-full h-10 rounded-lg text-xs font-semibold text-muted-foreground hover:text-foreground cursor-pointer"
+ className="w-full h-11 min-h-11 rounded-lg text-xs font-semibold text-muted-foreground hover:text-foreground cursor-pointer"
  >
  Agora Não
  </Button>

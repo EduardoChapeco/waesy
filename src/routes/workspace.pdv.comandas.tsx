@@ -700,7 +700,7 @@ function PdvComandasPage() {
  <SheetContent
  side="right"
  size="wide"
- className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] max-sm:!h-[100dvh] max-sm:!inset-0 max-sm:!rounded-none border-l p-0 overflow-hidden bg-card flex flex-col"
+ className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl max-sm:h-dvh max-sm:inset-0 max-sm:rounded-none border-l p-0 overflow-hidden overscroll-contain bg-card flex flex-col"
  >
  <SheetHeader className="p-4 sm:p-5 border-b border-border/80 bg-muted/20 text-left">
  <SheetTitle className="font-bold text-base sm:text-lg flex items-center gap-2 text-foreground">

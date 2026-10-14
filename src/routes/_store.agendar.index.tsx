@@ -602,7 +602,7 @@ function BookingIndexPage() {
 
       {/* ── SHEET LATERAL DE AGENDAMENTO RÁPIDO (Desktop e Mobile Drawer) ── */}
       <Sheet open={!!selectedService} onOpenChange={(open) => !open && setSelectedService(null)}>
-        <SheetContent side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] p-0 flex flex-col justify-between bg-card">
+        <SheetContent side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl p-0 flex flex-col justify-between overscroll-contain bg-card">
           <div className="p-6 overflow-y-auto space-y-6 flex-1">
             <SheetHeader className="text-left space-y-1">
               <SheetTitle className="text-lg font-bold text-foreground flex items-center gap-2">
