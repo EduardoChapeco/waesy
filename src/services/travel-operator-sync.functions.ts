@@ -4,7 +4,7 @@ import { getServerClient } from "@/lib/supabase";
 import { requireManager, requireStaff } from "@/lib/server-access";
 import { normalizeOperatorDocument, OperatorCodeSchema } from "@/lib/travel-operator-sync";
 
-const IntegrationInputSchema = z.object({
+export const IntegrationInputSchema = z.object({
   providerCode: OperatorCodeSchema,
   displayName: z.string().trim().min(2).max(120),
   supplierId: z.string().uuid().optional().nullable(),
@@ -32,6 +32,14 @@ export const listTravelOperatorIntegrations = createServerFn({ method: "GET" }).
 export const saveTravelOperatorIntegration = createServerFn({ method: "POST" })
   .validator(IntegrationInputSchema)
   .handler(async ({ data }) => {
+    const {
+      providerCode,
+      displayName,
+      supplierId = null,
+      capabilities = {},
+      config = {},
+      status = "active",
+    } = data ?? {};
     const identity = await requireManager();
     const supabase = getServerClient();
     const { data: row, error } = await supabase
@@ -39,14 +47,14 @@ export const saveTravelOperatorIntegration = createServerFn({ method: "POST" })
       .upsert(
         {
           store_id: identity.store_id,
-          supplier_id: data.supplierId || null,
-          provider_code: data.providerCode,
-          display_name: data.displayName,
+          supplier_id: supplierId || null,
+          provider_code: providerCode,
+          display_name: displayName,
           adapter_kind: "document",
           adapter_version: "travel-operator-v1",
-          capabilities: data.capabilities,
-          config_payload: data.config,
-          status: data.status,
+          capabilities: capabilities,
+          config_payload: config,
+          status: status,
           created_by_profile_id: identity.id,
           updated_at: new Date().toISOString(),
         },
@@ -60,16 +68,17 @@ export const saveTravelOperatorIntegration = createServerFn({ method: "POST" })
     return row;
   });
 
+export const ListTravelOperatorSyncRunsSchema = z
+  .object({
+    status: z.string().optional(),
+    limit: z.number().int().min(1).max(200).default(100),
+  })
+  .default({});
+
 export const listTravelOperatorSyncRuns = createServerFn({ method: "GET" })
-  .validator(
-    z
-      .object({
-        status: z.string().optional(),
-        limit: z.number().int().min(1).max(200).default(100),
-      })
-      .default({}),
-  )
+  .validator(ListTravelOperatorSyncRunsSchema)
   .handler(async ({ data }) => {
+    const { status = undefined, limit = 100 } = data ?? {};
     const identity = await requireStaff();
     const supabase = getServerClient();
     let query = supabase
@@ -79,22 +88,25 @@ export const listTravelOperatorSyncRuns = createServerFn({ method: "GET" })
       )
       .eq("store_id", identity.store_id)
       .order("created_at", { ascending: false })
-      .limit(data.limit);
-    if (data.status) query = query.eq("status", data.status);
+      .limit(limit);
+    if (status) query = query.eq("status", status);
     const { data: rows, error } = await query;
     if (error) throw new Error(`Não foi possível listar sincronizações: ${error.message}`);
     return rows || [];
   });
 
+export const SyncTravelDocumentSchema = z.object({ ingestionId: z.string().uuid() });
+
 export const syncTravelDocumentToOperatorCanonical = createServerFn({ method: "POST" })
-  .validator(z.object({ ingestionId: z.string().uuid() }))
+  .validator(SyncTravelDocumentSchema)
   .handler(async ({ data }) => {
+    const { ingestionId } = data ?? {};
     const identity = await requireStaff();
     const supabase = getServerClient();
     const { data: ingestion, error: ingestionError } = await supabase
       .from("travel_document_ingestions")
       .select("id, store_id, source_kind, extraction, extraction_status, review_status")
-      .eq("id", data.ingestionId)
+      .eq("id", ingestionId)
       .eq("store_id", identity.store_id)
       .single();
     if (ingestionError || !ingestion) throw new Error("Ingestão não encontrada nesta agência.");

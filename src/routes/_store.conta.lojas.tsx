@@ -6,6 +6,7 @@ import { setTenantContext } from "@/services/identity.functions";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { NativeMobileHeader } from "@/components/navigation/native-mobile-header";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_store/conta/lojas")({
@@ -43,9 +44,11 @@ export default function ContaLojasPage() {
  };
 
  return (
-    <div className="w-full max-w-5xl mx-auto space-y-4 sm:space-y-6 pb-20 px-0 sm:px-4 md:px-0">
-      {/* ── 1. Clean Minimalist Header ── */}
-      <div className="flex items-center justify-between gap-4 border-b border-border/40 pb-4 pt-1">
+    <div className="w-full max-w-5xl mx-auto space-y-4 sm:space-y-6 pb-safe pb-24 px-0 sm:px-4 md:px-0">
+      <NativeMobileHeader title="Minhas Lojas" fallbackHref="/conta" mobileOnly />
+
+      {/* ── 1. Clean Minimalist Header (Desktop) ── */}
+      <div className="hidden md:flex items-center justify-between gap-4 border-b border-border/40 pb-4 pt-1">
         <div className="flex items-center gap-3">
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
             Lojas
@@ -57,7 +60,7 @@ export default function ContaLojasPage() {
           )}
         </div>
 
-        <Button asChild size="sm" className="rounded-lg h-8 px-4 text-xs font-semibold gap-2 bg-foreground text-background hover:bg-foreground/90 shrink-0 cursor-pointer">
+        <Button asChild size="sm" className="rounded-lg h-11 min-h-11 sm:h-9 px-4 text-xs font-semibold gap-2 bg-foreground text-background hover:bg-foreground/90 shrink-0 cursor-pointer">
           <Link to="/criar-negocio">
             <Plus className="size-3.5" />
             <span>Nova Loja</span>

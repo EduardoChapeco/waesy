@@ -202,8 +202,15 @@ export const calculateMobilityQuote = createServerFn({ method: "POST" })
  }),
  )
  .handler(async ({ data }) => {
- const supabase = getServerClient();
- const surge = data.surge_multiplier || 1;
+    const {
+      origin_address,
+      destination_address,
+      distance_km = 3.5,
+      helpers_count = 0,
+      surge_multiplier = 1,
+    } = data;
+    const supabase = getServerClient();
+    const surge = surge_multiplier || 1;
 
  // Consulta tabelas de preço ativas cadastradas no banco
  const { data: priceTables, error } = await supabase
@@ -306,8 +313,30 @@ export const createMobilityRequest = createServerFn({ method: "POST" })
  }),
  )
  .handler(async ({ data }) => {
- const supabase = getServerClient();
- const identity = await getServerIdentity().catch(() => null);
+    const {
+      customer_name = "Cliente Waesy",
+      customer_phone = "(49) 99999-9999",
+      service_type,
+      origin_address,
+      origin_lat = null,
+      origin_lng = null,
+      origin_instructions = null,
+      destination_address,
+      destination_lat = null,
+      destination_lng = null,
+      destination_instructions = null,
+      distance_km = 3.5,
+      package_description = null,
+      helpers_count = 0,
+      needs_packing = false,
+      scheduled_for = null,
+      estimated_price_cents,
+      payment_method = "pix",
+      notes = null,
+      direct_driver_slug = null,
+    } = data;
+    const supabase = getServerClient();
+    const identity = await getServerIdentity().catch(() => null);
 
   // Zero-Trust Barreira por Inadimplência no CPF / Conta
   if (identity?.id) {
@@ -632,14 +661,15 @@ export const listOpenMobilityRequests = createServerFn({ method: "GET" })
  * 6. Motorista / Empresa aceita o chamado.
  */
 export const acceptMobilityRequest = createServerFn({ method: "POST" })
- .validator(
- z.object({
- requestId: z.string().uuid(),
- courierProfileId: z.string().uuid().optional(),
- }),
- )
- .handler(async ({ data }) => {
- const supabase = getServerClient();
+  .validator(
+    z.object({
+      requestId: z.string().uuid(),
+      courierProfileId: z.string().uuid().optional(),
+    }),
+  )
+  .handler(async ({ data }) => {
+    const { requestId, courierProfileId = null } = data;
+    const supabase = getServerClient();
 
  const { data: updated, error } = await supabase
  .from("orders")
@@ -685,15 +715,16 @@ export const acceptMobilityRequest = createServerFn({ method: "POST" })
  });
 
 export const updateMobilityStatus = createServerFn({ method: "POST" })
- .validator(
- z.object({
- requestId: z.string().uuid(),
- status: mobilityStatusEnum,
- cancellationReason: z.string().optional(),
- }),
- )
- .handler(async ({ data }) => {
- const supabase = getServerClient();
+  .validator(
+    z.object({
+      requestId: z.string().uuid(),
+      status: mobilityStatusEnum,
+      cancellationReason: z.string().optional(),
+    }),
+  )
+  .handler(async ({ data }) => {
+    const { requestId, status, cancellationReason = "Cancelado pelo operador" } = data;
+    const supabase = getServerClient();
  // Map mobility statuses to orders statuses
  const orderStatusMap: Record<string, string> = {
  searching: "draft",
@@ -818,9 +849,20 @@ export const saveLogisticsPriceTable = createServerFn({ method: "POST" })
  }),
  )
  .handler(async ({ data }) => {
- const supabase = getServerClient();
- const identity = await getServerIdentity();
- assertStoreAccess(identity, ["owner", "admin"]);
+    const {
+      id = null,
+      name,
+      service_type,
+      base_fee_cents,
+      km_rate_cents,
+      minute_rate_cents = 0,
+      helper_fee_cents = 0,
+      min_fare_cents = 0,
+      is_active = true,
+    } = data;
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin"]);
 
  const payload = {
  store_id: identity.store_id,
@@ -1012,19 +1054,27 @@ export const getCourierSurgeRules = createServerFn({ method: "GET" }).handler(as
 // 15. MOTOLINK: ATUALIZAR REGRAS DE PRECIFICAÇÃO DO ENTREGADOR
 // ============================================================
 export const updateCourierSurgeRules = createServerFn({ method: "POST" })
- .validator(
- z.object({
- min_fee_cents: z.number().int().min(500),
- base_km_fee_cents: z.number().int().min(100),
- rain_multiplier: z.number().min(1).max(2.5),
- peak_multiplier: z.number().min(1).max(2.0),
- night_fee_cents: z.number().int().min(0),
- auto_surge_enabled: z.boolean(),
- }),
- )
- .handler(async ({ data }) => {
- const identity = await getServerIdentity();
- const db = getServerClient();
+  .validator(
+    z.object({
+      min_fee_cents: z.number().int().min(500),
+      base_km_fee_cents: z.number().int().min(100),
+      rain_multiplier: z.number().min(1).max(2.5),
+      peak_multiplier: z.number().min(1).max(2.0),
+      night_fee_cents: z.number().int().min(0),
+      auto_surge_enabled: z.boolean(),
+    }),
+  )
+  .handler(async ({ data }) => {
+    const {
+      min_fee_cents,
+      base_km_fee_cents,
+      rain_multiplier,
+      peak_multiplier,
+      night_fee_cents = 0,
+      auto_surge_enabled = true,
+    } = data;
+    const identity = await getServerIdentity();
+    const db = getServerClient();
 
  const { data: updated, error } = await db
  .from("courier_surge_pricing_rules")
@@ -1060,17 +1110,24 @@ export const updateCourierSurgeRules = createServerFn({ method: "POST" })
 // 16. MOTOLINK: COTAÇÃO DINÂMICA DE FRETE COM CLIMA E DEMANDA
 // ============================================================
 export const calculateDynamicMotolinkQuote = createServerFn({ method: "GET" })
- .validator(
- z.object({
- store_id: z.string().uuid(),
- distance_km: z.number().min(0.1),
- is_raining: z.boolean().default(false),
- is_peak_hour: z.boolean().default(false),
- is_night_time: z.boolean().default(false),
- }),
- )
- .handler(async ({ data }) => {
- const db = getServerClient();
+  .validator(
+    z.object({
+      store_id: z.string().uuid(),
+      distance_km: z.number().min(0.1),
+      is_raining: z.boolean().default(false),
+      is_peak_hour: z.boolean().default(false),
+      is_night_time: z.boolean().default(false),
+    }),
+  )
+  .handler(async ({ data }) => {
+    const {
+      store_id,
+      distance_km,
+      is_raining = false,
+      is_peak_hour = false,
+      is_night_time = false,
+    } = data;
+    const db = getServerClient();
 
  const { data: quote, error } = await db.rpc("calculate_dynamic_motolink_quote", {
  p_store_id: data.store_id,

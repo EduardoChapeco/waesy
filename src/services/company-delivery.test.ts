@@ -1,5 +1,12 @@
 import { describe, it, expect } from "vitest";
-import { SaveDeliverySettingsSchema, CreateDispatchSchema, UpdateDispatchStatusSchema, GetDispatchByDealSchema } from "./company-delivery.functions";
+import {
+  SaveDeliverySettingsSchema,
+  CreateDispatchSchema,
+  UpdateDispatchStatusSchema,
+  GetDispatchByDealSchema,
+  GetDispatchByOrderSchema,
+  CalculateDeliveryFeeSchema,
+} from "./company-delivery.functions";
 
 describe("Company Delivery & Dispatch Contracts (BFF)", () => {
   it("valida schema de taxas de entrega com cálculo em centavos inteiros", () => {
@@ -84,5 +91,80 @@ describe("Company Delivery & Dispatch Contracts (BFF)", () => {
       dealId: "not-a-uuid",
     });
     expect(invalid.success).toBe(false);
+  });
+
+  describe("Invariante B.25 — Coalescência Defensiva e Branches Presentes/Ausentes", () => {
+    it("valida SaveDeliverySettingsSchema com parâmetros ausentes atribuindo defaults seguros", () => {
+      const minimal = SaveDeliverySettingsSchema.parse({});
+      expect(minimal.hasOwnCouriers).toBe(false);
+      expect(minimal.fixedDeliveryFeeCents).toBe(0);
+      expect(minimal.freeDeliveryAboveCents).toBeUndefined();
+      expect(minimal.neighborhoodsRates).toEqual([]);
+      expect(minimal.motoboyInstructions).toBeUndefined();
+      expect(minimal.storeId).toBeUndefined();
+    });
+
+    it("valida CreateDispatchSchema com parâmetros opcionais ausentes/nulos", () => {
+      const minimal = CreateDispatchSchema.parse({
+        customerName: "Carlos Pereira",
+        customerPhone: "49988776655",
+        deliveryAddress: "Rua Uruguai, 500",
+      });
+      expect(minimal.customerName).toBe("Carlos Pereira");
+      expect(minimal.deliveryFeeCents).toBe(0);
+      expect(minimal.orderAmountCents).toBe(0);
+      expect(minimal.dealId).toBeUndefined();
+      expect(minimal.orderId).toBeUndefined();
+      expect(minimal.classifiedId).toBeUndefined();
+      expect(minimal.courierId).toBeUndefined();
+      expect(minimal.notes).toBeUndefined();
+      expect(minimal.deliveryNeighborhood).toBeUndefined();
+    });
+
+    it("valida UpdateDispatchStatusSchema sem comprovante e sem PIN opcionais", () => {
+      const minimal = UpdateDispatchStatusSchema.parse({
+        token: "token_12345",
+        status: "accepted",
+      });
+      expect(minimal.token).toBe("token_12345");
+      expect(minimal.status).toBe("accepted");
+      expect(minimal.proofPhotoUrl).toBeUndefined();
+      expect(minimal.confirmationPin).toBeUndefined();
+      expect(minimal.notes).toBeUndefined();
+    });
+
+    it("valida GetDispatchByOrderSchema com UUID estrito válido e rejeita inválido", () => {
+      const valid = GetDispatchByOrderSchema.safeParse({
+        orderId: "22222222-2222-4222-a222-222222222222",
+      });
+      expect(valid.success).toBe(true);
+
+      const invalid = GetDispatchByOrderSchema.safeParse({
+        orderId: "invalid-id",
+      });
+      expect(invalid.success).toBe(false);
+    });
+
+    it("valida CalculateDeliveryFeeSchema com parâmetros presentes e ausentes", () => {
+      const minimal = CalculateDeliveryFeeSchema.parse({
+        storeId: "33333333-3333-4333-a333-333333333333",
+      });
+      expect(minimal.subtotalCents).toBe(0);
+      expect(minimal.deliveryMode).toBe("delivery");
+      expect(minimal.neighborhood).toBeUndefined();
+      expect(minimal.classifiedId).toBeUndefined();
+
+      const full = CalculateDeliveryFeeSchema.parse({
+        storeId: "33333333-3333-4333-a333-333333333333",
+        subtotalCents: 5000,
+        deliveryMode: "pickup",
+        neighborhood: "Efapi",
+        classifiedId: "44444444-4444-4444-a444-444444444444",
+      });
+      expect(full.subtotalCents).toBe(5000);
+      expect(full.deliveryMode).toBe("pickup");
+      expect(full.neighborhood).toBe("Efapi");
+      expect(full.classifiedId).toBe("44444444-4444-4444-a444-444444444444");
+    });
   });
 });

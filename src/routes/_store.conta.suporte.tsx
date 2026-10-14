@@ -1,8 +1,7 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
-import { EmptyState } from "@/components/state/states";
-import { MessagesSquare, Send, ChevronLeft, Lock, Plus, CheckCircle2, AlertCircle } from "lucide-react";
+import { MessagesSquare, Send, ChevronLeft, Lock, Plus, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -11,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { formatDate } from "@/lib/datetime";
 import { getTicketThread, sendTicketMessage, listCustomerTickets, createCustomerTicket, closeCustomerTicket } from "@/services/support-tickets.functions";
+import { NativeMobileHeader } from "@/components/navigation/native-mobile-header";
 
 export const Route = createFileRoute("/_store/conta/suporte")({
   head: () => ({ meta: [{ title: "Atendimento e Suporte | Waesy" }] }),
@@ -126,10 +126,30 @@ function CustomerSupportPage() {
 
   const selectedTicket = tickets.find((t: any) => t.id === selectedTicketId);
 
+  const newTicketButton = (
+    <Button
+      size="sm"
+      onClick={() => setIsNewTicketOpen(true)}
+      className="font-bold gap-2 h-11 min-h-11 sm:h-9 rounded-lg text-xs cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+    >
+      <Plus className="size-4 shrink-0" />
+      <span>Novo Chamado</span>
+    </Button>
+  );
+
   return (
-    <div className="w-full max-w-5xl mx-auto space-y-4 sm:space-y-6 pb-24 px-0 sm:px-4 md:px-0 flex flex-col h-[calc(100dvh-10rem)] min-h-[550px]">
-      {/* ── 1. Clean Minimalist Header ── */}
-      <div className="flex items-center justify-between gap-4 border-b border-border/40 pb-3 pt-1">
+    <div className="w-full max-w-5xl mx-auto space-y-4 sm:space-y-6 pb-safe pb-24 px-0 sm:px-4 md:px-0 flex flex-col flex-1 min-h-96">
+      {/* ── 0. Native Mobile Header (<768px) ── */}
+      <NativeMobileHeader
+        title={selectedTicketId ? (thread?.subject || selectedTicket?.subject || "Atendimento") : "Atendimento"}
+        fallbackHref="/conta"
+        onBack={selectedTicketId ? () => setSelectedTicketId(null) : undefined}
+        mobileOnly
+        rightAction={!selectedTicketId ? newTicketButton : undefined}
+      />
+
+      {/* ── 1. Clean Minimalist Header (Desktop >=768px) ── */}
+      <div className="hidden md:flex items-center justify-between gap-4 border-b border-border/40 pb-3 pt-1">
         <div className="flex items-center gap-3">
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
             Atendimento
@@ -141,14 +161,7 @@ function CustomerSupportPage() {
           )}
         </div>
 
-        <Button
-          size="sm"
-          onClick={() => setIsNewTicketOpen(true)}
-          className="font-bold gap-2 h-8 sm:h-9 rounded-lg text-xs"
-        >
-          <Plus className="size-3.5" />
-          <span>Novo Chamado</span>
-        </Button>
+        {newTicketButton}
       </div>
 
       <div className="flex-1 bg-card rounded-lg border border-border/60 overflow-hidden flex flex-col md:flex-row">
@@ -167,9 +180,9 @@ function CustomerSupportPage() {
                   variant="outline"
                   size="sm"
                   onClick={() => setIsNewTicketOpen(true)}
-                  className="rounded-lg text-xs font-semibold gap-2"
+                  className="rounded-lg text-xs font-semibold gap-2 h-11 min-h-11 px-4 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
                 >
-                  <Plus className="size-3.5" />
+                  <Plus className="size-4" />
                   <span>Abrir Chamado</span>
                 </Button>
               </div>
@@ -187,26 +200,26 @@ function CustomerSupportPage() {
                       <span className="font-semibold text-xs text-foreground truncate pr-2">{t.subject}</span>
                     </div>
                     <div className="flex justify-between items-center mt-2">
-                      <span className="text-[10px] text-muted-foreground">
+                      <span className="text-xs text-muted-foreground font-mono">
                         {formatDate(t.updated_at)}
                       </span>
                       {t.status === "open" && (
-                        <Badge variant="secondary" className="text-[9px] px-2 py-0">
+                        <Badge variant="secondary" className="text-xs px-2 py-0">
                           Aguardando Loja
                         </Badge>
                       )}
                       {t.status === "pending" && (
-                        <Badge variant="destructive" className="text-[9px] px-2 py-0 font-bold">
+                        <Badge variant="destructive" className="text-xs px-2 py-0 font-bold">
                           Sua Vez
                         </Badge>
                       )}
                       {t.status === "resolved" && (
-                        <Badge variant="outline" className="text-[9px] px-2 py-0 text-emerald-600 border-emerald-500/30">
+                        <Badge variant="outline" className="text-xs px-2 py-0 text-emerald-600 border-emerald-500/30">
                           Resolvido
                         </Badge>
                       )}
                       {t.status === "closed" && (
-                        <Badge variant="outline" className="text-[9px] px-2 py-0">
+                        <Badge variant="outline" className="text-xs px-2 py-0">
                           Encerrado
                         </Badge>
                       )}
@@ -238,10 +251,11 @@ function CustomerSupportPage() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="md:hidden size-8"
+                    className="md:hidden size-11 min-h-11 min-w-11"
                     onClick={() => setSelectedTicketId(null)}
+                    aria-label="Voltar para lista de chamados"
                   >
-                    <ChevronLeft className="size-4.5" />
+                    <ChevronLeft className="size-5" />
                   </Button>
                   {loadingThread ? (
                     <div className="animate-pulse h-4 bg-muted rounded w-40"></div>
@@ -250,8 +264,8 @@ function CustomerSupportPage() {
                       <h3 className="font-semibold text-xs sm:text-sm text-foreground truncate">
                         {thread?.subject || selectedTicket?.subject}
                       </h3>
-                      <span className="text-[10px] text-muted-foreground">
-                        {thread?.storeName || selectedTicket?.storeName || "Suporte"}
+                      <span className="text-xs text-muted-foreground">
+                        {thread?.storeName || selectedTicket?.storeName || "Suporte Waesy"}
                       </span>
                     </div>
                   )}
@@ -262,7 +276,7 @@ function CustomerSupportPage() {
                     variant="ghost"
                     size="sm"
                     onClick={handleCloseTicket}
-                    className="h-7 text-[11px] text-muted-foreground hover:text-foreground rounded-lg"
+                    className="h-11 min-h-11 sm:h-8 px-3 text-xs text-muted-foreground hover:text-foreground rounded-lg cursor-pointer"
                   >
                     Encerrar
                   </Button>
@@ -273,9 +287,9 @@ function CustomerSupportPage() {
               <div className="flex-1 overflow-y-auto no-scrollbar p-4 space-y-3">
                 {/* Indicativo de Segurança Visual */}
                 <div className="flex justify-center my-2">
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-muted/40 text-[11px] text-muted-foreground select-none">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-muted/40 text-xs text-muted-foreground select-none">
                     <Lock className="size-3 text-muted-foreground shrink-0" strokeWidth={1.75} />
-                    <span>As mensagens são protegidas com criptografia de ponta a ponta</span>
+                    <span>Mensagens protegidas com criptografia de ponta a ponta</span>
                   </div>
                 </div>
 
@@ -284,14 +298,14 @@ function CustomerSupportPage() {
                   .map((m: any) => (
                     <div key={m.id} className={`flex ${m.isMe ? "justify-end" : "justify-start"}`}>
                       <div
-                        className={`max-w-[85%] md:max-w-[70%] px-4 py-3 text-xs sm:text-sm leading-relaxed border-none ${
+                        className={`max-w-xs sm:max-w-md px-4 py-3 text-xs sm:text-sm leading-relaxed border-none ${
                           m.isMe
                             ? "bg-primary/10 text-foreground rounded-lg rounded-tr-xs"
                             : "bg-muted/70 text-foreground rounded-lg rounded-tl-xs"
                         }`}
                       >
                         <p className="whitespace-pre-wrap break-words">{m.content}</p>
-                        <div className="flex items-center justify-between gap-3 mt-1 text-[10px] text-muted-foreground">
+                        <div className="flex items-center justify-between gap-3 mt-1 text-xs text-muted-foreground">
                           <span>{m.isMe ? "Você" : m.senderName || "Atendimento"}</span>
                           <span>
                             {new Date(m.createdAt).toLocaleTimeString("pt-BR", {
@@ -315,17 +329,17 @@ function CustomerSupportPage() {
                     onKeyDown={(e) => {
                       if (e.key === "Enter") handleSend();
                     }}
-                    className="flex-1 h-10 rounded-full bg-muted/50 px-4 text-xs sm:text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-1 focus:ring-primary/20 transition-all border-none"
+                    className="flex-1 h-11 min-h-11 rounded-lg bg-muted/50 px-4 text-xs sm:text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-1 focus:ring-primary/20 transition-all border border-border/40"
                   />
                   <button
                     type="button"
                     onClick={handleSend}
                     disabled={sending || !message.trim()}
-                    className="size-9 flex items-center justify-center text-primary disabled:opacity-30 disabled:cursor-not-allowed hover:opacity-80 transition-opacity cursor-pointer shrink-0"
+                    className="size-11 min-h-11 min-w-11 flex items-center justify-center text-primary disabled:opacity-30 disabled:cursor-not-allowed hover:opacity-80 transition-opacity cursor-pointer shrink-0 rounded-lg focus-visible:ring-2 focus-visible:ring-primary"
                     title="Enviar"
                     aria-label="Enviar mensagem"
                   >
-                    <Send className="size-4.5" strokeWidth={1.75} />
+                    <Send className="size-5" strokeWidth={1.75} />
                   </button>
                 </div>
               ) : (
@@ -341,7 +355,7 @@ function CustomerSupportPage() {
 
       {/* ── Dialog de Novo Chamado ── */}
       <Dialog open={isNewTicketOpen} onOpenChange={setIsNewTicketOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md p-5 sm:p-6">
           <DialogHeader>
             <DialogTitle className="text-base font-bold">Abrir Novo Chamado</DialogTitle>
             <DialogDescription className="text-xs">
@@ -360,7 +374,7 @@ function CustomerSupportPage() {
                 placeholder="Ex: Dúvida sobre pedido, entrega ou cancelamento"
                 value={newSubject}
                 onChange={(e) => setNewSubject(e.target.value)}
-                className="text-xs h-9"
+                className="text-xs h-11 min-h-11 rounded-lg"
               />
             </div>
 
@@ -372,7 +386,7 @@ function CustomerSupportPage() {
                 id="ticket-category"
                 value={newContextType}
                 onChange={(e) => setNewContextType(e.target.value as any)}
-                className="w-full h-9 px-3 rounded-lg border border-border bg-background text-xs"
+                className="w-full h-11 min-h-11 px-3 rounded-lg border border-border bg-background text-xs"
               >
                 <option value="general">Geral / Dúvidas</option>
                 <option value="order">Referente a um Pedido</option>
@@ -391,7 +405,7 @@ function CustomerSupportPage() {
                 placeholder="Descreva detalhadamente o que aconteceu para agilizar o atendimento..."
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
-                className="text-xs resize-none"
+                className="text-xs resize-none rounded-lg"
               />
             </div>
 
@@ -401,7 +415,7 @@ function CustomerSupportPage() {
                 variant="ghost"
                 size="sm"
                 onClick={() => setIsNewTicketOpen(false)}
-                className="text-xs"
+                className="text-xs h-11 min-h-11 px-4 rounded-lg"
               >
                 Cancelar
               </Button>
@@ -409,7 +423,7 @@ function CustomerSupportPage() {
                 type="submit"
                 size="sm"
                 disabled={creatingTicket}
-                className="font-bold text-xs"
+                className="font-bold text-xs h-11 min-h-11 px-4 rounded-lg focus-visible:ring-2 focus-visible:ring-primary"
               >
                 {creatingTicket ? "Abrindo Chamado..." : "Enviar Chamado"}
               </Button>
