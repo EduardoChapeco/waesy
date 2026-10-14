@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Utensils, Plus, Send, Check, Users, Clock, DollarSign, Search, ArrowLeft, Trash2 } from "lucide-react";
@@ -7,11 +7,35 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { listRestaurantTables, updateRestaurantTableStatus, listKdsActiveOrders } from "@/services/pdv.functions";
+import { getUserSession } from "@/services/auth.functions";
 
 export const Route = createFileRoute("/_store/garcom")({
- head: () => ({ meta: [{ title: "App do Garçom | Terminal Móvel" }] }),
- errorComponent: GarcomErrorComponent,
- component: GarcomTerminalPage,
+  head: () => ({ meta: [{ title: "App do Garçom | Terminal Móvel" }] }),
+  beforeLoad: async ({ location }) => {
+    let session: any = null;
+    try {
+      session = await getUserSession();
+    } catch {
+      session = null;
+    }
+
+    if (!session?.user) {
+      throw redirect({
+        to: "/entrar",
+        search: { returnUrl: location.pathname },
+      });
+    }
+
+    const hasStore = (session?.memberships && session.memberships.length > 0) || Boolean(session?.store_id) || session?.role === "store_owner" || session?.role === "owner" || session?.role === "platform_admin" || session?.role === "master";
+
+    if (!hasStore) {
+      throw redirect({ to: "/criar-negocio" });
+    }
+
+    return { session };
+  },
+  errorComponent: GarcomErrorComponent,
+  component: GarcomTerminalPage,
 });
 
 function GarcomErrorComponent({ error, reset }: { error: any; reset: () => void }) {

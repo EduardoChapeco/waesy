@@ -3,7 +3,7 @@
  * Validação Biométrica em 2 Etapas, Gravação de Minivídeo Liveness, Cross-Check de IA e Termos de Autonomia.
  */
 
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate, redirect } from "@tanstack/react-router";
 import { useState, useTransition } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Motorcycle, Car, Truck, ShieldCheck, ShieldWarning, VideoCamera, Camera, CheckCircle, ArrowRight, ArrowLeft, FileText, Clock, Scales, Warning } from "@phosphor-icons/react";
@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { ImageUpload } from "@/components/ui/image-upload";
 import { submitCourierApplication, getMyCourierApplicationStatus } from "@/services/courier-verification.functions";
 import { getLegalDocumentBySlug } from "@/services/legal.functions";
+import { getUserSession } from "@/services/auth.functions";
 import { toast } from "sonner";
 import { formatCpf, validateCpfMod11 } from "@/lib/document-validator";
 import { DocumentField } from "@/components/ui/document-field";
@@ -30,6 +31,23 @@ export const Route = createFileRoute("/_store/entregador/cadastro")({
       },
     ],
   }),
+  beforeLoad: async ({ location }) => {
+    let session: any = null;
+    try {
+      session = await getUserSession();
+    } catch {
+      session = null;
+    }
+
+    if (!session?.user) {
+      throw redirect({
+        to: "/entrar",
+        search: { returnUrl: location.pathname + location.searchStr },
+      });
+    }
+
+    return { session };
+  },
   loader: async () => {
     try {
     const [existingApp, legalDoc] = await Promise.all([

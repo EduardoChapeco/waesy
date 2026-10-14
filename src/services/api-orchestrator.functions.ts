@@ -442,6 +442,9 @@ export const saveSimLabApiKey = createServerFn({ method: "POST" })
     })
   )
   .handler(async ({ data }) => {
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin", "manager"]);
+
     const supabase = getServerClient();
     const rawKey = data.apiKey.trim();
     const masked = rawKey.length > 8 ? `${rawKey.slice(0, 3)}...${rawKey.slice(-4)}` : `***${rawKey.slice(-2)}`;
@@ -486,6 +489,11 @@ export const saveSimLabApiKey = createServerFn({ method: "POST" })
  */
 export const getSimLabKeyStatus = createServerFn({ method: "GET" }).handler(
   async (): Promise<{ hasActiveKey: boolean; activeProvider: "openrouter" | "gemini" | "groq" | "openai" | null; poolCount: number }> => {
+    const identity = await getServerIdentity().catch(() => null);
+    if (!identity?.id) {
+      return { hasActiveKey: false, activeProvider: null, poolCount: 0 };
+    }
+
     const supabase = getServerClient();
     let poolCount = 0;
     try {

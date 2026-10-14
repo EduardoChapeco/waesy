@@ -37,6 +37,17 @@ export const recordOrderMicroFee = createServerFn({ method: "POST" })
       throw new Error("Pedido não encontrado para a loja especificada.");
     }
 
+    const identity = await getServerIdentity().catch(() => null);
+    const isStoreStaff = identity?.id
+      ? (identity.memberships || []).some((m) => m.store_id === data.storeId)
+      : false;
+    const isGlobalAdmin = identity?.role === "platform_admin" || identity?.role === "master";
+    const isOrderCustomer = Boolean(identity?.id && order.customer_id === identity.id);
+
+    if (identity?.id && !isStoreStaff && !isGlobalAdmin && !isOrderCustomer) {
+      throw new Error("Não autorizado a registrar microtaxa para este pedido.");
+    }
+
     // Idempotência estrita: se a microtaxa para este pedido já foi registrada, retorna sem duplicar
     const { data: existingFee } = await supabase
       .from("billing_line_items")

@@ -1,13 +1,31 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { formatMoney } from "@/lib/money";
 import { formatDateTime } from "@/lib/datetime";
 import { getOrderForReceipt } from "@/services/order.functions";
+import { getUserSession } from "@/services/auth.functions";
 import { FileText, Download, CheckCircle, Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/workspace_/pedidos/$id/recibo")({
   head: () => ({ meta: [{ title: "Comanda & Recibo do Pedido — Waesy" }] }),
+  beforeLoad: async ({ location }) => {
+    let session: any = null;
+    try {
+      session = await getUserSession();
+    } catch {
+      session = null;
+    }
+
+    if (!session?.user) {
+      throw redirect({
+        to: "/entrar",
+        search: { returnUrl: location.pathname },
+      });
+    }
+
+    return { session };
+  },
   loader: async ({ params }: { params: { id: string } }) => {
     try {
       return await getOrderForReceipt({ data: { id: params.id } });

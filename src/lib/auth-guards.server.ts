@@ -25,11 +25,11 @@ export async function requireRole(allowedRoles: Role[]): Promise<{ id: string; r
  throw new Error(`Forbidden: Insufficient privileges (${identity.role}). Required one of: ${allowedRoles.join(", ")}`);
  }
 
- if (!identity.store_id) {
+ if (!isGlobalAdmin && !identity.store_id) {
  throw new Error("Forbidden: No active store context associated with this identity.");
  }
 
- return { id: identity.id, role: identity.role as Role, store_id: identity.store_id };
+ return { id: identity.id, role: identity.role as Role, store_id: (identity.store_id || "") as string };
 }
 
 /**
@@ -116,7 +116,23 @@ export async function requireStaff(): Promise<{ id: string; role: Role; store_id
 /**
  * Exige acesso global de plataforma (master/platform_admin).
  */
-export async function requirePlatformAdmin() {
-  return requireRole(["platform_admin", "master"]);
+export async function requirePlatformAdmin(): Promise<{ id: string; role: Role; store_id: string | null }> {
+  const { getServerIdentity } = await import("./identity.server");
+  const identity = await getServerIdentity();
+
+  if (!identity.id) {
+    throw new Error("Unauthorized: User not authenticated.");
+  }
+
+  const isGlobalAdmin =
+    identity.role === "platform_admin" ||
+    identity.role === "master" ||
+    Boolean((identity as any).isPlatformAdmin);
+
+  if (!isGlobalAdmin) {
+    throw new Error(`Forbidden: Platform admin privileges required (${identity.role}).`);
+  }
+
+  return { id: identity.id, role: identity.role as Role, store_id: identity.store_id || null };
 }
 
