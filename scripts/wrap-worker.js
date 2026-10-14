@@ -88,9 +88,10 @@ globalThis.__env__ = Object.assign({}, __fallbackEnv__, globalThis.__env__ || {}
   fs.writeFileSync(bundledFile, envHeader + bundledCode);
 
   const workerDir = path.join(process.cwd(), "dist/_worker.js");
-  if (!fs.existsSync(workerDir)) {
-    fs.mkdirSync(workerDir, { recursive: true });
+  if (fs.existsSync(workerDir)) {
+    fs.rmSync(workerDir, { recursive: true, force: true });
   }
+  fs.mkdirSync(workerDir, { recursive: true });
   const workerIndexFile = path.join(workerDir, "index.js");
   fs.writeFileSync(workerIndexFile, envHeader + bundledCode, "utf-8");
   if (fs.existsSync(bundledFile)) {
