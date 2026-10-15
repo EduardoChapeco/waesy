@@ -318,89 +318,165 @@ export const saveMasterPrompt = createServerFn({ method: "POST" })
 // ============================================================
 
 /**
+ * Obtém todas as chaves ativas do pool para um provedor, ordenadas para equilibrar o consumo
+ * entre os limites gratuitos (menor daily_request_count e mais antiga last_used_at),
+ * respeitando a quarentena de 5 minutos caso tenha sofrido HTTP 429.
+ */
+export async function getAllActiveKeysForProvider(
+  provider: ApiProvider,
+  ownerId?: string
+): Promise<Array<{ id: string; rawKey: string }>> {
+  const keys: Array<{ id: string; rawKey: string }> = [];
+
+  // 1. BYOK do usuário ou loja (se houver no cofre)
+  if (ownerId) {
+    try {
+      const byokSecret = await getActiveSecretForProvider(provider, ownerId).catch(() => null);
+      if (byokSecret) {
+        keys.push({ id: `byok-${provider}`, rawKey: byokSecret });
+      }
+    } catch {}
+  }
+
+  // 2. Chaves cadastradas na api_key_pools do Admin Master
+  try {
+    const supabase = getServerClient();
+    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+
+    const { data: poolRows } = await supabase
+      .from("api_key_pools")
+      .select("id, encrypted_key, daily_request_count, last_used_at, last_error_at, last_error_message")
+      .eq("provider", provider)
+      .eq("is_active", true)
+      .order("daily_request_count", { ascending: true })
+      .order("last_used_at", { ascending: true, nullsFirst: true });
+
+    if (poolRows && poolRows.length > 0) {
+      // Prioriza chaves fora do cooldown de erro 429
+      const availableKeys = poolRows.filter((r) => {
+        if (!r.last_error_at) return true;
+        const inCooldown = r.last_error_at > fiveMinutesAgo;
+        const isRateLimit = (r.last_error_message || "").includes("429");
+        return !(inCooldown && isRateLimit);
+      });
+
+      const selectedPool = availableKeys.length > 0 ? availableKeys : poolRows;
+
+      for (const row of selectedPool) {
+        if (row.encrypted_key) {
+          const rawKey = Buffer.from(row.encrypted_key, "base64").toString("utf-8").trim();
+          if (rawKey && !keys.some((k) => k.rawKey === rawKey)) {
+            keys.push({ id: row.id, rawKey });
+          }
+        }
+      }
+    }
+  } catch (err) {
+    console.warn(`[api-orchestrator] Falha ao ler chaves do pool para ${provider}:`, err);
+  }
+
+  // 3. Fallbacks de variáveis de ambiente locais
+  const envKeyName = `${provider.toUpperCase()}_API_KEY`;
+  const envFallback = (typeof process !== "undefined" && process.env ? process.env[envKeyName] : undefined)?.trim();
+  if (envFallback && !keys.some((k) => k.rawKey === envFallback)) {
+    keys.push({ id: `env-${provider}`, rawKey: envFallback });
+  }
+
+  if (provider === "gemini") {
+    const alt = process.env.GOOGLE_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.VITE_GEMINI_API_KEY;
+    if (alt && !keys.some((k) => k.rawKey === alt.trim())) {
+      keys.push({ id: "env-gemini-alt", rawKey: alt.trim() });
+    }
+  } else if (provider === "firecrawl") {
+    const alt = process.env.FIRECRAWL_API_KEY_1 || process.env.FIRECRAWL_API_KEY_2 || process.env.VITE_FIRECRAWL_API_KEY;
+    if (alt && !keys.some((k) => k.rawKey === alt.trim())) {
+      keys.push({ id: "env-firecrawl-alt", rawKey: alt.trim() });
+    }
+  } else if (provider === "steel") {
+    const alt = process.env.VITE_STEEL_API_KEY;
+    if (alt && !keys.some((k) => k.rawKey === alt.trim())) {
+      keys.push({ id: "env-steel-alt", rawKey: alt.trim() });
+    }
+  }
+
+  return keys;
+}
+
+/**
+ * Atualiza estatísticas de uso da chave de API (FinOps & Quotas).
+ */
+export async function recordKeyUsage(keyId: string): Promise<void> {
+  if (!keyId || keyId.startsWith("env-") || keyId.startsWith("byok-")) return;
+  try {
+    const supabase = getServerClient();
+    const { data } = await supabase
+      .from("api_key_pools")
+      .select("daily_request_count")
+      .eq("id", keyId)
+      .maybeSingle();
+
+    await supabase
+      .from("api_key_pools")
+      .update({
+        last_used_at: new Date().toISOString(),
+        daily_request_count: ((data as any)?.daily_request_count || 0) + 1,
+      })
+      .eq("id", keyId);
+  } catch {}
+}
+
+/**
+ * Registra telemetria ACID granular em ai_telemetry_logs para observabilidade.
+ */
+export async function recordAiTelemetry(entry: {
+  callId?: string;
+  task: string;
+  provider: ApiProvider;
+  model: string;
+  latencyMs: number;
+  inputTokens?: number;
+  outputTokens?: number;
+  status: "success" | "error" | "fallback_recovered";
+  fallbackUsed?: boolean;
+  fallbackFrom?: string;
+  errorMessage?: string;
+  storeId?: string;
+  userId?: string;
+}): Promise<void> {
+  try {
+    const supabase = getServerClient();
+    await supabase.from("ai_telemetry_logs").insert({
+      call_id: entry.callId || `call-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      task: entry.task,
+      module: "omni_mining_orchestrator",
+      provider: entry.provider,
+      model: entry.model,
+      latency_ms: entry.latencyMs,
+      input_tokens: entry.inputTokens || 0,
+      output_tokens: entry.outputTokens || 0,
+      total_tokens: (entry.inputTokens || 0) + (entry.outputTokens || 0),
+      status: entry.status,
+      fallback_used: entry.fallbackUsed ?? false,
+      fallback_from: entry.fallbackFrom || null,
+      error_message: entry.errorMessage ? entry.errorMessage.slice(0, 255) : null,
+      store_id: entry.storeId || null,
+      user_id: entry.userId || null,
+      created_at: new Date().toISOString(),
+    });
+  } catch {
+    // Telemetria não bloqueia fluxo principal
+  }
+}
+
+/**
  * Helper interno: Obtém a chave ativa prioritária do pool com rotação e fallback para ambiente local.
  */
 export async function getNextActiveKey(provider: ApiProvider, ownerId?: string): Promise<{ id: string; rawKey: string } | null> {
-  // 1. BYOK: Verifica se o usuário ou loja ativo tem uma chave no secret_vault
-  try {
-    const targetOwner = ownerId || (await getServerIdentity().then((id) => id?.id).catch(() => undefined));
-    if (targetOwner) {
-      const byokSecret = await getActiveSecretForProvider(provider, targetOwner).catch(() => null);
-      if (byokSecret) {
-        return { id: `byok-${provider}`, rawKey: byokSecret };
-      }
-    }
-  } catch {
-    // Prossegue para a pool da plataforma
+  const keys = await getAllActiveKeysForProvider(provider, ownerId);
+  if (keys.length > 0) {
+    await recordKeyUsage(keys[0].id);
+    return keys[0];
   }
-
-  const supabase = getServerClient();
-  try {
-    let query: any = supabase
-      .from("api_key_pools")
-      .select("id, encrypted_key, daily_request_count");
-
-    if (typeof query?.eq === "function") {
-      query = query.eq("provider", provider);
-      if (typeof query?.eq === "function") {
-        query = query.eq("is_active", true);
-      }
-    } else if (typeof query?.match === "function") {
-      query = query.match({ provider, is_active: true });
-    }
-
-    if (typeof query?.order === "function") {
-      query = query.order("last_used_at", { ascending: true, nullsFirst: true });
-    }
-    if (typeof query?.limit === "function") {
-      query = query.limit(1);
-    }
-
-    const { data } = typeof query?.maybeSingle === "function" 
-      ? await query.maybeSingle() 
-      : (typeof query?.single === "function" ? await query.single() : { data: null });
-
-    if (data?.encrypted_key) {
-      const rawKey = Buffer.from(data.encrypted_key, "base64").toString("utf-8");
-      // Atualiza timestamp de uso
-      await supabase
-        .from("api_key_pools")
-        .update({
-          last_used_at: new Date().toISOString(),
-          daily_request_count: ((data as any).daily_request_count || 0) + 1,
-        })
-        .eq("id", data.id);
-
-      return { id: data.id, rawKey };
-    }
-  } catch (err) {
-    console.warn(`[api-orchestrator] Falha ao ler chave do pool para ${provider}:`, err);
-  }
-
-  // Fallback para variáveis de ambiente locais
-  if (provider === "gemini") {
-    const envKey = process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY || process.env.GOOGLE_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY;
-    if (envKey && envKey.trim().length > 5) return { id: "env-gemini", rawKey: envKey.trim() };
-  } else if (provider === "groq") {
-    const envKey = process.env.GROQ_API_KEY || process.env.VITE_GROQ_API_KEY;
-    if (envKey && envKey.trim().length > 5) return { id: "env-groq", rawKey: envKey.trim() };
-  } else if (provider === "openai") {
-    const envKey = process.env.OPENAI_API_KEY || process.env.VITE_OPENAI_API_KEY;
-    if (envKey && envKey.trim().length > 5) return { id: "env-openai", rawKey: envKey.trim() };
-  } else if (provider === "openrouter") {
-    const envKey = process.env.OPENROUTER_API_KEY || process.env.VITE_OPENROUTER_API_KEY;
-    if (envKey && envKey.trim().length > 5) return { id: "env-openrouter", rawKey: envKey.trim() };
-  } else if (provider === "anthropic") {
-    const envKey = process.env.ANTHROPIC_API_KEY || process.env.VITE_ANTHROPIC_API_KEY;
-    if (envKey && envKey.trim().length > 5) return { id: "env-anthropic", rawKey: envKey.trim() };
-  } else if (provider === "firecrawl") {
-    const envKey = process.env.FIRECRAWL_API_KEY || process.env.VITE_FIRECRAWL_API_KEY;
-    if (envKey && envKey.trim().length > 5) return { id: "env-firecrawl", rawKey: envKey.trim() };
-  } else if (provider === "steel") {
-    const envKey = process.env.STEEL_API_KEY || process.env.VITE_STEEL_API_KEY;
-    if (envKey && envKey.trim().length > 5) return { id: "env-steel", rawKey: envKey.trim() };
-  }
-
   return null;
 }
 
@@ -568,6 +644,7 @@ export interface UnifiedAiResult {
  * Provedores suportados: OpenRouter, Groq, Gemini, OpenAI.
  */
 export async function executeUnifiedAiCall(options: UnifiedAiCallOptions): Promise<UnifiedAiResult> {
+  const callStartTime = Date.now();
   const systemPrompt = options.systemPrompt || options.systemInstruction;
   const userPrompt = options.userPrompt || options.prompt || "";
   const isJson = options.responseFormat === "json_object" || options.expectJson === true || options.jsonMode === true;
@@ -580,13 +657,19 @@ export async function executeUnifiedAiCall(options: UnifiedAiCallOptions): Promi
     });
   }
 
+  const targetOwner = options.ownerId || (await getServerIdentity().then((id) => id?.id || undefined).catch(() => undefined));
+  const targetStore = options.storeId || (await getServerIdentity().then((id) => id?.store_id || undefined).catch(() => undefined));
+
   const providersToTry: ApiProvider[] = [];
   if (preferred) {
     providersToTry.push(preferred);
   }
 
-  // Prioriza provedores com chaves ativas no pool da plataforma (Groq responde em ~200ms com Qwen 3.8, Gemini como fallback robusto)
-  const defaultCascade: ApiProvider[] = images.length > 0
+  // Priorização baseada em afinidade de tarefa e quotas gratuitas:
+  // - Visão/OCR: Gemini primeiro (suporte nativo multimodal gratuito)
+  // - Texto/Editorial/JSON/Extração: Groq primeiro (latência ~200ms, Qwen 3.8, cota gratuita alta)
+  const isVisionTask = images.length > 0 || options.taskType === "vision" || options.taskType === "ocr" || options.taskType === "multimodal";
+  const defaultCascade: ApiProvider[] = isVisionTask
     ? ["gemini", "openai", "openrouter", "anthropic"]
     : ["groq", "gemini", "openrouter", "openai", "anthropic"];
 
@@ -604,9 +687,7 @@ export async function executeUnifiedAiCall(options: UnifiedAiCallOptions): Promi
       keysToTry.push({ id: "override-key", rawKey: options.overrideApiKey });
     }
 
-    // 1. BYOK: Verifica se o lojista/usuário possui chave ativa configurada no secret_vault, tenant_ai_providers ou integration_credentials
-    const targetOwner = options.ownerId || (await getServerIdentity().then((id) => id?.id || undefined).catch(() => undefined));
-    const targetStore = options.storeId || (await getServerIdentity().then((id) => id?.store_id || undefined).catch(() => undefined));
+    // 1. BYOK: Verifica se o lojista/usuário possui chave ativa configurada no secret_vault
     if (targetOwner || targetStore) {
       const byokSecret = await getActiveSecretForProvider(provider, targetOwner || undefined, targetStore || undefined).catch(() => null);
       if (byokSecret && !keysToTry.some((k) => k.rawKey === byokSecret)) {
@@ -614,10 +695,12 @@ export async function executeUnifiedAiCall(options: UnifiedAiCallOptions): Promi
       }
     }
 
-    // 2. Pool de Chaves Gerenciadas da Plataforma (Admin Master)
-    const poolKey = await getNextActiveKey(provider).catch(() => null);
-    if (poolKey?.rawKey && !keysToTry.some((k) => k.rawKey === poolKey.rawKey)) {
-      keysToTry.push(poolKey);
+    // 2. Pool de Chaves Gerenciadas da Plataforma (Admin Master) - Carrega todas as chaves ativas do provedor balanceadas
+    const poolKeys = await getAllActiveKeysForProvider(provider, targetOwner).catch(() => []);
+    for (const pk of poolKeys) {
+      if (pk.rawKey && !keysToTry.some((k) => k.rawKey === pk.rawKey)) {
+        keysToTry.push(pk);
+      }
     }
 
     // 3. Fallback de Variáveis de Ambiente do Servidor
@@ -629,8 +712,24 @@ export async function executeUnifiedAiCall(options: UnifiedAiCallOptions): Promi
 
     if (keysToTry.length === 0) continue;
 
-
     for (const keyInfo of keysToTry) {
+      const finalizeSuccess = async (content: string, model: string, parsedJson?: any): Promise<UnifiedAiResult> => {
+        await recordKeyUsage(keyInfo.id);
+        const latencyMs = Date.now() - callStartTime;
+        await recordAiTelemetry({
+          task: options.taskType || options.feature || "unified_call",
+          provider,
+          model,
+          latencyMs,
+          status: errors.length > 0 ? "fallback_recovered" : "success",
+          fallbackUsed: errors.length > 0,
+          fallbackFrom: errors.length > 0 ? errors[0] : undefined,
+          storeId: targetStore,
+          userId: targetOwner,
+        });
+        return { content, text: content, provider, model, parsedJson };
+      };
+
       try {
       if (provider === "openrouter") {
         const defaultModel = images.length > 0 ? "google/gemini-2.5-flash" : "meta-llama/llama-3.3-70b-instruct";
@@ -702,7 +801,7 @@ export async function executeUnifiedAiCall(options: UnifiedAiCallOptions): Promi
           }
         }
 
-        return { content, text: content, provider: "openrouter", model, parsedJson };
+        return await finalizeSuccess(content, model, parsedJson);
       }
 
       if (provider === "groq") {
@@ -773,7 +872,7 @@ export async function executeUnifiedAiCall(options: UnifiedAiCallOptions): Promi
           }
         }
 
-        return { content, text: content, provider: "groq", model, parsedJson };
+        return await finalizeSuccess(content, model, parsedJson);
       }
 
       if (provider === "gemini") {
@@ -849,7 +948,7 @@ export async function executeUnifiedAiCall(options: UnifiedAiCallOptions): Promi
           }
         }
 
-        return { content, text: content, provider: "gemini", model, parsedJson };
+        return await finalizeSuccess(content, model, parsedJson);
       }
 
       if (provider === "openai") {
@@ -919,7 +1018,7 @@ export async function executeUnifiedAiCall(options: UnifiedAiCallOptions): Promi
           }
         }
 
-        return { content, text: content, provider: "openai", model, parsedJson };
+        return await finalizeSuccess(content, model, parsedJson);
       }
 
       if (provider === "anthropic") {
@@ -991,7 +1090,7 @@ export async function executeUnifiedAiCall(options: UnifiedAiCallOptions): Promi
           }
         }
 
-        return { content, text: content, provider: "anthropic", model, parsedJson };
+        return await finalizeSuccess(content, model, parsedJson);
       }
     } catch (err: any) {
       if (keyInfo?.id) {
@@ -1001,6 +1100,17 @@ export async function executeUnifiedAiCall(options: UnifiedAiCallOptions): Promi
     }
   }
 }
+
+  await recordAiTelemetry({
+    task: options.taskType || options.feature || "unified_call",
+    provider: providersToTry[0] || "groq",
+    model: "none",
+    latencyMs: Date.now() - callStartTime,
+    status: "error",
+    errorMessage: errors.join("; "),
+    storeId: targetStore,
+    userId: targetOwner,
+  });
 
   throw new Error(
     `Nenhum provedor de IA ativo pôde processar a solicitação. Verifique suas chaves em Admin Master > Pools de APIs ou Workspace > Cofre de IA (OpenRouter, Groq, Gemini, OpenAI ou Anthropic). Detalhes: ${errors.join("; ") || "Sem chaves ativas configuradas"}`

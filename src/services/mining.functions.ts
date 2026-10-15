@@ -4,7 +4,7 @@ import { harvestAndPersistPlaces } from "./mining/places-harvester";
 import { syncAndPersistEconomicIndicators } from "./mining/economic-indicators-persister";
 import { extractAndPersistJobOpportunity } from "./mining/job-opportunity-extractor";
 import { harvestAndPersistPncpTenders } from "./mining/pncp-harvester";
-import { executeCrawlQueueBatchDirect } from "./mining/crawler-batch-engine";
+import { executeCrawlQueueBatchDirect, reapStalledProcessingQueueItems } from "./mining/crawler-batch-engine";
 import { crossEnrichListingsWithCnpj } from "./mining/places-cnpj-cross-enricher";
 import { pollActiveCrawlerSources } from "./crawler-sources.functions";
 import { curateDirectoryListingRecord, batchCurateDirectoryListings } from "./mining/business-curation-bootstrap";
@@ -3019,7 +3019,7 @@ export const getGhostStoreMetricsFn = createServerFn({ method: "GET" })
 export const dispatchScheduledMiningJobFn = createServerFn({ method: "POST" })
   .validator(
     z.object({
-      jobType: z.enum(["market-data", "rss-fetcher", "cnpj-enrichment", "continuous-crawler", "datajud-sync"]),
+      jobType: z.enum(["market-data", "rss-fetcher", "cnpj-enrichment", "continuous-crawler", "datajud-sync", "queue-reaper"]),
     })
   )
   .handler(async ({ data }): Promise<{ success: boolean; result: any }> => {
@@ -3161,6 +3161,19 @@ export const dispatchScheduledMiningJobFn = createServerFn({ method: "POST" })
         status: "success",
         duration_ms: Date.now() - startTime,
         records_affected: syncedCount,
+        result_summary: jobResult,
+      });
+    } else if (data.jobType === "queue-reaper") {
+      const reapedCount = await reapStalledProcessingQueueItems(supabase);
+      jobResult = { reapedCount };
+
+      await supabase.from("scraper_audit_log").insert({
+        scraper_name: "queue-reaper",
+        action: "reap_stalled_queue_items_cron",
+        target_table: "crawl_queue",
+        status: "success",
+        duration_ms: Date.now() - startTime,
+        records_affected: reapedCount,
         result_summary: jobResult,
       });
     }

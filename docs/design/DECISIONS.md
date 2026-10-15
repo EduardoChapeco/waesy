@@ -3040,5 +3040,25 @@
 - **Fundamentação:** AGENTS.md B.1, B.2, B.5, B.8, B.9, B.11, B.22, B.25; SPEC-JOB-POSTING-MINING-AND-CURATION-REMEDIATION; WCAG 2.2 AA.
 - **Consequências:** O módulo de Empregos da plataforma Waesy opera com alta integridade transacional, sem vagas agregadas falsas, com salários padronizados e requisitos/benefícios estruturados.
 
+## DEC-217: Reengenharia Industrial do Omni-Mining, Roteamento Multi-Key de Quotas Gratuitas de IA e Resiliência da Malha de Crawlers
+
+- **Data:** 2026-10-15
+- **Contexto:** Execução integral da reengenharia industrial sob o Master Prompt nos 5 vetores canônicos (Vetor A ao Vetor E):
+  1. **Otimização de Limites Gratuitos e Pool Multi-Chaves:** As chaves de API cadastradas na plataforma (Groq, Firecrawl, Gemini, Steel.dev, OpenRouter) precisavam de balanceamento de carga para consumir integralmente as quotas gratuitas diárias antes de gerar custos, com rotação intra-provedor na mesma requisição caso uma chave atinja HTTP 429.
+  2. **Afinidade Inteligente de Tarefas:** Cada tipo de extração e curadoria deve acionar o provedor ideal (Editorial/Texto/JSON -> Groq com Qwen 3.8 / Llama 3.3 a 200ms; Visão/OCR/Multimodal -> Gemini 2.5 Flash gratuito; Web Scraping profundo -> Firecrawl multi-conta rotacionado -> Steel.dev -> Native Fetch com fingerprinting).
+  3. **Fingerprinting & Headers de Navegador Moderno:** Atualização de User-Agents para Chrome 134+ / Firefox 135+, injeção de Client Hints realistas (`sec-ch-ua`, `sec-ch-ua-mobile`, `sec-ch-ua-platform`, `priority: u=0, i`), cooldown de domínio com backoff exponencial e jitter aleatório.
+  4. **Auto-Cura da Fila de Crawling (Reaper):** Resolução determinística para itens da fila travados em `processing` por mais de 10 minutos devido a reinicializações ou timeouts de rede, restaurando-os para `pending`.
+  5. **Sincronização de Triggers Agendados:** Expansão de `dispatchScheduledMiningJobFn` para unificar a execução de rotinas via pg_cron e webhooks, incluindo o novo job `"queue-reaper"`.
+- **Decisão Adotada:**
+  1. **Router Multi-Key com FinOps (`api-orchestrator.functions.ts`):** Criada função `getAllActiveKeysForProvider` que ordena as chaves por `daily_request_count ASC` e `last_used_at ASC NULLS FIRST`, aplicando quarentena de 5 minutos apenas a chaves que sofreram HTTP 429 recente.
+  2. **Cascata de Provedores com Tarefas Especializadas & Telemetria:** `executeUnifiedAiCall` prioriza Groq para tarefas editoriais/textuais e Gemini para visão/multimodal, iterando por todas as chaves ativas do provedor antes de chavear o failover, registrando uso via `recordKeyUsage` e telemetria ACID em `ai_telemetry_logs`.
+  3. **Multi-Account Firecrawl Pool (`firecrawl-client.ts`):** `scrapeUrl` agora itera entre todas as chaves ativas do Firecrawl cadastradas no pool antes de recorrer ao Steel.dev ou Native Fetch, dobrando o teto mensal gratuito.
+  4. **Fingerprinting Industrial & Jitter (`scraper-utils.ts`):** Atualizada lista canônica de User-Agents com Chrome 134+ e Safari 18.3, implementado gerador de headers `getRealisticBrowserHeaders` com Client Hints e adicionado jitter aleatório de até 500ms no backoff exponencial.
+  5. **Auto-Healing Crawler Reaper (`crawler-batch-engine.ts` e `mining.functions.ts`):** Implementada rotina `reapStalledProcessingQueueItems` exposta no dispatcher de rotinas agendadas `dispatchScheduledMiningJobFn` sob o jobType `"queue-reaper"`.
+  6. **Bateria de Testes Canônicos (`omni-mining-reengineering.test.ts`):** 9 novos testes unitários adicionados e validados com 100% de sucesso (totalizando 60 testes de mineração verdes); compilação TypeScript com 0 erros (`tsc --noEmit`); Catraca de Design Lint com -25 violações.
+- **Fundamentação:** AGENTS.md B.1 a B.31, SPEC-OMNI-MINING-AND-INDUSTRIAL-SCRAPING-REENGINEERING, Apple HIG, WCAG 2.2 AA.
+- **Consequências:** Malha de crawlers e IA operando em padrão industrial de alta resiliência, com consumo maximizado de cotas gratuitas, tolerância imediata a rate limits e evasão aprimorada de bloqueios anti-bot.
+
+
 
 

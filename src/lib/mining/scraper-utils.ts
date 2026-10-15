@@ -48,15 +48,15 @@ const DEFAULT_RETRY_OPTIONS: Required<RetryOptions> = {
 };
 
 // =============================================================================
-// USER AGENTS ROTATIVOS
+// USER AGENTS & FINGERPRINTING ROTATIVO (Chrome 134+, Firefox 135+)
 // =============================================================================
 
 const USER_AGENTS = [
-  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
-  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
-  "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:123.0) Gecko/20100101 Firefox/123.0",
-  "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
-  "Mozilla/5.0 (iPhone; CPU iPhone OS 17_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Mobile/15E148 Safari/604.1",
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36",
+  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36",
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:135.0) Gecko/20100101 Firefox/135.0",
+  "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36",
+  "Mozilla/5.0 (iPhone; CPU iPhone OS 18_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.3 Mobile/15E148 Safari/604.1",
   "Mozilla/5.0 (compatible; WaesyBot/2.0; +https://waesy.com.br/bot)",
 ];
 
@@ -65,6 +65,41 @@ let userAgentIndex = 0;
 export function getRandomUserAgent(): string {
   userAgentIndex = (userAgentIndex + 1) % USER_AGENTS.length;
   return USER_AGENTS[userAgentIndex];
+}
+
+export function getRealisticBrowserHeaders(customHeaders: HeadersInit = {}): Record<string, string> {
+  const ua = getRandomUserAgent();
+  const isWindows = ua.includes("Windows");
+  const isMac = ua.includes("Macintosh");
+  const isMobile = ua.includes("iPhone") || ua.includes("Mobile");
+  const platform = isWindows ? '"Windows"' : isMac ? '"macOS"' : '"Linux"';
+
+  const defaultHeaders: Record<string, string> = {
+    'User-Agent': ua,
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+    'Accept-Language': 'pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7',
+    'Cache-Control': 'no-cache',
+    'Pragma': 'no-cache',
+    'sec-ch-ua': '"Chromium";v="134", "Not:A-Brand";v="24", "Google Chrome";v="134"',
+    'sec-ch-ua-mobile': isMobile ? '?1' : '?0',
+    'sec-ch-ua-platform': platform,
+    'sec-fetch-dest': 'document',
+    'sec-fetch-mode': 'navigate',
+    'sec-fetch-site': 'none',
+    'sec-fetch-user': '?1',
+    'upgrade-insecure-requests': '1',
+    'priority': 'u=0, i',
+  };
+
+  if (customHeaders instanceof Headers) {
+    customHeaders.forEach((v, k) => { defaultHeaders[k] = v; });
+  } else if (Array.isArray(customHeaders)) {
+    for (const [k, v] of customHeaders) { defaultHeaders[k] = v; }
+  } else if (typeof customHeaders === "object") {
+    Object.assign(defaultHeaders, customHeaders);
+  }
+
+  return defaultHeaders;
 }
 
 export function sleep(ms: number): Promise<void> {
@@ -277,13 +312,7 @@ export async function fetchWithRetry(
 
       const response = await fetch(url, {
         ...options,
-        headers: {
-          'User-Agent': getRandomUserAgent(),
-          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,application/json;q=0.8,*/*;q=0.7',
-          'Accept-Language': 'pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7',
-          'Cache-Control': 'no-cache',
-          ...options.headers,
-        },
+        headers: getRealisticBrowserHeaders(options.headers),
         signal: controller.signal,
       });
 
@@ -327,7 +356,8 @@ export async function fetchWithRetry(
       if (attempt <= opts.maxRetries) {
         opts.onRetry(attempt, new Error(`HTTP ${response.status}`));
         await sleep(delay);
-        delay = Math.min(delay * opts.backoffMultiplier, opts.maxDelayMs);
+        const jitter = Math.floor(Math.random() * 500);
+        delay = Math.min(delay * opts.backoffMultiplier + jitter, opts.maxDelayMs);
         continue;
       }
 
@@ -338,7 +368,8 @@ export async function fetchWithRetry(
       if (attempt <= opts.maxRetries) {
         opts.onRetry(attempt, lastError);
         await sleep(delay);
-        delay = Math.min(delay * opts.backoffMultiplier, opts.maxDelayMs);
+        const jitter = Math.floor(Math.random() * 500);
+        delay = Math.min(delay * opts.backoffMultiplier + jitter, opts.maxDelayMs);
         continue;
       }
 
