@@ -141,7 +141,7 @@ function ClassifiedsMasterPage() {
         </div>
       </div>
 
-      <div className="px-4 sm:px-6 space-y-4 pt-2 sm:pt-4">
+      <div className="px-3 sm:px-6 space-y-3 sm:space-y-4 pt-2 sm:pt-4">
 
         {/* Barra de controle superior */}
         <ClassifiedCatalogHeader

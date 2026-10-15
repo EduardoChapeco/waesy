@@ -603,17 +603,17 @@ function CommunityMarketplaceView({ data }: { data: any }) {
   ]);
 
   return (
-    <div className="w-full space-y-4 sm:space-y-4 pb-14">
+    <div className="w-full space-y-3 sm:space-y-4 pb-14">
       {/* ── 0. HERO BANNERS (Trava Anti-Jank + Upload Limpo de Mídia pelo Admin Master) ── */}
       {heroSection && heroSection.items && heroSection.items.length > 0 ? (
-        <section aria-label={heroSection.title || "Destaques Principais"} className="w-full">
+        <section aria-label={heroSection.title || "Destaques Principais"} className="w-full py-1 my-2">
           {heroSection.show_title && heroSection.title && (
             <div className="mb-2 px-1">
-              <h2 className="text-base sm:text-lg font-bold text-foreground tracking-tight">
+              <h2 className="text-base sm:text-lg font-bold text-foreground tracking-tight truncate">
                 {heroSection.title}
               </h2>
               {heroSection.show_subtitle && heroSection.subtitle && (
-                <p className="text-xs text-muted-foreground">{heroSection.subtitle}</p>
+                <p className="text-xs text-muted-foreground line-clamp-1">{heroSection.subtitle}</p>
               )}
             </div>
           )}
@@ -623,7 +623,7 @@ function CommunityMarketplaceView({ data }: { data: any }) {
           />
         </section>
       ) : banners && banners.length > 0 ? (
-        <section aria-label="Destaques Principais" className="w-full">
+        <section aria-label="Destaques Principais" className="w-full py-1 my-2">
           <BannerHeroCarousel banners={banners} />
         </section>
       ) : null}
@@ -762,7 +762,7 @@ function CommunityMarketplaceView({ data }: { data: any }) {
             <section aria-label="Places" className="space-y-2">
               <HorizontalRail
                 title="Places"
-                actionLabel="Ver todos"
+                actionLabel="Ver mais"
                 onAction={() => {}}
                 actionTo="/diretorio"
                 leadCard={
@@ -844,7 +844,7 @@ function CommunityMarketplaceView({ data }: { data: any }) {
                                 niche: item.category || undefined,
                               })
                             }
-                            className="inline-flex items-center gap-1.5 h-11 min-h-11 px-3 rounded-md text-xs font-bold text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 cursor-pointer transition-colors"
+                            className="inline-flex items-center gap-2 h-11 min-h-11 px-3 rounded-md text-xs font-bold text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 cursor-pointer transition-colors"
                           >
                             <WhatsappLogo size={16} weight="bold" />
                             <span>WhatsApp</span>
@@ -887,7 +887,7 @@ function CommunityMarketplaceView({ data }: { data: any }) {
                   <HorizontalProductShelf
                     title="Marketplace de Empresas"
                     subtitle="Produtos e serviços com nota fiscal e garantia de empresas parceiras"
-                    viewAllLabel="Ver vitrine completa"
+                    viewAllLabel="Ver mais"
                     onViewAll={() => navigate({ to: "/marketplace" })}
                   >
                     <HitsLeadCard
@@ -926,7 +926,7 @@ function CommunityMarketplaceView({ data }: { data: any }) {
             <section aria-label="Classificados" className="space-y-2">
               <HorizontalRail
                 title="Classificados"
-                actionLabel="Ver todos"
+                actionLabel="Ver mais"
                 onAction={() => {}}
                 actionTo="/classificados"
                 leadCard={
@@ -1022,7 +1022,7 @@ function CommunityMarketplaceView({ data }: { data: any }) {
             <section aria-label="Notícias" className="space-y-2">
               <HorizontalRail
                 title="Notícias"
-                actionLabel="Ver todas"
+                actionLabel="Ver mais"
                 onAction={() => {}}
                 actionTo="/noticias"
               >
@@ -1040,7 +1040,7 @@ function CommunityMarketplaceView({ data }: { data: any }) {
             <section aria-label="Empregos" className="space-y-2">
               <HorizontalRail
                 title="Empregos"
-                actionLabel="Ver todas"
+                actionLabel="Ver mais"
                 onAction={() => {}}
                 actionTo="/empregos"
                 leadCard={
@@ -1114,7 +1114,7 @@ function CommunityMarketplaceView({ data }: { data: any }) {
             <section aria-label="Eventos" className="space-y-2">
               <HorizontalRail
                 title="Eventos"
-                actionLabel="Ver todos"
+                actionLabel="Ver mais"
                 onAction={() => {}}
                 actionTo="/eventos"
                 leadCard={
@@ -1189,8 +1189,7 @@ function CommunityMarketplaceView({ data }: { data: any }) {
             <section aria-label="Agenda Cultural" className="space-y-2">
               <HorizontalRail
                 title="Agenda"
-                badge="Programação cultural"
-                actionLabel="Ver agenda"
+                actionLabel="Ver mais"
                 onAction={() => {}}
                 actionTo="/agenda"
               >
@@ -1414,7 +1413,7 @@ function CommunityMarketplaceView({ data }: { data: any }) {
                             entityTitle: item.title,
                           })
                         }
-                        className="inline-flex items-center gap-1.5 h-11 min-h-11 px-3 rounded-md text-xs font-bold text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 cursor-pointer transition-colors"
+                        className="inline-flex items-center gap-2 h-11 min-h-11 px-3 rounded-md text-xs font-bold text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 cursor-pointer transition-colors"
                       >
                         <WhatsappLogo size={16} weight="bold" />
                         <span>WhatsApp</span>
@@ -1473,7 +1472,7 @@ function CommunityMarketplaceView({ data }: { data: any }) {
                     }
                     statusSlot={
                       item.badge ? (
-                        <Badge variant="outline" className="text-2xs font-mono px-1.5 py-0 h-4 text-muted-foreground border-border/50">
+                        <Badge variant="outline" className="text-xs font-mono px-2 py-0.5 h-auto text-muted-foreground border-border/50">
                           {item.badge}
                         </Badge>
                       ) : undefined

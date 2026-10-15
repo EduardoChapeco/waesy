@@ -41,11 +41,11 @@ function CategoryBubbleButton({
     >
       <div
         className={cn(
-          "size-16 rounded-full flex items-center justify-center p-1 border-2 transition-all",
+          "size-14 rounded-full flex items-center justify-center p-1 border-2 transition-colors",
           "focus-visible:ring-2 focus-visible:ring-ring",
           isSelected
             ? "border-primary shadow-xs ring-2 ring-primary/20"
-            : "border-border/60 hover:border-primary/50 group-hover:scale-105"
+            : "border-border/60 hover:border-primary/50"
         )}
       >
         {item.imageUrl && !imgError ? (
@@ -65,7 +65,7 @@ function CategoryBubbleButton({
 
       <span
         className={cn(
-          "text-2xs font-medium text-center truncate max-w-20 transition-colors",
+          "text-xs font-medium text-center truncate max-w-20 transition-colors",
           isSelected ? "text-primary font-bold" : "text-muted-foreground group-hover:text-foreground"
         )}
       >
@@ -84,7 +84,7 @@ export function CategoryBubbleCarousel({
   return (
     <div
       className={cn(
-        "flex items-center gap-4 overflow-x-auto scrollbar-none py-2 px-1 select-none",
+        "flex items-center gap-3 overflow-x-auto scrollbar-none py-1 px-1 select-none",
         className
       )}
     >

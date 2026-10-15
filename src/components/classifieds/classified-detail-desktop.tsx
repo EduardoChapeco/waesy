@@ -49,7 +49,7 @@ export function ClassifiedDetailDesktop({
 }: UniversalClassifiedShowcaseProps) {
   const [activeImage, setActiveImage] = useState(0);
   const [fullscreenImage, setFullscreenImage] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<"overview" | "specs" | "payments" | "seller" | "map">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "media" | "seller">("overview");
   const [simulatedInstallments, setSimulatedInstallments] = useState<number>(12);
   const [isLeadFormModalOpen, setIsLeadFormModalOpen] = useState(false);
   const navigate = useNavigate();
@@ -137,6 +137,30 @@ export function ClassifiedDetailDesktop({
 
   const niche = useMemo(() => resolveClassifiedNiche(classified), [classified]);
   const attrs = classified.attributes || {};
+
+  const isTravelOrHospitality = useMemo(() => {
+    return (
+      niche.id === "hospitality_stay" ||
+      niche.id === "travel" ||
+      (classified.attributes?.template_style as string) === "resort_hotel" ||
+      Boolean(attrs.lodgings)
+    );
+  }, [niche, classified.attributes, attrs]);
+
+  const tabs = useMemo(() => {
+    if (isTravelOrHospitality) {
+      return [
+        { id: "overview" as const, label: "Infos do pacote" },
+        { id: "media" as const, label: "Fotos & Mídia" },
+        { id: "seller" as const, label: "Anunciante / Empresa" },
+      ];
+    }
+    return [
+      { id: "overview" as const, label: "Detalhes do Item" },
+      { id: "media" as const, label: "Fotos & Mídia" },
+      { id: "seller" as const, label: "Anunciante / Empresa" },
+    ];
+  }, [isTravelOrHospitality]);
 
   const priceCents = Number(classified.price_cents || 0);
   const maxInstallments = Math.max(1, Number(attrs.max_installments) || 1);
@@ -329,27 +353,6 @@ export function ClassifiedDetailDesktop({
         </div>
       </div>
 
-      {/* ── MODO PROPRIETÁRIO (Banner Desktop) ── */}
-      {isOwner && (
-        <div className="w-full max-w-7xl mx-auto px-6 mb-4">
-          <div className="flex items-center justify-between gap-3 px-4 py-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-xs text-amber-900 dark:text-amber-100">
-            <div className="flex items-center gap-2 font-medium">
-              <span className="size-2 rounded-full bg-amber-500 shrink-0" />
-              <span><strong>Modo Proprietário Ativo:</strong> Você está visualizando seu anúncio como os compradores o veem.</span>
-            </div>
-            {onEdit && (
-              <button
-                type="button"
-                onClick={onEdit}
-                className="font-bold underline hover:no-underline cursor-pointer"
-              >
-                Editar anúncio
-              </button>
-            )}
-          </div>
-        </div>
-      )}
-
       {/* ── MOSAICO BENTO DE MÍDIA (Desktop Airbnb Layout) ── */}
       <div className="w-full max-w-7xl mx-auto px-6 mb-8">
         {images.length === 0 ? (
@@ -456,32 +459,26 @@ export function ClassifiedDetailDesktop({
             </div>
           </div>
 
-          {/* Navegação por Abas (Modo Tabs) */}
-          {displayMode === "tabs" && (
-            <div className="flex items-center gap-1 border-b border-border/60 pb-2 overflow-x-auto no-scrollbar">
-              {[
-                { id: "overview", label: "Visão Geral" },
-                { id: "specs", label: "Especificações" },
-                ...(isPaymentAllowed && paymentMethodsList.length > 0 ? [{ id: "payments", label: "Pagamento & Financiamento" }] : []),
-                { id: "seller", label: "Anunciante" },
-                ...(!classified.hide_location && !attrs.hide_location && classified.location_lat && classified.location_lng ? [{ id: "map", label: "Localização" }] : []),
-              ].map((t) => (
-                <button
-                  key={t.id}
-                  type="button"
-                  onClick={() => setActiveTab(t.id as any)}
-                  className={cn(
-                    "px-4 py-2 text-xs font-semibold rounded-lg transition-colors cursor-pointer",
-                    activeTab === t.id
-                      ? "bg-primary text-primary-foreground font-bold shadow-xs"
-                      : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
-                  )}
-                >
-                  {t.label}
-                </button>
-              ))}
-            </div>
-          )}
+          {/* Navegação por Abas em Linha Única */}
+          <div className="tab-list flex flex-nowrap overflow-x-auto no-scrollbar gap-1 border-b border-border/40 pb-px whitespace-nowrap">
+            {tabs.map((t) => (
+              <button
+                key={t.id}
+                type="button"
+                role="tab"
+                aria-selected={activeTab === t.id}
+                onClick={() => setActiveTab(t.id)}
+                className={cn(
+                  "h-11 min-h-11 px-4 text-xs font-semibold rounded-t-lg transition-colors border-b-2 flex items-center justify-center shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                  activeTab === t.id
+                    ? "border-primary text-primary font-bold bg-primary/5"
+                    : "border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/40"
+                )}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
 
           {/* Destaque Visual por Modelo Canônico */}
           {(displayMode === "continuous_list" || activeTab === "overview") && (
@@ -765,7 +762,7 @@ export function ClassifiedDetailDesktop({
           )}
 
           {/* Ficha Técnica & Especificações Canônicas */}
-          {(displayMode === "continuous_list" || activeTab === "specs") && (
+          {(displayMode === "continuous_list" || activeTab === "overview") && (
             <div className="space-y-4">
               <NicheSpecificationsDisplay
                 items={featureList}
@@ -774,8 +771,8 @@ export function ClassifiedDetailDesktop({
             </div>
           )}
 
-          {/* Aba: Pagamentos & Financiamento */}
-          {(displayMode === "continuous_list" || activeTab === "payments") && (
+          {/* Pagamentos & Financiamento */}
+          {(displayMode === "continuous_list" || activeTab === "overview") && (
             <div className="rounded-lg border border-border/60 bg-card p-5 space-y-4">
               <div className="flex items-center justify-between border-b border-border/40 pb-3">
                 <div className="flex items-center gap-2">
@@ -790,7 +787,7 @@ export function ClassifiedDetailDesktop({
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                   {acceptsPix && (
                     <div className="p-3 rounded-lg border border-emerald-500/30 bg-emerald-500/5 space-y-1">
-                      <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-700 dark:text-emerald-400">
+                      <div className="flex items-center gap-2 text-xs font-bold text-emerald-700 dark:text-emerald-400">
                         <QrCode className="size-3.5" />
                         <span>PIX</span>
                       </div>
@@ -802,7 +799,7 @@ export function ClassifiedDetailDesktop({
 
                   {acceptsCard && (
                     <div className="p-3 rounded-lg border border-blue-500/30 bg-blue-500/5 space-y-1">
-                      <div className="flex items-center gap-1.5 text-xs font-bold text-blue-700 dark:text-blue-400">
+                      <div className="flex items-center gap-2 text-xs font-bold text-blue-700 dark:text-blue-400">
                         <CreditCard className="size-3.5" />
                         <span>Cartão de Crédito</span>
                       </div>
@@ -814,7 +811,7 @@ export function ClassifiedDetailDesktop({
 
                   {acceptsBoleto && (
                     <div className="p-3 rounded-lg border border-border/60 bg-muted/20 space-y-1">
-                      <div className="flex items-center gap-1.5 text-xs font-bold text-foreground">
+                      <div className="flex items-center gap-2 text-xs font-bold text-foreground">
                         <Receipt className="size-3.5 text-muted-foreground" />
                         <span>Boleto Bancário</span>
                       </div>
@@ -826,7 +823,7 @@ export function ClassifiedDetailDesktop({
 
                   {acceptsCarne && (
                     <div className="p-3 rounded-lg border border-amber-500/30 bg-amber-500/5 space-y-1">
-                      <div className="flex items-center gap-1.5 text-xs font-bold text-amber-700 dark:text-amber-400">
+                      <div className="flex items-center gap-2 text-xs font-bold text-amber-700 dark:text-amber-400">
                         <FileSpreadsheet className="size-3.5" />
                         <span>Carnê Digital</span>
                       </div>
@@ -838,7 +835,7 @@ export function ClassifiedDetailDesktop({
 
                   {acceptsFinancing && (
                     <div className="p-3 rounded-lg border border-purple-500/30 bg-purple-500/5 space-y-1">
-                      <div className="flex items-center gap-1.5 text-xs font-bold text-purple-700 dark:text-purple-400">
+                      <div className="flex items-center gap-2 text-xs font-bold text-purple-700 dark:text-purple-400">
                         <Landmark className="size-3.5" />
                         <span>Financiamento</span>
                       </div>
@@ -850,7 +847,7 @@ export function ClassifiedDetailDesktop({
 
                   {acceptsTrade && (
                     <div className="p-3 rounded-lg border border-border/60 bg-muted/20 space-y-1">
-                      <div className="flex items-center gap-1.5 text-xs font-bold text-foreground">
+                      <div className="flex items-center gap-2 text-xs font-bold text-foreground">
                         <RefreshCw className="size-3.5 text-muted-foreground" />
                         <span>Aceita Troca / Permuta</span>
                       </div>
@@ -887,6 +884,40 @@ export function ClassifiedDetailDesktop({
             </div>
           )}
 
+          {/* Aba: Fotos & Mídia Desktop */}
+          {activeTab === "media" && (
+            <div className="space-y-4 animate-in fade-in duration-150">
+              <h2 className="text-sm font-bold text-foreground">Fotos e Mídia do Anúncio ({images.length})</h2>
+              {images.length > 0 ? (
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {images.map((imgUrl, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => setFullscreenImage(imgUrl)}
+                      className="aspect-square rounded-lg overflow-hidden border border-border/50 bg-muted/20 relative group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      aria-label={`Ver imagem ${idx + 1} em tela cheia`}
+                    >
+                      {isVideoUrl(imgUrl) ? (
+                        <video src={imgUrl} className="size-full object-cover" />
+                      ) : (
+                        <img
+                          src={imgUrl}
+                          alt={`${classified.title} - ${idx + 1}`}
+                          className="size-full object-cover group-hover:scale-105 transition-transform"
+                        />
+                      )}
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <div className="p-8 rounded-lg border border-border/50 bg-muted/20 text-center text-xs text-muted-foreground">
+                  Nenhuma foto adicional cadastrada.
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Card do Anunciante Desktop */}
           {(displayMode === "continuous_list" || activeTab === "seller") && (
             <div className="rounded-lg border border-border/60 bg-card p-5 space-y-4">
@@ -917,7 +948,7 @@ export function ClassifiedDetailDesktop({
                     variant="outline"
                     onClick={handleStartNativeChat}
                     disabled={isStartingChat}
-                    className="h-10 px-4 rounded-lg border-primary/30 text-primary bg-primary/10 hover:bg-primary/20 text-xs font-bold flex items-center gap-2 cursor-pointer"
+                    className="h-11 min-h-11 px-4 rounded-lg border-primary/30 text-primary bg-primary/10 hover:bg-primary/20 text-xs font-bold flex items-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                   >
                     <MessageCircle className="size-4 text-primary" />
                     <span>{isStartingChat ? "Abrindo..." : "Conversar no App"}</span>
@@ -928,7 +959,7 @@ export function ClassifiedDetailDesktop({
                       type="button"
                       variant="outline"
                       onClick={handleWhatsApp}
-                      className="h-10 px-4 rounded-lg border-emerald-500/40 text-emerald-700 dark:text-emerald-300 bg-emerald-500/10 text-xs font-bold flex items-center gap-2 cursor-pointer"
+                      className="h-11 min-h-11 px-4 rounded-lg border-emerald-500/40 text-emerald-700 dark:text-emerald-300 bg-emerald-500/10 text-xs font-bold flex items-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                     >
                       <Phone className="size-4 text-emerald-500" />
                       <span>WhatsApp</span>
@@ -940,7 +971,7 @@ export function ClassifiedDetailDesktop({
           )}
 
           {/* Localização e Mapa Desktop */}
-          {(displayMode === "continuous_list" || activeTab === "map") && !classified.hide_location && !attrs.hide_location && classified.location_lat && classified.location_lng && (
+          {(displayMode === "continuous_list" || activeTab === "overview") && !classified.hide_location && !attrs.hide_location && classified.location_lat && classified.location_lng && (
             <div className="space-y-3 pt-2">
               <h2 className="text-sm font-bold text-foreground">Localização no Mapa</h2>
               <div className="rounded-lg border border-border/50 overflow-hidden h-64 bg-muted/20">
@@ -1017,8 +1048,8 @@ export function ClassifiedDetailDesktop({
                 </div>
               )}
 
-              {/* Formas de Pagamento Rápidas (Exibidas apenas em modo de abas quando a aba de pagamentos não está visível) */}
-              {isPaymentAllowed && displayMode === "tabs" && activeTab !== "payments" && (
+              {/* Formas de Pagamento Rápidas */}
+              {isPaymentAllowed && displayMode === "tabs" && (
                 <div className="flex flex-wrap gap-2 pt-2">
                   {acceptsPix && (
                     <span className="inline-flex items-center gap-1 px-3 py-1 rounded-md text-xs font-semibold bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">

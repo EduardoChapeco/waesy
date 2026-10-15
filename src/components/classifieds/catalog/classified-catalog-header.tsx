@@ -73,13 +73,13 @@ export function ClassifiedCatalogHeader({
           )}
         </div>
 
-        {/* Botão de Filtros Avançados */}
+        {/* Botão de Filtros Avançados (size-11 / 44px touch target) */}
         <Button
           type="button"
           variant="outline"
-          onClick={onOpenFilters} /* focus-visible: */
+          onClick={onOpenFilters}
           className={cn(
-            "h-11 px-4 rounded-lg border border-border/70 text-xs sm:text-sm font-semibold flex items-center gap-2 shrink-0 cursor-pointer transition-colors active:scale-95 focus-visible:ring-2 focus-visible:ring-ring",
+            "size-11 min-h-11 min-w-11 sm:w-auto sm:px-4 rounded-lg border border-border/70 text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 shrink-0 cursor-pointer transition-colors active:scale-95 focus-visible:ring-2 focus-visible:ring-ring",
             activeFiltersCount > 0
               ? "bg-primary/10 border-primary/40 text-primary font-bold"
               : "bg-card hover:bg-muted/50 text-foreground"

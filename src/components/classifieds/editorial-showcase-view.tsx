@@ -456,14 +456,14 @@ export function EditorialShowcaseView({
   // ── CTA Text do Botão Primário Dinâmico ─────────────────────────────────────
   const getPrimaryCtaLabel = () => {
     if (isTravel) {
-      if (transportType === "airplane" || transportType === "aereo") return "Solicitar Cotação Aérea";
+      if (transportType === "airplane" || transportType === "aereo") return "Consultar e Reservar";
       if (transportType === "bus" || transportType === "terrestre") return "Reservar Pacote Terrestre";
-      if (transportType === "cruise" || transportType === "cruzeiro") return "Solicitar Cotação Cruzeiro";
-      if (transportType === "combo" || transportType === "misto") return "Solicitar Cotação Multimodal";
+      if (transportType === "cruise" || transportType === "cruzeiro") return "Consultar Cruzeiro";
+      if (transportType === "combo" || transportType === "misto") return "Consultar Pacote Multimodal";
       if (transportType === "train" || transportType === "ferrovia") return "Reservar Roteiro Ferroviário";
       if (transportType === "car" || transportType === "rodoviario") return "Reservar Pacote Rodoviário";
       if (transportType === "hotel_only") return "Consultar Disponibilidade";
-      return "Solicitar Cotação de Viagem";
+      return "Consultar e Reservar";
     }
     return getClassifiedPrimaryCtaLabel(classified);
   };
@@ -667,26 +667,6 @@ export function EditorialShowcaseView({
       </div>
 
       <div className="w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-0 pt-2 sm:pt-4 space-y-4 animate-in fade-in duration-200">
-
-        {/* ── Banner Canônico de Modo Proprietário (Regra 23 do AGENTS.md) ── */}
-        {isOwner && (
-          <div className="mx-2 sm:mx-0 flex items-center justify-between gap-3 px-4 py-2 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200">
-            <div className="flex items-center gap-2 text-xs font-medium">
-              <span className="flex size-2 rounded-full bg-amber-500 animate-pulse shrink-0" />
-              <span>
-                <strong>Modo Proprietário:</strong> Você é o autor deste anúncio. Edições feitas no formulário são sincronizadas em tempo real.
-              </span>
-            </div>
-            <Button
-              type="button"
-              size="sm"
-              onClick={handleEditClick}
-              className="h-7 text-xs px-3 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-semibold cursor-pointer shrink-0"
-            >
-              <Edit3 className="size-3.5 mr-1" /> Editar Anúncio
-            </Button>
-          </div>
-        )}
 
         {/* ── Desktop Contextual Header / Breadcrumbs (Apenas Desktop) ── */}
         <div className="hidden md:flex items-center justify-between py-2 border-b border-border/40">

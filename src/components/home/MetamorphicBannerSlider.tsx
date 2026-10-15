@@ -136,7 +136,7 @@ export function MetamorphicBannerSlider({
                 src={item.image_url}
                 alt={item.title || ""}
                 loading={idx === 0 ? "eager" : "lazy"}
-                className="size-full object-cover transition-transform duration-300 group-hover:scale-101 motion-reduce:transition-none"
+                className="size-full object-cover object-center transition-transform duration-300 group-hover:scale-101 motion-reduce:transition-none rounded-lg"
                 onError={(e) => {
                   (e.currentTarget as HTMLElement).style.opacity = "0.3";
                 }}
@@ -148,7 +148,7 @@ export function MetamorphicBannerSlider({
                   {item.badge_text && (
                     <Badge
                       variant="default"
-                      className="self-start mb-2 px-2 py-1 text-2xs font-bold uppercase tracking-wider rounded-md"
+                      className="self-start mb-2 px-2 py-1 text-xs font-bold uppercase tracking-wider rounded-md"
                     >
                       {item.badge_text}
                     </Badge>

@@ -28,6 +28,7 @@ import { CepField } from "@/components/ui/cep-field";
 import { PhoneField } from "@/components/ui/phone-field";
 import { CreditCardNumberInput, CardExpiryInput, CardCvvInput } from "@/components/ui/credit-card-field";
 import { Surface } from "@/components/ui/surface";
+import { DeliverySelector } from "@/components/checkout/delivery-selector";
 import { getNicheSemantics } from "@/lib/niche-semantics";
 
 export const Route = createFileRoute("/_store/checkout")({
@@ -1777,46 +1778,22 @@ export function CheckoutPage() {
         {/* ── ETAPA 2: ENTREGA FÍSICA OU RETIRADA ── */}
         {activeStep === 2 && isPhysicalDelivery && (
  <Surface className="p-5 sm:p-6 rounded-lg space-y-5">
- {/* Seletor de Modalidade: Entrega vs Retirada */}
- <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
- <button
- type="button"
- onClick={() => setFormData({ ...formData, shippingMethod: "manual_table" })}
- className={cn(
- "p-4 rounded-lg border text-left flex items-center gap-3 transition-colors motion-reduce:transition-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
- formData.shippingMethod !== "pickup"
- ? "bg-foreground text-background border-foreground font-bold"
- : "bg-card border-border/80 text-foreground hover:bg-muted/40"
- )}
- >
- <Truck size={20} className={formData.shippingMethod !== "pickup" ? "text-background" : "text-muted-foreground"} />
- <div>
- <p className="text-xs font-bold">Entrega no Endereço</p>
- <p className={cn("text-xs text-muted-foreground/75", formData.shippingMethod !== "pickup" ? "text-background/80" : "text-muted-foreground")}>
- Receba em casa ou trabalho
- </p>
- </div>
- </button>
-
- <button
- type="button"
- onClick={handleSelectPickup}
- className={cn(
- "p-4 rounded-lg border text-left flex items-center gap-3 transition-colors motion-reduce:transition-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
- formData.shippingMethod === "pickup"
- ? "bg-foreground text-background border-foreground font-bold"
- : "bg-card border-border/80 text-foreground hover:bg-muted/40"
- )}
- >
- <Store size={20} className={formData.shippingMethod === "pickup" ? "text-background" : "text-muted-foreground"} />
- <div>
- <p className="text-xs font-bold">Retirar na Loja</p>
- <p className={cn("text-xs text-muted-foreground/75", formData.shippingMethod === "pickup" ? "text-background/80" : "text-muted-foreground")}>
- Grátis no balcão
- </p>
- </div>
- </button>
- </div>
+          <DeliverySelector
+            method={formData.shippingMethod === "pickup" ? "pickup" : "delivery"}
+            onMethodChange={(method) => {
+              if (method === "pickup") {
+                handleSelectPickup();
+              } else {
+                setFormData((prev) => ({ ...prev, shippingMethod: "manual_table" }));
+              }
+            }}
+            storeAddress={
+              storeProfile?.address
+                ? `${storeProfile.address}, ${storeProfile.city || ""}`
+                : "Endereço principal da loja informado após confirmação"
+            }
+            storeName={storeProfile?.name || "Loja Parceira"}
+          />
 
  {/* Opção 1: Entrega no Endereço */}
  {formData.shippingMethod !== "pickup" ? (
@@ -2327,20 +2304,7 @@ export function CheckoutPage() {
               </div>
             )}
  </div>
- ) : (
- /* Opção 2: Retirar na Loja */
- <div className="p-4 rounded-lg bg-muted/20 space-y-2">
- <p className="text-xs font-bold text-foreground">Endereço de Retirada:</p>
- <p className="text-xs text-muted-foreground">
- {storeProfile?.address
- ? `${storeProfile.address}, ${storeProfile.city || ""}`
- : "Endereço principal da loja informado no pedido"}
- </p>
- <p className="text-xs text-emerald-600 dark:text-emerald-400 font-bold">
-  Custo de frete: R$ 0,00 (Retirada Grátis)
- </p>
- </div>
- )}
+ ) : null}
 
  <div className="pt-3 grid grid-cols-2 sm:flex sm:items-center sm:justify-between gap-3">
  <Button

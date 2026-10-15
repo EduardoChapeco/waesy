@@ -149,9 +149,9 @@ export function DiscoveryControlBar({
   };
 
   return (
-    <section aria-label="Controles e Filtros" className={cn("space-y-2 sm:space-y-3 w-full", stickyClasses, className)}>
+    <section aria-label="Controles e Filtros" className={cn("space-y-2 my-2 w-full", stickyClasses, className)}>
       {/* ── 1. LINHA SUPERIOR: MOTOR DE BUSCA & FILTRO CONTEXTUAL (ML-STYLE) ── */}
-      <div className="flex items-center justify-between gap-2 sm:gap-3 w-full">
+      <div className="flex items-center justify-between gap-2 w-full">
         {/* Campo de Busca Contextual (No Mobile recolhe para dar respiro até clicar na Lupa) */}
         <div className={cn("relative flex-1 min-w-0", !isMobileSearchExpanded && !search ? "hidden sm:block" : "block")}>
           <MagnifyingGlass
@@ -180,8 +180,8 @@ export function DiscoveryControlBar({
               <X size={14} weight="bold" />
             </button>
           ) : (
-            <kbd className="hidden sm:inline-flex items-center gap-1 pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 select-none rounded border border-border/80 bg-muted/50 px-2 py-1 font-mono text-2xs font-medium text-muted-foreground/80">
-              <span className="text-2xs">⌘</span>K
+            <kbd className="hidden sm:inline-flex items-center gap-1 pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 select-none rounded border border-border/80 bg-muted/50 px-2 py-1 font-mono text-xs font-medium text-muted-foreground/80">
+              <span className="text-xs">⌘</span>K
             </kbd>
           )}
         </div>
@@ -194,7 +194,7 @@ export function DiscoveryControlBar({
               setIsMobileSearchExpanded(true);
               setTimeout(() => inputRef.current?.focus(), 40);
             }}
-            className="sm:hidden flex-1 h-11 px-4 rounded-lg bg-card border border-border/70 flex items-center gap-3 text-left text-xs text-muted-foreground active:scale-98 transition-all"
+            className="sm:hidden flex-1 h-11 px-4 rounded-lg bg-card border border-border/70 flex items-center gap-3 text-left text-xs text-muted-foreground active:scale-98 transition-colors"
           >
             <MagnifyingGlass size={16} weight="bold" className="text-foreground/70 shrink-0" />
             <span className="truncate">{searchPlaceholder}</span>
@@ -219,13 +219,13 @@ export function DiscoveryControlBar({
           </div>
         )}
 
-        {/* Botão de Funil / ML-Filter Modal (Sempre disponível 44x44px h-11) */}
+        {/* Botão de Funil / ML-Filter Modal (Ícone tátil compacto size-11 / 44px) */}
         <Button
           type="button"
           variant="outline"
           onClick={handleOpenFilterEngine}
           className={cn(
-            "h-11 min-w-11 px-4 rounded-lg border border-border/70 text-xs sm:text-sm font-semibold flex items-center gap-2 shrink-0 cursor-pointer shadow-2xs transition-all active:scale-95",
+            "size-11 min-h-11 min-w-11 sm:w-auto sm:px-4 rounded-lg border border-border/70 text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 shrink-0 cursor-pointer shadow-2xs transition-colors active:scale-95 focus-visible:ring-2 focus-visible:ring-primary",
             computedActiveCount > 0
               ? "bg-primary/10 border-primary/40 text-primary font-bold"
               : "bg-card hover:bg-muted/50 text-foreground"
@@ -233,10 +233,10 @@ export function DiscoveryControlBar({
           title="Filtrar e Ordenar"
           aria-label="Abrir filtros"
         >
-          <SlidersHorizontal size={16} weight="bold" className="shrink-0" />
-          <span>{filterLabel}</span>
+          <SlidersHorizontal size={18} weight="bold" className="shrink-0" />
+          <span className="hidden sm:inline">{filterLabel}</span>
           {computedActiveCount > 0 && (
-            <span className="size-5 rounded-full bg-primary text-primary-foreground text-2xs font-bold flex items-center justify-center shrink-0">
+            <span className="size-5 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center shrink-0">
               {computedActiveCount}
             </span>
           )}
@@ -448,7 +448,7 @@ export function DiscoveryControlBar({
           />
           <div
             ref={tabsContainerRef}
-            className="flex items-center overflow-x-auto snap-x snap-mandatory scrollbar-hide no-scrollbar gap-2 py-2 px-3 sm:px-1 pr-10 w-full focus:outline-none"
+            className="flex items-center overflow-x-auto snap-x snap-mandatory scrollbar-hide no-scrollbar touch-pan-x gap-2 py-1 px-1 pr-10 w-full focus:outline-none"
           >
             {categories.map((chip) => {
               const isActive = activeCategory === chip.id || (!activeCategory && chip.id === "todos");
@@ -484,7 +484,7 @@ export function DiscoveryControlBar({
                 );
               }
 
-              // Padrão Canônico: Botão Grande h-10 sm:h-11 rounded-lg com Snap Start
+              // Padrão Canônico: Chip Compacto h-8 sm:h-9 rounded-lg com Snap Start
               return (
                 <button
                   key={chip.id}
@@ -492,24 +492,24 @@ export function DiscoveryControlBar({
                   type="button"
                   onClick={() => onSelectCategory(chip.id)}
                   className={cn(
-                    "snap-start h-10 sm:h-11 px-4 sm:px-4 rounded-lg border text-xs sm:text-sm font-semibold shrink-0 flex items-center gap-2 transition-all cursor-pointer select-none whitespace-nowrap active:scale-98 shadow-2xs",
+                    "snap-start h-8 sm:h-9 px-3 rounded-lg border text-xs font-medium shrink-0 flex items-center gap-2 transition-colors cursor-pointer select-none whitespace-nowrap active:scale-95 shadow-2xs",
                     isActive
                       ? "bg-foreground text-background border-foreground font-bold shadow-xs"
                       : "bg-card hover:bg-muted/50 text-muted-foreground hover:text-foreground border-border/70"
                   )}
                 >
                   {chip.icon_url ? (
-                    <img src={chip.icon_url} alt="" className="size-4 object-contain shrink-0" />
+                    <img src={chip.icon_url} alt="" className="size-3.5 object-contain shrink-0" />
                   ) : Icon ? (
-                    <Icon className={cn("size-4 shrink-0", isActive ? "text-background" : "text-muted-foreground/80")} />
+                    <Icon className={cn("size-3.5 shrink-0", isActive ? "text-background" : "text-muted-foreground/80")} />
                   ) : chip.emoji ? (
-                    <span className="text-sm shrink-0">{chip.emoji}</span>
+                    <span className="text-xs shrink-0">{chip.emoji}</span>
                   ) : null}
                   <span>{cleanLabel}</span>
                   {chip.count !== undefined && chip.count > 0 && (
                     <span
                       className={cn(
-                        "text-2xs px-2 py-1 rounded-md font-mono",
+                        "text-xs px-2 py-0.5 rounded-md font-mono",
                         isActive ? "bg-background/20 text-background" : "bg-muted text-muted-foreground"
                       )}
                     >
@@ -517,7 +517,7 @@ export function DiscoveryControlBar({
                     </span>
                   )}
                   {chip.badge && (
-                    <span className="text-2xs px-2 py-0.5 rounded-full bg-primary text-primary-foreground font-bold uppercase tracking-wider">
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-primary text-primary-foreground font-bold uppercase tracking-wider">
                       {chip.badge}
                     </span>
                   )}

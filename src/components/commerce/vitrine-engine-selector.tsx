@@ -10,118 +10,71 @@ export interface VitrineEngineSelectorProps {
 }
 
 /**
- * Seletor Tri-Engine da Vitrine Principal (Design Silencioso / Apple HIG)
- * Botões em cards amplos e limpos para filtragem direta por tipo de vitrine:
- * 1. Lugares (Guia local, serviços e endereços)
- * 2. Lojas (Marketplace e estabelecimentos)
- * 3. Classificados (Anúncios da comunidade)
+ * Seletor Tri-Engine da Vitrine Principal (Apple HIG / Linha Única Compacta)
+ * Unifica os três pilares em uma linha horizontal única e compacta com ícones táteis >= 44x44px:
+ * 1. Lugares (Guia local e serviços)
+ * 2. Marketplace (Empresas parceiras e ofertas)
+ * 3. Classificados (Comunidade e desapegos)
  */
 export function VitrineEngineSelector({
   activeMode,
   onModeChange,
   className,
 }: VitrineEngineSelectorProps) {
+  const engines = [
+    {
+      id: "empresas" as const,
+      label: "Lugares",
+      icon: Buildings,
+    },
+    {
+      id: "marketplace" as const,
+      label: "Marketplace",
+      icon: Storefront,
+    },
+    {
+      id: "classifieds" as const,
+      label: "Classificados",
+      icon: Tag,
+    },
+  ];
+
   return (
-    <div
+    <nav
       role="tablist"
       aria-label="Tipo de visualização da vitrine"
-      className={cn("w-full flex items-stretch gap-2 sm:gap-3", className)}
+      className={cn("w-full flex flex-row items-center justify-between gap-2 px-1", className)}
     >
-      {/* ── Card 1: Lugares ── */}
-      <button
-        type="button"
-        role="tab"
-        aria-selected={activeMode === "empresas"}
-        tabIndex={activeMode === "empresas" ? 0 : -1}
-        onClick={() => onModeChange("empresas")}
-        className={cn(
-          "flex-1 min-w-0 group relative flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-1 sm:gap-3 p-2 sm:px-4 sm:py-4 rounded-lg border transition-colors duration-150 cursor-pointer select-none min-h-11 sm:min-h-14 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-          activeMode === "empresas"
-            ? "bg-card border-foreground/40 text-foreground ring-1 ring-foreground/20 font-bold"
-            : "bg-card/70 hover:bg-card text-muted-foreground hover:text-foreground border-border/60"
-        )}
-      >
-        <div
-          className={cn(
-            "size-7 sm:size-9 rounded-lg flex items-center justify-center shrink-0 transition-colors",
-            activeMode === "empresas"
-              ? "bg-primary/10 text-primary"
-              : "bg-muted text-muted-foreground group-hover:text-foreground"
-          )}
-        >
-          <Buildings
-            weight={activeMode === "empresas" ? "fill" : "bold"}
-            className="size-4 sm:size-5 shrink-0"
-          />
-        </div>
-        <span className="text-xs sm:text-sm font-bold tracking-tight truncate leading-none text-center sm:text-left">
-          Lugares
-        </span>
-      </button>
+      {engines.map((engine) => {
+        const isActive = activeMode === engine.id;
+        const IconComponent = engine.icon;
 
-      {/* ── Card 2: Marketplace ── */}
-      <button
-        type="button"
-        role="tab"
-        aria-selected={activeMode === "marketplace"}
-        tabIndex={activeMode === "marketplace" ? 0 : -1}
-        onClick={() => onModeChange("marketplace")}
-        className={cn(
-          "flex-1 min-w-0 group relative flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-1 sm:gap-3 p-2 sm:px-4 sm:py-4 rounded-lg border transition-colors duration-150 cursor-pointer select-none min-h-11 sm:min-h-14 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-          activeMode === "marketplace"
-            ? "bg-card border-foreground/40 text-foreground ring-1 ring-foreground/20 font-bold"
-            : "bg-card/70 hover:bg-card text-muted-foreground hover:text-foreground border-border/60"
-        )}
-      >
-        <div
-          className={cn(
-            "size-7 sm:size-9 rounded-lg flex items-center justify-center shrink-0 transition-colors",
-            activeMode === "marketplace"
-              ? "bg-primary/10 text-primary"
-              : "bg-muted text-muted-foreground group-hover:text-foreground"
-          )}
-        >
-          <Storefront
-            weight={activeMode === "marketplace" ? "fill" : "bold"}
-            className="size-4 sm:size-5 shrink-0"
-          />
-        </div>
-        <span className="text-xs sm:text-sm font-bold tracking-tight truncate leading-none text-center sm:text-left">
-          Marketplace
-        </span>
-      </button>
-
-      {/* ── Card 3: Classificados ── */}
-      <button
-        type="button"
-        role="tab"
-        aria-selected={activeMode === "classifieds"}
-        tabIndex={activeMode === "classifieds" ? 0 : -1}
-        onClick={() => onModeChange("classifieds")}
-        className={cn(
-          "flex-1 min-w-0 group relative flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-1 sm:gap-3 p-2 sm:px-4 sm:py-4 rounded-lg border transition-colors duration-150 cursor-pointer select-none min-h-11 sm:min-h-14 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-          activeMode === "classifieds"
-            ? "bg-card border-foreground/40 text-foreground ring-1 ring-foreground/20 font-bold"
-            : "bg-card/70 hover:bg-card text-muted-foreground hover:text-foreground border-border/60"
-        )}
-      >
-        <div
-          className={cn(
-            "size-7 sm:size-9 rounded-lg flex items-center justify-center shrink-0 transition-colors",
-            activeMode === "classifieds"
-              ? "bg-primary/10 text-primary"
-              : "bg-muted text-muted-foreground group-hover:text-foreground"
-          )}
-        >
-          <Tag
-            weight={activeMode === "classifieds" ? "fill" : "bold"}
-            className="size-4 sm:size-5 shrink-0"
-          />
-        </div>
-        <span className="text-xs sm:text-sm font-bold tracking-tight truncate leading-none text-center sm:text-left">
-          Classificados
-        </span>
-      </button>
-    </div>
+        return (
+          <button
+            key={engine.id}
+            type="button"
+            role="tab"
+            aria-selected={isActive}
+            tabIndex={isActive ? 0 : -1}
+            onClick={() => onModeChange(engine.id)}
+            className={cn(
+              "h-11 min-h-11 flex-1 min-w-0 flex items-center justify-center gap-2 px-2 rounded-lg border transition-colors duration-150 cursor-pointer select-none active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+              isActive
+                ? "bg-foreground text-background border-foreground font-bold shadow-xs"
+                : "bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground border-border/40"
+            )}
+            title={engine.label}
+          >
+            <IconComponent
+              weight={isActive ? "fill" : "bold"}
+              className={cn("size-4 sm:size-5 shrink-0", isActive ? "text-background" : "text-muted-foreground")}
+            />
+            <span className="text-xs sm:text-sm font-semibold tracking-tight truncate">
+              {engine.label}
+            </span>
+          </button>
+        );
+      })}
+    </nav>
   );
 }
