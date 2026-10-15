@@ -125,7 +125,7 @@ export function WaesyCopilotDrawer(_props: { session?: { id?: string; user?: { i
     {
       id: "initial-msg",
       role: "assistant",
-      text: "Ola! Sou o Copilot inteligente do Waesy. Posso te ajudar a encontrar servicos locais, planejar viagens, conferir vagas e criar anuncios no sistema. Como posso te apoiar agora?",
+      text: "Olá! Sou o seu assessor consultivo executivo da região no Waesy. Posso te ajudar a descobrir os melhores estabelecimentos da cidade, planejar viagens com roteiros e Pix, conferir vagas verificadas ou estruturar propostas comerciais e planilhas para o seu negócio. Como posso te apoiar agora?",
     },
   ]);
 
@@ -177,7 +177,7 @@ export function WaesyCopilotDrawer(_props: { session?: { id?: string; user?: { i
 
       setMessages((prev) => [...prev, assistantMsg]);
     } catch (err: any) {
-      toast.error(err?.message || "Erro ao consultar o Copilot.");
+      toast.error(err?.message || "Tivemos uma oscilação rápida ao buscar as informações. Já estou pronto para tentar novamente para você.");
     } finally {
       setIsSending(false);
     }
@@ -246,10 +246,10 @@ export function WaesyCopilotDrawer(_props: { session?: { id?: string; user?: { i
         className={`fixed z-30 flex items-center gap-2 h-11 px-4 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-transform font-semibold text-xs focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none cursor-pointer ${
           isCompact ? "bottom-20 right-4" : "bottom-6 right-6"
         }`}
-        title="Abrir Assistente Inteligente Waesy Copilot"
+        title="Abrir Assessor Local Waesy"
       >
         <ChatCircleDots className="size-4" weight="fill" />
-        <span className="hidden sm:inline">Copilot</span>
+        <span className="hidden sm:inline">Assessor</span>
       </button>
 
       {/* Sheet / Drawer Lateral ou Inferior do Copilot */}
@@ -268,10 +268,10 @@ export function WaesyCopilotDrawer(_props: { session?: { id?: string; user?: { i
               </div>
               <div className="flex flex-col text-left">
                 <SheetTitle className="text-sm font-bold text-foreground">
-                  Waesy Copilot
+                  Assessor Local
                 </SheetTitle>
                 <SheetDescription className="text-xs text-muted-foreground">
-                  Assistente Central da Plataforma
+                  Assessor Executivo da Região
                 </SheetDescription>
               </div>
             </div>
@@ -366,7 +366,7 @@ export function WaesyCopilotDrawer(_props: { session?: { id?: string; user?: { i
                   <CircleNotch className="size-3.5 animate-spin motion-reduce:animate-none" />
                 </div>
                 <div className="bg-muted text-muted-foreground border border-border/60 rounded-lg px-4 py-2 text-xs flex items-center gap-2">
-                  <span>Processando instrucao...</span>
+                  <span>Consultando os dados para você...</span>
                 </div>
               </div>
             )}
@@ -441,7 +441,7 @@ export function WaesyCopilotDrawer(_props: { session?: { id?: string; user?: { i
                   handleSendMessage();
                 }
               }}
-              placeholder={isUploadingAttachment ? "Enviando arquivo..." : "Pergunte ao Copilot..."}
+              placeholder={isUploadingAttachment ? "Analisando seu arquivo..." : "Como posso te apoiar hoje? Digite aqui..."}
               className="flex-1 h-11 px-3 rounded-lg border border-border bg-background text-base sm:text-xs text-foreground placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
               disabled={isSending || isUploadingAttachment}
             />

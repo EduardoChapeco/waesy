@@ -44,15 +44,15 @@ const STEP_ICONS: Record<AIActivityStepType, React.ElementType> = {
 };
 
 const STEP_LABELS: Record<AIActivityStepType, string> = {
-  skill: "Skill",
-  tool: "Ferramenta",
-  search: "Pesquisa",
-  database: "Dados",
-  squad: "Esquadrão",
-  model: "Modelo",
-  thought: "Raciocínio",
-  subagent: "Subagente",
-  planner: "Planejador",
+  skill: "Especialidade",
+  tool: "Ação Prática",
+  search: "Busca Local",
+  database: "Registros Oficiais",
+  squad: "Equipe de Apoio",
+  model: "Análise",
+  thought: "Reflexão",
+  subagent: "Assistente de Apoio",
+  planner: "Organização",
 };
 
 export function AIActivityTrail({
@@ -79,7 +79,7 @@ export function AIActivityTrail({
           const next: AIActivityStep = {
             id: String(row.step_id),
             type: (row.step_type || "tool") as AIActivityStepType,
-            label: String(row.label || "Etapa do agente"),
+            label: String(row.label || "Etapa de atendimento"),
             detail: row.detail || undefined,
             status: row.status === "running" ? "running" : row.status === "failed" ? "failed" : row.status === "cancelled" ? "cancelled" : "completed",
             fsmPhase: row.fsm_phase || undefined,
@@ -126,7 +126,7 @@ export function AIActivityTrail({
             </div>
             <div className="min-w-0 flex-1 flex items-center gap-1.5 flex-wrap">
               <span className="font-semibold text-foreground truncate">
-                {runningStep ? runningStep.label : "Processando requisição..."}
+                {runningStep ? runningStep.label : "Organizando suas informações..."}
               </span>
               {runningStep?.detail && (
                 <span className="text-muted-foreground truncate hidden sm:inline text-3xs font-mono">
@@ -171,7 +171,7 @@ export function AIActivityTrail({
               {hasError
                 ? "Consulta concluída com alertas"
                 : completedCount > 1
-                ? `${completedCount} etapas e fontes consultadas`
+                ? `${completedCount} etapas e registros conferidos`
                 : "1 etapa concluída"}
               {totalDuration > 0 && (
                 <span className="text-muted-foreground/60 font-mono text-3xs ml-1.5">

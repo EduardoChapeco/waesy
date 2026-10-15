@@ -141,7 +141,7 @@ export function ArtifactTravelDossier({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-xs font-bold text-foreground">
               <QrCode className="size-4 text-primary" aria-hidden="true" />
-              <span>Pagamento Instantâneo Pix (BACEN EMV)</span>
+              <span>Código Pix para Pagamento Instantâneo</span>
             </div>
             {pixKey && (
               <span className="text-2xs text-muted-foreground font-mono">Chave: {pixKey}</span>
@@ -169,7 +169,7 @@ export function ArtifactTravelDossier({
             ) : (
               <>
                 <Copy className="size-4" />
-                <span>Copiar Código Pix (Copia e Cola)</span>
+                <span>Copiar Código Pix para Pagar</span>
               </>
             )}
           </Button>

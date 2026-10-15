@@ -575,7 +575,7 @@ export async function executeAiCoreGateway(request: AIGatewayRequest): Promise<A
       },
       error: {
         code: "PROMPT_SHIELD_VIOLATION",
-        message: securityCheck.violationReason || "Prompt bloqueado por violação de segurança e conformidade.",
+        message: securityCheck.violationReason || "Mensagem bloqueada por regras de segurança e proteção de dados.",
       },
     };
   }
@@ -671,7 +671,7 @@ export async function executeAiCoreGateway(request: AIGatewayRequest): Promise<A
       return {
         success: true,
         result: {
-          text: "Job enfileirado com sucesso.",
+          text: "Solicitação registrada com sucesso. Estamos preparando seu conteúdo.",
           asyncJobId: job.id,
         },
         metadata: {
@@ -869,7 +869,7 @@ export async function executeAiCoreGateway(request: AIGatewayRequest): Promise<A
 
     const latencyMs = Date.now() - startTime;
     if (request.task === "imagem" && request.context?.allowDeterministicFallback === true) {
-      const fallbackSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024"><rect width="1024" height="1024" fill="lightgray"/><text x="512" y="490" text-anchor="middle" font-family="sans-serif" font-size="40" fill="dimgray">Fallback determinístico</text><text x="512" y="545" text-anchor="middle" font-family="sans-serif" font-size="24" fill="dimgray">Imagem não gerada por provider</text></svg>`;
+      const fallbackSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024"><rect width="1024" height="1024" fill="lightgray"/><text x="512" y="490" text-anchor="middle" font-family="sans-serif" font-size="40" fill="dimgray">Prévia Ilustrativa</text><text x="512" y="545" text-anchor="middle" font-family="sans-serif" font-size="24" fill="dimgray">Gerando imagem oficial</text></svg>`;
       return {
         success: true,
         result: {
@@ -919,7 +919,7 @@ export async function executeAiCoreGateway(request: AIGatewayRequest): Promise<A
       },
       error: {
         code: "PROVIDER_UNAVAILABLE",
-        message: `Todos os provedores da cascata falharam para a tarefa '${request.task}'. Detalhe: ${lastError?.message || "Erro desconhecido"}`,
+        message: `Tivemos uma oscilação temporária em nossos serviços de consulta. Já estamos tentando novamente para você. Detalhe: ${lastError?.message || "Instabilidade temporária"}`,
       },
     };
 
@@ -965,7 +965,7 @@ export const callAiCoreGateway = createServerFn({ method: "POST" })
   .validator(
     z.object({
       task: aiTaskTypeEnum,
-      prompt: z.string().min(1, "O prompt é obrigatório"),
+      prompt: z.string().min(1, "A mensagem ou solicitação é obrigatória"),
       systemPrompt: z.string().optional(),
       mode: z.enum(["sync", "stream", "async_queue"]).optional().default("sync"),
       constraints: z
@@ -1088,11 +1088,11 @@ export async function executeAiCoreGatewayStream(request: AIGatewayRequest, onDe
   const start = Date.now();
   const security = inspectPromptSecurity(request.prompt);
   const baseMeta = (provider: string, model: string, attemptsCount: number) => ({ callId, provider, model, fallbackUsed: attemptsCount > 1, attemptsCount, latencyMs: Date.now() - start, cacheHit: false, usage: { inputTokens: 0, outputTokens: 0, totalTokens: 0 }, costUsd: 0, promptVersion: request.promptVersion || "v1.0", fingerprint: generateFingerprint(request) });
-  if (!security.isSafe) return { success: false, metadata: baseMeta("shield", "shield-v1", 0), error: { code: "PROMPT_SHIELD_VIOLATION", message: security.violationReason || "Prompt bloqueado." } };
+  if (!security.isSafe) return { success: false, metadata: baseMeta("shield", "shield-v1", 0), error: { code: "PROMPT_SHIELD_VIOLATION", message: security.violationReason || "Mensagem bloqueada por regras de segurança e proteção de dados." } };
   const { hardenedSystemPrompt, sandboxedUserPrompt } = buildSandboxedPromptPayload(security.sanitizedPrompt || request.prompt, request.systemPrompt);
   const candidates: RouteCandidate[] = CANONICAL_TASK_ROUTES[request.task] || CANONICAL_TASK_ROUTES.chat;
   let attempts = 0;
-  let lastError = "Falha em todos os providers de streaming";
+  let lastError = "Instabilidade temporária nos serviços de transmissão";
   for (const candidate of candidates) {
     attempts++;
     try {

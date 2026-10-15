@@ -32,10 +32,10 @@ const DEFAULT_WORKSPACE_THREAD_ID = "00000000-0000-0000-0000-000000000002";
 export const Route = createFileRoute("/workspace/copilot")({
   head: () => ({
     meta: [
-      { title: "Copilot Operacional | Workspace Waesy" },
+      { title: "Assessor de Negócios | Painel Waesy" },
       {
         name: "description",
-        content: "Assistente de IA operacional para apoio à gestão de catálogo, pedidos, campanhas, turismo e finanças da loja.",
+        content: "Assessor executivo para apoio à gestão comercial, pedidos, estoque, campanhas e finanças da loja.",
       },
     ],
   }),
@@ -113,7 +113,7 @@ function WorkspaceCopilotPage() {
         {
           id: DEFAULT_WORKSPACE_THREAD_ID,
           type: "project",
-          title: "Copilot Operacional",
+          title: "Assessor de Negócios",
           isPinned: true,
           lastMessageSnippet: "Como posso apoiar a gestão do seu negócio hoje?",
           workingMemory: {},
@@ -141,9 +141,9 @@ function WorkspaceCopilotPage() {
     {
       id: "workspace-welcome-msg",
       threadId: activeThreadId,
-      senderName: "Copilot Operacional",
+      senderName: "Assessor de Negócios",
       isStaffOrAI: true,
-      text: "Olá! Sou o assistente operacional do seu Workspace. Posso te ajudar a analisar o faturamento do dia, identificar produtos com estoque baixo, gerar propostas comerciais, minerar novos leads locais ou disparar ações para seus clientes. O que você gostaria de executar agora?",
+      text: "Olá! Sou o seu assessor executivo de negócios no Waesy. Posso te ajudar a acompanhar o faturamento do dia, conferir produtos com saldo baixo no estoque, gerar propostas comerciais, conectar novas oportunidades e clientes locais ou organizar o fechamento do caixa. O que você gostaria de executar agora?",
       createdAt: new Date().toISOString(),
       status: "delivered",
     },

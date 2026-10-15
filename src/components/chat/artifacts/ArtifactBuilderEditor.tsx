@@ -23,6 +23,16 @@ export interface ArtifactBuilderEditorProps {
   className?: string;
 }
 
+const DOC_TYPE_LABELS: Record<string, string> = {
+  document: "Documento",
+  spreadsheet: "Planilha Comercial",
+  presentation: "Apresentação",
+  landing_page: "Página de Apresentação",
+  website: "Página de Apresentação",
+  social_post: "Publicação para Redes",
+  travel_itinerary: "Roteiro de Viagem",
+};
+
 export function ArtifactBuilderEditor({
   documentId,
   docType = "document",
@@ -66,7 +76,7 @@ export function ArtifactBuilderEditor({
       setTimeout(() => setSaved(false), 2000);
     } catch {
       setIsSaving(false);
-      setErrorMsg("JSON inválido: verifique a sintaxe antes de salvar.");
+      setErrorMsg("Formato com erro: verifique a estrutura antes de salvar.");
     }
   };
 
@@ -85,8 +95,8 @@ export function ArtifactBuilderEditor({
         <div className="flex items-center gap-2">
           <FileCode className="size-4 text-primary" aria-hidden="true" />
           <h4 className="text-sm font-bold text-foreground leading-snug">Editor Integrado</h4>
-          <Badge variant="outline" className="text-2xs font-mono">
-            {docType}
+          <Badge variant="outline" className="text-2xs font-medium">
+            {DOC_TYPE_LABELS[docType] || docType}
           </Badge>
         </div>
 
@@ -131,7 +141,7 @@ export function ArtifactBuilderEditor({
       {mode === "edit" ? (
         <div className="space-y-2">
           <label className="text-2xs font-semibold text-muted-foreground uppercase flex items-center justify-between">
-            <span>Estrutura JSON do Conteúdo</span>
+            <span>Estrutura do seu Documento</span>
             {errorMsg && <span className="text-destructive font-normal">{errorMsg}</span>}
           </label>
           <textarea
@@ -211,7 +221,7 @@ export function ArtifactBuilderEditor({
           className="w-full sm:w-auto h-11 min-h-11 px-4 text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 cursor-pointer flex items-center justify-center gap-2"
         >
           <ExternalLink className="size-4" />
-          <span>Abrir no Builder Completo</span>
+          <span>Abrir Editor Completo</span>
         </Button>
       </div>
     </div>

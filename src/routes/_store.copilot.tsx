@@ -33,11 +33,11 @@ const DEFAULT_GUEST_THREAD_ID = "00000000-0000-0000-0000-000000000001";
 export const Route = createFileRoute("/_store/copilot")({
   head: () => ({
     meta: [
-      { title: "Waesy Copilot | Assistente Central Inteligente" },
+      { title: "Assessor Local | Waesy" },
       {
         name: "description",
         content:
-          "Assistente inteligente para consultas locais, planejamento de viagens, recomendação de produtos e criação de propostas.",
+          "Assessor executivo local para descobertas da cidade, planejamento de viagens, compras e criação de propostas comerciais.",
       },
     ],
   }),
@@ -61,7 +61,7 @@ export const Route = createFileRoute("/_store/copilot")({
           const newThread = await createAiConversationThread({
             data: {
               type: "ai_assistant",
-              title: "Copilot Geral",
+              title: "Assessor Local",
               metadata: {},
               workingMemory: {},
             },
@@ -112,9 +112,9 @@ function CopilotPage() {
         {
           id: DEFAULT_GUEST_THREAD_ID,
           type: "ai_assistant",
-          title: "Copilot Geral",
+          title: "Assessor Local",
           isPinned: true,
-          lastMessageSnippet: "Como posso ajudar com produtos, viagens ou serviços?",
+          lastMessageSnippet: "Como posso te apoiar hoje com compras, viagens ou negócios locais?",
           workingMemory: {},
         },
       ];
@@ -140,9 +140,9 @@ function CopilotPage() {
     {
       id: "welcome-msg",
       threadId: activeThreadId,
-      senderName: "Waesy Copilot",
+      senderName: "Assessor Waesy",
       isStaffOrAI: true,
-      text: "Olá! Sou o Copilot inteligente da plataforma Waesy. Posso te ajudar a encontrar estabelecimentos no Places, pacotes no Turismo, ofertas no Marketplace ou estruturar propostas comerciais para o seu negócio. Como posso te apoiar hoje?",
+      text: "Olá! Sou o seu assessor consultivo executivo da nossa região no Waesy. Posso te ajudar a descobrir os melhores estabelecimentos da cidade, planejar viagens com roteiros e pagamentos Pix, encontrar ofertas locais verificadas ou estruturar propostas comerciais e planilhas para você. Como posso te apoiar hoje?",
       createdAt: new Date().toISOString(),
       status: "delivered",
     },

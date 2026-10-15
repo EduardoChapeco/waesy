@@ -559,11 +559,11 @@ export async function executeSubagentDAG(
     role: "@planner",
     parentTaskId: ctx.parentTaskId,
     domain: ctx.domain,
-    label: "Planejador Autônomo (@planner)",
-    detail: `Decompondo requisitos MECE para '${ctx.domain}' em ${ctx.city || "âmbito global"}`,
+    label: "Planejamento de Atendimento (@planner)",
+    detail: `Organizando etapas de atendimento para '${ctx.domain}' em ${ctx.city || "âmbito regional"}`,
     context: { threadId: ctx.threadId, storeId: ctx.storeId, city: ctx.city, state: ctx.state },
     execute: async () => ({
-      detail: `Grafo de execução composto: @investigator (varredura prévia) + @harvester (mineração real) -> @critic (auditoria)`,
+      detail: `Etapas organizadas: @investigator (contexto local) + @harvester (registros oficiais) -> @critic (conferência de qualidade)`,
       tokensUsed: 60,
     }),
   });
@@ -575,11 +575,11 @@ export async function executeSubagentDAG(
       role: "@investigator",
       parentTaskId: ctx.parentTaskId,
       domain: ctx.domain,
-      label: "Investigador de Contexto (@investigator)",
-      detail: `Verificando contexto de dados locais e integridade relacional`,
+      label: "Consulta de Contexto Local (@investigator)",
+      detail: `Verificando contexto de dados locais e preferências de atendimento`,
       context: { threadId: ctx.threadId, storeId: ctx.storeId, city: ctx.city, state: ctx.state },
       execute: async () => ({
-        detail: `Parâmetros contextuais e histórico checados com sucesso`,
+        detail: `Parâmetros e histórico consultados com sucesso`,
         tokensUsed: 50,
       }),
     }),
@@ -587,8 +587,8 @@ export async function executeSubagentDAG(
       role: "@harvester",
       parentTaskId: ctx.parentTaskId,
       domain: ctx.domain,
-      label: "Minerador Especialista (@harvester)",
-      detail: `Consultando fontes de dados oficiais e operacionais`,
+      label: "Consulta aos Registros Oficiais (@harvester)",
+      detail: `Consultando registros oficiais e operacionais da região`,
       context: { threadId: ctx.threadId, storeId: ctx.storeId, city: ctx.city, state: ctx.state },
       execute: harvesterTask,
     }),
@@ -614,15 +614,15 @@ export async function executeSubagentDAG(
     role: "@critic",
     parentTaskId: ctx.parentTaskId,
     domain: ctx.domain,
-    label: "Crítico de Qualidade (@critic)",
-    detail: `Auditando integridade contra dados fictícios e conformidade com schema`,
+    label: "Conferência de Qualidade (@critic)",
+    detail: `Conferindo precisão das informações e conformidade dos dados consultados`,
     context: { threadId: ctx.threadId, storeId: ctx.storeId, city: ctx.city, state: ctx.state },
     execute: async () => {
       if (harvesterFailed) {
-        throw new Error(`Falha detectada na extração de dados: ${harvesterError || "sem dados reais"}`);
+        throw new Error(`Falha detectada na consulta de dados: ${harvesterError || "sem registros confirmados"}`);
       }
       return {
-        detail: `0 dados fictícios detectados. Contrato e integridade validados com sucesso.`,
+        detail: `0 dados fictícios detectados. Conferência e integridade validadas com sucesso.`,
         tokensUsed: 40,
       };
     },
@@ -675,8 +675,8 @@ export async function executeAutonomousCopilotTask(
     type: "planner",
     role: "@planner",
     parentTaskId: taskId,
-    label: "Fragmentação de Prompt & Análise EARS",
-    detail: `Identificado domínio '${task.domain}' com foco geográfico em '${task.city}/${task.state}'`,
+    label: "Estruturação das Necessidades",
+    detail: `Organizando atendimento para '${task.domain}' com foco em '${task.city}/${task.state}'`,
     status: "completed",
     startedAt: new Date(startTime).toISOString(),
     completedAt: new Date(startTime + 60).toISOString(),
@@ -734,8 +734,8 @@ export async function executeAutonomousCopilotTask(
     steps.push({
       id: `step-2-${taskId.slice(0, 8)}`,
       type: "tool",
-      label: "Cache de Tokens no Banco (SHA-256 Hit)",
-      detail: `Dados recuperados instantaneamente do cache local sem chamadas redundantes a APIs externas`,
+      label: "Consulta à Memória de Atendimento",
+      detail: `Informações recuperadas com agilidade da memória recente do sistema`,
       status: "completed",
       startedAt: new Date(startTime + 65).toISOString(),
       completedAt: new Date(startTime + 110).toISOString(),
@@ -755,7 +755,7 @@ export async function executeAutonomousCopilotTask(
       success: true,
       taskId,
       domain: task.domain,
-      summaryMessage: cachedData.summaryMessage || "Recuperei os dados estruturados do cache do sistema:",
+      summaryMessage: cachedData.summaryMessage || "Recuperei as informações salvas na memória recente para você:",
       isCacheHit: true,
       tokensSaved: 4500,
       steps,
@@ -777,8 +777,8 @@ export async function executeAutonomousCopilotTask(
       role: "@investigator",
       parentTaskId: taskId,
       domain: task.domain,
-      label: "Varredura de Contexto (@investigator)",
-      detail: `Inspecionando dados locais e requisitos operacionais para '${task.domain}'`,
+      label: "Consulta de Contexto (@investigator)",
+      detail: `Consultando dados locais e preferências de atendimento para '${task.domain}'`,
       context: { threadId: context.threadId, storeId: context.storeId, city: task.city, state: task.state },
       execute: async () => ({
         detail: `Contexto local e parâmetros operacionais validados para '${task.domain}'`,
@@ -791,8 +791,8 @@ export async function executeAutonomousCopilotTask(
     steps.push({
       id: `step-3-${taskId.slice(0, 8)}`,
       type: "tool",
-      label: "Mineração Mecânica de Estabelecimentos (Overpass & Nominatim)",
-      detail: `Consultando base georreferenciada para '${task.targetQuery}' em ${task.city}/${task.state}`,
+      label: "Consulta aos Registros Oficiais da Cidade",
+      detail: `Consultando registros georreferenciados para '${task.targetQuery}' em ${task.city}/${task.state}`,
       status: "running",
       startedAt: new Date().toISOString(),
     });
@@ -824,7 +824,7 @@ export async function executeAutonomousCopilotTask(
 
     artifact = {
       type: "spreadsheet",
-      title: `Leads - ${task.targetQuery} (${task.city}/${task.state})`,
+      title: `Oportunidades - ${task.targetQuery} (${task.city}/${task.state})`,
       data: {
         headers,
         rows,
@@ -833,14 +833,14 @@ export async function executeAutonomousCopilotTask(
       },
     };
 
-    summaryMessage = `Localizei ${rows.length} estabelecimentos em ${task.city} correspondentes a "${task.targetQuery}". Estruturei a planilha interativa abaixo para inspeção ou exportação:`;
+    summaryMessage = `Localizei ${rows.length} estabelecimentos em ${task.city} para "${task.targetQuery}". Estruturei a planilha abaixo com os contatos e endereços para você conferir:`;
     tokensSaved = rows.length * 150;
   } else if (task.domain === "cnpj_company" && task.cnpj) {
     steps.push({
       id: `step-3-${taskId.slice(0, 8)}`,
       type: "tool",
-      label: "Enriquecimento de CNPJ (BrasilAPI & Receita Federal)",
-      detail: `Consultando dados cadastrais, QSA e CNAEs para ${task.cnpj}`,
+      label: "Consulta Cadastral na Receita Federal",
+      detail: `Consultando quadro societário e situação cadastral para ${task.cnpj}`,
       status: "running",
       startedAt: new Date().toISOString(),
     });
@@ -872,7 +872,7 @@ export async function executeAutonomousCopilotTask(
     steps.push({
       id: `step-3-${taskId.slice(0, 8)}`,
       type: "tool",
-      label: "Harvester DataJud CNJ (Processo Judicial)",
+      label: "Consulta Processual no DataJud / CNJ",
       detail: `Consultando tribunal e movimentações para o processo ${task.processNumber}`,
       status: "running",
       startedAt: new Date().toISOString(),
@@ -910,8 +910,8 @@ export async function executeAutonomousCopilotTask(
     steps.push({
       id: `step-3-${taskId.slice(0, 8)}`,
       type: "tool",
-      label: "Composição Nativizada Omni-Builder",
-      detail: `Montando blocos canônicos para arquétipo '${task.archetype || "landing"}'`,
+      label: "Composição Visual da Página",
+      detail: `Montando blocos visuais para '${task.archetype || "landing"}'`,
       status: "running",
       startedAt: new Date().toISOString(),
     });
@@ -976,8 +976,8 @@ export async function executeAutonomousCopilotTask(
     steps.push({
       id: `step-3-${taskId.slice(0, 8)}`,
       type: "tool",
-      label: "Mineração de Hotéis, Pousadas & Resorts (OpenStreetMap / Overpass)",
-      detail: `Mapeando hospedagens para '${task.targetQuery}' em ${task.city}/${task.state}`,
+      label: "Mapeamento de Hotéis e Pousadas",
+      detail: `Consultando hospedagens e pousadas para '${task.targetQuery}' em ${task.city}/${task.state}`,
       status: "running",
       startedAt: new Date().toISOString(),
     });
@@ -1032,8 +1032,8 @@ export async function executeAutonomousCopilotTask(
     steps.push({
       id: `step-3-${taskId.slice(0, 8)}`,
       type: "tool",
-      label: "Mapeamento e Extração de Oportunidades de Emprego",
-      detail: `Buscando vagas ativas para '${task.targetQuery}' em ${task.city}`,
+      label: "Mapeamento de Oportunidades de Emprego",
+      detail: `Consultando vagas e oportunidades ativas para '${task.targetQuery}' em ${task.city}`,
       status: "running",
       startedAt: new Date().toISOString(),
     });
@@ -1076,7 +1076,7 @@ export async function executeAutonomousCopilotTask(
     steps.push({
       id: `step-3-${taskId.slice(0, 8)}`,
       type: "tool",
-      label: "Agenda de eventos",
+      label: "Consulta à Agenda de Eventos",
       detail: `Consultando eventos indexados em ${task.city}`,
       status: "running",
       startedAt: new Date().toISOString(),
@@ -1110,7 +1110,7 @@ export async function executeAutonomousCopilotTask(
     steps.push({
       id: `step-3-${taskId.slice(0, 8)}`,
       type: "tool",
-      label: "Vinculação de insumos (BOM)",
+      label: "Composição de Insumos e Ficha Técnica",
       detail: "Cruzando ingredientes informados com o catálogo da loja",
       status: "running",
       startedAt: new Date().toISOString(),
@@ -1160,7 +1160,7 @@ export async function executeAutonomousCopilotTask(
     steps.push({
       id: `step-3-${taskId.slice(0, 8)}`,
       type: "tool",
-      label: "Curadoria e Consulta de Notícias Oficiais",
+      label: "Consulta a Notícias e Comunicados Oficiais",
       detail: `Buscando artigos publicados para '${task.targetQuery}'`,
       status: "running",
       startedAt: new Date().toISOString(),
@@ -1207,7 +1207,7 @@ export async function executeAutonomousCopilotTask(
     steps.push({
       id: `step-sheet-${taskId.slice(0, 8)}`,
       type: "tool",
-      label: "Geração de Planilha Operacional",
+      label: "Organização da Planilha Operacional",
       detail: `Estruturada planilha com ${sheetPayload.columns.length} colunas e ${sheetPayload.rows.length} registros calculados`,
       status: "completed",
       startedAt: new Date().toISOString(),
@@ -1226,7 +1226,7 @@ export async function executeAutonomousCopilotTask(
     summaryMessage = `Estruturei a planilha "${artifact.title}" com cálculos operacionais e dados prontos para análise e edição.`;
     tokensSaved = 250;
   } else {
-    summaryMessage = `Não identifiquei uma tarefa de mineração específica em "${task.targetQuery.slice(0, 80)}".`;
+    summaryMessage = `Não localizei registros específicos para "${task.targetQuery.slice(0, 80)}". Posso pesquisar por uma categoria relacionada ou cidade próxima para você.`;
     tokensSaved = 0;
   }
   } catch (err: any) {
@@ -1247,7 +1247,7 @@ export async function executeAutonomousCopilotTask(
         type: "tool",
         role: "@harvester",
         parentTaskId: taskId,
-        label: "Falha na Ferramenta Externa",
+        label: "Oscilação em Consulta Externa",
         detail: toolExecutionError.message.slice(0, 120),
         status: "failed",
         startedAt: new Date().toISOString(),
@@ -1260,7 +1260,7 @@ export async function executeAutonomousCopilotTask(
       role: "@critic",
       parentTaskId: taskId,
       domain: task.domain,
-      label: "Auditoria de Integridade (@critic)",
+      label: "Conferência de Integridade (@critic)",
       detail: "Falha externa interceptada com transparência e zero dados sintéticos.",
       context: { threadId: context.threadId, storeId: context.storeId, city: task.city, state: task.state },
       execute: async () => ({
@@ -1270,7 +1270,7 @@ export async function executeAutonomousCopilotTask(
     });
     steps.push(criticErrRes.step);
 
-    summaryMessage = `Não foi possível consultar os dados externos no momento devido a uma indisponibilidade temporária (${toolExecutionError.message.slice(0, 80)}). Você pode tentar novamente em alguns instantes.`;
+    summaryMessage = `Tivemos uma oscilação rápida ao consultar os registros externos (${toolExecutionError.message.slice(0, 80)}). Já estou pronto para tentar novamente em instantes.`;
   }
 
   // Passo 3b: Auditoria de Integridade e Barreira Anti-Fakes (@critic)
@@ -1279,7 +1279,7 @@ export async function executeAutonomousCopilotTask(
       role: "@critic",
       parentTaskId: taskId,
       domain: task.domain,
-      label: "Auditoria de Integridade (@critic)",
+      label: "Conferência de Integridade (@critic)",
       detail: "Zero dados fictícios. Conformidade de contrato e regras de tenant validadas.",
       context: { threadId: context.threadId, storeId: context.storeId, city: task.city, state: task.state },
       execute: async () => ({

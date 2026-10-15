@@ -61,7 +61,7 @@ function BlackboardBlock({ code, title }: { code: string; title?: string }) {
             <ChalkboardTeacher className="size-3.5" weight="bold" />
           </div>
           <span className="font-semibold text-2xs tracking-wide uppercase text-slate-300">
-            {title || "Lousa Interativa do Copilot"}
+            {title || "Lousa Interativa do Assessor"}
           </span>
         </div>
 

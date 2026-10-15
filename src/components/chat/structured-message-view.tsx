@@ -430,9 +430,19 @@ function VerticalAiResultBlock({
   data: Record<string, any>;
   onAction?: (action: AIChatAction) => void;
 }) {
-  const vertical = data.vertical || "rh";
+  const VERTICAL_LABELS: Record<string, string> = {
+    rh: "Recursos Humanos",
+    finance: "Finanças",
+    legal: "Jurídico",
+    sales: "Vendas",
+    operations: "Operações",
+    marketing: "Marketing",
+    catalog: "Catálogo",
+  };
+  const rawVertical = data.vertical || "rh";
+  const vertical = VERTICAL_LABELS[rawVertical] || rawVertical;
   const capability = data.capability || "";
-  const title = data.title || data.summary || "Resultado de IA";
+  const title = data.title || data.summary || "Análise Especializada";
   const requiresHumanApproval = Boolean(data.requires_human_approval);
   const confidencePct = Math.round((data.confidence ?? 0.9) * 100);
 
@@ -460,7 +470,7 @@ function VerticalAiResultBlock({
       </div>
 
       <div className="flex items-center justify-between pt-1 border-t border-border/40 text-xs text-muted-foreground">
-        <span>Confiança do modelo</span>
+        <span>Conferência dos Dados</span>
         <span className="font-semibold text-foreground">{confidencePct}%</span>
       </div>
     </div>

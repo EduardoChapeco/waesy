@@ -135,10 +135,10 @@ export function JobDetailMobile({
           </p>
         </div>
 
-        {/* ── 4. Requisitos e Benefícios ── */}
+        {/* ── 4. O que a empresa busca e oferece ── */}
         {job.requirements && job.requirements.length > 0 && (
           <div className="p-4 rounded-lg border border-border/70 bg-card space-y-3">
-            <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Requisitos</h2>
+            <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">O que a empresa busca</h2>
             <ul className="space-y-2 text-xs text-foreground/85">
               {job.requirements.map((req: string, i: number) => (
                 <li key={i} className="flex items-start gap-2">
@@ -152,7 +152,7 @@ export function JobDetailMobile({
 
         {job.benefits && job.benefits.length > 0 && (
           <div className="p-4 rounded-lg border border-border/70 bg-card space-y-3">
-            <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Benefícios Oferecidos</h2>
+            <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">O que ela oferece para você</h2>
             <div className="flex flex-wrap gap-2">
               {job.benefits.map((benefit: string, i: number) => (
                 <Badge key={i} variant="outline" className="text-xs py-1 px-3 rounded-lg border-border/60 bg-muted/20">

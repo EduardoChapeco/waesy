@@ -620,7 +620,7 @@ export function AIChatShell({
               Nenhuma conversa selecionada
             </h2>
             <p className="text-xs max-w-sm">
-              Escolha uma conversa na barra lateral ou inicie um novo projeto com a inteligência artificial.
+              Escolha uma conversa na barra lateral ou inicie um novo projeto com o assessor de negócios.
             </p>
           </div>
         )}

@@ -145,7 +145,7 @@ export function CopilotApprovalPanel({ currentUserId }: { currentUserId?: string
   if (!currentUserId || approvals.length === 0) return null;
 
   return (
-    <section aria-label="Aprovações pendentes do Copilot" className="mx-auto w-full max-w-3xl rounded-lg border border-amber-500/30 bg-amber-500/5 p-3 shadow-xs">
+    <section aria-label="Aprovações pendentes do Assessor" className="mx-auto w-full max-w-3xl rounded-lg border border-amber-500/30 bg-amber-500/5 p-3 shadow-xs">
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-start gap-2">
           <div className="mt-1 rounded-md bg-amber-500/15 p-2 text-amber-700 dark:text-amber-300">

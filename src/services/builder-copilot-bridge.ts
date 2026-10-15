@@ -515,7 +515,7 @@ export async function createBuilderArtifactFromCopilot(params: {
     }
     case "travel_itinerary": {
       payload = buildTravelItineraryPayload(title, params.userPrompt);
-      summaryMessage = `Elaborei o dossiê completo de viagem para ${payload.destination} com roteiro detalhado por dia e código Pix BACEN EMV pronto para cópia.`;
+      summaryMessage = `Elaborei o dossiê completo de viagem para ${payload.destination} com roteiro detalhado por dia e código Pix pronto para pagamento.`;
       break;
     }
     case "document":
@@ -542,8 +542,8 @@ export async function createBuilderArtifactFromCopilot(params: {
     title,
     version: savedDoc.currentVersion,
     totalVersions: 1,
-    authorName: "Waesy Copilot 3.0",
-    authorRole: "Arquiteto de Produtividade",
+    authorName: "Assessor Executivo Local",
+    authorRole: "Consultor de Negócios",
     previewSummary: summaryMessage,
     data: {
       documentId: savedDoc.id,
@@ -569,7 +569,7 @@ export async function createBuilderArtifactFromCopilot(params: {
       title,
       payload: { documentId: savedDoc.id, ...payload },
       actionSchema: [
-        { id: "open_builder", label: "Abrir no Builder", action: "navigate", payload: { docId: savedDoc.id } },
+        { id: "open_builder", label: "Abrir no Editor", action: "navigate", payload: { docId: savedDoc.id } },
         { id: "export_pdf", label: "Exportar PDF", action: "export", payload: { format: "pdf" } },
       ],
     });

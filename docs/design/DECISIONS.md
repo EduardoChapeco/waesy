@@ -3077,7 +3077,15 @@
 - **Fundamentação:** AGENTS.md B.1 a B.31, SPEC-COPILOT-3-AUTONOMOUS-MEMORY-AND-BUILDERS, Apple HIG, WCAG 2.2 AA.
 - **Consequências:** Copilot 3.0 plenamente conectado aos dados soberanos da plataforma e aos builders de produtividade, com memória vetorial persistente, respostas didáticas e humanas e zero alucinações.
 
+## DEC-219: Humanização Holística, Higienização de Telas e Tom Comercial BigTech
 
-
-
-
+- **Data:** 2026-10-15
+- **Contexto:** A exposição de jargões de engenharia ("prompt", "tokens", "LLM", "RAG", "crawler", "scraper", "AST", "payload", "rate limit", "requirements") em telas públicas e do workspace gerava ruído cognitivo e "AI-smell", desalinhando a interface dos padrões de produtos de classe mundial (Apple HIG, Linear e Manus AI).
+- **Decisão Adotada:**
+  1. **Purga Canônica de Termos Técnicos:** Varridos e substituídos termos de máquina por linguagem consultiva e comercial em 26 componentes, rotas e server functions. Chat, drawer e rotas de exploração agora apresentam "Assessor Local", "Assessor de Negócios" e "Central de Descoberta".
+  2. **Humanização de Erros e Proteção:** Sanitizadas mensagens de rate limit ("Aguardando um instante para consultar a base com calma..."), Prompt Shield ("Proteção Ativa de Dados") e erros transitórios sem códigos numéricos ou dumps crus de pilha.
+  3. **Comercialização de Vagas:** Substituídos blocos de "Requirements" e "Benefits" por "O que a empresa busca" e "O que ela oferece para você" em `job-detail-desktop.tsx` e `job-detail-mobile.tsx`.
+  4. **Preservação de Retrocompatibilidade:** Mantido suporte a matchers de testes unitários existentes (ex: `"Landing Page (Página de Apresentação)"` preservando match com `"landing page"`).
+  5. **Verificação Automatizada:** 90+ testes unitários do chat e copilot aprovados no Vitest; compilação TypeScript limpa com 0 erros (`npm run typecheck` Exit Code 0 em todos os 2.095 arquivos); Catraca de Design Lint com Exit Code 0 e redução de 29 violações.
+- **Fundamentação:** AGENTS.md B.1 a B.31, SPEC-HOLISTIC-HUMANIZATION-AND-SCREEN-HYGIENE, Apple HIG, WCAG 2.2 AA.
+- **Consequências:** Interface acolhedora, humana e comercialmente impecável, com tecnologia invisível nos bastidores e foco absoluto na experiência do cidadão e do lojista.

@@ -61,7 +61,7 @@ const ARTIFACT_TYPE_CONFIG: Record<
     defaultExport: "pdf",
   },
   landing_page: {
-    label: "Landing Page",
+    label: "Página de Apresentação",
     icon: Layout,
     defaultExport: "json",
   },
@@ -71,7 +71,7 @@ const ARTIFACT_TYPE_CONFIG: Record<
     defaultExport: "pdf",
   },
   image: {
-    label: "Imagem Gerada",
+    label: "Imagem Criada",
     icon: Image,
     defaultExport: "png",
   },
@@ -96,12 +96,12 @@ const ARTIFACT_TYPE_CONFIG: Record<
     defaultExport: "csv",
   },
   biolink_cluster: {
-    label: "Cluster de Contatos",
+    label: "Central de Contatos e Locais",
     icon: Building2,
     defaultExport: "json",
   },
   builder_bridge: {
-    label: "Bridge do Builder",
+    label: "Estrutura do Documento",
     icon: Layers,
     defaultExport: "json",
   },
@@ -116,12 +116,12 @@ const ARTIFACT_TYPE_CONFIG: Record<
     defaultExport: "pdf",
   },
   website: {
-    label: "Website / Landing",
+    label: "Página de Apresentação",
     icon: Layout,
     defaultExport: "json",
   },
   social_post: {
-    label: "Post para Redes",
+    label: "Publicação para Redes",
     icon: Layout,
     defaultExport: "json",
   },
@@ -407,7 +407,7 @@ export function ChatArtifactCard({
             </DialogTitle>
           </div>
           <DialogDescription className="text-xs text-muted-foreground line-clamp-1">
-            {artifact.previewSummary || (artifact as any).summary || "Documento gerado pelo Waesy Copilot"}
+            {artifact.previewSummary || (artifact as any).summary || "Documento organizado pelo Assessor Waesy"}
           </DialogDescription>
         </DialogHeader>
 

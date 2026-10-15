@@ -34,6 +34,22 @@ export interface CopilotArtifactPanelProps {
   className?: string;
 }
 
+const ARTIFACT_FRIENDLY_LABELS: Record<string, string> = {
+  spreadsheet: "Planilha Comercial",
+  document: "Documento",
+  presentation: "Apresentação",
+  landing_page: "Página de Apresentação",
+  website: "Página de Apresentação",
+  social_post: "Publicação para Redes",
+  travel_itinerary: "Roteiro de Viagem",
+  travel_dossier: "Dossiê de Viagem",
+  biolink_cluster: "Central de Contatos",
+  chart: "Gráfico Analítico",
+  interactive_table: "Tabela Interativa",
+  proposal: "Proposta Comercial",
+  builder_bridge: "Estrutura do Documento",
+};
+
 export function CopilotArtifactPanel({
   artifact,
   onClose,
@@ -47,9 +63,9 @@ export function CopilotArtifactPanel({
     return (
       <div className={cn("p-6 text-center text-muted-foreground space-y-2", className)}>
         <Layers className="size-8 text-muted-foreground/30 mx-auto" aria-hidden="true" />
-        <h4 className="text-xs font-semibold text-foreground">Painel de Artefatos Vivos</h4>
+        <h4 className="text-xs font-semibold text-foreground">Painel de Documentos</h4>
         <p className="text-2xs max-w-xs mx-auto">
-          Nenhum artefato selecionado. Peça ao Copilot para criar planilhas, roteiros, documentos ou gráficos.
+          Nenhum item selecionado. Peça ao Assessor para criar planilhas, roteiros, propostas comerciais ou documentos.
         </p>
       </div>
     );
@@ -108,8 +124,8 @@ export function CopilotArtifactPanel({
           <Badge variant="outline" className="text-2xs font-mono h-5">
             v{artifact.version || 1}
           </Badge>
-          <Badge variant="secondary" className="text-2xs uppercase tracking-wider font-semibold">
-            {artifact.type}
+          <Badge variant="secondary" className="text-2xs font-semibold">
+            {ARTIFACT_FRIENDLY_LABELS[artifact.type] || artifact.type}
           </Badge>
         </div>
       </div>
@@ -118,7 +134,7 @@ export function CopilotArtifactPanel({
       <div className="px-1">
         <h3 className="text-sm font-bold text-foreground leading-snug">{artifact.title}</h3>
         <p className="text-2xs text-muted-foreground mt-1">
-          {artifact.authorName || "Waesy Copilot 3.0"} • {artifact.authorRole || "Artefato Versionado"}
+          {artifact.authorName || "Assessor Executivo Local"} • {artifact.authorRole || "Documento Verificado"}
         </p>
       </div>
 
@@ -202,7 +218,7 @@ export function CopilotArtifactPanel({
           className="h-11 min-h-11 px-3 text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 cursor-pointer flex items-center justify-center gap-2"
         >
           <ExternalLink className="size-4" />
-          <span>Abrir no Builder</span>
+          <span>Abrir Editor Completo</span>
         </Button>
       </div>
     </div>
