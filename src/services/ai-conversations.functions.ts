@@ -1880,9 +1880,14 @@ Responda SEMPRE em formato JSON com os campos:
       });
 
       if (!responseMessage) {
-        responseMessage =
-          gatewayResponse?.message ||
-          "Olá! Sou o Waesy Copilot, seu assistente inteligente no ecossistema local. Posso te ajudar a encontrar estabelecimentos no Places, calcular corridas ou fretes, consultar produtos e cardápios, planejar roteiros de viagem, estruturar propostas comerciais ou criar anúncios para o seu negócio. Como posso ajudar agora?";
+        if (platformSearch && platformSearch.cards.length > 0) {
+          const sampleNames = platformSearch.cards.slice(0, 3).map((c) => `"${c.title}"`).join(", ");
+          responseMessage = `Encontrei ótimas opções no ecossistema Waesy para "${platformSearch.query}", incluindo ${sampleNames}. Dê uma olhada nos detalhes e ações rápidas abaixo:`;
+        } else {
+          responseMessage =
+            gatewayResponse?.message ||
+            "Olá! Sou o Waesy Copilot, seu assistente inteligente no ecossistema local. Posso te ajudar a encontrar estabelecimentos no Places, notícias da região, eventos da comunidade, produtos no catálogo ou calcular corridas e fretes. Como posso apoiar você agora?";
+        }
       }
 
       updatedMemory.last_interaction_topic = userPrompt.slice(0, 40);

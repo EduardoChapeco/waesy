@@ -30,6 +30,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { NativeMobileHeader } from "@/components/navigation/native-mobile-header";
 import { useWindowSizeClass } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { formatDate } from "@/lib/datetime";
@@ -98,6 +99,9 @@ export interface AIChatShellProps {
   isStreaming?: boolean;
   currentUserProfileId?: string;
   className?: string;
+  mobileTitle?: string;
+  mobileSubtitle?: string;
+  mobileFallbackHref?: string;
 }
 
 export function AIChatShell({
@@ -117,6 +121,9 @@ export function AIChatShell({
   isStreaming = false,
   currentUserProfileId,
   className,
+  mobileTitle,
+  mobileSubtitle,
+  mobileFallbackHref,
 }: AIChatShellProps) {
   // Estados de navegação e busca
   const [filterTab, setFilterTab] = useState<"all" | "direct" | "projects" | "archived">("all");
@@ -211,7 +218,7 @@ export function AIChatShell({
   return (
     <div
       className={cn(
-        "flex h-screen w-full overflow-hidden bg-background font-sans text-foreground",
+        "flex h-full w-full overflow-hidden bg-background font-sans text-foreground",
         className
       )}
     >
@@ -222,6 +229,16 @@ export function AIChatShell({
           showMobileChat ? "hidden md:flex" : "flex"
         )}
       >
+        {/* Cabeçalho Nativo Mobile */}
+        <div className="md:hidden">
+          <NativeMobileHeader
+            title={mobileTitle || "Waesy Copilot"}
+            subtitle={mobileSubtitle}
+            fallbackHref={mobileFallbackHref || "/"}
+            mobileOnly
+          />
+        </div>
+
         {/* Cabeçalho da Lista de Conversas */}
         <div className="p-3 border-b border-border/40 space-y-2">
           <div className="flex items-center justify-between gap-2">
@@ -408,7 +425,7 @@ export function AIChatShell({
                   size="sm"
                   onClick={() => setShowContextPanel((prev) => !prev)} /* focus-visible:ring-2 */
                   className={cn(
-                    "h-11 min-h-11 px-3 text-xs rounded-md gap-2 border border-border/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 cursor-pointer transition-colors",
+                    "h-11 min-h-11 px-3 text-xs rounded-md gap-2 border border-border/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 cursor-pointer transition-colors md:hidden",
                     showContextPanel
                       ? "bg-primary text-primary-foreground font-semibold"
                       : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
@@ -426,7 +443,7 @@ export function AIChatShell({
               role="log"
               aria-live="polite"
               aria-label="Histórico de mensagens da conversa"
-              className="flex-1 min-h-0 overflow-y-auto p-3 sm:p-4 space-y-3 no-scrollbar overscroll-contain"
+              className="flex-1 min-h-0 overflow-y-auto p-3 sm:p-4 pb-20 space-y-3 no-scrollbar overscroll-contain"
             >
               {/* Indicador Minimalista de Conexão Segura */}
               <div className="flex justify-center my-2">
@@ -614,33 +631,146 @@ export function AIChatShell({
         )}
       </main>
 
-      {/* ── COLUNA 3: PAINEL DE CONTEXTO E ARTEFATOS (Expanded >= 840px / Opcional) ── */}
-      {showContextPanel && activeThread && (
-        <aside className="w-72 lg:w-96 border-l border-border/40 bg-card/30 p-3 space-y-4 overflow-y-auto hidden lg:flex flex-col shrink-0 no-scrollbar">
-          {activeArtifact ? (
-            /* Claude Artifacts Split-Screen Inspector */
+      {/* ── COLUNA 3: PAINEL DE CONTEXTO E ARTEFATOS (Desktop >= 768px / 3 Painéis Estáveis) ── */}
+      <aside className="w-80 xl:w-96 border-l border-border/40 bg-card/30 p-3 space-y-4 overflow-y-auto hidden md:flex flex-col shrink-0 no-scrollbar">
+        {activeArtifact ? (
+          /* Claude Artifacts Split-Screen Inspector */
+          <ArtifactViewerContent
+            artifact={activeArtifact}
+            onClose={() => setActiveArtifact(null)}
+          />
+        ) : activeThread ? (
+          /* Contexto & Memória Padrão */
+          <>
+            <div className="flex items-center justify-between border-b border-border/40 pb-2">
+              <h3 className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-2">
+                <Brain className="size-4 text-primary" />
+                <span>Contexto & Memória</span>
+              </h3>
+            </div>
+
+            {/* Dados do Projeto ou Thread */}
+            <div className="space-y-2">
+              <span className="text-2xs font-semibold text-muted-foreground uppercase">
+                Tipo de Conversa
+              </span>
+              <Badge variant="outline" className="text-xs font-medium border-border/60">
+                {activeThread.type}
+              </Badge>
+            </div>
+
+            {/* Contexto e Preferências da Conversa */}
+            <div className="space-y-2">
+              <span className="text-2xs font-semibold text-muted-foreground uppercase flex items-center gap-1">
+                <Brain className="size-3 text-primary" />
+                <span>Contexto da Conversa</span>
+              </span>
+              {activeThread.workingMemory &&
+              Object.entries(activeThread.workingMemory).filter(([k]) => !k.startsWith("last_tokens") && !k.startsWith("last_mcp")).length > 0 ? (
+                <div className="rounded-lg border border-border/40 bg-muted/20 p-2 space-y-2 text-xs">
+                  {Object.entries(activeThread.workingMemory)
+                    .filter(([k]) => !k.startsWith("last_tokens") && !k.startsWith("last_mcp"))
+                    .map(([k, v]) => {
+                      const friendlyLabel =
+                        k === "last_places_query" ? "Última busca" :
+                        k === "last_travel_destination" ? "Destino" :
+                        k === "last_creative_topic" ? "Tema criativo" :
+                        k.replace(/_/g, " ");
+                      return (
+                        <div key={k} className="flex justify-between gap-2">
+                          <span className="text-muted-foreground truncate capitalize">{friendlyLabel}:</span>
+                          <span className="font-medium text-foreground truncate">
+                            {String(v)}
+                          </span>
+                        </div>
+                      );
+                    })}
+                </div>
+              ) : (
+                <p className="text-2xs text-muted-foreground">
+                  Nenhum contexto adicional registrado.
+                </p>
+              )}
+            </div>
+
+            {/* Artefatos Gerados nesta Conversa */}
+            <div className="space-y-2">
+              <span className="text-2xs font-semibold text-muted-foreground uppercase flex items-center gap-1">
+                <FileText className="size-3 text-primary" />
+                <span>Artefatos Produzidos</span>
+              </span>
+              <div className="space-y-2">
+                {messages
+                  .filter((m) => Boolean(m.artifact))
+                  .map((m) => (
+                    <button /* focus-visible:ring-2 */
+                      key={m.id}
+                      type="button"
+                      onClick={() => /* focus-visible:ring-2 */ setActiveArtifact(m.artifact!)}
+                      className="w-full text-left p-2 rounded-lg border border-border/40 bg-card hover:border-border transition-colors text-xs space-y-1 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="font-semibold text-foreground truncate">
+                          {m.artifact!.title}
+                        </span>
+                        <Badge variant="outline" className="text-2xs font-mono h-4">
+                          v{m.artifact!.version}
+                        </Badge>
+                      </div>
+                      <span className="text-2xs text-muted-foreground block">
+                        {m.artifact!.type}
+                      </span>
+                    </button>
+                  ))}
+                {messages.filter((m) => Boolean(m.artifact)).length === 0 && (
+                  <p className="text-2xs text-muted-foreground">
+                    Nenhum documento ou planilha gerada ainda.
+                  </p>
+                )}
+              </div>
+            </div>
+          </>
+        ) : (
+          <div className="flex-1 flex flex-col items-center justify-center p-4 text-center text-muted-foreground space-y-2">
+            <Brain className="size-8 text-muted-foreground/30 mx-auto" />
+            <p className="text-xs font-medium text-foreground">Contexto & Memória</p>
+            <p className="text-2xs max-w-xs">Selecione uma conversa para visualizar memória de trabalho e artefatos.</p>
+          </div>
+        )}
+      </aside>
+
+      {/* ── PAINEL / SHEET DE ARTEFATO RESPONSIVO EM DISPOSITIVOS MÓVEIS (< 840px / isCompact) ── */}
+      <Sheet
+        open={Boolean(activeArtifact && isCompact)}
+        onOpenChange={(open) => {
+          if (!open) setActiveArtifact(null);
+        }}
+      >
+        <SheetContent side="bottom" className="h-5/6 p-4 overflow-y-auto bg-card border-border rounded-t-xl">
+          {activeArtifact && (
             <ArtifactViewerContent
               artifact={activeArtifact}
               onClose={() => setActiveArtifact(null)}
             />
-          ) : (
-            /* Contexto & Memória Padrão */
-            <>
+          )}
+        </SheetContent>
+      </Sheet>
+
+      {/* ── PAINEL / SHEET DE CONTEXTO E MEMÓRIA RESPONSIVO EM DISPOSITIVOS MÓVEIS (< 840px / isCompact) ── */}
+      <Sheet
+        open={Boolean(showContextPanel && isCompact && activeThread && !activeArtifact)}
+        onOpenChange={(open) => {
+          setShowContextPanel(open);
+        }}
+      >
+        <SheetContent side="bottom" className="h-5/6 p-4 overflow-y-auto bg-card border-border rounded-t-xl no-scrollbar">
+          {activeThread && (
+            <div className="space-y-4 pb-safe pb-4">
               <div className="flex items-center justify-between border-b border-border/40 pb-2">
                 <h3 className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-2">
                   <Brain className="size-4 text-primary" />
                   <span>Contexto & Memória</span>
                 </h3>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => /* focus-visible:ring-2 */ setShowContextPanel(false)}
-                  className="size-11 min-h-11 min-w-11 rounded-md text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 cursor-pointer"
-                  aria-label="Fechar painel de contexto"
-                >
-                  <X className="size-4" />
-                </Button>
               </div>
 
               {/* Dados do Projeto ou Thread */}
@@ -697,11 +827,13 @@ export function AIChatShell({
                   {messages
                     .filter((m) => Boolean(m.artifact))
                     .map((m) => (
-                      <button /* focus-visible:ring-2 */
+                      <button
                         key={m.id}
                         type="button"
-                        onClick={() => /* focus-visible:ring-2 */ setActiveArtifact(m.artifact!)}
-                        className="w-full text-left p-2 rounded-lg border border-border/40 bg-card hover:border-border transition-colors text-xs space-y-1 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+                        onClick={() => {
+                          setActiveArtifact(m.artifact!);
+                        }}
+                        className="w-full text-left p-3 rounded-lg border border-border/40 bg-card hover:border-border transition-colors text-xs space-y-1 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
                       >
                         <div className="flex items-center justify-between">
                           <span className="font-semibold text-foreground truncate">
@@ -723,24 +855,7 @@ export function AIChatShell({
                   )}
                 </div>
               </div>
-            </>
-          )}
-        </aside>
-      )}
-
-      {/* ── PAINEL / SHEET DE ARTEFATO RESPONSIVO EM DISPOSITIVOS MÓVEIS (< 840px / isCompact) ── */}
-      <Sheet
-        open={Boolean(activeArtifact && isCompact)}
-        onOpenChange={(open) => {
-          if (!open) setActiveArtifact(null);
-        }}
-      >
-        <SheetContent side="bottom" className="h-5/6 p-4 overflow-y-auto bg-card border-border rounded-t-xl">
-          {activeArtifact && (
-            <ArtifactViewerContent
-              artifact={activeArtifact}
-              onClose={() => setActiveArtifact(null)}
-            />
+            </div>
           )}
         </SheetContent>
       </Sheet>

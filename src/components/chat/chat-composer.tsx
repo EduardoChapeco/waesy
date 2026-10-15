@@ -113,7 +113,7 @@ export function ChatComposer({
     <footer
       aria-label="Área de composição de mensagem"
       className={cn(
-        "shrink-0 border-t border-border/40 bg-background/95 backdrop-blur-md pb-3 sm:pb-4 pb-[max(0.75rem,env(safe-area-inset-bottom))]",
+        "shrink-0 min-h-0 border-t border-border/40 bg-background/95 backdrop-blur-md pb-safe pb-3 sm:pb-4",
         className
       )}
     >
@@ -137,7 +137,7 @@ export function ChatComposer({
             variant="ghost"
             size="icon"
             onClick={onCancelReply} /* focus-visible:ring-2 */
-            className="size-8 rounded-full text-muted-foreground hover:text-foreground shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+            className="size-11 min-h-11 min-w-11 rounded-full text-muted-foreground hover:text-foreground shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
             aria-label="Cancelar resposta"
           >
             <X className="size-4" />
@@ -177,7 +177,7 @@ export function ChatComposer({
                 variant="ghost"
                 size="sm"
                 onClick={toggleRecording} /* focus-visible:ring-2 */
-                className="h-7 px-2 text-xs text-destructive hover:bg-destructive/10 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive/40"
+                className="h-11 min-h-11 px-3 text-xs text-destructive hover:bg-destructive/10 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive/40"
               >
                 Parar
               </Button>

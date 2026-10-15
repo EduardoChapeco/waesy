@@ -489,11 +489,14 @@ function CardCarouselBlock({
             key={idx}
             className="snap-start shrink-0 w-56 rounded-lg border border-border/80 bg-card p-3 space-y-2"
           >
-            {item.image_url && (
+            {item.image_url && typeof item.image_url === "string" && item.image_url.trim().length > 0 && (
               <img
                 src={item.image_url}
                 alt={item.title || "Item"}
                 className="w-full h-28 rounded-md object-cover bg-muted"
+                onError={(e) => {
+                  (e.currentTarget as HTMLElement).style.display = "none";
+                }}
               />
             )}
             <h5 className="text-xs font-bold text-foreground line-clamp-1">{item.title}</h5>

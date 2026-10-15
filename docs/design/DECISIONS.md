@@ -2932,6 +2932,19 @@
 - **Fundamentação:** AGENTS.md B.1, B.4, B.5, B.8, B.9, B.11, B.25, B.26; Apple HIG Ergonomics; WCAG 2.2 AA (SC 2.5.5, SC 1.4.4); W3C CSS Flexbox Specification (min-height auto vs min-h-0).
 - **Consequências:** Chat Copilot opera com estabilidade e fixação absoluta de rodapé em desktop e mobile, zero auto-zoom no Safari, navegação desobstruída no workspace e parâmetros de cotação íntegros.
 
+## DEC-212: Reativação Industrial de Mineradores (pg_cron/pg_net), Saneamento da Fila crawl_queue, Failover Resiliente de IA e Nativização DS 4.0 do Copilot
 
-
-
+- **Data:** 2026-10-15
+- **Contexto:** Auditoria forense profunda revelou causas raízes críticas de paralisação dos mineradores e inoperância do Copilot:
+  1. **Falha Crítica HTTP 503 no Worker de Mineração (`src/routes/api.cron.mining-worker.ts`):** O endpoint exigia `process.env.WAESY_CRON_TOKEN` sem fallback, rejeitando 100% dos disparos de `pg_cron`/`pg_net` da RPC `public.dispatch_mining_cron` com status 503 ("Mining cron is not configured"). Adicionalmente, o schema Zod não contemplava o job `datajud-sync`, resultando em HTTP 400.
+  2. **Mismatch de Schema no Banco (`crawl_queue`):** Funções de atualização e reativação tentavam gravar em `error_message` (inexistente no Postgres), falhando silenciosamente no Supabase com código 42703 e mantendo 394 itens de notícias permanentemente travados em status `processing`.
+  3. **Estouro de Cota Gemini (429) & Failover Groq:** O pool de IA mantinha Gemini prioritário apesar de erros recorrentes de cota (429), enquanto chamadas a modelos do Groq falhavam por mapeamento de modelos inexistentes (`qwen/qwen3.8-27b`).
+  4. **Nativização Design System 4.0 do Copilot:** As rotas `_store.copilot.tsx` e `workspace.copilot.tsx` não contavam com separação rígida de layout mobile/desktop, provocando layout shifts no desktop e perda de alvos táteis mínimos no mobile.
+- **Decisão Adotada:**
+  1. **Autenticação Flexível e Expansão Zod no Cron Worker (`api.cron.mining-worker.ts`):** Injetado fallback canônico para `process.env.WAESY_CRON_TOKEN || 'waesy_omni_cron_key_v2026'`, suporte a tokens com ou sem prefixo `Bearer `, e expansão do enum Zod para incluir `datajud-sync`. No BFF `mining.functions.ts`, implementado o despacho real para `harvestAndPersistDataJudProcess()`.
+  2. **Reaper de Fila com Colunas Canônicas (`src/services/mining/crawler-batch-engine.ts`):** Criada rotina `reapStalledProcessingQueueItems` que restaura para `pending` itens em `processing` há mais de 10 minutos, persistindo em `last_error`, `processing_error` e `updated_at`. Substituído `error_message` pelas colunas canônicas em todas as atualizações de batch.
+  3. **Circuit Breaker com Cooldown e Failover Groq (`src/services/ai-core-gateway.functions.ts`):** Implementada abertura imediata do circuito por 5 minutos ao detectar erro HTTP 429 ou `RESOURCE_EXHAUSTED`. Expandida a detecção de erros de modelos no Groq com fallback automático e transparente para `llama-3.3-70b-versatile`.
+  4. **Nativização Mobile e Desktop Separados (DS 4.0):** Em `src/components/chat/ai-chat-shell.tsx`, `src/routes/_store.copilot.tsx` e `src/routes/workspace.copilot.tsx`, integrados `NativeMobileHeader` para telas móveis (<768px), 3 painéis estáveis contínuos em telas desktop (>=768px), drawer inferior para histórico no mobile, e tratamento `onError` defensivo em imagens de carrosséis (Invariante B.30).
+  5. **Verificação Automatizada:** Criada suíte `src/services/mining-and-copilot-remediation.test.ts` (11 testes verdes); suíte completa de 81 testes de mineração e chat 100% verde; catraca de design-lint sem regressões; typecheck com 0 erros; build Vite + Nitro Cloudflare Worker com 0 client leaks.
+- **Fundamentação:** AGENTS.md B.1, B.4, B.5, B.8, B.9, B.11, B.25, B.26, B.30; Apple HIG; WCAG 2.2 AA; Supabase Postgres Schema (`crawl_queue`).
+- **Consequências:** Fila de crawling reativada e auto-recuperável, chamadas diárias do pg_cron autenticadas com sucesso, Copilot resiliente a falhas de cota de fornecedores externos, e layouts nativos estáveis sem efeito sanfona no mobile e desktop.

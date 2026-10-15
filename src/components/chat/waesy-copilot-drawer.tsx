@@ -223,7 +223,7 @@ export function WaesyCopilotDrawer(_props: { session?: { id?: string; user?: { i
           </SheetHeader>
 
           {/* Area de Mensagens */}
-          <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain p-4 space-y-4">
+          <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain p-4 pb-20 space-y-4">
             {messages.length === 0 ? (
               <div className="text-center text-xs text-muted-foreground py-12">
                 Nenhuma mensagem enviada. Como posso ajudar você hoje?

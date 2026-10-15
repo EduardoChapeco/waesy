@@ -1,16 +1,16 @@
 # LINT_DASHBOARD.md — Painel Canônico de Saúde Visual e Catraca
 
-> Gerado automaticamente pelo Design Lint V2 em: `2026-10-14T16:54:47.037Z`
+> Gerado automaticamente pelo Design Lint V2 em: `2026-10-15T07:44:56.059Z`
 
 ## 1. Resumo Executivo
 
 | Métrica | Atual | Baseline Congelada | Status Catraca |
 | :--- | :--- | :--- | :--- |
-| **Total de Arquivos** | 2074 | 2074 | Estável |
-| **Arquivos com Débito** | 888 | 889 | Monitorado |
-| **Total de Violações** | **13062** | **13063** | PASS (<= Baseline) |
+| **Total de Arquivos** | 2075 | 2074 | Estável |
+| **Arquivos com Débito** | 887 | 889 | Monitorado |
+| **Total de Violações** | **13060** | **13063** | PASS (<= Baseline) |
 | **P0 (Bloqueia Entrega)** | **1505** | 1505 | PASS |
-| **P1 (Bloqueia Merge)** | **8816** | 8816 | PASS |
+| **P1 (Bloqueia Merge)** | **8814** | 8816 | PASS |
 | **P2 (Fila de Correção)** | 1379 | 1380 | Acompanhamento |
 | **P3 (Polimento)** | 1362 | 1362 | Acompanhamento |
 
@@ -28,7 +28,7 @@
 | `lib` | 255 | 1 | 219 | 35 | 0 |
 | `routes/other` | 162 | 15 | 120 | 18 | 9 |
 | `components/builder` | 135 | 42 | 57 | 19 | 17 |
-| `components/chat` | 86 | 4 | 75 | 2 | 5 |
+| `components/chat` | 84 | 4 | 73 | 2 | 5 |
 | `hooks` | 17 | 5 | 8 | 4 | 0 |
 | `styles` | 9 | 0 | 0 | 9 | 0 |
 | `routes/api` | 6 | 0 | 6 | 0 | 0 |
@@ -39,7 +39,7 @@
 | Regra | Descrição Sumária | Severidade | Ocorrências |
 | :--- | :--- | :--- | :--- |
 | **DL-02** | Diretriz do Catálogo | `P1` | 3739 |
-| **DL-14** | Diretriz do Catálogo | `P1` | 2162 |
+| **DL-14** | Diretriz do Catálogo | `P1` | 2160 |
 | **DL-15** | Diretriz do Catálogo | `P0` | 1502 |
 | **DL-18** | Diretriz do Catálogo | `P1` | 1253 |
 | **DL-27** | Diretriz do Catálogo | `P3` | 1107 |

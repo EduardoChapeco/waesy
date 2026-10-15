@@ -3017,7 +3017,7 @@ export const getGhostStoreMetricsFn = createServerFn({ method: "GET" })
 export const dispatchScheduledMiningJobFn = createServerFn({ method: "POST" })
   .validator(
     z.object({
-      jobType: z.enum(["market-data", "rss-fetcher", "cnpj-enrichment", "continuous-crawler"]),
+      jobType: z.enum(["market-data", "rss-fetcher", "cnpj-enrichment", "continuous-crawler", "datajud-sync"]),
     })
   )
   .handler(async ({ data }): Promise<{ success: boolean; result: any }> => {
@@ -3160,6 +3160,37 @@ export const dispatchScheduledMiningJobFn = createServerFn({ method: "POST" })
         status: "success",
         duration_ms: Date.now() - startTime,
         records_affected: enrichedCount,
+        result_summary: jobResult,
+      });
+    } else if (data.jobType === "datajud-sync") {
+      const { data: lawsuits } = await supabase
+        .from("mined_lawsuits")
+        .select("id, process_number")
+        .order("updated_at", { ascending: true })
+        .limit(5);
+
+      let syncedCount = 0;
+      if (lawsuits && lawsuits.length > 0) {
+        for (const item of lawsuits) {
+          if (!item.process_number) continue;
+          try {
+            const res = await harvestAndPersistDataJudProcess({ processNumber: item.process_number });
+            if (res.success) syncedCount++;
+          } catch (judErr) {
+            console.warn(`[MiningCron] Erro ao sincronizar processo ${item.process_number}:`, judErr);
+          }
+        }
+      }
+
+      jobResult = { inspected: lawsuits?.length || 0, synced: syncedCount };
+
+      await supabase.from("scraper_audit_log").insert({
+        scraper_name: "datajud-sync",
+        action: "sync_lawsuits_cron",
+        target_table: "mined_lawsuits",
+        status: "success",
+        duration_ms: Date.now() - startTime,
+        records_affected: syncedCount,
         result_summary: jobResult,
       });
     }

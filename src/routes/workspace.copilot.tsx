@@ -19,6 +19,7 @@ import {
 } from "@/services/ai-conversations.functions";
 import type { AIChatAction } from "@/components/chat/structured-message-view";
 import { getUserSession } from "@/services/auth.functions";
+import { NativeMobileHeader } from "@/components/navigation/native-mobile-header";
 import { toast } from "sonner";
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -440,6 +441,9 @@ function WorkspaceCopilotPage() {
         threads={threads}
         activeThreadId={activeThreadId}
         messages={messages}
+        mobileTitle="Copilot Operacional"
+        mobileSubtitle="Workspace Waesy"
+        mobileFallbackHref="/workspace"
         onSelectThread={handleSelectThread}
         onSendMessage={handleSendMessage}
         onRetryMessage={handleRetryMessage}

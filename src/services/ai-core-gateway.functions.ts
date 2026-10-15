@@ -150,13 +150,23 @@ export function getCircuit(provider: string): ProviderCircuit {
   return cb;
 }
 
-export function recordCircuitFailure(provider: string) {
+export function recordCircuitFailure(provider: string, errorOrStatus?: number | string | Error) {
   const cb = getCircuit(provider);
   cb.consecutiveFailures += 1;
-  if (cb.consecutiveFailures >= 3 || cb.state === "half_open") {
+  const errStr = String(errorOrStatus || "").toLowerCase();
+  const isRateLimit =
+    errorOrStatus === 429 ||
+    errStr.includes("429") ||
+    errStr.includes("resource_exhausted") ||
+    errStr.includes("quota");
+
+  if (isRateLimit || cb.consecutiveFailures >= 3 || cb.state === "half_open") {
     cb.state = "open";
-    cb.openUntil = Date.now() + 60_000; // 60 segundos aberto
-    console.warn(`[AI-CORE-GATEWAY] Circuit Breaker OPEN para o provedor ${provider} até ${new Date(cb.openUntil).toISOString()}`);
+    // 5 minutos para 429 / quota estourada, 60 segundos para falhas transitórias
+    cb.openUntil = Date.now() + (isRateLimit ? 300_000 : 60_000);
+    console.warn(
+      `[AI-CORE-GATEWAY] Circuit Breaker OPEN para o provedor ${provider} (${isRateLimit ? "Quota 429 detectada" : "3 falhas consecutivas"}) até ${new Date(cb.openUntil).toISOString()}`
+    );
   }
 }
 
@@ -303,24 +313,46 @@ async function callProviderLowLevel(
 
   try {
     if (provider === "groq") {
-      const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${key}`,
-        },
-        body: JSON.stringify({
-          model,
-          messages: [
-            ...(systemPrompt ? [{ role: "system", content: systemPrompt }] : []),
-            { role: "user", content: prompt },
-          ],
-          temperature: options?.temperature ?? 0.5,
-          max_tokens: options?.maxTokens || 1024,
-          ...(options?.responseFormat === "json_object" ? { response_format: { type: "json_object" } } : {}),
-        }),
-        signal: controller.signal,
-      });
+      const tryFetchGroq = async (targetModel: string) => {
+        return fetch("https://api.groq.com/openai/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${key}`,
+          },
+          body: JSON.stringify({
+            model: targetModel,
+            messages: [
+              ...(systemPrompt ? [{ role: "system", content: systemPrompt }] : []),
+              { role: "user", content: prompt },
+            ],
+            temperature: options?.temperature ?? 0.5,
+            max_tokens: options?.maxTokens || 1024,
+            ...(options?.responseFormat === "json_object" ? { response_format: { type: "json_object" } } : {}),
+          }),
+          signal: controller.signal,
+        });
+      };
+
+      let res = await tryFetchGroq(model);
+      if (!res.ok && (res.status === 400 || res.status === 404) && model !== "llama-3.3-70b-versatile") {
+        const firstErr = await res.text().catch(() => "");
+        const lowerErr = firstErr.toLowerCase();
+        if (
+          lowerErr.includes("model_not_found") ||
+          lowerErr.includes("does not exist") ||
+          lowerErr.includes("not found") ||
+          lowerErr.includes("not supported") ||
+          lowerErr.includes("decommissioned") ||
+          lowerErr.includes("invalid model") ||
+          lowerErr.includes("unknown model")
+        ) {
+          console.warn(`[Groq] Modelo "${model}" indisponível no Groq (${res.status}). Executando failover transparente para "llama-3.3-70b-versatile"...`);
+          res = await tryFetchGroq("llama-3.3-70b-versatile");
+        } else {
+          throw new Error(`Groq error ${res.status}: ${firstErr}`);
+        }
+      }
 
       if (!res.ok) {
         const errText = await res.text().catch(() => "");
@@ -827,7 +859,7 @@ export async function executeAiCoreGateway(request: AIGatewayRequest): Promise<A
           provider: candidate.provider,
         }, { error: err instanceof Error ? err.message : String(err) });
 
-        recordCircuitFailure(candidate.provider);
+        recordCircuitFailure(candidate.provider, err.message);
         markKeyError(activeKey.id, err.message).catch(() => {});
 
         if (!fallbackFrom) fallbackFrom = candidate.provider;
