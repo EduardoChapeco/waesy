@@ -7,6 +7,7 @@ import { harvestAndPersistPncpTenders } from "./mining/pncp-harvester";
 import { executeCrawlQueueBatchDirect } from "./mining/crawler-batch-engine";
 import { crossEnrichListingsWithCnpj } from "./mining/places-cnpj-cross-enricher";
 import { pollActiveCrawlerSources } from "./crawler-sources.functions";
+import { curateDirectoryListingRecord, batchCurateDirectoryListings } from "./mining/business-curation-bootstrap";
 import { scrapeUrl } from "@/lib/mining/firecrawl-client";
 /**
  * mining.functions.ts — BFF Server Functions para o Mining Hub & Crawlers
@@ -4083,3 +4084,44 @@ export const createMinedRecipeFn = createServerFn({ method: "POST" })
 
     return { success: true, id: inserted.id };
   });
+
+// ============================================================
+// Curadoria Ativa Bootstrap de Empresas & Estabelecimentos (Places)
+// ============================================================
+
+export const curateDirectoryListingFn = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      listingId: z.string().uuid("ID do estabelecimento inválido"),
+    })
+  )
+  .handler(async ({ data }) => {
+    await requireAdmin();
+    const supabase = getServerClient();
+
+    const { data: listing, error } = await supabase
+      .from("directory_listings")
+      .select("*")
+      .eq("id", data.listingId)
+      .single();
+
+    if (error || !listing) {
+      throw new Error(`Estabelecimento não encontrado: ${error?.message || "ID inexistente"}`);
+    }
+
+    return await curateDirectoryListingRecord(listing);
+  });
+
+export const batchCurateDirectoryListingsFn = createServerFn({ method: "POST" })
+  .validator(
+    z
+      .object({
+        limit: z.number().int().min(1).max(100).default(30),
+      })
+      .optional()
+  )
+  .handler(async ({ data }) => {
+    await requireAdmin();
+    return await batchCurateDirectoryListings({ limit: data?.limit || 30 });
+  });
+

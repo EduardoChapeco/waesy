@@ -41,6 +41,25 @@ export interface PlaceDetailDTO {
   reviewsCount: number;
   hasMarketplaceShowcase: boolean;
   reviews: PlaceReviewItem[];
+  cnpj?: string | null;
+  cnae?: string | null;
+  dataQualityScore?: number | null;
+  isOpenNow?: boolean | null;
+  socialLinks?: Record<string, string | undefined> | null;
+  biolinkCards?: Array<{
+    label: string;
+    url: string;
+    icon: string;
+    isPrimary?: boolean;
+  }> | null;
+  fiscalData?: {
+    razaoSocial?: string;
+    situacaoCadastral?: string;
+    dataAbertura?: string;
+    naturezaJuridica?: string;
+    capitalSocial?: number;
+    socios?: Array<{ nome: string; qualificacao?: string }>;
+  } | null;
 }
 
 export const placeDetailInputSchema = z.object({
@@ -65,6 +84,13 @@ export const getPlaceDetailBySlugFn = createServerFn({ method: "GET" })
         category,
         description,
         address,
+        city,
+        state,
+        cnpj,
+        cnae,
+        data_quality_score,
+        photos,
+        metadata,
         latitude,
         longitude,
         contact_phone,
@@ -99,6 +125,9 @@ export const getPlaceDetailBySlugFn = createServerFn({ method: "GET" })
       storeId = dirItem.store_id || null;
       const associatedStore = Array.isArray(dirItem.stores) ? dirItem.stores[0] : dirItem.stores;
       const slugVal = associatedStore?.slug || dirItem.id;
+      const metadata = (dirItem.metadata || {}) as Record<string, any>;
+      const socialLinks = metadata.social_links || {};
+      const fiscalData = metadata.cnpj_fiscal_data || null;
 
       placeDetail = {
         id: dirItem.id,
@@ -107,23 +136,39 @@ export const getPlaceDetailBySlugFn = createServerFn({ method: "GET" })
         category: dirItem.category || "Comércio Local",
         description: dirItem.description || "",
         address: dirItem.address || "Endereço sob consulta",
-        city: "São Miguel do Oeste",
-        state: "SC",
+        city: dirItem.city || "Chapecó",
+        state: dirItem.state || "SC",
         latitude: dirItem.latitude || null,
         longitude: dirItem.longitude || null,
         phone: dirItem.contact_phone || null,
-        whatsapp: dirItem.contact_whatsapp || null,
-        instagram: null,
-        website: dirItem.website_url || null,
+        whatsapp: dirItem.contact_whatsapp || socialLinks.whatsapp || null,
+        instagram: socialLinks.instagram || null,
+        website: dirItem.website_url || socialLinks.website || null,
         avatarUrl: dirItem.avatar_url || null,
         bannerUrl: dirItem.banner_url || null,
-        galleryImages: [],
+        galleryImages: Array.isArray(dirItem.photos) ? dirItem.photos : [],
         operatingHours: dirItem.working_hours || null,
-        isVerified: Boolean(dirItem.is_verified),
+        isVerified: Boolean(dirItem.is_verified || dirItem.cnpj),
         ratingAverage: Number(dirItem.rating || 5.0),
         reviewsCount: Number(dirItem.reviews_count || 0),
         hasMarketplaceShowcase: false,
         reviews: [],
+        cnpj: dirItem.cnpj || null,
+        cnae: dirItem.cnae || null,
+        dataQualityScore: dirItem.data_quality_score || null,
+        isOpenNow: metadata.is_open_now ?? null,
+        socialLinks: socialLinks || null,
+        biolinkCards: metadata.biolink_cards || null,
+        fiscalData: fiscalData
+          ? {
+              razaoSocial: fiscalData.razao_social,
+              situacaoCadastral: fiscalData.situacao_cadastral,
+              dataAbertura: fiscalData.data_inicio_atividade,
+              naturezaJuridica: fiscalData.natureza_juridica,
+              capitalSocial: fiscalData.capital_social,
+              socios: fiscalData.socios,
+            }
+          : null,
       };
     } else {
       // 2. Tentar na tabela stores diretamente (estabelecimentos cadastrados como store)

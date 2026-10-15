@@ -36,6 +36,9 @@ import {
   Copy,
   Check,
   Buildings,
+  InstagramLogo,
+  ShieldCheck,
+  IdentificationCard,
 } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -252,6 +255,32 @@ function PlaceDetailPage() {
                     Verificado no Guia
                   </Badge>
                 )}
+                {place.cnpj && (
+                  <Badge variant="outline" className="flex items-center gap-1 border-primary/40 text-primary bg-primary/5">
+                    <ShieldCheck className="size-4" aria-hidden="true" />
+                    CNPJ {place.cnpj.replace(/\D/g, "").replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, "$1.$2.$3/$4-$5")}
+                  </Badge>
+                )}
+                {place.isOpenNow !== undefined && place.isOpenNow !== null && (
+                  <Badge
+                    variant="outline"
+                    className={
+                      place.isOpenNow
+                        ? "border-emerald-500/40 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 font-semibold"
+                        : "border-border text-muted-foreground bg-muted/40 font-medium"
+                    }
+                  >
+                    <span
+                      className={
+                        place.isOpenNow
+                          ? "size-2 rounded-full bg-emerald-500 mr-2"
+                          : "size-2 rounded-full bg-muted-foreground mr-2"
+                      }
+                      aria-hidden="true"
+                    />
+                    {place.isOpenNow ? "Aberto Agora" : "Fechado no Momento"}
+                  </Badge>
+                )}
               </div>
 
               <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
@@ -284,7 +313,7 @@ function PlaceDetailPage() {
       </section>
 
       {/* ── Barra de Ações Táteis Principais ── */}
-      <section aria-label="Ações de Contato e Rotas" className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+      <section aria-label="Ações de Contato e Rotas" className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Button asChild variant="default" size="sm" className="h-11 w-full font-medium focus-visible:ring-2">
           <a href={mapDirectionsUrl} target="_blank" rel="noopener noreferrer">
             <NavigationArrow className="mr-2 size-4" aria-hidden="true" />
@@ -297,6 +326,15 @@ function PlaceDetailPage() {
             <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
               <WhatsappLogo className="mr-2 size-4 text-primary" aria-hidden="true" />
               WhatsApp Oficial
+            </a>
+          </Button>
+        )}
+
+        {place.instagram && (
+          <Button asChild variant="outline" size="sm" className="h-11 w-full font-medium focus-visible:ring-2">
+            <a href={place.instagram} target="_blank" rel="noopener noreferrer">
+              <InstagramLogo className="mr-2 size-4 text-pink-600" aria-hidden="true" />
+              Instagram
             </a>
           </Button>
         )}
@@ -454,6 +492,81 @@ function PlaceDetailPage() {
                   Visitar Website
                 </a>
               </Button>
+            </div>
+          )}
+
+          {/* Card de Dados Fiscais e Registro Oficial */}
+          {place.fiscalData && (
+            <div className="flex flex-col gap-4 rounded-lg border border-border bg-card p-6">
+              <div className="flex items-center gap-2 text-foreground font-semibold">
+                <IdentificationCard className="size-5 text-primary" aria-hidden="true" />
+                <span>Registro Fiscal Oficial</span>
+              </div>
+
+              <div className="flex flex-col gap-2 text-xs text-muted-foreground">
+                {place.fiscalData.razaoSocial && (
+                  <div className="flex flex-col gap-1 border-b border-border/40 pb-2">
+                    <span className="font-semibold text-foreground">Razão Social:</span>
+                    <span className="font-mono text-xs text-foreground/90">{place.fiscalData.razaoSocial}</span>
+                  </div>
+                )}
+                {place.cnpj && (
+                  <div className="flex items-center justify-between border-b border-border/40 pb-2">
+                    <span className="font-semibold text-foreground">CNPJ:</span>
+                    <span className="font-mono text-xs text-primary font-medium">{place.cnpj}</span>
+                  </div>
+                )}
+                {place.fiscalData.situacaoCadastral && (
+                  <div className="flex items-center justify-between border-b border-border/40 pb-2">
+                    <span className="font-semibold text-foreground">Situação:</span>
+                    <Badge variant="outline" className="border-emerald-500/40 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 text-xs">
+                      {place.fiscalData.situacaoCadastral}
+                    </Badge>
+                  </div>
+                )}
+                {place.fiscalData.dataAbertura && (
+                  <div className="flex items-center justify-between border-b border-border/40 pb-2">
+                    <span className="font-semibold text-foreground">Fundação:</span>
+                    <span>{place.fiscalData.dataAbertura}</span>
+                  </div>
+                )}
+                {place.cnae && (
+                  <div className="flex items-center justify-between border-b border-border/40 pb-2 last:border-none">
+                    <span className="font-semibold text-foreground">CNAE:</span>
+                    <span className="font-mono text-xs">{place.cnae}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Biolink Cards de Acesso Rápido */}
+          {place.biolinkCards && place.biolinkCards.length > 0 && (
+            <div className="flex flex-col gap-3 rounded-lg border border-border bg-card p-6">
+              <div className="flex items-center gap-2 text-foreground font-semibold">
+                <Globe className="size-5 text-primary" aria-hidden="true" />
+                <span>Atalhos & Bio</span>
+              </div>
+              <div className="flex flex-col gap-2">
+                {place.biolinkCards.map((card, idx) => (
+                  <Button
+                    key={idx}
+                    asChild
+                    variant={card.isPrimary ? "default" : "outline"}
+                    size="sm"
+                    className="h-11 w-full justify-start font-medium px-4 focus-visible:ring-2"
+                  >
+                    <a href={card.url} target="_blank" rel="noopener noreferrer">
+                      {card.icon === "whatsapp" && <WhatsappLogo className="mr-2 size-4 shrink-0 text-emerald-500" aria-hidden="true" />}
+                      {card.icon === "instagram" && <InstagramLogo className="mr-2 size-4 shrink-0 text-pink-600" aria-hidden="true" />}
+                      {card.icon === "map" && <NavigationArrow className="mr-2 size-4 shrink-0 text-primary" aria-hidden="true" />}
+                      {card.icon === "phone" && <Phone className="mr-2 size-4 shrink-0 text-muted-foreground" aria-hidden="true" />}
+                      {card.icon === "globe" && <Globe className="mr-2 size-4 shrink-0 text-primary" aria-hidden="true" />}
+                      <span className="truncate">{card.label}</span>
+                    </a>
+                  </Button>
+                ))}
+              </div>
             </div>
           )}
         </aside>

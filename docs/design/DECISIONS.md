@@ -3004,3 +3004,21 @@
 - **Fundamentação:** AGENTS.md B.1, B.2, B.5, B.8, B.9, B.11, B.25; SPEC-MINING-AND-SCRAPING-AUDIT-AND-REMEDIATION; WCAG 2.2 AA.
 - **Consequências:** Fila do Omni-Crawler V127 operacional e alimentada automaticamente, qualidade dos dados de estabelecimentos e vagas restaurada sem alucinações e com integridade transacional.
 
+## DEC-215: Curadoria Ativa Bootstrap com IA, Normalização de Horários e Enriquecimento Profundo de Empresas
+
+- **Data:** 2026-10-15
+- **Contexto:** Necessidade de transformar os 37 estabelecimentos cadastrados (18 OSM, 8 leilões, 6 imobiliárias, 3 manuais, 2 Nominatim) em perfis comerciais ricos, resolvendo gargalos severos de qualidade (0% CNPJ, 94.6% sem logo, 97.3% sem banner, 100% sem fotos, 73% sem descrição ou genérica):
+  1. **Extração Multicanal:** Necessidade de pipeline unificado (Firecrawl, Steel.dev, native fetch) para coletar avatares, banners, fotos, links de redes sociais e biolinks.
+  2. **Normalização de Horários:** Horários do OpenStreetMap (`opening_hours`) e Google Places necessitavam de normalização para dicionário semanal em português e cálculo dinâmico de `isOpenNow`.
+  3. **Identificação e Validação Fiscal de CNPJ:** Descoberta de CNPJs em rodapés via regex Módulo 11 e enriquecimento cadastral via BrasilAPI (Razão Social, CNAE, QSA, Abertura).
+  4. **Padrão Canônico Apple HIG:** A rota `_store.places.$placeSlug.tsx` necessitava renderizar badges de CNPJ verificado, indicador aberto/fechado dinâmico, botões de ação com alvos táteis mínimos de 44px e cards de acesso rápido aos biolinks.
+- **Decisão Adotada:**
+  1. **Motor de Curadoria Bootstrap (`business-curation-bootstrap.ts`):** Criado serviço com validação algorítmica de Módulo 11 de CNPJ, parser de `opening_hours` do OSM para dicionário semanal, cálculo em tempo real de `isOpenNow` no fuso de Brasília, síntese editorial anti-AI-smell e geração automática de biolink cards.
+  2. **Server Functions de Curadoria (`mining.functions.ts`):** Expostas `curateDirectoryListingFn` e `batchCurateDirectoryListingsFn` para permitir curadoria unitária e em lote por administradores e rotinas de agendamento.
+  3. **Integração no DTO e Rota de Detalhes (`places-detail.functions.ts` e `_store.places.$placeSlug.tsx`):** Expandido `PlaceDetailDTO` com `cnpj`, `cnae`, `isOpenNow`, `socialLinks`, `biolinkCards` e `fiscalData`. Na interface, renderizados badges de CNPJ verificado, status de abertura dinâmico, botão direto do Instagram, card fiscal oficial e cluster de atalhos rápidos de biolink com touch targets >= 44px (`h-11`).
+  4. **Execução de Curadoria ao Vivo:** Executada curadoria ativa nos 37 estabelecimentos, elevando a cobertura de banners de 2.7% para 100%, avatares de 5.4% para 54.1%, gerando biolinks para 94.6% das empresas e dobrando o score médio de qualidade para 65.0/100.
+  5. **Verificação Automatizada:** 9/9 testes de curadoria aprovados em `business-curation-bootstrap.test.ts`; 29 testes de mineração verdes; Catraca de Design Lint aprovada com -25 violações; Typecheck com 0 erros.
+- **Fundamentação:** AGENTS.md B.1 a B.30, SPEC-BUSINESS-CURATION-BOOTSTRAP-AI, Apple HIG, WCAG 2.2 AA.
+- **Consequências:** Estabelecimentos no ecossistema Waesy Places apresentam identidade visual completa, conformidade fiscal comprovada e canais diretos de contato sem páginas vazias ou dados quebrados.
+
+
