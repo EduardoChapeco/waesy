@@ -77,6 +77,7 @@ const NAV_SECTIONS = [
     items: [
       { to: "/admin-master/pre-cadastro", label: "Pré-Cadastro e Lançamento", icon: Star },
       { to: "/admin-master/portal-completo", label: "Portal Completo", icon: Building2 },
+      { to: "/admin-master/home-editor", label: "Home Page Builder (CMS)", icon: Layout },
       { to: "/admin-master/vitrines", label: "Vitrines (CMS)", icon: Layout },
       { to: "/admin-master/banners", label: "Banners Globais", icon: ImageIcon },
       { to: "/admin-master/botoes", label: "Hotpages Globais", icon: Layers },

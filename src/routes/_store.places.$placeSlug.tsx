@@ -548,7 +548,7 @@ function PlaceDetailPage() {
                 <span>Atalhos & Bio</span>
               </div>
               <div className="flex flex-col gap-2">
-                {place.biolinkCards.map((card, idx) => (
+                {place.biolinkCards.map((card: NonNullable<PlaceDetailDTO["biolinkCards"]>[number], idx: number) => (
                   <Button
                     key={idx}
                     asChild

@@ -86,6 +86,7 @@ import { Route as AdminMasterCrescimentoRouteImport } from './routes/admin-maste
 import { Route as AdminMasterCuradoriaRouteImport } from './routes/admin-master.curadoria'
 import { Route as AdminMasterDenunciasRouteImport } from './routes/admin-master.denuncias'
 import { Route as AdminMasterFaturasRouteImport } from './routes/admin-master.faturas'
+import { Route as AdminMasterHomeEditorRouteImport } from './routes/admin-master.home-editor'
 import { Route as AdminMasterHubsRouteImport } from './routes/admin-master.hubs'
 import { Route as AdminMasterImprensaRouteImport } from './routes/admin-master.imprensa'
 import { Route as AdminMasterIntegracoesRouteImport } from './routes/admin-master.integracoes'
@@ -798,6 +799,11 @@ const AdminMasterDenunciasRoute = AdminMasterDenunciasRouteImport.update({
 const AdminMasterFaturasRoute = AdminMasterFaturasRouteImport.update({
   id: '/faturas',
   path: '/faturas',
+  getParentRoute: () => AdminMasterRoute,
+} as any)
+const AdminMasterHomeEditorRoute = AdminMasterHomeEditorRouteImport.update({
+  id: '/home-editor',
+  path: '/home-editor',
   getParentRoute: () => AdminMasterRoute,
 } as any)
 const AdminMasterHubsRoute = AdminMasterHubsRouteImport.update({
@@ -2639,6 +2645,7 @@ export interface FileRoutesByFullPath {
   '/admin-master/curadoria': typeof AdminMasterCuradoriaRoute
   '/admin-master/denuncias': typeof AdminMasterDenunciasRoute
   '/admin-master/faturas': typeof AdminMasterFaturasRoute
+  '/admin-master/home-editor': typeof AdminMasterHomeEditorRoute
   '/admin-master/hubs': typeof AdminMasterHubsRoute
   '/admin-master/imprensa': typeof AdminMasterImprensaRoute
   '/admin-master/integracoes': typeof AdminMasterIntegracoesRoute
@@ -3036,6 +3043,7 @@ export interface FileRoutesByTo {
   '/admin-master/curadoria': typeof AdminMasterCuradoriaRoute
   '/admin-master/denuncias': typeof AdminMasterDenunciasRoute
   '/admin-master/faturas': typeof AdminMasterFaturasRoute
+  '/admin-master/home-editor': typeof AdminMasterHomeEditorRoute
   '/admin-master/hubs': typeof AdminMasterHubsRoute
   '/admin-master/imprensa': typeof AdminMasterImprensaRoute
   '/admin-master/integracoes': typeof AdminMasterIntegracoesRoute
@@ -3441,6 +3449,7 @@ export interface FileRoutesById {
   '/admin-master/curadoria': typeof AdminMasterCuradoriaRoute
   '/admin-master/denuncias': typeof AdminMasterDenunciasRoute
   '/admin-master/faturas': typeof AdminMasterFaturasRoute
+  '/admin-master/home-editor': typeof AdminMasterHomeEditorRoute
   '/admin-master/hubs': typeof AdminMasterHubsRoute
   '/admin-master/imprensa': typeof AdminMasterImprensaRoute
   '/admin-master/integracoes': typeof AdminMasterIntegracoesRoute
@@ -3849,6 +3858,7 @@ export interface FileRouteTypes {
     | '/admin-master/curadoria'
     | '/admin-master/denuncias'
     | '/admin-master/faturas'
+    | '/admin-master/home-editor'
     | '/admin-master/hubs'
     | '/admin-master/imprensa'
     | '/admin-master/integracoes'
@@ -4246,6 +4256,7 @@ export interface FileRouteTypes {
     | '/admin-master/curadoria'
     | '/admin-master/denuncias'
     | '/admin-master/faturas'
+    | '/admin-master/home-editor'
     | '/admin-master/hubs'
     | '/admin-master/imprensa'
     | '/admin-master/integracoes'
@@ -4650,6 +4661,7 @@ export interface FileRouteTypes {
     | '/admin-master/curadoria'
     | '/admin-master/denuncias'
     | '/admin-master/faturas'
+    | '/admin-master/home-editor'
     | '/admin-master/hubs'
     | '/admin-master/imprensa'
     | '/admin-master/integracoes'
@@ -5568,6 +5580,13 @@ declare module '@tanstack/react-router' {
       path: '/faturas'
       fullPath: '/admin-master/faturas'
       preLoaderRoute: typeof AdminMasterFaturasRouteImport
+      parentRoute: typeof AdminMasterRoute
+    }
+    '/admin-master/home-editor': {
+      id: '/admin-master/home-editor'
+      path: '/home-editor'
+      fullPath: '/admin-master/home-editor'
+      preLoaderRoute: typeof AdminMasterHomeEditorRouteImport
       parentRoute: typeof AdminMasterRoute
     }
     '/admin-master/hubs': {
@@ -8252,6 +8271,7 @@ interface AdminMasterRouteChildren {
   AdminMasterCuradoriaRoute: typeof AdminMasterCuradoriaRoute
   AdminMasterDenunciasRoute: typeof AdminMasterDenunciasRoute
   AdminMasterFaturasRoute: typeof AdminMasterFaturasRoute
+  AdminMasterHomeEditorRoute: typeof AdminMasterHomeEditorRoute
   AdminMasterHubsRoute: typeof AdminMasterHubsRoute
   AdminMasterImprensaRoute: typeof AdminMasterImprensaRoute
   AdminMasterIntegracoesRoute: typeof AdminMasterIntegracoesRoute
@@ -8290,6 +8310,7 @@ const AdminMasterRouteChildren: AdminMasterRouteChildren = {
   AdminMasterCuradoriaRoute: AdminMasterCuradoriaRoute,
   AdminMasterDenunciasRoute: AdminMasterDenunciasRoute,
   AdminMasterFaturasRoute: AdminMasterFaturasRoute,
+  AdminMasterHomeEditorRoute: AdminMasterHomeEditorRoute,
   AdminMasterHubsRoute: AdminMasterHubsRoute,
   AdminMasterImprensaRoute: AdminMasterImprensaRoute,
   AdminMasterIntegracoesRoute: AdminMasterIntegracoesRoute,
@@ -8826,13 +8847,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

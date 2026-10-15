@@ -295,3 +295,47 @@ Mecanismo conversacional especializado em turismo e mobilidade:
 | DL-28 | Proibido ausência de suporte a movimento reduzido (`motion-reduce`) | P1 | Bloqueia merge |
 | DL-29 | Proibido layout que não bifurca casca entre compacto e expandido | P2 | Alerta de adaptatividade |
 | DL-30 | Proibido token semântico declarado sem consumo no sistema | P3 | Alerta de higiene |
+
+---
+
+## C.15 Primitivas Nativas da Homepage 3.0, CMS Omni-Builder & Bento Grid
+
+O ecossistema da Página Inicial (`_store.index.tsx`) e o módulo de personalização do Admin Master (`admin-master.home-editor.tsx`) operam sob o padrão visual nativo industrial inspirado em Noor, iFood e Bento Grid Apple HIG, garantindo eliminação de *AI-smell*, zero efeito sanfona (CLS < 0.05) e controle CMS bilateral ponta a ponta (Invariante B.20):
+
+### 1. `NoorNativeCategoryDock` (Menu Deslizante Mobile Nativo)
+- **Papel:** Navegação horizontal contínua de alta fluidez em visualizações móveis e docks rápidos.
+- **Física:** Trilho horizontal flexível com `overflow-x-auto snap-x mandatory no-scrollbar gap-3 py-2 px-1`.
+- **Ergonomia e Acessibilidade:** Alvos de toque com dimensão mínima de 44x44px (`min-h-11 min-w-11`), física tátil suave `:active:scale-95 transition-transform duration-150` e anel de foco teclado `:focus-visible:ring-2`.
+- **Zero Quebra de Layout:** Itens com largura intrínseca contida (`shrink-0 flex-shrink-0`), prevenindo encolhimento ou quebra de linha em telas compactas (<600px).
+
+### 2. `IFoodSquareCategoryButton` (Botão Quadrado 1:1 de Categorias)
+- **Papel:** Navegação visual por nichos, atalhos de delivery e categorias comerciais.
+- **Geometria:** Quadrado perfeito `1:1` (`aspect-square`), com dimensões mínimas de 80x80px a 96x96px (`w-20 sm:w-24`) e cantos arredondados sem bordas duras (`rounded-lg bg-card border border-border/60`).
+- **Comportamento Mídia Pura:** Quando `showText` for falso, a imagem preenche 100% da área do card (`object-cover size-full`). Quando verdadeiro, centraliza a mídia (`size-12 object-contain`) com rótulo conciso de 1 linha (`line-clamp-1 text-xs font-semibold`).
+
+### 3. `MetamorphicBannerSlider` (Carrossel Anti-Jank com Seletor de Aspect Ratio)
+- **Papel:** Hero banners e trilhos promocionais configuráveis pelo Admin Master.
+- **Travas Anti-Jank (CLS = 0):** O contêiner de imagem bloqueia a proporção exata no CSS antes do carregamento da mídia:
+  - `ifood`: `.aspect-banner-ifood` (`21/9` panorâmico mobile).
+  - `16:9`: `.aspect-banner-cinema` (`16/9` cinema e widescreen).
+  - `4:3`: `.aspect-banner-classic` (`4/3` clássico fotográfico).
+  - `1:1`: `.aspect-banner-square` (`1/1` quadrado).
+- **Controles Acessíveis:** Botões de paginação anterior/próximo acessíveis via teclado no desktop (`size-11 min-h-11`), dots suaves de indicação e autoplay que pausa instantaneamente ao toque ou hover.
+
+### 4. `BentoGridTetris` (Grid Modular Widescreen Desktop)
+- **Papel:** Acomodação visual assimétrica de hotpages, coleções e vitrines em telas maiores (>=840px).
+- **Estrutura:** Grid responsivo de 4 colunas desktop com empacotamento denso automático (`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 grid-flow-dense gap-3 sm:gap-4`).
+- **Acomodação Tetris Pack:** Spans modulares em largura (`grid_span_x` de 1 a 4) e altura (`grid_span_y` de 1 a 2) preenchem os vácuos sem buracos ou lacunas assimétricas.
+
+### 5. `HomePostsShowcase` (Vitrine de Feed Social Anti-Quebra)
+- **Papel:** Feed da comunidade e publicações locais em trilho horizontal.
+- **Conformidade com Invariantes B.27 e B.30:** Estrutura completa de post social contendo:
+  - Autor com badge de verificação opcional.
+  - Avatar civil com renderização direta e fallback resiliente (`UserCircle`) sob erro de imagem.
+  - Handle do perfil ou loja (`@handle`).
+  - Badge discreto de categoria temática no topo da mídia.
+  - Data relativa formatada em tempo real (`formatRelativeTime`).
+  - Mídia com proporção rígida (`.aspect-post-card` 16:10) e resolução automática para capa editorial canônica caso o arquivo original seja corrompido (`resolveHealthyCover`).
+  - Contadores de engajamento reais (curtidas e comentários).
+  - CTA tátil primário obrigatório com piso mínimo de 44px (`min-h-11`).
+

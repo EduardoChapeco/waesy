@@ -1,8 +1,8 @@
 {
-  "timestamp": "2026-10-13T22:41:13.498Z",
-  "totalFiles": 2014,
-  "totalImported": 1603,
-  "discoveredUnreferencedCount": 64,
+  "timestamp": "2026-10-15T19:18:41.772Z",
+  "totalFiles": 2102,
+  "totalImported": 1674,
+  "discoveredUnreferencedCount": 66,
   "intentionalUnreferencedCount": 58,
   "intentionalUnreferencedFiles": [
     "src/components/ad-engine/public/listing-empty-state.tsx",
@@ -66,14 +66,16 @@
   ],
   "allowlistUnknownCount": 0,
   "allowlistUnknownFiles": [],
-  "unreferencedCount": 6,
+  "unreferencedCount": 8,
   "unreferencedFiles": [
     "src/components/classifieds/classified-basic-info-section.tsx",
     "src/components/classifieds/classified-editor-navigation.tsx",
     "src/components/classifieds/classified-location-section.tsx",
     "src/components/classifieds/classified-media-section.tsx",
     "src/components/classifieds/classified-pricing-lifecycle-section.tsx",
-    "src/components/classifieds/create-type-picker.tsx"
+    "src/components/classifieds/create-type-picker.tsx",
+    "src/components/commerce/master-squircle-hero.tsx",
+    "src/start.ts"
   ],
   "duplicateComponentsCount": 0,
   "duplicateComponents": [],

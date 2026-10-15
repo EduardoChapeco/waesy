@@ -2,7 +2,6 @@ import React, { useState, useMemo } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Tag, Newspaper, Briefcase, CalendarDots, MapPin, Clock, WhatsappLogo, Buildings, Star, CheckCircle, Storefront, ArrowRight, Ticket, UserCircle, Target, Rss, ChatCircleDots, Globe, CookingPot, Airplane, Trophy, ShieldCheck } from "@phosphor-icons/react";
 import { BannerHeroCarousel } from "@/components/commerce/banner-hero-carousel";
-import { MasterSquircleHero } from "@/components/commerce/master-squircle-hero";
 import { HotpagesRail } from "@/components/commerce/hotpages-rail";
 import { OfferCard } from "@/components/commerce/offer-card";
 import { HorizontalRail } from "@/components/commerce/horizontal-rail";
@@ -24,9 +23,8 @@ import { AdTelemetryBeacon } from "@/components/commerce/ad-telemetry-beacon";
 import { resolveActiveCity } from "@/lib/city-helper";
 import { formatRelativeTime } from "@/lib/datetime";
 
-// BFF Functions — 100% Real no Supabase | Zero Mocks
 import { listActiveBanners, type BannerDTO } from "@/services/banner.functions";
-import { listHomeHeroCards, listHeroSquircleCards, listEditorialHotpages, type HotpageDTO } from "@/services/hotpage.functions";
+import { listEditorialHotpages, type HotpageDTO } from "@/services/hotpage.functions";
 import { getMarketplaceFeed, type FlashOfferDTO } from "@/services/marketplace.functions";
 import { listUnifiedListings } from "@/services/unified-listing.functions";
 import type { UnifiedListing } from "@/types/unified-ad-engine";
@@ -37,6 +35,17 @@ import { getPublicEvents } from "@/services/events.functions";
 import { listPublicArticles, type NewsArticleDTO } from "@/services/news.functions";
 import { getMuralFeed, type MuralFeedResponse } from "@/services/social.functions";
 import { getAllPublicConcursos, type RaffleDTO } from "@/services/invite.functions";
+import { MetamorphicBannerSlider } from "@/components/home/MetamorphicBannerSlider";
+import { NoorNativeCategoryDock } from "@/components/home/NoorNativeCategoryDock";
+import { BentoGridTetris } from "@/components/home/BentoGridTetris";
+import { IFoodSquareCategoryButton } from "@/components/home/IFoodSquareCategoryButton";
+import { HomePostsShowcase } from "@/components/home/HomePostsShowcase";
+import {
+  listPublicHomePageSections,
+  getUnifiedShowcasePosts,
+  type HomePageSectionDTO,
+  type NormalizedShowcasePost,
+} from "@/services/admin-home-cms.functions";
 
 const CANONICAL_PILLARS = [
   {
@@ -138,8 +147,6 @@ export const Route = createFileRoute("/_store/")({
         banners,
         middleBanners,
         footerBanners,
-        heroCards,
-        heroSquircleCards,
         editorialHotpages,
         marketplaceFeed,
         placesListings,
@@ -150,12 +157,12 @@ export const Route = createFileRoute("/_store/")({
         feedResponse,
         concursos,
         workspaceListings,
+        homeSections,
+        showcasePosts,
       ] = await Promise.all([
         listActiveBanners({ data: { placement: "home", city: filteredCity } }).catch(() => []),
         listActiveBanners({ data: { placement: "home_middle", city: filteredCity } }).catch(() => []),
         listActiveBanners({ data: { placement: "home_footer", city: filteredCity } }).catch(() => []),
-        listHomeHeroCards().catch(() => []),
-        listHeroSquircleCards().catch(() => []),
         listEditorialHotpages({ data: { module: "home" } }).catch(() => []),
         getMarketplaceFeed().catch(() => ({ sections: [], allProducts: [] })),
         getPublicDirectory({ data: { limit: 12, city: filteredCity } }).catch(() => []),
@@ -166,6 +173,8 @@ export const Route = createFileRoute("/_store/")({
         getMuralFeed({ data: { limit: 8 } }).catch(() => ({ items: [] })),
         getAllPublicConcursos({ data: { filter: "all" } }).catch(() => []),
         listUnifiedListings({ data: { origin: "workspace", limit: 36 } }).catch(() => []),
+        listPublicHomePageSections({ data: { city: filteredCity } }).catch(() => []),
+        getUnifiedShowcasePosts({ data: { limit: 12, city: filteredCity } }).catch(() => []),
       ]);
 
       const directWorkspaceProducts = (workspaceListings || []).map((item: UnifiedListing) => {
@@ -201,8 +210,6 @@ export const Route = createFileRoute("/_store/")({
         banners: banners || [],
         middleBanners: middleBanners || [],
         footerBanners: footerBanners || [],
-        heroCards: heroCards || [],
-        heroSquircleCards: heroSquircleCards || [],
         editorialHotpages: editorialHotpages || [],
         marketplaceProducts: Array.from(combinedMap.values()) as FlashOfferDTO[],
         placesListings: placesListings || [],
@@ -212,6 +219,8 @@ export const Route = createFileRoute("/_store/")({
         newsArticles: newsArticles || [],
         feedPosts: (feedResponse as MuralFeedResponse)?.items || [],
         concursos: concursos || [],
+        homeSections: homeSections || [],
+        showcasePosts: showcasePosts || [],
         activeCity: filteredCity,
       };
     } catch (err) {
@@ -220,8 +229,6 @@ export const Route = createFileRoute("/_store/")({
         banners: [],
         middleBanners: [],
         footerBanners: [],
-        heroCards: [],
-        heroSquircleCards: [],
         editorialHotpages: [],
         marketplaceProducts: [],
         placesListings: [],
@@ -247,8 +254,6 @@ function CommunityMarketplaceView({ data }: { data: any }) {
     banners = [],
     middleBanners = [],
     footerBanners = [],
-    heroCards = [],
-    heroSquircleCards = [],
     editorialHotpages = [],
     marketplaceProducts = [],
     placesListings = [],
@@ -258,7 +263,32 @@ function CommunityMarketplaceView({ data }: { data: any }) {
     newsArticles = [],
     feedPosts = [],
     concursos = [],
+    homeSections = [],
+    showcasePosts = [],
   } = (data || {});
+
+  // Resolução das seções gerenciadas via CMS Omni-Builder
+  const heroSection = useMemo(() => {
+    return (homeSections as HomePageSectionDTO[]).find(
+      (s) => s.section_key === "hero_banners" && s.is_active,
+    );
+  }, [homeSections]);
+
+  const quickCategoriesSection = useMemo(() => {
+    return (homeSections as HomePageSectionDTO[]).find(
+      (s) => s.section_key === "quick_categories_ifood" && s.is_active,
+    );
+  }, [homeSections]);
+
+  const customSections = useMemo(() => {
+    return (homeSections as HomePageSectionDTO[]).filter(
+      (s) =>
+        s.is_active &&
+        s.section_key !== "hero_banners" &&
+        s.section_key !== "quick_categories_ifood" &&
+        s.section_key !== "social_posts_vitrine",
+    );
+  }, [homeSections]);
 
   // Estado dos 3 Modos Canônicos de Visualização (Feed, Grid, List) e Filtros
   const navigate = useNavigate();
@@ -266,38 +296,6 @@ function CommunityMarketplaceView({ data }: { data: any }) {
   const [activeCategory, setActiveCategory] = useState("todos");
   const [viewMode, setViewMode] = useState<ViewModeType>("feed");
   const [engineMode, setEngineMode] = useState<VitrineEngineMode>("empresas");
-
-  // Resolução dinâmica dos cards do topo onde o gestor/admin faz upload de imagens
-  const displayHeroCards = useMemo(() => {
-    return CANONICAL_PILLARS.map((pillar) => {
-      const match = heroCards.find(
-        (h: HotpageDTO) =>
-          h.slug === pillar.slug ||
-          h.slug === `home-${pillar.slug}` ||
-          h.target_route === pillar.to ||
-          (h.target_route && h.target_route.startsWith(pillar.to))
-      );
-
-      const coverUrl = match?.cover_image_url || match?.bg_media_url || null;
-      const title = pillar.title;
-      const to = pillar.to;
-
-      return {
-        ...pillar,
-        coverUrl,
-        title,
-        to,
-        isActive: match ? match.is_active !== false : true,
-        // Configurações visuais persistidas no banco — Zero sombra por padrão
-        showOverlay: match?.show_overlay === true,
-        showShadow: match?.show_shadow === true,
-        bgOverlayOpacity: typeof match?.bg_overlay_opacity === "number" ? match.bg_overlay_opacity : 30,
-        bgColor: match?.bg_color || "#000000",
-        showTitle: match?.show_title !== false,
-        textColor: match?.text_color || null,
-      };
-    }).filter((card) => (card as any).isActive !== false);
-  }, [heroCards]);
 
   // Bolhas de descoberta do Design System 4.0
   const discoveryBubbleItems = useMemo(() => {
@@ -606,86 +604,90 @@ function CommunityMarketplaceView({ data }: { data: any }) {
 
   return (
     <div className="w-full space-y-4 sm:space-y-4 pb-14">
-      {/* ── 0. HERO SQUIRCLE MASTER BANNERS & QUICK ACCESS PILLS (iFood Style) ── */}
-      <MasterSquircleHero cards={heroSquircleCards} />
+      {/* ── 0. HERO BANNERS (Trava Anti-Jank + Upload Limpo de Mídia pelo Admin Master) ── */}
+      {heroSection && heroSection.items && heroSection.items.length > 0 ? (
+        <section aria-label={heroSection.title || "Destaques Principais"} className="w-full">
+          {heroSection.show_title && heroSection.title && (
+            <div className="mb-2 px-1">
+              <h2 className="text-base sm:text-lg font-bold text-foreground tracking-tight">
+                {heroSection.title}
+              </h2>
+              {heroSection.show_subtitle && heroSection.subtitle && (
+                <p className="text-xs text-muted-foreground">{heroSection.subtitle}</p>
+              )}
+            </div>
+          )}
+          <MetamorphicBannerSlider
+            items={heroSection.items}
+            aspectRatio={heroSection.aspect_ratio}
+          />
+        </section>
+      ) : banners && banners.length > 0 ? (
+        <section aria-label="Destaques Principais" className="w-full">
+          <BannerHeroCarousel banners={banners} />
+        </section>
+      ) : null}
 
-      {/* ── 1. CARDS COM IMAGENS DO TOPO (Categorias Master com Separação Rigorosa de Breakpoint) ── */}
-      {displayHeroCards && displayHeroCards.length > 0 && (
-        <section aria-label="Categorias Principais">
-          <HorizontalRail title="Categorias Principais" hideHeader={true}>
-            {displayHeroCards.map((card) => (
-              <Link
-                key={card.slug}
-                to={card.to as any}
-                className={`min-w-36 sm:min-w-52 md:min-w-60 max-w-64 shrink-0 snap-start group relative flex flex-col justify-end overflow-hidden rounded-lg bg-card aspect-video sm:aspect-video border border-border/60 hover:border-foreground/30 transition-all duration-200 active:active:scale-95 shadow-none`}
-              >
-                {(card as any).coverUrl ? (
-                  <img
-                    src={(card as any).coverUrl}
-                    alt={card.title}
-                    className="absolute inset-0 size-full object-cover group-hover:scale-105 transition-transform duration-300 motion-reduce:transition-none"
-                    loading="eager"
-                    onError={(e) => {
-                      (e.currentTarget as HTMLElement).style.display = "none";
-                    }}
-                  />
-                ) : (
-                  <div className="absolute inset-0 size-full bg-muted/40 border border-border/40 flex items-center justify-center">
-                    <span className="text-xs font-bold text-muted-foreground/60">{card.title}</span>
-                  </div>
-                )}
-
-                {/* Overlay configurável — Zero por padrão, somente se ativado no Admin com opacidade > 0 */}
-                {(card as any).showOverlay && ((card as any).bgOverlayOpacity ?? 30) > 0 && (
-                  <div
-                    className="absolute inset-0 bg-gradient-to-t to-transparent pointer-events-none"
-                    style={{
-                      background: `linear-gradient(to top, ${
-                        (card as any).bgColor || "#000000"
-                      }${Math.round(((card as any).bgOverlayOpacity ?? 30) * 2.55).toString(16).padStart(2, "0")} 0%, transparent 60%)`,
-                    }}
-                  />
-                )}
-
-                {/* Identificação do Card — visível somente se show_title não está desativado */}
-                {(card as any).showTitle !== false && (
-                  <div className="relative z-10 p-3 sm:p-3 w-full">
-                    {(card as any).isPlacesBadge ? (
-                      <PlacesHighlightBadge
-                        className={`text-xs font-bold drop-shadow-sm ${
-                          (card as any).textColor ? "" : (card as any).showOverlay ? "text-white" : "text-foreground"
-                        }`}
-                        style={(card as any).textColor ? { color: (card as any).textColor } : undefined}
-                      />
-                    ) : (
-                      <h2
-                        className={`text-xs font-bold leading-tight drop-shadow-sm truncate ${
-                          (card as any).textColor ? "" : (card as any).showOverlay ? "text-white" : "text-foreground"
-                        }`}
-                        style={(card as any).textColor ? { color: (card as any).textColor } : undefined}
-                      >
-                        {card.title}
-                      </h2>
-                    )}
-                  </div>
-                )}
-              </Link>
-            ))}
-          </HorizontalRail>
+      {/* ── 1. MENU DESLIZANTE NATIVO / CATEGORIAS QUADRADAS (Estilo Noor & iFood 1:1) ── */}
+      {quickCategoriesSection && quickCategoriesSection.items && quickCategoriesSection.items.length > 0 && (
+        <section aria-label={quickCategoriesSection.title || "Categorias Rápidas"} className="w-full">
+          {quickCategoriesSection.show_title && quickCategoriesSection.title && (
+            <div className="mb-2 px-1">
+              <h2 className="text-base sm:text-lg font-bold text-foreground tracking-tight">
+                {quickCategoriesSection.title}
+              </h2>
+              {quickCategoriesSection.show_subtitle && quickCategoriesSection.subtitle && (
+                <p className="text-xs text-muted-foreground">{quickCategoriesSection.subtitle}</p>
+              )}
+            </div>
+          )}
+          <NoorNativeCategoryDock items={quickCategoriesSection.items} />
         </section>
       )}
 
-      {/* ── 1.5. MINI CARDS EDITORIAIS / HOTPAGES (Omitido graciosamente se sem registros) ── */}
+      {/* ── 1.5. SEÇÕES MODULARES CONFIGURADAS NO CMS (Bento Grid / Carrossel / Grade 2D) ── */}
+      {customSections.map((sec: HomePageSectionDTO) => (
+        <section key={sec.id} aria-label={sec.title || "Destaques"} className="w-full space-y-2">
+          {sec.show_title && sec.title && (
+            <div className="px-1">
+              <h2 className="text-base sm:text-lg font-bold text-foreground tracking-tight">
+                {sec.title}
+              </h2>
+              {sec.show_subtitle && sec.subtitle && (
+                <p className="text-xs text-muted-foreground">{sec.subtitle}</p>
+              )}
+            </div>
+          )}
+          {sec.layout_variant === "bento_grid" && (
+            <BentoGridTetris items={sec.items} aspectRatio={sec.aspect_ratio} />
+          )}
+          {sec.layout_variant === "carousel" && (
+            <MetamorphicBannerSlider items={sec.items} aspectRatio={sec.aspect_ratio} />
+          )}
+          {sec.layout_variant === "horizontal_scroll" && (
+            <NoorNativeCategoryDock items={sec.items} />
+          )}
+          {sec.layout_variant === "grid_2d" && (
+            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3">
+              {sec.items.map((it) => (
+                <IFoodSquareCategoryButton
+                  key={it.id}
+                  title={it.title}
+                  imageUrl={it.image_url}
+                  targetUrl={it.target_url}
+                  showText={it.show_text}
+                  badgeText={it.badge_text}
+                />
+              ))}
+            </div>
+          )}
+        </section>
+      ))}
+
+      {/* ── 2. MINI CARDS EDITORIAIS / HOTPAGES (Omitido graciosamente se sem registros) ── */}
       {editorialHotpages && editorialHotpages.length > 0 && (
         <section aria-label="Destaques e Hotpages">
           <HotpagesRail hotpages={editorialHotpages} cleanMode={true} />
-        </section>
-      )}
-
-      {/* ── 2. CARROSSEL DE BANNERS HERO (Se cadastrados) ── */}
-      {banners && banners.length > 0 && (
-        <section aria-label="Destaques Principais">
-          <BannerHeroCarousel banners={banners} />
         </section>
       )}
 
@@ -984,95 +986,14 @@ function CommunityMarketplaceView({ data }: { data: any }) {
             </section>
           )}
 
-          {/* 3. FEED SOCIAL */}
-          {(activeCategory === "todos" || activeCategory === "feed") && filteredFeed.length > 0 && (
-            <section aria-label="Feed da Comunidade" className="space-y-2">
-              <HorizontalRail
-                title="Feed"
-                actionLabel="Ver feed"
-                onAction={() => {}}
-                actionTo="/feed"
-              >
-                {filteredFeed.map((post: any) => {
-                  const mediaFirst = post.media_urls && post.media_urls[0];
-                  const isVid = typeof mediaFirst === "string" && (
-                    mediaFirst.endsWith(".mp4") ||
-                    mediaFirst.endsWith(".webm") ||
-                    mediaFirst.endsWith(".mov") ||
-                    mediaFirst.includes("video")
-                  );
-                  const coverImage = isVid ? null : mediaFirst;
-                  const rawText = post.content_text || "Publicação compartilhada no feed da comunidade";
-                  const cleanContent = rawText
-                    .replace(/==([^=]+)==/g, "$1")
-                    .replace(/\*\*([^*]+)\*\*/g, "$1")
-                    .replace(/__([^_]+)__/g, "$1")
-                    .trim();
-
-                  const authorName = post.author?.name || post.profiles?.full_name || post.stores?.name || "Membro local";
-                  const avatarUrl = post.author?.avatar_url || post.profiles?.avatar_url || null;
-
-                  return (
-                    <Link
-                      key={post.id}
-                      to="/feed"
-                      className="min-w-64 sm:min-w-72 max-w-xs shrink-0 p-4 rounded-lg border border-border/60 bg-card hover:border-foreground/30 transition-all flex flex-col justify-between group space-y-3"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="size-8 rounded-full bg-muted/60 overflow-hidden flex items-center justify-center text-muted-foreground shrink-0 border border-border/40">
-                          {avatarUrl ? (
-                            <img
-                              src={avatarUrl}
-                              alt=""
-                              className="size-full object-cover"
-                              onError={(e) => {
-                                (e.currentTarget as HTMLElement).style.display = "none";
-                              }}
-                            />
-                          ) : (
-                            <UserCircle size={18} weight="bold" />
-                          )}
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <p className="text-xs font-bold text-foreground truncate">
-                            {authorName}
-                          </p>
-                          <p className="text-xs text-muted-foreground truncate">
-                            {post.location_name || "Na cidade"}
-                          </p>
-                        </div>
-                      </div>
-
-                      {coverImage && (
-                        <div className="relative aspect-video w-full rounded-lg overflow-hidden bg-muted/40">
-                          <img
-                            src={coverImage}
-                            alt=""
-                            className="size-full object-cover group-hover:scale-105 transition-transform duration-300 motion-reduce:transition-none"
-                            loading="lazy"
-                            onError={(e) => {
-                              (e.currentTarget.parentElement as HTMLElement)?.classList.add("hidden");
-                            }}
-                          />
-                        </div>
-                      )}
-
-                      <p className="text-xs text-muted-foreground line-clamp-3 leading-relaxed">
-                        {cleanContent}
-                      </p>
-
-                      <div className="pt-2 border-t border-border/30 flex items-center justify-between text-xs text-muted-foreground font-medium">
-                        <span className="flex items-center gap-1">
-                          <Clock size={12} />
-                          <span>{post.created_at ? formatRelativeTime(post.created_at) : "Recente"}</span>
-                        </span>
-                        <span className="text-primary font-bold group-hover:underline">Ver no feed</span>
-                      </div>
-                    </Link>
-                  );
-                })}
-              </HorizontalRail>
-            </section>
+          {/* 3. FEED SOCIAL (HomePostsShowcase - Anti-Broken Image & Anti-Jank) */}
+          {(activeCategory === "todos" || activeCategory === "feed") && (
+            <HomePostsShowcase
+              posts={showcasePosts && showcasePosts.length > 0 ? showcasePosts : []}
+              title="Feed da Cidade"
+              subtitle="Acontecimentos e publicações locais"
+              actionTo="/feed"
+            />
           )}
 
           {/* 4. NOTÍCIAS */}

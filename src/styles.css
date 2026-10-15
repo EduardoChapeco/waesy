@@ -103,6 +103,23 @@
   }
 }
 
+/* Canonical Aspect Ratio Traps for Anti-Jank & Zero CLS (Apple HIG / iFood) */
+.aspect-banner-ifood {
+  aspect-ratio: 21 / 9;
+}
+.aspect-banner-cinema {
+  aspect-ratio: 16 / 9;
+}
+.aspect-banner-classic {
+  aspect-ratio: 4 / 3;
+}
+.aspect-banner-square {
+  aspect-ratio: 1 / 1;
+}
+.aspect-post-card {
+  aspect-ratio: 16 / 10;
+}
+
 @theme inline {
   /* ── Master Niche Chameleon Tokens (MASTER PROMPT V138) ── */
   --radius-master: var(--radius-master, 0.75rem);
