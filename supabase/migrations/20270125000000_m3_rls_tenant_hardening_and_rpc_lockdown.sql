@@ -12,31 +12,38 @@ BEGIN;
 
 -- crawl_cache
 DROP POLICY IF EXISTS "crawl_cache_staff_all" ON public.crawl_cache;
+DROP POLICY IF EXISTS "crawl_cache_service_role" ON public.crawl_cache;
 CREATE POLICY "crawl_cache_service_role" ON public.crawl_cache
   FOR ALL TO service_role USING (true) WITH CHECK (true);
 
 -- crawl_queue
 DROP POLICY IF EXISTS "crawl_queue_staff_all" ON public.crawl_queue;
+DROP POLICY IF EXISTS "crawl_queue_service_role" ON public.crawl_queue;
 CREATE POLICY "crawl_queue_service_role" ON public.crawl_queue
   FOR ALL TO service_role USING (true) WITH CHECK (true);
 
 -- crawl_seeds
 DROP POLICY IF EXISTS "crawl_seeds_staff_all" ON public.crawl_seeds;
+DROP POLICY IF EXISTS "crawl_seeds_service_role" ON public.crawl_seeds;
 CREATE POLICY "crawl_seeds_service_role" ON public.crawl_seeds
   FOR ALL TO service_role USING (true) WITH CHECK (true);
 
 -- domain_configs
 DROP POLICY IF EXISTS "domain_configs_staff_all" ON public.domain_configs;
+DROP POLICY IF EXISTS "domain_configs_service_role" ON public.domain_configs;
 CREATE POLICY "domain_configs_service_role" ON public.domain_configs
   FOR ALL TO service_role USING (true) WITH CHECK (true);
 
 -- domain_cooldowns
 DROP POLICY IF EXISTS "domain_cooldowns_staff_all" ON public.domain_cooldowns;
+DROP POLICY IF EXISTS "domain_cooldowns_service_role" ON public.domain_cooldowns;
 CREATE POLICY "domain_cooldowns_service_role" ON public.domain_cooldowns
   FOR ALL TO service_role USING (true) WITH CHECK (true);
 
 -- mined_products
 DROP POLICY IF EXISTS "mined_products_staff_all" ON public.mined_products;
+DROP POLICY IF EXISTS "mined_products_service_role" ON public.mined_products;
+DROP POLICY IF EXISTS "mined_products_public_select" ON public.mined_products;
 CREATE POLICY "mined_products_service_role" ON public.mined_products
   FOR ALL TO service_role USING (true) WITH CHECK (true);
 CREATE POLICY "mined_products_public_select" ON public.mined_products
@@ -45,11 +52,14 @@ CREATE POLICY "mined_products_public_select" ON public.mined_products
 -- mining_schedules
 DROP POLICY IF EXISTS "mining_schedules_staff_all" ON public.mining_schedules;
 DROP POLICY IF EXISTS "allow_service_role_all" ON public.mining_schedules;
+DROP POLICY IF EXISTS "mining_schedules_service_role" ON public.mining_schedules;
 CREATE POLICY "mining_schedules_service_role" ON public.mining_schedules
   FOR ALL TO service_role USING (true) WITH CHECK (true);
 
 -- delivery_events (run_id -> delivery_runs.id)
 DROP POLICY IF EXISTS "delivery_events_insert_all" ON public.delivery_events;
+DROP POLICY IF EXISTS "delivery_events_service_role" ON public.delivery_events;
+DROP POLICY IF EXISTS "delivery_events_auth_select" ON public.delivery_events;
 CREATE POLICY "delivery_events_service_role" ON public.delivery_events
   FOR ALL TO service_role USING (true) WITH CHECK (true);
 CREATE POLICY "delivery_events_auth_select" ON public.delivery_events
@@ -63,6 +73,8 @@ CREATE POLICY "delivery_events_auth_select" ON public.delivery_events
 
 -- delivery_runs
 DROP POLICY IF EXISTS "delivery_runs_update_by_token" ON public.delivery_runs;
+DROP POLICY IF EXISTS "delivery_runs_service_role" ON public.delivery_runs;
+DROP POLICY IF EXISTS "delivery_runs_store_members" ON public.delivery_runs;
 CREATE POLICY "delivery_runs_service_role" ON public.delivery_runs
   FOR ALL TO service_role USING (true) WITH CHECK (true);
 CREATE POLICY "delivery_runs_store_members" ON public.delivery_runs
@@ -75,6 +87,8 @@ CREATE POLICY "delivery_runs_store_members" ON public.delivery_runs
 
 -- order_events
 DROP POLICY IF EXISTS "order_events_service_all" ON public.order_events;
+DROP POLICY IF EXISTS "order_events_service_role" ON public.order_events;
+DROP POLICY IF EXISTS "order_events_store_members" ON public.order_events;
 CREATE POLICY "order_events_service_role" ON public.order_events
   FOR ALL TO service_role USING (true) WITH CHECK (true);
 CREATE POLICY "order_events_store_members" ON public.order_events
@@ -87,6 +101,8 @@ CREATE POLICY "order_events_store_members" ON public.order_events
 
 -- rss_feeds
 DROP POLICY IF EXISTS "rss_feeds_staff_all" ON public.rss_feeds;
+DROP POLICY IF EXISTS "rss_feeds_service_role" ON public.rss_feeds;
+DROP POLICY IF EXISTS "rss_feeds_public_select" ON public.rss_feeds;
 CREATE POLICY "rss_feeds_service_role" ON public.rss_feeds
   FOR ALL TO service_role USING (true) WITH CHECK (true);
 CREATE POLICY "rss_feeds_public_select" ON public.rss_feeds
@@ -95,17 +111,21 @@ CREATE POLICY "rss_feeds_public_select" ON public.rss_feeds
 -- scraper_audit_log
 DROP POLICY IF EXISTS "scraper_audit_log_staff_all" ON public.scraper_audit_log;
 DROP POLICY IF EXISTS "allow_service_role_all" ON public.scraper_audit_log;
+DROP POLICY IF EXISTS "scraper_audit_log_service_role" ON public.scraper_audit_log;
 CREATE POLICY "scraper_audit_log_service_role" ON public.scraper_audit_log
   FOR ALL TO service_role USING (true) WITH CHECK (true);
 
 -- scraper_configs
 DROP POLICY IF EXISTS "scraper_configs_staff_all" ON public.scraper_configs;
+DROP POLICY IF EXISTS "scraper_configs_service_role" ON public.scraper_configs;
 CREATE POLICY "scraper_configs_service_role" ON public.scraper_configs
   FOR ALL TO service_role USING (true) WITH CHECK (true);
 
 -- sdr_chat_sessions
 DROP POLICY IF EXISTS "Service role anon can update chat sessions" ON public.sdr_chat_sessions;
 DROP POLICY IF EXISTS "Service role anon can insert chat sessions" ON public.sdr_chat_sessions;
+DROP POLICY IF EXISTS "sdr_chat_sessions_service_role" ON public.sdr_chat_sessions;
+DROP POLICY IF EXISTS "sdr_chat_sessions_user_access" ON public.sdr_chat_sessions;
 CREATE POLICY "sdr_chat_sessions_service_role" ON public.sdr_chat_sessions
   FOR ALL TO service_role USING (true) WITH CHECK (true);
 CREATE POLICY "sdr_chat_sessions_user_access" ON public.sdr_chat_sessions
@@ -118,6 +138,8 @@ CREATE POLICY "sdr_chat_sessions_user_access" ON public.sdr_chat_sessions
 
 -- mobility_offers_negotiations
 DROP POLICY IF EXISTS "Participants can view and create negotiations" ON public.mobility_offers_negotiations;
+DROP POLICY IF EXISTS "mobility_offers_negotiations_service_role" ON public.mobility_offers_negotiations;
+DROP POLICY IF EXISTS "mobility_offers_negotiations_participants" ON public.mobility_offers_negotiations;
 CREATE POLICY "mobility_offers_negotiations_service_role" ON public.mobility_offers_negotiations
   FOR ALL TO service_role USING (true) WITH CHECK (true);
 CREATE POLICY "mobility_offers_negotiations_participants" ON public.mobility_offers_negotiations
