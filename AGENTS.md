@@ -150,3 +150,8 @@ O agente deve interromper imediatamente o trabalho e devolver a decisão ao huma
 - Um finding só pode ser declarado corrigido após teste de regressão reproduzir a falha na baseline e passar no SHA final, prova positiva e negativa, validação de integração aplicável, reload/rehidratação e revisão adversarial. Código, mocks, typecheck, build, PR merge e deploy são evidências diferentes; nunca declarar um nível com base no anterior.
 - Manter o escopo no repositório Waesy solicitado, preservar alterações preexistentes, não enfraquecer segurança/checks nem usar mensagens/fallbacks como sucesso fictício. Não aplicar migration ou deploy de alto impacto sem a autoridade/confirmação adequada.
 - Skill canônica: `skills/waesy-integrity-auditor/SKILL.md`. Backlog, evidências, riscos e sequência de ondas: `docs/audits/WAESY_HOLISTIC_REMEDIATION_MASTERPLAN_2026-10-06.md`.
+
+## B.32 Invariante de Layouts Híbridos de Vitrine & Travas Anti-Jank (Noor / iFood / Bento Grid)
+- Seções de categorias e atalhos rápidos DEVEM suportar trifurcação dinâmica via CMS: (1) `horizontal_scroll` / `native_dock`: Menu deslizante contínuo com física tátil elástica e snap scroll (padrão Noor); (2) `grid_2d`: Grade compacta 4x2 no mobile com botões 1:1 e imagem centralizada (padrão iFood); (3) `bento_grid`: Grid responsivo widescreen com empacotamento denso automático (`grid-flow-dense`).
+- Todo contêiner de banner ou mídia promocional DEVE conter classe canônica de aspect ratio fixada no CSS antes do carregamento da imagem, garantindo Cumulative Layout Shift nulo (CLS < 0.05).
+- Buckets de upload vinculados ao Admin Master DEVEM incluir políticas RLS completas de gravação e exclusão para usuários autenticados.
