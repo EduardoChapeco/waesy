@@ -2863,3 +2863,128 @@ export const reviewAiChatAction = createServerFn({ method: "POST" })
       throw executionError;
     }
   });
+
+// ============================================================
+// 10. Upload Multimodal do Copilot (Camada 3 - PDFs, Imagens, CSV)
+// ============================================================
+
+export const uploadCopilotAttachmentSchema = z.object({
+  fileName: z.string().min(1).max(255),
+  fileType: z.string().min(1).max(100),
+  base64Data: z.string().min(1),
+  tenantId: z.string().optional(),
+});
+
+export interface CopilotMultimodalAttachmentResult {
+  url: string;
+  storagePath: string;
+  fileName: string;
+  fileType: string;
+  sizeBytes: number;
+  extractedText?: string;
+  metadata: {
+    tenantId: string;
+    linesCount?: number;
+    uploadedAt: string;
+  };
+}
+
+export const uploadCopilotMultimodalAttachment = createServerFn({ method: "POST" })
+  .validator(uploadCopilotAttachmentSchema)
+  .handler(async ({ data }): Promise<CopilotMultimodalAttachmentResult> => {
+    const identity = await getServerIdentity().catch(() => null);
+    enforceRateLimit(identity?.id || "guest", "media_upload");
+
+    const cleanMime = data.fileType.toLowerCase().split(";")[0].trim();
+    const ALLOWED_COPILOT_MIMES = new Set([
+      "application/pdf",
+      "text/plain",
+      "text/csv",
+      "image/jpeg",
+      "image/png",
+      "image/webp",
+      "image/avif",
+      "image/gif",
+    ]);
+
+    if (!ALLOWED_COPILOT_MIMES.has(cleanMime)) {
+      throw new Error(`Tipo de arquivo '${data.fileType}' não permitido. Formatos aceitos: PDF, CSV, TXT e imagens.`);
+    }
+
+    // Decodifica inline Base64
+    const base64Content = data.base64Data.includes(",") ? data.base64Data.split(",", 2)[1] : data.base64Data;
+    const normalized = base64Content.replace(/\s/g, "");
+    const buffer = Buffer.from(normalized, "base64");
+    const sizeBytes = buffer.length;
+
+    if (sizeBytes === 0) {
+      throw new Error("Arquivo vazio ou corrompido.");
+    }
+
+    if (sizeBytes > 15 * 1024 * 1024) {
+      throw new Error("Arquivo excede o limite máximo permitido de 15 MB.");
+    }
+
+    const tenantId = data.tenantId || identity?.store_id || identity?.id || "general";
+    const ext = data.fileName.split(".").pop() || "bin";
+    const sanitizedName = data.fileName.replace(/[^a-zA-Z0-9.-]/g, "_").slice(0, 80);
+    const storagePath = `tenants/${tenantId}/copilot-uploads/${Date.now()}-${Math.random().toString(36).substring(2, 8)}-${sanitizedName}.${ext}`;
+
+    const supabase = getServerClient();
+    const bucket = "copilot-uploads";
+    let uploadUrl = "";
+
+    // Tentativa com fallback de bucket para garantir resiliência
+    const { error: uploadError } = await supabase.storage.from(bucket).upload(storagePath, buffer, {
+      contentType: cleanMime,
+      upsert: true,
+    });
+
+    if (uploadError) {
+      const fallbackBucket = "store-assets";
+      const { error: fbErr } = await supabase.storage.from(fallbackBucket).upload(storagePath, buffer, {
+        contentType: cleanMime,
+        upsert: true,
+      });
+      if (fbErr) {
+        console.warn("[copilot-upload] fallback bucket storage warning:", fbErr.message);
+      }
+      const { data: fbUrl } = supabase.storage.from(fallbackBucket).getPublicUrl(storagePath);
+      uploadUrl = fbUrl?.publicUrl || "";
+    } else {
+      const { data: pubData } = supabase.storage.from(bucket).getPublicUrl(storagePath);
+      uploadUrl = pubData?.publicUrl || "";
+    }
+
+    // Processamento e extração inicial de texto/conteúdo
+    let extractedText: string | undefined;
+    let linesCount: number | undefined;
+
+    if (cleanMime === "text/plain" || cleanMime === "text/csv") {
+      const fullText = buffer.toString("utf-8");
+      linesCount = fullText.split("\n").length;
+      extractedText = fullText.slice(0, 30_000);
+    } else if (cleanMime === "application/pdf") {
+      const ascii = buffer.toString("latin1");
+      const pageMatches = ascii.match(/\/Type\s*\/Page\b/g);
+      const pagesCount = pageMatches ? pageMatches.length : 1;
+      extractedText = `[Documento PDF: ${data.fileName}, aprox. ${pagesCount} página(s), tamanho: ${(sizeBytes / 1024).toFixed(1)} KB]`;
+    } else if (cleanMime.startsWith("image/")) {
+      extractedText = `[Imagem anexada: ${data.fileName}, formato ${cleanMime}, tamanho: ${(sizeBytes / 1024).toFixed(1)} KB. Pronta para extração OCR/IA]`;
+    }
+
+    return {
+      url: uploadUrl,
+      storagePath,
+      fileName: data.fileName,
+      fileType: cleanMime,
+      sizeBytes,
+      extractedText,
+      metadata: {
+        tenantId,
+        linesCount,
+        uploadedAt: new Date().toISOString(),
+      },
+    };
+  });
+

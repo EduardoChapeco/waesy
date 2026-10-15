@@ -9,6 +9,8 @@ import { getRequest } from "@tanstack/react-start/server";
 import { z } from "zod";
 import { getServerClient, getAnonServerClient } from "@/lib/supabase";
 import { getServerIdentity, requireStaff } from "@/lib/server-access";
+import { generatePixBrCode } from "@/lib/pix-payload";
+import { formatMoney } from "@/lib/money";
 
 // ─── Tipagens Canônicas do Contrato Turístico ──────────────────────────────────
 
@@ -572,3 +574,152 @@ export const createContractAddendum = createServerFn({ method: "POST" })
 
     return addendum;
   });
+
+export const GenerateTravelReservationCheckoutSchema = z.object({
+  classifiedId: z.string().uuid().optional().nullable(),
+  proposalId: z.string().uuid().optional().nullable(),
+  storeId: z.string().uuid().optional().nullable(),
+  clientName: z.string().min(2, "Nome do cliente obrigatório"),
+  clientPhone: z.string().min(8, "Telefone obrigatório"),
+  clientEmail: z.string().email().optional().nullable(),
+  clientDocument: z.string().optional().nullable(),
+  destination: z.string().min(2, "Destino obrigatório"),
+  packageSummary: z.string().min(3, "Resumo do pacote obrigatório"),
+  totalValueCents: z.number().int().min(0).default(0),
+  travelStartDate: z.string().optional().nullable(),
+  travelEndDate: z.string().optional().nullable(),
+  passengers: z.array(z.object({ name: z.string(), document: z.string().optional() })).default([]),
+  generatePix: z.boolean().default(true),
+});
+
+export const generateTravelReservationCheckout = createServerFn({ method: "POST" })
+  .validator(GenerateTravelReservationCheckoutSchema)
+  .handler(async ({ data: input }) => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity().catch(() => null);
+
+    let storeId = input.storeId || identity?.store_id;
+
+    if (!storeId && input.classifiedId) {
+      const { data: cl } = await supabase
+        .from("classifieds")
+        .select("store_id")
+        .eq("id", input.classifiedId)
+        .maybeSingle();
+      if (cl?.store_id) {
+        storeId = cl.store_id;
+      }
+    }
+
+    let storeRow: any = null;
+    if (storeId) {
+      const { data: s } = await supabase
+        .from("stores")
+        .select("id, name, cnpj, phone, settings")
+        .eq("id", storeId)
+        .maybeSingle();
+      storeRow = s;
+    }
+
+    let actorProfileId = identity?.id;
+    if (!actorProfileId && storeId) {
+      const { data: member } = await supabase
+        .from("workspace_members")
+        .select("profile_id")
+        .eq("store_id", storeId)
+        .limit(1)
+        .maybeSingle();
+      actorProfileId = member?.profile_id;
+    }
+
+    let contractId: string | null = null;
+    let publicToken: string | null = null;
+
+    if (storeId && actorProfileId) {
+      try {
+        const { data: contractResult, error: contractErr } = await supabase.rpc(
+          "create_staff_travel_contract",
+          {
+            p_contract_data: {
+              contractTitle: `Contrato de Viagem - ${input.destination}`,
+              clientName: input.clientName,
+              clientPhone: input.clientPhone,
+              clientEmail: input.clientEmail || undefined,
+              clientDocument: input.clientDocument || "00000000000",
+              destination: input.destination,
+              packageSummary: input.packageSummary,
+              totalValueCents: input.totalValueCents,
+              paymentConditions: input.generatePix && input.totalValueCents > 0
+                ? `À vista via Pix no valor de ${formatMoney(input.totalValueCents)}`
+                : "A combinar com a agência",
+              travelStartDate: input.travelStartDate || undefined,
+              travelEndDate: input.travelEndDate || undefined,
+              passengers: input.passengers,
+            },
+            p_store_id: storeId,
+            p_actor_profile_id: actorProfileId,
+          },
+        );
+
+        if (!contractErr && contractResult?.success) {
+          contractId = contractResult.contract_id;
+          publicToken = contractResult.public_token;
+        }
+      } catch (err: any) {
+        console.warn("[generateTravelReservationCheckout] Contrato automático:", err?.message);
+      }
+    }
+
+    let pixBrCode: string | null = null;
+    if (input.generatePix && input.totalValueCents > 0) {
+      try {
+        const storeSettings = (storeRow?.settings as Record<string, any>) || {};
+        const pixKey =
+          storeSettings.pix_key ||
+          storeRow?.cnpj?.replace(/\D/g, "") ||
+          storeRow?.phone?.replace(/\D/g, "") ||
+          "pix@waesy.com";
+
+        pixBrCode = generatePixBrCode({
+          pixKey,
+          amountCents: input.totalValueCents,
+          merchantName: storeRow?.name || "WAESY TURISMO",
+          merchantCity: "CHAPECO",
+          txId: (publicToken || "RESERVA").slice(0, 20),
+          description: input.packageSummary.slice(0, 30),
+        });
+      } catch (err: any) {
+        console.warn("[generateTravelReservationCheckout] Falha defensiva ao gerar Pix:", err?.message);
+      }
+    }
+
+    const appOrigin = process.env.VITE_APP_URL || "https://waesy.com";
+    const contractUrl = publicToken ? `${appOrigin}/assinar/${publicToken}` : null;
+
+    let whatsappMessage = `*Reserva de Viagem - ${input.destination}*\n` +
+      `*Pacote:* ${input.packageSummary}\n` +
+      `*Titular:* ${input.clientName} (${input.clientPhone})\n`;
+
+    if (input.passengers.length > 0) {
+      whatsappMessage += `*Passageiros:* ${input.passengers.map((p) => p.name).join(", ")}\n`;
+    }
+    if (input.totalValueCents > 0) {
+      whatsappMessage += `*Valor Total:* ${formatMoney(input.totalValueCents)}\n`;
+    }
+    if (contractUrl) {
+      whatsappMessage += `\n*Link para Assinatura do Contrato de Viagem:*\n${contractUrl}\n`;
+    }
+    if (pixBrCode) {
+      whatsappMessage += `\n*Codigo Pix Copia e Cola para Sinal/Reserva:*\n${pixBrCode}\n`;
+    }
+
+    return {
+      success: true,
+      contractId,
+      publicToken,
+      contractUrl,
+      pixBrCode,
+      whatsappMessage,
+    };
+  });
+

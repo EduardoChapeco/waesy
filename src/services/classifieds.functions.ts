@@ -91,6 +91,7 @@ export const getPublicClassifieds = createServerFn({ method: "GET" })
           "id, author_profile_id, store_id, category, deal_type, title, content, price_cents, images, contact_whatsapp, location_name, location_text, city, state, expires_at, condition, negotiable, attributes, status, is_sponsored, is_boosted, sponsored_until, boosted_until, created_at, updated_at",
         )
         .eq("status", "active")
+        .or("visibility.is.null,visibility.neq.unlisted")
         .order("created_at", { ascending: false })
         .limit(limit);
 
@@ -285,15 +286,16 @@ async function getSimilarClassifiedsFallback(supabase: any, category?: string, e
 export const getPublicClassifiedById = createServerFn({ method: "GET" })
   .validator(
     z.union([
-      z.string(),
-      z.object({ data: z.string() }).transform((v) => v.data),
-      z.object({ id: z.string() }).transform((v) => v.id),
-      z.object({ data: z.object({ id: z.string() }) }).transform((v) => v.data.id),
+      z.string().transform((id) => ({ id, token: undefined as string | undefined })),
+      z.object({ data: z.string() }).transform((v) => ({ id: v.data, token: undefined as string | undefined })),
+      z.object({ id: z.string(), token: z.string().optional() }),
+      z.object({ data: z.object({ id: z.string(), token: z.string().optional() }) }).transform((v) => v.data),
     ]),
   )
-  .handler(async ({ data: inputId }) => {
+  .handler(async ({ data: input }) => {
     const supabase = getServerClient();
-    const rawId = typeof inputId === "string" ? inputId.trim() : "";
+    const rawId = typeof input?.id === "string" ? input.id.trim() : "";
+    const rawToken = typeof input?.token === "string" ? input.token.trim() : undefined;
 
     // Validação estrita de UUID na entrada — aborta imediatamente sem bater no banco se inválido
     if (!rawId || !UUID_REGEX.test(rawId)) {
@@ -335,6 +337,22 @@ export const getPublicClassifiedById = createServerFn({ method: "GET" })
           viewerContext: "anonymous" as const,
           similarAds,
         };
+      }
+
+      // Barreira de Visibilidade Unlisted (Pilar 1 - Propostas Exclusivas)
+      if (classifiedData.visibility === "unlisted") {
+        const isOwner = Boolean(identity?.id && classifiedData.author_profile_id === identity.id);
+        const isValidToken = Boolean(rawToken && classifiedData.access_token === rawToken);
+        if (!isOwner && !isValidToken) {
+          return {
+            classified: null,
+            status: "restricted_access" as const,
+            isOwner: false,
+            canManage: false,
+            viewerContext: "anonymous" as const,
+            similarAds: [],
+          };
+        }
       }
 
       // Normalize feed_media and payment_settings for public view
@@ -856,6 +874,28 @@ export const getClassified = createServerFn({ method: "GET" })
     return data;
   });
 
+export const getUnlistedClassified = createServerFn({ method: "GET" })
+  .validator(z.object({ id: z.string().uuid(), token: z.string().min(1) }))
+  .handler(async ({ data: { id, token } }) => {
+    const supabase = getServerClient();
+    const { data, error } = await supabase
+      .from("classifieds")
+      .select("*")
+      .eq("id", id)
+      .eq("status", "active")
+      .maybeSingle();
+
+    if (error || !data) {
+      throw new Error("Pacote ou proposta não encontrado.");
+    }
+
+    if (data.visibility === "unlisted" && data.access_token !== token) {
+      throw new Error("Acesso restrito: token de proposta inválido.");
+    }
+
+    return data;
+  });
+
 const upsertClassifiedInput = z.object({
   id: z.string().uuid().optional(),
   store_id: z.string().uuid().nullable().optional(),
@@ -962,6 +1002,8 @@ const upsertClassifiedInput = z.object({
   ai_instructions: z.string().optional(),
   ai_agent_enabled: z.boolean().optional(),
   form_id: z.string().uuid().nullable().optional(),
+  visibility: z.enum(["public", "unlisted", "archived"]).optional().default("public"),
+  access_token: z.string().optional().nullable(),
 });
 
 export const upsertClassified = createServerFn({ method: "POST" })
@@ -1099,6 +1141,11 @@ export const upsertClassified = createServerFn({ method: "POST" })
         ...(rest.ai_agent_enabled !== undefined ? { ai_agent_enabled: rest.ai_agent_enabled } : {}),
       },
       status: rest.status || "active",
+      visibility: rest.visibility || "public",
+      access_token:
+        rest.visibility === "unlisted"
+          ? rest.access_token || crypto.randomUUID().replace(/-/g, "").slice(0, 16)
+          : rest.access_token || null,
       max_discount_pct: rest.max_discount_pct ?? 0,
       delivery_type:
         rest.delivery_type || rest.delivery_mode || rest.attributes?.delivery_type || "pickup",

@@ -39,6 +39,8 @@ const STEP_ICONS: Record<AIActivityStepType, React.ElementType> = {
   squad: Users,
   model: Cpu,
   thought: Brain,
+  subagent: Users,
+  planner: Brain,
 };
 
 const STEP_LABELS: Record<AIActivityStepType, string> = {
@@ -49,6 +51,8 @@ const STEP_LABELS: Record<AIActivityStepType, string> = {
   squad: "Esquadrão",
   model: "Modelo",
   thought: "Raciocínio",
+  subagent: "Subagente",
+  planner: "Planejador",
 };
 
 export function AIActivityTrail({
@@ -84,6 +88,8 @@ export function AIActivityTrail({
             durationMs: row.duration_ms || undefined,
             tokensUsed: row.tokens_used || undefined,
             costUsd: row.cost_usd ? Number(row.cost_usd) : undefined,
+            role: row.role || undefined,
+            parentTaskId: row.parent_task_id || undefined,
           };
           return current.some((step) => step.id === next.id) ? current.map((step) => step.id === next.id ? next : step) : [...current, next];
         });
@@ -204,6 +210,11 @@ export function AIActivityTrail({
                         <span className="text-3xs uppercase tracking-wider text-muted-foreground font-mono bg-muted/60 px-1 py-0.2 rounded">
                           {STEP_LABELS[step.type]}
                         </span>
+                        {step.role && (
+                          <span className="text-3xs font-mono font-medium text-primary bg-primary/10 border border-primary/20 px-1 py-0.2 rounded">
+                            {step.role}
+                          </span>
+                        )}
                       </div>
 
                       {step.detail && (

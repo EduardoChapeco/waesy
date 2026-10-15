@@ -43,6 +43,7 @@ const ALLOWED_BFF_BUCKETS = new Set([
   "store-assets",
   "destination-media",
   "social",
+  "copilot-uploads",
 ]);
 
 const MAX_INLINE_UPLOAD_BYTES = 20 * 1024 * 1024;

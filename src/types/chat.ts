@@ -13,13 +13,17 @@ export type AIActivityStepType =
   | "database"
   | "squad"
   | "model"
-  | "thought";
+  | "thought"
+  | "subagent"
+  | "planner";
 
 export type AIActivityStepStatus =
   | "running"
   | "completed"
   | "failed"
   | "cancelled";
+
+export type SubagentRole = "@planner" | "@investigator" | "@harvester" | "@critic" | string;
 
 export interface AIActivityStep {
   id: string;
@@ -33,6 +37,8 @@ export interface AIActivityStep {
   durationMs?: number;
   tokensUsed?: number;
   costUsd?: number;
+  role?: SubagentRole;
+  parentTaskId?: string;
 }
 
 export type ChatArtifactType =

@@ -407,6 +407,27 @@ export function ChatArtifactCard({
                 </div>
               ))}
             </div>
+          ) : artifact.type === "spreadsheet" && Array.isArray((artifact.data as any)?.headers) && Array.isArray((artifact.data as any)?.rows) ? (
+            <div className="table-wrapper overflow-x-auto rounded-lg border border-border">
+              <table className="w-full text-xs text-left">
+                <thead className="bg-muted/50 border-b border-border font-semibold text-foreground">
+                  <tr>
+                    {((artifact.data as any).headers as string[]).map((h, i) => (
+                      <th key={i} className="px-3 py-2 text-2xs font-semibold">{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border/60">
+                  {((artifact.data as any).rows as any[][]).slice(0, 50).map((row, rIdx) => (
+                    <tr key={rIdx} className="hover:bg-muted/20">
+                      {row.map((cell, cIdx) => (
+                        <td key={cIdx} className="px-3 py-1 font-mono text-2xs truncate max-w-xs">{String(cell ?? "")}</td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           ) : typeof (artifact.data as any)?.content === "string" ? (
             <CopilotMessageRenderer content={(artifact.data as any).content} />
           ) : (

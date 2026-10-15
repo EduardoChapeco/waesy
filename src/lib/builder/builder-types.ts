@@ -67,6 +67,9 @@ export type BlockType =
  | "dynamic_product_carousel"
  | "travel_product_detail"
  | "customer_travel_portal"
+ | "travel_package_hero"
+ | "travel_hotel_slider"
+ | "travel_itinerary_timeline"
  // Food & Restaurant blocks
  | "food_menu_streamlined"
  | "food_menu_tabs"

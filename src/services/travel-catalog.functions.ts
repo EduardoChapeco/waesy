@@ -179,6 +179,10 @@ export interface GlobalHotelDTO {
  address?: string | null;
  stars?: number | null;
  verified_by_master: boolean;
+ hotel_score?: number | null;
+ destination_score?: number | null;
+ agency_service_score?: number | null;
+ reviews_count?: number;
 }
 
 export interface HotelMediaDTO {
@@ -441,7 +445,7 @@ export const searchGlobalHotels = createServerFn({ method: "GET" })
     const pattern = `%${term}%`;
     const { data: rows, error } = await db
       .from("global_hotels")
-      .select("id, name, canonical_slug, city, state, country, address, stars, verified_by_master")
+      .select("id, name, canonical_slug, city, state, country, address, stars, verified_by_master, hotel_score, destination_score, agency_service_score, reviews_count")
       .eq("verified_by_master", true)
       .or(`name.ilike.${pattern},normalized_name.ilike.${pattern},city.ilike.${pattern}`)
       .order("name", { ascending: true })

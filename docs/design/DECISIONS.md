@@ -2948,3 +2948,40 @@
   5. **Verificação Automatizada:** Criada suíte `src/services/mining-and-copilot-remediation.test.ts` (11 testes verdes); suíte completa de 81 testes de mineração e chat 100% verde; catraca de design-lint sem regressões; typecheck com 0 erros; build Vite + Nitro Cloudflare Worker com 0 client leaks.
 - **Fundamentação:** AGENTS.md B.1, B.4, B.5, B.8, B.9, B.11, B.25, B.26, B.30; Apple HIG; WCAG 2.2 AA; Supabase Postgres Schema (`crawl_queue`).
 - **Consequências:** Fila de crawling reativada e auto-recuperável, chamadas diárias do pg_cron autenticadas com sucesso, Copilot resiliente a falhas de cota de fornecedores externos, e layouts nativos estáveis sem efeito sanfona no mobile e desktop.
+
+## DEC-213: Implementação End-to-End das Specs Master de Turismo (OCR, GDS, Hotéis, Pix) e Copilot Autônomo (DAG Spawner, Dropzone, Approvals)
+
+- **Data:** 2026-10-15
+- **Contexto:** Auditoria, saneamento e conexão transversal de ponta a ponta dos módulos descritos em `SPEC-MASTER-TRAVEL-OCR-INFOTRAVEL-CMS-BUILDER` e `SPEC-MASTER-COPILOT-AUTONOMOUS-ENGINE`:
+  1. **Telemetria de Flutuação Tarifária & Propostas Unlisted:** A tabela `travel_price_history` não existia no banco nem em migrations; pacotes e propostas exclusivas não possuíam isolamento por hash de acesso, vazando na busca pública de classificados.
+  2. **Classificador Tripartite e Agregação de Hotéis:** `global_hotels` não possuía colunas agregadas de pontuação por dimensão (`hotel_score`, `destination_score`, `agency_service_score`), e avaliações não eram processadas de forma segregada.
+  3. **Transbordo Kanban & Checkout Pix:** O modal de dossiê de viagens continha emojis violando AGENTS.md B.8 e não possuía cálculo defensivo de BRCode Pix EMV (CRC-16) para pagamento instantâneo.
+  4. **Orquestrador de Subagentes em DAG:** O `autonomous-copilot-orchestrator.ts` gerava etapas estáticas sequenciais sem despachar subagentes reais concorrentes vinculados a `copilot_executions` com `parent_task_id`.
+  5. **Dropzone Multimodal & Painel de Aprovação:** O drawer do Copilot não suportava anexo de arquivos para leitura multimodal e não renderizava o painel `CopilotApprovalPanel` na fase `WAITING_APPROVAL`.
+- **Decisão Adotada:**
+  1. **Migração Canônica `20270126000000_travel_and_copilot_specs_completion.sql`:**
+     - Criada tabela `public.travel_price_history` com RLS habilitado e indexação por pacote e data.
+     - Adicionadas colunas `hotel_score`, `destination_score`, `agency_service_score` e `reviews_count` em `public.global_hotels`.
+     - Adicionadas colunas `parent_task_id` e `role` em `copilot_executions` e `copilot_execution_steps`.
+     - Adicionadas colunas `visibility` (`public`, `unlisted`, `archived`) e `access_token` em `public.classifieds`.
+     - Migração aplicada diretamente no projeto Supabase de produção (`jfuebqmltksyznovhlwa`).
+  2. **BFF de Turismo & Classificação Tripartite (`travel-reviews.functions.ts` e `classifieds.functions.ts`):**
+     - Criadas funções de submissão e agregação ponderada de resenhas com atualização atômica das médias em `global_hotels`.
+     - Filtragem em `getPublicClassifieds` para omitir anúncios `unlisted` e validação estrita de `access_token` em `getPublicClassifiedById` e `getUnlistedClassified`.
+     - Persistência automática de snapshots diários em `travel_price_history` no fluxo de extração de mídia.
+  3. **Checkout Pix Resiliente e Higienização Visual (`travel-booking-dossier-modal.tsx` e `pix-payload.ts`):**
+     - Implementado gerador de payload padrão BACEN EMV BRCode com cálculo determinístico de CRC-16 e tratamento defensivo `try/catch`.
+     - Erradicados todos os 9 emojis do resumo do dossiê no WhatsApp.
+     - Corrigida acessibilidade em `travel-hotel-slider.tsx` com `role="button"`, `tabIndex={0}`, anel `:focus-visible` e substituição de classes não-padrão `text-3xs`/`text-2xs` por `text-xs`.
+  4. **Spawner de Subagentes Concorrentes (`autonomous-copilot-orchestrator.ts`):**
+     - Implementado `spawnSubagentTask` que despacha concorrentemente subagentes com papéis explícitos (`@planner`, `@investigator`, `@harvester`, `@critic`), persistindo em `copilot_executions` e `copilot_execution_steps`.
+  5. **Dropzone Multimodal e Human Checkpoint no Drawer (`waesy-copilot-drawer.tsx`):**
+     - Adicionada área de dropzone com validação contra buffers vazios e upload seguro no bucket Supabase Storage `tenants/${tenantId}/copilot-uploads/`.
+     - Renderização integrada do `CopilotApprovalPanel` quando `m.fsmPhase === "WAITING_APPROVAL"`, permitindo autorizar ou cancelar ações críticas.
+  6. **Verificação Integral:**
+     - 46/46 testes unitários e de integração aprovados em 7 suítes.
+     - Design Lint Ratchet com Exit Code 0 (-25 violações de débito visual).
+     - Typecheck TypeScript com 0 erros (`tsc --noEmit` Exit Code 0).
+     - Build de produção Cloudflare Worker aprovado com 498 chunks e 0 runtime leaks de servidor no cliente.
+- **Fundamentação:** AGENTS.md B.1 a B.30, SPEC-MASTER-TRAVEL-OCR-INFOTRAVEL-CMS-BUILDER, SPEC-MASTER-COPILOT-AUTONOMOUS-ENGINE, Apple HIG, WCAG 2.2 AA.
+- **Consequências:** Ambas as especificações master atingem completude máxima funcional, ancoradas em tabelas reais e persistência transacional soberana sem dados fictícios.

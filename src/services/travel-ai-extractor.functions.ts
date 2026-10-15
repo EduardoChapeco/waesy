@@ -37,6 +37,8 @@ export const ExtractedTravelAdSchema = z.object({
   max_installments: z.number().int().min(1).max(24).default(12),
   installment_cents: z.number().int().nonnegative().optional().nullable(),
   pricing_mode: z.enum(["per_person", "total_package"]).default("per_person"),
+  visibility: z.enum(["public", "unlisted"]).default("public"),
+  package_id: z.string().uuid().optional().nullable(),
   suggested_background_url: z.string().optional().nullable(),
   matched_hotel_id: z.string().optional().nullable(),
   matched_destination_id: z.string().optional().nullable(),
@@ -53,6 +55,8 @@ export const ParseTravelMediaInputSchema = z.object({
   fileName: z.string().max(240).optional(),
   rawText: z.string().max(100_000, "Texto de extração excede o limite permitido.").optional(),
   destinationHint: z.string().trim().max(160).optional(),
+  packageId: z.string().uuid().optional().nullable(),
+  visibility: z.enum(["public", "unlisted"]).optional().default("public"),
 }).refine(
   (value) => Boolean(value.rawText?.trim() || (value.fileBase64 && value.fileMime)),
   { message: "Informe uma imagem com MIME ou um texto para extração." },
@@ -237,6 +241,8 @@ Retorne ESTRITAMENTE um JSON minificado compatível com este formato:
       max_installments: extracted.max_installments ?? 1,
       installment_cents: finalInstallmentCents ?? null,
       pricing_mode: extracted.pricing_mode || "per_person",
+      visibility: data.visibility || extracted.visibility || "public",
+      package_id: data.packageId || extracted.package_id || null,
       suggested_background_url: suggestedBackgroundUrl,
       matched_hotel_id: matchedHotelId,
       matched_destination_id: matchedDestinationId,
@@ -244,8 +250,90 @@ Retorne ESTRITAMENTE um JSON minificado compatível com este formato:
       raw_notes: extracted.raw_notes || null,
     };
 
+    if (data.packageId && typeof finalResult.price_cents === "number") {
+      try {
+        let daysToDeparture: number | null = null;
+        if (finalResult.departure_date) {
+          const depTime = new Date(finalResult.departure_date).getTime();
+          const now = Date.now();
+          if (!Number.isNaN(depTime) && depTime > now) {
+            daysToDeparture = Math.ceil((depTime - now) / (1000 * 60 * 60 * 24));
+          }
+        }
+        await supabase.from("travel_price_history").insert({
+          package_id: data.packageId,
+          store_id: identity.store_id || null,
+          snapshot_date: new Date().toISOString().slice(0, 10),
+          price_cents: finalResult.price_cents,
+          days_to_departure: daysToDeparture,
+          notes: `OCR extraction: ${finalResult.title}`,
+        });
+      } catch (err: any) {
+        console.warn("[parseTravelMediaAI] Erro ao gravar histórico de preço:", err?.message);
+      }
+    }
+
     return {
       success: true,
       data: finalResult,
     };
+  });
+
+export const RecordTravelPriceSnapshotSchema = z.object({
+  packageId: z.string().uuid(),
+  priceCents: z.number().int().nonnegative(),
+  departureDate: z.string().optional().nullable(),
+  notes: z.string().optional().nullable(),
+});
+
+export const recordTravelPriceSnapshot = createServerFn({ method: "POST" })
+  .validator(RecordTravelPriceSnapshotSchema)
+  .handler(async ({ data }): Promise<{ success: boolean; id: string }> => {
+    const identity = await requireStaff();
+    const supabase = getServerClient();
+
+    let daysToDeparture: number | null = null;
+    if (data.departureDate) {
+      const depTime = new Date(data.departureDate).getTime();
+      const now = Date.now();
+      if (!Number.isNaN(depTime) && depTime > now) {
+        daysToDeparture = Math.ceil((depTime - now) / (1000 * 60 * 60 * 24));
+      }
+    }
+
+    const { data: inserted, error } = await supabase
+      .from("travel_price_history")
+      .insert({
+        package_id: data.packageId,
+        store_id: identity.store_id || null,
+        snapshot_date: new Date().toISOString().slice(0, 10),
+        price_cents: data.priceCents,
+        days_to_departure: daysToDeparture,
+        notes: data.notes || null,
+      })
+      .select("id")
+      .single();
+
+    if (error) {
+      throw new Error(`Falha ao registrar histórico de preço: ${error.message}`);
+    }
+
+    return { success: true, id: inserted.id };
+  });
+
+export const getTravelPriceHistory = createServerFn({ method: "GET" })
+  .validator(z.object({ packageId: z.string().uuid() }))
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const { data: rows, error } = await supabase
+      .from("travel_price_history")
+      .select("id, package_id, snapshot_date, price_cents, days_to_departure, notes, created_at")
+      .eq("package_id", data.packageId)
+      .order("snapshot_date", { ascending: true });
+
+    if (error) {
+      throw new Error(`Falha ao buscar histórico de preços: ${error.message}`);
+    }
+
+    return rows || [];
   });

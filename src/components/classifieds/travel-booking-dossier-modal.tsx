@@ -10,6 +10,7 @@ import { Calendar, Users, Plane, ShieldCheck, MessageCircle, Loader2, Star } fro
 import { formatMoney } from "@/lib/money";
 import { registerClassifiedLead } from "@/services/company-mvp.functions";
 import { createAgencyTravelQuote } from "@/services/tourism.functions";
+import { generateTravelReservationCheckout } from "@/services/travel-contract.functions";
 import { trackAndOpenWhatsApp } from "@/lib/whatsapp";
 import { type DepartureOption } from "@/lib/classifieds/canonical-airports";
 
@@ -120,17 +121,17 @@ export function TravelBookingDossierModal({
       if (dateMode === "confirmed" && selectedDepartureId) {
         const selected = departureOptions.find((d) => d.id === selectedDepartureId);
         if (selected) {
-          periodSummary = `📅 *Saída Confirmada:* ${selected.label} (${selected.departure_date} até ${selected.return_date || "retorno"}${selected.departure_time ? ` às ${selected.departure_time}` : ""})`;
+          periodSummary = `*Saida Confirmada:* ${selected.label} (${selected.departure_date} ate ${selected.return_date || "retorno"}${selected.departure_time ? ` as ${selected.departure_time}` : ""})`;
         }
       } else if (flexiblePeriodText.trim()) {
-        periodSummary = `📅 *Período de Interesse:* ${flexiblePeriodText.trim()} ${flexibleDaysPlusMinus ? "(Flexibilidade +/- 3 dias)" : ""}`;
+        periodSummary = `*Periodo de Interesse:* ${flexiblePeriodText.trim()} ${flexibleDaysPlusMinus ? "(Flexibilidade +/- 3 dias)" : ""}`;
       } else if (departureDate) {
-        periodSummary = `📅 *Datas Pretendidas:* ${departureDate} até ${returnDate || "a definir"}`;
+        periodSummary = `*Datas Pretendidas:* ${departureDate} ate ${returnDate || "a definir"}`;
       }
 
       // 2. Resumo das crianças e idades
       const childrenSummary = childrenCount > 0
-        ? `👶 *Crianças (${childrenCount}):* Idades: ${childrenAges.map((a) => `${a} ano(s)`).join(", ")}`
+        ? `*Criancas (${childrenCount}):* Idades: ${childrenAges.map((a) => `${a} ano(s)`).join(", ")}`
         : "";
 
       // 3. Respostas das perguntas personalizadas (Meta Ads style)
@@ -138,20 +139,20 @@ export function TravelBookingDossierModal({
         .map((f: any) => {
           const ans = customAnswers[f.id];
           if (ans === undefined || ans === "" || ans === null) return null;
-          return `📌 *${f.label}:* ${f.type === "boolean" ? (ans ? "Sim" : "Não") : ans}`;
+          return `*${f.label}:* ${f.type === "boolean" ? (ans ? "Sim" : "Nao") : ans}`;
         })
         .filter(Boolean);
 
       const summaryMessage = [
-        `✈️ *Solicitação de Cotação de Viagem*`,
-        `📦 *Pacote:* ${classified.title}`,
-        priceCents > 0 ? `💰 *Valor de Referência:* ${formatMoney(priceCents)}` : "",
-        `👤 *Cliente:* ${customerName.trim()} (${customerPhone.trim()})`,
-        `👥 *Viajantes:* ${adultsCount} Adulto(s) ${childrenCount > 0 ? `+ ${childrenCount} Criança(s)` : ""}`,
+        `*Solicitacao de Cotacao de Viagem*`,
+        `*Pacote:* ${classified.title}`,
+        priceCents > 0 ? `*Valor de Referencia:* ${formatMoney(priceCents)}` : "",
+        `*Cliente:* ${customerName.trim()} (${customerPhone.trim()})`,
+        `*Viajantes:* ${adultsCount} Adulto(s) ${childrenCount > 0 ? `+ ${childrenCount} Crianca(s)` : ""}`,
         childrenSummary,
         periodSummary,
-        passengerNames.trim() ? `📝 *Passageiros:* ${passengerNames.trim()}` : "",
-        specialRequests.trim() ? `*Preferências:* ${specialRequests.trim()}` : "",
+        passengerNames.trim() ? `*Passageiros:* ${passengerNames.trim()}` : "",
+        specialRequests.trim() ? `*Preferencias:* ${specialRequests.trim()}` : "",
         ...customAnswerLines,
       ]
         .filter(Boolean)
@@ -201,13 +202,46 @@ export function TravelBookingDossierModal({
         });
       }
 
-      toast.success("Dossiê de cotação gerado com sucesso! Abrindo WhatsApp...");
+      // 5. Geração de contrato com link e cobrança Pix direta
+      let finalWhatsAppMessage = summaryMessage;
+      try {
+        const checkoutRes = await generateTravelReservationCheckout({
+          data: {
+            classifiedId: classified?.id || null,
+            storeId: classified?.store_id || classified?.store?.id || null,
+            clientName: customerName.trim(),
+            clientPhone: customerPhone.trim(),
+            destination: attrs?.destination_city || classified.title || "Destino Turístico",
+            packageSummary: classified.title,
+            totalValueCents: priceCents,
+            travelStartDate: selectedDepartureId
+              ? departureOptions.find((d) => d.id === selectedDepartureId)?.departure_date || departureDate || null
+              : departureDate || null,
+            travelEndDate: returnDate || null,
+            passengers: [
+              { name: customerName.trim() },
+              ...(passengerNames.trim() ? passengerNames.split(",").map((n) => ({ name: n.trim() })) : []),
+            ],
+            generatePix: priceCents > 0,
+          },
+        });
+
+        if (checkoutRes?.contractUrl || checkoutRes?.pixBrCode) {
+          const contractPart = checkoutRes.contractUrl ? `\n\n*Contrato de Viagem Online:*\n${checkoutRes.contractUrl}` : "";
+          const pixPart = checkoutRes.pixBrCode ? `\n\n*Chave Pix Copia e Cola:*\n\`${checkoutRes.pixBrCode}\`` : "";
+          finalWhatsAppMessage = `${summaryMessage}${contractPart}${pixPart}`;
+        }
+      } catch (checkoutErr) {
+        console.warn("[TravelBookingDossierModal] Checkout/Pix generation:", checkoutErr);
+      }
+
+      toast.success("Dossiê gerado com link de contrato e Pix! Abrindo WhatsApp...");
       onOpenChange(false);
 
-      // 5. Abertura do WhatsApp com a proposta completa e rastreável
+      // 6. Abertura do WhatsApp com a proposta completa e rastreável
       const targetPhone = classified?.contact_whatsapp || classified?.whatsapp || classified?.profiles?.phone;
       if (targetPhone) {
-        await trackAndOpenWhatsApp(targetPhone, summaryMessage, {
+        await trackAndOpenWhatsApp(targetPhone, finalWhatsAppMessage, {
           classifiedId: classified.id,
           classifiedTitle: classified.title,
           action: "travel_dossier_booking",
