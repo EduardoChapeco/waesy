@@ -149,7 +149,7 @@ export function DiscoveryControlBar({
   };
 
   return (
-    <section aria-label="Controles e Filtros" className={cn("space-y-2 sm:space-y-3 w-full px-4 sm:px-0", stickyClasses, className)}>
+    <section aria-label="Controles e Filtros" className={cn("space-y-2 sm:space-y-3 w-full", stickyClasses, className)}>
       {/* ── 1. LINHA SUPERIOR: MOTOR DE BUSCA & FILTRO CONTEXTUAL (ML-STYLE) ── */}
       <div className="flex items-center justify-between gap-2 sm:gap-3 w-full">
         {/* Campo de Busca Contextual (No Mobile recolhe para dar respiro até clicar na Lupa) */}

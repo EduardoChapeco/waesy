@@ -14,7 +14,7 @@ export interface MetamorphicBannerSliderProps {
 
 export function MetamorphicBannerSlider({
   items,
-  aspectRatio = "ifood",
+  aspectRatio = "16:9",
   autoPlayIntervalMs = 6000,
   className,
 }: MetamorphicBannerSliderProps) {
@@ -28,16 +28,16 @@ export function MetamorphicBannerSlider({
   // Mapeamento canônico de aspect ratio com zero classes arbitrárias entre colchetes
   const aspectClass = React.useMemo(() => {
     switch (aspectRatio) {
-      case "ifood":
-        return "aspect-banner-ifood";
       case "16:9":
         return "aspect-banner-cinema";
+      case "ifood":
+        return "aspect-banner-ifood";
       case "4:3":
         return "aspect-banner-classic";
       case "1:1":
         return "aspect-banner-square";
       default:
-        return "aspect-banner-ifood";
+        return "aspect-banner-cinema";
     }
   }, [aspectRatio]);
 
