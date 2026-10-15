@@ -3021,4 +3021,24 @@
 - **Fundamentação:** AGENTS.md B.1 a B.30, SPEC-BUSINESS-CURATION-BOOTSTRAP-AI, Apple HIG, WCAG 2.2 AA.
 - **Consequências:** Estabelecimentos no ecossistema Waesy Places apresentam identidade visual completa, conformidade fiscal comprovada e canais diretos de contato sem páginas vazias ou dados quebrados.
 
+## DEC-216: Remediação Arquitetural do Pipeline de Vagas, Anti-Agregação e Curadoria Contínua de Empregos
+
+- **Data:** 2026-10-15
+- **Contexto:** Auditoria identificou 4 falhas arquiteturais críticas no extrator e persistência de vagas de emprego (`job-opportunity-extractor.ts` e tabela `jobs`):
+  1. **Armadilha de Agregação:** Páginas de busca e índices regionais (`vagas.com.br/vagas-em-chapeco-sc` e `indeed.com`) eram tratadas como vagas unitárias.
+  2. **Títulos Corrompidos:** Captura de títulos agregadores ("1 vaga de emprego para chapeco sc", "17.104 Vagas em Chapecó/SC"), páginas de erro 404 e branding de portais (" - Vagas.com.br").
+  3. **Salários Corrompidos:** Slicing de texto que capturava skip-links e menus de acessibilidade ("Pular para o conteúdo Vagas.com Menu Cad").
+  4. **Descrições Poluídas:** Dump de navbars, headers e banners de cookies no corpo da vaga, com `requirements: []` e `benefits: []` vazios.
+- **Decisão Adotada:**
+  1. **Detecção Precoce de Catálogo (`isJobListingPage`) & Spidering:** Páginas de busca são identificadas por URL, padrão de título agregador ou detecção de >= 3 links de vagas. Em vez de criar vaga falsa, a rotina extrai até 30 links filhos individuais e enfileira na `crawl_queue` com prioridade 9 (`jobs_portal_spider`).
+  2. **Sanitização Estrita de Títulos de Cargo (`sanitizeJobTitle`):** Elimina branding de portais publicitários e rejeita expressões de catálogo, contagens de vagas decimais/inteiras e páginas 404.
+  3. **Normalização de Salários BRL (`parseBrlSalaryToCents`):** Converte valores monetários válidos (R$ 400 a R$ 100.000) em centavos (`minCents`, `maxCents`), com fallback rigoroso para "A combinar".
+  4. **Parser Heurístico Limpo e Listas Estruturadas (`extractRequirementsAndBenefits` & `sanitizeJobHtmlBody`):** Remove navbars, cookies e rodapés, extraindo bullet points de requisitos e benefícios em arrays estruturados.
+  5. **Curadoria Contínua com IA (`curateJobPostingWithAi`):** Caso requisitos ou benefícios estejam vazios, aciona squad de IA para estruturar responsabilidades, requisitos e benefícios em JSON estrito.
+  6. **Auto-Purga e Higienização no Supabase (`sanitizeAndPurgeCorruptedJobs`):** Executada purga de todas as 6 vagas agregadoras/corrompidas na tabela `jobs`, mantendo apenas cargos legítimos com salários normalizados.
+  7. **Verificação Integral:** 21/21 testes unitários aprovados em `job-opportunity-extractor.test.ts`; Design Lint Ratchet aprovado com 0 regressões (Exit Code 0); Compilação TypeScript com 0 erros.
+- **Fundamentação:** AGENTS.md B.1, B.2, B.5, B.8, B.9, B.11, B.22, B.25; SPEC-JOB-POSTING-MINING-AND-CURATION-REMEDIATION; WCAG 2.2 AA.
+- **Consequências:** O módulo de Empregos da plataforma Waesy opera com alta integridade transacional, sem vagas agregadas falsas, com salários padronizados e requisitos/benefícios estruturados.
+
+
 
