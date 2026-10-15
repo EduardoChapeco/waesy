@@ -1270,7 +1270,7 @@ export async function executeAutonomousCopilotTask(
     });
     steps.push(criticErrRes.step);
 
-    summaryMessage = `Tivemos uma oscilação rápida ao consultar os registros externos (${toolExecutionError.message.slice(0, 80)}). Já estou pronto para tentar novamente em instantes.`;
+    summaryMessage = `Não foi possível consultar os dados externos no momento devido a uma indisponibilidade temporária (${toolExecutionError.message.slice(0, 80)}). Já estou pronto para tentar novamente em instantes.`;
   }
 
   // Passo 3b: Auditoria de Integridade e Barreira Anti-Fakes (@critic)

@@ -117,7 +117,8 @@ export function ClassifiedFloatingActionBar({
 
   return (
     <>
-      <div className="h-16 w-full pb-20" aria-hidden="true" />
+      {/* Espaçador de folga para barra sticky inferior (pb-16 clearance) */}
+      <div className="h-16 w-full" aria-hidden="true" />
       <nav
         aria-label="Ações de Contato e Compra"
         className={cn(

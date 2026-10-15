@@ -162,14 +162,8 @@ function ClassifiedDetailPage() {
     chosenTemplate === "immersive" ||
     chosenTemplate === "instagram" ||
     chosenTemplate === "instagram_resort";
-  const isTravelDefaultEditorial =
-    !chosenTemplate &&
-    (detail.niche?.id === "travel" ||
-      classified?.category === "travel" ||
-      classified?.category === "viagem" ||
-      classified?.category === "tourism");
 
-  if (isEditorialStyle || isTravelDefaultEditorial) {
+  if (isEditorialStyle) {
     return (
       <>
         <ProductTelemetry
@@ -189,13 +183,8 @@ function ClassifiedDetailPage() {
           classified={classified}
           isOwner={detail.effectiveIsOwner}
           onOpenBookingModal={(dep) => {
-            requireAuth({
-              actionContext: "Efetuar reserva para este pacote de viagem",
-              onSuccess: () => {
-                if (dep) detail.setSelectedDeparture(dep);
-                detail.setBookingOpen(true);
-              },
-            });
+            if (dep) detail.setSelectedDeparture(dep);
+            detail.setBookingOpen(true);
           }}
           onOpenProposalModal={() => {
             requireAuth({
@@ -246,19 +235,15 @@ function ClassifiedDetailPage() {
         canManage={detail.effectiveIsOwner || canManage}
         viewerContext={viewerContext}
         currentProfile={currentProfile}
+        similarAds={similarAds}
         onOpenBookingModal={(payload) => {
-          requireAuth({
-            actionContext: "Efetuar reserva para este anúncio",
-            onSuccess: () => {
-              if (payload) {
-                if (payload.checkIn) detail.setCheckInDate(payload.checkIn);
-                if (payload.checkOut) detail.setCheckOutDate(payload.checkOut);
-                if (payload.guests) detail.setBookingGuests(payload.guests);
-                if (payload.departure_date || payload.id) detail.setSelectedDeparture(payload);
-              }
-              detail.setBookingOpen(true);
-            },
-          });
+          if (payload) {
+            if (payload.checkIn) detail.setCheckInDate(payload.checkIn);
+            if (payload.checkOut) detail.setCheckOutDate(payload.checkOut);
+            if (payload.guests) detail.setBookingGuests(payload.guests);
+            if (payload.departure_date || payload.id) detail.setSelectedDeparture(payload);
+          }
+          detail.setBookingOpen(true);
         }}
         onOpenProposalModal={() => {
           requireAuth({

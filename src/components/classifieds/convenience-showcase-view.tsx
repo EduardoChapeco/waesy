@@ -933,9 +933,9 @@ export function ConvenienceShowcaseView({
       <header className="sticky top-0 z-30 bg-background/85 backdrop-blur-md border-b border-border/40 px-3 sm:px-6 h-12 flex items-center justify-between">
         <div className="flex items-center gap-2 min-w-0">
           {!isPreview ? (
-            <Button asChild variant="ghost" size="icon" className="size-8 rounded-full shrink-0">
+            <Button asChild variant="ghost" size="icon" className="size-11 min-h-11 min-w-11 rounded-full shrink-0 flex items-center justify-center text-foreground hover:bg-muted active:scale-95 transition-colors">
               <Link to="/mercado">
-                <ArrowLeft className="size-4" />
+                <ArrowLeft className="size-5" />
                 <span className="sr-only">Voltar ao Mercado</span>
               </Link>
             </Button>
@@ -958,9 +958,9 @@ export function ConvenienceShowcaseView({
               variant="outline"
               size="sm"
               onClick={onEdit}
-              className="h-8 px-3 rounded-full text-xs font-medium text-muted-foreground hover:text-foreground gap-2 border-border/60 bg-background/60 hover:bg-muted cursor-pointer"
+              className="h-11 min-h-11 px-4 rounded-full text-xs font-semibold text-muted-foreground hover:text-foreground gap-2 border-border/60 bg-background/60 hover:bg-muted cursor-pointer active:scale-95 transition-colors"
             >
-              <Edit3 className="size-3.5" />
+              <Edit3 className="size-4" />
               <span className="hidden sm:inline">Editar</span>
             </Button>
           )}
@@ -969,10 +969,10 @@ export function ConvenienceShowcaseView({
             variant="ghost"
             size="icon"
             onClick={handleShare}
-            className="size-8 rounded-full text-muted-foreground hover:text-foreground cursor-pointer"
+            className="size-11 min-h-11 min-w-11 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground cursor-pointer active:scale-95 transition-colors"
             title="Compartilhar Produto"
           >
-            <Share2 className="size-4" />
+            <Share2 className="size-5" />
           </Button>
         </div>
       </header>

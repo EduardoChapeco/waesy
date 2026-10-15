@@ -1,31 +1,31 @@
 {
   "version": "2.0.0",
-  "timestamp": "2026-10-15T21:23:43.440Z",
+  "timestamp": "2026-10-15T21:39:39.369Z",
   "inspectedFiles": 2105,
-  "totalViolations": 12913,
+  "totalViolations": 12925,
   "summary": {
-    "totalViolations": 12913,
+    "totalViolations": 12925,
     "bySeverity": {
       "P0": 1493,
-      "P1": 8714,
-      "P2": 1358,
-      "P3": 1348
+      "P1": 8721,
+      "P2": 1360,
+      "P3": 1351
     },
     "byRule": {
-      "DL-18": 1231,
+      "DL-18": 1230,
       "DL-02": 3690,
-      "DL-14": 2155,
+      "DL-14": 2151,
       "DL-28": 291,
       "DL-15": 1490,
       "DL-07": 509,
       "DL-27": 1096,
-      "DL-30": 252,
+      "DL-30": 255,
       "DL-26": 90,
       "DL-01": 939,
       "DL-29": 121,
       "DL-05": 135,
-      "DL-23": 419,
-      "DL-03": 209,
+      "DL-23": 421,
+      "DL-03": 221,
       "DL-09": 76,
       "DL-08": 115,
       "DL-24": 2,
@@ -38,11 +38,11 @@
     },
     "byModule": {
       "components/app": {
-        "total": 5697,
+        "total": 5709,
         "P0": 608,
-        "P1": 3834,
-        "P2": 689,
-        "P3": 566
+        "P1": 3841,
+        "P2": 691,
+        "P3": 569
       },
       "components/builder": {
         "total": 135,
@@ -143,7 +143,7 @@
         "P3": 0
       }
     },
-    "filesWithViolations": 887,
+    "filesWithViolations": 888,
     "filesCount": 2105
   },
   "config": {

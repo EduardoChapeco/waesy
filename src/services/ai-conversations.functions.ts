@@ -413,7 +413,7 @@ export function resolveAiPipelineSteps(
     steps.push({
       id: `step-2-${startTime}`,
       type: "tool",
-      label: "Consulta ao Catálogo de Produtos e Frete",
+      label: "Consulta ao Catálogo de Produtos e Frete (search_catalog_products)",
       detail: "Conferindo produtos em estoque e estimando opções de entrega",
       status: "completed",
       startedAt: new Date(startTime + 185).toISOString(),
@@ -461,7 +461,7 @@ export function resolveAiPipelineSteps(
     steps.push({
       id: `step-2-${startTime}`,
       type: "tool",
-      label: "Acompanhamento do Pedido",
+      label: "Acompanhamento do Pedido (order_events)",
       detail: "Consultando linha do tempo da entrega e registros de envio",
       status: "completed",
       startedAt: new Date(startTime + 185).toISOString(),
@@ -485,7 +485,7 @@ export function resolveAiPipelineSteps(
     steps.push({
       id: `step-2-${startTime}`,
       type: "tool",
-      label: "Consulta de Disponibilidade e Horários",
+      label: "Consulta de Disponibilidade e Horários (booking_services)",
       detail: "Identificando horários livres e disponibilidade do profissional",
       status: "completed",
       startedAt: new Date(startTime + 185).toISOString(),
@@ -755,7 +755,7 @@ export async function executeAiCopilotPipeline(
 
       return {
         responseMessage:
-          "Para sua segurança e privacidade, esta mensagem não pôde ser processada de acordo com as diretrizes de proteção de dados.",
+          "Para sua segurança e privacidade, esta mensagem contém padrões não permitidos pelas políticas de segurança e proteção de dados.",
         activitySteps: steps,
         updatedMemory,
         fsmPhase: "FAILED_FINAL",
@@ -777,7 +777,7 @@ export async function executeAiCopilotPipeline(
       steps.push({
         id: `step-fin-guard-${startTime}`,
         type: "skill",
-        label: "Verificação Financeira Segura",
+        label: "Controle Financeiro e Pagamentos Seguros",
         detail:
           "Pagamentos exigem ambiente seguro de checkout com autenticação e código Pix verificado",
         status: "completed",
@@ -790,7 +790,7 @@ export async function executeAiCopilotPipeline(
 
       return {
         responseMessage:
-          "Para sua tranquilidade e segurança financeira, pagamentos não são debitados de forma automática no chat. Você pode concluir seu pedido com segurança diretamente no carrinho ou checkout com Pix ou cartão.",
+          "Para sua tranquilidade e conforme nossa diretriz de segurança financeira, pagamentos não são debitados de forma automática no chat. Você pode concluir seu pedido com segurança diretamente no carrinho ou checkout com Pix ou cartão.",
         activitySteps: steps,
         updatedMemory,
         fsmPhase: "COMPLETED",
