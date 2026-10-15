@@ -29,9 +29,9 @@ export function IFoodSquareCategoryButton({
       key={id}
       to={targetUrl as any}
       className={cn(
-        "group relative flex flex-col items-center justify-between p-2 rounded-lg bg-card border border-border/60",
+        "group relative flex flex-col items-center justify-between p-2 rounded-lg bg-muted/40 hover:bg-muted/60 dark:bg-muted/20 border border-border/50 hover:border-border/80",
         "aspect-square w-20 sm:w-24 shrink-0 transition-transform duration-150 select-none",
-        "hover:border-foreground/30 active:scale-95",
+        "active:scale-95",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
         className,
       )}

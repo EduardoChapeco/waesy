@@ -641,7 +641,26 @@ function CommunityMarketplaceView({ data }: { data: any }) {
               )}
             </div>
           )}
-          <NoorNativeCategoryDock items={quickCategoriesSection.items} />
+          {quickCategoriesSection.layout_variant === "grid_2d" ? (
+            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3 px-1">
+              {quickCategoriesSection.items.map((it) => (
+                <IFoodSquareCategoryButton
+                  key={it.id}
+                  id={it.id}
+                  title={it.title}
+                  imageUrl={it.image_url}
+                  targetUrl={it.target_url}
+                  showText={it.show_text}
+                  badgeText={it.badge_text}
+                  className="w-full"
+                />
+              ))}
+            </div>
+          ) : quickCategoriesSection.layout_variant === "bento_grid" ? (
+            <BentoGridTetris items={quickCategoriesSection.items} aspectRatio={quickCategoriesSection.aspect_ratio} />
+          ) : (
+            <NoorNativeCategoryDock items={quickCategoriesSection.items} />
+          )}
         </section>
       )}
 
@@ -668,15 +687,17 @@ function CommunityMarketplaceView({ data }: { data: any }) {
             <NoorNativeCategoryDock items={sec.items} />
           )}
           {sec.layout_variant === "grid_2d" && (
-            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3 px-1">
               {sec.items.map((it) => (
                 <IFoodSquareCategoryButton
                   key={it.id}
+                  id={it.id}
                   title={it.title}
                   imageUrl={it.image_url}
                   targetUrl={it.target_url}
                   showText={it.show_text}
                   badgeText={it.badge_text}
+                  className="w-full"
                 />
               ))}
             </div>
