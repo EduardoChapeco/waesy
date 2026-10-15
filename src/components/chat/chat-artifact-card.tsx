@@ -16,6 +16,8 @@ import {
   XCircle,
   Printer,
   Calendar,
+  BarChart3,
+  Building2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -82,6 +84,46 @@ const ARTIFACT_TYPE_CONFIG: Record<
     label: "Roteiro de Viagem",
     icon: Compass,
     defaultExport: "pdf",
+  },
+  chart: {
+    label: "Gráfico Interativo",
+    icon: BarChart3,
+    defaultExport: "json",
+  },
+  interactive_table: {
+    label: "Tabela Interativa",
+    icon: Table,
+    defaultExport: "csv",
+  },
+  biolink_cluster: {
+    label: "Cluster de Contatos",
+    icon: Building2,
+    defaultExport: "json",
+  },
+  builder_bridge: {
+    label: "Bridge do Builder",
+    icon: Layers,
+    defaultExport: "json",
+  },
+  travel_dossier: {
+    label: "Dossiê de Viagem",
+    icon: Compass,
+    defaultExport: "pdf",
+  },
+  document_preview: {
+    label: "Prévia de Documento",
+    icon: FileText,
+    defaultExport: "pdf",
+  },
+  website: {
+    label: "Website / Landing",
+    icon: Layout,
+    defaultExport: "json",
+  },
+  social_post: {
+    label: "Post para Redes",
+    icon: Layout,
+    defaultExport: "json",
   },
 };
 

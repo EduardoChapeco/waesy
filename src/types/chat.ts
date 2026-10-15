@@ -49,7 +49,15 @@ export type ChatArtifactType =
   | "proposal"
   | "image"
   | "itinerary"
-  | "travel_itinerary";
+  | "travel_itinerary"
+  | "chart"
+  | "interactive_table"
+  | "biolink_cluster"
+  | "builder_bridge"
+  | "travel_dossier"
+  | "document_preview"
+  | "website"
+  | "social_post";
 
 export interface ChatArtifactData {
   id: string;

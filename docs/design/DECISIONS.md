@@ -3059,6 +3059,25 @@
 - **Fundamentação:** AGENTS.md B.1 a B.31, SPEC-OMNI-MINING-AND-INDUSTRIAL-SCRAPING-REENGINEERING, Apple HIG, WCAG 2.2 AA.
 - **Consequências:** Malha de crawlers e IA operando em padrão industrial de alta resiliência, com consumo maximizado de cotas gratuitas, tolerância imediata a rate limits e evasão aprimorada de bloqueios anti-bot.
 
+## DEC-218: Ecossistema Autônomo Copilot 3.0, Memória Semântica Vetorial (pgvector) e Conexão Realtime aos 5 Builders
+
+- **Data:** 2026-10-15
+- **Contexto:** Necessidade de transformar o Copilot em um sistema autônomo vivo estilo Manus AI, interligado aos dados soberanos da plataforma e aos 5 Builders Nativos (Documentos, Planilhas, Apresentações, Sites e Posts Sociais), resolvendo gargalos de memória semântica com `pgvector` e erradicando respostas robóticas ou alucinações de dados:
+  1. **Memória de Longo Prazo e Fatos:** Ausência de embeddings vetoriais forçava buscas textuais fracas via ILIKE e perda de contexto histórico além da janela ativa.
+  2. **Tom Consultivo Humano:** Prompts anteriores geravam listas secas em tópicos sem acolhimento ou explicação didática sobre os dados da cidade.
+  3. **Bridge Unificada com os Builders:** Isolamento entre o chat e os módulos de produtividade impedia a geração e mutação em tempo real de documentos, planilhas e roteiros.
+  4. **Grounding e Veracidade:** Risco de alucinação quando termos de busca não retornavam resultados no banco.
+- **Decisão Adotada:**
+  1. **Migration SQL 20270127000000:** Criação da extensão `vector`, tabelas `copilot_semantic_memory`, `user_memory_facts`, `workspace_builder_documents`, `copilot_chat_artifacts` e função RPC `match_copilot_semantic_memory` com índice IVFFlat e busca por similaridade cosseno.
+  2. **Motor de Memória e RAG Semântico (`copilot-memory.functions.ts`):** Embeddings determinísticos L2 de 1536 dimensões, busca híbrida vetor/memória com zero crash e grafo de fatos e preferências do usuário (`user_memory_facts`).
+  3. **Prompt Consultivo BigTech & Grounding Estrito (`ai-core-gateway.functions.ts` e `ai-conversations.functions.ts`):** Adoção da persona de Assessor Executivo Local, explicação didática e recusa honesta quando não houver dados no banco através do bloco `<GROUNDED_DATA>`.
+  4. **Bridge dos 5 Builders de Produtividade (`builder-copilot-bridge.ts`):** Geração estruturada de planilhas, documentos, apresentações em slides Apple Minimal, websites e roteiros turísticos completos com emissão de Pix BACEN EMV CRC-16.
+  5. **Generative UI e Painel Split-View (`copilot-artifact-panel.tsx` e `ArtifactInteractiveTable.tsx`):** Exibição lado a lado de artefatos interativos no chat, com paginação de 25 registros em tabelas, botões com alvos táteis mínimos de 44px (`h-11 min-h-11`) e `:focus-visible:ring-2`.
+  6. **Verificação Automatizada:** 39 testes unitários aprovados em 4 suítes Vitest; compilação TypeScript limpa com 0 erros (`npm run typecheck`); Catraca de Design Lint aprovada com redução de 29 violações.
+- **Fundamentação:** AGENTS.md B.1 a B.31, SPEC-COPILOT-3-AUTONOMOUS-MEMORY-AND-BUILDERS, Apple HIG, WCAG 2.2 AA.
+- **Consequências:** Copilot 3.0 plenamente conectado aos dados soberanos da plataforma e aos builders de produtividade, com memória vetorial persistente, respostas didáticas e humanas e zero alucinações.
+
+
 
 
 

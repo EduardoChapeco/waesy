@@ -22,6 +22,7 @@ import {
   type CanonicalNiche,
   type ArtifactArchetype,
 } from "./ai-builder-composition.functions";
+import { buildSpreadsheetPayload } from "./builder-copilot-bridge";
 import { linkRecipeIngredientsToInventory } from "./mining/specialized-extractors";
 import type { AIActivityStep, ChatArtifactType, SubagentRole } from "@/types/chat";
 import type { CopilotFsmPhase } from "@/types/copilot-fsm";
@@ -230,6 +231,29 @@ export function fragmentAndOptimizePrompt(
       city,
       state,
       requestedFormat: "document",
+      rawPrompt: clean,
+    };
+  }
+
+  if (
+    (lower.includes("planilha") || lower.includes("tabela")) &&
+    (lower.includes("caixa") ||
+      lower.includes("financeir") ||
+      lower.includes("fluxo") ||
+      lower.includes("venda") ||
+      lower.includes("métrica") ||
+      lower.includes("custo") ||
+      lower.includes("orçamento") ||
+      lower.includes("despesa") ||
+      lower.includes("controle") ||
+      (!lower.includes("lead") && !lower.includes("empresa") && !lower.includes("restaurante") && !lower.includes("loja") && !lower.includes("comércio")))
+  ) {
+    return {
+      domain: "sheet_generator",
+      targetQuery: clean.replace(/(?:gere|crie|monte|uma|tabela|planilha|de|com)\s*/gi, "").trim() || "Controle Operacional",
+      city,
+      state,
+      requestedFormat: "spreadsheet",
       rawPrompt: clean,
     };
   }
@@ -1178,6 +1202,29 @@ export async function executeAutonomousCopilotTask(
       summaryMessage = `Nenhuma notícia publicada encontrada no momento. A esteira automatizada pode ser acionada via API.`;
     }
     tokensSaved = articles.length * 180;
+  } else if (task.domain === "sheet_generator") {
+    const sheetPayload = buildSpreadsheetPayload(task.targetQuery || "Controle Operacional", prompt);
+    steps.push({
+      id: `step-sheet-${taskId.slice(0, 8)}`,
+      type: "tool",
+      label: "Geração de Planilha Operacional",
+      detail: `Estruturada planilha com ${sheetPayload.columns.length} colunas e ${sheetPayload.rows.length} registros calculados`,
+      status: "completed",
+      startedAt: new Date().toISOString(),
+      completedAt: new Date().toISOString(),
+    });
+
+    artifact = {
+      type: "spreadsheet",
+      title: task.targetQuery ? `Planilha: ${task.targetQuery}` : "Planilha de Controle Operacional",
+      data: {
+        headers: sheetPayload.columns,
+        rows: sheetPayload.rows,
+        summary: sheetPayload.summary,
+      },
+    };
+    summaryMessage = `Estruturei a planilha "${artifact.title}" com cálculos operacionais e dados prontos para análise e edição.`;
+    tokensSaved = 250;
   } else {
     summaryMessage = `Não identifiquei uma tarefa de mineração específica em "${task.targetQuery.slice(0, 80)}".`;
     tokensSaved = 0;

@@ -1,13 +1,13 @@
 {
   "version": "2.0.0",
-  "timestamp": "2026-10-15T14:23:40.113Z",
-  "inspectedFiles": 2085,
-  "totalViolations": 13038,
+  "timestamp": "2026-10-15T15:57:18.689Z",
+  "inspectedFiles": 2095,
+  "totalViolations": 13034,
   "summary": {
-    "totalViolations": 13038,
+    "totalViolations": 13034,
     "bySeverity": {
       "P0": 1504,
-      "P1": 8806,
+      "P1": 8802,
       "P2": 1366,
       "P3": 1362
     },
@@ -25,7 +25,7 @@
       "DL-29": 121,
       "DL-05": 135,
       "DL-23": 419,
-      "DL-03": 231,
+      "DL-03": 227,
       "DL-09": 76,
       "DL-08": 116,
       "DL-24": 2,
@@ -52,9 +52,9 @@
         "P3": 17
       },
       "components/chat": {
-        "total": 85,
+        "total": 81,
         "P0": 4,
-        "P1": 74,
+        "P1": 70,
         "P2": 2,
         "P3": 5
       },
@@ -144,7 +144,7 @@
       }
     },
     "filesWithViolations": 888,
-    "filesCount": 2085
+    "filesCount": 2095
   },
   "config": {
     "$schema": "https://json-schema.org/draft/2020-12/schema",

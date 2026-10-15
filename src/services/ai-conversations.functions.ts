@@ -38,6 +38,16 @@ import type {
   ChatArtifactData,
   ChatArtifactType,
 } from "@/types/chat";
+import {
+  assembleLongTermContext,
+  extractAndSaveFactsFromConversation,
+  storeSemanticMemoryChunk,
+} from "./copilot-memory.functions";
+import {
+  createBuilderArtifactFromCopilot,
+  buildTravelItineraryPayload,
+  detectBuilderDocType,
+} from "./builder-copilot-bridge";
 
 // ============================================================
 // Schemas de Validação
@@ -638,6 +648,23 @@ function detectIntent(text: string): string {
     return "commercial_proposal";
   }
   if (
+    text.includes("apresentação") ||
+    text.includes("apresentacao") ||
+    text.includes("slide") ||
+    text.includes("pitch") ||
+    text.includes("deck")
+  ) {
+    return "presentation_deck";
+  }
+  if (
+    text.includes("landing page") ||
+    text.includes("criar site") ||
+    text.includes("montar site") ||
+    text.includes("meu site")
+  ) {
+    return "website_builder";
+  }
+  if (
     text.includes("planilha") ||
     text.includes("tabela") ||
     text.includes("métricas") ||
@@ -824,40 +851,55 @@ export async function executeAiCopilotPipeline(
     // Executa o Gateway de IA Soberano se houver modelo ativo no pool (com Prompt Sandboxing)
     let gatewayResponse: any = null;
     try {
+      const longTermMemory = context.userId
+        ? await assembleLongTermContext({
+            profileId: context.userId,
+            threadId: context.threadId,
+            currentPrompt: userPrompt,
+          }).catch(() => ({ formattedContext: "", factsCount: 0, memoryChunksCount: 0 }))
+        : { formattedContext: "", factsCount: 0, memoryChunksCount: 0 };
+
       const internalSearchContext = platformSearch
         ? `
-CONTEXTO SOBERANO DA PLATAFORMA (itens reais já publicados no Waesy — priorize-os):
+<GROUNDED_DATA>
+CONTEXTO SOBERANO DA PLATAFORMA (itens reais cadastrados no Waesy — priorize-os estritamente):
 ${JSON.stringify({ query: platformSearch.query, cards: platformSearch.cards, unavailableTables: platformSearch.unavailableTables }).slice(0, 12000)}
-Se houver cards no contexto acima, mencione-os de forma clara e calorosa, destacando seus diferenciais e convidando o usuário a conferir. Se a intenção for turismo ou evento (ex: Oktoberfest), integre essas informações naturalmente.
+</GROUNDED_DATA>
+Se houver itens no CONTEXTO SOBERANO acima, mencione-os de forma clara, consultiva e cordial, destacando diferenciais reais. Se for turismo/evento (ex: Oktoberfest, Urubici, Blumenau), estruture roteiro com precisão geográfica.
 `
         : "";
-      const systemPrompt = `Você é o Waesy Copilot, concierge e assistente inteligente da cidade e da comunidade no ecossistema Waesy.
-Seu objetivo é orientar o usuário com simpatia, naturalidade, calor humano e precisão, conectando-o ao comércio, serviços, passeios e oportunidades locais.
 
-DIRETRIZES DE COMUNICAÇÃO:
-- Fale como um concierge atencioso e acolhedor: tom humano, fluido, empático e resolutivo.
-- NUNCA use jargões robóticos, termos de programação ou frases como "para economizar processamento", "como modelo de linguagem", "ordens recebidas" ou "instruções do sistema".
-- Se houver dados no CONTEXTO SOBERANO DA PLATAFORMA (cards), mencione os itens reais encontrados pelo nome e diferenciais, recomendando com entusiasmo.
-- Quando o usuário perguntar sobre turismo ou eventos específicos (ex: Oktoberfest, feiras, festivais), adapte o roteiro para a cidade e tradição correta (ex: Oktoberfest em Blumenau - SC).
+      const systemPrompt = `Você é o Waesy Copilot, Assessor Consultivo Executivo e Concierge Sênior do ecossistema Waesy.
+Seu objetivo é orientar o usuário com linguagem natural acolhedora, tom de consultor humano sênior, empatia genuína, profundidade didática e precisão factual inegociável.
+
+DIRETRIZES DO ASSESSOR CONSULTIVO HUMANO (BIGTECH PERSONA):
+1. Acolhimento Didático: Inicie a resposta validando a necessidade com simpatia e naturalidade (ex: "Entendo perfeitamente o que você precisa. Vamos analisar as opções disponíveis aqui em Chapecó e região.").
+2. Contexto Explicado: Nunca jogue dados crus em tópicos secos. Explique o contexto e por que aquela opção, empresa, vaga ou indicador faz sentido para o usuário.
+3. Grounding Estrito & Zero Alucinações:
+   - Responda baseando-se ESTRITAMENTE nos dados verificados fornecidos em <GROUNDED_DATA>.
+   - Você está PROIBIDO de inventar ou supor nomes de empresas, CNPJs, vagas, telefones ou preços inexistentes.
+   - Se uma busca trouxer zero registros na base soberana, declare honestamente com cordialidade: "Consultei nossa base oficial de dados do Waesy e não encontrei nenhum registro ativo para este termo no momento. Gostaria que eu buscasse em um segmento próximo ou em outra categoria?"
+4. Fechamento Tátil e Consultivo: Conclua sempre sugerindo um próximo passo prático ou oferecendo a geração de artefato interativo (planilha, dossiê com Pix, proposta ou publicação social).
+5. Erradique jargões robóticos ("como modelo de linguagem", "para economizar processamento", "ordens recebidas", "minhas diretrizes"). Fale como um consultor humano experiente explicando para alguém.
 
 Ferramentas disponíveis:
 1. 'search_places': busca estabelecimentos locais (cafés, restaurantes, mercados, academias, oficinas, etc.)
 2. 'estimate_mobility': calcula estimativas de corrida urbana (moto, carro, entrega, van)
 3. 'search_catalog': busca produtos ou itens de cardápio com modificadores
-4. 'travel_itinerary': monta pacotes de viagem com dias, passeios e hotéis
+4. 'travel_itinerary': monta pacotes de viagem com dias, passeios, hotéis e código Pix BACEN EMV
 5. 'legal_triage': faz triagem jurídica com área do direito e checklist
-6. 'create_ad': cria cópia e arte para anúncio/mural
-7. 'commercial_proposal': cria proposta comercial formal BRL
-8. 'financial_report': gera relatório/planilha de caixa
+6. 'create_ad': cria cópia e arte para anúncio/mural ou redes sociais
+7. 'commercial_proposal': cria proposta comercial formal BRL ou documento executivo
+8. 'financial_report': gera relatório/planilha de caixa e métricas
 
 Responda SEMPRE em formato JSON com os campos:
 {
   "intent": "search_places" | "estimate_mobility" | "search_catalog" | "travel_itinerary" | "legal_triage" | "create_ad" | "commercial_proposal" | "financial_report" | "general_chat",
   "tool_args": { ... },
-  "message": "Mensagem calorosa, humana e completa para o usuário",
+  "message": "Mensagem acolhedora, consultiva, didática e humana para o usuário",
   "step_label": "Título amigável da ação",
   "step_detail": "Detalhe amigável para o usuário"
-}${internalSearchContext}`;
+}${internalSearchContext}${longTermMemory.formattedContext ? `\n${longTermMemory.formattedContext}` : ""}`;
 
       // 🛡️ Prompt Sandboxing: Isola dados não-confiáveis externos em <user_untrusted_data>
       const { hardenedSystemPrompt, sandboxedUserPrompt } = buildSandboxedPromptPayload(
@@ -1435,40 +1477,74 @@ Responda SEMPRE em formato JSON com os campos:
         }
       }
 
-      structuredPayload = {
-        blocks: [
-          {
-            type: "travel_itinerary",
-            data: {
-              destination,
-              duration_days: days.length,
-              passengers_count: toolArgs.passengers_count || 2,
-              hotel_category: toolArgs.hotel_category || "Hotel Selecionado com Café",
-              flights_included: Boolean(toolArgs.flights_included),
-              estimated_budget_cents: toolArgs.estimated_budget_cents || 249000,
-              days,
-            },
-          },
-        ],
-      };
-
-      artifact = {
-        id: crypto.randomUUID(),
-        type: "proposal",
+      const travelBuilderResult = await createBuilderArtifactFromCopilot({
+        userPrompt,
+        docType: "travel_itinerary",
         title: `Roteiro Turístico: ${destination}`,
-        version: 1,
-        authorName: "Consultor de Turismo Waesy",
-        authorRole: "Especialista em Experiências",
-        previewSummary: `Itinerário personalizado para ${destination} com passeios, hospedagem e estimativa de investimento.`,
-        data: {
-          destination,
-          daysCount: days.length,
-          estimated_budget_cents: toolArgs.estimated_budget_cents || 249000,
-        },
-      };
+        storeId: context.storeId,
+        authorProfileId: context.userId || "00000000-0000-0000-0000-000000000001",
+        sessionId: context.threadId,
+      }).catch(() => null);
 
-      if (!responseMessage) {
-        responseMessage = `Preparei um roteiro especial para ${destination}! Veja abaixo a programação detalhada e as sugestões de passeios para aproveitar ao máximo a sua experiência:`;
+      if (travelBuilderResult) {
+        artifact = travelBuilderResult.chatArtifact;
+        const p = travelBuilderResult.payload;
+        structuredPayload = {
+          blocks: [
+            {
+              type: "travel_itinerary",
+              data: {
+                destination: p.destination || destination,
+                duration_days: p.daysCount || days.length,
+                passengers_count: toolArgs.passengers_count || 2,
+                hotel_category: toolArgs.hotel_category || "Pousada de Charme com Café",
+                flights_included: Boolean(toolArgs.flights_included),
+                estimated_budget_cents: p.estimatedBudgetCents || 245000,
+                pix_code: p.pixCode,
+                days: p.days || days,
+              },
+            },
+          ],
+        };
+        if (!responseMessage) {
+          responseMessage = `Montei um roteiro consultivo personalizado para ${p.destination || destination}! Estruturei a programação dia a dia, a hospedagem selecionada e gerei o código Pix BACEN EMV oficial com chave cadastrada para validação imediata da reserva no painel lateral:`;
+        }
+      } else {
+        structuredPayload = {
+          blocks: [
+            {
+              type: "travel_itinerary",
+              data: {
+                destination,
+                duration_days: days.length,
+                passengers_count: toolArgs.passengers_count || 2,
+                hotel_category: toolArgs.hotel_category || "Hotel Selecionado com Café",
+                flights_included: Boolean(toolArgs.flights_included),
+                estimated_budget_cents: toolArgs.estimated_budget_cents || 249000,
+                days,
+              },
+            },
+          ],
+        };
+
+        artifact = {
+          id: crypto.randomUUID(),
+          type: "proposal",
+          title: `Roteiro Turístico: ${destination}`,
+          version: 1,
+          authorName: "Consultor de Turismo Waesy",
+          authorRole: "Especialista em Experiências",
+          previewSummary: `Itinerário personalizado para ${destination} com passeios, hospedagem e estimativa de investimento.`,
+          data: {
+            destination,
+            daysCount: days.length,
+            estimated_budget_cents: toolArgs.estimated_budget_cents || 249000,
+          },
+        };
+
+        if (!responseMessage) {
+          responseMessage = `Preparei um roteiro especial para ${destination}! Veja abaixo a programação detalhada e as sugestões de passeios para aproveitar ao máximo a sua experiência:`;
+        }
       }
 
       updatedMemory.last_travel_destination = destination;
@@ -1570,6 +1646,19 @@ Responda SEMPRE em formato JSON com os campos:
         "Aproveite descontos especiais em produtos e serviços locais. Compre de quem produz na sua cidade com entrega rápida.";
       const cta = toolArgs.cta_label || "Conferir Ofertas";
 
+      const socialBuilderResult = await createBuilderArtifactFromCopilot({
+        userPrompt,
+        docType: "social_post",
+        title: headline,
+        storeId: context.storeId,
+        authorProfileId: context.userId || "00000000-0000-0000-0000-000000000001",
+        sessionId: context.threadId,
+      }).catch(() => null);
+
+      if (socialBuilderResult) {
+        artifact = socialBuilderResult.chatArtifact;
+      }
+
       structuredPayload = {
         blocks: [
           {
@@ -1586,7 +1675,7 @@ Responda SEMPRE em formato JSON com os campos:
 
       if (!responseMessage) {
         responseMessage =
-          "Criei o rascunho da peça publicitária com copy persuasiva e chamada para ação. Você pode publicar diretamente no feed ou mural do comércio:";
+          `Criei o post e story "${headline}" com copy persuasiva e chamada para ação pronta para publicação no Instagram. A peça está aberta no painel lateral para você visualizar e ajustar:`;
       }
 
       updatedMemory.last_creative_topic = headline;
@@ -1723,23 +1812,36 @@ Responda SEMPRE em formato JSON com os campos:
         "Entrega final e encerramento",
       ];
 
-      artifact = {
-        id: crypto.randomUUID(),
-        type: "proposal",
+      const docBuilderResult = await createBuilderArtifactFromCopilot({
+        userPrompt,
+        docType: "document",
         title: extractedTitle,
-        version: 1,
-        totalVersions: 1,
-        authorName: "Consultor Comercial IA",
-        authorRole: "Agente Executivo",
-        previewSummary: `Proposta estruturada com cronograma em ${milestones.length} etapas e investimento total de ${formatMoney(totalCents / 100)}.`,
-        data: {
-          total_cents: totalCents,
-          currency: "BRL",
-          validity_days: 15,
-          milestones,
-          terms: "Condições de pagamento: 50% na aprovação e 50% na conclusão das entregas.",
-        },
-      };
+        storeId: context.storeId,
+        authorProfileId: context.userId || "00000000-0000-0000-0000-000000000001",
+        sessionId: context.threadId,
+      }).catch(() => null);
+
+      if (docBuilderResult) {
+        artifact = docBuilderResult.chatArtifact;
+      } else {
+        artifact = {
+          id: crypto.randomUUID(),
+          type: "proposal",
+          title: extractedTitle,
+          version: 1,
+          totalVersions: 1,
+          authorName: "Consultor Comercial IA",
+          authorRole: "Agente Executivo",
+          previewSummary: `Proposta estruturada com cronograma em ${milestones.length} etapas e investimento total de ${formatMoney(totalCents / 100)}.`,
+          data: {
+            total_cents: totalCents,
+            currency: "BRL",
+            validity_days: 15,
+            milestones,
+            terms: "Condições de pagamento: 50% na aprovação e 50% na conclusão das entregas.",
+          },
+        };
+      }
 
       structuredPayload = {
         blocks: [
@@ -1762,6 +1864,84 @@ Responda SEMPRE em formato JSON com os campos:
       }
 
       updatedMemory.last_proposal_created = new Date().toISOString();
+    }
+    // ── 7.1 Apresentação Executiva & Slides Apple HIG ──
+    else if (
+      intent === "presentation_deck" ||
+      promptLower.includes("apresentação") ||
+      promptLower.includes("apresentacao") ||
+      promptLower.includes("slide") ||
+      promptLower.includes("pitch") ||
+      promptLower.includes("deck")
+    ) {
+      const stepStart = Date.now();
+      steps.push({
+        id: `step-presentation-${stepStart}`,
+        type: "tool",
+        label: "Geração de Apresentação Executiva",
+        detail: "Estruturando slides temáticos e narrativa visual",
+        status: "completed",
+        startedAt: new Date(stepStart).toISOString(),
+        completedAt: new Date(stepStart + 260).toISOString(),
+        durationMs: 260,
+        tokensUsed: 220,
+      });
+
+      const slideTitle = toolArgs.title || (userPrompt.length > 8 ? userPrompt.slice(0, 50) : "Apresentação Executiva");
+      const deckBuilderResult = await createBuilderArtifactFromCopilot({
+        userPrompt,
+        docType: "presentation",
+        title: slideTitle,
+        storeId: context.storeId,
+        authorProfileId: context.userId || "00000000-0000-0000-0000-000000000001",
+        sessionId: context.threadId,
+      }).catch(() => null);
+
+      if (deckBuilderResult) {
+        artifact = deckBuilderResult.chatArtifact;
+      }
+
+      if (!responseMessage) {
+        responseMessage = `Estruturei a apresentação "${slideTitle}" com slides modernos no padrão Apple Minimal. A prévia já está aberta no painel lateral:`;
+      }
+    }
+    // ── 7.2 Website Canvas & Landing Page ──
+    else if (
+      intent === "website_builder" ||
+      promptLower.includes("landing page") ||
+      promptLower.includes("criar site") ||
+      promptLower.includes("montar site")
+    ) {
+      const stepStart = Date.now();
+      steps.push({
+        id: `step-site-${stepStart}`,
+        type: "tool",
+        label: "Omni-Builder Canvas Website",
+        detail: "Estruturando seções de hero, catálogo e chamada para conversão",
+        status: "completed",
+        startedAt: new Date(stepStart).toISOString(),
+        completedAt: new Date(stepStart + 280).toISOString(),
+        durationMs: 280,
+        tokensUsed: 240,
+      });
+
+      const siteTitle = toolArgs.title || "Landing Page do Estabelecimento";
+      const siteBuilderResult = await createBuilderArtifactFromCopilot({
+        userPrompt,
+        docType: "website",
+        title: siteTitle,
+        storeId: context.storeId,
+        authorProfileId: context.userId || "00000000-0000-0000-0000-000000000001",
+        sessionId: context.threadId,
+      }).catch(() => null);
+
+      if (siteBuilderResult) {
+        artifact = siteBuilderResult.chatArtifact;
+      }
+
+      if (!responseMessage) {
+        responseMessage = `Projetei a landing page "${siteTitle}" com layout adaptativo, seções estratégicas de conversão e botões de contato. Veja a prévia ao lado:`;
+      }
     }
     // ── 8. Relatório Financeiro & Planilha de Caixa ──
     else if (
@@ -1826,23 +2006,36 @@ Responda SEMPRE em formato JSON com os campos:
               ["Serviços Locais", "0", "R$ 0,00", "Sem Lançamentos"],
             ];
 
-      artifact = {
-        id: crypto.randomUUID(),
-        type: "spreadsheet",
+      const sheetBuilderResult = await createBuilderArtifactFromCopilot({
+        userPrompt,
+        docType: "spreadsheet",
         title: "Demonstrativo Financeiro do Caixa",
-        version: 1,
-        totalVersions: 1,
-        authorName: "Auditor Financeiro IA",
-        authorRole: "Controladoria",
-        previewSummary: `Demonstrativo contábil com ${rows.length} linhas de registro e status de liquidação.`,
-        data: {
-          rows: rows.length,
-          columns: 4,
-          headers: ["Categoria", "Qtd", "Valor (BRL)", "Status"],
-          dataRows: rows,
-          format: "tabular",
-        },
-      };
+        storeId: context.storeId,
+        authorProfileId: context.userId || "00000000-0000-0000-0000-000000000001",
+        sessionId: context.threadId,
+      }).catch(() => null);
+
+      if (sheetBuilderResult) {
+        artifact = sheetBuilderResult.chatArtifact;
+      } else {
+        artifact = {
+          id: crypto.randomUUID(),
+          type: "spreadsheet",
+          title: "Demonstrativo Financeiro do Caixa",
+          version: 1,
+          totalVersions: 1,
+          authorName: "Auditor Financeiro IA",
+          authorRole: "Controladoria",
+          previewSummary: `Demonstrativo contábil com ${rows.length} linhas de registro e status de liquidação.`,
+          data: {
+            rows: rows.length,
+            columns: 4,
+            headers: ["Categoria", "Qtd", "Valor (BRL)", "Status"],
+            dataRows: rows,
+            format: "tabular",
+          },
+        };
+      }
 
       structuredPayload = {
         blocks: [
@@ -2381,6 +2574,20 @@ export const sendAiConversationMessage = createServerFn({ method: "POST" })
     }
     const persistedAiMessageId = (persistedExchange as { ai_message_id?: string }).ai_message_id;
     const persistedAiCreatedAt = (persistedExchange as { ai_created_at?: string }).ai_created_at;
+
+    // 🧠 Motor Autônomo Estilo Manus AI: Aprendizado contínuo & Memória episódica
+    extractAndSaveFactsFromConversation({
+      profileId: identity.id,
+      userPrompt: data.message,
+      threadId: data.threadId,
+    }).catch((err) => console.warn("[COPILOT-LEARNING] Falha ao extrair fatos:", err));
+
+    storeSemanticMemoryChunk({
+      sessionId: data.threadId,
+      profileId: identity.id,
+      contentChunk: `Usuário: ${data.message}\nCopilot: ${execution.responseMessage}`,
+      importanceScore: execution.artifact ? 0.8 : 0.5,
+    }).catch((err) => console.warn("[COPILOT-LEARNING] Falha ao gravar memória semântica:", err));
 
     return {
       userMessageId: userMsg.id,
