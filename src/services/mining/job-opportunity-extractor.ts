@@ -55,10 +55,7 @@ export function parseBrlSalaryToCents(rawText: string): { minCents?: number; max
   const matches = Array.from(clean.matchAll(brlRegex));
 
   if (matches.length === 0) {
-    if (/combinar|a combinar/i.test(clean)) {
-      return { display: "A combinar" };
-    }
-    return { display: clean.slice(0, 40) || "A combinar" };
+    return { display: "A combinar" };
   }
 
   const parseNum = (valStr: string): number => {
@@ -306,6 +303,43 @@ export function extractJobFromHtmlHeuristics(
 /**
  * Extrai e persiste uma vaga de emprego na tabela `jobs` do Supabase
  */
+/**
+ * Detecta se a página é um índice/catálogo de vagas (em vez de uma vaga individual)
+ */
+export function isJobListingPage(title: string, url: string, html: string): boolean {
+  const cleanTitle = (title || "").toLowerCase();
+  const cleanUrl = (url || "").toLowerCase();
+
+  if (
+    /vagas\s+em\b|vagas\s+de\s+emprego\b|oportunidades\s+em\b|encontramos\s+\d+\s+vagas|\b\d+\s+vagas\s+de\b|resultado[s]?\s+de\s+busca/i.test(cleanTitle) ||
+    /vagas-em-|empregos-em-|\/vagas\?|\/buscar|\/busca\b|\/search\b/i.test(cleanUrl)
+  ) {
+    return true;
+  }
+
+  const jobLinkCount = (html.match(/href=["'][^"']*(?:\/vaga\/|\/emprego\/|\/oportunidade\/|\/cargo\/|\/viewjob)[^"']*["']/gi) || []).length;
+  if (jobLinkCount >= 3) {
+    return true;
+  }
+
+  return false;
+}
+
+/**
+ * Extrai links de vagas individuais a partir de uma página de catálogo
+ */
+export function extractJobLinksFromListing(html: string, baseUrl: string): string[] {
+  const matches = html.matchAll(/href=["']([^"']*(?:\/vaga\/|\/emprego\/|\/oportunidade\/|\/cargo\/|\/viewjob)[^"']*)["']/gi);
+  const links = new Set<string>();
+  for (const match of matches) {
+    try {
+      const resolved = new URL(match[1], baseUrl).toString();
+      links.add(resolved);
+    } catch {}
+  }
+  return Array.from(links).slice(0, 20);
+}
+
 export async function extractAndPersistJobOpportunity(
   html: string,
   url: string,
@@ -314,12 +348,36 @@ export async function extractAndPersistJobOpportunity(
   const normalized = normalizeUrl(url);
   const supabase = getServerClient();
 
+  // 0. Se for página de listagem/catálogo, extrai links individuais e enfileira na crawl_queue
+  if (isJobListingPage(html.slice(0, 500), normalized, html)) {
+    const jobLinks = extractJobLinksFromListing(html, normalized);
+    if (jobLinks.length > 0) {
+      const queueItems = jobLinks.map((link) => ({
+        url: link,
+        domain: new URL(link).hostname.replace("www.", ""),
+        entity_type: "job",
+        status: "pending",
+        priority: 8,
+        discovered_via: "jobs_portal_listing",
+        metadata: {
+          parent_url: normalized,
+          city: options?.city,
+          state: options?.state,
+        },
+      }));
+      await supabase.from("crawl_queue").upsert(queueItems, { onConflict: "url", ignoreDuplicates: true });
+      return {
+        success: true,
+      };
+    }
+  }
+
   const job = extractJobFromJsonLd(html, normalized, options) || extractJobFromHtmlHeuristics(html, normalized, options);
 
-  if (job == null) {
+  if (job == null || isJobListingPage(job.title, normalized, html)) {
     return {
       success: false,
-      error: `Não foi possível extrair dados de vaga de ${normalized}. Conteúdo sem indicadores de contratação.`,
+      error: `Não foi possível extrair dados de vaga de ${normalized}. Conteúdo sem indicadores de contratação ou página de busca.`,
     };
   }
 

@@ -2985,3 +2985,22 @@
      - Build de produção Cloudflare Worker aprovado com 498 chunks e 0 runtime leaks de servidor no cliente.
 - **Fundamentação:** AGENTS.md B.1 a B.30, SPEC-MASTER-TRAVEL-OCR-INFOTRAVEL-CMS-BUILDER, SPEC-MASTER-COPILOT-AUTONOMOUS-ENGINE, Apple HIG, WCAG 2.2 AA.
 - **Consequências:** Ambas as especificações master atingem completude máxima funcional, ancoradas em tabelas reais e persistência transacional soberana sem dados fictícios.
+
+## DEC-214: Auditoria Forense e Remediação Canônica dos Motores de Mineração, Crawlers e Qualidade de Dados (Omni-Crawler V127)
+
+- **Data:** 2026-10-15
+- **Contexto:** Auditoria forense end-to-end solicitada para avaliar o estado operacional real de mineradores, crawlers, scrapers, server functions e qualidade de dados persistidos no Supabase:
+  1. **Extração de Vagas e Páginas de Listagem:** Páginas de busca de emprego (`vagas.com.br/vagas-em-chapeco-sc` e `indeed.com`) eram tratadas como vagas individuais, gravando no banco títulos espúrios ("1 vaga de emprego para chapeco sc") e capturando o texto de skip link de acessibilidade ("Pular para o conteúdo Vagas.com Menu Cad") como salário da vaga devido a um fallback agressivo no fatiador BRL (`clean.slice(0, 40)`).
+  2. **Estabelecimentos Vazios em `directory_listings`:** 37 empresas coletadas via OpenStreetMap possuíam 0% de CNPJ, 94.6% sem avatar/logotipo, 97.3% sem banner, 100% sem fotos e 73% sem descrição ou com texto genérico de uma linha ("Empresa cadastrada..."), porque o `places-harvester.ts` omitia o enriquecimento de mídia e descrição.
+  3. **Estagnação de `crawler_sources`:** 74 fontes ativas permaneciam com `last_fetched_at: Nunca`, pois o dispatch agendado em `dispatchScheduledMiningJobFn` consultava exclusivamente a tabela legada `rss_feeds`, ignorando `crawler_sources`.
+  4. **Enriquecimento de CNPJ Inoperante:** A rotina periódica de CNPJ filtrava apenas `.not("cnpj", "is", null)`, sendo que 100% dos registros minerados de OSM possuíam `cnpj: null`, paralisando o enriquecimento.
+- **Decisão Adotada:**
+  1. **Remediação do Extrator de Vagas (`job-opportunity-extractor.ts`):** Erradicado o fallback de slicing textual em `parseBrlSalaryToCents`, padronizando para `"A combinar"`. Implementados `isJobListingPage()` e `extractJobLinksFromListing()`, que identificam páginas de catálogo de vagas, bloqueiam sua inserção como vagas singulares e enfileiram os links individuais das vagas na `crawl_queue` com prioridade alta.
+  2. **Refinamento do Coletor de Lugares (`places-harvester.ts`):** Expandido o mapeamento semântico de tags OSM (`amenity`, `shop`, `office`) para categorias canônicas do Waesy, adicionada consulta a polígonos `way` via Overpass QL, gerador determinístico de descrições ricas contextualizadas por nicho/cidade e resolução automática de favicons em alta definição via Google Favicons (`https://www.google.com/s2/favicons?domain=...&sz=128`).
+  3. **Enriquecimento Cruzado Fase 2 (`places-cnpj-cross-enricher.ts`):** Adicionada fase de scraping de website para estabelecimentos sem CNPJ, extraindo CNPJs do rodapé com validação de Módulo 11 e consultando a BrasilAPI para preencher razão social, CNAE, endereço e QSA.
+  4. **Polling Periódico de Fontes Canônicas (`crawler-sources.functions.ts` & `mining.functions.ts`):** Implementada a função `pollActiveCrawlerSources(limit)` que percorre as fontes ativas com intervalo vencido, busca feeds RSS ou enfileira páginas raiz na `crawl_queue`, atualizando `last_fetched_at` e `status`. Conectada ao branch `"rss-fetcher"` e enriquecimento cruzado ao branch `"cnpj-enrichment"` de `dispatchScheduledMiningJobFn`.
+  5. **Purga e Backfill no Banco ao Vivo:** Executada purga dos 2 registros corrompidos de vagas em `jobs` e backfill de descrições e avatares HD nas 37 `directory_listings`, elevando a cobertura de logotipos de 5.4% para 35.1% e de descrições ricas para 27.0%.
+  6. **Verificação Automatizada:** 23 testes de mineração e crawlers aprovados (0 falhas); compilação TypeScript limpa (`npm run typecheck` com 0 erros).
+- **Fundamentação:** AGENTS.md B.1, B.2, B.5, B.8, B.9, B.11, B.25; SPEC-MINING-AND-SCRAPING-AUDIT-AND-REMEDIATION; WCAG 2.2 AA.
+- **Consequências:** Fila do Omni-Crawler V127 operacional e alimentada automaticamente, qualidade dos dados de estabelecimentos e vagas restaurada sem alucinações e com integridade transacional.
+

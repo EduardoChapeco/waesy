@@ -370,3 +370,152 @@ export const getOmniCrawlerStats = createServerFn({ method: "GET" }).handler(asy
     activeJobsCount: jobsRes.count || 0,
   };
 });
+
+// ── 6. POLLING PERIÓDICO DE FONTES CANÔNICAS (SCHEDULER / CRON) ───────────────
+
+export async function pollActiveCrawlerSources(limit = 10): Promise<{
+  polled: number;
+  itemsQueued: number;
+  errors: number;
+}> {
+  const supabase = getServerClient();
+
+  const { data: sources, error } = await supabase
+    .from("crawler_sources")
+    .select("*")
+    .eq("is_active", true)
+    .order("last_fetched_at", { ascending: true, nullsFirst: true })
+    .order("priority", { ascending: false })
+    .limit(limit * 2);
+
+  if (error || !sources || sources.length === 0) {
+    return { polled: 0, itemsQueued: 0, errors: 0 };
+  }
+
+  const now = Date.now();
+  let polled = 0;
+  let itemsQueued = 0;
+  let errors = 0;
+
+  for (const source of sources) {
+    if (polled >= limit) break;
+
+    if (source.last_fetched_at) {
+      const lastFetchedMs = new Date(source.last_fetched_at).getTime();
+      const intervalMs = (source.fetch_interval_minutes || 60) * 60 * 1000;
+      if (now - lastFetchedMs < intervalMs) {
+        continue;
+      }
+    }
+
+    polled++;
+
+    await supabase
+      .from("crawler_sources")
+      .update({ status: "fetching", last_fetched_at: new Date().toISOString() })
+      .eq("id", source.id);
+
+    try {
+      let sourceItems = 0;
+      if (source.type === "rss") {
+        const feedResult = await parseFeed(source.url);
+        if (feedResult && feedResult.items && feedResult.items.length > 0) {
+          sourceItems = feedResult.items.length;
+          for (const item of feedResult.items.slice(0, 15)) {
+            if (!item.link) continue;
+            let domain = "";
+            try {
+              domain = new URL(item.link).hostname.replace("www.", "");
+            } catch {
+              domain = "unknown";
+            }
+
+            await supabase.from("crawl_queue").upsert(
+              {
+                url: item.link,
+                domain,
+                priority: source.priority,
+                entity_type: "news",
+                content_type: "rss_xml",
+                source_id: source.id,
+                status: "pending",
+                discovered_via: "source_scheduler",
+                metadata: {
+                  title: item.title,
+                  source_name: source.name,
+                  category: source.category,
+                  region: source.region,
+                  city: (source.config as any)?.city || source.region || undefined,
+                },
+              },
+              { onConflict: "url", ignoreDuplicates: true },
+            );
+          }
+        }
+      } else {
+        let domain = "";
+        try {
+          domain = new URL(source.url).hostname.replace("www.", "");
+        } catch {
+          domain = "unknown";
+        }
+
+        await supabase.from("crawl_queue").upsert(
+          {
+            url: source.url,
+            domain,
+            priority: source.priority,
+            entity_type: source.type,
+            content_type: "html_page",
+            source_id: source.id,
+            status: "pending",
+            discovered_via: "source_scheduler",
+            metadata: {
+              source_name: source.name,
+              category: source.category,
+              region: source.region,
+              city: (source.config as any)?.city || source.region || undefined,
+            },
+          },
+          { onConflict: "url", ignoreDuplicates: true },
+        );
+        sourceItems = 1;
+      }
+
+      await supabase
+        .from("crawler_sources")
+        .update({
+          status: "success",
+          last_success_at: new Date().toISOString(),
+          items_indexed_count: (source.items_indexed_count || 0) + sourceItems,
+          error_count: 0,
+          last_error: null,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", source.id);
+
+      itemsQueued += sourceItems;
+    } catch (err: any) {
+      errors++;
+      await supabase
+        .from("crawler_sources")
+        .update({
+          status: "error",
+          last_error: (err?.message || "Erro durante polling").slice(0, 300),
+          error_count: (source.error_count || 0) + 1,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", source.id);
+    }
+  }
+
+  return { polled, itemsQueued, errors };
+}
+
+export const pollDueCrawlerSourcesFn = createServerFn({ method: "POST" })
+  .validator(z.object({ limit: z.number().int().min(1).max(50).default(10) }).optional())
+  .handler(async ({ data }) => {
+    await requireAdmin();
+    return await pollActiveCrawlerSources(data?.limit || 10);
+  });
+
