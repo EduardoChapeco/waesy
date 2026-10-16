@@ -67,6 +67,9 @@ Qualquer alteração deve reforçar a integridade transacional, a governança mu
 - Proibido mais de uma ação primária (`variant="default"`) por superfície ou tela.
 - Proibido criar componente duplicado quando já existe primitivo canônico equivalente.
 - Proibido alterar arquivos pertencentes a módulos vizinhos sem autorização explícita da spec.
+- Proibido usar imagens de estoque (ex: Unsplash, Pexels) como fallback silencioso para posts sociais, artigos ou produtos cadastrados por usuários; itens sem mídia devem renderizar exclusivamente layout textual honesto ou omitir o container de mídia.
+- Proibido declarar valores padrão arbitrários para avaliações (estrelas), contadores de reviews ou distâncias em cards de estabelecimentos; dados ausentes devem ser representados por selos de verificação neutros ou omitidos.
+- Proibido exibir abas, chips ou botões de seção quando a coleção correspondente de dados estiver vazia ou não preenchida.
 
 ## B.9 Definition of Done
 - [ ] Especificação técnica aprovada e registrada em `docs/specs/`.
@@ -155,3 +158,9 @@ O agente deve interromper imediatamente o trabalho e devolver a decisão ao huma
 - Seções de categorias e atalhos rápidos DEVEM suportar trifurcação dinâmica via CMS: (1) `horizontal_scroll` / `native_dock`: Menu deslizante contínuo com física tátil elástica e snap scroll (padrão Noor); (2) `grid_2d`: Grade compacta 4x2 no mobile com botões 1:1 e imagem centralizada (padrão iFood); (3) `bento_grid`: Grid responsivo widescreen com empacotamento denso automático (`grid-flow-dense`).
 - Todo contêiner de banner ou mídia promocional DEVE conter classe canônica de aspect ratio fixada no CSS antes do carregamento da imagem, garantindo Cumulative Layout Shift nulo (CLS < 0.05).
 - Buckets de upload vinculados ao Admin Master DEVEM incluir políticas RLS completas de gravação e exclusão para usuários autenticados.
+
+## B.33 Invariante Anti-Fake Estrita & Omissão de Estados Vazios
+- **Zero Fallbacks Sintéticos:** É estritamente vedado injetar mídias fotográficas artificiais ou avatares sintéticos em publicações reais de usuários. Se o post é puramente textual, o layout DEVE ser renderizado em formato de cartão de texto limpo. Se a mídia é um arquivo de vídeo (.mp4, stream), DEVE renderizar nativamente a tag `<video>`.
+- **Honestidade em Estabelecimentos & Lojas:** Cards de empresas (`StoreCard`, `PlacesCard`) NÃO DEVEM exibir contadores ou estrelas fixas. Se o estabelecimento não possui reviews registradas, exibe unicamente a identificação comercial e selo de empresa verificada.
+- **Omissão Dinâmica de Abas em Detalhes:** Nas telas de detalhe (`_store.classificados.$id`, `_store.produto.$slug`), abas com dados opcionais (como "Fotos Extras", "Roteiro de Viagem" ou "Itens Inclusos") DEVEM ser totalmente omitidas da barra de navegação caso o registro no banco não possua itens reais válidos.
+- **Isolamento de Condições Comerciais:** Informações de preço, parcelamento e chaves de pagamento pertencem exclusivamente à aba de Condições/Explore, sendo proibida sua mistura em abas de conteúdo descritivo (ex.: Hospedagem/Ficha Técnica).
