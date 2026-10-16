@@ -219,6 +219,12 @@ function CommunityMarketplaceView({ data }: { data: any }) {
     );
   }, [homeSections]);
 
+  const socialPostsSection = useMemo(() => {
+    return (homeSections as HomePageSectionDTO[]).find(
+      (s) => s.section_key === "social_posts_vitrine",
+    );
+  }, [homeSections]);
+
   // Estado dos 3 Modos Canônicos de Visualização (Feed, Grid, List) e Filtros
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState("todos");
@@ -386,10 +392,10 @@ function CommunityMarketplaceView({ data }: { data: any }) {
         list.push({
           id: `feed-${post.id}`,
           pillar: "feed",
-          badge: "Feed",
+          badge: "Publicação",
           title: post.content_text ? post.content_text.slice(0, 90) : "Publicação da comunidade",
           image: cover,
-          to: "/feed",
+          to: `/publicacao/${post.id}`,
           priceOrDate: post.profiles?.full_name || "Membro local",
           location: post.location_name || "Na cidade",
         });
@@ -509,6 +515,7 @@ function CommunityMarketplaceView({ data }: { data: any }) {
   const sharedViewProps = {
     heroSection,
     quickCategoriesSection,
+    socialPostsSection,
     customSections,
     editorialHotpages,
     banners,

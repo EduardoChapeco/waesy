@@ -161,27 +161,18 @@ describe("Homepage Nativa 3.0 & CMS Omni-Builder (DEC-220)", () => {
       expect(resWithCity.length).toBeGreaterThanOrEqual(1);
     });
 
-    it("deve executar getUnifiedShowcasePosts com e sem parâmetros e retornar posts estruturados com fallback", async () => {
+    it("deve executar getUnifiedShowcasePosts sem posts falsos quando o banco retorna vazio", async () => {
       const { getUnifiedShowcasePosts } = await import("@/services/admin-home-cms.functions");
 
-      // Branch 1: Parâmetros vazios
+      // Branch 1: Parâmetros vazios com banco vazio -> Zero posts falsos
       const postsEmpty = await getUnifiedShowcasePosts({ data: undefined });
       expect(Array.isArray(postsEmpty)).toBe(true);
-      expect(postsEmpty.length).toBeGreaterThanOrEqual(1);
-      postsEmpty.forEach((p) => {
-        expect(p.id).toBeTruthy();
-        expect(isHealthyImageUrl(p.coverUrl)).toBe(true);
-        expect(p.title).toBeTruthy();
-      });
+      expect(postsEmpty.length).toBe(0);
 
-      // Branch 2: Parâmetros presentes (limit + city)
+      // Branch 2: Parâmetros presentes (limit + city) com banco vazio -> Zero posts falsos
       const postsParam = await getUnifiedShowcasePosts({ data: { limit: 6, city: "Chapecó" } });
       expect(Array.isArray(postsParam)).toBe(true);
-      expect(postsParam.length).toBeLessThanOrEqual(6);
-      postsParam.forEach((p) => {
-        expect(p.category).toBeTruthy();
-        expect(p.targetUrl).toBeTruthy();
-      });
+      expect(postsParam.length).toBe(0);
     });
   });
 });

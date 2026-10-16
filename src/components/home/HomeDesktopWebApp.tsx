@@ -40,6 +40,7 @@ import type { HomeDiscoveryViewProps } from "./HomeMobileNativeApp";
 export function HomeDesktopWebApp({
   heroSection,
   quickCategoriesSection,
+  socialPostsSection,
   customSections,
   editorialHotpages,
   banners,
@@ -432,11 +433,14 @@ export function HomeDesktopWebApp({
           )}
 
           {/* FEED DA CIDADE */}
-          {(activeCategory === "todos" || activeCategory === "feed") && (
+          {(activeCategory === "todos" || activeCategory === "feed") &&
+            (socialPostsSection ? socialPostsSection.is_active : true) && (
             <HomePostsShowcase
               posts={showcasePosts && showcasePosts.length > 0 ? showcasePosts : []}
-              title="Feed da Cidade"
-              subtitle="Acontecimentos e publicações locais"
+              title={socialPostsSection?.title || "Feed da Cidade"}
+              subtitle={socialPostsSection?.subtitle || "Acontecimentos e publicações locais"}
+              showTitle={socialPostsSection ? socialPostsSection.show_title : true}
+              showSubtitle={socialPostsSection ? socialPostsSection.show_subtitle : true}
               actionTo="/feed"
             />
           )}

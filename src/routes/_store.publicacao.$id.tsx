@@ -148,14 +148,15 @@ function PostThreadPage() {
   }
 
   const authorInitial = post.author?.name?.charAt(0)?.toUpperCase() || "W";
+  const bodyText = post.content_text || (post as any).content || "";
 
   return (
-    <div className="w-full max-w-2xl mx-auto px-0 sm:px-4 md:px-0 py-4 sm:py-6 space-y-6 animate-in fade-in duration-200">
+    <div className="w-full max-w-2xl mx-auto px-4 sm:px-4 md:px-0 py-4 sm:py-6 space-y-6 animate-in fade-in duration-200">
       {/* Barra de Retorno */}
       <div className="flex items-center justify-between">
-        <Button variant="ghost" size="sm" asChild className="min-h-11 sm:min-h-9 h-11 sm:h-9 px-3 rounded-lg text-xs">
-          <Link to="/mural">
-            <ChevronLeft className="h-4 w-4 mr-1" /> Mural da Comunidade
+        <Button variant="ghost" size="sm" asChild className="h-11 min-h-11 px-3 rounded-lg text-xs">
+          <Link to="/feed">
+            <ChevronLeft className="h-4 w-4 mr-1" /> Voltar ao Feed
           </Link>
         </Button>
         <span className="text-xs text-muted-foreground font-mono">
@@ -163,55 +164,93 @@ function PostThreadPage() {
         </span>
       </div>
 
-      {/* Cartão Central da Thread */}
-      <article className="bg-card border border-border/80 rounded-lg p-5 sm:p-6 shadow-xs space-y-4">
+      {/* Cartão Central da Publicação */}
+      <article className="bg-card border border-border/60 rounded-lg p-5 sm:p-6 shadow-xs space-y-4">
         {/* Cabeçalho do Autor */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Avatar className="size-11 rounded-full border border-border">
-              <AvatarImage src={post.author?.avatar_url || ""} alt={post.author?.name} />
-              <AvatarFallback className="font-bold text-sm bg-muted text-foreground">
+            <Avatar className="size-11 rounded-full border border-border/60">
+              <AvatarImage src={post.author?.avatar_url || ""} alt={post.author?.name} className="object-cover" />
+              <AvatarFallback className="font-bold text-sm bg-primary/10 text-primary">
                 {authorInitial}
               </AvatarFallback>
             </Avatar>
             <div>
-              <div className="font-bold text-sm text-foreground hover:underline cursor-pointer">
-                {post.author?.name}
+              <div className="font-bold text-sm text-foreground flex items-center gap-2">
+                <span>{post.author?.name}</span>
+                <span className="text-xs text-muted-foreground font-normal">• {formatRelativeTime(post.created_at)}</span>
               </div>
-              {(post.author as any)?.username && (
-                <div className="text-xs text-muted-foreground font-mono">
-                  @{(post.author as any).username}
+              {((post.author as any)?.username || post.location_name || post.city) && (
+                <div className="text-xs text-muted-foreground flex items-center gap-2">
+                  {(post.author as any)?.username && (
+                    <span className="font-mono">@{(post.author as any).username}</span>
+                  )}
+                  {(post.location_name || post.city) && (
+                    <span className="inline-flex items-center gap-1">
+                      <MapPin className="size-3 text-primary" />
+                      {post.location_name || post.city}
+                    </span>
+                  )}
                 </div>
               )}
             </div>
           </div>
 
-          <Badge variant="secondary" className="capitalize text-[11px] rounded-lg">
-            {(post.post_type as string) === "offer" ? "Oferta" : (post.post_type as string) === "review" ? "Avaliação" : "Mural"}
+          <Badge variant="secondary" className="capitalize text-xs rounded-full px-3 py-1">
+            {(post.post_type as string) === "offer"
+              ? "Oferta"
+              : (post.post_type as string) === "news"
+                ? "Notícia"
+                : (post.post_type as string) === "travel"
+                  ? "Roteiro"
+                  : "Publicação"}
           </Badge>
         </div>
 
+        {/* Manchete quando for notícia */}
+        {post.metadata?.title && (
+          <h1 className="text-lg sm:text-xl font-bold text-foreground leading-snug tracking-tight">
+            {post.metadata.title}
+          </h1>
+        )}
+
         {/* Texto da Publicação */}
-        {post.content && (
+        {bodyText && (
           <div className="text-sm sm:text-base leading-relaxed text-foreground whitespace-pre-line">
-            {post.content}
+            {bodyText}
           </div>
         )}
 
-        {/* Galeria de Mídias */}
-        {post.media_urls && post.media_urls.length > 0 && (
-          <div className="rounded-lg overflow-hidden border border-border/60 bg-black/5">
+        {/* Galeria de Mídias (Galeria Deslizante 3:4 quando > 1 ou Destaque Único) */}
+        {post.media_urls && post.media_urls.length > 1 ? (
+          <div className="carousel flex gap-2 overflow-x-auto snap-x mandatory no-scrollbar pb-1">
             {post.media_urls.map((url: string, idx: number) => (
-              <img
+              <div
                 key={idx}
-                src={url}
-                alt={`Mídia ${idx + 1}`}
-                className="w-full max-h-[500px] object-cover"
-                loading="lazy"
-              />
+                className="relative shrink-0 snap-start w-56 sm:w-64 aspect-post-portrait rounded-lg overflow-hidden border border-border/50 bg-muted"
+              >
+                <img
+                  src={url}
+                  alt={`Mídia ${idx + 1}`}
+                  className="size-full object-cover"
+                  loading="lazy"
+                />
+                <span className="absolute bottom-2 right-2 px-2 py-1 rounded-full bg-foreground/80 text-background text-xs font-medium">
+                  {idx + 1}/{post.media_urls.length}
+                </span>
+              </div>
             ))}
           </div>
-        )}
+        ) : post.media_urls && post.media_urls.length === 1 ? (
+          <div className="rounded-lg overflow-hidden border border-border/60 bg-muted aspect-post-card">
+            <img
+              src={post.media_urls[0]}
+              alt="Mídia da publicação"
+              className="size-full object-cover"
+              loading="lazy"
+            />
+          </div>
+        ) : null}
 
         {/* Card de Referência Embutido (Produto ou Evento) */}
         {post.reference_data && (
@@ -236,20 +275,20 @@ function PostThreadPage() {
                   </p>
                 )}
                 {post.reference_data.store_name && (
-                  <p className="text-[11px] text-muted-foreground truncate">{post.reference_data.store_name}</p>
+                  <p className="text-xs text-muted-foreground truncate">{post.reference_data.store_name}</p>
                 )}
               </div>
             </div>
 
             {post.reference_type === "product" && post.reference_id && (
-              <Button size="sm" asChild className="h-9 px-3 rounded-lg text-xs font-semibold shrink-0">
+              <Button size="sm" asChild className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold shrink-0">
                 <Link to={`/produto/${post.reference_id}` as any}>
-                  Ver <ExternalLink className="h-3 w-3 ml-1" />
+                  Ver Oferta <ExternalLink className="h-3 w-3 ml-1" />
                 </Link>
               </Button>
             )}
             {post.reference_type === "event" && post.reference_id && (
-              <Button size="sm" asChild className="h-9 px-3 rounded-lg text-xs font-semibold shrink-0">
+              <Button size="sm" asChild className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold shrink-0">
                 <Link to={`/evento/${post.reference_id}` as any}>
                   Ingresso <ExternalLink className="h-3 w-3 ml-1" />
                 </Link>
@@ -258,23 +297,23 @@ function PostThreadPage() {
           </div>
         )}
 
-        {/* Barra de Ações Sociais */}
-        <div className="flex items-center justify-between border-t border-border/60 pt-3">
-          <div className="flex items-center gap-1">
+        {/* Barra de Ações Sociais (Touch Target 44px) */}
+        <div className="flex items-center justify-between border-t border-border/50 pt-2">
+          <div className="flex items-center gap-1 -ml-2">
             <button
               type="button"
               onClick={() => likeMutation.mutate()}
-              className={`h-9 px-3 rounded-lg flex items-center gap-2 text-xs font-semibold transition-colors cursor-pointer ${
-                post.user_liked ? "text-red-500 bg-red-500/10" : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
+              className={`h-11 min-h-11 px-3 rounded-full flex items-center gap-2 text-xs font-semibold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                post.user_liked ? "text-destructive bg-destructive/10" : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
               }`}
             >
               <Heart className={`h-4 w-4 ${post.user_liked ? "fill-current" : ""}`} />
-              <span>{post.likes_count || 0}</span>
+              {(post.likes_count || 0) > 0 && <span>{post.likes_count}</span>}
             </button>
 
-            <div className="h-9 px-3 rounded-lg flex items-center gap-2 text-xs font-semibold text-muted-foreground">
+            <div className="h-11 min-h-11 px-3 rounded-full flex items-center gap-2 text-xs font-semibold text-muted-foreground">
               <MessageSquare className="h-4 w-4" />
-              <span>{comments.length}</span>
+              {comments.length > 0 && <span>{comments.length}</span>}
             </div>
           </div>
 
@@ -282,8 +321,9 @@ function PostThreadPage() {
             <button
               type="button"
               onClick={handleShare}
-              className="size-9 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors cursor-pointer"
+              className="size-11 min-h-11 min-w-11 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               title="Compartilhar"
+              aria-label="Compartilhar"
             >
               <Share2 className="h-4 w-4" />
             </button>
@@ -294,10 +334,11 @@ function PostThreadPage() {
                 setIsSaved(!isSaved);
                 toast.success(isSaved ? "Removido dos salvos" : "Publicação salva nos seus favoritos!");
               }}
-              className={`size-9 rounded-lg flex items-center justify-center transition-colors cursor-pointer ${
-                isSaved ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
+              className={`size-11 min-h-11 min-w-11 rounded-full flex items-center justify-center transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                isSaved ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
               }`}
               title="Salvar"
+              aria-label="Salvar"
             >
               <Bookmark className={`h-4 w-4 ${isSaved ? "fill-current" : ""}`} />
             </button>

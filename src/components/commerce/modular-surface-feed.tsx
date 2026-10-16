@@ -5,6 +5,7 @@ import { HorizontalRail } from "@/components/commerce/horizontal-rail";
 import { StoreCard } from "@/components/commerce/store-card";
 import { OfferCard } from "@/components/commerce/offer-card";
 import { HitsLeadCard } from "@/components/commerce/hits-lead-card";
+import { HomePostsShowcase } from "@/components/home/HomePostsShowcase";
 import { ArrowRight, Storefront, Flame, Lightning, Image as ImageIcon, SquaresFour } from "@phosphor-icons/react";
 import type { SurfaceSectionDTO } from "@/services/surface-cms.functions";
 
@@ -52,6 +53,21 @@ export function ModularSurfaceFeed({ sections, className = "", onAddToCart }: Mo
     <div className={`w-full space-y-8 sm:space-y-10 ${className}`}>
       {sections.map((section) => {
         if (!section.items || section.items.length === 0) return null;
+
+        // ── 0.0 Seção de Publicações & Notícias (Minimalist Social Stream) ──
+        if (section.type === "social_posts_rail" || section.data_source === "social_posts") {
+          return (
+            <HomePostsShowcase
+              key={section.id}
+              posts={section.items}
+              title={section.title || "Feed da Comunidade"}
+              subtitle={section.subtitle || undefined}
+              showTitle={Boolean(section.title)}
+              showSubtitle={Boolean(section.subtitle)}
+              actionTo="/feed"
+            />
+          );
+        }
 
         // ── 0.1 Seção de Banner Único Panorâmico (21:9) ──
         if (section.type === "banner_single_21_9" || section.layout_variant === "banner_21_9") {

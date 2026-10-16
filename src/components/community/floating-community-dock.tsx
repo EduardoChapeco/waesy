@@ -135,7 +135,12 @@ export function FloatingCommunityDock({ session }: FloatingCommunityDockProps) {
  data: {
  content_text: content.trim() || undefined,
  media_urls: mediaUrls,
- layout_style: activeFormat === "instagram_carousel" ? "carousel" : "grid",
+ layout_style:
+ activeFormat === "carrossel_unico" || activeFormat === "instagram_carousel"
+ ? "carrossel_unico"
+ : activeFormat === "trilho_horizontal"
+ ? "trilho_horizontal"
+ : "grid",
  post_type: activeFormat,
  location_name: locationName.trim() || undefined,
  metadata: Object.keys(metadata).length > 0 ? metadata : undefined,
@@ -158,11 +163,12 @@ export function FloatingCommunityDock({ session }: FloatingCommunityDockProps) {
  };
 
  const formats = [
- { id: "simple", label: "Post", icon: PencilSimple },
- { id: "grid", label: "Grid", icon: ImageSquare },
+ { id: "simple", label: "Publicação", icon: PencilSimple },
+ { id: "trilho_horizontal", label: "Galeria Deslizante", icon: ImageSquare },
+ { id: "carrossel_unico", label: "Carrossel Paginado", icon: FilmStrip },
+ { id: "grid", label: "Mosaico", icon: ImageSquare },
  { id: "news", label: "Notícia", icon: Newspaper },
  { id: "travel", label: "Viagem", icon: AirplaneTilt },
- { id: "instagram_carousel", label: "Carrossel", icon: FilmStrip },
  ] as const;
 
  return (

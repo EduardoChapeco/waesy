@@ -24,7 +24,7 @@ export interface PostCreationDrawerProps {
  open: boolean;
  onOpenChange: (open: boolean) => void;
  session?: any;
- defaultFormat?: "simple" | "carousel" | "grid" | "news" | "travel" | "threads" | "moment";
+ defaultFormat?: "simple" | "trilho_horizontal" | "carousel" | "grid" | "news" | "travel" | "threads" | "moment";
 }
 
 export function PostCreationDrawer({
@@ -37,7 +37,7 @@ export function PostCreationDrawer({
  const queryClient = useQueryClient();
 
  const [activeFormat, setActiveFormat] = useState<
- "simple" | "carousel" | "grid" | "news" | "travel" | "threads" | "moment"
+ "simple" | "trilho_horizontal" | "carousel" | "grid" | "news" | "travel" | "threads" | "moment"
  >(defaultFormat);
 
  // Common Post Fields
@@ -291,8 +291,8 @@ export function PostCreationDrawer({
  return;
  }
 
- if (activeFormat === "carousel" && mediaUrls.length < 2) {
- toast.error("Anexe pelo menos 2 mídias para publicar um Carrossel.");
+ if ((activeFormat === "carousel" || activeFormat === "trilho_horizontal") && mediaUrls.length < 2) {
+ toast.error("Anexe pelo menos 2 mídias para publicar uma Galeria ou Carrossel.");
  return;
  }
 
@@ -304,8 +304,20 @@ export function PostCreationDrawer({
  data: {
  content_text: contentText.trim() || undefined,
  media_urls: mediaUrls,
- layout_style: "grid",
+ layout_style: activeFormat === "grid" ? "grid" : mediaUrls.length > 1 ? "trilho_horizontal" : "panoramico",
  post_type: activeFormat === "grid" ? "grid" : "simple",
+ location_name: locationName.trim() || undefined,
+ as_store: false,
+ reference_type: "none",
+ },
+ });
+ } else if (activeFormat === "trilho_horizontal") {
+ await createPost({
+ data: {
+ content_text: contentText.trim() || undefined,
+ media_urls: mediaUrls,
+ layout_style: "trilho_horizontal",
+ post_type: "trilho_horizontal",
  location_name: locationName.trim() || undefined,
  as_store: false,
  reference_type: "none",
@@ -321,7 +333,7 @@ export function PostCreationDrawer({
  metadata: {
  is_news: true,
  title: newsTitle.trim() || contentText.slice(0, 60),
- source: newsSource.trim() || "Waesy News",
+ source: newsSource.trim() || "Redação Local",
  subtitle: contentText.trim(),
  },
  as_store: false,
@@ -339,7 +351,7 @@ export function PostCreationDrawer({
  is_triptych: true,
  origin_city: travelOrigin.trim() || "Chapecó",
  dest_city: travelDestination.trim() || locationName || "Destino",
- travel_headline: contentText.trim() || "Some moments shouldn't wait",
+ travel_headline: contentText.trim() || "Roteiro especial",
  },
  as_store: false,
  reference_type: "none",
@@ -350,8 +362,8 @@ export function PostCreationDrawer({
  data: {
  content_text: contentText.trim() || undefined,
  media_urls: mediaUrls,
- layout_style: "carousel",
- post_type: "instagram_carousel",
+ layout_style: "carrossel_unico",
+ post_type: "carrossel_unico",
  location_name: locationName.trim() || undefined,
  as_store: false,
  reference_type: "none",
@@ -360,7 +372,7 @@ export function PostCreationDrawer({
  } else if (activeFormat === "threads") {
  const validNodes = threadNodes.filter((n) => n.text.trim().length > 0);
  if (validNodes.length < 2) {
- toast.error("Preencha o conteúdo de pelo menos 2 cards da sua thread.");
+ toast.error("Preencha o conteúdo de pelo menos 2 cards da sequência.");
  setIsSubmitting(false);
  return;
  }
@@ -389,7 +401,7 @@ export function PostCreationDrawer({
  media_urls: mediaUrls,
  layout_style: "grid",
  post_type: "moment",
- location_name: locationName.trim() || "São Miguel do Oeste",
+ location_name: locationName.trim() || "Chapecó",
  metadata: {
  activity: "Momento da Comunidade",
  },
@@ -415,13 +427,14 @@ export function PostCreationDrawer({
  };
 
  const formats = [
- { id: "simple", label: "Post Padrão", icon: ChatCircleText, color: "text-info" },
- { id: "grid", label: "Grid Orgânico", icon: ImageSquare, color: "text-emerald-500" },
- { id: "news", label: "Notícia Editorial", icon: ChatCircleText, color: "text-primary" },
- { id: "travel", label: "Viagem / Tríptico", icon: MapPin, color: "text-sky-500" },
- { id: "carousel", label: "Carrossel", icon: ImageSquare, color: "text-primary" },
+ { id: "simple", label: "Publicação", icon: ChatCircleText, color: "text-info" },
+ { id: "trilho_horizontal", label: "Galeria Deslizante", icon: ImageSquare, color: "text-primary" },
+ { id: "carousel", label: "Carrossel Paginado", icon: ImageSquare, color: "text-primary" },
+ { id: "grid", label: "Mosaico de Fotos", icon: ImageSquare, color: "text-emerald-500" },
+ { id: "news", label: "Notícia / Artigo", icon: ChatCircleText, color: "text-primary" },
+ { id: "travel", label: "Viagem / Roteiro", icon: MapPin, color: "text-sky-500" },
  { id: "threads", label: "Sequência", icon: ListBullets, color: "text-primary" },
- { id: "moment", label: "Moment", icon: FilmStrip, color: "text-amber-500" },
+ { id: "moment", label: "Vídeo Curto", icon: FilmStrip, color: "text-amber-500" },
  ] as const;
 
  return (
@@ -499,8 +512,12 @@ export function PostCreationDrawer({
  </div>
  </div>
 
- {/* Formatos 1, 2, 4: Simple, Carousel, Moment */}
- {(activeFormat === "simple" || activeFormat === "carousel" || activeFormat === "moment") && (
+ {/* Formatos de Texto e Mídia */}
+ {(activeFormat === "simple" ||
+ activeFormat === "trilho_horizontal" ||
+ activeFormat === "carousel" ||
+ activeFormat === "grid" ||
+ activeFormat === "moment") && (
  <div className="space-y-4">
  <Textarea
  ref={textareaRef}
@@ -509,9 +526,11 @@ export function PostCreationDrawer({
  onPaste={handleClipboardPaste}
  placeholder={
  activeFormat === "moment"
- ? "Legenda do seu momento em vídeo..."
+ ? "Legenda do seu vídeo curto..."
+ : activeFormat === "trilho_horizontal"
+ ? "Compartilhe fotos na galeria deslizante... (use ==texto== para destacar)"
  : activeFormat === "carousel"
- ? "Compartilhe uma sequência de fotos ou momentos... (use ==texto== para destacar)"
+ ? "Compartilhe uma sequência de fotos no carrossel... (use ==texto== para destacar)"
  : "O que está acontecendo na comunidade? (use ==texto== para destacar ou cole com Ctrl+V)"
  }
  className="w-full border-none shadow-none focus-visible:ring-0 resize-none text-base sm:text-sm p-0 min-h-28 placeholder:text-muted-foreground/60 leading-relaxed bg-transparent"
@@ -519,7 +538,7 @@ export function PostCreationDrawer({
 
  {/* Previews de Mídia */}
  {mediaPreviews.length > 0 && (
- <div className="grid grid-cols-3 gap-3 pt-2">
+ <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2">
  {mediaPreviews.map((media, idx) => (
  <div
  key={idx}
@@ -646,7 +665,7 @@ export function PostCreationDrawer({
  variant="outline"
  onClick={handleInsertHighlight}
  className="rounded-lg text-sm font-semibold h-11 gap-2 px-4 hover:bg-amber-300/20 hover:text-amber-800 dark:hover:text-amber-200 transition-colors cursor-pointer shadow-2xs"
- title="Destacar com marca-texto estilo Threads (==texto==)"
+ title="Destacar texto (==texto==)"
  >
  <Highlighter size={18} className="text-amber-500" />
  <span>Destaque</span>

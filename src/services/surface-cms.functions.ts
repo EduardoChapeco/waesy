@@ -24,7 +24,8 @@ export type SurfaceSectionType =
  | "banner_trio_bento"
  | "custom_buttons_rail"
  | "single_store_spotlight"
- | "classifieds_spotlight";
+ | "classifieds_spotlight"
+ | "social_posts_rail";
 
 export type SurfaceDataSource =
  | "all_products"
@@ -34,7 +35,8 @@ export type SurfaceDataSource =
  | "flash_deals"
  | "top_sellers"
  | "banners"
- | "custom_buttons";
+ | "custom_buttons"
+ | "social_posts";
 
 export type SurfaceRankingStrategy =
  | "discount"
@@ -417,6 +419,11 @@ export const getModularSurfaceFeed = createServerFn({ method: "GET" })
  { id: "frete-gratis", label: "Frete Grátis", icon: "Truck", route: "/buscar?free_delivery=true" },
  ];
  }
+ } else if (sec.type === "social_posts_rail" || sec.data_source === "social_posts") {
+ const { getUnifiedShowcasePosts } = await import("@/services/admin-home-cms.functions");
+ sectionItems = await getUnifiedShowcasePosts({
+ data: { city: cleanCity || undefined, limit: sec.item_limit || 10 },
+ }).catch(() => []);
  } else if (sec.type === "store_rail" || sec.data_source === "stores") {
  let storePool = [...filteredStores];
  if (sec.ranking_strategy === "random_shuffle") {
@@ -544,6 +551,7 @@ export const upsertSurfaceSection = createServerFn({ method: "POST" })
       "custom_buttons_rail",
       "single_store_spotlight",
       "classifieds_spotlight",
+      "social_posts_rail",
     ]),
  title: z.string().min(1, "Título obrigatório"),
  subtitle: z.string().optional().nullable(),
@@ -557,6 +565,7 @@ export const upsertSurfaceSection = createServerFn({ method: "POST" })
  "top_sellers",
  "banners",
  "custom_buttons",
+ "social_posts",
  ]),
  taxonomy_slug: z.string().optional().nullable(),
  ranking_strategy: z.enum([

@@ -45,6 +45,10 @@ export interface NormalizedShowcasePost {
   title: string;
   summary: string;
   coverUrl: string;
+  mediaUrls?: string[];
+  postType?: string;
+  layoutStyle?: "trilho_horizontal" | "carrossel_unico" | "panoramico" | "grid";
+  locationName?: string | null;
   category: string;
   publishedAt: string;
   targetUrl: string;
@@ -755,7 +759,7 @@ export const reorderHomeSectionItems = createServerFn({ method: "POST" })
     return { success: true };
   });
 
-// ── 9. CONSULTA UNIFICADA E NORMALIZADA DE POSTS PARA VITRINE SOCIAL (ANTI-BROKEN IMAGE) ──
+// ── 9. CONSULTA UNIFICADA E NORMALIZADA DE POSTS PARA VITRINE SOCIAL (ZERO FAKES / ANTI-BROKEN IMAGE) ──
 export const getUnifiedShowcasePosts = createServerFn({ method: "GET" })
   .validator(
     z
@@ -768,31 +772,41 @@ export const getUnifiedShowcasePosts = createServerFn({ method: "GET" })
   .handler(async ({ data: input }): Promise<NormalizedShowcasePost[]> => {
     const supabase = getAnonServerClient();
     const { limit = 12, city } = input || {};
+    const cleanCity = city ? city.split("-")[0].trim().toLowerCase() : "";
 
     const normalizedList: NormalizedShowcasePost[] = [];
 
     try {
-      // 1. Busca posts ativos com profiles e stores
-      let postsQuery = supabase
+      // 1. Busca publicações reais ativas (prioriza correspondências da cidade e mantém cobertura regional)
+      const { data: rawPostsData } = await supabase
         .from("posts")
         .select(`
-          id, content_text, media_urls, created_at, post_type, city,
-          publish_as_handle,
+          id, content_text, media_urls, layout_style, created_at, post_type, city, location_name,
+          publish_as_handle, metadata,
           profiles!posts_author_profile_id_fkey(full_name, avatar_url, username),
-          stores(name)
+          stores(name, settings)
         `)
         .eq("status", "active")
         .order("created_at", { ascending: false })
-        .limit(limit);
+        .limit(Math.max(limit * 2, 24));
 
-      if (city && city.trim().length > 0) {
-        postsQuery = postsQuery.ilike("city", `%${city.trim()}%`);
+      const postsData = Array.isArray(rawPostsData) ? [...rawPostsData] : [];
+      if (cleanCity && postsData.length > 1) {
+        postsData.sort((a: any, b: any) => {
+          const aMatch =
+            (a.city || "").toLowerCase().includes(cleanCity) ||
+            (a.location_name || "").toLowerCase().includes(cleanCity);
+          const bMatch =
+            (b.city || "").toLowerCase().includes(cleanCity) ||
+            (b.location_name || "").toLowerCase().includes(cleanCity);
+          if (aMatch && !bMatch) return -1;
+          if (!aMatch && bMatch) return 1;
+          return 0;
+        });
       }
 
-      const { data: postsData } = await postsQuery;
-
-      // 1.1 Batch: likes e comentários para alimentar contadores de engajamento (Invariante B.30)
-      const postIds = (postsData || []).map((p: any) => p.id).filter(Boolean);
+      // 1.1 Batch: curtidas e comentários reais (Invariante B.30 — Zero Engajamento Falso)
+      const postIds = postsData.map((p: any) => p.id).filter(Boolean);
       const likeCountMap = new Map<string, number>();
       const commentCountMap = new Map<string, number>();
 
@@ -823,131 +837,125 @@ export const getUnifiedShowcasePosts = createServerFn({ method: "GET" })
         }
       }
 
-      if (postsData && Array.isArray(postsData)) {
-        postsData.forEach((p: any, idx: number) => {
-          const rawMedia = Array.isArray(p.media_urls) ? p.media_urls[0] : null;
-          const cover = resolveHealthyCover(rawMedia, idx);
-          const rawText = p.content_text || "Acontecimentos e destaques da comunidade local";
-          const cleanText = rawText
-            .replace(/==([^=]+)==/g, "$1")
-            .replace(/\*\*([^*]+)\*\*/g, "$1")
-            .replace(/__([^_]+)__/g, "$1")
-            .trim();
+      postsData.forEach((p: any, idx: number) => {
+        const validMediaUrls = Array.isArray(p.media_urls)
+          ? p.media_urls.filter((u: unknown) => isHealthyImageUrl(u)).map((u: string) => u.trim())
+          : [];
+        const rawMedia = validMediaUrls[0] || null;
+        const cover = resolveHealthyCover(rawMedia, idx);
+        const rawText =
+          p.content_text ||
+          p.metadata?.title ||
+          p.metadata?.subtitle ||
+          "";
+        const cleanText = rawText
+          .replace(/==([^=]+)==/g, "$1")
+          .replace(/\*\*([^*]+)\*\*/g, "$1")
+          .replace(/__([^_]+)__/g, "$1")
+          .trim();
 
-          const author = p.profiles?.full_name || p.stores?.name || "Membro local";
-          const handle = p.publish_as_handle
-            ? (p.publish_as_handle.startsWith("@") ? p.publish_as_handle : `@${p.publish_as_handle}`)
-            : p.profiles?.username
-              ? `@${p.profiles.username}`
-              : p.stores?.name
-                ? `@${p.stores.name.toLowerCase().replace(/\s+/g, "")}`
-                : "@comunidade";
-          const avatar = isHealthyImageUrl(p.profiles?.avatar_url) ? p.profiles.avatar_url : null;
+        if (!cleanText && validMediaUrls.length === 0) return;
 
-          normalizedList.push({
-            id: `post-${p.id}`,
-            title: cleanText.slice(0, 90) + (cleanText.length > 90 ? "..." : ""),
-            summary: cleanText,
-            coverUrl: cover,
-            category: p.post_type === "moment" ? "Momento" : p.post_type === "news" ? "Notícia" : "Comunidade",
-            publishedAt: p.created_at || new Date().toISOString(),
-            targetUrl: `/feed?postId=${p.id}`,
-            authorName: author,
-            authorHandle: handle,
-            authorAvatar: avatar,
-            isVerified: Boolean(p.stores?.name),
-            likesCount: likeCountMap.get(p.id) ?? 0,
-            commentsCount: commentCountMap.get(p.id) ?? 0,
-          });
+        const storeSettings = (p.stores?.settings as Record<string, any>) || {};
+        const storeAvatar = storeSettings.avatar_url || storeSettings.logo_url || storeSettings.logoUrl || null;
+        const author =
+          p.metadata?.creator_name ||
+          p.profiles?.full_name ||
+          p.stores?.name ||
+          "Membro da Comunidade";
+        const handle = p.publish_as_handle
+          ? p.publish_as_handle.startsWith("@")
+            ? p.publish_as_handle
+            : `@${p.publish_as_handle}`
+          : p.profiles?.username
+            ? `@${p.profiles.username}`
+            : p.stores?.name
+              ? `@${p.stores.name.toLowerCase().replace(/\s+/g, "")}`
+              : undefined;
+        const rawAvatar = p.profiles?.avatar_url || storeAvatar;
+        const avatar = isHealthyImageUrl(rawAvatar) ? rawAvatar : null;
+
+        const resolvedLayoutStyle: NormalizedShowcasePost["layoutStyle"] =
+          p.post_type === "trilho_horizontal" ||
+          (validMediaUrls.length > 1 && p.layout_style !== "carousel" && p.post_type !== "carrossel_unico")
+            ? "trilho_horizontal"
+            : p.post_type === "carrossel_unico" || p.layout_style === "carousel"
+              ? "carrossel_unico"
+              : p.post_type === "grid"
+                ? "grid"
+                : "panoramico";
+
+        normalizedList.push({
+          id: p.id,
+          title: p.metadata?.title || cleanText.slice(0, 96) + (cleanText.length > 96 ? "..." : ""),
+          summary: cleanText,
+          coverUrl: cover,
+          mediaUrls: validMediaUrls,
+          postType: p.post_type || "simple",
+          layoutStyle: resolvedLayoutStyle,
+          locationName: p.city || p.location_name || null,
+          category:
+            p.post_type === "moment"
+              ? "Momento"
+              : p.post_type === "news"
+                ? "Notícia"
+                : p.post_type === "travel"
+                  ? "Roteiro"
+                  : "Comunidade",
+          publishedAt: p.created_at || new Date().toISOString(),
+          targetUrl: `/publicacao/${p.id}`,
+          authorName: author,
+          authorHandle: handle,
+          authorAvatar: avatar,
+          isVerified: Boolean(p.stores?.name || p.publish_as_handle),
+          likesCount: likeCountMap.get(p.id) ?? 0,
+          commentsCount: commentCountMap.get(p.id) ?? 0,
         });
-      }
+      });
 
-      // 2. Se a lista for inferior a 4 itens, complementa com notícias publicadas
-      if (normalizedList.length < 4) {
-        let articlesQuery = supabase
+      // 2. Complementa com notícias reais publicadas (link direto para /noticias/$slug)
+      if (normalizedList.length < limit) {
+        const { data: rawArticlesData } = await supabase
           .from("news_articles")
-          .select("id, slug, title, summary, cover_media_url, category, published_at, city")
+          .select("id, slug, title, subtitle, summary, cover_media_url, category, published_at, city")
           .eq("status", "published")
           .order("published_at", { ascending: false })
-          .limit(6);
+          .limit(Math.max(limit, 8));
 
-        if (city && city.trim().length > 0) {
-          articlesQuery = articlesQuery.ilike("city", `%${city.trim()}%`);
-        }
-
-        const { data: articlesData } = await articlesQuery;
-
-        if (articlesData && Array.isArray(articlesData)) {
-          articlesData.forEach((art: any, idx: number) => {
-            const cover = resolveHealthyCover(art.cover_media_url, idx + 10);
-            normalizedList.push({
-              id: `article-${art.id}`,
-              title: art.title,
-              summary: art.summary || art.title,
-              coverUrl: cover,
-              category: art.category || "Notícia",
-              publishedAt: art.published_at || new Date().toISOString(),
-              targetUrl: `/noticias/${art.slug || art.id}`,
-              authorName: "Redação Local",
-              authorHandle: "@redacaolocal",
-              authorAvatar: null,
-              isVerified: true,
-              likesCount: 5 + (idx % 7),
-              commentsCount: 2 + (idx % 4),
-            });
+        const articlesData = Array.isArray(rawArticlesData) ? [...rawArticlesData] : [];
+        if (cleanCity && articlesData.length > 1) {
+          articlesData.sort((a: any, b: any) => {
+            const aMatch = (a.city || "").toLowerCase().includes(cleanCity);
+            const bMatch = (b.city || "").toLowerCase().includes(cleanCity);
+            if (aMatch && !bMatch) return -1;
+            if (!aMatch && bMatch) return 1;
+            return 0;
           });
         }
-      }
 
-      // 3. Se ainda assim estiver vazio (banco zerado), aplica cards editoriais padrão da cidade
-      if (normalizedList.length === 0) {
-        return [
-          {
-            id: "editorial-demo-1",
-            title: "Descobertas e novidades do comércio regional",
-            summary: "Acompanhe as atualizações das lojas e estabelecimentos parceiros.",
-            coverUrl: CANONICAL_EDITORIAL_FALLBACKS[0],
-            category: "Destaque",
-            publishedAt: new Date().toISOString(),
-            targetUrl: "/feed",
-            authorName: "Waesy Comunidade",
-            authorHandle: "@waesycomunidade",
+        articlesData.forEach((art: any, idx: number) => {
+          const validMedia = isHealthyImageUrl(art.cover_media_url) ? [art.cover_media_url.trim()] : [];
+          const cover = resolveHealthyCover(art.cover_media_url, idx + 10);
+          normalizedList.push({
+            id: `article-${art.id}`,
+            title: art.title,
+            summary: art.summary || art.subtitle || art.title,
+            coverUrl: cover,
+            mediaUrls: validMedia,
+            postType: "news",
+            layoutStyle: "panoramico",
+            locationName: art.city || null,
+            category: art.category || "Notícia",
+            publishedAt: art.published_at || new Date().toISOString(),
+            targetUrl: `/noticias/${art.slug || art.id}`,
+            authorName: "Redação Local",
+            authorHandle: "@redacaolocal",
             authorAvatar: null,
             isVerified: true,
-            likesCount: 14,
-            commentsCount: 3,
-          },
-          {
-            id: "editorial-demo-2",
-            title: "Gastronomia e cultura local em movimento",
-            summary: "Conheça novos pratos e experiências disponíveis na sua cidade.",
-            coverUrl: CANONICAL_EDITORIAL_FALLBACKS[1],
-            category: "Gastronomia",
-            publishedAt: new Date().toISOString(),
-            targetUrl: "/gastronomia",
-            authorName: "Guia Gastronômico",
-            authorHandle: "@guiagastronomico",
-            authorAvatar: null,
-            isVerified: true,
-            likesCount: 28,
-            commentsCount: 6,
-          },
-          {
-            id: "editorial-demo-3",
-            title: "Empreendimentos e serviços inovadores",
-            summary: "Conectando profissionais e clientes com agilidade.",
-            coverUrl: CANONICAL_EDITORIAL_FALLBACKS[2],
-            category: "Negócios",
-            publishedAt: new Date().toISOString(),
-            targetUrl: "/diretorio",
-            authorName: "Waesy Negócios",
-            authorHandle: "@waesynegocios",
-            authorAvatar: null,
-            isVerified: true,
-            likesCount: 19,
-            commentsCount: 4,
-          },
-        ];
+            likesCount: 0,
+            commentsCount: 0,
+          });
+        });
       }
 
       return normalizedList.slice(0, limit);

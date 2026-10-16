@@ -27,11 +27,12 @@ export interface InlinePostComposerProps {
 }
 
 const TEMPLATE_OPTIONS: { id: PostType; label: string; icon: React.ElementType }[] = [
-  { id: "simple", label: "Padrão", icon: ChatCircleText },
+  { id: "simple", label: "Publicação", icon: ChatCircleText },
+  { id: "trilho_horizontal", label: "Galeria Deslizante", icon: Slideshow },
+  { id: "carrossel_unico", label: "Carrossel Paginado", icon: FilmStrip },
+  { id: "grid", label: "Mosaico de Fotos", icon: SquaresFour },
+  { id: "news", label: "Notícia / Artigo", icon: Newspaper },
   { id: "travel", label: "Viagem / Roteiro", icon: AirplaneTilt },
-  { id: "grid", label: "Grid de Fotos", icon: SquaresFour },
-  { id: "instagram_carousel", label: "Carrossel", icon: Slideshow },
-  { id: "news", label: "Notícia", icon: Newspaper },
   { id: "duo_badge", label: "Parceria", icon: IdentificationBadge },
 ];
 
@@ -332,7 +333,14 @@ export function InlinePostComposer({ session, profile, onSuccess }: InlinePostCo
         data: {
           content_text: trimmedContent || undefined,
           media_urls: mediaUrls,
-          layout_style: selectedTemplate === "instagram_carousel" ? "carousel" : "grid",
+          layout_style:
+            selectedTemplate === "carrossel_unico" || selectedTemplate === "instagram_carousel"
+              ? "carrossel_unico"
+              : selectedTemplate === "trilho_horizontal"
+                ? "trilho_horizontal"
+                : mediaUrls.length > 1 && selectedTemplate === "simple"
+                  ? "trilho_horizontal"
+                  : "grid",
           post_type: selectedTemplate,
           location_name: locationCity.trim()
             ? `${locationCity.trim()}${locationRegion.trim() ? ` (${locationRegion.trim()})` : ""}`
@@ -402,16 +410,16 @@ export function InlinePostComposer({ session, profile, onSuccess }: InlinePostCo
           setIsExpanded(true);
           setTimeout(() => textareaRef.current?.focus(), 80);
         }}
-        className="w-full bg-card rounded-lg p-3 sm:p-3 flex items-center gap-3 border border-border/60 shadow-xs cursor-pointer hover:border-border transition-all active:scale-[0.99] select-none"
+        className="w-full bg-card rounded-lg p-3 sm:p-4 flex items-center gap-3 border border-border/60 shadow-xs cursor-pointer hover:border-border transition-colors active:scale-99 select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
-        <Avatar className="size-9 sm:size-10 rounded-lg border border-border/50 shrink-0 overflow-hidden bg-muted">
+        <Avatar className="size-9 sm:size-10 rounded-full border border-border/50 shrink-0 overflow-hidden bg-muted">
           {userAvatar && <AvatarImage src={userAvatar} alt={userName} className="size-full object-cover" />}
           <AvatarFallback className="text-xs font-bold text-primary bg-primary/10 size-full flex items-center justify-center">
             {userInitial}
           </AvatarFallback>
         </Avatar>
 
-        <div className="flex-1 min-w-0 bg-muted/40 hover:bg-muted/60 transition-colors h-10 rounded-lg px-4 flex items-center text-xs text-muted-foreground">
+        <div className="flex-1 min-w-0 bg-muted/40 hover:bg-muted/60 transition-colors h-10 rounded-full px-4 flex items-center text-xs text-muted-foreground">
           <span className="truncate">Compartilhe uma história, foto ou dica...</span>
         </div>
 
@@ -423,7 +431,7 @@ export function InlinePostComposer({ session, profile, onSuccess }: InlinePostCo
               setIsExpanded(true);
               setTimeout(() => fileInputRef.current?.click(), 120);
             }}
-            className="size-9 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/70 transition-colors cursor-pointer"
+            className="size-11 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/70 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             title="Adicionar foto"
           >
             <ImageSquare size={18} />
@@ -435,7 +443,7 @@ export function InlinePostComposer({ session, profile, onSuccess }: InlinePostCo
               setSelectedTemplate("travel");
               setIsExpanded(true);
             }}
-            className="size-9 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/70 transition-colors hidden xs:flex cursor-pointer"
+            className="size-11 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/70 transition-colors hidden xs:flex cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             title="Roteiro de Viagem"
           >
             <AirplaneTilt size={18} />
@@ -453,7 +461,7 @@ export function InlinePostComposer({ session, profile, onSuccess }: InlinePostCo
       {/* ── 1. Topo: Identificação do Autor + Seletor de Identidade + Botão Fechar ── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-1">
         <div className="flex items-center gap-3">
-          <Avatar className="size-10 rounded-lg border border-border/50 shrink-0 overflow-hidden bg-muted">
+          <Avatar className="size-10 rounded-full border border-border/50 shrink-0 overflow-hidden bg-muted">
             {userAvatar && (
               <AvatarImage
                 src={userAvatar}

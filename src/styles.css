@@ -119,6 +119,15 @@
 .aspect-post-card {
   aspect-ratio: 16 / 10;
 }
+.aspect-post-portrait {
+  aspect-ratio: 3 / 4;
+}
+.aspect-post-vertical {
+  aspect-ratio: 4 / 5;
+}
+.aspect-post-moment {
+  aspect-ratio: 9 / 16;
+}
 
 @theme inline {
   /* ── Master Niche Chameleon Tokens (MASTER PROMPT V138) ── */

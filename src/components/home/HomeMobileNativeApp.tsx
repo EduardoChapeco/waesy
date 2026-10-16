@@ -56,6 +56,7 @@ export interface UnifiedDiscoveryItem {
 export interface HomeDiscoveryViewProps {
   heroSection?: HomePageSectionDTO;
   quickCategoriesSection?: HomePageSectionDTO;
+  socialPostsSection?: HomePageSectionDTO;
   customSections: HomePageSectionDTO[];
   editorialHotpages: HotpageDTO[];
   banners: BannerDTO[];
@@ -84,6 +85,7 @@ export interface HomeDiscoveryViewProps {
 export function HomeMobileNativeApp({
   heroSection,
   quickCategoriesSection,
+  socialPostsSection,
   customSections,
   editorialHotpages,
   banners,
@@ -440,14 +442,17 @@ export function HomeMobileNativeApp({
           )}
 
           {/* FEED DA CIDADE */}
-          {(activeCategory === "todos" || activeCategory === "feed") && (
-            <HomePostsShowcase
-              posts={showcasePosts && showcasePosts.length > 0 ? showcasePosts : []}
-              title="Feed da Cidade"
-              subtitle="Acontecimentos e publicações locais"
-              actionTo="/feed"
-            />
-          )}
+          {(activeCategory === "todos" || activeCategory === "feed") &&
+            (socialPostsSection ? socialPostsSection.is_active : true) && (
+              <HomePostsShowcase
+                posts={showcasePosts && showcasePosts.length > 0 ? showcasePosts : []}
+                title={socialPostsSection?.title || "Feed da Cidade"}
+                subtitle={socialPostsSection?.subtitle || "Acontecimentos e publicações locais"}
+                showTitle={socialPostsSection ? socialPostsSection.show_title : true}
+                showSubtitle={socialPostsSection ? socialPostsSection.show_subtitle : true}
+                actionTo="/feed"
+              />
+            )}
 
           {/* NOTÍCIAS */}
           {(activeCategory === "todos" || activeCategory === "noticias") && filteredNews.length > 0 && (
