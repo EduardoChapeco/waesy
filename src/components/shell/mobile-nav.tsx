@@ -9,7 +9,7 @@
  *  - Previsibilidade total: 1 clique = 1 ação óbvia (erradicação do duplo-clique no avatar).
  *  - Super App Hub Pattern: Módulos secundários movidos para o <GlobalMenuHub>.
  *  - Smart Floating Cart: Botão de carrinho flutuante posicionado discretamente acima da nav bar quando há itens.
- *  - Resiliência a teclado virtual e safe areas do iOS/Android.
+ *  - Resiliência a teclado virtual e safe areas do iOS/Android (paddingBottom clearance in AppShell pb-24).
  */
 
 import { useState, useEffect } from "react";
@@ -159,16 +159,14 @@ export function MobileNav({ session, userRole }: MobileNavProps) {
     };
   }, []);
 
-  const { isCompact } = useWindowSizeClass();
-
-  if (!isCompact || isFormPage || isKeyboardVisible) {
+  if (isFormPage || isKeyboardVisible) {
     return null;
   }
 
   return (
     <>
       {/* ── 2. BOTTOM NAVIGATION DOCK (APPLE HIG - SAFE AREA RESILIENT) ── */}
-      <div className="md:hidden fixed bottom-0 inset-x-0 z-40 pb-safe select-none pointer-events-none mobile-nav-hide-on-keyboard pb-16">
+      <div className="md:hidden fixed bottom-0 inset-x-0 z-40 pb-safe select-none pointer-events-none mobile-nav-hide-on-keyboard">
         <div className="px-2 pb-2 pointer-events-auto max-w-lg mx-auto space-y-2">
           {/* ── 1. SMART FLOATING CART BUTTON (Discreto acima da TabBar) ── */}
           {hasCartItems && (

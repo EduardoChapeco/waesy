@@ -270,7 +270,7 @@ function ServicosVerticalPage() {
         searchPlaceholder="Buscar eletricistas, médicos, salões..."
       />
       {/* ── Cabeçalho Inpage Desktop (Apple HIG) ── */}
-      <div className="hidden md:flex items-center justify-between px-4 sm:px-5 pt-6 pb-4 border-b border-border/40">
+      <div className="hidden md:flex items-center justify-between pt-4 pb-4 border-b border-border/40">
         <div>
           <h1 className="text-xl font-bold tracking-tight text-foreground">Serviços</h1>
           <p className="text-xs text-muted-foreground mt-1">
@@ -278,7 +278,7 @@ function ServicosVerticalPage() {
           </p>
         </div>
       </div>
-      <div className="px-4 sm:px-5 space-y-6 pt-2 sm:pt-4">
+      <div className="space-y-4 pt-2 sm:pt-4">
  {/* ── 1. Banners ── */}
  {banners && banners.length > 0 && (
  <section aria-label="Banners de Serviços">

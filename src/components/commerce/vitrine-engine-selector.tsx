@@ -43,7 +43,10 @@ export function VitrineEngineSelector({
     <nav
       role="tablist"
       aria-label="Tipo de visualização da vitrine"
-      className={cn("w-full flex flex-row items-center justify-between gap-2 px-1", className)}
+      className={cn(
+        "w-full flex flex-row items-center justify-between gap-1 p-1 rounded-lg bg-muted/60",
+        className
+      )}
     >
       {engines.map((engine) => {
         const isActive = activeMode === engine.id;
@@ -58,16 +61,16 @@ export function VitrineEngineSelector({
             tabIndex={isActive ? 0 : -1}
             onClick={() => onModeChange(engine.id)}
             className={cn(
-              "h-11 min-h-11 flex-1 min-w-0 flex items-center justify-center gap-2 px-2 rounded-lg border transition-colors duration-150 cursor-pointer select-none active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+              "h-11 min-h-11 flex-1 min-w-0 flex items-center justify-center gap-2 px-2 rounded-md transition-colors duration-150 cursor-pointer select-none active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
               isActive
-                ? "bg-foreground text-background border-foreground font-bold shadow-xs"
-                : "bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground border-border/40"
+                ? "bg-card text-foreground font-bold shadow-xs"
+                : "bg-transparent text-muted-foreground hover:text-foreground hover:bg-background/40"
             )}
             title={engine.label}
           >
             <IconComponent
               weight={isActive ? "fill" : "bold"}
-              className={cn("size-4 sm:size-5 shrink-0", isActive ? "text-background" : "text-muted-foreground")}
+              className={cn("size-4 sm:size-5 shrink-0", isActive ? "text-primary" : "text-muted-foreground")}
             />
             <span className="text-xs sm:text-sm font-semibold tracking-tight truncate">
               {engine.label}

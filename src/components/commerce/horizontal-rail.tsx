@@ -106,7 +106,7 @@ export function HorizontalRail({
           type="button"
           onClick={() => scroll("left")}
           aria-label="Rolar para a esquerda"
-          className="hidden lg:flex absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3.5 z-20 size-11 sm:size-9 rounded-full bg-background/95 hover:bg-background backdrop-blur-md shadow-md border border-border/70 items-center justify-center text-foreground opacity-0 group-hover/rail:opacity-100 transition-all hover:scale-105 active:scale-95 cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          className="hidden lg:flex absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 z-20 size-11 sm:size-9 rounded-lg bg-background/95 hover:bg-background backdrop-blur-md shadow-md border border-border/70 items-center justify-center text-foreground opacity-0 group-hover/rail:opacity-100 transition-opacity hover:scale-105 active:scale-95 cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
         >
           <ChevronLeft className="size-5" />
         </button>
@@ -114,7 +114,7 @@ export function HorizontalRail({
         {/* Scroll Container */}
         <div
           ref={scrollContainerRef}
-          className={`flex items-stretch gap-2 sm:gap-3 overflow-x-auto no-scrollbar pb-2 snap-x snap-mandatory focus:outline-none ${containerClassName}`}
+          className={`-mx-2 px-2 sm:mx-0 sm:px-0 flex items-stretch gap-3 overflow-x-auto no-scrollbar pb-2 snap-x snap-mandatory focus:outline-none ${containerClassName}`}
           tabIndex={0}
           aria-label={`Carrossel de ${title}`}
         >
@@ -127,7 +127,7 @@ export function HorizontalRail({
           type="button"
           onClick={() => scroll("right")}
           aria-label="Rolar para a direita"
-          className="hidden lg:flex absolute right-0 top-1/2 -translate-y-1/2 translate-x-3.5 z-20 size-11 sm:size-9 rounded-full bg-background/95 hover:bg-background backdrop-blur-md shadow-md border border-border/70 items-center justify-center text-foreground opacity-0 group-hover/rail:opacity-100 transition-all hover:scale-105 active:scale-95 cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          className="hidden lg:flex absolute right-0 top-1/2 -translate-y-1/2 translate-x-3 z-20 size-11 sm:size-9 rounded-lg bg-background/95 hover:bg-background backdrop-blur-md shadow-md border border-border/70 items-center justify-center text-foreground opacity-0 group-hover/rail:opacity-100 transition-opacity hover:scale-105 active:scale-95 cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
         >
           <ChevronRight className="size-5" />
         </button>

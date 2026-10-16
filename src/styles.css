@@ -128,8 +128,8 @@
   /* ── Radius scale — Apple HIG Contained Squircle System ── */
   --radius-xs: 2px;
   --radius-sm: 4px;   /* micro-chips, tags e badges compactos */
-  --radius-md: 6px;   /* selects compactos, segmented controls */
-  --radius-lg: 8px;   /* botões standard, inputs principais */
+  --radius-md: 8px;   /* selects compactos, segmented controls, inputs */
+  --radius-lg: 12px;  /* squircle canônico de botões, cards e controles */
   --radius-xl: 12px;  /* cards de conteúdo, produtos, notícias, tiles */
   --radius-2xl: 16px; /* containers mestres, sheets e painéis */
   --radius-3xl: 20px; /* superfícies de destaque, modais */

@@ -9,6 +9,7 @@ export interface MetamorphicBannerSliderProps {
   items: HomeSectionItemDTO[];
   aspectRatio?: HomeAspectRatio;
   autoPlayIntervalMs?: number;
+  columnsDesktop?: 1 | 2;
   className?: string;
 }
 
@@ -16,6 +17,7 @@ export function MetamorphicBannerSlider({
   items,
   aspectRatio = "16:9",
   autoPlayIntervalMs = 6000,
+  columnsDesktop = 1,
   className,
 }: MetamorphicBannerSliderProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -24,6 +26,7 @@ export function MetamorphicBannerSlider({
 
   const activeItems = (items || []).filter((item) => item.is_active !== false);
   const total = activeItems.length;
+  const useTwoColsDesktop = columnsDesktop === 2 && total >= 2;
 
   // Mapeamento canônico de aspect ratio com zero classes arbitrárias entre colchetes
   const aspectClass = React.useMemo(() => {
@@ -114,7 +117,10 @@ export function MetamorphicBannerSlider({
       <div
         ref={sliderRef}
         onScroll={handleScroll}
-        className="carousel w-full flex overflow-x-auto snap-x mandatory no-scrollbar rounded-lg focus:outline-none"
+        className={cn(
+          "carousel w-full flex overflow-x-auto snap-x mandatory no-scrollbar rounded-lg focus:outline-none",
+          useTwoColsDesktop && "md:gap-4"
+        )}
         tabIndex={0}
         role="region"
         aria-label="Carrossel de Banners"
@@ -124,6 +130,7 @@ export function MetamorphicBannerSlider({
             key={item.id || idx}
             className={cn(
               "w-full shrink-0 snap-start relative overflow-hidden rounded-lg bg-muted/40",
+              useTwoColsDesktop && "md:w-1/2",
               aspectClass,
             )}
           >
@@ -177,7 +184,7 @@ export function MetamorphicBannerSlider({
             type="button"
             onClick={handlePrev}
             aria-label="Banner anterior"
-            className="hidden sm:flex absolute left-3 top-1/2 -translate-y-1/2 size-11 items-center justify-center rounded-full bg-background/80 hover:bg-background border border-border/80 text-foreground transition-transform active:scale-95 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            className="hidden sm:flex absolute left-3 top-1/2 -translate-y-1/2 size-11 items-center justify-center rounded-lg bg-background/85 hover:bg-background border border-border/80 text-foreground transition-transform active:scale-95 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
           >
             <CaretLeft size={20} weight="bold" />
           </button>
@@ -185,7 +192,7 @@ export function MetamorphicBannerSlider({
             type="button"
             onClick={handleNext}
             aria-label="Próximo banner"
-            className="hidden sm:flex absolute right-3 top-1/2 -translate-y-1/2 size-11 items-center justify-center rounded-full bg-background/80 hover:bg-background border border-border/80 text-foreground transition-transform active:scale-95 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            className="hidden sm:flex absolute right-3 top-1/2 -translate-y-1/2 size-11 items-center justify-center rounded-lg bg-background/85 hover:bg-background border border-border/80 text-foreground transition-transform active:scale-95 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
           >
             <CaretRight size={20} weight="bold" />
           </button>

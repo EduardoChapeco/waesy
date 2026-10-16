@@ -44,15 +44,15 @@ export function ClassifiedCatalogHeader({
   onSelectCategory,
 }: ClassifiedCatalogHeaderProps) {
   return (
-    <div className="sticky top-0 lg:static z-20 bg-background lg:bg-transparent px-0 pt-1 pb-2 space-y-2 border-b border-border/40 lg:border-b-0">
+    <div className="px-0 pt-1 pb-2 space-y-2 border-b border-border/40 lg:border-b-0">
       {/* Nível 1: Barra de Ação Principal */}
-      <div className="flex items-center gap-2 w-full">
-        {/* Input de Busca */}
-        <div className="relative flex-1 min-w-0">
+      <div className="flex items-center justify-between gap-2 w-full">
+        {/* Input de Busca (Desktop/Tablet — no Mobile fica no NativeMobileHeader) */}
+        <div className="hidden md:block relative flex-1 min-w-0">
           <MagnifyingGlass
             size={16}
             weight="bold"
-            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
           />
           <Input
             value={search}
@@ -62,10 +62,10 @@ export function ClassifiedCatalogHeader({
             aria-label="Buscar nos classificados"
           />
           {search && (
-            <button /* focus-visible: */
+            <button
               type="button"
-              onClick={() => onSearchChange("")} /* focus-visible: */
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-muted-foreground hover:text-foreground rounded-full hover:bg-muted/80 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              onClick={() => onSearchChange("")}
+              className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-muted-foreground hover:text-foreground rounded-full hover:bg-muted/80 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               aria-label="Limpar busca"
             >
               <X size={14} weight="bold" />
@@ -79,7 +79,7 @@ export function ClassifiedCatalogHeader({
           variant="outline"
           onClick={onOpenFilters}
           className={cn(
-            "size-11 min-h-11 min-w-11 sm:w-auto sm:px-4 rounded-lg border border-border/70 text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 shrink-0 cursor-pointer transition-colors active:scale-95 focus-visible:ring-2 focus-visible:ring-ring",
+            "h-11 min-h-11 px-3 sm:px-4 rounded-lg border border-border/70 text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 shrink-0 cursor-pointer transition-colors active:scale-95 focus-visible:ring-2 focus-visible:ring-ring",
             activeFiltersCount > 0
               ? "bg-primary/10 border-primary/40 text-primary font-bold"
               : "bg-card hover:bg-muted/50 text-foreground"
@@ -88,7 +88,7 @@ export function ClassifiedCatalogHeader({
           aria-label="Abrir filtros avançados"
         >
           <SlidersHorizontal className="size-4 shrink-0" />
-          <span className="hidden sm:inline">Filtros</span>
+          <span>Filtros</span>
           {activeFiltersCount > 0 && (
             <span className="size-5 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center shrink-0">
               {activeFiltersCount}
@@ -98,9 +98,9 @@ export function ClassifiedCatalogHeader({
 
         {/* Toggles de Visualização (Feed vs. Grade vs. Lista) */}
         <div className="flex items-center p-1 rounded-lg bg-muted/40 border border-border/50 shrink-0 h-11">
-          <button /* focus-visible: */
+          <button
             type="button"
-            onClick={() => onViewModeChange("feed")} /* focus-visible: */
+            onClick={() => onViewModeChange("feed")}
             className={cn(
               "h-full px-3 rounded-md text-xs font-semibold transition-colors cursor-pointer flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
               viewMode === "feed"
@@ -112,9 +112,9 @@ export function ClassifiedCatalogHeader({
           >
             <Rows size={16} weight={viewMode === "feed" ? "fill" : "bold"} />
           </button>
-          <button /* focus-visible: */
+          <button
             type="button"
-            onClick={() => onViewModeChange("grid")} /* focus-visible: */
+            onClick={() => onViewModeChange("grid")}
             className={cn(
               "h-full px-3 rounded-md text-xs font-semibold transition-colors cursor-pointer flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
               viewMode === "grid"
@@ -126,9 +126,9 @@ export function ClassifiedCatalogHeader({
           >
             <SquaresFour size={16} weight={viewMode === "grid" ? "fill" : "bold"} />
           </button>
-          <button /* focus-visible: */
+          <button
             type="button"
-            onClick={() => onViewModeChange("list")} /* focus-visible: */
+            onClick={() => onViewModeChange("list")}
             className={cn(
               "h-full px-3 rounded-md text-xs font-semibold transition-colors cursor-pointer flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
               viewMode === "list"
@@ -149,19 +149,16 @@ export function ClassifiedCatalogHeader({
         >
           <Link to="/conta/classificados/novo">
             <Plus size={16} weight="bold" />
-            <span className="hidden sm:inline">Anunciar</span>
+            <span>Anunciar</span>
           </Link>
         </Button>
       </div>
 
       {/* Nível 2: Trilho de Categorias */}
-      <div
-        className="tab-list flex items-center gap-2 overflow-x-auto no-scrollbar snap-x snap-mandatory py-1 pr-6 w-full focus:outline-none"
-        style={{
-          maskImage: "linear-gradient(to right, black 88%, transparent 100%)",
-          WebkitMaskImage: "linear-gradient(to right, black 88%, transparent 100%)",
-        }}
-      >
+      <div className="relative -mx-4 px-4 sm:mx-0 sm:px-0">
+        <div
+          className="tab-list flex items-center gap-2 overflow-x-auto no-scrollbar snap-x snap-mandatory py-1 pr-6 w-full focus:outline-none"
+        >
         {categoryChips.map((cat) => {
           const isActive = selectedCategory === cat.id;
           const Icon = cat.icon;
@@ -187,6 +184,7 @@ export function ClassifiedCatalogHeader({
             </button>
           );
         })}
+        </div>
       </div>
     </div>
   );

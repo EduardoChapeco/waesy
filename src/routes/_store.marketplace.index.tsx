@@ -293,13 +293,23 @@ function AdvancedMarketplacePage() {
         searchPlaceholder="Buscar produtos e lojas verificadas..."
       />
 
-      <div className="px-4 sm:px-6 space-y-6 pt-3 sm:pt-5">
+      {/* ── Cabeçalho Inpage Desktop (Apple HIG) ── */}
+      <div className="hidden md:flex items-center justify-between pt-4 pb-3 border-b border-border/40">
+        <div>
+          <h1 className="text-xl font-bold tracking-tight text-foreground">Marketplace de Empresas</h1>
+          <p className="text-xs text-muted-foreground mt-1">
+            Produtos novos com estoque verificado, entrega rápida e compra direta nas lojas da região
+          </p>
+        </div>
+      </div>
+
+      <div className="space-y-4 sm:space-y-6 pt-3 sm:pt-4">
         {activeNiche !== "todos" && activeNicheConfig.targetRoute && (
           <div className="flex items-center justify-between p-3 rounded-lg bg-card border border-border/80">
             <span className="text-xs font-medium text-muted-foreground">Vitrine especializada disponível</span>
             <Link
               to={activeNicheConfig.targetRoute as any}
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-primary hover:underline cursor-pointer"
+              className="inline-flex items-center gap-2 text-xs font-bold text-primary hover:underline cursor-pointer"
             >
               <span>Acessar vitrine {activeNicheConfig.label}</span>
               <ArrowSquareOut size={13} weight="bold" />
@@ -331,6 +341,7 @@ function AdvancedMarketplacePage() {
           onSelectCategory={handleNicheChange}
           viewMode={viewMode}
           onViewModeChange={handleViewModeChange}
+          hideMobileSearch={true}
         />
 
         {/* ── 5. Feed Dinâmico CMS & Catálogo de Produtos ── */}
@@ -379,7 +390,7 @@ function AdvancedMarketplacePage() {
                   )}
                 </div>
               ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
                   {productCards.map((product) => (
                     <OfferCard key={product.id} {...product} />
                   ))}

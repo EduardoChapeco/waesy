@@ -14,7 +14,6 @@ import { listHotpages } from "@/services/hotpage.functions";
 import { BannerHeroCarousel } from "@/components/commerce/banner-hero-carousel";
 import { HotpagesRail } from "@/components/commerce/hotpages-rail";
 import { HorizontalRail } from "@/components/commerce/horizontal-rail";
-import { HitsLeadCard } from "@/components/commerce/hits-lead-card";
 import { NewsCard } from "@/components/news/news-card";
 import { NewsSponsorBanner } from "@/components/news/news-sponsor-banner";
 import { EconomicIndicatorsBar } from "@/components/news/economic-indicators-bar";
@@ -130,7 +129,7 @@ export function NoticiasFeedPage() {
   const gridArticles = articles.slice(1);
 
   return (
-    <div className="w-full max-w-5xl mx-auto px-0 sm:px-4 space-y-6 pb-20">
+    <div className="w-full max-w-7xl mx-auto space-y-6 pb-20">
       {/* ── 1. Top Banners de Notícias ── */}
       {banners && banners.length > 0 && (
         <section aria-label="Banners e Anúncios">
@@ -160,7 +159,7 @@ export function NoticiasFeedPage() {
       </div>
 
       <section aria-label="Editorias de Notícias" className="space-y-2">
-        <div className="flex items-center gap-2 sm:gap-2 overflow-x-auto no-scrollbar py-1 w-full px-1 focus:outline-none tab-list">
+        <div className="-mx-4 px-4 sm:mx-0 sm:px-0 flex items-center gap-2 overflow-x-auto no-scrollbar py-1 focus:outline-none tab-list">
           {CATEGORIES.map((cat) => {
             const isSelected = selectedCategory === cat.id;
 
@@ -203,22 +202,16 @@ export function NoticiasFeedPage() {
         </section>
       )}
 
-      {/* ── 4. Plantão & Notícias de Última Hora (Trilho com Lead Card Sincronizado) ── */}
+      {/* ── 4. Plantão & Notícias de Última Hora ── */}
       {breakingNews.length > 0 && !searchQuery && !isSearching && (
         <section aria-label="Plantão de Notícias" className="space-y-3">
           <HorizontalRail
-            title="Plantão"
-            hideHeader={true}
-            leadCard={
-              <HitsLeadCard
-                actionTo="/noticias"
-                gradient="from-red-600 via-rose-600 to-orange-600"
-                ariaLabel="Plantão de Notícias"
-              />
-            }
+            title="Plantão de Notícias"
+            actionLabel="Ver mais"
+            onAction={() => handleFilterCategory("urgente")}
           >
             {breakingNews.map((article) => (
-              <div key={article.id} className="shrink-0">
+              <div key={article.id} className="w-68 shrink-0">
                 <NewsCard article={article} compact={true} />
               </div>
             ))}
@@ -282,18 +275,12 @@ export function NoticiasFeedPage() {
       {cityArticles.length > 0 && !searchQuery && !isSearching && (
         <section aria-label="Cotidiano & Cidade" className="space-y-3">
           <HorizontalRail
-            title="Cidade"
-            hideHeader={true}
-            leadCard={
-              <HitsLeadCard
-                actionTo="/noticias"
-                gradient="from-blue-600 via-sky-600 to-cyan-700"
-                ariaLabel="Cotidiano & Cidade"
-              />
-            }
+            title="Cotidiano e Cidade"
+            actionLabel="Ver mais"
+            onAction={() => handleFilterCategory("cidade")}
           >
             {cityArticles.map((article) => (
-              <div key={article.id} className="shrink-0">
+              <div key={article.id} className="w-68 shrink-0">
                 <NewsCard article={article} compact={true} />
               </div>
             ))}
@@ -305,18 +292,12 @@ export function NoticiasFeedPage() {
       {economyArticles.length > 0 && !searchQuery && !isSearching && (
         <section aria-label="Economia & Negócios" className="space-y-3">
           <HorizontalRail
-            title="Economia"
-            hideHeader={true}
-            leadCard={
-              <HitsLeadCard
-                actionTo="/noticias"
-                gradient="from-emerald-600 via-teal-600 to-green-700"
-                ariaLabel="Economia & Negócios"
-              />
-            }
+            title="Economia e Negócios"
+            actionLabel="Ver mais"
+            onAction={() => handleFilterCategory("economia")}
           >
             {economyArticles.map((article) => (
-              <div key={article.id} className="shrink-0">
+              <div key={article.id} className="w-68 shrink-0">
                 <NewsCard article={article} compact={true} />
               </div>
             ))}
@@ -328,18 +309,12 @@ export function NoticiasFeedPage() {
       {cultureArticles.length > 0 && !searchQuery && !isSearching && (
         <section aria-label="Cultura & Lazer" className="space-y-3">
           <HorizontalRail
-            title="Cultura"
-            hideHeader={true}
-            leadCard={
-              <HitsLeadCard
-                actionTo="/noticias"
-                gradient="from-violet-600 via-purple-600 to-pink-600"
-                ariaLabel="Cultura, Noite & Lazer"
-              />
-            }
+            title="Cultura e Lazer"
+            actionLabel="Ver mais"
+            onAction={() => handleFilterCategory("cultura")}
           >
             {cultureArticles.map((article) => (
-              <div key={article.id} className="shrink-0">
+              <div key={article.id} className="w-68 shrink-0">
                 <NewsCard article={article} compact={true} />
               </div>
             ))}
@@ -351,18 +326,12 @@ export function NoticiasFeedPage() {
       {sportsArticles.length > 0 && !searchQuery && !isSearching && (
         <section aria-label="Esportes & Regional" className="space-y-3">
           <HorizontalRail
-            title="Esportes"
-            hideHeader={true}
-            leadCard={
-              <HitsLeadCard
-                actionTo="/noticias"
-                gradient="from-emerald-700 via-green-600 to-teal-700"
-                ariaLabel="Esportes & Regional"
-              />
-            }
+            title="Esportes e Regional"
+            actionLabel="Ver mais"
+            onAction={() => handleFilterCategory("esportes")}
           >
             {sportsArticles.map((article) => (
-              <div key={article.id} className="shrink-0">
+              <div key={article.id} className="w-68 shrink-0">
                 <NewsCard article={article} compact={true} />
               </div>
             ))}

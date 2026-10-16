@@ -97,7 +97,7 @@ export const CANONICAL_DEFAULT_HOME_SECTIONS: HomePageSectionDTO[] = [
     show_title: false,
     show_subtitle: false,
     layout_variant: "carousel",
-    aspect_ratio: "ifood",
+    aspect_ratio: "16:9",
     is_active: true,
     sort_order: 1,
     metadata: {},

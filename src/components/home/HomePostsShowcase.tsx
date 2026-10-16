@@ -42,17 +42,16 @@ export function HomePostsShowcase({
         {actionTo && (
           <Link
             to={actionTo as any}
-            className="inline-flex items-center gap-2 text-xs font-semibold text-primary hover:underline min-h-11 px-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="inline-flex items-center justify-center h-8 px-3 rounded-lg text-xs font-semibold text-primary hover:bg-primary/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
-            <span>Ver tudo</span>
-            <ArrowRight size={14} weight="bold" />
+            <span>Ver mais</span>
           </Link>
         )}
       </div>
 
       {/* ── Trilho Horizontal com Trava Anti-Jank de Mídia e Zero Quebra (Invariante B.30) ── */}
       <div
-        className="carousel w-full flex overflow-x-auto snap-x mandatory no-scrollbar gap-3 sm:gap-4 py-1 px-1 focus:outline-none select-none"
+        className="carousel -mx-2 px-2 sm:mx-0 sm:px-0 w-full flex overflow-x-auto snap-x mandatory no-scrollbar gap-3 sm:gap-4 py-1 focus:outline-none select-none"
         tabIndex={0}
         role="region"
         aria-label="Feed de Publicações"
@@ -73,7 +72,7 @@ export function HomePostsShowcase({
             >
               {/* Autor, Avatar com Fallback Direto, Handle e Data Relativa (Invariante B.27 / B.30) */}
               <div className="flex items-center gap-2 mb-2">
-                <div className="size-8 rounded-full bg-muted/60 overflow-hidden flex items-center justify-center shrink-0 border border-border/40 relative">
+                <div className="size-8 rounded-lg bg-muted/60 overflow-hidden flex items-center justify-center shrink-0 border border-border/40 relative">
                   <UserCircle size={20} className="text-muted-foreground/60 absolute" />
                   {hasAvatar && (
                     <img
@@ -96,14 +95,14 @@ export function HomePostsShowcase({
                       <CheckCircle size={14} weight="fill" className="text-primary shrink-0" />
                     )}
                   </div>
-                  <div className="flex items-center gap-1.5 text-3xs text-muted-foreground">
+                  <div className="flex items-center gap-2 text-3xs text-muted-foreground">
                     {post.authorHandle && (
                       <span className="font-mono text-muted-foreground/80 truncate">
                         {post.authorHandle.startsWith("@") ? post.authorHandle : `@${post.authorHandle}`}
                       </span>
                     )}
                     <span>•</span>
-                    <span className="flex items-center gap-0.5">
+                    <span className="flex items-center gap-1">
                       <Clock size={10} />
                       <span>{formatRelativeTime(post.publishedAt)}</span>
                     </span>

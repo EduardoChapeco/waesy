@@ -162,7 +162,7 @@ function ImoveisVerticalPage() {
         searchPlaceholder="Buscar casas, apartamentos, terrenos..."
       />
       {/* ── Cabeçalho Inpage Desktop (Apple HIG) ── */}
-      <div className="hidden md:flex items-center justify-between px-4 sm:px-5 pt-6 pb-4 border-b border-border/40">
+      <div className="hidden md:flex items-center justify-between pt-4 pb-4 border-b border-border/40">
         <div>
           <h1 className="text-xl font-bold tracking-tight text-foreground">Imóveis</h1>
           <p className="text-xs text-muted-foreground mt-1">
@@ -170,7 +170,7 @@ function ImoveisVerticalPage() {
           </p>
         </div>
       </div>
-      <div className="px-4 sm:px-5 space-y-6 pt-2 sm:pt-4">
+      <div className="space-y-4 pt-2 sm:pt-4">
       {/* ── 1. Banners de Imóveis ── */}
       {banners && banners.length > 0 && (
         <section aria-label="Destaques Imobiliários">

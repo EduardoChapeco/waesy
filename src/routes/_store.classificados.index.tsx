@@ -118,7 +118,7 @@ function ClassifiedsMasterPage() {
       />
 
       {/* ── Cabeçalho Inpage Desktop (Apple HIG) ── */}
-      <div className="hidden md:flex items-center justify-between px-4 sm:px-6 pt-6 pb-4 border-b border-border/40">
+      <div className="hidden md:flex items-center justify-between pt-4 pb-3 border-b border-border/40">
         <div>
           <h1 className="text-xl font-bold tracking-tight text-foreground">Classificados</h1>
           <p className="text-xs text-muted-foreground mt-1">
@@ -141,7 +141,7 @@ function ClassifiedsMasterPage() {
         </div>
       </div>
 
-      <div className="px-3 sm:px-6 space-y-3 sm:space-y-4 pt-2 sm:pt-4">
+      <div className="space-y-3 sm:space-y-4 pt-2 sm:pt-4">
 
         {/* Barra de controle superior */}
         <ClassifiedCatalogHeader

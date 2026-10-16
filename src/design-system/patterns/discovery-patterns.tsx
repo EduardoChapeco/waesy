@@ -41,7 +41,7 @@ function CategoryBubbleButton({
     >
       <div
         className={cn(
-          "size-14 rounded-full flex items-center justify-center p-1 border-2 transition-colors",
+          "size-14 rounded-lg flex items-center justify-center p-1 border-2 transition-colors",
           "focus-visible:ring-2 focus-visible:ring-ring",
           isSelected
             ? "border-primary shadow-xs ring-2 ring-primary/20"
@@ -52,12 +52,12 @@ function CategoryBubbleButton({
           <img
             src={item.imageUrl}
             alt={item.label}
-            className="w-full h-full object-cover rounded-full"
+            className="w-full h-full object-cover rounded-lg"
             loading="lazy"
             onError={() => setImgError(true)}
           />
         ) : (
-          <div className="w-full h-full rounded-full bg-muted flex items-center justify-center text-muted-foreground group-hover:text-primary transition-colors">
+          <div className="w-full h-full rounded-lg bg-muted flex items-center justify-center text-muted-foreground group-hover:text-primary transition-colors">
             {item.icon ?? <Sparkles className="size-5" />}
           </div>
         )}

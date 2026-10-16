@@ -70,7 +70,7 @@ export function NativeMobileHeader({
   return (
     <header
       className={cn(
-        "sticky top-0 z-40 w-full select-none transition-colors",
+        "sticky top-0 z-40 -mx-2 sm:mx-0 sm:w-full select-none transition-colors",
         transparent ? "bg-transparent" : "bg-background/95 backdrop-blur-md",
         bordered && !transparent ? "border-b border-border/40" : "",
         mobileOnly ? "md:hidden" : "",
@@ -78,14 +78,14 @@ export function NativeMobileHeader({
         className
       )}
     >
-      <div className="relative flex items-center justify-between gap-2 px-4 h-11 min-h-11 w-full min-w-0">
+      <div className="relative flex items-center justify-between gap-2 px-2 sm:px-4 h-11 min-h-11 w-full min-w-0">
         {/* ── Lado Esquerdo: Apenas Ícone < (44x44px, sem texto) ── */}
         <div className="flex items-center gap-1 shrink-0 min-w-11 z-10">
           {showBack && (
             <button
               type="button"
               onClick={handleBack}
-              className="size-11 min-h-11 min-w-11 -ml-2 rounded-full flex items-center justify-center text-foreground/85 hover:text-foreground hover:bg-muted/50 active:bg-muted/80 active:scale-95 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              className="size-11 min-h-11 min-w-11 -ml-1 rounded-lg flex items-center justify-center text-foreground/85 hover:text-foreground hover:bg-muted/50 active:bg-muted/80 active:scale-95 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               aria-label="Voltar"
             >
               <CaretLeft className="size-5" weight="bold" />
@@ -175,7 +175,7 @@ export function NativeMobileHeader({
                 setIsSearchOpen(true);
               }}
               aria-label="Buscar"
-              className="size-11 min-h-11 min-w-11 rounded-full inline-flex items-center justify-center text-foreground/80 hover:text-foreground hover:bg-muted/50 active:scale-95 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              className="size-11 min-h-11 min-w-11 rounded-lg inline-flex items-center justify-center text-foreground/80 hover:text-foreground hover:bg-muted/50 active:scale-95 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
               <MagnifyingGlass size={20} weight="bold" />
             </button>
@@ -189,7 +189,7 @@ export function NativeMobileHeader({
                 onFilterClick();
               }}
               aria-label="Filtrar"
-              className="relative size-11 min-h-11 min-w-11 rounded-full inline-flex items-center justify-center text-foreground/80 hover:text-foreground hover:bg-muted/50 active:scale-95 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              className="relative size-11 min-h-11 min-w-11 rounded-lg inline-flex items-center justify-center text-foreground/80 hover:text-foreground hover:bg-muted/50 active:scale-95 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
               <Funnel
                 size={20}

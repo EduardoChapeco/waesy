@@ -9,6 +9,7 @@ describe("Adversarial Stress Test: checkHasCustomPageMobileHeader", () => {
         "/agenda",
         "/afiliados",
         "/classificados",
+        "/marketplace",
         "/diretorio",
         "/imoveis",
         "/servicos",

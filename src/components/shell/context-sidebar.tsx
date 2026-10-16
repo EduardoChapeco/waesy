@@ -119,7 +119,7 @@ export function ContextSidebar({ config, session }: ContextSidebarProps) {
   return (
     <aside
       className={cn(
-        "flex flex-col shrink-0 h-full py-3 bg-background justify-between select-none overflow-y-auto no-scrollbar z-20 border-r border-border/40 transition duration-200 motion-reduce:transition-none",
+        "hidden md:flex flex-col shrink-0 h-full py-3 bg-background justify-between select-none overflow-y-auto no-scrollbar z-20 border-r border-border/40 transition duration-200 motion-reduce:transition-none",
         isExpanded ? "w-56 px-3" : "w-16 px-2"
       )}
     >

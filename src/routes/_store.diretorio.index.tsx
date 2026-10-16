@@ -121,13 +121,13 @@ export function DirectoryPage() {
         searchPlaceholder="Buscar empresas, clínicas, serviços..."
       />
       {/* ── Cabeçalho Inpage Desktop (Apple HIG) ── */}
-      <div className="hidden md:flex items-center justify-between px-4 sm:px-5 pt-4 pb-3 border-b border-border/40">
+      <div className="hidden md:flex items-center justify-between pt-4 pb-3 border-b border-border/40">
         <div>
           <h1 className="text-xl font-bold tracking-tight text-foreground">Guia & Diretório Local</h1>
           <p className="text-xs text-muted-foreground mt-1">Empresas, comércios, clínicas e prestadores de serviços verificados na região</p>
         </div>
       </div>
-      <div className="px-0 sm:px-4 space-y-4 pt-2 sm:pt-4">
+      <div className="space-y-4 pt-2 sm:pt-4">
 
         {/* ── 1. Banners Hero de Topo ── */}
         {banners && banners.length > 0 && (
@@ -155,6 +155,7 @@ export function DirectoryPage() {
  viewMode={viewMode}
  onViewModeChange={setViewMode}
  allowedViewModes={["feed", "grid", "list"]}
+ hideMobileSearch={true}
  />
 
  {/* ── 4. Renderização Conforme o Modo de Visualização ── */}

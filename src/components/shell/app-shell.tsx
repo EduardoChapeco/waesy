@@ -97,6 +97,7 @@ export function checkHasCustomPageMobileHeader(pathname: string): boolean {
     "/agenda",
     "/afiliados",
     "/classificados",
+    "/marketplace",
     "/diretorio",
     "/imoveis",
     "/servicos",
@@ -152,7 +153,6 @@ export interface AppShellProps {
 export function AppShell({ children, session, brandSettings }: AppShellProps) {
   const location = useLocation();
   const mainRef = useRef<HTMLElement>(null);
-  const { isCompact } = useWindowSizeClass();
 
  useEffect(() => {
    if (typeof window !== "undefined") {
@@ -246,6 +246,7 @@ export function AppShell({ children, session, brandSettings }: AppShellProps) {
     location.pathname.includes("/agendar") ||
     location.pathname.includes("/servicos") ||
     location.pathname.includes("/classificados") ||
+    location.pathname.includes("/marketplace") ||
     location.pathname.includes("/concurso") ||
     location.pathname.includes("/diretorio") ||
     location.pathname.includes("/empregos") ||
@@ -338,12 +339,12 @@ export function AppShell({ children, session, brandSettings }: AppShellProps) {
             isCopilotPage
               ? "p-0 m-0 overflow-hidden min-h-0"
               : isFeedPage || isCleanMobileAppPage
-              ? "overflow-y-auto no-scrollbar overflow-x-hidden px-4 sm:px-6 md:px-8 pt-0 md:pt-3 pb-24 md:pb-8"
+              ? "overflow-y-auto no-scrollbar overflow-x-hidden px-2 sm:px-6 md:px-8 pt-0 md:pt-3 pb-24 md:pb-8"
               : isFormPage
-              ? "overflow-y-auto no-scrollbar overflow-x-hidden px-4 sm:px-6 md:px-8 pt-0 md:pt-4 pb-20 md:pb-8"
+              ? "overflow-y-auto no-scrollbar overflow-x-hidden px-2 sm:px-6 md:px-8 pt-0 md:pt-4 pb-20 md:pb-8"
               : isDetailPage
-              ? "overflow-y-auto no-scrollbar overflow-x-hidden px-4 sm:px-6 md:px-8 py-0 md:py-3 pb-20 md:pb-8"
-              : "overflow-y-auto no-scrollbar overflow-x-hidden px-4 sm:px-6 md:px-8 pt-0 md:pt-3 pb-24 md:pb-8"
+              ? "overflow-y-auto no-scrollbar overflow-x-hidden px-2 sm:px-6 md:px-8 py-0 md:py-3 pb-20 md:pb-8"
+              : "overflow-y-auto no-scrollbar overflow-x-hidden px-2 sm:px-6 md:px-8 pt-0 md:pt-3 pb-24 md:pb-8"
           }`}
         >
           <div className={`w-full mx-auto flex flex-col items-stretch min-w-0 flex-1 ${
@@ -361,7 +362,7 @@ export function AppShell({ children, session, brandSettings }: AppShellProps) {
       </div>
 
       {/* Mobile Bottom Navigation com Botão Criar Flutuante & Action Sheet (Ocultado em páginas de detalhe e no copilot para manter o input de chat acessível) */}
-      {isCompact && !isDetailPage && !isCopilotPage && <MobileNav session={session} userRole={session?.role} />}
+      {!isDetailPage && !isCopilotPage && <MobileNav session={session} userRole={session?.role} />}
 
       {/* Waesy Copilot Drawer Global Flutuante */}
       <WaesyCopilotDrawer session={session} />

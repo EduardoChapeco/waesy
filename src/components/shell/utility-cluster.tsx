@@ -210,7 +210,7 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
             asChild
             variant="ghost"
             size="icon"
-            className="hidden md:inline-flex size-11 min-h-11 min-w-11 rounded-lg relative text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-all active:scale-95 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            className="hidden md:inline-flex size-11 min-h-11 min-w-11 rounded-lg relative text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-colors active:scale-95 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             title="Conversas"
           >
             <Link to="/conta/conversas">
@@ -224,7 +224,7 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
           variant="ghost"
           size="icon"
           onClick={() => setIsCartOpen(true)}
-          className="hidden md:inline-flex size-11 min-h-11 min-w-11 rounded-lg relative text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-all active:scale-95 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          className="hidden md:inline-flex size-11 min-h-11 min-w-11 rounded-lg relative text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-colors active:scale-95 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           title="Sacola de Compras"
         >
           <ShoppingBag className="size-5" />
@@ -239,7 +239,7 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
         <NotificationsPopover session={session} />
 
         {/* 4. Alternador de Tema Dark/Light (Desktop >= 768px) */}
-        <ThemeToggle className="hidden md:inline-flex size-11 min-h-11 min-w-11 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-all active:scale-95 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary" />
+        <ThemeToggle className="hidden md:inline-flex size-11 min-h-11 min-w-11 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-colors active:scale-95 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary" />
 
         <div className="hidden md:block h-4 w-px bg-border/60 mx-1" />
 
@@ -249,7 +249,7 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
             <button
               type="button"
               onClick={() => setIsAccountOpen(true)}
-              className="size-11 min-h-11 min-w-11 shrink-0 rounded-full overflow-hidden border border-border/60 hover:border-primary/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-all hover:scale-105 active:scale-95 cursor-pointer bg-muted flex items-center justify-center p-0"
+              className="size-11 min-h-11 min-w-11 shrink-0 rounded-lg overflow-hidden border border-border/60 hover:border-primary/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-transform hover:scale-105 active:scale-95 cursor-pointer bg-muted flex items-center justify-center p-0"
               aria-label="Abrir Menu de Perfil e Conta"
             >
               {userAvatar && !avatarError ? (

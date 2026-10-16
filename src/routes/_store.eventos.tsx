@@ -572,13 +572,13 @@ function EventosPage() {
         searchPlaceholder="Buscar shows, festivais, eventos..."
       />
       {/* ── Cabeçalho Inpage Desktop (Apple HIG) ── */}
-      <div className="hidden md:flex items-center justify-between px-4 sm:px-5 pt-4 pb-3 border-b border-border/40">
+      <div className="hidden md:flex items-center justify-between pt-4 pb-3 border-b border-border/40">
         <div>
           <h1 className="text-xl font-bold tracking-tight text-foreground">Eventos & Agenda Cultural</h1>
           <p className="text-xs text-muted-foreground mt-1">Shows, festivais, palestras e atrações na sua cidade e região</p>
         </div>
       </div>
-      <div className="px-4 sm:px-5 space-y-6 pt-2 sm:pt-4">
+      <div className="space-y-4 pt-2 sm:pt-4">
       {/* ── 1. Top Universal Banner Hero Carousel (Canônico & Editável no Admin) ── */}
       {displayBanners.length > 0 && (
         <section aria-label="Destaques & Banners de Eventos">

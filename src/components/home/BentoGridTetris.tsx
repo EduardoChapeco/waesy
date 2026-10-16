@@ -17,8 +17,7 @@ export function BentoGridTetris({ items, aspectRatio, className }: BentoGridTetr
   return (
     <div
       className={cn(
-        "w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 grid-flow-dense gap-3 sm:gap-4 select-none",
-        aspectRatio === "16:9" && "aspect-banner-cinema",
+        "w-full grid grid-cols-2 md:grid-cols-4 grid-flow-dense gap-3 sm:gap-4 select-none",
         className,
       )}
       role="region"
@@ -31,14 +30,14 @@ export function BentoGridTetris({ items, aspectRatio, className }: BentoGridTetr
         // Mapeamento canônico sem classes com colchetes arbitrários (DL-02)
         const colClass =
           spanX >= 4
-            ? "sm:col-span-2 md:col-span-4"
+            ? "col-span-2 md:col-span-4"
             : spanX === 3
-              ? "sm:col-span-2 md:col-span-3"
+              ? "col-span-2 md:col-span-3"
               : spanX === 2
-                ? "sm:col-span-2 md:col-span-2"
+                ? "col-span-2 md:col-span-2"
                 : "col-span-1";
 
-        const rowClass = spanY >= 2 ? "row-span-2 min-h-64 sm:min-h-80" : "row-span-1 min-h-36 sm:min-h-40";
+        const rowClass = spanY >= 2 ? "row-span-2 min-h-48 sm:min-h-72" : "row-span-1 min-h-32 sm:min-h-40";
 
         return (
           <div

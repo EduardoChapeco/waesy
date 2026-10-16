@@ -82,11 +82,11 @@ describe("Homepage Nativa 3.0 & CMS Omni-Builder (DEC-220)", () => {
       expect(keys).toContain("social_posts_vitrine");
     });
 
-    it("a seção hero_banners deve estar em proporção 'ifood' com show_title falso (cards limpos)", () => {
+    it("a seção hero_banners deve estar em proporção '16:9' unificada Desktop/Mobile com show_title falso (cards limpos)", () => {
       const hero = CANONICAL_DEFAULT_HOME_SECTIONS.find((s) => s.section_key === "hero_banners");
       expect(hero).toBeDefined();
       expect(hero?.layout_variant).toBe("carousel");
-      expect(hero?.aspect_ratio).toBe("ifood");
+      expect(hero?.aspect_ratio).toBe("16:9");
       expect(hero?.show_title).toBe(false);
     });
 

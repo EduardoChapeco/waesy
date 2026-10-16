@@ -145,17 +145,15 @@ function TourismMasterPage() {
   };
 
   return (
-    <div className="w-full max-w-5xl mx-auto px-4 sm:px-5 space-y-6 pb-24">
-      <div className="-mx-4 sm:-mx-5">
-        <NativeMobileHeader
-          title="Turismo"
-          centerTitle
-          backTo="/"
-          searchValue={search}
-          onSearchChange={setSearch}
-          searchPlaceholder="Buscar destinos ou roteiros..."
-        />
-      </div>
+    <div className="w-full max-w-5xl mx-auto space-y-4 pb-24">
+      <NativeMobileHeader
+        title="Turismo"
+        centerTitle
+        backTo="/"
+        searchValue={search}
+        onSearchChange={setSearch}
+        searchPlaceholder="Buscar destinos ou roteiros..."
+      />
       {/* ── Cabeçalho Inpage Desktop (Apple HIG) ── */}
       <div className="hidden md:flex items-center justify-between pt-2 pb-4 border-b border-border/40">
         <div>

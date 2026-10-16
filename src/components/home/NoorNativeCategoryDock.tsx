@@ -20,7 +20,7 @@ export function NoorNativeCategoryDock({
   return (
     <div
       className={cn(
-        "carousel w-full overflow-x-auto snap-x mandatory no-scrollbar py-2 px-1 focus:outline-none flex gap-3 select-none",
+        "carousel -mx-2 px-2 sm:mx-0 sm:px-0 overflow-x-auto snap-x mandatory no-scrollbar py-1 focus:outline-none flex gap-2 sm:gap-3 select-none",
         className,
       )}
       role="region"
@@ -33,8 +33,8 @@ export function NoorNativeCategoryDock({
               key={item.id}
               to={item.target_url as any}
               className={cn(
-                "snap-start shrink-0 min-h-11 min-w-11 px-3 py-2 rounded-lg bg-card border border-border/60",
-                "flex items-center gap-2 hover:border-foreground/30 active:scale-95 transition-transform duration-150",
+                "snap-start shrink-0 min-h-11 min-w-11 px-3 py-2 rounded-lg bg-muted/50 hover:bg-muted",
+                "flex items-center gap-2 active:scale-95 transition-transform duration-150",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
               )}
             >
@@ -57,7 +57,7 @@ export function NoorNativeCategoryDock({
         }
 
         return (
-          <div key={item.id} className="snap-start shrink-0">
+          <div key={item.id} className="snap-start shrink-0 w-20 sm:w-24">
             <IFoodSquareCategoryButton
               id={item.id}
               title={item.title}
