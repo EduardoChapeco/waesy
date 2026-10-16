@@ -22,13 +22,10 @@ export interface ImageCropperDialogProps {
 }
 
 const ASPECT_PRESETS: Array<{ label: string; value: number | undefined }> = [
-  { label: "21:9 (Hero)", value: 21 / 9 },
-  { label: "3:1 (Capa)", value: 3 / 1 },
-  { label: "16:9 (Wide)", value: 16 / 9 },
-  { label: "4:3 (Foto)", value: 4 / 3 },
+  { label: "4:3 (Vitrine)", value: 4 / 3 },
   { label: "1:1 (Quadrado)", value: 1 },
+  { label: "16:9 (Panorâmico)", value: 16 / 9 },
   { label: "9:16 (Story)", value: 9 / 16 },
-  { label: "4:1 (Topo)", value: 4 / 1 },
   { label: "Livre", value: undefined },
 ];
 
@@ -49,7 +46,7 @@ export function ImageCropperDialog({
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [rotation, setRotation] = useState(0);
-  const [objectFit, setObjectFit] = useState<"contain" | "cover" | "horizontal-cover" | "vertical-cover">("contain");
+  const [objectFit, setObjectFit] = useState<"contain" | "cover" | "horizontal-cover" | "vertical-cover">("cover");
   const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -58,6 +55,7 @@ export function ImageCropperDialog({
       setCrop({ x: 0, y: 0 });
       setZoom(1);
       setRotation(0);
+      setObjectFit("cover");
       setSelectedAspect(cropShape === "round" ? 1 : (initialAspect ?? aspectRatio ?? 4 / 3));
     }
   }, [open, initialAspect, aspectRatio, cropShape]);

@@ -2679,7 +2679,7 @@ export function EditorialShowcaseView({
       </div>
 
       {/* ── Barra Inferior Flutuante Fixa (Apenas no Mobile) ── */}
-      <div className="md:hidden fixed bottom-0 inset-x-0 z-50 bg-background/95 backdrop-blur-xl border-t border-border/60 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+      <div className="md:hidden fixed bottom-0 inset-x-0 z-30 bg-background/95 backdrop-blur-xl border-t border-border/60 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
         <div className="max-w-3xl lg:max-w-4xl mx-auto px-4 sm:px-6 md:px-8 py-2 sm:py-3 flex items-center justify-between gap-3">
           {/* Lado Esquerdo: Valor Parcelado / Total Limpo (Sem cortes, clicável para abrir opções) */}
           <button

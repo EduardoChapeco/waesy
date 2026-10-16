@@ -376,7 +376,7 @@ export function ClassifiedDetailMobile({
   }, [attrs, classified, images, locationText]);
 
   return (
-    <div className="w-full min-h-screen bg-background text-foreground pb-20 select-none">
+    <div className="w-full min-h-screen bg-background text-foreground pb-32 pb-safe select-none">
       {/* ── 1. HEADER PADRONIZADO FIXO NO TOPO COM FLEX ROW E BACK BUTTON ALINHADO ── */}
       <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-md border-b border-border/40 px-3 h-12 flex items-center justify-between">
         <NativeBackButton

@@ -645,82 +645,92 @@ export function ConvenienceShowcaseView({
   );
 
   // Componente Reutilizável: Bloco de Preço e Condições de Pagamento com Suporte a Desconto Progressivo
-  const PricingBlock = () => (
-    <div className="p-4 rounded-lg bg-card border border-border/60 space-y-3">
-      <div className="flex items-baseline justify-between flex-wrap gap-2">
-        <div>
-          <div className="flex items-baseline gap-2">
-            {discountResult.activeTier && (
-              <span className="text-sm sm:text-base text-muted-foreground line-through font-mono">
-                {formatMoney(baseUnitPriceCents)}
-              </span>
-            )}
-            <span className="text-2xl sm:text-3xl font-black text-foreground font-mono tracking-tight">
-              {effectiveUnitPriceCents > 0 ? formatMoney(effectiveUnitPriceCents) : "Preço sob consulta"}
-            </span>
-          </div>
-          <span className="text-xs text-muted-foreground font-mono">
-            {isFreshPricingActive && pricingMode === "weight"
-              ? `/ ${weightGrams >= 1000 ? `${(weightGrams / 1000).toFixed(1)}kg` : `${weightGrams}g`}`
-              : unitSuffix
-              ? `/ ${unitSuffix}`
-              : "/ un"}
-          </span>
-        </div>
-
-        {discountResult.activeTier ? (
-          <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
-            {discountResult.activeTier.discount_type === "percentage"
-              ? `${discountResult.activeTier.discount_value}% OFF`
-              : `${formatMoney(discountResult.activeTier.discount_value)} OFF`}
-          </span>
-        ) : acceptsPix && pixDiscountPercent > 0 && effectiveUnitPriceCents > 0 ? (
-          <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
-            {pixDiscountPercent}% OFF no Pix
-          </span>
-        ) : null}
-      </div>
-
-      {acceptsPix && pixDiscountPercent > 0 && effectiveUnitPriceCents > 0 && (
-        <div className="text-xs text-emerald-700 dark:text-emerald-400 font-medium flex items-center gap-2">
-          <span>
-            Sai por <strong>{formatMoney(pixPriceCents)}</strong> à vista no Pix
-          </span>
-        </div>
-      )}
-
-      {discountResult.totalSavedCents > 0 && (
-        <div className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">
-          Economia de <strong>{formatMoney(discountResult.totalSavedCents)}</strong> com desconto progressivo
-        </div>
-      )}
-
-      <div className="pt-2 border-t border-border/40 text-xs text-muted-foreground space-y-1">
-        {acceptsCard && (
-          <div className="flex items-center gap-2">
-            <CreditCard className="size-3.5 text-primary shrink-0" />
-            <span>
-              {maxInstallments === 1 ? (
-                <span>Pagamento <strong>à vista</strong> no cartão</span>
-              ) : (
-                <span>
-                  ou até <strong>{maxInstallments}x de {formatMoney(installmentCents)}</strong>{" "}
-                  {cardInterestFree ? "(sem juros)" : ""}
+  const PricingBlock = ({ bare = false }: { bare?: boolean }) => {
+    const content = (
+      <div className="space-y-3">
+        <div className="flex items-baseline justify-between flex-wrap gap-2">
+          <div>
+            <div className="flex items-baseline gap-2">
+              {discountResult.activeTier && (
+                <span className="text-sm sm:text-base text-muted-foreground line-through font-mono">
+                  {formatMoney(baseUnitPriceCents)}
                 </span>
               )}
+              <span className="text-2xl sm:text-3xl font-black text-foreground font-mono tracking-tight">
+                {effectiveUnitPriceCents > 0 ? formatMoney(effectiveUnitPriceCents) : "Preço sob consulta"}
+              </span>
+            </div>
+            <span className="text-xs text-muted-foreground font-mono">
+              {isFreshPricingActive && pricingMode === "weight"
+                ? `/ ${weightGrams >= 1000 ? `${(weightGrams / 1000).toFixed(1)}kg` : `${weightGrams}g`}`
+                : unitSuffix
+                ? `/ ${unitSuffix}`
+                : "/ un"}
+            </span>
+          </div>
+
+          {discountResult.activeTier ? (
+            <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
+              {discountResult.activeTier.discount_type === "percentage"
+                ? `${discountResult.activeTier.discount_value}% OFF`
+                : `${formatMoney(discountResult.activeTier.discount_value)} OFF`}
+            </span>
+          ) : acceptsPix && pixDiscountPercent > 0 && effectiveUnitPriceCents > 0 ? (
+            <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
+              {pixDiscountPercent}% OFF no Pix
+            </span>
+          ) : null}
+        </div>
+
+        {acceptsPix && pixDiscountPercent > 0 && effectiveUnitPriceCents > 0 && (
+          <div className="text-xs text-emerald-700 dark:text-emerald-400 font-medium flex items-center gap-2">
+            <span>
+              Sai por <strong>{formatMoney(pixPriceCents)}</strong> à vista no Pix
             </span>
           </div>
         )}
 
-        {acceptsCash && (
-          <div className="flex items-center gap-2 text-xs">
-            <Banknote className="size-3.5 text-muted-foreground shrink-0" />
-            <span>Aceita dinheiro em espécie com troco</span>
+        {discountResult.totalSavedCents > 0 && (
+          <div className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">
+            Economia de <strong>{formatMoney(discountResult.totalSavedCents)}</strong> com desconto progressivo
           </div>
         )}
+
+        <div className="pt-2 border-t border-border/40 text-xs text-muted-foreground space-y-1">
+          {acceptsCard && (
+            <div className="flex items-center gap-2">
+              <CreditCard className="size-3.5 text-primary shrink-0" />
+              <span>
+                {maxInstallments === 1 ? (
+                  <span>Pagamento <strong>à vista</strong> no cartão</span>
+                ) : (
+                  <span>
+                    ou até <strong>{maxInstallments}x de {formatMoney(installmentCents)}</strong>{" "}
+                    {cardInterestFree ? "(sem juros)" : ""}
+                  </span>
+                )}
+              </span>
+            </div>
+          )}
+
+          {acceptsCash && (
+            <div className="flex items-center gap-2 text-xs">
+              <Banknote className="size-3.5 text-muted-foreground shrink-0" />
+              <span>Aceita dinheiro em espécie com troco</span>
+            </div>
+          )}
+        </div>
       </div>
-    </div>
-  );
+    );
+
+    if (bare) return content;
+
+    return (
+      <div className="p-4 rounded-lg bg-card border border-border/60 space-y-3">
+        {content}
+      </div>
+    );
+  };
 
   // Componente Reutilizável: Controles de Hortifrúti Fresco (Peso vs Unidade & Ponto de Maturação)
   const FreshProduceControls = () => {
@@ -1045,24 +1055,29 @@ export function ConvenienceShowcaseView({
                 BLOCO DE CABEÇALHO DO PRODUTO NO MOBILE (MD:HIDDEN OU FORCED MOBILE)
                 Aparece imediatamente abaixo da foto no smartphone!
                ═════════════════════════════════════════════════════════════════ */}
-            <div className={cn("px-4 space-y-4", isForcedMobile ? "block" : "md:hidden")}>
-              <div className="space-y-1">
-                <div className="text-xs text-muted-foreground flex items-center gap-2 flex-wrap">
-                  <span className="font-semibold text-foreground/90">{advertiserName}</span>
-                  <span>•</span>
-                  <span>{department}</span>
+            <div className={cn("px-4 space-y-3", isForcedMobile ? "block" : "md:hidden")}>
+              {/* Card Canônico de Resumo do Produto (Identificação + Preço Integrados Padrão Apple HIG) */}
+              <div className="p-4 sm:p-5 rounded-lg bg-card border border-border/60 space-y-3 shadow-xs">
+                <div className="space-y-1">
+                  <div className="text-xs text-muted-foreground flex items-center gap-2 flex-wrap">
+                    <span className="font-semibold text-foreground/90">{advertiserName}</span>
+                    <span>•</span>
+                    <span>{department}</span>
+                  </div>
+
+                  <h1 className="text-xl font-bold text-foreground tracking-tight leading-snug">
+                    {title}
+                  </h1>
+
+                  {/* Tags Sutis Textuais abaixo do título (Sem neon, sem badges) */}
+                  <SubtleProductTags />
                 </div>
 
-                <h1 className="text-xl font-black text-foreground tracking-tight leading-tight">
-                  {title}
-                </h1>
-
-                {/* Tags Sutis Textuais abaixo do título (Sem neon, sem badges) */}
-                <SubtleProductTags />
+                {/* Preço e Condições Integradas */}
+                <div className="pt-3 border-t border-border/40">
+                  <PricingBlock bare />
+                </div>
               </div>
-
-              {/* Bloco de Preço no Mobile */}
-              <PricingBlock />
 
               {/* Linha Compacta de Entrega no Mobile */}
               <DeliveryEstimateLine />
@@ -1379,13 +1394,16 @@ export function ConvenienceShowcaseView({
 
           </div>
         </div>
+
+        {/* Clearance spacer para a barra flutuante mobile */}
+        <div className="h-24 w-full md:hidden" aria-hidden="true" />
       </main>
 
       {/* ═══════════════════════════════════════════════════════════════════════
           FLOATING BOTTOM BAR NO MOBILE (THUMB ZONE ERGONOMICS)
          ═══════════════════════════════════════════════════════════════════════ */}
       <div className={cn(
-        "z-40 bg-background border-t border-border/60 p-3 pb-safe flex items-center gap-3",
+        "z-30 bg-background border-t border-border/60 p-3 pb-safe flex items-center gap-3",
         isForcedMobile || isPreview
           ? "sticky bottom-0 inset-x-0 block rounded-none sm:rounded-b-lg pb-safe"
           : "md:hidden fixed bottom-0 inset-x-0 pb-safe"

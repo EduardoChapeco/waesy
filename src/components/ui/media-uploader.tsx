@@ -443,125 +443,199 @@ export const MediaUploader: React.FC<MediaUploaderProps> = ({
  </div>
  )}
 
- {/* Grid de previews existentes */}
- {mediaList.length > 0 && (
- <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
- {mediaList.map((item, idx) => (
- <div
- key={item.id || idx}
- className={cn(
- "group relative rounded-lg overflow-hidden border border-border bg-card shadow-xs transition-all hover:border-primary/50",
- idx === 0 && "ring-2 ring-primary/60 border-primary",
- computedAspect === 1 ? "aspect-square" : computedAspect === 4 / 3 ? "aspect-4/3" : "aspect-video"
- )}
- >
- {item.type === "video" ? (
- <div className="relative w-full h-full bg-neutral-950 flex items-center justify-center">
- <video src={item.url} className="w-full h-full object-cover" controls={false} />
- <div className="absolute inset-0 bg-neutral-950/30 flex items-center justify-center pointer-events-none">
- <Film className="size-6 text-background/80" />
- </div>
- </div>
- ) : (
- <img src={item.url} alt="Mídia" className="w-full h-full object-cover" />
- )}
+       {/* Input de Arquivos Oculto */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        multiple={maxFiles > 1}
+        accept={acceptedTypes.join(",")}
+        className="hidden"
+        onChange={(e) => {
+          const files = Array.from(e.target.files || []);
+          handleFiles(files);
+        }}
+      />
 
- {/* Botões de Ação sobre o Card */}
- <div className="absolute top-1.5 right-1.5 flex items-center gap-2 opacity-90 sm:opacity-0 group-hover:opacity-100 transition-opacity">
- {item.type === "image" && enableCrop && (
- <Button type="button" variant="secondary" size="icon" onClick={() => handleOpenRecrop(idx)}
- title="Ajustar e Recortar"
- className="h-11 w-11 min-h-11 min-w-11 flex items-center justify-center rounded-lg bg-foreground/80 backdrop-blur-xs text-background hover:bg-primary hover:text-primary-foreground transition-colors cursor-pointer shadow-xs focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
- aria-label="Ajustar e Recortar Imagem"
- >
- <Crop className="size-4" />
- </Button>
- )}
- <Button type="button" variant="destructive" size="icon" onClick={() => removeMedia(idx)}
- title="Remover"
- className="h-11 w-11 min-h-11 min-w-11 flex items-center justify-center rounded-lg bg-foreground/80 backdrop-blur-xs text-background hover:bg-destructive hover:text-destructive-foreground transition-colors cursor-pointer shadow-xs focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
- aria-label="Remover Mídia"
- >
- <X className="size-4" />
- </Button>
- </div>
+      {/* Estado Vazio: Dropzone Limpa e Proporcional */}
+      {mediaList.length === 0 ? (
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={() => fileInputRef.current?.click()}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              fileInputRef.current?.click();
+            }
+          }}
+          onPaste={handlePaste}
+          onDragOver={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          }}
+          onDrop={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+              handleFiles(Array.from(e.dataTransfer.files));
+            }
+          }}
+          className={cn(
+            "relative flex flex-col items-center justify-center p-6 border-2 border-dashed rounded-lg cursor-pointer transition-colors",
+            "border-border/80 hover:border-primary/70 bg-card hover:bg-muted/30 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
+            uploading && "pointer-events-none opacity-60"
+          )}
+        >
+          {uploading ? (
+            <div className="flex flex-col items-center gap-2 text-primary">
+              <Loader2 className="size-6 animate-spin motion-reduce:animate-none" />
+              <span className="text-xs font-semibold text-foreground">
+                {uploadProgress || "Processando upload..."}
+              </span>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center text-center gap-2">
+              <div className="p-3 rounded-lg bg-primary/10 text-primary">
+                <UploadCloud className="size-5" />
+              </div>
+              <p className="text-xs font-semibold text-foreground">
+                Clique, arraste ou cole fotos e vídeos aqui
+              </p>
+              <p className="text-xs text-muted-foreground">
+                JPG, PNG, WEBP ou MP4 até {maxFiles} arquivo{maxFiles > 1 ? "s" : ""} • Cole com Ctrl+V
+              </p>
+            </div>
+          )}
+        </div>
+      ) : (
+        /* Trilho Deslizante Contínuo com Card [+] Fixo na Primeira Posição */
+        <div className="flex items-stretch gap-3 media-carousel-rail overflow-x-auto no-scrollbar py-1 snap-x snap-mandatory -mx-1 px-1">
+          {/* Card [+] Fixo na Primeira Posição */}
+          {mediaList.length < maxFiles && (
+            <div
+              role="button"
+              tabIndex={0}
+              onClick={() => fileInputRef.current?.click()}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  fileInputRef.current?.click();
+                }
+              }}
+              onPaste={handlePaste}
+              onDragOver={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+              }}
+              onDrop={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                  handleFiles(Array.from(e.dataTransfer.files));
+                }
+              }}
+              className={cn(
+                "shrink-0 snap-start rounded-lg border-2 border-dashed border-border/80 hover:border-primary/70 bg-card hover:bg-muted/30 flex flex-col items-center justify-center gap-2 p-3 text-center cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                uploading && "pointer-events-none opacity-60",
+                computedAspect === 1
+                  ? "w-28 sm:w-36 aspect-square"
+                  : computedAspect === 4 / 3
+                  ? "w-36 sm:w-44 aspect-4/3"
+                  : "w-44 sm:w-52 aspect-video"
+              )}
+            >
+              {uploading ? (
+                <div className="flex flex-col items-center gap-1 text-primary">
+                  <Loader2 className="size-5 animate-spin motion-reduce:animate-none" />
+                  <span className="text-xs font-semibold text-foreground truncate max-w-24">
+                    {uploadProgress || "Enviando..."}
+                  </span>
+                </div>
+              ) : (
+                <>
+                  <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                    <UploadCloud className="size-4.5" />
+                  </div>
+                  <span className="text-xs font-bold text-foreground">
+                    + Adicionar
+                  </span>
+                  <span className="text-xs text-muted-foreground leading-tight">
+                    {mediaList.length}/{maxFiles} mídias
+                  </span>
+                </>
+              )}
+            </div>
+          )}
 
- {idx === 0 && (
- <span className="absolute bottom-1.5 left-1.5 text-xs font-bold bg-primary text-primary-foreground px-2 py-1 rounded-md shadow-xs">
- Capa
- </span>
- )}
- </div>
- ))}
- </div>
- )}
+          {/* Miniaturas em Trilho Deslizante */}
+          {mediaList.map((item, idx) => (
+            <div
+              key={item.id || idx}
+              className={cn(
+                "group relative shrink-0 snap-start rounded-lg overflow-hidden border border-border bg-card shadow-xs transition-colors hover:border-primary/50",
+                idx === 0 && "ring-2 ring-primary/60 border-primary",
+                computedAspect === 1
+                  ? "w-28 sm:w-36 aspect-square"
+                  : computedAspect === 4 / 3
+                  ? "w-36 sm:w-44 aspect-4/3"
+                  : "w-44 sm:w-52 aspect-video"
+              )}
+            >
+              {item.type === "video" ? (
+                <div className="relative size-full bg-neutral-950 flex items-center justify-center">
+                  <video src={item.url} className="size-full object-cover" controls={false} />
+                  <div className="absolute inset-0 bg-neutral-950/30 flex items-center justify-center pointer-events-none">
+                    <Film className="size-6 text-background/80" />
+                  </div>
+                </div>
+              ) : (
+                <img src={item.url} alt={`Mídia ${idx + 1}`} className="size-full object-cover" />
+              )}
 
- {/* Área de Dropzone se não atingiu o limite */}
- {mediaList.length < maxFiles && (
- <div
- role="button"
- tabIndex={0}
- onClick={() => fileInputRef.current?.click()} // focus-visible:ring-2 focus-visible:outline-none
- onKeyDown={(e) => {
- if (e.key === "Enter" || e.key === " ") {
- e.preventDefault();
- fileInputRef.current?.click();
- }
- }}
- onPaste={handlePaste}
- onDragOver={(e) => {
- e.preventDefault();
- e.stopPropagation();
- }}
- onDrop={(e) => {
- e.preventDefault();
- e.stopPropagation();
- if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
- handleFiles(Array.from(e.dataTransfer.files));
- }
- }}
- className={cn(
- "relative flex flex-col items-center justify-center p-6 border-2 border-dashed rounded-lg cursor-pointer transition-all",
- "border-border/80 hover:border-primary/70 bg-card hover:bg-muted/30 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
- uploading && "pointer-events-none opacity-60",
- )}
- >
- {uploading ? (
- <div className="flex flex-col items-center gap-2 text-primary">
- <Loader2 className="size-6 animate-spin motion-reduce:animate-none" />
- <span className="text-xs font-semibold text-foreground">
- {uploadProgress || "Processando upload..."}
- </span>
- </div>
- ) : (
- <div className="flex flex-col items-center text-center gap-2">
- <div className="p-3 rounded-lg bg-primary/10 text-primary">
- <UploadCloud className="size-5" />
- </div>
- <p className="text-xs font-semibold text-foreground">
- Clique, arraste ou cole fotos e vídeos aqui
- </p>
- <p className="text-xs text-muted-foreground">
- JPG, PNG, WEBP ou MP4 até {maxFiles} arquivo{maxFiles > 1 ? "s" : ""} ({mediaList.length}/{maxFiles} adicionados) • Cole com Ctrl+V
- </p>
- </div>
- )}
+              {/* Botões de Ação sobrepostos acessíveis (>= 44px) */}
+              <div className="absolute top-1.5 right-1.5 flex items-center gap-1 opacity-90 sm:opacity-0 group-hover:opacity-100 transition-opacity">
+                {item.type === "image" && enableCrop && (
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="icon"
+                    onClick={() => handleOpenRecrop(idx)}
+                    title="Ajustar e Recortar"
+                    className="size-11 min-h-11 min-w-11 flex items-center justify-center rounded-lg bg-foreground/80 backdrop-blur-xs text-background hover:bg-primary hover:text-primary-foreground transition-colors cursor-pointer shadow-xs focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                    aria-label="Ajustar e Recortar Imagem"
+                  >
+                    <Crop className="size-4" />
+                  </Button>
+                )}
+                <Button
+                  type="button"
+                  variant="destructive"
+                  size="icon"
+                  onClick={() => removeMedia(idx)}
+                  title="Remover"
+                  className="size-11 min-h-11 min-w-11 flex items-center justify-center rounded-lg bg-foreground/80 backdrop-blur-xs text-background hover:bg-destructive hover:text-destructive-foreground transition-colors cursor-pointer shadow-xs focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                  aria-label="Remover Mídia"
+                >
+                  <X className="size-4" />
+                </Button>
+              </div>
 
- <input
- ref={fileInputRef}
- type="file"
- multiple={maxFiles > 1}
- accept={acceptedTypes.join(",")}
- className="hidden"
- onChange={(e) => {
- const files = Array.from(e.target.files || []);
- handleFiles(files);
- }}
- />
- </div>
- )}
+              {/* Badge de Capa (#1) ou Posição (#2, #3, ...) */}
+              {idx === 0 ? (
+                <span className="absolute bottom-2 left-2 text-xs font-bold bg-primary text-primary-foreground px-2 py-1 rounded shadow-xs">
+                  Capa
+                </span>
+              ) : (
+                <span className="absolute bottom-2 left-2 text-xs font-mono font-bold bg-neutral-950/70 text-neutral-100 px-2 py-1 rounded backdrop-blur-xs">
+                  #{idx + 1}
+                </span>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
 
- <ImageCropperDialog
+      <ImageCropperDialog
  open={cropModalOpen}
  onOpenChange={setCropModalOpen}
  imageSrc={currentImageSrc}

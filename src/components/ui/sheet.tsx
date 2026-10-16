@@ -93,7 +93,7 @@ const SheetContent = React.forwardRef<
         ref={ref}
         className={cn(
           sheetVariants({ side: resolvedSide, size }),
-          resolvedSide === "bottom" && "p-4 sm:p-6",
+          resolvedSide === "bottom" && "pt-3 pb-6 pb-safe px-4 sm:px-6",
           className
         )}
         {...props}
@@ -101,7 +101,7 @@ const SheetContent = React.forwardRef<
         {resolvedSide === "bottom" && (
           <div className="mx-auto w-12 h-1 rounded-full bg-muted-foreground/20 mb-3 shrink-0" aria-hidden="true" />
         )}
-        <SheetPrimitive.Close className="absolute right-4 top-4 flex size-11 min-h-11 min-w-11 items-center justify-center rounded-lg ring-offset-background cursor-pointer transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none z-10 touch-manipulation">
+        <SheetPrimitive.Close className="absolute right-4 top-4 top-safe flex size-11 min-h-11 min-w-11 items-center justify-center rounded-lg ring-offset-background cursor-pointer transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none z-10 touch-manipulation">
           <X className="size-4" />
           <span className="sr-only">Fechar</span>
         </SheetPrimitive.Close>

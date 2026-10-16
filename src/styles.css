@@ -851,6 +851,9 @@
 @utility bottom-safe {
   bottom: env(safe-area-inset-bottom);
 }
+@utility top-safe {
+  top: max(1rem, env(safe-area-inset-top, 16px));
+}
 @utility pb-safe {
   padding-bottom: env(safe-area-inset-bottom);
 }

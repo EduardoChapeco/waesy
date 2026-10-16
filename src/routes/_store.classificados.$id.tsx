@@ -1,5 +1,4 @@
 import { createFileRoute, isRedirect } from "@tanstack/react-router";
-import { EditorialShowcaseView } from "@/components/classifieds/editorial-showcase-view";
 import { UniversalClassifiedShowcase } from "@/components/classifieds/universal-classified-showcase";
 import { ConvenienceShowcaseView } from "@/components/classifieds/convenience-showcase-view";
 import { ProductTelemetry } from "@/components/commerce/product-telemetry";
@@ -143,59 +142,6 @@ function ClassifiedDetailPage() {
           onEdit={detail.handleEdit}
         />
         {dialogs}
-        {classified?.ai_agent_enabled && (
-          <AiSdrChat
-            classifiedId={classified.id}
-            storeName={classified.store_name || undefined}
-            sellerName={classified.profiles?.full_name || classified.author_profile?.full_name || undefined}
-            storeId={classified.store_id || undefined}
-            sellerProfileId={classified.author_profile_id || undefined}
-          />
-        )}
-      </>
-    );
-  }
-
-  const chosenTemplate = classified?.attributes?.template_style as string | undefined;
-  const isEditorialStyle =
-    chosenTemplate === "editorial" ||
-    chosenTemplate === "immersive" ||
-    chosenTemplate === "instagram" ||
-    chosenTemplate === "instagram_resort";
-
-  if (isEditorialStyle) {
-    return (
-      <>
-        <ProductTelemetry
-          storeId={classified?.store_id || classified?.storeId}
-          productId={classified?.id}
-          title={classified?.title || "Anúncio"}
-          description={classified?.content}
-          priceCents={classified?.price_cents || 0}
-          currency="BRL"
-          imageUrl={classified?.images?.[0]}
-          brandName={classified?.store_name || "Comunidade Waesy"}
-          categoryName={classified?.category || "Turismo"}
-          sku={classified?.id}
-          inStock={detail.isAvailableToOrder}
-        />
-        <EditorialShowcaseView
-          classified={classified}
-          isOwner={detail.effectiveIsOwner}
-          onOpenBookingModal={(dep) => {
-            if (dep) detail.setSelectedDeparture(dep);
-            detail.setBookingOpen(true);
-          }}
-          onOpenProposalModal={() => {
-            requireAuth({
-              actionContext: "Enviar proposta para este anúncio",
-              onSuccess: () => detail.setProposalOpen(true),
-            });
-          }}
-          onEditClassified={detail.handleEdit}
-        />
-        {dialogs}
-        <ActionAuthGuardModal {...modalProps} />
         {classified?.ai_agent_enabled && (
           <AiSdrChat
             classifiedId={classified.id}

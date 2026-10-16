@@ -70,6 +70,8 @@ Qualquer alteração deve reforçar a integridade transacional, a governança mu
 - Proibido usar imagens de estoque (ex: Unsplash, Pexels) como fallback silencioso para posts sociais, artigos ou produtos cadastrados por usuários; itens sem mídia devem renderizar exclusivamente layout textual honesto ou omitir o container de mídia.
 - Proibido declarar valores padrão arbitrários para avaliações (estrelas), contadores de reviews ou distâncias em cards de estabelecimentos; dados ausentes devem ser representados por selos de verificação neutros ou omitidos.
 - Proibido exibir abas, chips ou botões de seção quando a coleção correspondente de dados estiver vazia ou não preenchida.
+- Proibido truncar ou omitir biografias de perfis públicos cadastrados por usuários; o texto deve renderizar de forma integral respeitando quebras de linha (`whitespace-pre-line break-words`).
+- Proibido sobreposição de barras inferiores flutuantes sobre modais ou drawers; barras sticky devem possuir z-index estritamente menor (`z-30`) que o overlay do diálogo (`z-50`) e contêineres de rolagem devem possuir folga de no mínimo `pb-32 pb-safe` para evitar oclusão de cards informativos.
 
 ## B.9 Definition of Done
 - [ ] Especificação técnica aprovada e registrada em `docs/specs/`.
@@ -164,3 +166,13 @@ O agente deve interromper imediatamente o trabalho e devolver a decisão ao huma
 - **Honestidade em Estabelecimentos & Lojas:** Cards de empresas (`StoreCard`, `PlacesCard`) NÃO DEVEM exibir contadores ou estrelas fixas. Se o estabelecimento não possui reviews registradas, exibe unicamente a identificação comercial e selo de empresa verificada.
 - **Omissão Dinâmica de Abas em Detalhes:** Nas telas de detalhe (`_store.classificados.$id`, `_store.produto.$slug`), abas com dados opcionais (como "Fotos Extras", "Roteiro de Viagem" ou "Itens Inclusos") DEVEM ser totalmente omitidas da barra de navegação caso o registro no banco não possua itens reais válidos.
 - **Isolamento de Condições Comerciais:** Informações de preço, parcelamento e chaves de pagamento pertencem exclusivamente à aba de Condições/Explore, sendo proibida sua mistura em abas de conteúdo descritivo (ex.: Hospedagem/Ficha Técnica).
+
+## B.34 Invariante de Desobstrução de Safe-Area e Deconflito de Z-Index em Modais & Drawers
+- Em viewports mobile e no modo `isForceCompact`, diálogos, drawers e sheets DEVEM aplicar padding superior defensivo de safe-area (`pt-[max(1.25rem,env(safe-area-inset-top))]`) e fechar botão `<X>` posicionado abaixo do entalhe de hardware (`top-[max(1rem,env(safe-area-inset-top))]`).
+- Toda barra de ação flutuante ou rodapé fixo de página (`ClassifiedFloatingActionBar`, `sticky-footer`) DEVE operar em `z-30`, garantindo que o overlay do diálogo (`DialogOverlay` em `z-50`) cubra 100% da viewport e bloqueie interação residual de fundo.
+
+## B.35 Invariante de Integridade Plena de Biografia em Perfis Públicos
+- Superfícies de perfil público (`_store.membro.$id`, `_store.u.$username`) NÃO DEVEM truncar ou cortar a biografia preenchida pelo usuário com `line-clamp-3` ou reticências silenciosas. O texto deve ser renderizado na íntegra com `whitespace-pre-line break-words`. Métricas sociais (Seguidores, Seguindo, Curtidas) DEVEM compartilhar uma barra horizontal compacta e única, eliminando caixas verticais infladas.
+
+## B.36 Invariante de Unificação Canônica do Template Editorial & Desambiguação de Showcase
+- O ecossistema de exibição de anúncios opera com bifurcação unificada e clara: (1) `ConvenienceShowcaseView` para itens de catálogo/delivery rápido (modo produto/conveniência); (2) `UniversalClassifiedShowcase` para todos os classificados, turismo, veículos, serviços e imóveis, integrando em sua casca a exibição nativa mobile (`ClassifiedDetailMobile`) e desktop (`ClassifiedDetailDesktop`). É expressamente vedada a existência de templates concorrentes na mesma rota interceptando requisições e gerando quebras de layout.
