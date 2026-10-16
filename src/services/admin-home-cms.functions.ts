@@ -72,7 +72,8 @@ export function isHealthyImageUrl(url: unknown): boolean {
     trimmed === "undefined" ||
     trimmed === "null" ||
     trimmed === "[object Object]" ||
-    trimmed.length < 5
+    trimmed.length < 5 ||
+    trimmed.includes("1511707171634-5f897ff02560")
   ) {
     return false;
   }
@@ -82,6 +83,9 @@ export function isHealthyImageUrl(url: unknown): boolean {
 export function resolveHealthyCover(url: unknown, indexFallback = 0): string {
   if (isHealthyImageUrl(url)) {
     return (url as string).trim();
+  }
+  if (typeof url === "string" && url.includes("1511707171634-5f897ff02560")) {
+    return "https://images.unsplash.com/photo-1498049794561-7780e7231661?auto=format&fit=crop&w=400&q=80";
   }
   const idx = Math.abs(indexFallback) % CANONICAL_EDITORIAL_FALLBACKS.length;
   return CANONICAL_EDITORIAL_FALLBACKS[idx];
@@ -211,7 +215,7 @@ export const CANONICAL_DEFAULT_HOME_SECTIONS: HomePageSectionDTO[] = [
         show_text: true,
         grid_span_x: 1,
         grid_span_y: 1,
-        badge_text: "Go",
+        badge_text: null,
         is_active: true,
         sort_order: 5,
       },
@@ -282,7 +286,7 @@ export const CANONICAL_DEFAULT_HOME_SECTIONS: HomePageSectionDTO[] = [
         show_text: false,
         grid_span_x: 2,
         grid_span_y: 2,
-        badge_text: "Especial",
+        badge_text: null,
         is_active: true,
         sort_order: 1,
       },
@@ -296,7 +300,7 @@ export const CANONICAL_DEFAULT_HOME_SECTIONS: HomePageSectionDTO[] = [
         show_text: false,
         grid_span_x: 1,
         grid_span_y: 1,
-        badge_text: "Ofertas",
+        badge_text: null,
         is_active: true,
         sort_order: 2,
       },
@@ -310,7 +314,7 @@ export const CANONICAL_DEFAULT_HOME_SECTIONS: HomePageSectionDTO[] = [
         show_text: false,
         grid_span_x: 1,
         grid_span_y: 1,
-        badge_text: "Serviços",
+        badge_text: null,
         is_active: true,
         sort_order: 3,
       },
@@ -362,7 +366,7 @@ export const CANONICAL_DEFAULT_HOME_SECTIONS: HomePageSectionDTO[] = [
         section_id: "canonical-marketplace-categories",
         title: "Eletrônicos & Celulares",
         subtitle: null,
-        image_url: "https://images.unsplash.com/photo-1511707171634-5f897ff02560?auto=format&fit=crop&w=240&q=80",
+        image_url: "https://images.unsplash.com/photo-1498049794561-7780e7231661?auto=format&fit=crop&w=400&q=80",
         target_url: "/classificados?category=eletronicos",
         show_text: true,
         grid_span_x: 1,
@@ -443,7 +447,7 @@ export const listPublicHomePageSections = createServerFn({ method: "GET" })
           section_id: item.section_id,
           title: item.title,
           subtitle: item.subtitle,
-          image_url: item.image_url,
+          image_url: resolveHealthyCover(item.image_url),
           target_url: item.target_url || "/",
           show_text: item.show_text ?? false,
           grid_span_x: item.grid_span_x || 1,
@@ -510,7 +514,7 @@ export const listAdminHomePageSections = createServerFn({ method: "GET" })
           section_id: item.section_id,
           title: item.title,
           subtitle: item.subtitle,
-          image_url: item.image_url,
+          image_url: resolveHealthyCover(item.image_url),
           target_url: item.target_url || "/",
           show_text: item.show_text ?? false,
           grid_span_x: item.grid_span_x || 1,

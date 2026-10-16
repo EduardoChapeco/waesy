@@ -66,13 +66,18 @@ export function HomeDesktopWebApp({
 }: HomeDiscoveryViewProps) {
   const navigate = useNavigate();
 
-  const heroSpotlights = (editorialHotpages || []).slice(0, 2);
-  const remainingHotpages =
-    heroSpotlights.length === 2 ? (editorialHotpages || []).slice(2) : editorialHotpages || [];
+  const getDesktopGridCols = (count: number) => {
+    if (count <= 1) return "md:grid-cols-1";
+    if (count === 2) return "md:grid-cols-2";
+    if (count === 3) return "md:grid-cols-3";
+    if (count === 4) return "md:grid-cols-4";
+    if (count <= 6) return "md:grid-cols-3 lg:grid-cols-6";
+    return "md:grid-cols-4 lg:grid-cols-8";
+  };
 
   return (
-    <div className="hidden md:block w-full space-y-5 pb-14" data-testid="home-desktop-web-app">
-      {/* ── 1. PALCO HERO WIDESCREEN 12 COLUNAS (Proporção 16:9 Intacta + Zero Estouro Vertical) ── */}
+    <div className="hidden md:block w-full space-y-6 pb-14" data-testid="home-desktop-web-app">
+      {/* ── 1. PALCO HERO WIDESCREEN COMPLETO (Proporção 16:9 Intacta em 100% da Largura) ── */}
       {heroSection && heroSection.items && heroSection.items.length > 0 ? (
         <section aria-label={heroSection.title || "Destaques Principais"} className="w-full">
           {heroSection.show_title && heroSection.title && (
@@ -85,98 +90,19 @@ export function HomeDesktopWebApp({
               )}
             </div>
           )}
-          {heroSpotlights.length === 2 ? (
-            <div className="grid md:grid-cols-12 gap-4 items-stretch">
-              <div className="col-span-12 lg:col-span-8">
-                <MetamorphicBannerSlider
-                  items={heroSection.items}
-                  aspectRatio={heroSection.aspect_ratio}
-                />
-              </div>
-              <div className="hidden lg:flex lg:col-span-4 flex-col justify-between gap-4">
-                {heroSpotlights.map((hp) => {
-                  const cover =
-                    hp.cover_image_url && hp.cover_image_url !== "/brand-logo.png"
-                      ? hp.cover_image_url
-                      : "https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=800&q=80";
-                  return (
-                    <Link
-                      key={hp.id}
-                      to="/destaques/$slug"
-                      params={{ slug: hp.slug }}
-                      className="group relative aspect-banner-cinema w-full rounded-lg overflow-hidden bg-muted/40 border border-border/50 hover:border-foreground/30 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                    >
-                      <img
-                        src={cover}
-                        alt={hp.title}
-                        loading="lazy"
-                        className="size-full object-cover group-hover:scale-105 transition-transform duration-300 motion-reduce:transition-none"
-                      />
-                      {hp.show_title !== false && hp.title && (
-                        <div className="absolute inset-x-0 bottom-0 p-3 bg-background/90 border-t border-border/40">
-                          <h3 className="text-xs font-bold text-foreground line-clamp-1">
-                            {hp.title}
-                          </h3>
-                        </div>
-                      )}
-                    </Link>
-                  );
-                })}
-              </div>
-            </div>
-          ) : (
-            <MetamorphicBannerSlider
-              items={heroSection.items}
-              aspectRatio={heroSection.aspect_ratio}
-              columnsDesktop={2}
-            />
-          )}
+          <MetamorphicBannerSlider
+            items={heroSection.items}
+            aspectRatio={heroSection.aspect_ratio}
+            columnsDesktop={heroSection.items.length >= 2 ? 2 : 1}
+          />
         </section>
       ) : banners && banners.length > 0 ? (
         <section aria-label="Destaques Principais" className="w-full">
-          {heroSpotlights.length === 2 ? (
-            <div className="grid md:grid-cols-12 gap-4 items-stretch">
-              <div className="col-span-12 lg:col-span-8">
-                <BannerHeroCarousel banners={banners} />
-              </div>
-              <div className="hidden lg:flex lg:col-span-4 flex-col justify-between gap-4">
-                {heroSpotlights.map((hp) => {
-                  const cover =
-                    hp.cover_image_url && hp.cover_image_url !== "/brand-logo.png"
-                      ? hp.cover_image_url
-                      : "https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=800&q=80";
-                  return (
-                    <Link
-                      key={hp.id}
-                      to="/destaques/$slug"
-                      params={{ slug: hp.slug }}
-                      className="group relative aspect-banner-cinema w-full rounded-lg overflow-hidden bg-muted/40 border border-border/50 hover:border-foreground/30 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                    >
-                      <img
-                        src={cover}
-                        alt={hp.title}
-                        loading="lazy"
-                        className="size-full object-cover group-hover:scale-105 transition-transform duration-300 motion-reduce:transition-none"
-                      />
-                      {hp.show_title !== false && hp.title && (
-                        <div className="absolute inset-x-0 bottom-0 p-3 bg-background/90 border-t border-border/40">
-                          <h3 className="text-xs font-bold text-foreground line-clamp-1">
-                            {hp.title}
-                          </h3>
-                        </div>
-                      )}
-                    </Link>
-                  );
-                })}
-              </div>
-            </div>
-          ) : (
-            <BannerHeroCarousel banners={banners} />
-          )}
+          <BannerHeroCarousel banners={banners} />
         </section>
       ) : null}
 
-      {/* ── 2. CATEGORIAS RÁPIDAS WIDESCREEN (Dock ou Grade Simétrica) ── */}
+      {/* ── 2. CATEGORIAS RÁPIDAS DESKTOP (Grade Widescreen Simétrica 100% Preenchida) ── */}
       {quickCategoriesSection && quickCategoriesSection.items && quickCategoriesSection.items.length > 0 && (
         <section aria-label={quickCategoriesSection.title || "Categorias Rápidas"} className="w-full">
           {quickCategoriesSection.show_title && quickCategoriesSection.title && (
@@ -189,75 +115,87 @@ export function HomeDesktopWebApp({
               )}
             </div>
           )}
-          {quickCategoriesSection.layout_variant === "grid_2d" ? (
-            <div className="grid md:grid-cols-4 lg:grid-cols-8 gap-3">
-              {quickCategoriesSection.items.map((it) => (
-                <IFoodSquareCategoryButton
-                  key={it.id}
-                  id={it.id}
-                  title={it.title}
-                  imageUrl={it.image_url}
-                  targetUrl={it.target_url}
-                  showText={it.show_text}
-                  badgeText={it.badge_text}
-                />
-              ))}
-            </div>
-          ) : quickCategoriesSection.layout_variant === "bento_grid" ? (
-            <BentoGridTetris items={quickCategoriesSection.items} aspectRatio={quickCategoriesSection.aspect_ratio} />
-          ) : (
-            <NoorNativeCategoryDock items={quickCategoriesSection.items} />
-          )}
+          <div className={`grid ${getDesktopGridCols(quickCategoriesSection.items.length)} gap-4`}>
+            {quickCategoriesSection.items.map((it) => (
+              <IFoodSquareCategoryButton
+                key={it.id}
+                id={it.id}
+                title={it.title}
+                imageUrl={it.image_url}
+                targetUrl={it.target_url}
+                showText={it.show_text}
+                badgeText={it.badge_text}
+              />
+            ))}
+          </div>
         </section>
       )}
 
-      {/* ── 3. SEÇÕES MODULARES DO CMS (Bento Grid Widescreen / Grade 2D / Carrossel) ── */}
-      {customSections.map((sec: HomePageSectionDTO) => (
-        <section key={sec.id} aria-label={sec.title || "Destaques"} className="w-full space-y-2">
-          {sec.show_title && sec.title && (
-            <div>
-              <h2 className="text-lg font-bold text-foreground tracking-tight">
-                {sec.title}
-              </h2>
-              {sec.show_subtitle && sec.subtitle && (
-                <p className="text-xs text-muted-foreground">{sec.subtitle}</p>
-              )}
-            </div>
-          )}
-          {sec.layout_variant === "bento_grid" && (
-            <BentoGridTetris items={sec.items} aspectRatio={sec.aspect_ratio} />
-          )}
-          {sec.layout_variant === "carousel" && (
-            <MetamorphicBannerSlider
-              items={sec.items}
-              aspectRatio={sec.aspect_ratio}
-              columnsDesktop={2}
-            />
-          )}
-          {sec.layout_variant === "horizontal_scroll" && (
-            <NoorNativeCategoryDock items={sec.items} />
-          )}
-          {sec.layout_variant === "grid_2d" && (
-            <div className="grid md:grid-cols-4 lg:grid-cols-6 gap-3">
-              {sec.items.map((it) => (
-                <IFoodSquareCategoryButton
-                  key={it.id}
-                  id={it.id}
-                  title={it.title}
-                  imageUrl={it.image_url}
-                  targetUrl={it.target_url}
-                  showText={it.show_text}
-                  badgeText={it.badge_text}
-                />
-              ))}
-            </div>
-          )}
-        </section>
-      ))}
+      {/* ── 3. SEÇÕES MODULARES DO CMS NO DESKTOP (100% da Largura em Proporção Widescreen 16:9) ── */}
+      {customSections.map((sec: HomePageSectionDTO) => {
+        const activeSecItems = (sec.items || []).filter((it) => it.is_active !== false);
+        if (activeSecItems.length === 0) return null;
+        const desktopColsClass = getDesktopGridCols(activeSecItems.length);
 
-      {/* ── 4. HOTPAGES EDITORIAIS COMPLEMENTARES ── */}
-      {remainingHotpages.length > 0 && (
-        <HotpagesRail hotpages={remainingHotpages} cleanMode={true} />
+        return (
+          <section key={sec.id} aria-label={sec.title || "Destaques"} className="w-full space-y-2">
+            {sec.show_title && sec.title && (
+              <div>
+                <h2 className="text-lg font-bold text-foreground tracking-tight">
+                  {sec.title}
+                </h2>
+                {sec.show_subtitle && sec.subtitle && (
+                  <p className="text-xs text-muted-foreground">{sec.subtitle}</p>
+                )}
+              </div>
+            )}
+            {sec.layout_variant === "carousel" ? (
+              <MetamorphicBannerSlider
+                items={activeSecItems}
+                aspectRatio={sec.aspect_ratio}
+                columnsDesktop={activeSecItems.length >= 2 ? 2 : 1}
+              />
+            ) : (
+              <div className={`grid ${desktopColsClass} gap-4`}>
+                {activeSecItems.map((it) => (
+                  <Link
+                    key={it.id}
+                    to={it.target_url as any}
+                    className="group flex flex-col gap-2 w-full rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    aria-label={it.title || "Destaque"}
+                  >
+                    <div className="relative aspect-banner-cinema w-full overflow-hidden rounded-lg bg-muted/40 border border-border/50 group-hover:border-foreground/30 transition-colors">
+                      <img
+                        src={it.image_url}
+                        alt=""
+                        loading="lazy"
+                        className="size-full object-cover group-hover:scale-105 transition-transform duration-300 motion-reduce:transition-none"
+                        onError={(e) => {
+                          const img = e.currentTarget as HTMLImageElement;
+                          const fallback =
+                            "https://images.unsplash.com/photo-1498049794561-7780e7231661?auto=format&fit=crop&w=600&q=80";
+                          if (img.src !== fallback) {
+                            img.src = fallback;
+                          }
+                        }}
+                      />
+                    </div>
+                    {it.show_text && it.title && (
+                      <span className="w-full text-center text-xs font-semibold text-foreground line-clamp-1 px-1 tracking-tight">
+                        {it.title}
+                      </span>
+                    )}
+                  </Link>
+                ))}
+              </div>
+            )}
+          </section>
+        );
+      })}
+
+      {/* ── 4. HOTPAGES EDITORIAIS (Trilho Limpo Sem Fundo Semi-Transparente e Sem Badges) ── */}
+      {editorialHotpages && editorialHotpages.length > 0 && (
+        <HotpagesRail hotpages={editorialHotpages} cleanMode={true} />
       )}
 
       {/* ── 5. BARRA DE COMANDO E NAVEGAÇÃO TRI-ENGINE UNIFICADA (Sem Duplicação de Categorias) ── */}

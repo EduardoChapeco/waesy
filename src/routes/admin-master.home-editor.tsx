@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   Plus,
   Trash2,
@@ -338,7 +338,19 @@ function AdminMasterHomeEditorPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            asChild
+            variant="outline"
+            size="sm"
+            className="gap-2 min-h-11"
+          >
+            <Link to="/admin-master/hubs">
+              <Layers size={16} />
+              <span>Editar Hotpages & Categorias</span>
+            </Link>
+          </Button>
+
           <Button
             type="button"
             variant="outline"

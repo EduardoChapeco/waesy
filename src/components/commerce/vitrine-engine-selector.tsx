@@ -61,18 +61,18 @@ export function VitrineEngineSelector({
             tabIndex={isActive ? 0 : -1}
             onClick={() => onModeChange(engine.id)}
             className={cn(
-              "h-11 min-h-11 flex-1 min-w-0 flex items-center justify-center gap-2 px-2 rounded-md transition-colors duration-150 cursor-pointer select-none active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+              "h-11 min-h-11 flex-1 min-w-0 flex items-center justify-center gap-1 sm:gap-2 px-1 sm:px-3 rounded-md transition-colors duration-150 cursor-pointer select-none active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
               isActive
-                ? "bg-card text-foreground font-bold shadow-xs"
+                ? "bg-card text-foreground font-bold"
                 : "bg-transparent text-muted-foreground hover:text-foreground hover:bg-background/40"
             )}
             title={engine.label}
           >
             <IconComponent
               weight={isActive ? "fill" : "bold"}
-              className={cn("size-4 sm:size-5 shrink-0", isActive ? "text-primary" : "text-muted-foreground")}
+              className={cn("size-4 shrink-0", isActive ? "text-primary" : "text-muted-foreground")}
             />
-            <span className="text-xs sm:text-sm font-semibold tracking-tight truncate">
+            <span className="text-xs sm:text-sm font-semibold tracking-tight whitespace-nowrap">
               {engine.label}
             </span>
           </button>

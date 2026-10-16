@@ -10,9 +10,14 @@ export interface BentoGridTetrisProps {
   className?: string;
 }
 
+const FALLBACK_BENTO_IMAGE =
+  "https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=800&q=80";
+
 export function BentoGridTetris({ items, aspectRatio, className }: BentoGridTetrisProps) {
   const activeItems = (items || []).filter((item) => item.is_active !== false);
   if (activeItems.length === 0) return null;
+
+  const isThreeItemPack = activeItems.length === 3;
 
   return (
     <div
@@ -27,9 +32,13 @@ export function BentoGridTetris({ items, aspectRatio, className }: BentoGridTetr
         const spanX = item.grid_span_x || 1;
         const spanY = item.grid_span_y || 1;
 
-        // Mapeamento canônico sem classes com colchetes arbitrários (DL-02)
-        const colClass =
-          spanX >= 4
+        // Quando há exatamente 3 itens (1 principal 2x2 + 2 secundários), no Desktop (4 cols)
+        // os 2 secundários ocupam 2 colunas cada (empilhados na metade direita) para fechar 100% do retângulo sem buracos
+        const colClass = isThreeItemPack
+          ? idx === 0
+            ? "col-span-2 md:col-span-2"
+            : "col-span-1 md:col-span-2"
+          : spanX >= 4
             ? "col-span-2 md:col-span-4"
             : spanX === 3
               ? "col-span-2 md:col-span-3"
@@ -37,13 +46,21 @@ export function BentoGridTetris({ items, aspectRatio, className }: BentoGridTetr
                 ? "col-span-2 md:col-span-2"
                 : "col-span-1";
 
-        const rowClass = spanY >= 2 ? "row-span-2 min-h-48 sm:min-h-72" : "row-span-1 min-h-32 sm:min-h-40";
+        const rowClass =
+          (isThreeItemPack && idx === 0) || spanY >= 2
+            ? "row-span-2 min-h-44 sm:min-h-72"
+            : "row-span-1 min-h-28 sm:min-h-36";
+
+        const safeSrc =
+          item.image_url && !item.image_url.includes("1511707171634-5f897ff02560")
+            ? item.image_url
+            : FALLBACK_BENTO_IMAGE;
 
         return (
           <div
             key={item.id || idx}
             className={cn(
-              "group relative overflow-hidden rounded-lg bg-card border border-border/60 hover:border-foreground/30 transition-colors duration-200",
+              "group relative overflow-hidden rounded-lg bg-muted/40 border border-border/50 hover:border-foreground/30 transition-colors duration-200",
               colClass,
               rowClass,
             )}
@@ -54,37 +71,17 @@ export function BentoGridTetris({ items, aspectRatio, className }: BentoGridTetr
               aria-label={item.title || "Destaque modular"}
             >
               <img
-                src={item.image_url}
-                alt={item.title || ""}
+                src={safeSrc}
+                alt=""
                 loading="lazy"
                 className="size-full object-cover group-hover:scale-102 transition-transform duration-300 motion-reduce:transition-none"
                 onError={(e) => {
-                  (e.currentTarget as HTMLElement).style.opacity = "0.3";
+                  const img = e.currentTarget as HTMLImageElement;
+                  if (img.src !== FALLBACK_BENTO_IMAGE) {
+                    img.src = FALLBACK_BENTO_IMAGE;
+                  }
                 }}
               />
-
-              {item.show_text && (item.title || item.badge_text) && (
-                <div className="absolute inset-x-0 bottom-0 bg-background/90 p-4 text-foreground pointer-events-none border-t border-border/40">
-                  {item.badge_text && (
-                    <Badge
-                      variant="default"
-                      className="self-start mb-2 px-2 py-0 text-3xs font-bold uppercase tracking-wider rounded-md"
-                    >
-                      {item.badge_text}
-                    </Badge>
-                  )}
-                  {item.title && (
-                    <h3 className="text-sm sm:text-base font-bold tracking-tight line-clamp-2">
-                      {item.title}
-                    </h3>
-                  )}
-                  {item.subtitle && (
-                    <p className="text-xs text-muted-foreground line-clamp-1 mt-1">
-                      {item.subtitle}
-                    </p>
-                  )}
-                </div>
-              )}
             </Link>
           </div>
         );

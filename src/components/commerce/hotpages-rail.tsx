@@ -42,6 +42,7 @@ export function HotpagesRail({
   className = "",
   onSelect,
   basePath,
+  cleanMode = true,
 }: HotpagesRailProps) {
   if (!hotpages || hotpages.length === 0) return null;
 
@@ -77,13 +78,10 @@ export function HotpagesRail({
 
   return (
     <section className={`w-full ${className}`} aria-label="Experiências e Categorias em Destaque">
-      <div className="-mx-2 px-2 sm:mx-0 sm:px-0 flex gap-3 sm:gap-4 overflow-x-auto no-scrollbar pb-2 snap-x snap-mandatory">
+      <div className="-mx-2 px-2 sm:mx-0 sm:px-0 flex gap-3 sm:gap-4 overflow-x-auto no-scrollbar pb-1 snap-x snap-mandatory">
         {hotpages.map((hp) => {
-          const showTitle = hp.show_title !== false;
-          const showBadge = hp.show_badge !== false && (!!hp.badge_label || !!hp.hero_stat_badge || !!hp.hero_secondary_badge);
-          const showOverlay = hp.show_overlay !== false;
+          const showTitle = !cleanMode && hp.show_title === true && Boolean(hp.title);
           const isActive = activeSlug === hp.slug;
-          const customIcon = hp.custom_icon_url || hp.icon_url;
           const fallbackCover = getCuratedHotpageCover(hp.slug, hp.title, hp.module);
           const effectiveCover =
             hp.cover_image_url && hp.cover_image_url !== "/brand-logo.png"
@@ -92,71 +90,30 @@ export function HotpagesRail({
 
           const cardContent = (
             <>
-              <img
-                src={effectiveCover}
-                alt={hp.title}
-                className="absolute inset-0 size-full object-cover group-hover:scale-105 transition-transform duration-300 motion-reduce:transition-none"
-                loading="lazy"
-                onError={(e) => {
-                  if (e.currentTarget.src !== fallbackCover) {
-                    e.currentTarget.src = fallbackCover;
-                  }
-                }}
-              />
+              <div className="relative aspect-banner-cinema w-full overflow-hidden rounded-lg bg-muted/40">
+                <img
+                  src={effectiveCover}
+                  alt={hp.title || "Destaque"}
+                  className="size-full object-cover group-hover:scale-105 transition-transform duration-300 motion-reduce:transition-none"
+                  loading="lazy"
+                  onError={(e) => {
+                    if (e.currentTarget.src !== fallbackCover) {
+                      e.currentTarget.src = fallbackCover;
+                    }
+                  }}
+                />
+              </div>
 
-              {showOverlay && (
-                <div className="absolute inset-0 bg-background/80 backdrop-blur-2xs opacity-0 group-hover:opacity-10 transition-opacity pointer-events-none" />
-              )}
-
-              {(showTitle || showBadge || customIcon) && (
-                <div className="relative z-10 p-3 sm:p-4 space-y-1 bg-background/90 border-t border-border/40 text-left w-full">
-                  {showBadge && (
-                    <div className="flex items-center gap-2 flex-wrap">
-                      {hp.badge_label && (
-                        <span className="inline-block px-2 py-0.5 rounded-md text-xs font-sans font-bold uppercase tracking-wider bg-muted text-foreground border border-border/60">
-                          {hp.badge_label.replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F700}-\u{1F77F}\u{1F780}-\u{1F7FF}\u{1F800}-\u{1F8FF}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, "").trim()}
-                        </span>
-                      )}
-                      {hp.hero_stat_badge && (
-                        <span className="inline-block px-2 py-0.5 rounded-md text-xs font-sans font-bold uppercase tracking-wider bg-primary text-primary-foreground">
-                          {hp.hero_stat_badge}
-                        </span>
-                      )}
-                      {hp.hero_secondary_badge && (
-                        <span className="inline-block px-2 py-0.5 rounded-md text-xs font-sans font-bold uppercase tracking-wider bg-muted text-muted-foreground">
-                          {hp.hero_secondary_badge}
-                        </span>
-                      )}
-                    </div>
-                  )}
-                  <div className="flex items-center gap-2">
-                    {customIcon && (
-                      <div className="size-6 shrink-0 flex items-center justify-center">
-                        <img
-                          src={customIcon}
-                          alt="Icon"
-                          className="size-full object-contain"
-                          onError={(e) => {
-                            e.currentTarget.style.display = "none";
-                          }}
-                        />
-                      </div>
-                    )}
-                    {showTitle && hp.title && (
-                      <h3 className="text-xs sm:text-sm font-bold text-foreground leading-tight line-clamp-1">
-                        {hp.title}
-                      </h3>
-                    )}
-                  </div>
-                </div>
+              {showTitle && (
+                <span className="mt-1 px-1 text-xs font-semibold text-foreground line-clamp-1 text-left w-full">
+                  {hp.title}
+                </span>
               )}
             </>
           );
 
-          const baseClass = `snap-start group relative flex flex-col justify-end aspect-banner-cinema w-64 sm:w-80 shrink-0 rounded-lg border bg-card overflow-hidden transition-colors duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
-            isActive
-              ? "border-foreground ring-2 ring-foreground/20 font-bold"
-              : "border-border/60 hover:border-foreground/30"
+          const baseClass = `snap-start group relative flex flex-col w-60 sm:w-76 shrink-0 rounded-lg transition-transform duration-150 active:scale-95 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+            isActive ? "ring-2 ring-primary font-bold" : ""
           }`;
 
           if (onSelect) {
@@ -166,6 +123,7 @@ export function HotpagesRail({
                 type="button"
                 onClick={() => onSelect(hp.slug)}
                 className={baseClass}
+                aria-label={hp.title || "Categoria"}
               >
                 {cardContent}
               </button>
@@ -181,6 +139,7 @@ export function HotpagesRail({
               params={target.params as any}
               search={target.search as any}
               className={baseClass}
+              aria-label={hp.title || "Categoria"}
             >
               {cardContent}
             </Link>

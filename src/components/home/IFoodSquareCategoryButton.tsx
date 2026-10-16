@@ -13,6 +13,9 @@ export interface IFoodSquareCategoryButtonProps {
   className?: string;
 }
 
+const FALLBACK_CATEGORY_IMAGE =
+  "https://images.unsplash.com/photo-1498049794561-7780e7231661?auto=format&fit=crop&w=400&q=80";
+
 export function IFoodSquareCategoryButton({
   id,
   title,
@@ -23,6 +26,10 @@ export function IFoodSquareCategoryButton({
   className,
 }: IFoodSquareCategoryButtonProps) {
   const isShowTitle = showText && Boolean(title && title.trim().length > 0);
+  const safeSrc =
+    imageUrl && !imageUrl.includes("1511707171634-5f897ff02560")
+      ? imageUrl
+      : FALLBACK_CATEGORY_IMAGE;
 
   return (
     <Link
@@ -35,8 +42,8 @@ export function IFoodSquareCategoryButton({
       )}
       aria-label={title || "Categoria"}
     >
-      <div className="relative aspect-square w-full overflow-hidden rounded-lg bg-muted/50 group-hover:bg-muted/80 transition-colors flex items-center justify-center">
-        {badgeText && (
+      <div className="relative aspect-square w-full overflow-hidden rounded-lg bg-muted/40 group-hover:bg-muted/70 transition-colors flex items-center justify-center border border-border/40">
+        {isShowTitle && badgeText && (
           <div className="absolute top-1 right-1 z-10 pointer-events-none">
             <Badge
               variant="default"
@@ -47,12 +54,15 @@ export function IFoodSquareCategoryButton({
           </div>
         )}
         <img
-          src={imageUrl}
-          alt={title || ""}
+          src={safeSrc}
+          alt=""
           loading="lazy"
           className="size-full object-cover group-hover:scale-105 transition-transform duration-200 motion-reduce:transition-none"
           onError={(e) => {
-            (e.currentTarget as HTMLElement).style.opacity = "0.3";
+            const img = e.currentTarget as HTMLImageElement;
+            if (img.src !== FALLBACK_CATEGORY_IMAGE) {
+              img.src = FALLBACK_CATEGORY_IMAGE;
+            }
           }}
         />
       </div>

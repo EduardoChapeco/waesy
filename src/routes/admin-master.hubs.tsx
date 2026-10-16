@@ -88,25 +88,25 @@ function AdminMasterHubsPage() {
  return matchesModule && matchesSearch;
  });
 
- const handleOpenNew = () => {
- setEditingHub({
- slug: "",
- title: "",
- badge_label: "",
- description: "",
- module: selectedModule === "all" ? "home" : (selectedModule as HotpageModule),
- sort_order: (hubs.length + 1) * 10,
- show_title: true,
- show_description: true,
- show_overlay: true,
- show_badge: true,
- is_active: true,
- icon_url: "",
- custom_icon_url: "",
- cover_image_url: "",
- });
- setIsOpen(true);
- };
+  const handleOpenNew = () => {
+    setEditingHub({
+      slug: "",
+      title: "",
+      badge_label: "",
+      description: "",
+      module: selectedModule === "all" ? "home" : (selectedModule as HotpageModule),
+      sort_order: (hubs.length + 1) * 10,
+      show_title: false,
+      show_description: false,
+      show_overlay: false,
+      show_badge: false,
+      is_active: true,
+      icon_url: "",
+      custom_icon_url: "",
+      cover_image_url: "",
+    });
+    setIsOpen(true);
+  };
 
  const handleOpenEdit = (hub: HotpageDTO) => {
  setEditingHub({ ...hub });
@@ -237,166 +237,161 @@ function AdminMasterHubsPage() {
 
  return (
  <div className="space-y-6">
- {/* ── 1. Top Bar com Título e Ação ── */}
- <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6">
- <div>
- <div className="flex items-center gap-2">
- <span className="px-3 py-1 rounded-lg text-[10px] font-mono font-bold uppercase bg-primary text-primary-foreground">
- Governança Global
- </span>
- </div>
- <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-foreground mt-1">
- Categorias Globais
- </h1>
- <p className="text-xs text-muted-foreground mt-1">
- Taxonomia de categorias e botões de atalho da rede
- </p>
- </div>
+      {/* ── 1. Top Bar com Título e Ação ── */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6">
+        <div>
+          <div className="flex items-center gap-2">
+            <span className="px-3 py-1 rounded-lg text-xs font-mono font-bold uppercase bg-primary text-primary-foreground">
+              Governança Global
+            </span>
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-foreground mt-1">
+            Categorias Globais
+          </h1>
+          <p className="text-xs text-muted-foreground mt-1">
+            Taxonomia de categorias e botões de atalho da rede
+          </p>
+        </div>
 
- <Button
- onClick={handleOpenNew}
- className="h-11 px-5 rounded-lg font-medium text-xs bg-foreground text-background hover:bg-foreground/90 shrink-0 shadow-xs"
- >
- <Plus className="size-4 mr-2" />
- Nova Categoria Global
- </Button>
- </div>
+        <Button
+          onClick={handleOpenNew}
+          className="h-11 px-5 rounded-lg font-medium text-xs bg-foreground text-background hover:bg-foreground/90 shrink-0 shadow-xs"
+        >
+          <Plus className="size-4 mr-2" />
+          Nova Categoria Global
+        </Button>
+      </div>
 
- {/* ── 2. Filtro por Módulo & Busca ── */}
- <div className="space-y-3">
- <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 ">
- {MODULES.map((m) => (
- <button
- key={m.id}
- onClick={() => setSelectedModule(m.id)}
- className={`px-4 py-2 rounded-lg text-xs font-semibold whitespace-nowrap transition-all border shrink-0 cursor-pointer min-h-9 flex items-center justify-center ${
- selectedModule === m.id
- ? "bg-foreground text-background border-foreground font-bold "
- : "bg-card text-muted-foreground border-border hover:bg-muted/70 hover:text-foreground"
- }`}
- >
- <span>{m.label}</span>
- </button>
- ))}
- </div>
+      {/* ── 2. Filtro por Módulo & Busca ── */}
+      <div className="space-y-3">
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 ">
+          {MODULES.map((m) => (
+            <button
+              key={m.id}
+              onClick={() => setSelectedModule(m.id)}
+              className={`px-4 py-2 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors border shrink-0 cursor-pointer min-h-11 flex items-center justify-center ${
+                selectedModule === m.id
+                  ? "bg-foreground text-background border-foreground font-bold "
+                  : "bg-card text-muted-foreground border-border hover:bg-muted/70 hover:text-foreground"
+              }`}
+            >
+              <span>{m.label}</span>
+            </button>
+          ))}
+        </div>
 
- <div className="flex items-center gap-3">
- <Input
- placeholder="Filtrar por nome, slug ou tag..."
- value={searchQuery}
- onChange={(e) => setSearchQuery(e.target.value)}
- className="max-w-md h-10 rounded-lg bg-card border-border text-xs"
- />
- <span className="text-xs text-muted-foreground font-mono">
- {filteredHubs.length} de {hubs.length} categorias
- </span>
- </div>
- </div>
+        <div className="flex items-center gap-3">
+          <Input
+            placeholder="Filtrar por nome, slug ou tag..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="max-w-md h-11 rounded-lg bg-card border-border text-xs"
+          />
+          <span className="text-xs text-muted-foreground font-mono">
+            {filteredHubs.length} de {hubs.length} categorias
+          </span>
+        </div>
+      </div>
 
- {/* ── 3. Lista de Categorias & Cards ── */}
- <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
- {filteredHubs.map((hub) => (
- <div
- key={hub.id}
- className="p-5 rounded-lg bg-card space-y-4 flex flex-col justify-between hover:border-foreground/20 transition-all group"
- >
- <div className="space-y-3">
- {/* Header com Ícone e Status */}
- <div className="flex items-center justify-between">
- <div className="flex items-center gap-3">
- <div className="size-11 rounded-lg bg-muted flex items-center justify-center overflow-hidden shrink-0">
- {hub.custom_icon_url || hub.icon_url ? (
- <img
- src={hub.custom_icon_url || hub.icon_url!}
- alt={hub.title}
- className="size-8 object-contain"
- onError={(e) => {
- e.currentTarget.style.display = "none";
- }}
- />
- ) : (
- <Tag className="size-5 text-muted-foreground/50" />
- )}
- </div>
- <div>
- <h3 className="text-sm font-bold text-foreground leading-tight group-hover:text-primary transition-colors">
- {hub.title}
- </h3>
- <span className="text-[11px] font-mono text-muted-foreground">
- /{hub.module}/{hub.slug}
- </span>
- </div>
- </div>
+      {/* ── 3. Lista de Categorias & Cards ── */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {filteredHubs.map((hub) => (
+          <div
+            key={hub.id}
+            className="p-5 rounded-lg bg-card space-y-4 flex flex-col justify-between hover:border-foreground/20 transition-colors group border border-border/50"
+          >
+            <div className="space-y-3">
+              {/* Header com Ícone e Status */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="size-11 rounded-lg bg-muted flex items-center justify-center overflow-hidden shrink-0">
+                    {hub.custom_icon_url || hub.icon_url ? (
+                      <img
+                        src={hub.custom_icon_url || hub.icon_url!}
+                        alt={hub.title}
+                        className="size-8 object-contain"
+                        onError={(e) => {
+                          e.currentTarget.style.display = "none";
+                        }}
+                      />
+                    ) : (
+                      <Tag className="size-5 text-muted-foreground/50" />
+                    )}
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-foreground leading-tight group-hover:text-primary transition-colors">
+                      {hub.title}
+                    </h3>
+                    <span className="text-xs font-mono text-muted-foreground">
+                      /{hub.module}/{hub.slug}
+                    </span>
+                  </div>
+                </div>
 
- <button
- type="button"
- onClick={() => handleToggleStatus(hub)}
- className={`size-8 rounded-lg flex items-center justify-center border transition-colors cursor-pointer ${
- hub.is_active
- ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400"
- : "bg-muted border-border text-muted-foreground/40"
- }`}
- title={hub.is_active ? "Ativo (clique para pausar)" : "Pausado (clique para ativar)"}
- >
- {hub.is_active ? <Eye size={15} /> : <EyeOff size={15} />}
- </button>
- </div>
+                <button
+                  type="button"
+                  onClick={() => handleToggleStatus(hub)}
+                  className={`size-11 rounded-lg flex items-center justify-center border transition-colors cursor-pointer ${
+                    hub.is_active
+                      ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400"
+                      : "bg-muted border-border text-muted-foreground/40"
+                  }`}
+                  title={hub.is_active ? "Ativo (clique para pausar)" : "Pausado (clique para ativar)"}
+                >
+                  {hub.is_active ? <Eye size={16} /> : <EyeOff size={16} />}
+                </button>
+              </div>
 
- {/* Preview de Capa (se houver) */}
- {hub.cover_image_url && (
- <div className="relative aspect-16/9 rounded-lg overflow-hidden bg-muted ">
- <img
- src={hub.cover_image_url}
- alt={hub.title}
- className="size-full object-cover"
- onError={(e) => {
- e.currentTarget.style.display = "none";
- }}
- />
- {hub.badge_label && (
- <span className="absolute top-2 left-2 px-2 py-1 rounded-md text-[9px] font-mono font-bold uppercase bg-black/60 backdrop-blur-md text-white border border-white/20">
- {hub.badge_label}
- </span>
- )}
- </div>
- )}
+              {/* Preview de Capa (se houver) */}
+              {hub.cover_image_url && (
+                <div className="relative aspect-video rounded-lg overflow-hidden bg-muted ">
+                  <img
+                    src={hub.cover_image_url}
+                    alt={hub.title}
+                    className="size-full object-cover"
+                    onError={(e) => {
+                      e.currentTarget.style.display = "none";
+                    }}
+                  />
+                </div>
+              )}
 
- {hub.description && (
- <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
- {hub.description}
- </p>
- )}
- </div>
+              {hub.description && (
+                <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
+                  {hub.description}
+                </p>
+              )}
+            </div>
 
- {/* Ações de Edição e Ordenação */}
- <div className="pt-3 flex items-center justify-between text-xs">
- <span className="font-mono text-muted-foreground">Ordem: #{hub.sort_order}</span>
- <div className="flex items-center gap-2">
- <Button
- size="sm"
- variant="outline"
- onClick={() => handleOpenEdit(hub)}
- className="h-8 px-3 rounded-lg border-border text-xs font-semibold"
- >
- <Edit2 className="size-3.5 mr-1" /> Editar
- </Button>
- <Button
- size="sm"
- variant="ghost"
- onClick={() => handleDelete(hub.id, hub.title)}
- className="h-8 px-2 rounded-lg text-rose-500 hover:bg-rose-500/10 hover:text-rose-600"
- >
- <Trash2 className="size-3.5" />
- </Button>
- </div>
- </div>
- </div>
- ))}
- </div>
+            {/* Ações de Edição e Ordenação */}
+            <div className="pt-3 flex items-center justify-between text-xs">
+              <span className="font-mono text-muted-foreground">Ordem: #{hub.sort_order}</span>
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleOpenEdit(hub)}
+                  className="h-11 px-3 rounded-lg border-border text-xs font-semibold"
+                >
+                  <Edit2 className="size-4 mr-1" /> Editar
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => handleDelete(hub.id, hub.title)}
+                  className="h-11 px-3 rounded-lg text-rose-500 hover:bg-rose-500/10 hover:text-rose-600"
+                >
+                  <Trash2 className="size-4" />
+                </Button>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
 
- {/* ── Modal de Criação / Edição de Categoria Global ── */}
- <Dialog open={isOpen} onOpenChange={setIsOpen}>
- <DialogContent className="sm:max-w-xl max-h-[90vh] overflow-y-auto no-scrollbar sm:rounded-lg">
+      {/* ── Modal de Criação / Edição de Categoria Global ── */}
+      <Dialog open={isOpen} onOpenChange={setIsOpen}>
+        <DialogContent className="sm:max-w-xl max-h-screen overflow-y-auto no-scrollbar sm:rounded-lg">
  <DialogHeader>
  <DialogTitle className="text-lg font-bold">
  {editingHub?.id ? "Editar Categoria Global" : "Nova Categoria Global"}
@@ -492,88 +487,112 @@ function AdminMasterHubsPage() {
  type="file"
  accept="image/*"
  onChange={handleIconUpload}
- className="hidden"
- />
- <Button
- type="button"
- variant="outline"
- size="sm"
- disabled={isUploadingIcon}
- onClick={() => iconInputRef.current?.click()}
- className="rounded-lg text-xs font-semibold border-border"
- >
- <UploadCloud className="size-3.5 mr-2" />
- {isUploadingIcon ? "Enviando..." : "Fazer Upload do Ícone"}
- </Button>
- <p className="text-[11px] text-muted-foreground">
- Recomendado: PNG com fundo transparente ou SVG, 128x128px.
- </p>
- </div>
- </div>
- </div>
+                      className="hidden"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      disabled={isUploadingIcon}
+                      onClick={() => iconInputRef.current?.click()}
+                      className="rounded-lg text-xs font-semibold border-border min-h-11"
+                    >
+                      <UploadCloud className="size-4 mr-2" />
+                      {isUploadingIcon ? "Enviando..." : "Fazer Upload do Ícone"}
+                    </Button>
+                    <p className="text-xs text-muted-foreground">
+                      Recomendado: PNG com fundo transparente ou SVG, 128x128px.
+                    </p>
+                  </div>
+                </div>
+              </div>
 
- {/* Upload de Capa / Banner Panorâmico */}
- <div className="p-4 rounded-lg bg-muted/20 space-y-3">
- <Label className="text-xs font-bold flex items-center gap-2">
- <ImageIcon className="size-4 text-primary" />
- Foto de Capa do Hub (Hero Card / Carrossel)
- </Label>
- <div className="space-y-2">
- {editingHub.cover_image_url && (
- <div className="relative aspect-16/9 rounded-lg overflow-hidden bg-muted ">
- <img
- src={editingHub.cover_image_url}
- alt="Capa"
- className="size-full object-cover"
- />
- </div>
- )}
- <input
- ref={coverInputRef}
- type="file"
- accept="image/*"
- onChange={handleCoverUpload}
- className="hidden"
- />
- <Button
- type="button"
- variant="outline"
- size="sm"
- disabled={isUploadingCover}
- onClick={() => coverInputRef.current?.click()}
- className="rounded-lg text-xs font-semibold border-border"
- >
- <UploadCloud className="size-3.5 mr-2" />
- {isUploadingCover ? "Enviando..." : "Fazer Upload da Capa"}
- </Button>
- </div>
- </div>
+              {/* Upload de Capa / Banner Panorâmico */}
+              <div className="p-4 rounded-lg bg-muted/20 space-y-3">
+                <Label className="text-xs font-bold flex items-center gap-2">
+                  <ImageIcon className="size-4 text-primary" />
+                  Foto de Capa do Hub (Hero Card / Carrossel)
+                </Label>
+                <div className="space-y-2">
+                  {editingHub.cover_image_url && (
+                    <div className="relative aspect-video rounded-lg overflow-hidden bg-muted ">
+                      <img
+                        src={editingHub.cover_image_url}
+                        alt="Capa"
+                        className="size-full object-cover"
+                      />
+                    </div>
+                  )}
+                  <input
+                    ref={coverInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleCoverUpload}
+                    className="hidden"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    disabled={isUploadingCover}
+                    onClick={() => coverInputRef.current?.click()}
+                    className="rounded-lg text-xs font-semibold border-border min-h-11"
+                  >
+                    <UploadCloud className="size-4 mr-2" />
+                    {isUploadingCover ? "Enviando..." : "Fazer Upload da Capa"}
+                  </Button>
+                </div>
+              </div>
 
- {/* Ordem e Opções de Exibição */}
- <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
- <div className="space-y-2">
- <Label className="text-xs">Ordem de Exibição</Label>
- <Input
- type="number"
- value={editingHub.sort_order ?? 0}
- onChange={(e) => setEditingHub({ ...editingHub, sort_order: Number(e.target.value) })}
- className="rounded-lg h-10 text-xs font-mono"
- />
- </div>
+                {/* Ordem e Opções de Exibição */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                  <div className="space-y-2">
+                    <Label className="text-xs">Ordem de Exibição</Label>
+                    <Input
+                      type="number"
+                      value={editingHub.sort_order ?? 0}
+                      onChange={(e) =>
+                        setEditingHub({ ...editingHub, sort_order: Number(e.target.value) })
+                      }
+                      className="rounded-lg h-10 text-xs font-mono"
+                    />
+                  </div>
 
- <div className="flex items-center justify-between p-3 rounded-lg bg-card">
- <div>
- <Label className="text-xs font-bold block">Status Ativo</Label>
- <span className="text-[10px] text-muted-foreground">Visível no app</span>
- </div>
- <Switch
- checked={editingHub.is_active !== false}
- onCheckedChange={(val) => setEditingHub({ ...editingHub, is_active: val })}
- />
- </div>
- </div>
- </div>
- )}
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-card border border-border/40">
+                    <div>
+                      <Label className="text-xs font-bold block">Status Ativo</Label>
+                      <span className="text-xs text-muted-foreground">Visível no app</span>
+                    </div>
+                    <Switch
+                      checked={editingHub.is_active !== false}
+                      onCheckedChange={(val) => setEditingHub({ ...editingHub, is_active: val })}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-card border border-border/40">
+                    <div>
+                      <Label className="text-xs font-bold block">Exibir Título</Label>
+                      <span className="text-xs text-muted-foreground">Mostrar texto abaixo da mídia</span>
+                    </div>
+                    <Switch
+                      checked={Boolean(editingHub.show_title)}
+                      onCheckedChange={(val) => setEditingHub({ ...editingHub, show_title: val })}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-card border border-border/40">
+                    <div>
+                      <Label className="text-xs font-bold block">Exibir Badge</Label>
+                      <span className="text-xs text-muted-foreground">Mostrar selo promocional</span>
+                    </div>
+                    <Switch
+                      checked={Boolean(editingHub.show_badge)}
+                      onCheckedChange={(val) => setEditingHub({ ...editingHub, show_badge: val })}
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
 
  <DialogFooter className="gap-2 pt-3 ">
  <Button

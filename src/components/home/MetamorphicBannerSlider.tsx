@@ -141,37 +141,18 @@ export function MetamorphicBannerSlider({
             >
               <img
                 src={item.image_url}
-                alt={item.title || ""}
+                alt=""
                 loading={idx === 0 ? "eager" : "lazy"}
                 className="size-full object-cover object-center transition-transform duration-300 group-hover:scale-101 motion-reduce:transition-none rounded-lg"
                 onError={(e) => {
-                  (e.currentTarget as HTMLElement).style.opacity = "0.3";
+                  const img = e.currentTarget as HTMLImageElement;
+                  const fallback =
+                    "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=1200&q=80";
+                  if (img.src !== fallback) {
+                    img.src = fallback;
+                  }
                 }}
               />
-
-              {/* Se show_text for ativado, renderiza título e badge discretos */}
-              {item.show_text && (item.title || item.badge_text) && (
-                <div className="absolute inset-x-0 bottom-0 bg-background/90 p-4 sm:p-6 text-foreground pointer-events-none border-t border-border/40">
-                  {item.badge_text && (
-                    <Badge
-                      variant="default"
-                      className="self-start mb-2 px-2 py-1 text-xs font-bold uppercase tracking-wider rounded-md"
-                    >
-                      {item.badge_text}
-                    </Badge>
-                  )}
-                  {item.title && (
-                    <h2 className="text-base sm:text-lg font-bold tracking-tight line-clamp-2">
-                      {item.title}
-                    </h2>
-                  )}
-                  {item.subtitle && (
-                    <p className="text-xs sm:text-sm text-muted-foreground line-clamp-1 mt-1">
-                      {item.subtitle}
-                    </p>
-                  )}
-                </div>
-              )}
             </Link>
           </div>
         ))}

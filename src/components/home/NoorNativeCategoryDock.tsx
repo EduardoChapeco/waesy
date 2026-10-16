@@ -40,11 +40,16 @@ export function NoorNativeCategoryDock({
             >
               <img
                 src={item.image_url}
-                alt={item.title || ""}
+                alt=""
                 loading="lazy"
                 className="size-7 object-contain"
                 onError={(e) => {
-                  (e.currentTarget as HTMLElement).style.opacity = "0.3";
+                  const img = e.currentTarget as HTMLImageElement;
+                  const fallback =
+                    "https://images.unsplash.com/photo-1498049794561-7780e7231661?auto=format&fit=crop&w=400&q=80";
+                  if (img.src !== fallback) {
+                    img.src = fallback;
+                  }
                 }}
               />
               {item.show_text && item.title && (

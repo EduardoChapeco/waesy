@@ -766,9 +766,15 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
         ) : (
           <Button
             asChild
-            className="h-11 min-h-11 px-4 rounded-lg text-xs font-bold bg-primary text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary cursor-pointer active:scale-95 shrink-0"
+            variant="ghost"
+            size="icon"
+            className="size-11 min-h-11 min-w-11 shrink-0 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary cursor-pointer active:scale-95 transition-colors"
+            title="Entrar na conta"
+            aria-label="Entrar na conta"
           >
-            <Link to="/entrar">Entrar</Link>
+            <Link to="/entrar">
+              <User className="size-5" />
+            </Link>
           </Button>
         )}
       </div>

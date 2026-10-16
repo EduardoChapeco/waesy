@@ -56,25 +56,25 @@ export function TopBar({ session, brandSettings }: TopBarProps) {
             )}
           </Link>
 
-          {/* Badge BETA Silencioso (Padrão Design.md: Monocromático, sem fundo colorido) */}
+          {/* Badge BETA Silencioso (Apenas Desktop/Tablet para não comprimir o header mobile) */}
           <button
             type="button"
             onClick={() => setBetaModalOpen(true)}
             title="Versão Beta"
-            className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-mono font-medium tracking-wider uppercase text-muted-foreground hover:text-foreground border border-border/50 bg-muted/20 hover:bg-muted/50 transition-colors cursor-pointer shrink-0"
+            className="hidden sm:inline-flex items-center px-2 py-1 rounded-md text-xs font-mono font-medium tracking-wider uppercase text-muted-foreground hover:text-foreground border border-border/50 bg-muted/20 hover:bg-muted/50 transition-colors cursor-pointer shrink-0"
           >
             BETA
           </button>
 
           {/* Location Master Pill — com largura fluida que não estrangula o nome da cidade */}
-          <LocationMasterPill className="max-w-[120px] sm:max-w-52" />
+          <LocationMasterPill className="max-w-36 sm:max-w-52" />
         </div>
 
         {/* Centro (Desktop >= 768px): Busca Global Inteligente Silenciosa */}
         <div className="hidden md:flex flex-1 max-w-xl mx-4">
           <Link
             to="/buscar"
-            className="w-full flex items-center justify-between px-4 h-11 min-h-11 rounded-lg bg-muted/40 hover:bg-muted/70 text-muted-foreground hover:text-foreground text-xs font-normal transition-all group border border-border/40 hover:border-border/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            className="w-full flex items-center justify-between px-4 h-11 min-h-11 rounded-lg bg-muted/40 hover:bg-muted/70 text-muted-foreground hover:text-foreground text-xs font-normal transition-colors group border border-border/40 hover:border-border/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           >
             <div className="flex items-center gap-3 min-w-0">
               <MagnifyingGlass
