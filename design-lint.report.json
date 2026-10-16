@@ -1,31 +1,31 @@
 {
   "version": "2.0.0",
-  "timestamp": "2026-10-16T19:15:04.736Z",
-  "inspectedFiles": 2107,
-  "totalViolations": 12671,
+  "timestamp": "2026-10-16T20:41:57.491Z",
+  "inspectedFiles": 2108,
+  "totalViolations": 12667,
   "summary": {
-    "totalViolations": 12671,
+    "totalViolations": 12667,
     "bySeverity": {
-      "P0": 1461,
-      "P1": 8562,
-      "P2": 1339,
+      "P0": 1457,
+      "P1": 8561,
+      "P2": 1340,
       "P3": 1309
     },
     "byRule": {
       "DL-18": 1166,
-      "DL-02": 3623,
+      "DL-02": 3621,
       "DL-14": 2131,
       "DL-28": 290,
-      "DL-15": 1458,
+      "DL-15": 1454,
       "DL-07": 506,
       "DL-27": 1055,
       "DL-30": 254,
       "DL-26": 85,
       "DL-01": 939,
-      "DL-29": 119,
+      "DL-29": 120,
       "DL-05": 135,
       "DL-23": 421,
-      "DL-03": 214,
+      "DL-03": 215,
       "DL-09": 76,
       "DL-08": 104,
       "DL-24": 2,
@@ -38,10 +38,10 @@
     },
     "byModule": {
       "components/app": {
-        "total": 5521,
-        "P0": 583,
-        "P1": 3721,
-        "P2": 674,
+        "total": 5517,
+        "P0": 579,
+        "P1": 3720,
+        "P2": 675,
         "P3": 543
       },
       "components/builder": {
@@ -144,7 +144,7 @@
       }
     },
     "filesWithViolations": 884,
-    "filesCount": 2107
+    "filesCount": 2108
   },
   "config": {
     "$schema": "https://json-schema.org/draft/2020-12/schema",

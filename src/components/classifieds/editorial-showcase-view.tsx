@@ -53,7 +53,7 @@ export function EditorialShowcaseView({
   onOpenCompanionCard,
 }: EditorialShowcaseViewProps) {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<"grid" | "resort" | "itinerary" | "explore">("grid");
+  const [activeTab, setActiveTab] = useState<"grid" | "resort" | "itinerary" | "explore">("resort");
   const [activeStoryModal, setActiveStoryModal] = useState<any | null>(null);
   const [fullscreenImage, setFullscreenImage] = useState<string | null>(null);
   const [isBookingDossierOpen, setIsBookingDossierOpen] = useState(false);
@@ -413,7 +413,7 @@ export function EditorialShowcaseView({
   // ── Labels das 4 Abas Semânticas ──────────────────────────────────────────
   const getTabLabels = () => {
     if (isTravel) {
-      return { tab2: "Hospedagem & Resort", tab3: "Roteiro Dia a Dia", tab4: "Condições & Embarque" };
+      return { tab2: "Infos do pacote", tab3: "Roteiro Dia a Dia", tab4: "Condições & Embarque" };
     }
     if (nicheId.includes("alim") || nicheId.includes("gastro")) {
       return { tab2: "Cardápio", tab3: "Detalhes", tab4: "Retirada & Pagto" };
@@ -452,6 +452,61 @@ export function EditorialShowcaseView({
   };
 
   const tabLabels = getTabLabels();
+
+  // ── Abas Disponíveis Dinâmicas (Oculta Fotos vazias e Roteiro vazio) ───────
+  const availableTabs = React.useMemo(() => {
+    const tabs: Array<{ id: "resort" | "grid" | "itinerary" | "explore"; label: string; icon: any }> = [];
+
+    // Aba 1: Ficha / Infos do pacote (sempre visível)
+    tabs.push({
+      id: "resort",
+      label: isTravel ? "Infos do pacote" : tabLabels.tab2,
+      icon: Building2,
+    });
+
+    // Aba 2: Fotos (somente se houver mídias válidas no feed)
+    const hasValidFeedImages =
+      Array.isArray(feedImages) &&
+      feedImages.some((item) => {
+        const url = typeof item === "string" ? item.trim() : (item?.url || item?.src || "").trim();
+        return Boolean(url && url.length > 5);
+      });
+    if (hasValidFeedImages) {
+      tabs.push({
+        id: "grid",
+        label: "Fotos",
+        icon: Grid,
+      });
+    }
+
+    // Aba 3: Roteiro (somente se houver dias cadastrados com conteúdo ou skills/benefícios)
+    const hasItineraryContent = isTravel
+      ? itineraryDays.some((d: any) => Boolean(d && (d.title?.trim() || d.description?.trim() || d.day || d.activities?.length || d.images?.length)))
+      : Boolean(attrs.benefits?.length || attrs.skills?.length || attrs.available_weekdays?.length);
+    if (hasItineraryContent) {
+      tabs.push({
+        id: "itinerary",
+        label: isTravel ? "Roteiro" : tabLabels.tab3,
+        icon: Calendar,
+      });
+    }
+
+    // Aba 4: Condições Comerciais (sempre visível)
+    tabs.push({
+      id: "explore",
+      label: isTravel ? "Condições" : tabLabels.tab4,
+      icon: Compass,
+    });
+
+    return tabs;
+  }, [isTravel, tabLabels, feedImages, itineraryDays, attrs]);
+
+  // Se a aba ativa não estiver mais disponível, faz fallback seguro para a primeira
+  React.useEffect(() => {
+    if (!availableTabs.some((tab) => tab.id === activeTab)) {
+      setActiveTab(availableTabs[0]?.id || "resort");
+    }
+  }, [availableTabs, activeTab]);
 
   // ── CTA Text do Botão Primário Dinâmico ─────────────────────────────────────
   const getPrimaryCtaLabel = () => {
@@ -937,72 +992,35 @@ export function EditorialShowcaseView({
 
         {/* ── Abas Canônicas (Fotos, Ficha Técnica, Aprofundamento, Explore/Pagamento) ── */}
         <div className="border-t border-border/40 pt-1">
-          <div className="grid grid-cols-2 sm:grid-cols-4 border-b border-border/40 gap-1">
-            <button
-              type="button"
-              onClick={() => setActiveTab("grid")}
-              className={cn(
-                "py-2 flex flex-col items-center justify-center gap-1 border-b-2 transition-colors cursor-pointer",
-                activeTab === "grid"
-                  ? "border-foreground text-foreground font-bold"
-                  : "border-transparent text-muted-foreground hover:text-foreground"
-              )}
-              aria-label="Fotos"
-            >
-              <Grid className="size-4.5" />
-              <span className="text-xs sm:text-xs font-semibold tracking-tight">Fotos</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setActiveTab("resort")}
-              className={cn(
-                "py-2 flex flex-col items-center justify-center gap-1 border-b-2 transition-colors cursor-pointer",
-                activeTab === "resort"
-                  ? "border-foreground text-foreground font-bold"
-                  : "border-transparent text-muted-foreground hover:text-foreground"
-              )}
-              aria-label={tabLabels.tab2}
-            >
-              <Building2 className="size-4.5" />
-              <span className="text-xs sm:text-xs font-semibold tracking-tight truncate max-w-[72px] sm:max-w-none">
-                {isTravel ? "Hospedagem" : tabLabels.tab2}
-              </span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setActiveTab("itinerary")}
-              className={cn(
-                "py-2 flex flex-col items-center justify-center gap-1 border-b-2 transition-colors cursor-pointer",
-                activeTab === "itinerary"
-                  ? "border-foreground text-foreground font-bold"
-                  : "border-transparent text-muted-foreground hover:text-foreground"
-              )}
-              aria-label={tabLabels.tab3}
-            >
-              <Calendar className="size-4.5" />
-              <span className="text-xs sm:text-xs font-semibold tracking-tight truncate max-w-[72px] sm:max-w-none">
-                {isTravel ? "Roteiro" : tabLabels.tab3}
-              </span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setActiveTab("explore")}
-              className={cn(
-                "py-2 flex flex-col items-center justify-center gap-1 border-b-2 transition-colors cursor-pointer",
-                activeTab === "explore"
-                  ? "border-foreground text-foreground font-bold"
-                  : "border-transparent text-muted-foreground hover:text-foreground"
-              )}
-              aria-label={tabLabels.tab4}
-            >
-              <Compass className="size-4.5" />
-              <span className="text-xs sm:text-xs font-semibold tracking-tight truncate max-w-[72px] sm:max-w-none">
-                {isTravel ? "Condições" : tabLabels.tab4}
-              </span>
-            </button>
+          <div className={cn(
+            "grid border-b border-border/40 gap-1",
+            availableTabs.length === 2 && "grid-cols-2",
+            availableTabs.length === 3 && "grid-cols-3",
+            availableTabs.length >= 4 && "grid-cols-2 sm:grid-cols-4"
+          )}>
+            {availableTabs.map((tab) => {
+              const Icon = tab.icon;
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setActiveTab(tab.id)}
+                  className={cn(
+                    "min-h-11 py-1.5 flex flex-col items-center justify-center gap-1 border-b-2 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                    isActive
+                      ? "border-foreground text-foreground font-bold"
+                      : "border-transparent text-muted-foreground hover:text-foreground"
+                  )}
+                  aria-label={tab.label}
+                >
+                  <Icon className="size-4.5" />
+                  <span className="text-xs sm:text-xs font-semibold tracking-tight truncate max-w-[84px] sm:max-w-none">
+                    {tab.label}
+                  </span>
+                </button>
+              );
+            })}
           </div>
 
           {/* ── Aba 1: Grid de Mídias do Feed (Até 12 Mídias: Fotos, GIFs e Vídeos MP4) ── */}
@@ -1084,60 +1102,6 @@ export function EditorialShowcaseView({
           {/* ── Aba 2: Ficha Técnica & Especificações do Nicho ── */}
           {activeTab === "resort" && (
             <div className="pt-4 space-y-4">
-              {/* Card de Preço & Condição Principal */}
-              <div className="p-4 rounded-lg bg-muted/40 border border-border/40 space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold tracking-wider uppercase text-muted-foreground">
-                    Condição Comercial
-                  </span>
-                  <Badge className="bg-primary/10 text-primary border border-primary/20 text-xs font-bold">
-                    {pricingType === "starting_at" ? "A partir de" : pricingType === "on_quote" ? "Sob Cotação" : "Tarifa Direta"}
-                  </Badge>
-                </div>
-
-                <div className="flex items-baseline gap-2">
-                  {pricingType === "on_quote" ? (
-                    <span className="text-xl sm:text-2xl font-black text-foreground tracking-tight font-display">
-                      Sob Consulta
-                    </span>
-                  ) : pricingType === "free" ? (
-                    <span className="text-xl sm:text-2xl font-black text-emerald-600 tracking-tight font-display">
-                      Gratuito (Doação)
-                    </span>
-                  ) : pricingType === "exchange_only" ? (
-                    <span className="text-xl sm:text-2xl font-black text-amber-600 tracking-tight font-display">
-                      Somente Troca / Permuta
-                    </span>
-                  ) : pricingType === "price_range" && priceMinCents && priceMaxCents ? (
-                    <span className="text-xl sm:text-2xl font-black text-foreground tracking-tight font-display">
-                      {formatMoney(priceMinCents)} a {formatMoney(priceMaxCents)}
-                    </span>
-                  ) : priceCents > 0 ? (
-                    <>
-                      {pricingType === "starting_at" && (
-                        <span className="text-xs text-muted-foreground font-semibold">A partir de</span>
-                      )}
-                      <span className="text-2xl font-black text-foreground tracking-tight font-display">
-                        {maxInstallments > 1 ? `${maxInstallments}x ${formatMoney(installmentCents)}` : formatMoney(priceCents)}
-                      </span>
-                      {maxInstallments > 1 && (
-                        <span className="text-xs text-muted-foreground font-medium">sem juros</span>
-                      )}
-                    </>
-                  ) : (
-                    <span className="text-lg font-bold text-foreground">Consulte Valores</span>
-                  )}
-                </div>
-
-                {/* Disclaimer legal em destaque */}
-                {disclaimerText && (
-                  <p className="text-xs text-muted-foreground flex items-start gap-1 pt-1">
-                    <Info className="size-3 text-primary shrink-0 mt-1" />
-                    <span>{disclaimerText}</span>
-                  </p>
-                )}
-              </div>
-
               {/* Especificações por Nicho */}
 
               {/* Pacote de Viagem & Turismo (Paridade CMS ↔ Vitrine - Regra 19) */}
@@ -1875,6 +1839,62 @@ export function EditorialShowcaseView({
           {/* ── Aba 4: Explore, Condições Comerciais & Pagamento ── */}
           {activeTab === "explore" && (
             <div className="pt-4 space-y-4">
+              {/* Card de Preço & Condição Principal */}
+              {!((nicheId.includes("doacao") || attrs.is_donation) || (nicheId.includes("vaga") || classified.category === "job")) && (
+                <div className="p-4 rounded-lg bg-muted/40 border border-border/40 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold tracking-wider uppercase text-muted-foreground">
+                      Condição Comercial
+                    </span>
+                    <Badge className="bg-primary/10 text-primary border border-primary/20 text-xs font-bold">
+                      {pricingType === "starting_at" ? "A partir de" : pricingType === "on_quote" ? "Sob Cotação" : "Tarifa Direta"}
+                    </Badge>
+                  </div>
+
+                  <div className="flex items-baseline gap-2">
+                    {pricingType === "on_quote" ? (
+                      <span className="text-xl sm:text-2xl font-black text-foreground tracking-tight font-display">
+                        Sob Consulta
+                      </span>
+                    ) : pricingType === "free" ? (
+                      <span className="text-xl sm:text-2xl font-black text-emerald-600 tracking-tight font-display">
+                        Gratuito (Doação)
+                      </span>
+                    ) : pricingType === "exchange_only" ? (
+                      <span className="text-xl sm:text-2xl font-black text-amber-600 tracking-tight font-display">
+                        Somente Troca / Permuta
+                      </span>
+                    ) : pricingType === "price_range" && priceMinCents && priceMaxCents ? (
+                      <span className="text-xl sm:text-2xl font-black text-foreground tracking-tight font-display">
+                        {formatMoney(priceMinCents)} a {formatMoney(priceMaxCents)}
+                      </span>
+                    ) : priceCents > 0 ? (
+                      <>
+                        {pricingType === "starting_at" && (
+                          <span className="text-xs text-muted-foreground font-semibold">A partir de</span>
+                        )}
+                        <span className="text-2xl font-black text-foreground tracking-tight font-display">
+                          {maxInstallments > 1 ? `${maxInstallments}x ${formatMoney(installmentCents)}` : formatMoney(priceCents)}
+                        </span>
+                        {maxInstallments > 1 && (
+                          <span className="text-xs text-muted-foreground font-medium">sem juros</span>
+                        )}
+                      </>
+                    ) : (
+                      <span className="text-lg font-bold text-foreground">Consulte Valores</span>
+                    )}
+                  </div>
+
+                  {/* Disclaimer legal em destaque */}
+                  {disclaimerText && (
+                    <p className="text-xs text-muted-foreground flex items-start gap-1 pt-1">
+                      <Info className="size-3 text-primary shrink-0 mt-1" />
+                      <span>{disclaimerText}</span>
+                    </p>
+                  )}
+                </div>
+              )}
+
               {/* Card Específico de Retirada Solidária (Doação) */}
               {(nicheId.includes("doacao") || attrs.is_donation) ? (
                 <div className="p-4 rounded-lg bg-emerald-500/10 border border-emerald-500/25 space-y-3">

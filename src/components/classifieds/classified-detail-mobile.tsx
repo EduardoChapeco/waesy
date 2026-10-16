@@ -150,19 +150,17 @@ export function ClassifiedDetailMobile({
   }, [niche, templateStyle, attrs]);
 
   const tabs = useMemo(() => {
-    if (isTravelOrHospitality) {
-      return [
-        { id: "overview" as const, label: "Infos do pacote" },
-        { id: "media" as const, label: "Fotos & Mídia" },
-        { id: "seller" as const, label: "Anunciante / Empresa" },
-      ];
+    const list: Array<{ id: "overview" | "media" | "seller"; label: string }> = [];
+    list.push({
+      id: "overview",
+      label: isTravelOrHospitality ? "Infos do pacote" : "Detalhes do Item",
+    });
+    if (images.length > 1) {
+      list.push({ id: "media", label: "Fotos & Mídia" });
     }
-    return [
-      { id: "overview" as const, label: "Detalhes do Item" },
-      { id: "media" as const, label: "Fotos & Mídia" },
-      { id: "seller" as const, label: "Anunciante / Empresa" },
-    ];
-  }, [isTravelOrHospitality]);
+    list.push({ id: "seller", label: "Anunciante / Empresa" });
+    return list;
+  }, [isTravelOrHospitality, images.length]);
 
   const priceCents = Number(classified.price_cents || 0);
   const maxInstallments = Math.max(1, Number(attrs.max_installments) || 1);
@@ -1047,13 +1045,25 @@ export function ClassifiedDetailMobile({
                     <span className="font-semibold text-foreground">~15 min</span>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Star className="size-4 text-amber-500 fill-amber-500 shrink-0" />
-                  <div>
-                    <span className="text-muted-foreground block text-xs font-medium">Avaliação</span>
-                    <span className="font-semibold text-foreground">4.9 ★ (128)</span>
+                {classified.rating && Number(classified.rating) > 0 ? (
+                  <div className="flex items-center gap-2">
+                    <Star className="size-4 text-amber-500 fill-amber-500 shrink-0" />
+                    <div>
+                      <span className="text-muted-foreground block text-xs font-medium">Avaliação</span>
+                      <span className="font-semibold text-foreground">
+                        {Number(classified.rating).toFixed(1)} ★ {classified.review_count ? `(${classified.review_count})` : ""}
+                      </span>
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <ShieldCheck className="size-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                    <div>
+                      <span className="text-muted-foreground block text-xs font-medium">Procedência</span>
+                      <span className="font-semibold text-foreground">Anunciante Verificado</span>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="grid grid-cols-2 gap-2 pt-2 border-t border-border/40">

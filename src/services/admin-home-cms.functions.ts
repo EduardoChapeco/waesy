@@ -44,7 +44,7 @@ export interface NormalizedShowcasePost {
   id: string;
   title: string;
   summary: string;
-  coverUrl: string;
+  coverUrl: string | null;
   mediaUrls?: string[];
   postType?: string;
   layoutStyle?: "trilho_horizontal" | "carrossel_unico" | "panoramico" | "grid";
@@ -451,7 +451,7 @@ export const listPublicHomePageSections = createServerFn({ method: "GET" })
           section_id: item.section_id,
           title: item.title,
           subtitle: item.subtitle,
-          image_url: resolveHealthyCover(item.image_url),
+          image_url: isHealthyImageUrl(item.image_url) ? String(item.image_url).trim() : (item.image_url || ""),
           target_url: item.target_url || "/",
           show_text: item.show_text ?? false,
           grid_span_x: item.grid_span_x || 1,
@@ -518,7 +518,7 @@ export const listAdminHomePageSections = createServerFn({ method: "GET" })
           section_id: item.section_id,
           title: item.title,
           subtitle: item.subtitle,
-          image_url: resolveHealthyCover(item.image_url),
+          image_url: isHealthyImageUrl(item.image_url) ? String(item.image_url).trim() : (item.image_url || ""),
           target_url: item.target_url || "/",
           show_text: item.show_text ?? false,
           grid_span_x: item.grid_span_x || 1,
@@ -842,17 +842,16 @@ export const getUnifiedShowcasePosts = createServerFn({ method: "GET" })
           ? p.media_urls.filter((u: unknown) => isHealthyImageUrl(u)).map((u: string) => u.trim())
           : [];
         const rawMedia = validMediaUrls[0] || null;
-        const cover = resolveHealthyCover(rawMedia, idx);
+        // Invariante Anti-Fake: Post sem mídia NÃO deve receber imagem do Unsplash como fallback.
+        // Se não possui mídia enviada pelo criador/loja, coverUrl é null (post puro de texto).
+        const cover = rawMedia && isHealthyImageUrl(rawMedia) ? rawMedia : null;
         const rawText =
           p.content_text ||
           p.metadata?.title ||
           p.metadata?.subtitle ||
           "";
-        const cleanText = rawText
-          .replace(/==([^=]+)==/g, "$1")
-          .replace(/\*\*([^*]+)\*\*/g, "$1")
-          .replace(/__([^_]+)__/g, "$1")
-          .trim();
+        // Preserva a formatação rica (==destaque==, menções, hashtags) para exibição nativa
+        const cleanText = rawText.trim();
 
         if (!cleanText && validMediaUrls.length === 0) return;
 
@@ -935,7 +934,8 @@ export const getUnifiedShowcasePosts = createServerFn({ method: "GET" })
 
         articlesData.forEach((art: any, idx: number) => {
           const validMedia = isHealthyImageUrl(art.cover_media_url) ? [art.cover_media_url.trim()] : [];
-          const cover = resolveHealthyCover(art.cover_media_url, idx + 10);
+          // Invariante Anti-Fake: Notícia sem imagem de capa NÃO deve receber Unsplash como fallback
+          const cover = validMedia[0] || null;
           normalizedList.push({
             id: `article-${art.id}`,
             title: art.title,

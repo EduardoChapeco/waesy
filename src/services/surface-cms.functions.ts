@@ -10,6 +10,7 @@ import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { NICHE_STORE_KEYWORDS } from "@/services/marketplace.functions";
 import type { FlashOfferDTO, StoreCardDTO } from "@/services/marketplace.functions";
+import { formatStoreCategory } from "@/lib/niches/niche-manifest";
 
 export type SurfaceSectionType =
  | "flash_deal_rail"
@@ -302,7 +303,7 @@ export const getModularSurfaceFeed = createServerFn({ method: "GET" })
  // Mapeia lojas
  const allDbStores: StoreCardDTO[] = (storesRes.data || []).map((s: any) => {
  const settings = (s.settings as Record<string, any>) || {};
- const category = settings.segment || settings.type || settings.niche || "Comércio Local";
+ const category = formatStoreCategory(settings.segment || settings.type || settings.niche || "Comércio Local");
  return {
  id: s.id,
  name: s.name,
@@ -924,7 +925,7 @@ export const getProceduralInfiniteFeedPage = createServerFn({ method: "GET" })
             slug: s.slug || `loja-${s.id.slice(0, 6)}`,
             avatar_url: settings.logoUrl || settings.logo_url || undefined,
             banner_url: settings.bannerUrl || settings.banner_url || undefined,
-            category: settings.segment || settings.niche || "Comércio Local",
+            category: formatStoreCategory(settings.segment || settings.niche || "Comércio Local"),
             rating: typeof s.rating === "number" ? s.rating : typeof settings.rating === "number" ? settings.rating : undefined,
             review_count: typeof s.review_count === "number" ? s.review_count : typeof settings.review_count === "number" ? settings.review_count : undefined,
             distance_km: typeof s.distance_km === "number" ? s.distance_km : undefined,

@@ -13,9 +13,31 @@ import { cn } from "@/lib/utils";
 import { formatRelativeTime } from "@/lib/datetime";
 import {
   type NormalizedShowcasePost,
-  resolveHealthyCover,
   isHealthyImageUrl,
 } from "@/services/admin-home-cms.functions";
+import { RichPostContent } from "@/components/community/rich-post-content";
+
+function isVideoUrl(url?: string | null): boolean {
+  if (!url) return false;
+  const clean = url.split("?")[0].toLowerCase();
+  const lower = url.toLowerCase();
+  return (
+    clean.endsWith(".mp4") ||
+    clean.endsWith(".webm") ||
+    clean.endsWith(".mov") ||
+    clean.endsWith(".quicktime") ||
+    clean.endsWith(".m4v") ||
+    clean.endsWith(".ogg") ||
+    clean.endsWith(".avi") ||
+    clean.endsWith(".mkv") ||
+    clean.includes("video") ||
+    lower.includes(".mp4") ||
+    lower.includes(".webm") ||
+    lower.includes(".mov") ||
+    lower.includes("/video/") ||
+    lower.includes("video=")
+  );
+}
 
 export interface HomePostsShowcaseProps {
   posts: NormalizedShowcasePost[];
@@ -71,12 +93,14 @@ export function HomePostsShowcase({
       >
         {posts.map((post, idx) => {
           const hasAvatar = isHealthyImageUrl(post.authorAvatar);
-          const mediaList =
+          const rawMediaList =
             Array.isArray(post.mediaUrls) && post.mediaUrls.length > 0
               ? post.mediaUrls.filter((u) => isHealthyImageUrl(u))
               : isHealthyImageUrl(post.coverUrl)
-                ? [resolveHealthyCover(post.coverUrl, idx)]
+                ? [post.coverUrl!]
                 : [];
+          // Invariante Anti-Fake: Se o post não tem foto/vídeo real, lista de mídia fica VAZIA
+          const mediaList = rawMediaList.filter(Boolean);
           const isNews = post.postType === "news" || post.category === "Notícia";
           const displayText = post.summary || post.title || "";
 
@@ -140,54 +164,78 @@ export function HomePostsShowcase({
                   </div>
                 </div>
 
-                {/* 2. Texto Principal Acima da Mídia + Gatilho Inline "Ler mais" */}
+                {/* 2. Texto Principal Formatado com Highlighter Threads + Gatilho Inline "Ler mais" */}
                 <div className="space-y-1">
                   {isNews && post.title && (
                     <h3 className="text-sm font-bold text-foreground line-clamp-2 leading-snug group-hover:text-primary transition-colors">
                       {post.title}
                     </h3>
                   )}
-                  <p className="text-xs sm:text-sm text-foreground/90 line-clamp-3 leading-relaxed">
-                    {displayText}
+                  <div className={cn("text-xs sm:text-sm text-foreground/90 leading-relaxed", mediaList.length > 0 ? "line-clamp-3" : "line-clamp-6")}>
+                    <RichPostContent
+                      content={displayText}
+                      isExpanded={false}
+                      maxCharacters={mediaList.length > 0 ? 180 : 360}
+                    />
                     <span className="inline-flex items-center gap-1 ml-2 text-xs font-bold text-primary group-hover:underline">
                       Ler mais
                     </span>
-                  </p>
+                  </div>
                 </div>
 
-                {/* 3. Mídia Multi-Formato: Galeria Deslizante (múltiplas fotos 3:4 lado a lado) ou Quadro Panorâmico */}
+                {/* 3. Mídia Multi-Formato: Vídeo nativo, Galeria Deslizante ou Imagem Panorâmica (Zero Imagens Fakes) */}
                 {mediaList.length > 1 ? (
                   <div className="carousel flex gap-2 overflow-x-auto no-scrollbar pb-1">
                     {mediaList.slice(0, 6).map((mediaUrl, mIdx) => (
                       <div
                         key={mIdx}
-                        className="w-36 sm:w-40 aspect-post-portrait rounded-lg overflow-hidden bg-muted/30 border border-border/40 shrink-0"
+                        className="w-36 sm:w-40 aspect-post-portrait rounded-lg overflow-hidden bg-muted/30 border border-border/40 shrink-0 relative"
                       >
-                        <img
-                          src={mediaUrl}
-                          alt={post.title}
-                          loading="lazy"
-                          className="size-full object-cover group-hover:scale-102 transition-transform duration-300 motion-reduce:transition-none"
-                          onError={(e) => {
-                            (e.currentTarget as HTMLImageElement).src =
-                              resolveHealthyCover(null, idx + mIdx);
-                          }}
-                        />
+                        {isVideoUrl(mediaUrl) ? (
+                          <video
+                            src={mediaUrl}
+                            controls={false}
+                            muted
+                            playsInline
+                            loop
+                            preload="metadata"
+                            className="size-full object-cover"
+                          />
+                        ) : (
+                          <img
+                            src={mediaUrl}
+                            alt={post.title}
+                            loading="lazy"
+                            className="size-full object-cover group-hover:scale-102 transition-transform duration-300 motion-reduce:transition-none"
+                            onError={(e) => {
+                              (e.currentTarget.parentElement as HTMLElement)?.style.setProperty("display", "none");
+                            }}
+                          />
+                        )}
                       </div>
                     ))}
                   </div>
                 ) : mediaList.length === 1 ? (
                   <div className="relative w-full aspect-post-card rounded-lg overflow-hidden bg-muted/30 border border-border/40">
-                    <img
-                      src={mediaList[0]}
-                      alt={post.title}
-                      loading="lazy"
-                      className="size-full object-cover group-hover:scale-102 transition-transform duration-300 motion-reduce:transition-none"
-                      onError={(e) => {
-                        (e.currentTarget as HTMLImageElement).src =
-                          resolveHealthyCover(null, idx);
-                      }}
-                    />
+                    {isVideoUrl(mediaList[0]) ? (
+                      <video
+                        src={mediaList[0]}
+                        controls
+                        playsInline
+                        preload="metadata"
+                        className="size-full object-cover"
+                      />
+                    ) : (
+                      <img
+                        src={mediaList[0]}
+                        alt={post.title}
+                        loading="lazy"
+                        className="size-full object-cover group-hover:scale-102 transition-transform duration-300 motion-reduce:transition-none"
+                        onError={(e) => {
+                          (e.currentTarget.parentElement as HTMLElement)?.style.setProperty("display", "none");
+                        }}
+                      />
+                    )}
                   </div>
                 ) : null}
               </div>
