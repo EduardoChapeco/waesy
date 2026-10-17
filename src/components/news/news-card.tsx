@@ -1,6 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Clock, Eye, ArrowRight, Share2, Newspaper, MapPin } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Clock, Eye, ArrowRight, Share2, Newspaper, MapPin, CheckCircle2 } from "lucide-react";
 import { type NewsArticleDTO } from "@/services/news.functions";
 import { toast } from "sonner";
 
@@ -26,216 +25,183 @@ export function NewsCard({ article, compact = false }: NewsCardProps) {
       })
     : "Recente";
 
-  // ── Modo Compacto: Projetado especificamente para trilhos horizontais ──
-  // Altura sincronizada perfeitamente com HitsLeadCard
+  const sourceName = article.store_name || article.author_name || "Redação Local";
+  const sourceInitial = sourceName.trim().charAt(0).toUpperCase() || "R";
+
+  // ── Modo Compacto: Projetado para trilhos horizontais ──
   if (compact) {
     return (
       <Link
         to="/noticias/$slug"
         params={{ slug: article.slug }}
-        className="group relative flex items-center gap-4 p-3 rounded-lg bg-card border border-border/60 hover-elevate transition-colors w-full content-auto-card min-w-72 sm:min-w-80 max-w-sm h-36 sm:h-40 shrink-0 select-none overflow-hidden"
+        className="group relative flex items-center gap-3 p-3 rounded-lg bg-card border border-border/60 hover:border-border transition-colors w-full content-auto-card min-w-72 sm:min-w-80 max-w-sm h-36 sm:h-40 shrink-0 select-none overflow-hidden"
       >
-        {/* Thumbnail Quadrada com cantos arredondados contínuos */}
         <div className="size-24 sm:size-28 rounded-lg overflow-hidden bg-muted shrink-0 relative aspect-square">
           {article.cover_media_url ? (
             <img
               src={article.cover_media_url}
               alt={article.title}
               loading="lazy"
-              className="size-full object-cover group-hover:scale-105 transition-transform duration-500"
+              className="size-full object-cover group-hover:scale-103 transition-transform duration-300"
             />
           ) : (
             <div className="size-full flex items-center justify-center bg-muted/40 text-muted-foreground">
               <Newspaper className="size-6 opacity-30" />
             </div>
           )}
-
-          {article.reading_time_minutes && (
-            <span className="absolute bottom-1 right-1 px-2 py-1 rounded-md bg-black/85 text-xs font-mono text-white">
-              {article.reading_time_minutes}m
-            </span>
-          )}
         </div>
 
-        {/* Informações da Notícia */}
         <div className="flex-1 min-w-0 flex flex-col justify-between h-full py-1 space-y-1">
           <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-black uppercase text-primary tracking-wider truncate">
-                {article.kicker || article.category || "Notícia"}
-              </span>
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <span className="font-bold text-foreground truncate">{sourceName}</span>
+              <CheckCircle2 className="size-3 text-primary shrink-0" />
+              <span>•</span>
+              <span className="shrink-0">{formattedDate}</span>
             </div>
-              {article.city && (
-                <span className="inline-flex items-center gap-1 text-xs font-semibold text-muted-foreground truncate">
-                  <MapPin className="size-3 shrink-0 text-primary" />
-                  <span>{article.city}</span>
-                </span>
-              )}
             <h4 className="text-xs sm:text-sm font-bold text-foreground leading-snug line-clamp-2 group-hover:text-primary transition-colors">
               {article.title}
             </h4>
           </div>
 
-          <div className="flex items-center justify-between text-xs text-muted-foreground pt-1 border-t border-border/40">
-            <span className="truncate max-w-28 font-medium text-foreground/80">
-              {article.store_name || "Redação"}
-            </span>
-              {((article as any).source_type === "crawler" || (article as any).source_url) && (
-                <span className="px-2 py-1 rounded text-xs bg-muted text-muted-foreground border border-border/40 shrink-0">
-                  Minerada
-                </span>
-              )}
-            <span className="font-mono">{formattedDate}</span>
+          <div className="flex items-center justify-between text-xs pt-1 border-t border-border/40">
+            <span className="font-semibold text-primary">Ler mais</span>
+            {article.city && (
+              <span className="inline-flex items-center gap-1 text-xs text-muted-foreground truncate">
+                <MapPin className="size-3 shrink-0" />
+                <span className="truncate">{article.city}</span>
+              </span>
+            )}
           </div>
         </div>
       </Link>
     );
   }
 
-  // ── Modo Completo: Padrão Apple HIG com tipografia fluida e touch target de 44px ──
+  // ── Modo Completo: Minimalist Social Stream Editorial Card ──
   return (
-    <article className="group relative flex flex-col rounded-lg bg-card border border-border/60 overflow-hidden hover-elevate transition-colors duration-200 content-auto-card">
-      {/* ── 1. Imagem / Vídeo Full Bleed ── */}
-      <div className="relative aspect-16/10 w-full overflow-hidden bg-muted block">
-        <Link
-          to="/noticias/$slug"
-          params={{ slug: article.slug }}
-          className="size-full block group-hover:scale-103 transition-transform duration-500"
-        >
-          {article.cover_media_url ? (
-            article.cover_media_type === "video" ? (
-              <video
-                src={article.cover_media_url}
-                autoPlay
-                muted
-                loop
-                playsInline
+    <article className="group relative flex flex-col rounded-lg bg-card border border-border/60 p-4 sm:p-5 hover:border-border transition-colors duration-200 content-auto-card">
+      {/* ── 1. Header Minimalista: Fonte + Selo + Data + Compartilhar ── */}
+      <div className="flex items-center justify-between gap-2 mb-3">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="size-9 rounded-full overflow-hidden bg-primary/10 text-primary border border-border/50 flex items-center justify-center shrink-0 font-bold text-xs">
+            {article.store_avatar ? (
+              <img
+                src={article.store_avatar}
+                alt={sourceName}
                 className="size-full object-cover"
               />
             ) : (
-              <img
-                src={article.cover_media_url}
-                alt={article.title}
-                loading="lazy"
-                className="size-full object-cover"
-              />
-            )
-          ) : (
-            <div className="size-full flex items-center justify-center bg-muted/40 text-muted-foreground">
-              <Newspaper className="size-10 opacity-30" />
-            </div>
-          )}
-        </Link>
-
-        {/* Badges Flutuantes sobre a Imagem */}
-        <div className="absolute top-3 left-3 right-3 flex items-center justify-between pointer-events-none">
-          <div className="flex items-center gap-2 flex-wrap">
-            {article.kicker ? (
-              <span className="px-3 py-1 rounded-md text-xs font-black uppercase tracking-wider bg-black/85 text-white border border-white/10">
-                {article.kicker}
-              </span>
-            ) : null}
-            {article.city ? (
-              <span className="px-3 py-1 rounded-md text-xs font-semibold bg-background/90 text-foreground border border-border/80 flex items-center gap-1">
-                <MapPin className="size-3 shrink-0 text-primary" />
-                <span>{article.city}{article.state ? ` · ${article.state}` : ""}</span>
-              </span>
-            ) : null}
-            {((article as any).source_type === "crawler" || (article as any).source_url) ? (
-              <span className="px-2 py-1 rounded-md text-xs font-medium bg-background/90 text-foreground border border-border/80">
-                Fonte Regional
-              </span>
-            ) : null}
+              <span>{sourceInitial}</span>
+            )}
           </div>
-
-          <div className="flex items-center gap-2 pointer-events-auto">
-            <span className="px-3 py-1 rounded-md bg-black/85 text-xs font-mono text-white flex items-center gap-1 border border-white/10">
-              <Clock className="size-3" />
-              {article.reading_time_minutes || 3} min
-            </span>
-
-            {/* Botão de Compartilhar com Hit Area Expandida (44px) */}
-            <button
-              type="button"
-              onClick={handleShare}
-              className="size-11 rounded-full bg-black/85 text-white hover:bg-black/90 border border-white/10 flex items-center justify-center cursor-pointer transition-colors active:scale-95 touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              title="Compartilhar notícia"
-              aria-label="Compartilhar notícia"
-            >
-              <Share2 className="size-3.5" />
-            </button>
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-bold text-foreground truncate">{sourceName}</span>
+              <CheckCircle2 className="size-3.5 text-primary fill-primary/15 shrink-0" />
+              <span className="text-xs text-muted-foreground">•</span>
+              <span className="text-xs text-muted-foreground shrink-0">{formattedDate}</span>
+            </div>
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <span>{article.kicker || article.category || "Jornalismo Local"}</span>
+              {article.city && (
+                <>
+                  <span>•</span>
+                  <span className="inline-flex items-center gap-1 truncate">
+                    <MapPin className="size-3 shrink-0" />
+                    <span>{article.city}</span>
+                  </span>
+                </>
+              )}
+            </div>
           </div>
         </div>
+
+        <button
+          type="button"
+          onClick={handleShare}
+          className="size-11 min-h-11 min-w-11 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/60 flex items-center justify-center cursor-pointer transition-colors active:scale-95 shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          title="Compartilhar notícia"
+          aria-label="Compartilhar notícia"
+        >
+          <Share2 className="size-4" />
+        </button>
       </div>
 
-      {/* ── 2. Conteúdo Editorial Conciso ── */}
-      <div className="p-4 sm:p-5 space-y-3 flex-1 flex flex-col justify-between">
-        <div className="space-y-2">
-          {/* Autor & Data */}
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            {article.store_avatar && (
-              <img
-                src={article.store_avatar}
-                alt={article.store_name || "Autor"}
-                className="size-4 rounded-full object-cover"
-              />
-            )}
-            <span className="font-semibold text-foreground truncate max-w-40">
-              {article.store_name || article.author_name || "Redação"}
-            </span>
-            <span>•</span>
-            <span>{formattedDate}</span>
-            {article.city && (
-              <>
-                <span>•</span>
-                <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-                  <MapPin className="size-3 shrink-0 text-primary" />
-                  <span>{article.city}{article.state ? ` · ${article.state}` : ""}</span>
-                </span>
-              </>
-            )}
-            {((article as any).source_type === "crawler" || (article as any).source_url) && (
-              <span className="px-2 py-1 rounded text-xs bg-muted text-muted-foreground border border-border/40">
-                Minerada
-              </span>
-            )}
-          </div>
+      {/* ── 2. Manchete + Resumo + "Ler mais" Acima da Mídia ── */}
+      <div className="space-y-2 mb-3">
+        <Link
+          to="/noticias/$slug"
+          params={{ slug: article.slug }}
+          className="block group-hover:text-primary transition-colors"
+        >
+          <h3 className="text-base sm:text-lg font-bold tracking-tight text-foreground leading-snug line-clamp-2">
+            {article.title}
+          </h3>
+        </Link>
 
-          {/* Título Principal */}
+        <p className="text-sm text-foreground/85 leading-relaxed line-clamp-3">
+          {article.subtitle || article.title}{" "}
           <Link
             to="/noticias/$slug"
             params={{ slug: article.slug }}
-            className="block group-hover:text-primary transition-colors"
+            className="inline font-semibold text-primary hover:underline ml-1"
           >
-            <h3 className="text-base sm:text-lg font-bold tracking-tight text-foreground leading-snug line-clamp-2">
-              {article.title}
-            </h3>
+            Ler mais
           </Link>
+        </p>
+      </div>
 
-          {/* Subtítulo / Descrição Curta */}
-          {article.subtitle && (
-            <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">
-              {article.subtitle}
-            </p>
+      {/* ── 3. Mídia Arredondada Limpa Abaixo do Texto ── */}
+      {article.cover_media_url && (
+        <Link
+          to="/noticias/$slug"
+          params={{ slug: article.slug }}
+          className="relative aspect-16/10 w-full rounded-lg overflow-hidden bg-muted border border-border/50 mb-3 block"
+        >
+          {article.cover_media_type === "video" ? (
+            <video
+              src={article.cover_media_url}
+              autoPlay
+              muted
+              loop
+              playsInline
+              className="size-full object-cover"
+            />
+          ) : (
+            <img
+              src={article.cover_media_url}
+              alt={article.title}
+              loading="lazy"
+              className="size-full object-cover group-hover:scale-102 transition-transform duration-300"
+            />
+          )}
+        </Link>
+      )}
+
+      {/* ── 4. Rodapé Minimalista com Touch Target de 44px ── */}
+      <div className="pt-2 mt-auto border-t border-border/40 flex items-center justify-between gap-2 text-xs text-muted-foreground">
+        <div className="flex items-center gap-3">
+          <span className="inline-flex items-center gap-1">
+            <Clock className="size-3.5" />
+            <span>{article.reading_time_minutes || 3} min de leitura</span>
+          </span>
+          {(article.views_count || 0) > 0 && (
+            <span className="inline-flex items-center gap-1">
+              <Eye className="size-3.5" />
+              <span>{article.views_count}</span>
+            </span>
           )}
         </div>
 
-        {/* ── 3. Rodapé com Touch Target de 44px ── */}
-        <div className="pt-3 border-t border-border/40 flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2 text-xs text-muted-foreground font-medium">
-            <Eye className="size-3.5 opacity-60" />
-            <span>{article.views_count || 0} leituras</span>
-          </div>
-
-          <Link
-            to="/noticias/$slug"
-            params={{ slug: article.slug }}
-            className="inline-flex items-center gap-2 px-3 min-h-11 text-xs font-bold text-foreground hover:text-primary transition-colors group/btn"
-          >
-            <span>Ler Matéria</span>
-            <ArrowRight className="size-3.5 group-hover/btn:translate-x-0.5 transition-transform" />
-          </Link>
-        </div>
+        <Link
+          to="/noticias/$slug"
+          params={{ slug: article.slug }}
+          className="inline-flex items-center gap-2 px-3 min-h-11 rounded-full text-xs font-semibold text-primary hover:bg-primary/10 transition-colors"
+        >
+          <span>Ler matéria completa</span>
+          <ArrowRight className="size-3.5" />
+        </Link>
       </div>
     </article>
   );

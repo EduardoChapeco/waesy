@@ -51,7 +51,7 @@ export const Route = createFileRoute("/workspace/simulacao")({
 });
 
 const NICHES = [
-  { id: "all", label: "Todos os Nichos" },
+  { id: "all", label: "Todos" },
   { id: "eventos", label: "Eventos e Festas" },
   { id: "gastronomia", label: "Gastronomia e Restaurante" },
   { id: "moda", label: "Moda e Vestuário" },
@@ -181,7 +181,7 @@ function SimulacaoPage() {
   ], [synthesis, evaluations.length]);
 
   return (
-    <div className="flex flex-col min-h-[calc(100dvh-4rem)] w-full">
+    <div className="flex flex-col flex-1 min-h-0 w-full">
       {/* ── 1. BARRA CANÔNICA APPLE HIG (SEM TÍTULOS PROLIXOS) ── */}
       <WorkspaceCanonicalToolbar
           placeholder="Buscar perfis sintéticos por nome, classe ou região..."
@@ -348,7 +348,7 @@ function SimulacaoPage() {
           {/* Coluna Direita: Resultados da Simulação / Veredito Científico */}
           <div className="lg:col-span-7 space-y-5">
             {!synthesis && !isRunning && (
-              <div className="rounded-lg border border-border/80 bg-card p-8 sm:p-12 text-center flex flex-col items-center justify-center space-y-3 min-h-[440px] shadow-sm">
+              <div className="rounded-lg border border-border/80 bg-card p-8 sm:p-12 text-center flex flex-col items-center justify-center space-y-3 min-h-112 shadow-sm">
                 <div className="p-4 bg-primary/10 rounded-lg text-primary">
                   <BrainCircuit className="size-8" />
                 </div>
@@ -362,7 +362,7 @@ function SimulacaoPage() {
             )}
 
             {isRunning && (
-              <div className="rounded-lg border border-border/80 bg-card p-8 sm:p-12 text-center flex flex-col items-center justify-center space-y-4 min-h-[440px] shadow-sm">
+              <div className="rounded-lg border border-border/80 bg-card p-8 sm:p-12 text-center flex flex-col items-center justify-center space-y-4 min-h-112 shadow-sm">
                 <Loader2 className="size-10 text-primary animate-spin" />
                 <div className="space-y-1">
                   <h3 className="text-sm font-bold text-foreground">
@@ -435,7 +435,7 @@ function SimulacaoPage() {
                     </span>
                   </div>
 
-                  <div className="space-y-3 max-h-[380px] overflow-y-auto no-scrollbar pr-1">
+                  <div className="space-y-3 max-h-96 overflow-y-auto no-scrollbar pr-1">
                     {evaluations.map((ev, idx) => (
                       <div
                         key={idx}

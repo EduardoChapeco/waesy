@@ -49,11 +49,46 @@ export interface CrawlBatchResult {
   message?: string;
 }
 
+/**
+ * Auto-Reset / Reaper de Itens Travados na Fila de Crawling
+ * Restaura para 'pending' itens presos em 'processing' há mais de 10 minutos ou com processed_at nulo.
+ */
+export async function reapStalledProcessingQueueItems(supabaseClient?: any): Promise<number> {
+  const supabase = supabaseClient || getServerClient();
+  const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+
+  const { data: stalled, error } = await supabase
+    .from("crawl_queue")
+    .update({
+      status: "pending",
+      last_error: "Auto-reset pelo reaper: recuperado de travamento em 'processing'",
+      processing_error: "Auto-reset pelo reaper: recuperado de travamento em 'processing'",
+      updated_at: new Date().toISOString(),
+    })
+    .eq("status", "processing")
+    .or(`processed_at.lt.${tenMinutesAgo},processed_at.is.null,started_at.lt.${tenMinutesAgo}`)
+    .select("id");
+
+  if (error) {
+    console.warn("[CrawlerReaper] Falha ao recuperar itens travados na fila:", error);
+    return 0;
+  }
+
+  const count = stalled?.length || 0;
+  if (count > 0) {
+    console.info(`[CrawlerReaper] ${count} itens em 'processing' foram restaurados para 'pending'.`);
+  }
+  return count;
+}
+
 export async function executeCrawlQueueBatchDirect(
   options?: CrawlBatchOptions
 ): Promise<CrawlBatchResult> {
   const supabase = getServerClient();
   const batchSize = options?.batchSize || options?.limit || 5;
+
+  // 0. Auto-reset / Reaper de itens presos em 'processing' há mais de 10 minutos
+  await reapStalledProcessingQueueItems(supabase);
 
   // 1. Busca itens pendentes ordenados por prioridade decrescente e idade
   let query = supabase
@@ -115,7 +150,8 @@ export async function executeCrawlQueueBatchDirect(
           .from("crawl_queue")
           .update({
             status: jobRes.success ? "completed" : "failed",
-            error_message: jobRes.error || null,
+            last_error: jobRes.error || null,
+            processing_error: jobRes.error || null,
             completed_at: new Date().toISOString(),
           })
           .eq("id", item.id);
@@ -143,7 +179,8 @@ export async function executeCrawlQueueBatchDirect(
           .from("crawl_queue")
           .update({
             status: placesRes.success ? "completed" : "failed",
-            error_message: placesRes.error || null,
+            last_error: placesRes.error || null,
+            processing_error: placesRes.error || null,
             completed_at: new Date().toISOString(),
           })
           .eq("id", item.id);
@@ -170,7 +207,8 @@ export async function executeCrawlQueueBatchDirect(
           .from("crawl_queue")
           .update({
             status: tendersRes.success ? "completed" : "failed",
-            error_message: tendersRes.error || null,
+            last_error: tendersRes.error || null,
+            processing_error: tendersRes.error || null,
             completed_at: new Date().toISOString(),
           })
           .eq("id", item.id);
@@ -198,7 +236,8 @@ export async function executeCrawlQueueBatchDirect(
           .from("crawl_queue")
           .update({
             status: estateRes.success ? "completed" : "failed",
-            error_message: estateRes.error || null,
+            last_error: estateRes.error || null,
+            processing_error: estateRes.error || null,
             completed_at: new Date().toISOString(),
           })
           .eq("id", item.id);
@@ -228,7 +267,8 @@ export async function executeCrawlQueueBatchDirect(
           .from("crawl_queue")
           .update({
             status: auctionRes.success ? "completed" : "failed",
-            error_message: auctionRes.error || null,
+            last_error: auctionRes.error || null,
+            processing_error: auctionRes.error || null,
             completed_at: new Date().toISOString(),
           })
           .eq("id", item.id);
@@ -281,7 +321,8 @@ export async function executeCrawlQueueBatchDirect(
           .from("crawl_queue")
           .update({
             status: "completed",
-            error_message: null,
+            last_error: null,
+            processing_error: null,
             completed_at: new Date().toISOString(),
           })
           .eq("id", item.id);
@@ -314,7 +355,8 @@ export async function executeCrawlQueueBatchDirect(
           .from("crawl_queue")
           .update({
             status: eventRes.success ? "completed" : "failed",
-            error_message: eventRes.error || null,
+            last_error: eventRes.error || null,
+            processing_error: eventRes.error || null,
             completed_at: new Date().toISOString(),
           })
           .eq("id", item.id);
@@ -483,7 +525,8 @@ export async function executeCrawlQueueBatchDirect(
           .from("crawl_queue")
           .update({
             status: "completed",
-            error_message: null,
+            last_error: null,
+            processing_error: null,
             completed_at: new Date().toISOString(),
           })
           .eq("id", item.id);
@@ -503,7 +546,8 @@ export async function executeCrawlQueueBatchDirect(
         .from("crawl_queue")
         .update({
           status: "failed",
-          error_message: errMsg.slice(0, 300),
+          last_error: errMsg.slice(0, 300),
+          processing_error: errMsg.slice(0, 300),
           completed_at: new Date().toISOString(),
         })
         .eq("id", item.id);

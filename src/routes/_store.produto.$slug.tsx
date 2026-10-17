@@ -156,7 +156,7 @@ function SizeGuideSheet({
  </tbody>
  </table>
  </div>
- <p className="mt-2 text-[10px] text-muted-foreground leading-normal">
+ <p className="mt-2 text-2xs text-muted-foreground leading-normal">
  * Dica: Se ficar entre dois tamanhos, recomendamos escolher a numeração maior para maior
  conforto.
  </p>
@@ -276,7 +276,7 @@ function ProductPage() {
         <EmptyState
           title="Produto não encontrado"
           action={
-            <Button asChild>
+            <Button asChild className="h-11 min-h-11 px-5 rounded-lg font-semibold text-xs cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
               <Link to="/mercado">Ver catálogo</Link>
             </Button>
           }

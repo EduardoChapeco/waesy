@@ -292,7 +292,7 @@ function RootShell({ children }: { children: ReactNode }) {
           />
         )}
       </head>
- <body className="w-full max-w-full overflow-x-hidden min-h-[100dvh] antialiased">
+ <body className="w-full max-w-full viewport-lock antialiased select-none font-sans">
         <a href="#main-content" className="skip-link">
           Pular para o conteúdo principal
         </a>

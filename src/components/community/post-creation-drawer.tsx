@@ -24,7 +24,7 @@ export interface PostCreationDrawerProps {
  open: boolean;
  onOpenChange: (open: boolean) => void;
  session?: any;
- defaultFormat?: "simple" | "carousel" | "grid" | "news" | "travel" | "threads" | "moment";
+ defaultFormat?: "simple" | "trilho_horizontal" | "carousel" | "grid" | "news" | "travel" | "threads" | "moment";
 }
 
 export function PostCreationDrawer({
@@ -37,7 +37,7 @@ export function PostCreationDrawer({
  const queryClient = useQueryClient();
 
  const [activeFormat, setActiveFormat] = useState<
- "simple" | "carousel" | "grid" | "news" | "travel" | "threads" | "moment"
+ "simple" | "trilho_horizontal" | "carousel" | "grid" | "news" | "travel" | "threads" | "moment"
  >(defaultFormat);
 
  // Common Post Fields
@@ -291,8 +291,8 @@ export function PostCreationDrawer({
  return;
  }
 
- if (activeFormat === "carousel" && mediaUrls.length < 2) {
- toast.error("Anexe pelo menos 2 mídias para publicar um Carrossel.");
+ if ((activeFormat === "carousel" || activeFormat === "trilho_horizontal") && mediaUrls.length < 2) {
+ toast.error("Anexe pelo menos 2 mídias para publicar uma Galeria ou Carrossel.");
  return;
  }
 
@@ -304,8 +304,20 @@ export function PostCreationDrawer({
  data: {
  content_text: contentText.trim() || undefined,
  media_urls: mediaUrls,
- layout_style: "grid",
+ layout_style: activeFormat === "grid" ? "grid" : mediaUrls.length > 1 ? "trilho_horizontal" : "panoramico",
  post_type: activeFormat === "grid" ? "grid" : "simple",
+ location_name: locationName.trim() || undefined,
+ as_store: false,
+ reference_type: "none",
+ },
+ });
+ } else if (activeFormat === "trilho_horizontal") {
+ await createPost({
+ data: {
+ content_text: contentText.trim() || undefined,
+ media_urls: mediaUrls,
+ layout_style: "trilho_horizontal",
+ post_type: "trilho_horizontal",
  location_name: locationName.trim() || undefined,
  as_store: false,
  reference_type: "none",
@@ -321,7 +333,7 @@ export function PostCreationDrawer({
  metadata: {
  is_news: true,
  title: newsTitle.trim() || contentText.slice(0, 60),
- source: newsSource.trim() || "Waesy News",
+ source: newsSource.trim() || "Redação Local",
  subtitle: contentText.trim(),
  },
  as_store: false,
@@ -339,7 +351,7 @@ export function PostCreationDrawer({
  is_triptych: true,
  origin_city: travelOrigin.trim() || "Chapecó",
  dest_city: travelDestination.trim() || locationName || "Destino",
- travel_headline: contentText.trim() || "Some moments shouldn't wait",
+ travel_headline: contentText.trim() || "Roteiro especial",
  },
  as_store: false,
  reference_type: "none",
@@ -350,8 +362,8 @@ export function PostCreationDrawer({
  data: {
  content_text: contentText.trim() || undefined,
  media_urls: mediaUrls,
- layout_style: "carousel",
- post_type: "instagram_carousel",
+ layout_style: "carrossel_unico",
+ post_type: "carrossel_unico",
  location_name: locationName.trim() || undefined,
  as_store: false,
  reference_type: "none",
@@ -360,7 +372,7 @@ export function PostCreationDrawer({
  } else if (activeFormat === "threads") {
  const validNodes = threadNodes.filter((n) => n.text.trim().length > 0);
  if (validNodes.length < 2) {
- toast.error("Preencha o conteúdo de pelo menos 2 cards da sua thread.");
+ toast.error("Preencha o conteúdo de pelo menos 2 cards da sequência.");
  setIsSubmitting(false);
  return;
  }
@@ -389,7 +401,7 @@ export function PostCreationDrawer({
  media_urls: mediaUrls,
  layout_style: "grid",
  post_type: "moment",
- location_name: locationName.trim() || "São Miguel do Oeste",
+ location_name: locationName.trim() || "Chapecó",
  metadata: {
  activity: "Momento da Comunidade",
  },
@@ -415,24 +427,25 @@ export function PostCreationDrawer({
  };
 
  const formats = [
- { id: "simple", label: "Post Padrão", icon: ChatCircleText, color: "text-info" },
- { id: "grid", label: "Grid Orgânico", icon: ImageSquare, color: "text-emerald-500" },
- { id: "news", label: "Notícia Editorial", icon: ChatCircleText, color: "text-primary" },
- { id: "travel", label: "Viagem / Tríptico", icon: MapPin, color: "text-sky-500" },
- { id: "carousel", label: "Carrossel", icon: ImageSquare, color: "text-primary" },
+ { id: "simple", label: "Publicação", icon: ChatCircleText, color: "text-info" },
+ { id: "trilho_horizontal", label: "Galeria Deslizante", icon: ImageSquare, color: "text-primary" },
+ { id: "carousel", label: "Carrossel Paginado", icon: ImageSquare, color: "text-primary" },
+ { id: "grid", label: "Mosaico de Fotos", icon: ImageSquare, color: "text-emerald-500" },
+ { id: "news", label: "Notícia / Artigo", icon: ChatCircleText, color: "text-primary" },
+ { id: "travel", label: "Viagem / Roteiro", icon: MapPin, color: "text-sky-500" },
  { id: "threads", label: "Sequência", icon: ListBullets, color: "text-primary" },
- { id: "moment", label: "Moment", icon: FilmStrip, color: "text-amber-500" },
+ { id: "moment", label: "Vídeo Curto", icon: FilmStrip, color: "text-amber-500" },
  ] as const;
 
  return (
  <Drawer open={open} onOpenChange={onOpenChange}>
- <DrawerContent className="h-[100dvh] max-h-[100dvh] rounded-none sm:rounded-lg sm:h-auto sm:max-h-[90vh] border-none sm: bg-background p-0 flex flex-col overflow-hidden max-w-2xl mx-auto ">
+ <DrawerContent className="h-dvh max-h-dvh rounded-none sm:rounded-2xl sm:h-auto sm:max-h-full border-none bg-background p-0 flex flex-col overflow-hidden max-w-2xl mx-auto overscroll-contain">
  {/* ── Top Header Fixo (Silêncio Operacional) ── */}
  <DrawerHeader className="p-4 flex items-center justify-between shrink-0 bg-background/95 backdrop-blur-md">
  <div className="flex items-center gap-3">
  <button
  onClick={() => onOpenChange(false)}
- className="size-10 rounded-lg flex items-center justify-center hover:bg-muted active:scale-95 transition-all text-muted-foreground hover:text-foreground cursor-pointer"
+ className="size-11 min-h-11 min-w-11 rounded-lg flex items-center justify-center hover:bg-muted active:scale-95 transition-all text-muted-foreground hover:text-foreground cursor-pointer"
  aria-label="Fechar"
  >
  <X size={20} weight="bold" />
@@ -445,7 +458,7 @@ export function PostCreationDrawer({
  <Button
  onClick={handlePublish}
  disabled={isSubmitting || isUploadingMedia}
- className="bg-primary text-primary-foreground font-bold rounded-lg h-10 sm:h-11 px-6 text-sm hover:scale-102 active:scale-98 transition-all shadow-xs cursor-pointer"
+ className="bg-primary text-primary-foreground font-bold rounded-lg h-11 min-h-11 px-6 text-sm hover:scale-102 active:scale-98 transition-all shadow-xs cursor-pointer"
  >
  {isSubmitting ? (
  <>
@@ -469,7 +482,7 @@ export function PostCreationDrawer({
  key={fmt.id}
  type="button"
  onClick={() => setActiveFormat(fmt.id)}
- className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all cursor-pointer min-h-[38px] ${
+ className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all cursor-pointer min-h-11 ${
  isActive
  ? "bg-foreground text-background shadow-xs scale-102"
  : "bg-card text-muted-foreground hover:text-foreground hover:bg-card/80 border border-border/50"
@@ -495,12 +508,16 @@ export function PostCreationDrawer({
  </Avatar>
  <div>
  <p className="text-xs font-bold text-foreground leading-none">{userName}</p>
- <p className="text-[11px] text-muted-foreground mt-1">Mural Comunitário</p>
+ <p className="text-xs text-muted-foreground mt-1">Mural Comunitário</p>
  </div>
  </div>
 
- {/* Formatos 1, 2, 4: Simple, Carousel, Moment */}
- {(activeFormat === "simple" || activeFormat === "carousel" || activeFormat === "moment") && (
+ {/* Formatos de Texto e Mídia */}
+ {(activeFormat === "simple" ||
+ activeFormat === "trilho_horizontal" ||
+ activeFormat === "carousel" ||
+ activeFormat === "grid" ||
+ activeFormat === "moment") && (
  <div className="space-y-4">
  <Textarea
  ref={textareaRef}
@@ -509,17 +526,19 @@ export function PostCreationDrawer({
  onPaste={handleClipboardPaste}
  placeholder={
  activeFormat === "moment"
- ? "Legenda do seu momento em vídeo..."
+ ? "Legenda do seu vídeo curto..."
+ : activeFormat === "trilho_horizontal"
+ ? "Compartilhe fotos na galeria deslizante... (use ==texto== para destacar)"
  : activeFormat === "carousel"
- ? "Compartilhe uma sequência de fotos ou momentos... (use ==texto== para destacar)"
+ ? "Compartilhe uma sequência de fotos no carrossel... (use ==texto== para destacar)"
  : "O que está acontecendo na comunidade? (use ==texto== para destacar ou cole com Ctrl+V)"
  }
- className="w-full border-none shadow-none focus-visible:ring-0 resize-none text-sm p-0 min-h-[110px] placeholder:text-muted-foreground/60 leading-relaxed bg-transparent"
+ className="w-full border-none shadow-none focus-visible:ring-0 resize-none text-base sm:text-sm p-0 min-h-28 placeholder:text-muted-foreground/60 leading-relaxed bg-transparent"
  />
 
  {/* Previews de Mídia */}
  {mediaPreviews.length > 0 && (
- <div className="grid grid-cols-3 gap-3 pt-2">
+ <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2">
  {mediaPreviews.map((media, idx) => (
  <div
  key={idx}
@@ -536,13 +555,16 @@ export function PostCreationDrawer({
  <img
  src={media.url}
  alt="Upload preview"
+ onError={(e) => {
+   (e.currentTarget as HTMLElement).style.display = "none";
+ }}
  className="size-full object-cover"
  />
  )}
  <button
  type="button"
  onClick={() => handleRemoveMedia(idx)}
- className="absolute top-1.5 right-1.5 size-6 rounded-full bg-black/70 text-white flex items-center justify-center hover:bg-destructive transition-colors cursor-pointer"
+ className="absolute top-1.5 right-1.5 size-8 min-h-8 min-w-8 rounded-full bg-black/70 text-white flex items-center justify-center hover:bg-destructive transition-colors cursor-pointer"
  aria-label="Remover mídia"
  >
  <Trash size={12} weight="bold" />
@@ -565,7 +587,7 @@ export function PostCreationDrawer({
  >
  <div className="flex items-center justify-between text-xs text-muted-foreground font-bold">
  <span className="flex items-center gap-2 text-primary">
- <span className="size-5 rounded-full bg-primary/10 flex items-center justify-center text-[10px]">
+ <span className="size-5 rounded-full bg-primary/10 flex items-center justify-center text-2xs">
  {index + 1}
  </span>
  Card #{index + 1}
@@ -584,7 +606,7 @@ export function PostCreationDrawer({
  value={node.text}
  onChange={(e) => handleUpdateThreadNode(index, e.target.value)}
  placeholder={`Ponto ${index + 1} da sua reflexão...`}
- className="border-none shadow-none focus-visible:ring-0 resize-none text-xs p-0 min-h-[60px] bg-transparent"
+ className="border-none shadow-none focus-visible:ring-0 resize-none text-base sm:text-xs p-0 min-h-16 bg-transparent"
  />
  </div>
  ))}
@@ -595,7 +617,7 @@ export function PostCreationDrawer({
  variant="outline"
  size="sm"
  onClick={handleAddThreadNode}
- className="w-full rounded-lg text-xs font-bold border-dashed border-border gap-2 h-10 hover:border-primary/50"
+ className="w-full rounded-lg text-xs font-bold border-dashed border-border gap-2 h-11 min-h-11 hover:border-primary/50"
  >
  <Plus size={14} weight="bold" /> Adicionar Card à Sequência
  </Button>
@@ -643,7 +665,7 @@ export function PostCreationDrawer({
  variant="outline"
  onClick={handleInsertHighlight}
  className="rounded-lg text-sm font-semibold h-11 gap-2 px-4 hover:bg-amber-300/20 hover:text-amber-800 dark:hover:text-amber-200 transition-colors cursor-pointer shadow-2xs"
- title="Destacar com marca-texto estilo Threads (==texto==)"
+ title="Destacar texto (==texto==)"
  >
  <Highlighter size={18} className="text-amber-500" />
  <span>Destaque</span>
@@ -655,7 +677,7 @@ export function PostCreationDrawer({
  value={locationName}
  onChange={(e) => setLocationName(e.target.value)}
  placeholder="Localização..."
- className="h-full border-none shadow-none focus-visible:ring-0 text-sm p-0 w-32 bg-transparent"
+ className="h-full border-none shadow-none focus-visible:ring-0 text-base sm:text-sm p-0 w-32 bg-transparent"
  />
  </div>
  </div>

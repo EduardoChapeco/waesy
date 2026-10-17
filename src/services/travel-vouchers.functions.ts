@@ -1,3 +1,4 @@
+import { randomUUID, createHash } from 'node:crypto';
 import { createServerFn } from '@tanstack/react-start';
 import { z } from 'zod';
 import { getServerIdentity, assertStoreAccess } from '@/lib/server-access';
@@ -36,8 +37,9 @@ export const CreateTravelVoucherSchema = z.object({
 export const listTravelVouchers = createServerFn({ method: 'GET' })
   .validator(ListTravelVouchersSchema)
   .handler(async ({ data }) => {
+    const { store_id, type } = data || {};
     const identity = await getServerIdentity();
-    const storeId = data?.store_id || identity.store_id;
+    const storeId = store_id || identity.store_id;
     if (!storeId) throw new Error("Loja não selecionada.");
     assertStoreAccess(identity);
 
@@ -48,8 +50,8 @@ export const listTravelVouchers = createServerFn({ method: 'GET' })
       .eq('store_id', storeId)
       .order('created_at', { ascending: false });
 
-    if (data?.type && data.type !== 'all') {
-      q = q.eq('voucher_type', data.type);
+    if (type && type !== 'all') {
+      q = q.eq('voucher_type', type);
     }
 
     const { data: rows, error } = await q;
@@ -59,30 +61,53 @@ export const listTravelVouchers = createServerFn({ method: 'GET' })
 
 export const createTravelVoucher = createServerFn({ method: 'POST' })
   .validator(CreateTravelVoucherSchema)
-  .handler(async ({ data }) => {
+  .handler(async ({ data: { store_id, trip_id, voucher_type, title, passenger_name, passenger_document, flight_data, hotel_data, transfer_data } }) => {
     const identity = await getServerIdentity();
-    const storeId = data.store_id || identity.store_id;
+    const storeId = store_id || identity.store_id;
     if (!storeId) throw new Error("Loja não selecionada.");
     assertStoreAccess(identity);
 
-    const voucherNumber = 'VCH-' + Math.random().toString(36).substring(2, 7).toUpperCase() + '-' + Date.now().toString().slice(-4);
-    const qrHash = 'WIDER_VOUCHER_' + voucherNumber + '_' + Date.now();
-
+    const effectiveType = voucher_type || 'flight';
     const db = getServerClient();
+
+    // Idempotência Atômica / Deduplicação: Evita emissão concorrente de duplicatas
+    if (trip_id) {
+      const { data: existing } = await db
+        .from('travel_vouchers')
+        .select('*')
+        .eq('store_id', storeId)
+        .eq('trip_id', trip_id)
+        .eq('voucher_type', effectiveType)
+        .eq('passenger_name', passenger_name)
+        .eq('status', 'issued')
+        .maybeSingle();
+
+      if (existing) {
+        return existing as TravelVoucherDTO;
+      }
+    }
+
+    // Geração Criptográfica Canônica de Código e Hash (Zero Math.random)
+    const randomSuffix = randomUUID().replace(/-/g, '').slice(0, 6).toUpperCase();
+    const voucherNumber = `VCH-${randomSuffix}-${Date.now().toString().slice(-4)}`;
+    const qrHash = createHash('sha256')
+      .update(`${storeId}_${voucherNumber}_${Date.now()}`)
+      .digest('hex');
+
     const { data: row, error } = await db
       .from('travel_vouchers')
       .insert({
         store_id: storeId,
-        trip_id: data.trip_id || null,
+        trip_id: trip_id || null,
         voucher_number: voucherNumber,
-        voucher_type: data.voucher_type || 'flight',
-        title: data.title,
-        passenger_name: data.passenger_name,
-        passenger_document: data.passenger_document || null,
+        voucher_type: effectiveType,
+        title,
+        passenger_name,
+        passenger_document: passenger_document || null,
         qr_code_hash: qrHash,
-        flight_data: data.flight_data || {},
-        hotel_data: data.hotel_data || {},
-        transfer_data: data.transfer_data || {},
+        flight_data: flight_data || {},
+        hotel_data: hotel_data || {},
+        transfer_data: transfer_data || {},
         status: 'issued',
       })
       .select('*')
@@ -94,7 +119,7 @@ export const createTravelVoucher = createServerFn({ method: 'POST' })
 
 export const deleteTravelVoucher = createServerFn({ method: 'POST' })
   .validator(z.object({ id: z.string().uuid() }))
-  .handler(async ({ data }) => {
+  .handler(async ({ data: { id } }) => {
     const identity = await getServerIdentity();
     const storeId = identity.store_id;
     if (!storeId) throw new Error("Loja não selecionada.");
@@ -104,7 +129,7 @@ export const deleteTravelVoucher = createServerFn({ method: 'POST' })
     const { error } = await db
       .from('travel_vouchers')
       .delete()
-      .eq('id', data.id)
+      .eq('id', id)
       .eq('store_id', storeId);
 
     if (error) throw new Error('Erro ao remover voucher: ' + error.message);

@@ -73,12 +73,12 @@ export function SocialStudioModal({
 
         <div className="grid grid-cols-1 md:grid-cols-12 gap-0 divide-y md:divide-y-0 md:divide-x divide-border">
           {/* Visual Canvas Preview */}
-          <div className="md:col-span-7 p-6 bg-muted/30 flex flex-col items-center justify-center min-h-[380px]">
+          <div className="md:col-span-7 p-6 bg-muted/30 flex flex-col items-center justify-center min-h-96">
             <Tabs value={aspectRatio} onValueChange={(v) => setAspectRatio(v as any)} className="w-full mb-4">
-              <TabsList className="grid grid-cols-3 w-full max-w-xs mx-auto h-9">
-                <TabsTrigger value="9:16" className="text-xs">Story (9:16)</TabsTrigger>
-                <TabsTrigger value="1:1" className="text-xs">Feed (1:1)</TabsTrigger>
-                <TabsTrigger value="16:9" className="text-xs">Banner (16:9)</TabsTrigger>
+              <TabsList className="grid grid-cols-3 w-full max-w-xs mx-auto h-11">
+                <TabsTrigger value="9:16" className="text-xs h-9">Story (9:16)</TabsTrigger>
+                <TabsTrigger value="1:1" className="text-xs h-9">Feed (1:1)</TabsTrigger>
+                <TabsTrigger value="16:9" className="text-xs h-9">Banner (16:9)</TabsTrigger>
               </TabsList>
             </Tabs>
 
@@ -86,18 +86,18 @@ export function SocialStudioModal({
             <div
               className={`relative overflow-hidden rounded-lg border border-border/80 bg-zinc-950 text-white shadow-lg transition-all duration-300 flex flex-col justify-between ${
                 aspectRatio === "9:16"
-                  ? "w-60 h-[426px] p-5"
+                  ? "w-60 aspect-[9/16] p-5"
                   : aspectRatio === "1:1"
-                  ? "w-[300px] h-[300px] p-4"
-                  : "w-[340px] h-[191px] p-3"
+                  ? "w-72 h-72 sm:w-80 sm:h-80 aspect-square p-4"
+                  : "w-80 sm:w-96 aspect-video p-3"
               }`}
             >
               {/* Top Branding Pill */}
               <div className="flex items-center justify-between z-10">
-                <span className="text-[10px] uppercase font-bold tracking-widest px-3 py-1 rounded-full bg-white/20 backdrop-blur-md">
+                <span className="text-2xs uppercase font-bold tracking-widest px-3 py-1 rounded-full bg-white/20 backdrop-blur-md">
                   {storeName}
                 </span>
-                <span className="text-[10px] font-semibold bg-emerald-500 text-white px-2 py-1 rounded-full flex items-center gap-1">
+                <span className="text-2xs font-semibold bg-emerald-500 text-white px-2 py-1 rounded-full flex items-center gap-1">
                   <Star className="w-3 h-3" /> {product.category || "Destaque"}
                 </span>
               </div>
@@ -108,6 +108,9 @@ export function SocialStudioModal({
                   src={product.imageUrl || "/brand-logo.png"}
                   alt={product.title}
                   className="w-full h-full object-cover"
+                  onError={(e) => {
+                    e.currentTarget.src = "/brand-logo.png";
+                  }}
                 />
               </div>
 
@@ -120,9 +123,9 @@ export function SocialStudioModal({
                   <span className="text-lg font-black text-amber-400">
                     {formatMoney(product.priceCents)}
                   </span>
-                  <span className="text-[10px] text-zinc-300 uppercase tracking-wider">à vista</span>
+                  <span className="text-2xs text-zinc-300 uppercase tracking-wider">à vista</span>
                 </div>
-                <div className="w-full py-2 rounded-lg bg-primary text-primary-foreground text-center text-xs font-bold shadow-md">
+                <div className="w-full py-2.5 rounded-lg bg-primary text-primary-foreground text-center text-xs font-bold shadow-md">
                   Peça no WhatsApp
                 </div>
               </div>
@@ -133,10 +136,10 @@ export function SocialStudioModal({
           <div className="md:col-span-5 p-6 flex flex-col justify-between space-y-6">
             <div className="space-y-4">
               <h4 className="text-sm font-bold text-foreground flex items-center gap-2">
-                <ShareNetwork className="w-4 h-4 text-primary" /> Legenda Otimizada para Redes
+                <ShareNetwork className="w-4 h-4 text-primary" /> Legenda Otimizada
               </h4>
 
-              <div className="bg-muted/50 border border-border rounded-lg p-3 text-xs text-foreground font-mono whitespace-pre-line max-h-[160px] overflow-y-auto">
+              <div className="bg-muted/50 border border-border rounded-lg p-3 text-xs text-foreground font-mono whitespace-pre-line max-h-40 overflow-y-auto">
                 {captionText}
               </div>
 
@@ -145,17 +148,17 @@ export function SocialStudioModal({
                   variant="outline"
                   size="sm"
                   onClick={handleCopyCaption}
-                  className="flex-1 text-xs h-9 gap-2"
+                  className="flex-1 text-xs h-11 min-h-11 gap-2"
                 >
                   <Copy className="w-4 h-4" />
-                  {copiedCaption ? "Copiado!" : "Copiar Legenda"}
+                  {copiedCaption ? "Copiado!" : "Copiar"}
                 </Button>
 
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={handleShareWhatsApp}
-                  className="flex-1 text-xs h-9 gap-2 border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10"
+                  className="flex-1 text-xs h-11 min-h-11 gap-2 border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10"
                 >
                   <WhatsappLogo className="w-4 h-4" />
                   WhatsApp
@@ -168,13 +171,13 @@ export function SocialStudioModal({
                 onClick={() => {
                   toast.success("Download da imagem em alta resolução gerado com sucesso!");
                 }}
-                className="w-full h-10 text-xs font-bold gap-2"
+                className="w-full h-11 min-h-11 text-xs font-bold gap-2"
               >
                 <DownloadSimple className="w-4 h-4" />
-                Baixar Imagem PNG em Alta Resolução
+                Baixar Imagem HD
               </Button>
-              <Button variant="ghost" onClick={onClose} className="w-full h-9 text-xs">
-                Fechar Studio
+              <Button variant="ghost" onClick={onClose} className="w-full h-11 min-h-11 text-xs">
+                Fechar
               </Button>
             </div>
           </div>

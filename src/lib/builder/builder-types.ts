@@ -62,6 +62,14 @@ export type BlockType =
  | "tourism_quote_hero"
  | "tourism_services_grid"
  | "tourism_destinations_carousel"
+ | "dynamic_booking_hero"
+ | "category_icon_grid"
+ | "dynamic_product_carousel"
+ | "travel_product_detail"
+ | "customer_travel_portal"
+ | "travel_package_hero"
+ | "travel_hotel_slider"
+ | "travel_itinerary_timeline"
  // Food & Restaurant blocks
  | "food_menu_streamlined"
  | "food_menu_tabs"
@@ -199,7 +207,16 @@ export interface InspectorField {
 }
 
 export type BlockCategory =
- "layout" | "content" | "media" | "commerce" | "social" | "forms" | "marketing";
+  | "layout"
+  | "content"
+  | "media"
+  | "commerce"
+  | "social"
+  | "forms"
+  | "marketing"
+  | "tourism"
+  | "gastronomy"
+  | "services";
 
 export interface BlockManifest {
  type: BlockType;

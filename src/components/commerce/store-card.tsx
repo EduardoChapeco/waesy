@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { Star, MapPin, Clock, Store, ShieldCheck, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { StoreCardDTO } from "@/services/marketplace.functions";
+import { formatStoreCategory } from "@/lib/niches/niche-manifest";
 
 export interface StoreCardProps extends StoreCardDTO {
   className?: string;
@@ -13,14 +14,20 @@ export function StoreCard({
   slug,
   avatar_url,
   banner_url,
-  category = "Comércio",
-  rating = 4.9,
-  review_count = 128,
-  distance_km = 1.2,
+  category = "Comércio Local",
+  rating,
+  review_count,
+  distance_km,
   is_open = true,
-  delivery_time_min = "30-45",
+  delivery_time_min,
   className,
 }: StoreCardProps) {
+  const displayCategory = formatStoreCategory(category);
+  const hasRating = typeof rating === "number" && rating > 0;
+  const hasDistance = typeof distance_km === "number" && distance_km > 0;
+  const hasDelivery = typeof delivery_time_min === "string" && delivery_time_min.trim().length > 0;
+  const hasAnyMetric = hasRating || hasDistance || hasDelivery;
+
   return (
     <Link
       to="/diretorio/$id"
@@ -77,27 +84,42 @@ export function StoreCard({
             </h3>
             <ShieldCheck className="size-4 text-primary shrink-0" />
           </div>
-          <p className="text-xs text-muted-foreground line-clamp-1 mt-1">{category}</p>
+          <p className="text-xs text-muted-foreground line-clamp-1 mt-1">{displayCategory}</p>
         </div>
 
-        {/* Badges de Distância, Avaliação e Tempo */}
-        <div className="flex items-center justify-between text-xs text-muted-foreground pt-3">
-          <div className="flex items-center gap-1 font-bold text-foreground">
-            <Star className="size-4 fill-amber-400 text-amber-400" />
-            <span>{rating.toFixed(1)}</span>
-            <span className="text-muted-foreground font-normal">({review_count})</span>
-          </div>
+        {/* Badges de Distância, Avaliação e Tempo (Apenas dados autênticos — Zero Fakes) */}
+        {hasAnyMetric ? (
+          <div className="flex items-center justify-between text-xs text-muted-foreground pt-3">
+            {hasRating ? (
+              <div className="flex items-center gap-1 font-bold text-foreground">
+                <Star className="size-4 fill-amber-400 text-amber-400" />
+                <span>{rating!.toFixed(1)}</span>
+                {review_count ? <span className="text-muted-foreground font-normal">({review_count})</span> : null}
+              </div>
+            ) : <div />}
 
-          <div className="flex items-center gap-1">
-            <MapPin className="size-3 text-muted-foreground" />
-            <span>{distance_km.toFixed(1)} km</span>
-          </div>
+            {hasDistance ? (
+              <div className="flex items-center gap-1">
+                <MapPin className="size-3 text-muted-foreground" />
+                <span>{distance_km!.toFixed(1)} km</span>
+              </div>
+            ) : null}
 
-          <div className="flex items-center gap-1 font-mono text-xs">
-            <Clock className="size-3 text-muted-foreground" />
-            <span>{delivery_time_min}</span>
+            {hasDelivery ? (
+              <div className="flex items-center gap-1 font-mono text-xs">
+                <Clock className="size-3 text-muted-foreground" />
+                <span>{delivery_time_min}</span>
+              </div>
+            ) : null}
           </div>
-        </div>
+        ) : (
+          <div className="flex items-center gap-2 text-xs text-muted-foreground pt-3">
+            <span className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-medium">
+              <ShieldCheck className="size-3.5" />
+              <span>Empresa Verificada</span>
+            </span>
+          </div>
+        )}
 
         {/* Botão Padronizado de Ação (Touch Target >= 44px) */}
         <div className="pt-2 border-t border-border/40">

@@ -204,7 +204,7 @@ export function ClassifiedItemCard({ item, variant = "grid" }: ClassifiedItemCar
             </div>
 
             <div className="p-4 space-y-2 flex-1 flex flex-col justify-between min-h-0">
-              <div>
+              <div className="space-y-1">
                 <span className="text-lg sm:text-xl font-black text-foreground font-mono block">
                   {formatMoney(item.price_cents || 0)}
                   {(itemNiche.priceSuffix || (isAluguel ? " /mês" : isTemporada ? " /diária" : "")) && (
@@ -214,12 +214,12 @@ export function ClassifiedItemCard({ item, variant = "grid" }: ClassifiedItemCar
                   )}
                 </span>
 
-                <h3 className="text-xs sm:text-sm font-bold text-foreground line-clamp-2 leading-tight group-hover:underline mt-1 h-9 overflow-hidden">
+                <h3 className="text-xs sm:text-sm font-bold text-foreground line-clamp-2 leading-snug break-words group-hover:underline">
                   {item.title}
                 </h3>
               </div>
 
-              <div className="pt-2 text-xs text-muted-foreground font-mono flex items-center justify-between h-4">
+              <div className="pt-2 text-xs text-muted-foreground font-mono flex items-center justify-between">
                 <span className="flex items-center gap-1 truncate">
                   <MapPin className="size-3 shrink-0 text-primary" />
                   <span className="truncate">{item.location_name || item.location_text || "Regional"}</span>
@@ -309,7 +309,7 @@ export function ClassifiedItemCard({ item, variant = "grid" }: ClassifiedItemCar
         </div>
 
         <div className="p-4 sm:p-5 space-y-2 flex-1 flex flex-col justify-between min-h-0">
-          <div>
+          <div className="space-y-1">
             <span className="text-xl sm:text-2xl font-black text-foreground font-mono block">
               {formatMoney(item.price_cents || 0)}
               {(itemNiche.priceSuffix || (isAluguel ? " /mês" : isTemporada ? " /diária" : "")) && (
@@ -319,12 +319,12 @@ export function ClassifiedItemCard({ item, variant = "grid" }: ClassifiedItemCar
               )}
             </span>
 
-            <h3 className="text-sm sm:text-base font-bold text-foreground line-clamp-2 leading-snug group-hover:text-primary transition-colors mt-1 h-11 sm:h-12 overflow-hidden">
+            <h3 className="text-sm sm:text-base font-bold text-foreground line-clamp-2 leading-snug break-words group-hover:text-primary transition-colors">
               {item.title}
             </h3>
           </div>
 
-          <div className="pt-2 text-xs text-muted-foreground font-mono flex items-center justify-between h-4">
+          <div className="pt-2 text-xs text-muted-foreground font-mono flex items-center justify-between">
             <span className="flex items-center gap-1 truncate">
               <MapPin className="size-3 shrink-0 text-primary" />
               <span className="truncate">{item.location_name || item.location_text || "Regional"}</span>

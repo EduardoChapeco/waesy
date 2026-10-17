@@ -400,8 +400,18 @@ function CourierDriverHubPage() {
   const netMarginPercent = grossRevenueCents > 0 ? Math.round((netProfitCents / grossRevenueCents) * 100) : 0;
 
   return (
-    <div className="w-full max-w-5xl mx-auto space-y-6 pb-24 px-4 sm:px-6">
-      <NativeMobileHeader title="Painel do Condutor" fallbackHref="/conta" />
+    <div className="w-full max-w-5xl mx-auto space-y-6 pb-24 px-0 sm:px-4 md:px-0">
+      <NativeMobileHeader title="Painel do Condutor" fallbackHref="/conta" mobileOnly />
+
+      {/* ── Cabeçalho Inpage Desktop (Apple HIG) ── */}
+      <div className="hidden md:flex items-center justify-between pb-4 border-b border-border/40">
+        <div className="flex items-center gap-3">
+          <h1 className="text-xl font-bold tracking-tight text-foreground">Painel do Condutor</h1>
+          <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20 text-xs font-mono">
+            WAESY GO
+          </Badge>
+        </div>
+      </div>
 
       {/* ── 1. HEADER OPERACIONAL: STATUS, VEÍCULO & TOGGLE ONLINE ── */}
       <div className="bg-card rounded-lg border border-border/70 p-4 sm:p-6 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">

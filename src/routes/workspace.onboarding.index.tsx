@@ -73,7 +73,7 @@ const NICHE_COPIES: Record<string, NicheCopy> = {
     badgeLabel: "Ativação Comercial & Catálogo",
     title: "Ativação da Vitrine e Catálogo Comercial",
     subtitle: "Complete os passos essenciais para liberar pagamentos online, cálculo de frete automático e vitrine ativa.",
-    multimodalTitle: "Ingestão Rápida com IA & Catálogo Mestre",
+    multimodalTitle: "Configuração Rápida & Catálogo da Loja",
     multimodalDescription: "Fotografe seus produtos ou importe itens validados do catálogo comunitário sem digitação manual.",
     stepsSectionTitle: "Etapas de Fundamentação da Loja",
   },
@@ -189,7 +189,7 @@ export default function WorkspaceOnboardingPage() {
           </div>
           <Button asChild className="h-9 px-4 rounded-lg text-xs font-bold gap-2 shrink-0 w-full sm:w-auto">
             <Link to="/workspace/onboarding/revisao">
-              <span>Abrir Ingestão Inteligente</span>
+              <span>Abrir Configuração Inteligente</span>
               <ArrowRight className="size-3.5" />
             </Link>
           </Button>

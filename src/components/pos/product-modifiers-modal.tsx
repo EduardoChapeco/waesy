@@ -141,7 +141,7 @@ export function ProductModifiersModal({
  return (
  <Sheet open={open} onOpenChange={setOpen}>
  <SheetContent
- side="right" size="wide" className="sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] md:max-w-xl w-full max-sm:!h-[100dvh] max-sm:!inset-0 max-sm:!rounded-none border-l p-0 overflow-hidden bg-card flex flex-col"
+ side="right" size="wide" className="p-0 overflow-hidden bg-card flex flex-col overscroll-contain max-sm:inset-0 max-sm:h-dvh max-sm:rounded-none"
  >
  <SheetHeader className="p-4 sm:p-5 border-b border-border/80 bg-muted/20 text-left space-y-1">
  <div>

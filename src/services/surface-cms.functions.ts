@@ -10,6 +10,7 @@ import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { NICHE_STORE_KEYWORDS } from "@/services/marketplace.functions";
 import type { FlashOfferDTO, StoreCardDTO } from "@/services/marketplace.functions";
+import { formatStoreCategory } from "@/lib/niches/niche-manifest";
 
 export type SurfaceSectionType =
  | "flash_deal_rail"
@@ -24,7 +25,8 @@ export type SurfaceSectionType =
  | "banner_trio_bento"
  | "custom_buttons_rail"
  | "single_store_spotlight"
- | "classifieds_spotlight";
+ | "classifieds_spotlight"
+ | "social_posts_rail";
 
 export type SurfaceDataSource =
  | "all_products"
@@ -34,7 +36,8 @@ export type SurfaceDataSource =
  | "flash_deals"
  | "top_sellers"
  | "banners"
- | "custom_buttons";
+ | "custom_buttons"
+ | "social_posts";
 
 export type SurfaceRankingStrategy =
  | "discount"
@@ -300,7 +303,7 @@ export const getModularSurfaceFeed = createServerFn({ method: "GET" })
  // Mapeia lojas
  const allDbStores: StoreCardDTO[] = (storesRes.data || []).map((s: any) => {
  const settings = (s.settings as Record<string, any>) || {};
- const category = settings.segment || settings.type || settings.niche || "Comércio Local";
+ const category = formatStoreCategory(settings.segment || settings.type || settings.niche || "Comércio Local");
  return {
  id: s.id,
  name: s.name,
@@ -417,6 +420,11 @@ export const getModularSurfaceFeed = createServerFn({ method: "GET" })
  { id: "frete-gratis", label: "Frete Grátis", icon: "Truck", route: "/buscar?free_delivery=true" },
  ];
  }
+ } else if (sec.type === "social_posts_rail" || sec.data_source === "social_posts") {
+ const { getUnifiedShowcasePosts } = await import("@/services/admin-home-cms.functions");
+ sectionItems = await getUnifiedShowcasePosts({
+ data: { city: cleanCity || undefined, limit: sec.item_limit || 10 },
+ }).catch(() => []);
  } else if (sec.type === "store_rail" || sec.data_source === "stores") {
  let storePool = [...filteredStores];
  if (sec.ranking_strategy === "random_shuffle") {
@@ -544,6 +552,7 @@ export const upsertSurfaceSection = createServerFn({ method: "POST" })
       "custom_buttons_rail",
       "single_store_spotlight",
       "classifieds_spotlight",
+      "social_posts_rail",
     ]),
  title: z.string().min(1, "Título obrigatório"),
  subtitle: z.string().optional().nullable(),
@@ -557,6 +566,7 @@ export const upsertSurfaceSection = createServerFn({ method: "POST" })
  "top_sellers",
  "banners",
  "custom_buttons",
+ "social_posts",
  ]),
  taxonomy_slug: z.string().optional().nullable(),
  ranking_strategy: z.enum([
@@ -915,7 +925,7 @@ export const getProceduralInfiniteFeedPage = createServerFn({ method: "GET" })
             slug: s.slug || `loja-${s.id.slice(0, 6)}`,
             avatar_url: settings.logoUrl || settings.logo_url || undefined,
             banner_url: settings.bannerUrl || settings.banner_url || undefined,
-            category: settings.segment || settings.niche || "Comércio Local",
+            category: formatStoreCategory(settings.segment || settings.niche || "Comércio Local"),
             rating: typeof s.rating === "number" ? s.rating : typeof settings.rating === "number" ? settings.rating : undefined,
             review_count: typeof s.review_count === "number" ? s.review_count : typeof settings.review_count === "number" ? settings.review_count : undefined,
             distance_km: typeof s.distance_km === "number" ? s.distance_km : undefined,

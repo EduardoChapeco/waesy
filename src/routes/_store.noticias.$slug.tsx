@@ -157,7 +157,7 @@ function NoticiaDetailPage() {
         />
       </div>
 
-      <article className="max-w-3xl mx-auto px-4 sm:px-6 space-y-8 pb-20 pt-4">
+      <article className="max-w-3xl mx-auto px-1 sm:px-6 space-y-6 pb-20 pt-3">
         {/* Breadcrumb Apple HIG */}
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <Link to="/noticias" className="hover:text-foreground transition-colors min-h-11 inline-flex items-center">

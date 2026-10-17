@@ -1280,7 +1280,7 @@ function AnunciosWorkspacePage() {
 
         {/* ── SHEET LATERAL DE CRIAÇÃO RÁPIDA (EDIÇÃO EM PROFUNDIDADE 3) ── */}
         <Sheet open={quickCreateOpen} onOpenChange={setQuickCreateOpen}>
-          <SheetContent size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] overflow-y-auto p-6 space-y-6">
+          <SheetContent size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl overflow-y-auto overscroll-contain p-6 space-y-6">
             <SheetHeader className="space-y-1 text-left">
               <div className="flex items-center gap-2">
                 <span className="p-2 rounded-lg bg-primary/10 text-primary">

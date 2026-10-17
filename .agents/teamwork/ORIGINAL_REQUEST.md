@@ -344,3 +344,45 @@ Manter as invariantes do AGENTS.md (alvos de 44px, focus-visible:ring-2, sem col
 - [ ] node scripts/design-lint.mjs --ratchet passa (sem aumento de P0/P1).
 - [ ] npm run build termina com exit 0, e o deploy no Cloudflare Pages (usewaesy) é concluído; os testes E2E passam contra a URL de produção.
 - [ ] Entrada de handoff adicionada em docs/design/DECISIONS.md.
+
+
+## 2026-10-13T17:23:17Z
+
+Unificação completa e reconciliação forense de todas as branches remotas (`origin/feat/system-merge-improvements-and-classifieds-copilot`, `origin/perf/login-latency-and-route-caching`, PRs #24-#33) para a branch `main` de produção, auditoria recursiva end-to-end e execução do Hiper Master Plan de Engenharia, Segurança e Nativização Mobile da plataforma Waesy.
+
+Working directory: c:\Users\Excelência Tour SMO\Documents\waesy
+Integrity mode: development
+
+## Requirements
+
+### R1. Reconciliação Forense e Unificação de Branches Remotas
+Unificar e reconciliar as melhorias de `origin/feat/system-merge-improvements-and-classifieds-copilot` (+9.182 linhas, DEC-198 a DEC-206) e `origin/perf/login-latency-and-route-caching` (+1.198 linhas, DEC-196) com a `main` atualizada (`4fc5979e`), resolvendo pontualmente os 5 arquivos de conflito (`src/lib/identity.server.ts`, `src/services/builder.functions.ts`, `design-lint.baseline.json`, `design-lint.report.json`, `docs/design/DECISIONS.md`) mantendo integridade estrita de segurança multi-tenant e zero regressões.
+- No `src/lib/identity.server.ts`: manter a proibição de fallback arbitrário de primeira loja e consultas por email/settings soltas de `main`, e incorporar o isolamento de Zero-Trust Civil Root de DEC-206 (`if (activeContext === "civil") activeStoreId = null;`).
+- No `src/services/builder.functions.ts`: manter a exigência estrita de tenant de `main` e adicionar suporte aos blocos modernos do Omni-Builder (`const omniDoc = (doc.settings as any)?.omni_page;`).
+- No `docs/design/DECISIONS.md`: unificar todas as decisões DEC-196 a DEC-206 em ordem cronológica canônica.
+
+### R2. Nativização Mobile e Ergonomia de App
+Mapear e refatorar as rotas da plataforma para garantir a transformação do mobile web em experiência 100% app nativo:
+- Barra de navegação inferior flutuante/dock (`mobile-nav.tsx`) com safe-area.
+- Cabeçalhos nativos (`native-mobile-header.tsx`) com altura canônica de 44px (`h-11`).
+- Bottom sheets modais para filtros e gavetas no lugar de caixas de diálogo centradas desktop.
+- Alvos táteis mínimos de 44x44px (`h-11 min-h-11`) em 100% dos botões e links interativos.
+- Piso tipográfico >= 12px (`text-xs` e `text-sm`), eliminando microfontes arbitrárias.
+- Borda canônica de 1px (`px-[1px]`) sem margens duplas ou dead space lateral.
+- Erradicação de AI-smell: botões humanos curtos e sem caixas prolixas explicativas.
+
+### R3. Auditoria de Segurança, RLS, Rotas Públicas e Proteção de Dados
+- Garantir políticas RLS deny-by-default nas 585 tabelas do banco de dados, sem vazamento multi-tenant (`store_id` soberano).
+- Garantir RPCs sensíveis com `SECURITY DEFINER` e `search_path = public` explícito.
+- Proteger rotas públicas com `ActionAuthGuardModal` em ações transacionais (comprar, reservar, cotação).
+- Garantir governança de buckets de storage (`avatars`, `banners`, `classifieds-images`, `cms-media`) com sanitização e prevenção de imagens quebradas (`onError` e SVG neutro).
+
+### R4. Saneamento Arquitetural BFF e Matriz de 4 Estados
+- Validar Invariante B.25 (100% de parâmetros tipados desestruturados e protegidos com coalescência defensiva).
+- Garantir matriz de 4 estados em todas as superfícies (dados, carregamento/skeleton, vazio/empty state honesto e erro).
+
+## Acceptance Criteria
+- [ ] TypeScript compila com 0 erros (`npm.cmd run typecheck` Exit Code 0).
+- [ ] Build de produção conclui com sucesso (`npm.cmd run build` Exit Code 0).
+- [ ] Design Lint executa sem novas violações P0 ou P1 (`node scripts/design-lint.mjs --changed` Exit Code 0).
+- [ ] Zero conflitos de git ou regressões na branch final.

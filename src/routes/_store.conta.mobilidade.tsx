@@ -93,7 +93,7 @@ function CustomerMobilityHistoryPage() {
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto space-y-6 pb-6 px-4">
+    <div className="w-full max-w-4xl mx-auto space-y-5 pb-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <MobilityQuickButton />

@@ -118,7 +118,7 @@ export function WorkspaceAccountSwitcher({
  </div>
 
  {/* ── 2. Grid Split de 2 Colunas: Portfólios vs Ativos (Padrão Meta Studio) ── */}
- <div className="grid grid-cols-1 sm:grid-cols-12 min-h-[300px] max-h-[420px]">
+ <div className="grid grid-cols-1 sm:grid-cols-12 min-h-80 max-h-112">
  {/* Coluna da Esquerda (Portfólios Empresariais - 5 cols) */}
  <div className="sm:col-span-5 border-r border-border/60 bg-muted/10 p-3 flex flex-col justify-between overflow-y-auto no-scrollbar">
  <div className="space-y-1">

@@ -111,17 +111,22 @@ function JobsMasterPage() {
     return jobsList.filter((j: JobItemDTO) => j.is_featured).slice(0, 6);
   }, [jobsList]);
 
- return (
- <div className="w-full max-w-5xl mx-auto px-4 sm:px-5 space-y-6 pb-24">
-      <div className="-mx-4 sm:-mx-5">
-        <NativeMobileHeader
-          title="Vagas"
-          centerTitle
-          fallbackHref="/"
-          searchValue={search}
-          onSearchChange={setSearch}
-          searchPlaceholder="Buscar cargo, empresa ou vaga..."
-        />
+  return (
+    <div className="w-full max-w-7xl mx-auto space-y-4 sm:space-y-6 pb-24">
+      <NativeMobileHeader
+        title="Vagas"
+        centerTitle
+        fallbackHref="/"
+        searchValue={search}
+        onSearchChange={setSearch}
+        searchPlaceholder="Buscar cargo, empresa ou vaga..."
+      />
+      {/* ── Cabeçalho Inpage Desktop (Apple HIG) ── */}
+      <div className="hidden md:flex items-center justify-between pt-4 pb-3 border-b border-border/40">
+        <div>
+          <h1 className="text-xl font-bold tracking-tight text-foreground">Vagas & Oportunidades</h1>
+          <p className="text-xs text-muted-foreground mt-1">Encontre vagas de trabalho, estágios e carreiras em empresas locais</p>
+        </div>
       </div>
  {/* ── 1. Banners Contextuais de Empregos ── */}
  {banners && banners.length > 0 && (
@@ -180,6 +185,7 @@ function JobsMasterPage() {
  viewMode={viewMode}
  onViewModeChange={setViewMode}
  allowedViewModes={["feed", "grid", "list"]}
+ hideMobileSearch={true}
  />
 
       <ProfessionSearchDialog
@@ -195,14 +201,12 @@ function JobsMasterPage() {
 
  {/* MODE 1: FEED / TIMELINE DE VAGAS EM ESTILO POST */}
  {viewMode === "feed" && (
- <div className="space-y-10">
+ <div className="space-y-6">
  {/* Trilho de Vagas em Destaque */}
  {featuredJobs.length > 0 && (
  <HorizontalRail
  title="Oportunidades em Destaque"
- hideHeader={true}
- badge="Contratação Imediata"
- actionLabel="Ver grade completa"
+ actionLabel="Ver mais"
  onAction={() => setViewMode("grid")}
  >
  {featuredJobs.map((job: any) => (
@@ -218,8 +222,7 @@ function JobsMasterPage() {
  <HorizontalRail
  key={categoryKey}
  title={categoryName}
- hideHeader={true}
- actionLabel="Ver todas"
+ actionLabel="Ver mais"
  onAction={() => {
  setSelectedCategory(categoryKey);
  setViewMode("grid");

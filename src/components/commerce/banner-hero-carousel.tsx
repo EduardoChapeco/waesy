@@ -98,11 +98,11 @@ export function BannerHeroCarousel({
           aria-hidden="true"
           className="absolute inset-0 size-full object-cover blur-2xl opacity-40 scale-110 pointer-events-none select-none"
         />
-        {/* Mídia Principal: Escala Proporcional Verdadeira sem Cortes (Zero Image Clipping) */}
+        {/* Mídia Principal: Escala Proporcional Verdadeira sem Cortes */}
         <img
           src={banner.media_url}
           alt={banner.title}
-          className="relative size-full object-contain transition-transform duration-300 motion-reduce:transition-none will-change-transform select-none"
+          className="relative size-full object-cover object-center transition-transform duration-300 motion-reduce:transition-none will-change-transform select-none rounded-lg"
           loading="eager"
           onError={(e) => {
             (e.currentTarget as HTMLImageElement).style.display = "none";
@@ -122,8 +122,8 @@ export function BannerHeroCarousel({
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
-      {/* ── Responsive Proportional Aspect Ratio: 16:9 mobile, 2.4:1 tablet, 21:9 desktop ── */}
-      <div className="relative w-full aspect-[16/9] sm:aspect-[2.4/1] md:aspect-[21/9] overflow-hidden bg-muted">
+      {/* ── Proporção Unificada 16:9 em Mobile e Desktop (Zero Corte Divergente) ── */}
+      <div className="relative w-full aspect-banner-cinema overflow-hidden rounded-lg bg-muted">
         {/* Render Actual Image / Video */}
         {renderMedia(currentBanner)}
 
@@ -143,7 +143,7 @@ export function BannerHeroCarousel({
             <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent sm:bg-gradient-to-r sm:from-black/90 sm:via-black/50 sm:to-transparent flex flex-col justify-end sm:justify-center p-4 sm:p-8 lg:p-12 text-white pointer-events-none z-10">
               <div className="max-w-xl space-y-2 sm:space-y-3 z-10 pointer-events-auto">
                 {currentBanner.show_badge === true && currentBanner.badge_text && (
-                  <div className="inline-flex items-center gap-2 px-3 py-1 sm:px-3 sm:py-1 rounded-full bg-white/20 backdrop-blur-md text-[9px] sm:text-xs font-bold uppercase tracking-wider text-white border border-white/30">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 sm:px-3 sm:py-1 rounded-full bg-white/20 backdrop-blur-md text-xs font-bold uppercase tracking-wider text-white border border-white/30">
                     <Layers className="size-3 text-amber-300" />
                     <span>{currentBanner.badge_text}</span>
                   </div>
@@ -156,7 +156,7 @@ export function BannerHeroCarousel({
                 )}
 
                 {currentBanner.show_description === true && currentBanner.subtitle && (
-                  <p className="text-[11px] sm:text-sm text-zinc-200 line-clamp-2 leading-relaxed max-w-lg">
+                  <p className="text-xs sm:text-sm text-zinc-200 line-clamp-2 leading-relaxed max-w-lg">
                     {currentBanner.subtitle}
                   </p>
                 )}
@@ -165,7 +165,7 @@ export function BannerHeroCarousel({
                   <div className="pt-2 sm:pt-2">
                     <Link
                       to={targetLink as any}
-                      className="inline-flex items-center gap-2 px-4 py-2 sm:px-5 sm:py-3 rounded-lg sm:rounded-lg bg-white text-black font-bold text-xs sm:text-sm hover:bg-zinc-100 hover:scale-105 active:scale-95 transition-all"
+                      className="inline-flex items-center gap-2 px-4 py-2 sm:px-5 sm:py-3 rounded-lg bg-white text-black font-bold text-xs sm:text-sm hover:bg-zinc-100 hover:scale-105 active:scale-95 transition-transform"
                     >
                       <span>{currentBanner.cta_label || "Conferir"}</span>
                       <ArrowRight className="size-3.5 sm:size-4" />

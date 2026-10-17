@@ -302,7 +302,7 @@ export function NewTravelContractSheet({
  return (
  <Sheet open={effectiveOpen} onOpenChange={onOpenChange}>
  <SheetContent
- side="right" size="wide" className="w-full max-sm:!max-w-full max-sm:!w-screen sm:max-w-3xl lg:max-w-[70vw] xl:max-w-[70vw] flex flex-col p-0 gap-0 overflow-hidden bg-card border-l border-border shadow-2xl"
+ side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl flex flex-col p-0 gap-0 overflow-hidden overscroll-contain bg-card border-l border-border shadow-2xl"
  >
  {/* Header Premium do Contrato */}
  <SheetHeader className="p-6 pb-4 border-b border-border/70 bg-muted/20">
@@ -316,7 +316,7 @@ export function NewTravelContractSheet({
  <span>Emitir Contrato Turístico e Assinatura</span>
  <Badge
  variant="outline"
- className="text-[10px] uppercase tracking-wider font-extrabold border-emerald-500/30 text-emerald-700 bg-emerald-500/10"
+ className="text-xs uppercase tracking-wider font-extrabold border-emerald-500/30 text-emerald-700 bg-emerald-500/10"
  >
  Validade Jurídica
  </Badge>
@@ -369,7 +369,7 @@ export function NewTravelContractSheet({
  <div className="space-y-4">
  <div className="p-4 rounded-lg bg-muted/30 border border-border/70 space-y-1">
  <p className="font-bold text-foreground">Importar Proposta Aprovada do Studio</p>
- <p className="text-muted-foreground text-[11px]">
+ <p className="text-muted-foreground text-xs">
  Selecione uma proposta já apresentada ao cliente. O contrato será preenchido automaticamente com destino, passageiros, itinerário e preço.
  </p>
  </div>
@@ -383,7 +383,7 @@ export function NewTravelContractSheet({
  <div className="p-8 text-center bg-card rounded-lg border border-border/60 space-y-2">
  <FileText className="size-8 text-muted-foreground mx-auto" />
  <p className="font-bold text-foreground">Nenhuma proposta encontrada</p>
- <p className="text-muted-foreground text-[11px]">
+ <p className="text-muted-foreground text-xs">
  Crie uma proposta no Studio primeiro ou use o modo "Contrato Sob Medida".
  </p>
  <Button
@@ -413,7 +413,7 @@ export function NewTravelContractSheet({
  </span>
  <Badge
  variant="outline"
- className={`text-[9px] uppercase font-bold ${
+ className={`text-xs uppercase font-bold ${
  prop.status === "approved"
  ? "bg-emerald-50 text-emerald-700 border-emerald-300"
  : ""
@@ -422,7 +422,7 @@ export function NewTravelContractSheet({
  {prop.status === "approved" ? "✓ Aprovada" : prop.status}
  </Badge>
  </div>
- <p className="text-[11px] text-muted-foreground truncate">
+ <p className="text-xs text-muted-foreground truncate">
  Passageiro: {prop.client_name} • Destino: {prop.destination_city}
  </p>
  </div>
@@ -453,7 +453,7 @@ export function NewTravelContractSheet({
  <div className="space-y-4">
  <div className="p-4 rounded-lg bg-muted/30 border border-border/70 space-y-1">
  <p className="font-bold text-foreground">Vincular Cliente da Carteira (CRM)</p>
- <p className="text-muted-foreground text-[11px]">
+ <p className="text-muted-foreground text-xs">
  Pesquise por nome, CPF/CNPJ, WhatsApp ou e-mail para autopreencher todos os dados civis do contratante.
  </p>
  </div>
@@ -490,7 +490,7 @@ export function NewTravelContractSheet({
  >
  <div className="space-y-1 min-w-0">
  <p className="font-bold text-foreground truncate">{c.fullName || c.name}</p>
- <p className="text-[11px] text-muted-foreground truncate">
+ <p className="text-xs text-muted-foreground truncate">
  {c.document && `CPF: ${c.document} • `}
  {c.phone && `Whats: ${c.phone} • `}
  {c.email}
@@ -529,7 +529,7 @@ export function NewTravelContractSheet({
  {customerId ? (
  <Badge
  variant="secondary"
- className="bg-primary/10 text-primary border-primary/20 text-[10px] font-bold"
+ className="bg-primary/10 text-primary border-primary/20 text-xs font-bold"
  >
  ✓ Vinculado ao CRM
  </Badge>
@@ -539,7 +539,7 @@ export function NewTravelContractSheet({
  variant="ghost"
  size="sm"
  onClick={() => setIsQuickCreateOpen(!isQuickCreateOpen)}
- className="h-7 px-2 text-[11px] font-bold text-primary hover:text-primary/80"
+ className="h-11 min-h-11 px-3 text-xs font-bold text-primary hover:text-primary/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
  >
  <UserPlus className="mr-1 size-3.5" />
  {isQuickCreateOpen ? "Fechar Cadastro" : "+ Cadastrar no CRM"}
@@ -555,7 +555,7 @@ export function NewTravelContractSheet({
  </span>
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
  <div className="space-y-1 sm:col-span-2">
- <Label className="text-[11px] font-semibold">Nome Completo *</Label>
+ <Label className="text-xs font-semibold">Nome Completo *</Label>
  <Input
  placeholder="Ex: Carlos Eduardo Silveira"
  value={quickFullName}
@@ -564,7 +564,7 @@ export function NewTravelContractSheet({
  />
  </div>
  <div className="space-y-1">
- <Label className="text-[11px] font-semibold">CPF *</Label>
+ <Label className="text-xs font-semibold">CPF *</Label>
  <Input
  placeholder="000.000.000-00"
  value={quickDocument}
@@ -573,7 +573,7 @@ export function NewTravelContractSheet({
  />
  </div>
  <div className="space-y-1">
- <Label className="text-[11px] font-semibold">WhatsApp *</Label>
+ <Label className="text-xs font-semibold">WhatsApp *</Label>
  <Input
  placeholder="(49) 99999-9999"
  value={quickPhone}
@@ -582,7 +582,7 @@ export function NewTravelContractSheet({
  />
  </div>
  <div className="space-y-1 sm:col-span-2">
- <Label className="text-[11px] font-semibold">Endereço Residencial</Label>
+ <Label className="text-xs font-semibold">Endereço Residencial</Label>
  <Input
  placeholder="Rua, Número, Bairro, Cidade - UF, CEP"
  value={quickAddress}
@@ -636,7 +636,7 @@ export function NewTravelContractSheet({
  variant="ghost"
  size="sm"
  onClick={handleUnlinkCustomer}
- className="h-6 px-2 text-[11px] text-muted-foreground hover:text-destructive"
+ className="h-11 min-h-11 px-3 text-xs text-muted-foreground hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive"
  >
  Desvincular
  </Button>
@@ -645,7 +645,7 @@ export function NewTravelContractSheet({
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
  <div className="space-y-1">
- <Label className="text-[11px] font-bold">Nome do Contratante *</Label>
+ <Label className="text-xs font-bold">Nome do Contratante *</Label>
  <Input
  placeholder="Nome completo do titular"
  value={clientName}
@@ -655,7 +655,7 @@ export function NewTravelContractSheet({
  />
  </div>
  <div className="space-y-1">
- <Label className="text-[11px] font-bold">CPF do Contratante *</Label>
+ <Label className="text-xs font-bold">CPF do Contratante *</Label>
  <Input
  placeholder="000.000.000-00"
  value={clientDocument}
@@ -665,7 +665,7 @@ export function NewTravelContractSheet({
  />
  </div>
  <div className="space-y-1">
- <Label className="text-[11px] font-bold">RG / Órgão Emissor</Label>
+ <Label className="text-xs font-bold">RG / Órgão Emissor</Label>
  <Input
  placeholder="0.000.000 SSP/SC"
  value={clientRg}
@@ -674,7 +674,7 @@ export function NewTravelContractSheet({
  />
  </div>
  <div className="space-y-1">
- <Label className="text-[11px] font-bold">WhatsApp / Telefone *</Label>
+ <Label className="text-xs font-bold">WhatsApp / Telefone *</Label>
  <Input
  placeholder="(49) 99999-9999"
  value={clientPhone}
@@ -684,7 +684,7 @@ export function NewTravelContractSheet({
  />
  </div>
  <div className="space-y-1 sm:col-span-2">
- <Label className="text-[11px] font-bold">E-mail para Envio do Link de Assinatura</Label>
+ <Label className="text-xs font-bold">E-mail para Envio do Link de Assinatura</Label>
  <Input
  type="email"
  placeholder="cliente@email.com"
@@ -694,7 +694,7 @@ export function NewTravelContractSheet({
  />
  </div>
  <div className="space-y-1 sm:col-span-2">
- <Label className="text-[11px] font-bold">Endereço Residencial Completo</Label>
+ <Label className="text-xs font-bold">Endereço Residencial Completo</Label>
  <Input
  placeholder="Rua, Número, Bairro, Cidade - UF, CEP"
  value={clientAddress}
@@ -725,7 +725,7 @@ export function NewTravelContractSheet({
  </div>
 
  {passengers.length === 0 ? (
- <p className="text-[11px] text-muted-foreground">
+ <p className="text-xs text-muted-foreground">
  Se houver acompanhantes viajando junto com o titular, adicione-os aqui para constarem na minuta oficial.
  </p>
  ) : (
@@ -772,14 +772,14 @@ export function NewTravelContractSheet({
  <span>Dados da Viagem e Serviços</span>
  </div>
  {nightsCount !== null && (
- <Badge variant="secondary" className="text-[10px] font-bold bg-muted">
+ <Badge variant="secondary" className="text-xs font-bold bg-muted">
  🌙 {nightsCount} {nightsCount === 1 ? "Noite" : "Noites"}
  </Badge>
  )}
  </div>
 
  <div className="space-y-1">
- <Label className="text-[11px] font-bold">Título do Contrato (Opcional)</Label>
+ <Label className="text-xs font-bold">Título do Contrato (Opcional)</Label>
  <Input
  placeholder="Ex: Contrato de Viagem - Pacote Gramado & Vinhedos"
  value={contractTitle}
@@ -790,7 +790,7 @@ export function NewTravelContractSheet({
 
  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
  <div className="space-y-1">
- <Label className="text-[11px] font-bold">Destino Principal *</Label>
+ <Label className="text-xs font-bold">Destino Principal *</Label>
  <Input
  placeholder="Ex: Gramado, RS"
  value={destination}
@@ -800,7 +800,7 @@ export function NewTravelContractSheet({
  />
  </div>
  <div className="space-y-1">
- <Label className="text-[11px] font-bold">Data Início</Label>
+ <Label className="text-xs font-bold">Data Início</Label>
  <Input
  type="date"
  value={travelStartDate}
@@ -809,7 +809,7 @@ export function NewTravelContractSheet({
  />
  </div>
  <div className="space-y-1">
- <Label className="text-[11px] font-bold">Data Término</Label>
+ <Label className="text-xs font-bold">Data Término</Label>
  <Input
  type="date"
  value={travelEndDate}
@@ -820,7 +820,7 @@ export function NewTravelContractSheet({
  </div>
 
  <div className="space-y-1">
- <Label className="text-[11px] font-bold">Resumo dos Serviços Inclusos (Objeto do Contrato) *</Label>
+ <Label className="text-xs font-bold">Resumo dos Serviços Inclusos (Objeto do Contrato) *</Label>
  <Textarea
  rows={4}
  placeholder="Descreva detalhadamente: Passagens aéreas ida e volta com bagagem despachada, hospedagem no Hotel X com café da manhã, passeios inclusos, traslados in/out e apólice de seguro viagem..."
@@ -841,7 +841,7 @@ export function NewTravelContractSheet({
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
  <div className="space-y-1">
- <Label className="text-[11px] font-bold">Valor Total do Contrato (BRL) *</Label>
+ <Label className="text-xs font-bold">Valor Total do Contrato (BRL) *</Label>
  <Input
  type="text"
  value={totalValueFormatted}
@@ -851,7 +851,7 @@ export function NewTravelContractSheet({
  />
  </div>
  <div className="space-y-1">
- <Label className="text-[11px] font-bold">Forma de Liquidação</Label>
+ <Label className="text-xs font-bold">Forma de Liquidação</Label>
  <div className="h-10 flex items-center px-3 rounded-lg bg-muted/30 border border-border text-xs text-muted-foreground">
  <span>Assinatura Digital + Emissão com Vouchers</span>
  </div>
@@ -860,7 +860,7 @@ export function NewTravelContractSheet({
 
  {/* Chips de Presets de Condições Comerciais */}
  <div className="space-y-2 pt-1">
- <Label className="text-[11px] font-bold text-muted-foreground">
+ <Label className="text-xs font-bold text-muted-foreground">
  Modelos Rápidos de Pagamento:
  </Label>
  <div className="flex flex-wrap gap-2">
@@ -874,7 +874,7 @@ export function NewTravelContractSheet({
  key={preset}
  type="button"
  onClick={() => applyPaymentPreset(preset)}
- className="text-[10px] font-medium px-3 py-1 rounded-lg bg-muted/60 hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
+ className="text-xs font-medium px-3 py-1 rounded-lg bg-muted/60 hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
  >
  {preset}
  </button>
@@ -883,7 +883,7 @@ export function NewTravelContractSheet({
  </div>
 
  <div className="space-y-1">
- <Label className="text-[11px] font-bold">Condições de Pagamento Descritivas *</Label>
+ <Label className="text-xs font-bold">Condições de Pagamento Descritivas *</Label>
  <Textarea
  rows={2}
  value={paymentConditions}
@@ -909,7 +909,7 @@ export function NewTravelContractSheet({
  </button>
 
  {showClauses && (
- <div className="p-4 pt-0 space-y-3 divide-y divide-border/40 text-[11px]">
+ <div className="p-4 pt-0 space-y-3 divide-y divide-border/40 text-xs">
  {CANONICAL_TOURISM_CLAUSES.map((c) => (
  <div key={c.number} className="pt-3 space-y-1">
  <p className="font-bold text-foreground">

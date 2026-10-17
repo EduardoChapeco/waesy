@@ -68,6 +68,9 @@ export function getModule(filePath) {
     if (rest.startsWith('api')) return 'routes/api';
     return 'routes/other';
   }
+  if (norm.startsWith('src/design-system/')) {
+    return 'components/ui';
+  }
   if (norm.startsWith('src/components/')) {
     const rest = norm.slice('src/components/'.length);
     if (rest.startsWith('ui/')) return 'components/ui';

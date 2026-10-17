@@ -150,13 +150,23 @@ export function getCircuit(provider: string): ProviderCircuit {
   return cb;
 }
 
-export function recordCircuitFailure(provider: string) {
+export function recordCircuitFailure(provider: string, errorOrStatus?: number | string | Error) {
   const cb = getCircuit(provider);
   cb.consecutiveFailures += 1;
-  if (cb.consecutiveFailures >= 3 || cb.state === "half_open") {
+  const errStr = String(errorOrStatus || "").toLowerCase();
+  const isRateLimit =
+    errorOrStatus === 429 ||
+    errStr.includes("429") ||
+    errStr.includes("resource_exhausted") ||
+    errStr.includes("quota");
+
+  if (isRateLimit || cb.consecutiveFailures >= 3 || cb.state === "half_open") {
     cb.state = "open";
-    cb.openUntil = Date.now() + 60_000; // 60 segundos aberto
-    console.warn(`[AI-CORE-GATEWAY] Circuit Breaker OPEN para o provedor ${provider} até ${new Date(cb.openUntil).toISOString()}`);
+    // 5 minutos para 429 / quota estourada, 60 segundos para falhas transitórias
+    cb.openUntil = Date.now() + (isRateLimit ? 300_000 : 60_000);
+    console.warn(
+      `[AI-CORE-GATEWAY] Circuit Breaker OPEN para o provedor ${provider} (${isRateLimit ? "Quota 429 detectada" : "3 falhas consecutivas"}) até ${new Date(cb.openUntil).toISOString()}`
+    );
   }
 }
 
@@ -303,24 +313,46 @@ async function callProviderLowLevel(
 
   try {
     if (provider === "groq") {
-      const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${key}`,
-        },
-        body: JSON.stringify({
-          model,
-          messages: [
-            ...(systemPrompt ? [{ role: "system", content: systemPrompt }] : []),
-            { role: "user", content: prompt },
-          ],
-          temperature: options?.temperature ?? 0.5,
-          max_tokens: options?.maxTokens || 1024,
-          ...(options?.responseFormat === "json_object" ? { response_format: { type: "json_object" } } : {}),
-        }),
-        signal: controller.signal,
-      });
+      const tryFetchGroq = async (targetModel: string) => {
+        return fetch("https://api.groq.com/openai/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${key}`,
+          },
+          body: JSON.stringify({
+            model: targetModel,
+            messages: [
+              ...(systemPrompt ? [{ role: "system", content: systemPrompt }] : []),
+              { role: "user", content: prompt },
+            ],
+            temperature: options?.temperature ?? 0.5,
+            max_tokens: options?.maxTokens || 1024,
+            ...(options?.responseFormat === "json_object" ? { response_format: { type: "json_object" } } : {}),
+          }),
+          signal: controller.signal,
+        });
+      };
+
+      let res = await tryFetchGroq(model);
+      if (!res.ok && (res.status === 400 || res.status === 404) && model !== "llama-3.3-70b-versatile") {
+        const firstErr = await res.text().catch(() => "");
+        const lowerErr = firstErr.toLowerCase();
+        if (
+          lowerErr.includes("model_not_found") ||
+          lowerErr.includes("does not exist") ||
+          lowerErr.includes("not found") ||
+          lowerErr.includes("not supported") ||
+          lowerErr.includes("decommissioned") ||
+          lowerErr.includes("invalid model") ||
+          lowerErr.includes("unknown model")
+        ) {
+          console.warn(`[Groq] Modelo "${model}" indisponível no Groq (${res.status}). Executando failover transparente para "llama-3.3-70b-versatile"...`);
+          res = await tryFetchGroq("llama-3.3-70b-versatile");
+        } else {
+          throw new Error(`Groq error ${res.status}: ${firstErr}`);
+        }
+      }
 
       if (!res.ok) {
         const errText = await res.text().catch(() => "");
@@ -543,7 +575,7 @@ export async function executeAiCoreGateway(request: AIGatewayRequest): Promise<A
       },
       error: {
         code: "PROMPT_SHIELD_VIOLATION",
-        message: securityCheck.violationReason || "Prompt bloqueado por violação de segurança e conformidade.",
+        message: securityCheck.violationReason || "Mensagem bloqueada por regras de segurança e proteção de dados.",
       },
     };
   }
@@ -639,7 +671,7 @@ export async function executeAiCoreGateway(request: AIGatewayRequest): Promise<A
       return {
         success: true,
         result: {
-          text: "Job enfileirado com sucesso.",
+          text: "Solicitação registrada com sucesso. Estamos preparando seu conteúdo.",
           asyncJobId: job.id,
         },
         metadata: {
@@ -827,7 +859,7 @@ export async function executeAiCoreGateway(request: AIGatewayRequest): Promise<A
           provider: candidate.provider,
         }, { error: err instanceof Error ? err.message : String(err) });
 
-        recordCircuitFailure(candidate.provider);
+        recordCircuitFailure(candidate.provider, err.message);
         markKeyError(activeKey.id, err.message).catch(() => {});
 
         if (!fallbackFrom) fallbackFrom = candidate.provider;
@@ -837,7 +869,7 @@ export async function executeAiCoreGateway(request: AIGatewayRequest): Promise<A
 
     const latencyMs = Date.now() - startTime;
     if (request.task === "imagem" && request.context?.allowDeterministicFallback === true) {
-      const fallbackSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024"><rect width="1024" height="1024" fill="lightgray"/><text x="512" y="490" text-anchor="middle" font-family="sans-serif" font-size="40" fill="dimgray">Fallback determinístico</text><text x="512" y="545" text-anchor="middle" font-family="sans-serif" font-size="24" fill="dimgray">Imagem não gerada por provider</text></svg>`;
+      const fallbackSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024"><rect width="1024" height="1024" fill="lightgray"/><text x="512" y="490" text-anchor="middle" font-family="sans-serif" font-size="40" fill="dimgray">Prévia Ilustrativa</text><text x="512" y="545" text-anchor="middle" font-family="sans-serif" font-size="24" fill="dimgray">Gerando imagem oficial</text></svg>`;
       return {
         success: true,
         result: {
@@ -887,7 +919,7 @@ export async function executeAiCoreGateway(request: AIGatewayRequest): Promise<A
       },
       error: {
         code: "PROVIDER_UNAVAILABLE",
-        message: `Todos os provedores da cascata falharam para a tarefa '${request.task}'. Detalhe: ${lastError?.message || "Erro desconhecido"}`,
+        message: `Tivemos uma oscilação temporária em nossos serviços de consulta. Já estamos tentando novamente para você. Detalhe: ${lastError?.message || "Instabilidade temporária"}`,
       },
     };
 
@@ -933,7 +965,7 @@ export const callAiCoreGateway = createServerFn({ method: "POST" })
   .validator(
     z.object({
       task: aiTaskTypeEnum,
-      prompt: z.string().min(1, "O prompt é obrigatório"),
+      prompt: z.string().min(1, "A mensagem ou solicitação é obrigatória"),
       systemPrompt: z.string().optional(),
       mode: z.enum(["sync", "stream", "async_queue"]).optional().default("sync"),
       constraints: z
@@ -1056,11 +1088,11 @@ export async function executeAiCoreGatewayStream(request: AIGatewayRequest, onDe
   const start = Date.now();
   const security = inspectPromptSecurity(request.prompt);
   const baseMeta = (provider: string, model: string, attemptsCount: number) => ({ callId, provider, model, fallbackUsed: attemptsCount > 1, attemptsCount, latencyMs: Date.now() - start, cacheHit: false, usage: { inputTokens: 0, outputTokens: 0, totalTokens: 0 }, costUsd: 0, promptVersion: request.promptVersion || "v1.0", fingerprint: generateFingerprint(request) });
-  if (!security.isSafe) return { success: false, metadata: baseMeta("shield", "shield-v1", 0), error: { code: "PROMPT_SHIELD_VIOLATION", message: security.violationReason || "Prompt bloqueado." } };
+  if (!security.isSafe) return { success: false, metadata: baseMeta("shield", "shield-v1", 0), error: { code: "PROMPT_SHIELD_VIOLATION", message: security.violationReason || "Mensagem bloqueada por regras de segurança e proteção de dados." } };
   const { hardenedSystemPrompt, sandboxedUserPrompt } = buildSandboxedPromptPayload(security.sanitizedPrompt || request.prompt, request.systemPrompt);
   const candidates: RouteCandidate[] = CANONICAL_TASK_ROUTES[request.task] || CANONICAL_TASK_ROUTES.chat;
   let attempts = 0;
-  let lastError = "Falha em todos os providers de streaming";
+  let lastError = "Instabilidade temporária nos serviços de transmissão";
   for (const candidate of candidates) {
     attempts++;
     try {

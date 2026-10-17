@@ -35,8 +35,31 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 function CustomerChatPage() {
-  const { thread, messages: initialMessages } = ((Route.useLoaderData?.() as any) || {});
+  const data = (Route.useLoaderData?.() as any) || {};
   const { id } = Route.useParams();
+  return (
+    <CustomerChatRoom
+      threadId={id}
+      initialThread={data.thread}
+      initialMessages={data.messages}
+      showBackButton={true}
+    />
+  );
+}
+
+export function CustomerChatRoom({
+  threadId,
+  initialThread,
+  initialMessages,
+  showBackButton = true,
+}: {
+  threadId: string;
+  initialThread?: any;
+  initialMessages?: any[];
+  showBackButton?: boolean;
+}) {
+  const id = threadId;
+  const [thread, setThread] = useState<any>(initialThread || null);
   const [messages, setMessages] = useState<any[]>(initialMessages || []);
   const [text, setText] = useState("");
   const [isSending, setIsSending] = useState(false);
@@ -45,6 +68,26 @@ function CustomerChatPage() {
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const messengerChannelRef = useRef<any>(null);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    if (!initialThread || initialThread.id !== threadId) {
+      getCustomerChatThread({ data: { threadId } })
+        .then((res) => {
+          if (isMounted && res) {
+            setThread(res.thread || null);
+            if (res.messages) setMessages(res.messages);
+          }
+        })
+        .catch(console.error);
+    } else {
+      setThread(initialThread);
+      if (initialMessages) setMessages(initialMessages);
+    }
+    return () => {
+      isMounted = false;
+    };
+  }, [threadId, initialThread, initialMessages]);
 
   const rawStore: any = thread?.store;
   const storeData: any = Array.isArray(rawStore) ? rawStore[0] : rawStore;
@@ -215,11 +258,11 @@ function CustomerChatPage() {
   const isClosed = thread?.status === "closed" || thread?.status === "resolved";
 
   return (
-    <section className="flex flex-col h-[calc(100dvh-100px)] max-w-4xl mx-auto font-sans text-foreground bg-background">
+    <section className="flex flex-col h-full w-full mx-auto font-sans text-foreground bg-background">
       {/* ── Header Ultra-Minimalista WhatsApp com Avatar Circular + Online Dot + Typing Indicator ── */}
       <div className="flex items-center justify-between gap-3 px-3 py-3 border-b border-border/40 bg-background sticky top-0 z-10">
         <div className="flex items-center gap-3 min-w-0">
-          <NativeBackButton fallbackHref="/conta/conversas" />
+          {showBackButton && <NativeBackButton fallbackHref="/conta/conversas" />}
 
           <div className="flex items-center gap-3 min-w-0">
             <div className="relative shrink-0">

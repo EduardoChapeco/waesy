@@ -64,14 +64,26 @@ function CreatorProfilesManagementPage() {
   });
 
   const handleActivatePersona = (cp: any) => {
-    const handleOrId = cp.id || cp.handle;
+    const handleClean = cp.handle || "criador";
     if (typeof window !== "undefined") {
       window.document.cookie = "waesy_active_context=creator; path=/; max-age=31536000; SameSite=Lax";
-      window.document.cookie = `waesy_active_creator=${encodeURIComponent(handleOrId)}; path=/; max-age=31536000; SameSite=Lax`;
+      window.document.cookie = `waesy_active_creator=${encodeURIComponent(handleClean)}; path=/; max-age=31536000; SameSite=Lax`;
       window.document.cookie = "waesy_active_tenant=; path=/; max-age=0; SameSite=Lax";
+      window.document.cookie = "waesy_store_id=; path=/; max-age=0; SameSite=Lax";
     }
-    setActiveCreator(handleOrId);
-    toast.success(`Identidade ativa alterada para @${cp.handle} (Persona Criador)!`);
+    setActiveCreator(handleClean);
+    toast.success(`Identidade ativa alterada para @${handleClean} (Persona Criador)!`);
+  };
+
+  const handleDeactivatePersona = () => {
+    if (typeof window !== "undefined") {
+      window.document.cookie = "waesy_active_context=civil; path=/; max-age=31536000; SameSite=Lax";
+      window.document.cookie = "waesy_active_creator=; path=/; max-age=0; SameSite=Lax";
+      window.document.cookie = "waesy_active_tenant=; path=/; max-age=0; SameSite=Lax";
+      window.document.cookie = "waesy_store_id=; path=/; max-age=0; SameSite=Lax";
+    }
+    setActiveCreator(null);
+    toast.success("Retornado à identidade Civil Pessoal.");
   };
 
   const handleCopy = (text: string) => {
@@ -223,14 +235,26 @@ function CreatorProfilesManagementPage() {
                     </div>
 
                     <div className="flex items-center gap-2 self-start sm:self-auto flex-wrap">
-                      {activeCreator === (cp.id || handle) || activeCreator === handle ? (
-                        <Badge
-                          variant="outline"
-                          className="h-9 px-3 rounded-lg text-xs font-bold bg-amber-500/10 text-amber-600 border-amber-500/30 gap-2 shrink-0"
-                        >
-                          <CheckCircle2 className="size-3.5 text-amber-600" />
-                          <span>Persona Ativa</span>
-                        </Badge>
+                      {activeCreator === cp.handle || activeCreator === cp.id ? (
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <Badge
+                            variant="outline"
+                            className="h-9 px-3 rounded-lg text-xs font-bold bg-amber-500/10 text-amber-600 border-amber-500/30 gap-2 shrink-0"
+                          >
+                            <CheckCircle2 className="size-3.5 text-amber-600" />
+                            <span>Persona Ativa</span>
+                          </Badge>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={handleDeactivatePersona}
+                            className="h-9 px-2.5 rounded-lg text-xs font-semibold text-muted-foreground hover:text-foreground cursor-pointer"
+                            title="Voltar ao Perfil Civil"
+                          >
+                            Desativar
+                          </Button>
+                        </div>
                       ) : (
                         <Button
                           type="button"

@@ -1429,7 +1429,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                 <div key={cd.domain} className="p-3 flex items-center justify-between gap-3">
                   <div className="min-w-0 flex-1">
                     <div className="text-xs font-medium text-foreground truncate">{cd.domain}</div>
-                    <div className="text-xs text-muted-foreground truncate">{cd.reason || "Rate limit"}</div>
+                    <div className="text-xs text-muted-foreground truncate">{cd.reason || "Aguardando intervalo de consulta"}</div>
                     <div className="text-xs text-muted-foreground mt-1">
                       Até {new Date(cd.cooldown_until).toLocaleTimeString("pt-BR")}
                     </div>
@@ -1477,7 +1477,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                 ) : domainCooldowns.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={6} className="h-24 text-center text-xs text-muted-foreground">
-                      Nenhum domínio em repouso ativo. Todos os scrapers com tráfego liberado.
+                      Nenhum domínio em repouso ativo. Todas as buscas com tráfego normalizado.
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -1487,7 +1487,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                         {cd.domain}
                       </TableCell>
                       <TableCell className="text-xs text-muted-foreground truncate max-w-[180px]">
-                        {cd.reason || "Rate limit"}
+                        {cd.reason || "Aguardando intervalo de consulta"}
                       </TableCell>
                       <TableCell className="text-xs text-muted-foreground font-mono">
                         {cd.last_http_status || "—"}

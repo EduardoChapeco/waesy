@@ -75,7 +75,7 @@ export function WorkspaceDashboardSheet({
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetContent
-        side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] p-0 flex flex-col h-full bg-background border-l border-border/70 overflow-hidden select-none"
+        side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl p-0 flex flex-col h-full bg-background border-l border-border/70 overflow-hidden overscroll-contain select-none"
       >
         {/* ── 1. Topo do Painel de Métricas ── */}
         <div className="p-5 border-b border-border/60 bg-muted/20 shrink-0 space-y-3">
@@ -95,7 +95,7 @@ export function WorkspaceDashboardSheet({
                 type="button"
                 onClick={() => setPeriod("today")}
                 className={cn(
-                  "px-3 py-2 rounded-lg transition-all cursor-pointer min-h-9",
+                  "px-3 py-2 rounded-lg transition-all cursor-pointer min-h-11 h-11 inline-flex items-center justify-center focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring",
                   period === "today"
                     ? "bg-background text-foreground shadow-2xs"
                     : "text-muted-foreground hover:text-foreground"
@@ -107,7 +107,7 @@ export function WorkspaceDashboardSheet({
                 type="button"
                 onClick={() => setPeriod("7d")}
                 className={cn(
-                  "px-3 py-2 rounded-lg transition-all cursor-pointer min-h-9",
+                  "px-3 py-2 rounded-lg transition-all cursor-pointer min-h-11 h-11 inline-flex items-center justify-center focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring",
                   period === "7d"
                     ? "bg-background text-foreground shadow-2xs"
                     : "text-muted-foreground hover:text-foreground"
@@ -119,7 +119,7 @@ export function WorkspaceDashboardSheet({
                 type="button"
                 onClick={() => setPeriod("30d")}
                 className={cn(
-                  "px-3 py-2 rounded-lg transition-all cursor-pointer min-h-9",
+                  "px-3 py-2 rounded-lg transition-all cursor-pointer min-h-11 h-11 inline-flex items-center justify-center focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring",
                   period === "30d"
                     ? "bg-background text-foreground shadow-2xs"
                     : "text-muted-foreground hover:text-foreground"
@@ -131,7 +131,7 @@ export function WorkspaceDashboardSheet({
                 type="button"
                 onClick={() => setPeriod("all")}
                 className={cn(
-                  "px-3 py-2 rounded-lg transition-all cursor-pointer min-h-9",
+                  "px-3 py-2 rounded-lg transition-all cursor-pointer min-h-11 h-11 inline-flex items-center justify-center focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring",
                   period === "all"
                     ? "bg-background text-foreground shadow-2xs"
                     : "text-muted-foreground hover:text-foreground"
@@ -191,7 +191,7 @@ export function WorkspaceDashboardSheet({
                         >
                           {m.trend.value}
                         </span>
-                        <span className="text-muted-foreground/60 font-normal text-[11px]">vs. anterior</span>
+                        <span className="text-muted-foreground/60 font-normal text-xs">vs. anterior</span>
                       </div>
                     )}
                   </div>

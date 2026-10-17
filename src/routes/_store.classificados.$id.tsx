@@ -1,5 +1,4 @@
 import { createFileRoute, isRedirect } from "@tanstack/react-router";
-import { EditorialShowcaseView } from "@/components/classifieds/editorial-showcase-view";
 import { UniversalClassifiedShowcase } from "@/components/classifieds/universal-classified-showcase";
 import { ConvenienceShowcaseView } from "@/components/classifieds/convenience-showcase-view";
 import { ProductTelemetry } from "@/components/commerce/product-telemetry";
@@ -156,66 +155,6 @@ function ClassifiedDetailPage() {
     );
   }
 
-  if (
-    detail.niche?.id === "travel" ||
-    classified?.category === "travel" ||
-    classified?.category === "viagem" ||
-    classified?.category === "tourism" ||
-    classified?.attributes?.template_style === "editorial" ||
-    classified?.attributes?.template_style === "immersive" ||
-    classified?.attributes?.template_style === "instagram" ||
-    classified?.attributes?.template_style === "instagram_resort"
-  ) {
-    return (
-      <>
-        <ProductTelemetry
-          storeId={classified?.store_id || classified?.storeId}
-          productId={classified?.id}
-          title={classified?.title || "Anúncio"}
-          description={classified?.content}
-          priceCents={classified?.price_cents || 0}
-          currency="BRL"
-          imageUrl={classified?.images?.[0]}
-          brandName={classified?.store_name || "Comunidade Waesy"}
-          categoryName={classified?.category || "Turismo"}
-          sku={classified?.id}
-          inStock={detail.isAvailableToOrder}
-        />
-        <EditorialShowcaseView
-          classified={classified}
-          isOwner={detail.effectiveIsOwner}
-          onOpenBookingModal={(dep) => {
-            requireAuth({
-              actionContext: "Efetuar reserva para este pacote de viagem",
-              onSuccess: () => {
-                if (dep) detail.setSelectedDeparture(dep);
-                detail.setBookingOpen(true);
-              },
-            });
-          }}
-          onOpenProposalModal={() => {
-            requireAuth({
-              actionContext: "Enviar proposta para este anúncio",
-              onSuccess: () => detail.setProposalOpen(true),
-            });
-          }}
-          onEditClassified={detail.handleEdit}
-        />
-        {dialogs}
-        <ActionAuthGuardModal {...modalProps} />
-        {classified?.ai_agent_enabled && (
-          <AiSdrChat
-            classifiedId={classified.id}
-            storeName={classified.store_name || undefined}
-            sellerName={classified.profiles?.full_name || classified.author_profile?.full_name || undefined}
-            storeId={classified.store_id || undefined}
-            sellerProfileId={classified.author_profile_id || undefined}
-          />
-        )}
-      </>
-    );
-  }
-
   return (
     <>
       <ProductTelemetry
@@ -242,19 +181,15 @@ function ClassifiedDetailPage() {
         canManage={detail.effectiveIsOwner || canManage}
         viewerContext={viewerContext}
         currentProfile={currentProfile}
+        similarAds={similarAds}
         onOpenBookingModal={(payload) => {
-          requireAuth({
-            actionContext: "Efetuar reserva para este anúncio",
-            onSuccess: () => {
-              if (payload) {
-                if (payload.checkIn) detail.setCheckInDate(payload.checkIn);
-                if (payload.checkOut) detail.setCheckOutDate(payload.checkOut);
-                if (payload.guests) detail.setBookingGuests(payload.guests);
-                if (payload.departure_date || payload.id) detail.setSelectedDeparture(payload);
-              }
-              detail.setBookingOpen(true);
-            },
-          });
+          if (payload) {
+            if (payload.checkIn) detail.setCheckInDate(payload.checkIn);
+            if (payload.checkOut) detail.setCheckOutDate(payload.checkOut);
+            if (payload.guests) detail.setBookingGuests(payload.guests);
+            if (payload.departure_date || payload.id) detail.setSelectedDeparture(payload);
+          }
+          detail.setBookingOpen(true);
         }}
         onOpenProposalModal={() => {
           requireAuth({

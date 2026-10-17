@@ -48,7 +48,7 @@ function DriverDirectPage() {
   const reviewsList = reviews || [];
 
   return (
-    <div className="w-full max-w-xl mx-auto space-y-6 pb-20 px-4">
+    <div className="w-full max-w-xl mx-auto space-y-5 pb-20">
       {/* Profile Card */}
       <div className="rounded-lg bg-card border border-border/70 p-6 text-center space-y-5 shadow-2xs">
         <div className="size-24 rounded-lg mx-auto overflow-hidden bg-muted flex items-center justify-center font-bold text-2xl text-foreground border border-border/60">

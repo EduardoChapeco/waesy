@@ -53,7 +53,7 @@ export function ContextualStoriesRail({
  className="flex flex-col items-center gap-2 shrink-0 group focus:outline-none"
  aria-label="Criar novo story"
  >
- <div className="relative size-[68px] sm:size-[74px] rounded-full p-[2.5px] border-2 border-dashed border-border group-hover:border-primary transition-colors flex items-center justify-center bg-card">
+ <div className="relative size-16 sm:size-18 rounded-full p-1 border-2 border-dashed border-border group-hover:border-primary transition-colors flex items-center justify-center bg-card">
  <div className="size-full rounded-full bg-muted flex items-center justify-center text-foreground group-hover:scale-105 transition-transform">
  <Plus size={24} weight="bold" />
  </div>
@@ -61,7 +61,7 @@ export function ContextualStoriesRail({
  <Plus size={12} weight="bold" />
  </div>
  </div>
- <span className="text-[11px] font-semibold text-foreground truncate max-w-[70px]">
+ <span className="text-2xs font-semibold text-foreground truncate max-w-16">
  Seu Story
  </span>
  </button>
@@ -76,11 +76,11 @@ export function ContextualStoriesRail({
  // Anéis semânticos de alta fidelidade
  let ringClasses = "border-2 border-border/70";
  if (isAmbassador) {
- ringClasses = "p-[2.5px] bg-gradient-to-tr from-purple-500 via-indigo-500 to-cyan-400";
+ ringClasses = "p-1 bg-gradient-to-tr from-purple-500 via-indigo-500 to-cyan-400";
  } else if (isFollowing) {
- ringClasses = "p-[2.5px] bg-gradient-to-tr from-amber-400 via-primary to-emerald-500";
+ ringClasses = "p-1 bg-gradient-to-tr from-amber-400 via-primary to-emerald-500";
  } else if (group.hasUnseenStories) {
- ringClasses = "p-[2.5px] bg-gradient-to-tr from-primary to-sky-400";
+ ringClasses = "p-1 bg-gradient-to-tr from-primary to-sky-400";
  }
 
  return (
@@ -91,13 +91,16 @@ export function ContextualStoriesRail({
  aria-label={`Ver stories de ${group.entityName}`}
  >
  <div
- className={`relative size-[68px] sm:size-[74px] rounded-full overflow-hidden flex items-center justify-center transition-all ${ringClasses}`}
+ className={`relative size-16 sm:size-18 rounded-full overflow-hidden flex items-center justify-center transition-all ${ringClasses}`}
  >
  <div className="size-full rounded-full overflow-hidden bg-zinc-900 border-2 border-background">
  {group.entityAvatarUrl ? (
  <img
  src={group.entityAvatarUrl}
  alt={group.entityName}
+ onError={(e) => {
+   (e.currentTarget as HTMLElement).style.display = "none";
+ }}
  className="size-full object-cover group-hover:scale-105 transition-transform duration-300"
  loading="lazy"
  />
@@ -117,13 +120,13 @@ export function ContextualStoriesRail({
 
  {/* Badge de Patrocinado */}
  {isSponsored && (
- <div className="absolute bottom-0 inset-x-1 bg-amber-500 text-black text-[8px] font-black uppercase text-center rounded-xs py-0.2 shadow-xs">
+ <div className="absolute bottom-0 inset-x-1 bg-amber-500 text-black text-2xs font-black uppercase text-center rounded-xs py-0.5 shadow-xs">
  Ads
  </div>
  )}
  </div>
 
- <span className="text-[11px] font-medium text-foreground truncate max-w-[74px] text-center leading-tight">
+ <span className="text-2xs font-medium text-foreground truncate max-w-18 text-center leading-tight">
  {group.entityName}
  </span>
  </button>

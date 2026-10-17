@@ -194,6 +194,9 @@ export type PostReferenceType = "product" | "event" | "classified" | "ad" | "job
 
 export type PostType =
  | "simple"
+ | "trilho_horizontal"
+ | "carrossel_unico"
+ | "panoramico"
  | "carousel"
  | "instagram_carousel"
  | "threads"
@@ -224,7 +227,7 @@ export type MuralFeedItem = {
  content?: string | null;
  scope?: string | null;
  media_urls: string[];
- layout_style?: "grid" | "carousel";
+ layout_style?: "grid" | "carousel" | "trilho_horizontal" | "carrossel_unico" | "panoramico";
  post_type: PostType;
  location_name?: string | null;
  location_lat?: number | null;
@@ -260,6 +263,9 @@ const muralFeedInput = z.object({
   post_type: z
     .enum([
       "simple",
+      "trilho_horizontal",
+      "carrossel_unico",
+      "panoramico",
       "carousel",
       "instagram_carousel",
       "threads",
@@ -655,10 +661,13 @@ export const createPost = createServerFn({ method: "POST" })
         .nullable()
         .transform((v) => (v && v.trim() ? v.trim() : null)),
       media_urls: z.array(z.string()).max(10, "Máximo de 10 mídias por publicação").optional(),
-      layout_style: z.enum(["grid", "carousel"]).default("grid"),
+      layout_style: z.enum(["grid", "carousel", "trilho_horizontal", "carrossel_unico", "panoramico"]).default("grid"),
       post_type: z
         .enum([
           "simple",
+          "trilho_horizontal",
+          "carrossel_unico",
+          "panoramico",
           "carousel",
           "instagram_carousel",
           "threads",
@@ -2411,23 +2420,39 @@ export const getPostById = createServerFn({ method: "GET" })
     const sessionUser = await getUserSession().catch(() => null);
     const currentUserId = (sessionUser as any)?.user?.id || (sessionUser as any)?.id || null;
 
-    // 1. Busca post e autor
+    // 1. Busca post e autor com colunas reais da tabela posts
     const { data: post, error } = await db
       .from("posts")
       .select(`
         id,
-        content,
+        content_text,
+        media_urls,
+        layout_style,
+        location_name,
+        city,
+        state,
+        region,
+        publish_as_handle,
+        paid_partner_handle,
+        paid_partner_label,
+        collaborators,
+        tags,
         created_at,
         reference_type,
         reference_id,
         post_type,
-        scope,
         metadata,
-        profile:profiles(
+        author_profile_id,
+        author_store_id,
+        profiles!posts_author_profile_id_fkey(
           id,
           full_name,
           username,
           avatar_url
+        ),
+        stores(
+          name,
+          settings
         )
       `)
       .eq("id", postId)
@@ -2437,20 +2462,22 @@ export const getPostById = createServerFn({ method: "GET" })
       return null;
     }
 
-    // 2. Mídias
-    let mediaUrls: string[] = [];
-    try {
-      const { data: mediaRows } = await db
-        .from("post_media")
-        .select("media_url, sort_order")
-        .eq("post_id", postId)
-        .order("sort_order", { ascending: true });
+    // 2. Mídias (combina post.media_urls com post_media se houver)
+    let mediaUrls: string[] = Array.isArray(post.media_urls) ? [...post.media_urls] : [];
+    if (mediaUrls.length === 0) {
+      try {
+        const { data: mediaRows } = await db
+          .from("post_media")
+          .select("media_url, sort_order")
+          .eq("post_id", postId)
+          .order("sort_order", { ascending: true });
 
-      if (mediaRows && mediaRows.length > 0) {
-        mediaUrls = mediaRows.map((m: any) => m.media_url);
+        if (mediaRows && mediaRows.length > 0) {
+          mediaUrls = mediaRows.map((m: any) => m.media_url);
+        }
+      } catch {
+        // fallback
       }
-    } catch {
-      // fallback
     }
 
     // 3. Contagem de curtidas
@@ -2494,21 +2521,20 @@ export const getPostById = createServerFn({ method: "GET" })
       }
     }
 
-    // 6. Dados da referência (produto, evento, etc.)
+    // 6. Dados da referência (produto, evento, classificado)
     let referenceData: any = null;
     if (post.reference_type === "product" && post.reference_id) {
       const { data: prod } = await db
         .from("products")
-        .select("id, title, price_cents, images, store:stores(id, name, slug)")
+        .select("id, title, slug, price_cents, compare_at_price_cents, images, stores(id, name, slug)")
         .eq("id", post.reference_id)
         .maybeSingle();
       if (prod) {
         referenceData = {
-          title: prod.title,
-          price_cents: prod.price_cents,
+          ...prod,
           image_url: prod.images?.[0] || null,
-          store_name: (prod.store as any)?.name || null,
-          store_slug: (prod.store as any)?.slug || null,
+          store_name: (prod.stores as any)?.name || null,
+          store_slug: (prod.stores as any)?.slug || null,
         };
       }
     } else if (post.reference_type === "event" && post.reference_id) {
@@ -2527,28 +2553,52 @@ export const getPostById = createServerFn({ method: "GET" })
           is_free: evt.is_free,
         };
       }
+    } else if (post.reference_type === "classified" && post.reference_id) {
+      const { data: cls } = await db
+        .from("classifieds")
+        .select("id, title, price_cents, images")
+        .eq("id", post.reference_id)
+        .maybeSingle();
+      if (cls) {
+        referenceData = cls;
+      }
     }
+
+    const isStore = Boolean(post.author_store_id && post.stores);
+    const prof = (Array.isArray(post.profiles) ? post.profiles[0] : post.profiles) as any;
+    const store = (Array.isArray(post.stores) ? post.stores[0] : post.stores) as any;
+    const storeLogo = store?.settings?.avatar_url || store?.settings?.logo_url || null;
 
     const item: MuralFeedItem = {
       type: "post",
       id: post.id,
-      content: post.content,
-      content_text: post.content,
+      content: post.content_text,
+      content_text: post.content_text,
+      layout_style: post.layout_style as any,
+      location_name: post.location_name,
+      city: post.city,
+      state: post.state,
+      region: post.region,
+      publish_as_handle: post.publish_as_handle,
+      paid_partner_handle: post.paid_partner_handle,
+      paid_partner_label: post.paid_partner_label,
+      collaborators: post.collaborators,
+      tags: post.tags,
       created_at: post.created_at,
-      reference_type: post.reference_type,
+      reference_type: post.reference_type as PostReferenceType,
       reference_id: post.reference_id,
-      post_type: post.post_type,
-      scope: post.scope,
-      metadata: post.metadata,
+      post_type: (post.post_type as PostType) || "simple",
+      metadata: post.metadata || {},
       media_urls: mediaUrls,
       likes_count: likesCount,
       comments_count: commentsCount,
       user_liked: userLiked,
       author: {
-        id: (post.profile as any)?.id || (Array.isArray(post.profile) ? (post.profile as any[])[0]?.id : null) || "unknown",
-        name: (post.profile as any)?.full_name || (Array.isArray(post.profile) ? (post.profile as any[])[0]?.full_name : null) || "Membro da Comunidade",
-        is_store: false,
-        avatar_url: (post.profile as any)?.avatar_url || (Array.isArray(post.profile) ? (post.profile as any[])[0]?.avatar_url : null) || null,
+        id: post.author_store_id || post.author_profile_id || prof?.id || "unknown",
+        name: isStore ? store.name : (prof?.full_name || "").trim() || "Membro da Comunidade",
+        is_store: isStore,
+        avatar_url: isStore ? storeLogo : (prof?.avatar_url || null),
+        username: prof?.username || null,
       } as any,
       reference_data: referenceData,
     };

@@ -177,7 +177,7 @@ function StoreSlugCanonicalPage() {
           title="Empresa Não Encontrada"
           description="A loja ou vitrine que você está procurando não existe ou teve seu endereço alterado."
         />
-        <Button asChild variant="outline" className="rounded-lg font-bold text-xs h-11 px-4 gap-2">
+        <Button asChild variant="outline" className="rounded-lg font-bold text-xs h-11 min-h-11 px-4 gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
           <Link to="/">
             <ArrowLeft size={16} weight="bold" />
             <span>Voltar para o Início</span>
@@ -199,7 +199,7 @@ function StoreSlugCanonicalPage() {
           <p className="text-xs text-muted-foreground">
             Esta vitrine é privada e requer a senha fornecida pelo lojista.
           </p>
-          <Button asChild className="w-full h-11 rounded-lg font-bold text-xs">
+          <Button asChild className="w-full h-11 min-h-11 rounded-lg font-bold text-xs cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
             <Link to="/loja/$slug/senha" params={{ slug }}>
               Digitar Senha de Acesso
             </Link>
@@ -227,7 +227,7 @@ function StoreSlugCanonicalPage() {
             <span className="font-medium text-foreground">
               Você é gestor desta empresa.
             </span>
-            <Button asChild size="default" className="h-11 min-h-11 px-4 rounded-lg font-semibold text-xs gap-2">
+            <Button asChild size="default" className="h-11 min-h-11 px-4 rounded-lg font-semibold text-xs gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
               <Link to="/workspace" search={{ storeId: profile.id }}>
                 <Storefront size={16} weight="bold" />
                 <span>Gerenciar no Workspace</span>

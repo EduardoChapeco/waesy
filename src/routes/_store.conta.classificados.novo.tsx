@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate, useSearch, Link, redirect } from "@tansta
 import { useState, useMemo, useEffect, useRef } from "react";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Tag, Car, Home as HomeIcon, Briefcase, Wrench, Sliders, ArrowLeft, ChevronRight, Eye, EyeOff, Edit3, ImagePlus, MapPin, MessageCircle, ShieldCheck, Check, Loader2, Phone, FileText, DollarSign, Layers, ChevronLeft, Building, Key, Truck, Package, CreditCard, QrCode, RefreshCw, Banknote, DownloadCloud, FileArchive, Search, Utensils, Plane, Thermometer, CreditCard as CreditCardIcon, PlusCircle, Coins, Wand2, Bot, BadgePercent, Landmark, Info, Trash2, Plus, Bus, Ship, Train, Navigation, Route as RouteIcon, Users, Calendar, ChevronDown, ChevronUp, X, CheckCircle, GraduationCap, Award, SlidersHorizontal, Store as StoreIcon, Star, Lock, ShieldAlert, FileSpreadsheet, Receipt, BookOpenCheck, Zap, Apple, Flame, Croissant, Milk, Wine, Palette } from 'lucide-react';
+import { Tag, Car, Home as HomeIcon, Briefcase, Wrench, Sliders, ArrowLeft, ChevronRight, Eye, EyeOff, Edit3, ImagePlus, MapPin, MessageCircle, ShieldCheck, Check, Loader2, Phone, FileText, DollarSign, Layers, ChevronLeft, Building, Building2, Key, Truck, Package, CreditCard, QrCode, RefreshCw, Banknote, DownloadCloud, FileArchive, Search, Utensils, Plane, Thermometer, CreditCard as CreditCardIcon, PlusCircle, Coins, Wand2, Bot, BadgePercent, Landmark, Info, Trash2, Plus, Bus, Ship, Train, Navigation, Route as RouteIcon, Users, Calendar, Clock, ChevronDown, ChevronUp, X, CheckCircle, GraduationCap, Award, SlidersHorizontal, Store as StoreIcon, Star, Lock, ShieldAlert, FileSpreadsheet, Receipt, BookOpenCheck, Zap, Apple, Flame, Croissant, Milk, Wine, Palette } from 'lucide-react';
 import { StoryHighlightUploader, type StoryHighlight } from "@/components/classifieds/story-highlight-uploader";
 import { ItineraryDayEditor, type ItineraryDay } from "@/components/classifieds/itinerary-day-editor";
 import { WeatherWidget } from "@/components/classifieds/weather-widget";
@@ -14,6 +14,7 @@ import { CANONICAL_AIRPORTS, CANONICAL_AIRLINES, CANONICAL_TRANSPORT_TYPES, CANO
 import { cn } from "@/lib/utils";
 import { ClassifiedTemplateStyle, ClassifiedDisplayMode, CivilInquiryQuestion, CivilInquiryConfig } from "@/types/unified-ad-engine";
 
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
@@ -28,15 +29,9 @@ import { formatMoney } from "@/lib/money";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { MediaUploader } from "@/components/ui/media-uploader";
 import { DigitalFileDropzone } from "@/components/classifieds/digital-file-dropzone";
-import { CreateTypePicker } from "@/components/classifieds/create-type-picker";
-import { ClassifiedEditorNavigation } from "@/components/classifieds/classified-editor-navigation";
-import { ClassifiedMediaSection } from "@/components/classifieds/classified-media-section";
-import { ClassifiedBasicInfoSection } from "@/components/classifieds/classified-basic-info-section";
-import { ClassifiedLocationSection } from "@/components/classifieds/classified-location-section";
-import { ClassifiedPricingLifecycleSection } from "@/components/classifieds/classified-pricing-lifecycle-section";
 import { ChoiceCard } from "@/components/ui/choice-card";
 import { SquircleCard } from "@/components/ui/squircle-card";
-import type { StructuredLocationValue } from "@/components/ui/city-combobox";
+import { CityCombobox, type StructuredLocationValue } from "@/components/ui/city-combobox";
 import { upsertClassified, getPublicClassifiedById, refineClassifiedWithAI } from "@/services/classifieds.functions";
 import { getMyStoresList } from "@/services/store.functions";
 import { getProfile, getUserSession } from "@/services/auth.functions";
@@ -46,19 +41,8 @@ import { analyzeCommercialPointPotential, auditCnpjWithSimLabs } from "@/service
 import { lookupCnpj } from "@/services/public-apis.functions";
 import { CANONICAL_VEHICLE_BRANDS, CANONICAL_TRANSMISSIONS, CANONICAL_FUELS, CANONICAL_VEHICLE_COLORS, CANONICAL_VEHICLE_OPTIONS, CANONICAL_VEHICLE_PROVENANCE, CANONICAL_GOODS_SEGMENTS, CANONICAL_ITEM_CONDITIONS, CANONICAL_SMARTPHONE_BRANDS, CANONICAL_COMPUTER_TYPES, CANONICAL_COMPUTER_BRANDS, CANONICAL_PROCESSORS, CANONICAL_RAM_OPTIONS, CANONICAL_STORAGE_OPTIONS, CANONICAL_APPLIANCE_TYPES, CANONICAL_APPLIANCE_BRANDS, CANONICAL_VOLTAGES, CANONICAL_GAME_CONSOLES, CANONICAL_FASHION_CATEGORIES, CANONICAL_FASHION_SIZES, CANONICAL_FOOD_SUBNICHES, CANONICAL_SERVICE_SUBNICHES, CANONICAL_BUSINESS_TYPES, CANONICAL_BUSINESS_SEGMENTS, CANONICAL_SALE_REASONS, CANONICAL_EMPLOYEES_RANGES, CANONICAL_COMMERCIAL_POINT_TYPES, CANONICAL_INVESTMENT_MODELS, CANONICAL_PROJECT_STAGES, CANONICAL_USE_OF_FUNDS, CANONICAL_GROCERY_DEPARTMENTS, CANONICAL_UNIT_TYPES, CANONICAL_STORAGE_TEMPERATURES, CANONICAL_MEAT_CUT_OPTIONS, CANONICAL_BAKERY_PREP_OPTIONS, GroceryFreshPricing, GroceryRipenessConfig, ProgressiveDiscountTier, OrderBumpOffer, RipenessStage, DEFAULT_RIPENESS_LABELS } from "@/lib/classifieds/canonical-taxonomy";
 import { CANONICAL_EDUCATION_LEVELS, CANONICAL_EXPERIENCE_LEVELS, CANONICAL_JOB_REGIMES, CANONICAL_WORKPLACE_MODELS, CANONICAL_WORK_SCHEDULES, CANONICAL_SALARY_RANGES, CANONICAL_JOB_BENEFITS, SUGGESTED_JOB_SKILLS, getEducationLabel, getExperienceLabel, getRegimeLabel, getWorkplaceModelLabel } from "@/lib/classifieds/canonical-hiring";
-// (ChevronDown, ChevronUp merged into main lucide import above)
-import { resolveClassifiedNiche } from "@/lib/classifieds/semantics";
+import { resolveClassifiedNiche, getNicheDefaultInquiryConfig, isNichePaymentApplicable } from "@/lib/classifieds/semantics";
 import { z } from "zod";
-import {
-  computeClassifiedRefinementBaseHash,
-  type ClassifiedNicheType,
-  type ClassifiedPriceDisclaimer,
-  type ClassifiedPricingType,
-  type ClassifiedRefinementEvidence,
-  type ClassifiedValidityDays,
-  type NicheDefinition,
-} from "@/types/classified-editor";
-
 
 const ClassifiedSearchSchema = z.object({
   tipo: z.string().optional(),
@@ -117,8 +101,55 @@ function ContaClassificadoNovoErrorComponent({ error }: { error: any }) {
   );
 }
 
+export interface TravelLodging {
+  id: string;
+  name: string;
+  type?: "hotel" | "pousada" | "resort" | "flat" | "hostel" | "outro";
+  stars?: number;
+  city?: string;
+  state?: string;
+  address?: string;
+  description?: string;
+  regime?: string; // All Inclusive, Café da Manhã, etc.
+  checkin_time?: string;
+  checkout_time?: string;
+  room_category?: string;
+  amenities?: string[];
+  photos?: string[];
+  cover_photo_url?: string;
+  booking_code?: string;
+  website?: string;
+  phone?: string;
+}
+
 // ─── 1. Taxonomia Canônica de Tipos ────────────
-export type { ClassifiedNicheType, NicheDefinition } from "@/types/classified-editor";
+type ClassifiedNicheType =
+  | "viagem"
+  | "equipamento"
+  | "doacao"
+  | "hospedagem"
+  | "imovel"
+  | "desapego"
+  | "digital"
+  | "veiculo"
+  | "servico"
+  | "vaga"
+  | "assinatura"
+  | "gastronomia"
+  | "farmacia"
+  | "mercado"
+  | "negocio";
+
+interface NicheDefinition {
+  id: ClassifiedNicheType;
+  canonicalCategory: "sale" | "vehicle" | "real_estate" | "service" | "job" | "travel" | "equipment" | "donation" | "business" | "food";
+  title: string;
+  subtitle: string;
+  description: string;
+  icon: any;
+  badge: string;
+  gradient: string;
+}
 
 const NICHE_CARDS: NicheDefinition[] = [
   {
@@ -318,7 +349,15 @@ function NovoClassificadoPage() {
         try {
           const saved = sessionStorage.getItem("waesy_ai_prefill");
           if (saved) {
-            setInitialData(JSON.parse(saved));
+            const parsed = JSON.parse(saved);
+            const savedNiche = parsed?.attributes?.niche || parsed?.category;
+            // Se o usuário navegou explicitamente com ?tipo=x e o prefill é incompatível, descarta prefill residual
+            if (selectedType && savedNiche && savedNiche !== selectedType && savedNiche !== "goods") {
+              sessionStorage.removeItem("waesy_ai_prefill");
+              setInitialData(null);
+            } else {
+              setInitialData(parsed);
+            }
             setIsLoadingEdit(false);
             return;
           }
@@ -467,8 +506,6 @@ function NovoClassificadoPage() {
   if (!activeNiche) {
     return (
       <CreateTypePicker
-        nicheCards={NICHE_CARDS}
-        desapegoTaxonomy={DESAPEGO_TAXONOMY}
         onSelect={(typeId, sub) =>
           navigate({
             to: "/conta/classificados/novo",
@@ -564,6 +601,436 @@ function NovoClassificadoPage() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// CAMADA 2: CreateTypePicker (Cards Verticais com Scroll Horizontal)
+// ─────────────────────────────────────────────────────────────────────────────
+function CreateTypePicker({
+  onSelect,
+  onAiPrefill,
+}: {
+  onSelect: (typeId: ClassifiedNicheType, sub?: string) => void;
+  onAiPrefill?: (listing: any) => void;
+}) {
+  const [searchFilter, setSearchFilter] = useState("");
+  const [aiPrompt, setAiPrompt] = useState("");
+  const [isAiGenerating, setIsAiGenerating] = useState(false);
+  const [highlightInput, setHighlightInput] = useState(false);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const aiInputRef = useRef<HTMLInputElement>(null);
+
+  const handleGenerateWithAi = async () => {
+    const trimmed = (searchFilter || aiPrompt).trim();
+    if (!trimmed) {
+      setHighlightInput(true);
+      if (aiInputRef.current) {
+        aiInputRef.current.focus();
+      }
+      toast.info("Descreva seu anúncio na barra acima para a IA estruturar.", {
+        id: "ai-prompt-guide",
+        duration: 4000,
+      });
+      return;
+    }
+    setHighlightInput(false);
+    setIsAiGenerating(true);
+    toast.loading("O Copilot está estruturando seu anúncio...", { id: "ai-ad" });
+    try {
+      const res = await createListingWithAI({ data: { prompt: trimmed } });
+      if (res?.success && res.listing) {
+        toast.success("Anúncio estruturado com Copilot! Revise os dados.", { id: "ai-ad" });
+        if (onAiPrefill) {
+          onAiPrefill(res.listing);
+        } else {
+          onSelect((res.listing.niche as ClassifiedNicheType) || "desapego");
+        }
+      } else {
+        toast.error("Não foi possível gerar os dados. Escolha a categoria abaixo.", { id: "ai-ad" });
+      }
+    } catch (e: any) {
+      console.warn("Erro ao gerar anúncio com IA:", e);
+      toast.error(e?.message || "Erro ao conectar com a IA. Escolha a categoria manualmente.", { id: "ai-ad" });
+    } finally {
+      setIsAiGenerating(false);
+    }
+  };
+
+  const handleScroll = (direction: "left" | "right") => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollBy({
+        left: direction === "left" ? -300 : 300,
+        behavior: "smooth",
+      });
+    }
+  };
+
+  const personalNiches = useMemo(() => {
+    const ids = ["desapego", "veiculo", "imovel", "servico", "vaga", "digital", "hospedagem", "equipamento", "doacao", "viagem"];
+    if (!searchFilter.trim()) return NICHE_CARDS.filter(n => ids.includes(n.id));
+    const q = searchFilter.toLowerCase();
+    return NICHE_CARDS.filter(n => ids.includes(n.id) && (n.title.toLowerCase().includes(q) || n.subtitle.toLowerCase().includes(q) || n.description.toLowerCase().includes(q)));
+  }, [searchFilter]);
+
+  const businessNiches = useMemo(() => {
+    const ids = ["negocio", "assinatura", "gastronomia", "farmacia", "mercado"];
+    if (!searchFilter.trim()) return NICHE_CARDS.filter(n => ids.includes(n.id));
+    const q = searchFilter.toLowerCase();
+    return NICHE_CARDS.filter(n => ids.includes(n.id) && (n.title.toLowerCase().includes(q) || n.subtitle.toLowerCase().includes(q) || n.description.toLowerCase().includes(q)));
+  }, [searchFilter]);
+
+  const filteredDesapegoItems = useMemo(() => {
+    if (!searchFilter.trim()) return [];
+    const q = searchFilter.toLowerCase();
+    return DESAPEGO_TAXONOMY.filter(
+      (d) =>
+        d.label.toLowerCase().includes(q) ||
+        d.desc.toLowerCase().includes(q)
+    );
+  }, [searchFilter]);
+
+  const [scopeTab, setScopeTab] = useState<"all" | "personal" | "business">("all");
+
+  const visibleNiches = useMemo(() => {
+    if (scopeTab === "personal") return personalNiches;
+    if (scopeTab === "business") return businessNiches;
+    return [...personalNiches, ...businessNiches];
+  }, [scopeTab, personalNiches, businessNiches]);
+
+  return (
+    <div className="w-full max-w-6xl mx-auto space-y-6 pb-20 px-1 sm:px-0">
+      {/* ── 1. Clean Minimalist Header ── */}
+      <div className="flex items-center justify-between gap-4 border-b border-border/40 pb-4 pt-1">
+        <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
+          Criar Anúncio
+        </h1>
+        <Button asChild size="sm" variant="outline" className="rounded-lg text-xs font-semibold h-11 min-h-11 px-4 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary border-border/70">
+          <Link to="/conta/classificados">Meus Anúncios</Link>
+        </Button>
+      </div>
+
+      {/* ── Tabs Limpas no Topo (Apple HIG Segmented Control) ── */}
+      <div className="flex items-center gap-1 p-1 bg-muted/40 rounded-lg border border-border/50 max-w-md">
+        <button
+          type="button"
+          onClick={() => setScopeTab("all")}
+          className={cn(
+            "flex-1 py-2 px-3 rounded-lg text-xs font-semibold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+            scopeTab === "all"
+              ? "bg-background text-foreground border border-border/70"
+              : "text-muted-foreground hover:text-foreground border border-transparent"
+          )}
+        >
+          Todos
+        </button>
+        <button
+          type="button"
+          onClick={() => setScopeTab("personal")}
+          className={cn(
+            "flex-1 py-2 px-3 rounded-lg text-xs font-semibold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+            scopeTab === "personal"
+              ? "bg-background text-foreground border border-border/70"
+              : "text-muted-foreground hover:text-foreground border border-transparent"
+          )}
+        >
+          Pessoal
+        </button>
+        <button
+          type="button"
+          onClick={() => setScopeTab("business")}
+          className={cn(
+            "flex-1 py-2 px-3 rounded-lg text-xs font-semibold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+            scopeTab === "business"
+              ? "bg-background text-foreground border border-border/70"
+              : "text-muted-foreground hover:text-foreground border border-transparent"
+          )}
+        >
+          Negócios
+        </button>
+      </div>
+
+      {/* ── Ação Unificada: Busca & Criar com IA Copilot Adjacente ── */}
+      <div className="space-y-2">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+          <div className="relative flex-1">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+            <Input
+              ref={aiInputRef}
+              value={searchFilter || aiPrompt}
+              onChange={(e) => {
+                setSearchFilter(e.target.value);
+                setAiPrompt(e.target.value);
+                if (highlightInput) setHighlightInput(false);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  handleGenerateWithAi();
+                }
+              }}
+              placeholder="Descreva seu anúncio ou busque categorias (ex: iPhone 13 Pro 128GB)..."
+              className={cn(
+                "pl-10 pr-16 h-11 rounded-lg text-xs sm:text-sm bg-card border-border/70 transition-colors duration-200",
+                highlightInput
+                  ? "border-primary ring-2 ring-primary/40 animate-pulse focus-visible:ring-primary"
+                  : "focus-visible:ring-1 focus-visible:ring-foreground/20"
+              )}
+              id="ai-intent-input"
+            />
+            {(searchFilter || aiPrompt) && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSearchFilter("");
+                  setAiPrompt("");
+                  setHighlightInput(false);
+                }}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary px-2 py-1"
+              >
+                Limpar
+              </button>
+            )}
+          </div>
+          <Button
+            type="button"
+            disabled={isAiGenerating}
+            onClick={handleGenerateWithAi}
+            variant="outline"
+            className="h-11 px-4 rounded-lg font-semibold text-xs border border-border/80 text-foreground hover:bg-muted/40 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary shrink-0 flex items-center gap-2"
+          >
+            {isAiGenerating ? (
+              <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
+            ) : (
+              <Wand2 className="size-4 text-primary" />
+            )}
+            <span>{isAiGenerating ? "Gerando..." : "Criar com IA"}</span>
+            <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground bg-muted/60 px-2 py-0.5 rounded border border-border/50">
+              Copilot
+            </span>
+          </Button>
+        </div>
+        {highlightInput && (
+          <p className="text-xs text-primary font-medium animate-in fade-in duration-200 px-1">
+            Digite aqui o que você deseja anunciar e clique em "Criar com IA".
+          </p>
+        )}
+      </div>
+
+      {/* ── MOBILE: The WhatsApp List Pattern (Listas Verticais Limpas) ── */}
+      <div className="block sm:hidden space-y-1">
+        <span className="text-xs text-muted-foreground/75 font-bold uppercase tracking-wider block px-1 py-1">
+          {scopeTab === "personal"
+            ? "Pessoal"
+            : scopeTab === "business"
+            ? "Negócios"
+            : "Categorias"}
+        </span>
+        <div className="divide-y divide-border/20 rounded-lg border border-border/50 bg-card overflow-hidden">
+          {visibleNiches.map((niche) => {
+            const Icon = niche.icon;
+            return (
+              <button
+                key={niche.id}
+                onClick={() => onSelect(niche.id)}
+                className="w-full flex items-center justify-between p-4 hover:bg-muted/30 active:bg-muted/50 transition-colors text-left cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary min-h-14"
+              >
+                <div className="flex items-center gap-4 min-w-0">
+                  <div className="size-11 rounded-full border border-border/60 flex items-center justify-center shrink-0 text-foreground bg-background">
+                    <Icon className="size-5" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-sm font-semibold text-foreground truncate">
+                        {niche.title}
+                      </h3>
+                      <span className="text-xs font-medium text-muted-foreground border border-border/60 px-2 py-0.2 rounded-sm shrink-0">
+                        {niche.badge}
+                      </span>
+                    </div>
+                    <p className="text-xs text-muted-foreground truncate mt-1">
+                      {niche.subtitle}
+                    </p>
+                  </div>
+                </div>
+                <ChevronRight className="size-4 text-muted-foreground shrink-0 ml-2" />
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ── DESKTOP: Trilho de Cards Refinado (Apple HIG Clean) ── */}
+      <div className="hidden sm:block space-y-6">
+        {/* Trilho Pessoal */}
+        {(scopeTab === "all" || scopeTab === "personal") && personalNiches.length > 0 && (
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">
+                Pessoal
+              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleScroll("left")}
+                  className="size-11 min-h-11 min-w-11 rounded-lg border border-border/70 bg-card hover:bg-muted flex items-center justify-center text-foreground transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  title="Rolar para a esquerda"
+                  aria-label="Rolar para esquerda"
+                >
+                  <ChevronLeft className="size-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleScroll("right")}
+                  className="size-11 min-h-11 min-w-11 rounded-lg border border-border/70 bg-card hover:bg-muted flex items-center justify-center text-foreground transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  title="Rolar para a direita"
+                  aria-label="Rolar para direita"
+                >
+                  <ChevronRight className="size-4" />
+                </button>
+              </div>
+            </div>
+
+            <div className="relative group/rail">
+              <div
+                ref={scrollContainerRef}
+                className="flex flex-row gap-4 overflow-x-auto carousel snap-x snap-mandatory no-scrollbar py-1 px-1 scroll-smooth"
+              >
+                {personalNiches.map((niche) => {
+                  const Icon = niche.icon;
+                  return (
+                    <button
+                      key={niche.id}
+                      onClick={() => onSelect(niche.id)}
+                      className="w-68 min-w-68 h-11 min-h-116 shrink-0 snap-start text-left relative rounded-lg border border-border/60 bg-card hover:border-foreground/40 hover: transition-colors duration-200 p-5 flex flex-col justify-between overflow-hidden group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="size-12 rounded-lg bg-muted/40 border border-border/70 flex items-center justify-center text-foreground group-hover:scale-105 transition-colors">
+                          <Icon className="size-6" />
+                        </div>
+                        <span className="text-xs font-semibold text-muted-foreground border border-border/60 px-2 py-1 rounded-md">
+                          {niche.badge}
+                        </span>
+                      </div>
+
+                      <div className="space-y-2 flex-1 flex flex-col justify-center mt-3">
+                        <h3 className="text-base font-bold text-foreground group-hover:text-primary transition-colors line-clamp-2">
+                          {niche.title}
+                        </h3>
+                        <p className="text-xs font-semibold text-foreground/80">
+                          {niche.subtitle}
+                        </p>
+                        <p className="text-xs text-muted-foreground line-clamp-3 leading-relaxed">
+                          {niche.description}
+                        </p>
+                      </div>
+
+                      <div className="pt-3 border-t border-border/40 flex items-center justify-between text-xs font-semibold text-foreground group-hover:text-primary transition-colors">
+                        <span>Criar Anúncio</span>
+                        <ChevronRight className="size-4 group-hover:translate-x-1 transition-transform" />
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Trilho Negócios */}
+        {(scopeTab === "all" || scopeTab === "business") && businessNiches.length > 0 && (
+          <div className="space-y-3 pt-4 border-t border-border/30">
+            <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">
+              Negócios
+            </span>
+
+            <div className="flex flex-row gap-4 overflow-x-auto carousel snap-x snap-mandatory no-scrollbar py-1 px-1 scroll-smooth">
+              {businessNiches.map((niche) => {
+                const Icon = niche.icon;
+                return (
+                  <button
+                    key={niche.id}
+                    onClick={() => onSelect(niche.id)}
+                    className="w-68 min-w-68 h-11 min-h-116 shrink-0 snap-start text-left relative rounded-lg border border-border/60 bg-card hover:border-foreground/40 hover: transition-colors duration-200 p-5 flex flex-col justify-between overflow-hidden group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="size-12 rounded-lg bg-muted/40 border border-border/70 flex items-center justify-center text-foreground group-hover:scale-105 transition-colors">
+                        <Icon className="size-6" />
+                      </div>
+                      <span className="text-xs font-semibold text-muted-foreground border border-border/60 px-2 py-1 rounded-md">
+                        {niche.badge}
+                      </span>
+                    </div>
+
+                    <div className="space-y-2 flex-1 flex flex-col justify-center mt-3">
+                      <h3 className="text-base font-bold text-foreground group-hover:text-primary transition-colors line-clamp-2">
+                        {niche.title}
+                      </h3>
+                      <p className="text-xs font-semibold text-foreground/80">
+                        {niche.subtitle}
+                      </p>
+                      <p className="text-xs text-muted-foreground line-clamp-3 leading-relaxed">
+                        {niche.description}
+                      </p>
+                    </div>
+
+                    <div className="pt-3 border-t border-border/40 flex items-center justify-between text-xs font-semibold text-foreground group-hover:text-primary transition-colors">
+                      <span>Criar Anúncio</span>
+                      <ChevronRight className="size-4 group-hover:translate-x-1 transition-transform" />
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ── 3. Categorias Rápidas para Desapego ── */}
+      <div className="space-y-2 pt-2 border-t border-border/40">
+        <span className="text-xs text-muted-foreground/75 font-bold uppercase tracking-wider text-muted-foreground block">
+          Categorias Populares para Desapego Rápido
+        </span>
+        <div className="flex flex-wrap gap-2">
+          {DESAPEGO_TAXONOMY.slice(0, 8).map((cat) => (
+            <Badge
+              key={cat.id}
+              variant="outline"
+              onClick={() => onSelect("desapego", cat.id)}
+              className="text-xs py-2 px-3 rounded-lg gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary hover:bg-primary/10 hover:text-primary hover:border-primary/30 transition-colors"
+            >
+              <span>{cat.label}</span>
+            </Badge>
+          ))}
+        </div>
+      </div>
+
+      {filteredDesapegoItems.length > 0 && (
+        <div className="space-y-2 pt-2">
+          <span className="text-xs text-muted-foreground/75 font-bold uppercase tracking-wider text-primary block">
+            Itens Específicos Encontrados ({filteredDesapegoItems.length})
+          </span>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {filteredDesapegoItems.map((item) => (
+              <button
+                key={item.id}
+                onClick={() => onSelect("desapego", item.id)}
+                className="flex items-center gap-3 p-4 rounded-lg border border-border/60 bg-card hover:bg-muted/40 text-left transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              >
+                <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                  <Tag className="size-4" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-bold text-foreground truncate">{item.label}</p>
+                  <p className="text-xs text-muted-foreground/75 text-muted-foreground truncate">{item.desc}</p>
+                </div>
+                <ChevronRight className="size-4 text-muted-foreground" />
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // CAMADA 3: Specialized Editor + Live Truthful Preview
 // ─────────────────────────────────────────────────────────────────────────────
 function SpecializedClassifiedEditor({
@@ -618,7 +1085,6 @@ function SpecializedClassifiedEditor({
   const [isCustomCommercialOpen, setIsCustomCommercialOpen] = useState(false);
   const [draftInfo, setDraftInfo] = useState<{ step: number; savedAt: string } | null>(null);
   const [mobileTab, setMobileTab] = useState<"edit" | "preview">("edit");
-  const [previewActionNotice, setPreviewActionNotice] = useState("");
  const [jobWorkSchedule, setJobWorkSchedule] = useState("integral_44h");
  const [jobAcceptedMethods, setJobAcceptedMethods] = useState<string[]>([
  "perfil_waesy",
@@ -637,69 +1103,128 @@ function SpecializedClassifiedEditor({
  const [description, setDescription] = useState(
    initialData?.content || initialData?.description || ""
  );
- const [isRefiningDescription, setIsRefiningDescription] = useState(false);
- const [refinementPreview, setRefinementPreview] = useState<ClassifiedRefinementEvidence | null>(null);
- const [appliedRefinementEvidence, setAppliedRefinementEvidence] = useState<ClassifiedRefinementEvidence | null>(null);
- const [refinementVersion, setRefinementVersion] = useState(0);
+  const [isRefiningDescription, setIsRefiningDescription] = useState(false);
+  const [copilotModalOpen, setCopilotModalOpen] = useState(false);
+  const [copilotSuggestions, setCopilotSuggestions] = useState<{
+    version1?: { title: string; description: string; badge: string };
+    version2?: { title: string; description: string; badge: string };
+    suggestedTags?: string[];
+  } | null>(null);
+  const [selectedCopilotVersion, setSelectedCopilotVersion] = useState<"version1" | "version2">("version1");
 
- const handleRefineDescriptionWithAI = async () => {
-   if (!title.trim() && !description.trim()) {
-     toast.error("Preencha ao menos o título ou um resumo da descrição para a IA refinar.");
-     return;
-   }
-   setIsRefiningDescription(true);
-   toast.loading("Refinando anúncio com IA...", { id: "ai-refine" });
-   try {
-     const res = await refineClassifiedWithAI({
-       data: {
-         title: title.trim(),
-         description: description.trim(),
-         niche: niche.id,
-       },
-     });
-     if (res.success) {
-       const suggestion = {
-         title: res.title?.trim() || title.trim(),
-         description: res.description?.trim() || description.trim(),
-         suggestedTags: Array.isArray(res.suggestedTags) ? res.suggestedTags : [],
-       };
-       const nextVersion = refinementVersion + 1;
-       setRefinementVersion(nextVersion);
-       setRefinementPreview({
-         version: nextVersion,
-         source: "unified_ai",
-         generatedAt: new Date().toISOString(),
-         baseHash: computeClassifiedRefinementBaseHash(title, description),
-         before: { title: title.trim(), description: description.trim() },
-         suggestion,
-       });
-       toast.success("Preview de título e descrição pronto para revisão.", { id: "ai-refine" });
-     } else {
-       toast.error(res.message || "Não foi possível aprimorar no momento.", { id: "ai-refine" });
-     }
-   } catch (err: unknown) {
-     toast.error(err instanceof Error ? err.message : "Erro ao conectar com a IA.", { id: "ai-refine" });
-   } finally {
-     setIsRefiningDescription(false);
-   }
- };
+  const buildCurrentNicheContext = () => {
+    const ctx: Record<string, any> = {};
+    if (priceCents) ctx["preço"] = formatMoney(priceCents);
+    if (locationName) ctx["localização"] = locationName;
+    if (niche.id === "veiculo") {
+      if (vehicleBrand) ctx["marca"] = vehicleBrand;
+      if (vehicleModel) ctx["modelo"] = vehicleModel;
+      if (vehicleVersion) ctx["versão"] = vehicleVersion;
+      if (vehicleYearModel) ctx["ano_modelo"] = vehicleYearModel;
+      if (vehicleYearFab) ctx["ano_fabricação"] = vehicleYearFab;
+      if (vehicleKm) ctx["quilometragem"] = `${vehicleKm} km`;
+      if (vehicleTransmission) ctx["câmbio"] = vehicleTransmission;
+      if (vehicleFuel) ctx["combustível"] = vehicleFuel;
+      if (vehicleColor) ctx["cor"] = vehicleColor;
+      if (vehicleFeatures?.length) ctx["opcionais"] = vehicleFeatures;
+    } else if (niche.id === "imovel") {
+      ctx["tipo_negocio"] = reDealType === "aluguel" ? "Locação" : "Venda";
+      if (rePropertyType) ctx["tipo_imovel"] = rePropertyType;
+      if (reAreaSqm) ctx["área_útil"] = `${reAreaSqm} m²`;
+      if (reBedrooms) ctx["quartos"] = reBedrooms;
+      if (reSuites) ctx["suítes"] = reSuites;
+      if (reParking) ctx["vagas"] = reParking;
+      if (reCondoCents) ctx["condomínio"] = formatMoney(reCondoCents);
+      if (reIptuCents) ctx["iptu"] = formatMoney(reIptuCents);
+      if (reAmenities?.length) ctx["comodidades"] = reAmenities;
+    } else if (niche.id === "viagem") {
+      if (travelDestinationCity) ctx["destino"] = travelDestinationCity;
+      if (travelDuration) ctx["duração"] = travelDuration;
+      if (travelMealPlan) ctx["regime"] = travelMealPlan;
+      if (travelGuests) ctx["capacidade_hóspedes"] = travelGuests;
+      if (travelTransportType) ctx["transporte"] = travelTransportType === "flight" ? "Aéreo" : travelTransportType === "bus" ? "Rodoviário" : travelTransportType;
+      if (travelDepartureCity) ctx["cidade_saída"] = travelDepartureCity;
+      if (travelStoryHighlights?.length) ctx["destaques"] = travelStoryHighlights.map((s) => s.title);
+      if (travelItineraryDays?.length) {
+        ctx["roteiro_dias"] = travelItineraryDays.map((d) => `Dia ${d.day_number}: ${d.title}`).join("; ");
+      }
+    } else if (niche.id === "hospedagem") {
+      if (hospPropertyType) ctx["tipo_espaço"] = hospPropertyType;
+      if (hospGuests) ctx["capacidade_hóspedes"] = hospGuests;
+      if (hospBedrooms) ctx["quartos"] = hospBedrooms;
+      if (hospCheckinTime) ctx["check_in"] = hospCheckinTime;
+      if (hospCheckoutTime) ctx["check_out"] = hospCheckoutTime;
+      if (hospCleaningFeeCents) ctx["taxa_limpeza"] = formatMoney(hospCleaningFeeCents);
+      if (hospAmenities?.length) ctx["comodidades"] = hospAmenities;
+    } else if (niche.id === "servico") {
+      if (serviceArea) ctx["área_atuação"] = serviceArea;
+      if (serviceModality) ctx["modalidade"] = serviceModality === "remoto" ? "Online / Remoto" : serviceModality === "domicilio" ? "A Domicílio" : "Presencial";
+      if (serviceDuration) ctx["duração_estimada"] = `${serviceDuration} minutos`;
+      if (serviceSpecialty) ctx["especialidade"] = serviceSpecialty;
+      if (serviceProfessionalCouncil) ctx["conselho_profissional"] = serviceProfessionalCouncil;
+    } else if (niche.id === "vaga") {
+      if (jobRole) ctx["cargo"] = jobRole;
+      if (jobMinEducation) ctx["escolaridade"] = jobMinEducation;
+      if (jobExperienceLevel) ctx["experiência"] = jobExperienceLevel;
+      if (jobModel) ctx["modelo_trabalho"] = jobModel;
+      if (jobRegime) ctx["regime_contratação"] = jobRegime;
+      if (jobSalaryRange) ctx["salário"] = jobSalaryRange;
+    } else if (niche.id === "desapego") {
+      if (itemCondition) ctx["condição"] = itemCondition;
+      if (phoneBrand) ctx["marca_aparelho"] = phoneBrand;
+      if (phoneModel) ctx["modelo_aparelho"] = phoneModel;
+    }
+    return ctx;
+  };
 
- const applyRefinementPreview = () => {
-   if (!refinementPreview) return;
-   const currentHash = computeClassifiedRefinementBaseHash(title, description);
-   if (currentHash !== refinementPreview.baseHash) {
-     setRefinementPreview(null);
-     toast.warning("O texto mudou desde o preview. Gere uma nova sugestão para evitar sobrescrever sua edição.");
-     return;
-   }
-   const applied = { ...refinementPreview, appliedAt: new Date().toISOString() };
-   setTitle(applied.suggestion.title);
-   setDescription(applied.suggestion.description);
-   setAppliedRefinementEvidence(applied);
-   setRefinementPreview(null);
-   toast.success(`Sugestão v${applied.version} aplicada com evidência registrada.`);
- };
+  const handleRefineDescriptionWithAI = async () => {
+    if (!title.trim() && !description.trim()) {
+      toast.error("Preencha ao menos o título ou um resumo da descrição para o Copilot refinar.");
+      return;
+    }
+    setIsRefiningDescription(true);
+    toast.loading("Copilot analisando especificações e formulando opções...", { id: "copilot-refine" });
+    try {
+      const res = await refineClassifiedWithAI({
+        data: {
+          title: title.trim(),
+          description: description.trim(),
+          niche: niche.id,
+          attributes: buildCurrentNicheContext(),
+        },
+      });
+      if (res.success && (res.version1 || res.version2)) {
+        setCopilotSuggestions({
+          version1: res.version1,
+          version2: res.version2,
+          suggestedTags: res.suggestedTags,
+        });
+        setSelectedCopilotVersion("version1");
+        setCopilotModalOpen(true);
+        toast.success("Opções de anúncio geradas com sucesso!", { id: "copilot-refine" });
+      } else if (res.success && res.title) {
+        setTitle(res.title);
+        if (res.description) setDescription(res.description);
+        toast.success("Título e descrição aprimorados com sucesso!", { id: "copilot-refine" });
+      } else {
+        toast.error(res.message || "Não foi possível aprimorar no momento.", { id: "copilot-refine" });
+      }
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao conectar com o Copilot.", { id: "copilot-refine" });
+    } finally {
+      setIsRefiningDescription(false);
+    }
+  };
 
+  const handleApplyCopilotVersion = (versionKey: "version1" | "version2") => {
+    const chosen = copilotSuggestions?.[versionKey];
+    if (chosen) {
+      if (chosen.title) setTitle(chosen.title);
+      if (chosen.description) setDescription(chosen.description);
+      setCopilotModalOpen(false);
+      toast.success(`${chosen.badge} aplicada com sucesso ao anúncio!`);
+    }
+  };
  const [aiInstructions, setAiInstructions] = useState("");
  const [aiAgentEnabled, setAiAgentEnabled] = useState<boolean>(
    initialData?.ai_agent_enabled ?? false
@@ -713,8 +1238,8 @@ function SpecializedClassifiedEditor({
  const [negotiable, setNegotiable] = useState(true);
 
   // FASE 1: Lifecycle & Regras de Validade e Estoque
-  const [validityDays, setValidityDays] = useState<ClassifiedValidityDays>(
-    (initialData?.attributes?.validity_days as ClassifiedValidityDays) || 30
+  const [validityDays, setValidityDays] = useState<30 | 60 | 90>(
+    (initialData?.attributes?.validity_days as any) || 30
   );
   const [stockLimit, setStockLimit] = useState<string>(
     initialData?.stock_limit != null ? String(initialData.stock_limit) : ""
@@ -749,48 +1274,58 @@ function SpecializedClassifiedEditor({
   });
 
   // Template de Exibição (6 Modelos Canônicos + Auto-Theming Inteligente)
+  const defaultNicheTemplateStyle = useMemo<ClassifiedTemplateStyle>(() => {
+    if (niche.id === "veiculo") return "automotivo";
+    if (niche.id === "imovel") return "imobiliario";
+    if (niche.id === "viagem" || niche.id === "hospedagem") return "resort_hotel";
+    if (niche.id === "servico") return "servicos_agenda";
+    if (niche.id === "mercado") return "conveniencia";
+    return "standard";
+  }, [niche.id]);
+
   const [templateStyle, setTemplateStyle] = useState<ClassifiedTemplateStyle>(
-    (initialData?.attributes?.template_style as ClassifiedTemplateStyle) ||
-    (niche.id === "veiculo"
-      ? "automotivo"
-      : niche.id === "imovel"
-      ? "imobiliario"
-      : niche.id === "viagem" || niche.id === "hospedagem"
-      ? "resort_hotel"
-      : niche.id === "servico"
-      ? "servicos_agenda"
-      : "standard")
+    (initialData?.attributes?.template_style as ClassifiedTemplateStyle) || defaultNicheTemplateStyle
   );
+
+  // Sincroniza o template quando o usuário troca o nicho ativo (se não for edição com template explícito inicial)
+  useEffect(() => {
+    if (!initialData?.attributes?.template_style) {
+      setTemplateStyle(defaultNicheTemplateStyle);
+    }
+  }, [defaultNicheTemplateStyle, initialData]);
+
   const [displayMode, setDisplayMode] = useState<ClassifiedDisplayMode>(
     (initialData?.attributes?.display_mode as ClassifiedDisplayMode) || "tabs"
   );
-  const [isTemplateStyleOpen, setIsTemplateStyleOpen] = useState(false);
+  const [isTemplateStyleOpen, setIsTemplateStyleOpen] = useState(true);
 
   // Qualificação de Leads & SDR IA (Para Anunciantes Civis / Pessoa Física)
+  const defaultNicheInquiry = useMemo(() => {
+    return getNicheDefaultInquiryConfig(niche.id, { acceptsTrade: niche.id === "veiculo" });
+  }, [niche.id]);
+
   const [civilInquiryEnabled, setCivilInquiryEnabled] = useState<boolean>(
     initialData?.attributes?.inquiry_config?.enabled ?? false
   );
   const [civilInquiryTitle, setCivilInquiryTitle] = useState<string>(
-    initialData?.attributes?.inquiry_config?.title || "Tenho Interesse neste Anúncio"
+    initialData?.attributes?.inquiry_config?.title || defaultNicheInquiry.title
   );
   const [civilInquirySubtitle, setCivilInquirySubtitle] = useState<string>(
-    initialData?.attributes?.inquiry_config?.subtitle || "Responda algumas perguntas rápidas para receber atendimento ou proposta personalizada."
+    initialData?.attributes?.inquiry_config?.subtitle || defaultNicheInquiry.subtitle
   );
   const [civilInquiryActivateSdr, setCivilInquiryActivateSdr] = useState<boolean>(
     initialData?.attributes?.inquiry_config?.activate_sdr_ai ?? true
   );
   const [civilInquiryQuestions, setCivilInquiryQuestions] = useState<CivilInquiryQuestion[]>(
-    initialData?.attributes?.inquiry_config?.questions || [
-      { id: "q1", label: "Qual seu prazo para fechar negócio?", type: "select", options: ["Imediato / Esta semana", "Próximos 15 a 30 dias", "Apenas pesquisando valores"], required: true },
-      { id: "q2", label: "Possui item ou veículo para entrada / permuta?", type: "select", options: ["Não, pagamento à vista / financiado", "Sim, gostaria de avaliar troca"], required: false },
-      { id: "q3", label: "Mensagem ou proposta personalizada", type: "textarea", placeholder: "Descreva sua proposta ou melhor horário para contato...", required: false }
-    ]
+    initialData?.attributes?.inquiry_config?.questions || defaultNicheInquiry.questions
   );
   const [newQuestionLabel, setNewQuestionLabel] = useState("");
   const [newQuestionType, setNewQuestionType] = useState<"text" | "select" | "currency" | "textarea">("text");
 
   // ── Motor de Precificação Dinâmica & Avisos ──
-  const [pricingType, setPricingType] = useState<ClassifiedPricingType>(
+  const [pricingType, setPricingType] = useState<
+    "fixed" | "starting_at" | "on_quote" | "price_range" | "exchange_only" | "free"
+  >(
     initialData?.attributes?.pricing_type || (niche.id === "doacao" ? "free" : "fixed")
   );
   const [priceMinCents, setPriceMinCents] = useState<number | undefined>(
@@ -799,8 +1334,8 @@ function SpecializedClassifiedEditor({
   const [priceMaxCents, setPriceMaxCents] = useState<number | undefined>(
     initialData?.attributes?.price_max_cents ?? undefined
   );
-  const [priceDisclaimer, setPriceDisclaimer] = useState<ClassifiedPriceDisclaimer>(
-    (initialData?.attributes?.price_disclaimer as ClassifiedPriceDisclaimer) || "none"
+  const [priceDisclaimer, setPriceDisclaimer] = useState<string>(
+    initialData?.attributes?.price_disclaimer || "none"
   );
   const [customDisclaimer, setCustomDisclaimer] = useState<string>(
     initialData?.attributes?.custom_disclaimer || ""
@@ -833,6 +1368,33 @@ function SpecializedClassifiedEditor({
   const [travelDates, setTravelDates] = useState(
     initialData?.attributes?.dates_text || ""
   );
+  const [travelVisibilityMode, setTravelVisibilityMode] = useState<"public" | "unlisted" | "private">(
+    (initialData?.attributes?.visibility_mode as "public" | "unlisted" | "private") || "public"
+  );
+  const [travelIsCustomQuote, setTravelIsCustomQuote] = useState<boolean>(
+    Boolean(initialData?.attributes?.is_custom_quote)
+  );
+  const [travelAdultsCount, setTravelAdultsCount] = useState<number>(
+    Number(initialData?.attributes?.passenger_composition?.adults ?? 2)
+  );
+  const [travelChildrenCount, setTravelChildrenCount] = useState<number>(
+    Number(initialData?.attributes?.passenger_composition?.children ?? 0)
+  );
+  const [travelChildrenMaxAge, setTravelChildrenMaxAge] = useState<number>(
+    Number(initialData?.attributes?.passenger_composition?.children_max_age ?? 12)
+  );
+  const [travelBaggagePersonalItem, setTravelBaggagePersonalItem] = useState<boolean>(
+    initialData?.attributes?.flight_details?.baggage?.personal_item ?? true
+  );
+  const [travelBaggageCarryOn, setTravelBaggageCarryOn] = useState<boolean>(
+    initialData?.attributes?.flight_details?.baggage?.carry_on ?? true
+  );
+  const [travelBaggageChecked, setTravelBaggageChecked] = useState<number>(
+    Number(initialData?.attributes?.flight_details?.baggage?.checked_bags ?? 0)
+  );
+  const [travelConnectionCity, setTravelConnectionCity] = useState<string>(
+    initialData?.attributes?.flight_details?.connection_city || ""
+  );
 
   // ── Novos campos de viagem: Destino e Aeroportos ──
   const [travelDestinationCity, setTravelDestinationCity] = useState(
@@ -864,9 +1426,6 @@ function SpecializedClassifiedEditor({
   );
   const [travelArrivalTime, setTravelArrivalTime] = useState(
     initialData?.attributes?.flight_details?.arrival_time || ""
-  );
-  const [travelMaxInstallments, setTravelMaxInstallments] = useState(
-    initialData?.attributes?.max_installments ?? 1
   );
   const [travelStoryHighlights, setTravelStoryHighlights] = useState<StoryHighlight[]>(
     initialData?.attributes?.story_highlights || []
@@ -984,6 +1543,59 @@ function SpecializedClassifiedEditor({
     );
   const handleRemoveDeparture = (id: string) =>
     setTravelDepartureOptions((prev) => prev.filter((d) => d.id !== id));
+
+  // ── Hospedagens da Viagem (Hotéis / Resorts / Pousadas) ──
+  const [travelLodgings, setTravelLodgings] = useState<TravelLodging[]>(() => {
+    if (Array.isArray(initialData?.attributes?.lodgings) && initialData.attributes.lodgings.length > 0) {
+      return initialData.attributes.lodgings;
+    }
+    if (Array.isArray(initialData?.attributes?.hotels) && initialData.attributes.hotels.length > 0) {
+      return initialData.attributes.hotels;
+    }
+    if (initialData?.attributes?.hotel_name) {
+      return [{
+        id: crypto.randomUUID(),
+        name: initialData.attributes.hotel_name,
+        type: "hotel",
+        city: initialData.attributes.destination_city || "",
+        regime: initialData.attributes.meal_plan || "Café da Manhã",
+        description: initialData.attributes.hotel_description || "",
+        amenities: initialData.attributes.hotel_amenities || [],
+        address: initialData.attributes.hotel_address || "",
+        stars: initialData.attributes.hotel_stars || 4,
+        checkin_time: initialData.attributes.checkin_time || "14:00",
+        checkout_time: initialData.attributes.checkout_time || "11:00",
+      }];
+    }
+    return [];
+  });
+
+  const handleAddTravelLodging = () => {
+    const newLodging: TravelLodging = {
+      id: crypto.randomUUID(),
+      name: "",
+      type: "hotel",
+      stars: 4,
+      city: travelDestinationCity || "",
+      regime: travelMealPlan || "Café da Manhã",
+      amenities: [],
+      photos: [],
+      checkin_time: "14:00",
+      checkout_time: "11:00",
+    };
+    setTravelLodgings((prev) => [...prev, newLodging]);
+  };
+
+  const handleUpdateTravelLodging = (id: string, patch: Partial<TravelLodging>) => {
+    setTravelLodgings((prev) =>
+      prev.map((l) => (l.id === id ? { ...l, ...patch } : l))
+    );
+  };
+
+  const handleRemoveTravelLodging = (id: string) => {
+    setTravelLodgings((prev) => prev.filter((l) => l.id !== id));
+  };
+
   const [travelBioBullets, setTravelBioBullets] = useState<string[]>(() => {
     if (Array.isArray(initialData?.attributes?.bio_bullets) && initialData.attributes.bio_bullets.length > 0) {
       return initialData.attributes.bio_bullets;
@@ -1087,19 +1699,32 @@ function SpecializedClassifiedEditor({
   );
   const [billingCycle, setBillingCycle] = useState<"monthly" | "quarterly" | "semiannual" | "yearly">("monthly");
   const [setupFeeCents, setSetupFeeCents] = useState<number | undefined>(undefined);
-  const [trialDays, setTrialDays] = useState<number>(0);
-  const [recurringFeatures, setRecurringFeatures] = useState<string[]>([
-    "Acesso completo ao serviço",
-    "Suporte prioritário via WhatsApp",
-  ]);
+  const [trialDays, setTrialDays] = useState<number | undefined>(
+    initialData?.trial_days ?? undefined
+  );
+  const [recurringFeatures, setRecurringFeatures] = useState<string[]>(() => {
+    if (Array.isArray(initialData?.recurring_features) && initialData.recurring_features.length > 0) {
+      return initialData.recurring_features;
+    }
+    return [];
+  });
   const [newFeatureInput, setNewFeatureInput] = useState("");
 
   // Specialized: Formas de Pagamento & Cancelamento (Zero Hardcoded)
-  const [acceptsPix, setAcceptsPix] = useState(true);
-  const [acceptsCard, setAcceptsCard] = useState(false);
-  const [maxInstallments, setMaxInstallments] = useState(12);
+  const isPaymentAllowed = isNichePaymentApplicable(niche.id);
+  const [acceptsPix, setAcceptsPix] = useState(
+    isPaymentAllowed ? (initialData?.attributes?.accepts_pix ?? true) : false
+  );
+  const [acceptsCard, setAcceptsCard] = useState(
+    isPaymentAllowed ? (initialData?.attributes?.accepts_card ?? false) : false
+  );
+  const [maxInstallments, setMaxInstallments] = useState(
+    initialData?.attributes?.max_installments ?? 12
+  );
   const [cardInterestFree, setCardInterestFree] = useState(true);
-  const [acceptsBoleto, setAcceptsBoleto] = useState(false);
+  const [acceptsBoleto, setAcceptsBoleto] = useState(
+    isPaymentAllowed ? Boolean(initialData?.attributes?.accepts_boleto) : false
+  );
   const [boletoDueDays, setBoletoDueDays] = useState(3);
   const [acceptsBoletoInstallments, setAcceptsBoletoInstallments] = useState(false);
   const [maxBoletoInstallments, setMaxBoletoInstallments] = useState(12);
@@ -1110,8 +1735,12 @@ function SpecializedClassifiedEditor({
   const [carneGraceDays, setCarneGraceDays] = useState(30);
   const [carneMinDownPaymentCents, setCarneMinDownPaymentCents] = useState<number | undefined>(undefined);
   const [carneNotes, setCarneNotes] = useState("");
-  const [acceptsCash, setAcceptsCash] = useState(true);
-  const [acceptsTrade, setAcceptsTrade] = useState(false);
+  const [acceptsCash, setAcceptsCash] = useState(
+    isPaymentAllowed && niche.id !== "digital" ? (initialData?.attributes?.accepts_cash ?? true) : false
+  );
+  const [acceptsTrade, setAcceptsTrade] = useState(
+    isPaymentAllowed && niche.id !== "digital" ? Boolean(initialData?.attributes?.accepts_trade) : false
+  );
   const [cancellationPolicy, setCancellationPolicy] = useState<"flexible" | "moderate" | "strict" | "negotiable">("flexible");
 
   // ── Modo Conveniência & Fast Delivery (Bebidas, Mercado, Lanches) ──
@@ -1580,7 +2209,9 @@ function SpecializedClassifiedEditor({
 
 
     if (initialData.attributes) {
-      if (initialData.attributes.template_style) setTemplateStyle(initialData.attributes.template_style === "editorial" || initialData.attributes.template_style === "instagram" ? "editorial" : initialData.attributes.template_style === "conveniencia" ? "conveniencia" : "standard");
+      if (initialData.attributes.template_style) {
+        setTemplateStyle(initialData.attributes.template_style as ClassifiedTemplateStyle);
+      }
       if (initialData.attributes.volume) setConvenienceVolume(initialData.attributes.volume);
       if (initialData.attributes.temperature) setConvenienceTemp(initialData.attributes.temperature);
       if (initialData.attributes.is_alcoholic !== undefined) setIsAlcoholic(!!initialData.attributes.is_alcoholic);
@@ -1649,6 +2280,11 @@ function SpecializedClassifiedEditor({
           setTravelBoardingGateways(initialData.attributes.flight_details.boarding_gateways);
         }
       }
+      if (Array.isArray(initialData.attributes.lodgings) && initialData.attributes.lodgings.length > 0) {
+        setTravelLodgings(initialData.attributes.lodgings);
+      } else if (Array.isArray(initialData.attributes.hotels) && initialData.attributes.hotels.length > 0) {
+        setTravelLodgings(initialData.attributes.hotels);
+      }
 
       // Equipamento
       if (initialData.attributes.equipment_period) setEquipmentPeriod(initialData.attributes.equipment_period);
@@ -1689,7 +2325,6 @@ function SpecializedClassifiedEditor({
 
       // Desapego & Bens Físicos
       if (initialData.attributes.warranty) setItemWarranty(initialData.attributes.warranty);
-      if (initialData.attributes.condition) setItemCondition(initialData.attributes.condition as any);
       if (initialData.attributes.brand) {
         setPhoneBrand(initialData.attributes.brand);
         setComputerBrand(initialData.attributes.brand);
@@ -1881,7 +2516,6 @@ function SpecializedClassifiedEditor({
         city: structuredLoc?.city || undefined,
         state: structuredLoc?.state || undefined,
         neighborhood: structuredLoc?.neighborhood || undefined,
-        ai_refinement_evidence: appliedRefinementEvidence || undefined,
         delivery_mode: niche.id === "desapego" ? deliveryMode : niche.id === "digital" ? "digital_download" : undefined,
         pricing_type: pricingType,
         price_min_cents: pricingType === "price_range" || pricingType === "starting_at" ? priceMinCents : undefined,
@@ -1903,8 +2537,8 @@ function SpecializedClassifiedEditor({
         carne_grace_days: acceptsCarne ? carneGraceDays : undefined,
         carne_min_down_payment_cents: acceptsCarne ? carneMinDownPaymentCents : undefined,
         carne_notes: acceptsCarne ? carneNotes.trim() : undefined,
-        accepts_cash: niche.id === "digital" ? false : acceptsCash,
-        accepts_trade: niche.id === "digital" ? false : acceptsTrade,
+        accepts_cash: isPaymentAllowed && niche.id !== "digital" ? acceptsCash : false,
+        accepts_trade: isPaymentAllowed && niche.id !== "digital" ? acceptsTrade : false,
         trade_notes: acceptsTrade ? tradeNotes.trim() : undefined,
         accepts_financing: acceptsFinancing,
         financing_notes: acceptsFinancing ? financingNotes.trim() : undefined,
@@ -1931,17 +2565,19 @@ function SpecializedClassifiedEditor({
           accepts_financing: acceptsFinancing,
           financing_notes: financingNotes,
         },
-        accepted_payment_methods: [
-          ...(acceptsPix ? ["pix"] : []),
-          ...(acceptsCard ? ["cartao_credito"] : []),
-          ...(acceptsBoleto ? ["boleto"] : []),
-          ...(acceptsBoletoInstallments ? ["boleto_parcelado"] : []),
-          ...(acceptsCarne ? ["carne_digital"] : []),
-          ...(acceptsCash ? ["dinheiro"] : []),
-          ...(acceptsTrade ? ["permuta"] : []),
-          ...(acceptsFinancing ? ["financiamento"] : []),
-        ],
-        installments_available: acceptsCard || acceptsBoletoInstallments || acceptsCarne,
+        accepted_payment_methods: isPaymentAllowed
+          ? [
+              ...(acceptsPix ? ["pix"] : []),
+              ...(acceptsCard ? ["cartao_credito"] : []),
+              ...(acceptsBoleto ? ["boleto"] : []),
+              ...(acceptsBoletoInstallments ? ["boleto_parcelado"] : []),
+              ...(acceptsCarne ? ["carne_digital"] : []),
+              ...(acceptsCash ? ["dinheiro"] : []),
+              ...(acceptsTrade ? ["permuta"] : []),
+              ...(acceptsFinancing ? ["financiamento"] : []),
+            ]
+          : [],
+        installments_available: isPaymentAllowed ? (acceptsCard || acceptsBoletoInstallments || acceptsCarne) : false,
         cancellation_policy: cancellationPolicy,
         max_installments: acceptsCard ? Number(maxInstallments) || 1 : (acceptsCarne ? Number(maxCarneInstallments) || 1 : (acceptsBoletoInstallments ? Number(maxBoletoInstallments) || 1 : 1)),
         free_shipping_local: niche.id === "desapego" ? freeShippingLocal : false,
@@ -1954,28 +2590,38 @@ function SpecializedClassifiedEditor({
           activate_sdr_ai: civilInquiryActivateSdr,
           questions: civilInquiryQuestions,
         },
-        volume: convenienceVolume || undefined,
-        temperature: convenienceTemp,
-        is_alcoholic: isAlcoholic,
-        brand: convenienceBrand || undefined,
-        delivery_estimate: deliveryEstimateText,
-        ready_delivery: readyDelivery,
         story_highlights: travelStoryHighlights,
         itinerary_days: travelItineraryDays,
         bio_bullets: travelBioBullets.map((b) => b.trim()).filter(Boolean),
       };
 
+      if (niche.id === "mercado" || niche.id === "gastronomia" || templateStyle === "conveniencia") {
+        attributes.volume = convenienceVolume || undefined;
+        attributes.temperature = convenienceTemp;
+        attributes.is_alcoholic = isAlcoholic;
+        attributes.brand = convenienceBrand || undefined;
+        attributes.delivery_estimate = deliveryEstimateText;
+        attributes.ready_delivery = readyDelivery;
+      }
+
       if (niche.id === "viagem") {
         attributes.duration_text = travelDuration;
         attributes.meal_plan = travelMealPlan;
-        attributes.guests_text = travelGuests;
+        attributes.guests_text = travelGuests || `${travelAdultsCount} Adulto${travelAdultsCount > 1 ? "s" : ""}${travelChildrenCount > 0 ? ` + ${travelChildrenCount} Criança${travelChildrenCount > 1 ? "s" : ""} (até ${travelChildrenMaxAge} anos)` : ""}`;
         attributes.dates_text = travelDates;
         attributes.destination_city = travelDestinationCity;
         attributes.departure_date = travelDepartureDate;
         attributes.return_date = travelReturnDate;
-        attributes.max_installments = travelMaxInstallments;
+        attributes.max_installments = maxInstallments;
         attributes.bio_bullets = travelBioBullets.map((b) => b.trim()).filter(Boolean);
         attributes.departure_options = travelDepartureOptions;
+        attributes.visibility_mode = travelVisibilityMode;
+        attributes.is_custom_quote = travelIsCustomQuote;
+        attributes.passenger_composition = {
+          adults: Math.max(1, Number(travelAdultsCount) || 1),
+          children: Math.max(0, Number(travelChildrenCount) || 0),
+          children_max_age: Math.max(1, Number(travelChildrenMaxAge) || 12),
+        };
         attributes.flight_details = {
           transport_type: travelTransportType,
           // Aéreo
@@ -1983,10 +2629,16 @@ function SpecializedClassifiedEditor({
           arrival_iata: travelArrivalIATA,
           airline: travelAirline,
           connections: travelConnections,
+          connection_city: travelConnectionCity || undefined,
           departure_time: travelDepartureTime,
           arrival_time: travelArrivalTime,
           price_text: travelFlightPrice,
           duration_text: travelFlightDuration,
+          baggage: {
+            personal_item: travelBaggagePersonalItem,
+            carry_on: travelBaggageCarryOn,
+            checked_bags: Math.max(0, Number(travelBaggageChecked) || 0),
+          },
           // Terrestre / Excursão
           bus_category: travelBusCategory,
           bus_company: travelBusCompany,
@@ -2012,6 +2664,16 @@ function SpecializedClassifiedEditor({
           cabin_category: travelCabinCategory,
           embarkation_port: travelEmbarkationPort,
         };
+        const validTravelLodgings = travelLodgings.filter((l) => l.name.trim() !== "");
+        attributes.lodgings = validTravelLodgings;
+        attributes.hotels = validTravelLodgings;
+        if (validTravelLodgings.length > 0) {
+          attributes.hotel_name = validTravelLodgings[0].name;
+          attributes.hotel_description = validTravelLodgings[0].description;
+          attributes.hotel_address = validTravelLodgings[0].address;
+          attributes.hotel_stars = validTravelLodgings[0].stars;
+          attributes.hotel_amenities = validTravelLodgings[0].amenities;
+        }
       } else if (niche.id === "equipamento") {
         attributes.equipment_period = equipmentPeriod;
         attributes.deposit_cents = equipmentDepositCents || 0;
@@ -2129,7 +2791,7 @@ function SpecializedClassifiedEditor({
         attributes.food_delivery_modes = foodDeliveryModes;
       } else if (niche.id === "mercado") {
         attributes.niche = "mercado";
-        attributes.template_style = "conveniencia";
+        attributes.template_style = templateStyle || "conveniencia";
         attributes.grocery_department = groceryDepartment;
         attributes.sub_category = grocerySubCategory;
         attributes.unit_type = groceryUnitType;
@@ -2216,23 +2878,25 @@ function SpecializedClassifiedEditor({
           title: title.trim(),
           pricing_model: niche.id === "assinatura" ? "recurring" : pricingModel,
           billing_cycle: niche.id === "assinatura" ? billingCycle : undefined,
-          setup_fee_cents: setupFeeCents ?? undefined,
-          trial_days: trialDays ?? undefined,
-          recurring_features: recurringFeatures.length > 0 ? recurringFeatures : undefined,
-          accepts_card: acceptsCard,
-          max_installments: acceptsCard ? parseInt(String(maxInstallments)) || 1 : undefined,
-          accepts_trade: acceptsTrade,
-          accepted_payment_methods: [
-            ...(acceptsPix ? ["pix"] : []),
-            ...(acceptsCard ? ["cartao_credito"] : []),
-            ...(acceptsBoleto ? ["boleto"] : []),
-            ...(acceptsBoletoInstallments ? ["boleto_parcelado"] : []),
-            ...(acceptsCarne ? ["carne_digital"] : []),
-            ...(acceptsCash ? ["dinheiro"] : []),
-            ...(acceptsTrade ? ["permuta"] : []),
-            ...(acceptsFinancing ? ["financiamento"] : []),
-          ],
-          installments_available: acceptsCard || acceptsBoletoInstallments || acceptsCarne,
+          setup_fee_cents: niche.id === "assinatura" ? setupFeeCents ?? undefined : undefined,
+          trial_days: niche.id === "assinatura" ? trialDays ?? undefined : undefined,
+          recurring_features: niche.id === "assinatura" && recurringFeatures.length > 0 ? recurringFeatures : undefined,
+          accepts_card: isPaymentAllowed ? acceptsCard : false,
+          max_installments: isPaymentAllowed && acceptsCard ? parseInt(String(maxInstallments)) || 1 : undefined,
+          accepts_trade: isPaymentAllowed ? acceptsTrade : false,
+          accepted_payment_methods: isPaymentAllowed
+            ? [
+                ...(acceptsPix ? ["pix"] : []),
+                ...(acceptsCard ? ["cartao_credito"] : []),
+                ...(acceptsBoleto ? ["boleto"] : []),
+                ...(acceptsBoletoInstallments ? ["boleto_parcelado"] : []),
+                ...(acceptsCarne ? ["carne_digital"] : []),
+                ...(acceptsCash ? ["dinheiro"] : []),
+                ...(acceptsTrade ? ["permuta"] : []),
+                ...(acceptsFinancing ? ["financiamento"] : []),
+              ]
+            : [],
+          installments_available: isPaymentAllowed ? (acceptsCard || acceptsBoletoInstallments || acceptsCarne) : false,
           cancellation_policy: cancellationPolicy,
           store_id: selectedStoreId || undefined,
           sub_category: niche.id === "desapego" ? desapegoCategory : undefined,
@@ -2245,13 +2909,13 @@ function SpecializedClassifiedEditor({
           max_discount_pct: maxDiscountPct,
           feed_media: feedMedia,
           feed_images: feedMedia,
-          payment_settings: {
+          payment_settings: isPaymentAllowed ? {
             pix_key: pixKey.trim(),
             pix_key_type: pixKeyType,
             pix_receiver_name: pixReceiverName.trim(),
             payment_link: paymentLink.trim(),
             payment_instructions: paymentInstructions.trim(),
-          },
+          } : undefined,
           price_cents:
             pricingType === "free" || niche.id === "doacao"
               ? 0
@@ -2660,7 +3324,7 @@ function SpecializedClassifiedEditor({
         accepts_pix: acceptsPix,
         pix_discount_percent: pixDiscountPercent,
         accepts_card: acceptsCard,
-        max_installments: acceptsCard ? (niche.id === "viagem" ? Number(travelMaxInstallments) || 1 : Number(maxInstallments) || 1) : 1,
+        max_installments: acceptsCard ? Number(maxInstallments) || 1 : 1,
         card_interest_free: cardInterestFree,
         accepts_boleto: acceptsBoleto,
         boleto_due_days: boletoDueDays,
@@ -2722,6 +3386,14 @@ function SpecializedClassifiedEditor({
         story_highlights: travelStoryHighlights,
         itinerary_days: travelItineraryDays,
         bio_bullets: generatedBioBullets,
+        // Hospedagem do Pacote de Turismo
+        lodgings: travelLodgings.filter((l) => l.name.trim() !== ""),
+        hotels: travelLodgings.filter((l) => l.name.trim() !== ""),
+        hotel_name: travelLodgings[0]?.name || undefined,
+        hotel_description: travelLodgings[0]?.description || undefined,
+        hotel_address: travelLodgings[0]?.address || undefined,
+        hotel_stars: travelLodgings[0]?.stars || undefined,
+        hotel_amenities: travelLodgings[0]?.amenities || undefined,
         // Hospedagem
         deal_type: niche.id === "hospedagem" ? "temporada" : niche.id === "imovel" ? reDealType : undefined,
         rental_period: niche.id === "hospedagem" ? "diaria" : undefined,
@@ -2862,7 +3534,6 @@ function SpecializedClassifiedEditor({
     acceptsPix,
     pixDiscountPercent,
     acceptsCard,
-    travelMaxInstallments,
     maxInstallments,
     tradeNotes,
     acceptsFinancing,
@@ -2945,37 +3616,216 @@ function SpecializedClassifiedEditor({
   ]);
 
  return (
- <div className="space-y-4 pb-20">
+ <div className="space-y-4">
+ {/* ── Topbar Operacional Compacta & Sticky no Mobile ────────── */}
+      <div className="sticky top-0 z-30 bg-background/95 backdrop-blur-md border-b border-border/60 -mx-4 px-4 py-2 sm:mx-0 sm:px-0 sm:py-0 sm:static sm:border-0 sm:bg-transparent flex items-center justify-between gap-2 pb-3">
+        <div className="flex items-center gap-2">
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={onBack}
+            className="rounded-lg size-11 min-size-11 font-bold text-muted-foreground hover:text-foreground shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            aria-label="Voltar"
+          >
+            <ArrowLeft className="size-5 sm:size-4" />
+          </Button>
 
-      <ClassifiedEditorNavigation
-        niche={niche}
-        editId={editId}
-        currentStep={currentStep}
-        mobileTab={mobileTab}
-        imagesCount={images.length}
-        isSubmitting={isSubmitting}
-        isUploadingMedia={isUploadingMedia}
-        qualityScore={qualityScore}
-        draftInfo={draftInfo}
-        onBack={onBack}
-        onPublish={handlePublish}
-        onMobileTabChange={setMobileTab}
-        onStepChange={setCurrentStep}
-        onRestoreDraft={handleRestoreDraft}
-        onDiscardDraft={handleDiscardDraft}
-      />
+          <div className="hidden sm:flex items-center gap-2">
+            <span className="text-muted-foreground text-xs">/</span>
+            <Badge variant="outline" className="text-xs font-semibold gap-2">
+              <niche.icon className="size-4 text-primary" />
+              <span>{niche.title}</span>
+            </Badge>
+          </div>
+        </div>
+
+        {/* Mobile Switcher & Publicar / Salvar Action */}
+        <div className="flex items-center gap-2">
+          <div className="flex md:hidden bg-muted p-1 rounded-lg text-xs font-semibold">
+            <button
+              type="button"
+              onClick={() => setMobileTab("edit")}
+              className={`px-3 py-2 rounded-lg min-h-11 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                mobileTab === "edit"
+                  ? "bg-card text-foreground font-bold "
+                  : "text-muted-foreground"
+              }`}
+            >
+              Editar
+            </button>
+            <button
+              type="button"
+              onClick={() => setMobileTab("preview")}
+              className={`px-3 py-2 rounded-lg min-h-11 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                mobileTab === "preview"
+                  ? "bg-card text-foreground font-bold "
+                  : "text-muted-foreground"
+              }`}
+            >
+              Prévia ({images.length})
+            </button>
+          </div>
+
+          <Button
+            onClick={handlePublish}
+            disabled={isSubmitting || isUploadingMedia}
+            size="sm"
+            className="rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground h-11 min-h-11 px-4"
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
+                <span>{editId ? "Salvando..." : "Publicando..."}</span>
+              </>
+            ) : (
+              <>
+                <Check className="size-4" />
+                <span>{editId ? "Salvar Alterações" : "Publicar Anúncio"}</span>
+              </>
+            )}
+          </Button>
+        </div>
+      </div>
+
+      {/* ── 5-Step Adaptive Stepper Tracker (Media-First & Snap-X V121) ── */}
+      <div className="w-full bg-card rounded-lg border border-border/60 p-2 sm:p-2">
+        <div className="flex overflow-x-auto carousel snap-x snap-mandatory scrollbar-none gap-1 sm:grid sm:grid-cols-2 sm:grid-cols-5 sm:gap-2">
+          {[
+            { step: 1, label: "Categoria", short: "Categoria" },
+            { step: 2, label: "Fotos e Mídia", short: "Mídia" },
+            { step: 3, label: "Informações", short: "Info" },
+            {
+              step: 4,
+              label: niche.id === "vaga" ? "Remuneração" : niche.id === "doacao" ? "Disponibilidade" : "Preço e Pagamento",
+              short: niche.id === "vaga" ? "Salário" : niche.id === "doacao" ? "Doação" : "Preço",
+            },
+            { step: 5, label: "Prévia e Publicar", short: "Publicar" },
+          ].map((s) => {
+            const isCurrent = currentStep === s.step;
+            const isPast = currentStep > s.step;
+            return (
+              <button
+                key={s.step}
+                type="button"
+                onClick={() => {
+                  if (s.step === 1) onBack();
+                  else setCurrentStep(s.step as any);
+                }}
+                className={cn(
+                  "flex items-center justify-center gap-2 py-2 px-3 sm:px-2 rounded-lg text-xs font-semibold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary text-center shrink-0 snap-center min-w-20 sm:min-w-0",
+                  isCurrent
+                    ? "bg-primary text-primary-foreground font-bold"
+                    : isPast
+                    ? "bg-muted/50 text-foreground hover:bg-muted"
+                    : "text-muted-foreground hover:bg-muted/30 opacity-70"
+                )}
+              >
+                <span
+                  className={cn(
+                    "size-5 rounded-full flex items-center justify-center text-xs font-mono shrink-0",
+                    isCurrent
+                      ? "bg-primary-foreground/20 text-primary-foreground"
+                      : isPast
+                      ? "bg-primary/15 text-primary"
+                      : "bg-muted text-muted-foreground"
+                  )}
+                >
+                  {isPast ? "" : s.step}
+                </span>
+                <span className="hidden sm:inline truncate">{s.label}</span>
+                <span className="sm:hidden truncate">{s.short}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ── Alerta Discreto de Rascunho Disponível ── */}
+      {draftInfo && (
+        <div className="flex items-center justify-between gap-3 p-3 rounded-lg bg-primary/5 border border-primary/20 text-xs">
+          <span className="text-muted-foreground">
+            Rascunho não finalizado encontrado (Etapa {draftInfo.step} de 5).
+          </span>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handleRestoreDraft}
+              className="font-bold text-primary hover:underline cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            >
+              Restaurar
+            </button>
+            <span className="text-muted-foreground/40">•</span>
+            <button
+              type="button"
+              onClick={handleDiscardDraft}
+              className="text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            >
+              Descartar
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ── Barra de Score de Qualidade (Silenciosa & Informativa) ── */}
+      <div className="flex items-center justify-between gap-3 px-4 py-2 rounded-lg bg-card border border-border/60 text-xs">
+        <div className="flex items-center gap-2 flex-1 min-w-0">
+          <span className="text-xs text-muted-foreground/75 font-bold text-muted-foreground uppercase tracking-wider shrink-0">
+            Qualidade
+          </span>
+          <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden max-w-xs">
+            <div
+              className={cn(
+                "h-full rounded-full transition-colors duration-300",
+                qualityScore >= 80 ? "bg-emerald-500" : qualityScore >= 50 ? "bg-amber-500" : "bg-primary"
+              )}
+              style={{ width: `${qualityScore}%` }}
+            />
+          </div>
+          <span className="font-mono font-bold text-foreground text-xs text-muted-foreground/75 shrink-0">{qualityScore}%</span>
+        </div>
+        <span className="text-xs text-muted-foreground/75 text-muted-foreground truncate hidden sm:inline">
+          {qualityScore >= 80 ? "Excelente · Pronto para publicar" : qualityScore >= 50 ? "Bom · Adicione fotos e dados para 100%" : "Básico · Preencha mais campos"}
+        </span>
+      </div>
+
       {currentStep === 5 ? (
         <div className="space-y-4 max-w-5xl mx-auto">
-          {/* Header do Preview com Alternador de Dispositivo sem Emojis */}
-          <div className="flex items-center justify-between gap-3 p-3 rounded-lg bg-card border border-border/60">
-            <div className="flex items-center gap-2">
+          {/* Header do Preview com Alternador de Layout e Dispositivo */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 rounded-lg bg-card border border-border/60">
+            <div className="flex items-center gap-2 flex-wrap">
               <span className="text-xs font-bold text-foreground uppercase tracking-wider">
                 Visualização do Comprador
               </span>
+              <div className="flex items-center gap-1 bg-muted p-0.5 rounded-lg text-xs">
+                {[
+                  { id: "standard", label: "Padrão" },
+                  { id: "editorial", label: "Editorial" },
+                  { id: "automotivo", label: "Auto" },
+                  { id: "imobiliario", label: "Imóvel" },
+                  { id: "resort_hotel", label: "Resort" },
+                  { id: "servicos_agenda", label: "Serviço" },
+                  ...(niche.id === "mercado" ? [{ id: "conveniencia", label: "Mercado" }] : []),
+                ].map((t) => (
+                  <button
+                    key={t.id}
+                    type="button"
+                    onClick={() => setTemplateStyle(t.id as any)}
+                    className={cn(
+                      "px-2.5 py-1 text-xs font-semibold rounded-md transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                      templateStyle === t.id
+                        ? "bg-primary text-primary-foreground font-bold shadow-xs"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    {t.label}
+                  </button>
+                ))}
+              </div>
             </div>
 
             {/* Alternador Limpo: Mobile vs Desktop (Sem Emojis) */}
-            <div className="flex items-center bg-muted p-1 rounded-lg text-xs font-semibold">
+            <div className="flex items-center self-end sm:self-auto bg-muted p-1 rounded-lg text-xs font-semibold">
               <button
                 type="button"
                 onClick={() => setPreviewDevice("mobile")}
@@ -3013,10 +3863,7 @@ function SpecializedClassifiedEditor({
                   : "max-w-5xl"
               )}
             >
-              <span className="sr-only" aria-live="polite">
-                {previewActionNotice}
-              </span>
-              {niche.id === "mercado" || templateStyle === "conveniencia" ? (
+              {templateStyle === "conveniencia" || niche.id === "mercado" ? (
                 <ConvenienceShowcaseView
                   classified={livePreviewClassified}
                   previewData={{
@@ -3080,24 +3927,26 @@ function SpecializedClassifiedEditor({
                   compact={previewDevice === "mobile"}
                   onEdit={() => setCurrentStep(2)}
                 />
-              ) : templateStyle === "editorial" || niche.id === "viagem" ? (
+              ) : templateStyle === "editorial" || (templateStyle as string) === "instagram" || (templateStyle as string) === "instagram_resort" || (!templateStyle && niche.id === "viagem") ? (
                 <EditorialShowcaseView
                   classified={livePreviewClassified}
                   isOwner={true}
-                  onOpenBookingModal={() => setPreviewActionNotice("Reservas disponíveis somente após a publicação do anúncio.")}
-                  onOpenProposalModal={() => setPreviewActionNotice("Propostas disponíveis somente após a publicação do anúncio.")}
+                  onOpenBookingModal={() => toast.info("Modo de Pré-visualização: As reservas estarão ativas após a publicação do anúncio.")}
+                  onOpenProposalModal={() => toast.info("Modo de Pré-visualização: O envio de propostas estará ativo após a publicação do anúncio.")}
                   onEditClassified={() => setCurrentStep(2)}
                 />
               ) : (
                 <UniversalClassifiedShowcase
                   classified={livePreviewClassified}
+                  previewViewport={previewDevice}
                   isOwner={true}
                   canManage={true}
-                  onOpenBookingModal={() => setPreviewActionNotice("Reservas disponíveis somente após a publicação do anúncio.")}
-                  onOpenProposalModal={() => setPreviewActionNotice("Propostas disponíveis somente após a publicação do anúncio.")}
+                  onOpenBookingModal={() => toast.info("Modo de Pré-visualização: As reservas estarão ativas após a publicação do anúncio.")}
+                  onOpenProposalModal={() => toast.info("Modo de Pré-visualização: O envio de propostas estará ativo após a publicação do anúncio.")}
                   onEdit={() => setCurrentStep(2)}
                 />
               )}
+
             </div>
           </div>
 
@@ -3154,50 +4003,388 @@ function SpecializedClassifiedEditor({
  >
           <div className="space-y-6">
             {/* Section 1: Fotos do Topo & Galeria Exclusiva do Feed */}
-            <ClassifiedMediaSection
-              images={images}
-              feedMedia={feedMedia}
-              onImagesChange={setImages}
-              onFeedMediaChange={setFeedMedia}
-              onUploadingStateChange={setIsUploadingMedia}
-            />
+            <div className="bg-card rounded-lg p-4 sm:p-5 space-y-5 border border-border/60">
+              <div className="flex items-center justify-between pb-3 border-b border-border/40">
+                <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
+                  <ImagePlus className="size-4 text-primary shrink-0" />
+                  <span>1. Mídias do Anúncio</span>
+                </div>
+              </div>
+
+              {/* 1.1 Fotos de Destaque / Carrossel Superior */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs font-semibold text-foreground flex items-center gap-2">
+                    <span>Fotos do Topo (Carrossel Hero)</span>
+                    <Badge variant="outline" className="text-xs py-0 px-2 font-mono">Até 10 fotos</Badge>
+                  </Label>
+                  <span className="text-xs text-muted-foreground/75 font-mono text-muted-foreground">
+                    {images.length}/10 adicionada(s)
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground/75 text-muted-foreground leading-relaxed">
+                  Imagens principais exibidas no carrossel de topo do anúncio (formato 4:3 com recorte).
+                </p>
+                <MediaUploader
+                  value={images}
+                  onChange={setImages}
+                  onUploadingStateChange={setIsUploadingMedia}
+                  bucket="post-media"
+                  folder="classifieds"
+                  aspect={4 / 3}
+                  enableCrop={true}
+                  lockAspect={true}
+                  maxFiles={10}
+                />
+              </div>
+
+              {/* 1.2 Galeria Exclusiva do Feed */}
+              <div className="pt-3 border-t border-border/40 space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs font-semibold text-foreground flex items-center gap-2">
+                    <span>Galeria Exclusiva do Feed</span>
+                    <Badge className="bg-primary/10 text-primary border-primary/20 text-xs py-0 px-2 font-bold">Até 12 mídias</Badge>
+                  </Label>
+                  <span className="text-xs text-muted-foreground/75 font-mono text-muted-foreground">
+                    {feedMedia.length}/12 adicionada(s)
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground/75 text-muted-foreground leading-relaxed">
+                  Mídias que aparecem exclusivamente no feed e grid do anúncio. Aceita Fotos, GIFs animados e Vídeos curtos (MP4/WebM). <strong>Não duplica as fotos do topo.</strong>
+                </p>
+                <MediaUploader
+                  value={feedMedia}
+                  onChange={setFeedMedia}
+                  onUploadingStateChange={setIsUploadingMedia}
+                  bucket="post-media"
+                  folder="classifieds-feed"
+                  aspect={1}
+                  enableCrop={false}
+                  maxFiles={12}
+                  accept="all"
+                />
+              </div>
+            </div>
+
             {/* Section 2: Informações Básicas (Design Silencioso V121) */}
-            <ClassifiedBasicInfoSection
-              nicheId={niche.id}
-              title={title}
-              description={description}
-              isRefiningDescription={isRefiningDescription}
-              onTitleChange={setTitle}
-              onDescriptionChange={setDescription}
-              onRefineDescription={handleRefineDescriptionWithAI}
-              refinementPreview={refinementPreview}
-              onApplyRefinement={applyRefinementPreview}
-              onDismissRefinement={() => setRefinementPreview(null)}
-            >
-            <ClassifiedPricingLifecycleSection
-              nicheId={niche.id}
-              pricingType={pricingType}
-              priceCents={priceCents}
-              priceMinCents={priceMinCents}
-              priceMaxCents={priceMaxCents}
-              negotiable={negotiable}
-              validityDays={validityDays}
-              offerLimit={offerLimit}
-              stockLimit={stockLimit}
-              priceDisclaimer={priceDisclaimer}
-              customDisclaimer={customDisclaimer}
-              onPricingTypeChange={setPricingType}
-              onPriceCentsChange={setPriceCents}
-              onPriceMinCentsChange={setPriceMinCents}
-              onPriceMaxCentsChange={setPriceMaxCents}
-              onNegotiableChange={setNegotiable}
-              onValidityDaysChange={setValidityDays}
-              onOfferLimitChange={setOfferLimit}
-              onStockLimitChange={setStockLimit}
-              onPriceDisclaimerChange={setPriceDisclaimer}
-              onCustomDisclaimerChange={setCustomDisclaimer}
-            />
-            </ClassifiedBasicInfoSection>
+            <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60">
+              <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground pb-3 border-b border-border/40">
+                <FileText className="size-4 text-primary shrink-0" />
+                <span>2. Informações</span>
+              </div>
+
+            <div className="space-y-2">
+              <Label className="text-xs text-foreground font-medium">Título do Anúncio *</Label>
+              <Input
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder={
+                  niche.id === "hospedagem"
+                    ? "Ex: Chalé na Serra com Hidro e Vista Panorâmica"
+                    : niche.id === "imovel"
+                    ? "Ex: Apartamento 2 Quartos no Centro com Garagem"
+                    : niche.id === "veiculo"
+                    ? "Ex: Honda Civic 2.0 EXL Automático 2021"
+                    : niche.id === "servico"
+                    ? "Ex: Manutenção Elétrica Residencial & Comercial"
+                    : niche.id === "vaga"
+                    ? "Ex: Analista Financeiro Sênior (Híbrido)"
+                    : "Ex: iPhone 15 Pro Max 256GB Impecável na Caixa"
+                }
+                className="h-11 rounded-lg text-xs bg-background font-medium"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label className="text-xs text-foreground font-medium">Descrição Completa *</Label>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  disabled={isRefiningDescription}
+                  onClick={handleRefineDescriptionWithAI}
+                  className="h-11 min-h-11 px-3 text-xs font-semibold text-primary hover:text-primary hover:bg-primary/10 gap-1.5 rounded-lg cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                >
+                  {isRefiningDescription ? (
+                    <>
+                      <Loader2 className="size-3.5 animate-spin" />
+                      <span>Copilot pensando...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Wand2 className="size-3.5" />
+                      <span>Refinar com Copilot</span>
+                    </>
+                  )}
+                </Button>
+              </div>
+              <Textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                rows={4}
+                placeholder={
+                  niche.id === "hospedagem"
+                    ? "Descreva a atmosfera do espaço, comodidades, localização, distâncias de pontos turísticos e regras de convivência..."
+                    : "Descreva todos os detalhes, histórico, diferenciais e informações importantes..."
+                }
+                className="rounded-lg text-xs bg-background resize-none leading-relaxed"
+              />
+            </div>
+
+            {/* Motor de Precificação Dinâmica & Avisos */}
+            <div className="space-y-3 pt-1 border-t border-border/40">
+              <div className="space-y-2">
+                <Label className="text-xs text-foreground font-semibold">
+                  Modalidade de Preço
+                </Label>
+                <Select value={pricingType} onValueChange={(v: any) => setPricingType(v)}>
+                  <SelectTrigger className="h-11 rounded-lg text-xs bg-background font-medium">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {niche.id === "vaga" ? (
+                      <>
+                        <SelectItem value="fixed">Salário Fixo Mensal (R$)</SelectItem>
+                        <SelectItem value="starting_at">A partir de... (Piso Salarial)</SelectItem>
+                        <SelectItem value="price_range">Faixa Salarial (Mínimo e Máximo)</SelectItem>
+                        <SelectItem value="on_quote">A Combinar / A Negociar na Entrevista</SelectItem>
+                      </>
+                    ) : niche.id === "doacao" ? (
+                      <SelectItem value="free">Gratuito / Doação Solidária (R$ 0)</SelectItem>
+                    ) : (
+                      <>
+                        <SelectItem value="fixed">Preço Fixo Definido (R$)</SelectItem>
+                        <SelectItem value="starting_at">A partir de... (Preço Inicial)</SelectItem>
+                        <SelectItem value="price_range">Faixa de Preço (Mínimo e Máximo)</SelectItem>
+                        <SelectItem value="on_quote">Sob Orçamento / Cotação Personalizada</SelectItem>
+                        <SelectItem value="exchange_only">Troca / Permuta Direta (Sem valor)</SelectItem>
+                        <SelectItem value="free">Gratuito / Doação Solidária (R$ 0)</SelectItem>
+                      </>
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {pricingType === "fixed" && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-2">
+                    <Label className="text-xs text-foreground font-medium">
+                      {niche.id === "servico"
+                        ? "Valor Base (R$) *"
+                        : niche.id === "vaga"
+                        ? "Salário Proposto (R$) *"
+                        : "Valor (R$) *"}
+                    </Label>
+                    <CurrencyField
+                      value={priceCents}
+                      onChange={setPriceCents}
+                      placeholder="0,00"
+                      className="h-11 rounded-lg text-xs bg-background"
+                    />
+                  </div>
+                  <div className="space-y-2 flex items-end">
+                    <div
+                      className="flex items-center gap-2 h-11 px-3 rounded-lg bg-background border border-border/60 hover:bg-muted/30 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary w-full"
+                      onClick={() => setNegotiable(!negotiable)}
+                    >
+                      <Checkbox
+                        id="neg-check"
+                        checked={negotiable}
+                        onCheckedChange={(c) => setNegotiable(!!c)}
+                      />
+                      <Label
+                        htmlFor="neg-check"
+                        className="text-xs text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary font-medium select-none"
+                      >
+                        Aceita Propostas / Negociável
+                      </Label>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* FASE 1: Lifecycle & Regras de Validade e Estoque */}
+              <div className="p-4 rounded-lg border border-border/60 bg-muted/20 space-y-3 mt-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Clock className="size-4 text-primary shrink-0" />
+                    <span className="text-xs font-bold text-foreground">Validade do Anúncio (Obrigatório)</span>
+                  </div>
+                  <div className="flex items-center gap-2 bg-background p-1 rounded-lg border border-border/50">
+                    {([30, 60, 90] as const).map((days) => (
+                      <button
+                        key={days}
+                        type="button"
+                        onClick={() => setValidityDays(days)}
+                        className={`px-3 py-2 text-xs text-muted-foreground/75 font-bold rounded-md min-h-11 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                          validityDays === days
+                            ? "bg-primary text-primary-foreground shadow-xs"
+                            : "text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        {days} dias
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                  <div className="space-y-2">
+                    <Label className="text-xs text-muted-foreground/75 font-semibold text-muted-foreground">
+                      Limite de Pedidos / Oferta (Opcional)
+                    </Label>
+                    <Input
+                      type="number"
+                      min="1"
+                      placeholder="Ex: 5 pedidos"
+                      value={offerLimit}
+                      onChange={(e) => setOfferLimit(e.target.value)}
+                      className="h-11 min-h-11 rounded-lg text-xs bg-background"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs text-muted-foreground/75 font-semibold text-muted-foreground">
+                      Estoque Físico Disponível (Opcional)
+                    </Label>
+                    <Input
+                      type="number"
+                      min="1"
+                      placeholder="Ex: 10 unidades"
+                      value={stockLimit}
+                      onChange={(e) => setStockLimit(e.target.value)}
+                      className="h-11 min-h-11 rounded-lg text-xs bg-background"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {pricingType === "starting_at" && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-2">
+                    <Label className="text-xs text-foreground font-medium">A partir de (R$) *</Label>
+                    <CurrencyField
+                      value={priceMinCents}
+                      onChange={(v) => {
+                        setPriceMinCents(v);
+                        if (v && !priceCents) setPriceCents(v);
+                      }}
+                      placeholder="0,00"
+                      className="h-11 rounded-lg text-xs bg-background"
+                    />
+                  </div>
+                  <div className="space-y-2 flex items-end">
+                    <div
+                      className="flex items-center gap-2 h-11 px-3 rounded-lg bg-background border border-border/60 hover:bg-muted/30 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary w-full"
+                      onClick={() => setNegotiable(!negotiable)}
+                    >
+                      <Checkbox
+                        id="neg-check-start"
+                        checked={negotiable}
+                        onCheckedChange={(c) => setNegotiable(!!c)}
+                      />
+                      <Label
+                        htmlFor="neg-check-start"
+                        className="text-xs text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary font-medium select-none"
+                      >
+                        Sujeito a orçamento final
+                      </Label>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {pricingType === "price_range" && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-2">
+                    <Label className="text-xs text-foreground font-medium">Preço Mínimo (R$) *</Label>
+                    <CurrencyField
+                      value={priceMinCents}
+                      onChange={(v) => {
+                        setPriceMinCents(v);
+                        if (v && !priceCents) setPriceCents(v);
+                      }}
+                      placeholder="0,00"
+                      className="h-11 rounded-lg text-xs bg-background"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs text-foreground font-medium">Preço Máximo (R$) *</Label>
+                    <CurrencyField
+                      value={priceMaxCents}
+                      onChange={setPriceMaxCents}
+                      placeholder="0,00"
+                      className="h-11 rounded-lg text-xs bg-background"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {pricingType === "on_quote" && (
+                <div className="p-4 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-300 text-xs">
+                  <p className="font-semibold flex items-center gap-2">
+                    <Coins className="size-4 shrink-0" />
+                    <span>Preço sob Orçamento / Cotação</span>
+                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground/75 opacity-90">
+                    O anúncio exibirá "Sob Consulta" na vitrine pública e convidará os clientes a solicitarem cotação personalizada via WhatsApp.
+                  </p>
+                </div>
+              )}
+
+              {pricingType === "exchange_only" && (
+                <div className="p-4 rounded-lg bg-blue-500/10 border border-blue-500/20 text-blue-700 dark:text-blue-300 text-xs">
+                  <p className="font-semibold flex items-center gap-2">
+                    <RefreshCw className="size-4 shrink-0" />
+                    <span>Permuta / Troca Direta</span>
+                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground/75 opacity-90">
+                    O anúncio será classificado como troca direta. Especifique na seção de pagamento o que você aceita em contrapartida.
+                  </p>
+                </div>
+              )}
+
+              {pricingType === "free" && (
+                <div className="p-4 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-300 text-xs">
+                  <p className="font-semibold flex items-center gap-2">
+                    <Tag className="size-4 shrink-0" />
+                    <span>Gratuito / Doação Solidária (R$ 0)</span>
+                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground/75 opacity-90">
+                    Este item ou serviço será oferecido gratuitamente para a comunidade local.
+                  </p>
+                </div>
+              )}
+
+              {/* Aviso Legal / Disclaimer sobre o Valor */}
+              <div className="space-y-2 pt-1">
+                <Label className="text-xs text-foreground font-medium">
+                  Aviso sobre Valores / Flutuação
+                </Label>
+                <Select value={priceDisclaimer} onValueChange={setPriceDisclaimer}>
+                  <SelectTrigger className="h-11 rounded-lg text-xs bg-background font-medium">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Nenhum aviso adicional</SelectItem>
+                    <SelectItem value="demonstrative">Preço ilustrativo / demonstrativo (sob consulta)</SelectItem>
+                    <SelectItem value="subject_to_availability">Sujeito à disponibilidade e estoque sem aviso prévio</SelectItem>
+                    <SelectItem value="seasonal">Tarifa sazonal válida para baixa temporada / dias úteis</SelectItem>
+                    <SelectItem value="exchange_rate">Sujeito a flutuação cambial e taxas governamentais</SelectItem>
+                    <SelectItem value="custom">Aviso personalizado por extenso</SelectItem>
+                  </SelectContent>
+                </Select>
+                {priceDisclaimer === "custom" && (
+                  <Input
+                    value={customDisclaimer}
+                    onChange={(e) => setCustomDisclaimer(e.target.value)}
+                    placeholder="Escreva o aviso que aparecerá na vitrine pública..."
+                    className="h-11 min-h-11 rounded-lg text-xs bg-background mt-2"
+                  />
+                )}
+              </div>
+            </div>
+ </div>
 
  {/* Seção 2: Especificações Técnicas do Anúncio */}
             {/* Viagens, Turismo & Resorts */}
@@ -3209,9 +4396,83 @@ function SpecializedClassifiedEditor({
                     <Key className="size-4 text-primary shrink-0" />
                     <span>2. Detalhes da Viagem</span>
                   </div>
-                  <Badge variant="outline" className="text-xs font-mono text-muted-foreground">
-                    Vitrine Imersiva
-                  </Badge>
+                </div>
+
+                {/* 2.0 — Modo de Visibilidade & Orçamento Privado (Link Direto) */}
+                <div className="rounded-lg border border-border/50 bg-muted/20 p-4 space-y-3">
+                  <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                    Visibilidade & Formato Comercial
+                  </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <Label className="text-xs text-foreground font-medium">Modo de Exibição</Label>
+                      <Select
+                        value={travelVisibilityMode}
+                        onValueChange={(v) => setTravelVisibilityMode(v as "public" | "unlisted" | "private")}
+                      >
+                        <SelectTrigger className="h-11 rounded-lg text-xs bg-background font-medium">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="public">Público na Vitrine & Catálogo</SelectItem>
+                          <SelectItem value="unlisted">Não Listado (Apenas Link Direto p/ Cliente)</SelectItem>
+                          <SelectItem value="private">Rascunho Interno Privado</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs text-foreground font-medium">Tipo de Oferta</Label>
+                      <Select
+                        value={travelIsCustomQuote ? "custom_quote" : "standard_package"}
+                        onValueChange={(v) => setTravelIsCustomQuote(v === "custom_quote")}
+                      >
+                        <SelectTrigger className="h-11 rounded-lg text-xs bg-background font-medium">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="standard_package">Pacote de Vitrine (CTA: Garantir Reserva)</SelectItem>
+                          <SelectItem value="custom_quote">Orçamento Sob Medida (CTA: Aceitar Orçamento)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  {/* Composição Exata de Passageiros */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-border/40">
+                    <div className="space-y-1">
+                      <Label className="text-xs text-foreground font-medium">Qtd. Adultos no Pacote</Label>
+                      <Input
+                        type="number"
+                        min={1}
+                        max={20}
+                        value={travelAdultsCount}
+                        onChange={(e) => setTravelAdultsCount(Math.max(1, Number(e.target.value) || 1))}
+                        className="h-11 rounded-lg text-xs bg-background font-mono"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs text-foreground font-medium">Qtd. Crianças no Pacote</Label>
+                      <Input
+                        type="number"
+                        min={0}
+                        max={10}
+                        value={travelChildrenCount}
+                        onChange={(e) => setTravelChildrenCount(Math.max(0, Number(e.target.value) || 0))}
+                        className="h-11 rounded-lg text-xs bg-background font-mono"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs text-foreground font-medium">Idade Máx. Criança (Anos)</Label>
+                      <Input
+                        type="number"
+                        min={1}
+                        max={17}
+                        value={travelChildrenMaxAge}
+                        onChange={(e) => setTravelChildrenMaxAge(Math.max(1, Number(e.target.value) || 12))}
+                        className="h-11 rounded-lg text-xs bg-background font-mono"
+                      />
+                    </div>
+                  </div>
                 </div>
 
                 {/* 2.1 — Resumo Rápido: Duração, Regime, Hóspedes */}
@@ -3243,11 +4504,11 @@ function SpecializedClassifiedEditor({
                       </Select>
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-xs text-foreground font-medium">Hóspedes Indicados</Label>
+                      <Label className="text-xs text-foreground font-medium">Hóspedes Indicados (Rótulo)</Label>
                       <Input
                         value={travelGuests}
                         onChange={(e) => setTravelGuests(e.target.value)}
-                        placeholder="Ex: 2 Adultos"
+                        placeholder="Ex: 2 Adultos + 1 Criança"
                         className="h-11 rounded-lg text-xs bg-background font-medium"
                       />
                     </div>
@@ -3387,13 +4648,24 @@ function SpecializedClassifiedEditor({
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="0">️ Voo Direto (sem escala)</SelectItem>
-                              <SelectItem value="1"> 1 Conexão</SelectItem>
-                              <SelectItem value="2"> 2 Conexões</SelectItem>
-                              <SelectItem value="3"> 3+ Conexões</SelectItem>
+                              <SelectItem value="0">Voo Direto (sem escala)</SelectItem>
+                              <SelectItem value="1">1 Conexão</SelectItem>
+                              <SelectItem value="2">2 Conexões</SelectItem>
+                              <SelectItem value="3">3+ Conexões</SelectItem>
                             </SelectContent>
                           </Select>
                         </div>
+                        {travelConnections > 0 && (
+                          <div className="sm:col-span-2 space-y-2">
+                            <Label className="text-xs font-medium">Aeroporto / Cidade de Conexão</Label>
+                            <Input
+                              value={travelConnectionCity}
+                              onChange={(e) => setTravelConnectionCity(e.target.value)}
+                              placeholder="Ex: Aeroporto Internacional de Guarulhos (GRU)"
+                              className="h-11 rounded-lg text-xs bg-background"
+                            />
+                          </div>
+                        )}
                         <div className="space-y-2">
                           <Label className="text-xs font-medium">Horário Embarque</Label>
                           <Input type="time" value={travelDepartureTime} onChange={(e) => setTravelDepartureTime(e.target.value)} className="h-11 rounded-lg text-xs bg-background font-mono" />
@@ -3409,6 +4681,50 @@ function SpecializedClassifiedEditor({
                         <div className="space-y-2">
                           <Label className="text-xs font-medium">Duração do Voo</Label>
                           <Input value={travelFlightDuration} onChange={(e) => setTravelFlightDuration(e.target.value)} placeholder="Ex: 2h 15min" className="h-11 rounded-lg text-xs bg-background" />
+                        </div>
+                      </div>
+
+                      {/* Franquia de Bagagem */}
+                      <div className="pt-3 border-t border-border/40 space-y-2">
+                        <Label className="text-xs font-semibold text-foreground">Franquia de Bagagem Inclusa</Label>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setTravelBaggagePersonalItem((p) => !p)}
+                            className={cn(
+                              "h-11 px-3 rounded-lg border text-xs font-semibold flex items-center justify-between cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                              travelBaggagePersonalItem
+                                ? "bg-primary/10 border-primary/40 text-primary"
+                                : "bg-background border-border/50 text-muted-foreground"
+                            )}
+                          >
+                            <span>Item Pessoal (10kg)</span>
+                            <span>{travelBaggagePersonalItem ? "Incluso" : "Não"}</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setTravelBaggageCarryOn((p) => !p)}
+                            className={cn(
+                              "h-11 px-3 rounded-lg border text-xs font-semibold flex items-center justify-between cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                              travelBaggageCarryOn
+                                ? "bg-primary/10 border-primary/40 text-primary"
+                                : "bg-background border-border/50 text-muted-foreground"
+                            )}
+                          >
+                            <span>Bagagem de Mão (10kg)</span>
+                            <span>{travelBaggageCarryOn ? "Inclusa" : "Não"}</span>
+                          </button>
+                          <div className="flex items-center gap-2">
+                            <Label className="text-xs font-medium shrink-0">Despachada (23kg):</Label>
+                            <Input
+                              type="number"
+                              min={0}
+                              max={5}
+                              value={travelBaggageChecked}
+                              onChange={(e) => setTravelBaggageChecked(Math.max(0, Number(e.target.value) || 0))}
+                              className="h-11 rounded-lg text-xs bg-background font-mono"
+                            />
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -3443,7 +4759,7 @@ function SpecializedClassifiedEditor({
                           <Input value={travelDepartureCity} onChange={(e) => setTravelDepartureCity(e.target.value)} placeholder="Ex: Chapecó, SC" className="h-11 rounded-lg text-xs bg-background" />
                         </div>
                         <div className="space-y-2">
-                          <Label className="text-xs font-medium">Cidade de Destino da Viagem</Label>
+                          <Label className="text-xs font-medium">Cidade de Destino da Viagem (sincronizada)</Label>
                           <Input value={travelDestinationCity} onChange={(e) => setTravelDestinationCity(e.target.value)} placeholder="Ex: Beto Carrero / Penha, SC" className="h-11 rounded-lg text-xs bg-background" />
                         </div>
                         <div className="space-y-2">
@@ -3464,57 +4780,6 @@ function SpecializedClassifiedEditor({
                         </div>
                       </div>
 
-                      {/* Badges de Meios de Pagamento Aceitos na Prévia */}
-                      <div className="flex flex-wrap gap-2 pt-1">
-                        {acceptsPix && (
-                          <Badge variant="secondary" className="text-xs font-medium gap-1 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
-                            <QrCode className="size-3 text-emerald-600" />
-                            <span>PIX {pixDiscountPercent > 0 ? `(${pixDiscountPercent}% off)` : ""}</span>
-                          </Badge>
-                        )}
-                        {acceptsCard && (
-                          <Badge variant="secondary" className="text-xs font-medium gap-1 bg-blue-500/10 text-blue-700 dark:text-blue-300">
-                            <CreditCard className="size-3 text-blue-600" />
-                            <span>Cartão até {maxInstallments}x</span>
-                          </Badge>
-                        )}
-                        {acceptsBoleto && (
-                          <Badge variant="secondary" className="text-xs font-medium gap-1 bg-muted/60 text-foreground">
-                            <Receipt className="size-3 text-muted-foreground" />
-                            <span>Boleto à vista</span>
-                          </Badge>
-                        )}
-                        {acceptsBoletoInstallments && (
-                          <Badge variant="secondary" className="text-xs font-medium gap-1 bg-amber-500/10 text-amber-800 dark:text-amber-200">
-                            <FileSpreadsheet className="size-3 text-amber-600" />
-                            <span>Boleto até {maxBoletoInstallments}x</span>
-                          </Badge>
-                        )}
-                        {acceptsCarne && (
-                          <Badge variant="secondary" className="text-xs font-medium gap-1 bg-primary/10 text-primary">
-                            <BookOpenCheck className="size-3 text-primary" />
-                            <span>Carnê da Loja até {maxCarneInstallments}x</span>
-                          </Badge>
-                        )}
-                        {acceptsCash && (
-                          <Badge variant="secondary" className="text-xs font-medium gap-1 bg-slate-500/10 text-slate-700 dark:text-slate-300">
-                            <Banknote className="size-3 text-slate-600" />
-                            <span>Dinheiro</span>
-                          </Badge>
-                        )}
-                        {acceptsTrade && (
-                          <Badge variant="secondary" className="text-xs font-medium gap-1 bg-amber-500/10 text-amber-700 dark:text-amber-300">
-                            <RefreshCw className="size-3 text-amber-600" />
-                            <span>Aceita Troca</span>
-                          </Badge>
-                        )}
-                        {acceptsFinancing && (
-                          <Badge variant="secondary" className="text-xs font-medium gap-1 bg-indigo-500/10 text-indigo-700 dark:text-indigo-300">
-                            <Landmark className="size-3 text-indigo-600" />
-                            <span>Financiamento</span>
-                          </Badge>
-                        )}
-                      </div>
 
                       {/* Embarques na Rota (Gateways) */}
                       <div className="space-y-2">
@@ -3927,16 +5192,16 @@ function SpecializedClassifiedEditor({
                   <div className="flex items-center gap-2 flex-wrap pt-1">
                     <span className="text-xs text-muted-foreground font-medium">Sugestões rápidas:</span>
                     {[
-                      " All Inclusive",
-                      " Café da Manhã Incluso",
-                      "️ Aéreo Ida e Volta",
-                      " Transfer In/Out",
-                      "️ Pé na Areia",
-                      " Piscina Aquecida",
-                      "⭐ Suíte com Vista",
-                      "️ Ingressos Inclusos",
-                      " Wi-Fi Alta Velocidade",
-                      " Open Bar Nacional",
+                      "All Inclusive",
+                      "Café da Manhã Incluso",
+                      "Aéreo Ida e Volta",
+                      "Transfer In/Out",
+                      "Pé na Areia",
+                      "Piscina Aquecida",
+                      "Suíte com Vista",
+                      "Ingressos Inclusos",
+                      "Wi-Fi Alta Velocidade",
+                      "Open Bar Nacional",
                     ].map((sug) => (
                       <button
                         key={sug}
@@ -3959,31 +5224,224 @@ function SpecializedClassifiedEditor({
                   </div>
                 </div>
 
-                {/* 2.5 — Parcelamento */}
-                <div className="space-y-2">
+                {/* 2.5 — Hospedagem & Hotel do Pacote */}
+                <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <Label className="text-xs text-foreground font-medium flex items-center gap-2">
-                      <CreditCard className="size-4 text-primary" />
-                      <span>Máximo de Parcelas</span>
-                    </Label>
-                    <span className="text-xs font-black text-primary font-mono">{travelMaxInstallments}x</span>
+                    <div>
+                      <p className="text-xs text-muted-foreground/75 font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                        <Building2 className="size-4 text-primary" />
+                        <span>Hospedagem & Hotel do Pacote</span>
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Adicione os dados da acomodação (resort, hotel, pousada). Suporta múltiplos hotéis ou estadias combinadas.
+                      </p>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={handleAddTravelLodging}
+                      className="h-11 min-h-11 text-xs font-semibold rounded-lg gap-1 border-primary/30 text-primary hover:bg-primary/5 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    >
+                      <Plus className="size-4" />
+                      <span>Adicionar Hotel / Hospedagem</span>
+                    </Button>
                   </div>
-                  <input
-                    type="range"
-                    min={1}
-                    max={24}
-                    step={1}
-                    value={travelMaxInstallments}
-                    onChange={(e) => setTravelMaxInstallments(Number(e.target.value))}
-                    className="w-full h-2 rounded-full accent-primary cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                    aria-label="Máximo de parcelas"
-                  />
-                  <div className="flex justify-between text-xs text-muted-foreground font-mono">
-                    <span>1x</span>
-                    <span>6x</span>
-                    <span>12x</span>
-                    <span>18x</span>
-                    <span>24x</span>
+
+                  {travelLodgings.length === 0 && (
+                    <div className="p-4 rounded-lg border border-dashed border-border/70 text-center space-y-2 bg-muted/10">
+                      <p className="text-xs text-muted-foreground">
+                        Nenhuma hospedagem cadastrada para este pacote.
+                      </p>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={handleAddTravelLodging}
+                        className="h-11 min-h-11 text-xs font-semibold rounded-lg gap-2 border-primary/40 text-primary hover:bg-primary/5 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      >
+                        <Plus className="size-4" />
+                        <span>Cadastrar Hotel / Pousada</span>
+                      </Button>
+                    </div>
+                  )}
+
+                  <div className="space-y-4">
+                    {travelLodgings.map((lodging, idx) => (
+                      <div key={lodging.id} className="p-4 rounded-lg border border-border/70 bg-card space-y-3 shadow-xs">
+                        <div className="flex items-center justify-between pb-2 border-b border-border/40">
+                          <div className="flex items-center gap-2">
+                            <span className="size-6 rounded-full bg-primary/10 text-primary font-bold text-xs flex items-center justify-center font-mono">
+                              {idx + 1}
+                            </span>
+                            <span className="text-xs font-bold text-foreground">
+                              {lodging.name ? lodging.name : `Hospedagem ${idx + 1}`}
+                            </span>
+                            {lodging.stars ? (
+                              <Badge variant="outline" className="text-xs font-bold text-amber-600 dark:text-amber-400 border-amber-500/30">
+                                {lodging.stars} estrelas
+                              </Badge>
+                            ) : null}
+                          </div>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleRemoveTravelLodging(lodging.id)}
+                            className="size-11 min-h-11 min-w-11 p-0 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive"
+                            title="Remover Hospedagem"
+                            aria-label="Remover Hospedagem"
+                          >
+                            <Trash2 className="size-4" />
+                          </Button>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                          <div className="sm:col-span-2 space-y-1">
+                            <Label className="text-xs font-medium text-foreground">Nome do Hotel / Pousada / Resort *</Label>
+                            <Input
+                              value={lodging.name}
+                              onChange={(e) => handleUpdateTravelLodging(lodging.id, { name: e.target.value })}
+                              placeholder="Ex: Nannai Muro Alto Resort ou Hotel Costa Brava"
+                              className="h-11 rounded-lg text-xs bg-background"
+                            />
+                          </div>
+
+                          <div className="space-y-1">
+                            <Label className="text-xs font-medium text-foreground">Tipo de Hospedagem</Label>
+                            <Select
+                              value={lodging.type || "hotel"}
+                              onValueChange={(v: any) => handleUpdateTravelLodging(lodging.id, { type: v })}
+                            >
+                              <SelectTrigger className="h-11 rounded-lg text-xs bg-background">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="resort">Resort</SelectItem>
+                                <SelectItem value="hotel">Hotel</SelectItem>
+                                <SelectItem value="pousada">Pousada</SelectItem>
+                                <SelectItem value="flat">Flat / Apart-hotel</SelectItem>
+                                <SelectItem value="hostel">Hostel</SelectItem>
+                                <SelectItem value="outro">Outro</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                          <div className="space-y-1">
+                            <Label className="text-xs font-medium text-foreground">Regime de Alimentação</Label>
+                            <Select
+                              value={lodging.regime || "Café da Manhã"}
+                              onValueChange={(v) => handleUpdateTravelLodging(lodging.id, { regime: v })}
+                            >
+                              <SelectTrigger className="h-11 rounded-lg text-xs bg-background">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="All Inclusive">All Inclusive (Tudo Incluso)</SelectItem>
+                                <SelectItem value="Pensão Completa">Pensão Completa</SelectItem>
+                                <SelectItem value="Meia Pensão">Meia Pensão</SelectItem>
+                                <SelectItem value="Café da Manhã">Café da Manhã Incluso</SelectItem>
+                                <SelectItem value="Só Hospedagem">Só Hospedagem</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+
+                          <div className="space-y-1">
+                            <Label className="text-xs font-medium text-foreground">Classificação (Estrelas)</Label>
+                            <Select
+                              value={String(lodging.stars || 4)}
+                              onValueChange={(v) => handleUpdateTravelLodging(lodging.id, { stars: Number(v) })}
+                            >
+                              <SelectTrigger className="h-11 rounded-lg text-xs bg-background">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="5">5 Estrelas (Luxo)</SelectItem>
+                                <SelectItem value="4">4 Estrelas (Superior)</SelectItem>
+                                <SelectItem value="3">3 Estrelas (Conforto)</SelectItem>
+                                <SelectItem value="2">2 Estrelas (Econômico)</SelectItem>
+                                <SelectItem value="1">1 Estrela (Simples)</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+
+                          <div className="space-y-1">
+                            <Label className="text-xs font-medium text-foreground">Categoria do Quarto / Acomodação</Label>
+                            <Input
+                              value={lodging.room_category || ""}
+                              onChange={(e) => handleUpdateTravelLodging(lodging.id, { room_category: e.target.value })}
+                              placeholder="Ex: Suíte Standard, Bangalô Luxo..."
+                              className="h-11 rounded-lg text-xs bg-background"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div className="space-y-1">
+                            <Label className="text-xs font-medium text-foreground">Cidade / Destino da Hospedagem</Label>
+                            <Input
+                              value={lodging.city || ""}
+                              onChange={(e) => handleUpdateTravelLodging(lodging.id, { city: e.target.value })}
+                              placeholder="Ex: Porto de Galinhas, PE"
+                              className="h-11 rounded-lg text-xs bg-background"
+                            />
+                          </div>
+
+                          <div className="space-y-1">
+                            <Label className="text-xs font-medium text-foreground">Endereço / Localização Exata</Label>
+                            <Input
+                              value={lodging.address || ""}
+                              onChange={(e) => handleUpdateTravelLodging(lodging.id, { address: e.target.value })}
+                              placeholder="Ex: Av. Beira Mar, 1200 - Centro"
+                              className="h-11 rounded-lg text-xs bg-background"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                          <div className="space-y-1">
+                            <Label className="text-xs font-medium text-foreground">Horário Check-in</Label>
+                            <Input
+                              value={lodging.checkin_time || "14:00"}
+                              onChange={(e) => handleUpdateTravelLodging(lodging.id, { checkin_time: e.target.value })}
+                              placeholder="14:00"
+                              className="h-11 rounded-lg text-xs bg-background font-mono"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-xs font-medium text-foreground">Horário Check-out</Label>
+                            <Input
+                              value={lodging.checkout_time || "11:00"}
+                              onChange={(e) => handleUpdateTravelLodging(lodging.id, { checkout_time: e.target.value })}
+                              placeholder="11:00"
+                              className="h-11 rounded-lg text-xs bg-background font-mono"
+                            />
+                          </div>
+                          <div className="space-y-1 sm:col-span-2">
+                            <Label className="text-xs font-medium text-foreground">Código de Reserva / Voucher (Opcional)</Label>
+                            <Input
+                              value={lodging.booking_code || ""}
+                              onChange={(e) => handleUpdateTravelLodging(lodging.id, { booking_code: e.target.value })}
+                              placeholder="Ex: HTR-88291"
+                              className="h-11 rounded-lg text-xs bg-background font-mono"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="space-y-1">
+                          <Label className="text-xs font-medium text-foreground">Descrição da Estrutura & Lazer do Hotel</Label>
+                          <Textarea
+                            value={lodging.description || ""}
+                            onChange={(e) => handleUpdateTravelLodging(lodging.id, { description: e.target.value })}
+                            placeholder="Descreva as piscinas, restaurantes, localização em relação à praia ou pontos turísticos..."
+                            rows={2}
+                            className="text-xs rounded-lg bg-background resize-none"
+                          />
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
 
@@ -4021,9 +5479,6 @@ function SpecializedClassifiedEditor({
                     <ImagePlus className="size-4 text-primary shrink-0" />
                     <span>Destaques Visuais</span>
                   </div>
-                  <Badge variant="outline" className="text-xs font-mono text-primary bg-primary/10 border-primary/30">
-                    Vitrine Imersiva
-                  </Badge>
                 </div>
                                 <StoryHighlightUploader
                   highlights={travelStoryHighlights}
@@ -4643,7 +6098,7 @@ function SpecializedClassifiedEditor({
 
                   {/* Sub-nicho Canônico Especializado com Smart Cascade Pills */}
                   <div className="space-y-2">
-                    <Label className="text-xs text-foreground font-medium">Segmento / Sub-nicho Profissional *</Label>
+                    <Label className="text-xs text-foreground font-medium">Especialidade Profissional *</Label>
                     <div className="flex flex-wrap gap-2">
                       {CANONICAL_SERVICE_SUBNICHES.map((sub) => {
                         const isSelected = serviceSubNiche === sub.id;
@@ -4846,7 +6301,7 @@ function SpecializedClassifiedEditor({
 
                   {/* Smart Cascade Pills para Gastronomia */}
                   <div className="space-y-2">
-                    <Label className="text-xs text-foreground font-medium">Sub-nicho Gastronômico *</Label>
+                    <Label className="text-xs text-foreground font-medium">Especialidade Gastronômica *</Label>
                     <div className="flex flex-wrap gap-2">
                       {CANONICAL_FOOD_SUBNICHES.map((food) => {
                         const isSelected = foodSubNiche === food.id;
@@ -7177,14 +8632,15 @@ function SpecializedClassifiedEditor({
               )}
 
               {/* Formas de Pagamento (LISTA ESTRUTURADA ESPAÇOSA - ZERO TRUNCATION - 1x = À VISTA) */}
-              <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60">
-                <div className="flex items-center justify-between pb-3 border-b border-border/40">
-                  <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
-                    <CreditCard className="size-4 text-primary shrink-0" />
-                    <span>Formas de Pagamento Aceitas</span>
+              {isPaymentAllowed && (
+                <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60">
+                  <div className="flex items-center justify-between pb-3 border-b border-border/40">
+                    <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
+                      <CreditCard className="size-4 text-primary shrink-0" />
+                      <span>Formas de Pagamento Aceitas</span>
+                    </div>
+                    <span className="text-xs text-muted-foreground font-mono">Ative as opções aceitas</span>
                   </div>
-                  <span className="text-xs text-muted-foreground font-mono">Ative as opções aceitas</span>
-                </div>
 
                 {/* Lista Vertical Espaçosa e Descomplicada */}
                 <div className="space-y-3">
@@ -7691,16 +9147,49 @@ function SpecializedClassifiedEditor({
                   </Select>
                 </div>
               </div>
+            )}
 
-              <ClassifiedLocationSection
-                locationName={locationName}
-                hideLocation={hideLocation}
-                onLocationChange={(formatted, structured) => {
-                  setLocationName(formatted);
-                  if (structured) setStructuredLoc(structured);
-                }}
-                onHideLocationChange={setHideLocation}
-              />
+              {/* Seção: Localização */}
+              <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60">
+                <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground pb-3 border-b border-border/40">
+                  <MapPin className="size-4 text-primary shrink-0" />
+                  <span>Localização</span>
+                </div>
+
+ <CityCombobox
+ value={locationName}
+ onChange={(formatted, struct) => {
+ setLocationName(formatted);
+ if (struct) setStructuredLoc(struct);
+ }}
+ label="Bairro e Cidade do Anúncio *"
+ />
+
+            {/* Controle de Privacidade Total de Endereço (LGPD) */}
+            <div className="p-4 bg-muted/20 border border-border/70 rounded-lg space-y-2">
+              <div className="flex items-center justify-between gap-3">
+                <div className="space-y-1 min-w-0">
+                  <Label htmlFor="hide-location-toggle" className="text-xs font-bold text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary flex items-center gap-2">
+                    <ShieldCheck className="size-4 text-primary" />
+                    Ocultar endereço completamente
+                  </Label>
+                  <p className="text-xs text-muted-foreground/75 text-muted-foreground leading-snug">
+                    Não exibe cidade, bairro nem mapa no anúncio público.
+                  </p>
+                </div>
+                <Switch
+                  id="hide-location-toggle"
+                  checked={hideLocation}
+                  onCheckedChange={setHideLocation}
+                />
+              </div>
+              {hideLocation && (
+                <div className="text-xs text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-2 rounded-lg font-medium flex items-center gap-2">
+                  <Check className="size-3 shrink-0" />
+                  Privacidade total ativa: nenhum dado geográfico ou mapa será exposto.
+                </div>
+              )}
+            </div>
 
  <div className="space-y-2 pt-1">
  <Label className="text-xs text-foreground font-medium">
@@ -7712,6 +9201,7 @@ function SpecializedClassifiedEditor({
 									placeholder="(49) 99999-9999"
 									className="h-11 min-h-11 rounded-lg text-xs bg-background"
 								/>
+ </div>
  </div>
 
               {/* ── Formulário de Captura de Leads / Landing Page Vinculada (Restrito a Lojas Oficiais) ── */}
@@ -7853,7 +9343,24 @@ function SpecializedClassifiedEditor({
 
                       {/* Lista de Perguntas */}
                       <div className="space-y-2">
-                        <Label className="text-xs font-semibold text-foreground">Perguntas de Qualificação ({civilInquiryQuestions.length})</Label>
+                        <div className="flex items-center justify-between">
+                          <Label className="text-xs font-semibold text-foreground">Perguntas de Qualificação ({civilInquiryQuestions.length})</Label>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              setCivilInquiryTitle(defaultNicheInquiry.title);
+                              setCivilInquirySubtitle(defaultNicheInquiry.subtitle);
+                              setCivilInquiryQuestions(defaultNicheInquiry.questions);
+                              toast.success(`Formulário restaurado para o padrão do nicho "${niche.title}"`);
+                            }}
+                            className="h-11 min-h-11 px-3 text-xs text-primary hover:bg-primary/10 gap-2 rounded-lg cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                          >
+                            <RefreshCw className="size-4" />
+                            <span>Padrão do Nicho</span>
+                          </Button>
+                        </div>
                         <div className="space-y-2">
                           {civilInquiryQuestions.map((q, idx) => (
                             <div key={q.id || idx} className="p-3 rounded-lg border border-border/60 bg-background space-y-2">
@@ -8161,31 +9668,72 @@ function SpecializedClassifiedEditor({
  <main
  className={`md:col-span-7 ${mobileTab === "preview" ? "block" : "hidden md:block"} sticky top-0`}
  >
-        {templateStyle === "editorial" || (templateStyle as string) === "instagram" ? (
-          <div className="bg-card rounded-lg overflow-hidden border border-border/60">
-            <div className="bg-muted/40 px-4 py-2 flex items-center justify-between text-xs border-b border-border/40">
-              <span className="font-semibold flex items-center gap-2 text-muted-foreground">
+        <div className="bg-card rounded-lg overflow-hidden border border-border/60">
+          <div className="bg-muted/40 px-3 py-2 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 border-b border-border/40 text-xs">
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className="font-semibold flex items-center gap-1.5 text-foreground shrink-0">
                 <Eye className="size-4 text-primary" />
-                Prévia ao vivo
+                <span>Prévia ao vivo</span>
               </span>
+              <div className="flex items-center gap-1 bg-background/80 p-0.5 rounded-lg border border-border/50">
+                {[
+                  { id: "standard", label: "Padrão" },
+                  { id: "editorial", label: "Editorial" },
+                  { id: "automotivo", label: "Auto" },
+                  { id: "imobiliario", label: "Imóvel" },
+                  { id: "resort_hotel", label: "Resort" },
+                  { id: "servicos_agenda", label: "Serviço" },
+                  ...(niche.id === "mercado" ? [{ id: "conveniencia", label: "Mercado" }] : []),
+                ].map((tpl) => (
+                  <button
+                    key={tpl.id}
+                    type="button"
+                    onClick={() => setTemplateStyle(tpl.id as any)}
+                    className={cn(
+                      "px-2 py-0.5 text-xs font-semibold rounded transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                      templateStyle === tpl.id
+                        ? "bg-primary text-primary-foreground font-bold shadow-xs"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    {tpl.label}
+                  </button>
+                ))}
+              </div>
             </div>
-            <div className="max-h-screen overflow-y-auto">
-              <EditorialShowcaseView
-                classified={livePreviewClassified}
-                isOwner={false}
-              />
+
+            <div className="flex items-center gap-1 bg-background p-0.5 rounded-lg border border-border/50 self-end sm:self-auto">
+              <button
+                type="button"
+                onClick={() => setPreviewDevice("mobile")}
+                className={cn(
+                  "px-2.5 py-1 text-xs font-bold rounded-md transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                  previewDevice === "mobile"
+                    ? "bg-primary text-primary-foreground shadow-xs"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                Mobile
+              </button>
+              <button
+                type="button"
+                onClick={() => setPreviewDevice("desktop")}
+                className={cn(
+                  "px-2.5 py-1 text-xs font-bold rounded-md transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                  previewDevice === "desktop"
+                    ? "bg-primary text-primary-foreground shadow-xs"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                Desktop
+              </button>
             </div>
           </div>
-        ) : niche.id === "mercado" || templateStyle === "conveniencia" ? (
-          <div className="bg-card rounded-lg overflow-hidden border border-border/60">
-            <div className="bg-muted/40 px-4 py-2 flex items-center justify-between text-xs border-b border-border/40">
-              <span className="font-semibold flex items-center gap-2 text-muted-foreground">
-                <Eye className="size-4 text-primary" />
-                Prévia ao vivo · Mercado & Perecíveis
-              </span>
-            </div>
-            <div className="max-h-screen overflow-y-auto">
+
+          <div className="max-h-[calc(100vh-140px)] overflow-y-auto">
+            {templateStyle === "conveniencia" || niche.id === "mercado" ? (
               <ConvenienceShowcaseView
+                classified={livePreviewClassified}
                 previewData={{
                   title: title || "Produto de Mercado / Conveniência",
                   description: description,
@@ -8193,7 +9741,12 @@ function SpecializedClassifiedEditor({
                   images: images,
                   locationName: locationName || "São Miguel do Oeste - SC",
                   whatsapp: whatsapp,
-                  storeName: "Sua Loja",
+                  storeName: selectedStore?.name || "Sua Loja",
+                  storeSlug: selectedStore?.slug,
+                  storeLogo: selectedStore?.logo_url,
+                  authorName: !selectedStore ? (userProfile?.full_name || "Você") : undefined,
+                  authorAvatar: !selectedStore ? (userProfile?.avatar_url || undefined) : undefined,
+                  authorId: !selectedStore ? userProfile?.id : undefined,
                   volume: convenienceVolume,
                   unitType: groceryUnitType,
                   estimatedWeightPerUnit: groceryEstimatedWeightPerUnit,
@@ -8210,6 +9763,7 @@ function SpecializedClassifiedEditor({
                   prepOptions: groceryPrepOptions,
                   deliveryEstimate: groceryDeliveryEstimate,
                   deliveryFeeCents: groceryDeliveryFeeCents,
+                  readyDelivery: readyDelivery,
                   acceptsPix,
                   pixDiscountPercent,
                   acceptsCard,
@@ -8238,448 +9792,174 @@ function SpecializedClassifiedEditor({
                     badge_text: groceryOrderBumpBadge || "Oferta Relâmpago",
                   } : undefined,
                 }}
-                isOwner={false}
-                previewDevice="desktop"
-                compact={false}
+                isOwner={true}
+                previewDevice={previewDevice}
+                compact={previewDevice === "mobile"}
+                onEdit={() => setCurrentStep(2)}
               />
-            </div>
+            ) : templateStyle === "editorial" || (templateStyle as string) === "instagram" || (templateStyle as string) === "instagram_resort" || (!templateStyle && niche.id === "viagem") ? (
+              <EditorialShowcaseView
+                classified={livePreviewClassified}
+                isOwner={false}
+              />
+            ) : (
+              <UniversalClassifiedShowcase
+                classified={livePreviewClassified}
+                previewViewport={previewDevice}
+                isOwner={true}
+                canManage={true}
+                onOpenBookingModal={() => toast.info("Modo de Pré-visualização: As reservas estarão ativas após a publicação do anúncio.")}
+                onOpenProposalModal={() => toast.info("Modo de Pré-visualização: O envio de propostas estará ativo após a publicação do anúncio.")}
+                onEdit={() => setCurrentStep(2)}
+              />
+            )}
           </div>
-        ) : (
-          <div className="bg-card rounded-lg overflow-hidden border border-border/60">
-            {/* Header da Prévia */}
-            <div className="bg-muted/40 px-4 py-2 flex items-center justify-between text-xs border-b border-border/40">
-              <span className="font-semibold flex items-center gap-2 text-muted-foreground">
-                <Eye className="size-4 text-primary" />
-                Prévia ao vivo
-              </span>
-            </div>
-
- <div className="p-4 md:p-6 space-y-6">
- {/* Galeria de Fotos da Prévia */}
- <div className="space-y-2">
- <div className="relative aspect-video rounded-lg overflow-hidden bg-muted/60 flex items-center justify-center">
- {images.length > 0 ? (
- <img
- src={images[activePreviewImage] || images[0]}
- alt="Prévia"
- className="w-full h-full object-cover"
- />
- ) : (
- <div className="flex flex-col items-center gap-2 text-muted-foreground p-6 text-center">
- <ImagePlus className="size-10 stroke-1" />
- <p className="text-xs">
- Adicione fotos no editor para visualizar a galeria pública
- </p>
- </div>
- )}
- </div>
-
- {images.length > 1 && (
- <div className="flex gap-2 overflow-x-auto carousel no-scrollbar pb-1">
- {images.map((img, idx) => (
- <button
- key={idx}
- type="button"
- onClick={() => setActivePreviewImage(idx)}
- className={`size-14 min-h-11 min-w-11 rounded-lg overflow-hidden border shrink-0 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
- activePreviewImage === idx
- ? "border-primary ring-2 ring-primary/20"
- : "border-border opacity-70"
- }`}
- >
- <img
- src={img}
- alt={`Thumb ${idx}`}
- className="w-full h-full object-cover"
- />
- </button>
- ))}
- </div>
- )}
- </div>
-
- {/* Informações Principais */}
- <div className="space-y-3">
- <div className="flex items-center justify-between gap-2">
- <Badge variant="outline" className="text-xs font-semibold">
- {niche.title}
- </Badge>
- {locationName && (
- <span className="text-xs text-muted-foreground flex items-center gap-1">
- <MapPin className="size-3 text-primary" />
- {locationName}
- </span>
- )}
- </div>
-
- <h1 className="text-xl md:text-2xl font-bold text-foreground leading-tight">
- {title || "Título do Anúncio aparecerá aqui..."}
- </h1>
-
-              <div className="space-y-2 pt-1">
-                <div className="flex items-baseline gap-2 flex-wrap">
-                  <span className="text-2xl font-black text-primary font-mono">
-                    {pricingType === "free" || niche.id === "doacao"
-                      ? "Gratuito / Doação"
-                      : pricingType === "on_quote"
-                      ? "Sob Consulta"
-                      : pricingType === "exchange_only"
-                      ? "Somente Troca / Permuta"
-                      : pricingType === "starting_at"
-                      ? `A partir de ${formatMoney(priceMinCents || parsedPriceCents || 0)}`
-                      : pricingType === "price_range"
-                      ? `${formatMoney(priceMinCents || 0)} - ${formatMoney(priceMaxCents || 0)}`
-                      : parsedPriceCents
-                      ? formatMoney(parsedPriceCents)
-                      : "A Combinar"}
-                  </span>
-                  {niche.id === "hospedagem" && parsedPriceCents && (
-                    <span className="text-xs font-semibold text-muted-foreground">/diária</span>
-                  )}
-                  {niche.id === "imovel" && reDealType === "aluguel" && parsedPriceCents && (
-                    <span className="text-xs font-semibold text-muted-foreground">/mês</span>
-                  )}
-                  {negotiable && pricingType !== "on_quote" && pricingType !== "free" && (
-                    <Badge variant="secondary" className="text-xs">
-                      Aceita Propostas
-                    </Badge>
-                  )}
-                </div>
-
-                {/* Disclaimer de Preço na Prévia Padrão */}
-                {priceDisclaimer && priceDisclaimer !== "none" && (
-                  <p className="text-xs text-muted-foreground/75 text-amber-700 dark:text-amber-400 font-medium flex items-center gap-1">
-                    <Info className="size-3 shrink-0" />
-                    <span>
-                      {priceDisclaimer === "custom" && customDisclaimer
-                        ? customDisclaimer
-                        : priceDisclaimer === "demonstrative"
-                        ? "Valor ilustrativo / demonstrativo — proposta final emitida sob consulta."
-                        : priceDisclaimer === "subject_to_availability"
-                        ? "Preço e disponibilidade sujeitos a alteração e confirmação de estoque."
-                        : priceDisclaimer === "seasonal"
-                        ? "Tarifa promocional válida para baixa temporada e dias úteis."
-                        : priceDisclaimer === "exchange_rate"
-                        ? "Valores sujeitos a flutuação cambial e taxas governamentais."
-                        : "Consulte condições comerciais atualizadas."}
-                    </span>
-                  </p>
-                )}
-
-                {/* Desconto PIX na Prévia Padrão */}
-                {acceptsPix && pixDiscountPercent > 0 && parsedPriceCents && (
-                  <p className="text-xs text-muted-foreground/75 text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1">
-                    <BadgePercent className="size-3 shrink-0" />
-                    <span>
-                      <strong>{pixDiscountPercent}% de desconto</strong> no PIX ({formatMoney(Math.round(parsedPriceCents * (1 - pixDiscountPercent / 100)))})
-                    </span>
-                  </p>
-                )}
-
-                {niche.id === "hospedagem" && hospCleaningFeeCents && hospCleaningFeeCents > 0 && (
-                  <p className="text-xs text-muted-foreground/75 text-muted-foreground font-medium">
-                    + Taxa de Limpeza: <strong className="text-foreground">{formatMoney(hospCleaningFeeCents)}</strong> (taxa única por estadia)
-                  </p>
-                )}
-
-                {parsedPriceCents && acceptsCard && parseInt(String(maxInstallments)) > 1 && niche.id !== "hospedagem" && (
-                  <p className="text-xs text-muted-foreground/75 text-muted-foreground font-medium flex items-center gap-1">
-                    <CreditCard className="size-3 text-primary" />
-                    <span>
-                      ou em até <strong>{maxInstallments}x de {formatMoney(Math.round(parsedPriceCents / (parseInt(String(maxInstallments)) || 1)))}</strong>
-                    </span>
-                  </p>
-                )}
-              </div>
-
- {/* Badges Semânticos de Acordo com o Nicho */}
- {niche.id === "hospedagem" && (
- <div className="flex flex-wrap gap-2 pt-1">
- <Badge variant="outline" className="text-xs font-medium gap-1 bg-muted/40">
- <Key className="size-3 text-primary" />
- <span>
- {hospCheckinType === "self_checkin"
- ? "Self Check-in (Fechadura Eletrônica)"
- : hospCheckinType === "front_desk"
- ? "Portaria 24h"
- : "Check-in Presencial"}
- </span>
- </Badge>
- <Badge variant="outline" className="text-xs font-medium gap-1 bg-muted/40">
- <span>{hospGuests} Hóspedes máx.</span>
- </Badge>
- <Badge variant="outline" className="text-xs font-medium gap-1 bg-muted/40">
- <span>{hospPropertyType}</span>
- </Badge>
- {acceptsPix && (
- <Badge variant="secondary" className="text-xs font-medium gap-1">
- <QrCode className="size-3 text-emerald-600" />
- <span>PIX</span>
- </Badge>
- )}
- {acceptsCard && (
- <Badge variant="secondary" className="text-xs font-medium gap-1">
- <CreditCard className="size-3 text-blue-600" />
- <span>Cartão</span>
- </Badge>
- )}
- </div>
- )}
-
- {niche.id === "desapego" && (
- <div className="flex flex-wrap gap-2 pt-1">
- {deliveryMode === "both" && (
- <Badge variant="outline" className="text-xs font-medium gap-1 bg-muted/40">
- <Truck className="size-3 text-primary" />
- <span>Entrega Local</span>
- </Badge>
- )}
- {deliveryMode === "local_delivery" && (
- <Badge variant="outline" className="text-xs font-medium gap-1 bg-muted/40">
- <Truck className="size-3 text-primary" />
- <span>Entrega Waesy Express</span>
- </Badge>
- )}
- {deliveryMode === "pickup" && (
- <Badge variant="outline" className="text-xs font-medium gap-1 bg-muted/40">
- <Package className="size-3 text-primary" />
- <span>Somente Retirada</span>
- </Badge>
- )}
- {deliveryMode === "shipping" && (
- <Badge variant="outline" className="text-xs font-medium gap-1 bg-muted/40">
- <Truck className="size-3 text-primary" />
- <span>Envio Nacional</span>
- </Badge>
- )}
- <Badge variant="secondary" className="text-xs font-medium">
- {itemCondition === "novo"
- ? "Novo / Na Caixa"
- : itemCondition === "usado_excelente"
- ? "Usado - Como Novo"
- : itemCondition === "usado_bom"
- ? "Usado - Bom Estado"
- : "Usado - Com Marcas"}
- </Badge>
- {acceptsTrade && (
- <Badge variant="secondary" className="text-xs font-medium gap-1">
- <RefreshCw className="size-3 text-amber-600" />
- <span>Aceita Troca</span>
- </Badge>
- )}
- </div>
- )}
-
- {(niche.id === "veiculo" || niche.id === "desapego") && (
- <div className="flex flex-wrap gap-2 pt-1">
- {acceptsPix && (
- <Badge variant="secondary" className="text-xs font-medium gap-1">
- <QrCode className="size-3 text-emerald-600" />
- <span>PIX</span>
- </Badge>
- )}
- {acceptsCard && (
- <Badge variant="secondary" className="text-xs font-medium gap-1">
- <CreditCard className="size-3 text-blue-600" />
- <span>Cartão</span>
- </Badge>
- )}
- {acceptsCash && (
- <Badge variant="secondary" className="text-xs font-medium gap-1">
- <Banknote className="size-3 text-slate-600" />
- <span>Dinheiro</span>
- </Badge>
- )}
- </div>
- )}
-
- <p className="text-xs text-foreground/80 leading-relaxed whitespace-pre-wrap pt-2">
- {description ||
- "A descrição detalhada do anúncio aparecerá aqui conforme você digita no formulário à esquerda..."}
- </p>
- </div>
-
- {/* Simulador de Frete & Logística Waesy Express na Prévia (Apenas para Desapego) */}
- {niche.id === "desapego" && (deliveryMode === "both" || deliveryMode === "local_delivery" || deliveryMode === "shipping") && (
- <div className="border border-primary/30 rounded-lg p-4 bg-primary/5 space-y-2">
- <div className="flex items-center justify-between">
- <div className="flex items-center gap-2 text-xs font-bold text-foreground">
- <Truck className="size-4 text-primary" />
- <span>Simulação de Frete</span>
- </div>
- <Badge className="text-xs font-mono bg-primary text-primary-foreground">
- Waesy Express
- </Badge>
- </div>
-
- <div className="space-y-2 text-xs pt-1">
- <div className="flex items-center justify-between p-2 rounded-lg bg-background">
- <div className="flex items-center gap-2">
- <div className="size-11 min-h-11 min-w-11 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
- <Truck className="size-4" />
- </div>
- <div>
- <p className="font-semibold text-xs text-foreground">Entrega Expressa Motoboy</p>
- <p className="text-xs text-muted-foreground">Chega hoje em até 2 horas</p>
- </div>
- </div>
- <span className="font-bold text-xs text-primary font-mono">
- {freeShippingLocal ? "Grátis" : "R$ 12,00"}
- </span>
- </div>
-
- <div className="flex items-center justify-between p-2 rounded-lg bg-background">
- <div className="flex items-center gap-2">
- <div className="size-11 min-h-11 min-w-11 rounded-lg bg-muted flex items-center justify-center text-foreground">
- <Package className="size-4" />
- </div>
- <div>
- <p className="font-semibold text-xs text-foreground">Ponto PUDO / Locker Waesy</p>
- <p className="text-xs text-muted-foreground">Retire no ponto credenciado</p>
- </div>
- </div>
- <span className="font-bold text-xs text-foreground font-mono">
- R$ 5,00
- </span>
- </div>
- </div>
- </div>
- )}
-
- {/* Especificações na Prévia */}
- {niche.id === "hospedagem" && (
- <div className="rounded-lg p-4 bg-muted/20 space-y-3">
- <h3 className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-2">
- <Key className="size-4 text-primary" />
- <span>Regras da Estadia</span>
- </h3>
- <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs pt-1">
- <div>
- <span className="text-muted-foreground block text-xs">Tipo</span>
- <span className="font-semibold">{hospPropertyType}</span>
- </div>
- <div>
- <span className="text-muted-foreground block text-xs">Capacidade</span>
- <span className="font-semibold font-mono">{hospGuests} hóspedes</span>
- </div>
- <div>
- <span className="text-muted-foreground block text-xs">Check-in</span>
- <span className="font-semibold font-mono">A partir de {hospCheckinTime}</span>
- </div>
- <div>
- <span className="text-muted-foreground block text-xs">Check-out</span>
- <span className="font-semibold font-mono">Até às {hospCheckoutTime}</span>
- </div>
- </div>
- {hospAmenities.length > 0 && (
- <div className="pt-2 border-t border-border/40">
- <span className="text-xs text-muted-foreground uppercase font-bold tracking-wider block mb-2">
- Comodidades
- </span>
- <div className="flex flex-wrap gap-1">
- {hospAmenities.map((a) => (
- <Badge key={a} variant="outline" className="text-xs bg-background">
- {a}
- </Badge>
- ))}
- </div>
- </div>
- )}
- </div>
- )}
-
- {niche.id === "imovel" && (
- <div className="rounded-lg p-4 bg-muted/20 space-y-2">
- <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">
- Especificações do Imóvel
- </h3>
- <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs pt-1">
- <div>
- <span className="text-muted-foreground block text-xs">Finalidade</span>
- <span className="font-semibold capitalize">{reDealType}</span>
- </div>
- <div>
- <span className="text-muted-foreground block text-xs">Área</span>
- <span className="font-semibold font-mono">
- {reAreaSqm ? `${reAreaSqm} m²` : "—"}
- </span>
- </div>
- <div>
- <span className="text-muted-foreground block text-xs">Quartos</span>
- <span className="font-semibold font-mono">{reBedrooms || "—"}</span>
- </div>
- <div>
- <span className="text-muted-foreground block text-xs">Vagas</span>
- <span className="font-semibold font-mono">{reParking || "—"}</span>
- </div>
- </div>
- </div>
- )}
-
- {niche.id === "veiculo" && (
- <div className="rounded-lg p-4 bg-muted/20 space-y-2">
- <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">
- Especificações do Veículo
- </h3>
- <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs pt-1">
- <div>
- <span className="text-muted-foreground block text-xs">Marca/Modelo</span>
- <span className="font-semibold">
- {vehicleBrand} {vehicleModel}
- </span>
- </div>
- <div>
- <span className="text-muted-foreground block text-xs">Ano</span>
- <span className="font-semibold font-mono">
- {vehicleYearFab || "—"}/{vehicleYearModel || "—"}
- </span>
- </div>
- <div>
- <span className="text-muted-foreground block text-xs">Km</span>
- <span className="font-semibold font-mono">
- {vehicleKm ? `${vehicleKm} km` : "—"}
- </span>
- </div>
- <div>
- <span className="text-muted-foreground block text-xs">Câmbio</span>
- <span className="font-semibold">{vehicleTransmission}</span>
- </div>
- </div>
- </div>
- )}
-
- {/* Botão de Contato na Prévia */}
- <div className="pt-2">
- <Button
- type="button"
- disabled
- data-action-intent="preview-only"
- data-action-reason="Contato disponível somente após publicar o anúncio."
- title="Contato disponível somente após publicar o anúncio."
- className="w-full rounded-lg bg-foreground text-background font-bold text-xs gap-2 h-11 cursor-pointer"
- >
- <Phone className="size-4" />
- <span>
- {niche.id === "hospedagem"
- ? "Reservar Estadia"
- : niche.id === "imovel"
- ? "Agendar Visita"
- : niche.id === "veiculo"
- ? "Agendar Test Drive"
- : niche.id === "servico"
- ? "Solicitar Orçamento"
- : niche.id === "vaga"
- ? "Candidatar-se"
- : "Falar com Vendedor"}
- </span>
- </Button>
- </div>
- </div>
- </div>
-        )}
+        </div>
  </main>
  </div>
       )}
+      {/* Modal de Comparação e Escolha do Copilot */}
+      <Dialog open={copilotModalOpen} onOpenChange={setCopilotModalOpen}>
+        <DialogContent className="max-w-3xl rounded-lg bg-card border border-border/60 p-0 overflow-hidden shadow-2xl">
+          <DialogHeader className="p-4 sm:p-5 border-b border-border/40 bg-muted/20">
+            <div className="flex items-center gap-2">
+              <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+                <Wand2 className="size-4" />
+              </div>
+              <div>
+                <DialogTitle className="text-sm sm:text-base font-bold text-foreground">
+                  Refinamento com Copilot
+                </DialogTitle>
+                <DialogDescription className="text-xs text-muted-foreground">
+                  O Copilot analisou as especificações do nicho e redigiu 2 abordagens de alta conversão. Escolha a que melhor se adapta à sua estratégia:
+                </DialogDescription>
+              </div>
+            </div>
+          </DialogHeader>
+
+          <div className="p-4 sm:p-5 space-y-4 max-h-[70vh] overflow-y-auto">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Opção 1: Comercial & Direta */}
+              {copilotSuggestions?.version1 && (
+                <div
+                  onClick={() => setSelectedCopilotVersion("version1")}
+                  className={cn(
+                    "p-4 rounded-lg border text-left transition-colors cursor-pointer space-y-3",
+                    selectedCopilotVersion === "version1"
+                      ? "border-primary bg-primary/5 ring-2 ring-primary/30"
+                      : "border-border/60 bg-muted/10 hover:border-border hover:bg-muted/20"
+                  )}
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <Badge variant="outline" className="text-xs font-bold text-primary border-primary/30 bg-primary/10">
+                      {copilotSuggestions.version1.badge || "Opção 1 · Comercial"}
+                    </Badge>
+                    <div className={cn(
+                      "size-5 rounded-full border flex items-center justify-center transition-colors",
+                      selectedCopilotVersion === "version1"
+                        ? "border-primary bg-primary text-primary-foreground"
+                        : "border-border"
+                    )}>
+                      {selectedCopilotVersion === "version1" && <Check className="size-3 stroke-3" />}
+                    </div>
+                  </div>
+
+                  <div>
+                    <span className="text-xs uppercase font-semibold text-muted-foreground block">Título Sugerido</span>
+                    <h4 className="text-sm font-bold text-foreground mt-0.5 leading-snug">
+                      {copilotSuggestions.version1.title}
+                    </h4>
+                  </div>
+
+                  <div>
+                    <span className="text-xs uppercase font-semibold text-muted-foreground block mb-1">Descrição Comercial</span>
+                    <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed whitespace-pre-line bg-background/60 p-3 rounded-md border border-border/40 max-h-48 overflow-y-auto">
+                      {copilotSuggestions.version1.description}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Opção 2: Storytelling & Detalhada */}
+              {copilotSuggestions?.version2 && (
+                <div
+                  onClick={() => setSelectedCopilotVersion("version2")}
+                  className={cn(
+                    "p-4 rounded-lg border text-left transition-colors cursor-pointer space-y-3",
+                    selectedCopilotVersion === "version2"
+                      ? "border-primary bg-primary/5 ring-2 ring-primary/30"
+                      : "border-border/60 bg-muted/10 hover:border-border hover:bg-muted/20"
+                  )}
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <Badge variant="outline" className="text-xs font-bold text-emerald-600 dark:text-emerald-400 border-emerald-500/30 bg-emerald-500/10">
+                      {copilotSuggestions.version2.badge || "Opção 2 · Storytelling"}
+                    </Badge>
+                    <div className={cn(
+                      "size-5 rounded-full border flex items-center justify-center transition-colors",
+                      selectedCopilotVersion === "version2"
+                        ? "border-primary bg-primary text-primary-foreground"
+                        : "border-border"
+                    )}>
+                      {selectedCopilotVersion === "version2" && <Check className="size-3 stroke-3" />}
+                    </div>
+                  </div>
+
+                  <div>
+                    <span className="text-xs uppercase font-semibold text-muted-foreground block">Título Sugerido</span>
+                    <h4 className="text-sm font-bold text-foreground mt-0.5 leading-snug">
+                      {copilotSuggestions.version2.title}
+                    </h4>
+                  </div>
+
+                  <div>
+                    <span className="text-xs uppercase font-semibold text-muted-foreground block mb-1">Descrição com Storytelling</span>
+                    <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed whitespace-pre-line bg-background/60 p-3 rounded-md border border-border/40 max-h-48 overflow-y-auto">
+                      {copilotSuggestions.version2.description}
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Tags Sugeridas */}
+            {copilotSuggestions?.suggestedTags && copilotSuggestions.suggestedTags.length > 0 && (
+              <div className="p-3 rounded-lg bg-muted/30 border border-border/40 space-y-1.5">
+                <span className="text-xs uppercase font-semibold text-muted-foreground block">
+                  Palavras-chave de Descoberta Sugeridas
+                </span>
+                <div className="flex flex-wrap gap-1.5">
+                  {copilotSuggestions.suggestedTags.map((tag, idx) => (
+                    <Badge key={idx} variant="secondary" className="text-xs font-mono">
+                      #{tag}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <DialogFooter className="p-4 sm:p-5 border-t border-border/40 bg-muted/10 flex items-center justify-between gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setCopilotModalOpen(false)}
+              className="h-11 px-4 text-xs font-semibold rounded-lg cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            >
+              Manter Texto Atual
+            </Button>
+
+            <Button
+              type="button"
+              onClick={() => handleApplyCopilotVersion(selectedCopilotVersion)}
+              className="h-11 px-6 text-xs font-bold rounded-lg bg-primary text-primary-foreground gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary active:scale-98"
+            >
+              <Check className="size-4" />
+              <span>Aplicar {selectedCopilotVersion === "version1" ? "Opção 1 (Comercial)" : "Opção 2 (Storytelling)"}</span>
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
  </div>
  );
 }

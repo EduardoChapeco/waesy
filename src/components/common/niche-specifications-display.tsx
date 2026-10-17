@@ -15,6 +15,18 @@ import {
   Users,
   Info,
   Zap,
+  Briefcase,
+  GraduationCap,
+  Sparkles,
+  Award,
+  Smartphone,
+  Laptop,
+  Check,
+  CheckCircle2,
+  DollarSign,
+  MapPin,
+  Utensils,
+  Truck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -24,24 +36,60 @@ export interface SpecDisplayItem {
   value: string;
   icon?: any;
   highlight?: boolean;
+  category?: string;
 }
 
 export interface NicheSpecificationsDisplayProps {
   attributes?: Record<string, any> | null;
-  items?: SpecDisplayItem[] | Array<{ label: string; value: string; icon?: any; highlight?: boolean }> | null;
+  items?: SpecDisplayItem[] | Array<{ label: string; value: string; icon?: any; highlight?: boolean; category?: string }> | null;
   nicheId?: string | null;
   className?: string;
   title?: string;
 }
 
 /**
- * NicheSpecificationsDisplay — Exibição Canônica de Especificações Públicas Comerciais
+ * Mapeador Inteligente de Ícones por Semântica de Rótulo
+ */
+function resolveSpecIcon(label: string, customIcon?: any) {
+  if (customIcon) return customIcon;
+  const l = label.toLowerCase();
+
+  if (l.includes("ano") || l.includes("data") || l.includes("fundação") || l.includes("construção")) return Calendar;
+  if (l.includes("km") || l.includes("quilometragem") || l.includes("velocidade")) return Gauge;
+  if (l.includes("combustível")) return Fuel;
+  if (l.includes("câmbio") || l.includes("material") || l.includes("versão") || l.includes("categoria")) return Layers;
+  if (l.includes("porta") || l.includes("carroceria") || l.includes("vaga") || l.includes("veículo")) return Car;
+  if (l.includes("motor") || l.includes("potência") || l.includes("voltagem") || l.includes("tensão") || l.includes("bateria")) return Zap;
+  if (l.includes("placa") || l.includes("blindagem") || l.includes("garantia") || l.includes("seguro")) return ShieldCheck;
+  if (l.includes("condição")) return Award;
+  if (l.includes("área") || l.includes("tamanho") || l.includes("dimens")) return Ruler;
+  if (l.includes("quarto") || l.includes("suíte") || l.includes("banheiro") || l.includes("andar") || l.includes("imóvel")) return HomeIcon;
+  if (l.includes("capacidade") || l.includes("hóspede") || l.includes("passageiro") || l.includes("funcionário") || l.includes("rendimento")) return Users;
+  if (l.includes("condomínio") || l.includes("iptu") || l.includes("caução") || l.includes("salário") || l.includes("remuneração") || l.includes("faturamento") || l.includes("lucro") || l.includes("taxa")) return DollarSign;
+  if (l.includes("duração") || l.includes("horário") || l.includes("preparo") || l.includes("check-in") || l.includes("check-out") || l.includes("tempo")) return Clock;
+  if (l.includes("modalidade") || l.includes("atendimento") || l.includes("operador")) return Wrench;
+  if (l.includes("cargo") || l.includes("regime") || l.includes("modelo") || l.includes("segmento") || l.includes("negócio")) return Briefcase;
+  if (l.includes("escolaridade") || l.includes("experiência") || l.includes("registro") || l.includes("conselho")) return GraduationCap;
+  if (l.includes("armazenamento") || l.includes("memória") || l.includes("processador")) return Laptop;
+  if (l.includes("console") || l.includes("equipamento") || l.includes("celular")) return Smartphone;
+  if (l.includes("peso")) return Scale;
+  if (l.includes("destino") || l.includes("região") || l.includes("local")) return MapPin;
+  if (l.includes("aliment") || l.includes("refeiç") || l.includes("cardápio")) return Utensils;
+  if (l.includes("logística") || l.includes("entrega") || l.includes("envio") || l.includes("traslado")) return Truck;
+  if (l.includes("opciona") || l.includes("comodidade") || l.includes("benefício") || l.includes("acessório") || l.includes("procedência")) return CheckCircle2;
+
+  return Info;
+}
+
+/**
+ * NicheSpecificationsDisplay — Exibição Canônica em Cards Grandes Squircles
  * 
- * Regra Arquitetural Absoluta:
- * - Apenas atributos técnicos orientados ao consumidor final (Marca, Modelo, Ano, Quilometragem,
- *   Combustível, Câmbio, Dimensões, Peso, Potência, Garantia, etc.) são permitidos.
- * - Utiliza estritamente ALLOWLIST FECHADA. Proibido expressamente qualquer blacklist,
- *   iteração sobre chaves desconhecidas ou exibição de dados fiscais/internos/custos.
+ * Regras Mandatórias:
+ * - Destaques Principais (Highlights): Cards grandes squircles com métricas em destaque tipográfico.
+ * - Ficha Técnica: Cards squircles compactos e organizados em grade responsiva.
+ * - Opcionais/Comodidades: Pills estruturadas com ícones sem quebra visual.
+ * - Acessibilidade: Piso tipográfico >= 12px (elimina DL-02 e DL-14).
+ * - Espaçamentos na grade canônica de 4px (elimina DL-03).
  */
 export function NicheSpecificationsDisplay({
   attributes,
@@ -50,357 +98,249 @@ export function NicheSpecificationsDisplay({
   className,
   title = "Especificações",
 }: NicheSpecificationsDisplayProps) {
-  // Se já foram fornecidos itens pré-resolvidos pelo resolvedor canônico de nicho:
-  if (Array.isArray(preResolvedItems) && preResolvedItems.length > 0) {
-    return (
-      <div className={cn("space-y-3", className)}>
-        <div className="flex items-center justify-between">
-          <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-            {title}
-          </h2>
-          <span className="text-[10px] text-muted-foreground font-mono">
-            {preResolvedItems.length} item(ns)
-          </span>
-        </div>
+  // ── 1. Resolução dos Itens a Exibir ──
+  const resolvedList: SpecDisplayItem[] = [];
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5">
-          {preResolvedItems.map((item, idx) => {
-            const IconComponent = item.icon || Info;
+  if (Array.isArray(preResolvedItems) && preResolvedItems.length > 0) {
+    for (const item of preResolvedItems) {
+      resolvedList.push({
+        label: item.label,
+        value: item.value,
+        icon: resolveSpecIcon(item.label, item.icon),
+        highlight: item.highlight,
+        category: item.category,
+      });
+    }
+  } else if (attributes && typeof attributes === "object") {
+    // Fallback de extração direta de attributes caso items não venham pré-resolvidos
+    if (attributes.brand || attributes.marca) {
+      resolvedList.push({ label: "Marca", value: String(attributes.brand || attributes.marca) });
+    }
+    if (attributes.model || attributes.modelo) {
+      resolvedList.push({ label: "Modelo", value: String(attributes.model || attributes.modelo) });
+    }
+    if (attributes.condition || attributes.condicao) {
+      const rawCond = String(attributes.condition || attributes.condicao).toLowerCase();
+      const condMap: Record<string, string> = {
+        new: "Novo",
+        novo: "Novo",
+        used: "Usado",
+        usado: "Usado",
+        seminovo: "Seminovo",
+        refurbished: "Revisado",
+      };
+      resolvedList.push({ label: "Condição", value: condMap[rawCond] || String(attributes.condition || attributes.condicao), highlight: true });
+    }
+    if (attributes.year || attributes.ano_fabricacao || attributes.ano_modelo) {
+      const yr = attributes.ano_fabricacao && attributes.ano_modelo
+        ? `${attributes.ano_fabricacao}/${attributes.ano_modelo}`
+        : String(attributes.year || attributes.ano_modelo || attributes.ano_fabricacao);
+      resolvedList.push({ label: "Ano", value: yr, highlight: true });
+    }
+    if (attributes.mileage !== undefined || attributes.quilometragem !== undefined || attributes.km !== undefined) {
+      const km = Number(attributes.mileage ?? attributes.quilometragem ?? attributes.km);
+      if (!isNaN(km)) resolvedList.push({ label: "Quilometragem", value: `${km.toLocaleString("pt-BR")} km`, highlight: true });
+    }
+    if (attributes.transmission || attributes.cambio) {
+      const raw = String(attributes.transmission || attributes.cambio).toLowerCase();
+      const cMap: Record<string, string> = { automatic: "Automático", manual: "Manual", cvt: "CVT" };
+      resolvedList.push({ label: "Câmbio", value: cMap[raw] || String(attributes.transmission || attributes.cambio), highlight: true });
+    }
+    if (attributes.fuel_type || attributes.combustivel || attributes.fuel) {
+      const raw = String(attributes.fuel_type || attributes.combustivel || attributes.fuel).toLowerCase();
+      const fMap: Record<string, string> = { flex: "Flex", gasolina: "Gasolina", etanol: "Etanol", diesel: "Diesel", electric: "Elétrico" };
+      resolvedList.push({ label: "Combustível", value: fMap[raw] || String(attributes.fuel_type || attributes.combustivel || attributes.fuel), highlight: true });
+    }
+    if (attributes.doors || attributes.portas) {
+      resolvedList.push({ label: "Portas", value: `${attributes.doors || attributes.portas} Portas` });
+    }
+    if (attributes.motor || attributes.potencia) {
+      resolvedList.push({ label: "Motorização", value: String(attributes.motor || attributes.potencia) });
+    }
+    if (attributes.usable_area || attributes.area_util || attributes.area_sqm) {
+      const a = attributes.usable_area || attributes.area_util || attributes.area_sqm;
+      resolvedList.push({ label: "Área Útil", value: `${a} m²`, highlight: true });
+    }
+    if (attributes.bedrooms || attributes.quartos) {
+      resolvedList.push({ label: "Quartos", value: String(attributes.bedrooms || attributes.quartos), highlight: true });
+    }
+    if (attributes.suites) {
+      resolvedList.push({ label: "Suítes", value: String(attributes.suites), highlight: true });
+    }
+    if (attributes.parking_spaces || attributes.vagas) {
+      resolvedList.push({ label: "Vagas", value: String(attributes.parking_spaces || attributes.vagas), highlight: true });
+    }
+    if (attributes.condo_cents || attributes.condominio) {
+      const c = attributes.condo_cents ? `R$ ${(attributes.condo_cents / 100).toFixed(2).replace(".", ",")}` : String(attributes.condominio);
+      resolvedList.push({ label: "Condomínio", value: c });
+    }
+    if (attributes.storage) {
+      resolvedList.push({ label: "Armazenamento", value: String(attributes.storage), highlight: true });
+    }
+    if (attributes.battery_health) {
+      resolvedList.push({ label: "Saúde da Bateria", value: `${attributes.battery_health}%`, highlight: true });
+    }
+    if (attributes.voltage || attributes.voltagem) {
+      resolvedList.push({ label: "Voltagem", value: String(attributes.voltage || attributes.voltagem) });
+    }
+  }
+
+  if (resolvedList.length === 0) return null;
+
+  // ── 2. Separação Semântica: Highlights vs. Pills vs. Ficha Técnica ──
+  const isPillItem = (item: SpecDisplayItem) => {
+    const l = item.label.toLowerCase();
+    const isTagCategory =
+      l.includes("opciona") ||
+      l.includes("comodidade") ||
+      l.includes("benefício") ||
+      l.includes("acessório") ||
+      l.includes("procedência");
+    return isTagCategory && item.value.includes(",");
+  };
+
+  const pillItems: SpecDisplayItem[] = [];
+  const nonPillItems: SpecDisplayItem[] = [];
+
+  for (const item of resolvedList) {
+    if (isPillItem(item)) {
+      pillItems.push(item);
+    } else {
+      nonPillItems.push(item);
+    }
+  }
+
+  // Identificar destaques principais (highlight === true)
+  const explicitHighlights = nonPillItems.filter((i) => i.highlight);
+  const remainingSpecs = nonPillItems.filter((i) => !i.highlight);
+
+  // Se houver de 2 a 4 highlights explícitos, usamos eles no bloco de topo.
+  // Se não houver nenhum highlight explícito, promovemos os primeiros 4 itens se houver pelo menos 4.
+  let topHighlights: SpecDisplayItem[] = [];
+  let detailedSpecs: SpecDisplayItem[] = [];
+
+  if (explicitHighlights.length >= 2) {
+    topHighlights = explicitHighlights;
+    detailedSpecs = remainingSpecs;
+  } else if (nonPillItems.length >= 4) {
+    topHighlights = nonPillItems.slice(0, 4);
+    detailedSpecs = nonPillItems.slice(4);
+  } else {
+    topHighlights = nonPillItems;
+    detailedSpecs = [];
+  }
+
+  return (
+    <div className={cn("space-y-4", className)}>
+      {/* ── CABEÇALHO DA SEÇÃO COM CONTAGEM OFICIAL ── */}
+      <div className="flex items-center justify-between">
+        <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+          {title}
+        </h2>
+        <span className="text-xs text-muted-foreground font-mono font-medium">
+          {resolvedList.length} especificação(ões)
+        </span>
+      </div>
+
+      {/* ── 1. CARDS GRANDES SQUIRCLES: DESTAQUES PRINCIPAIS (HIGHLIGHT STATS) ── */}
+      {topHighlights.length > 0 && (
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+          {topHighlights.map((item, idx) => {
+            const IconComp = item.icon || resolveSpecIcon(item.label);
             return (
               <div
-                key={`resolved-${idx}`}
-                className={cn(
-                  "p-3 rounded-lg border border-border/60 bg-card hover:border-primary/40 transition-colors flex flex-col justify-between gap-1 shadow-2xs",
-                  item.highlight && "ring-1 ring-primary/20 bg-primary/5"
-                )}
+                key={`highlight-${idx}`}
+                className="p-4 sm:p-5 rounded-lg bg-card border border-border/60 hover:border-primary/40 transition-colors flex flex-col justify-between gap-2 shadow-2xs group"
               >
-                <div className="flex items-center gap-1.5 text-muted-foreground">
-                  <IconComponent className="size-3.5 text-primary shrink-0" />
-                  <span className="text-[11px] font-medium truncate">{item.label}</span>
+                <div className="flex items-center gap-2 text-muted-foreground min-w-0">
+                  <IconComp className="size-4 text-primary shrink-0 transition-transform group-hover:scale-110" />
+                  <span className="text-xs font-bold uppercase tracking-wider truncate">
+                    {item.label}
+                  </span>
                 </div>
-                <p className="text-xs font-semibold text-foreground font-mono truncate pt-0.5">
+                <p className="text-lg sm:text-xl font-extrabold text-foreground font-mono tracking-tight truncate pt-0.5">
                   {item.value}
                 </p>
               </div>
             );
           })}
         </div>
-      </div>
-    );
-  }
+      )}
 
-  if (!attributes || typeof attributes !== "object") return null;
-
-  // ── ALLOWLIST ESTRITA DE ESPECIFICAÇÕES PÚBLICAS ──
-  const displayItems: SpecDisplayItem[] = [];
-
-  // 1. Identificação Comercial Básica
-  if (attributes.brand || attributes.marca) {
-    displayItems.push({
-      key: "brand",
-      label: "Marca",
-      value: String(attributes.brand || attributes.marca),
-      icon: Layers,
-    });
-  }
-  if (attributes.model || attributes.modelo) {
-    displayItems.push({
-      key: "model",
-      label: "Modelo",
-      value: String(attributes.model || attributes.modelo),
-      icon: Info,
-    });
-  }
-  if (attributes.version || attributes.versao) {
-    displayItems.push({
-      key: "version",
-      label: "Versão",
-      value: String(attributes.version || attributes.versao),
-      icon: Info,
-    });
-  }
-  if (attributes.condition || attributes.condicao) {
-    const rawCond = String(attributes.condition || attributes.condicao).toLowerCase();
-    const condMap: Record<string, string> = {
-      new: "Novo",
-      novo: "Novo",
-      used: "Usado",
-      usado: "Usado",
-      seminovo: "Seminovo",
-      refurbished: "Recondicionado",
-    };
-    displayItems.push({
-      key: "condition",
-      label: "Condição",
-      value: condMap[rawCond] || String(attributes.condition || attributes.condicao),
-      icon: ShieldCheck,
-      highlight: true,
-    });
-  }
-
-  // 2. Veículos & Automotivo
-  if (attributes.year || attributes.ano_fabricacao || attributes.ano_modelo) {
-    const yearText = attributes.ano_fabricacao && attributes.ano_modelo
-      ? `${attributes.ano_fabricacao}/${attributes.ano_modelo}`
-      : String(attributes.year || attributes.ano_modelo || attributes.ano_fabricacao);
-    displayItems.push({
-      key: "year",
-      label: "Ano",
-      value: yearText,
-      icon: Calendar,
-    });
-  }
-  if (attributes.mileage !== undefined || attributes.quilometragem !== undefined || attributes.km !== undefined) {
-    const kmVal = Number(attributes.mileage ?? attributes.quilometragem ?? attributes.km);
-    if (!isNaN(kmVal)) {
-      displayItems.push({
-        key: "mileage",
-        label: "Quilometragem",
-        value: `${kmVal.toLocaleString("pt-BR")} km`,
-        icon: Gauge,
-      });
-    }
-  }
-  if (attributes.transmission || attributes.cambio) {
-    const rawCambio = String(attributes.transmission || attributes.cambio).toLowerCase();
-    const cambioMap: Record<string, string> = {
-      automatic: "Automático",
-      manual: "Manual",
-      cvt: "CVT",
-      semi_automatic: "Automatizado",
-    };
-    displayItems.push({
-      key: "transmission",
-      label: "Câmbio",
-      value: cambioMap[rawCambio] || String(attributes.transmission || attributes.cambio),
-      icon: Layers,
-    });
-  }
-  if (attributes.fuel_type || attributes.combustivel || attributes.fuel) {
-    const rawFuel = String(attributes.fuel_type || attributes.combustivel || attributes.fuel).toLowerCase();
-    const fuelMap: Record<string, string> = {
-      flex: "Flex (Álcool/Gasolina)",
-      gasolina: "Gasolina",
-      etanol: "Etanol",
-      diesel: "Diesel",
-      hybrid: "Híbrido",
-      electric: "Elétrico",
-    };
-    displayItems.push({
-      key: "fuel",
-      label: "Combustível",
-      value: fuelMap[rawFuel] || String(attributes.fuel_type || attributes.combustivel || attributes.fuel),
-      icon: Fuel,
-    });
-  }
-  if (attributes.color || attributes.cor) {
-    displayItems.push({
-      key: "color",
-      label: "Cor",
-      value: String(attributes.color || attributes.cor),
-      icon: Layers,
-    });
-  }
-  if (attributes.doors || attributes.portas) {
-    displayItems.push({
-      key: "doors",
-      label: "Portas",
-      value: `${attributes.doors || attributes.portas} portas`,
-      icon: Car,
-    });
-  }
-  if (attributes.license_plate_end || attributes.final_placa) {
-    displayItems.push({
-      key: "plate_end",
-      label: "Final da Placa",
-      value: String(attributes.license_plate_end || attributes.final_placa),
-      icon: Info,
-    });
-  }
-
-  // 3. Imóveis & Construção
-  if (attributes.usable_area || attributes.area_util || attributes.area_privativa) {
-    const area = attributes.usable_area || attributes.area_util || attributes.area_privativa;
-    displayItems.push({
-      key: "usable_area",
-      label: "Área Útil",
-      value: `${area} m²`,
-      icon: Ruler,
-    });
-  }
-  if (attributes.total_area || attributes.area_total) {
-    const totalArea = attributes.total_area || attributes.area_total;
-    displayItems.push({
-      key: "total_area",
-      label: "Área Total",
-      value: `${totalArea} m²`,
-      icon: Ruler,
-    });
-  }
-  if (attributes.bedrooms || attributes.quartos) {
-    displayItems.push({
-      key: "bedrooms",
-      label: "Quartos",
-      value: String(attributes.bedrooms || attributes.quartos),
-      icon: HomeIcon,
-    });
-  }
-  if (attributes.suites || attributes.suites_count) {
-    displayItems.push({
-      key: "suites",
-      label: "Suítes",
-      value: String(attributes.suites || attributes.suites_count),
-      icon: HomeIcon,
-    });
-  }
-  if (attributes.bathrooms || attributes.banheiros) {
-    displayItems.push({
-      key: "bathrooms",
-      label: "Banheiros",
-      value: String(attributes.bathrooms || attributes.banheiros),
-      icon: HomeIcon,
-    });
-  }
-  if (attributes.parking_spaces || attributes.vagas || attributes.garage_spots) {
-    displayItems.push({
-      key: "parking",
-      label: "Vagas de Garagem",
-      value: String(attributes.parking_spaces || attributes.vagas || attributes.garage_spots),
-      icon: Car,
-    });
-  }
-
-  // 4. Serviços Locais & Atendimento
-  if (attributes.service_duration || attributes.duracao_estimada || attributes.duracao) {
-    const dur = attributes.service_duration || attributes.duracao_estimada || attributes.duracao;
-    displayItems.push({
-      key: "duration",
-      label: "Duração Estimada",
-      value: isNaN(Number(dur)) ? String(dur) : `${dur} min`,
-      icon: Clock,
-    });
-  }
-  if (attributes.service_modality || attributes.regime_atendimento || attributes.modalidade) {
-    const rawMod = String(attributes.service_modality || attributes.regime_atendimento || attributes.modalidade).toLowerCase();
-    const modMap: Record<string, string> = {
-      presencial: "Presencial no Estabelecimento",
-      domicilio: "Atendimento no Local do Cliente",
-      remoto: "Online / Remoto",
-      both: "Presencial ou Remoto",
-    };
-    displayItems.push({
-      key: "modality",
-      label: "Atendimento",
-      value: modMap[rawMod] || String(attributes.service_modality || attributes.regime_atendimento),
-      icon: Wrench,
-    });
-  }
-  if (attributes.service_warranty || attributes.garantia_servico || attributes.warranty || attributes.garantia) {
-    displayItems.push({
-      key: "warranty",
-      label: "Garantia",
-      value: String(attributes.service_warranty || attributes.garantia_servico || attributes.warranty || attributes.garantia),
-      icon: ShieldCheck,
-    });
-  }
-
-  // 5. Gastronomia
-  if (attributes.servings || attributes.rendimento || attributes.serve_pessoas) {
-    const s = attributes.servings || attributes.rendimento || attributes.serve_pessoas;
-    displayItems.push({
-      key: "servings",
-      label: "Rendimento",
-      value: `Serve ${s} pessoa(s)`,
-      icon: Users,
-    });
-  }
-  if (attributes.prep_time || attributes.tempo_preparo) {
-    displayItems.push({
-      key: "prep_time",
-      label: "Preparo",
-      value: String(attributes.prep_time || attributes.tempo_preparo),
-      icon: Clock,
-    });
-  }
-
-  // 6. Produtos Físicos, Dimensões e Especificações do Fabricante
-  if (attributes.weight_kg || attributes.peso_kg || attributes.peso) {
-    displayItems.push({
-      key: "weight",
-      label: "Peso",
-      value: `${attributes.weight_kg || attributes.peso_kg || attributes.peso} kg`,
-      icon: Scale,
-    });
-  }
-  if (attributes.dimensions || attributes.dimensoes || (attributes.width_cm && attributes.height_cm)) {
-    const dims = attributes.dimensions || attributes.dimensoes || `${attributes.height_cm} x ${attributes.width_cm} x ${attributes.length_cm || attributes.depth_cm || 0} cm`;
-    displayItems.push({
-      key: "dimensions",
-      label: "Dimensões",
-      value: String(dims),
-      icon: Package,
-    });
-  }
-  if (attributes.material || attributes.composicao) {
-    displayItems.push({
-      key: "material",
-      label: "Material",
-      value: String(attributes.material || attributes.composicao),
-      icon: Layers,
-    });
-  }
-  if (attributes.voltage || attributes.voltagem || attributes.tensao) {
-    displayItems.push({
-      key: "voltage",
-      label: "Voltagem",
-      value: String(attributes.voltage || attributes.voltagem || attributes.tensao),
-      icon: Zap,
-    });
-  }
-  if (attributes.power || attributes.potencia) {
-    displayItems.push({
-      key: "power",
-      label: "Potência",
-      value: String(attributes.power || attributes.potencia),
-      icon: Zap,
-    });
-  }
-
-  if (displayItems.length === 0) return null;
-
-  return (
-    <div className={cn("space-y-3", className)}>
-      <div className="flex items-center justify-between">
-        <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-          {title}
-        </h2>
-        <span className="text-[10px] text-muted-foreground font-mono">
-          {displayItems.length} item(ns)
-        </span>
-      </div>
-
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5">
-        {displayItems.map((item) => {
-          const IconComponent = item.icon || Info;
-          return (
-            <div
-              key={item.key}
-              className={cn(
-                "p-3 rounded-lg border border-border/60 bg-card hover:border-primary/40 transition-colors flex flex-col justify-between gap-1 shadow-2xs",
-                item.highlight && "ring-1 ring-primary/20 bg-primary/5"
-              )}
-            >
-              <div className="flex items-center gap-1.5 text-muted-foreground">
-                <IconComponent className="size-3.5 text-primary shrink-0" />
-                <span className="text-[11px] font-medium truncate">{item.label}</span>
-              </div>
-              <p className="text-xs font-semibold text-foreground font-mono truncate pt-0.5">
-                {item.value}
-              </p>
+      {/* ── 2. GRID TÉCNICO ESTRUTURADO: DETALHES SECUNDÁRIOS ── */}
+      {detailedSpecs.length > 0 && (
+        <div className="space-y-3 pt-1">
+          {topHighlights.length > 0 && (
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                Ficha Técnica Detalhada
+              </h3>
+              <span className="text-xs text-muted-foreground font-mono">
+                {detailedSpecs.length} item(ns)
+              </span>
             </div>
-          );
-        })}
-      </div>
+          )}
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3">
+            {detailedSpecs.map((item, idx) => {
+              const IconComp = item.icon || resolveSpecIcon(item.label);
+              return (
+                <div
+                  key={`spec-${idx}`}
+                  className="p-3.5 sm:p-4 rounded-lg bg-card border border-border/50 hover:border-border transition-colors flex items-center justify-between gap-3 shadow-2xs"
+                >
+                  <div className="flex items-center gap-2 text-muted-foreground min-w-0">
+                    <IconComp className="size-4 text-primary/80 shrink-0" />
+                    <span className="text-xs font-semibold text-muted-foreground truncate">
+                      {item.label}
+                    </span>
+                  </div>
+                  <span className="text-xs sm:text-sm font-bold text-foreground font-mono truncate shrink-0 text-right">
+                    {item.value}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* ── 3. SQUIRCLE PILLS: OPCIONAIS, COMODIDADES & BENEFÍCIOS ── */}
+      {pillItems.length > 0 && (
+        <div className="space-y-3 pt-1">
+          {pillItems.map((pItem, pIdx) => {
+            const pills = pItem.value.split(",").map((s) => s.trim()).filter(Boolean);
+            return (
+              <div
+                key={`pills-${pIdx}`}
+                className="rounded-lg border border-border/60 bg-card p-4 sm:p-5 space-y-3 shadow-2xs"
+              >
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="size-4 text-primary shrink-0" />
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-foreground">
+                    {pItem.label}
+                  </h4>
+                  <span className="text-xs text-muted-foreground font-mono ml-auto">
+                    {pills.length} item(ns)
+                  </span>
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  {pills.map((pill, tagIdx) => (
+                    <span
+                      key={`pill-tag-${tagIdx}`}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-muted/60 text-foreground border border-border/50"
+                    >
+                      <Check className="size-3 text-primary shrink-0" />
+                      <span>{pill}</span>
+                    </span>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

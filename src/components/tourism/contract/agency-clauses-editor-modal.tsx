@@ -216,7 +216,7 @@ export function AgencyClausesEditorModal({
 
  return (
  <Sheet open={open} onOpenChange={onOpenChange}>
- <SheetContent side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] lg:max-w-3xl flex flex-col p-0 gap-0 overflow-hidden bg-card border-l border-border">
+ <SheetContent side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl flex flex-col p-0 gap-0 overflow-hidden overscroll-contain bg-card border-l border-border">
  <SheetHeader className="p-6 pb-4 border-b border-border/60 bg-card">
  <div className="flex items-center justify-between gap-3">
  <div className="flex items-center gap-2">

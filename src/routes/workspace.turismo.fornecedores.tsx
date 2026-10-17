@@ -149,7 +149,7 @@ function WorkspaceSuppliersPage() {
  <div className="space-y-1">
  <h3 className="text-sm font-bold text-foreground leading-tight">{s.name}</h3>
  {s.legal_name && (
- <p className="text-xs text-muted-foreground truncate max-w-[220px]">{s.legal_name}</p>
+ <p className="text-xs text-muted-foreground truncate max-w-56">{s.legal_name}</p>
  )}
  </div>
  <Badge variant="outline" className="text-xs uppercase font-mono shrink-0">

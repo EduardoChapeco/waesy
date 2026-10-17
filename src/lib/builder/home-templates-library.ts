@@ -913,8 +913,11 @@ export const HOME_TEMPLATES_LIBRARY: Record<string, HomeTemplatePreset> = {
  return [
  { id: s1, node_type: "section", block_type: "section", parent_id: null, sort_order: 0 },
  { id: c1, node_type: "container", block_type: "container", parent_id: s1, sort_order: 0 },
- { id: uid(), node_type: "composition", block_type: "hero_carousel", parent_id: c1, sort_order: 0, content: { title: "Descubra o Mundo dos Seus Sonhos" } },
- { id: uid(), node_type: "composition", block_type: "bento_grid", parent_id: c1, sort_order: 1, content: { title: "Destinos em Alta" } },
+ { id: uid(), node_type: "composition", block_type: "travel_package_hero", parent_id: c1, sort_order: 0, content: { title: "Descubra o Mundo dos Seus Sonhos" } },
+ { id: uid(), node_type: "composition", block_type: "travel_hotel_slider", parent_id: c1, sort_order: 1, content: { title: "Hospedagens e Resorts Selecionados" } },
+ { id: uid(), node_type: "composition", block_type: "travel_itinerary_timeline", parent_id: c1, sort_order: 2, content: { title: "Roteiro Dia a Dia Completo" } },
+ { id: uid(), node_type: "composition", block_type: "customer_travel_portal", parent_id: c1, sort_order: 3, content: { title: "Área do Viajante" } },
+ { id: uid(), node_type: "composition", block_type: "bento_grid", parent_id: c1, sort_order: 4, content: { title: "Destinos em Alta" } },
  ];
  },
  },

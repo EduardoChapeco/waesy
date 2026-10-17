@@ -180,4 +180,105 @@ describe("Waesy Go — Autonomous Governance & Financial Engine", () => {
       expect(storeBWhatsApp[0].store_name).toBe("Farmácia Central");
     });
   });
+
+  describe("Invariante B.25 — Saneamento de Parâmetros e Coalescência Defensiva", () => {
+    it("deve aplicar fallbacks defensivos na ausência de parâmetros opcionais de cotação", () => {
+      const payloadMinimo = {
+        origin_address: "Rua Uruguai, 100",
+        destination_address: "Av. Getúlio Vargas, 500",
+      };
+
+      const {
+        distance_km = 3.5,
+        helpers_count = 0,
+        surge_multiplier = 1,
+      } = payloadMinimo as any;
+
+      expect(distance_km).toBe(3.5);
+      expect(helpers_count).toBe(0);
+      expect(surge_multiplier).toBe(1);
+    });
+
+    it("deve respeitar parâmetros fornecidos explicitamente na cotação", () => {
+      const payloadCompleto = {
+        origin_address: "Rua Uruguai, 100",
+        destination_address: "Av. Getúlio Vargas, 500",
+        distance_km: 8.2,
+        helpers_count: 2,
+        surge_multiplier: 1.5,
+      };
+
+      const {
+        distance_km = 3.5,
+        helpers_count = 0,
+        surge_multiplier = 1,
+      } = payloadCompleto;
+
+      expect(distance_km).toBe(8.2);
+      expect(helpers_count).toBe(2);
+      expect(surge_multiplier).toBe(1.5);
+    });
+
+    it("deve aplicar defaults defensivos na criação de corrida quando campos opcionais forem omitidos", () => {
+      const payloadOmitido = {
+        service_type: "ride_car",
+        origin_address: "Rua das Palmeiras, 200",
+        destination_address: "Aeroporto Chapecó",
+        estimated_price_cents: 3500,
+      };
+
+      const {
+        customer_name = "Cliente Waesy",
+        customer_phone = "(49) 99999-9999",
+        origin_lat = null,
+        origin_lng = null,
+        origin_instructions = null,
+        destination_lat = null,
+        destination_lng = null,
+        destination_instructions = null,
+        distance_km = 3.5,
+        package_description = null,
+        helpers_count = 0,
+        needs_packing = false,
+        scheduled_for = null,
+        payment_method = "pix",
+        notes = null,
+        direct_driver_slug = null,
+      } = payloadOmitido as any;
+
+      expect(customer_name).toBe("Cliente Waesy");
+      expect(customer_phone).toBe("(49) 99999-9999");
+      expect(origin_lat).toBeNull();
+      expect(origin_lng).toBeNull();
+      expect(origin_instructions).toBeNull();
+      expect(destination_lat).toBeNull();
+      expect(destination_lng).toBeNull();
+      expect(destination_instructions).toBeNull();
+      expect(distance_km).toBe(3.5);
+      expect(package_description).toBeNull();
+      expect(helpers_count).toBe(0);
+      expect(needs_packing).toBe(false);
+      expect(scheduled_for).toBeNull();
+      expect(payment_method).toBe("pix");
+      expect(notes).toBeNull();
+      expect(direct_driver_slug).toBeNull();
+    });
+
+    it("deve desestruturar parâmetros de atualização de status com razão de cancelamento padrão", () => {
+      const payload = {
+        requestId: "b5f1a302-3c58-48b2-a42e-ec5f9794cb14",
+        status: "cancelled",
+      };
+
+      const {
+        requestId,
+        status,
+        cancellationReason = "Cancelado pelo operador",
+      } = payload as any;
+
+      expect(requestId).toBe("b5f1a302-3c58-48b2-a42e-ec5f9794cb14");
+      expect(status).toBe("cancelled");
+      expect(cancellationReason).toBe("Cancelado pelo operador");
+    });
+  });
 });

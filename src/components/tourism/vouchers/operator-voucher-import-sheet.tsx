@@ -225,7 +225,7 @@ export function OperatorVoucherImportSheet({
       <SheetContent
         side="right"
         size="wide"
-        className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] p-0 flex flex-col justify-between bg-background text-foreground overflow-hidden border-l border-border"
+        className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl p-0 flex flex-col justify-between bg-background text-foreground overflow-hidden overscroll-contain border-l border-border"
       >
         {/* ── HEADER ── */}
         <div className="p-5 border-b border-border bg-muted/20">
@@ -305,7 +305,7 @@ export function OperatorVoucherImportSheet({
                       <p className="text-xs font-bold text-foreground">
                         Clique, arraste ou cole com Ctrl+V os comprovantes
                       </p>
-                      <p className="text-[11px] text-muted-foreground mt-1">
+                      <p className="text-xs text-muted-foreground mt-1">
                         PDFs de reservas, bilhetes aéreos, vouchers, boletos e prints de tela (suporta colar direto da área de transferência)
                       </p>
                     </div>
@@ -342,7 +342,7 @@ export function OperatorVoucherImportSheet({
                             <div className="flex items-center gap-2 truncate min-w-0 pr-2">
                               <FileText className="size-4 text-primary shrink-0" />
                               <span className="truncate font-medium text-foreground">{doc.name}</span>
-                              <span className="text-[10px] text-muted-foreground shrink-0">
+                              <span className="text-xs text-muted-foreground shrink-0">
                                 ({Math.round(doc.size / 1024)} KB)
                               </span>
                             </div>
@@ -405,7 +405,7 @@ export function OperatorVoucherImportSheet({
                   }`}
                 >
                   Viajantes e Validades
-                  <Badge variant="secondary" className="text-[10px] h-4 px-1 ml-1">
+                  <Badge variant="secondary" className="text-xs h-4 px-1 ml-1">
                     {parsedData.passengers?.length || 0}
                   </Badge>
                 </button>
@@ -419,7 +419,7 @@ export function OperatorVoucherImportSheet({
                   }`}
                 >
                   Voos e Bagagens
-                  <Badge variant="secondary" className="text-[10px] h-4 px-1 ml-1">
+                  <Badge variant="secondary" className="text-xs h-4 px-1 ml-1">
                     {parsedData.flights?.length || 0}
                   </Badge>
                 </button>
@@ -433,7 +433,7 @@ export function OperatorVoucherImportSheet({
                   }`}
                 >
                   Hospedagem
-                  <Badge variant="secondary" className="text-[10px] h-4 px-1 ml-1">
+                  <Badge variant="secondary" className="text-xs h-4 px-1 ml-1">
                     {parsedData.hotels?.length || 0}
                   </Badge>
                 </button>
@@ -466,7 +466,7 @@ export function OperatorVoucherImportSheet({
                 <div className="space-y-4">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                      <label className="text-[11px] font-bold text-muted-foreground block mb-1">
+                      <label className="text-xs font-bold text-muted-foreground block mb-1">
                         Operadora Emissora:
                       </label>
                       <Input
@@ -477,7 +477,7 @@ export function OperatorVoucherImportSheet({
                       />
                     </div>
                     <div>
-                      <label className="text-[11px] font-bold text-muted-foreground block mb-1">
+                      <label className="text-xs font-bold text-muted-foreground block mb-1">
                         Localizador Geral / Reserva:
                       </label>
                       <Input
@@ -491,7 +491,7 @@ export function OperatorVoucherImportSheet({
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                      <label className="text-[11px] font-bold text-muted-foreground block mb-1">
+                      <label className="text-xs font-bold text-muted-foreground block mb-1">
                         Cidade de Destino:
                       </label>
                       <Input
@@ -502,7 +502,7 @@ export function OperatorVoucherImportSheet({
                       />
                     </div>
                     <div>
-                      <label className="text-[11px] font-bold text-muted-foreground block mb-1">
+                      <label className="text-xs font-bold text-muted-foreground block mb-1">
                         Título da Viagem:
                       </label>
                       <Input
@@ -516,7 +516,7 @@ export function OperatorVoucherImportSheet({
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                      <label className="text-[11px] font-bold text-muted-foreground block mb-1">
+                      <label className="text-xs font-bold text-muted-foreground block mb-1">
                         Data de Partida / Início:
                       </label>
                       <Input
@@ -527,7 +527,7 @@ export function OperatorVoucherImportSheet({
                       />
                     </div>
                     <div>
-                      <label className="text-[11px] font-bold text-muted-foreground block mb-1">
+                      <label className="text-xs font-bold text-muted-foreground block mb-1">
                         Data de Retorno / Fim:
                       </label>
                       <Input
@@ -549,7 +549,7 @@ export function OperatorVoucherImportSheet({
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                       <div>
-                        <label className="text-[10px] font-bold text-muted-foreground block mb-1">
+                        <label className="text-xs font-bold text-muted-foreground block mb-1">
                           Telefone Comercial:
                         </label>
                         <Input
@@ -568,7 +568,7 @@ export function OperatorVoucherImportSheet({
                         />
                       </div>
                       <div>
-                        <label className="text-[10px] font-bold text-muted-foreground block mb-1">
+                        <label className="text-xs font-bold text-muted-foreground block mb-1">
                           Plantão 24h Operadora:
                         </label>
                         <Input
@@ -587,7 +587,7 @@ export function OperatorVoucherImportSheet({
                         />
                       </div>
                       <div>
-                        <label className="text-[10px] font-bold text-muted-foreground block mb-1">
+                        <label className="text-xs font-bold text-muted-foreground block mb-1">
                           Mesa de Reserva / Ramal:
                         </label>
                         <Input
@@ -665,7 +665,7 @@ export function OperatorVoucherImportSheet({
                                 {pax.name || `Passageiro ${index + 1}`}
                               </span>
                               {pax.is_lead && (
-                                <Badge variant="secondary" className="text-[10px]">
+                                <Badge variant="secondary" className="text-xs">
                                   Titular
                                 </Badge>
                               )}
@@ -674,17 +674,17 @@ export function OperatorVoucherImportSheet({
                             <div className="flex items-center gap-2">
                               {/* Badge de Alerta de Validade */}
                               {validity.status === "warning" && (
-                                <Badge className="bg-amber-500/10 text-amber-700 border-amber-500/30 text-[10px] gap-1">
+                                <Badge className="bg-amber-500/10 text-amber-700 border-amber-500/30 text-xs gap-1">
                                   <AlertTriangle className="size-3" /> {validity.label}
                                 </Badge>
                               )}
                               {validity.status === "expired" && (
-                                <Badge className="bg-destructive/10 text-destructive border-destructive/30 text-[10px] gap-1">
+                                <Badge className="bg-destructive/10 text-destructive border-destructive/30 text-xs gap-1">
                                   <AlertCircle className="size-3" /> {validity.label}
                                 </Badge>
                               )}
                               {validity.status === "ok" && (
-                                <Badge className="bg-emerald-500/10 text-emerald-700 border-emerald-500/30 text-[10px] gap-1">
+                                <Badge className="bg-emerald-500/10 text-emerald-700 border-emerald-500/30 text-xs gap-1">
                                   <Check className="size-3" /> {validity.label}
                                 </Badge>
                               )}
@@ -706,7 +706,7 @@ export function OperatorVoucherImportSheet({
 
                           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                             <div>
-                              <label className="text-[10px] font-bold text-muted-foreground block mb-1">
+                              <label className="text-xs font-bold text-muted-foreground block mb-1">
                                 Nome Completo:
                               </label>
                               <Input
@@ -720,7 +720,7 @@ export function OperatorVoucherImportSheet({
                               />
                             </div>
                             <div>
-                              <label className="text-[10px] font-bold text-muted-foreground block mb-1">
+                              <label className="text-xs font-bold text-muted-foreground block mb-1">
                                 Tipo de Documento:
                               </label>
                               <select
@@ -739,7 +739,7 @@ export function OperatorVoucherImportSheet({
                               </select>
                             </div>
                             <div>
-                              <label className="text-[10px] font-bold text-muted-foreground block mb-1">
+                              <label className="text-xs font-bold text-muted-foreground block mb-1">
                                 Número do Documento:
                               </label>
                               <Input
@@ -756,7 +756,7 @@ export function OperatorVoucherImportSheet({
 
                           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                             <div>
-                              <label className="text-[10px] font-bold text-muted-foreground block mb-1">
+                              <label className="text-xs font-bold text-muted-foreground block mb-1">
                                 Validade do Documento:
                               </label>
                               <Input
@@ -771,7 +771,7 @@ export function OperatorVoucherImportSheet({
                               />
                             </div>
                             <div>
-                              <label className="text-[10px] font-bold text-muted-foreground block mb-1">
+                              <label className="text-xs font-bold text-muted-foreground block mb-1">
                                 Data de Nascimento:
                               </label>
                               <Input
@@ -786,7 +786,7 @@ export function OperatorVoucherImportSheet({
                               />
                             </div>
                             <div>
-                              <label className="text-[10px] font-bold text-muted-foreground block mb-1">
+                              <label className="text-xs font-bold text-muted-foreground block mb-1">
                                 Assento Marcado:
                               </label>
                               <Input
@@ -870,7 +870,7 @@ export function OperatorVoucherImportSheet({
 
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                           <div>
-                            <label className="text-[10px] font-bold text-muted-foreground block mb-1">
+                            <label className="text-xs font-bold text-muted-foreground block mb-1">
                               Cia Aérea:
                             </label>
                             <Input
@@ -884,7 +884,7 @@ export function OperatorVoucherImportSheet({
                             />
                           </div>
                           <div>
-                            <label className="text-[10px] font-bold text-muted-foreground block mb-1">
+                            <label className="text-xs font-bold text-muted-foreground block mb-1">
                               Nº do Voo:
                             </label>
                             <Input
@@ -898,7 +898,7 @@ export function OperatorVoucherImportSheet({
                             />
                           </div>
                           <div>
-                            <label className="text-[10px] font-bold text-muted-foreground block mb-1">
+                            <label className="text-xs font-bold text-muted-foreground block mb-1">
                               Origem (IATA):
                             </label>
                             <Input
@@ -912,7 +912,7 @@ export function OperatorVoucherImportSheet({
                             />
                           </div>
                           <div>
-                            <label className="text-[10px] font-bold text-muted-foreground block mb-1">
+                            <label className="text-xs font-bold text-muted-foreground block mb-1">
                               Destino (IATA):
                             </label>
                             <Input
@@ -929,7 +929,7 @@ export function OperatorVoucherImportSheet({
 
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                           <div>
-                            <label className="text-[10px] font-bold text-muted-foreground block mb-1">
+                            <label className="text-xs font-bold text-muted-foreground block mb-1">
                               Data do Voo:
                             </label>
                             <Input
@@ -944,7 +944,7 @@ export function OperatorVoucherImportSheet({
                             />
                           </div>
                           <div>
-                            <label className="text-[10px] font-bold text-muted-foreground block mb-1">
+                            <label className="text-xs font-bold text-muted-foreground block mb-1">
                               Horário Partida:
                             </label>
                             <Input
@@ -958,7 +958,7 @@ export function OperatorVoucherImportSheet({
                             />
                           </div>
                           <div>
-                            <label className="text-[10px] font-bold text-muted-foreground block mb-1">
+                            <label className="text-xs font-bold text-muted-foreground block mb-1">
                               Localizador PNR:
                             </label>
                             <Input
@@ -972,7 +972,7 @@ export function OperatorVoucherImportSheet({
                             />
                           </div>
                           <div>
-                            <label className="text-[10px] font-bold text-muted-foreground block mb-1">
+                            <label className="text-xs font-bold text-muted-foreground block mb-1">
                               Franquia de Bagagem:
                             </label>
                             <Input
@@ -1051,7 +1051,7 @@ export function OperatorVoucherImportSheet({
 
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                           <div>
-                            <label className="text-[10px] font-bold text-muted-foreground block mb-1">
+                            <label className="text-xs font-bold text-muted-foreground block mb-1">
                               Nome do Hotel:
                             </label>
                             <Input
@@ -1065,7 +1065,7 @@ export function OperatorVoucherImportSheet({
                             />
                           </div>
                           <div>
-                            <label className="text-[10px] font-bold text-muted-foreground block mb-1">
+                            <label className="text-xs font-bold text-muted-foreground block mb-1">
                               Cidade / Região:
                             </label>
                             <Input
@@ -1079,7 +1079,7 @@ export function OperatorVoucherImportSheet({
                             />
                           </div>
                           <div>
-                            <label className="text-[10px] font-bold text-muted-foreground block mb-1">
+                            <label className="text-xs font-bold text-muted-foreground block mb-1">
                               Código de Reserva Hotel:
                             </label>
                             <Input
@@ -1096,7 +1096,7 @@ export function OperatorVoucherImportSheet({
 
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                           <div>
-                            <label className="text-[10px] font-bold text-muted-foreground block mb-1">
+                            <label className="text-xs font-bold text-muted-foreground block mb-1">
                               Check-in:
                             </label>
                             <Input
@@ -1111,7 +1111,7 @@ export function OperatorVoucherImportSheet({
                             />
                           </div>
                           <div>
-                            <label className="text-[10px] font-bold text-muted-foreground block mb-1">
+                            <label className="text-xs font-bold text-muted-foreground block mb-1">
                               Check-out:
                             </label>
                             <Input
@@ -1126,7 +1126,7 @@ export function OperatorVoucherImportSheet({
                             />
                           </div>
                           <div>
-                            <label className="text-[10px] font-bold text-muted-foreground block mb-1">
+                            <label className="text-xs font-bold text-muted-foreground block mb-1">
                               Tipo de Quarto:
                             </label>
                             <Input
@@ -1140,7 +1140,7 @@ export function OperatorVoucherImportSheet({
                             />
                           </div>
                           <div>
-                            <label className="text-[10px] font-bold text-muted-foreground block mb-1">
+                            <label className="text-xs font-bold text-muted-foreground block mb-1">
                               Regime de Refeição:
                             </label>
                             <Input
@@ -1171,7 +1171,7 @@ export function OperatorVoucherImportSheet({
                       <div key={index} className="p-3 rounded-lg bg-card border border-border space-y-2">
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                           <div>
-                            <label className="text-[10px] font-bold text-muted-foreground block mb-1">
+                            <label className="text-xs font-bold text-muted-foreground block mb-1">
                               Receptivo / Fornecedor:
                             </label>
                             <Input
@@ -1185,7 +1185,7 @@ export function OperatorVoucherImportSheet({
                             />
                           </div>
                           <div>
-                            <label className="text-[10px] font-bold text-muted-foreground block mb-1">
+                            <label className="text-xs font-bold text-muted-foreground block mb-1">
                               Trecho:
                             </label>
                             <Input
@@ -1201,7 +1201,7 @@ export function OperatorVoucherImportSheet({
                             />
                           </div>
                           <div>
-                            <label className="text-[10px] font-bold text-muted-foreground block mb-1">
+                            <label className="text-xs font-bold text-muted-foreground block mb-1">
                               Plantão Receptivo 24h:
                             </label>
                             <Input
@@ -1227,7 +1227,7 @@ export function OperatorVoucherImportSheet({
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                       <div>
-                        <label className="text-[10px] font-bold text-muted-foreground block mb-1">
+                        <label className="text-xs font-bold text-muted-foreground block mb-1">
                           Seguradora:
                         </label>
                         <Input
@@ -1242,7 +1242,7 @@ export function OperatorVoucherImportSheet({
                         />
                       </div>
                       <div>
-                        <label className="text-[10px] font-bold text-muted-foreground block mb-1">
+                        <label className="text-xs font-bold text-muted-foreground block mb-1">
                           Nº da Apólice:
                         </label>
                         <Input
@@ -1257,7 +1257,7 @@ export function OperatorVoucherImportSheet({
                         />
                       </div>
                       <div>
-                        <label className="text-[10px] font-bold text-muted-foreground block mb-1">
+                        <label className="text-xs font-bold text-muted-foreground block mb-1">
                           Central Médica 24h:
                         </label>
                         <Input
@@ -1288,7 +1288,7 @@ export function OperatorVoucherImportSheet({
 
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                       <div>
-                        <label className="text-[10px] font-bold text-muted-foreground block mb-1">
+                        <label className="text-xs font-bold text-muted-foreground block mb-1">
                           Valor Total (R$):
                         </label>
                         <Input
@@ -1313,7 +1313,7 @@ export function OperatorVoucherImportSheet({
                         />
                       </div>
                       <div>
-                        <label className="text-[10px] font-bold text-muted-foreground block mb-1">
+                        <label className="text-xs font-bold text-muted-foreground block mb-1">
                           Forma de Pagamento:
                         </label>
                         <Input
@@ -1332,7 +1332,7 @@ export function OperatorVoucherImportSheet({
                         />
                       </div>
                       <div>
-                        <label className="text-[10px] font-bold text-muted-foreground block mb-1">
+                        <label className="text-xs font-bold text-muted-foreground block mb-1">
                           Quantidade de Parcelas:
                         </label>
                         <Input
@@ -1354,7 +1354,7 @@ export function OperatorVoucherImportSheet({
 
                     {/* Recibo / Observação de Quitação */}
                     <div>
-                      <label className="text-[10px] font-bold text-muted-foreground block mb-1">
+                      <label className="text-xs font-bold text-muted-foreground block mb-1">
                         Dados do Recibo / Fatura:
                       </label>
                       <Input
@@ -1383,7 +1383,7 @@ export function OperatorVoucherImportSheet({
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div>
-                        <label className="text-[10px] font-bold text-muted-foreground block mb-1">
+                        <label className="text-xs font-bold text-muted-foreground block mb-1">
                           Prazo Limite para Cancelamento sem Multa:
                         </label>
                         <Input
@@ -1402,7 +1402,7 @@ export function OperatorVoucherImportSheet({
                         />
                       </div>
                       <div>
-                        <label className="text-[10px] font-bold text-muted-foreground block mb-1">
+                        <label className="text-xs font-bold text-muted-foreground block mb-1">
                           Regras de Bagagem Inclusa:
                         </label>
                         <Input
@@ -1423,7 +1423,7 @@ export function OperatorVoucherImportSheet({
                     </div>
 
                     <div>
-                      <label className="text-[10px] font-bold text-muted-foreground block mb-1">
+                      <label className="text-xs font-bold text-muted-foreground block mb-1">
                         Política de Multas / No-Show:
                       </label>
                       <Textarea

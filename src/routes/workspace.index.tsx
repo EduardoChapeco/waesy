@@ -14,6 +14,7 @@ import { formatMoney } from "@/lib/money";
 import { SeasonalMarketingCalendarWidget } from "@/components/admin/marketing/seasonal-marketing-calendar-widget";
 import { PolymorphicDashboardRenderer } from "@/components/workspace/dashboard/PolymorphicDashboardRenderer";
 import { getWorkspaceDashboardKpisFn } from "@/services/workspace-dashboard.functions";
+import { StatTile, SegmentedControl } from "@/design-system/components";
 
 export const Route = createFileRoute("/workspace/")({
   head: () => ({ meta: [{ title: "Operação | Workspace Waesy" }] }),
@@ -79,6 +80,7 @@ export default function WorkspaceDashboardPage() {
   const semantics = getNicheSemantics(activeStore);
 
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [metricsPeriod, setMetricsPeriod] = useState<string>("today");
   const [isOpenNow, setIsOpenNow] = useState(() => {
     const pauseUntil = activeStore?.settings?.emergency_pause_until;
     if (!pauseUntil) return true;
@@ -266,7 +268,7 @@ export default function WorkspaceDashboardPage() {
             type="button"
             onClick={handleToggleStoreStatus}
             disabled={isTogglingStatus}
-            className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold border transition-colors cursor-pointer min-h-11 sm:min-h-9 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+            className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold border transition-colors cursor-pointer h-11 min-h-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
               isOpenNow
                 ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/15"
                 : "bg-rose-500/10 border-rose-500/20 text-rose-600 dark:text-rose-400 hover:bg-rose-500/15"
@@ -287,20 +289,20 @@ export default function WorkspaceDashboardPage() {
             variant="outline"
             size="sm"
             onClick={() => setIsShareModalOpen(true)}
-            className="rounded-lg text-xs font-semibold gap-2 cursor-pointer border-border/40 hover:bg-muted/50 min-h-11 sm:min-h-9"
+            className="rounded-lg text-xs font-semibold gap-2 cursor-pointer border-border/40 hover:bg-muted/50 h-11 min-h-11"
           >
             <QrCode className="size-3.5 text-primary" />
             <span>Divulgar</span>
           </Button>
 
-          <Button asChild size="sm" variant="outline" className="rounded-lg text-xs font-semibold border-border/40 hover:bg-muted/50 min-h-11 sm:min-h-9">
+          <Button asChild size="sm" variant="outline" className="rounded-lg text-xs font-semibold border-border/40 hover:bg-muted/50 h-11 min-h-11">
             <Link to="/workspace/lojas">
               Trocar Loja
             </Link>
           </Button>
 
           {activeStore?.slug && (
-            <Button asChild size="sm" variant="outline" className="rounded-lg text-xs font-semibold gap-2 border-border/40 hover:bg-muted/50 min-h-11 sm:min-h-9">
+            <Button asChild size="sm" variant="outline" className="rounded-lg text-xs font-semibold gap-2 border-border/40 hover:bg-muted/50 h-11 min-h-11">
               <Link to="/diretorio/$id" params={{ id: activeStore.slug }}>
                 <Store className="size-3.5 text-primary" />
                 <span>Vitrine Pública</span>
@@ -308,7 +310,7 @@ export default function WorkspaceDashboardPage() {
             </Button>
           )}
 
-          <Button asChild size="sm" variant="ghost" className="rounded-lg text-xs font-semibold gap-1 text-muted-foreground hover:text-foreground hover:bg-muted/50 min-h-11 sm:min-h-9">
+          <Button asChild size="sm" variant="ghost" className="rounded-lg text-xs font-semibold gap-1 text-muted-foreground hover:text-foreground hover:bg-muted/50 h-11 min-h-11">
             <Link to="/workspace/marketing/vitrine">
               <Layers className="size-3.5" />
               <span>Vitrine</span>
@@ -317,13 +319,13 @@ export default function WorkspaceDashboardPage() {
 
           {/* Ação Primária Única da Tela */}
           {semantics.primaryQuickAction ? (
-            <Button asChild size="sm" className="rounded-lg text-xs font-semibold bg-primary text-primary-foreground shadow-none min-h-11 sm:min-h-9 px-4">
+            <Button asChild size="sm" className="rounded-lg text-xs font-semibold bg-primary text-primary-foreground shadow-none h-11 min-h-11 px-4">
               <Link to={semantics.primaryQuickAction.path as any}>
                 {semantics.primaryQuickAction.label}
               </Link>
             </Button>
           ) : (
-            <Button asChild size="sm" className="rounded-lg text-xs font-semibold bg-primary text-primary-foreground shadow-none min-h-11 sm:min-h-9 px-4">
+            <Button asChild size="sm" className="rounded-lg text-xs font-semibold bg-primary text-primary-foreground shadow-none h-11 min-h-11 px-4">
               <Link to="/workspace/pdv">
                 PDV
               </Link>
@@ -335,14 +337,32 @@ export default function WorkspaceDashboardPage() {
       {/* ── 2. Bento Grid Operacional de Alta Performance (12 Colunas) ── */}
       <div className="grid grid-cols-12 gap-4 sm:gap-4 lg:gap-5 items-stretch">
         {/* Herói de Faturamento do Mês (7/8 cols no Desktop, 12 cols no Mobile) */}
-        <div className="col-span-12 lg:col-span-7 xl:col-span-8 p-5 sm:p-6 rounded-lg bg-card border border-border/40 flex flex-col justify-between gap-5">
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/75">
-                Faturamento do Mês
+        <div className="col-span-12 lg:col-span-7 xl:col-span-8 p-5 sm:p-6 rounded-xl bg-card border border-border/70 flex flex-col justify-between gap-5">
+          <div className="space-y-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <span className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Faturamento da Operação
               </span>
+              <SegmentedControl
+                options={[
+                  { id: "today", label: "Hoje" },
+                  { id: "7d", label: "7 Dias" },
+                  { id: "30d", label: "30 Dias" },
+                  { id: "month", label: "Mês Atual" },
+                ]}
+                value={metricsPeriod}
+                onChange={setMetricsPeriod}
+                size="sm"
+              />
+            </div>
+            <div className="space-y-1">
+              <div className="text-3xl sm:text-4xl lg:text-5xl font-bold font-mono tabular-nums tracking-tight text-foreground">
+                {metricsPeriod === "today"
+                  ? formatMoney(dashboardMetrics?.salesTodayCents || 0)
+                  : formatMoney(dashboardMetrics?.salesMonthCents || 0)}
+              </div>
               {dashboardMetrics?.growthPercentage != null && (
-                <span className={`inline-flex items-center gap-1 text-xs font-semibold ${
+                <div className={`inline-flex items-center gap-1.5 text-xs font-semibold font-mono tabular-nums ${
                   dashboardMetrics.growthPercentage >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"
                 }`}>
                   {dashboardMetrics.growthPercentage >= 0 ? (
@@ -350,107 +370,83 @@ export default function WorkspaceDashboardPage() {
                   ) : (
                     <TrendingDown className="size-3.5" />
                   )}
-                  {dashboardMetrics.growthPercentage >= 0 ? `+${dashboardMetrics.growthPercentage}%` : `${dashboardMetrics.growthPercentage}%`} vs mês anterior
-                </span>
+                  <span>
+                    {dashboardMetrics.growthPercentage >= 0 ? `+${dashboardMetrics.growthPercentage}%` : `${dashboardMetrics.growthPercentage}%`} vs período anterior
+                  </span>
+                </div>
               )}
-            </div>
-            <div className="text-3xl sm:text-4xl lg:text-5xl font-bold font-mono tracking-tight text-foreground">
-              {formatMoney(dashboardMetrics?.salesMonthCents || 0)}
             </div>
           </div>
 
-          <div className="flex items-center gap-2 pt-3 border-t border-border/30">
+          <div className="flex items-center gap-2 pt-3 border-t border-border/40">
             <Link
               to="/workspace/financeiro/caixa"
-              className="inline-flex items-center justify-center min-h-11 sm:min-h-9 px-4 rounded-lg bg-primary/10 text-primary hover:bg-primary/15 text-xs font-semibold transition-colors"
+              className="inline-flex items-center justify-center h-11 min-h-11 px-4 rounded-lg bg-primary/10 text-primary hover:bg-primary/15 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               Fluxo de Caixa
             </Link>
             <Link
               to={catalogDetails.path as any}
-              className="inline-flex items-center justify-center min-h-11 sm:min-h-9 px-4 rounded-lg bg-muted/60 hover:bg-muted text-foreground text-xs font-semibold transition-colors"
+              className="inline-flex items-center justify-center h-11 min-h-11 px-4 rounded-lg bg-muted/60 hover:bg-muted text-foreground text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               {semantics.catalogTitle}
             </Link>
           </div>
         </div>
 
-        {/* 4 Métricas Táticas Integradas (5/4 cols no Desktop, 12 cols no Mobile) */}
+        {/* 4 Métricas Táticas Integradas com StatTile Canônico (5/4 cols no Desktop, 12 cols no Mobile) */}
         <div className="col-span-12 lg:col-span-5 xl:col-span-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-3 h-full">
-          {/* Card 1: Pedidos */}
           <Link
             to={getOrdersDestination() as any}
-            className="p-4 rounded-lg bg-card border border-border/40 hover:border-border/80 transition-colors flex flex-col justify-between min-h-24 group"
+            className="group rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
-            <div className="flex items-center justify-between">
-              <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
-                <ShoppingBag className="size-4" />
-              </div>
-              <ArrowUpRight className="size-3.5 text-muted-foreground/60 group-hover:text-foreground transition-colors" />
-            </div>
-            <div className="mt-3">
-              <p className="text-xs font-semibold text-muted-foreground/75 truncate">{semantics.ordersLabel}</p>
-              <p className="text-sm font-bold tracking-tight text-foreground mt-1 font-mono">
-                {dashboardMetrics?.ordersTodayCount || 0} hoje
-              </p>
-            </div>
+            <StatTile
+              label={semantics.ordersLabel}
+              value={`${dashboardMetrics?.ordersTodayCount || 0} hoje`}
+              sublabel={dashboardMetrics?.ordersMonthCount ? `${dashboardMetrics.ordersMonthCount} no mês` : "Operação ativa"}
+              trend="up"
+              className="h-full hover:border-primary/50 transition-colors"
+            />
           </Link>
 
-          {/* Card 2: Clientes */}
           <Link
             to="/workspace/clientes"
-            className="p-4 rounded-lg bg-card border border-border/40 hover:border-border/80 transition-colors flex flex-col justify-between min-h-24 group"
+            className="group rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
-            <div className="flex items-center justify-between">
-              <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
-                <Users className="size-4" />
-              </div>
-              <ArrowUpRight className="size-3.5 text-muted-foreground/60 group-hover:text-foreground transition-colors" />
-            </div>
-            <div className="mt-3">
-              <p className="text-xs font-semibold text-muted-foreground/75 truncate">{semantics.customerLabel}</p>
-              <p className="text-sm font-bold tracking-tight text-foreground mt-1 font-mono">
-                +{dashboardMetrics?.newCustomers30d ?? 0} no mês
-              </p>
-            </div>
+            <StatTile
+              label={semantics.customerLabel}
+              value={`+${dashboardMetrics?.newCustomers30d ?? 0}`}
+              sublabel="Novos no mês"
+              trend="up"
+              className="h-full hover:border-primary/50 transition-colors"
+            />
           </Link>
 
-          {/* Card 3: Vendas Hoje */}
           <Link
             to="/workspace/financeiro/caixa"
-            className="p-4 rounded-lg bg-card border border-border/40 hover:border-border/80 transition-colors flex flex-col justify-between min-h-24 group"
+            className="group rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
-            <div className="flex items-center justify-between">
-              <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
-                <DollarSign className="size-4" />
-              </div>
-              <ArrowUpRight className="size-3.5 text-muted-foreground/60 group-hover:text-foreground transition-colors" />
-            </div>
-            <div className="mt-3">
-              <p className="text-xs font-semibold text-muted-foreground/75 truncate">Vendas Hoje</p>
-              <p className="text-sm font-bold tracking-tight text-foreground mt-1 font-mono truncate">
-                {formatMoney(dashboardMetrics?.salesTodayCents || 0)}
-              </p>
-            </div>
+            <StatTile
+              label="Vendas Hoje"
+              value={formatMoney(dashboardMetrics?.salesTodayCents || 0)}
+              sublabel="Receita diária"
+              trend={dashboardMetrics?.salesTodayCents ? "up" : "neutral"}
+              className="h-full hover:border-primary/50 transition-colors"
+            />
           </Link>
 
-          {/* Card 4: Catálogo / Estoque */}
           <Link
             to={catalogDetails.path as any}
-            className="p-4 rounded-lg bg-card border border-border/40 hover:border-border/80 transition-colors flex flex-col justify-between min-h-24 group"
+            className="group rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
-            <div className="flex items-center justify-between">
-              <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
-                <Package className="size-4" />
-              </div>
-              <ArrowUpRight className="size-3.5 text-muted-foreground/60 group-hover:text-foreground transition-colors" />
-            </div>
-            <div className="mt-3">
-              <p className="text-xs font-semibold text-muted-foreground/75 truncate">{semantics.stockLabel || semantics.catalogTitle}</p>
-              <p className="text-sm font-bold tracking-tight text-foreground mt-1 truncate">
-                {catalogDetails.subtitle}
-              </p>
-            </div>
+            <StatTile
+              label={semantics.stockLabel || semantics.catalogTitle}
+              value={criticalStockCount > 0 ? `${criticalStockCount} alertas` : "Regular"}
+              sublabel={catalogDetails.subtitle}
+              trend={criticalStockCount > 0 ? "down" : "neutral"}
+              trendValue={criticalStockCount > 0 ? "Atenção" : "OK"}
+              className="h-full hover:border-primary/50 transition-colors"
+            />
           </Link>
         </div>
       </div>
@@ -499,9 +495,9 @@ export default function WorkspaceDashboardPage() {
                       </div>
                     </div>
                     <div className="text-right">
-                      <span className="text-xs font-mono text-muted-foreground/75 block">{act.timeDisplay}</span>
+                      <span className="text-xs font-mono tabular-nums text-muted-foreground/75 block">{act.timeDisplay}</span>
                       {act.totalCents != null && (
-                        <span className="text-xs font-bold font-mono text-foreground">{formatMoney(act.totalCents)}</span>
+                        <span className="text-xs font-bold font-mono tabular-nums text-foreground">{formatMoney(act.totalCents)}</span>
                       )}
                     </div>
                   </div>
@@ -529,7 +525,7 @@ export default function WorkspaceDashboardPage() {
                   <Link
                     key={idx}
                     to={link.path as any}
-                    className="flex items-center justify-between p-3 rounded-lg hover:bg-muted/60 text-xs font-medium transition-colors group min-h-11 sm:min-h-9"
+                    className="flex items-center justify-between p-3 rounded-lg hover:bg-muted/60 text-xs font-medium transition-colors group h-11 min-h-11"
                   >
                     <div className="flex items-center gap-3">
                       <Icon className="size-4 text-muted-foreground/80 group-hover:text-foreground transition-colors" />

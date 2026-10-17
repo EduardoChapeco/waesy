@@ -40,10 +40,10 @@ DROP POLICY IF EXISTS "Stores can view their own media" ON public.media_assets;
 CREATE POLICY "Stores can view their own media" ON public.media_assets
   FOR SELECT USING (
     EXISTS (
-      SELECT 1 FROM public.profiles p
-      WHERE p.id = auth.uid()
-        AND p.store_id = media_assets.store_id
-        AND p.role IN ('owner', 'admin', 'manager', 'content')
+      SELECT 1 FROM public.workspace_members wm
+      WHERE wm.profile_id = auth.uid()
+        AND wm.store_id = media_assets.store_id
+        AND wm.role IN ('owner', 'store_owner', 'admin', 'manager', 'proprietario', 'gerente', 'content')
     )
   );
 
@@ -57,10 +57,10 @@ DROP POLICY IF EXISTS "Admin can delete media" ON public.media_assets;
 CREATE POLICY "Admin can delete media" ON public.media_assets
   FOR DELETE USING (
     EXISTS (
-      SELECT 1 FROM public.profiles p
-      WHERE p.id = auth.uid()
-        AND p.store_id = media_assets.store_id
-        AND p.role IN ('owner', 'admin', 'manager', 'content')
+      SELECT 1 FROM public.workspace_members wm
+      WHERE wm.profile_id = auth.uid()
+        AND wm.store_id = media_assets.store_id
+        AND wm.role IN ('owner', 'store_owner', 'admin', 'manager', 'proprietario', 'gerente', 'content')
     )
   );
 

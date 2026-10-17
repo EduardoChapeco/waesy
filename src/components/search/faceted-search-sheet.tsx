@@ -210,7 +210,7 @@ export function FacetedSearchSheet({
           {facets?.niches && facets.niches.length > 0 && (
             <div className="space-y-3">
               <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                <Layers className="size-3 text-primary" /> Nichos de Negócio
+                <Layers className="size-3 text-primary" /> Categorias
               </Label>
               <div className="flex flex-wrap gap-2">
                 {facets.niches.map((niche) => {
@@ -372,7 +372,7 @@ export function FacetedSearchSheet({
           {facets?.niches && facets.niches.length > 0 && (
             <div className="space-y-3 border-t border-border/40 pt-4">
               <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                <Layers className="size-3 text-primary" /> Nichos de Negócio
+                <Layers className="size-3 text-primary" /> Categorias
               </Label>
               <div className="flex flex-wrap gap-2">
                 {facets.niches.map((niche) => {

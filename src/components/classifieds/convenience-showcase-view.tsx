@@ -562,7 +562,7 @@ export function ConvenienceShowcaseView({
                 </span>
               )}
             </div>
-            <p className="text-[11px] text-muted-foreground truncate">
+            <p className="text-xs text-muted-foreground truncate">
               {isCompany ? "Loja Oficial" : "Vendedor Particular"} • {locationName}
             </p>
           </div>
@@ -570,7 +570,7 @@ export function ConvenienceShowcaseView({
 
         <div className="flex items-center gap-1 shrink-0">
           {advertiserProfileUrl && !isPreview && (
-            <Button asChild variant="ghost" size="sm" className="h-7 px-3 text-[11px] text-foreground/80 hover:text-foreground gap-1">
+            <Button asChild variant="ghost" size="sm" className="h-7 px-3 text-xs text-foreground/80 hover:text-foreground gap-1">
               <Link to={advertiserProfileUrl}>
                 <span>{isCompany ? "Ver Loja" : "Ver Perfil"}</span>
                 <ExternalLink className="size-3" />
@@ -583,7 +583,7 @@ export function ConvenienceShowcaseView({
       {/* Ação de Vinculação para o Dono do Anúncio (Owner Action) */}
       {isOwner && !isCompany && classified?.id && (
         <div className="pt-2 border-t border-border/40 flex items-center justify-between gap-2">
-          <span className="text-[11px] text-muted-foreground">
+          <span className="text-xs text-muted-foreground">
             Anuncia como empresa?
           </span>
           <Button
@@ -591,7 +591,7 @@ export function ConvenienceShowcaseView({
             variant="outline"
             size="sm"
             onClick={handleOpenLinkStoreModal}
-            className="h-6 px-2 text-[10px] font-semibold text-primary border-primary/30 bg-primary/5 hover:bg-primary/10 gap-1 rounded-lg cursor-pointer"
+            className="h-6 px-2 text-xs font-semibold text-primary border-primary/30 bg-primary/5 hover:bg-primary/10 gap-1 rounded-lg cursor-pointer"
           >
             <Building2 className="size-3" />
             <span>Vincular a Loja</span>
@@ -645,82 +645,92 @@ export function ConvenienceShowcaseView({
   );
 
   // Componente Reutilizável: Bloco de Preço e Condições de Pagamento com Suporte a Desconto Progressivo
-  const PricingBlock = () => (
-    <div className="p-4 rounded-lg bg-card border border-border/60 space-y-3">
-      <div className="flex items-baseline justify-between flex-wrap gap-2">
-        <div>
-          <div className="flex items-baseline gap-2">
-            {discountResult.activeTier && (
-              <span className="text-sm sm:text-base text-muted-foreground line-through font-mono">
-                {formatMoney(baseUnitPriceCents)}
-              </span>
-            )}
-            <span className="text-2xl sm:text-3xl font-black text-foreground font-mono tracking-tight">
-              {effectiveUnitPriceCents > 0 ? formatMoney(effectiveUnitPriceCents) : "Preço sob consulta"}
-            </span>
-          </div>
-          <span className="text-xs text-muted-foreground font-mono">
-            {isFreshPricingActive && pricingMode === "weight"
-              ? `/ ${weightGrams >= 1000 ? `${(weightGrams / 1000).toFixed(1)}kg` : `${weightGrams}g`}`
-              : unitSuffix
-              ? `/ ${unitSuffix}`
-              : "/ un"}
-          </span>
-        </div>
-
-        {discountResult.activeTier ? (
-          <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
-            {discountResult.activeTier.discount_type === "percentage"
-              ? `${discountResult.activeTier.discount_value}% OFF`
-              : `${formatMoney(discountResult.activeTier.discount_value)} OFF`}
-          </span>
-        ) : acceptsPix && pixDiscountPercent > 0 && effectiveUnitPriceCents > 0 ? (
-          <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
-            {pixDiscountPercent}% OFF no Pix
-          </span>
-        ) : null}
-      </div>
-
-      {acceptsPix && pixDiscountPercent > 0 && effectiveUnitPriceCents > 0 && (
-        <div className="text-xs text-emerald-700 dark:text-emerald-400 font-medium flex items-center gap-2">
-          <span>
-            Sai por <strong>{formatMoney(pixPriceCents)}</strong> à vista no Pix
-          </span>
-        </div>
-      )}
-
-      {discountResult.totalSavedCents > 0 && (
-        <div className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">
-          Economia de <strong>{formatMoney(discountResult.totalSavedCents)}</strong> com desconto progressivo
-        </div>
-      )}
-
-      <div className="pt-2 border-t border-border/40 text-xs text-muted-foreground space-y-1">
-        {acceptsCard && (
-          <div className="flex items-center gap-2">
-            <CreditCard className="size-3.5 text-primary shrink-0" />
-            <span>
-              {maxInstallments === 1 ? (
-                <span>Pagamento <strong>à vista</strong> no cartão</span>
-              ) : (
-                <span>
-                  ou até <strong>{maxInstallments}x de {formatMoney(installmentCents)}</strong>{" "}
-                  {cardInterestFree ? "(sem juros)" : ""}
+  const PricingBlock = ({ bare = false }: { bare?: boolean }) => {
+    const content = (
+      <div className="space-y-3">
+        <div className="flex items-baseline justify-between flex-wrap gap-2">
+          <div>
+            <div className="flex items-baseline gap-2">
+              {discountResult.activeTier && (
+                <span className="text-sm sm:text-base text-muted-foreground line-through font-mono">
+                  {formatMoney(baseUnitPriceCents)}
                 </span>
               )}
+              <span className="text-2xl sm:text-3xl font-black text-foreground font-mono tracking-tight">
+                {effectiveUnitPriceCents > 0 ? formatMoney(effectiveUnitPriceCents) : "Preço sob consulta"}
+              </span>
+            </div>
+            <span className="text-xs text-muted-foreground font-mono">
+              {isFreshPricingActive && pricingMode === "weight"
+                ? `/ ${weightGrams >= 1000 ? `${(weightGrams / 1000).toFixed(1)}kg` : `${weightGrams}g`}`
+                : unitSuffix
+                ? `/ ${unitSuffix}`
+                : "/ un"}
+            </span>
+          </div>
+
+          {discountResult.activeTier ? (
+            <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
+              {discountResult.activeTier.discount_type === "percentage"
+                ? `${discountResult.activeTier.discount_value}% OFF`
+                : `${formatMoney(discountResult.activeTier.discount_value)} OFF`}
+            </span>
+          ) : acceptsPix && pixDiscountPercent > 0 && effectiveUnitPriceCents > 0 ? (
+            <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
+              {pixDiscountPercent}% OFF no Pix
+            </span>
+          ) : null}
+        </div>
+
+        {acceptsPix && pixDiscountPercent > 0 && effectiveUnitPriceCents > 0 && (
+          <div className="text-xs text-emerald-700 dark:text-emerald-400 font-medium flex items-center gap-2">
+            <span>
+              Sai por <strong>{formatMoney(pixPriceCents)}</strong> à vista no Pix
             </span>
           </div>
         )}
 
-        {acceptsCash && (
-          <div className="flex items-center gap-2 text-[11px]">
-            <Banknote className="size-3.5 text-muted-foreground shrink-0" />
-            <span>Aceita dinheiro em espécie com troco</span>
+        {discountResult.totalSavedCents > 0 && (
+          <div className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">
+            Economia de <strong>{formatMoney(discountResult.totalSavedCents)}</strong> com desconto progressivo
           </div>
         )}
+
+        <div className="pt-2 border-t border-border/40 text-xs text-muted-foreground space-y-1">
+          {acceptsCard && (
+            <div className="flex items-center gap-2">
+              <CreditCard className="size-3.5 text-primary shrink-0" />
+              <span>
+                {maxInstallments === 1 ? (
+                  <span>Pagamento <strong>à vista</strong> no cartão</span>
+                ) : (
+                  <span>
+                    ou até <strong>{maxInstallments}x de {formatMoney(installmentCents)}</strong>{" "}
+                    {cardInterestFree ? "(sem juros)" : ""}
+                  </span>
+                )}
+              </span>
+            </div>
+          )}
+
+          {acceptsCash && (
+            <div className="flex items-center gap-2 text-xs">
+              <Banknote className="size-3.5 text-muted-foreground shrink-0" />
+              <span>Aceita dinheiro em espécie com troco</span>
+            </div>
+          )}
+        </div>
       </div>
-    </div>
-  );
+    );
+
+    if (bare) return content;
+
+    return (
+      <div className="p-4 rounded-lg bg-card border border-border/60 space-y-3">
+        {content}
+      </div>
+    );
+  };
 
   // Componente Reutilizável: Controles de Hortifrúti Fresco (Peso vs Unidade & Ponto de Maturação)
   const FreshProduceControls = () => {
@@ -737,7 +747,7 @@ export function ConvenienceShowcaseView({
                 <span>Modo de Compra:</span>
               </span>
               {freshPricingConfig.avg_piece_weight_grams && (
-                <span className="text-[11px] text-muted-foreground font-mono">
+                <span className="text-xs text-muted-foreground font-mono">
                   ~{freshPricingConfig.avg_piece_weight_grams}g / peça
                 </span>
               )}
@@ -822,7 +832,7 @@ export function ConvenienceShowcaseView({
               })}
             </div>
             {selectedRipeness && (
-              <p className="text-[11px] text-muted-foreground italic px-1">
+              <p className="text-xs text-muted-foreground italic px-1">
                 • {DEFAULT_RIPENESS_LABELS[selectedRipeness]?.desc}
               </p>
             )}
@@ -850,7 +860,7 @@ export function ConvenienceShowcaseView({
                 : `${formatMoney(discountResult.activeTier.discount_value)} OFF`}
             </span>
           ) : (
-            <span className="text-[11px] text-muted-foreground">Compre mais, pague menos</span>
+            <span className="text-xs text-muted-foreground">Compre mais, pague menos</span>
           )}
         </div>
 
@@ -888,7 +898,7 @@ export function ConvenienceShowcaseView({
                     Ativado
                   </span>
                 ) : (
-                  <span className="text-[11px] text-muted-foreground font-mono">
+                  <span className="text-xs text-muted-foreground font-mono">
                     + {tier.min_quantity - quantity} un
                   </span>
                 )}
@@ -915,7 +925,7 @@ export function ConvenienceShowcaseView({
         <div className="truncate">
           <span className="font-semibold">Entrega local</span>
           <span className="text-muted-foreground ml-1">{deliveryFeeCents > 0 ? `a partir de ${formatMoney(deliveryFeeCents)}` : "Grátis / A combinar com a loja"}</span>
-          <span className="text-muted-foreground text-[11px] block">• Estimativa {deliveryEstimate}</span>
+          <span className="text-muted-foreground text-xs block">• Estimativa {deliveryEstimate}</span>
         </div>
       </div>
       <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 shrink-0">
@@ -933,9 +943,9 @@ export function ConvenienceShowcaseView({
       <header className="sticky top-0 z-30 bg-background/85 backdrop-blur-md border-b border-border/40 px-3 sm:px-6 h-12 flex items-center justify-between">
         <div className="flex items-center gap-2 min-w-0">
           {!isPreview ? (
-            <Button asChild variant="ghost" size="icon" className="size-8 rounded-full shrink-0">
+            <Button asChild variant="ghost" size="icon" className="size-11 min-h-11 min-w-11 rounded-full shrink-0 flex items-center justify-center text-foreground hover:bg-muted active:scale-95 transition-colors">
               <Link to="/mercado">
-                <ArrowLeft className="size-4" />
+                <ArrowLeft className="size-5" />
                 <span className="sr-only">Voltar ao Mercado</span>
               </Link>
             </Button>
@@ -958,9 +968,9 @@ export function ConvenienceShowcaseView({
               variant="outline"
               size="sm"
               onClick={onEdit}
-              className="h-8 px-3 rounded-full text-xs font-medium text-muted-foreground hover:text-foreground gap-2 border-border/60 bg-background/60 hover:bg-muted cursor-pointer"
+              className="h-11 min-h-11 px-4 rounded-full text-xs font-semibold text-muted-foreground hover:text-foreground gap-2 border-border/60 bg-background/60 hover:bg-muted cursor-pointer active:scale-95 transition-colors"
             >
-              <Edit3 className="size-3.5" />
+              <Edit3 className="size-4" />
               <span className="hidden sm:inline">Editar</span>
             </Button>
           )}
@@ -969,10 +979,10 @@ export function ConvenienceShowcaseView({
             variant="ghost"
             size="icon"
             onClick={handleShare}
-            className="size-8 rounded-full text-muted-foreground hover:text-foreground cursor-pointer"
+            className="size-11 min-h-11 min-w-11 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground cursor-pointer active:scale-95 transition-colors"
             title="Compartilhar Produto"
           >
-            <Share2 className="size-4" />
+            <Share2 className="size-5" />
           </Button>
         </div>
       </header>
@@ -1011,7 +1021,7 @@ export function ConvenienceShowcaseView({
                 )}
                 {images.length > 0 && (
                   <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <span className="px-3 py-1 rounded-lg bg-background/90 backdrop-blur-md text-[11px] font-semibold text-foreground border border-border/50 flex items-center gap-2">
+                    <span className="px-3 py-1 rounded-lg bg-background/90 backdrop-blur-md text-xs font-semibold text-foreground border border-border/50 flex items-center gap-2">
                       <Maximize2 className="size-3.5" />
                       Expandir
                     </span>
@@ -1045,24 +1055,29 @@ export function ConvenienceShowcaseView({
                 BLOCO DE CABEÇALHO DO PRODUTO NO MOBILE (MD:HIDDEN OU FORCED MOBILE)
                 Aparece imediatamente abaixo da foto no smartphone!
                ═════════════════════════════════════════════════════════════════ */}
-            <div className={cn("px-4 space-y-4", isForcedMobile ? "block" : "md:hidden")}>
-              <div className="space-y-1">
-                <div className="text-xs text-muted-foreground flex items-center gap-2 flex-wrap">
-                  <span className="font-semibold text-foreground/90">{advertiserName}</span>
-                  <span>•</span>
-                  <span>{department}</span>
+            <div className={cn("px-4 space-y-3", isForcedMobile ? "block" : "md:hidden")}>
+              {/* Card Canônico de Resumo do Produto (Identificação + Preço Integrados Padrão Apple HIG) */}
+              <div className="p-4 sm:p-5 rounded-lg bg-card border border-border/60 space-y-3 shadow-xs">
+                <div className="space-y-1">
+                  <div className="text-xs text-muted-foreground flex items-center gap-2 flex-wrap">
+                    <span className="font-semibold text-foreground/90">{advertiserName}</span>
+                    <span>•</span>
+                    <span>{department}</span>
+                  </div>
+
+                  <h1 className="text-xl font-bold text-foreground tracking-tight leading-snug">
+                    {title}
+                  </h1>
+
+                  {/* Tags Sutis Textuais abaixo do título (Sem neon, sem badges) */}
+                  <SubtleProductTags />
                 </div>
 
-                <h1 className="text-xl font-black text-foreground tracking-tight leading-tight">
-                  {title}
-                </h1>
-
-                {/* Tags Sutis Textuais abaixo do título (Sem neon, sem badges) */}
-                <SubtleProductTags />
+                {/* Preço e Condições Integradas */}
+                <div className="pt-3 border-t border-border/40">
+                  <PricingBlock bare />
+                </div>
               </div>
-
-              {/* Bloco de Preço no Mobile */}
-              <PricingBlock />
 
               {/* Linha Compacta de Entrega no Mobile */}
               <DeliveryEstimateLine />
@@ -1121,42 +1136,46 @@ export function ConvenienceShowcaseView({
             {/* ─────────────────────────────────────────────────────────────
                 SEÇÃO: ESPECIFICAÇÕES TÉCNICAS E TABELA DE ATRIBUTOS
                ───────────────────────────────────────────────────────────── */}
-            <div className="mx-4 sm:mx-0 p-4 sm:p-6 rounded-lg bg-card border border-border/60 space-y-4">
-              <h2 className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-2">
-                <CheckCircle2 className="size-4 text-primary" />
-                <span>Especificações e Características</span>
-              </h2>
+            <div className="mx-4 sm:mx-0 p-5 sm:p-6 rounded-lg bg-card border border-border/60 space-y-5 shadow-2xs">
+              <div className="flex items-center justify-between border-b border-border/40 pb-3">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="size-4 text-primary shrink-0" />
+                  <h2 className="text-xs font-bold uppercase tracking-wider text-foreground">
+                    Especificações e Características
+                  </h2>
+                </div>
+              </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {brand && (
-                  <div className="p-3 rounded-lg border border-border/50 bg-muted/20 space-y-1">
-                    <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Marca</span>
-                    <p className="font-semibold text-foreground truncate">{brand}</p>
+                  <div className="p-3.5 sm:p-4 rounded-lg border border-border/50 bg-muted/20 space-y-1">
+                    <span className="text-xs text-muted-foreground uppercase font-bold tracking-wider block">Marca</span>
+                    <p className="text-sm font-bold text-foreground truncate">{brand}</p>
                   </div>
                 )}
 
-                <div className="p-3 rounded-lg border border-border/50 bg-muted/20 space-y-1">
-                  <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Departamento</span>
-                  <p className="font-semibold text-foreground truncate">{department}</p>
+                <div className="p-3.5 sm:p-4 rounded-lg border border-border/50 bg-muted/20 space-y-1">
+                  <span className="text-xs text-muted-foreground uppercase font-bold tracking-wider block">Departamento</span>
+                  <p className="text-sm font-bold text-foreground truncate">{department}</p>
                 </div>
 
                 {unitSuffix && (
-                  <div className="p-3 rounded-lg border border-border/50 bg-muted/20 space-y-1">
-                    <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Conteúdo / Peso</span>
-                    <p className="font-semibold text-foreground truncate font-mono">{unitSuffix}</p>
+                  <div className="p-3.5 sm:p-4 rounded-lg border border-border/50 bg-muted/20 space-y-1">
+                    <span className="text-xs text-muted-foreground uppercase font-bold tracking-wider block">Conteúdo / Peso</span>
+                    <p className="text-sm font-bold text-foreground truncate font-mono">{unitSuffix}</p>
                   </div>
                 )}
 
                 {estimatedWeightPerUnit && (
-                  <div className="p-3 rounded-lg border border-border/50 bg-muted/20 space-y-1">
-                    <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Peso Aprox. Peça</span>
-                    <p className="font-semibold text-foreground truncate font-mono">{estimatedWeightPerUnit}</p>
+                  <div className="p-3.5 sm:p-4 rounded-lg border border-border/50 bg-muted/20 space-y-1">
+                    <span className="text-xs text-muted-foreground uppercase font-bold tracking-wider block">Peso Aprox. Peça</span>
+                    <p className="text-sm font-bold text-foreground truncate font-mono">{estimatedWeightPerUnit}</p>
                   </div>
                 )}
 
-                <div className="p-3 rounded-lg border border-border/50 bg-muted/20 space-y-1">
-                  <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Conservação</span>
-                  <p className="font-semibold text-foreground capitalize">
+                <div className="p-3.5 sm:p-4 rounded-lg border border-border/50 bg-muted/20 space-y-1">
+                  <span className="text-xs text-muted-foreground uppercase font-bold tracking-wider block">Conservação</span>
+                  <p className="text-sm font-bold text-foreground capitalize">
                     {temperature === "gelada"
                       ? "Gelada / Imediata"
                       : temperature === "resfriado"
@@ -1167,33 +1186,33 @@ export function ConvenienceShowcaseView({
                   </p>
                 </div>
 
-                <div className="p-3 rounded-lg border border-border/50 bg-muted/20 space-y-1">
-                  <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Disponibilidade</span>
-                  <p className="font-semibold text-foreground">
+                <div className="p-3.5 sm:p-4 rounded-lg border border-border/50 bg-muted/20 space-y-1">
+                  <span className="text-xs text-muted-foreground uppercase font-bold tracking-wider block">Disponibilidade</span>
+                  <p className="text-sm font-bold text-foreground">
                     {readyDelivery ? "Em estoque para envio" : "Sob encomenda"}
                   </p>
                 </div>
 
                 {barcodeEan && (
-                  <div className="p-3 rounded-lg border border-border/50 bg-muted/20 space-y-1">
-                    <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Código EAN</span>
-                    <p className="font-semibold text-foreground font-mono truncate">{barcodeEan}</p>
+                  <div className="p-3.5 sm:p-4 rounded-lg border border-border/50 bg-muted/20 space-y-1">
+                    <span className="text-xs text-muted-foreground uppercase font-bold tracking-wider block">Código EAN</span>
+                    <p className="text-sm font-bold text-foreground font-mono truncate">{barcodeEan}</p>
                   </div>
                 )}
 
                 {containsGluten !== undefined && (
-                  <div className="p-3 rounded-lg border border-border/50 bg-muted/20 space-y-1">
-                    <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Glúten</span>
-                    <p className="font-semibold text-foreground">
+                  <div className="p-3.5 sm:p-4 rounded-lg border border-border/50 bg-muted/20 space-y-1">
+                    <span className="text-xs text-muted-foreground uppercase font-bold tracking-wider block">Glúten</span>
+                    <p className="text-sm font-bold text-foreground">
                       {containsGluten ? "Contém Glúten" : "Sem Glúten"}
                     </p>
                   </div>
                 )}
 
                 {containsLactose !== undefined && (
-                  <div className="p-3 rounded-lg border border-border/50 bg-muted/20 space-y-1">
-                    <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Lactose</span>
-                    <p className="font-semibold text-foreground">
+                  <div className="p-3.5 sm:p-4 rounded-lg border border-border/50 bg-muted/20 space-y-1">
+                    <span className="text-xs text-muted-foreground uppercase font-bold tracking-wider block">Lactose</span>
+                    <p className="text-sm font-bold text-foreground">
                       {containsLactose ? "Contém Lactose" : "Sem Lactose"}
                     </p>
                   </div>
@@ -1201,9 +1220,9 @@ export function ConvenienceShowcaseView({
               </div>
 
               {ingredients && (
-                <div className="pt-2 border-t border-border/40 space-y-1">
-                  <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block">Ingredientes / Composição:</span>
-                  <p className="text-xs text-foreground/80 leading-relaxed">{ingredients}</p>
+                <div className="pt-3 border-t border-border/40 space-y-1">
+                  <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider block">Ingredientes / Composição:</span>
+                  <p className="text-xs text-foreground/85 leading-relaxed">{ingredients}</p>
                 </div>
               )}
             </div>
@@ -1214,7 +1233,7 @@ export function ConvenienceShowcaseView({
                 <Info className="size-4 shrink-0 mt-1" />
                 <div>
                   <p className="font-bold">Aviso Regulatório — Venda Restrita</p>
-                  <p className="text-[11px] opacity-90 leading-relaxed">
+                  <p className="text-xs opacity-90 leading-relaxed">
                     Venda e consumo proibidos para menores de 18 anos. Beba com moderação. Se beber, não dirija.
                   </p>
                 </div>
@@ -1303,7 +1322,7 @@ export function ConvenienceShowcaseView({
               <div className="flex items-center justify-between">
                 <div>
                   <span className="text-xs font-bold text-foreground block">Quantidade</span>
-                  <span className="text-[11px] text-muted-foreground">Adicione ao seu pedido</span>
+                  <span className="text-xs text-muted-foreground">Adicione ao seu pedido</span>
                 </div>
 
                 <div className="flex items-center gap-2 border border-border/70 rounded-lg bg-background p-1">
@@ -1342,7 +1361,7 @@ export function ConvenienceShowcaseView({
                       {formatMoney(subtotalCents)}
                     </span>
                     {acceptsPix && pixDiscountPercent > 0 && (
-                      <span className="block text-[11px] text-emerald-600 dark:text-emerald-400 font-mono font-medium">
+                      <span className="block text-xs text-emerald-600 dark:text-emerald-400 font-mono font-medium">
                         ou {formatMoney(pixSubtotalCents)} no Pix
                       </span>
                     )}
@@ -1379,13 +1398,16 @@ export function ConvenienceShowcaseView({
 
           </div>
         </div>
+
+        {/* Clearance spacer para a barra flutuante mobile */}
+        <div className="h-24 w-full md:hidden" aria-hidden="true" />
       </main>
 
       {/* ═══════════════════════════════════════════════════════════════════════
           FLOATING BOTTOM BAR NO MOBILE (THUMB ZONE ERGONOMICS)
          ═══════════════════════════════════════════════════════════════════════ */}
       <div className={cn(
-        "z-40 bg-background border-t border-border/60 p-3 pb-safe flex items-center gap-3",
+        "z-30 bg-background border-t border-border/60 p-3 pb-safe flex items-center gap-3",
         isForcedMobile || isPreview
           ? "sticky bottom-0 inset-x-0 block rounded-none sm:rounded-b-lg pb-safe"
           : "md:hidden fixed bottom-0 inset-x-0 pb-safe"
@@ -1416,7 +1438,7 @@ export function ConvenienceShowcaseView({
         </div>
 
         <div className="min-w-0 flex-1">
-          <span className="text-[10px] text-muted-foreground block font-medium truncate">
+          <span className="text-xs text-muted-foreground block font-medium truncate">
             Total ({quantity} un)
           </span>
           <span className="text-sm font-black font-mono text-foreground truncate block">
@@ -1460,19 +1482,19 @@ export function ConvenienceShowcaseView({
               )}
               <div className="min-w-0 flex-1">
                 <p className="text-xs font-bold text-foreground truncate">{title}</p>
-                <p className="text-[11px] text-muted-foreground">
+                <p className="text-xs text-muted-foreground">
                   {quantity}x de {formatMoney(effectiveUnitPriceCents)} {unitSuffix ? `(${unitSuffix})` : ""}
                   {isFreshPricingActive && (
                     <span> • {pricingMode === "weight" ? `${weightGrams >= 1000 ? `${(weightGrams / 1000).toFixed(1)}kg` : `${weightGrams}g`}` : "Unidade"}</span>
                   )}
                 </p>
                 {isRipenessActive && selectedRipeness && (
-                  <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">
+                  <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">
                     Maturação: {DEFAULT_RIPENESS_LABELS[selectedRipeness]?.title}
                   </p>
                 )}
                 {selectedPrepOption && (
-                  <p className="text-[10px] text-primary font-medium mt-1">
+                  <p className="text-xs text-primary font-medium mt-1">
                     Preparo: {selectedPrepOption}
                   </p>
                 )}
@@ -1485,7 +1507,7 @@ export function ConvenienceShowcaseView({
             {/* Identificação do Cliente */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 rounded-lg bg-muted/20 border border-border/40">
               <div className="space-y-1">
-                <Label className="text-[11px] font-semibold text-foreground">
+                <Label className="text-xs font-semibold text-foreground">
                   Seu Nome *
                 </Label>
                 <Input
@@ -1496,7 +1518,7 @@ export function ConvenienceShowcaseView({
                 />
               </div>
               <div className="space-y-1">
-                <Label className="text-[11px] font-semibold text-foreground">
+                <Label className="text-xs font-semibold text-foreground">
                   WhatsApp / Celular *
                 </Label>
                 <Input
@@ -1516,7 +1538,7 @@ export function ConvenienceShowcaseView({
                     <Zap className="size-3.5 fill-amber-500 text-amber-500" />
                     <span>{orderBumpOffer.badge_text || "Oferta Relâmpago no Carrinho"}</span>
                   </div>
-                  <span className="text-[10px] text-muted-foreground">Adicione com 1 clique</span>
+                  <span className="text-xs text-muted-foreground">Adicione com 1 clique</span>
                 </div>
 
                 <div className="flex items-center justify-between gap-3 pt-1">
@@ -1534,9 +1556,9 @@ export function ConvenienceShowcaseView({
                     )}
                     <div className="min-w-0">
                       <p className="text-xs font-bold text-foreground truncate">{orderBumpOffer.target_title}</p>
-                      <div className="flex items-center gap-2 text-[11px] font-mono">
+                      <div className="flex items-center gap-2 text-xs font-mono">
                         {orderBumpOffer.original_price_cents && (
-                          <span className="line-through text-muted-foreground text-[10px]">
+                          <span className="line-through text-muted-foreground text-xs">
                             {formatMoney(orderBumpOffer.original_price_cents)}
                           </span>
                         )}
@@ -1569,7 +1591,7 @@ export function ConvenienceShowcaseView({
             <div className="space-y-2">
               <Label className="text-xs font-bold text-foreground flex items-center justify-between">
                 <span>Forma de Recebimento</span>
-                <span className="text-[11px] font-medium text-muted-foreground">
+                <span className="text-xs font-medium text-muted-foreground">
                   {orderDeliveryMode === "pickup" ? "Sem taxa de frete" : `Taxa: ${formatMoney(deliveryFeeCents)}`}
                 </span>
               </Label>
@@ -1619,7 +1641,7 @@ export function ConvenienceShowcaseView({
                     <Clock3 className="size-3.5 text-primary" />
                     <span>Despacho Sob Demanda via MotoLink</span>
                   </p>
-                  <p className="text-[11px] text-muted-foreground">
+                  <p className="text-xs text-muted-foreground">
                     A loja prepara o pedido e aloca o entregador autônomo assim que confirmado ({deliveryEstimate}).
                   </p>
                 </div>
@@ -1627,7 +1649,7 @@ export function ConvenienceShowcaseView({
 
               {orderDeliveryMode === "scheduled" && (
                 <div className="p-3 rounded-lg bg-muted/20 border border-border/40 space-y-2">
-                  <Label className="text-[11px] font-semibold text-foreground flex items-center gap-2">
+                  <Label className="text-xs font-semibold text-foreground flex items-center gap-2">
                     <Calendar className="size-3.5 text-primary" />
                     <span>Selecione o Melhor Horário</span>
                   </Label>
@@ -1657,7 +1679,7 @@ export function ConvenienceShowcaseView({
                     <Store className="size-3.5" />
                     <span>Retirada no Balcão da Loja (Taxa Grátis)</span>
                   </p>
-                  <p className="text-[11px] opacity-90">
+                  <p className="text-xs opacity-90">
                     O pedido fica reservado para você retirar em: <strong>{locationName}</strong>.
                   </p>
                 </div>
@@ -1698,7 +1720,7 @@ export function ConvenienceShowcaseView({
                     <QrCode className="size-4" />
                     <span className="text-xs">Pix</span>
                     {pixDiscountPercent > 0 && (
-                      <span className="text-[9px] font-bold text-emerald-600 bg-emerald-500/20 px-1 rounded">
+                      <span className="text-xs font-bold text-emerald-600 bg-emerald-500/20 px-1 rounded">
                         -{pixDiscountPercent}%
                       </span>
                     )}
@@ -1718,7 +1740,7 @@ export function ConvenienceShowcaseView({
                   >
                     <CreditCard className="size-4" />
                     <span className="text-xs">Cartão</span>
-                    <span className="text-[9px] text-muted-foreground">Na entrega</span>
+                    <span className="text-xs text-muted-foreground">Na entrega</span>
                   </button>
                 )}
 
@@ -1735,14 +1757,14 @@ export function ConvenienceShowcaseView({
                   >
                     <Banknote className="size-4" />
                     <span className="text-xs">Dinheiro</span>
-                    <span className="text-[9px] text-muted-foreground">Espécie</span>
+                    <span className="text-xs text-muted-foreground">Espécie</span>
                   </button>
                 )}
               </div>
 
               {orderPaymentMethod === "cash" && (
                 <div className="space-y-1 pt-1">
-                  <Label className="text-[11px] text-muted-foreground">
+                  <Label className="text-xs text-muted-foreground">
                     Precisa de troco para quanto? (Opcional)
                   </Label>
                   <Input
@@ -1871,14 +1893,14 @@ export function ConvenienceShowcaseView({
                         </div>
                         <div className="min-w-0">
                           <p className="text-xs font-bold text-foreground truncate">{st.name}</p>
-                          <p className="text-[10px] text-muted-foreground truncate">
+                          <p className="text-xs text-muted-foreground truncate">
                             {st.city ? `${st.city}${st.state ? ` - ${st.state}` : ""}` : "Loja Waesy"}
                           </p>
                         </div>
                       </div>
 
                       {isCurrent ? (
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-primary">
+                        <span className="text-xs font-bold uppercase tracking-wider text-primary">
                           Vinculada
                         </span>
                       ) : (

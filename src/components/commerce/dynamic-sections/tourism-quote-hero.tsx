@@ -21,13 +21,13 @@ export interface TourismQuoteHeroProps {
 }
 
 export const TourismQuoteHero: React.FC<TourismQuoteHeroProps> = ({
- title = "Sua Próxima Viagem Inesquecível Começa Aqui",
- subtitle = "Roteiros exclusivos, cruzeiros, passagens aéreas e pacotes completos com assessoria VIP.",
- badge = "",
- bgImageUrl = "",
- destinationPresets = [],
- whatsappPhone,
- storeData,
+  title = "Sua Próxima Viagem Inesquecível Começa Aqui",
+  subtitle = "Roteiros exclusivos, cruzeiros, passagens aéreas e pacotes completos com assessoria VIP.",
+  badge = "",
+  bgImageUrl = "",
+  destinationPresets = [],
+  whatsappPhone,
+  storeData,
 }) => {
  const [destination, setDestination] = useState("");
  const [origin, setOrigin] = useState("");

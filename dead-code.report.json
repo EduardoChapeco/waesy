@@ -1,9 +1,9 @@
 {
-  "timestamp": "2026-10-12T01:29:09.012Z",
-  "totalFiles": 1995,
-  "totalImported": 1597,
-  "discoveredUnreferencedCount": 58,
-  "intentionalUnreferencedCount": 58,
+  "timestamp": "2026-10-17T00:42:40.301Z",
+  "totalFiles": 2112,
+  "totalImported": 1683,
+  "discoveredUnreferencedCount": 65,
+  "intentionalUnreferencedCount": 65,
   "intentionalUnreferencedFiles": [
     "src/components/ad-engine/public/listing-empty-state.tsx",
     "src/components/admin/builder/builder-add-panel-3col.tsx",
@@ -20,6 +20,13 @@
     "src/components/admin/classified-form.tsx",
     "src/components/admin/working-hours-editor.tsx",
     "src/components/classifieds/ad-details.tsx",
+    "src/components/classifieds/classified-basic-info-section.tsx",
+    "src/components/classifieds/classified-editor-navigation.tsx",
+    "src/components/classifieds/classified-location-section.tsx",
+    "src/components/classifieds/classified-media-section.tsx",
+    "src/components/classifieds/classified-pricing-lifecycle-section.tsx",
+    "src/components/classifieds/create-type-picker.tsx",
+    "src/components/commerce/master-squircle-hero.tsx",
     "src/components/commerce/return-modal.tsx",
     "src/components/proposals/ProposalStudio.tsx",
     "src/components/studio/StudioToolbar.tsx",
@@ -122,62 +129,6 @@
       ]
     },
     {
-      "componentName": "StudioFormatPicker",
-      "count": 2,
-      "paths": [
-        "src/components/studio/StudioFormatPicker.tsx",
-        "src/components/tourism/studio/StudioFormatPicker.tsx"
-      ]
-    },
-    {
-      "componentName": "StudioFrame",
-      "count": 2,
-      "paths": [
-        "src/components/studio/StudioFrame.tsx",
-        "src/components/tourism/studio/StudioFrame.tsx"
-      ]
-    },
-    {
-      "componentName": "StudioMapWidget",
-      "count": 2,
-      "paths": [
-        "src/components/studio/StudioMapWidget.tsx",
-        "src/components/tourism/studio/StudioMapWidget.tsx"
-      ]
-    },
-    {
-      "componentName": "StudioSidebar",
-      "count": 2,
-      "paths": [
-        "src/components/studio/StudioSidebar.tsx",
-        "src/components/tourism/studio/StudioSidebar.tsx"
-      ]
-    },
-    {
-      "componentName": "StudioTemplatePicker",
-      "count": 2,
-      "paths": [
-        "src/components/studio/StudioTemplatePicker.tsx",
-        "src/components/tourism/studio/StudioTemplatePicker.tsx"
-      ]
-    },
-    {
-      "componentName": "StudioToolbar",
-      "count": 2,
-      "paths": [
-        "src/components/studio/StudioToolbar.tsx",
-        "src/components/tourism/studio/StudioToolbar.tsx"
-      ]
-    },
-    {
-      "componentName": "StudioUnsplashPicker",
-      "count": 2,
-      "paths": [
-        "src/components/studio/StudioUnsplashPicker.tsx",
-        "src/components/tourism/studio/StudioUnsplashPicker.tsx"
-      ]
-    },
-    {
       "componentName": "SectionCover",
       "count": 2,
       "paths": [
@@ -255,6 +206,62 @@
       "paths": [
         "src/components/studio/sections/SectionTravelers.tsx",
         "src/components/tourism/studio/sections/SectionTravelers.tsx"
+      ]
+    },
+    {
+      "componentName": "StudioFormatPicker",
+      "count": 2,
+      "paths": [
+        "src/components/studio/StudioFormatPicker.tsx",
+        "src/components/tourism/studio/StudioFormatPicker.tsx"
+      ]
+    },
+    {
+      "componentName": "StudioFrame",
+      "count": 2,
+      "paths": [
+        "src/components/studio/StudioFrame.tsx",
+        "src/components/tourism/studio/StudioFrame.tsx"
+      ]
+    },
+    {
+      "componentName": "StudioMapWidget",
+      "count": 2,
+      "paths": [
+        "src/components/studio/StudioMapWidget.tsx",
+        "src/components/tourism/studio/StudioMapWidget.tsx"
+      ]
+    },
+    {
+      "componentName": "StudioSidebar",
+      "count": 2,
+      "paths": [
+        "src/components/studio/StudioSidebar.tsx",
+        "src/components/tourism/studio/StudioSidebar.tsx"
+      ]
+    },
+    {
+      "componentName": "StudioTemplatePicker",
+      "count": 2,
+      "paths": [
+        "src/components/studio/StudioTemplatePicker.tsx",
+        "src/components/tourism/studio/StudioTemplatePicker.tsx"
+      ]
+    },
+    {
+      "componentName": "StudioToolbar",
+      "count": 2,
+      "paths": [
+        "src/components/studio/StudioToolbar.tsx",
+        "src/components/tourism/studio/StudioToolbar.tsx"
+      ]
+    },
+    {
+      "componentName": "StudioUnsplashPicker",
+      "count": 2,
+      "paths": [
+        "src/components/studio/StudioUnsplashPicker.tsx",
+        "src/components/tourism/studio/StudioUnsplashPicker.tsx"
       ]
     }
   ],

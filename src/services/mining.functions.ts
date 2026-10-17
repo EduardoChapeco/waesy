@@ -4,8 +4,10 @@ import { harvestAndPersistPlaces } from "./mining/places-harvester";
 import { syncAndPersistEconomicIndicators } from "./mining/economic-indicators-persister";
 import { extractAndPersistJobOpportunity } from "./mining/job-opportunity-extractor";
 import { harvestAndPersistPncpTenders } from "./mining/pncp-harvester";
-import { executeCrawlQueueBatchDirect } from "./mining/crawler-batch-engine";
+import { executeCrawlQueueBatchDirect, reapStalledProcessingQueueItems } from "./mining/crawler-batch-engine";
 import { crossEnrichListingsWithCnpj } from "./mining/places-cnpj-cross-enricher";
+import { pollActiveCrawlerSources } from "./crawler-sources.functions";
+import { curateDirectoryListingRecord, batchCurateDirectoryListings } from "./mining/business-curation-bootstrap";
 import { scrapeUrl } from "@/lib/mining/firecrawl-client";
 /**
  * mining.functions.ts — BFF Server Functions para o Mining Hub & Crawlers
@@ -3017,7 +3019,7 @@ export const getGhostStoreMetricsFn = createServerFn({ method: "GET" })
 export const dispatchScheduledMiningJobFn = createServerFn({ method: "POST" })
   .validator(
     z.object({
-      jobType: z.enum(["market-data", "rss-fetcher", "cnpj-enrichment", "continuous-crawler"]),
+      jobType: z.enum(["market-data", "rss-fetcher", "cnpj-enrichment", "continuous-crawler", "datajud-sync", "queue-reaper"]),
     })
   )
   .handler(async ({ data }): Promise<{ success: boolean; result: any }> => {
@@ -3039,6 +3041,10 @@ export const dispatchScheduledMiningJobFn = createServerFn({ method: "POST" })
         result_summary: syncRes,
       });
     } else if (data.jobType === "rss-fetcher") {
+      // 1. Polling das fontes canônicas do Omni-Crawler V127 (crawler_sources)
+      const sourcesResult = await pollActiveCrawlerSources(10);
+
+      // 2. Coleta de feeds legados na tabela rss_feeds (se houver)
       const { data: feeds } = await supabase
         .from("rss_feeds")
         .select("id, feed_url, name")
@@ -3082,15 +3088,21 @@ export const dispatchScheduledMiningJobFn = createServerFn({ method: "POST" })
         }
       }
 
-      jobResult = { feedsProcessed: feeds?.length || 0, itemsFound: totalParsed, itemsQueued: totalQueued };
+      jobResult = {
+        sourcesPolled: sourcesResult.polled,
+        sourcesQueued: sourcesResult.itemsQueued,
+        sourcesErrors: sourcesResult.errors,
+        legacyFeedsProcessed: feeds?.length || 0,
+        itemsQueued: totalQueued + sourcesResult.itemsQueued,
+      };
 
       await supabase.from("scraper_audit_log").insert({
         scraper_name: "rss-fetcher",
-        action: "fetch_and_queue_feeds_cron",
+        action: "fetch_and_queue_sources_cron",
         target_table: "crawl_queue",
         status: "success",
         duration_ms: Date.now() - startTime,
-        records_affected: totalQueued,
+        records_affected: jobResult.itemsQueued,
         result_summary: jobResult,
       });
     } else if (data.jobType === "continuous-crawler") {
@@ -3107,51 +3119,9 @@ export const dispatchScheduledMiningJobFn = createServerFn({ method: "POST" })
         result_summary: batchRes,
       });
     } else if (data.jobType === "cnpj-enrichment") {
-      const { data: listings } = await supabase
-        .from("directory_listings")
-        .select("id, cnpj, business_name")
-        .not("cnpj", "is", null)
-        .order("last_validated_at", { ascending: true, nullsFirst: true })
-        .limit(5);
-
-      let enrichedCount = 0;
-      if (listings && listings.length > 0) {
-        for (const item of listings) {
-          if (!item.cnpj) continue;
-          try {
-            const enriched: any = await enrichCnpj(item.cnpj);
-            if (enriched) {
-              await supabase
-                .from("directory_listings")
-                .update({
-                  business_name: enriched.nome_fantasia || enriched.razao_social || item.business_name,
-                  cnae: enriched.cnae_principal?.codigo || undefined,
-                  contact_phone: enriched.telefone || undefined,
-                  contact_email: enriched.email || undefined,
-                  address: enriched.logradouro ? `${enriched.logradouro}, ${enriched.numero || "S/N"}` : undefined,
-                  neighborhood: enriched.bairro || undefined,
-                  city: enriched.municipio || "Chapecó",
-                  state: enriched.uf || "SC",
-                  data_quality_score: Math.max(75, enriched.data_quality_score || 75),
-                  last_validated_at: new Date().toISOString(),
-                  metadata: {
-                    socios: enriched.socios,
-                    cnaes_secundarios: enriched.cnaes_secundarios,
-                    natureza_juridica: enriched.natureza_juridica,
-                    capital_social: enriched.capital_social,
-                    enriched_at: new Date().toISOString(),
-                  },
-                })
-                .eq("id", item.id);
-              enrichedCount++;
-            }
-          } catch (cnpjErr) {
-            console.warn(`[MiningCron] Erro ao enriquecer CNPJ ${item.cnpj}:`, cnpjErr);
-          }
-        }
-      }
-
-      jobResult = { inspected: listings?.length || 0, enriched: enrichedCount };
+      // Usa enriquecimento cruzado completo (Fase 1: CNPJ BrasilAPI + Fase 2: Descoberta Web & Favicon HD)
+      const enrichRes = await crossEnrichListingsWithCnpj({ limit: 10 });
+      jobResult = enrichRes;
 
       await supabase.from("scraper_audit_log").insert({
         scraper_name: "cnpj-enrichment",
@@ -3159,7 +3129,51 @@ export const dispatchScheduledMiningJobFn = createServerFn({ method: "POST" })
         target_table: "directory_listings",
         status: "success",
         duration_ms: Date.now() - startTime,
-        records_affected: enrichedCount,
+        records_affected: enrichRes.enriched,
+        result_summary: jobResult,
+      });
+    } else if (data.jobType === "datajud-sync") {
+      const { data: lawsuits } = await supabase
+        .from("mined_lawsuits")
+        .select("id, process_number")
+        .order("updated_at", { ascending: true })
+        .limit(5);
+
+      let syncedCount = 0;
+      if (lawsuits && lawsuits.length > 0) {
+        for (const item of lawsuits) {
+          if (!item.process_number) continue;
+          try {
+            const res = await harvestAndPersistDataJudProcess({ processNumber: item.process_number });
+            if (res.success) syncedCount++;
+          } catch (judErr) {
+            console.warn(`[MiningCron] Erro ao sincronizar processo ${item.process_number}:`, judErr);
+          }
+        }
+      }
+
+      jobResult = { inspected: lawsuits?.length || 0, synced: syncedCount };
+
+      await supabase.from("scraper_audit_log").insert({
+        scraper_name: "datajud-sync",
+        action: "sync_lawsuits_cron",
+        target_table: "mined_lawsuits",
+        status: "success",
+        duration_ms: Date.now() - startTime,
+        records_affected: syncedCount,
+        result_summary: jobResult,
+      });
+    } else if (data.jobType === "queue-reaper") {
+      const reapedCount = await reapStalledProcessingQueueItems(supabase);
+      jobResult = { reapedCount };
+
+      await supabase.from("scraper_audit_log").insert({
+        scraper_name: "queue-reaper",
+        action: "reap_stalled_queue_items_cron",
+        target_table: "crawl_queue",
+        status: "success",
+        duration_ms: Date.now() - startTime,
+        records_affected: reapedCount,
         result_summary: jobResult,
       });
     }
@@ -4083,3 +4097,44 @@ export const createMinedRecipeFn = createServerFn({ method: "POST" })
 
     return { success: true, id: inserted.id };
   });
+
+// ============================================================
+// Curadoria Ativa Bootstrap de Empresas & Estabelecimentos (Places)
+// ============================================================
+
+export const curateDirectoryListingFn = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      listingId: z.string().uuid("ID do estabelecimento inválido"),
+    })
+  )
+  .handler(async ({ data }) => {
+    await requireAdmin();
+    const supabase = getServerClient();
+
+    const { data: listing, error } = await supabase
+      .from("directory_listings")
+      .select("*")
+      .eq("id", data.listingId)
+      .single();
+
+    if (error || !listing) {
+      throw new Error(`Estabelecimento não encontrado: ${error?.message || "ID inexistente"}`);
+    }
+
+    return await curateDirectoryListingRecord(listing);
+  });
+
+export const batchCurateDirectoryListingsFn = createServerFn({ method: "POST" })
+  .validator(
+    z
+      .object({
+        limit: z.number().int().min(1).max(100).default(30),
+      })
+      .optional()
+  )
+  .handler(async ({ data }) => {
+    await requireAdmin();
+    return await batchCurateDirectoryListings({ limit: data?.limit || 30 });
+  });
+

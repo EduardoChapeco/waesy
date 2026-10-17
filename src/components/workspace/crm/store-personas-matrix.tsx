@@ -210,7 +210,7 @@ export function StorePersonasMatrix() {
                     key={p.id}
                     type="button"
                     onClick={() => setActivePersona(p)}
-                    className="w-full flex items-center justify-between p-4 text-left active:bg-muted/40 transition-colors cursor-pointer min-h-[56px]"
+                    className="w-full flex items-center justify-between p-4 text-left active:bg-muted/40 transition-colors cursor-pointer min-h-14 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     <div className="flex items-center gap-3 min-w-0">
                       <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0 font-bold text-xs">
@@ -222,12 +222,12 @@ export function StorePersonasMatrix() {
                             {p.persona_code}
                           </p>
                           <span
-                            className={`text-[9px] font-mono px-2 py-1 rounded-md border ${intentInfo.color}`}
+                            className={`text-2xs font-mono px-2 py-1 rounded-md border ${intentInfo.color}`}
                           >
                             {intentInfo.label}
                           </span>
                         </div>
-                        <p className="text-[11px] text-muted-foreground truncate mt-1">
+                        <p className="text-xs text-muted-foreground truncate mt-1">
                           Nicho: <span className="font-semibold text-foreground capitalize">{topNiche}</span>
                           {recentQuery ? ` • "${recentQuery}"` : ""}
                         </p>
@@ -330,7 +330,7 @@ export function StorePersonasMatrix() {
 
       {/* ── 4. Bottom Sheet de Inspeção Profunda (100dvh no Mobile) ── */}
       <Sheet open={Boolean(activePersona)} onOpenChange={(open) => !open && setActivePersona(null)}>
-        <SheetContent side="bottom" className="h-[90dvh] sm:h-auto sm:max-h-[85vh] sm:max-w-lg mx-auto rounded-t-lg sm:rounded-lg p-0 overflow-hidden flex flex-col">
+        <SheetContent side="bottom" className="h-5/6 sm:h-auto sm:max-h-160 sm:max-w-lg mx-auto rounded-t-lg sm:rounded-lg p-0 overflow-hidden flex flex-col">
           {activePersona && (
             <div className="flex flex-col h-full overflow-hidden">
               <SheetHeader className="p-4 sm:p-6 border-b border-border/40 shrink-0 text-left">
@@ -345,7 +345,7 @@ export function StorePersonasMatrix() {
                   </div>
                   <Badge
                     variant="outline"
-                    className={`text-[10px] font-mono ${getIntentInfo(activePersona.intent_classification).color}`}
+                    className={`text-2xs font-mono ${getIntentInfo(activePersona.intent_classification).color}`}
                   >
                     {getIntentInfo(activePersona.intent_classification).label}
                   </Badge>
@@ -359,13 +359,13 @@ export function StorePersonasMatrix() {
                 {/* Resumo Financeiro */}
                 <div className="grid grid-cols-2 gap-3">
                   <div className="p-3 rounded-lg bg-muted/40 border border-border/40">
-                    <span className="text-[10px] text-muted-foreground">Ticket Médio Estimado</span>
+                    <span className="text-2xs text-muted-foreground">Ticket Médio Estimado</span>
                     <p className="text-base font-mono font-bold text-foreground mt-1">
                       {activePersona.avg_ticket_cents > 0 ? formatMoney(activePersona.avg_ticket_cents) : "—"}
                     </p>
                   </div>
                   <div className="p-3 rounded-lg bg-muted/40 border border-border/40">
-                    <span className="text-[10px] text-muted-foreground">Sensibilidade a Preço</span>
+                    <span className="text-2xs text-muted-foreground">Sensibilidade a Preço</span>
                     <p className="text-base font-mono font-bold text-foreground capitalize mt-1">
                       {activePersona.price_sensitivity || "balanced"}
                     </p>

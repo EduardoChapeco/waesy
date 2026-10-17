@@ -20,6 +20,7 @@ import {
 } from "@/services/ai-conversations.functions";
 import type { AIChatAction } from "@/components/chat/structured-message-view";
 import { getUserSession } from "@/services/auth.functions";
+import { NativeMobileHeader } from "@/components/navigation/native-mobile-header";
 import { toast } from "sonner";
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -32,11 +33,11 @@ const DEFAULT_GUEST_THREAD_ID = "00000000-0000-0000-0000-000000000001";
 export const Route = createFileRoute("/_store/copilot")({
   head: () => ({
     meta: [
-      { title: "Waesy Copilot | Assistente Central Inteligente" },
+      { title: "Assessor Local | Waesy" },
       {
         name: "description",
         content:
-          "Assistente inteligente para consultas locais, planejamento de viagens, recomendação de produtos e criação de propostas.",
+          "Assessor executivo local para descobertas da cidade, planejamento de viagens, compras e criação de propostas comerciais.",
       },
     ],
   }),
@@ -60,7 +61,7 @@ export const Route = createFileRoute("/_store/copilot")({
           const newThread = await createAiConversationThread({
             data: {
               type: "ai_assistant",
-              title: "Copilot Geral",
+              title: "Assessor Local",
               metadata: {},
               workingMemory: {},
             },
@@ -111,9 +112,9 @@ function CopilotPage() {
         {
           id: DEFAULT_GUEST_THREAD_ID,
           type: "ai_assistant",
-          title: "Copilot Geral",
+          title: "Assessor Local",
           isPinned: true,
-          lastMessageSnippet: "Como posso ajudar com produtos, viagens ou serviços?",
+          lastMessageSnippet: "Como posso te apoiar hoje com compras, viagens ou negócios locais?",
           workingMemory: {},
         },
       ];
@@ -139,9 +140,9 @@ function CopilotPage() {
     {
       id: "welcome-msg",
       threadId: activeThreadId,
-      senderName: "Waesy Copilot",
+      senderName: "Assessor Waesy",
       isStaffOrAI: true,
-      text: "Olá! Sou o Copilot inteligente da plataforma Waesy. Posso te ajudar a encontrar estabelecimentos no Places, pacotes no Turismo, ofertas no Marketplace ou estruturar propostas comerciais para o seu negócio. Como posso te apoiar hoje?",
+      text: "Olá! Sou o seu assessor consultivo executivo da nossa região no Waesy. Posso te ajudar a descobrir os melhores estabelecimentos da cidade, planejar viagens com roteiros e pagamentos Pix, encontrar ofertas locais verificadas ou estruturar propostas comerciais e planilhas para você. Como posso te apoiar hoje?",
       createdAt: new Date().toISOString(),
       status: "delivered",
     },
@@ -497,11 +498,14 @@ function CopilotPage() {
   };
 
   return (
-    <div className="h-full flex-1 w-full flex flex-col bg-background">
+    <div className="h-full flex-1 w-full flex flex-col min-h-0 overflow-hidden bg-background">
       <AIChatShell
         threads={threads}
         activeThreadId={activeThreadId}
         messages={messages}
+        mobileTitle="Waesy Copilot"
+        mobileSubtitle="Assistente Central Inteligente"
+        mobileFallbackHref="/"
         onSelectThread={handleSelectThread}
         onSendMessage={handleSendMessage}
         onRetryMessage={handleRetryMessage}
@@ -514,7 +518,7 @@ function CopilotPage() {
         isSending={isSending}
         isStreaming={isSending}
         currentUserProfileId={effectiveUserId || undefined}
-        className="h-full border-none rounded-none"
+        className="h-full min-h-0 border-none rounded-none"
       />
     </div>
   );

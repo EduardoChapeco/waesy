@@ -428,7 +428,7 @@ function CouriersListPage() {
 
         {/* ── SHEET LATERAL DE DETALHES RÁPIDOS (EDIÇÃO EM PROFUNDIDADE 3) ── */}
         <Sheet open={!!selectedCourier} onOpenChange={(open) => !open && setSelectedCourier(null)}>
-          <SheetContent size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] p-6 space-y-6 overflow-y-auto">
+          <SheetContent size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl p-6 space-y-6 overflow-y-auto overscroll-contain">
             {selectedCourier && (
               <>
                 <SheetHeader className="space-y-1 text-left">

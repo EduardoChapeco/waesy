@@ -49,18 +49,11 @@ export function HorizontalRail({
     <section className={`w-full ${hideHeader ? "" : "space-y-4"} ${className}`} aria-label={title}>
       {/* ── Rail Header — oculto em páginas de vitrine pública (hideHeader) ── */}
       {!hideHeader && (
-        <div className="flex items-end justify-between gap-4 px-1">
-          <div className="space-y-1 min-w-0">
-            <div className="flex items-center gap-2">
-              <h2 className="text-lg md:text-xl font-bold tracking-tight text-foreground truncate">
-                {title}
-              </h2>
-              {badge && (
-                <span className="px-2 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider bg-primary/10 text-primary border border-primary/20 shrink-0">
-                  {badge}
-                </span>
-              )}
-            </div>
+        <div className="flex items-center justify-between gap-4 px-1">
+          <div className="space-y-1 min-w-0 flex-1">
+            <h2 className="text-base sm:text-lg font-bold tracking-tight text-foreground truncate">
+              {title}
+            </h2>
             {subtitle && <p className="text-xs text-muted-foreground line-clamp-1">{subtitle}</p>}
           </div>
 
@@ -70,7 +63,7 @@ export function HorizontalRail({
               <Button
                 asChild
                 variant="ghost"
-                className="text-xs font-semibold text-primary hover:text-primary/80 h-11 sm:h-9 px-3.5 rounded-lg focus-visible:ring-2 focus-visible:ring-primary"
+                className="text-xs font-semibold text-primary hover:text-primary hover:bg-primary/10 h-8 px-3 rounded-lg focus-visible:ring-2 focus-visible:ring-primary transition-colors"
               >
                 <Link to={actionTo as any}>{actionLabel}</Link>
               </Button>
@@ -79,7 +72,7 @@ export function HorizontalRail({
               <Button
                 variant="ghost"
                 onClick={onAction}
-                className="text-xs font-semibold text-primary hover:text-primary/80 h-11 sm:h-9 px-3.5 rounded-lg focus-visible:ring-2 focus-visible:ring-primary"
+                className="text-xs font-semibold text-primary hover:text-primary hover:bg-primary/10 h-8 px-3 rounded-lg focus-visible:ring-2 focus-visible:ring-primary transition-colors"
               >
                 {actionLabel}
               </Button>
@@ -113,7 +106,7 @@ export function HorizontalRail({
           type="button"
           onClick={() => scroll("left")}
           aria-label="Rolar para a esquerda"
-          className="hidden lg:flex absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3.5 z-20 size-11 sm:size-9 rounded-full bg-background/95 hover:bg-background backdrop-blur-md shadow-md border border-border/70 items-center justify-center text-foreground opacity-0 group-hover/rail:opacity-100 transition-all hover:scale-105 active:scale-95 cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          className="hidden lg:flex absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 z-20 size-11 sm:size-9 rounded-lg bg-background/95 hover:bg-background backdrop-blur-md shadow-md border border-border/70 items-center justify-center text-foreground opacity-0 group-hover/rail:opacity-100 transition-opacity hover:scale-105 active:scale-95 cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
         >
           <ChevronLeft className="size-5" />
         </button>
@@ -121,7 +114,7 @@ export function HorizontalRail({
         {/* Scroll Container */}
         <div
           ref={scrollContainerRef}
-          className={`flex items-stretch gap-2 sm:gap-3 overflow-x-auto no-scrollbar pb-2 snap-x snap-mandatory focus:outline-none ${containerClassName}`}
+          className={`-mx-2 px-2 sm:mx-0 sm:px-0 flex items-stretch gap-3 overflow-x-auto no-scrollbar pb-2 snap-x snap-mandatory focus:outline-none ${containerClassName}`}
           tabIndex={0}
           aria-label={`Carrossel de ${title}`}
         >
@@ -134,7 +127,7 @@ export function HorizontalRail({
           type="button"
           onClick={() => scroll("right")}
           aria-label="Rolar para a direita"
-          className="hidden lg:flex absolute right-0 top-1/2 -translate-y-1/2 translate-x-3.5 z-20 size-11 sm:size-9 rounded-full bg-background/95 hover:bg-background backdrop-blur-md shadow-md border border-border/70 items-center justify-center text-foreground opacity-0 group-hover/rail:opacity-100 transition-all hover:scale-105 active:scale-95 cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          className="hidden lg:flex absolute right-0 top-1/2 -translate-y-1/2 translate-x-3 z-20 size-11 sm:size-9 rounded-lg bg-background/95 hover:bg-background backdrop-blur-md shadow-md border border-border/70 items-center justify-center text-foreground opacity-0 group-hover/rail:opacity-100 transition-opacity hover:scale-105 active:scale-95 cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
         >
           <ChevronRight className="size-5" />
         </button>

@@ -159,7 +159,7 @@ export function GlobalMenuHub({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="bottom"
-        className="h-[88dvh] max-h-[88dvh] sm:max-h-[85vh] p-0 flex flex-col rounded-t-[24px] border-t border-border bg-background overflow-hidden"
+        className="h-overlay-max max-h-overlay-max p-0 flex flex-col rounded-t-3xl border-t border-border bg-background overflow-hidden"
       >
         {/* Apple HIG Grab Handle */}
         <div className="w-10 h-1 bg-muted-foreground/30 rounded-full mx-auto my-3 shrink-0" />
@@ -196,7 +196,7 @@ export function GlobalMenuHub({
                     {username ? `@${username}` : userEmail}
                   </p>
                   {isAdmin && (
-                    <span className="inline-flex items-center gap-1 text-[10px] font-bold text-primary bg-primary/10 px-2 py-1 rounded-full mt-1">
+                    <span className="inline-flex items-center gap-1 text-xs font-bold text-primary bg-primary/10 px-2 py-1 rounded-full mt-1">
                       <Shield className="size-3" />
                       Admin Master
                     </span>
@@ -214,9 +214,9 @@ export function GlobalMenuHub({
                       publicProfileTarget ? { id: String(publicProfileTarget) } : undefined
                     )
                   }
-                  className="h-9 rounded-lg text-xs font-semibold gap-2 justify-center border-border/70"
+                  className="h-11 rounded-lg text-xs font-semibold gap-2 justify-center border-border/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
                 >
-                  <User className="size-3.5 text-muted-foreground" />
+                  <User className="size-4 text-muted-foreground" />
                   <span>Perfil</span>
                 </Button>
 
@@ -224,9 +224,9 @@ export function GlobalMenuHub({
                   variant="outline"
                   size="sm"
                   onClick={() => handleNavigate("/conta/perfil")}
-                  className="h-9 rounded-lg text-xs font-semibold gap-2 justify-center border-border/70"
+                  className="h-11 rounded-lg text-xs font-semibold gap-2 justify-center border-border/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
                 >
-                  <Settings className="size-3.5 text-muted-foreground" />
+                  <Settings className="size-4 text-muted-foreground" />
                   <span>Ajustes</span>
                 </Button>
               </div>
@@ -238,7 +238,7 @@ export function GlobalMenuHub({
               </span>
               <Button
                 onClick={() => handleNavigate("/entrar")}
-                className="h-9 px-4 rounded-lg text-xs font-bold bg-primary text-primary-foreground"
+                className="h-11 px-4 rounded-lg text-xs font-bold bg-primary text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
               >
                 Entrar
               </Button>
@@ -247,18 +247,18 @@ export function GlobalMenuHub({
 
           {/* ── 2. ATIVIDADE (Silent WhatsApp List) ── */}
           <div className="space-y-1">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground px-1">
+            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground px-1">
               Atividade
             </span>
             <div className="rounded-lg border border-border/70 bg-card divide-y divide-border/40 overflow-hidden">
-              {activityItems.map((item) => {
+              {activityItems.length === 0 ? null : activityItems.map((item) => {
                 const Icon = item.icon;
                 return (
                   <button
                     key={item.label}
                     type="button"
                     onClick={item.onClick}
-                    className="w-full h-11 px-4 flex items-center justify-between hover:bg-muted/40 active:bg-muted/60 transition-colors text-left cursor-pointer"
+                    className="w-full h-11 px-4 flex items-center justify-between hover:bg-muted/40 active:bg-muted/60 transition-colors text-left cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
                   >
                     <div className="flex items-center gap-3 min-w-0">
                       <Icon className="size-4 text-muted-foreground shrink-0" />
@@ -268,7 +268,7 @@ export function GlobalMenuHub({
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
                       {item.badge && (
-                        <Badge className="bg-primary text-primary-foreground text-[10px] font-bold h-5 px-2">
+                        <Badge className="bg-primary text-primary-foreground text-xs font-bold h-5 px-2">
                           {item.badge}
                         </Badge>
                       )}
@@ -282,18 +282,18 @@ export function GlobalMenuHub({
 
           {/* ── 3. SERVIÇOS (Silent WhatsApp List) ── */}
           <div className="space-y-1">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground px-1">
+            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground px-1">
               Ecossistema
             </span>
             <div className="rounded-lg border border-border/70 bg-card divide-y divide-border/40 overflow-hidden">
-              {ecosystemItems.map((item) => {
+              {ecosystemItems.length === 0 ? null : ecosystemItems.map((item) => {
                 const Icon = item.icon;
                 return (
                   <button
                     key={item.label}
                     type="button"
                     onClick={item.onClick}
-                    className="w-full h-11 px-4 flex items-center justify-between hover:bg-muted/40 active:bg-muted/60 transition-colors text-left cursor-pointer"
+                    className="w-full h-11 px-4 flex items-center justify-between hover:bg-muted/40 active:bg-muted/60 transition-colors text-left cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
                   >
                     <div className="flex items-center gap-3 min-w-0">
                       <Icon className="size-4 text-muted-foreground shrink-0" />
@@ -310,14 +310,14 @@ export function GlobalMenuHub({
 
           {/* ── 4. OPERAÇÃO (Silent WhatsApp List) ── */}
           <div className="space-y-1">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground px-1">
+            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground px-1">
               Operação
             </span>
             <div className="rounded-lg border border-border/70 bg-card divide-y divide-border/40 overflow-hidden">
               <button
                 type="button"
                 onClick={() => handleSwitchContext("store")}
-                className="w-full h-11 px-4 flex items-center justify-between hover:bg-muted/40 active:bg-muted/60 transition-colors text-left cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                className="w-full h-11 px-4 flex items-center justify-between hover:bg-muted/40 active:bg-muted/60 transition-colors text-left cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
               >
                 <div className="flex items-center gap-3 min-w-0">
                   <LayoutDashboard className="size-4 text-muted-foreground shrink-0" />
@@ -331,7 +331,7 @@ export function GlobalMenuHub({
               <button
                 type="button"
                 onClick={() => handleNavigate("/criar-negocio")}
-                className="w-full h-11 px-4 flex items-center justify-between hover:bg-muted/40 active:bg-muted/60 transition-colors text-left cursor-pointer"
+                className="w-full h-11 px-4 flex items-center justify-between hover:bg-muted/40 active:bg-muted/60 transition-colors text-left cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
               >
                 <div className="flex items-center gap-3 min-w-0">
                   <Store className="size-4 text-muted-foreground shrink-0" />
@@ -346,7 +346,7 @@ export function GlobalMenuHub({
                 <button
                   type="button"
                   onClick={() => handleNavigate("/admin-master")}
-                  className="w-full h-11 px-4 flex items-center justify-between bg-primary/5 hover:bg-primary/10 transition-colors text-left cursor-pointer"
+                  className="w-full h-11 px-4 flex items-center justify-between bg-primary/5 hover:bg-primary/10 transition-colors text-left cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     <Shield className="size-4 text-primary shrink-0" />
@@ -366,7 +366,7 @@ export function GlobalMenuHub({
               <button
                 type="button"
                 onClick={() => handleNavigate(isAuthenticated ? "/conta" : "/entrar")}
-                className="w-full h-11 px-4 flex items-center justify-between hover:bg-muted/40 active:bg-muted/60 transition-colors text-left cursor-pointer"
+                className="w-full h-11 px-4 flex items-center justify-between hover:bg-muted/40 active:bg-muted/60 transition-colors text-left cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
               >
                 <div className="flex items-center gap-3 min-w-0">
                   <Settings className="size-4 text-muted-foreground shrink-0" />
@@ -381,7 +381,7 @@ export function GlobalMenuHub({
                 <button
                   type="button"
                   onClick={handleLogout}
-                  className="w-full h-11 px-4 flex items-center justify-between hover:bg-destructive/10 transition-colors text-left cursor-pointer text-destructive"
+                  className="w-full h-11 px-4 flex items-center justify-between hover:bg-destructive/10 transition-colors text-left cursor-pointer text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive focus-visible:ring-offset-2"
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     <LogOut className="size-4 shrink-0" />
@@ -393,7 +393,7 @@ export function GlobalMenuHub({
           </div>
 
           <div className="text-center pt-2 pb-6">
-            <span className="text-[11px] text-muted-foreground">
+            <span className="text-xs text-muted-foreground">
               Waesy Platform • Versão 2.4 (Mobile-First Native)
             </span>
           </div>

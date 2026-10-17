@@ -100,7 +100,7 @@ export async function requireStaff(): Promise<{ id: string; role: Role; store_id
 }
 
 /** Exige acesso administrativo global (master). Servidor apenas. */
-export async function requirePlatformAdmin(): Promise<{ id: string; role: Role; store_id: string }> {
+export async function requirePlatformAdmin(): Promise<{ id: string; role: Role; store_id: string | null }> {
   const mod = await import("@/lib/auth-guards.server");
   return mod.requirePlatformAdmin();
 }

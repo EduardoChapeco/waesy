@@ -552,12 +552,33 @@ function SearchPage() {
     }
   };
 
-  const handleSearch = async (q: string) => {
+  const handleSearch = async (
+    q: string,
+    overrideFilters?: {
+      categories?: string[];
+      niches?: string[];
+      minPrice?: number;
+      maxPrice?: number;
+      sort?: string;
+    }
+  ) => {
     const trimmed = q.trim();
     if (!trimmed || trimmed.length < 2) return;
 
     saveRecentSearch(trimmed);
     navigate({ to: Route.fullPath, search: { q: trimmed } });
+
+    const categoriesToUse = overrideFilters?.categories ?? selectedCategories;
+    const nichesToUse = overrideFilters?.niches ?? selectedNiches;
+    const minPriceToUse =
+      overrideFilters?.minPrice !== undefined
+        ? overrideFilters.minPrice
+        : selectedMinPrice;
+    const maxPriceToUse =
+      overrideFilters?.maxPrice !== undefined
+        ? overrideFilters.maxPrice
+        : selectedMaxPrice;
+    const sortToUse = overrideFilters?.sort ?? selectedSort;
 
     try {
       const [res, facetedRes] = await Promise.all([
@@ -565,11 +586,11 @@ function SearchPage() {
         searchFacetedCatalog({
           data: {
             query: trimmed,
-            category_slugs: selectedCategories,
-            niches: selectedNiches,
-            min_price_cents: selectedMinPrice,
-            max_price_cents: selectedMaxPrice,
-            sort_by: selectedSort as any,
+            category_slugs: categoriesToUse,
+            niches: nichesToUse,
+            min_price_cents: minPriceToUse,
+            max_price_cents: maxPriceToUse,
+            sort_by: sortToUse as any,
           },
         }).catch(() => null),
       ]);
@@ -672,7 +693,7 @@ function SearchPage() {
                 <button
                   type="button"
                   onClick={clearRecentSearches}
-                  className="text-[11px] font-semibold text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
+                  className="text-xs font-semibold text-muted-foreground hover:text-foreground cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xs"
                 >
                   Limpar tudo
                 </button>
@@ -1052,6 +1073,36 @@ function SearchPage() {
       </ResultSection>
     </div>
   )}
+
+  {/* ── 3. Motor de Busca Facetada (FacetedSearchSheet Bottom Sheet / Slide-over) ── */}
+  <FacetedSearchSheet
+    isOpen={isFilterSheetOpen}
+    onClose={() => setIsFilterSheetOpen(false)}
+    facets={facetedFacets}
+    selectedCategories={selectedCategories}
+    selectedNiches={selectedNiches}
+    selectedMinPrice={selectedMinPrice}
+    selectedMaxPrice={selectedMaxPrice}
+    selectedSort={selectedSort}
+    totalResultsCount={total}
+    onApplyFilters={handleApplyFilters}
+    onResetFilters={() => {
+      setSelectedCategories([]);
+      setSelectedNiches([]);
+      setSelectedMinPrice(undefined);
+      setSelectedMaxPrice(undefined);
+      setSelectedSort("relevance_telemetry");
+      if (input.trim()) {
+        handleSearch(input.trim(), {
+          categories: [],
+          niches: [],
+          minPrice: undefined,
+          maxPrice: undefined,
+          sort: "relevance_telemetry",
+        });
+      }
+    }}
+  />
  </div>
  );
 }

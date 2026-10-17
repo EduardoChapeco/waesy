@@ -40,7 +40,7 @@ export function AdvancedVariantEditor({
 
  return (
  <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
- <SheetContent size="wide" className="sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] w-full sm:w-3/4 overflow-y-auto no-scrollbar">
+ <SheetContent size="wide" className="sm:max-w-3xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl w-full overflow-y-auto overscroll-contain no-scrollbar">
  <SheetHeader>
  <SheetTitle>Edição Avançada da Variação</SheetTitle>
  <SheetDescription>

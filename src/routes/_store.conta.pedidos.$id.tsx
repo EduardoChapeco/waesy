@@ -237,7 +237,7 @@ function CustomerOrderDetailPage() {
               variant="outline"
               size="sm"
               onClick={() => setCompanionOpen(true)}
-              className="rounded-lg text-xs font-semibold gap-2 h-8.5 px-3 cursor-pointer border-emerald-500/30 text-emerald-700 dark:text-emerald-400 bg-emerald-500/5 hover:bg-emerald-500/10"
+              className="rounded-lg text-xs font-semibold gap-2 h-11 min-h-11 px-3 cursor-pointer border-emerald-500/30 text-emerald-700 dark:text-emerald-400 bg-emerald-500/5 hover:bg-emerald-500/10 focus-visible:ring-2 focus-visible:ring-primary"
             >
               <Smartphone className="size-3.5" />
               <span className="hidden sm:inline">Resumo 9:16</span>
@@ -245,13 +245,42 @@ function CustomerOrderDetailPage() {
             </Button>
             <Badge
               variant={getStatusVariant(order.status)}
-              className="text-[11px] font-mono font-semibold px-3 py-1 rounded-lg"
+              className="text-xs font-mono font-semibold px-3 py-1 rounded-lg"
             >
               {translateStatus(order.status)}
             </Badge>
           </div>
         }
       />
+
+      {/* ── Cabeçalho Inpage Desktop (Apple HIG) ── */}
+      <div className="hidden md:flex items-center justify-between pb-4 border-b border-border/40 mb-6">
+        <div className="space-y-1">
+          <div className="flex items-center gap-3">
+            <h1 className="text-xl font-bold tracking-tight text-foreground">
+              Pedido {order.order_number || formatHumanOrderId(order.custom_fields?.short_id || order.public_token)}
+            </h1>
+            <Badge
+              variant={getStatusVariant(order.status)}
+              className="text-xs font-mono font-semibold px-3 py-1 rounded-full"
+            >
+              {translateStatus(order.status)}
+            </Badge>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Realizado em {formatDate(order.created_at)}
+          </p>
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setCompanionOpen(true)}
+          className="rounded-lg text-xs font-semibold gap-2 h-11 min-h-11 px-4 cursor-pointer border-emerald-500/30 text-emerald-700 dark:text-emerald-400 bg-emerald-500/5 hover:bg-emerald-500/10 focus-visible:ring-2 focus-visible:ring-primary"
+        >
+          <Smartphone className="size-4" />
+          <span>Resumo Digital 9:16</span>
+        </Button>
+      </div>
 
       <div className="grid gap-6 md:grid-cols-3">
         {/* Left: items + shipping */}

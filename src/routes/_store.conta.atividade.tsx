@@ -157,10 +157,10 @@ function MyActivityPage() {
 
   return (
     <div className="space-y-6 pb-12">
-      <NativeMobileHeader title="Minha Atividade" />
+      <NativeMobileHeader title="Minha Atividade" fallbackHref="/conta" mobileOnly />
 
-      {/* Header com contextualização LGPD */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-4">
+      {/* Header com contextualização LGPD (Desktop Apenas) */}
+      <div className="hidden md:flex items-center justify-between gap-4 border-b pb-4">
         <div>
           <h1 className="text-2xl font-black tracking-tight text-foreground flex items-center gap-2">
             <Activity className="size-6 text-primary" />

@@ -278,7 +278,7 @@ export function TaskDetailSheet({
         <SheetContent
           side="right"
           size="wide"
-          className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] p-0 flex flex-col h-full max-sm:!h-[100dvh] max-sm:!inset-0 max-sm:!rounded-none bg-card border-l border-border/70"
+          className="p-0 flex flex-col h-full bg-card border-l border-border/70 overscroll-contain max-sm:inset-0 max-sm:h-dvh max-sm:rounded-none"
         >
           {/* Header Compacto */}
           <SheetHeader className="px-5 py-4 border-b border-border/60 bg-muted/20 flex flex-row items-center justify-between shrink-0">

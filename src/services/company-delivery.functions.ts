@@ -69,8 +69,9 @@ export const GetDispatchByOrderSchema = z.object({
 export const getCompanyDeliverySettings = createServerFn({ method: "GET" })
   .validator(z.object({ storeId: z.string().uuid().optional() }).optional())
   .handler(async ({ data }) => {
+    const { storeId = undefined } = data ?? {};
     const supabase = getServerClient();
-    let targetStoreId: string | undefined = data?.storeId;
+    let targetStoreId: string | undefined = storeId;
 
     if (!targetStoreId) {
       const identity = await getServerIdentity().catch(() => null);
@@ -124,8 +125,16 @@ export const getCompanyDeliverySettings = createServerFn({ method: "GET" })
 export const saveCompanyDeliverySettings = createServerFn({ method: "POST" })
   .validator(SaveDeliverySettingsSchema)
   .handler(async ({ data }) => {
+    const {
+      storeId = undefined,
+      hasOwnCouriers = false,
+      fixedDeliveryFeeCents = 0,
+      freeDeliveryAboveCents = null,
+      neighborhoodsRates = [],
+      motoboyInstructions = null,
+    } = data ?? {};
     const supabase = getServerClient();
-    let targetStoreId: string | undefined = data.storeId;
+    let targetStoreId: string | undefined = storeId;
 
     if (!targetStoreId) {
       const identity = await getServerIdentity().catch(() => null);
@@ -138,11 +147,11 @@ export const saveCompanyDeliverySettings = createServerFn({ method: "POST" })
 
     const payload = {
       store_id: targetStoreId,
-      has_own_couriers: data.hasOwnCouriers,
-      fixed_delivery_fee_cents: data.fixedDeliveryFeeCents,
-      free_delivery_above_cents: data.freeDeliveryAboveCents || null,
-      neighborhoods_rates: data.neighborhoodsRates,
-      motoboy_instructions: data.motoboyInstructions || null,
+      has_own_couriers: hasOwnCouriers,
+      fixed_delivery_fee_cents: fixedDeliveryFeeCents,
+      free_delivery_above_cents: freeDeliveryAboveCents || null,
+      neighborhoods_rates: neighborhoodsRates,
+      motoboy_instructions: motoboyInstructions || null,
       updated_at: new Date().toISOString(),
     };
 
@@ -174,9 +183,27 @@ export const saveCompanyDeliverySettings = createServerFn({ method: "POST" })
 export const createDeliveryDispatch = createServerFn({ method: "POST" })
   .validator(CreateDispatchSchema)
   .handler(async ({ data }) => {
+    const {
+      storeId = undefined,
+      dealId = null,
+      orderId = null,
+      classifiedId = null,
+      customerName = "",
+      customerPhone = "",
+      deliveryAddress = "",
+      deliveryNeighborhood = null,
+      deliveryCity = null,
+      deliveryFeeCents = 0,
+      orderAmountCents = 0,
+      paymentMethod = "pix",
+      courierId = null,
+      courierName = null,
+      courierPhone = null,
+      notes = null,
+    } = data ?? {};
     const supabase = getServerClient();
     const identity = await getServerIdentity().catch(() => null);
-    let targetStoreId = data.storeId || identity?.store_id || identity?.tenant_id;
+    let targetStoreId = storeId || identity?.store_id || identity?.tenant_id;
 
     if (!targetStoreId) {
       throw new Error("Identidade de loja não localizada para despachar entrega.");
@@ -192,23 +219,23 @@ export const createDeliveryDispatch = createServerFn({ method: "POST" })
 
     const dispatchRecord = {
       store_id: targetStoreId,
-      deal_id: data.dealId || null,
-      order_id: data.orderId || null,
-      classified_id: data.classifiedId || null,
-      customer_name: data.customerName,
-      customer_phone: data.customerPhone,
-      delivery_address: data.deliveryAddress,
-      delivery_neighborhood: data.deliveryNeighborhood || null,
-      delivery_city: getDefaultCity(data.deliveryCity),
-      delivery_fee_cents: data.deliveryFeeCents,
-      order_amount_cents: data.orderAmountCents,
-      payment_method: data.paymentMethod || "pix",
+      deal_id: dealId || null,
+      order_id: orderId || null,
+      classified_id: classifiedId || null,
+      customer_name: customerName,
+      customer_phone: customerPhone,
+      delivery_address: deliveryAddress,
+      delivery_neighborhood: deliveryNeighborhood || null,
+      delivery_city: getDefaultCity(deliveryCity),
+      delivery_fee_cents: deliveryFeeCents,
+      order_amount_cents: orderAmountCents,
+      payment_method: paymentMethod || "pix",
       token,
-      courier_id: data.courierId || null,
-      courier_name: data.courierName || null,
-      courier_phone: data.courierPhone || null,
+      courier_id: courierId || null,
+      courier_name: courierName || null,
+      courier_phone: courierPhone || null,
       status: "pending",
-      notes: data.notes || null,
+      notes: notes || null,
       confirmation_pin: confirmationPin,
       created_at: new Date().toISOString(),
     };
@@ -245,6 +272,7 @@ export const createDeliveryDispatch = createServerFn({ method: "POST" })
 export const getDispatchByToken = createServerFn({ method: "GET" })
   .validator(z.object({ token: z.string().min(5) }))
   .handler(async ({ data }) => {
+    const { token } = data ?? {};
     const supabase = getServerClient();
 
     try {
@@ -254,7 +282,7 @@ export const getDispatchByToken = createServerFn({ method: "GET" })
           *,
           store:stores(id, name, logo_url, phone, address, city, state)
         `)
-        .eq("token", data.token)
+        .eq("token", token)
         .maybeSingle();
 
       if (error || !dispatch) {
@@ -273,27 +301,34 @@ export const getDispatchByToken = createServerFn({ method: "GET" })
 export const updateDispatchStatusByToken = createServerFn({ method: "POST" })
   .validator(UpdateDispatchStatusSchema)
   .handler(async ({ data }) => {
+    const {
+      token,
+      status,
+      proofPhotoUrl = null,
+      confirmationPin = null,
+      notes = null,
+    } = data ?? {};
     const supabase = getServerClient();
 
     const updates: Record<string, any> = {
-      status: data.status,
+      status,
       updated_at: new Date().toISOString(),
     };
 
-    if (data.status === "accepted") {
+    if (status === "accepted") {
       updates.accepted_at = new Date().toISOString();
-    } else if (data.status === "delivered") {
+    } else if (status === "delivered") {
       updates.delivered_at = new Date().toISOString();
-      if (data.proofPhotoUrl) updates.proof_photo_url = data.proofPhotoUrl;
+      if (proofPhotoUrl) updates.proof_photo_url = proofPhotoUrl;
     }
 
-    if (data.notes) updates.notes = data.notes;
+    if (notes) updates.notes = notes;
 
     try {
       const { data: updated, error } = await (supabase as any)
         .from("classified_delivery_dispatches")
         .update(updates)
-        .eq("token", data.token)
+        .eq("token", token)
         .select()
         .single();
 
@@ -318,6 +353,7 @@ export const updateDispatchStatusByToken = createServerFn({ method: "POST" })
 export const getDispatchByDealId = createServerFn({ method: "GET" })
   .validator(GetDispatchByDealSchema)
   .handler(async ({ data }) => {
+    const { dealId } = data ?? {};
     const supabase = getServerClient();
 
     try {
@@ -327,7 +363,7 @@ export const getDispatchByDealId = createServerFn({ method: "GET" })
           *,
           store:stores(id, name, logo_url, phone)
         `)
-        .eq("deal_id", data.dealId)
+        .eq("deal_id", dealId)
         .order("created_at", { ascending: false })
         .limit(1)
         .maybeSingle();
@@ -348,6 +384,7 @@ export const getDispatchByDealId = createServerFn({ method: "GET" })
 export const getDispatchByOrderId = createServerFn({ method: "GET" })
   .validator(GetDispatchByOrderSchema)
   .handler(async ({ data }) => {
+    const { orderId } = data ?? {};
     const supabase = getServerClient();
 
     try {
@@ -357,7 +394,7 @@ export const getDispatchByOrderId = createServerFn({ method: "GET" })
           *,
           store:stores(id, name, logo_url, phone)
         `)
-        .eq("order_id", data.orderId)
+        .eq("order_id", orderId)
         .order("created_at", { ascending: false })
         .limit(1)
         .maybeSingle();
@@ -388,14 +425,21 @@ export const CalculateDeliveryFeeSchema = z.object({
 export const calculateDeliveryFeeReal = createServerFn({ method: "POST" })
   .validator(CalculateDeliveryFeeSchema)
   .handler(async ({ data }) => {
+    const {
+      storeId,
+      subtotalCents = 0,
+      deliveryMode = "delivery",
+      neighborhood = null,
+      classifiedId = null,
+    } = data ?? {};
     const supabase = getServerClient();
     try {
       const { data: res, error } = await supabase.rpc("calculate_order_delivery_fee", {
-        p_store_id: data.storeId,
-        p_subtotal_cents: data.subtotalCents,
-        p_delivery_mode: data.deliveryMode === "pickup" ? "pickup" : "delivery",
-        p_neighborhood: data.neighborhood || null,
-        p_classified_id: data.classifiedId || null,
+        p_store_id: storeId,
+        p_subtotal_cents: subtotalCents,
+        p_delivery_mode: deliveryMode === "pickup" ? "pickup" : "delivery",
+        p_neighborhood: neighborhood || null,
+        p_classified_id: classifiedId || null,
       });
 
       if (error) {

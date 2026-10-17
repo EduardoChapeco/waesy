@@ -205,10 +205,10 @@ export function OnboardingReviewPage() {
           </div>
           <div>
             <h1 className="text-base font-semibold text-foreground tracking-tight">
-              Onboarding e Ingestão de Catálogo
+              Revisão e Cadastro de Catálogo
             </h1>
             <p className="text-xs text-muted-foreground">
-              OCR Multimodal · Master SKU Catalog · Modo Tradicional 100% Opcional
+              Leitura Automática de Fotos · Catálogo de Produtos · Cadastro Rápido
             </p>
           </div>
         </div>
@@ -225,7 +225,7 @@ export function OnboardingReviewPage() {
             }`}
           >
             <Camera className="size-3.5" />
-            <span>Revisão Multimodal</span>
+            <span>Revisão por Foto</span>
             <Badge variant="secondary" className="text-xs px-1 py-0 h-4">
               {items.length}
             </Badge>

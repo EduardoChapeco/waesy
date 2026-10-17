@@ -49,7 +49,7 @@ function Page() {
  <div className="text-center mb-8">
  <h1 className="text-3xl font-semibold">Recuperar senha</h1>
  <p className="text-muted-foreground mt-2">
- Digite seu e-mail para receber um link de redefinição de senha.
+ Informe seu e-mail cadastrado.
  </p>
  </div>
 

@@ -331,14 +331,20 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
  };
 
  const confirmSwitchToPersonal = () => {
- setShowPersonalSwitchModal(false);
- toast.info(`Alternando para o perfil de ${userDisplayName}...`);
- navigate({ to: targetPersonalPath as any });
+   setShowPersonalSwitchModal(false);
+   if (typeof window !== "undefined") {
+     window.document.cookie = "waesy_active_context=civil; path=/; max-age=31536000; SameSite=Lax";
+     window.document.cookie = "waesy_active_tenant=; path=/; max-age=0; SameSite=Lax";
+     window.document.cookie = "waesy_active_creator=; path=/; max-age=0; SameSite=Lax";
+     window.document.cookie = "waesy_store_id=; path=/; max-age=0; SameSite=Lax";
+   }
+   toast.success(`Alternando para o perfil de ${userDisplayName}...`);
+   window.location.href = targetPersonalPath || "/conta";
  };
 
  const requestSwitchToPersonal = (destination = "/conta") => {
- setTargetPersonalPath(destination);
- setShowPersonalSwitchModal(true);
+   setTargetPersonalPath(destination);
+   setShowPersonalSwitchModal(true);
  };
 
  const NavLinks = ({ isMobile = false }: { isMobile?: boolean }) => (
@@ -449,7 +455,7 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
  <button
  type="button"
  onClick={() => setIsAllToolsOpen(true)}
- className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+ className="w-full flex items-center gap-3 px-3 min-h-11 rounded-lg text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
  >
  <Sliders className="size-4 text-primary shrink-0" />
  <span className="truncate">Todas as ferramentas</span>
@@ -459,7 +465,7 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
  <button
  type="button"
  onClick={() => setIsAllToolsOpen(true)}
- className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+ className="w-full flex items-center gap-3 px-3 min-h-11 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
  >
  <Search className="size-4 shrink-0 text-muted-foreground" />
  <span className="truncate">Pesquisar</span>
@@ -468,7 +474,7 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
  {/* 3. Configurações da Loja */}
  <Link
  to="/workspace/configuracoes"
- className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
+ className="w-full flex items-center gap-3 px-3 min-h-11 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
  >
  <Settings className="size-4 shrink-0 text-muted-foreground" />
  <span className="truncate">Configurações</span>
@@ -478,20 +484,21 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
  <div className="flex items-center justify-between pt-1 border-t border-border/40 text-xs">
  <Link
  to="/termos"
- className="flex items-center gap-2 text-muted-foreground hover:text-foreground px-2 py-1 rounded-lg hover:bg-muted/40 transition-colors"
+ className="flex items-center gap-2 text-muted-foreground hover:text-foreground px-2 min-h-11 rounded-lg hover:bg-muted/40 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
  >
  <HelpCircle className="size-3.5" />
  <span>Ajuda</span>
  </Link>
 
- <Link
- to="/conta"
- className="flex items-center gap-1 text-primary hover:underline px-2 py-1 font-bold"
- title="Voltar ao marketplace"
+ <button
+ type="button"
+ onClick={() => requestSwitchToPersonal("/")}
+ className="flex items-center gap-1 text-primary hover:underline px-2 min-h-11 font-bold cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+ title="Voltar ao marketplace (Super App)"
  >
  <span>Super App</span>
  <ArrowUpRight className="size-3" />
- </Link>
+ </button>
  </div>
  </div>
  </aside>
@@ -609,7 +616,7 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
               <DropdownMenuTrigger asChild>
                 <button
                   type="button"
-                  className="flex items-center gap-2 p-1 pl-2 rounded-lg border border-border/60 bg-card hover:bg-muted/80 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  className="flex items-center gap-2 p-1 pl-2 h-11 min-h-11 rounded-lg border border-border/60 bg-card hover:bg-muted/80 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 >
                   <span className="text-xs font-bold text-foreground max-w-28 truncate hidden waesy-expanded-flex">
                     {userDisplayName}
@@ -650,14 +657,15 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
 
                 <DropdownMenuSeparator className="bg-border" />
 
-                <DropdownMenuItem asChild className="rounded-lg cursor-pointer text-xs font-semibold text-foreground flex items-center justify-between">
-                  <Link to="/conta">
-                    <div className="flex items-center gap-2">
-                      <UserCircle className="size-3.5 text-primary" />
-                      <span>Conta Pessoal</span>
-                    </div>
-                    <ArrowUpRight className="size-3 text-muted-foreground" />
-                  </Link>
+                <DropdownMenuItem
+                  onClick={() => requestSwitchToPersonal("/conta")}
+                  className="rounded-lg cursor-pointer text-xs font-semibold text-foreground flex items-center justify-between"
+                >
+                  <div className="flex items-center gap-2">
+                    <UserCircle className="size-3.5 text-primary" />
+                    <span>Conta Pessoal</span>
+                  </div>
+                  <ArrowUpRight className="size-3 text-muted-foreground" />
                 </DropdownMenuItem>
 
                 <DropdownMenuSeparator className="bg-border" />
@@ -674,8 +682,8 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
           </div>
         </header>
 
-        <main id="workspace-main-content" className="main-container-query flex-1 w-full overflow-y-auto no-scrollbar">
-          <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 pb-24">
+        <main id="workspace-main-content" className="main-container-query flex-1 w-full min-h-0 overflow-y-auto no-scrollbar flex flex-col">
+          <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 pb-24 lg:pb-6 flex-1 flex flex-col min-h-0">
             {isAuthorized ? (
               children
             ) : (

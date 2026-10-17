@@ -86,7 +86,8 @@ function NotificationsPage() {
       markReadMutation.mutate(item.id);
     }
     if (item.linkUrl) {
-      navigate({ to: item.linkUrl });
+      const canonicalUrl = item.linkUrl.replace(/^\/_store\//, "/");
+      navigate({ to: canonicalUrl as any });
     }
   };
 
@@ -146,7 +147,7 @@ function NotificationsPage() {
   ) : null;
 
   return (
-    <div className="w-full max-w-5xl mx-auto space-y-4 sm:space-y-6 pb-20 px-4 sm:px-6">
+    <div className="w-full max-w-5xl mx-auto space-y-4 sm:space-y-6 pb-20 px-0 sm:px-4 md:px-0">
       {/* ── 1. Native Mobile Header (Apple HIG / PWA Nativo) ── */}
       <NativeMobileHeader
         title="Notificações"

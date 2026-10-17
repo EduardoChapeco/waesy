@@ -403,7 +403,7 @@ export function SquadsWorkspacePage() {
 
       {/* ── SHEET CANÔNICA DO CURRÍCULO DO ESPECIALISTA (APPLE HIG) ── */}
       <Sheet open={!!selectedAgent} onOpenChange={(open) => !open && setSelectedAgent(null)}>
-        <SheetContent side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] bg-card p-6 overflow-y-auto flex flex-col justify-between space-y-6">
+        <SheetContent side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl bg-card p-6 overflow-y-auto overscroll-contain flex flex-col justify-between space-y-6">
           {selectedAgent && (
             <div>
               <SheetHeader className="border-b border-border/40 pb-4 text-left">
@@ -511,7 +511,7 @@ export function SquadsWorkspacePage() {
       </Sheet>
       {/* ── SHEET CANÔNICA DE INSPEÇÃO DE ENTREGÁVEIS & PARECER EXECUTIVO ── */}
       <Sheet open={!!selectedRunArtifacts} onOpenChange={(open) => !open && setSelectedRunArtifacts(null)}>
-        <SheetContent side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] bg-card p-6 overflow-y-auto flex flex-col justify-between space-y-6">
+        <SheetContent side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl bg-card p-6 overflow-y-auto overscroll-contain flex flex-col justify-between space-y-6">
           {selectedRunArtifacts && selectedRunArtifacts.run && (
             <div>
               <SheetHeader className="border-b border-border/40 pb-4 text-left">

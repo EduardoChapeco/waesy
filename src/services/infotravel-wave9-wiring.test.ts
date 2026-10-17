@@ -4,9 +4,9 @@ import { resolve } from "node:path";
 import { mapInfotravelV1BookingToNormalized } from "@/types/infotravel";
 
 describe("Onda 9 — wiring dos módulos ao DTO infotravel-v1", () => {
-  const service = readFileSync(resolve(process.cwd(), "src/services/infotravel.ts"), "utf8");
-  const lifecycle = readFileSync(resolve(process.cwd(), "src/services/travel-lifecycle.functions.ts"), "utf8");
-  const proposals = readFileSync(resolve(process.cwd(), "src/services/travel-proposal.functions.ts"), "utf8");
+  const service = readFileSync(resolve(process.cwd(), "src/services/infotravel.ts"), "utf8").replace(/\r\n/g, "\n");
+  const lifecycle = readFileSync(resolve(process.cwd(), "src/services/travel-lifecycle.functions.ts"), "utf8").replace(/\r\n/g, "\n");
+  const proposals = readFileSync(resolve(process.cwd(), "src/services/travel-proposal.functions.ts"), "utf8").replace(/\r\n/g, "\n");
 
   it("exige o envelope v1 nas buscas, importação e sincronização", () => {
     expect(service).toContain("requireV1Envelope(data, \"search_hotels\")");

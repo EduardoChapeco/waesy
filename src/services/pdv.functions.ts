@@ -16,6 +16,7 @@ export const listKdsStations = createServerFn({ method: "GET" })
  .handler(async (): Promise<KdsStation[]> => {
  const supabase = getServerClient();
  const identity = await getServerIdentity();
+ assertStoreAccess(identity, ["owner", "admin", "manager", "kitchen", "cook", "waiter", "seller"]);
 
  const { data, error } = await supabase
  .from("kds_stations")
@@ -97,6 +98,7 @@ export const listKdsActiveOrders = createServerFn({ method: "GET" })
  .handler(async ({ data }): Promise<KdsOrder[]> => {
  const supabase = getServerClient();
  const identity = await getServerIdentity();
+ assertStoreAccess(identity, ["owner", "admin", "manager", "kitchen", "cook", "waiter", "seller"]);
 
  let query = supabase
  .from("kds_orders")
@@ -132,6 +134,7 @@ export const updateKdsOrderStatus = createServerFn({ method: "POST" })
  .handler(async ({ data }) => {
  const supabase = getServerClient();
  const identity = await getServerIdentity();
+ assertStoreAccess(identity, ["owner", "admin", "manager", "kitchen", "cook"]);
 
  const updates: Record<string, unknown> = {
  status: data.status,
@@ -168,6 +171,7 @@ export const updateKdsItemStatus = createServerFn({ method: "POST" })
  .handler(async ({ data }) => {
  const supabase = getServerClient();
  const identity = await getServerIdentity();
+ assertStoreAccess(identity, ["owner", "admin", "manager", "kitchen", "cook"]);
 
  const updates: Record<string, unknown> = {
  status: data.status,
@@ -194,6 +198,7 @@ export const listRestaurantTables = createServerFn({ method: "GET" })
  .handler(async (): Promise<RestaurantTable[]> => {
  const supabase = getServerClient();
  const identity = await getServerIdentity();
+ assertStoreAccess(identity, ["owner", "admin", "manager", "waiter", "seller"]);
 
  const { data, error } = await supabase
  .from("restaurant_tables")
@@ -218,6 +223,7 @@ export const updateRestaurantTableStatus = createServerFn({ method: "POST" })
  .handler(async ({ data }) => {
  const supabase = getServerClient();
  const identity = await getServerIdentity();
+ assertStoreAccess(identity, ["owner", "admin", "manager", "waiter", "seller"]);
 
  const updates: Record<string, unknown> = {
  status: data.status,
@@ -274,6 +280,7 @@ export const processPosMultiPayment = createServerFn({ method: "POST" })
  .handler(async ({ data }) => {
  const supabase = getServerClient();
  const identity = await getServerIdentity();
+ assertStoreAccess(identity, ["owner", "admin", "manager", "cashier", "seller", "finance"]);
 
  // 1. Validar Pedido
  const { data: order, error: orderErr } = await supabase

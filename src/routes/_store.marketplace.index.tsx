@@ -293,13 +293,23 @@ function AdvancedMarketplacePage() {
         searchPlaceholder="Buscar produtos e lojas verificadas..."
       />
 
-      <div className="px-4 sm:px-6 space-y-6 pt-3 sm:pt-5">
+      {/* ── Cabeçalho Inpage Desktop (Apple HIG) ── */}
+      <div className="hidden md:flex items-center justify-between pt-4 pb-3 border-b border-border/40">
+        <div>
+          <h1 className="text-xl font-bold tracking-tight text-foreground">Marketplace de Empresas</h1>
+          <p className="text-xs text-muted-foreground mt-1">
+            Produtos novos com estoque verificado, entrega rápida e compra direta nas lojas da região
+          </p>
+        </div>
+      </div>
+
+      <div className="space-y-4 sm:space-y-6 pt-3 sm:pt-4">
         {activeNiche !== "todos" && activeNicheConfig.targetRoute && (
           <div className="flex items-center justify-between p-3 rounded-lg bg-card border border-border/80">
             <span className="text-xs font-medium text-muted-foreground">Vitrine especializada disponível</span>
             <Link
               to={activeNicheConfig.targetRoute as any}
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-primary hover:underline cursor-pointer"
+              className="inline-flex items-center gap-2 text-xs font-bold text-primary hover:underline cursor-pointer"
             >
               <span>Acessar vitrine {activeNicheConfig.label}</span>
               <ArrowSquareOut size={13} weight="bold" />
@@ -321,43 +331,7 @@ function AdvancedMarketplacePage() {
           </section>
         )}
 
-        {/* ── 4. Seletor de Sub-Marketplaces e Vitrines Especializadas ── */}
-        <section aria-label="Vitrines por Nicho" className="space-y-2.5">
-          <div className="flex items-center justify-between px-1">
-            <span className="text-xs font-mono font-bold uppercase tracking-wider text-muted-foreground/80">
-              Vitrines por Nicho
-            </span>
-            <span className="text-2xs text-muted-foreground font-mono">
-              14 subnichos ativos
-            </span>
-          </div>
-
-          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
-            {MARKETPLACE_NICHES.map((niche) => {
-              const Icon = niche.icon;
-              const isSelected = activeNiche === niche.id;
-
-              return (
-                <button
-                  key={niche.id}
-                  type="button"
-                  onClick={() => handleNicheChange(niche.id)}
-                  className={cn(
-                    "inline-flex items-center gap-2 h-9 px-3.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors shrink-0 cursor-pointer",
-                    isSelected
-                      ? "bg-primary text-primary-foreground font-bold shadow-xs"
-                      : "bg-card border border-border/70 text-muted-foreground hover:text-foreground hover:bg-muted/60"
-                  )}
-                >
-                  <Icon size={14} weight={isSelected ? "fill" : "regular"} className="shrink-0" />
-                  <span>{niche.label}</span>
-                </button>
-              );
-            })}
-          </div>
-        </section>
-
-        {/* ── 5. Barra de Controle de Descoberta (Busca + Modos Feed/Grid/List) ── */}
+        {/* ── 4. Barra Unificada de Descoberta e Categorias (Busca + Modos Feed/Grid/List) ── */}
         <DiscoveryControlBar
           search={searchTerm}
           onSearchChange={handleSearchChange}
@@ -367,9 +341,10 @@ function AdvancedMarketplacePage() {
           onSelectCategory={handleNicheChange}
           viewMode={viewMode}
           onViewModeChange={handleViewModeChange}
+          hideMobileSearch={true}
         />
 
-        {/* ── 6. Feed Dinâmico CMS & Catálogo de Produtos ── */}
+        {/* ── 5. Feed Dinâmico CMS & Catálogo de Produtos ── */}
         {viewMode === "feed" ? (
           <div className="space-y-8">
             {/* Seções CMS Dinâmicas Configuradas no Admin Master (Random Shuffle, Flash Deals, Rails, Bento, Banners) */}
@@ -387,7 +362,7 @@ function AdvancedMarketplacePage() {
                   <h2 className="text-sm sm:text-base font-bold text-foreground leading-tight">
                     {activeNiche === "todos"
                       ? "Destaques das Lojas Locais"
-                      : `Produtos em ${activeNicheConfig.label}`}
+                      : activeNicheConfig.label}
                   </h2>
                 </div>
                 <span className="text-xs font-mono text-muted-foreground">
@@ -396,14 +371,26 @@ function AdvancedMarketplacePage() {
               </div>
 
               {productCards.length === 0 ? (
-                <div className="py-12 text-center bg-card rounded-lg border border-border/60 p-6">
+                <div className="py-12 text-center bg-card rounded-lg border border-border/60 p-6 space-y-3">
                   <EmptyState
-                    title="Nenhum produto cadastrado neste nicho"
-                    description="As lojas deste segmento estão atualizando seus estoques. Experimente selecionar outro nicho ou buscar pelo nome do item."
+                    title="Nenhum produto encontrado"
+                    description=""
                   />
+                  {(activeNiche !== "todos" || searchTerm.trim()) && (
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        handleNicheChange("todos");
+                        handleSearchChange("");
+                      }}
+                      className="h-11 px-4 text-xs font-semibold rounded-lg cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    >
+                      Limpar filtros
+                    </Button>
+                  )}
                 </div>
               ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
                   {productCards.map((product) => (
                     <OfferCard key={product.id} {...product} />
                   ))}
@@ -420,11 +407,23 @@ function AdvancedMarketplacePage() {
             </div>
 
             {productCards.length === 0 ? (
-              <div className="py-12 text-center bg-card rounded-lg border border-border/60 p-6">
+              <div className="py-12 text-center bg-card rounded-lg border border-border/60 p-6 space-y-3">
                 <EmptyState
                   title="Nenhum produto encontrado"
-                  description="Verifique os termos de busca ou selecione outro nicho no menu superior."
+                  description=""
                 />
+                {(activeNiche !== "todos" || searchTerm.trim()) && (
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      handleNicheChange("todos");
+                      handleSearchChange("");
+                    }}
+                    className="h-11 px-4 text-xs font-semibold rounded-lg cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  >
+                    Limpar filtros
+                  </Button>
+                )}
               </div>
             ) : viewMode === "list" ? (
               <div className="flex flex-col gap-3">

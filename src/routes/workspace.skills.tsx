@@ -225,7 +225,7 @@ function SkillsCatalogPage() {
 
       {/* Modal de Detalhes e Teste da Skill */}
       <Dialog open={testModalOpen} onOpenChange={setTestModalOpen}>
-        <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto rounded-lg">
+        <DialogContent className="max-w-xl max-h-5/6 sm:max-h-160 overflow-y-auto rounded-lg">
           <DialogHeader>
             <DialogTitle className="text-base font-bold flex items-center gap-2">
               <Zap className="size-4 text-primary" />
@@ -250,7 +250,7 @@ function SkillsCatalogPage() {
               <div className="space-y-2">
                 <label className="font-bold text-foreground block">Entrada de Teste:</label>
                 <textarea
-                  className="w-full p-3 rounded-lg bg-muted/20 border border-border/60 text-xs min-h-[80px] focus:outline-none focus:ring-1 focus:ring-primary"
+                  className="w-full p-3 rounded-lg bg-muted/20 border border-border/60 text-base sm:text-xs min-h-20 focus:outline-none focus:ring-1 focus:ring-primary"
                   placeholder="Insira dados de teste para a skill..."
                   value={testPrompt}
                   onChange={(e) => setTestPrompt(e.target.value)}
@@ -261,14 +261,14 @@ function SkillsCatalogPage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="rounded-lg"
+                  className="rounded-lg h-11 min-h-11 px-4 cursor-pointer focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
                   onClick={() => setTestModalOpen(false)}
                 >
                   Fechar
                 </Button>
                 <Button
                   size="sm"
-                  className="rounded-lg"
+                  className="rounded-lg h-11 min-h-11 px-4 cursor-pointer focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
                   disabled={!testPrompt.trim() || executeMutation.isPending}
                   onClick={() => {
                     executeMutation.mutate({
@@ -299,7 +299,7 @@ function SkillsCatalogPage() {
                       Sucesso (Porta Única)
                     </Badge>
                   </div>
-                  <pre className="p-3 rounded-lg bg-muted/40 font-mono text-xs whitespace-pre-wrap max-h-[220px] overflow-y-auto">
+                  <pre className="p-3 rounded-lg bg-muted/40 font-mono text-xs whitespace-pre-wrap max-h-56 overflow-y-auto">
                     {testResult}
                   </pre>
                 </div>

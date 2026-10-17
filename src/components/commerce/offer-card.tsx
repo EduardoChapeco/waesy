@@ -221,19 +221,25 @@ export function OfferCard({
         params={{ slug }}
         className="flex-1 flex flex-col justify-between block cursor-pointer"
       >
-        {/* ── IMAGEM NO TOPO (ASPECT-[4/3] FULL BLEED COM ESCALA PROPORCIONAL) ── */}
-        <div className="relative aspect-[4/3] w-full bg-muted overflow-hidden shrink-0">
+        {/* ── IMAGEM NO TOPO (ASPECT-4-3 FULL BLEED COM ESCALA PROPORCIONAL) ── */}
+        <div className="relative aspect-4-3 w-full bg-muted overflow-hidden shrink-0">
           <img
             src={cover_image || "/banner-placeholder.png"}
             alt=""
             aria-hidden="true"
             className="absolute inset-0 size-full object-cover blur-xl opacity-35 scale-110 pointer-events-none select-none"
+            onError={(e) => {
+              (e.currentTarget as HTMLElement).style.display = "none";
+            }}
           />
           <img
             src={cover_image || "/banner-placeholder.png"}
             alt={title}
             className="relative size-full object-contain group-hover:scale-105 transition-transform duration-300 motion-reduce:transition-none"
             loading="lazy"
+            onError={(e) => {
+              (e.currentTarget as HTMLImageElement).src = "/banner-placeholder.png";
+            }}
           />
 
           {/* Badge de Desconto */}

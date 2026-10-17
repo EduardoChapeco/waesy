@@ -347,16 +347,16 @@ const SECTOR_TOOL_GROUPS: SectorGroup[] = [
   {
     id: "intelligence",
     title: "Inteligência & Automações",
-    description: "Squads de IA autônomos, importações via crawler, gatilhos e ledger de tokens",
+    description: "Equipes de assistência inteligente, importações automáticas, regras e consumo de consultas",
     tools: [
       { title: "Squads de IA", path: "/workspace/squads", icon: Zap },
       { title: "Habilidades de IA", path: "/workspace/skills", icon: Zap },
       { title: "SimLab & Validação", path: "/workspace/simulacao", icon: Sliders },
       { title: "Focus Group Virtual", path: "/workspace/simlab/focus-group", icon: Users },
       { title: "Radar de Mercado", path: "/workspace/inteligencia/radar", icon: Target },
-      { title: "Importações & Crawler", path: "/workspace/mining", icon: Globe },
+      { title: "Central de Descoberta & Importação", path: "/workspace/mining", icon: Globe },
       { title: "Gatilhos & Automações", path: "/workspace/automacoes", icon: Sliders },
-      { title: "Tokens e Solvência", path: "/workspace/tokens", icon: Coins },
+      { title: "Consultas e Solvência", path: "/workspace/tokens", icon: Coins },
       { title: "Quadro de Tarefas", path: "/workspace/tarefas", icon: ClipboardList },
     ],
   },
@@ -368,7 +368,7 @@ const SECTOR_TOOL_GROUPS: SectorGroup[] = [
       { title: "Identidade da Loja", path: "/workspace/configuracoes", icon: Settings },
       { title: "Dados da Empresa", path: "/workspace/configuracoes/loja", icon: Building2 },
       { title: "Revisão de Ativação", path: "/workspace/onboarding/revisao", icon: Layers },
-      { title: "Cofre de Chaves IA (BYOK)", path: "/workspace/configuracoes/ai", icon: Zap },
+      { title: "Conexões e Chaves de Acesso", path: "/workspace/configuracoes/ai", icon: Zap },
       { title: "App Instalável (PWA)", path: "/workspace/configuracoes/pwa", icon: Globe },
       { title: "Privacidade & LGPD", path: "/workspace/configuracoes/privacidade-loja", icon: ShieldCheck },
       { title: "Equipe de Trabalho", path: "/workspace/configuracoes/equipe", icon: Users },
@@ -517,7 +517,7 @@ export function WorkspaceAllToolsDialog({
 
  return (
  <Dialog open={open} onOpenChange={onOpenChange}>
- <DialogContent className="sm:max-w-4xl max-h-[90vh] p-0 rounded-lg border border-border/80 bg-background/98 backdrop-blur-2xl shadow-2xl overflow-hidden flex flex-col">
+ <DialogContent className="sm:max-w-4xl max-h-5/6 sm:max-h-160 p-0 rounded-lg border border-border/80 bg-background/98 backdrop-blur-2xl shadow-2xl overflow-hidden flex flex-col">
  {/* ── 1. Top Header com Busca Ampla (Padrão Meta Studio) ── */}
  <div className="p-4 sm:p-6 pb-4 border-b border-border/60 bg-muted/15 shrink-0 space-y-3">
  <div className="flex items-center justify-between">
@@ -529,7 +529,7 @@ export function WorkspaceAllToolsDialog({
  Todas as Ferramentas
  </DialogTitle>
  </div>
- <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider hidden sm:inline">
+ <span className="text-2xs font-mono text-muted-foreground uppercase tracking-wider hidden sm:inline">
  Workspace • {activeStore?.name || "Waesy"}
  </span>
  </div>
@@ -549,7 +549,7 @@ export function WorkspaceAllToolsDialog({
                 }
               }}
               placeholder="Pesquisar ferramentas ou ditar campanha (ex: Instagram, R$ 50/dia, 7 dias, produto X)..."
-              className="h-10 pl-10 pr-20 text-xs sm:text-sm rounded-lg bg-card border-border/60 focus-visible:ring-1 focus-visible:ring-primary shadow-xs"
+              className="h-11 min-h-11 pl-10 pr-20 text-base sm:text-sm rounded-lg bg-card border-border/60 focus-visible:ring-1 focus-visible:ring-primary shadow-xs"
               autoFocus
             />
             <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">

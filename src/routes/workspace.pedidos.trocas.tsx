@@ -663,13 +663,13 @@ function ExchangesDashboardPage() {
           </Table>
         </div>
       ) : (
-        <div className="flex gap-4 overflow-x-auto no-scrollbar pb-4 items-start min-h-[500px]">
+        <div className="flex gap-4 overflow-x-auto no-scrollbar pb-4 items-start min-h-128">
           {KANBAN_COLUMNS.map((col) => {
             const columnExchanges = filteredExchanges.filter((r: any) => r.status === col.id);
             return (
               <div
                 key={col.id}
-                className="min-w-[300px] w-[300px] bg-muted/20 border border-border/60 p-4 flex flex-col gap-3 rounded-lg"
+                className="min-w-72 sm:min-w-80 w-72 sm:w-80 bg-muted/20 border border-border/60 p-4 flex flex-col gap-3 rounded-lg"
               >
                 <div className="flex justify-between items-center font-medium px-1">
                   <span className="font-bold text-xs text-foreground uppercase tracking-wider">{col.title}</span>

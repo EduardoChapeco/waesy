@@ -1,6 +1,16 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "@tanstack/react-router";
-import { ChatCircleDots, ArrowSquareOut, X, CircleNotch, PaperPlaneRight, User } from "@phosphor-icons/react";
+import {
+  ChatCircleDots,
+  ArrowSquareOut,
+  X,
+  CircleNotch,
+  PaperPlaneRight,
+  User,
+  Paperclip,
+  FileText,
+  Trash,
+} from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -13,8 +23,10 @@ import { useWindowSizeClass } from "@/hooks/use-mobile";
 import {
   executeCopilotDrawerMessage,
   dispatchAiChatAction,
+  uploadCopilotMultimodalAttachment,
   type AiExecutionResult,
 } from "@/services/ai-conversations.functions";
+import { CopilotMessageRenderer } from "@/components/chat/copilot-message-renderer";
 import { AIActivityTrail, type AIActivityStep } from "@/components/chat/ai-activity-trail";
 import { ChatArtifactCard, type ChatArtifactData } from "@/components/chat/chat-artifact-card";
 import { StructuredMessageView, type AIChatAction } from "@/components/chat/structured-message-view";
@@ -43,6 +55,14 @@ export function WaesyCopilotDrawer(_props: { session?: { id?: string; user?: { i
   const [inputText, setInputText] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [userCoords, setUserCoords] = useState<{ lat?: number; lng?: number }>({});
+  const [attachment, setAttachment] = useState<{
+    fileName: string;
+    fileType: string;
+    url: string;
+    extractedText?: string;
+  } | null>(null);
+  const [isUploadingAttachment, setIsUploadingAttachment] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (typeof navigator !== "undefined" && "geolocation" in navigator) {
@@ -56,6 +76,47 @@ export function WaesyCopilotDrawer(_props: { session?: { id?: string; user?: { i
     }
   }, []);
 
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 15 * 1024 * 1024) {
+      toast.error("Arquivo excede o limite máximo permitido de 15 MB.");
+      return;
+    }
+
+    setIsUploadingAttachment(true);
+    try {
+      const reader = new FileReader();
+      reader.onload = async () => {
+        const base64Data = reader.result as string;
+        try {
+          const result = await uploadCopilotMultimodalAttachment({
+            data: {
+              fileName: file.name,
+              fileType: file.type || "application/octet-stream",
+              base64Data,
+            },
+          });
+          setAttachment({
+            fileName: result.fileName,
+            fileType: result.fileType,
+            url: result.url,
+            extractedText: result.extractedText,
+          });
+          toast.success(`Arquivo "${file.name}" anexado.`);
+        } catch (err: any) {
+          toast.error(err?.message || "Erro no upload do anexo.");
+        } finally {
+          setIsUploadingAttachment(false);
+        }
+      };
+      reader.readAsDataURL(file);
+    } catch {
+      toast.error("Erro ao ler o arquivo selecionado.");
+      setIsUploadingAttachment(false);
+    }
+  };
+
   // Nao exibe o drawer flutuante se o usuario ja esta na rota dedicada /copilot
   const currentPath = location.pathname || "/";
   const currentUserId = _props.session?.id || _props.session?.user?.id;
@@ -64,7 +125,7 @@ export function WaesyCopilotDrawer(_props: { session?: { id?: string; user?: { i
     {
       id: "initial-msg",
       role: "assistant",
-      text: "Ola! Sou o Copilot inteligente do Waesy. Posso te ajudar a encontrar servicos locais, planejar viagens, conferir vagas e criar anuncios no sistema. Como posso te apoiar agora?",
+      text: "Olá! Sou o seu assessor consultivo executivo da região no Waesy. Posso te ajudar a descobrir os melhores estabelecimentos da cidade, planejar viagens com roteiros e Pix, conferir vagas verificadas ou estruturar propostas comerciais e planilhas para o seu negócio. Como posso te apoiar agora?",
     },
   ]);
 
@@ -76,12 +137,21 @@ export function WaesyCopilotDrawer(_props: { session?: { id?: string; user?: { i
 
   const handleSendMessage = async (textToSend?: string) => {
     const text = (textToSend || inputText).trim();
-    if (!text || isSending) return;
+    if ((!text && !attachment) || isSending) return;
+
+    let messagePrompt = text || (attachment ? `Analise o arquivo anexado: ${attachment.fileName}` : "");
+    if (attachment?.extractedText) {
+      messagePrompt += `\n\n[Contexto do Arquivo Anexado (${attachment.fileName})]:\n${attachment.extractedText}`;
+    }
+
+    const currentAttachment = attachment;
+    setAttachment(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
 
     const userMsg: DrawerMessage = {
       id: `usr-${Date.now()}`,
       role: "user",
-      text,
+      text: text || `[Arquivo anexado: ${currentAttachment?.fileName}]`,
     };
 
     setMessages((prev) => [...prev, userMsg]);
@@ -91,7 +161,7 @@ export function WaesyCopilotDrawer(_props: { session?: { id?: string; user?: { i
     try {
       // O drawer usa o mesmo boundary server-side dos restantes shells.
       const execution: AiExecutionResult = await executeCopilotDrawerMessage({
-        data: { message: text, userLat: userCoords.lat, userLng: userCoords.lng },
+        data: { message: messagePrompt, userLat: userCoords.lat, userLng: userCoords.lng },
       });
 
       const assistantMsg: DrawerMessage = {
@@ -107,7 +177,7 @@ export function WaesyCopilotDrawer(_props: { session?: { id?: string; user?: { i
 
       setMessages((prev) => [...prev, assistantMsg]);
     } catch (err: any) {
-      toast.error(err?.message || "Erro ao consultar o Copilot.");
+      toast.error(err?.message || "Tivemos uma oscilação rápida ao buscar as informações. Já estou pronto para tentar novamente para você.");
     } finally {
       setIsSending(false);
     }
@@ -176,10 +246,10 @@ export function WaesyCopilotDrawer(_props: { session?: { id?: string; user?: { i
         className={`fixed z-30 flex items-center gap-2 h-11 px-4 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-transform font-semibold text-xs focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none cursor-pointer ${
           isCompact ? "bottom-20 right-4" : "bottom-6 right-6"
         }`}
-        title="Abrir Assistente Inteligente Waesy Copilot"
+        title="Abrir Assessor Local Waesy"
       >
         <ChatCircleDots className="size-4" weight="fill" />
-        <span className="hidden sm:inline">Copilot</span>
+        <span className="hidden sm:inline">Assessor</span>
       </button>
 
       {/* Sheet / Drawer Lateral ou Inferior do Copilot */}
@@ -198,10 +268,10 @@ export function WaesyCopilotDrawer(_props: { session?: { id?: string; user?: { i
               </div>
               <div className="flex flex-col text-left">
                 <SheetTitle className="text-sm font-bold text-foreground">
-                  Waesy Copilot
+                  Assessor Local
                 </SheetTitle>
                 <SheetDescription className="text-xs text-muted-foreground">
-                  Assistente Central da Plataforma
+                  Assessor Executivo da Região
                 </SheetDescription>
               </div>
             </div>
@@ -222,7 +292,7 @@ export function WaesyCopilotDrawer(_props: { session?: { id?: string; user?: { i
           </SheetHeader>
 
           {/* Area de Mensagens */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain p-4 pb-20 space-y-4">
             {messages.length === 0 ? (
               <div className="text-center text-xs text-muted-foreground py-12">
                 Nenhuma mensagem enviada. Como posso ajudar você hoje?
@@ -249,7 +319,7 @@ export function WaesyCopilotDrawer(_props: { session?: { id?: string; user?: { i
                         : "bg-muted text-foreground border border-border/60"
                     }`}
                   >
-                    {m.text}
+                    <CopilotMessageRenderer content={m.text} isUser={m.role === "user"} />
                   </div>
 
                   {/* Blocos Estruturados (Generative UI) */}
@@ -262,15 +332,18 @@ export function WaesyCopilotDrawer(_props: { session?: { id?: string; user?: { i
                     </div>
                   )}
 
-                  {/* Artefato Versionado Gerado */}
+                  {/* Artefato Versionado Gerado (Modal In-Place, Zero Redirecionamento Forçado) */}
                   {m.artifact && (
                     <ChatArtifactCard
                       artifact={m.artifact}
-                      onOpenBuilder={() => {
-                        setIsOpen(false);
-                        navigate({ to: "/copilot" as any });
-                      }}
                     />
+                  )}
+
+                  {/* Checkpoint de Decisão Humana (Camada 4 - WAITING_APPROVAL) */}
+                  {(m.fsmPhase === "WAITING_APPROVAL" || m.structuredPayload?.status === "needs_approval") && (
+                    <div className="w-full my-2">
+                      <CopilotApprovalPanel currentUserId={currentUserId} />
+                    </div>
                   )}
 
                   {/* Trilha de Atividade da IA (Discreta e Colapsada) */}
@@ -293,7 +366,7 @@ export function WaesyCopilotDrawer(_props: { session?: { id?: string; user?: { i
                   <CircleNotch className="size-3.5 animate-spin motion-reduce:animate-none" />
                 </div>
                 <div className="bg-muted text-muted-foreground border border-border/60 rounded-lg px-4 py-2 text-xs flex items-center gap-2">
-                  <span>Processando instrucao...</span>
+                  <span>Consultando os dados para você...</span>
                 </div>
               </div>
             )}
@@ -315,8 +388,49 @@ export function WaesyCopilotDrawer(_props: { session?: { id?: string; user?: { i
             </div>
           )}
 
+          {/* Anexo Multimodal Selecionado */}
+          {attachment && (
+            <div className="px-3 py-2 border-t border-border bg-muted/40 flex items-center justify-between gap-2 text-xs">
+              <div className="flex items-center gap-2 min-w-0">
+                <FileText className="size-4 text-primary shrink-0" />
+                <span className="font-medium text-foreground truncate">{attachment.fileName}</span>
+                <span className="text-xs text-muted-foreground uppercase font-mono">({attachment.fileType.split("/")[1] || "doc"})</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setAttachment(null)}
+                className="size-7 rounded hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-destructive focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none cursor-pointer"
+                title="Remover anexo"
+              >
+                <X className="size-3.5" />
+              </button>
+            </div>
+          )}
+
           {/* Compositor */}
-          <div className="p-3 border-t border-border bg-card flex items-center gap-2">
+          <div className="p-3 border-t border-border bg-card flex items-center gap-2 shrink-0 sticky bottom-0">
+            <input
+              ref={fileInputRef}
+              type="file"
+              onChange={handleFileSelect}
+              className="hidden"
+              accept=".pdf,.csv,.txt,image/*"
+            />
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isSending || isUploadingAttachment}
+              className="size-11 min-w-11 min-h-11 p-0 flex items-center justify-center text-muted-foreground hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none cursor-pointer shrink-0"
+              title="Anexar arquivo (PDF, imagem ou CSV)"
+            >
+              {isUploadingAttachment ? (
+                <CircleNotch className="size-4 animate-spin motion-reduce:animate-none" />
+              ) : (
+                <Paperclip className="size-4" />
+              )}
+            </Button>
             <input
               type="text"
               value={inputText}
@@ -327,14 +441,14 @@ export function WaesyCopilotDrawer(_props: { session?: { id?: string; user?: { i
                   handleSendMessage();
                 }
               }}
-              placeholder="Pergunte ao Copilot..."
-              className="flex-1 h-11 px-3 rounded-lg border border-border bg-background text-xs text-foreground placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-              disabled={isSending}
+              placeholder={isUploadingAttachment ? "Analisando seu arquivo..." : "Como posso te apoiar hoje? Digite aqui..."}
+              className="flex-1 h-11 px-3 rounded-lg border border-border bg-background text-base sm:text-xs text-foreground placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+              disabled={isSending || isUploadingAttachment}
             />
             <Button
               type="button"
               onClick={() => /* focus-visible:ring-2 */ handleSendMessage()}
-              disabled={isSending || Boolean(inputText.trim()) === false}
+              disabled={isSending || isUploadingAttachment || (Boolean(inputText.trim()) === false && !attachment)}
               className="h-11 px-4 rounded-lg bg-primary text-primary-foreground text-xs font-semibold flex items-center gap-2 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none cursor-pointer shrink-0"
             >
               <PaperPlaneRight className="size-4" weight="bold" />

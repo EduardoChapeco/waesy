@@ -14,6 +14,8 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { EmptyState } from "@/components/state/states";
 import { FilterBottomSheet, FilterTriggerButton } from "@/components/workspace/filter-bottom-sheet";
+import { StatTile, SegmentedControl } from "@/design-system/components";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { listOrders, updateOrderStatus } from "@/services/order.functions";
 import { approvePayment } from "@/services/payment.functions";
 import { getStoreSettings } from "@/services/store.functions";
@@ -139,6 +141,7 @@ function AdminOrdersPage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [selectedShippingLabelOrderId, setSelectedShippingLabelOrderId] = useState<string | null>(null);
+  const [selectedOrderDetail, setSelectedOrderDetail] = useState<any | null>(null);
 
   // Filter orders by search, status tab & sales channel
   const filteredOrders = useMemo(() => {
@@ -377,7 +380,37 @@ function AdminOrdersPage() {
  </div>
  </div>
 
- {/* ── MODO 1: KANBAN DE EMISSÕES & VIAGENS (TURISMO & TRAVELOS) ── */}
+ {/* ── KPIs Operacionais de Pedidos via StatTile ── */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <StatTile
+          label={isTourism ? "Total de Reservas" : "Total de Pedidos"}
+          value={orders.length}
+          sublabel="Registrados no período"
+          trend="neutral"
+        />
+        <StatTile
+          label="Aguardando Pagto"
+          value={newOrders.length}
+          sublabel="Ação imediata"
+          trend={newOrders.length > 0 ? "down" : "neutral"}
+          trendValue={newOrders.length > 0 ? "Pendente" : "Zero"}
+        />
+        <StatTile
+          label={isTourism ? "Em Emissão" : "Em Preparo"}
+          value={processingOrders.length}
+          sublabel="Fila operacional ativa"
+          trend="up"
+          trendValue="Em fila"
+        />
+        <StatTile
+          label="Receita Filtrada"
+          value={formatMoney(filteredOrders.reduce((sum, o) => sum + (o.total_cents || 0), 0))}
+          sublabel={`${filteredOrders.length} registro(s) listados`}
+          trend="up"
+        />
+      </div>
+
+      {/* ── MODO 1: KANBAN DE EMISSÕES & VIAGENS (TURISMO & TRAVELOS) ── */}
  {viewMode === "emissions" && isTourism ? (
  <div className="space-y-4">
  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
@@ -444,7 +477,7 @@ function AdminOrdersPage() {
  size="sm"
  onClick={() => handleQuickApprove(order.id)}
  disabled={isProcessing}
- className="flex-1 rounded-lg font-bold bg-foreground text-background text-xs h-11 sm:h-9"
+ className="flex-1 rounded-lg font-bold bg-foreground text-background text-xs h-11 min-h-11"
  >
  Confirmar Reserva
  </Button>
@@ -541,7 +574,7 @@ function AdminOrdersPage() {
  size="sm"
  onClick={() => handleStatusChange(order.id, "ready_for_pickup")}
  disabled={isProcessing}
- className="flex-1 rounded-lg font-bold bg-primary text-primary-foreground text-xs h-11 sm:h-9 gap-1"
+ className="flex-1 rounded-lg font-bold bg-primary text-primary-foreground text-xs h-11 min-h-11 gap-1"
  >
  <span>Liberar Voucher</span>
  <ArrowRight className="size-3.5" />
@@ -616,7 +649,7 @@ function AdminOrdersPage() {
  variant="outline"
  onClick={() => handleStatusChange(order.id, "delivered")}
  disabled={isProcessing}
- className="flex-1 rounded-lg font-bold text-xs h-11 sm:h-9 border-success/40 text-success hover:bg-success/10"
+ className="flex-1 rounded-lg font-bold text-xs h-11 min-h-11 border-success/40 text-success hover:bg-success/10"
  >
  <CheckCircle2 className="size-3.5 mr-1" />
  Concluir Viagem
@@ -749,11 +782,11 @@ function AdminOrdersPage() {
  </div>
 
  {Array.isArray(order.items_snapshot) && order.items_snapshot.length > 0 && (
- <div className="space-y-1.5 py-2 border-y border-border/40 text-xs">
+ <div className="space-y-2 py-2 border-y border-border/40 text-xs">
  {order.items_snapshot.map((item: any, idx: number) => (
  <div key={idx} className="flex items-start justify-between gap-2">
- <div className="flex items-start gap-1.5">
- <span className="font-bold text-foreground bg-muted px-1.5 py-0.5 rounded text-xs">
+ <div className="flex items-start gap-2">
+ <span className="font-bold text-foreground bg-muted px-2 py-1 rounded text-xs">
  {item.quantity || 1}x
  </span>
  <div>
@@ -777,7 +810,7 @@ function AdminOrdersPage() {
  size="sm"
  onClick={() => handleQuickApprove(order.id)}
  disabled={isProcessing}
- className="flex-1 rounded-lg font-bold bg-foreground text-background text-xs h-11 sm:h-9"
+ className="flex-1 rounded-lg font-bold bg-foreground text-background text-xs h-11 min-h-11"
  >
  Aceitar Pedido
  </Button>
@@ -843,11 +876,11 @@ function AdminOrdersPage() {
  </div>
 
  {Array.isArray(order.items_snapshot) && order.items_snapshot.length > 0 && (
- <div className="space-y-1.5 py-2 border-y border-border/40 text-xs">
+ <div className="space-y-2 py-2 border-y border-border/40 text-xs">
  {order.items_snapshot.map((item: any, idx: number) => (
  <div key={idx} className="flex items-start justify-between gap-2">
- <div className="flex items-start gap-1.5">
- <span className="font-bold text-foreground bg-muted px-1.5 py-0.5 rounded text-xs">
+ <div className="flex items-start gap-2">
+ <span className="font-bold text-foreground bg-muted px-2 py-1 rounded text-xs">
  {item.quantity || 1}x
  </span>
  <div>
@@ -876,7 +909,7 @@ function AdminOrdersPage() {
  )
  }
  disabled={isProcessing}
- className="flex-1 rounded-lg font-bold bg-primary text-primary-foreground text-xs h-11 sm:h-9 gap-1"
+ className="flex-1 rounded-lg font-bold bg-primary text-primary-foreground text-xs h-11 min-h-11 gap-1"
  >
  <span>Pronto p/ Despacho</span>
  <ArrowRight className="size-3.5" />
@@ -957,11 +990,11 @@ function AdminOrdersPage() {
  </div>
 
  {Array.isArray(order.items_snapshot) && order.items_snapshot.length > 0 && (
- <div className="space-y-1.5 py-2 border-y border-border/40 text-xs">
+ <div className="space-y-2 py-2 border-y border-border/40 text-xs">
  {order.items_snapshot.map((item: any, idx: number) => (
  <div key={idx} className="flex items-start justify-between gap-2">
- <div className="flex items-start gap-1.5">
- <span className="font-bold text-foreground bg-muted px-1.5 py-0.5 rounded text-xs">
+ <div className="flex items-start gap-2">
+ <span className="font-bold text-foreground bg-muted px-2 py-1 rounded text-xs">
  {item.quantity || 1}x
  </span>
  <div>
@@ -986,7 +1019,7 @@ function AdminOrdersPage() {
  variant="outline"
  onClick={() => handleStatusChange(order.id, "delivered")}
  disabled={isProcessing}
- className="flex-1 rounded-lg font-bold text-xs h-11 sm:h-9 border-success/40 text-success hover:bg-success/10"
+ className="flex-1 rounded-lg font-bold text-xs h-11 min-h-11 border-success/40 text-success hover:bg-success/10"
  >
  Confirmar Entrega
  </Button>
@@ -1141,7 +1174,7 @@ function AdminOrdersPage() {
  toast.info(`Item ${item.title} marcado para substituição.`);
  }
  }}
- className="h-7 px-2 text-xs font-bold text-primary hover:bg-primary/10 rounded-lg shrink-0"
+ className="h-11 min-h-11 px-3 text-xs font-bold text-primary hover:bg-primary/10 rounded-lg shrink-0 focus-visible:ring-2 focus-visible:ring-ring"
  >
  Substituir
  </Button>
@@ -1205,8 +1238,8 @@ function AdminOrdersPage() {
  value={statusTab}
  onValueChange={setStatusTab}
  >
- <TabsList className="flex overflow-x-auto no-scrollbar h-8">
- <TabsTrigger value="all" className="text-xs shrink-0">
+ <TabsList className="flex overflow-x-auto no-scrollbar h-11 min-h-11 p-1 bg-muted/60 rounded-xl">
+ <TabsTrigger value="all" className="text-xs h-9 min-h-9 px-3 shrink-0 rounded-lg">
  Todos ({orders.length})
  </TabsTrigger>
  <TabsTrigger value="awaiting" className="text-xs shrink-0">
@@ -1229,7 +1262,7 @@ function AdminOrdersPage() {
               <select
                 value={channelFilter}
                 onChange={(e) => setChannelFilter(e.target.value)}
-                className="hidden sm:inline-flex h-8 rounded-lg border border-border bg-card px-3 text-xs font-semibold text-foreground focus:outline-none focus:ring-1 focus:ring-primary w-40 shrink-0"
+                className="hidden sm:inline-flex h-11 min-h-11 rounded-lg border border-border bg-card px-3 text-xs font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary w-44 shrink-0"
               >
                 <option value="all">Todos os Canais</option>
                 <option value="waesy_app">App Waesy</option>
@@ -1250,7 +1283,7 @@ function AdminOrdersPage() {
                   placeholder={isTourism ? "Buscar passageiro ou token..." : "Buscar por código ou cliente..."}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9 h-8 text-xs rounded-lg w-full"
+                  className="pl-9 h-11 min-h-11 text-xs rounded-lg w-full"
                 />
               </div>
 
@@ -1259,171 +1292,422 @@ function AdminOrdersPage() {
                 <FilterTriggerButton
                   onClick={() => setIsChannelSheetOpen(true)}
                   activeCount={channelFilter !== "all" ? 1 : 0}
-                  className="h-8 px-3 text-xs rounded-lg border border-border shrink-0 shadow-none"
+                  className="h-11 min-h-11 px-4 text-xs rounded-lg border border-border shrink-0 shadow-none"
                 />
               </div>
             </div>
           </div>
 
- <div className="bg-card overflow-hidden rounded-lg border border-border">
- <Table>
- <TableHeader>
- <TableRow className="bg-muted/40">
- <TableHead>{isTourism ? "Reserva" : "Pedido"}</TableHead>
- <TableHead>Canal</TableHead>
- <TableHead>Data e Hora</TableHead>
- <TableHead>{isTourism ? "Passageiro" : "Cliente"}</TableHead>
- <TableHead>{isTourism ? "Roteiro" : "Meio"}</TableHead>
- <TableHead className="text-right">Total Final</TableHead>
- <TableHead className="text-center">Status da Emissão</TableHead>
- <TableHead className="text-right">Ações</TableHead>
- </TableRow>
- </TableHeader>
- <TableBody>
- {filteredOrders.length === 0 ? (
- <TableRow>
- <TableCell colSpan={8} className="h-32 text-center text-xs text-muted-foreground">
- Nenhum registro encontrado para este filtro.
- </TableCell>
- </TableRow>
- ) : (
- filteredOrders.map((order) => {
- const badgeInfo = getStatusLabel(order.status, semantics);
- const items = order.items_snapshot || [];
- const firstItem = items[0]?.title || items[0]?.product_name || "Serviço / Pacote";
+ {/* ── VISÃO MOBILE (< 600px): Cards estruturados de alta legibilidade com Sheet para detalhes ── */}
+        <div className="md:hidden space-y-3">
+          {filteredOrders.length === 0 ? (
+            <div className="p-8 text-center text-xs text-muted-foreground bg-card rounded-xl border border-border/70">
+              Nenhum registro encontrado para este filtro.
+            </div>
+          ) : (
+            filteredOrders.map((order) => {
+              const badgeInfo = getStatusLabel(order.status, semantics);
+              const items = order.items_snapshot || [];
+              const firstItem = items[0]?.title || items[0]?.product_name || "Serviço / Pacote";
+              const orderCode = order.order_number || ("#" + (order.public_token || order.id.slice(0, 6)));
 
- return (
- <TableRow key={order.id} className="hover:bg-muted/30 transition-colors">
- <TableCell className="font-mono text-xs font-bold text-foreground">
- {order.order_number || ("#" + (order.public_token || order.id.slice(0, 6)))}
- </TableCell>
+              return (
+                <div
+                  key={order.id}
+                  className="p-4 rounded-xl border border-border/70 bg-card space-y-3 shadow-2xs hover:border-primary/40 transition-colors"
+                >
+                  {/* Top Bar: Order ID + Channel + Status */}
+                  <div className="flex items-center justify-between gap-2 border-b border-border/40 pb-2.5">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className="font-mono tabular-nums font-bold text-sm text-foreground truncate">
+                        {orderCode}
+                      </span>
+                      <ChannelBadge source={order.origin_channel || order.channel_source || order.metadata?.channel} />
+                    </div>
+                    <Badge variant={badgeInfo.variant} className="text-xs font-bold shrink-0">
+                      {badgeInfo.label}
+                    </Badge>
+                  </div>
 
- <TableCell>
- <ChannelBadge source={order.origin_channel || order.channel_source || order.metadata?.channel} />
- </TableCell>
+                  {/* Informações Centrais: Cliente & Itens */}
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="font-bold text-foreground truncate">
+                        {order.customer_snapshot?.name || (isTourism ? "Passageiro Titular" : "Cliente")}
+                      </span>
+                      <span className="text-xs font-mono tabular-nums text-muted-foreground shrink-0">
+                        {formatDateTime(order.created_at)}
+                      </span>
+                    </div>
+                    <p className="text-xs text-muted-foreground truncate">
+                      {order.customer_snapshot?.phone || order.customer_snapshot?.email || "Sem contato informado"}
+                    </p>
+                    <div className="flex items-center justify-between text-xs pt-1">
+                      <span className="text-muted-foreground truncate max-w-56 font-medium">
+                        {firstItem} {items.length > 1 ? `(+ ${items.length - 1} item)` : ""}
+                      </span>
+                      <span className="font-bold font-mono tabular-nums text-sm text-foreground">
+                        {formatMoney(order.total_cents)}
+                      </span>
+                    </div>
+                  </div>
 
- <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
- {formatDateTime(order.created_at)}
- </TableCell>
+                  {/* Botões de Ação Táteis (Piso 44px) */}
+                  <div className="flex items-center gap-2 pt-2 border-t border-border/40">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setSelectedOrderDetail(order)}
+                      className="flex-1 h-11 min-h-11 rounded-lg text-xs font-bold gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                    >
+                      <Eye className="size-4 text-primary" />
+                      <span>Ver Detalhes</span>
+                    </Button>
 
- <TableCell>
- <div className="flex flex-col">
- <span className="font-bold text-sm text-foreground">
- {order.customer_snapshot?.name || "Passageiro Titular"}
- </span>
- <span className="text-xs text-muted-foreground">
- {order.customer_snapshot?.email ||
- order.customer_snapshot?.phone ||
- "Sem contato informado"}
- </span>
- </div>
- </TableCell>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className="size-11 min-w-11 min-h-11 p-0 rounded-lg flex items-center justify-center cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                          aria-label="Ações rápidas do pedido"
+                        >
+                          <MoreVertical className="size-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-56">
+                        <DropdownMenuLabel className="text-xs">
+                          Ações de Gestão
+                        </DropdownMenuLabel>
+                        <DropdownMenuItem asChild>
+                          <Link to={`/workspace/pedidos/${order.id}` as never}>
+                            <Eye className="size-3.5 mr-2" />
+                            {isTourism ? "Ver Ficha do Passageiro" : "Ver Ficha 360 do Pedido"}
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                          <Link
+                            to={`/workspace/pedidos/${order.id}/recibo` as never}
+                            target="_blank"
+                          >
+                            <ReceiptText className="size-3.5 mr-2" />
+                            {isTourism ? "Imprimir Contrato / Voucher" : "Imprimir Recibo / Comprovante"}
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setSelectedShippingLabelOrderId(order.id)}>
+                          <Printer className="size-3.5 mr-2 text-primary" />
+                          {isTourism ? "Emitir Voucher / Etiqueta" : "Etiqueta de Envio & Declaração"}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleGenerateContract(order.id)}>
+                          <FileText className="size-3.5 mr-2 text-indigo-600 dark:text-indigo-400" />
+                          Gerar Contrato e Assinatura Digital
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
 
- <TableCell className="text-xs text-muted-foreground">
- <div className="flex flex-col max-w-52">
- <span className="font-semibold text-foreground truncate">
- {firstItem}
- </span>
- <span className="text-xs text-muted-foreground uppercase">
- {order.payment_method || "Pix / Boleto"}
- </span>
- </div>
- </TableCell>
+                        {order.status === "awaiting_payment" && (
+                          <DropdownMenuItem onClick={() => handleQuickApprove(order.id)}>
+                            <CheckCircle2 className="size-3.5 mr-2 text-success" />
+                            {isTourism ? "Aprovar Pagamento da Reserva" : "Aprovar Pagamento"}
+                          </DropdownMenuItem>
+                        )}
 
- <TableCell className="text-right font-extrabold text-sm text-foreground">
- {formatMoney(order.total_cents)}
- </TableCell>
+                        {(order.status === "paid" || order.status === "processing") && (
+                          <DropdownMenuItem
+                            onClick={() => handleStatusChange(order.id, "ready_for_pickup")}
+                          >
+                            <CheckCircle2 className="size-3.5 mr-2 text-primary" />
+                            {isTourism ? "Liberar Voucher p/ Embarque" : "Pronto p/ Retirada"}
+                          </DropdownMenuItem>
+                        )}
 
- <TableCell className="text-center">
- <Badge variant={badgeInfo.variant} className="text-xs font-bold">
- {badgeInfo.label}
- </Badge>
- </TableCell>
+                        {(order.status === "shipped" || order.status === "ready_for_pickup") && (
+                          <DropdownMenuItem
+                            onClick={() => handleStatusChange(order.id, "delivered")}
+                          >
+                            <PackageCheck className="size-3.5 mr-2 text-success" />
+                            {isTourism ? "Confirmar Viagem Concluída" : "Confirmar Entrega"}
+                          </DropdownMenuItem>
+                        )}
 
- <TableCell className="text-right">
- <DropdownMenu>
- <DropdownMenuTrigger asChild>
- <Button variant="ghost" size="icon" aria-label="Ações do pedido">
- <MoreVertical className="size-4" />
- </Button>
- </DropdownMenuTrigger>
- <DropdownMenuContent align="end" className="w-56">
- <DropdownMenuLabel className="text-xs">
- Ações de Gestão
- </DropdownMenuLabel>
- <DropdownMenuItem asChild>
- <Link to={`/workspace/pedidos/${order.id}` as never}>
- <Eye className="size-3.5 mr-2" />
- {isTourism ? "Ver Ficha do Passageiro" : "Ver Ficha 360 do Pedido"}
- </Link>
- </DropdownMenuItem>
- <DropdownMenuItem asChild>
- <Link
- to={`/workspace/pedidos/${order.id}/recibo` as never}
- target="_blank"
- >
- <ReceiptText className="size-3.5 mr-2" />
- {isTourism ? "Imprimir Contrato / Voucher" : "Imprimir Recibo / Comprovante"}
- </Link>
- </DropdownMenuItem>
- <DropdownMenuItem onClick={() => setSelectedShippingLabelOrderId(order.id)}>
-									<Printer className="size-3.5 mr-2 text-primary" />
-									{isTourism ? "Emitir Voucher / Etiqueta" : "Etiqueta de Envio & Declaração"}
-								</DropdownMenuItem>
-								<DropdownMenuItem onClick={() => handleGenerateContract(order.id)}>
-									<FileText className="size-3.5 mr-2 text-indigo-600 dark:text-indigo-400" />
-									Gerar Contrato e Assinatura Digital
-								</DropdownMenuItem>
- <DropdownMenuSeparator />
+                        {order.status !== "cancelled" && order.status !== "delivered" && (
+                          <DropdownMenuItem
+                            onClick={() => handleStatusChange(order.id, "cancelled")}
+                            className="text-destructive focus:text-destructive"
+                          >
+                            <XCircle className="size-3.5 mr-2" />
+                            Cancelar
+                          </DropdownMenuItem>
+                        )}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
 
- {order.status === "awaiting_payment" && (
- <DropdownMenuItem onClick={() => handleQuickApprove(order.id)}>
- <CheckCircle2 className="size-3.5 mr-2 text-success" />
- {isTourism ? "Aprovar Pagamento da Reserva" : "Aprovar Pagamento"}
- </DropdownMenuItem>
- )}
+        {/* ── VISÃO DESKTOP (>= 840px): Tabela Analítica de Alta Densidade com Rolagem Interna Independente ── */}
+        <div className="hidden md:flex flex-col bg-card overflow-hidden rounded-xl border border-border/70 shadow-2xs flex-1 min-h-0">
+          <div className="overflow-x-auto overflow-y-auto native-scroll flex-1 flex-1 min-h-0">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-muted/40">
+                  <TableHead>{isTourism ? "Reserva" : "Pedido"}</TableHead>
+                  <TableHead>Canal</TableHead>
+                  <TableHead>Data e Hora</TableHead>
+                  <TableHead>{isTourism ? "Passageiro" : "Cliente"}</TableHead>
+                  <TableHead>{isTourism ? "Roteiro" : "Meio"}</TableHead>
+                  <TableHead className="text-right">Total Final</TableHead>
+                  <TableHead className="text-center">Status da Emissão</TableHead>
+                  <TableHead className="text-right">Ações</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredOrders.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={8} className="h-32 text-center text-xs text-muted-foreground">
+                      Nenhum registro encontrado para este filtro.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredOrders.map((order) => {
+                    const badgeInfo = getStatusLabel(order.status, semantics);
+                    const items = order.items_snapshot || [];
+                    const firstItem = items[0]?.title || items[0]?.product_name || "Serviço / Pacote";
 
- {(order.status === "paid" || order.status === "processing") && (
- <DropdownMenuItem
- onClick={() => handleStatusChange(order.id, "ready_for_pickup")}
- >
- <CheckCircle2 className="size-3.5 mr-2 text-primary" />
- {isTourism ? "Liberar Voucher p/ Embarque" : "Pronto p/ Retirada"}
- </DropdownMenuItem>
- )}
+                    return (
+                      <TableRow key={order.id} className="hover:bg-muted/30 transition-colors">
+                        <TableCell className="font-mono tabular-nums text-xs font-bold text-foreground">
+                          {order.order_number || ("#" + (order.public_token || order.id.slice(0, 6)))}
+                        </TableCell>
 
- {(order.status === "shipped" || order.status === "ready_for_pickup") && (
- <DropdownMenuItem
- onClick={() => handleStatusChange(order.id, "delivered")}
- >
- <PackageCheck className="size-3.5 mr-2 text-success" />
- {isTourism ? "Confirmar Viagem Concluída" : "Confirmar Entrega"}
- </DropdownMenuItem>
- )}
+                        <TableCell>
+                          <ChannelBadge source={order.origin_channel || order.channel_source || order.metadata?.channel} />
+                        </TableCell>
 
- {order.status !== "cancelled" && order.status !== "delivered" && (
- <DropdownMenuItem
- onClick={() => handleStatusChange(order.id, "cancelled")}
- className="text-destructive focus:text-destructive"
- >
- <XCircle className="size-3.5 mr-2" />
- Cancelar Reserva
- </DropdownMenuItem>
- )}
- </DropdownMenuContent>
- </DropdownMenu>
- </TableCell>
- </TableRow>
- );
- })
- )}
- </TableBody>
- </Table>
- </div>
- </div>
- ) : null}
+                        <TableCell className="text-xs font-mono tabular-nums text-muted-foreground whitespace-nowrap">
+                          {formatDateTime(order.created_at)}
+                        </TableCell>
 
- {selectedShippingLabelOrderId && (
+                        <TableCell>
+                          <div className="flex flex-col">
+                            <span className="font-bold text-sm text-foreground">
+                              {order.customer_snapshot?.name || "Passageiro Titular"}
+                            </span>
+                            <span className="text-xs text-muted-foreground">
+                              {order.customer_snapshot?.email ||
+                                order.customer_snapshot?.phone ||
+                                "Sem contato informado"}
+                            </span>
+                          </div>
+                        </TableCell>
+
+                        <TableCell className="text-xs text-muted-foreground">
+                          <div className="flex flex-col max-w-52">
+                            <span className="font-semibold text-foreground truncate">
+                              {firstItem}
+                            </span>
+                            <span className="text-xs text-muted-foreground uppercase">
+                              {order.payment_method || "Pix / Boleto"}
+                            </span>
+                          </div>
+                        </TableCell>
+
+                        <TableCell className="text-right font-extrabold font-mono tabular-nums text-sm text-foreground">
+                          {formatMoney(order.total_cents)}
+                        </TableCell>
+
+                        <TableCell className="text-center">
+                          <Badge variant={badgeInfo.variant} className="text-xs font-bold">
+                            {badgeInfo.label}
+                          </Badge>
+                        </TableCell>
+
+                        <TableCell className="text-right">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="size-11 min-w-11 min-h-11 rounded-lg cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                                aria-label="Ações do pedido"
+                              >
+                                <MoreVertical className="size-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-56">
+                              <DropdownMenuLabel className="text-xs">
+                                Ações de Gestão
+                              </DropdownMenuLabel>
+                              <DropdownMenuItem asChild>
+                                <Link to={`/workspace/pedidos/${order.id}` as never}>
+                                  <Eye className="size-3.5 mr-2" />
+                                  {isTourism ? "Ver Ficha do Passageiro" : "Ver Ficha 360 do Pedido"}
+                                </Link>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem asChild>
+                                <Link
+                                  to={`/workspace/pedidos/${order.id}/recibo` as never}
+                                  target="_blank"
+                                >
+                                  <ReceiptText className="size-3.5 mr-2" />
+                                  {isTourism ? "Imprimir Contrato / Voucher" : "Imprimir Recibo / Comprovante"}
+                                </Link>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => setSelectedShippingLabelOrderId(order.id)}>
+                                <Printer className="size-3.5 mr-2 text-primary" />
+                                {isTourism ? "Emitir Voucher / Etiqueta" : "Etiqueta de Envio & Declaração"}
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleGenerateContract(order.id)}>
+                                <FileText className="size-3.5 mr-2 text-indigo-600 dark:text-indigo-400" />
+                                Gerar Contrato e Assinatura Digital
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+
+                              {order.status === "awaiting_payment" && (
+                                <DropdownMenuItem onClick={() => handleQuickApprove(order.id)}>
+                                  <CheckCircle2 className="size-3.5 mr-2 text-success" />
+                                  {isTourism ? "Aprovar Pagamento da Reserva" : "Aprovar Pagamento"}
+                                </DropdownMenuItem>
+                              )}
+
+                              {(order.status === "paid" || order.status === "processing") && (
+                                <DropdownMenuItem
+                                  onClick={() => handleStatusChange(order.id, "ready_for_pickup")}
+                                >
+                                  <CheckCircle2 className="size-3.5 mr-2 text-primary" />
+                                  {isTourism ? "Liberar Voucher p/ Embarque" : "Pronto p/ Retirada"}
+                                </DropdownMenuItem>
+                              )}
+
+                              {(order.status === "shipped" || order.status === "ready_for_pickup") && (
+                                <DropdownMenuItem
+                                  onClick={() => handleStatusChange(order.id, "delivered")}
+                                >
+                                  <PackageCheck className="size-3.5 mr-2 text-success" />
+                                  {isTourism ? "Confirmar Viagem Concluída" : "Confirmar Entrega"}
+                                </DropdownMenuItem>
+                              )}
+
+                              {order.status !== "cancelled" && order.status !== "delivered" && (
+                                <DropdownMenuItem
+                                  onClick={() => handleStatusChange(order.id, "cancelled")}
+                                  className="text-destructive focus:text-destructive"
+                                >
+                                  <XCircle className="size-3.5 mr-2" />
+                                  Cancelar
+                                </DropdownMenuItem>
+                              )}
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </div>
+      </div>
+      ) : null}
+
+      {/* Sheet Canônico de Detalhes do Pedido para Mobile */}
+      <Sheet open={!!selectedOrderDetail} onOpenChange={(open) => !open && setSelectedOrderDetail(null)}>
+        <SheetContent side="bottom" className="sm:max-w-lg mx-auto rounded-t-2xl max-h-screen overflow-y-auto p-6 space-y-4">
+          {selectedOrderDetail && (
+            <>
+              <SheetHeader className="pb-3 border-b border-border/40">
+                <div className="flex items-center justify-between gap-2">
+                  <SheetTitle className="text-base font-mono tabular-nums font-bold">
+                    {selectedOrderDetail.order_number || ("#" + (selectedOrderDetail.public_token || selectedOrderDetail.id.slice(0, 6)))}
+                  </SheetTitle>
+                  <Badge variant={getStatusLabel(selectedOrderDetail.status, semantics).variant} className="text-xs font-bold">
+                    {getStatusLabel(selectedOrderDetail.status, semantics).label}
+                  </Badge>
+                </div>
+                <SheetDescription className="text-xs text-muted-foreground flex items-center gap-2">
+                  <ChannelBadge source={selectedOrderDetail.origin_channel || selectedOrderDetail.channel_source || selectedOrderDetail.metadata?.channel} />
+                  <span>•</span>
+                  <span className="font-mono tabular-nums">{formatDateTime(selectedOrderDetail.created_at)}</span>
+                </SheetDescription>
+              </SheetHeader>
+
+              {/* Dados do Cliente */}
+              <div className="p-3 rounded-lg bg-muted/30 border border-border/50 space-y-1 text-xs">
+                <span className="text-3xs uppercase font-bold text-muted-foreground tracking-wider block">
+                  {isTourism ? "Passageiro Titular" : "Cliente"}
+                </span>
+                <p className="font-bold text-sm text-foreground">
+                  {selectedOrderDetail.customer_snapshot?.name || "Sem nome informado"}
+                </p>
+                <p className="text-muted-foreground font-mono">
+                  {selectedOrderDetail.customer_snapshot?.phone || selectedOrderDetail.customer_snapshot?.email || "Sem contato informado"}
+                </p>
+              </div>
+
+              {/* Itens */}
+              <div className="space-y-2">
+                <span className="text-3xs uppercase font-bold text-muted-foreground tracking-wider block">
+                  Itens da Ordem
+                </span>
+                <div className="divide-y divide-border/40 rounded-lg border border-border/50 overflow-hidden bg-card">
+                  {(selectedOrderDetail.items_snapshot || []).map((item: any, idx: number) => (
+                    <div key={idx} className="p-3 flex items-center justify-between text-xs">
+                      <div className="space-y-0.5 min-w-0 pr-2">
+                        <p className="font-medium text-foreground truncate">{item.title || item.product_name || "Item"}</p>
+                        <p className="text-muted-foreground font-mono tabular-nums">{item.quantity || 1}x {formatMoney(item.unit_price_cents || item.price_cents || 0)}</p>
+                      </div>
+                      <span className="font-bold font-mono tabular-nums text-foreground shrink-0">
+                        {formatMoney((item.quantity || 1) * (item.unit_price_cents || item.price_cents || 0))}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Total & Pagamento */}
+              <div className="p-3 rounded-lg bg-muted/40 border border-border/60 flex items-center justify-between text-xs">
+                <div>
+                  <span className="text-muted-foreground">Forma de Pagamento:</span>
+                  <p className="font-semibold text-foreground uppercase">{selectedOrderDetail.payment_method || "Não especificado"}</p>
+                </div>
+                <div className="text-right">
+                  <span className="text-muted-foreground">Valor Total:</span>
+                  <p className="text-lg font-bold font-mono tabular-nums text-foreground">
+                    {formatMoney(selectedOrderDetail.total_cents)}
+                  </p>
+                </div>
+              </div>
+
+              {/* Ações no Sheet */}
+              <div className="pt-2 flex flex-col gap-2">
+                <Button
+                  asChild
+                  className="h-11 min-h-11 rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <Link to={`/workspace/pedidos/${selectedOrderDetail.id}` as never}>
+                    <Eye className="size-4" />
+                    <span>Ver Ficha Completa 360</span>
+                  </Link>
+                </Button>
+                <Button
+                  asChild
+                  variant="outline"
+                  className="h-11 min-h-11 rounded-lg text-xs font-bold gap-2 border-border focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <Link to={`/workspace/pedidos/${selectedOrderDetail.id}/recibo` as never} target="_blank">
+                    <ReceiptText className="size-4" />
+                    <span>Imprimir Recibo / Comprovante</span>
+                  </Link>
+                </Button>
+              </div>
+            </>
+          )}
+        </SheetContent>
+      </Sheet>
+
+  {selectedShippingLabelOrderId && (
  <ShippingLabelModal
  orderId={selectedShippingLabelOrderId}
  isOpen={!!selectedShippingLabelOrderId}

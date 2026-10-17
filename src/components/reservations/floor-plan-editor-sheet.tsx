@@ -107,7 +107,7 @@ export function FloorPlanEditorSheet({
  return (
  <Sheet open={open} onOpenChange={onOpenChange}>
  <SheetContent
- side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] p-0 flex flex-col justify-between"
+ side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl p-0 flex flex-col justify-between overscroll-contain"
  >
  <SheetHeader className="p-6 border-b border-border/80">
  <div className="flex items-center gap-2 text-xs font-bold font-mono text-primary uppercase tracking-wider">

@@ -299,7 +299,7 @@ function MobilityPage() {
  };
 
  return (
- <div className="relative w-full h-[100dvh] min-h-0 bg-background overflow-hidden font-sans select-none">
+ <div className="relative w-full h-dvh min-h-0 bg-background overflow-hidden font-sans select-none">
  {/* ── 1. MAPA FULL-BLEED MAPLIBRE (100% DA TELA) ── */}
  <div className="absolute inset-0 size-full z-0">
  <MapLibreCanvas
@@ -325,10 +325,10 @@ function MobilityPage() {
  <span>Clique no mapa para marcar {pinMode === "origin" ? "a Origem" : "o Destino"}</span>
  <button
  onClick={() => setPinMode(null)}
- className="ml-2 p-1 hover:bg-background/20 rounded-full transition-colors"
+ className="ml-2 size-11 min-h-11 min-w-11 hover:bg-background/20 rounded-lg flex items-center justify-center transition-colors focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
  aria-label="Cancelar seleção no mapa"
  >
- <X className="size-3.5" />
+ <X className="size-4" />
  </button>
  </div>
  )}
@@ -339,9 +339,9 @@ function MobilityPage() {
  className="
  absolute z-30
  /* Mobile: Bottom Sheet ancorado embaixo */
- bottom-0 left-0 right-0 max-h-[85vh] rounded-t-lg border-t
+ bottom-0 left-0 right-0 max-h-5/6 rounded-t-lg border-t
  /* Desktop: Card flutuante lateral esquerdo */
- sm:bottom-4 sm:top-4 sm:left-4 sm:right-auto sm:w-[420px] sm:max-h-none sm:rounded-lg sm:border
+ sm:bottom-4 sm:top-4 sm:left-4 sm:right-auto sm:w-96 sm:max-w-md sm:max-h-none sm:rounded-lg sm:border
  overflow-y-auto no-scrollbar bg-card/95 backdrop-blur-2xl p-5 text-foreground border-border/80 space-y-4 animate-in slide-in-from-bottom-4 sm:slide-in-from-left-4 duration-300
  "
  >
@@ -381,9 +381,9 @@ function MobilityPage() {
  key={tab.id}
  type="button"
  onClick={() => setSelectedService(tab.id)}
- className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold whitespace-nowrap transition-all select-none cursor-pointer border ${
+ className={`flex items-center gap-2 px-4 h-11 min-h-11 rounded-lg text-xs font-bold whitespace-nowrap transition-all select-none cursor-pointer border focus-visible:ring-2 focus-visible:ring-primary ${
  isSelected
- ? "bg-foreground text-background border-foreground scale-[1.02]"
+ ? "bg-foreground text-background border-foreground shadow-sm"
  : "bg-muted/40 text-muted-foreground border-border/60 hover:text-foreground hover:bg-muted/80"
  }`}
  >
@@ -398,7 +398,7 @@ function MobilityPage() {
  <div className="space-y-3 pt-1">
  {/* Campo Origem */}
  <div className="space-y-1">
- <Label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+ <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
  Origem
  </Label>
  <div className="relative flex items-center">
@@ -409,7 +409,7 @@ function MobilityPage() {
  value={originText}
  onChange={(e) => setOriginText(e.target.value)}
  placeholder={activeTabConfig.placeholderOrigin}
- className="h-11 pl-9 pr-10 rounded-lg bg-muted/20 border-border/70 text-xs font-medium focus-visible:ring-1 focus-visible:ring-primary"
+ className="h-11 min-h-11 pl-9 pr-12 rounded-lg bg-muted/20 border-border/70 text-base sm:text-xs font-medium focus-visible:ring-2 focus-visible:ring-primary"
  />
  <button
  type="button"
@@ -417,16 +417,16 @@ function MobilityPage() {
  disabled={isLocatingGPS}
  title="Usar minha localização GPS atual"
  aria-label="Usar minha localização GPS atual"
- className="absolute right-2 size-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
+ className="absolute right-0 top-0 size-11 min-h-11 min-w-11 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors focus-visible:ring-2 focus-visible:ring-primary cursor-pointer"
  >
- <RotateCw className={`size-3.5 ${isLocatingGPS ? "animate-spin text-primary" : ""}`} />
+ <RotateCw className={`size-4 ${isLocatingGPS ? "animate-spin text-primary" : ""}`} />
  </button>
  </div>
  </div>
 
  {/* Campo Destino */}
  <div className="space-y-1">
- <Label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+ <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
  Destino
  </Label>
  <div className="relative flex items-center">
@@ -437,20 +437,20 @@ function MobilityPage() {
  value={destinationText}
  onChange={(e) => setDestinationText(e.target.value)}
  placeholder={activeTabConfig.placeholderDest}
- className="h-11 pl-9 pr-10 rounded-lg bg-muted/20 border-border/70 text-xs font-medium focus-visible:ring-1 focus-visible:ring-primary"
+ className="h-11 min-h-11 pl-9 pr-12 rounded-lg bg-muted/20 border-border/70 text-base sm:text-xs font-medium focus-visible:ring-2 focus-visible:ring-primary"
  />
  <button
  type="button"
  onClick={() => setPinMode("destination")}
  title="Marcar ponto de destino no mapa"
  aria-label="Marcar ponto de destino no mapa"
- className={`absolute right-2 size-7 rounded-lg flex items-center justify-center transition-colors ${
+ className={`absolute right-0 top-0 size-11 min-h-11 min-w-11 rounded-lg flex items-center justify-center transition-colors focus-visible:ring-2 focus-visible:ring-primary cursor-pointer ${
  pinMode === "destination"
  ? "bg-primary text-primary-foreground"
  : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
  }`}
  >
- <Crosshair className="size-3.5" />
+ <Crosshair className="size-4" />
  </button>
  </div>
  </div>
@@ -462,7 +462,7 @@ function MobilityPage() {
  key={idx}
  type="button"
  onClick={() => handleSelectPresetDestination(p)}
- className="px-3 py-1 rounded-lg bg-muted/40 hover:bg-muted border border-border/40 text-[11px] font-semibold text-muted-foreground hover:text-foreground whitespace-nowrap transition-colors"
+ className="px-3 h-11 min-h-11 rounded-lg bg-muted/40 hover:bg-muted border border-border/40 text-xs font-semibold text-muted-foreground hover:text-foreground whitespace-nowrap transition-colors flex items-center focus-visible:ring-2 focus-visible:ring-primary"
  >
  {p.name}
  </button>
@@ -473,10 +473,10 @@ function MobilityPage() {
  {/* ── SELEÇÃO DE MODAIS & VALORES DISPONÍVEIS ── */}
  <div className="space-y-2 pt-1">
  <div className="flex items-center justify-between">
- <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+ <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
  Opções Disponíveis
  </span>
- <div className="flex items-center gap-2 text-[11px] font-mono text-muted-foreground font-semibold">
+ <div className="flex items-center gap-2 text-xs font-mono text-muted-foreground font-semibold">
  <span>{routeStats.distanceKm} km</span>
  <span>•</span>
  <span>~{routeStats.durationMin} min</span>
@@ -544,14 +544,14 @@ function MobilityPage() {
  {/* ── FORMA DE PAGAMENTO & DETALHES ── */}
  <div className="p-4 rounded-lg bg-muted/30 border border-border/50 space-y-3">
  <div className="flex items-center justify-between">
- <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+ <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
  Forma de Pagamento
  </span>
  <div className="flex items-center gap-1 bg-background p-1 rounded-lg border border-border/60">
  <button
  type="button"
  onClick={() => setPaymentMethod("pix")}
- className={`px-3 py-1 rounded-lg text-[11px] font-bold flex items-center gap-1 transition-all ${
+ className={`px-3 h-11 min-h-11 rounded-lg text-xs font-bold flex items-center gap-1 transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-primary ${
  paymentMethod === "pix"
  ? "bg-foreground text-background"
  : "text-muted-foreground hover:text-foreground"
@@ -563,7 +563,7 @@ function MobilityPage() {
  <button
  type="button"
  onClick={() => setPaymentMethod("card")}
- className={`px-3 py-1 rounded-lg text-[11px] font-bold flex items-center gap-1 transition-all ${
+ className={`px-3 h-11 min-h-11 rounded-lg text-xs font-bold flex items-center gap-1 transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-primary ${
  paymentMethod === "card"
  ? "bg-foreground text-background"
  : "text-muted-foreground hover:text-foreground"
@@ -575,7 +575,7 @@ function MobilityPage() {
  <button
  type="button"
  onClick={() => setPaymentMethod("cash")}
- className={`px-3 py-1 rounded-lg text-[11px] font-bold flex items-center gap-1 transition-all ${
+ className={`px-3 h-11 min-h-11 rounded-lg text-xs font-bold flex items-center gap-1 transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-primary ${
  paymentMethod === "cash"
  ? "bg-foreground text-background"
  : "text-muted-foreground hover:text-foreground"
@@ -592,7 +592,7 @@ function MobilityPage() {
  <button
  type="button"
  onClick={() => setShowDetails(!showDetails)}
- className="w-full flex items-center justify-between text-xs font-semibold text-muted-foreground hover:text-foreground pt-1"
+ className="w-full h-11 min-h-11 px-2 flex items-center justify-between text-xs font-semibold text-muted-foreground hover:text-foreground focus-visible:ring-2 focus-visible:ring-primary rounded-lg transition-colors cursor-pointer"
  >
  <span className="flex items-center gap-2">
  <MapPin className="size-3.5" />
@@ -605,52 +605,52 @@ function MobilityPage() {
  <div className="space-y-3 pt-3 animate-in fade-in duration-200">
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
  <div>
- <Label className="text-[10px] text-muted-foreground">Número</Label>
+ <Label className="text-xs text-muted-foreground">Número</Label>
  <Input
  value={buildingNumber}
  onChange={(e) => setBuildingNumber(e.target.value)}
  placeholder="Ex: 500"
- className="h-8 rounded-lg bg-background text-xs"
+ className="h-11 min-h-11 px-3 rounded-lg bg-background text-base sm:text-xs border border-border/60 focus-visible:ring-2 focus-visible:ring-primary"
  />
  </div>
  <div>
- <Label className="text-[10px] text-muted-foreground">Complemento</Label>
+ <Label className="text-xs text-muted-foreground">Complemento</Label>
  <Input
  value={complement}
  onChange={(e) => setComplement(e.target.value)}
  placeholder="Ex: Apto 102"
- className="h-8 rounded-lg bg-background text-xs"
+ className="h-11 min-h-11 px-3 rounded-lg bg-background text-base sm:text-xs border border-border/60 focus-visible:ring-2 focus-visible:ring-primary"
  />
  </div>
  </div>
 
  <div>
- <Label className="text-[10px] text-muted-foreground">Ponto de Referência</Label>
+ <Label className="text-xs text-muted-foreground">Ponto de Referência</Label>
  <Input
  value={referencePoint}
  onChange={(e) => setReferencePoint(e.target.value)}
  placeholder="Ex: Em frente à praça"
- className="h-8 rounded-lg bg-background text-xs"
+ className="h-11 min-h-11 px-3 rounded-lg bg-background text-base sm:text-xs border border-border/60 focus-visible:ring-2 focus-visible:ring-primary"
  />
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
  <div>
- <Label className="text-[10px] text-muted-foreground">Nome Passageiro/Contato</Label>
+ <Label className="text-xs text-muted-foreground">Nome Passageiro/Contato</Label>
  <Input
  value={recipientName}
  onChange={(e) => setRecipientName(e.target.value)}
  placeholder="Nome"
- className="h-8 rounded-lg bg-background text-xs"
+ className="h-11 min-h-11 px-3 rounded-lg bg-background text-base sm:text-xs border border-border/60 focus-visible:ring-2 focus-visible:ring-primary"
  />
  </div>
  <div>
- <Label className="text-[10px] text-muted-foreground">Telefone / WhatsApp</Label>
+ <Label className="text-xs text-muted-foreground">Telefone / WhatsApp</Label>
  <Input
  value={recipientPhone}
  onChange={(e) => setRecipientPhone(e.target.value)}
  placeholder="(49) 99999-9999"
- className="h-8 rounded-lg bg-background text-xs"
+ className="h-11 min-h-11 px-3 rounded-lg bg-background text-base sm:text-xs border border-border/60 focus-visible:ring-2 focus-visible:ring-primary"
  />
  </div>
  </div>
@@ -664,7 +664,7 @@ function MobilityPage() {
  type="button"
  onClick={handleSubmitRequest}
  disabled={createMutation.isPending || requestStatus === "searching"}
- className="w-full h-12 rounded-lg bg-foreground text-background font-bold text-xs sm:text-sm hover:bg-foreground/90 transition-all active:scale-[0.98] cursor-pointer"
+ className="w-full h-12 rounded-lg bg-foreground text-background font-bold text-xs sm:text-sm hover:bg-foreground/90 transition-all active:scale-95 cursor-pointer"
  >
  {createMutation.isPending || requestStatus === "searching" ? (
  <div className="flex items-center gap-2">
@@ -686,7 +686,7 @@ function MobilityPage() {
  <CheckCircle2 className="size-4 text-emerald-500" />
  <span className="text-xs font-bold text-foreground">Solicitação Confirmada</span>
  </div>
- <Badge variant="secondary" className="text-[10px] font-mono">
+ <Badge variant="secondary" className="text-xs font-mono">
  #{activeRequest.id.slice(0, 8)}
  </Badge>
  </div>
@@ -694,7 +694,7 @@ function MobilityPage() {
  Notificando motoristas parceiros próximos. Você pode acompanhar o trajeto ao vivo.
  </p>
  <div className="flex gap-2">
- <Button asChild size="sm" className="flex-1 rounded-lg text-xs font-bold bg-foreground text-background">
+ <Button asChild size="sm" className="flex-1 h-11 min-h-11 rounded-lg text-xs font-bold bg-foreground text-background focus-visible:ring-2 focus-visible:ring-primary">
  <Link to="/conta/mobilidade">Acompanhar Trajeto</Link>
  </Button>
  <Button
@@ -704,7 +704,7 @@ function MobilityPage() {
  setRequestStatus("idle");
  setActiveRequest(null);
  }}
- className="rounded-lg text-xs font-semibold"
+ className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold border-border focus-visible:ring-2 focus-visible:ring-primary"
  >
  Nova Corrida
  </Button>
@@ -723,19 +723,19 @@ function MobilityPage() {
  </div>
  <div>
  <p className="text-xs font-black text-foreground">Instalar Waesy App</p>
- <p className="text-[10px] text-muted-foreground">Rápido, offline, notificações</p>
+ <p className="text-xs text-muted-foreground">Rápido, offline, notificações</p>
  </div>
  </div>
  <button
  onClick={() => setShowPwaBanner(false)}
- className="text-muted-foreground hover:text-foreground"
+ className="size-11 min-h-11 min-w-11 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
  aria-label="Fechar banner PWA"
  >
- <X className="size-3.5" />
+ <X className="size-4" />
  </button>
  </div>
 
- <div className="space-y-1 text-[11px] text-muted-foreground">
+ <div className="space-y-1 text-xs text-muted-foreground">
  <div className="flex items-center gap-2">
  <Check className="size-3 text-emerald-500 shrink-0" />
  <span>Acesso instantâneo</span>

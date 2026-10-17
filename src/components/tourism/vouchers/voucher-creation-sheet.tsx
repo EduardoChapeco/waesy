@@ -146,11 +146,11 @@ export function VoucherCreationSheet({
       <SheetContent
         side="right"
         size="wide"
-        className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] p-0 flex flex-col bg-background border-l border-border/80 overflow-hidden"
+        className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl p-0 flex flex-col bg-background border-l border-border/80 overflow-hidden overscroll-contain"
       >
         <SheetHeader className="p-6 pb-4 border-b border-border/60 bg-muted/20 shrink-0">
           <div className="flex items-center gap-2 mb-1">
-            <Badge variant="outline" className="text-[10px] font-mono font-bold bg-primary/10 text-primary border-primary/20">
+            <Badge variant="outline" className="text-xs font-mono font-bold bg-primary/10 text-primary border-primary/20">
               Boarding Pass e Voucher
             </Badge>
           </div>

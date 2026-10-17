@@ -86,6 +86,7 @@ import { Route as AdminMasterCrescimentoRouteImport } from './routes/admin-maste
 import { Route as AdminMasterCuradoriaRouteImport } from './routes/admin-master.curadoria'
 import { Route as AdminMasterDenunciasRouteImport } from './routes/admin-master.denuncias'
 import { Route as AdminMasterFaturasRouteImport } from './routes/admin-master.faturas'
+import { Route as AdminMasterHomeEditorRouteImport } from './routes/admin-master.home-editor'
 import { Route as AdminMasterHubsRouteImport } from './routes/admin-master.hubs'
 import { Route as AdminMasterImprensaRouteImport } from './routes/admin-master.imprensa'
 import { Route as AdminMasterIntegracoesRouteImport } from './routes/admin-master.integracoes'
@@ -118,6 +119,7 @@ import { Route as WorkspaceIndexRouteImport } from './routes/workspace.index'
 import { Route as WorkspaceAutomacoesRouteImport } from './routes/workspace.automacoes'
 import { Route as WorkspaceAvaliacoesRouteImport } from './routes/workspace.avaliacoes'
 import { Route as WorkspaceComercialRouteImport } from './routes/workspace.comercial'
+import { Route as WorkspaceCopilotRouteImport } from './routes/workspace.copilot'
 import { Route as WorkspaceCrmRouteImport } from './routes/workspace.crm'
 import { Route as WorkspaceDesignSystemRouteImport } from './routes/workspace.design-system'
 import { Route as WorkspaceLicitacoesRouteImport } from './routes/workspace.licitacoes'
@@ -195,6 +197,7 @@ import { Route as StoreMembroIdRouteImport } from './routes/_store.membro.$id'
 import { Route as StoreMotoristaSlugRouteImport } from './routes/_store.motorista.$slug'
 import { Route as StoreNoticiasIndexRouteImport } from './routes/_store.noticias.index'
 import { Route as StoreNoticiasSlugRouteImport } from './routes/_store.noticias.$slug'
+import { Route as StoreOrcamentosBundleSlugRouteImport } from './routes/_store.orcamentos.$bundleSlug'
 import { Route as StorePaginasSlugRouteImport } from './routes/_store.paginas.$slug'
 import { Route as StorePatrocinadorTokenRouteImport } from './routes/_store.patrocinador.$token'
 import { Route as StorePlacesIndexRouteImport } from './routes/_store.places.index'
@@ -799,6 +802,11 @@ const AdminMasterFaturasRoute = AdminMasterFaturasRouteImport.update({
   path: '/faturas',
   getParentRoute: () => AdminMasterRoute,
 } as any)
+const AdminMasterHomeEditorRoute = AdminMasterHomeEditorRouteImport.update({
+  id: '/home-editor',
+  path: '/home-editor',
+  getParentRoute: () => AdminMasterRoute,
+} as any)
 const AdminMasterHubsRoute = AdminMasterHubsRouteImport.update({
   id: '/hubs',
   path: '/hubs',
@@ -958,6 +966,11 @@ const WorkspaceAvaliacoesRoute = WorkspaceAvaliacoesRouteImport.update({
 const WorkspaceComercialRoute = WorkspaceComercialRouteImport.update({
   id: '/comercial',
   path: '/comercial',
+  getParentRoute: () => WorkspaceRoute,
+} as any)
+const WorkspaceCopilotRoute = WorkspaceCopilotRouteImport.update({
+  id: '/copilot',
+  path: '/copilot',
   getParentRoute: () => WorkspaceRoute,
 } as any)
 const WorkspaceCrmRoute = WorkspaceCrmRouteImport.update({
@@ -1348,6 +1361,12 @@ const StoreNoticiasSlugRoute = StoreNoticiasSlugRouteImport.update({
   path: '/noticias/$slug',
   getParentRoute: () => StoreRoute,
 } as any)
+const StoreOrcamentosBundleSlugRoute =
+  StoreOrcamentosBundleSlugRouteImport.update({
+    id: '/orcamentos/$bundleSlug',
+    path: '/orcamentos/$bundleSlug',
+    getParentRoute: () => StoreRoute,
+  } as any)
 const StorePaginasSlugRoute = StorePaginasSlugRouteImport.update({
   id: '/paginas/$slug',
   path: '/paginas/$slug',
@@ -2633,6 +2652,7 @@ export interface FileRoutesByFullPath {
   '/admin-master/curadoria': typeof AdminMasterCuradoriaRoute
   '/admin-master/denuncias': typeof AdminMasterDenunciasRoute
   '/admin-master/faturas': typeof AdminMasterFaturasRoute
+  '/admin-master/home-editor': typeof AdminMasterHomeEditorRoute
   '/admin-master/hubs': typeof AdminMasterHubsRoute
   '/admin-master/imprensa': typeof AdminMasterImprensaRoute
   '/admin-master/integracoes': typeof AdminMasterIntegracoesRoute
@@ -2664,6 +2684,7 @@ export interface FileRoutesByFullPath {
   '/workspace/automacoes': typeof WorkspaceAutomacoesRoute
   '/workspace/avaliacoes': typeof WorkspaceAvaliacoesRoute
   '/workspace/comercial': typeof WorkspaceComercialRoute
+  '/workspace/copilot': typeof WorkspaceCopilotRoute
   '/workspace/crm': typeof WorkspaceCrmRoute
   '/workspace/design-system': typeof WorkspaceDesignSystemRoute
   '/workspace/licitacoes': typeof WorkspaceLicitacoesRoute
@@ -2736,6 +2757,7 @@ export interface FileRoutesByFullPath {
   '/membro/$id': typeof StoreMembroIdRoute
   '/motorista/$slug': typeof StoreMotoristaSlugRoute
   '/noticias/$slug': typeof StoreNoticiasSlugRoute
+  '/orcamentos/$bundleSlug': typeof StoreOrcamentosBundleSlugRoute
   '/paginas/$slug': typeof StorePaginasSlugRoute
   '/patrocinador/$token': typeof StorePatrocinadorTokenRoute
   '/places/$placeSlug': typeof StorePlacesPlaceSlugRoute
@@ -3029,6 +3051,7 @@ export interface FileRoutesByTo {
   '/admin-master/curadoria': typeof AdminMasterCuradoriaRoute
   '/admin-master/denuncias': typeof AdminMasterDenunciasRoute
   '/admin-master/faturas': typeof AdminMasterFaturasRoute
+  '/admin-master/home-editor': typeof AdminMasterHomeEditorRoute
   '/admin-master/hubs': typeof AdminMasterHubsRoute
   '/admin-master/imprensa': typeof AdminMasterImprensaRoute
   '/admin-master/integracoes': typeof AdminMasterIntegracoesRoute
@@ -3060,6 +3083,7 @@ export interface FileRoutesByTo {
   '/workspace/automacoes': typeof WorkspaceAutomacoesRoute
   '/workspace/avaliacoes': typeof WorkspaceAvaliacoesRoute
   '/workspace/comercial': typeof WorkspaceComercialRoute
+  '/workspace/copilot': typeof WorkspaceCopilotRoute
   '/workspace/crm': typeof WorkspaceCrmRoute
   '/workspace/design-system': typeof WorkspaceDesignSystemRoute
   '/workspace/licitacoes': typeof WorkspaceLicitacoesRoute
@@ -3132,6 +3156,7 @@ export interface FileRoutesByTo {
   '/membro/$id': typeof StoreMembroIdRoute
   '/motorista/$slug': typeof StoreMotoristaSlugRoute
   '/noticias/$slug': typeof StoreNoticiasSlugRoute
+  '/orcamentos/$bundleSlug': typeof StoreOrcamentosBundleSlugRoute
   '/paginas/$slug': typeof StorePaginasSlugRoute
   '/patrocinador/$token': typeof StorePatrocinadorTokenRoute
   '/places/$placeSlug': typeof StorePlacesPlaceSlugRoute
@@ -3433,6 +3458,7 @@ export interface FileRoutesById {
   '/admin-master/curadoria': typeof AdminMasterCuradoriaRoute
   '/admin-master/denuncias': typeof AdminMasterDenunciasRoute
   '/admin-master/faturas': typeof AdminMasterFaturasRoute
+  '/admin-master/home-editor': typeof AdminMasterHomeEditorRoute
   '/admin-master/hubs': typeof AdminMasterHubsRoute
   '/admin-master/imprensa': typeof AdminMasterImprensaRoute
   '/admin-master/integracoes': typeof AdminMasterIntegracoesRoute
@@ -3464,6 +3490,7 @@ export interface FileRoutesById {
   '/workspace/automacoes': typeof WorkspaceAutomacoesRoute
   '/workspace/avaliacoes': typeof WorkspaceAvaliacoesRoute
   '/workspace/comercial': typeof WorkspaceComercialRoute
+  '/workspace/copilot': typeof WorkspaceCopilotRoute
   '/workspace/crm': typeof WorkspaceCrmRoute
   '/workspace/design-system': typeof WorkspaceDesignSystemRoute
   '/workspace/licitacoes': typeof WorkspaceLicitacoesRoute
@@ -3537,6 +3564,7 @@ export interface FileRoutesById {
   '/_store/membro/$id': typeof StoreMembroIdRoute
   '/_store/motorista/$slug': typeof StoreMotoristaSlugRoute
   '/_store/noticias/$slug': typeof StoreNoticiasSlugRoute
+  '/_store/orcamentos/$bundleSlug': typeof StoreOrcamentosBundleSlugRoute
   '/_store/paginas/$slug': typeof StorePaginasSlugRoute
   '/_store/patrocinador/$token': typeof StorePatrocinadorTokenRoute
   '/_store/places/$placeSlug': typeof StorePlacesPlaceSlugRoute
@@ -3840,6 +3868,7 @@ export interface FileRouteTypes {
     | '/admin-master/curadoria'
     | '/admin-master/denuncias'
     | '/admin-master/faturas'
+    | '/admin-master/home-editor'
     | '/admin-master/hubs'
     | '/admin-master/imprensa'
     | '/admin-master/integracoes'
@@ -3871,6 +3900,7 @@ export interface FileRouteTypes {
     | '/workspace/automacoes'
     | '/workspace/avaliacoes'
     | '/workspace/comercial'
+    | '/workspace/copilot'
     | '/workspace/crm'
     | '/workspace/design-system'
     | '/workspace/licitacoes'
@@ -3943,6 +3973,7 @@ export interface FileRouteTypes {
     | '/membro/$id'
     | '/motorista/$slug'
     | '/noticias/$slug'
+    | '/orcamentos/$bundleSlug'
     | '/paginas/$slug'
     | '/patrocinador/$token'
     | '/places/$placeSlug'
@@ -4236,6 +4267,7 @@ export interface FileRouteTypes {
     | '/admin-master/curadoria'
     | '/admin-master/denuncias'
     | '/admin-master/faturas'
+    | '/admin-master/home-editor'
     | '/admin-master/hubs'
     | '/admin-master/imprensa'
     | '/admin-master/integracoes'
@@ -4267,6 +4299,7 @@ export interface FileRouteTypes {
     | '/workspace/automacoes'
     | '/workspace/avaliacoes'
     | '/workspace/comercial'
+    | '/workspace/copilot'
     | '/workspace/crm'
     | '/workspace/design-system'
     | '/workspace/licitacoes'
@@ -4339,6 +4372,7 @@ export interface FileRouteTypes {
     | '/membro/$id'
     | '/motorista/$slug'
     | '/noticias/$slug'
+    | '/orcamentos/$bundleSlug'
     | '/paginas/$slug'
     | '/patrocinador/$token'
     | '/places/$placeSlug'
@@ -4639,6 +4673,7 @@ export interface FileRouteTypes {
     | '/admin-master/curadoria'
     | '/admin-master/denuncias'
     | '/admin-master/faturas'
+    | '/admin-master/home-editor'
     | '/admin-master/hubs'
     | '/admin-master/imprensa'
     | '/admin-master/integracoes'
@@ -4670,6 +4705,7 @@ export interface FileRouteTypes {
     | '/workspace/automacoes'
     | '/workspace/avaliacoes'
     | '/workspace/comercial'
+    | '/workspace/copilot'
     | '/workspace/crm'
     | '/workspace/design-system'
     | '/workspace/licitacoes'
@@ -4743,6 +4779,7 @@ export interface FileRouteTypes {
     | '/_store/membro/$id'
     | '/_store/motorista/$slug'
     | '/_store/noticias/$slug'
+    | '/_store/orcamentos/$bundleSlug'
     | '/_store/paginas/$slug'
     | '/_store/patrocinador/$token'
     | '/_store/places/$placeSlug'
@@ -5558,6 +5595,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminMasterFaturasRouteImport
       parentRoute: typeof AdminMasterRoute
     }
+    '/admin-master/home-editor': {
+      id: '/admin-master/home-editor'
+      path: '/home-editor'
+      fullPath: '/admin-master/home-editor'
+      preLoaderRoute: typeof AdminMasterHomeEditorRouteImport
+      parentRoute: typeof AdminMasterRoute
+    }
     '/admin-master/hubs': {
       id: '/admin-master/hubs'
       path: '/hubs'
@@ -5780,6 +5824,13 @@ declare module '@tanstack/react-router' {
       path: '/comercial'
       fullPath: '/workspace/comercial'
       preLoaderRoute: typeof WorkspaceComercialRouteImport
+      parentRoute: typeof WorkspaceRoute
+    }
+    '/workspace/copilot': {
+      id: '/workspace/copilot'
+      path: '/copilot'
+      fullPath: '/workspace/copilot'
+      preLoaderRoute: typeof WorkspaceCopilotRouteImport
       parentRoute: typeof WorkspaceRoute
     }
     '/workspace/crm': {
@@ -6319,6 +6370,13 @@ declare module '@tanstack/react-router' {
       path: '/noticias/$slug'
       fullPath: '/noticias/$slug'
       preLoaderRoute: typeof StoreNoticiasSlugRouteImport
+      parentRoute: typeof StoreRoute
+    }
+    '/_store/orcamentos/$bundleSlug': {
+      id: '/_store/orcamentos/$bundleSlug'
+      path: '/orcamentos/$bundleSlug'
+      fullPath: '/orcamentos/$bundleSlug'
+      preLoaderRoute: typeof StoreOrcamentosBundleSlugRouteImport
       parentRoute: typeof StoreRoute
     }
     '/_store/paginas/$slug': {
@@ -8089,6 +8147,7 @@ interface StoreRouteChildren {
   StoreMembroIdRoute: typeof StoreMembroIdRoute
   StoreMotoristaSlugRoute: typeof StoreMotoristaSlugRoute
   StoreNoticiasSlugRoute: typeof StoreNoticiasSlugRoute
+  StoreOrcamentosBundleSlugRoute: typeof StoreOrcamentosBundleSlugRoute
   StorePaginasSlugRoute: typeof StorePaginasSlugRoute
   StorePatrocinadorTokenRoute: typeof StorePatrocinadorTokenRoute
   StorePlacesPlaceSlugRoute: typeof StorePlacesPlaceSlugRoute
@@ -8183,6 +8242,7 @@ const StoreRouteChildren: StoreRouteChildren = {
   StoreMembroIdRoute: StoreMembroIdRoute,
   StoreMotoristaSlugRoute: StoreMotoristaSlugRoute,
   StoreNoticiasSlugRoute: StoreNoticiasSlugRoute,
+  StoreOrcamentosBundleSlugRoute: StoreOrcamentosBundleSlugRoute,
   StorePaginasSlugRoute: StorePaginasSlugRoute,
   StorePatrocinadorTokenRoute: StorePatrocinadorTokenRoute,
   StorePlacesPlaceSlugRoute: StorePlacesPlaceSlugRoute,
@@ -8233,6 +8293,7 @@ interface AdminMasterRouteChildren {
   AdminMasterCuradoriaRoute: typeof AdminMasterCuradoriaRoute
   AdminMasterDenunciasRoute: typeof AdminMasterDenunciasRoute
   AdminMasterFaturasRoute: typeof AdminMasterFaturasRoute
+  AdminMasterHomeEditorRoute: typeof AdminMasterHomeEditorRoute
   AdminMasterHubsRoute: typeof AdminMasterHubsRoute
   AdminMasterImprensaRoute: typeof AdminMasterImprensaRoute
   AdminMasterIntegracoesRoute: typeof AdminMasterIntegracoesRoute
@@ -8271,6 +8332,7 @@ const AdminMasterRouteChildren: AdminMasterRouteChildren = {
   AdminMasterCuradoriaRoute: AdminMasterCuradoriaRoute,
   AdminMasterDenunciasRoute: AdminMasterDenunciasRoute,
   AdminMasterFaturasRoute: AdminMasterFaturasRoute,
+  AdminMasterHomeEditorRoute: AdminMasterHomeEditorRoute,
   AdminMasterHubsRoute: AdminMasterHubsRoute,
   AdminMasterImprensaRoute: AdminMasterImprensaRoute,
   AdminMasterIntegracoesRoute: AdminMasterIntegracoesRoute,
@@ -8390,6 +8452,7 @@ interface WorkspaceRouteChildren {
   WorkspaceAutomacoesRoute: typeof WorkspaceAutomacoesRoute
   WorkspaceAvaliacoesRoute: typeof WorkspaceAvaliacoesRoute
   WorkspaceComercialRoute: typeof WorkspaceComercialRoute
+  WorkspaceCopilotRoute: typeof WorkspaceCopilotRoute
   WorkspaceCrmRoute: typeof WorkspaceCrmRoute
   WorkspaceDesignSystemRoute: typeof WorkspaceDesignSystemRoute
   WorkspaceLicitacoesRoute: typeof WorkspaceLicitacoesRoute
@@ -8561,6 +8624,7 @@ const WorkspaceRouteChildren: WorkspaceRouteChildren = {
   WorkspaceAutomacoesRoute: WorkspaceAutomacoesRoute,
   WorkspaceAvaliacoesRoute: WorkspaceAvaliacoesRoute,
   WorkspaceComercialRoute: WorkspaceComercialRoute,
+  WorkspaceCopilotRoute: WorkspaceCopilotRoute,
   WorkspaceCrmRoute: WorkspaceCrmRoute,
   WorkspaceDesignSystemRoute: WorkspaceDesignSystemRoute,
   WorkspaceLicitacoesRoute: WorkspaceLicitacoesRoute,

@@ -416,7 +416,7 @@ function AdminMasterTermosPage() {
 
  {/* Sheet para Edição de Documento Legal */}
  <Sheet open={isEditingDoc} onOpenChange={setIsEditingDoc}>
- <SheetContent size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] overflow-y-auto no-scrollbar">
+ <SheetContent size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl overflow-y-auto overscroll-contain no-scrollbar">
  <SheetHeader>
  <SheetTitle>Editar Documento Legal</SheetTitle>
  <SheetDescription>

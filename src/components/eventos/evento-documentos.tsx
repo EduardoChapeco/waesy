@@ -127,7 +127,7 @@ export function EventoDocumentos({ eventId }: EventoDocumentosProps) {
               <span>Anexar Documento</span>
             </Button>
           </SheetTrigger>
-          <SheetContent side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] p-6">
+          <SheetContent side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl p-6 overscroll-contain">
             <SheetHeader>
               <SheetTitle className="text-lg font-bold">Protocolar Documento / Alvará</SheetTitle>
               <SheetDescription className="text-xs text-muted-foreground">

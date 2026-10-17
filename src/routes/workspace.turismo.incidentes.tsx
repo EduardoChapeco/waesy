@@ -306,7 +306,7 @@ export default function TourismIncidentsPage() {
         <SheetContent
           side="right"
           size="wide"
-          className="w-full max-sm:!max-w-full max-sm:!w-screen sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] border-l p-0 flex flex-col h-full bg-card overflow-hidden"
+          className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl border-l p-0 flex flex-col h-full bg-card overflow-hidden overscroll-contain"
         >
           {detailLoading ? (
             <div className="flex-1 flex items-center justify-center">
@@ -506,7 +506,7 @@ export default function TourismIncidentsPage() {
         <SheetContent
           side="right"
           size="wide"
-          className="w-full max-sm:!max-w-full max-sm:!w-screen sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] border-l p-0 overflow-y-auto no-scrollbar bg-card flex flex-col h-full"
+          className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl border-l p-0 overflow-y-auto overscroll-contain no-scrollbar bg-card flex flex-col h-full"
         >
           <SheetHeader className="px-5 py-4 border-b border-border/60 bg-muted/20 shrink-0">
             <SheetTitle className="text-sm font-bold text-foreground flex items-center gap-2">

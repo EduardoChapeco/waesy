@@ -1,0 +1,8 @@
+# SPEC-DESKTOP-SEPARATION-AND-CLEAN-HOTPAGES — Separação Estrita Desktop vs. Mobile, Header com Ícones e Hotpages Limpas
+
+## 1. Requisitos em Sintaxe EARS
+- **WHEN** a página inicial (`_store.index.tsx`) for renderizada em viewport Desktop (`>= 768px` / `HomeDesktopWebApp.tsx`), **THE SYSTEM SHALL** renderizar o layout clássico widescreen de largura total sem o dock estreito mobile estilo Noor e sem colunas vazias à direita (`md:grid-cols-2`, `md:grid-cols-3`, `md:grid-cols-4`, `lg:grid-cols-8`).
+- **WHEN** o cabeçalho global (`TopBar` e `UtilityCluster`) for exibido no Mobile ou Desktop, **THE SYSTEM SHALL** renderizar os controles de ação e autenticação exclusivamente como botões de ícone táteis (`size-11 min-h-11 min-w-11`), sem texto `"Entrar"` cortado e sem badge `"BETA"` ocupando espaço no mobile.
+- **WHEN** os trilhos de Hotpages/Categorias (`HotpagesRail`), `BentoGridTetris` ou `MetamorphicBannerSlider` forem renderizados nas 26 rotas públicas (`_store.*`), **THE SYSTEM SHALL** exibir cards limpos de mídia em proporção `16:9` (`aspect-banner-cinema`), sem faixas semi-transparentes (`bg-background/90`), sem badges sobrepostas e sem emojis/ícones flutuantes.
+- **IF** uma URL de imagem de categoria ou card falhar ao carregar (ex: Unsplash HTTP 404 `1511707171634-5f897ff02560`), **THEN THE SYSTEM SHALL** substituir automaticamente o `src` por uma imagem de fallback verificada HTTP 200 tanto no BFF (`resolveHealthyCover`) quanto no handler `onError` do cliente.
+- **WHERE** o Admin Master gerenciar a Home (`/admin-master/home-editor`) ou Hotpages & Categorias Globais (`/admin-master/hubs`), **THE SYSTEM SHALL** disponibilizar switches explícitos para `is_active`, `show_title`, `show_badge`, upload de mídia e navegação cruzada direta.

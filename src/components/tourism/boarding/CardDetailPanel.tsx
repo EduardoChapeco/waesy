@@ -263,7 +263,7 @@ export function CardDetailPanel({
     <Sheet open={open} onOpenChange={(v) => !v && onClose()}>
       <SheetContent
         side="right"
-        className="w-full max-sm:!max-w-full max-sm:!w-screen sm:max-w-2xl md:max-w-3xl flex flex-col p-0 bg-background text-foreground border-l border-border/70"
+        className="w-full sm:max-w-2xl md:max-w-3xl flex flex-col p-0 bg-background text-foreground border-l border-border/70"
       >
         {isLoading ? (
           <div className="flex-1 flex flex-col items-center justify-center gap-3">

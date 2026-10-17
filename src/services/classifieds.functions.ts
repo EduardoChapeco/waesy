@@ -91,6 +91,7 @@ export const getPublicClassifieds = createServerFn({ method: "GET" })
           "id, author_profile_id, store_id, category, deal_type, title, content, price_cents, images, contact_whatsapp, location_name, location_text, city, state, expires_at, condition, negotiable, attributes, status, is_sponsored, is_boosted, sponsored_until, boosted_until, created_at, updated_at",
         )
         .eq("status", "active")
+        .or("visibility.is.null,visibility.neq.unlisted")
         .order("created_at", { ascending: false })
         .limit(limit);
 
@@ -285,15 +286,16 @@ async function getSimilarClassifiedsFallback(supabase: any, category?: string, e
 export const getPublicClassifiedById = createServerFn({ method: "GET" })
   .validator(
     z.union([
-      z.string(),
-      z.object({ data: z.string() }).transform((v) => v.data),
-      z.object({ id: z.string() }).transform((v) => v.id),
-      z.object({ data: z.object({ id: z.string() }) }).transform((v) => v.data.id),
+      z.string().transform((id) => ({ id, token: undefined as string | undefined })),
+      z.object({ data: z.string() }).transform((v) => ({ id: v.data, token: undefined as string | undefined })),
+      z.object({ id: z.string(), token: z.string().optional() }),
+      z.object({ data: z.object({ id: z.string(), token: z.string().optional() }) }).transform((v) => v.data),
     ]),
   )
-  .handler(async ({ data: inputId }) => {
+  .handler(async ({ data: input }) => {
     const supabase = getServerClient();
-    const rawId = typeof inputId === "string" ? inputId.trim() : "";
+    const rawId = typeof input?.id === "string" ? input.id.trim() : "";
+    const rawToken = typeof input?.token === "string" ? input.token.trim() : undefined;
 
     // Validação estrita de UUID na entrada — aborta imediatamente sem bater no banco se inválido
     if (!rawId || !UUID_REGEX.test(rawId)) {
@@ -335,6 +337,22 @@ export const getPublicClassifiedById = createServerFn({ method: "GET" })
           viewerContext: "anonymous" as const,
           similarAds,
         };
+      }
+
+      // Barreira de Visibilidade Unlisted (Pilar 1 - Propostas Exclusivas)
+      if (classifiedData.visibility === "unlisted") {
+        const isOwner = Boolean(identity?.id && classifiedData.author_profile_id === identity.id);
+        const isValidToken = Boolean(rawToken && classifiedData.access_token === rawToken);
+        if (!isOwner && !isValidToken) {
+          return {
+            classified: null,
+            status: "restricted_access" as const,
+            isOwner: false,
+            canManage: false,
+            viewerContext: "anonymous" as const,
+            similarAds: [],
+          };
+        }
       }
 
       // Normalize feed_media and payment_settings for public view
@@ -856,6 +874,28 @@ export const getClassified = createServerFn({ method: "GET" })
     return data;
   });
 
+export const getUnlistedClassified = createServerFn({ method: "GET" })
+  .validator(z.object({ id: z.string().uuid(), token: z.string().min(1) }))
+  .handler(async ({ data: { id, token } }) => {
+    const supabase = getServerClient();
+    const { data, error } = await supabase
+      .from("classifieds")
+      .select("*")
+      .eq("id", id)
+      .eq("status", "active")
+      .maybeSingle();
+
+    if (error || !data) {
+      throw new Error("Pacote ou proposta não encontrado.");
+    }
+
+    if (data.visibility === "unlisted" && data.access_token !== token) {
+      throw new Error("Acesso restrito: token de proposta inválido.");
+    }
+
+    return data;
+  });
+
 const upsertClassifiedInput = z.object({
   id: z.string().uuid().optional(),
   store_id: z.string().uuid().nullable().optional(),
@@ -962,6 +1002,8 @@ const upsertClassifiedInput = z.object({
   ai_instructions: z.string().optional(),
   ai_agent_enabled: z.boolean().optional(),
   form_id: z.string().uuid().nullable().optional(),
+  visibility: z.enum(["public", "unlisted", "archived"]).optional().default("public"),
+  access_token: z.string().optional().nullable(),
 });
 
 export const upsertClassified = createServerFn({ method: "POST" })
@@ -1099,6 +1141,11 @@ export const upsertClassified = createServerFn({ method: "POST" })
         ...(rest.ai_agent_enabled !== undefined ? { ai_agent_enabled: rest.ai_agent_enabled } : {}),
       },
       status: rest.status || "active",
+      visibility: rest.visibility || "public",
+      access_token:
+        rest.visibility === "unlisted"
+          ? rest.access_token || crypto.randomUUID().replace(/-/g, "").slice(0, 16)
+          : rest.access_token || null,
       max_discount_pct: rest.max_discount_pct ?? 0,
       delivery_type:
         rest.delivery_type || rest.delivery_mode || rest.attributes?.delivery_type || "pickup",
@@ -2367,62 +2414,119 @@ export const getBoostPaymentById = createServerFn({ method: "GET" })
 export const boostClassifiedAd = initiateBoostPayment;
 
 /**
- * Refina título, descrição persuasiva e tags do classificado via Pool Unificado de IA.
- * Pure handler desacoplado para testes e uso interno.
+ * Refina título, descrição persuasiva e tags do classificado via Pool Unificado de IA (Copilot).
+ * Suporta atributos contextuais do nicho e gera duas versões comparáveis:
+ * - Versão 1: Direta, Comercial & Objetiva (foco em conversão rápida e especificações)
+ * - Versão 2: Narrativa, Storytelling & Experiência (foco em desejo, detalhes ricos e imersão)
  */
 export async function internalRefineClassifiedWithAI(options: {
   title?: string;
   description?: string;
   niche?: string;
+  attributes?: Record<string, any>;
 }) {
   const title = options.title || "";
   const description = options.description || "";
   const niche = options.niche || "desapego";
+  const attributes = options.attributes || {};
 
-  const systemPrompt = `Você é um Copywriter e Especialista em Classificados de alta conversão da plataforma Waesy.
-O usuário fornecerá um título preliminar e/ou descrição de um anúncio do nicho "${niche}".
-Sua tarefa é aprimorar o anúncio mantendo a fidelidade total aos fatos, tornando a linguagem persuasiva, elegante, clara e estruturada.
-Formate a descrição com parágrafos curtos e tópicos (bullet points) destacando diferenciais, estado de conservação, garantias ou especificações técnicas.
+  const contextDetails = Object.entries(attributes)
+    .filter(([_, v]) => v !== undefined && v !== null && v !== "" && !(Array.isArray(v) && v.length === 0))
+    .map(([k, v]) => `- ${k}: ${typeof v === "object" ? JSON.stringify(v) : v}`)
+    .join("\n");
+
+  const systemPrompt = `Você é o Copilot de Classificados da plataforma Waesy — um redator sênior de marketing e alta conversão.
+Sua missão é produzir duas opções excepcionais de anúncio para o nicho "${niche}", preservando a veracidade factual dos dados informados:
+
+1. Versão 1 (Comercial & Direta): Rápida, pragmática, orientada a compradores decididos. Foco em benefícios imediatos, dados essenciais, especificações claras e apelo comercial.
+2. Versão 2 (Storytelling & Detalhada): Envolvente, imersiva e completa. Constrói desejo, contextualiza a oportunidade (viagem dos sonhos, veículo impecável, imóvel acolhedor, serviço de excelência) com tópicos elegantes e ricos em detalhes.
+
+Diretrizes estritas:
+- Nunca invente especificações técnicas ou preços não fornecidos.
+- Use formatação limpa com tópicos legíveis (bullet points).
+- Proibido qualquer emoji na resposta.
+
 Retorne APENAS um JSON válido no seguinte formato:
 {
-  "title": "Título refinado, direto e atraente (máx 80 caracteres)",
-  "description": "Texto estruturado e persuasivo para o anúncio",
+  "title": "Título principal refinado e atraente (máx 80 caracteres)",
+  "description": "Texto da Versão 1 (padrão principal)",
+  "version1": {
+    "title": "Título direto da Versão 1",
+    "description": "Descrição comercial objetiva e focada em conversão rápida",
+    "badge": "Comercial e Direta"
+  },
+  "version2": {
+    "title": "Título envolvente da Versão 2",
+    "description": "Descrição detalhada com storytelling, diferenciais e experiência imersiva",
+    "badge": "Storytelling e Experiência"
+  },
   "suggestedTags": ["tag1", "tag2", "tag3"]
 }
 Sem blocos de código markdown adicionais fora do JSON.`;
 
-  const userPrompt = `Nicho: ${niche}\nTítulo atual: ${title || "Não informado"}\nDescrição atual: ${description || "Não informada"}\n\nPor favor, aprimore e retorne o JSON.`;
+  const userPrompt = `Nicho: ${niche}
+Título preliminar: ${title || "Não informado"}
+Descrição preliminar: ${description || "Não informada"}
+${contextDetails ? `Especificações técnicas e atributos preenchidos:\n${contextDetails}` : ""}
+
+Gere as duas propostas em formato JSON estrito conforme solicitado.`;
 
   try {
     const res = await executeUnifiedAiCall({
       systemPrompt,
       userPrompt,
       responseFormat: "json_object",
-      maxTokens: 800,
-      temperature: 0.3,
+      maxTokens: 1400,
+      temperature: 0.4,
     });
 
     const parsed = res.parsedJson || JSON.parse(res.content);
+    const v1Title = (parsed.version1?.title || parsed.title || title).trim();
+    const v1Desc = (parsed.version1?.description || parsed.description || description).trim();
+    const v2Title = (parsed.version2?.title || parsed.title || title).trim();
+    const v2Desc = (parsed.version2?.description || parsed.description || description).trim();
+
     return {
       success: true,
-      title: (parsed.title || title).trim(),
-      description: (parsed.description || description).trim(),
+      title: v1Title,
+      description: v1Desc,
+      version1: {
+        title: v1Title,
+        description: v1Desc,
+        badge: parsed.version1?.badge || "Comercial e Direta",
+      },
+      version2: {
+        title: v2Title,
+        description: v2Desc,
+        badge: parsed.version2?.badge || "Storytelling e Experiência",
+      },
       suggestedTags: Array.isArray(parsed.suggestedTags) ? parsed.suggestedTags : [],
     };
   } catch (err: any) {
     console.warn("[classifieds] refineClassifiedWithAI fallback defensivo:", err?.message);
+    const fallbackDesc = description || "Excelente oportunidade disponível no Waesy.";
     return {
       success: false,
       title,
-      description,
+      description: fallbackDesc,
+      version1: {
+        title,
+        description: fallbackDesc,
+        badge: "Comercial e Direta",
+      },
+      version2: {
+        title,
+        description: fallbackDesc,
+        badge: "Storytelling e Experiência",
+      },
       suggestedTags: [],
-      message: err?.message || "Não foi possível conectar ao motor de IA no momento.",
+      message: err?.message || "Não foi possível conectar ao Copilot no momento.",
     };
   }
 }
 
 /**
- * Server Function para refinar anúncios via IA a partir da interface do usuário.
+ * Server Function para refinar anúncios via Copilot a partir da interface do usuário.
  */
 export const refineClassifiedWithAI = createServerFn({ method: "POST" })
   .validator(
@@ -2430,7 +2534,8 @@ export const refineClassifiedWithAI = createServerFn({ method: "POST" })
       title: z.string().optional().default(""),
       description: z.string().optional().default(""),
       niche: z.string().optional().default("desapego"),
-    }),
+      attributes: z.record(z.any()).optional().default({}),
+    })
   )
   .handler(async ({ data }) => internalRefineClassifiedWithAI(data));
 

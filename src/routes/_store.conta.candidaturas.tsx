@@ -5,6 +5,7 @@ import { Briefcase, Calendar, Video, Clock, CheckCircle2, XCircle, ExternalLink,
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/state/states";
+import { NativeMobileHeader } from "@/components/navigation/native-mobile-header";
 import { listMyJobApplications, withdrawJobApplication } from "@/services/jobs.functions";
 
 export const Route = createFileRoute("/_store/conta/candidaturas")({
@@ -39,29 +40,31 @@ function MinhasCandidaturasPage() {
   }
  };
 
- const getStatusBadge = (status: string) => {
- switch (status) {
- case "pending":
- return <Badge variant="secondary" className="text-[10px]">Em Análise</Badge>;
- case "reviewed":
- case "shortlisted":
- return <Badge variant="outline" className="text-[10px] text-primary border-primary/30">Selecionado</Badge>;
- case "interview_scheduled":
- return <Badge className="text-[10px] bg-amber-500 hover:bg-amber-600 text-white">Entrevista</Badge>;
- case "hired":
- case "approved":
- return <Badge className="text-[10px] bg-primary hover:bg-primary/90 text-primary-foreground">Aprovado</Badge>;
- case "rejected":
- return <Badge variant="outline" className="text-[10px] text-muted-foreground">Recusado</Badge>;
- default:
- return <Badge variant="outline" className="text-[10px]">{status}</Badge>;
- }
- };
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case "pending":
+        return <Badge variant="secondary" className="text-xs">Em Análise</Badge>;
+      case "reviewed":
+      case "shortlisted":
+        return <Badge variant="outline" className="text-xs text-primary border-primary/30">Selecionado</Badge>;
+      case "interview_scheduled":
+        return <Badge className="text-xs bg-amber-500 hover:bg-amber-600 text-white">Entrevista</Badge>;
+      case "hired":
+      case "approved":
+        return <Badge className="text-xs bg-primary hover:bg-primary/90 text-primary-foreground">Aprovado</Badge>;
+      case "rejected":
+        return <Badge variant="outline" className="text-xs text-muted-foreground">Recusado</Badge>;
+      default:
+        return <Badge variant="outline" className="text-xs">{status}</Badge>;
+    }
+  };
 
  return (
-    <div className="w-full max-w-5xl mx-auto space-y-4 sm:space-y-6 pb-20 px-0 sm:px-4 md:px-0">
-      {/* ── 1. Clean Minimalist Header ── */}
-      <div className="flex items-center justify-between gap-4 border-b border-border/40 pb-4 pt-1">
+    <div className="w-full max-w-5xl mx-auto space-y-4 sm:space-y-6 pb-safe pb-24 px-0 sm:px-4 md:px-0">
+      <NativeMobileHeader title="Minhas Candidaturas" fallbackHref="/conta" mobileOnly />
+
+      {/* ── 1. Clean Minimalist Header (Desktop) ── */}
+      <div className="hidden md:flex items-center justify-between gap-4 border-b border-border/40 pb-4 pt-1">
         <div className="flex items-center gap-3">
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
             Candidaturas
@@ -74,13 +77,13 @@ function MinhasCandidaturasPage() {
         </div>
 
         <div className="flex items-center gap-2">
-          <Button asChild size="sm" variant="outline" className="rounded-lg text-xs font-semibold h-8 px-4 cursor-pointer gap-2">
+          <Button asChild size="sm" variant="outline" className="rounded-lg text-xs font-semibold h-11 min-h-11 sm:h-9 px-4 cursor-pointer gap-2">
             <Link to="/conta/curriculo">
               <FileText className="size-3.5" />
               <span>Currículo</span>
             </Link>
           </Button>
-          <Button asChild size="sm" variant="default" className="rounded-lg text-xs font-semibold h-8 px-4 cursor-pointer">
+          <Button asChild size="sm" variant="default" className="rounded-lg text-xs font-semibold h-11 min-h-11 sm:h-9 px-4 cursor-pointer">
             <Link to="/empregos">Explorar</Link>
           </Button>
         </div>

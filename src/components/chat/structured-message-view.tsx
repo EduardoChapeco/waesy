@@ -430,9 +430,19 @@ function VerticalAiResultBlock({
   data: Record<string, any>;
   onAction?: (action: AIChatAction) => void;
 }) {
-  const vertical = data.vertical || "rh";
+  const VERTICAL_LABELS: Record<string, string> = {
+    rh: "Recursos Humanos",
+    finance: "Finanças",
+    legal: "Jurídico",
+    sales: "Vendas",
+    operations: "Operações",
+    marketing: "Marketing",
+    catalog: "Catálogo",
+  };
+  const rawVertical = data.vertical || "rh";
+  const vertical = VERTICAL_LABELS[rawVertical] || rawVertical;
   const capability = data.capability || "";
-  const title = data.title || data.summary || "Resultado de IA";
+  const title = data.title || data.summary || "Análise Especializada";
   const requiresHumanApproval = Boolean(data.requires_human_approval);
   const confidencePct = Math.round((data.confidence ?? 0.9) * 100);
 
@@ -460,7 +470,7 @@ function VerticalAiResultBlock({
       </div>
 
       <div className="flex items-center justify-between pt-1 border-t border-border/40 text-xs text-muted-foreground">
-        <span>Confiança do modelo</span>
+        <span>Conferência dos Dados</span>
         <span className="font-semibold text-foreground">{confidencePct}%</span>
       </div>
     </div>
@@ -489,11 +499,14 @@ function CardCarouselBlock({
             key={idx}
             className="snap-start shrink-0 w-56 rounded-lg border border-border/80 bg-card p-3 space-y-2"
           >
-            {item.image_url && (
+            {item.image_url && typeof item.image_url === "string" && item.image_url.trim().length > 0 && (
               <img
                 src={item.image_url}
                 alt={item.title || "Item"}
                 className="w-full h-28 rounded-md object-cover bg-muted"
+                onError={(e) => {
+                  (e.currentTarget as HTMLElement).style.display = "none";
+                }}
               />
             )}
             <h5 className="text-xs font-bold text-foreground line-clamp-1">{item.title}</h5>

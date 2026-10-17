@@ -314,7 +314,7 @@ export function LeadCard({
           )}
 
           {assignedMember && (
-            <span className="text-muted-foreground font-mono truncate max-w-[90px]">
+            <span className="text-muted-foreground font-mono truncate max-w-24">
               @{assignedMember.name || assignedMember.full_name}
             </span>
           )}

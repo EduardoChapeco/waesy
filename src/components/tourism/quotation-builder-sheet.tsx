@@ -15,6 +15,12 @@ import { listHotelsBank } from "@/services/travel-catalog.functions";
 import { cn } from "@/lib/utils";
 
 import { CANONICAL_DESTINATIONS, MAJOR_IATA_AIRPORTS, type CanonicalDestination } from "@/lib/destinations-catalog";
+import {
+  FlightSearchWidget,
+  TravelSearchResults,
+  type FlightOfferCardProps,
+  type FlightSearchParams,
+} from "@/design-system/travel";
 
 export interface QuotationBuilderSheetProps {
  open: boolean;
@@ -129,6 +135,89 @@ export function QuotationBuilderSheet({
  const [baggage, setBaggage] = useState<"mao" | "despachada">("mao");
  const [includeTransfer, setIncludeTransfer] = useState(true);
  const [includeInsurance, setIncludeInsurance] = useState(true);
+
+ // Flight Simulator State (GDS Integration)
+ const [showFlightSimulator, setShowFlightSimulator] = useState(false);
+ const [flightOffers, setFlightOffers] = useState<FlightOfferCardProps[]>([]);
+ const [isSearchingFlights, setIsSearchingFlights] = useState(false);
+ const [selectedFlightOffer, setSelectedFlightOffer] = useState<FlightOfferCardProps | null>(null);
+
+ const handleFlightSearch = useCallback((params: FlightSearchParams) => {
+   setIsSearchingFlights(true);
+   setTimeout(() => {
+     const originCode = params.origin.match(/\(([A-Z]{3})\)/)?.[1] || originIata || "XAP";
+     const destCode = params.destination.match(/\(([A-Z]{3})\)/)?.[1] || destinationIata || "REC";
+     const pax = Math.max(1, params.passengers || totalRoomsAdults + totalRoomsChildren);
+
+     const offers: FlightOfferCardProps[] = [
+       {
+         airline: "LATAM Airlines",
+         flightNumber: "LA 3412",
+         departureTime: "08:15",
+         departureAirport: originCode,
+         arrivalTime: "11:35",
+         arrivalAirport: destCode,
+         duration: "3h 20m",
+         stops: 0,
+         baggageIncluded: true,
+         price: formatMoney(124000 * pax),
+         pricePerPerson: `${formatMoney(124000)} por pessoa`,
+         conditions: "Tarifa com remarcação gratuita",
+         isBestOption: true,
+         isCheapest: false,
+       },
+       {
+         airline: "GOL Linhas Aéreas",
+         flightNumber: "G3 1890",
+         departureTime: "06:40",
+         departureAirport: originCode,
+         arrivalTime: "10:10",
+         arrivalAirport: destCode,
+         duration: "3h 30m",
+         stops: 0,
+         baggageIncluded: false,
+         price: formatMoney(98000 * pax),
+         pricePerPerson: `${formatMoney(98000)} por pessoa`,
+         conditions: "Não reembolsável",
+         isBestOption: false,
+         isCheapest: true,
+       },
+       {
+         airline: "Azul Linhas Aéreas",
+         flightNumber: "AD 4501",
+         departureTime: "14:20",
+         departureAirport: originCode,
+         arrivalTime: "18:05",
+         arrivalAirport: destCode,
+         duration: "3h 45m",
+         stops: 1,
+         baggageIncluded: true,
+         price: formatMoney(112000 * pax),
+         pricePerPerson: `${formatMoney(112000)} por pessoa`,
+         conditions: "Inclui lanche a bordo e TV ao vivo",
+         isBestOption: false,
+         isCheapest: false,
+       },
+     ];
+
+     setFlightOffers(offers);
+     setIsSearchingFlights(false);
+   }, 450);
+ }, [originIata, destinationIata, totalRoomsAdults, totalRoomsChildren]);
+
+ const handleSelectFlightOffer = useCallback((offer: FlightOfferCardProps) => {
+   setSelectedFlightOffer(offer);
+   const airLower = offer.airline.toLowerCase();
+   if (airLower.includes("latam")) setPreferredAirline("latam");
+   else if (airLower.includes("gol")) setPreferredAirline("gol");
+   else if (airLower.includes("azul")) setPreferredAirline("azul");
+
+   setBaggage(offer.baggageIncluded ? "despachada" : "mao");
+
+   const flightNote = `Voo selecionado: ${offer.airline} (${offer.flightNumber}) ${offer.departureAirport} às ${offer.departureTime} ➔ ${offer.arrivalAirport} às ${offer.arrivalTime}.`;
+   setSpecialNotes((prev) => (prev ? `${prev}\n${flightNote}` : flightNote));
+   toast.success(`Voo ${offer.flightNumber} (${offer.airline}) vinculado à cotação!`);
+ }, []);
  // excursions/activities as dynamic tags
  const [excursionTags, setExcursionTags] = useState<string[]>([]);
  const [excursionInput, setExcursionInput] = useState("");
@@ -358,7 +447,7 @@ export function QuotationBuilderSheet({
  const seasonTip = selectedCanonicalDest ? `\n☀️ *Melhor época para viajar:* ${selectedCanonicalDest.bestSeason}` : "";
  const gastroTip = selectedCanonicalDest ? `\n🍽️ *Dica gastronômica local:* ${selectedCanonicalDest.gastronomyTip}` : "";
 
- const template = `✈️ *PROPOSTA DE VIAGEM EXCLUSIVA*
+ const template = `*PROPOSTA DE VIAGEM EXCLUSIVA*
 📍 *Origem:* ${originDisplay} ➔ *Destino:* ${destDisplay}
 📅 *Período:* ${departureDate || "Data a definir"} até ${returnDate || "Data a definir"}${nightsStr}
 👥 *Viajantes:* ${totalRoomsAdults} Adultos${totalRoomsChildren > 0 ? `, ${totalRoomsChildren} Crianças` : ""}
@@ -366,7 +455,7 @@ export function QuotationBuilderSheet({
 🏨 *Hospedagem:* ${hotelName || "Hotel Selecionado"} (${hotelCategory})
 🍽️ *Regime:* ${mealPlanLabel}
 🛏️ *Acomodação:* Quarto ${roomType.toUpperCase()}
-✈️ *Aéreo & Logística:* ${preferredAirline !== "qualquer" ? `Voo ${preferredAirline.toUpperCase()}` : "Melhor Tarifa Aérea"} com ${baggage === "despachada" ? "🧳 Mala Despachada (23kg)" : "🧳 Bagagem de Mão (10kg)"}
+*Aéreo & Logística:* ${preferredAirline !== "qualquer" ? `Voo ${preferredAirline.toUpperCase()}` : "Melhor Tarifa Aérea"} com ${baggage === "despachada" ? "🧳 Mala Despachada (23kg)" : "🧳 Bagagem de Mão (10kg)"}
 ${includeTransfer ? "🚗 *Transfer:* Incluso Aeroporto ↔ Hotel In/Out\n" : ""}${includeInsurance ? "🛡️ *Seguro Viagem:* Incluso com assistência médica completa\n" : ""}${excursionTags.length > 0 ? `🎫 *Passeios & Ingressos:* ${excursionTags.join(", ")}\n` : ""}${seasonTip}${gastroTip}
 💰 *Investimento Total:* ${totalDisplay}
 💳 *Condições:* ${installmentDisplay}
@@ -439,7 +528,7 @@ _Valores sujeitos a reajuste tarifário sem aviso prévio. Garanta sua reserva!_
       <SheetContent
         side="right"
         size="wide"
-        className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] max-sm:!h-[100dvh] max-sm:!inset-0 max-sm:!rounded-none border-l p-0 overflow-y-auto no-scrollbar bg-card flex flex-col justify-between shadow-2xl"
+        className="border-l p-0 overflow-y-auto no-scrollbar bg-card flex flex-col justify-between shadow-2xl overscroll-contain max-sm:inset-0 max-sm:h-dvh max-sm:rounded-none"
       >
  {/* ── 1. Top Header ── */}
  <SheetHeader className="p-5 sm:p-6 border-b border-border/80 bg-muted/20 text-left space-y-2">
@@ -451,7 +540,7 @@ _Valores sujeitos a reajuste tarifário sem aviso prévio. Garanta sua reserva!_
  <div>
  <SheetTitle className="text-base font-bold text-foreground flex items-center gap-2">
  <span>Quotation Builder • Cotação Inteligente</span>
- <Badge variant="outline" className="text-[10px] font-mono border-primary/30 text-primary">
+ <Badge variant="outline" className="text-xs font-mono border-primary/30 text-primary">
  Turismo e CRM
  </Badge>
  </SheetTitle>
@@ -470,7 +559,7 @@ _Valores sujeitos a reajuste tarifário sem aviso prévio. Garanta sua reserva!_
  <Sliders className="size-3.5" />
  <span>Interpretar com IA (WhatsApp ou Texto Livre)</span>
  </span>
- <Badge variant="secondary" className="text-[9px] py-0 px-2 font-mono">
+ <Badge variant="secondary" className="text-xs py-0.5 px-2 font-mono">
  Auto-Preenchimento
  </Badge>
  </div>
@@ -478,10 +567,10 @@ _Valores sujeitos a reajuste tarifário sem aviso prévio. Garanta sua reserva!_
  placeholder="Cole aqui a mensagem do WhatsApp do passageiro... Ex: 'Casal quer ir pra Porto de Galinhas em novembro saindo de Chapecó, hotel com café da manhã e transfer, orçamento até 8 mil. Carlos whats (49) 99912-3456'"
  value={aiText}
  onChange={(e) => setAiText(e.target.value)}
- className="min-h-[65px] text-xs bg-background rounded-lg resize-none"
+ className="min-h-16 text-base sm:text-xs bg-background rounded-lg resize-none"
  />
  <div className="flex items-center justify-between gap-2 pt-1">
- <span className="text-[10px] text-muted-foreground">
+ <span className="text-xs text-muted-foreground">
  Detecta automaticamente destino, datas, passageiros, regime e orçamento.
  </span>
  <Button
@@ -489,7 +578,7 @@ _Valores sujeitos a reajuste tarifário sem aviso prévio. Garanta sua reserva!_
  size="sm"
  disabled={!aiText.trim() || isAiParsing}
  onClick={handleParseAi}
- className="h-8 rounded-lg font-bold text-xs gap-2 bg-primary text-primary-foreground cursor-pointer shadow-xs shrink-0"
+ className="h-11 min-h-11 px-4 rounded-lg font-bold text-xs gap-2 bg-primary text-primary-foreground cursor-pointer shadow-xs shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
  >
  <Sliders className="size-3.5" />
  <span>{isAiParsing ? "Interpretando..." : "Interpretar Texto"}</span>
@@ -548,8 +637,8 @@ _Valores sujeitos a reajuste tarifário sem aviso prévio. Garanta sua reserva!_
  <div className="flex items-center justify-between">
  <Label className="text-xs font-bold text-foreground">Origem da Viagem</Label>
  {originIata && (
- <Badge variant="outline" className="text-[10px] font-mono text-primary border-primary/30 font-bold">
- ✈️ {originIata}
+ <Badge variant="outline" className="text-xs font-mono text-primary border-primary/30 font-bold">
+ {originIata}
  </Badge>
  )}
  </div>
@@ -559,7 +648,7 @@ _Valores sujeitos a reajuste tarifário sem aviso prévio. Garanta sua reserva!_
  value={originCity}
  onChange={(e) => setOriginCity(e.target.value)}
  placeholder="Chapecó"
- className="h-9 rounded-lg text-xs bg-background"
+ className="h-11 min-h-11 rounded-lg text-base sm:text-xs bg-background"
  />
  </div>
  <div>
@@ -568,13 +657,13 @@ _Valores sujeitos a reajuste tarifário sem aviso prévio. Garanta sua reserva!_
  onChange={(e) => setOriginIata(e.target.value.toUpperCase())}
  placeholder="IATA"
  maxLength={3}
- className="h-9 rounded-lg text-xs font-mono font-bold bg-background text-center uppercase"
+ className="h-11 min-h-11 rounded-lg text-base sm:text-xs font-mono font-bold bg-background text-center uppercase"
  />
  </div>
  </div>
 
  {/* Atalhos Rápidos de Origem */}
- <div className="flex flex-wrap gap-1 pt-1">
+ <div className="flex flex-wrap gap-1.5 pt-1">
  {COMMON_ORIGINS.map((orig) => (
  <button
  key={orig.iata}
@@ -584,7 +673,7 @@ _Valores sujeitos a reajuste tarifário sem aviso prévio. Garanta sua reserva!_
  setOriginIata(orig.iata);
  }}
  className={cn(
- "text-[10px] font-medium px-2 py-1 rounded-lg border transition-all cursor-pointer",
+ "text-xs font-medium px-3 py-2 min-h-11 rounded-lg border transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
  originIata === orig.iata
  ? "bg-primary/10 border-primary text-primary font-bold"
  : "bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground border-border/60"
@@ -601,8 +690,8 @@ _Valores sujeitos a reajuste tarifário sem aviso prévio. Garanta sua reserva!_
  <div className="flex items-center justify-between">
  <Label className="text-xs font-bold text-foreground">Destino Almejado *</Label>
  {destinationIata && (
- <Badge variant="outline" className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 border-emerald-500/30 font-bold">
- ✈️ {destinationIata}
+ <Badge variant="outline" className="text-xs font-mono text-emerald-600 dark:text-emerald-400 border-emerald-500/30 font-bold">
+ {destinationIata}
  </Badge>
  )}
  </div>
@@ -622,7 +711,7 @@ _Valores sujeitos a reajuste tarifário sem aviso prévio. Garanta sua reserva!_
  }
  }}
  placeholder="Ex: Porto de Galinhas, PE"
- className="h-9 rounded-lg text-xs bg-background"
+ className="h-11 min-h-11 rounded-lg text-base sm:text-xs bg-background"
  />
  </div>
  <div>
@@ -631,7 +720,7 @@ _Valores sujeitos a reajuste tarifário sem aviso prévio. Garanta sua reserva!_
  onChange={(e) => setDestinationIata(e.target.value.toUpperCase())}
  placeholder="IATA"
  maxLength={3}
- className="h-9 rounded-lg text-xs font-mono font-bold bg-background text-center uppercase"
+ className="h-11 min-h-11 rounded-lg text-base sm:text-xs font-mono font-bold bg-background text-center uppercase"
  />
  </div>
  </div>
@@ -646,29 +735,29 @@ _Valores sujeitos a reajuste tarifário sem aviso prévio. Garanta sua reserva!_
  <span>Janela de Datas Prevista</span>
  </Label>
  {nightsCount && (
- <Badge variant="secondary" className="text-[10px] font-mono bg-primary/10 text-primary border-primary/20">
- 🌙 {nightsCount} {nightsCount === 1 ? "noite" : "noites"}
+ <Badge variant="secondary" className="text-xs font-mono bg-primary/10 text-primary border-primary/20">
+ {nightsCount} {nightsCount === 1 ? "noite" : "noites"}
  </Badge>
  )}
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
  <div>
- <span className="text-[10px] text-muted-foreground block mb-1">Ida Prevista:</span>
+ <span className="text-xs text-muted-foreground block mb-1">Ida Prevista:</span>
  <Input
  type="date"
  value={departureDate}
  onChange={(e) => setDepartureDate(e.target.value)}
- className="h-9 rounded-lg text-xs bg-background"
+ className="h-11 min-h-11 rounded-lg text-base sm:text-xs bg-background"
  />
  </div>
  <div>
- <span className="text-[10px] text-muted-foreground block mb-1">Volta Prevista:</span>
+ <span className="text-xs text-muted-foreground block mb-1">Volta Prevista:</span>
  <Input
  type="date"
  value={returnDate}
  onChange={(e) => setReturnDate(e.target.value)}
- className="h-9 rounded-lg text-xs bg-background"
+ className="h-11 min-h-11 rounded-lg text-base sm:text-xs bg-background"
  />
  </div>
  </div>
@@ -689,7 +778,7 @@ _Valores sujeitos a reajuste tarifário sem aviso prévio. Garanta sua reserva!_
   onFocus={() => hotelSearchQuery.length >= 2 && setShowHotelDropdown(hotelSuggestions.length > 0)}
   onBlur={() => setTimeout(() => setShowHotelDropdown(false), 180)}
   placeholder="Digite o nome do hotel ou resort..."
-  className="h-10 rounded-lg text-xs bg-background pl-8"
+  className="h-11 min-h-11 rounded-lg text-base sm:text-xs bg-background pl-8"
   />
   </div>
   {showHotelDropdown && hotelSuggestions.length > 0 && (
@@ -704,16 +793,16 @@ _Valores sujeitos a reajuste tarifário sem aviso prévio. Garanta sua reserva!_
   >
   <div>
   <span className="text-xs font-bold text-foreground block">{h.name}</span>
-  <span className="text-[10px] text-muted-foreground">{h.city}{h.state ? `, ${h.state}` : ""}</span>
+  <span className="text-xs text-muted-foreground">{h.city}{h.state ? `, ${h.state}` : ""}</span>
   </div>
   {h.regime_options?.[0] && (
-  <Badge variant="secondary" className="text-[9px] shrink-0">{h.regime_options[0]}</Badge>
+  <Badge variant="secondary" className="text-xs shrink-0">{h.regime_options[0]}</Badge>
   )}
   </button>
   ))}
   </div>
   )}
-  <p className="text-[10px] text-muted-foreground pt-1">Digite para buscar hotéis cadastrados ou escreva livremente.</p>
+  <p className="text-xs text-muted-foreground pt-1">Digite para buscar hotéis cadastrados ou escreva livremente.</p>
   </div>
 
   {/* Categoria sem estrelas */}
@@ -738,7 +827,7 @@ _Valores sujeitos a reajuste tarifário sem aviso prévio. Garanta sua reserva!_
   )}
   >
   <span className="text-xs font-bold block">{cat.label}</span>
-  <span className="text-[10px] leading-snug">{cat.sub}</span>
+  <span className="text-xs leading-snug">{cat.sub}</span>
   </button>
   ))}
   </div>
@@ -799,7 +888,7 @@ _Valores sujeitos a reajuste tarifário sem aviso prévio. Garanta sua reserva!_
   variant="outline"
   size="sm"
   onClick={() => setRoomDistribution(prev => prev.slice(0, -1))}
-  className="h-7 rounded-lg text-xs gap-1 text-destructive border-destructive/40"
+  className="h-11 min-h-11 px-3 rounded-lg text-xs gap-1 text-destructive border-destructive/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive"
   >
   <Minus className="size-3" /> Remover
   </Button>
@@ -807,7 +896,7 @@ _Valores sujeitos a reajuste tarifário sem aviso prévio. Garanta sua reserva!_
   </div>
   </div>
 
-  <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+  <div className="flex items-center gap-2 text-xs text-muted-foreground">
   <Users className="size-3.5" />
   <span>{roomDistribution.length} {roomDistribution.length === 1 ? "quarto" : "quartos"} • {totalRoomsAdults} adulto{totalRoomsAdults !== 1 ? "s" : ""}{totalRoomsChildren > 0 ? ` • ${totalRoomsChildren} criança${totalRoomsChildren !== 1 ? "s" : ""}` : ""}</span>
   </div>
@@ -816,49 +905,49 @@ _Valores sujeitos a reajuste tarifário sem aviso prévio. Garanta sua reserva!_
   {roomDistribution.map((room, ri) => (
   <div key={ri} className="p-3 rounded-lg border border-border/70 bg-card space-y-2">
   <div className="flex items-center justify-between">
-  <span className="text-[11px] font-bold text-foreground">Quarto {ri + 1}</span>
-  <Badge variant="secondary" className="text-[9px]">
+  <span className="text-xs font-bold text-foreground">Quarto {ri + 1}</span>
+  <Badge variant="secondary" className="text-xs">
   {room.adults} adulto{room.adults !== 1 ? "s" : ""}{room.children.length > 0 ? ` + ${room.children.length} criança${room.children.length !== 1 ? "s" : ""}` : ""}
   </Badge>
   </div>
   <div className="grid grid-cols-2 gap-3">
   <div className="space-y-1">
-  <span className="text-[10px] text-muted-foreground">Adultos (+12 anos)</span>
+  <span className="text-xs text-muted-foreground">Adultos (+12 anos)</span>
   <div className="flex items-center gap-2">
   <Button type="button" variant="outline" size="icon"
   onClick={() => setRoomDistribution(prev => prev.map((r, i) => i === ri ? { ...r, adults: Math.max(1, r.adults - 1) } : r))}
-  className="size-7 rounded-lg"><Minus className="size-3" /></Button>
+  className="size-11 min-h-11 min-w-11 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"><Minus className="size-3" /></Button>
   <span className="text-sm font-bold font-mono w-4 text-center">{room.adults}</span>
   <Button type="button" variant="outline" size="icon"
   onClick={() => setRoomDistribution(prev => prev.map((r, i) => i === ri ? { ...r, adults: r.adults + 1 } : r))}
-  className="size-7 rounded-lg"><Plus className="size-3" /></Button>
+  className="size-11 min-h-11 min-w-11 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"><Plus className="size-3" /></Button>
   </div>
   </div>
   <div className="space-y-1">
-  <span className="text-[10px] text-muted-foreground">Crianças (0-11 anos)</span>
+  <span className="text-xs text-muted-foreground">Crianças (0-11 anos)</span>
   <div className="flex items-center gap-2">
   <Button type="button" variant="outline" size="icon"
   onClick={() => setRoomDistribution(prev => prev.map((r, i) => i === ri ? { ...r, children: r.children.slice(0, -1) } : r))}
   disabled={room.children.length === 0}
-  className="size-7 rounded-lg"><Minus className="size-3" /></Button>
+  className="size-11 min-h-11 min-w-11 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"><Minus className="size-3" /></Button>
   <span className="text-sm font-bold font-mono w-4 text-center">{room.children.length}</span>
   <Button type="button" variant="outline" size="icon"
   onClick={() => setRoomDistribution(prev => prev.map((r, i) => i === ri ? { ...r, children: [...r.children, 7] } : r))}
-  className="size-7 rounded-lg"><Plus className="size-3" /></Button>
+  className="size-11 min-h-11 min-w-11 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"><Plus className="size-3" /></Button>
   </div>
   </div>
   </div>
   {room.children.length > 0 && (
   <div className="pt-1 space-y-1">
-  <span className="text-[10px] text-muted-foreground">Idades das crianças:</span>
+  <span className="text-xs text-muted-foreground">Idades das crianças:</span>
   <div className="flex flex-wrap gap-2">
   {room.children.map((age, ci) => (
   <div key={ci} className="flex items-center gap-1">
-  <span className="text-[10px] text-muted-foreground">C{ci + 1}:</span>
+  <span className="text-xs text-muted-foreground">C{ci + 1}:</span>
   <select
   value={age}
   onChange={(e) => setRoomDistribution(prev => prev.map((r, i) => i === ri ? { ...r, children: r.children.map((a, j) => j === ci ? parseInt(e.target.value) : a) } : r))}
-  className="h-6 px-2 rounded-lg border border-input bg-background text-xs font-medium cursor-pointer"
+  className="h-11 min-h-11 px-3 rounded-lg border border-input bg-background text-base sm:text-xs font-medium cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
   >
   {Array.from({ length: 12 }, (_, a) => a).map(a => (
   <option key={a} value={a}>{a === 0 ? "< 1 ano" : `${a} anos`}</option>
@@ -909,6 +998,76 @@ _Valores sujeitos a reajuste tarifário sem aviso prévio. Garanta sua reserva!_
 
  {/* Preferência de Aéreo & Bagagem */}
  {tripType === "air_package" && (
+ <div className="space-y-3">
+ {/* Simulador de Voos GDS */}
+ <div className="p-4 rounded-lg bg-card border border-border/80 space-y-3">
+ <div className="flex items-center justify-between">
+ <div className="flex items-center gap-2">
+ <Plane className="size-4 text-primary" />
+ <span className="text-xs font-bold text-foreground">GDS / Simulador de Voos</span>
+ </div>
+ <Button
+ type="button"
+ variant="outline"
+ size="sm"
+ onClick={() => setShowFlightSimulator(prev => !prev)}
+ className="h-11 min-h-11 px-4 text-xs font-semibold rounded-lg cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+ >
+ {showFlightSimulator ? "Ocultar Simulador" : "Buscar Voos"}
+ </Button>
+ </div>
+
+ {/* Card de Voo Selecionado */}
+ {selectedFlightOffer && (
+ <div className="p-3 rounded-lg bg-primary/10 border border-primary/30 flex items-center justify-between gap-3 text-xs">
+ <div>
+ <div className="font-bold text-foreground flex items-center gap-1.5">
+ <CheckCircle2 className="size-3.5 text-primary" />
+ <span>{selectedFlightOffer.airline} ({selectedFlightOffer.flightNumber})</span>
+ </div>
+ <p className="text-xs text-muted-foreground mt-0.5">
+ {selectedFlightOffer.departureAirport} {selectedFlightOffer.departureTime} ➔ {selectedFlightOffer.arrivalAirport} {selectedFlightOffer.arrivalTime} ({selectedFlightOffer.duration}) • {selectedFlightOffer.price}
+ </p>
+ </div>
+ <Button
+ type="button"
+ variant="ghost"
+ size="sm"
+ onClick={() => setSelectedFlightOffer(null)}
+ className="h-11 min-h-11 px-3 text-xs text-muted-foreground hover:text-destructive cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive"
+ >
+ Remover
+ </Button>
+ </div>
+ )}
+
+ {showFlightSimulator && (
+ <div className="space-y-4 pt-2 border-t border-border/60">
+ <FlightSearchWidget
+ initialParams={{
+ origin: originCity ? `${originCity} (${originIata || "XAP"})` : "Chapecó (XAP)",
+ destination: destinationCity ? `${destinationCity} (${destinationIata || "REC"})` : "Recife (REC)",
+ departureDate: departureDate || "2026-11-15",
+ returnDate: returnDate || "2026-11-22",
+ passengers: Math.max(1, totalRoomsAdults + totalRoomsChildren),
+ travelClass: "economy",
+ isRoundTrip: true,
+ }}
+ onSearch={handleFlightSearch}
+ isLoading={isSearchingFlights}
+ />
+
+ {flightOffers.length > 0 && (
+ <TravelSearchResults
+ destination={destinationCity || "Destino"}
+ offers={flightOffers}
+ onSelectOffer={handleSelectFlightOffer}
+ />
+ )}
+ </div>
+ )}
+ </div>
+
  <div className="p-4 rounded-lg bg-muted/30 border border-border/60 space-y-3">
  <div className="space-y-2">
  <span className="text-xs font-bold text-foreground block">Cia Aérea Preferencial</span>
@@ -973,6 +1132,7 @@ _Valores sujeitos a reajuste tarifário sem aviso prévio. Garanta sua reserva!_
  </div>
  </div>
  </div>
+ </div>
  )}
 
  {/* Serviços Inclusos */}
@@ -1012,7 +1172,7 @@ _Valores sujeitos a reajuste tarifário sem aviso prévio. Garanta sua reserva!_
  </div>
  <div>
  <span className="text-xs font-bold block">{item.title}</span>
- <span className="text-[10px] text-muted-foreground block">{item.desc}</span>
+ <span className="text-xs text-muted-foreground block">{item.desc}</span>
  </div>
  </div>
  <div className={cn("size-5 rounded-md border flex items-center justify-center", item.checked ? "bg-primary text-primary-foreground border-primary" : "border-border/80")}>
@@ -1029,7 +1189,7 @@ _Valores sujeitos a reajuste tarifário sem aviso prévio. Garanta sua reserva!_
  <div className="flex items-center justify-between">
  <Label className="text-xs font-bold text-foreground">Passeios e Ingressos</Label>
  {excursionTags.length > 0 && (
- <Badge variant="secondary" className="text-[9px] font-mono">{excursionTags.length} item{excursionTags.length !== 1 ? "s" : ""}</Badge>
+ <Badge variant="secondary" className="text-xs font-mono">{excursionTags.length} item{excursionTags.length !== 1 ? "s" : ""}</Badge>
  )}
  </div>
 
@@ -1039,7 +1199,7 @@ _Valores sujeitos a reajuste tarifário sem aviso prévio. Garanta sua reserva!_
  {excursionTags.map((tag) => (
  <span
  key={tag}
- className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-primary/10 text-primary text-[11px] font-semibold border border-primary/20"
+ className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold border border-primary/20"
  >
  {tag}
  <button
@@ -1056,14 +1216,14 @@ _Valores sujeitos a reajuste tarifário sem aviso prévio. Garanta sua reserva!_
 
  {/* Atalhos rápidos */}
  <div className="space-y-2">
- <span className="text-[10px] text-muted-foreground">Adicionar rapidamente:</span>
+ <span className="text-xs text-muted-foreground">Adicionar rapidamente:</span>
  <div className="flex flex-wrap gap-2">
  {presetExcursions.filter((p) => !excursionTags.includes(p)).slice(0, 8).map((preset) => (
  <button
  key={preset}
  type="button"
  onClick={() => addExcursion(preset)}
- className="px-3 py-1 rounded-full bg-card border border-border/70 text-[11px] text-muted-foreground hover:text-foreground hover:border-primary/40 hover:bg-primary/5 transition-all cursor-pointer"
+ className="px-3 py-1 rounded-full bg-card border border-border/70 text-xs text-muted-foreground hover:text-foreground hover:border-primary/40 hover:bg-primary/5 transition-all cursor-pointer"
  >
  + {preset}
  </button>
@@ -1142,48 +1302,48 @@ _Valores sujeitos a reajuste tarifário sem aviso prévio. Garanta sua reserva!_
  <DollarSign className="size-3.5" />
  <span>Simulação de Pagamento Automática</span>
  </span>
- <Badge variant="outline" className="text-[10px] font-mono border-emerald-500/40 text-emerald-700 dark:text-emerald-300">
+ <Badge variant="outline" className="text-xs font-mono border-emerald-500/40 text-emerald-700 dark:text-emerald-300">
  Condição Comercial
  </Badge>
  </div>
 
  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
  <div className="p-3 rounded-lg bg-background border border-emerald-500/20 text-foreground">
- <span className="text-[10px] text-muted-foreground block">À Vista no Pix (5% off)</span>
+ <span className="text-xs text-muted-foreground block">À Vista no Pix (5% off)</span>
  <span className="text-xs font-black text-emerald-600 font-mono">
  {formatMoney(Math.round(quoteAmountCents * 0.95))}
  </span>
  </div>
 
  <div className="p-3 rounded-lg bg-background border border-emerald-500/20 text-foreground">
- <span className="text-[10px] text-muted-foreground block">10x sem juros (Cartão)</span>
+ <span className="text-xs text-muted-foreground block">10x sem juros (Cartão)</span>
  <span className="text-xs font-black text-foreground font-mono">
  10x de {formatMoney(Math.round(quoteAmountCents / 10))}
  </span>
  </div>
 
  <div className="p-3 rounded-lg bg-background border border-emerald-500/20 text-foreground col-span-2 sm:col-span-1">
- <span className="text-[10px] text-muted-foreground block">Entrada 20% + Saldo 10x</span>
+ <span className="text-xs text-muted-foreground block">Entrada 20% + Saldo 10x</span>
  <span className="text-xs font-bold text-foreground font-mono">
  {formatMoney(Math.round(quoteAmountCents * 0.2))} + 10x {formatMoney(Math.round((quoteAmountCents * 0.8) / 10))}
  </span>
 
             {Math.max(1, totalRoomsAdults + totalRoomsChildren) > 1 && (
               <div className="p-3 rounded-lg bg-background border border-emerald-500/20 text-foreground">
-                <span className="text-[10px] text-muted-foreground block">Por Pessoa ({Math.max(1, totalRoomsAdults + totalRoomsChildren)} pax)</span>
+                <span className="text-xs text-muted-foreground block">Por Pessoa ({Math.max(1, totalRoomsAdults + totalRoomsChildren)} pax)</span>
                 <span className="text-xs font-bold text-emerald-700 dark:text-emerald-300 font-mono">
                   {formatMoney(Math.round(quoteAmountCents / Math.max(1, totalRoomsAdults + totalRoomsChildren)))}
-                  <span className="text-[10px] font-normal text-muted-foreground block">ou 10x {formatMoney(Math.round(quoteAmountCents / (10 * Math.max(1, totalRoomsAdults + totalRoomsChildren))))}</span>
+                  <span className="text-xs font-normal text-muted-foreground block">ou 10x {formatMoney(Math.round(quoteAmountCents / (10 * Math.max(1, totalRoomsAdults + totalRoomsChildren))))}</span>
                 </span>
               </div>
             )}
 
             {roomDistribution.length > 1 && (
               <div className="p-3 rounded-lg bg-background border border-emerald-500/20 text-foreground">
-                <span className="text-[10px] text-muted-foreground block">Por Quarto ({roomDistribution.length} qtos)</span>
+                <span className="text-xs text-muted-foreground block">Por Quarto ({roomDistribution.length} qtos)</span>
                 <span className="text-xs font-bold text-emerald-700 dark:text-emerald-300 font-mono">
                   {formatMoney(Math.round(quoteAmountCents / roomDistribution.length))}
-                  <span className="text-[10px] font-normal text-muted-foreground block">ou 10x {formatMoney(Math.round(quoteAmountCents / (10 * roomDistribution.length)))}</span>
+                  <span className="text-xs font-normal text-muted-foreground block">ou 10x {formatMoney(Math.round(quoteAmountCents / (10 * roomDistribution.length)))}</span>
                 </span>
               </div>
             )}

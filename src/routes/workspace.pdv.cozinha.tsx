@@ -452,7 +452,7 @@ function KDSDashboard() {
 
  {/* ── SHEET: SUMÁRIO DE ITENS POR LOTE ── */}
  <Sheet open={itemsSummaryOpen} onOpenChange={setItemsSummaryOpen}>
- <SheetContent size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] flex flex-col">
+ <SheetContent size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl flex flex-col overscroll-contain">
  <SheetHeader className="pb-3 border-b border-border/70">
  <SheetTitle className="text-lg font-bold flex items-center gap-2">
  <Layers className="size-5 text-primary" />

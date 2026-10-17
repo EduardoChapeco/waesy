@@ -88,9 +88,16 @@ globalThis.__env__ = Object.assign({}, __fallbackEnv__, globalThis.__env__ || {}
   fs.writeFileSync(bundledFile, envHeader + bundledCode);
 
   const workerDir = path.join(process.cwd(), "dist/_worker.js");
-  fs.rmSync(workerDir, { recursive: true, force: true });
-  fs.renameSync(bundledFile, workerDir);
-  console.log("Successfully created ultra-optimized single-file dist/_worker.js with Supabase env for Cloudflare Pages.");
+  if (fs.existsSync(workerDir)) {
+    fs.rmSync(workerDir, { recursive: true, force: true });
+  }
+  fs.mkdirSync(workerDir, { recursive: true });
+  const workerIndexFile = path.join(workerDir, "index.js");
+  fs.writeFileSync(workerIndexFile, envHeader + bundledCode, "utf-8");
+  if (fs.existsSync(bundledFile)) {
+    fs.unlinkSync(bundledFile);
+  }
+  console.log("Successfully created ultra-optimized dist/_worker.js/index.js with Supabase env for Cloudflare Pages.");
 } catch (esbuildErr) {
   console.warn("Notice during esbuild worker bundling:", esbuildErr.message);
 }

@@ -33,8 +33,8 @@ export function ClassifiedMediaSection({
   }, [isFeedUploading, isHeroUploading, onUploadingStateChange]);
 
   return (
-    <div className="bg-card rounded-lg p-4 sm:p-5 space-y-5 border border-border/60">
-      <div className="flex items-center justify-between pb-3 border-b border-border/40">
+    <section className="space-y-4">
+      <div className="flex items-center justify-between pb-2 border-b border-border/40">
         <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
           <ImagePlus className="size-4 text-primary shrink-0" />
           <span>1. Mídias do Anúncio</span>
@@ -96,6 +96,6 @@ export function ClassifiedMediaSection({
           accept="all"
         />
       </div>
-    </div>
+    </section>
   );
 }

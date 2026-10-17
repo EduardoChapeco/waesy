@@ -121,13 +121,13 @@ export function SquadArchitectSheet({
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
-        side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] p-0 flex flex-col justify-between overflow-y-auto"
+        side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl p-0 flex flex-col justify-between overflow-y-auto overscroll-contain"
       >
         <div className="p-6 space-y-6">
           <SheetHeader className="text-left space-y-1 border-b border-border/60 pb-4">
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/10 border border-primary/20 rounded-full w-fit mb-1">
               <Cpu className="size-3.5 text-primary" />
-              <span className="text-[10px] font-bold uppercase tracking-wider text-foreground">
+              <span className="text-xs font-bold uppercase tracking-wider text-foreground">
                 Architect Builder (ENGIOS)
               </span>
             </div>
@@ -150,7 +150,7 @@ export function SquadArchitectSheet({
                 placeholder="Ex: Squad de Lançamentos & Tráfego Pago"
                 value={squadName}
                 onChange={(e) => setSquadName(e.target.value)}
-                className="h-11 min-h-11 rounded-lg bg-background text-xs"
+                className="h-11 min-h-11 rounded-lg bg-background text-base sm:text-xs"
               />
             </div>
 
@@ -162,7 +162,7 @@ export function SquadArchitectSheet({
                 placeholder="Descreva o objetivo nuclear deste squad (ex: Otimizar campanhas e validar copies de vendas)..."
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className="w-full text-xs rounded-lg border border-input bg-background p-3 focus:outline-none focus:ring-2 focus:ring-primary/40 min-h-[70px] resize-none"
+                className="w-full text-base sm:text-xs rounded-lg border border-input bg-background p-3 focus:outline-hidden focus:ring-2 focus:ring-primary/40 min-h-20 resize-none"
               />
             </div>
           </div>
@@ -174,7 +174,7 @@ export function SquadArchitectSheet({
                 <Layers className="size-3.5 text-primary" />
                 Pipeline de Execução ({pipeline.length})
               </span>
-              <span className="text-[10px] text-muted-foreground font-mono">
+              <span className="text-xs text-muted-foreground font-mono">
                 Ordem sequencial
               </span>
             </div>
@@ -191,14 +191,14 @@ export function SquadArchitectSheet({
                     className="flex items-center justify-between p-3 rounded-lg border border-border/70 bg-card text-xs shadow-xs"
                   >
                     <div className="flex items-center gap-3">
-                      <span className="size-5 rounded-full bg-primary/10 text-primary font-bold font-mono text-[10px] flex items-center justify-center">
+                      <span className="size-5 rounded-full bg-primary/10 text-primary font-bold font-mono text-xs flex items-center justify-center">
                         {idx + 1}
                       </span>
                       <div>
                         <p className="font-semibold text-foreground">
                           {agent.name}
                         </p>
-                        <p className="text-[10px] text-muted-foreground">
+                        <p className="text-xs text-muted-foreground">
                           {agent.role_label}
                         </p>
                       </div>
@@ -237,12 +237,12 @@ export function SquadArchitectSheet({
                       </span>
                       <Badge
                         variant="outline"
-                        className="text-[9px] font-mono px-2 py-0"
+                        className="text-xs font-mono px-2 py-0.5"
                       >
                         {agent.role_label}
                       </Badge>
                     </div>
-                    <p className="text-[11px] text-muted-foreground">
+                    <p className="text-xs text-muted-foreground">
                       {agent.specialty}
                     </p>
                   </div>
@@ -251,7 +251,7 @@ export function SquadArchitectSheet({
                     size="sm"
                     variant="outline"
                     onClick={() => handleAddAgent(agent)}
-                    className="rounded-lg h-8 px-3 text-xs gap-1 shrink-0 cursor-pointer"
+                    className="rounded-lg h-11 min-h-11 px-3 text-xs gap-1 shrink-0 cursor-pointer"
                   >
                     <Plus className="size-3" />
                     Incluir
@@ -266,7 +266,7 @@ export function SquadArchitectSheet({
           <Button
             variant="ghost"
             onClick={() => onOpenChange(false)}
-            className="rounded-lg h-11 text-xs"
+            className="rounded-lg h-11 min-h-11 text-xs"
           >
             Cancelar
           </Button>

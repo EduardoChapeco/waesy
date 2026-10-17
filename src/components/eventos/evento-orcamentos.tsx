@@ -363,12 +363,12 @@ export function EventoOrcamentos({ eventId }: EventoOrcamentosProps) {
         {selectedBudget && (
           <Sheet open={isItemModalOpen} onOpenChange={setIsItemModalOpen}>
             <SheetTrigger asChild>
-              <Button size="sm" className="h-9 rounded-lg text-xs font-bold gap-2">
+              <Button size="sm" className="h-11 min-h-11 px-4 rounded-lg text-xs font-bold gap-2">
                 <Plus className="size-3.5" />
                 <span>Adicionar Lançamento</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] p-6">
+            <SheetContent side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl p-6 overscroll-contain">
               <SheetHeader>
                 <SheetTitle className="text-lg font-bold">Novo Lançamento Orçamentário</SheetTitle>
                 <SheetDescription className="text-xs text-muted-foreground">

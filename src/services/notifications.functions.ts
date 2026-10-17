@@ -72,7 +72,10 @@ export const listUserNotifications = createServerFn({ method: "GET" })
       return rows.map((r: any) => {
         let linkUrl = r.link_url || null;
         if (!linkUrl && (r.type === "new_lead" || (r.title && r.title.toLowerCase().includes("lead")))) {
-          linkUrl = "/_store/conta/negociacoes";
+          linkUrl = "/conta/negociacoes";
+        }
+        if (linkUrl && linkUrl.startsWith("/_store/")) {
+          linkUrl = linkUrl.replace(/^\/_store\//, "/");
         }
         return {
           id: r.id,
@@ -187,7 +190,7 @@ export function formatNicheNotification(
           emailPreheader: `Horário agendado no corpo clínico.`,
           whatsappMessage: `Olá ${name}! Confirmamos seu horário para ${item}. Estamos prontos para recebê-lo(a).`,
           actionLabel: "Ver Detalhes do Agendamento",
-          actionUrl: "/_store/conta/agendamentos",
+          actionUrl: "/conta/agendamentos",
         };
       case "order_cancelled":
         return {
@@ -197,7 +200,7 @@ export function formatNicheNotification(
           emailPreheader: `Horário liberado na agenda clínica.`,
           whatsappMessage: `Olá ${name}, informamos que o horário para ${item} foi cancelado conforme solicitado.`,
           actionLabel: "Reagendar Horário",
-          actionUrl: "/_store/conta/agendamentos",
+          actionUrl: "/conta/agendamentos",
         };
       default:
         return {
@@ -207,7 +210,7 @@ export function formatNicheNotification(
           emailPreheader: `Aguarde a confirmação da recepção.`,
           whatsappMessage: `Olá ${name}, recebemos sua solicitação de agendamento e retornaremos em instantes.`,
           actionLabel: "Acompanhar Status",
-          actionUrl: "/_store/conta/agendamentos",
+          actionUrl: "/conta/agendamentos",
         };
     }
   }
@@ -222,7 +225,7 @@ export function formatNicheNotification(
           emailPreheader: `Próxima etapa: elaboração da minuta contratual.`,
           whatsappMessage: `Parabéns ${name}! Sua proposta para o imóvel ${item} foi aceita.`,
           actionLabel: "Ver Minuta Contratual",
-          actionUrl: "/_store/conta/negociacoes",
+          actionUrl: "/conta/negociacoes",
         };
       case "lead_received":
         return {
@@ -232,7 +235,7 @@ export function formatNicheNotification(
           emailPreheader: `Acesse o portal para analisar as condições.`,
           whatsappMessage: `Olá ${name}, você recebeu uma nova proposta no imóvel ${item}.`,
           actionLabel: "Analisar Proposta",
-          actionUrl: "/_store/conta/negociacoes",
+          actionUrl: "/conta/negociacoes",
         };
       default:
         return {
@@ -242,7 +245,7 @@ export function formatNicheNotification(
           emailPreheader: `Novo interessado em contato.`,
           whatsappMessage: `Olá ${name}, temos novidades sobre a captação do imóvel ${item}.`,
           actionLabel: "Acessar Ficha",
-          actionUrl: "/_store/conta/negociacoes",
+          actionUrl: "/conta/negociacoes",
         };
     }
   }
@@ -255,7 +258,7 @@ export function formatNicheNotification(
       emailPreheader: `Comece a assistir às aulas agora mesmo.`,
       whatsappMessage: `Boas-vindas ${name}! Seu acesso a ${item} está pronto. Aproveite o conteúdo!`,
       actionLabel: "Acessar Área de Membros",
-      actionUrl: "/_store/conta/cursos",
+      actionUrl: "/conta/cursos",
     };
   }
 
@@ -267,7 +270,7 @@ export function formatNicheNotification(
       emailPreheader: `Seu prato está sendo preparado com ingredientes frescos.`,
       whatsappMessage: `Olá ${name}! O restaurante confirmou seu pedido ${code} e já iniciou a preparação.`,
       actionLabel: "Acompanhar Pedido ao Vivo",
-      actionUrl: "/_store/conta/pedidos",
+      actionUrl: "/conta/pedidos",
     };
   }
 
@@ -279,7 +282,7 @@ export function formatNicheNotification(
     emailPreheader: `Obrigado por comprar conosco.`,
     whatsappMessage: `Olá ${name}, seu pedido ${code} foi confirmado com sucesso!`,
     actionLabel: "Ver Detalhes do Pedido",
-    actionUrl: "/_store/conta/pedidos",
+    actionUrl: "/conta/pedidos",
   };
 }
 

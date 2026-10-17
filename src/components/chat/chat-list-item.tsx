@@ -24,6 +24,7 @@ export interface ChatListItemData {
 
 export interface ChatListItemProps {
   item: ChatListItemData;
+  isSelected?: boolean;
   onOpen: (id: string) => void;
   onArchive: (id: string) => void;
   onDelete: (id: string) => void;
@@ -40,6 +41,7 @@ export interface ChatListItemProps {
  */
 export function ChatListItem({
   item,
+  isSelected,
   onOpen,
   onArchive,
   onDelete,
@@ -132,7 +134,12 @@ export function ChatListItem({
   return (
     <div className="relative w-full overflow-hidden select-none bg-background">
       {/* Camada Traseira de Swipe-to-Action (Oculta até deslizar para a esquerda) */}
-      <div className="absolute inset-y-0 right-0 flex items-stretch w-[148px] z-0">
+      <div
+        className={cn(
+          "absolute inset-y-0 right-0 flex items-stretch w-[148px] z-0 transition-opacity duration-150 md:hidden",
+          offsetX < 0 ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+        )}
+      >
         <button
           type="button"
           onClick={(e) => {
@@ -140,7 +147,7 @@ export function ChatListItem({
             setOffsetX(0);
             onArchive(item.id);
           }}
-          className="flex-1 bg-zinc-600 hover:bg-zinc-700 text-white flex flex-col items-center justify-center gap-1 text-[11px] font-semibold cursor-pointer transition-colors"
+          className="flex-1 bg-muted-foreground/80 hover:bg-muted-foreground text-primary-foreground flex flex-col items-center justify-center gap-1 text-[11px] font-semibold cursor-pointer transition-colors"
           aria-label="Arquivar conversa"
         >
           <Archive className="size-4" />
@@ -169,7 +176,12 @@ export function ChatListItem({
         onClick={handleRowClick}
         onContextMenu={handleContextMenu}
         style={{ transform: `translate3d(${offsetX}px, 0, 0)` }}
-        className="relative z-10 flex items-center gap-4 px-4 sm:px-4 py-3 bg-card hover:bg-muted/30 active:bg-muted/50 transition-transform duration-150 ease-out cursor-pointer"
+        className={cn(
+          "relative z-10 flex items-center gap-4 px-4 sm:px-4 py-3 border-l-4 transition-colors duration-150 cursor-pointer",
+          isSelected
+            ? "bg-muted/70 border-primary"
+            : "bg-card border-transparent hover:bg-muted/30 active:bg-muted/50"
+        )}
       >
         {/* 1. Esquerda: Avatar Circular + Indicador Online na Borda Inferior Direita */}
         <div className="relative shrink-0">

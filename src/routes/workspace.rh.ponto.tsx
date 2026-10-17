@@ -267,7 +267,7 @@ function WorkspaceRHPontoPage() {
                           variant="ghost"
                           size="sm"
                           onClick={() => setSelectedEntry(entry)}
-                          className="h-9 px-3 rounded-lg min-h-11 min-w-[44px] text-xs"
+                          className="h-11 min-h-11 min-w-11 px-3 rounded-lg text-xs cursor-pointer focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
                         >
                           <Edit3 className="h-4 w-4 mr-2" /> Ajustar
                         </Button>

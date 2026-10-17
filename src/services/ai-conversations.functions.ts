@@ -38,6 +38,16 @@ import type {
   ChatArtifactData,
   ChatArtifactType,
 } from "@/types/chat";
+import {
+  assembleLongTermContext,
+  extractAndSaveFactsFromConversation,
+  storeSemanticMemoryChunk,
+} from "./copilot-memory.functions";
+import {
+  createBuilderArtifactFromCopilot,
+  buildTravelItineraryPayload,
+  detectBuilderDocType,
+} from "./builder-copilot-bridge";
 
 // ============================================================
 // Schemas de Validação
@@ -226,8 +236,8 @@ export function resolveAiPipelineSteps(
   steps.push({
     id: `step-1-${startTime}`,
     type: "database",
-    label: "Pesquisa no banco de dados e catálogo da loja",
-    detail: "Buscando entidades correspondentes e políticas do tenant",
+    label: "Consulta ao Catálogo e Registros da Loja",
+    detail: "Consultando itens correspondentes e diretrizes locais",
     status: "completed",
     startedAt: step1Start,
     completedAt: new Date(startTime + 180).toISOString(),
@@ -245,8 +255,8 @@ export function resolveAiPipelineSteps(
     steps.push({
       id: `step-2-${startTime}`,
       type: "skill",
-      label: "Skill Commercial Proposal acionada",
-      detail: "Estruturando escopo técnico, marcos de entrega e modelo BRL",
+      label: "Estruturação de Proposta Comercial",
+      detail: "Organizando escopo, etapas de entrega e condições comerciais",
       status: "completed",
       startedAt: new Date(startTime + 185).toISOString(),
       completedAt: new Date(startTime + 420).toISOString(),
@@ -257,8 +267,8 @@ export function resolveAiPipelineSteps(
     steps.push({
       id: `step-3-${startTime}`,
       type: "model",
-      label: "Sintetizando artefato versionado de proposta",
-      detail: "Compilando documento executivo em formato exportável",
+      label: "Elaboração de Documento de Proposta",
+      detail: "Organizando documento executivo pronto para consulta e exportação",
       status: "completed",
       startedAt: new Date(startTime + 425).toISOString(),
       completedAt: new Date(startTime + 750).toISOString(),
@@ -272,8 +282,8 @@ export function resolveAiPipelineSteps(
       title: "Proposta de Prestação de Serviços Comerciais",
       version: 1,
       totalVersions: 1,
-      authorName: "Consultor Comercial IA",
-      authorRole: "Agente Executivo",
+      authorName: "Assessor Comercial Local",
+      authorRole: "Consultoria Executiva",
       previewSummary:
         "Escopo detalhado de implementação, cronograma em 4 etapas e tabela de investimento com condições de pagamento.",
       data: {
@@ -307,7 +317,7 @@ export function resolveAiPipelineSteps(
     };
 
     responseMessage =
-      "Elaborei a proposta comercial completa conforme os parâmetros do projeto. O documento foi anexado à conversa como artefato versionado pronto para abertura no Builder ou exportação em PDF.";
+      "Elaborei a proposta comercial completa conforme combinamos. O documento está disponível em anexo, pronto para você abrir no editor ou exportar em PDF.";
     updatedMemory.last_proposal_created = new Date().toISOString();
   }
   // Detectar solicitação de landing page ou builder
@@ -319,8 +329,8 @@ export function resolveAiPipelineSteps(
     steps.push({
       id: `step-2-${startTime}`,
       type: "skill",
-      label: "Skill Omni Builder Architect acionada",
-      detail: "Definindo seções: Hero, Recursos, Grade de Produtos e Footer",
+      label: "Composição Visual da Página",
+      detail: "Organizando seções: Destaque, Recursos, Produtos Locais e Contato",
       status: "completed",
       startedAt: new Date(startTime + 185).toISOString(),
       completedAt: new Date(startTime + 510).toISOString(),
@@ -334,8 +344,8 @@ export function resolveAiPipelineSteps(
       title: "Landing Page Oficial do Produto",
       version: 1,
       totalVersions: 1,
-      authorName: "Designer de UI/UX IA",
-      authorRole: "Squad de Crescimento",
+      authorName: "Designer Especialista Local",
+      authorRole: "Equipe de Criação",
       previewSummary:
         "Estrutura pronta com hero responsivo, grade de 3 colunas de produtos locais e rodapé com mapa de cobertura.",
       data: {
@@ -346,7 +356,7 @@ export function resolveAiPipelineSteps(
     };
 
     responseMessage =
-      "Gerei a estrutura inicial da landing page. O artefato está disponível abaixo e pode ser aberto diretamente no Builder visual para edição.";
+      "Organizei a estrutura inicial da sua landing page (página de apresentação). O documento está disponível logo abaixo e você pode abrir diretamente no editor visual para personalizar.";
     updatedMemory.last_landing_page = artifact.title;
   }
   // Detectar solicitação de planilha ou relatório financeiro
@@ -360,8 +370,8 @@ export function resolveAiPipelineSteps(
     steps.push({
       id: `step-2-${startTime}`,
       type: "tool",
-      label: "Tool Financial Intelligence acionada",
-      detail: "Estruturando linhas de fluxo de caixa, DRE e projeção de vendas",
+      label: "Análise de Indicadores Financeiros",
+      detail: "Organizando fluxo de caixa, demonstrativo e projeção de receitas",
       status: "completed",
       startedAt: new Date(startTime + 185).toISOString(),
       completedAt: new Date(startTime + 420).toISOString(),
@@ -375,8 +385,8 @@ export function resolveAiPipelineSteps(
       title: "Planilha de Métricas de Vendas e Fluxo de Caixa",
       version: 1,
       totalVersions: 1,
-      authorName: "Assistente Financeiro IA",
-      authorRole: "Squad de Operações",
+      authorName: "Consultor Financeiro Local",
+      authorRole: "Equipe de Apoio Executivo",
       previewSummary:
         "Métricas consolidadas de entradas, saídas, margem e indicadores de desempenho.",
       data: {
@@ -403,8 +413,8 @@ export function resolveAiPipelineSteps(
     steps.push({
       id: `step-2-${startTime}`,
       type: "tool",
-      label: "Tool search_catalog_products e cálculo de frete",
-      detail: "Consultando inventário em tempo real e aplicando tabela de entrega",
+      label: "Consulta ao Catálogo de Produtos e Frete (search_catalog_products)",
+      detail: "Conferindo produtos em estoque e estimando opções de entrega",
       status: "completed",
       startedAt: new Date(startTime + 185).toISOString(),
       completedAt: new Date(startTime + 410).toISOString(),
@@ -451,8 +461,8 @@ export function resolveAiPipelineSteps(
     steps.push({
       id: `step-2-${startTime}`,
       type: "tool",
-      label: "Tool order_events e telemetria logística",
-      detail: "Buscando linha do tempo do pedido e dados de despacho",
+      label: "Acompanhamento do Pedido (order_events)",
+      detail: "Consultando linha do tempo da entrega e registros de envio",
       status: "completed",
       startedAt: new Date(startTime + 185).toISOString(),
       completedAt: new Date(startTime + 370).toISOString(),
@@ -461,7 +471,7 @@ export function resolveAiPipelineSteps(
     });
 
     responseMessage =
-      "Para consultar o rastreio real, informe o número do pedido ou o token público de entrega. Não vou exibir status, endereço ou entregador sem localizar um registro confirmado.";
+      "Para consultar o rastreio com precisão, informe o número do pedido ou o código de acompanhamento. Assim consigo conferir os dados confirmados de envio para você.";
     updatedMemory.last_tracking_query = new Date().toISOString();
     updatedMemory.last_interaction_topic = userPrompt.slice(0, 40);
   }
@@ -475,8 +485,8 @@ export function resolveAiPipelineSteps(
     steps.push({
       id: `step-2-${startTime}`,
       type: "tool",
-      label: "Tool booking_services e verificação de agenda",
-      detail: "Identificando janelas livres e disponibilidade do especialista",
+      label: "Consulta de Disponibilidade e Horários (booking_services)",
+      detail: "Identificando horários livres e disponibilidade do profissional",
       status: "completed",
       startedAt: new Date(startTime + 185).toISOString(),
       completedAt: new Date(startTime + 400).toISOString(),
@@ -510,8 +520,8 @@ export function resolveAiPipelineSteps(
     steps.push({
       id: `step-2-${startTime}`,
       type: "model",
-      label: "Processamento de linguagem natural e regras de negócio",
-      detail: "Aplicando tom de voz da loja e diretrizes de concisão",
+      label: "Organização da Resposta Consultiva",
+      detail: "Adequando orientações e diretrizes de atendimento",
       status: "completed",
       startedAt: new Date(startTime + 185).toISOString(),
       completedAt: new Date(startTime + 410).toISOString(),
@@ -519,7 +529,7 @@ export function resolveAiPipelineSteps(
       tokensUsed: 195,
     });
 
-    responseMessage = `Recebi sua instrução e processei o contexto da conversa. As preferências foram salvas na memória de trabalho da thread. Como posso auxiliar nos próximos passos do projeto?`;
+    responseMessage = `Recebi sua mensagem e organizei as orientações para o seu atendimento. Como posso te apoiar nos próximos passos?`;
     updatedMemory.last_interaction_topic = userPrompt.slice(0, 40);
   }
 
@@ -638,6 +648,23 @@ function detectIntent(text: string): string {
     return "commercial_proposal";
   }
   if (
+    text.includes("apresentação") ||
+    text.includes("apresentacao") ||
+    text.includes("slide") ||
+    text.includes("pitch") ||
+    text.includes("deck")
+  ) {
+    return "presentation_deck";
+  }
+  if (
+    text.includes("landing page") ||
+    text.includes("criar site") ||
+    text.includes("montar site") ||
+    text.includes("meu site")
+  ) {
+    return "website_builder";
+  }
+  if (
     text.includes("planilha") ||
     text.includes("tabela") ||
     text.includes("métricas") ||
@@ -689,7 +716,7 @@ function withCopilotTimeout<T>(
     new Promise<T>((_, reject) => {
       const timer = setTimeout(() => {
         abortController?.abort();
-        reject(new Error("Tempo limite excedido na execução do Copilot."));
+        reject(new Error("Tempo limite excedido ao processar sua consulta."));
       }, timeoutMs);
       promise.finally(() => clearTimeout(timer)).catch(() => undefined);
     }),
@@ -716,8 +743,8 @@ export async function executeAiCopilotPipeline(
       steps.push({
         id: `step-sec-${startTime}`,
         type: "skill",
-        label: "Firewall de Segurança & Prompt Shield",
-        detail: `Bloqueio preventivo ativado: ${securityCheck.violationReason || "Padrão inseguro detectado"}`,
+        label: "Proteção Ativa de Dados",
+        detail: `Verificação preventiva: ${securityCheck.violationReason || "Padrão não permitido identificado"}`,
         status: "failed",
         fsmPhase: "FAILED_FINAL",
         startedAt: new Date(startTime).toISOString(),
@@ -728,7 +755,7 @@ export async function executeAiCopilotPipeline(
 
       return {
         responseMessage:
-          "Desculpe, sua mensagem contém instruções ou padrões não permitidos pelas políticas de segurança do sistema.",
+          "Para sua segurança e privacidade, esta mensagem contém padrões não permitidos pelas políticas de segurança e proteção de dados.",
         activitySteps: steps,
         updatedMemory,
         fsmPhase: "FAILED_FINAL",
@@ -750,9 +777,9 @@ export async function executeAiCopilotPipeline(
       steps.push({
         id: `step-fin-guard-${startTime}`,
         type: "skill",
-        label: "Firewall Financeiro & Zero-Trust",
+        label: "Controle Financeiro e Pagamentos Seguros",
         detail:
-          "Operações financeiras requerem sessão de checkout autenticada com Pix/Token assinado",
+          "Pagamentos exigem ambiente seguro de checkout com autenticação e código Pix verificado",
         status: "completed",
         fsmPhase: "COMPLETED",
         startedAt: new Date(startTime).toISOString(),
@@ -763,7 +790,7 @@ export async function executeAiCopilotPipeline(
 
       return {
         responseMessage:
-          "Por diretriz de segurança financeira e proteção do usuário, transações de pagamento não podem ser executadas autonomamente pelo chat. Gere um pedido no catálogo ou acesse o checkout para autenticar com chave Pix ou cartão.",
+          "Para sua tranquilidade e conforme nossa diretriz de segurança financeira, pagamentos não são debitados de forma automática no chat. Você pode concluir seu pedido com segurança diretamente no carrinho ou checkout com Pix ou cartão.",
         activitySteps: steps,
         updatedMemory,
         fsmPhase: "COMPLETED",
@@ -776,8 +803,8 @@ export async function executeAiCopilotPipeline(
     steps.push({
       id: `step-1-${startTime}`,
       type: "database",
-      label: "Pesquisa contextual e memória do tenant",
-      detail: "Consultando contexto geográfico, histórico da conversa e tabelas soberanas",
+      label: "Consulta ao Histórico e Preferências",
+      detail: "Consultando localização, histórico de atendimento e registros locais",
       status: "completed",
       fsmPhase: "UNDERSTANDING",
       startedAt: new Date(startTime).toISOString(),
@@ -799,11 +826,11 @@ export async function executeAiCopilotPipeline(
       steps.push({
         id: `step-platform-search-${searchStart}`,
         type: "search",
-        label: "Busca interna Waesy",
+        label: "Central de Descoberta Local",
         detail:
           platformSearch.cards.length > 0
-            ? `${platformSearch.cards.length} resultado(s) persistido(s) encontrado(s) no sistema`
-            : "Nenhum resultado persistido; a solicitação pode escalar para engines de mineração",
+            ? `${platformSearch.cards.length} resultado(s) encontrado(s) no sistema`
+            : "Nenhum resultado local encontrado no momento",
         status: "completed",
         fsmPhase: "WAITING_TOOL",
         startedAt: new Date(searchStart).toISOString(),
@@ -824,40 +851,56 @@ export async function executeAiCopilotPipeline(
     // Executa o Gateway de IA Soberano se houver modelo ativo no pool (com Prompt Sandboxing)
     let gatewayResponse: any = null;
     try {
+      const longTermMemory = context.userId
+        ? await assembleLongTermContext({
+            profileId: context.userId,
+            threadId: context.threadId,
+            currentPrompt: userPrompt,
+          }).catch(() => ({ formattedContext: "", factsCount: 0, memoryChunksCount: 0 }))
+        : { formattedContext: "", factsCount: 0, memoryChunksCount: 0 };
+
       const internalSearchContext = platformSearch
         ? `
-CONTEXTO SOBERANO DA PLATAFORMA (itens reais já publicados no Waesy — priorize-os):
+<GROUNDED_DATA>
+CONTEXTO SOBERANO DA PLATAFORMA (itens reais cadastrados no Waesy — priorize-os estritamente):
 ${JSON.stringify({ query: platformSearch.query, cards: platformSearch.cards, unavailableTables: platformSearch.unavailableTables }).slice(0, 12000)}
-Se houver cards no contexto acima, mencione-os de forma clara e calorosa, destacando seus diferenciais e convidando o usuário a conferir. Se a intenção for turismo ou evento (ex: Oktoberfest), integre essas informações naturalmente.
+</GROUNDED_DATA>
+Se houver itens no CONTEXTO SOBERANO acima, mencione-os de forma clara, consultiva e cordial, destacando diferenciais reais. Se for turismo/evento (ex: Oktoberfest, Urubici, Blumenau), estruture roteiro com precisão geográfica.
 `
         : "";
-      const systemPrompt = `Você é o Waesy Copilot, concierge e assistente inteligente da cidade e da comunidade no ecossistema Waesy.
-Seu objetivo é orientar o usuário com simpatia, naturalidade, calor humano e precisão, conectando-o ao comércio, serviços, passeios e oportunidades locais.
+
+      const systemPrompt = `Você é o Assessor Executivo Local de Chapecó e Região no ecossistema Waesy.
+Seu papel é acolher, orientar e resolver demandas locais com extrema cordialidade, tom consultivo executivo, empatia genuína e precisão factual inegociável.
+
+ESTRUTURA CONSULTIVA OBRIGATÓRIA EM 4 BLOCOS:
+1. Acolhimento Caloroso e Empático: Inicie validando a necessidade do usuário de forma natural e próxima (ex: "Entendo perfeitamente o que você precisa. Vamos conferir as melhores alternativas disponíveis aqui na região.").
+2. Contexto Consultivo e Dados Locais: Explique com clareza o cenário local, contextualizando por que cada opção, serviço ou número faz sentido.
+3. Detalhamento Transparente: Apresente valores, prazos e opções de forma clara, organizada e sem abreviações ou jargões técnicos.
+4. Próximo Passo Prático e Conclusão Proativa: Encerre sugerindo uma ação concreta (agendar, chamar motorista, abrir proposta, conferir planilha ou enviar mensagem).
 
 DIRETRIZES DE COMUNICAÇÃO:
-- Fale como um concierge atencioso e acolhedor: tom humano, fluido, empático e resolutivo.
-- NUNCA use jargões robóticos, termos de programação ou frases como "para economizar processamento", "como modelo de linguagem", "ordens recebidas" ou "instruções do sistema".
-- Se houver dados no CONTEXTO SOBERANO DA PLATAFORMA (cards), mencione os itens reais encontrados pelo nome e diferenciais, recomendando com entusiasmo.
-- Quando o usuário perguntar sobre turismo ou eventos específicos (ex: Oktoberfest, feiras, festivais), adapte o roteiro para a cidade e tradição correta (ex: Oktoberfest em Blumenau - SC).
+- Grounding Estrito & Zero Dados Fictícios: Responda baseando-se ESTRITAMENTE nos dados verificados fornecidos em <GROUNDED_DATA>. Nunca invente nomes, preços, telefones ou empresas inexistentes.
+- Transparência Honesta: Se não encontrar registros oficiais ativos, responda cordialmente: "Consultei nossa base oficial de registros e não localizei nenhuma opção ativa para este termo no momento. Posso pesquisar em uma categoria próxima ou cidade vizinha para você?"
+- Erradique 100% dos jargões de engenharia: Proibido mencionar "LLM", "prompt", "token", "payload", "crawler", "scraper", "BACEN EMV", "schema", "endpoint" ou "processamento de modelo". Fale como um consultor humano sênior e atencioso.
 
 Ferramentas disponíveis:
 1. 'search_places': busca estabelecimentos locais (cafés, restaurantes, mercados, academias, oficinas, etc.)
-2. 'estimate_mobility': calcula estimativas de corrida urbana (moto, carro, entrega, van)
-3. 'search_catalog': busca produtos ou itens de cardápio com modificadores
-4. 'travel_itinerary': monta pacotes de viagem com dias, passeios e hotéis
-5. 'legal_triage': faz triagem jurídica com área do direito e checklist
-6. 'create_ad': cria cópia e arte para anúncio/mural
-7. 'commercial_proposal': cria proposta comercial formal BRL
-8. 'financial_report': gera relatório/planilha de caixa
+2. 'estimate_mobility': calcula estimativas de trajeto e corrida urbana (moto, carro, entrega, van)
+3. 'search_catalog': busca produtos ou itens de cardápio com personalização
+4. 'travel_itinerary': monta pacotes de viagem com dias, passeios, hospedagens e código Pix para pagamento
+5. 'legal_triage': faz triagem jurídica com área do direito e documentos recomendados
+6. 'create_ad': cria texto e peça visual para divulgação ou redes sociais
+7. 'commercial_proposal': cria proposta comercial formal ou documento executivo
+8. 'financial_report': gera planilha de fechamento de caixa e indicadores de receita
 
 Responda SEMPRE em formato JSON com os campos:
 {
   "intent": "search_places" | "estimate_mobility" | "search_catalog" | "travel_itinerary" | "legal_triage" | "create_ad" | "commercial_proposal" | "financial_report" | "general_chat",
   "tool_args": { ... },
-  "message": "Mensagem calorosa, humana e completa para o usuário",
+  "message": "Mensagem acolhedora, consultiva, didática e humana para o usuário seguindo os 4 blocos",
   "step_label": "Título amigável da ação",
   "step_detail": "Detalhe amigável para o usuário"
-}${internalSearchContext}`;
+}${internalSearchContext}${longTermMemory.formattedContext ? `\n${longTermMemory.formattedContext}` : ""}`;
 
       // 🛡️ Prompt Sandboxing: Isola dados não-confiáveis externos em <user_untrusted_data>
       const { hardenedSystemPrompt, sandboxedUserPrompt } = buildSandboxedPromptPayload(
@@ -973,8 +1016,8 @@ Responda SEMPRE em formato JSON com os campos:
             title: copilotResult.artifact.title,
             version: 1,
             totalVersions: 1,
-            authorName: "Waesy Copilot",
-            authorRole: "Consultor Comercial Waesy",
+            authorName: "Assessor Executivo Local",
+            authorRole: "Consultor de Negócios",
             previewSummary: copilotResult.summaryMessage,
             data: copilotResult.artifact.data,
           };
@@ -1012,7 +1055,7 @@ Responda SEMPRE em formato JSON com os campos:
       } catch (autoErr: any) {
         console.warn("[COPILOT-AUTONOMOUS-BOUNDARY] Falha na mineração capturada:", autoErr);
         fsm.recordFailure(autoErr);
-        responseMessage = `Não foi possível consultar os dados externos no momento devido à indisponibilidade temporária (${autoErr.message?.slice(0, 80)}). Você pode tentar novamente em alguns instantes.`;
+        responseMessage = `Tivemos uma oscilação rápida ao buscar esses dados externos. Suas preferências foram salvas com segurança e você pode tentar novamente em instantes.`;
       }
 
       return {
@@ -1039,11 +1082,11 @@ Responda SEMPRE em formato JSON com os campos:
       steps.push({
         id: `step-mcp-${mcpCandidateTool}-${stepStart}`,
         type: "tool",
-        label: gatewayResponse?.step_label || `Ferramenta MCP: ${mcpCandidateTool}`,
+        label: gatewayResponse?.step_label || "Ação Especializada",
         detail:
           gatewayResponse?.step_detail ||
           toolDef.description ||
-          `Invocando ${mcpCandidateTool} via WebMCP Server`,
+          "Consultando registros oficiais da plataforma",
         status: "running",
         fsmPhase: "WAITING_TOOL",
         startedAt: new Date(stepStart).toISOString(),
@@ -1270,10 +1313,10 @@ Responda SEMPRE em formato JSON com os campos:
       steps.push({
         id: `step-mobility-${stepStart}`,
         type: "tool",
-        label: gatewayResponse?.step_label || "Ferramenta estimate_mobility acionada",
+        label: gatewayResponse?.step_label || "Estimativa de Trajeto e Corrida",
         detail:
           gatewayResponse?.step_detail ||
-          "Calculando tarifas de Moto, Carro e Utilitário com base na distância",
+          "Calculando opções de moto, carro e entrega com base na distância",
         status: "completed",
         startedAt: new Date(stepStart).toISOString(),
         completedAt: new Date(stepStart + 180).toISOString(),
@@ -1435,40 +1478,74 @@ Responda SEMPRE em formato JSON com os campos:
         }
       }
 
-      structuredPayload = {
-        blocks: [
-          {
-            type: "travel_itinerary",
-            data: {
-              destination,
-              duration_days: days.length,
-              passengers_count: toolArgs.passengers_count || 2,
-              hotel_category: toolArgs.hotel_category || "Hotel Selecionado com Café",
-              flights_included: Boolean(toolArgs.flights_included),
-              estimated_budget_cents: toolArgs.estimated_budget_cents || 249000,
-              days,
-            },
-          },
-        ],
-      };
-
-      artifact = {
-        id: crypto.randomUUID(),
-        type: "proposal",
+      const travelBuilderResult = await createBuilderArtifactFromCopilot({
+        userPrompt,
+        docType: "travel_itinerary",
         title: `Roteiro Turístico: ${destination}`,
-        version: 1,
-        authorName: "Consultor de Turismo Waesy",
-        authorRole: "Especialista em Experiências",
-        previewSummary: `Itinerário personalizado para ${destination} com passeios, hospedagem e estimativa de investimento.`,
-        data: {
-          destination,
-          daysCount: days.length,
-          estimated_budget_cents: toolArgs.estimated_budget_cents || 249000,
-        },
-      };
+        storeId: context.storeId,
+        authorProfileId: context.userId || "00000000-0000-0000-0000-000000000001",
+        sessionId: context.threadId,
+      }).catch(() => null);
 
-      if (!responseMessage) {
-        responseMessage = `Preparei um roteiro especial para ${destination}! Veja abaixo a programação detalhada e as sugestões de passeios para aproveitar ao máximo a sua experiência:`;
+      if (travelBuilderResult) {
+        artifact = travelBuilderResult.chatArtifact;
+        const p = travelBuilderResult.payload;
+        structuredPayload = {
+          blocks: [
+            {
+              type: "travel_itinerary",
+              data: {
+                destination: p.destination || destination,
+                duration_days: p.daysCount || days.length,
+                passengers_count: toolArgs.passengers_count || 2,
+                hotel_category: toolArgs.hotel_category || "Pousada de Charme com Café",
+                flights_included: Boolean(toolArgs.flights_included),
+                estimated_budget_cents: p.estimatedBudgetCents || 245000,
+                pix_code: p.pixCode,
+                days: p.days || days,
+              },
+            },
+          ],
+        };
+        if (!responseMessage) {
+          responseMessage = `Montei um roteiro personalizado para ${p.destination || destination}! Estruturei a programação dia a dia, a hospedagem selecionada e gerei o código Pix pronto para pagamento com validação imediata da reserva no painel lateral:`;
+        }
+      } else {
+        structuredPayload = {
+          blocks: [
+            {
+              type: "travel_itinerary",
+              data: {
+                destination,
+                duration_days: days.length,
+                passengers_count: toolArgs.passengers_count || 2,
+                hotel_category: toolArgs.hotel_category || "Hotel Selecionado com Café",
+                flights_included: Boolean(toolArgs.flights_included),
+                estimated_budget_cents: toolArgs.estimated_budget_cents || 249000,
+                days,
+              },
+            },
+          ],
+        };
+
+        artifact = {
+          id: crypto.randomUUID(),
+          type: "proposal",
+          title: `Roteiro Turístico: ${destination}`,
+          version: 1,
+          authorName: "Assessor de Turismo Local",
+          authorRole: "Especialista em Experiências",
+          previewSummary: `Itinerário personalizado para ${destination} com passeios, hospedagem e estimativa de investimento.`,
+          data: {
+            destination,
+            daysCount: days.length,
+            estimated_budget_cents: toolArgs.estimated_budget_cents || 249000,
+          },
+        };
+
+        if (!responseMessage) {
+          responseMessage = `Preparei um roteiro especial para ${destination}! Veja abaixo a programação detalhada e as sugestões de passeios para aproveitar ao máximo a sua experiência:`;
+        }
       }
 
       updatedMemory.last_travel_destination = destination;
@@ -1487,10 +1564,10 @@ Responda SEMPRE em formato JSON com os campos:
       steps.push({
         id: `step-legal-${stepStart}`,
         type: "skill",
-        label: gatewayResponse?.step_label || "Skill Legal Triage & Intake acionada",
+        label: gatewayResponse?.step_label || "Triagem e Análise Jurídica",
         detail:
           gatewayResponse?.step_detail ||
-          "Identificando área do direito, direitos violados e documentação recomendada",
+          "Identificando área do direito, direitos pertinentes e documentação recomendada",
         status: "completed",
         startedAt: new Date(stepStart).toISOString(),
         completedAt: new Date(stepStart + 290).toISOString(),
@@ -1553,10 +1630,10 @@ Responda SEMPRE em formato JSON com os campos:
       steps.push({
         id: `step-creative-${stepStart}`,
         type: "tool",
-        label: gatewayResponse?.step_label || "Tool Creative Studio Draft acionada",
+        label: gatewayResponse?.step_label || "Criação de Peça Publicitária",
         detail:
           gatewayResponse?.step_detail ||
-          "Gerando copy persuasiva com ganchos emocionais e chamada para ação",
+          "Elaborando texto atrativo e chamada para ação para divulgação",
         status: "completed",
         startedAt: new Date(stepStart).toISOString(),
         completedAt: new Date(stepStart + 240).toISOString(),
@@ -1569,6 +1646,19 @@ Responda SEMPRE em formato JSON com os campos:
         toolArgs.copy ||
         "Aproveite descontos especiais em produtos e serviços locais. Compre de quem produz na sua cidade com entrega rápida.";
       const cta = toolArgs.cta_label || "Conferir Ofertas";
+
+      const socialBuilderResult = await createBuilderArtifactFromCopilot({
+        userPrompt,
+        docType: "social_post",
+        title: headline,
+        storeId: context.storeId,
+        authorProfileId: context.userId || "00000000-0000-0000-0000-000000000001",
+        sessionId: context.threadId,
+      }).catch(() => null);
+
+      if (socialBuilderResult) {
+        artifact = socialBuilderResult.chatArtifact;
+      }
 
       structuredPayload = {
         blocks: [
@@ -1586,7 +1676,7 @@ Responda SEMPRE em formato JSON com os campos:
 
       if (!responseMessage) {
         responseMessage =
-          "Criei o rascunho da peça publicitária com copy persuasiva e chamada para ação. Você pode publicar diretamente no feed ou mural do comércio:";
+          `Criei o post e story "${headline}" com copy persuasiva e chamada para ação pronta para publicação no Instagram. A peça está aberta no painel lateral para você visualizar e ajustar:`;
       }
 
       updatedMemory.last_creative_topic = headline;
@@ -1604,10 +1694,10 @@ Responda SEMPRE em formato JSON com os campos:
       steps.push({
         id: `step-food-${stepStart}`,
         type: "tool",
-        label: gatewayResponse?.step_label || "Tool search_catalog e modificadores acionada",
+        label: gatewayResponse?.step_label || "Consulta ao Catálogo de Produtos",
         detail:
           gatewayResponse?.step_detail ||
-          "Consultando estoque e opções de personalização do cardápio",
+          "Consultando estoque e opções de personalização do cardápio local",
         status: "completed",
         startedAt: new Date(stepStart).toISOString(),
         completedAt: new Date(stepStart + 190).toISOString(),
@@ -1699,10 +1789,10 @@ Responda SEMPRE em formato JSON com os campos:
       steps.push({
         id: `step-proposal-${stepStart}`,
         type: "skill",
-        label: gatewayResponse?.step_label || "Skill Commercial Proposal acionada",
+        label: gatewayResponse?.step_label || "Estruturação de Proposta Comercial",
         detail:
           gatewayResponse?.step_detail ||
-          "Estruturando escopo técnico, marcos de entrega e modelo BRL",
+          "Organizando escopo, etapas de entrega e condições comerciais",
         status: "completed",
         startedAt: new Date(stepStart).toISOString(),
         completedAt: new Date(stepStart + 310).toISOString(),
@@ -1723,23 +1813,36 @@ Responda SEMPRE em formato JSON com os campos:
         "Entrega final e encerramento",
       ];
 
-      artifact = {
-        id: crypto.randomUUID(),
-        type: "proposal",
+      const docBuilderResult = await createBuilderArtifactFromCopilot({
+        userPrompt,
+        docType: "document",
         title: extractedTitle,
-        version: 1,
-        totalVersions: 1,
-        authorName: "Consultor Comercial IA",
-        authorRole: "Agente Executivo",
-        previewSummary: `Proposta estruturada com cronograma em ${milestones.length} etapas e investimento total de ${formatMoney(totalCents / 100)}.`,
-        data: {
-          total_cents: totalCents,
-          currency: "BRL",
-          validity_days: 15,
-          milestones,
-          terms: "Condições de pagamento: 50% na aprovação e 50% na conclusão das entregas.",
-        },
-      };
+        storeId: context.storeId,
+        authorProfileId: context.userId || "00000000-0000-0000-0000-000000000001",
+        sessionId: context.threadId,
+      }).catch(() => null);
+
+      if (docBuilderResult) {
+        artifact = docBuilderResult.chatArtifact;
+      } else {
+        artifact = {
+          id: crypto.randomUUID(),
+          type: "proposal",
+          title: extractedTitle,
+          version: 1,
+          totalVersions: 1,
+          authorName: "Assessor Comercial Local",
+          authorRole: "Consultoria Executiva",
+          previewSummary: `Proposta estruturada com cronograma em ${milestones.length} etapas e investimento total de ${formatMoney(totalCents / 100)}.`,
+          data: {
+            total_cents: totalCents,
+            currency: "BRL",
+            validity_days: 15,
+            milestones,
+            terms: "Condições de pagamento: 50% na aprovação e 50% na conclusão das entregas.",
+          },
+        };
+      }
 
       structuredPayload = {
         blocks: [
@@ -1758,10 +1861,88 @@ Responda SEMPRE em formato JSON com os campos:
       };
 
       if (!responseMessage) {
-        responseMessage = `Elaborei a proposta comercial "${extractedTitle}" com valor total de ${formatMoney(totalCents / 100)}. O documento foi versionado e está disponível no painel de artefatos para visualização e exportação.`;
+        responseMessage = `Elaborei a proposta comercial "${extractedTitle}" com valor total de ${formatMoney(totalCents / 100)}. O documento está anexado ao lado, pronto para você visualizar e exportar.`;
       }
 
       updatedMemory.last_proposal_created = new Date().toISOString();
+    }
+    // ── 7.1 Apresentação Executiva & Slides Apple HIG ──
+    else if (
+      intent === "presentation_deck" ||
+      promptLower.includes("apresentação") ||
+      promptLower.includes("apresentacao") ||
+      promptLower.includes("slide") ||
+      promptLower.includes("pitch") ||
+      promptLower.includes("deck")
+    ) {
+      const stepStart = Date.now();
+      steps.push({
+        id: `step-presentation-${stepStart}`,
+        type: "tool",
+        label: "Geração de Apresentação Executiva",
+        detail: "Estruturando slides temáticos e narrativa visual",
+        status: "completed",
+        startedAt: new Date(stepStart).toISOString(),
+        completedAt: new Date(stepStart + 260).toISOString(),
+        durationMs: 260,
+        tokensUsed: 220,
+      });
+
+      const slideTitle = toolArgs.title || (userPrompt.length > 8 ? userPrompt.slice(0, 50) : "Apresentação Executiva");
+      const deckBuilderResult = await createBuilderArtifactFromCopilot({
+        userPrompt,
+        docType: "presentation",
+        title: slideTitle,
+        storeId: context.storeId,
+        authorProfileId: context.userId || "00000000-0000-0000-0000-000000000001",
+        sessionId: context.threadId,
+      }).catch(() => null);
+
+      if (deckBuilderResult) {
+        artifact = deckBuilderResult.chatArtifact;
+      }
+
+      if (!responseMessage) {
+        responseMessage = `Estruturei a apresentação "${slideTitle}" com slides modernos no padrão Apple Minimal. A prévia já está aberta no painel lateral:`;
+      }
+    }
+    // ── 7.2 Website Canvas & Landing Page ──
+    else if (
+      intent === "website_builder" ||
+      promptLower.includes("landing page") ||
+      promptLower.includes("criar site") ||
+      promptLower.includes("montar site")
+    ) {
+      const stepStart = Date.now();
+      steps.push({
+        id: `step-site-${stepStart}`,
+        type: "tool",
+        label: "Criação de Página de Apresentação",
+        detail: "Organizando seções de destaque, catálogo e canais de contato",
+        status: "completed",
+        startedAt: new Date(stepStart).toISOString(),
+        completedAt: new Date(stepStart + 280).toISOString(),
+        durationMs: 280,
+        tokensUsed: 240,
+      });
+
+      const siteTitle = toolArgs.title || "Landing Page do Estabelecimento";
+      const siteBuilderResult = await createBuilderArtifactFromCopilot({
+        userPrompt,
+        docType: "website",
+        title: siteTitle,
+        storeId: context.storeId,
+        authorProfileId: context.userId || "00000000-0000-0000-0000-000000000001",
+        sessionId: context.threadId,
+      }).catch(() => null);
+
+      if (siteBuilderResult) {
+        artifact = siteBuilderResult.chatArtifact;
+      }
+
+      if (!responseMessage) {
+        responseMessage = `Projetei a landing page "${siteTitle}" com layout adaptativo, seções estratégicas de conversão e botões de contato. Veja a prévia ao lado:`;
+      }
     }
     // ── 8. Relatório Financeiro & Planilha de Caixa ──
     else if (
@@ -1775,10 +1956,10 @@ Responda SEMPRE em formato JSON com os campos:
       steps.push({
         id: `step-finance-${stepStart}`,
         type: "tool",
-        label: gatewayResponse?.step_label || "Tool pos_get_cash_status acionada",
+        label: gatewayResponse?.step_label || "Fechamento de Caixa do Dia",
         detail:
           gatewayResponse?.step_detail ||
-          "Consultando demonstrativo e transações financeiras do tenant",
+          "Consultando demonstrativo e transações registradas do período",
         status: "completed",
         startedAt: new Date(stepStart).toISOString(),
         completedAt: new Date(stepStart + 220).toISOString(),
@@ -1826,23 +2007,36 @@ Responda SEMPRE em formato JSON com os campos:
               ["Serviços Locais", "0", "R$ 0,00", "Sem Lançamentos"],
             ];
 
-      artifact = {
-        id: crypto.randomUUID(),
-        type: "spreadsheet",
+      const sheetBuilderResult = await createBuilderArtifactFromCopilot({
+        userPrompt,
+        docType: "spreadsheet",
         title: "Demonstrativo Financeiro do Caixa",
-        version: 1,
-        totalVersions: 1,
-        authorName: "Auditor Financeiro IA",
-        authorRole: "Controladoria",
-        previewSummary: `Demonstrativo contábil com ${rows.length} linhas de registro e status de liquidação.`,
-        data: {
-          rows: rows.length,
-          columns: 4,
-          headers: ["Categoria", "Qtd", "Valor (BRL)", "Status"],
-          dataRows: rows,
-          format: "tabular",
-        },
-      };
+        storeId: context.storeId,
+        authorProfileId: context.userId || "00000000-0000-0000-0000-000000000001",
+        sessionId: context.threadId,
+      }).catch(() => null);
+
+      if (sheetBuilderResult) {
+        artifact = sheetBuilderResult.chatArtifact;
+      } else {
+        artifact = {
+          id: crypto.randomUUID(),
+          type: "spreadsheet",
+          title: "Demonstrativo Financeiro do Caixa",
+          version: 1,
+          totalVersions: 1,
+          authorName: "Consultor de Finanças Local",
+          authorRole: "Controladoria e Gestão",
+          previewSummary: `Demonstrativo contábil com ${rows.length} linhas de registro e status de liquidação.`,
+          data: {
+            rows: rows.length,
+            columns: 4,
+            headers: ["Categoria", "Qtd", "Valor (BRL)", "Status"],
+            dataRows: rows,
+            format: "tabular",
+          },
+        };
+      }
 
       structuredPayload = {
         blocks: [
@@ -1870,8 +2064,8 @@ Responda SEMPRE em formato JSON com os campos:
       steps.push({
         id: `step-general-${stepStart}`,
         type: "model",
-        label: "Síntese de resposta do Waesy Copilot",
-        detail: "Processando diálogo com contexto da conversa",
+        label: "Orientação do Assessor Local",
+        detail: "Organizando orientações com base no seu atendimento",
         status: "completed",
         startedAt: new Date(stepStart).toISOString(),
         completedAt: new Date(stepStart + 150).toISOString(),
@@ -1880,9 +2074,14 @@ Responda SEMPRE em formato JSON com os campos:
       });
 
       if (!responseMessage) {
-        responseMessage =
-          gatewayResponse?.message ||
-          "Olá! Sou o Waesy Copilot, seu assistente inteligente no ecossistema local. Posso te ajudar a encontrar estabelecimentos no Places, calcular corridas ou fretes, consultar produtos e cardápios, planejar roteiros de viagem, estruturar propostas comerciais ou criar anúncios para o seu negócio. Como posso ajudar agora?";
+        if (platformSearch && platformSearch.cards.length > 0) {
+          const sampleNames = platformSearch.cards.slice(0, 3).map((c) => `"${c.title}"`).join(", ");
+          responseMessage = `Encontrei ótimas opções no ecossistema Waesy para "${platformSearch.query}", incluindo ${sampleNames}. Dê uma olhada nos detalhes e ações rápidas abaixo:`;
+        } else {
+          responseMessage =
+            gatewayResponse?.message ||
+            "Olá! Sou o seu Assessor Local. Posso apoiar você a encontrar estabelecimentos comerciais, consultar eventos e notícias da região, conferir produtos locais ou estimar corridas e fretes. Como posso te apoiar agora?";
+        }
       }
 
       updatedMemory.last_interaction_topic = userPrompt.slice(0, 40);
@@ -1924,7 +2123,7 @@ Responda SEMPRE em formato JSON com os campos:
         responseMessage = `Encontrei ótimas opções no Waesy para você aproveitar "${platformSearch.query}". Confira os destaques abaixo:`;
       } else {
         responseMessage =
-          "Olá! Sou o Waesy Copilot. Como posso ajudar você no ecossistema local hoje?";
+          "Olá! Sou o seu Assessor Local. Como posso apoiar você hoje?";
       }
     }
 
@@ -1953,8 +2152,8 @@ Responda SEMPRE em formato JSON com os campos:
     steps.push({
       id: `step-boundary-err-${Date.now()}`,
       type: "skill",
-      label: "Proteção de Resiliência do Copilot",
-      detail: `Falha capturada defensivamente: ${pipelineErr?.message || "Instabilidade temporária"}`,
+      label: "Verificação de Estabilidade do Atendimento",
+      detail: `Ajuste automático de conexão: ${pipelineErr?.message || "Oscilação temporária"}`,
       status: "failed",
       fsmPhase: "FAILED_RETRYABLE",
       startedAt: new Date().toISOString(),
@@ -1962,7 +2161,7 @@ Responda SEMPRE em formato JSON com os campos:
     });
 
     return {
-      responseMessage: `Ocorreu uma instabilidade temporária ao processar sua solicitação (${pipelineErr?.message || "Erro transitório"}). Seus dados e contexto foram preservados. Por favor, tente enviar sua mensagem novamente.`,
+      responseMessage: "Tivemos uma oscilação rápida ao buscar essas informações. Suas preferências foram salvas com segurança. Já estou pronto para tentar novamente para você.",
       activitySteps: steps,
       updatedMemory,
       fsmPhase: "FAILED_RETRYABLE",
@@ -2308,13 +2507,13 @@ export const sendAiConversationMessage = createServerFn({ method: "POST" })
       );
       execution = {
         responseMessage:
-          "Ocorreu uma instabilidade temporária ao consultar os serviços do Copilot. Seus dados e contexto foram preservados. Por favor, tente enviar sua mensagem novamente.",
+          "Tivemos uma oscilação rápida ao buscar esses dados. Suas informações foram preservadas com segurança e já estou pronto para tentar novamente para você.",
         activitySteps: [
           {
             id: `step-err-${Date.now()}`,
             type: "tool",
-            label: "Instabilidade Momentânea",
-            detail: String(pipelineErr?.message || "Falha de rede").slice(0, 100),
+            label: "Oscilação Temporária",
+            detail: String(pipelineErr?.message || "Reconexão necessária").slice(0, 100),
             status: "failed",
             fsmPhase: "FAILED_RETRYABLE",
             startedAt: new Date().toISOString(),
@@ -2376,6 +2575,20 @@ export const sendAiConversationMessage = createServerFn({ method: "POST" })
     }
     const persistedAiMessageId = (persistedExchange as { ai_message_id?: string }).ai_message_id;
     const persistedAiCreatedAt = (persistedExchange as { ai_created_at?: string }).ai_created_at;
+
+    // 🧠 Motor Autônomo Estilo Manus AI: Aprendizado contínuo & Memória episódica
+    extractAndSaveFactsFromConversation({
+      profileId: identity.id,
+      userPrompt: data.message,
+      threadId: data.threadId,
+    }).catch((err) => console.warn("[COPILOT-LEARNING] Falha ao extrair fatos:", err));
+
+    storeSemanticMemoryChunk({
+      sessionId: data.threadId,
+      profileId: identity.id,
+      contentChunk: `Usuário: ${data.message}\nCopilot: ${execution.responseMessage}`,
+      importanceScore: execution.artifact ? 0.8 : 0.5,
+    }).catch((err) => console.warn("[COPILOT-LEARNING] Falha ao gravar memória semântica:", err));
 
     return {
       userMessageId: userMsg.id,
@@ -2684,7 +2897,13 @@ async function executeApprovedChatAction(
           trip_type: "air_package",
           flexible_dates: true,
           contact_name: contactName,
-          contact_whatsapp: String(identity.email || ""),
+          contact_whatsapp: String(
+            (payload as any).whatsapp ||
+            (payload as any).contact_whatsapp ||
+            (identity as any).phone ||
+            (identity as any).whatsapp ||
+            ""
+          ),
           contact_email: contactEmail,
           special_notes: typeof payload.notes === "string" ? payload.notes : undefined,
         },
@@ -2852,3 +3071,128 @@ export const reviewAiChatAction = createServerFn({ method: "POST" })
       throw executionError;
     }
   });
+
+// ============================================================
+// 10. Upload Multimodal do Copilot (Camada 3 - PDFs, Imagens, CSV)
+// ============================================================
+
+export const uploadCopilotAttachmentSchema = z.object({
+  fileName: z.string().min(1).max(255),
+  fileType: z.string().min(1).max(100),
+  base64Data: z.string().min(1),
+  tenantId: z.string().optional(),
+});
+
+export interface CopilotMultimodalAttachmentResult {
+  url: string;
+  storagePath: string;
+  fileName: string;
+  fileType: string;
+  sizeBytes: number;
+  extractedText?: string;
+  metadata: {
+    tenantId: string;
+    linesCount?: number;
+    uploadedAt: string;
+  };
+}
+
+export const uploadCopilotMultimodalAttachment = createServerFn({ method: "POST" })
+  .validator(uploadCopilotAttachmentSchema)
+  .handler(async ({ data }): Promise<CopilotMultimodalAttachmentResult> => {
+    const identity = await getServerIdentity().catch(() => null);
+    enforceRateLimit(identity?.id || "guest", "media_upload");
+
+    const cleanMime = data.fileType.toLowerCase().split(";")[0].trim();
+    const ALLOWED_COPILOT_MIMES = new Set([
+      "application/pdf",
+      "text/plain",
+      "text/csv",
+      "image/jpeg",
+      "image/png",
+      "image/webp",
+      "image/avif",
+      "image/gif",
+    ]);
+
+    if (!ALLOWED_COPILOT_MIMES.has(cleanMime)) {
+      throw new Error(`Tipo de arquivo '${data.fileType}' não permitido. Formatos aceitos: PDF, CSV, TXT e imagens.`);
+    }
+
+    // Decodifica inline Base64
+    const base64Content = data.base64Data.includes(",") ? data.base64Data.split(",", 2)[1] : data.base64Data;
+    const normalized = base64Content.replace(/\s/g, "");
+    const buffer = Buffer.from(normalized, "base64");
+    const sizeBytes = buffer.length;
+
+    if (sizeBytes === 0) {
+      throw new Error("Arquivo vazio ou corrompido.");
+    }
+
+    if (sizeBytes > 15 * 1024 * 1024) {
+      throw new Error("Arquivo excede o limite máximo permitido de 15 MB.");
+    }
+
+    const tenantId = data.tenantId || identity?.store_id || identity?.id || "general";
+    const ext = data.fileName.split(".").pop() || "bin";
+    const sanitizedName = data.fileName.replace(/[^a-zA-Z0-9.-]/g, "_").slice(0, 80);
+    const storagePath = `tenants/${tenantId}/copilot-uploads/${Date.now()}-${Math.random().toString(36).substring(2, 8)}-${sanitizedName}.${ext}`;
+
+    const supabase = getServerClient();
+    const bucket = "copilot-uploads";
+    let uploadUrl = "";
+
+    // Tentativa com fallback de bucket para garantir resiliência
+    const { error: uploadError } = await supabase.storage.from(bucket).upload(storagePath, buffer, {
+      contentType: cleanMime,
+      upsert: true,
+    });
+
+    if (uploadError) {
+      const fallbackBucket = "store-assets";
+      const { error: fbErr } = await supabase.storage.from(fallbackBucket).upload(storagePath, buffer, {
+        contentType: cleanMime,
+        upsert: true,
+      });
+      if (fbErr) {
+        console.warn("[copilot-upload] fallback bucket storage warning:", fbErr.message);
+      }
+      const { data: fbUrl } = supabase.storage.from(fallbackBucket).getPublicUrl(storagePath);
+      uploadUrl = fbUrl?.publicUrl || "";
+    } else {
+      const { data: pubData } = supabase.storage.from(bucket).getPublicUrl(storagePath);
+      uploadUrl = pubData?.publicUrl || "";
+    }
+
+    // Processamento e extração inicial de texto/conteúdo
+    let extractedText: string | undefined;
+    let linesCount: number | undefined;
+
+    if (cleanMime === "text/plain" || cleanMime === "text/csv") {
+      const fullText = buffer.toString("utf-8");
+      linesCount = fullText.split("\n").length;
+      extractedText = fullText.slice(0, 30_000);
+    } else if (cleanMime === "application/pdf") {
+      const ascii = buffer.toString("latin1");
+      const pageMatches = ascii.match(/\/Type\s*\/Page\b/g);
+      const pagesCount = pageMatches ? pageMatches.length : 1;
+      extractedText = `[Documento PDF: ${data.fileName}, aprox. ${pagesCount} página(s), tamanho: ${(sizeBytes / 1024).toFixed(1)} KB]`;
+    } else if (cleanMime.startsWith("image/")) {
+      extractedText = `[Imagem anexada: ${data.fileName}, formato ${cleanMime}, tamanho: ${(sizeBytes / 1024).toFixed(1)} KB. Pronta para extração OCR/IA]`;
+    }
+
+    return {
+      url: uploadUrl,
+      storagePath,
+      fileName: data.fileName,
+      fileType: cleanMime,
+      sizeBytes,
+      extractedText,
+      metadata: {
+        tenantId,
+        linesCount,
+        uploadedAt: new Date().toISOString(),
+      },
+    };
+  });
+

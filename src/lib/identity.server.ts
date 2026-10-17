@@ -26,9 +26,11 @@ function resolveMemoKey(): string {
   try {
     const raw = getRequestHeader("cookie") || "";
     const host = getRequestHeader("host") || "unknown-host";
-    const sb =
-      raw.match(new RegExp(["sb-", "[^;]+", "-auth-token", "[^;]*"].join(""), "g"))?.join("&") ||
-      "guest";
+    const sbPattern = new RegExp(["sb-", "[^;]+", "-auth-token", "[^;]*"].join(""), "g");
+    const sb = [
+      ...(raw.match(/waesy-auth-token[^;]*/g) || []),
+      ...(raw.match(sbPattern) || []),
+    ].join("&") || "guest";
     const ctx = raw.match(/waesy_[^;]+/g)?.join("&") || "";
     return `${host}|${sb}|${ctx}`;
   } catch {
@@ -95,20 +97,38 @@ export async function getServerIdentity(): Promise<ServerIdentity> {
     return guestIdentity;
   }
 
-  // ── Passo 1: Buscar memberships via workspace_members (única fonte canônica)
+  // ── Passo 1: Busca em paralelo de Perfil completo e Vínculos canônicos (1 roundtrip)
+  let userProfile: any = null;
+  let userProfileRole = "customer";
+  let memberRows: any[] = [];
+
   try {
-    const { data: memberRows, error: wmErr } = await serverClient
-      .from("workspace_members")
-      .select("store_id, role")
-      .eq("profile_id", user.id);
+    const [profileRes, wmRes] = await Promise.all([
+      serverClient
+        .from("profiles")
+        .select("id, full_name, username, avatar_url, role, phone, cpf")
+        .eq("id", user.id)
+        .maybeSingle(),
+      serverClient
+        .from("workspace_members")
+        .select("store_id, role")
+        .eq("profile_id", user.id),
+    ]);
 
-    if (wmErr) {
-      console.warn("[identity.server] Erro ao buscar workspace_members:", wmErr.message);
+    userProfile = profileRes?.data || null;
+    userProfileRole = userProfile?.role || "customer";
+    memberRows = wmRes?.data || [];
+    if (wmRes?.error) {
+      console.warn("[identity.server] Erro ao buscar workspace_members:", wmRes.error.message);
     }
+  } catch (err) {
+    console.warn("[identity.server] Erro ao buscar perfil ou workspace_members:", err);
+  }
 
-    if (memberRows && memberRows.length > 0) {
-      const storeIds = Array.from(new Set(memberRows.map((m: any) => m.store_id).filter(Boolean)));
-      if (storeIds.length > 0) {
+  if (memberRows && memberRows.length > 0) {
+    const storeIds = Array.from(new Set(memberRows.map((m: any) => m.store_id).filter(Boolean)));
+    if (storeIds.length > 0) {
+      try {
         const { data: storesList, error: storesErr } = await serverClient
           .from("stores")
           .select(
@@ -144,23 +164,10 @@ export async function getServerIdentity(): Promise<ServerIdentity> {
         });
 
         memberships = Array.from(uniqueMembershipMap.values());
+      } catch (e) {
+        console.warn("[identity.server] Erro ao montar memberships de lojas:", e);
       }
     }
-  } catch (e) {
-    console.warn("[identity.server] Erro ao buscar memberships:", e);
-  }
-
-  // ── Passo 2: Verificar role do perfil
-  let userProfileRole = "customer";
-  try {
-    const { data: p } = await serverClient
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .maybeSingle();
-    userProfileRole = p?.role || "customer";
-  } catch (err) {
-    console.error("[identity.server] Falha ao verificar role no banco:", err);
   }
 
   // isPlatformAdmin: derivado EXCLUSIVAMENTE do banco de dados.
@@ -174,15 +181,16 @@ export async function getServerIdentity(): Promise<ServerIdentity> {
   // Nunca inferir ownership por email/settings nem persistir auto-heal com service_role.
   // Usuários sem workspace_members permanecem no contexto civil e precisam passar
   // por onboarding/convite explícito antes de acessar superfícies de loja.
+
   // ── Passo 4: Resolver contexto ativo (Civil vs Creator vs Store)
   let activeContext = "civil";
   let activeStoreId: string | null = null;
 
   try {
-    const { getCookie, getRequestHeader } = await import("@tanstack/start-server-core");
+    const { getCookie, getRequestHeader: getHeader } = await import("@tanstack/start-server-core");
     let ctxCookie = getCookie("waesy_active_context");
     if (!ctxCookie) {
-      const rawCookie = getRequestHeader("cookie") || "";
+      const rawCookie = getHeader("cookie") || "";
       const match = rawCookie.match(/waesy_active_context=([^;]+)/);
       if (match && match[1]) {
         ctxCookie = decodeURIComponent(match[1].trim());
@@ -205,18 +213,28 @@ export async function getServerIdentity(): Promise<ServerIdentity> {
     ? memberships.find((m) => m.store_id === activeStoreId)
     : null;
 
-  if (activeContext === "creator") {
+  if (activeContext === "civil") {
+    // Zero-Trust Civil Root (DEC-206): contexto civil pessoal NUNCA carrega store_id ativo
     activeStoreId = null;
+  } else if (activeContext === "creator") {
+    // Contexto de Criador: opera com personas de conteúdo e afiliação sem tenant de loja
+    activeStoreId = null;
+  } else if (activeContext === "store") {
+    if (matchedMembership) {
+      activeStoreId = matchedMembership.store_id;
+    } else if (isPlatformAdmin && activeStoreId) {
+      // Admin master com permissão de impersonação/acesso à loja ativa
+    } else {
+      activeStoreId = memberships[0]?.store_id || null;
+    }
   } else if (matchedMembership) {
     activeStoreId = matchedMembership.store_id;
     activeContext = "store";
   } else if (isPlatformAdmin && activeStoreId) {
     activeContext = "store";
-  } else if (activeContext === "store") {
-    activeStoreId = memberships[0]?.store_id || null;
   } else {
     activeStoreId = null;
-    activeContext = activeContext || "civil";
+    activeContext = "civil";
   }
 
   const currentMembership = activeStoreId
@@ -235,6 +253,12 @@ export async function getServerIdentity(): Promise<ServerIdentity> {
     isCivilContext: activeStoreId === null || activeContext === "civil",
     activeContext: activeContext || (activeStoreId ? "store" : "civil"),
     memberships,
+    email: user.email,
+    fullName:
+      userProfile?.full_name ||
+      user.user_metadata?.full_name ||
+      user.email?.split("@")[0] ||
+      "Membro Waesy",
   };
 
   if (evt?.context) {

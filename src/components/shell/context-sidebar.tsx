@@ -119,7 +119,7 @@ export function ContextSidebar({ config, session }: ContextSidebarProps) {
   return (
     <aside
       className={cn(
-        "flex flex-col shrink-0 h-full py-3 bg-background justify-between select-none overflow-y-auto no-scrollbar z-20 border-r border-border/40 transition duration-200 motion-reduce:transition-none",
+        "hidden md:flex flex-col shrink-0 h-full py-3 bg-background justify-between select-none overflow-y-auto no-scrollbar z-20 border-r border-border/40 transition duration-200 motion-reduce:transition-none",
         isExpanded ? "w-56 px-3" : "w-16 px-2"
       )}
     >
@@ -183,8 +183,8 @@ export function ContextSidebar({ config, session }: ContextSidebarProps) {
                             e.stopPropagation();
                             setIsMarketplacesOpen((prev) => !prev);
                           }}
-                          title={isMarketplacesOpen ? "Recolher subnichos" : "Expandir subnichos"}
-                          aria-label={isMarketplacesOpen ? "Recolher subnichos" : "Expandir subnichos"}
+                          title={isMarketplacesOpen ? "Recolher categorias" : "Expandir categorias"}
+                          aria-label={isMarketplacesOpen ? "Recolher categorias" : "Expandir categorias"}
                           className="flex items-center gap-1 px-2 py-1 rounded-md text-2xs font-mono font-bold bg-muted/80 hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                         >
                           <span>14</span>

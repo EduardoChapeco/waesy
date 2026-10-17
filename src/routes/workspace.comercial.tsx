@@ -782,7 +782,7 @@ function WorkspaceComercialPage() {
 
       {/* ── MODAL / SHEET LATERAL DE NOVA OPORTUNIDADE (TRAVELAGÊNCIAS STANDARD) ── */}
       <Sheet open={isNewLeadOpen} onOpenChange={setIsNewLeadOpen}>
-        <SheetContent side="right" className="w-full max-sm:!max-w-full max-sm:!w-screen sm:max-w-2xl p-6 flex flex-col justify-between overflow-y-auto no-scrollbar">
+        <SheetContent side="right" className="w-full sm:max-w-2xl p-6 flex flex-col justify-between overflow-y-auto no-scrollbar">
           <div className="space-y-6">
             <SheetHeader className="p-0 text-left space-y-1 border-b border-border/50 pb-3">
               <div className="flex items-center gap-2">
@@ -1077,7 +1077,7 @@ function WorkspaceComercialPage() {
 
       {/* ── FICHA 360° DO LEAD (TRAVELAGÊNCIAS ENTERPRISE STANDARD) ── */}
       <Sheet open={!!selectedLead} onOpenChange={(open) => !open && setSelectedLead(null)}>
-        <SheetContent side="right" className="w-full max-sm:!max-w-full max-sm:!w-screen sm:max-w-xl p-6 flex flex-col justify-between overflow-y-auto no-scrollbar">
+        <SheetContent side="right" className="w-full sm:max-w-xl p-6 flex flex-col justify-between overflow-y-auto no-scrollbar">
           {selectedLead && (
             <>
               <div className="space-y-5">
@@ -1639,7 +1639,7 @@ function WorkspaceComercialPage() {
 
                     {/* Top Nichos de Afinidade */}
                     <div className="space-y-2">
-                      <span className="text-xs font-bold text-foreground">Nichos de Maior Afinidade</span>
+                      <span className="text-xs font-bold text-foreground">Categorias de Maior Afinidade</span>
                       {customer360Data?.customer?.behavioral_profile?.top_niches?.length > 0 ? (
                         <div className="grid grid-cols-2 gap-2">
                           {(customer360Data?.customer?.behavioral_profile?.top_niches || []).map((n: any, idx: number) => (

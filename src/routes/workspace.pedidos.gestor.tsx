@@ -1546,7 +1546,7 @@ function KDSPage() {
  </DialogTitle>
  </DialogHeader>
 
- <div className="space-y-3 py-3 max-h-[60vh] overflow-y-auto no-scrollbar">
+ <div className="space-y-3 py-3 max-h-96 sm:max-h-128 overflow-y-auto no-scrollbar">
  <p className="text-xs text-muted-foreground">
  Estes pedidos ultrapassaram o tempo alvo estabelecido. Acione a equipe de cozinha ou notifique o cliente para garantir a melhor experiência.
  </p>

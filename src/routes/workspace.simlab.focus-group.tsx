@@ -277,7 +277,7 @@ function FocusGroupPage() {
                       : 'bg-muted/30 border-transparent text-muted-foreground opacity-60'
                   }`}
                 >
-                  <span className="truncate max-w-[120px]">{p.display_name}</span>
+                  <span className="truncate max-w-28">{p.display_name}</span>
                   <Badge variant="secondary" className="text-xs py-0 px-2 rounded-sm">
                     {p.abep_social_class}
                   </Badge>
@@ -448,7 +448,7 @@ function FocusGroupPage() {
 
       {/* ── SHEET 1: PERFIL SINTÉTICO E PROVENIÊNCIA ── */}
       <Sheet open={!!inspectingPersona} onOpenChange={(open) => !open && setInspectingPersona(null)}>
-        <SheetContent side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] overflow-y-auto p-6 space-y-6">
+        <SheetContent side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl overflow-y-auto overscroll-contain p-6 space-y-6">
           {inspectingPersona && (
             <>
               <SheetHeader className="space-y-2">
@@ -494,7 +494,7 @@ function FocusGroupPage() {
 
       {/* ── SHEET 2: GOVERNANÇA DE CHAVES DE IA (GEMINI / GROQ / OPENAI) ── */}
       <Sheet open={isKeySheetOpen} onOpenChange={setIsKeySheetOpen}>
-        <SheetContent side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] p-6 space-y-5">
+        <SheetContent side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl p-6 space-y-5 overscroll-contain">
           <SheetHeader className="space-y-1">
             <div className="flex items-center gap-2">
               <Key className="size-4 text-primary" />

@@ -36,6 +36,7 @@ export function NativeMobileHeader({
   fallbackHref = "/",
   leftSlot,
   rightActions,
+  rightAction,
   badge,
   bottomSlot,
   transparent = false,
@@ -69,25 +70,25 @@ export function NativeMobileHeader({
   return (
     <header
       className={cn(
-        "sticky top-0 z-40 w-full select-none transition-colors",
+        "sticky top-0 z-40 -mx-2 sm:mx-0 sm:w-full select-none transition-colors",
         transparent ? "bg-transparent" : "bg-background/95 backdrop-blur-md",
         bordered && !transparent ? "border-b border-border/40" : "",
         mobileOnly ? "md:hidden" : "",
-        "pt-[env(safe-area-inset-top,0px)]",
+        "pt-safe",
         className
       )}
     >
-      <div className="relative flex items-center justify-between gap-2 px-4 h-12 sm:h-14 w-full min-w-0">
+      <div className="relative flex items-center justify-between gap-2 px-2 sm:px-4 h-11 min-h-11 w-full min-w-0">
         {/* ── Lado Esquerdo: Apenas Ícone < (44x44px, sem texto) ── */}
-        <div className="flex items-center gap-1 shrink-0 min-w-[44px] z-10">
+        <div className="flex items-center gap-1 shrink-0 min-w-11 z-10">
           {showBack && (
             <button
               type="button"
               onClick={handleBack}
-              className="size-11 min-h-11 min-w-[44px] -ml-2 rounded-full flex items-center justify-center text-foreground/85 hover:text-foreground hover:bg-muted/50 active:bg-muted/80 active:scale-95 transition-all cursor-pointer"
+              className="size-11 min-h-11 min-w-11 -ml-1 rounded-lg flex items-center justify-center text-foreground/85 hover:text-foreground hover:bg-muted/50 active:bg-muted/80 active:scale-95 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               aria-label="Voltar"
             >
-              <CaretLeft className="size-5 stroke-[2.5]" weight="bold" />
+              <CaretLeft className="size-5" weight="bold" />
             </button>
           )}
           {leftSlot}
@@ -100,7 +101,7 @@ export function NativeMobileHeader({
               <MagnifyingGlass
                 size={16}
                 weight="bold"
-                className="absolute left-3 text-muted-foreground pointer-events-none"
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
               />
               <input
                 type="search"
@@ -117,7 +118,7 @@ export function NativeMobileHeader({
                   }
                 }}
                 placeholder={searchPlaceholder}
-                className="w-full h-9 pl-8 pr-8 rounded-lg bg-muted/60 border border-border/60 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                className="w-full h-11 min-h-11 pl-9 pr-11 rounded-lg bg-muted/60 border border-border/60 text-xs text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               />
               <button
                 type="button"
@@ -126,9 +127,9 @@ export function NativeMobileHeader({
                   setIsSearchOpen(false);
                 }}
                 aria-label="Fechar busca"
-                className="absolute right-2 size-6 rounded-full inline-flex items-center justify-center text-muted-foreground hover:text-foreground"
+                className="absolute right-0 top-0 size-11 min-h-11 min-w-11 rounded-lg inline-flex items-center justify-center text-muted-foreground hover:text-foreground active:scale-95 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
-                <X size={13} weight="bold" />
+                <X size={16} weight="bold" />
               </button>
             </div>
           </div>
@@ -157,7 +158,7 @@ export function NativeMobileHeader({
               {badge && <div className="shrink-0">{badge}</div>}
             </div>
             {subtitle && (
-              <div className="text-[11px] text-muted-foreground truncate leading-tight mt-1">
+              <div className="text-xs text-muted-foreground truncate leading-tight mt-1">
                 {subtitle}
               </div>
             )}
@@ -165,7 +166,7 @@ export function NativeMobileHeader({
         )}
 
         {/* ── Lado Direito: Lupa Contextual + Funil ML-Filter + Ações Extras (44x44px) ── */}
-        <div className="flex items-center gap-1 shrink-0 min-w-[44px] justify-end z-10">
+        <div className="flex items-center gap-1 shrink-0 min-w-11 justify-end z-10">
           {onSearchChange && !isSearchOpen && (
             <button
               type="button"
@@ -174,7 +175,7 @@ export function NativeMobileHeader({
                 setIsSearchOpen(true);
               }}
               aria-label="Buscar"
-              className="size-11 min-h-11 min-w-[44px] rounded-full inline-flex items-center justify-center text-foreground/80 hover:text-foreground hover:bg-muted/50 active:scale-95 transition-all cursor-pointer"
+              className="size-11 min-h-11 min-w-11 rounded-lg inline-flex items-center justify-center text-foreground/80 hover:text-foreground hover:bg-muted/50 active:scale-95 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
               <MagnifyingGlass size={20} weight="bold" />
             </button>
@@ -188,7 +189,7 @@ export function NativeMobileHeader({
                 onFilterClick();
               }}
               aria-label="Filtrar"
-              className="relative size-11 min-h-11 min-w-[44px] rounded-full inline-flex items-center justify-center text-foreground/80 hover:text-foreground hover:bg-muted/50 active:scale-95 transition-all cursor-pointer"
+              className="relative size-11 min-h-11 min-w-11 rounded-lg inline-flex items-center justify-center text-foreground/80 hover:text-foreground hover:bg-muted/50 active:scale-95 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
               <Funnel
                 size={20}
@@ -196,14 +197,14 @@ export function NativeMobileHeader({
                 className={activeFiltersCount > 0 ? "text-primary" : ""}
               />
               {activeFiltersCount > 0 && (
-                <span className="absolute top-1.5 right-1.5 size-4 rounded-full bg-primary text-primary-foreground text-[9px] font-bold flex items-center justify-center">
+                <span className="absolute top-1 right-1 min-w-4 h-4 px-1 rounded-full bg-primary text-primary-foreground text-xs font-bold leading-none flex items-center justify-center">
                   {activeFiltersCount}
                 </span>
               )}
             </button>
           )}
 
-          {rightActions}
+          {rightActions || rightAction}
         </div>
       </div>
 

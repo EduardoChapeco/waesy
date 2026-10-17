@@ -1089,7 +1089,7 @@ function CustomerDetailPage() {
 
       {/* ── Sheet: Conceder Crédito ── */}
       <Sheet open={isCreditModalOpen} onOpenChange={setIsCreditModalOpen}>
-        <SheetContent side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] md:max-w-3xl lg:max-w-[70vw] flex flex-col justify-between overflow-y-auto">
+        <SheetContent side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl flex flex-col justify-between overflow-y-auto overscroll-contain">
           <div>
             <SheetHeader className="pb-4">
               <SheetTitle>Conceder Crédito em Loja</SheetTitle>
@@ -1137,7 +1137,7 @@ function CustomerDetailPage() {
         <SheetContent
           side="right"
           size="wide"
-          className="w-full max-sm:!max-w-full max-sm:!w-screen sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] flex flex-col justify-between overflow-y-auto"
+          className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl flex flex-col justify-between overflow-y-auto"
         >
           <div>
             <SheetHeader className="pb-4">
@@ -1195,7 +1195,7 @@ function CustomerDetailPage() {
         <SheetContent
           side="right"
           size="wide"
-          className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] md:max-w-3xl lg:max-w-[70vw] xl:max-w-[70vw] flex flex-col justify-between overflow-y-auto"
+          className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl flex flex-col justify-between overflow-y-auto overscroll-contain"
         >
           <div>
             <SheetHeader className="pb-4">

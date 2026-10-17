@@ -23,6 +23,7 @@ import {
 } from "@/services/chat.functions";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
+import { CustomerChatRoom } from "./_store.conta.conversas.$id";
 import {
   Dialog,
   DialogContent,

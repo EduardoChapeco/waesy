@@ -250,6 +250,8 @@ export interface UniversalClassifiedShowcaseProps {
   isBooking?: boolean;
   isBuyingDirect?: boolean;
   isDownloadingDigital?: boolean;
+  previewViewport?: "mobile" | "desktop" | "auto";
+  similarAds?: any[];
 }
 
 export type ClassifiedTemplateStyle =

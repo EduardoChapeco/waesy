@@ -27,7 +27,13 @@ export type SiteBlockCategory =
   | "social_proof"
   | "contact"
   | "faq"
-  | "cta_footer";
+  | "cta_footer"
+  | "commerce"
+  | "gastronomy"
+  | "media"
+  | "services"
+  | "tourism"
+  | "biolink";
 
 export interface BaseSiteBlockProps {
   id: string;

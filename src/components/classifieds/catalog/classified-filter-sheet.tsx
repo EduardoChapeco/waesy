@@ -1,6 +1,6 @@
 import React from "react";
 import { SlidersHorizontal, Check, ArrowLeftRight, CreditCard, Flame, Lock, FileText } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
@@ -120,12 +120,20 @@ export function ClassifiedFilterSheet({
   onToggleInstantDigital,
 }: ClassifiedFilterSheetProps) {
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-full sm:max-w-lg max-h-screen rounded-none sm:rounded-lg p-5 space-y-4 overflow-y-auto">
-        <DialogHeader className="flex flex-row items-center justify-between pb-2 border-b border-border/40">
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent
+        side="bottom"
+        className="w-full sm:max-w-lg max-h-overlay-max p-0 flex flex-col rounded-t-lg border-t border-border bg-background outline-none sm:mx-auto"
+      >
+        {/* iOS Grab Handle */}
+        <div className="pt-3 pb-1 flex justify-center shrink-0">
+          <div className="w-12 h-1.5 rounded-full bg-muted-foreground/30" />
+        </div>
+
+        <SheetHeader className="flex flex-row items-center justify-between px-5 pb-2 border-b border-border/40 shrink-0 text-left">
           <div className="flex items-center gap-2">
             <SlidersHorizontal className="size-4 text-primary" />
-            <DialogTitle className="text-base font-bold">Filtros Avançados</DialogTitle>
+            <SheetTitle className="text-base font-bold text-foreground">Filtros Avançados</SheetTitle>
             {activeFiltersCount > 0 && (
               <Badge variant="secondary" className="text-xs font-mono font-bold">
                 {activeFiltersCount} ativo{activeFiltersCount > 1 ? "s" : ""}
@@ -143,9 +151,9 @@ export function ClassifiedFilterSheet({
               Limpar Todos
             </Button>
           )}
-        </DialogHeader>
+        </SheetHeader>
 
-        <div className="space-y-4 text-xs">
+        <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4 text-xs no-scrollbar">
           {/* Cidades */}
           <div className="space-y-2">
             <span className="font-bold font-mono uppercase text-muted-foreground block text-xs tracking-wider">
@@ -589,16 +597,16 @@ export function ClassifiedFilterSheet({
           )}
         </div>
 
-        <div className="pt-3 border-t border-border/40">
+        <div className="p-4 border-t border-border/40 bg-background shrink-0">
           <Button
             type="button"
             onClick={() => onOpenChange(false)} /* focus-visible: */
-            className="w-full h-11 rounded-lg font-bold text-xs bg-foreground text-background hover:bg-foreground/90 cursor-pointer shadow-xs focus-visible:ring-2 focus-visible:ring-ring"
+            className="w-full h-11 min-h-11 rounded-lg font-bold text-xs bg-foreground text-background hover:bg-foreground/90 cursor-pointer shadow-xs focus-visible:ring-2 focus-visible:ring-ring"
           >
             Ver {filteredCount} {filteredCount === 1 ? "Anúncio" : "Anúncios"}
           </Button>
         </div>
-      </DialogContent>
-    </Dialog>
+      </SheetContent>
+    </Sheet>
   );
 }

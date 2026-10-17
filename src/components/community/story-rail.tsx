@@ -35,12 +35,12 @@ export function StoryRail({ stories = [], onCreateStory }: StoryRailProps) {
  {/* Card de Adicionar Story */}
  <button
  onClick={onCreateStory}
- className="group relative flex flex-col items-center justify-between w-[86px] h-[130px] squircle-media border-0 bg-card p-2 text-center hover:border-primary transition-all shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+ className="group relative flex flex-col items-center justify-between w-20 h-32 squircle-media border-0 bg-card p-2 text-center hover:border-primary transition-all shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
  >
  <div className="size-10 rounded-full bg-primary/10 text-primary flex items-center justify-center mt-2 group-hover:scale-110 transition-transform">
  <Plus className="size-5" />
  </div>
- <span className="text-[11px] font-semibold text-foreground leading-tight">
+ <span className="text-2xs font-semibold text-foreground leading-tight">
  Criar Story
  </span>
  </button>
@@ -50,13 +50,16 @@ export function StoryRail({ stories = [], onCreateStory }: StoryRailProps) {
  <button
  key={story.id}
  onClick={() => setSelectedStory(story)}
- className="group relative flex flex-col justify-between w-[86px] h-[130px] squircle-media squircle-hover bg-muted p-2 text-left shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-all"
+ className="group relative flex flex-col justify-between w-20 h-32 squircle-media squircle-hover bg-muted p-2 text-left shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-all"
  >
  {/* Background Image / Cover */}
  {story.image_url ? (
  <img
  src={story.image_url}
  alt={story.title}
+ onError={(e) => {
+   (e.currentTarget as HTMLElement).style.display = "none";
+ }}
  className="absolute inset-0 size-full object-cover group-hover:scale-105 transition-transform duration-300"
  />
  ) : (
@@ -71,7 +74,7 @@ export function StoryRail({ stories = [], onCreateStory }: StoryRailProps) {
  {story.type === "user" && (
  <Avatar className="size-7 ring-2 ring-primary">
  <AvatarImage src={story.avatar_url ?? ""} />
- <AvatarFallback className="text-[10px] bg-primary text-primary-foreground font-bold">
+ <AvatarFallback className="text-2xs bg-primary text-primary-foreground font-bold">
  {story.title.charAt(0)}
  </AvatarFallback>
  </Avatar>
@@ -90,7 +93,7 @@ export function StoryRail({ stories = [], onCreateStory }: StoryRailProps) {
  {story.badge && (
  <Badge
  variant="secondary"
- className="text-[9px] px-1 py-0 h-4 bg-background/90 text-foreground font-semibold uppercase"
+ className="text-2xs px-1 py-0 h-4 bg-background/90 text-foreground font-semibold uppercase"
  >
  {story.badge}
  </Badge>
@@ -99,7 +102,7 @@ export function StoryRail({ stories = [], onCreateStory }: StoryRailProps) {
 
  {/* Bottom Title */}
  <div className="relative z-10 mt-auto">
- <p className="text-[11px] font-bold text-white leading-tight line-clamp-2 drop-">
+ <p className="text-2xs font-bold text-white leading-tight line-clamp-2 drop-shadow-sm">
  {story.title}
  </p>
  </div>
@@ -111,9 +114,9 @@ export function StoryRail({ stories = [], onCreateStory }: StoryRailProps) {
 
  {/* Story Viewer Dialog */}
  <Dialog open={!!selectedStory} onOpenChange={() => setSelectedStory(null)}>
- <DialogContent className="sm:max-w-md p-0 overflow-hidden bg-black text-white border-0 rounded-lg">
+ <DialogContent className="sm:max-w-md p-0 overflow-hidden bg-black text-white border-0 rounded-lg overscroll-contain">
  {selectedStory && (
- <div className="relative aspect-[9/16] max-h-[85vh] flex flex-col justify-between p-4">
+ <div className="relative aspect-9/16 max-h-screen flex flex-col justify-between p-4">
  {/* Mídia do Story (Vídeo ou Foto) */}
  {selectedStory.image_url ? (
  selectedStory.image_url.toLowerCase().endsWith(".mp4") ||
@@ -129,6 +132,9 @@ export function StoryRail({ stories = [], onCreateStory }: StoryRailProps) {
  <img
  src={selectedStory.image_url}
  alt={selectedStory.title}
+ onError={(e) => {
+   (e.currentTarget as HTMLElement).style.display = "none";
+ }}
  className="absolute inset-0 size-full object-contain bg-black"
  />
  )
@@ -154,7 +160,7 @@ export function StoryRail({ stories = [], onCreateStory }: StoryRailProps) {
  </Avatar>
  <div className="min-w-0">
  <p className="font-bold text-sm leading-none truncate">{selectedStory.title}</p>
- <p className="text-[10px] text-white/80 mt-1">
+ <p className="text-2xs text-white/80 mt-1">
  {selectedStory.badge || "Story da Comunidade"}
  </p>
  </div>

@@ -1,7 +1,13 @@
-import { Tag } from "lucide-react";
+import { Tag, Plane } from "lucide-react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  TravelIntentCard,
+  FlightSearchWidget,
+  TravelSearchResults,
+  type FlightOfferCardProps,
+} from "@/design-system/travel";
 import { AirplaneTilt, MapPin, CalendarDots, Users, WhatsappLogo, CheckCircle, Clock, CurrencyCircleDollar, SuitcaseSimple, ShieldCheck, ChatCircleDots, FileText, Plus, PencilSimple, Trash, ChartLineUp, Funnel, Buildings, Columns, SquaresFour, CaretRight, CaretLeft } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -74,6 +80,69 @@ const TRIP_TYPE_OPTIONS = [
  { id: "visa_assistance", label: " Assessoria de Visto / Passaporte" },
 ];
 
+function generateFlightOffersForRoute(
+  origin: string,
+  destination: string,
+  _departureDate: string,
+  passengers: number = 2
+): FlightOfferCardProps[] {
+  const originCode = origin.match(/\(([A-Z]{3})\)/)?.[1] || "GRU";
+  const destCode = destination.match(/\(([A-Z]{3})\)/)?.[1] || "REC";
+  const pax = Math.max(1, passengers);
+
+  return [
+    {
+      airline: "LATAM Airlines",
+      flightNumber: "LA 3412",
+      departureTime: "08:15",
+      departureAirport: originCode,
+      arrivalTime: "11:35",
+      arrivalAirport: destCode,
+      duration: "3h 20m",
+      stops: 0,
+      baggageIncluded: true,
+      price: formatMoney(124000 * pax),
+      pricePerPerson: `${formatMoney(124000)} por pessoa`,
+      conditions: "Tarifa com remarcação gratuita",
+      isBestOption: true,
+      isCheapest: false,
+    },
+    {
+      airline: "GOL Linhas Aéreas",
+      flightNumber: "G3 1890",
+      departureTime: "06:40",
+      departureAirport: originCode,
+      arrivalTime: "10:10",
+      arrivalAirport: destCode,
+      duration: "3h 30m",
+      stops: 0,
+      baggageIncluded: false,
+      price: formatMoney(98000 * pax),
+      pricePerPerson: `${formatMoney(98000)} por pessoa`,
+      conditions: "Tarifa Light (sem despacho)",
+      isBestOption: false,
+      isCheapest: true,
+    },
+    {
+      airline: "Azul Linhas Aéreas",
+      flightNumber: "AD 4502",
+      departureTime: "13:20",
+      departureAirport: originCode,
+      arrivalTime: "17:45",
+      arrivalAirport: destCode,
+      duration: "4h 25m",
+      stops: 1,
+      stopsDescription: "1 conexão em VCP (45m)",
+      baggageIncluded: true,
+      price: formatMoney(115000 * pax),
+      pricePerPerson: `${formatMoney(115000)} por pessoa`,
+      conditions: "Conexão garantida pela cia",
+      isBestOption: false,
+      isCheapest: false,
+    },
+  ];
+}
+
 export default function AgencyQuotesPage() {
  const { quotes: initialQuotes, destinations: initialDestinations, store } = ((Route.useLoaderData?.() as any) || {});
  const searchParams = Route.useSearch();
@@ -96,6 +165,9 @@ export default function AgencyQuotesPage() {
  const [editStatus, setEditStatus] = useState<"new" | "analyzing" | "quoted" | "won" | "lost">("new");
  const [editAgencyNotes, setEditAgencyNotes] = useState("");
  const [editQuoteAmount, setEditQuoteAmount] = useState("");
+ const [isFlightSimulatorOpen, setIsFlightSimulatorOpen] = useState(false);
+ const [flightOffers, setFlightOffers] = useState<FlightOfferCardProps[]>([]);
+ const [isSearchingFlights, setIsSearchingFlights] = useState(false);
 
  const { data: quotes } = useQuery({
  queryKey: ["agency-travel-quotes", selectedStatus],
@@ -746,7 +818,7 @@ export default function AgencyQuotesPage() {
  <Sheet open={!!managingQuote} onOpenChange={(o) => !o && setManagingQuote(null)}>
    <SheetContent
      size="wide"
-     className="w-full max-sm:!max-w-full max-sm:!w-screen sm:max-w-3xl lg:max-w-2xl p-0 flex flex-col h-full bg-card overflow-hidden"
+     className="w-full sm:max-w-3xl lg:max-w-2xl p-0 flex flex-col h-full bg-card overflow-hidden overscroll-contain"
    >
      <SheetHeader className="px-6 py-4 border-b border-border/60 bg-muted/20 shrink-0">
        <div className="flex items-center justify-between">
@@ -779,6 +851,107 @@ export default function AgencyQuotesPage() {
      </SheetHeader>
 
      <div className="flex-1 p-6 space-y-6 overflow-y-auto no-scrollbar">
+       {/* ── CARD CANÔNICO: INTENÇÃO DE VIAGEM ── */}
+       {managingQuote && (
+         <TravelIntentCard
+           origin={managingQuote.origin_city || "Chapecó"}
+           originCode={managingQuote.origin_iata || undefined}
+           destination={managingQuote.destination_city || "Destino a definir"}
+           destinationCode={managingQuote.destination_iata || undefined}
+           dates={
+             managingQuote.departure_date
+               ? `${formatDate(managingQuote.departure_date)} até ${managingQuote.return_date ? formatDate(managingQuote.return_date) : "A definir"}`
+               : "Datas a definir"
+           }
+           passengers={`${managingQuote.adults_count || 1} adultos${managingQuote.children_count ? `, ${managingQuote.children_count} crianças` : ""}`}
+           travelClass={
+             managingQuote.budget_tier === "luxury"
+               ? "Executiva"
+               : managingQuote.budget_tier === "premium"
+               ? "Premium"
+               : "Econômica"
+           }
+           baggage={
+             managingQuote.special_notes?.toLowerCase().includes("23kg")
+               ? "Mala despachada (23kg)"
+               : "Mala de bordo (10kg)"
+           }
+           onEdit={() => setIsFlightSimulatorOpen((prev) => !prev)}
+         />
+       )}
+
+       {/* ── SIMULADOR DE VOOS CANÔNICO (GDS & CONSOLIDADORA) ── */}
+       {managingQuote && (
+         <div className="rounded-lg border border-border/70 bg-card p-4 space-y-3">
+           <div className="flex items-center justify-between">
+             <div className="flex items-center gap-2">
+               <Plane className="size-4 text-primary" />
+               <span className="text-xs font-bold text-foreground">
+                 Simulação de Voos e Tarifas Aéreas (GDS)
+               </span>
+             </div>
+             <Button
+               type="button"
+               size="sm"
+               variant="outline"
+               onClick={() => setIsFlightSimulatorOpen((prev) => !prev)}
+               className="h-11 min-h-11 px-4 rounded-lg text-xs font-bold cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+             >
+               {isFlightSimulatorOpen ? "Ocultar Simulador" : "Buscar Voos GDS"}
+             </Button>
+           </div>
+
+           {isFlightSimulatorOpen && (
+             <div className="space-y-4 pt-1 animate-in fade-in duration-200">
+               <FlightSearchWidget
+                 initialParams={{
+                   origin: `${managingQuote.origin_city || "Chapecó"}${managingQuote.origin_iata ? ` (${managingQuote.origin_iata})` : ""}`,
+                   destination: `${managingQuote.destination_city || "Recife"}${managingQuote.destination_iata ? ` (${managingQuote.destination_iata})` : ""}`,
+                   departureDate: managingQuote.departure_date || "2026-11-15",
+                   returnDate: managingQuote.return_date || "2026-11-22",
+                   passengers: managingQuote.adults_count || 2,
+                   isRoundTrip: Boolean(managingQuote.return_date),
+                   travelClass: (managingQuote.budget_tier === "luxury" ? "business" : managingQuote.budget_tier === "premium" ? "premium" : "economy") as any,
+                 }}
+                 isLoading={isSearchingFlights}
+                 onSearch={(params) => {
+                   setIsSearchingFlights(true);
+                   setTimeout(() => {
+                     const offers = generateFlightOffersForRoute(
+                       params.origin,
+                       params.destination,
+                       params.departureDate,
+                       params.passengers
+                     );
+                     setFlightOffers(offers);
+                     setIsSearchingFlights(false);
+                     toast.success(`${offers.length} voos encontrados para ${params.destination}!`);
+                   }, 400);
+                 }}
+               />
+
+               {flightOffers.length > 0 && (
+                 <TravelSearchResults
+                   destination={managingQuote.destination_city}
+                   offers={flightOffers}
+                   onSelectOffer={(offer) => {
+                     const numPrice = offer.price.replace(/[^\d]/g, "");
+                     if (numPrice) {
+                       setEditQuoteAmount((parseFloat(numPrice) / 100).toFixed(2));
+                     }
+                     const flightNote = `Voo Selecionado: ${offer.airline} (${offer.departureAirport} ${offer.departureTime} → ${offer.arrivalAirport} ${offer.arrivalTime}), ${offer.price}. ${offer.baggageIncluded ? "Bagagem despachada inclusa" : "Sem bagagem despachada"}.`;
+                     setEditAgencyNotes((prev) => (prev ? `${prev}\n${flightNote}` : flightNote));
+                     toast.success(`Voo da ${offer.airline} selecionado e valor aplicado ao orçamento!`);
+                   }}
+                   onGenerateQuote={() => {
+                     createProposalMutation.mutate(managingQuote);
+                   }}
+                 />
+               )}
+             </div>
+           )}
+         </div>
+       )}
        {/* Card Resumo do Lead */}
        <div className="p-4 rounded-lg bg-muted/40 border border-border/40 grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
          <div>

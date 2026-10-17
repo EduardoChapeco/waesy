@@ -3,7 +3,7 @@ import { readFile } from "node:fs/promises";
 
 describe("manual contract signing security boundary", () => {
   it("bounds signing input and rejects expired envelopes", async () => {
-    const source = await readFile(new URL("./contracts.functions.ts", import.meta.url), "utf8");
+    const source = (await readFile(new URL("./contracts.functions.ts", import.meta.url), "utf8")).replace(/\r\n/g, "\n");
     const start = source.indexOf("export const signContractEnvelope");
     const expiry = source.indexOf("envelope.expires_at", start);
     expect(source.slice(start, start + 1300)).toContain("signingToken: z.string().trim().min(16).max(240)");
@@ -12,7 +12,7 @@ describe("manual contract signing security boundary", () => {
   });
 
   it("finalizes evidence and envelope in one transaction without a best-effort cleanup", async () => {
-    const source = await readFile(new URL("./contracts.functions.ts", import.meta.url), "utf8");
+    const source = (await readFile(new URL("./contracts.functions.ts", import.meta.url), "utf8")).replace(/\r\n/g, "\n");
     const start = source.indexOf("export const signContractEnvelope");
     const end = source.indexOf("// ─── Verificação Pública", start);
     const signer = source.slice(start, end);
@@ -25,7 +25,7 @@ describe("manual contract signing security boundary", () => {
   });
 
   it("reports ambiguous success only after re-reading a signed envelope and promoting its contract", async () => {
-    const source = await readFile(new URL("./contracts.functions.ts", import.meta.url), "utf8");
+    const source = (await readFile(new URL("./contracts.functions.ts", import.meta.url), "utf8")).replace(/\r\n/g, "\n");
     const start = source.indexOf("export const signContractEnvelope");
     const end = source.indexOf("// ─── Verificação Pública", start);
     const signer = source.slice(start, end);
@@ -43,7 +43,7 @@ describe("manual contract signing security boundary", () => {
   });
 
   it("finalizes evidence, envelope, and contract completion through the transactional RPC", async () => {
-    const source = await readFile(new URL("./contracts.functions.ts", import.meta.url), "utf8");
+    const source = (await readFile(new URL("./contracts.functions.ts", import.meta.url), "utf8")).replace(/\r\n/g, "\n");
     const start = source.indexOf("export const signContractEnvelope");
     const end = source.indexOf("// ─── Verificação Pública", start);
     const signer = source.slice(start, end);
@@ -57,7 +57,7 @@ describe("manual contract signing security boundary", () => {
   });
 
   it("proves persisted consent evidence before idempotent success for an already-signed envelope", async () => {
-    const source = await readFile(new URL("./contracts.functions.ts", import.meta.url), "utf8");
+    const source = (await readFile(new URL("./contracts.functions.ts", import.meta.url), "utf8")).replace(/\r\n/g, "\n");
     const start = source.indexOf("export const signContractEnvelope");
     const end = source.indexOf("// ─── Verificação Pública", start);
     const signer = source.slice(start, end);
@@ -72,7 +72,7 @@ describe("manual contract signing security boundary", () => {
   });
 
   it("does not reconcile an ambiguous response unless this exact digest has consented evidence", async () => {
-    const source = await readFile(new URL("./contracts.functions.ts", import.meta.url), "utf8");
+    const source = (await readFile(new URL("./contracts.functions.ts", import.meta.url), "utf8")).replace(/\r\n/g, "\n");
     const start = source.indexOf("export const signContractEnvelope");
     const end = source.indexOf("// ─── Verificação Pública", start);
     const signer = source.slice(start, end);

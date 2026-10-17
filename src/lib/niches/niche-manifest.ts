@@ -696,6 +696,42 @@ export function isModuleActiveForNiche(moduleKey: NicheModuleKey, nicheId?: stri
 }
 
 /**
+ * Tradução canônica de categorias e nichos técnicos em inglês para rótulos humanos em Português.
+ * Evita vazamento de strings brutas como "tourism" na vitrine pública.
+ */
+export function formatStoreCategory(category?: string | null): string {
+  if (!category) return "Comércio Local";
+  const normalized = category.toLowerCase().trim();
+
+  const ENGLISH_TO_PT: Record<string, string> = {
+    tourism: "Turismo & Viagens",
+    travel: "Turismo & Viagens",
+    gastronomy: "Gastronomia & Alimentação",
+    restaurant: "Restaurante & Gastronomia",
+    retail: "Comércio & Varejo",
+    services: "Serviços Especializados",
+    real_estate: "Imóveis & Hospedagem",
+    healthcare: "Saúde & Bem-Estar",
+    automotive: "Automotivo & Veículos",
+    events: "Eventos & Festas",
+    creator: "Criador de Conteúdo",
+    generic: "Comércio Local",
+    commerce: "Comércio Local",
+  };
+
+  if (ENGLISH_TO_PT[normalized]) {
+    return ENGLISH_TO_PT[normalized];
+  }
+
+  const manifest = getNicheManifest(normalized);
+  if (manifest && manifest.id !== "generic") {
+    return manifest.label;
+  }
+
+  return category.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+/**
  * Retorna a nomenclatura polimórfica para um determinado nicho.
  */
 export function getNicheNomenclature(nicheId?: string | null): NicheEntityNomenclature {

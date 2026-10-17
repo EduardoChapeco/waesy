@@ -12,10 +12,12 @@ import { CitySelect } from "@/components/ui/city-select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { NativeMobileHeader } from "@/components/navigation";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { User, Camera, ExternalLink, Loader2, Image as ImageIcon, Trash2, Check, Briefcase, Link as LinkIcon, ShieldCheck, Eye, EyeOff, Building2, ShieldAlert, Phone, Calendar, Lock, Plus } from "lucide-react";
+import { User, Camera, ExternalLink, Loader2, Image as ImageIcon, Trash2, Check, Briefcase, Link as LinkIcon, ShieldCheck, Eye, EyeOff, Building2, ShieldAlert, Phone, Calendar, Lock, Plus, Sparkles, Info } from "lucide-react";
+import { ImageUpload } from "@/components/ui/image-upload";
 import { Switch } from "@/components/ui/switch";
 import { ProfessionalResumeEditor, ResumeDataDTO } from "@/components/profile/professional-resume-editor";
 
@@ -77,6 +79,7 @@ function ProfileCivilPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showCivilInfo, setShowCivilInfo] = useState(false);
 
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
@@ -112,6 +115,8 @@ function ProfileCivilPage() {
     newsletterOptIn: profile?.newsletterOptIn ?? false,
     isAnonymous: profile?.is_anonymous ?? profile?.isAnonymous ?? false,
     hideLocation: profile?.hide_location ?? profile?.hideLocation ?? false,
+    featuredBannerUrl: profile?.featured_banner_url || profile?.featuredBannerUrl || "",
+    featuredBannerLink: profile?.featured_banner_link || profile?.featuredBannerLink || "",
   });
 
   // Perfil Profissional / Currículo (Padrão Executivo Waesy)
@@ -305,6 +310,8 @@ function ProfileCivilPage() {
           isAnonymous: formData.isAnonymous,
           privacyMode: formData.isAnonymous ? "unlisted" : "public",
           hideLocation: formData.hideLocation,
+          featuredBannerUrl: formData.featuredBannerUrl?.trim() || undefined,
+          featuredBannerLink: formData.featuredBannerLink?.trim() || undefined,
           biolinks: biolinks.map((b) => ({
             id: b.id,
             label: b.label.trim(),
@@ -432,32 +439,36 @@ function ProfileCivilPage() {
         </div>
       </div>
 
-      {/* ── 2. Banner Informativo do Perfil Pessoal ── */}
-      <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 sm:p-5 flex items-start gap-4 text-xs text-foreground">
-        <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-1">
-          <ShieldCheck className="size-5" />
-        </div>
-        <div className="space-y-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <h3 className="font-bold text-foreground text-sm">Perfil Pessoal</h3>
-            <Badge variant="outline" className="text-[10px] font-mono border-primary/30 text-primary">
-              Titular da Conta
-            </Badge>
+      {/* ── 2. Banner de Claridade de Identidade (Conta Civil Pessoal) ── */}
+      <div className="rounded-lg border border-border/60 bg-muted/30 p-4 sm:p-5 flex items-start justify-between gap-4 text-xs text-foreground">
+        <div className="flex items-start gap-3 min-w-0">
+          <div className="size-9 rounded-lg bg-card border border-border/50 text-foreground flex items-center justify-center shrink-0 mt-0.5">
+            <ShieldCheck className="size-5 text-primary" />
           </div>
-          <p className="text-muted-foreground leading-relaxed text-[11px] sm:text-xs">
-            Estes são os seus dados como usuário na plataforma, utilizados para{" "}
-            <strong>compras, ingressos, pedidos e comunicação com estabelecimentos</strong>.
-            Para alternar e gerenciar lojas, empresas ou projetos profissionais, utilize o{" "}
-            <Link to="/conta" className="text-primary font-semibold hover:underline">
-              painel de contas
-            </Link>{" "}
-            no menu superior.
-          </p>
+          <div className="space-y-1 min-w-0">
+            <div className="flex items-center gap-2">
+              <h3 className="font-bold text-foreground text-sm">Conta Civil</h3>
+              <Badge variant="secondary" className="text-[10px] font-medium text-muted-foreground">
+                Perfil Oficial
+              </Badge>
+            </div>
+            <p className="text-muted-foreground leading-relaxed text-[11px] sm:text-xs">
+              Sua identidade pessoal para compras na loja, reservas, contratos e pedidos na comunidade.
+            </p>
+          </div>
         </div>
+        <button
+          type="button"
+          onClick={() => setShowCivilInfo(true)}
+          aria-label="Entender a Conta Civil"
+          className="size-11 min-h-11 min-w-11 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors cursor-pointer shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+        >
+          <Info className="size-5" />
+        </button>
       </div>
 
-      {/* ── 3. Formulário de Perfil Civil com 3 Abas Estritas ── */}
-      <form onSubmit={handleSubmit} className="space-y-6">
+      {/* ── 3. Formulário de Perfil Civil com 4 Abas ── */}
+      <div className="space-y-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <div className="flex items-center overflow-x-auto no-scrollbar pb-1">
             <TabsList className="bg-transparent p-0 gap-2 h-auto flex flex-nowrap">
@@ -982,6 +993,56 @@ function ProfileCivilPage() {
               )}
             </div>
 
+            {/* Mini-Banner de Destaque / Evento do Perfil */}
+            <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60">
+              <div className="flex items-center justify-between pb-3 border-b border-border/40">
+                <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
+                  <Sparkles className="size-4 text-primary shrink-0" />
+                  <span>Banner de Destaque / Evento</span>
+                </div>
+                <Badge variant="outline" className="text-[10px] font-mono border-primary/30 text-primary">
+                  Panorâmico 21:9
+                </Badge>
+              </div>
+
+              <div className="space-y-3">
+                <p className="text-xs text-muted-foreground">
+                  Exibido em posição nobre abaixo da sua bio no perfil público, ideal para divulgar uma campanha, evento, portfólio ou comunicado especial.
+                </p>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start">
+                  <div className="space-y-1">
+                    <Label className="text-xs font-semibold text-foreground">Imagem do Banner (21:9)</Label>
+                    <ImageUpload
+                      value={formData.featuredBannerUrl}
+                      onChange={(url) => set("featuredBannerUrl", url)}
+                      onRemove={() => set("featuredBannerUrl", "")}
+                      aspectPreset="banner"
+                      bucket="banners"
+                      helperText="Banner promocional oficial (21:9)"
+                    />
+                  </div>
+                  <div className="space-y-3">
+                    <div className="space-y-1">
+                      <Label className="text-xs font-semibold text-foreground">Link de Destino do Banner (URL)</Label>
+                      <Input
+                        value={formData.featuredBannerLink}
+                        onChange={(e) => set("featuredBannerLink", e.target.value)}
+                        placeholder="https://... (ao clicar, abre esta página)"
+                        className="h-11 rounded-lg text-base sm:text-xs bg-background font-mono"
+                      />
+                    </div>
+                    {formData.featuredBannerUrl && (
+                      <div className="p-3 rounded-lg bg-muted/20 border border-border/50 text-xs text-muted-foreground space-y-1">
+                        <p className="font-semibold text-foreground">Banner Configurado</p>
+                        <p className="text-[11px]">Salve o perfil para que este banner passe a aparecer na sua página pública.</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
             {/* Prévia Fiel ao Perfil Público */}
             {biolinks.length > 0 && (
               <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60">
@@ -1207,7 +1268,8 @@ function ProfileCivilPage() {
         {/* ── Botão Salvar Principal (Desktop: Alinhado à Direita | Mobile: Espaçado) ── */}
         <div className="flex items-center justify-end gap-3 pt-2 w-full">
           <Button
-            type="submit"
+            type="button"
+            onClick={handleSubmit}
             disabled={isSubmitting}
             className="w-full sm:w-auto rounded-lg px-6 h-11 text-xs font-bold bg-primary text-primary-foreground gap-2 cursor-pointer shadow-xs active:scale-98"
           >
@@ -1228,7 +1290,8 @@ function ProfileCivilPage() {
         {/* ── Barra de Ação Flutuante Mobile (<640px) para Salvar sem Rolar a Página Toda ── */}
         <div className="sm:hidden fixed bottom-0 left-0 right-0 p-3 pb-safe bg-background border-t border-border/40 z-30">
           <Button
-            type="submit"
+            type="button"
+            onClick={handleSubmit}
             disabled={isSubmitting}
             className="w-full rounded-lg h-11 text-xs font-bold bg-primary text-primary-foreground gap-2 cursor-pointer active:scale-95"
           >
@@ -1245,7 +1308,7 @@ function ProfileCivilPage() {
             )}
           </Button>
         </div>
-      </form>
+      </div>
 
       {/* Modal de Recorte de Imagem (1:1 Avatar, 21:9 Capa) */}
       {cropperSrc && (
@@ -1266,6 +1329,45 @@ function ProfileCivilPage() {
           onCropComplete={handleCropComplete}
         />
       )}
+
+      {/* Modal Explicativo: O que é a Conta Civil */}
+      <Dialog open={showCivilInfo} onOpenChange={setShowCivilInfo}>
+        <DialogContent className="max-w-md rounded-lg p-6 space-y-4">
+          <DialogHeader>
+            <div className="flex items-center gap-2 text-primary">
+              <ShieldCheck className="size-5" />
+              <DialogTitle className="text-base font-bold">O que é a Conta Civil?</DialogTitle>
+            </div>
+            <DialogDescription className="text-xs text-muted-foreground">
+              Entenda como sua identidade oficial opera no ecossistema Waesy.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-3 text-xs text-muted-foreground leading-relaxed">
+            <p>
+              A <strong>Conta Civil</strong> é o seu perfil pessoal oficial como cidadão. É através dela que você realiza compras, agenda serviços, adquire ingressos nominais e fecha negociações com segurança jurídica.
+            </p>
+            <div className="rounded-lg border border-border/50 bg-muted/30 p-3 space-y-1.5">
+              <p className="font-semibold text-foreground">Como se conecta com seus outros perfis:</p>
+              <ul className="list-disc list-inside space-y-1 pl-1">
+                <li>Você pode criar ou gerenciar empresas e negócios locais sem misturar os dados pessoais.</li>
+                <li>Seus anúncios de desapego nos classificados são vinculados com procedência verificada.</li>
+                <li>Para alternar para uma empresa ou perfil de criador, use o menu de contas no topo.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="pt-2 flex justify-end">
+            <Button
+              type="button"
+              onClick={() => setShowCivilInfo(false)}
+              className="h-11 px-6 rounded-lg text-xs font-semibold"
+            >
+              Entendi
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

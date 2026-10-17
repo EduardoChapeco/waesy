@@ -7,6 +7,7 @@ export type PersistedExecutionStatus = "queued" | "running" | "paused" | "comple
 interface ExecutionContext {
   executionId: string;
   taskId: string;
+  parentTaskId?: string;
   threadId?: string;
   storeId?: string;
   userId?: string;
@@ -30,6 +31,8 @@ function toPersistedStep(step: AIActivityStep, executionId: string, sequenceNo: 
     duration_ms: step.durationMs ?? null,
     tokens_used: step.tokensUsed ?? null,
     cost_usd: step.costUsd ?? null,
+    role: step.role ?? null,
+    parent_task_id: step.parentTaskId ?? null,
   };
 }
 
@@ -38,6 +41,7 @@ export async function startCopilotExecution(context: ExecutionContext): Promise<
   await db.from("copilot_executions").upsert({
     id: context.executionId,
     task_id: context.taskId,
+    parent_task_id: context.parentTaskId ?? null,
     thread_id: context.threadId ?? null,
     store_id: context.storeId ?? null,
     user_id: context.userId ?? null,

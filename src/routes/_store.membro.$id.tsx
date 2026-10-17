@@ -608,20 +608,20 @@ export function MemberPublicProfileView({
             </div>
           </div>
 
-          {/* Stats no Final (Seguidores, Seguindo, Curtidas) */}
-          <div className="h-14 sm:h-20 md:h-28 lg:h-32 lg:min-w-60 shrink-0 bg-background/90 backdrop-blur-md rounded-lg border border-border/50 p-2 sm:p-4 flex flex-col justify-center">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-center w-full">
-              <div>
-                <p className="text-sm sm:text-base md:text-lg font-black text-foreground">{followersCount}</p>
-                <p className="text-xs sm:text-xs text-muted-foreground/75 text-muted-foreground font-medium truncate">Seguidores</p>
+          {/* Stats no Final (Seguidores, Seguindo, Curtidas) em Linha Horizontal Unificada */}
+          <div className="h-auto py-2 sm:py-3 px-3 sm:px-4 lg:min-w-64 shrink-0 bg-muted/20 rounded-lg border border-border/40 flex items-center justify-center">
+            <div className="grid grid-cols-3 divide-x divide-border/30 text-center w-full">
+              <div className="px-1">
+                <p className="text-sm sm:text-base font-black text-foreground">{followersCount}</p>
+                <p className="text-xs text-muted-foreground font-medium truncate">Seguidores</p>
               </div>
-              <div>
-                <p className="text-sm sm:text-base md:text-lg font-black text-foreground">{stats.followingCount || 0}</p>
-                <p className="text-xs sm:text-xs text-muted-foreground/75 text-muted-foreground font-medium truncate">Seguindo</p>
+              <div className="px-1">
+                <p className="text-sm sm:text-base font-black text-foreground">{stats.followingCount || 0}</p>
+                <p className="text-xs text-muted-foreground font-medium truncate">Seguindo</p>
               </div>
-              <div>
-                <p className="text-sm sm:text-base md:text-lg font-black text-foreground font-mono">{stats.totalLikes || stats.postsCount || 0}</p>
-                <p className="text-xs sm:text-xs text-muted-foreground/75 text-muted-foreground font-medium truncate">Curtidas</p>
+              <div className="px-1">
+                <p className="text-sm sm:text-base font-black text-foreground font-mono">{stats.totalLikes || stats.postsCount || 0}</p>
+                <p className="text-xs text-muted-foreground font-medium truncate">Curtidas</p>
               </div>
             </div>
           </div>
@@ -776,23 +776,9 @@ export function MemberPublicProfileView({
  {/* Bio / Descrição Formatada com Limite & Expansão */}
  {(profile.bio || profile.headline) && (
  <div className="space-y-1 max-w-xl">
- <p
- className={cn(
- "text-xs sm:text-sm text-foreground/90 font-medium leading-relaxed whitespace-pre-line",
- !isBioExpanded && "line-clamp-3"
- )}
- >
+ <p className="text-xs sm:text-sm text-foreground/90 font-medium leading-relaxed whitespace-pre-line break-words">
  {profile.bio || profile.headline}
  </p>
- {(profile.bio || profile.headline).length > 160 && (
- <button
- type="button"
- onClick={() => setIsBioExpanded(!isBioExpanded)}
- className="text-xs text-muted-foreground/75 font-bold text-primary hover:underline cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary inline-flex items-center gap-1"
- >
- {isBioExpanded ? "Ver menos" : "...mais"}
- </button>
- )}
  </div>
  )}
 

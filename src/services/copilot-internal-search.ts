@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-export type InternalSearchKind = "product" | "store" | "event" | "classified" | "travel";
+export type InternalSearchKind = "product" | "store" | "event" | "classified" | "travel" | "news";
 
 export interface InternalSearchCard {
   id: string;
@@ -31,12 +31,13 @@ export interface InternalSearchResult {
   source: "platform";
 }
 
-const SEARCH_TERMS = /\b(onde|onde fica|onde tem|procuro|buscar|busco|encontre|encontrar|quero|tem|produto|produtos|loja|lojas|evento|eventos|show|shows|classificado|classificados|comprar|cardápio|restaurante|mercado|serviço|servicos|perto|disponível|disponivel|viagem|viagens|turismo|roteiro|roteiros|pacote|pacotes|hotel|hotéis|pousada|destino|destinos|oktoberfest)\b/i;
+const SEARCH_TERMS = /\b(onde|onde fica|onde tem|procuro|buscar|busco|encontre|encontrar|quero|tem|produto|produtos|loja|lojas|evento|eventos|show|shows|classificado|classificados|comprar|cardápio|restaurante|mercado|serviço|servicos|perto|disponível|disponivel|viagem|viagens|turismo|roteiro|roteiros|pacote|pacotes|hotel|hotéis|pousada|destino|destinos|oktoberfest|notícia|notícias|noticia|noticias|jornal|novidade|novidades)\b/i;
 const STORE_TERMS = /\b(loja|lojas|empresa|restaurante|mercado|cafeteria|academia|oficina|serviço|servicos|perto|onde fica|onde tem)\b/i;
 const EVENT_TERMS = /\b(evento|eventos|show|shows|feira|festival|agenda|hoje|amanhã|amanha|fim de semana|oktoberfest)\b/i;
 const CLASSIFIED_TERMS = /\b(classificado|classificados|usado|usados|vendo|vendo-se|alugo|aluguel|imóvel|imovel|carro|moto|emprego|vaga|vagas)\b/i;
 const PRODUCT_TERMS = /\b(produto|produtos|comprar|compro|cardápio|cardapio|pizza|lanche|preço|preco|valor|oferta|ofertas)\b/i;
 const TRAVEL_TERMS = /\b(viagem|viagens|turismo|passeio|passeios|roteiro|roteiros|pacote|pacotes|hotel|hotéis|hoteis|pousada|pousadas|destino|destinos|resort|resorts|praia|serra|oktoberfest|blumenau|gramado|voo|aéreo)\b/i;
+const NEWS_TERMS = /\b(notícia|notícias|noticia|noticias|jornal|aconteceu|informe|reportagem|fato|fatos|novidade|novidades|matéria|materia|artigo)\b/i;
 
 function safeSearchTerm(input: string): string {
   return input
@@ -62,12 +63,14 @@ function uniqueKinds(prompt: string): InternalSearchKind[] {
   if (EVENT_TERMS.test(prompt)) kinds.add("event");
   if (CLASSIFIED_TERMS.test(prompt)) kinds.add("classified");
   if (TRAVEL_TERMS.test(prompt)) kinds.add("travel");
+  if (NEWS_TERMS.test(prompt)) kinds.add("news");
   if (kinds.size === 0) {
     kinds.add("product");
     kinds.add("store");
     kinds.add("event");
     kinds.add("classified");
     kinds.add("travel");
+    kinds.add("news");
   }
   return [...kinds];
 }
@@ -202,6 +205,29 @@ function travelCard(row: Record<string, any>): InternalSearchCard | null {
   };
 }
 
+function newsCard(row: Record<string, any>): InternalSearchCard | null {
+  const title = firstText(row, ["title"]);
+  if (!row.id || !title) return null;
+  return {
+    id: `news:${row.id}`,
+    kind: "news",
+    title,
+    subtitle: firstText(row, ["kicker", "category"]),
+    description: firstText(row, ["subtitle", "ai_summary", "lead"]),
+    image_url: firstImage(row) || row.cover_media_url,
+    location: firstText(row, ["city", "state"]),
+    source_table: "news_articles",
+    source_id: row.id,
+    slug: row.slug ?? null,
+    action: {
+      id: `open-news:${row.id}`,
+      label: "Ler notícia",
+      action_type: "navigate",
+      payload: { href: row.slug ? `/noticias/${encodeURIComponent(row.slug)}` : `/noticias/${row.id}`, article_id: row.id },
+    },
+  };
+}
+
 const PORTUGUESE_STOP_WORDS = new Set([
   "a", "o", "as", "os", "um", "uma", "uns", "umas",
   "de", "da", "do", "das", "dos", "em", "na", "no", "nas", "nos",
@@ -231,8 +257,10 @@ async function searchTable(
   query: string,
   kind: InternalSearchKind,
 ): Promise<{ cards: InternalSearchCard[]; unavailable: boolean }> {
-  let request = db.from(table).select("*").limit(24);
+  let request = db.from(table).select("*");
   if (table === "products") request = request.eq("is_active", true);
+  if (table === "news_articles") request = request.eq("status", "published");
+  request = request.limit(24);
 
   const { data, error } = await request;
   if (error) {
@@ -243,7 +271,7 @@ async function searchTable(
   const discriminatorTokens = extractDiscriminatorTokens(query);
 
   const scoredRows = (data ?? []).map((row: Record<string, any>) => {
-    if (table === "classifieds" || table === "events" || table === "directory_listings") {
+    if (table === "classifieds" || table === "events" || table === "directory_listings" || table === "news_articles") {
       const status = String(row.status ?? row.visibility ?? "").toLowerCase();
       if (status && !["active", "published", "approved", "live", "public"].includes(status)) return null;
     }
@@ -257,7 +285,7 @@ async function searchTable(
       .filter(Boolean).join(" ").toLocaleLowerCase("pt-BR").normalize("NFD").replace(/[\u0300-\u036f]/g, "");
     const locationHaystack = [row.address, row.city, row.state, row.venue, row.destination]
       .filter(Boolean).join(" ").toLocaleLowerCase("pt-BR").normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-    const bodyHaystack = [row.category, row.description, row.summary, row.short_description]
+    const bodyHaystack = [row.category, row.description, row.summary, row.short_description, row.subtitle, row.kicker]
       .filter(Boolean).join(" ").toLocaleLowerCase("pt-BR").normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
     let score = 0;
@@ -274,7 +302,7 @@ async function searchTable(
   // Ordena por maior relevância discriminatória
   scoredRows.sort((a, b) => b.score - a.score);
 
-  const mapper = kind === "product" ? productCard : kind === "store" ? storeCard : kind === "event" ? eventCard : kind === "travel" ? travelCard : classifiedCard;
+  const mapper = kind === "product" ? productCard : kind === "store" ? storeCard : kind === "event" ? eventCard : kind === "travel" ? travelCard : kind === "news" ? newsCard : classifiedCard;
   return {
     cards: scoredRows.map(({ row }) => mapper(row)).filter((item): item is InternalSearchCard => Boolean(item)).slice(0, 6),
     unavailable: false,
@@ -294,6 +322,7 @@ export async function searchPlatformForCopilot(db: SupabaseClient, prompt: strin
     event: ["events"],
     classified: ["classifieds"],
     travel: ["destinations", "tourism_trips"],
+    news: ["news_articles"],
   };
   const searches = await Promise.all(kinds.flatMap((kind) => tableByKind[kind].map(async (table) => ({ kind, table, result: await searchTable(db, table, query, kind) }))));
   const cards = searches.flatMap(({ result }) => result.cards);

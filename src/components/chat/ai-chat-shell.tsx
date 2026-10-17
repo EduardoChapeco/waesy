@@ -24,11 +24,13 @@ import {
   Table as TableIcon,
   Calendar,
   Trash2,
+  Compass,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { NativeMobileHeader } from "@/components/navigation/native-mobile-header";
 import { useWindowSizeClass } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { formatDate } from "@/lib/datetime";
@@ -38,6 +40,8 @@ import { ChatArtifactCard, type ChatArtifactData } from "./chat-artifact-card";
 import { ChatComposer, type QuotedMessage } from "./chat-composer";
 import { StructuredMessageView, type AIChatAction } from "./structured-message-view";
 import { CopilotApprovalPanel } from "./copilot-approval-panel";
+import { CopilotMessageRenderer } from "./copilot-message-renderer";
+import { CopilotArtifactPanel } from "./copilot-artifact-panel";
 import type { CopilotFsmPhase, CopilotFsmExecutionState } from "@/types/copilot-fsm";
 
 export type ThreadType = "store" | "direct_p2p" | "support" | "project" | "ai_assistant";
@@ -96,6 +100,9 @@ export interface AIChatShellProps {
   isStreaming?: boolean;
   currentUserProfileId?: string;
   className?: string;
+  mobileTitle?: string;
+  mobileSubtitle?: string;
+  mobileFallbackHref?: string;
 }
 
 export function AIChatShell({
@@ -115,6 +122,9 @@ export function AIChatShell({
   isStreaming = false,
   currentUserProfileId,
   className,
+  mobileTitle,
+  mobileSubtitle,
+  mobileFallbackHref,
 }: AIChatShellProps) {
   // Estados de navegação e busca
   const [filterTab, setFilterTab] = useState<"all" | "direct" | "projects" | "archived">("all");
@@ -209,7 +219,7 @@ export function AIChatShell({
   return (
     <div
       className={cn(
-        "flex h-screen w-full overflow-hidden bg-background font-sans text-foreground",
+        "flex h-full w-full overflow-hidden bg-background font-sans text-foreground",
         className
       )}
     >
@@ -220,6 +230,16 @@ export function AIChatShell({
           showMobileChat ? "hidden md:flex" : "flex"
         )}
       >
+        {/* Cabeçalho Nativo Mobile */}
+        <div className="md:hidden">
+          <NativeMobileHeader
+            title={mobileTitle || "Waesy Copilot"}
+            subtitle={mobileSubtitle}
+            fallbackHref={mobileFallbackHref || "/"}
+            mobileOnly
+          />
+        </div>
+
         {/* Cabeçalho da Lista de Conversas */}
         <div className="p-3 border-b border-border/40 space-y-2">
           <div className="flex items-center justify-between gap-2">
@@ -336,14 +356,14 @@ export function AIChatShell({
       {/* ── COLUNA 2: STREAM DE CONVERSA PRINCIPAL ── */}
       <main
         className={cn(
-          "flex-1 flex flex-col h-full bg-background transition-colors min-w-0",
+          "flex-1 flex flex-col h-full min-h-0 bg-background transition-colors min-w-0 overflow-hidden relative",
           showMobileChat === false && "hidden md:flex"
         )}
       >
         {activeThread ? (
           <>
             {/* Cabeçalho da Conversa Ativa */}
-            <header className="flex items-center justify-between px-3 py-2 border-b border-border/40 bg-background/80 backdrop-blur-md sticky top-0 z-10 gap-2">
+            <header className="flex items-center justify-between px-3 py-2 border-b border-border/40 bg-background/80 backdrop-blur-md sticky top-0 z-10 gap-2 shrink-0">
               <div className="flex items-center gap-2 min-w-0">
                 {/* Botão Voltar para Mobile */}
                 <Button
@@ -406,7 +426,7 @@ export function AIChatShell({
                   size="sm"
                   onClick={() => setShowContextPanel((prev) => !prev)} /* focus-visible:ring-2 */
                   className={cn(
-                    "h-11 min-h-11 px-3 text-xs rounded-md gap-2 border border-border/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 cursor-pointer transition-colors",
+                    "h-11 min-h-11 px-3 text-xs rounded-md gap-2 border border-border/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 cursor-pointer transition-colors md:hidden",
                     showContextPanel
                       ? "bg-primary text-primary-foreground font-semibold"
                       : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
@@ -424,7 +444,7 @@ export function AIChatShell({
               role="log"
               aria-live="polite"
               aria-label="Histórico de mensagens da conversa"
-              className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 no-scrollbar"
+              className="flex-1 min-h-0 overflow-y-auto p-3 sm:p-4 pb-20 space-y-3 no-scrollbar overscroll-contain"
             >
               {/* Indicador Minimalista de Conexão Segura */}
               <div className="flex justify-center my-2">
@@ -485,7 +505,7 @@ export function AIChatShell({
                           msg.status === "failed" && "border border-destructive/50 bg-destructive/10 text-destructive"
                         )}
                       >
-                        <p className="whitespace-pre-wrap break-words">{msg.text}</p>
+                        <CopilotMessageRenderer content={msg.text} isUser={isUser} />
 
                         {/* Rodapé da Bolha: Horário e Status */}
                         <div className="flex items-center justify-end gap-1 mt-1 font-mono text-2xs opacity-80">
@@ -525,12 +545,8 @@ export function AIChatShell({
                         <ChatArtifactCard
                           artifact={msg.artifact}
                           onOpenBuilder={(art) => {
-                            const data = art.data || {};
-                            const docId = data.experience_document_id || data.documentId;
-                            const query = docId
-                              ? `doc=${encodeURIComponent(String(docId))}`
-                              : `artifactId=${encodeURIComponent(String(art.id))}`;
-                            window.location.assign(`/workspace/builder?${query}`);
+                            setActiveArtifact(art);
+                            setShowContextPanel(true);
                           }}
                         />
                       </div>
@@ -592,6 +608,7 @@ export function AIChatShell({
               isSending={isSending}
               replyTo={replyTo}
               onCancelReply={() => setReplyTo(null)}
+              className="shrink-0 sticky bottom-0 z-20"
             />
           </>
         ) : (
@@ -603,39 +620,152 @@ export function AIChatShell({
               Nenhuma conversa selecionada
             </h2>
             <p className="text-xs max-w-sm">
-              Escolha uma conversa na barra lateral ou inicie um novo projeto com a inteligência artificial.
+              Escolha uma conversa na barra lateral ou inicie um novo projeto com o assessor de negócios.
             </p>
           </div>
         )}
       </main>
 
-      {/* ── COLUNA 3: PAINEL DE CONTEXTO E ARTEFATOS (Expanded >= 840px / Opcional) ── */}
-      {showContextPanel && activeThread && (
-        <aside className="w-72 lg:w-96 border-l border-border/40 bg-card/30 p-3 space-y-4 overflow-y-auto hidden lg:flex flex-col shrink-0 no-scrollbar">
-          {activeArtifact ? (
-            /* Claude Artifacts Split-Screen Inspector */
+      {/* ── COLUNA 3: PAINEL DE CONTEXTO E ARTEFATOS (Desktop >= 768px / 3 Painéis Estáveis) ── */}
+      <aside className="w-80 xl:w-96 border-l border-border/40 bg-card/30 p-3 space-y-4 overflow-y-auto hidden md:flex flex-col shrink-0 no-scrollbar">
+        {activeArtifact ? (
+          /* Claude Artifacts Split-Screen Inspector */
+          <ArtifactViewerContent
+            artifact={activeArtifact}
+            onClose={() => setActiveArtifact(null)}
+          />
+        ) : activeThread ? (
+          /* Contexto & Memória Padrão */
+          <>
+            <div className="flex items-center justify-between border-b border-border/40 pb-2">
+              <h3 className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-2">
+                <Brain className="size-4 text-primary" />
+                <span>Contexto & Memória</span>
+              </h3>
+            </div>
+
+            {/* Dados do Projeto ou Thread */}
+            <div className="space-y-2">
+              <span className="text-2xs font-semibold text-muted-foreground uppercase">
+                Tipo de Conversa
+              </span>
+              <Badge variant="outline" className="text-xs font-medium border-border/60">
+                {activeThread.type}
+              </Badge>
+            </div>
+
+            {/* Contexto e Preferências da Conversa */}
+            <div className="space-y-2">
+              <span className="text-2xs font-semibold text-muted-foreground uppercase flex items-center gap-1">
+                <Brain className="size-3 text-primary" />
+                <span>Contexto da Conversa</span>
+              </span>
+              {activeThread.workingMemory &&
+              Object.entries(activeThread.workingMemory).filter(([k]) => !k.startsWith("last_tokens") && !k.startsWith("last_mcp")).length > 0 ? (
+                <div className="rounded-lg border border-border/40 bg-muted/20 p-2 space-y-2 text-xs">
+                  {Object.entries(activeThread.workingMemory)
+                    .filter(([k]) => !k.startsWith("last_tokens") && !k.startsWith("last_mcp"))
+                    .map(([k, v]) => {
+                      const friendlyLabel =
+                        k === "last_places_query" ? "Última busca" :
+                        k === "last_travel_destination" ? "Destino" :
+                        k === "last_creative_topic" ? "Tema criativo" :
+                        k.replace(/_/g, " ");
+                      return (
+                        <div key={k} className="flex justify-between gap-2">
+                          <span className="text-muted-foreground truncate capitalize">{friendlyLabel}:</span>
+                          <span className="font-medium text-foreground truncate">
+                            {String(v)}
+                          </span>
+                        </div>
+                      );
+                    })}
+                </div>
+              ) : (
+                <p className="text-2xs text-muted-foreground">
+                  Nenhum contexto adicional registrado.
+                </p>
+              )}
+            </div>
+
+            {/* Artefatos Gerados nesta Conversa */}
+            <div className="space-y-2">
+              <span className="text-2xs font-semibold text-muted-foreground uppercase flex items-center gap-1">
+                <FileText className="size-3 text-primary" />
+                <span>Artefatos Produzidos</span>
+              </span>
+              <div className="space-y-2">
+                {messages
+                  .filter((m) => Boolean(m.artifact))
+                  .map((m) => (
+                    <button /* focus-visible:ring-2 */
+                      key={m.id}
+                      type="button"
+                      onClick={() => /* focus-visible:ring-2 */ setActiveArtifact(m.artifact!)}
+                      className="w-full text-left p-2 rounded-lg border border-border/40 bg-card hover:border-border transition-colors text-xs space-y-1 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="font-semibold text-foreground truncate">
+                          {m.artifact!.title}
+                        </span>
+                        <Badge variant="outline" className="text-2xs font-mono h-4">
+                          v{m.artifact!.version}
+                        </Badge>
+                      </div>
+                      <span className="text-2xs text-muted-foreground block">
+                        {m.artifact!.type}
+                      </span>
+                    </button>
+                  ))}
+                {messages.filter((m) => Boolean(m.artifact)).length === 0 && (
+                  <p className="text-2xs text-muted-foreground">
+                    Nenhum documento ou planilha gerada ainda.
+                  </p>
+                )}
+              </div>
+            </div>
+          </>
+        ) : (
+          <div className="flex-1 flex flex-col items-center justify-center p-4 text-center text-muted-foreground space-y-2">
+            <Brain className="size-8 text-muted-foreground/30 mx-auto" />
+            <p className="text-xs font-medium text-foreground">Contexto & Memória</p>
+            <p className="text-2xs max-w-xs">Selecione uma conversa para visualizar memória de trabalho e artefatos.</p>
+          </div>
+        )}
+      </aside>
+
+      {/* ── PAINEL / SHEET DE ARTEFATO RESPONSIVO EM DISPOSITIVOS MÓVEIS (< 840px / isCompact) ── */}
+      <Sheet
+        open={Boolean(activeArtifact && isCompact)}
+        onOpenChange={(open) => {
+          if (!open) setActiveArtifact(null);
+        }}
+      >
+        <SheetContent side="bottom" className="h-5/6 p-4 overflow-y-auto bg-card border-border rounded-t-xl">
+          {activeArtifact && (
             <ArtifactViewerContent
               artifact={activeArtifact}
               onClose={() => setActiveArtifact(null)}
             />
-          ) : (
-            /* Contexto & Memória Padrão */
-            <>
+          )}
+        </SheetContent>
+      </Sheet>
+
+      {/* ── PAINEL / SHEET DE CONTEXTO E MEMÓRIA RESPONSIVO EM DISPOSITIVOS MÓVEIS (< 840px / isCompact) ── */}
+      <Sheet
+        open={Boolean(showContextPanel && isCompact && activeThread && !activeArtifact)}
+        onOpenChange={(open) => {
+          setShowContextPanel(open);
+        }}
+      >
+        <SheetContent side="bottom" className="h-5/6 p-4 overflow-y-auto bg-card border-border rounded-t-xl no-scrollbar">
+          {activeThread && (
+            <div className="space-y-4 pb-safe pb-4">
               <div className="flex items-center justify-between border-b border-border/40 pb-2">
                 <h3 className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-2">
                   <Brain className="size-4 text-primary" />
                   <span>Contexto & Memória</span>
                 </h3>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => /* focus-visible:ring-2 */ setShowContextPanel(false)}
-                  className="size-11 min-h-11 min-w-11 rounded-md text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 cursor-pointer"
-                  aria-label="Fechar painel de contexto"
-                >
-                  <X className="size-4" />
-                </Button>
               </div>
 
               {/* Dados do Projeto ou Thread */}
@@ -692,11 +822,13 @@ export function AIChatShell({
                   {messages
                     .filter((m) => Boolean(m.artifact))
                     .map((m) => (
-                      <button /* focus-visible:ring-2 */
+                      <button
                         key={m.id}
                         type="button"
-                        onClick={() => /* focus-visible:ring-2 */ setActiveArtifact(m.artifact!)}
-                        className="w-full text-left p-2 rounded-lg border border-border/40 bg-card hover:border-border transition-colors text-xs space-y-1 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+                        onClick={() => {
+                          setActiveArtifact(m.artifact!);
+                        }}
+                        className="w-full text-left p-3 rounded-lg border border-border/40 bg-card hover:border-border transition-colors text-xs space-y-1 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
                       >
                         <div className="flex items-center justify-between">
                           <span className="font-semibold text-foreground truncate">
@@ -718,24 +850,7 @@ export function AIChatShell({
                   )}
                 </div>
               </div>
-            </>
-          )}
-        </aside>
-      )}
-
-      {/* ── PAINEL / SHEET DE ARTEFATO RESPONSIVO EM DISPOSITIVOS MÓVEIS (< 840px / isCompact) ── */}
-      <Sheet
-        open={Boolean(activeArtifact && isCompact)}
-        onOpenChange={(open) => {
-          if (!open) setActiveArtifact(null);
-        }}
-      >
-        <SheetContent side="bottom" className="h-5/6 p-4 overflow-y-auto bg-card border-border rounded-t-xl">
-          {activeArtifact && (
-            <ArtifactViewerContent
-              artifact={activeArtifact}
-              onClose={() => setActiveArtifact(null)}
-            />
+            </div>
           )}
         </SheetContent>
       </Sheet>
@@ -800,217 +915,7 @@ function ArtifactViewerContent({
   artifact: ChatArtifactData;
   onClose: () => void;
 }) {
-  const handleDownloadCsv = () => {
-    const csvContent = buildArtifactCsv(artifact.data || {});
-    const encodedUri = `data:text/csv;charset=utf-8,${encodeURIComponent(csvContent)}`;
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `${(artifact.title || "tabela").toLowerCase().replace(/\s+/g, "_")}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
-  const handlePrint = () => {
-    window.print();
-  };
-
-  const tableHeaders = Array.isArray(artifact.data?.headers)
-    ? artifact.data.headers.map((header: unknown) => artifactCellToText(header))
-    : [];
-  const tableRows = getArtifactTableRows(artifact.data || {});
-  const visibleHeaders = tableHeaders.length
-    ? tableHeaders
-    : ["Item", "Valor", "Status"].slice(0, Math.max(tableRows[0]?.length || 3, 1));
-
-  return (
-    <div className="space-y-4">
-      {/* Header do Artefato */}
-      <div className="flex items-center justify-between border-b border-border/40 pb-2">
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          /* focus-visible:ring-2 */ onClick={onClose}
-          className="h-11 min-h-11 px-3 text-xs text-muted-foreground hover:text-foreground flex items-center gap-2 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none cursor-pointer"
-        >
-          <ArrowLeft className="size-4" />
-          <span>Voltar</span>
-        </Button>
-
-        <div className="flex items-center gap-1">
-          <Badge variant="outline" className="text-2xs font-mono h-5">
-            v{artifact.version}
-          </Badge>
-          <Badge variant="secondary" className="text-2xs uppercase tracking-wider font-semibold">
-            {artifact.type}
-          </Badge>
-        </div>
-      </div>
-
-      <div>
-        <h4 className="text-sm font-bold text-foreground leading-snug">{artifact.title}</h4>
-        <p className="text-2xs text-muted-foreground">
-          {artifact.authorName || "Waesy Copilot"} • {artifact.authorRole || "Artefato Versionado"}
-        </p>
-      </div>
-
-      {artifact.previewSummary && (
-        <div className="rounded-md border border-border/40 bg-muted/20 p-3 text-xs text-muted-foreground leading-relaxed">
-          {artifact.previewSummary}
-        </div>
-      )}
-
-      {/* 1. Viewer de Proposta Comercial / Documento */}
-      {(artifact.type === "proposal" || artifact.type === "document") && (
-        <div className="space-y-3 rounded-lg border border-border/50 bg-card p-3 text-xs">
-          <div className="flex items-center justify-between border-b border-border/40 pb-2">
-            <span className="font-bold text-2xs uppercase tracking-wider text-primary">Proposta Executiva</span>
-            {artifact.data?.validity_days && (
-              <span className="text-2xs text-muted-foreground font-mono">Validade: {artifact.data.validity_days} dias</span>
-            )}
-          </div>
-
-          {artifact.data?.total_cents && (
-            <div className="flex justify-between items-baseline border-b border-border/40 pb-2">
-              <span className="text-muted-foreground text-xs">Investimento Total:</span>
-              <span className="font-mono font-bold text-base text-primary">
-                {formatMoney(artifact.data.total_cents / 100)}
-              </span>
-            </div>
-          )}
-
-          {artifact.data?.milestones && Array.isArray(artifact.data.milestones) && (
-            <div className="space-y-2 pt-1">
-              <span className="text-2xs font-semibold text-muted-foreground uppercase">Cronograma & Entregas:</span>
-              <ul className="space-y-1 text-2xs text-foreground">
-                {artifact.data.milestones.map((m: string, i: number) => (
-                  <li key={i} className="flex items-start gap-2">
-                    <span className="size-2 rounded-full bg-primary shrink-0 mt-1" />
-                    <span>{m}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {artifact.data?.terms && (
-            <div className="pt-2 border-t border-border/40 text-2xs text-muted-foreground">
-              <span className="font-semibold block text-foreground mb-1">Termos de Aceite:</span>
-              <p>{artifact.data.terms}</p>
-            </div>
-          )}
-
-          <div className="pt-2 flex items-center gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="flex-1 h-11 rounded-md text-xs font-semibold cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
-              /* focus-visible:ring-2 */ onClick={handlePrint}
-            >
-              <Printer className="size-3.5 mr-2" />
-              <span>Exportar PDF / Imprimir</span>
-            </Button>
-          </div>
-        </div>
-      )}
-
-      {/* 2. Viewer de Planilha / Dados Tabulares */}
-      {(artifact.type === "spreadsheet" || artifact.data?.dataRows || artifact.data?.headers) && (
-        <div className="space-y-3 rounded-lg border border-border/50 bg-card p-3 text-xs">
-          <div className="flex items-center justify-between border-b border-border/40 pb-2">
-            <span className="font-bold text-2xs uppercase tracking-wider text-primary">Tabela de Dados</span>
-            <Badge variant="outline" className="text-2xs font-mono">
-              {tableRows.length} registros
-            </Badge>
-          </div>
-
-          <div className="table-scroll overflow-x-auto rounded border border-border/40 max-h-56 no-scrollbar">
-            <table className="w-full text-2xs text-left border-collapse">
-              <thead className="bg-muted/40 border-b border-border/60">
-                <tr>
-                  {visibleHeaders.map((h: string, idx: number) => (
-                    <th key={idx} className="p-2 font-semibold text-foreground whitespace-nowrap">
-                      {h}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border/30">
-                {tableRows.length > 0 ? tableRows.map((row, rIdx) => (
-                  <tr key={rIdx} className="hover:bg-muted/20">
-                    {Array.from({ length: visibleHeaders.length }, (_, cIdx) => (
-                      <td key={cIdx} className="p-2 whitespace-nowrap text-muted-foreground">
-                        {artifactCellToText(row[cIdx])}
-                      </td>
-                    ))}
-                  </tr>
-                )) : (
-                  <tr>
-                    <td colSpan={visibleHeaders.length} className="p-3 text-center text-muted-foreground">
-                      Nenhum registro retornado.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="w-full h-11 rounded-md text-xs font-semibold cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
-            /* focus-visible:ring-2 */ onClick={handleDownloadCsv}
-          >
-            <Download className="size-3.5 mr-2" />
-            <span>Baixar CSV</span>
-          </Button>
-        </div>
-      )}
-
-      {/* 3. Viewer de Roteiro / Timeline */}
-      {(artifact.type === "itinerary" || artifact.data?.days) && (
-        <div className="space-y-3 rounded-lg border border-border/50 bg-card p-3 text-xs">
-          <span className="font-bold text-2xs uppercase tracking-wider text-primary block">Linha do Tempo</span>
-          <div className="space-y-2 max-h-56 overflow-y-auto no-scrollbar">
-            {(artifact.data?.days || []).map((d: any, idx: number) => (
-              <div key={idx} className="rounded border border-border/40 bg-muted/20 p-2 space-y-1">
-                <span className="font-bold text-primary text-2xs uppercase block">
-                  Dia {d.day || idx + 1}: {d.title}
-                </span>
-                <ul className="space-y-1 text-2xs text-muted-foreground">
-                  {d.activities?.map((act: string, aIdx: number) => (
-                    <li key={aIdx} className="flex items-start gap-2">
-                      <span className="text-primary font-bold">•</span>
-                      <span>{act}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* 4. Ações Globais */}
-      <div className="pt-1">
-        <Button
-          type="button"
-          size="sm"
-          className="w-full h-11 rounded-md text-xs font-semibold cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
-          /* focus-visible:ring-2 */ onClick={() => {
-            const dataStr = JSON.stringify(artifact.data || artifact, null, 2);
-            navigator.clipboard.writeText(dataStr);
-          }}
-        >
-          <Copy className="size-3.5 mr-2" />
-          <span>Copiar Conteúdo do Artefato</span>
-        </Button>
-      </div>
-    </div>
-  );
+  return <CopilotArtifactPanel artifact={artifact} onClose={onClose} />;
 }
 
 function ThreadListItem({

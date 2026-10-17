@@ -41,13 +41,13 @@ export function WelcomeOnboardingModal({ initialSteps }: { initialSteps: SystemO
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-background/80 backdrop-blur-md p-4 sm:p-6 animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-md p-4 sm:p-6 animate-in fade-in duration-200">
       <div
         key={currentStep.id}
-        className="relative w-full max-w-4xl bg-card border border-border shadow-2xl overflow-hidden rounded-lg flex flex-col md:flex-row min-h-[500px] transition-all duration-300 animate-in zoom-in-95"
+        className="relative w-full max-w-4xl bg-card border border-border shadow-2xl overflow-hidden rounded-lg flex flex-col md:flex-row min-h-128 transition-all duration-300 animate-in zoom-in-95"
       >
         {/* Lado Esquerdo: Mídia (Vídeo ou Imagem) */}
-        <div className="w-full md:w-1/2 bg-muted/30 relative overflow-hidden flex items-center justify-center min-h-[250px] md:min-h-full">
+        <div className="w-full md:w-1/2 bg-muted/30 relative overflow-hidden flex items-center justify-center min-h-64 md:min-h-full">
           {currentStep.media_url ? (
             currentStep.media_type === "video" ? (
               <video
@@ -63,6 +63,9 @@ export function WelcomeOnboardingModal({ initialSteps }: { initialSteps: SystemO
                 src={currentStep.media_url}
                 alt={currentStep.title}
                 className="absolute inset-0 w-full h-full object-cover"
+                onError={(e) => {
+                  e.currentTarget.src = "/brand-logo.png";
+                }}
               />
             )
           ) : (

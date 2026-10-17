@@ -257,7 +257,7 @@ function SeatButton({ seat, onClick }: { seat: BusSeatDTO; onClick: () => void }
  title={isOccupied ? `Ocupado: ${seat.passenger_name}` : `Poltrona ${seat.seat_number} Livre`}
  >
  <span className="text-xs font-black">{seat.seat_number}</span>
- <span className="text-[8px] opacity-70 uppercase truncate max-w-[36px]">
+ <span className="text-xs opacity-70 uppercase truncate max-w-10">
  {isOccupied ? seat.passenger_name?.split(" ")[0] : seat.column}
  </span>
  </button>

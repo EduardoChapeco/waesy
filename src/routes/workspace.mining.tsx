@@ -32,9 +32,9 @@ function WorkspaceMiningErrorComponent({ error, reset }: { error: any; reset: ()
       <div className="inline-flex size-14 items-center justify-center rounded-lg bg-destructive/10 text-destructive mb-2">
         <AlertTriangle className="size-7" />
       </div>
-      <h2 className="text-xl font-bold text-foreground">Instabilidade no Hub de Mineração</h2>
+      <h2 className="text-xl font-bold text-foreground">Instabilidade na Central de Descoberta</h2>
       <p className="text-xs text-muted-foreground max-w-md mx-auto leading-relaxed">
-        {error?.message || "Não foi possível sincronizar a telemetria dos crawlers e mineradores industriais."}
+        {error?.message || "Não foi possível sincronizar as informações da central de busca e descoberta."}
       </p>
       <Button
         type="button"

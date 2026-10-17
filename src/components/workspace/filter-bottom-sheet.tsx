@@ -58,7 +58,7 @@ export function FilterBottomSheet({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="bottom"
-        className="p-0 rounded-t-lg max-h-[85dvh] bg-background border-t border-border flex flex-col overflow-hidden outline-none"
+        className="p-0 rounded-t-lg max-h-5/6 sm:max-h-160 bg-background border-t border-border flex flex-col overflow-hidden outline-none"
       >
         {/* Puxador táctil estilo iOS / iFood */}
         <div className="pt-3 pb-1 flex justify-center shrink-0">
@@ -162,7 +162,7 @@ export function FilterBottomSheet({
             size="lg"
             onClick={handleReset}
             disabled={activeFiltersCount === 0}
-            className="rounded-lg h-11 px-4 text-xs font-semibold gap-2 border-border/70 cursor-pointer shrink-0"
+            className="rounded-lg h-11 min-h-11 px-4 text-xs font-semibold gap-2 border-border/70 cursor-pointer shrink-0 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
           >
             <RotateCcw className="size-3.5" />
             <span>Limpar</span>
@@ -172,7 +172,7 @@ export function FilterBottomSheet({
             type="button"
             size="lg"
             onClick={() => onOpenChange(false)}
-            className="rounded-lg h-11 flex-1 text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer"
+            className="rounded-lg h-11 min-h-11 flex-1 text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
           >
             Aplicar Filtros {activeFiltersCount > 0 && `(${activeFiltersCount})`}
           </Button>
@@ -201,7 +201,7 @@ export function FilterTriggerButton({
       variant="outline"
       onClick={onClick}
       className={cn(
-        "h-10 px-3 sm:px-4 rounded-lg text-xs font-semibold border-border/70 gap-2 shrink-0 cursor-pointer relative shadow-none",
+        "h-11 min-h-11 px-3 sm:px-4 rounded-lg text-xs font-semibold border-border/70 gap-2 shrink-0 cursor-pointer relative shadow-none focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring",
         activeCount > 0
           ? "border-primary/50 text-foreground bg-primary/5"
           : "text-muted-foreground hover:text-foreground hover:bg-muted/60",
@@ -213,7 +213,7 @@ export function FilterTriggerButton({
       />
       <span className="hidden xs:inline sm:inline">{label}</span>
       {activeCount > 0 && (
-        <span className="size-4.5 rounded-full bg-primary text-primary-foreground text-[10px] font-mono font-bold flex items-center justify-center leading-none">
+        <span className="size-4.5 rounded-full bg-primary text-primary-foreground text-2xs font-mono font-bold flex items-center justify-center leading-none">
           {activeCount}
         </span>
       )}

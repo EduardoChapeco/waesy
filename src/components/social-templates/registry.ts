@@ -13,10 +13,22 @@ import { GastronomyTemplate } from "./GastronomyTemplate";
 import { RealEstateMinimalHero } from "./imoveis/RealEstateMinimalHero";
 import { RealEstateEditorialGrid } from "./imoveis/RealEstateEditorialGrid";
 import { RealEstateLuxuryDarkGlass } from "./imoveis/RealEstateLuxuryDarkGlass";
+import { RealEstateSeasonRentalGrid } from "./imoveis/RealEstateSeasonRentalGrid";
+import { RetailSupermarketClassicFlyer } from "./varejo/RetailSupermarketClassicFlyer";
+import { RetailSupermarket2x1Promo } from "./varejo/RetailSupermarket2x1Promo";
+import { RetailSupermarketMeatPromo } from "./varejo/RetailSupermarketMeatPromo";
 import type { SocialTemplateDefinition, SocialNiche } from "./types";
 
 export const SOCIAL_TEMPLATES_REGISTRY: SocialTemplateDefinition[] = [
   // ── 1. Imóveis & Mercado Imobiliário ──
+  {
+    id: "imoveis_season_rental_grid",
+    name: "Imóveis 00: Temporada & Grid 4 Fotos",
+    niche: "imoveis",
+    description: "Estilo americano clássico em creme e verde com 4 fotos, lista de atributos e contato",
+    supportedRatios: ["9:16", "4:5", "1:1"],
+    component: RealEstateSeasonRentalGrid,
+  },
   {
     id: "imoveis_minimal_hero",
     name: "Imóveis 01: Fachada Dominante",
@@ -86,8 +98,32 @@ export const SOCIAL_TEMPLATES_REGISTRY: SocialTemplateDefinition[] = [
 
   // ── 3. Varejo & Supermercado ──
   {
+    id: "retail_supermarket_classic",
+    name: "Varejo 01: Cartaz Lambe-Lambe Tradicional",
+    niche: "varejo",
+    description: "Amarelo e vermelho clássico de supermercado com estrela splash de preço e ornamento vintage",
+    supportedRatios: ["9:16", "4:5", "1:1"],
+    component: RetailSupermarketClassicFlyer,
+  },
+  {
+    id: "retail_supermarket_2x1",
+    name: "Varejo 02: Tabloide 2x1 & Desconto Online",
+    niche: "varejo",
+    description: "Layout limpo ciano internacional com grande chamada '2x1' e área de produto",
+    supportedRatios: ["9:16", "4:5", "1:1"],
+    component: RetailSupermarket2x1Promo,
+  },
+  {
+    id: "retail_supermarket_meat",
+    name: "Varejo 03: Açougue & Churrasco El Zonda",
+    niche: "varejo",
+    description: "Polígono amarelo de alta conversão, selo dentado de preço e lista de cortes nobres",
+    supportedRatios: ["9:16", "4:5", "1:1"],
+    component: RetailSupermarketMeatPromo,
+  },
+  {
     id: "retail_promo_clean",
-    name: "Varejo 01: Oferta & Supermercado",
+    name: "Varejo 04: Oferta & Supermercado Clean",
     niche: "varejo",
     description: "Foco comercial com preço 'de/por', desconto percentual e garantia",
     supportedRatios: ["9:16", "4:5", "1:1"],
@@ -131,8 +167,8 @@ export function getDefaultTemplateForNiche(niche?: string): SocialTemplateDefini
   if (normalized.includes("gastro") || normalized.includes("lanche") || normalized.includes("comida") || normalized.includes("restaurante")) {
     return SOCIAL_TEMPLATES_REGISTRY.find((t) => t.id === "gastronomy_gourmet") || SOCIAL_TEMPLATES_REGISTRY[0];
   }
-  if (normalized.includes("mercado") || normalized.includes("varejo") || normalized.includes("oferta") || normalized.includes("bebida")) {
-    return SOCIAL_TEMPLATES_REGISTRY.find((t) => t.id === "retail_promo_clean") || SOCIAL_TEMPLATES_REGISTRY[0];
+  if (normalized.includes("mercado") || normalized.includes("varejo") || normalized.includes("oferta") || normalized.includes("bebida") || normalized.includes("supermercado") || normalized.includes("padaria") || normalized.includes("acougue")) {
+    return SOCIAL_TEMPLATES_REGISTRY.find((t) => t.id === "retail_supermarket_classic") || SOCIAL_TEMPLATES_REGISTRY[0];
   }
 
   return SOCIAL_TEMPLATES_REGISTRY[0];

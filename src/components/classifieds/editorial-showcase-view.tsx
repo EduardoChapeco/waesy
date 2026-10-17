@@ -22,6 +22,9 @@ import { DepartureOption, CANONICAL_BUS_CATEGORIES, CANONICAL_GUIDE_SERVICES, CA
 import { cn } from "@/lib/utils";
 import { TravelBookingDossierModal } from "./travel-booking-dossier-modal";
 import { TravelPromoFlyerModal } from "@/components/tourism/promotional-flyer/travel-promo-flyer-modal";
+import { TravelFlightItineraryCard } from "./travel-flight-itinerary-card";
+import { NicheSpecificationsDisplay } from "@/components/common/niche-specifications-display";
+import { resolveClassifiedDetailedSpecs } from "@/lib/classifieds/canonical-specs-resolver";
 
 
 export interface EditorialShowcaseViewProps {
@@ -53,7 +56,7 @@ export function EditorialShowcaseView({
   onOpenCompanionCard,
 }: EditorialShowcaseViewProps) {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<"grid" | "resort" | "itinerary" | "explore">("grid");
+  const [activeTab, setActiveTab] = useState<"grid" | "resort" | "itinerary" | "explore">("resort");
   const [activeStoryModal, setActiveStoryModal] = useState<any | null>(null);
   const [fullscreenImage, setFullscreenImage] = useState<string | null>(null);
   const [isBookingDossierOpen, setIsBookingDossierOpen] = useState(false);
@@ -145,6 +148,7 @@ export function EditorialShowcaseView({
   const nicheId = String(attrs.niche || nicheDef.id || "goods").toLowerCase();
   const isTravel = nicheId === "travel" || nicheId.includes("viag") || nicheId.includes("tour") || classified?.category === "travel";
   const isHospitality = nicheId === "hospitality_stay" || nicheId.includes("hosped") || nicheId.includes("temporada");
+  const featureList = React.useMemo(() => resolveClassifiedDetailedSpecs(classified), [classified]);
 
   // Inclusões dinâmicas para o flyer promocional
   const travelPromoInclusions = React.useMemo(() => {
@@ -298,6 +302,29 @@ export function EditorialShowcaseView({
     flightDetails?.destination ||
     "";
 
+  // ── Hospedagens Cadastradas no Pacote de Turismo ──
+  const travelLodgings = React.useMemo(() => {
+    if (Array.isArray(attrs.lodgings) && attrs.lodgings.length > 0) return attrs.lodgings;
+    if (Array.isArray(attrs.hotels) && attrs.hotels.length > 0) return attrs.hotels;
+    if (attrs.hotel_details) return Array.isArray(attrs.hotel_details) ? attrs.hotel_details : [attrs.hotel_details];
+    if (attrs.hotel_name) {
+      return [{
+        id: "primary-hotel",
+        name: attrs.hotel_name,
+        type: attrs.hotel_type || "hotel",
+        stars: attrs.hotel_stars || 4,
+        city: attrs.destination_city || destinationCity || "",
+        address: attrs.hotel_address || "",
+        regime: attrs.meal_plan || "Café da Manhã",
+        description: attrs.hotel_description || "",
+        amenities: attrs.hotel_amenities || attrs.amenities || [],
+        checkin_time: attrs.checkin_time || "14:00",
+        checkout_time: attrs.checkout_time || "11:00",
+      }];
+    }
+    return [];
+  }, [attrs, destinationCity]);
+
   // ── Estatísticas do Topo (Polimórficas por Nicho — Zero Fake Fallback) ──
   const getHeaderStats = () => {
     const list: { label: string; val: string }[] = [];
@@ -390,7 +417,7 @@ export function EditorialShowcaseView({
   // ── Labels das 4 Abas Semânticas ──────────────────────────────────────────
   const getTabLabels = () => {
     if (isTravel) {
-      return { tab2: "Hospedagem & Resort", tab3: "Roteiro Dia a Dia", tab4: "Condições & Embarque" };
+      return { tab2: "Infos do pacote", tab3: "Roteiro Dia a Dia", tab4: "Condições & Embarque" };
     }
     if (nicheId.includes("alim") || nicheId.includes("gastro")) {
       return { tab2: "Cardápio", tab3: "Detalhes", tab4: "Retirada & Pagto" };
@@ -425,22 +452,85 @@ export function EditorialShowcaseView({
     if (nicheId.includes("desapego")) {
       return { tab2: "Ficha Técnica", tab3: "Acessórios & Garantia", tab4: "Entrega & Pagamento" };
     }
-    return { tab2: "Especificações", tab3: "Diferenciais", tab4: "Condições Comerciais" };
+    return { tab2: "Especificações", tab3: "Diferenciais", tab4: "Pagamento" };
   };
 
   const tabLabels = getTabLabels();
 
+  // ── Abas Disponíveis Dinâmicas (Oculta Fotos vazias e Roteiro vazio) ───────
+  const availableTabs = React.useMemo(() => {
+    const tabs: Array<{ id: "resort" | "grid" | "itinerary" | "explore"; label: string; icon: any }> = [];
+
+    // Aba 1: Ficha / Infos do pacote (sempre visível)
+    tabs.push({
+      id: "resort",
+      label: isTravel ? "Infos do pacote" : tabLabels.tab2,
+      icon: Building2,
+    });
+
+    // Aba 2: Fotos (somente se houver mídias válidas no feed)
+    const hasValidFeedImages =
+      Array.isArray(feedImages) &&
+      feedImages.some((item) => {
+        const url = typeof item === "string" ? item.trim() : (item?.url || item?.src || "").trim();
+        return Boolean(url && url.length > 5);
+      });
+    if (hasValidFeedImages) {
+      tabs.push({
+        id: "grid",
+        label: "Fotos",
+        icon: Grid,
+      });
+    }
+
+    // Aba 3: Roteiro (somente se houver dias cadastrados com conteúdo ou skills/benefícios)
+    const hasItineraryContent = isTravel
+      ? itineraryDays.some((d: any) => Boolean(d && (d.title?.trim() || d.description?.trim() || d.day || d.activities?.length || d.images?.length)))
+      : Boolean(attrs.benefits?.length || attrs.skills?.length || attrs.available_weekdays?.length);
+    if (hasItineraryContent) {
+      tabs.push({
+        id: "itinerary",
+        label: isTravel ? "Roteiro" : tabLabels.tab3,
+        icon: Calendar,
+      });
+    }
+
+    // Aba 4: Condições Comerciais (sempre visível)
+    tabs.push({
+      id: "explore",
+      label: isTravel ? "Condições" : tabLabels.tab4,
+      icon: Compass,
+    });
+
+    return tabs;
+  }, [isTravel, tabLabels, feedImages, itineraryDays, attrs]);
+
+  // Se a aba ativa não estiver mais disponível, faz fallback seguro para a primeira
+  React.useEffect(() => {
+    if (!availableTabs.some((tab) => tab.id === activeTab)) {
+      setActiveTab(availableTabs[0]?.id || "resort");
+    }
+  }, [availableTabs, activeTab]);
+
   // ── CTA Text do Botão Primário Dinâmico ─────────────────────────────────────
+  const isCustomOrUnlistedQuote = Boolean(
+    classified?.is_custom_quote ||
+    classified?.visibility_mode === "unlisted" ||
+    attrs?.is_custom_quote ||
+    attrs?.visibility_mode === "unlisted"
+  );
+
   const getPrimaryCtaLabel = () => {
     if (isTravel) {
-      if (transportType === "airplane" || transportType === "aereo") return "Solicitar Cotação Aérea";
+      if (isCustomOrUnlistedQuote) return "Aceitar Orçamento e Reservar";
+      if (transportType === "airplane" || transportType === "aereo") return "Consultar e Reservar";
       if (transportType === "bus" || transportType === "terrestre") return "Reservar Pacote Terrestre";
-      if (transportType === "cruise" || transportType === "cruzeiro") return "Solicitar Cotação Cruzeiro";
-      if (transportType === "combo" || transportType === "misto") return "Solicitar Cotação Multimodal";
+      if (transportType === "cruise" || transportType === "cruzeiro") return "Consultar Cruzeiro";
+      if (transportType === "combo" || transportType === "misto") return "Consultar Pacote Multimodal";
       if (transportType === "train" || transportType === "ferrovia") return "Reservar Roteiro Ferroviário";
       if (transportType === "car" || transportType === "rodoviario") return "Reservar Pacote Rodoviário";
       if (transportType === "hotel_only") return "Consultar Disponibilidade";
-      return "Solicitar Cotação de Viagem";
+      return "Consultar e Reservar";
     }
     return getClassifiedPrimaryCtaLabel(classified);
   };
@@ -645,26 +735,6 @@ export function EditorialShowcaseView({
 
       <div className="w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-0 pt-2 sm:pt-4 space-y-4 animate-in fade-in duration-200">
 
-        {/* ── Banner Canônico de Modo Proprietário (Regra 23 do AGENTS.md) ── */}
-        {isOwner && (
-          <div className="mx-2 sm:mx-0 flex items-center justify-between gap-3 px-4 py-2 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200">
-            <div className="flex items-center gap-2 text-xs font-medium">
-              <span className="flex size-2 rounded-full bg-amber-500 animate-pulse shrink-0" />
-              <span>
-                <strong>Modo Proprietário:</strong> Você é o autor deste anúncio. Edições feitas no formulário são sincronizadas em tempo real.
-              </span>
-            </div>
-            <Button
-              type="button"
-              size="sm"
-              onClick={handleEditClick}
-              className="h-7 text-xs px-3 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-semibold cursor-pointer shrink-0"
-            >
-              <Edit3 className="size-3.5 mr-1" /> Editar Anúncio
-            </Button>
-          </div>
-        )}
-
         {/* ── Desktop Contextual Header / Breadcrumbs (Apenas Desktop) ── */}
         <div className="hidden md:flex items-center justify-between py-2 border-b border-border/40">
           <button
@@ -767,7 +837,7 @@ export function EditorialShowcaseView({
 
                 {/* Miniaturas de Acesso Rápido com Alternância Fiel da Foto Principal (Até 10 fotos no Topo sem espaço vazio) */}
                 {images.length > 1 && (
-                  <div className="flex items-center gap-2 sm:gap-2 overflow-x-auto no-scrollbar py-1 w-full">
+                  <div className="flex items-center gap-2 sm:gap-2 overflow-x-auto carousel no-scrollbar py-1 w-full">
                     {images.slice(0, images.length > 10 ? 9 : 10).map((img, idx) => {
                       const isActive = activeImageIndex === idx;
                       return (
@@ -909,7 +979,7 @@ export function EditorialShowcaseView({
 
         {/* ── Destaques Visuais ── */}
         {storyHighlights.length > 0 && (
-          <div className="flex items-center gap-4 overflow-x-auto no-scrollbar py-2">
+          <div className="flex items-center gap-4 overflow-x-auto carousel no-scrollbar py-2">
             {storyHighlights.map((hl: any, index: number) => (
               <button
                 key={hl.id || index}
@@ -934,79 +1004,42 @@ export function EditorialShowcaseView({
 
         {/* ── Abas Canônicas (Fotos, Ficha Técnica, Aprofundamento, Explore/Pagamento) ── */}
         <div className="border-t border-border/40 pt-1">
-          <div className="grid grid-cols-2 sm:grid-cols-4 border-b border-border/40 gap-1">
-            <button
-              type="button"
-              onClick={() => setActiveTab("grid")}
-              className={cn(
-                "py-2 flex flex-col items-center justify-center gap-1 border-b-2 transition-colors cursor-pointer",
-                activeTab === "grid"
-                  ? "border-foreground text-foreground font-bold"
-                  : "border-transparent text-muted-foreground hover:text-foreground"
-              )}
-              aria-label="Fotos"
-            >
-              <Grid className="size-4.5" />
-              <span className="text-xs sm:text-xs font-semibold tracking-tight">Fotos</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setActiveTab("resort")}
-              className={cn(
-                "py-2 flex flex-col items-center justify-center gap-1 border-b-2 transition-colors cursor-pointer",
-                activeTab === "resort"
-                  ? "border-foreground text-foreground font-bold"
-                  : "border-transparent text-muted-foreground hover:text-foreground"
-              )}
-              aria-label={tabLabels.tab2}
-            >
-              <Building2 className="size-4.5" />
-              <span className="text-xs sm:text-xs font-semibold tracking-tight truncate max-w-[72px] sm:max-w-none">
-                {isTravel ? "Hospedagem" : tabLabels.tab2}
-              </span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setActiveTab("itinerary")}
-              className={cn(
-                "py-2 flex flex-col items-center justify-center gap-1 border-b-2 transition-colors cursor-pointer",
-                activeTab === "itinerary"
-                  ? "border-foreground text-foreground font-bold"
-                  : "border-transparent text-muted-foreground hover:text-foreground"
-              )}
-              aria-label={tabLabels.tab3}
-            >
-              <Calendar className="size-4.5" />
-              <span className="text-xs sm:text-xs font-semibold tracking-tight truncate max-w-[72px] sm:max-w-none">
-                {isTravel ? "Roteiro" : tabLabels.tab3}
-              </span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setActiveTab("explore")}
-              className={cn(
-                "py-2 flex flex-col items-center justify-center gap-1 border-b-2 transition-colors cursor-pointer",
-                activeTab === "explore"
-                  ? "border-foreground text-foreground font-bold"
-                  : "border-transparent text-muted-foreground hover:text-foreground"
-              )}
-              aria-label={tabLabels.tab4}
-            >
-              <Compass className="size-4.5" />
-              <span className="text-xs sm:text-xs font-semibold tracking-tight truncate max-w-[72px] sm:max-w-none">
-                {isTravel ? "Condições" : tabLabels.tab4}
-              </span>
-            </button>
+          <div className={cn(
+            "grid border-b border-border/40 gap-1",
+            availableTabs.length === 2 && "grid-cols-2",
+            availableTabs.length === 3 && "grid-cols-1 sm:grid-cols-",
+            availableTabs.length >= 4 && "grid-cols-2 sm:grid-cols-4"
+          )}>
+            {availableTabs.map((tab) => {
+              const Icon = tab.icon;
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setActiveTab(tab.id)}
+                  className={cn(
+                    "min-h-11 py-2 flex flex-col items-center justify-center gap-1 border-b-2 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                    isActive
+                      ? "border-foreground text-foreground font-bold"
+                      : "border-transparent text-muted-foreground hover:text-foreground"
+                  )}
+                  aria-label={tab.label}
+                >
+                  <Icon className="size-4.5" />
+                  <span className="text-xs sm:text-xs font-semibold tracking-tight truncate max-w-[84px] sm:max-w-none">
+                    {tab.label}
+                  </span>
+                </button>
+              );
+            })}
           </div>
 
           {/* ── Aba 1: Grid de Mídias do Feed (Até 12 Mídias: Fotos, GIFs e Vídeos MP4) ── */}
           {activeTab === "grid" && (
             <div className="pt-3">
               {feedImages.length > 0 ? (
-                <div className="grid grid-cols-3 gap-2 sm:gap-2 rounded-lg overflow-hidden">
+                <div className="grid grid-cols-1 sm:grid-cols- gap-2 sm:gap-2 rounded-lg overflow-hidden">
                   {feedImages.slice(0, 12).map((item, i) => {
                     const rawUrl = typeof item === "string" ? item : (item?.url || item?.src || "");
                     const isVideo = /\.(mp4|webm|mov|m4v|ogg)(\?.*)?$/i.test(rawUrl) || item?.type === "video";
@@ -1038,7 +1071,7 @@ export function EditorialShowcaseView({
                                 <Play className="size-4 fill-white text-white ml-1" />
                               </div>
                             </div>
-                            <span className="absolute top-2 right-1.5 px-2 py-1 rounded-md bg-black/70 text-[9px] font-bold text-white uppercase tracking-wider backdrop-blur-xs font-mono">
+                            <span className="absolute top-2 right-1.5 px-2 py-1 rounded-md bg-black/70 text-xs font-bold text-white uppercase tracking-wider backdrop-blur-xs font-mono">
                               Vídeo
                             </span>
                           </div>
@@ -1051,7 +1084,7 @@ export function EditorialShowcaseView({
                               loading="lazy"
                             />
                             {isGif && (
-                              <span className="absolute top-2 right-1.5 px-2 py-1 rounded-md bg-foreground/80 text-background text-[9px] font-bold uppercase tracking-wider backdrop-blur-xs font-mono">
+                              <span className="absolute top-2 right-1.5 px-2 py-1 rounded-md bg-foreground/80 text-background text-xs font-bold uppercase tracking-wider backdrop-blur-xs font-mono">
                                 GIF
                               </span>
                             )}
@@ -1081,97 +1114,29 @@ export function EditorialShowcaseView({
           {/* ── Aba 2: Ficha Técnica & Especificações do Nicho ── */}
           {activeTab === "resort" && (
             <div className="pt-4 space-y-4">
-              {/* Card de Preço & Condição Principal */}
-              <div className="p-4 rounded-lg bg-muted/40 border border-border/40 space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold tracking-wider uppercase text-muted-foreground">
-                    Condição Comercial
-                  </span>
-                  <Badge className="bg-primary/10 text-primary border border-primary/20 text-xs font-bold">
-                    {pricingType === "starting_at" ? "A partir de" : pricingType === "on_quote" ? "Sob Cotação" : "Tarifa Direta"}
-                  </Badge>
-                </div>
-
-                <div className="flex items-baseline gap-2">
-                  {pricingType === "on_quote" ? (
-                    <span className="text-xl sm:text-2xl font-black text-foreground tracking-tight font-display">
-                      Sob Consulta
-                    </span>
-                  ) : pricingType === "free" ? (
-                    <span className="text-xl sm:text-2xl font-black text-emerald-600 tracking-tight font-display">
-                      Gratuito (Doação)
-                    </span>
-                  ) : pricingType === "exchange_only" ? (
-                    <span className="text-xl sm:text-2xl font-black text-amber-600 tracking-tight font-display">
-                      Somente Troca / Permuta
-                    </span>
-                  ) : pricingType === "price_range" && priceMinCents && priceMaxCents ? (
-                    <span className="text-xl sm:text-2xl font-black text-foreground tracking-tight font-display">
-                      {formatMoney(priceMinCents)} a {formatMoney(priceMaxCents)}
-                    </span>
-                  ) : priceCents > 0 ? (
-                    <>
-                      {pricingType === "starting_at" && (
-                        <span className="text-xs text-muted-foreground font-semibold">A partir de</span>
-                      )}
-                      <span className="text-2xl font-black text-foreground tracking-tight font-display">
-                        {maxInstallments > 1 ? `${maxInstallments}x ${formatMoney(installmentCents)}` : formatMoney(priceCents)}
-                      </span>
-                      {maxInstallments > 1 && (
-                        <span className="text-xs text-muted-foreground font-medium">sem juros</span>
-                      )}
-                    </>
-                  ) : (
-                    <span className="text-lg font-bold text-foreground">Consulte Valores</span>
-                  )}
-                </div>
-
-                {/* Disclaimer legal em destaque */}
-                {disclaimerText && (
-                  <p className="text-xs text-muted-foreground flex items-start gap-1 pt-1">
-                    <Info className="size-3 text-primary shrink-0 mt-1" />
-                    <span>{disclaimerText}</span>
-                  </p>
-                )}
-              </div>
-
               {/* Especificações por Nicho */}
 
               {/* Pacote de Viagem & Turismo (Paridade CMS ↔ Vitrine - Regra 19) */}
               {isTravel && (
-                <div className="p-4 sm:p-5 rounded-lg bg-muted/20 border border-border/30 space-y-4 text-xs">
-                  <div className="flex items-center justify-between">
-                    <h4 className="font-bold text-foreground uppercase tracking-wider text-xs flex items-center gap-2">
-                      <Compass className="size-3.5 text-primary" />
-                      <span>Diferenciais e Inclusões do Pacote</span>
-                    </h4>
-                    {attrs.duration_text && (
-                      <Badge variant="outline" className="text-xs font-bold text-primary border-primary/30">
-                        {attrs.duration_text}
-                      </Badge>
-                    )}
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-2 text-muted-foreground">
-                    <div>Regime: <strong className="text-foreground">{attrs.meal_plan || "Consulte"}</strong></div>
-                    <div>Transporte: <strong className="text-foreground">{transportType === "bus" ? "Ônibus Leito / Terrestre" : transportType === "cruise" ? "Cruzeiro Marítimo" : "Aéreo"}</strong></div>
-                    <div>Saída: <strong className="text-foreground">{attrs.departure_date ? formatDate(attrs.departure_date) : attrs.dates_text || "A combinar"}</strong></div>
-                    <div>Retorno: <strong className="text-foreground">{attrs.return_date ? formatDate(attrs.return_date) : "Conforme roteiro"}</strong></div>
-                    <div>Vagas / Grupo: <strong className="text-foreground">{attrs.guests_text || "Grupo Confirmado"}</strong></div>
-                    <div>Cancelamento: <strong className="text-foreground capitalize">{cancellationPolicy === "flexible" ? "Flexível" : cancellationPolicy === "moderate" ? "Moderado" : "Especial de Grupo"}</strong></div>
-                  </div>
+                <div className="space-y-4">
+                  {featureList.length > 0 && (
+                    <NicheSpecificationsDisplay
+                      items={featureList}
+                      title="Destaques & Especificações do Pacote"
+                    />
+                  )}
 
                   {/* Bullets / Itens Inclusos (bio_bullets ou inclusions) */}
                   {(bioBullets.length > 0 || (Array.isArray(attrs.inclusions) && attrs.inclusions.length > 0)) && (
                     <div className="pt-3 border-t border-border/30 space-y-2">
-                      <span className="font-bold text-foreground block text-xs">
+                      <span className="font-bold text-foreground block text-sm">
                         O que está incluso neste pacote:
                       </span>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                         {(bioBullets.length > 0 ? bioBullets : attrs.inclusions).map((item: string, i: number) => (
-                          <div key={i} className="flex items-start gap-2 p-2 rounded-lg bg-background/60 border border-border/30">
+                          <div key={i} className="flex items-start gap-2 p-3 rounded-lg bg-background/60 border border-border/30">
                             <CheckCircle2 className="size-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-1" />
-                            <span className="text-xs text-foreground/90 font-medium leading-tight">{item}</span>
+                            <span className="text-xs sm:text-sm text-foreground/90 font-medium leading-snug">{item}</span>
                           </div>
                         ))}
                       </div>
@@ -1194,104 +1159,199 @@ export function EditorialShowcaseView({
                       </ul>
                     </div>
                   )}
-                </div>
-              )}
 
-              {nicheId.includes("hosped") && (
-                <div className="p-4 rounded-lg bg-muted/20 border border-border/30 space-y-2 text-xs">
-                  <div className="flex items-center justify-between">
-                    <h4 className="font-bold text-foreground uppercase tracking-wider text-xs">Hospedagem e Estadia</h4>
-                    {attrs.property_type && (
-                      <Badge variant="outline" className="text-xs font-semibold">{attrs.property_type}</Badge>
+                  {/* Malha Aérea & Conexões (Estilo Google Flights / CVC) */}
+                  {flightDetails &&
+                    (transportType === "airplane" ||
+                      transportType === "combo" ||
+                      Boolean(flightDetails.departure_iata || flightDetails.arrival_iata)) && (
+                      <div className="pt-3 border-t border-border/30">
+                        <TravelFlightItineraryCard
+                          flightDetails={flightDetails}
+                          originCity={departureCity}
+                          destinationCity={destinationCity}
+                          departureDateText={
+                            attrs.departure_date ? formatDate(attrs.departure_date) : attrs.dates_text
+                          }
+                          returnDateText={
+                            attrs.return_date ? formatDate(attrs.return_date) : undefined
+                          }
+                        />
+                      </div>
                     )}
-                  </div>
-                  <div className="grid grid-cols-2 gap-2 text-muted-foreground">
-                    <div>Check-in: <strong className="text-foreground">{attrs.checkin_time || "14:00"}</strong></div>
-                    <div>Check-out: <strong className="text-foreground">{attrs.checkout_time || "11:00"}</strong></div>
-                    <div>Hóspedes: <strong className="text-foreground">{attrs.max_guests ? `${attrs.max_guests} máx.` : "—"}</strong></div>
-                    <div>Taxa de limpeza: <strong className="text-foreground">{attrs.cleaning_fee_cents ? formatMoney(attrs.cleaning_fee_cents) : "Não informada"}</strong></div>
-                    {attrs.security_deposit_cents ? (
-                      <div>Caução / Garantia: <strong className="text-foreground">{formatMoney(attrs.security_deposit_cents)}</strong></div>
-                    ) : null}
-                  </div>
-                  {attrs.house_rules && (
-                    <div className="pt-2 border-t border-border/30 text-xs">
-                      <span className="font-bold text-foreground block mb-1">Regras da Hospedagem:</span>
-                      <p className="text-muted-foreground whitespace-pre-line leading-relaxed">{attrs.house_rules}</p>
+
+                  {/* Hospedagem & Acomodação do Pacote (Nicho Turismo / Viagem) */}
+                  {travelLodgings.length > 0 ? (
+                    <div className="pt-3 border-t border-border/30 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-foreground block text-sm flex items-center gap-2">
+                          <Building2 className="size-4 text-primary" />
+                          <span>Hospedagem & Acomodação ({travelLodgings.length} {travelLodgings.length > 1 ? "opções" : "hotel"})</span>
+                        </span>
+                        {attrs.meal_plan && (
+                          <Badge variant="outline" className="text-xs font-bold text-primary border-primary/25 bg-primary/5">
+                            {attrs.meal_plan}
+                          </Badge>
+                        )}
+                      </div>
+
+                      <div className="space-y-3">
+                        {travelLodgings.map((lodging: any, lIdx: number) => {
+                          const lodgingPhotos: string[] = Array.isArray(lodging.images) && lodging.images.length > 0
+                            ? lodging.images.filter(Boolean)
+                            : Array.isArray(lodging.gallery_urls) && lodging.gallery_urls.length > 0
+                              ? lodging.gallery_urls.filter(Boolean)
+                              : Array.isArray(lodging.photos) && lodging.photos.length > 0
+                                ? lodging.photos.filter(Boolean)
+                                : lodging.cover_image_url
+                                  ? [lodging.cover_image_url]
+                                  : [];
+
+                          return (
+                            <div
+                              key={lodging.id || lIdx}
+                              className="p-4 rounded-lg bg-background border border-border/60 space-y-3 shadow-xs"
+                            >
+                              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-border/40">
+                                <div className="flex items-center gap-2">
+                                  <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                                    <Building2 className="size-4" />
+                                  </div>
+                                  <div>
+                                    <h5 className="font-bold text-sm text-foreground leading-tight">
+                                      {lodging.name || "Hospedagem Confirmada"}
+                                    </h5>
+                                    <p className="text-xs text-muted-foreground">
+                                      {lodging.city || lodging.address || destinationCity || "Localização privilegiada"}
+                                      {lodging.type ? ` • ${lodging.type.toUpperCase()}` : ""}
+                                    </p>
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  {lodging.stars ? (
+                                    <span className="text-xs font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2 py-1 rounded-full border border-amber-500/20">
+                                      {lodging.stars} estrelas
+                                    </span>
+                                  ) : null}
+                                  {lodging.room_category ? (
+                                    <Badge variant="outline" className="text-xs font-semibold">
+                                      {lodging.room_category}
+                                    </Badge>
+                                  ) : null}
+                                </div>
+                              </div>
+
+                              {/* Carrossel Visual de Fotos do Hotel (quando disponível) */}
+                              {lodgingPhotos.length > 0 && (
+                                <div className="flex items-center gap-2 overflow-x-auto carousel no-scrollbar py-1">
+                                  {lodgingPhotos.map((photoUrl, pIdx) => (
+                                    <button
+                                      key={pIdx}
+                                      type="button"
+                                      onClick={() => setFullscreenImage(photoUrl)}
+                                      className="relative shrink-0 w-40 sm:w-48 aspect-video rounded-lg overflow-hidden border border-border/50 bg-muted group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                                    >
+                                      <img
+                                        src={photoUrl}
+                                        alt={`${lodging.name || "Hotel"} - Foto ${pIdx + 1}`}
+                                        className="size-full object-cover group-hover:scale-105 transition-transform duration-200"
+                                        loading="lazy"
+                                      />
+                                      <span className="absolute bottom-1.5 right-1.5 px-2 py-1 rounded-md bg-neutral-950/70 text-white text-xs font-mono">
+                                        {pIdx + 1}/{lodgingPhotos.length}
+                                      </span>
+                                    </button>
+                                  ))}
+                                </div>
+                              )}
+
+                              {/* Informações Rápidas: Regime, Check-in, Check-out, Voucher */}
+                              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                                <div className="p-2 rounded-lg bg-muted/30 border border-border/40">
+                                  <span className="text-muted-foreground block text-xs">Regime</span>
+                                  <strong className="text-foreground text-xs">{lodging.regime || attrs.meal_plan || "Café da Manhã"}</strong>
+                                </div>
+                                <div className="p-2 rounded-lg bg-muted/30 border border-border/40">
+                                  <span className="text-muted-foreground block text-xs">Check-in</span>
+                                  <strong className="text-foreground text-xs font-mono">{lodging.checkin_time || "14:00"}</strong>
+                                </div>
+                                <div className="p-2 rounded-lg bg-muted/30 border border-border/40">
+                                  <span className="text-muted-foreground block text-xs">Check-out</span>
+                                  <strong className="text-foreground text-xs font-mono">{lodging.checkout_time || "11:00"}</strong>
+                                </div>
+                                <div className="p-2 rounded-lg bg-muted/30 border border-border/40">
+                                  <span className="text-muted-foreground block text-xs">Reserva / Status</span>
+                                  <strong className="text-foreground text-xs">{lodging.booking_code ? `Cód: ${lodging.booking_code}` : "Incluso no Pacote"}</strong>
+                                </div>
+                              </div>
+
+                              {lodging.address && (
+                                <p className="text-xs text-muted-foreground flex items-center gap-2 pt-1">
+                                  <MapPin className="size-4 text-primary shrink-0" />
+                                  <span>{lodging.address}</span>
+                                </p>
+                              )}
+
+                              {lodging.description && (
+                                <p className="text-xs text-foreground/80 leading-relaxed pt-1 whitespace-pre-line bg-muted/20 p-3 rounded-lg border border-border/30">
+                                  {lodging.description}
+                                </p>
+                              )}
+
+                              {Array.isArray(lodging.amenities) && lodging.amenities.length > 0 && (
+                                <div className="flex flex-wrap gap-2 pt-1">
+                                  {lodging.amenities.map((am: string, aIdx: number) => (
+                                    <span
+                                      key={aIdx}
+                                      className="inline-flex items-center gap-1 px-3 py-1 rounded-md text-xs font-medium bg-muted/60 text-foreground border border-border/40"
+                                    >
+                                      <Check className="size-3 text-emerald-600 shrink-0" />
+                                      <span>{am}</span>
+                                    </span>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="pt-3 border-t border-border/30 space-y-2">
+                      <span className="font-bold text-foreground block text-sm flex items-center gap-2">
+                        <Building2 className="size-4 text-primary" />
+                        <span>Hospedagem</span>
+                      </span>
+                      <div className="p-3 rounded-lg bg-background/50 border border-border/40 text-xs text-muted-foreground flex items-center justify-between">
+                        <span>Acomodação selecionada e homologada pela agência.</span>
+                        <strong className="text-foreground">{attrs.meal_plan || "Inclusa no pacote"}</strong>
+                      </div>
                     </div>
                   )}
-                </div>
-              )}
 
-              {nicheId.includes("imov") && (
-                <div className="p-4 rounded-lg bg-muted/20 border border-border/30 space-y-2 text-xs">
-                  <div className="flex items-center justify-between">
-                    <h4 className="font-bold text-foreground uppercase tracking-wider text-xs">Imóvel</h4>
-                    {attrs.property_type && (
-                      <Badge variant="outline" className="text-xs font-semibold">{attrs.property_type}</Badge>
-                    )}
-                  </div>
-                  <div className="grid grid-cols-2 gap-2 text-muted-foreground">
-                    <div>Finalidade: <strong className="text-foreground capitalize">{attrs.deal_type || "—"}</strong></div>
-                    <div>Área: <strong className="text-foreground">{attrs.area_sqm ? `${attrs.area_sqm} m²` : "—"}</strong></div>
-                    <div>Quartos: <strong className="text-foreground">{attrs.bedrooms || "—"} ({attrs.suites || 0} suítes)</strong></div>
-                    <div>Vagas de Garagem: <strong className="text-foreground">{attrs.parking_spots || "—"}</strong></div>
-                    <div>Condomínio: <strong className="text-foreground">{attrs.condo_cents ? formatMoney(attrs.condo_cents) : "Isento"}</strong></div>
-                    <div>IPTU: <strong className="text-foreground">{attrs.iptu_cents ? formatMoney(attrs.iptu_cents) : "Isento"}</strong></div>
-                  </div>
-                </div>
-              )}
-
-              {nicheId.includes("veic") && (
-                <div className="p-4 rounded-lg bg-muted/20 border border-border/30 space-y-2 text-xs">
-                  <div className="flex items-center justify-between">
-                    <h4 className="font-bold text-foreground uppercase tracking-wider text-xs">Veículo</h4>
-                    {attrs.version && (
-                      <Badge variant="outline" className="text-xs font-semibold">{attrs.version}</Badge>
-                    )}
-                  </div>
-                  <div className="grid grid-cols-2 gap-2 text-muted-foreground">
-                    <div>Marca/Modelo: <strong className="text-foreground">{attrs.brand || "—"} {attrs.model || ""}</strong></div>
-                    <div>Ano Fab/Mod: <strong className="text-foreground">{attrs.year_fab || "—"}/{attrs.year_model || "—"}</strong></div>
-                    <div>Quilometragem: <strong className="text-foreground">{attrs.mileage_km !== undefined && attrs.mileage_km !== null ? (attrs.mileage_km === 0 ? "Zero Km" : `${attrs.mileage_km} km`) : "—"}</strong></div>
-                    <div>Câmbio: <strong className="text-foreground">{attrs.transmission || "—"}</strong></div>
-                    <div>Combustível: <strong className="text-foreground">{attrs.fuel_type || "—"}</strong></div>
-                    <div>Cor: <strong className="text-foreground">{attrs.color || "—"}</strong></div>
-                    {attrs.doors && <div>Portas: <strong className="text-foreground">{attrs.doors} portas</strong></div>}
-                    {attrs.plate_end && <div>Final da Placa: <strong className="text-foreground">{attrs.plate_end}</strong></div>}
-                  </div>
-                </div>
-              )}
-
-              {/* Equipamentos & Locação */}
-              {(nicheId.includes("equip") || classified.category === "equipment") && (
-                <div className="p-4 rounded-lg bg-muted/20 border border-border/30 space-y-2 text-xs">
-                  <div className="flex items-center justify-between">
-                    <h4 className="font-bold text-foreground uppercase tracking-wider text-xs flex items-center gap-2">
-                      <Wrench className="size-3.5 text-primary" />
-                      <span>Equipamento e Locação</span>
-                    </h4>
-                    {attrs.condition && (
-                      <Badge variant="outline" className="text-xs font-semibold capitalize">
-                        {attrs.condition.replace(/_/g, " ")}
-                      </Badge>
-                    )}
-                  </div>
-                  <div className="grid grid-cols-2 gap-2 text-muted-foreground">
-                    <div>Período: <strong className="text-foreground capitalize">{attrs.equipment_period === "evento" ? "Por Evento" : attrs.equipment_period === "semanal" ? "Semanal" : attrs.equipment_period === "mensal" ? "Mensal" : "Por Diária"}</strong></div>
-                    <div>Caução: <strong className="text-foreground">{attrs.deposit_cents ? formatMoney(attrs.deposit_cents) : "Sem caução"}</strong></div>
-                    <div>Operador Técnico: <strong className="text-foreground">{attrs.operator_included ? "Incluso no valor" : "Não incluso"}</strong></div>
-                    <div>Logística: <strong className="text-foreground">{attrs.delivery_available ? "Entrega no local" : "Retirada no balcão"}</strong></div>
-                  </div>
-                  {Array.isArray(attrs.accessories) && attrs.accessories.length > 0 && (
-                    <div className="pt-2 border-t border-border/30">
-                      <span className="font-bold text-foreground block mb-1 text-xs">Itens & Acessórios Inclusos:</span>
-                      <div className="flex flex-wrap gap-1">
-                        {attrs.accessories.map((acc: string, i: number) => (
-                          <Badge key={i} variant="secondary" className="text-xs font-medium px-2 py-1 gap-1 flex items-center">
-                            <Check className="size-2.5 text-primary shrink-0" />
-                            <span>{acc}</span>
-                          </Badge>
+                  {/* Transfers, Receptivos e Passeios do Pacote */}
+                  {Array.isArray(attrs.transfers_and_tours) && attrs.transfers_and_tours.length > 0 && (
+                    <div className="pt-3 border-t border-border/30 space-y-3">
+                      <span className="font-bold text-foreground block text-sm flex items-center gap-2">
+                        <Bus className="size-4 text-primary" />
+                        <span>Transfers, Receptivos e Passeios ({attrs.transfers_and_tours.length})</span>
+                      </span>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {attrs.transfers_and_tours.map((tr: any, tIdx: number) => (
+                          <div
+                            key={tr.id || tIdx}
+                            className="p-4 rounded-lg bg-background border border-border/60 space-y-2"
+                          >
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="text-xs font-bold text-foreground">{tr.title || tr.name || "Serviço Receptivo"}</span>
+                              <Badge variant="secondary" className="text-xs">
+                                {tr.type === "optional" ? "Opcional" : "Incluso"}
+                              </Badge>
+                            </div>
+                            {tr.description && (
+                              <p className="text-xs text-muted-foreground leading-relaxed">{tr.description}</p>
+                            )}
+                          </div>
                         ))}
                       </div>
                     </div>
@@ -1299,197 +1359,67 @@ export function EditorialShowcaseView({
                 </div>
               )}
 
-              {/* Produto Digital & Downloads */}
-              {(nicheId.includes("digit") || attrs.is_digital || attrs.digital_file_url) && (
-                <div className="p-4 rounded-lg bg-muted/20 border border-border/30 space-y-3 text-xs">
-                  <div className="flex items-center justify-between">
-                    <h4 className="font-bold text-foreground uppercase tracking-wider text-xs flex items-center gap-2">
-                      <FileArchive className="size-3.5 text-primary" />
-                      <span>Produto Digital e Download</span>
-                    </h4>
-                    <Badge variant="outline" className="text-xs font-bold text-emerald-600 border-emerald-500/30 bg-emerald-500/10">
-                      Acesso Instantâneo
-                    </Badge>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2 text-muted-foreground">
-                    <div>Formato: <strong className="text-foreground uppercase font-mono">{attrs.digital_file_type || "PDF / Arquivo"}</strong></div>
-                    <div>Tamanho: <strong className="text-foreground font-mono">{attrs.digital_file_size_bytes ? `${(attrs.digital_file_size_bytes / (1024 * 1024)).toFixed(1)} MB` : attrs.file_size || "Acesso Imediato"}</strong></div>
-                    <div>Limite de Downloads: <strong className="text-foreground">{attrs.download_limit || attrs.digital_download_limit ? `${attrs.download_limit || attrs.digital_download_limit} tentativas` : "Ilimitado"}</strong></div>
-                    <div>Licença: <strong className="text-emerald-600">Vitalícia</strong></div>
-                  </div>
-                  {attrs.digital_preview_url && (
-                    <div className="pt-1">
-                      <a
-                        href={attrs.digital_preview_url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="inline-flex items-center gap-2 text-xs text-primary font-bold hover:underline"
+              {/* Especificações Canônicas em Cards Grandes Squircles (Categorias Não-Turismo) */}
+              {!isTravel && featureList.length > 0 && (
+                <div className="space-y-4">
+                  <NicheSpecificationsDisplay
+                    items={featureList}
+                    title="Ficha Técnica & Especificações"
+                  />
+
+                  {/* Regras da Hospedagem (quando preenchidas) */}
+                  {attrs.house_rules && (
+                    <div className="rounded-lg border border-border/50 bg-card p-4 space-y-1.5 text-xs">
+                      <span className="font-bold text-foreground uppercase tracking-wider block">Regras da Hospedagem</span>
+                      <p className="text-muted-foreground whitespace-pre-line leading-relaxed">{attrs.house_rules}</p>
+                    </div>
+                  )}
+
+                  {/* Produto Digital — Ação de Download Seguro */}
+                  {(nicheId.includes("digit") || attrs.is_digital || attrs.digital_file_url) && (
+                    <div className="p-4 rounded-lg bg-card border border-border/60 flex items-center justify-between gap-3 shadow-xs">
+                      <div className="flex items-center gap-2.5">
+                        <div className="size-9 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                          <FileArchive className="size-4" />
+                        </div>
+                        <div>
+                          <span className="text-xs font-bold text-foreground block">Arquivo Digital Pronto para Download</span>
+                          <span className="text-xs text-muted-foreground">{attrs.digital_file_type ? String(attrs.digital_file_type).toUpperCase() : "Acesso Vitalício"}</span>
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        onClick={handleDownloadDigitalFile}
+                        disabled={isDownloadingDigital}
+                        size="sm"
+                        className="h-11 min-h-11 px-4 rounded-lg font-bold text-xs gap-2 bg-primary text-primary-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                       >
-                        <ExternalLink className="size-3.5" />
-                        <span>Ver Demonstração / Amostra Gratuita</span>
-                      </a>
-                    </div>
-                  )}
-                  <div className="pt-2 border-t border-border/30 flex items-center justify-between gap-2">
-                    <span className="text-xs text-muted-foreground">Arquivo criptografado e verificado</span>
-                    <Button
-                      onClick={handleDownloadDigitalFile}
-                      disabled={isDownloadingDigital}
-                      size="sm"
-                      className="h-8 px-3 rounded-lg font-bold text-xs gap-2 bg-primary text-primary-foreground cursor-pointer"
-                    >
-                      {isDownloadingDigital ? (
-                        <>
-                          <Loader2 className="size-3.5 animate-spin" />
-                          <span>Baixando...</span>
-                        </>
-                      ) : (
-                        <>
-                          <Download className="size-3.5" />
-                          <span>Baixar Arquivo</span>
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                </div>
-              )}
-
-              {/* Serviço Profissional */}
-              {(nicheId.includes("serv") || classified.category === "service") && (
-                <div className="p-4 rounded-lg bg-muted/20 border border-border/30 space-y-2 text-xs">
-                  <div className="flex items-center justify-between">
-                    <h4 className="font-bold text-foreground uppercase tracking-wider text-xs flex items-center gap-2">
-                      <Wrench className="size-3.5 text-primary" />
-                      <span>Serviço Profissional e Atendimento</span>
-                    </h4>
-                    <Badge variant="outline" className="text-xs font-bold text-primary border-primary/30">
-                      Agendamento Disponível
-                    </Badge>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2 text-muted-foreground">
-                    <div>Modalidade: <strong className="text-foreground capitalize">{attrs.modality === "domicilio" ? "A Domicílio" : attrs.modality === "remoto" ? "Remoto / Online" : "Presencial"}</strong></div>
-                    <div>Cobrança: <strong className="text-foreground capitalize">{attrs.pricing_type === "por_hora" ? "Por Hora" : attrs.pricing_type === "a_combinar" ? "Sob Consulta" : "Preço Fixo"}</strong></div>
-                    <div>Duração Média: <strong className="text-foreground">{attrs.service_duration_minutes || attrs.estimated_duration || 60} min</strong></div>
-                    <div>Horário: <strong className="text-foreground font-mono">{attrs.working_hours_start || "08:00"} às {attrs.working_hours_end || "18:00"}</strong></div>
-                    {attrs.service_area && (
-                      <div className="col-span-2">Raio de Atendimento: <strong className="text-foreground">{attrs.service_area}</strong></div>
-                    )}
-                    {attrs.available_slots !== undefined && (
-                      <div className="col-span-2">Capacidade Diária: <strong className="text-foreground font-mono">{attrs.available_slots} atendimentos/dia</strong></div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Vaga de Emprego & Oportunidade */}
-              {(nicheId.includes("vaga") || classified.category === "job") && (
-                <div className="p-4 rounded-lg bg-muted/20 border border-border/30 space-y-2 text-xs">
-                  <div className="flex items-center justify-between">
-                    <h4 className="font-bold text-foreground uppercase tracking-wider text-xs flex items-center gap-2">
-                      <Briefcase className="size-3.5 text-primary" />
-                      <span>Requisitos e Detalhes da Vaga</span>
-                    </h4>
-                    <Badge variant="outline" className="text-xs font-bold text-primary border-primary/30">
-                      {attrs.role || classified.title}
-                    </Badge>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2 text-muted-foreground">
-                    <div>Escolaridade: <strong className="text-foreground">{getEducationLabel(attrs.min_education)}</strong></div>
-                    <div>Experiência: <strong className="text-foreground">{getExperienceLabel(attrs.experience_level)}</strong></div>
-                    <div>Regime: <strong className="text-foreground">{getRegimeLabel(attrs.regime)}</strong></div>
-                    <div>Modelo: <strong className="text-foreground">{getWorkplaceModelLabel(attrs.work_model)}</strong></div>
-                    {attrs.work_schedule && (
-                      <div className="col-span-2">Escala: <strong className="text-foreground">{attrs.work_schedule}</strong></div>
-                    )}
-                    {attrs.salary_range && (
-                      <div className="col-span-2">Faixa Salarial: <strong className="text-foreground">{attrs.salary_range}</strong></div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Desapego & Bens Físicos */}
-              {isGoods && (
-                <div className="p-4 rounded-lg bg-muted/20 border border-border/30 space-y-2 text-xs">
-                  <div className="flex items-center justify-between">
-                    <h4 className="font-bold text-foreground uppercase tracking-wider text-xs flex items-center gap-2">
-                      <Tag className="size-3.5 text-primary" />
-                      <span>Ficha do Produto Físico</span>
-                    </h4>
-                    {attrs.condition && (
-                      <Badge variant="outline" className="text-xs font-semibold capitalize">
-                        {attrs.condition.replace(/_/g, " ")}
-                      </Badge>
-                    )}
-                  </div>
-                  <div className="grid grid-cols-2 gap-2 text-muted-foreground">
-                    {attrs.brand && <div>Marca: <strong className="text-foreground">{attrs.brand}</strong></div>}
-                    {attrs.model && <div>Modelo: <strong className="text-foreground">{attrs.model}</strong></div>}
-                    {attrs.storage && <div>Armazenamento: <strong className="text-foreground">{attrs.storage}</strong></div>}
-                    {attrs.battery_health && <div>Saúde da Bateria: <strong className="text-foreground">{attrs.battery_health}%</strong></div>}
-                    {attrs.computer_type && <div>Tipo: <strong className="text-foreground">{attrs.computer_type}</strong></div>}
-                    {attrs.processor && <div>Processador: <strong className="text-foreground">{attrs.processor}</strong></div>}
-                    {attrs.ram && <div>RAM: <strong className="text-foreground">{attrs.ram}</strong></div>}
-                    {attrs.voltage && <div>Voltagem: <strong className="text-foreground">{attrs.voltage}</strong></div>}
-                    {attrs.console && <div>Console: <strong className="text-foreground">{attrs.console}</strong></div>}
-                    {attrs.room && <div>Ambiente: <strong className="text-foreground">{attrs.room}</strong></div>}
-                    {attrs.material && <div>Material: <strong className="text-foreground">{attrs.material}</strong></div>}
-                    {attrs.size && <div>Tamanho: <strong className="text-foreground">{attrs.size}</strong></div>}
-                    {attrs.gender && <div>Gênero: <strong className="text-foreground">{attrs.gender}</strong></div>}
-                    {attrs.warranty && <div className="col-span-2">Garantia / Procedência: <strong className="text-foreground">{attrs.warranty}</strong></div>}
-                  </div>
-                </div>
-              )}
-
-              {/* Doação Solidária */}
-              {(nicheId.includes("doacao") || attrs.is_donation) && (
-                <div className="p-4 rounded-lg bg-emerald-500/10 border border-emerald-500/20 space-y-2 text-xs">
-                  <div className="flex items-center justify-between">
-                    <h4 className="font-bold text-emerald-800 dark:text-emerald-300 uppercase tracking-wider text-xs flex items-center gap-2">
-                      <Star className="size-3.5 text-emerald-600" />
-                      <span>Doação Solidária Comunitária</span>
-                    </h4>
-                    <Badge className="bg-emerald-600 text-white font-bold text-xs">
-                      Gratuito R$ 0,00
-                    </Badge>
-                  </div>
-                  <p className="text-emerald-700/90 dark:text-emerald-300/80 leading-relaxed text-xs">
-                    Este item está sendo doado gratuitamente para a comunidade. Combine o local e horário de retirada diretamente com o doador via chat ou WhatsApp.
-                  </p>
-                  {attrs.condition && (
-                    <div className="pt-1 text-muted-foreground">
-                      Estado de Conservação: <strong className="text-foreground capitalize">{attrs.condition.replace(/_/g, " ")}</strong>
+                        {isDownloadingDigital ? (
+                          <>
+                            <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" />
+                            <span>Baixando...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Download className="size-3.5" />
+                            <span>Baixar Arquivo</span>
+                          </>
+                        )}
+                      </Button>
                     </div>
                   )}
                 </div>
               )}
 
-              {/* Assinatura & Recorrência */}
-              {(nicheId.includes("assinatura") || classified.pricing_model === "recurring") && (
-                <div className="p-4 rounded-lg bg-muted/20 border border-border/30 space-y-2 text-xs">
-                  <div className="flex items-center justify-between">
-                    <h4 className="font-bold text-foreground uppercase tracking-wider text-xs flex items-center gap-2">
-                      <Award className="size-3.5 text-primary" />
-                      <span>Plano e Assinatura Recorrente</span>
-                    </h4>
-                    <Badge variant="outline" className="text-xs font-bold text-primary border-primary/30 capitalize">
-                      {classified.billing_cycle === "yearly" ? "Cobrança Anual" : classified.billing_cycle === "quarterly" ? "Cobrança Trimestral" : classified.billing_cycle === "semiannual" ? "Cobrança Semestral" : "Cobrança Mensal"}
-                    </Badge>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2 text-muted-foreground">
-                    <div>Taxa de Adesão: <strong className="text-foreground">{classified.setup_fee_cents ? formatMoney(classified.setup_fee_cents) : "Isenta"}</strong></div>
-                    <div>Período de Teste: <strong className="text-foreground">{classified.trial_days ? `${classified.trial_days} dias grátis` : "Sem teste"}</strong></div>
-                    <div>Renovação: <strong className="text-foreground">Automática</strong></div>
-                    <div>Cancelamento: <strong className="text-foreground">A qualquer momento</strong></div>
-                  </div>
-                </div>
-              )}
-
-              {/* Descrição Completa */}
+              {/* Descrição Completa do Anúncio */}
               {classified.content && (
-                <div className="space-y-2 text-xs text-foreground/80 leading-relaxed bg-muted/20 p-4 rounded-lg border border-border/30">
-                  <h3 className="font-bold text-foreground text-sm">Sobre</h3>
-                  <p className="whitespace-pre-line">{classified.content}</p>
+                <div className="rounded-lg border border-border/60 bg-card p-4 sm:p-5 space-y-2.5">
+                  <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                    Sobre o Anúncio
+                  </h3>
+                  <div className="text-sm text-foreground/90 leading-relaxed whitespace-pre-line">
+                    {classified.content}
+                  </div>
                 </div>
               )}
             </div>
@@ -1644,7 +1574,8 @@ export function EditorialShowcaseView({
                   )}
 
                   {/* Recursos Inclusos na Assinatura */}
-                  {Array.isArray(classified.recurring_features || attrs.recurring_features) &&
+                  {(classified.pricing_model === "recurring" || nicheId.includes("assinatura")) &&
+                    Array.isArray(classified.recurring_features || attrs.recurring_features) &&
                     (classified.recurring_features || attrs.recurring_features).length > 0 && (
                       <div className="p-4 rounded-lg bg-muted/20 border border-border/30 space-y-2">
                         <h4 className="font-bold text-xs text-foreground uppercase tracking-wider flex items-center gap-2">
@@ -1740,6 +1671,62 @@ export function EditorialShowcaseView({
           {/* ── Aba 4: Explore, Condições Comerciais & Pagamento ── */}
           {activeTab === "explore" && (
             <div className="pt-4 space-y-4">
+              {/* Card de Preço & Condição Principal */}
+              {!((nicheId.includes("doacao") || attrs.is_donation) || (nicheId.includes("vaga") || classified.category === "job")) && (
+                <div className="p-4 rounded-lg bg-muted/40 border border-border/40 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold tracking-wider uppercase text-muted-foreground">
+                      Condição Comercial
+                    </span>
+                    <Badge className="bg-primary/10 text-primary border border-primary/20 text-xs font-bold">
+                      {pricingType === "starting_at" ? "A partir de" : pricingType === "on_quote" ? "Sob Cotação" : "Tarifa Direta"}
+                    </Badge>
+                  </div>
+
+                  <div className="flex items-baseline gap-2">
+                    {pricingType === "on_quote" ? (
+                      <span className="text-xl sm:text-2xl font-black text-foreground tracking-tight font-display">
+                        Sob Consulta
+                      </span>
+                    ) : pricingType === "free" ? (
+                      <span className="text-xl sm:text-2xl font-black text-emerald-600 tracking-tight font-display">
+                        Gratuito (Doação)
+                      </span>
+                    ) : pricingType === "exchange_only" ? (
+                      <span className="text-xl sm:text-2xl font-black text-amber-600 tracking-tight font-display">
+                        Somente Troca / Permuta
+                      </span>
+                    ) : pricingType === "price_range" && priceMinCents && priceMaxCents ? (
+                      <span className="text-xl sm:text-2xl font-black text-foreground tracking-tight font-display">
+                        {formatMoney(priceMinCents)} a {formatMoney(priceMaxCents)}
+                      </span>
+                    ) : priceCents > 0 ? (
+                      <>
+                        {pricingType === "starting_at" && (
+                          <span className="text-xs text-muted-foreground font-semibold">A partir de</span>
+                        )}
+                        <span className="text-2xl font-black text-foreground tracking-tight font-display">
+                          {maxInstallments > 1 ? `${maxInstallments}x ${formatMoney(installmentCents)}` : formatMoney(priceCents)}
+                        </span>
+                        {maxInstallments > 1 && (
+                          <span className="text-xs text-muted-foreground font-medium">sem juros</span>
+                        )}
+                      </>
+                    ) : (
+                      <span className="text-lg font-bold text-foreground">Consulte Valores</span>
+                    )}
+                  </div>
+
+                  {/* Disclaimer legal em destaque */}
+                  {disclaimerText && (
+                    <p className="text-xs text-muted-foreground flex items-start gap-1 pt-1">
+                      <Info className="size-3 text-primary shrink-0 mt-1" />
+                      <span>{disclaimerText}</span>
+                    </p>
+                  )}
+                </div>
+              )}
+
               {/* Card Específico de Retirada Solidária (Doação) */}
               {(nicheId.includes("doacao") || attrs.is_donation) ? (
                 <div className="p-4 rounded-lg bg-emerald-500/10 border border-emerald-500/25 space-y-3">
@@ -2185,7 +2172,7 @@ export function EditorialShowcaseView({
                               <div className="flex items-center gap-2">
                                 {opt.label && <p className="text-xs font-bold text-foreground">{opt.label}</p>}
                                 {isSelected && (
-                                  <span className="text-[9px] font-bold text-primary bg-primary/10 px-2 py-0.2 rounded-full">
+                                  <span className="text-xs font-bold text-primary bg-primary/10 px-2 py-1 rounded-full">
                                     Selecionada
                                   </span>
                                 )}
@@ -2282,36 +2269,36 @@ export function EditorialShowcaseView({
             const heroHighlight = getClassifiedHeroHighlight(classified, selectedDeparture);
             if (!heroHighlight) return null;
             const gridCols = heroHighlight.tertiaryValue
-              ? "grid-cols-3"
+              ? "grid-cols-1 sm:grid-cols-"
               : heroHighlight.secondaryValue
               ? "grid-cols-2"
               : "grid-cols-1";
             return (
               <div className={`grid ${gridCols} gap-3 sm:gap-4 py-4 border-t border-b border-border/40`}>
                 <div>
-                  <p className="text-xs uppercase tracking-widest text-muted-foreground font-semibold">
+                  <p className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">
                     {heroHighlight.primaryLabel}
                   </p>
-                  <p className="text-base sm:text-lg font-black text-foreground mt-1 leading-tight truncate">
+                  <p className="text-sm sm:text-base font-bold text-foreground mt-1 leading-snug break-words">
                     {heroHighlight.primaryValue}
                   </p>
                 </div>
                 {heroHighlight.secondaryLabel && heroHighlight.secondaryValue && (
                   <div>
-                    <p className="text-xs uppercase tracking-widest text-muted-foreground font-semibold">
+                    <p className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">
                       {heroHighlight.secondaryLabel}
                     </p>
-                    <p className="text-base sm:text-lg font-black text-foreground mt-1 leading-tight truncate">
+                    <p className="text-sm sm:text-base font-bold text-foreground mt-1 leading-snug break-words">
                       {heroHighlight.secondaryValue}
                     </p>
                   </div>
                 )}
                 {heroHighlight.tertiaryLabel && heroHighlight.tertiaryValue && (
                   <div>
-                    <p className="text-xs uppercase tracking-widest text-muted-foreground font-semibold">
+                    <p className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">
                       {heroHighlight.tertiaryLabel}
                     </p>
-                    <p className="text-base sm:text-lg font-black text-foreground mt-1 leading-tight truncate">
+                    <p className="text-sm sm:text-base font-bold text-foreground mt-1 leading-snug break-words">
                       {heroHighlight.tertiaryValue}
                     </p>
                   </div>
@@ -2524,7 +2511,7 @@ export function EditorialShowcaseView({
       </div>
 
       {/* ── Barra Inferior Flutuante Fixa (Apenas no Mobile) ── */}
-      <div className="md:hidden fixed bottom-0 inset-x-0 z-50 bg-background/95 backdrop-blur-xl border-t border-border/60 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+      <div className="md:hidden fixed bottom-0 inset-x-0 z-30 bg-background/95 backdrop-blur-xl border-t border-border/60 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
         <div className="max-w-3xl lg:max-w-4xl mx-auto px-4 sm:px-6 md:px-8 py-2 sm:py-3 flex items-center justify-between gap-3">
           {/* Lado Esquerdo: Valor Parcelado / Total Limpo (Sem cortes, clicável para abrir opções) */}
           <button
@@ -2694,7 +2681,7 @@ export function EditorialShowcaseView({
 
             {/* Miniaturas na Base do Modal */}
             {images.length > 1 && (
-              <div className="p-3 bg-black/80 border-t border-white/10 flex items-center justify-center gap-2 overflow-x-auto no-scrollbar">
+              <div className="p-3 bg-black/80 border-t border-white/10 flex items-center justify-center gap-2 overflow-x-auto carousel no-scrollbar">
                 {images.map((img, idx) => (
                   <button
                     key={idx}
@@ -3114,6 +3101,7 @@ export function EditorialShowcaseView({
       <TravelPromoFlyerModal
         isOpen={isPromoFlyerOpen}
         onClose={() => setIsPromoFlyerOpen(false)}
+        niche={isTravel ? "turismo" : (nicheId || "turismo")}
         destinationTitle={classified.title || attrs.destination_city || "Destino Turístico"}
         destinationCity={attrs.destination_city || attrs.destination}
         datesText={attrs.dates_text}
@@ -3132,6 +3120,7 @@ export function EditorialShowcaseView({
           initialForm={classified.lead_form || null}
           classifiedId={classified.id}
           classifiedTitle={classified.title}
+          nicheId={nicheId}
           isOpen={isLeadFormModalOpen}
           onOpenChange={setIsLeadFormModalOpen}
           civilInquiryConfig={classified?.attributes?.inquiry_config}

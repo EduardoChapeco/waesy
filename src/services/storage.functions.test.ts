@@ -54,8 +54,8 @@ describe("Storage de mídia — W9.2", () => {
 
   it("corrige RLS de media_assets por usuário/loja sem repetir a policy LIMIT 1", () => {
     expect(studioMigration).toContain("ALTER TABLE public.media_assets");
-    expect(studioMigration).toContain("p.id = auth.uid()");
-    expect(studioMigration).toContain("p.store_id = media_assets.store_id");
+    expect(studioMigration).toContain("wm.profile_id = auth.uid()");
+    expect(studioMigration).toContain("wm.store_id = media_assets.store_id");
     expect(studioMigration).toContain("studio_usage_slot IS NOT NULL");
     expect(studioMigration).toContain("FOR INSERT TO anon, authenticated WITH CHECK (false)");
     expect(studioMigration).not.toMatch(/SELECT\s+id\s+FROM\s+public\.stores\s+LIMIT\s+1/i);

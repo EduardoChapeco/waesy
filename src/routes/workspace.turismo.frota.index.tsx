@@ -322,7 +322,7 @@ function VehicleLayoutsListPage() {
      <SheetContent
        side="right"
        size="wide"
-       className="w-full max-sm:!max-w-full max-sm:!w-screen sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] border-l border-border/70 bg-card p-6 space-y-4 overflow-y-auto"
+       className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl border-l border-border/70 bg-card p-6 space-y-4 overflow-y-auto"
      >
       <SheetHeader>
         <SheetTitle className="text-base font-bold text-foreground">

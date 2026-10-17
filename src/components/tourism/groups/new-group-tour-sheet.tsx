@@ -328,7 +328,7 @@ export function NewGroupTourSheet({
  return (
  <Sheet open={open} onOpenChange={onOpenChange}>
  <SheetContent
- side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] md:max-w-3xl flex flex-col p-0 gap-0 overflow-hidden bg-card border-l border-border"
+ side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl flex flex-col p-0 gap-0 overflow-hidden overscroll-contain bg-card border-l border-border"
  >
  {/* ── 1. HEADER DO STUDIO ── */}
  <SheetHeader className="p-5 pb-4 border-b border-border/80 bg-muted/20">

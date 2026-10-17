@@ -14,7 +14,7 @@ export function CreatorNicheSelect({
   value,
   onValueChange,
   className,
-  placeholder = "Selecione o nicho principal...",
+  placeholder = "Selecione o segmento principal...",
   disabled = false,
 }: CreatorNicheSelectProps) {
   return (

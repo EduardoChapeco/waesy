@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Download, ImagePlus, Star, Palette, Check, Loader2, ArrowLeft, Sliders, Type, ImageIcon, ShieldCheck, Maximize2, RefreshCw, Dices } from "lucide-react";
+import { Download, ImagePlus, Star, Palette, Check, Loader2, ArrowLeft, Sliders, Type, ImageIcon, ShieldCheck, Maximize2, RefreshCw, Dices, Play, Sparkles, Film, Video } from "lucide-react";
 import { TravelPromoArtboard, type TravelPromoData, type PromoAspectRatio } from "./travel-promo-artboard";
 import { uploadClassifiedMedia } from "@/lib/classifieds/upload-classified-media";
 import { convertToCorsSafeDataUri, preloadImage } from "@/lib/canvas/cors-safe-image";
@@ -39,6 +39,7 @@ export interface TravelPromoFlyerModalProps {
     templateId?: string;
     niche?: string;
   };
+  niche?: string;
   destinationTitle?: string;
   destinationCity?: string;
   datesText?: string | null;
@@ -57,6 +58,7 @@ export function TravelPromoFlyerModal({
   isOpen,
   onClose,
   initialData,
+  niche: propNiche,
   destinationTitle,
   destinationCity,
   datesText: propDatesText,
@@ -68,6 +70,7 @@ export function TravelPromoFlyerModal({
   onAttachToClassified,
   onApplyImageToClassified,
 }: TravelPromoFlyerModalProps) {
+  const effectiveNiche = propNiche || initialData?.niche || "turismo";
   const isModalOpen = open !== undefined ? open : (isOpen ?? false);
   const handleModalClose = (val: boolean) => {
     if (onOpenChange) onOpenChange(val);
@@ -89,25 +92,25 @@ export function TravelPromoFlyerModal({
 
   // Estados de edição do Flyer
   const [templateId, setTemplateId] = useState<string>(
-    () => initialData?.templateId || getDefaultTemplateForNiche(initialData?.niche).id
+    () => initialData?.templateId || getDefaultTemplateForNiche(effectiveNiche).id
   );
   const [aspectRatio, setAspectRatio] = useState<PromoAspectRatio>("9:16");
 
   // Motor Dinâmico de CTAs
   const availableCTAs = useMemo(() => {
-    return getDynamicCTAsForNiche(initialData?.niche || (templateId.startsWith("imoveis") ? "imoveis" : "turismo"));
-  }, [initialData?.niche, templateId]);
+    return getDynamicCTAsForNiche(effectiveNiche || (templateId.startsWith("imoveis") ? "imoveis" : "turismo"));
+  }, [effectiveNiche, templateId]);
 
-  const [ctaLabel, setCtaLabel] = useState<string>(() => availableCTAs[0] || "Agendar Visita");
+  const [ctaLabel, setCtaLabel] = useState<string>(() => availableCTAs[0] || "Garantir Vaga");
 
   const handleShuffleLayout = () => {
-    const next = getNextTemplateInNiche(templateId, initialData?.niche);
+    const next = getNextTemplateInNiche(templateId, effectiveNiche);
     setTemplateId(next.id);
     toast.info(`Layout alternado para: ${next.name}`);
   };
 
   const handleCycleCTA = () => {
-    const next = getNextCTAOption(ctaLabel, initialData?.niche || (templateId.startsWith("imoveis") ? "imoveis" : "turismo"));
+    const next = getNextCTAOption(ctaLabel, effectiveNiche || (templateId.startsWith("imoveis") ? "imoveis" : "turismo"));
     setCtaLabel(next);
     toast.success(`CTA alterado para: "${next}"`);
   };
@@ -137,6 +140,7 @@ export function TravelPromoFlyerModal({
   const [containerSize, setContainerSize] = useState<{ width: number; height: number }>({ width: 600, height: 700 });
   const [activeTab, setActiveTab] = useState<string>("template");
   const [isMobileControlsOpen, setIsMobileControlsOpen] = useState<boolean>(false);
+  const [isAnimatedPreview, setIsAnimatedPreview] = useState<boolean>(false);
 
   // Sincronização e auto-binding quando propriedades externas mudam
   useEffect(() => {
@@ -299,6 +303,115 @@ export function TravelPromoFlyerModal({
     });
   }, [safeBgDataUri, bgImageUrl]);
 
+  const [isExportingVideo, setIsExportingVideo] = useState<boolean>(false);
+
+  const handleDownloadVideo = async () => {
+    setIsExportingVideo(true);
+    try {
+      // 1. Renderiza o canvas inicial via html2canvas
+      let resolvedDataUri = safeBgDataUri;
+      if (!resolvedDataUri || (!resolvedDataUri.startsWith("data:") && !resolvedDataUri.startsWith("blob:"))) {
+        resolvedDataUri = await convertToCorsSafeDataUri(bgImageUrl);
+        setSafeBgDataUri(resolvedDataUri);
+      }
+      await preloadImage(resolvedDataUri);
+
+      const el = document.getElementById("travel-promo-canvas-artboard");
+      if (!el) throw new Error("Elemento de arte promocional não encontrado.");
+
+      const html2canvas = (await import("html2canvas")).default;
+      const baseCanvas = await html2canvas(el, {
+        scale: 1.5,
+        useCORS: true,
+        allowTaint: false,
+        backgroundColor: "#0a192f",
+        logging: false,
+      });
+
+      // 2. Cria stream com canvas dinâmico de 3 segundos com animação suave de zoom e pulso de luz
+      const videoWidth = baseCanvas.width;
+      const videoHeight = baseCanvas.height;
+      const animCanvas = document.createElement("canvas");
+      animCanvas.width = videoWidth;
+      animCanvas.height = videoHeight;
+      const ctx = animCanvas.getContext("2d");
+      if (!ctx) throw new Error("Falha ao inicializar contexto 2D de vídeo.");
+
+      const stream = animCanvas.captureStream(30); // 30 FPS
+      const mimeType = MediaRecorder.isTypeSupported("video/mp4")
+        ? "video/mp4"
+        : MediaRecorder.isTypeSupported("video/webm;codecs=vp9")
+        ? "video/webm;codecs=vp9"
+        : "video/webm";
+
+      const recorder = new MediaRecorder(stream, {
+        mimeType,
+        videoBitsPerSecond: 5000000, // 5 Mbps
+      });
+
+      const chunks: Blob[] = [];
+      recorder.ondataavailable = (e) => {
+        if (e.data && e.data.size > 0) chunks.push(e.data);
+      };
+
+      const videoPromise = new Promise<Blob>((resolve, reject) => {
+        recorder.onstop = () => {
+          const videoBlob = new Blob(chunks, { type: mimeType });
+          resolve(videoBlob);
+        };
+        recorder.onerror = reject;
+      });
+
+      recorder.start();
+
+      // Renderiza loop de 90 frames (3 segundos a 30fps) com efeito de câmera lenta (Ken Burns) e revelação
+      const totalFrames = 90;
+      for (let frame = 0; frame < totalFrames; frame++) {
+        const progress = frame / totalFrames;
+        const zoom = 1 + progress * 0.05; // 5% de zoom cinematográfico contínuo
+        const alpha = Math.min(progress * 4, 1); // Fade in suave no início
+
+        ctx.fillStyle = "#070b12";
+        ctx.fillRect(0, 0, videoWidth, videoHeight);
+
+        ctx.save();
+        ctx.globalAlpha = alpha;
+        ctx.translate(videoWidth / 2, videoHeight / 2);
+        ctx.scale(zoom, zoom);
+        ctx.translate(-videoWidth / 2, -videoHeight / 2);
+        ctx.drawImage(baseCanvas, 0, 0);
+        ctx.restore();
+
+        // Barra sutil de pulso visual inferior
+        const pulseAlpha = 0.3 + 0.2 * Math.sin(progress * Math.PI * 4);
+        ctx.fillStyle = `rgba(255, 215, 0, ${pulseAlpha})`;
+        ctx.fillRect(0, videoHeight - 8, videoWidth * progress, 8);
+
+        await new Promise((r) => setTimeout(r, 33)); // ~30 FPS
+      }
+
+      recorder.stop();
+      const videoBlob = await videoPromise;
+
+      const url = URL.createObjectURL(videoBlob);
+      const a = document.createElement("a");
+      a.href = url;
+      const ext = mimeType.includes("mp4") ? "mp4" : "webm";
+      a.download = `storie-video-${title.toLowerCase().replace(/[^a-z0-9]/g, "-")}.${ext}`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      toast.success("Mini-vídeo animado gerado e exportado com sucesso!");
+    } catch (err: any) {
+      console.error("[SocialEngine] Erro ao gerar vídeo:", err);
+      toast.error("Erro na renderização do vídeo: " + (err?.message || "Tente novamente"));
+    } finally {
+      setIsExportingVideo(false);
+    }
+  };
+
   const handleDownload = async () => {
     setIsExporting(true);
     try {
@@ -361,7 +474,7 @@ export function TravelPromoFlyerModal({
 
   return (
     <Dialog open={isModalOpen} onOpenChange={handleModalClose}>
-      <DialogContent className="max-w-none w-screen max-w-full h-[100dvh] p-0 border-0 rounded-none bg-background flex flex-col overflow-hidden outline-none [&>button]:hidden z-50">
+      <DialogContent size="screen" className="p-0 border-0 rounded-none bg-background flex flex-col overflow-hidden outline-none [&>button]:hidden z-50">
         {/* ── 1. Top Bar Estúdio (Apple Studio / Canva Ergonomics) ── */}
         <header className="h-14 px-3 sm:px-6 border-b border-border/80 bg-card/95 backdrop-blur-md flex items-center justify-between z-20 shrink-0 select-none">
           <div className="flex items-center gap-2 sm:gap-4 min-w-0">
@@ -444,6 +557,26 @@ export function TravelPromoFlyerModal({
               <span className="hidden sm:inline">Trocar Layout</span>
             </Button>
 
+            {/* Preview Dinâmico com Efeito Motion */}
+            <Button
+              type="button"
+              variant={isAnimatedPreview ? "default" : "outline"}
+              size="sm"
+              onClick={() => {
+                setIsAnimatedPreview(!isAnimatedPreview);
+                if (!isAnimatedPreview) {
+                  toast.success("Modo Motion Ativo: Micro-animações de entrada renderizadas!");
+                }
+              }}
+              className={`h-9 px-3 rounded-lg text-xs gap-1.5 font-semibold cursor-pointer transition-all ${
+                isAnimatedPreview ? "bg-amber-500 text-slate-950 font-bold" : "border-border/80 text-foreground"
+              }`}
+              title="Alternar modo de animação dinâmica para pré-visualização"
+            >
+              <Sparkles className="size-3.5" />
+              <span className="hidden md:inline">{isAnimatedPreview ? "Animação Ativa" : "Modo Motion"}</span>
+            </Button>
+
             {/* Botão Mobile para Abrir Controles */}
             <Button
               type="button"
@@ -454,6 +587,20 @@ export function TravelPromoFlyerModal({
             >
               <Sliders className="size-3.5" />
               <span>Ajustes</span>
+            </Button>
+
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleDownloadVideo}
+              disabled={isExportingVideo}
+              className="h-9 px-3 sm:px-4 rounded-lg text-xs font-semibold gap-2 cursor-pointer border-amber-500/30 hover:bg-amber-500/10 text-amber-500 hover:text-amber-400"
+              title="Gerar e baixar vídeo animado de 3s (Stories/Reels)"
+            >
+              {isExportingVideo ? <Loader2 className="size-3.5 animate-spin" /> : <Film className="size-3.5" />}
+              <span className="hidden sm:inline">Gerar Vídeo Animado</span>
+              <span className="sm:hidden">Vídeo</span>
             </Button>
 
             <Button
@@ -511,7 +658,7 @@ export function TravelPromoFlyerModal({
                   height: `${artDimensions.height}px`,
                 }}
               >
-                <TravelPromoArtboard data={promoData} />
+                <TravelPromoArtboard data={promoData} isAnimated={isAnimatedPreview} />
               </div>
             </div>
 
@@ -584,7 +731,16 @@ export function TravelPromoFlyerModal({
                       </button>
                     </div>
                     <div className="grid grid-cols-1 gap-2">
-                      {getAllSocialTemplates().map((t) => (
+                      {getAllSocialTemplates()
+                        .slice()
+                        .sort((a, b) => {
+                          const aMatch = a.niche === effectiveNiche || (effectiveNiche.startsWith("turis") && a.niche === "turismo") || (effectiveNiche.startsWith("imov") && a.niche === "imoveis");
+                          const bMatch = b.niche === effectiveNiche || (effectiveNiche.startsWith("turis") && b.niche === "turismo") || (effectiveNiche.startsWith("imov") && b.niche === "imoveis");
+                          if (aMatch && !bMatch) return -1;
+                          if (!aMatch && bMatch) return 1;
+                          return 0;
+                        })
+                        .map((t) => (
                         <button
                           key={t.id}
                           type="button"

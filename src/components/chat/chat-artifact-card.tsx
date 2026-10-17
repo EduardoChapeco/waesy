@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   FileText,
   Table,
@@ -14,9 +14,21 @@ import {
   CheckCircle,
   AlertCircle,
   XCircle,
+  Printer,
+  Calendar,
+  BarChart3,
+  Building2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { CopilotMessageRenderer } from "./copilot-message-renderer";
 import { cn } from "@/lib/utils";
 import type { ChatArtifactType, ChatArtifactData } from "@/types/chat";
 export type { ChatArtifactType, ChatArtifactData };
@@ -49,7 +61,7 @@ const ARTIFACT_TYPE_CONFIG: Record<
     defaultExport: "pdf",
   },
   landing_page: {
-    label: "Landing Page",
+    label: "Página de Apresentação",
     icon: Layout,
     defaultExport: "json",
   },
@@ -59,7 +71,7 @@ const ARTIFACT_TYPE_CONFIG: Record<
     defaultExport: "pdf",
   },
   image: {
-    label: "Imagem Gerada",
+    label: "Imagem Criada",
     icon: Image,
     defaultExport: "png",
   },
@@ -72,6 +84,46 @@ const ARTIFACT_TYPE_CONFIG: Record<
     label: "Roteiro de Viagem",
     icon: Compass,
     defaultExport: "pdf",
+  },
+  chart: {
+    label: "Gráfico Interativo",
+    icon: BarChart3,
+    defaultExport: "json",
+  },
+  interactive_table: {
+    label: "Tabela Interativa",
+    icon: Table,
+    defaultExport: "csv",
+  },
+  biolink_cluster: {
+    label: "Central de Contatos e Locais",
+    icon: Building2,
+    defaultExport: "json",
+  },
+  builder_bridge: {
+    label: "Estrutura do Documento",
+    icon: Layers,
+    defaultExport: "json",
+  },
+  travel_dossier: {
+    label: "Dossiê de Viagem",
+    icon: Compass,
+    defaultExport: "pdf",
+  },
+  document_preview: {
+    label: "Prévia de Documento",
+    icon: FileText,
+    defaultExport: "pdf",
+  },
+  website: {
+    label: "Página de Apresentação",
+    icon: Layout,
+    defaultExport: "json",
+  },
+  social_post: {
+    label: "Publicação para Redes",
+    icon: Layout,
+    defaultExport: "json",
   },
 };
 
@@ -197,6 +249,7 @@ export function ChatArtifactCard({
   };
   const Icon = config.icon;
 
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const rubricData = (artifact.data as any)?.rubric as Record<string, number> | undefined;
   const qualityScore =
     typeof (artifact.data as any)?.rubric?.totalScore === "number"
@@ -211,7 +264,7 @@ export function ChatArtifactCard({
       if (docId) {
         window.location.href = `/workspace/builder/${docId}/editor`;
       } else {
-        window.location.href = `/workspace/cms/paginas?artifactId=${artifact.id}`;
+        setIsPreviewOpen(true);
       }
     }
   };
@@ -222,8 +275,12 @@ export function ChatArtifactCard({
     }
   };
 
+  const travelDestination = (artifact.data as any)?.destination || (artifact.data as any)?.cidade || "";
+  const travelDays = Array.isArray((artifact.data as any)?.days) ? (artifact.data as any).days : [];
+
   return (
-    <article
+    <>
+      <article
       role="article"
       aria-label={`Artefato: ${artifact.title}`}
       className={cn(
@@ -336,5 +393,114 @@ export function ChatArtifactCard({
         </Button>
       </div>
     </article>
+
+    {/* ── Modal de Pré-Visualização In-Place (Garante Zero 404) ── */}
+    <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
+      <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col p-0 gap-0 overflow-hidden bg-card border-border">
+        <DialogHeader className="p-4 border-b border-border bg-muted/20 shrink-0">
+          <div className="flex items-center gap-2">
+            <Badge variant="outline" className="text-2xs font-mono h-4 px-2 border-border/40">
+              v{artifact.version}
+            </Badge>
+            <DialogTitle className="text-sm font-bold text-foreground">
+              {artifact.title}
+            </DialogTitle>
+          </div>
+          <DialogDescription className="text-xs text-muted-foreground line-clamp-1">
+            {artifact.previewSummary || (artifact as any).summary || "Documento organizado pelo Assessor Waesy"}
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          {travelDestination || travelDays.length > 0 ? (
+            <div className="space-y-4">
+              <div className="p-3 rounded-lg border border-primary/20 bg-primary/5 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Compass className="size-4 text-primary" />
+                  <span className="text-xs font-bold text-foreground">
+                    {travelDestination || "Roteiro Turístico"}
+                  </span>
+                </div>
+                {travelDays.length > 0 && (
+                  <Badge variant="secondary" className="text-2xs">
+                    {travelDays.length} {travelDays.length === 1 ? "dia" : "dias"} planejados
+                  </Badge>
+                )}
+              </div>
+
+              {travelDays.map((d: any, idx: number) => (
+                <div key={idx} className="p-3 rounded-lg border border-border bg-muted/10 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="size-3.5 text-primary" />
+                    <span className="text-xs font-semibold text-foreground">
+                      {d.day || `Dia ${idx + 1}`}: {d.title || d.theme || "Programação"}
+                    </span>
+                  </div>
+                  {Array.isArray(d.activities || d.stops) && (
+                    <ul className="text-xs text-muted-foreground space-y-1.5 list-disc pl-5">
+                      {(d.activities || d.stops).map((act: any, aIdx: number) => (
+                        <li key={aIdx}>
+                          <strong className="text-foreground">{typeof act === "string" ? act : act.time || act.title}:</strong>{" "}
+                          {typeof act === "object" ? (act.description || act.name || "") : ""}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : artifact.type === "spreadsheet" && Array.isArray((artifact.data as any)?.headers) && Array.isArray((artifact.data as any)?.rows) ? (
+            <div className="table-wrapper overflow-x-auto rounded-lg border border-border">
+              <table className="w-full text-xs text-left">
+                <thead className="bg-muted/50 border-b border-border font-semibold text-foreground">
+                  <tr>
+                    {((artifact.data as any).headers as string[]).map((h, i) => (
+                      <th key={i} className="px-3 py-2 text-2xs font-semibold">{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border/60">
+                  {((artifact.data as any).rows as any[][]).slice(0, 50).map((row, rIdx) => (
+                    <tr key={rIdx} className="hover:bg-muted/20">
+                      {row.map((cell, cIdx) => (
+                        <td key={cIdx} className="px-3 py-1 font-mono text-2xs truncate max-w-xs">{String(cell ?? "")}</td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : typeof (artifact.data as any)?.content === "string" ? (
+            <CopilotMessageRenderer content={(artifact.data as any).content} />
+          ) : (
+            <div className="rounded-lg border border-border/60 bg-muted/20 p-4">
+              <pre className="font-mono text-2xs text-muted-foreground whitespace-pre-wrap">{JSON.stringify(artifact.data, null, 2)}</pre>
+            </div>
+          )}
+        </div>
+
+        <div className="p-3 border-t border-border bg-muted/10 flex items-center justify-between shrink-0">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => window.print()}
+            className="h-11 px-3 text-xs gap-1.5 focus-visible:ring-2 focus-visible:ring-primary/40"
+          >
+            <Printer className="size-3.5" />
+            <span>Imprimir</span>
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            onClick={() => setIsPreviewOpen(false)}
+            className="h-11 px-4 text-xs font-semibold bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-primary/40"
+          >
+            Fechar
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  </>
   );
 }

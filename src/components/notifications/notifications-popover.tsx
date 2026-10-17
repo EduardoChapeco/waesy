@@ -64,7 +64,8 @@ export function NotificationsPopover({ session }: NotificationsPopoverProps) {
  }
  setOpen(false);
  if (item.linkUrl) {
- navigate({ to: item.linkUrl });
+ const canonicalUrl = item.linkUrl.replace(/^\/_store\//, "/");
+ navigate({ to: canonicalUrl as any });
  }
  };
 

@@ -11,6 +11,7 @@ import { PWAInstallBanner } from "@/components/commerce/pwa-install-banner";
 import { OfflineIndicator } from "./offline-indicator";
 import { WaesyCopilotDrawer } from "@/components/chat/waesy-copilot-drawer";
 import { NativeMobileHeader } from "@/components/navigation/native-mobile-header";
+import { ActiveContextBanner } from "./context-banner";
 import { useWindowSizeClass } from "@/hooks/use-mobile";
 
 function resolveCleanMobileTitle(pathname: string, fallbackTitle?: string): string {
@@ -84,6 +85,59 @@ function resolveCleanMobileTitle(pathname: string, fallbackTitle?: string): stri
   return seg.charAt(0).toUpperCase() + seg.slice(1).replace(/-/g, " ");
 }
 
+/**
+ * Determina se a rota ativa renderiza seu próprio NativeMobileHeader ou cabeçalho dedicado,
+ * impedindo a renderização duplicada de cabeçalho global pelo AppShell.
+ */
+export function checkHasCustomPageMobileHeader(pathname: string): boolean {
+  const clean = pathname.replace(/\/+$/, "") || "/";
+
+  const exactCustomRoutes = new Set([
+    "/conta",
+    "/agenda",
+    "/afiliados",
+    "/classificados",
+    "/marketplace",
+    "/diretorio",
+    "/imoveis",
+    "/servicos",
+    "/eventos",
+    "/empregos",
+    "/agendar",
+    "/turismo",
+    "/faq",
+  ]);
+
+  if (exactCustomRoutes.has(clean)) return true;
+
+  const prefixCustomRoutes = [
+    "/doacoes",
+    "/ofertas",
+    "/redefinir-senha",
+    "/destaques",
+    "/admin-master",
+    "/conta/atividade",
+    "/conta/avaliacoes",
+    "/conta/enderecos",
+    "/conta/entregador",
+    "/conta/financas",
+    "/conta/salvos",
+    "/conta/trocas",
+    "/conta/conversas",
+    "/conta/agendamentos",
+    "/conta/classificados",
+    "/conta/negociacoes",
+    "/conta/comissoes",
+    "/conta/curriculo",
+    "/conta/empresa",
+    "/conta/ingressos",
+    "/conta/notificacoes",
+    "/conta/pedidos",
+  ];
+
+  return prefixCustomRoutes.some((prefix) => clean === prefix || clean.startsWith(`${prefix}/`));
+}
+
 export interface AppShellProps {
  children: ReactNode;
  session?: any;
@@ -99,7 +153,6 @@ export interface AppShellProps {
 export function AppShell({ children, session, brandSettings }: AppShellProps) {
   const location = useLocation();
   const mainRef = useRef<HTMLElement>(null);
-  const { isCompact } = useWindowSizeClass();
 
  useEffect(() => {
    if (typeof window !== "undefined") {
@@ -193,6 +246,7 @@ export function AppShell({ children, session, brandSettings }: AppShellProps) {
     location.pathname.includes("/agendar") ||
     location.pathname.includes("/servicos") ||
     location.pathname.includes("/classificados") ||
+    location.pathname.includes("/marketplace") ||
     location.pathname.includes("/concurso") ||
     location.pathname.includes("/diretorio") ||
     location.pathname.includes("/empregos") ||
@@ -237,49 +291,22 @@ export function AppShell({ children, session, brandSettings }: AppShellProps) {
   const isFeedPage = location.pathname.startsWith("/feed");
   // isMarketingLanding removido (V99/FASE 1) — LP agora em /cadastroantecipado.
 
-  const hasCustomPageMobileHeader =
-    location.pathname === "/conta" ||
-    location.pathname === "/conta/" ||
-    location.pathname === "/agenda" ||
-    location.pathname === "/afiliados" ||
-    location.pathname === "/classificados" ||
-    location.pathname === "/diretorio" ||
-    location.pathname === "/diretorio/" ||
-    location.pathname === "/imoveis" ||
-    location.pathname === "/servicos" ||
-    location.pathname === "/eventos" ||
-    location.pathname === "/empregos" ||
-    location.pathname === "/empregos/" ||
-    location.pathname === "/agendar" ||
-    location.pathname === "/agendar/" ||
-    location.pathname === "/turismo" ||
-    location.pathname === "/turismo/" ||
-    location.pathname.startsWith("/doacoes") ||
-    location.pathname.startsWith("/ofertas") ||
-    location.pathname.startsWith("/conta/conversas") ||
-    location.pathname.startsWith("/conta/agendamentos") ||
-    location.pathname.startsWith("/conta/classificados") ||
-    location.pathname.startsWith("/conta/negociacoes") ||
-    location.pathname.startsWith("/conta/comissoes") ||
-    location.pathname.startsWith("/conta/curriculo") ||
-    location.pathname.startsWith("/conta/empresa") ||
-    location.pathname.startsWith("/conta/ingressos") ||
-    location.pathname.startsWith("/conta/notificacoes") ||
-    location.pathname.startsWith("/conta/pedidos") ||
-    location.pathname.startsWith("/destaques/") ||
-    location.pathname.startsWith("/admin-master");
+  const hasCustomPageMobileHeader = checkHasCustomPageMobileHeader(location.pathname);
+
+  const isCopilotPage = location.pathname.startsWith("/copilot");
 
   const shouldRenderGlobalNativeMobileHeader =
     isCleanMobileAppPage &&
     !isProfilePage &&
     !isFormPage &&
     !isDetailPage &&
-    !hasCustomPageMobileHeader;
+    !hasCustomPageMobileHeader &&
+    !isCopilotPage;
 
   return (
-    <div className="h-[100dvh] w-full max-w-full bg-background text-foreground selection:bg-primary selection:text-primary-foreground font-sans antialiased relative flex flex-col overflow-hidden">
-      {/* ── Barra de Topo Horizontal (Ocultada no Mobile em Telas Nativas de App, Perfil, Formulário e Afiliados) ── */}
-      <div className={isProfilePage || isFormPage || isCleanMobileAppPage || isDetailPage ? "hidden md:block" : ""}>
+    <div className="h-dvh w-full max-w-full bg-background text-foreground selection:bg-primary selection:text-primary-foreground font-sans antialiased relative flex flex-col overflow-hidden">
+      {/* ── Barra de Topo Horizontal (Ocultada no Mobile em Telas Nativas de App, Perfil, Formulário, Copilot e Afiliados) ── */}
+      <div className={isProfilePage || isFormPage || isCleanMobileAppPage || isDetailPage || isCopilotPage ? "hidden md:block" : ""}>
         <TopBar
           session={session}
           brandSettings={brandSettings}
@@ -295,6 +322,9 @@ export function AppShell({ children, session, brandSettings }: AppShellProps) {
         />
       )}
 
+      {/* ── Banner Global de Contexto Não-Civil (Aviso de Identidade Ativa) ── */}
+      <ActiveContextBanner session={session} />
+
       {/* ── Corpo Principal com Scrolls Independentes (Sidebar fixa + Main independente) ── */}
       <div className="flex-1 flex min-w-0 w-full max-w-full relative overflow-hidden">
         {/* Coluna Contextual Fixa com Scroll Próprio (Desktop apenas) */}
@@ -305,30 +335,34 @@ export function AppShell({ children, session, brandSettings }: AppShellProps) {
         {/* Viewport Central com Container Canônico Único + Container Query Anti-Jank */}
         <main
           ref={mainRef}
-          className={`main-container-query flex-1 flex flex-col min-w-0 h-full w-full max-w-full overflow-y-auto no-scrollbar overflow-x-hidden ${
-            isFeedPage || isCleanMobileAppPage
-              ? "px-4 sm:px-6 md:px-8 pt-0 md:pt-3 pb-24 md:pb-8"
+          className={`main-container-query flex-1 flex flex-col min-w-0 h-full w-full max-w-full ${
+            isCopilotPage
+              ? "p-0 m-0 overflow-hidden min-h-0"
+              : isFeedPage || isCleanMobileAppPage
+              ? "overflow-y-auto no-scrollbar overflow-x-hidden px-2 sm:px-6 md:px-8 pt-0 md:pt-3 pb-24 md:pb-8"
               : isFormPage
-              ? "px-4 sm:px-6 md:px-8 pt-0 md:pt-4 pb-20 md:pb-8"
+              ? "overflow-y-auto no-scrollbar overflow-x-hidden px-2 sm:px-6 md:px-8 pt-0 md:pt-4 pb-20 md:pb-8"
               : isDetailPage
-              ? "px-4 sm:px-6 md:px-8 py-0 md:py-3 pb-20 md:pb-8"
-              : "px-4 sm:px-6 md:px-8 pt-0 md:pt-3 pb-24 md:pb-8"
+              ? "overflow-y-auto no-scrollbar overflow-x-hidden px-2 sm:px-6 md:px-8 py-0 md:py-3 pb-20 md:pb-8"
+              : "overflow-y-auto no-scrollbar overflow-x-hidden px-2 sm:px-6 md:px-8 pt-0 md:pt-3 pb-24 md:pb-8"
           }`}
         >
           <div className={`w-full mx-auto flex flex-col items-stretch min-w-0 flex-1 ${
-            isFeedPage
+            isCopilotPage
+              ? "size-full max-w-none overflow-hidden min-h-0"
+              : isFeedPage
               ? "max-w-2xl"
               : isFormPage 
               ? "max-w-7xl" 
-              : "max-w-7xl 2xl:max-w-[1440px]"
+              : "max-w-7xl 2xl:max-w-desktop"
           }`}>
             {children}
           </div>
         </main>
       </div>
 
-      {/* Mobile Bottom Navigation com Botão Criar Flutuante & Action Sheet (Ocultado em páginas de detalhe para liberar a barra de compra/conversão) */}
-      {isCompact && !isDetailPage && <MobileNav session={session} userRole={session?.role} />}
+      {/* Mobile Bottom Navigation com Botão Criar Flutuante & Action Sheet (Ocultado em páginas de detalhe e no copilot para manter o input de chat acessível) */}
+      {!isDetailPage && !isCopilotPage && <MobileNav session={session} userRole={session?.role} />}
 
       {/* Waesy Copilot Drawer Global Flutuante */}
       <WaesyCopilotDrawer session={session} />

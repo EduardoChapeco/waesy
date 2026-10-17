@@ -221,7 +221,7 @@ function BookingIndexPage() {
   });
 
   return (
-    <div className="w-full max-w-5xl mx-auto px-4 sm:px-5 space-y-6 pb-24">
+    <div className="w-full max-w-5xl mx-auto px-0 sm:px-4 md:px-0 space-y-6 pb-24">
       <div className="-mx-4 sm:-mx-5">
         <NativeMobileHeader
           title="Agendar"
@@ -314,11 +314,11 @@ function BookingIndexPage() {
                             </div>
                           )}
                           <div className="absolute top-2.5 left-2.5 flex items-center gap-2">
-                            <span className="bg-background/90 backdrop-blur-md text-foreground text-[10px] font-mono font-bold px-2 py-1 rounded-lg border border-border/40">
+                            <span className="bg-background/90 backdrop-blur-md text-foreground text-xs font-mono font-bold px-2 py-1 rounded-lg border border-border/40">
                               {service.category || "Geral"}
                             </span>
                             {service.duration_minutes && (
-                              <span className="bg-background/90 backdrop-blur-md text-foreground text-[10px] font-mono font-bold px-2 py-1 rounded-lg border border-border/40 flex items-center gap-1">
+                              <span className="bg-background/90 backdrop-blur-md text-foreground text-xs font-mono font-bold px-2 py-1 rounded-lg border border-border/40 flex items-center gap-1">
                                 <Clock size={11} />
                                 <span>{service.duration_minutes}m</span>
                               </span>
@@ -329,7 +329,7 @@ function BookingIndexPage() {
                         {/* Informações */}
                         <div className="p-4 space-y-2 text-xs">
                           {service.stores?.name && (
-                            <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                            <div className="flex items-center gap-1 text-xs text-muted-foreground">
                               <Storefront size={13} className="text-primary" />
                               <span className="font-semibold truncate">{service.stores.name}</span>
                             </div>
@@ -338,7 +338,7 @@ function BookingIndexPage() {
                             {service.title}
                           </h3>
                           {service.description && (
-                            <p className="text-muted-foreground line-clamp-2 leading-relaxed text-[11px]">
+                            <p className="text-muted-foreground line-clamp-2 leading-relaxed text-xs">
                               {service.description}
                             </p>
                           )}
@@ -392,11 +392,11 @@ function BookingIndexPage() {
                             </div>
                           )}
                           <div className="absolute top-2.5 left-2.5 flex items-center gap-2">
-                            <span className="bg-background/90 backdrop-blur-md text-foreground text-[10px] font-mono font-bold px-2 py-1 rounded-lg border border-border/40">
+                            <span className="bg-background/90 backdrop-blur-md text-foreground text-xs font-mono font-bold px-2 py-1 rounded-lg border border-border/40">
                               {service.category || "Geral"}
                             </span>
                             {service.duration_minutes && (
-                              <span className="bg-background/90 backdrop-blur-md text-foreground text-[10px] font-mono font-bold px-2 py-1 rounded-lg border border-border/40 flex items-center gap-1">
+                              <span className="bg-background/90 backdrop-blur-md text-foreground text-xs font-mono font-bold px-2 py-1 rounded-lg border border-border/40 flex items-center gap-1">
                                 <Clock size={11} />
                                 <span>{service.duration_minutes}m</span>
                               </span>
@@ -406,7 +406,7 @@ function BookingIndexPage() {
 
                         <div className="p-4 space-y-2">
                           {service.stores?.name && (
-                            <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                            <div className="flex items-center gap-1 text-xs text-muted-foreground">
                               <Storefront size={13} className="text-primary" />
                               <span className="font-semibold truncate">{service.stores.name}</span>
                             </div>
@@ -469,11 +469,11 @@ function BookingIndexPage() {
                         </div>
                       )}
                       <div className="absolute top-2.5 left-2.5 flex items-center gap-2">
-                        <span className="bg-background/90 backdrop-blur-md text-foreground text-[10px] font-mono font-bold px-2 py-1 rounded-lg border border-border/40">
+                        <span className="bg-background/90 backdrop-blur-md text-foreground text-xs font-mono font-bold px-2 py-1 rounded-lg border border-border/40">
                           {service.category || "Geral"}
                         </span>
                         {service.duration_minutes && (
-                          <span className="bg-background/90 backdrop-blur-md text-foreground text-[10px] font-mono font-bold px-2 py-1 rounded-lg border border-border/40 flex items-center gap-1">
+                          <span className="bg-background/90 backdrop-blur-md text-foreground text-xs font-mono font-bold px-2 py-1 rounded-lg border border-border/40 flex items-center gap-1">
                             <Clock size={11} />
                             <span>{service.duration_minutes}m</span>
                           </span>
@@ -484,7 +484,7 @@ function BookingIndexPage() {
                     {/* Conteúdo */}
                     <div className="p-4 space-y-2">
                       {service.stores?.name && (
-                        <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
                           <Storefront size={13} className="text-primary" />
                           <span className="font-semibold truncate">{service.stores.name}</span>
                         </div>
@@ -503,7 +503,7 @@ function BookingIndexPage() {
                   {/* Rodapé */}
                   <div className="p-4 pt-2 border-t border-border/40 flex items-center justify-between">
                     <div>
-                      <span className="text-[10px] text-muted-foreground block">A partir de</span>
+                      <span className="text-xs text-muted-foreground block">A partir de</span>
                       <span className="font-mono font-black text-lg text-foreground">
                         {formatMoney(service.price_cents)}
                       </span>
@@ -554,17 +554,17 @@ function BookingIndexPage() {
                     className="min-w-0 flex-1 space-y-2 pl-1 block"
                   >
                     <div className="flex items-center gap-2 flex-wrap">
-                      <Badge variant="outline" className="text-[9px] font-mono font-bold uppercase px-2 py-0 rounded-md">
+                      <Badge variant="outline" className="text-xs font-mono font-bold uppercase px-2 py-1 rounded-md">
                         {service.category || "Geral"}
                       </Badge>
                       {service.duration_minutes && (
-                        <span className="text-[11px] text-muted-foreground font-mono flex items-center gap-1">
+                        <span className="text-xs text-muted-foreground font-mono flex items-center gap-1">
                           <Clock size={12} />
                           <span>{service.duration_minutes} min</span>
                         </span>
                       )}
                       {service.stores?.name && (
-                        <span className="text-[11px] text-muted-foreground font-medium truncate">
+                        <span className="text-xs text-muted-foreground font-medium truncate">
                           • {service.stores.name}
                         </span>
                       )}
@@ -602,7 +602,7 @@ function BookingIndexPage() {
 
       {/* ── SHEET LATERAL DE AGENDAMENTO RÁPIDO (Desktop e Mobile Drawer) ── */}
       <Sheet open={!!selectedService} onOpenChange={(open) => !open && setSelectedService(null)}>
-        <SheetContent side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] p-0 flex flex-col justify-between bg-card">
+        <SheetContent side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl p-0 flex flex-col justify-between overscroll-contain bg-card">
           <div className="p-6 overflow-y-auto space-y-6 flex-1">
             <SheetHeader className="text-left space-y-1">
               <SheetTitle className="text-lg font-bold text-foreground flex items-center gap-2">
@@ -663,7 +663,7 @@ function BookingIndexPage() {
                                 : "bg-muted/30 border-border/50 text-muted-foreground hover:bg-muted"
                             )}
                           >
-                            <span className="text-[9px] font-mono tracking-wider">{day.weekday}</span>
+                            <span className="text-xs font-mono tracking-wider">{day.weekday}</span>
                             <span className="text-sm font-bold mt-1">{day.dayNum}</span>
                           </button>
                         );
@@ -675,7 +675,7 @@ function BookingIndexPage() {
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
                       <Label className="text-xs font-bold text-foreground">2. Horário Disponível</Label>
-                      <span className="text-[10px] text-muted-foreground font-mono">
+                      <span className="text-xs text-muted-foreground font-mono">
                         {slots.length} horários
                       </span>
                     </div>
@@ -784,7 +784,7 @@ function BookingIndexPage() {
           {!isSuccess && selectedService && (
             <div className="p-4 border-t border-border/60 bg-background flex items-center justify-between gap-3">
               <div>
-                <span className="text-[10px] text-muted-foreground font-semibold block">Total</span>
+                <span className="text-xs text-muted-foreground font-semibold block">Total</span>
                 <span className="text-base font-black font-mono text-foreground">
                   {selectedPassId ? "1 Crédito (Pacote)" : formatMoney(selectedService.price_cents)}
                 </span>

@@ -47,7 +47,7 @@ export function MagicOnboardingCard({ storeId, onSuccess }: MagicOnboardingCardP
     }
 
     setIsProcessing(true);
-    setCurrentStageText("Conectando fontes e iniciando crawler...");
+    setCurrentStageText("Conectando fontes e iniciando busca em tempo real...");
     setCompletedResult(null);
 
     try {
@@ -60,12 +60,12 @@ export function MagicOnboardingCard({ storeId, onSuccess }: MagicOnboardingCardP
 
       if (res.success && res.result) {
         setCompletedResult(res.result);
-        setCurrentStageText("Brandkit e matrizes prontos.");
+        setCurrentStageText("Identidade visual e catálogo prontos.");
         toast.success(res.message);
         if (onSuccess) onSuccess(res.result);
       }
     } catch (err: any) {
-      const msg = err?.message || "Falha ao processar onboarding.";
+      const msg = err?.message || "Falha ao configurar as informações da loja.";
       setErrorMessage(msg);
       toast.error(msg);
     } finally {

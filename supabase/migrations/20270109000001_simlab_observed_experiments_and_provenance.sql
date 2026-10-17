@@ -89,6 +89,9 @@ ALTER TABLE public.simlab_focus_group_messages
   ADD COLUMN IF NOT EXISTS provenance JSONB NOT NULL DEFAULT '{}'::jsonb;
 
 ALTER TABLE public.simlab_statistical_synthesis
+  ADD COLUMN IF NOT EXISTS rejection_rate NUMERIC;
+
+ALTER TABLE public.simlab_statistical_synthesis
   ALTER COLUMN synthetic_nps DROP NOT NULL,
   ALTER COLUMN overall_approval_rate DROP NOT NULL,
   ALTER COLUMN rejection_rate DROP NOT NULL,

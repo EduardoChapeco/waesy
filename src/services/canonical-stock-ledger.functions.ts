@@ -10,7 +10,7 @@
 import { createServerFn } from '@tanstack/react-start';
 import { z } from 'zod';
 import { getServerClient, SupabaseUnconfiguredError } from '@/lib/supabase';
-import { getServerIdentity } from '@/lib/server-access';
+import { getServerIdentity, assertStoreAccess } from '@/lib/server-access';
 
 export const stockMovementTypeSchema = z.enum([
   'purchase',
@@ -128,7 +128,8 @@ export const recordStockMovement = createServerFn({ method: 'POST' })
   .handler(async ({ data }) => {
     try {
       const identity = await getServerIdentity();
-      return await _recordStockMovement(data, identity?.userId || undefined);
+      assertStoreAccess(identity, ['owner', 'admin', 'manager', 'stock'], data.storeId);
+      return await _recordStockMovement(data, identity.id);
     } catch (e) {
       if (e instanceof SupabaseUnconfiguredError) throw e;
       console.error('[stock-ledger] Erro em recordStockMovement:', e);
@@ -165,6 +166,8 @@ export const listStockLedger = createServerFn({ method: 'GET' })
   .validator((d: { variantId: string; storeId: string; limit?: number }) => d)
   .handler(async ({ data }) => {
     try {
+      const identity = await getServerIdentity();
+      assertStoreAccess(identity, ['owner', 'admin', 'manager', 'seller', 'stock'], data.storeId);
       return await _listStockLedger(data.variantId, data.storeId, data.limit);
     } catch (e) {
       if (e instanceof SupabaseUnconfiguredError) throw e;

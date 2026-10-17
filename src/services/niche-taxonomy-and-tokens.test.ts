@@ -117,7 +117,7 @@ describe("MASTER PROMPT V138: Niche Taxonomy, Micro-Copy Metamorphosis & Design 
       expect(notif.message).not.toContain("pedido faturado");
       expect(notif.message).not.toContain("separação");
       expect(notif.emailSubject).toContain("agendamento");
-      expect(notif.actionUrl).toBe("/_store/conta/agendamentos");
+      expect(notif.actionUrl).toBe("/conta/agendamentos");
     });
 
     it("deve formatar notificação de proposta imobiliária com terminologia de alto padrão", () => {
@@ -131,7 +131,7 @@ describe("MASTER PROMPT V138: Niche Taxonomy, Micro-Copy Metamorphosis & Design 
       expect(notif.message).toContain("imóvel");
       expect(notif.message).toContain("Cobertura Vista Mar");
       expect(notif.emailPreheader).toContain("minuta contratual");
-      expect(notif.actionUrl).toBe("/_store/conta/negociacoes");
+      expect(notif.actionUrl).toBe("/conta/negociacoes");
     });
 
     it("deve formatar notificação de gastronomia focada em preparo da cozinha", () => {
@@ -144,7 +144,7 @@ describe("MASTER PROMPT V138: Niche Taxonomy, Micro-Copy Metamorphosis & Design 
       expect(notif.message).toContain("#9842");
       expect(notif.message).toContain("cozinha");
       expect(notif.whatsappMessage).toContain("preparação");
-      expect(notif.actionUrl).toBe("/_store/conta/pedidos");
+      expect(notif.actionUrl).toBe("/conta/pedidos");
     });
 
     it("deve formatar notificação de criador com acesso imediato à área de membros", () => {
@@ -157,7 +157,7 @@ describe("MASTER PROMPT V138: Niche Taxonomy, Micro-Copy Metamorphosis & Design 
       expect(notif.message).toContain("Mariana");
       expect(notif.message).toContain("Masterclass de Storytelling");
       expect(notif.actionLabel).toBe("Acessar Área de Membros");
-      expect(notif.actionUrl).toBe("/_store/conta/cursos");
+      expect(notif.actionUrl).toBe("/conta/cursos");
     });
   });
 });
