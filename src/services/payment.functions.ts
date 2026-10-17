@@ -17,6 +17,7 @@ import { withDataPayload } from "./cart-helpers";
 import { recordLedgerEntryCore } from "@/services/immutable-ledger.functions";
 import { enforceRateLimit } from "@/lib/rate-limiter";
 import { assertUserKycVerified } from "@/services/kyc.functions";
+import { signTicketPayload } from "@/lib/ticket-crypto";
 
 // Schema for initiating a payment
 const InitiatePaymentSchema = z.object({
@@ -294,16 +295,26 @@ export const confirmPayment = createServerFn({ method: "POST" })
  for (const item of orderItems) {
  const matchingLot = ticketLots.find((l: any) => l.id === item.variant_id);
  if (matchingLot) {
- // Issue 'qty' tickets
+ // Issue 'qty' tickets with WCTS-1 Cryptographic Signature
  for (let i = 0; i < item.qty; i++) {
+ const ticketId = crypto.randomUUID();
+ const signed = signTicketPayload({
+ ticketId,
+ eventId: matchingLot.event_id,
+ lotId: matchingLot.id,
+ ownerProfileId: orderDetails.customer_id,
+ });
  ticketsToInsert.push({
+ id: ticketId,
  event_id: matchingLot.event_id,
  lot_id: matchingLot.id,
  owner_profile_id: orderDetails.customer_id,
  order_id: orderId,
  status: "valid",
- // Generate a secure offline-verifiable hash for check-in
- qr_hash: crypto.randomBytes(16).toString("hex").toUpperCase(),
+ qr_hash: signed.qrPayload,
+ human_code: signed.humanCode,
+ hmac_signature: signed.signature,
+ issued_at_epoch: signed.issuedAt,
  });
  }
 

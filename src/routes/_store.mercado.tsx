@@ -253,7 +253,7 @@ function SupermarketMasterPage() {
 
  {/* ── 3. Seletor de Supermercados Parceiros (Multi-Store Filter - Padrão Botão Grande) ── */}
  {availableStores.length > 0 && (
- <div className="flex items-center gap-2 sm:gap-2 overflow-x-auto no-scrollbar py-1">
+ <div className="flex items-center gap-2 sm:gap-3 overflow-x-auto sm:overflow-visible sm:flex-wrap no-scrollbar py-1">
  <button
  type="button"
  onClick={() => setSelectedStore("todos")}
@@ -306,7 +306,7 @@ function SupermarketMasterPage() {
  />
 
  {/* ── 6. Filtros Especiais de Dieta & Estilo de Vida (Padrão Botão Grande) ── */}
- <div className="flex items-center gap-2 sm:gap-2 overflow-x-auto no-scrollbar py-1">
+ <div className="flex items-center gap-2 sm:gap-3 overflow-x-auto sm:overflow-visible sm:flex-wrap no-scrollbar py-1">
  {DIETARY_FILTERS.map((f) => {
  const isSelected = selectedDietary === f.id;
  return (

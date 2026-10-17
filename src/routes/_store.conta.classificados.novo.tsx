@@ -325,6 +325,19 @@ export const DESAPEGO_TAXONOMY = [
   { id: "outros", label: "Outros Desapegos", desc: "Livros, colecionáveis e itens variados" },
 ];
 
+export const CANONICAL_LODGING_AMENITIES = [
+  "Piscina",
+  "Wi-Fi Grátis",
+  "Café da Manhã Incluso",
+  "Estacionamento",
+  "Restaurante",
+  "Frente Mar / Praia",
+  "Academia",
+  "Ar-Condicionado",
+  "Spa / Sauna",
+  "Pet Friendly",
+] as const;
+
 function NovoClassificadoPage() {
   const navigate = Route.useNavigate();
   const search = Route.useSearch();
@@ -1431,7 +1444,7 @@ function SpecializedClassifiedEditor({
     initialData?.attributes?.story_highlights || []
   );
   const [travelItineraryDays, setTravelItineraryDays] = useState<ItineraryDay[]>(
-    initialData?.attributes?.itinerary_days || []
+    initialData?.attributes?.itinerary_days || initialData?.attributes?.itinerary || []
   );
 
   const [travelFlightPrice, setTravelFlightPrice] = useState(
@@ -2256,7 +2269,11 @@ function SpecializedClassifiedEditor({
 
       // Viagem
       if (Array.isArray(initialData.attributes.story_highlights)) setTravelStoryHighlights(initialData.attributes.story_highlights);
-      if (Array.isArray(initialData.attributes.itinerary_days)) setTravelItineraryDays(initialData.attributes.itinerary_days);
+      if (Array.isArray(initialData.attributes.itinerary_days)) {
+        setTravelItineraryDays(initialData.attributes.itinerary_days);
+      } else if (Array.isArray(initialData.attributes.itinerary)) {
+        setTravelItineraryDays(initialData.attributes.itinerary);
+      }
       if (initialData.attributes.destination_city) setTravelDestinationCity(initialData.attributes.destination_city);
       if (initialData.attributes.departure_date) setTravelDepartureDate(initialData.attributes.departure_date);
       if (initialData.attributes.return_date) setTravelReturnDate(initialData.attributes.return_date);
@@ -2284,6 +2301,21 @@ function SpecializedClassifiedEditor({
         setTravelLodgings(initialData.attributes.lodgings);
       } else if (Array.isArray(initialData.attributes.hotels) && initialData.attributes.hotels.length > 0) {
         setTravelLodgings(initialData.attributes.hotels);
+      } else if (initialData.attributes.hotel_name) {
+        setTravelLodgings([{
+          id: crypto.randomUUID(),
+          name: initialData.attributes.hotel_name,
+          type: "hotel",
+          stars: initialData.attributes.hotel_stars || 4,
+          city: initialData.attributes.destination_city || "",
+          address: initialData.attributes.hotel_address || "",
+          description: initialData.attributes.hotel_description || "",
+          regime: initialData.attributes.meal_plan || "Café da Manhã",
+          amenities: Array.isArray(initialData.attributes.hotel_amenities) ? initialData.attributes.hotel_amenities : [],
+          photos: Array.isArray(initialData.attributes.hotel_photos) ? initialData.attributes.hotel_photos : [],
+          checkin_time: "14:00",
+          checkout_time: "11:00",
+        }]);
       }
 
       // Equipamento
@@ -2673,6 +2705,8 @@ function SpecializedClassifiedEditor({
           attributes.hotel_address = validTravelLodgings[0].address;
           attributes.hotel_stars = validTravelLodgings[0].stars;
           attributes.hotel_amenities = validTravelLodgings[0].amenities;
+          attributes.hotel_photos = validTravelLodgings[0].photos;
+          attributes.hotel_images = validTravelLodgings[0].photos;
         }
       } else if (niche.id === "equipamento") {
         attributes.equipment_period = equipmentPeriod;
@@ -4803,10 +4837,10 @@ function SpecializedClassifiedEditor({
                         {travelBoardingGateways.length > 0 && (
                           <div className="flex flex-wrap gap-2 pt-1">
                             {travelBoardingGateways.map((gw) => (
-                              <span key={gw} className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-xs text-muted-foreground/75 font-medium text-primary">
+                              <span key={gw} className="inline-flex items-center gap-1 px-3 py-1 rounded-md bg-primary/10 border border-primary/20 text-xs font-medium text-primary">
                                 <Navigation className="size-2.5" />
                                 {gw}
-                                <button type="button" onClick={() => handleRemoveGateway(gw)} className="size-11 min-h-11 min-w-11 hover:bg-destructive/20 rounded-full flex items-center justify-center ml-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                                <button type="button" onClick={() => handleRemoveGateway(gw)} className="size-11 min-h-11 min-w-11 hover:bg-destructive/20 rounded-lg flex items-center justify-center ml-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
                                   <X className="size-2.5" />
                                 </button>
                               </span>
@@ -5268,10 +5302,10 @@ function SpecializedClassifiedEditor({
 
                   <div className="space-y-4">
                     {travelLodgings.map((lodging, idx) => (
-                      <div key={lodging.id} className="p-4 rounded-lg border border-border/70 bg-card space-y-3 shadow-xs">
+                      <div key={lodging.id} className="p-4 rounded-lg border border-border/70 bg-card space-y-3 shadow-2xs">
                         <div className="flex items-center justify-between pb-2 border-b border-border/40">
                           <div className="flex items-center gap-2">
-                            <span className="size-6 rounded-full bg-primary/10 text-primary font-bold text-xs flex items-center justify-center font-mono">
+                            <span className="size-6 rounded-md bg-primary/10 text-primary font-bold text-xs flex items-center justify-center font-mono">
                               {idx + 1}
                             </span>
                             <span className="text-xs font-bold text-foreground">
@@ -5439,6 +5473,87 @@ function SpecializedClassifiedEditor({
                             rows={2}
                             className="text-xs rounded-lg bg-background resize-none"
                           />
+                        </div>
+
+                        {/* Comodidades Rápidas da Hospedagem */}
+                        <div className="space-y-2 pt-2 border-t border-border/40">
+                          <Label className="text-xs font-semibold text-foreground">
+                            Comodidades do Hotel & Estrutura
+                          </Label>
+                          <div className="flex flex-wrap gap-2">
+                            {CANONICAL_LODGING_AMENITIES.map((amenity) => {
+                              const isSelected = (lodging.amenities || []).includes(amenity);
+                              return (
+                                <button
+                                  key={amenity}
+                                  type="button"
+                                  onClick={() => {
+                                    const nextAmenities = isSelected
+                                      ? (lodging.amenities || []).filter((a) => a !== amenity)
+                                      : [...(lodging.amenities || []), amenity];
+                                    handleUpdateTravelLodging(lodging.id, { amenities: nextAmenities });
+                                  }}
+                                  className={cn(
+                                    "h-11 px-3 rounded-md text-xs font-medium border transition-colors cursor-pointer flex items-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                                    isSelected
+                                      ? "bg-primary/10 border-primary/40 text-primary"
+                                      : "bg-muted/40 border-border/50 text-muted-foreground hover:bg-muted/70"
+                                  )}
+                                >
+                                  {isSelected && <Check className="size-3 shrink-0" />}
+                                  <span>{amenity}</span>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+
+                        {/* Fotos da Hospedagem */}
+                        <div className="space-y-2 pt-2 border-t border-border/40">
+                          <Label className="text-xs font-semibold text-foreground flex items-center gap-2">
+                            <ImagePlus className="size-4 text-primary" />
+                            <span>Fotos da Hospedagem ({(lodging.photos || []).length})</span>
+                          </Label>
+                          <div className="flex flex-wrap items-center gap-2">
+                            {(lodging.photos || []).map((photoUrl, pIdx) => (
+                              <div key={pIdx} className="relative size-16 rounded-lg overflow-hidden border border-border/60 bg-muted group shrink-0">
+                                <img src={photoUrl} alt={`Foto ${pIdx + 1}`} className="size-full object-cover" />
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const nextPhotos = (lodging.photos || []).filter((_, i) => i !== pIdx);
+                                    handleUpdateTravelLodging(lodging.id, { photos: nextPhotos });
+                                  }}
+                                  className="absolute top-1 right-1 size-11 min-h-11 min-w-11 rounded-md bg-neutral-950/80 hover:bg-destructive text-neutral-100 flex items-center justify-center transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                                  title="Remover foto"
+                                >
+                                  <X className="size-3" />
+                                </button>
+                              </div>
+                            ))}
+                            <label className="size-16 rounded-lg border border-dashed border-border/80 hover:border-primary/60 bg-muted/20 hover:bg-muted/40 flex flex-col items-center justify-center cursor-pointer transition-colors text-muted-foreground hover:text-foreground shrink-0">
+                              <ImagePlus className="size-4 mb-1" />
+                              <span className="text-xs font-semibold">+ Foto</span>
+                              <input
+                                type="file"
+                                accept="image/*"
+                                className="hidden"
+                                onChange={async (e) => {
+                                  const file = e.target.files?.[0];
+                                  if (!file) return;
+                                  try {
+                                    const url = await uploadClassifiedMedia(file, "lodging");
+                                    if (url) {
+                                      const current = lodging.photos || [];
+                                      handleUpdateTravelLodging(lodging.id, { photos: [...current, url] });
+                                    }
+                                  } catch {
+                                    toast.error("Erro ao enviar foto do hotel");
+                                  }
+                                }}
+                              />
+                            </label>
+                          </div>
                         </div>
                       </div>
                     ))}

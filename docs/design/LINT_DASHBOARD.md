@@ -1,32 +1,32 @@
 # LINT_DASHBOARD.md — Painel Canônico de Saúde Visual e Catraca
 
-> Gerado automaticamente pelo Design Lint V2 em: `2026-10-16T23:52:11.827Z`
+> Gerado automaticamente pelo Design Lint V2 em: `2026-10-17T19:47:59.460Z`
 
 ## 1. Resumo Executivo
 
 | Métrica | Atual | Baseline Congelada | Status Catraca |
 | :--- | :--- | :--- | :--- |
-| **Total de Arquivos** | 2113 | 2074 | Estável |
-| **Arquivos com Débito** | 884 | 889 | Monitorado |
-| **Total de Violações** | **12658** | **13063** | PASS (<= Baseline) |
-| **P0 (Bloqueia Entrega)** | **1456** | 1505 | PASS |
-| **P1 (Bloqueia Merge)** | **8563** | 8816 | PASS |
-| **P2 (Fila de Correção)** | 1337 | 1380 | Acompanhamento |
-| **P3 (Polimento)** | 1302 | 1362 | Acompanhamento |
+| **Total de Arquivos** | 2134 | 2118 | Estável |
+| **Arquivos com Débito** | 881 | 884 | Monitorado |
+| **Total de Violações** | **12609** | **12651** | PASS (<= Baseline) |
+| **P0 (Bloqueia Entrega)** | **1448** | 1453 | PASS |
+| **P1 (Bloqueia Merge)** | **8526** | 8554 | PASS |
+| **P2 (Fila de Correção)** | 1336 | 1339 | Acompanhamento |
+| **P3 (Polimento)** | 1299 | 1305 | Acompanhamento |
 
 ## 2. Débito Visual por Módulo
 
 | Módulo | Total | P0 | P1 | P2 | P3 |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| `components/app` | 5511 | 578 | 3724 | 671 | 538 |
-| `routes/workspace` | 2249 | 453 | 1396 | 124 | 276 |
+| `components/app` | 5494 | 575 | 3706 | 673 | 540 |
+| `routes/workspace` | 2243 | 453 | 1392 | 124 | 274 |
 | `routes/store` | 1504 | 135 | 1002 | 140 | 227 |
 | `components/tourism` | 1135 | 95 | 791 | 178 | 71 |
 | `routes/admin` | 1024 | 90 | 765 | 51 | 118 |
 | `components/ui` | 310 | 38 | 219 | 14 | 39 |
 | `services` | 258 | 0 | 184 | 72 | 2 |
 | `lib` | 255 | 1 | 219 | 35 | 0 |
-| `routes/other` | 162 | 15 | 120 | 18 | 9 |
+| `routes/other` | 136 | 10 | 105 | 15 | 6 |
 | `components/builder` | 135 | 42 | 57 | 19 | 17 |
 | `components/chat` | 81 | 4 | 70 | 2 | 5 |
 | `hooks` | 17 | 5 | 8 | 4 | 0 |
@@ -38,22 +38,22 @@
 
 | Regra | Descrição Sumária | Severidade | Ocorrências |
 | :--- | :--- | :--- | :--- |
-| **DL-02** | Diretriz do Catálogo | `P1` | 3617 |
-| **DL-14** | Diretriz do Catálogo | `P1` | 2131 |
-| **DL-15** | Diretriz do Catálogo | `P0` | 1453 |
-| **DL-18** | Diretriz do Catálogo | `P1` | 1167 |
-| **DL-27** | Diretriz do Catálogo | `P3` | 1051 |
+| **DL-02** | Diretriz do Catálogo | `P1` | 3596 |
+| **DL-14** | Diretriz do Catálogo | `P1` | 2123 |
+| **DL-15** | Diretriz do Catálogo | `P0` | 1445 |
+| **DL-18** | Diretriz do Catálogo | `P1` | 1164 |
+| **DL-27** | Diretriz do Catálogo | `P3` | 1046 |
 | **DL-01** | Diretriz do Catálogo | `P1` | 939 |
-| **DL-07** | Diretriz do Catálogo | `P2` | 505 |
+| **DL-07** | Diretriz do Catálogo | `P2` | 503 |
 | **DL-23** | Diretriz do Catálogo | `P2` | 421 |
-| **DL-28** | Diretriz do Catálogo | `P1` | 288 |
-| **DL-30** | Diretriz do Catálogo | `P3` | 251 |
-| **DL-03** | Diretriz do Catálogo | `P1` | 223 |
+| **DL-28** | Diretriz do Catálogo | `P1` | 287 |
+| **DL-30** | Diretriz do Catálogo | `P3` | 253 |
+| **DL-03** | Diretriz do Catálogo | `P1` | 219 |
 | **DL-05** | Diretriz do Catálogo | `P1` | 135 |
 | **DL-29** | Diretriz do Catálogo | `P2` | 118 |
 | **DL-08** | Diretriz do Catálogo | `P2` | 104 |
 | **DL-26** | Diretriz do Catálogo | `P2` | 85 |
-| **DL-09** | Diretriz do Catálogo | `P2` | 76 |
+| **DL-09** | Diretriz do Catálogo | `P2` | 77 |
 | **DL-12** | Diretriz do Catálogo | `P1` | 31 |
 | **DL-25** | Diretriz do Catálogo | `P2` | 23 |
 | **DL-11** | Diretriz do Catálogo | `P1` | 21 |

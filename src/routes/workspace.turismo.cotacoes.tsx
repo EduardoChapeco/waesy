@@ -23,7 +23,7 @@ import { createTravelProposal } from "@/services/travel-proposal.functions";
 import { listDestinations } from "@/services/travel-catalog.functions";
 import { getStoreSettings } from "@/services/store.functions";
 import { NicheOperationalGuard } from "@/components/workspace/niche-operational-guard";
-import { QuotationBuilderSheet } from "@/components/tourism/quotation-builder-sheet";
+import { UniversalQuoteProposalStudio } from "@/components/tourism/universal-quote-proposal-studio";
 import { TravelAiImporterBanner } from "@/components/tourism/promotional-flyer/travel-ai-importer-banner";
 import { ingestTravelDocument } from "@/services/travel-canonical-pipeline.functions";
 import { formatDate } from "@/lib/datetime";
@@ -800,17 +800,17 @@ export default function AgencyQuotesPage() {
  </div>
  )}
 
- {/* ── 5. Quotation Builder Studio Avançado (Inspirado em TurisAgências / TravelAgências) ── */}
- <QuotationBuilderSheet
+ {/* ── 5. Gerador Canônico Unificado de Cotação & Proposta (Web + HTML2PDF + InfoTravel + Rooming) ── */}
+ <UniversalQuoteProposalStudio
  open={isNewSheetOpen}
  onOpenChange={setIsNewSheetOpen}
- destinations={destinations}
- store={store}
- initialLeadName={searchParams?.leadName}
- initialLeadPhone={searchParams?.leadPhone}
- initialLeadEmail={searchParams?.leadEmail}
- onSuccess={() => {
+ mode="kanban_lead_quote"
+ initialClientName={searchParams?.leadName}
+ initialClientPhone={searchParams?.leadPhone}
+ initialClientEmail={searchParams?.leadEmail}
+ onCreated={() => {
  queryClient.invalidateQueries({ queryKey: ["agency-travel-quotes"] });
+ queryClient.invalidateQueries({ queryKey: ["agency-proposals"] });
  }}
  />
 

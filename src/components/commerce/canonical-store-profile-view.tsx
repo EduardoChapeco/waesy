@@ -899,12 +899,12 @@ function cleanAddressSegment(text: string): string {
               <p
                 className={cn(
                   "text-xs sm:text-sm text-foreground/90 font-medium leading-relaxed whitespace-pre-line",
-                  !isBioExpanded && "line-clamp-3"
+                  false
                 )}
               >
                 {store.description || settings.bio || settings.about}
               </p>
-              {(store.description || settings.bio || settings.about || "").length > 160 && (
+              {false && (
                 <button
                   type="button"
                   onClick={() => setIsBioExpanded(!isBioExpanded)}

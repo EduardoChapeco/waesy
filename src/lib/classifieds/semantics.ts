@@ -7,7 +7,7 @@
  * 3. Cada nicho possui vocabulário, badges, fichas técnicas e CTAs contextuais dedicados.
  */
 
-import { Home, Building, Key, Car, Tag, Wrench, Tractor, Calendar, Clock, MapPin, CheckCircle2, ShieldCheck, Package, Truck, Layers, RefreshCw, CreditCard, QrCode, FileCheck, UserCheck, Lock, Plane, HeartHandshake, Utensils, Users, Banknote, Briefcase, Download, DownloadCloud, FileArchive, Gauge, Coins, TrendingUp, ShieldAlert, Star, Store, Flame, Apple, Bath, Fuel, Receipt, FileSpreadsheet, Landmark } from "lucide-react";
+import { Home, Building, Key, Car, Tag, Wrench, Tractor, Calendar, Clock, MapPin, CheckCircle2, ShieldCheck, Package, Truck, Layers, RefreshCw, CreditCard, QrCode, FileCheck, UserCheck, Lock, Plane, HeartHandshake, Utensils, Users, Banknote, Briefcase, Download, DownloadCloud, FileArchive, Gauge, Coins, TrendingUp, ShieldAlert, Star, Store, Flame, Apple, Bath, Fuel, Receipt, FileSpreadsheet, Landmark, Bus, Ship, Train, Building2 } from "lucide-react";
 import { formatMoney } from "@/lib/money";
 import { getEducationLabel, getExperienceLabel, getRegimeLabel, getWorkplaceModelLabel } from "@/lib/classifieds/canonical-hiring";
 
@@ -1057,13 +1057,47 @@ export function getClassifiedFeatureCards(classified: any): ClassifiedFeatureCar
 
   // Nicho: Viagem
   else if (niche.id === "travel") {
+    const flightDetails = attrs.flight_details || {};
+    const transport = flightDetails.transport_type || attrs.transport_type;
+    const transportLabel =
+      transport === "flight"
+        ? "Aéreo Incluso"
+        : transport === "bus"
+        ? "Rodoviário / Ônibus"
+        : transport === "cruise"
+        ? "Cruzeiro Marítimo"
+        : transport === "train"
+        ? "Ferroviário / Trem"
+        : transport === "combo"
+        ? "Multimodal (Voo + Transfer)"
+        : transport === "car"
+        ? "Carro Próprio / Roteiro"
+        : "Pacote Turístico";
+
     cards.push({
-      title: "Modalidade",
-      value: "Roteiro & Pacote",
-      icon: Plane,
+      title: "Transporte",
+      value: transportLabel,
+      icon: transport === "bus" ? Bus : transport === "cruise" ? Ship : transport === "train" ? Train : Plane,
     });
 
-    const flightDetails = attrs.flight_details || {};
+    const lodgingName = attrs.lodgings?.[0]?.name || attrs.hotel_name;
+    if (lodgingName) {
+      cards.push({
+        title: "Hospedagem",
+        value: lodgingName,
+        icon: Building2,
+      });
+    }
+
+    const mealPlan = attrs.meal_plan || attrs.lodgings?.[0]?.regime;
+    if (mealPlan) {
+      cards.push({
+        title: "Regime",
+        value: mealPlan,
+        icon: Utensils,
+      });
+    }
+
     const gateways = Array.isArray(flightDetails.boarding_gateways) ? flightDetails.boarding_gateways : [];
     const departure = gateways[0] || flightDetails.departure_airport || attrs.meeting_point;
     if (departure) {
@@ -1082,10 +1116,18 @@ export function getClassifiedFeatureCards(classified: any): ClassifiedFeatureCar
       });
     }
 
+    if (attrs.remaining_spots && Number(attrs.remaining_spots) > 0) {
+      cards.push({
+        title: "Disponibilidade",
+        value: `${attrs.remaining_spots} Vagas`,
+        icon: Users,
+      });
+    }
+
     if (attrs.max_installments && Number(attrs.max_installments) > 1) {
       cards.push({
         title: "Parcelamento",
-        value: `Até ${attrs.max_installments}x`,
+        value: `Até ${attrs.max_installments}x ${attrs.card_interest_free ? "sem juros" : ""}`.trim(),
         icon: CreditCard,
       });
     }

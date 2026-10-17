@@ -9,6 +9,7 @@ import { crossEnrichListingsWithCnpj } from "./mining/places-cnpj-cross-enricher
 import { pollActiveCrawlerSources } from "./crawler-sources.functions";
 import { curateDirectoryListingRecord, batchCurateDirectoryListings } from "./mining/business-curation-bootstrap";
 import { scrapeUrl } from "@/lib/mining/firecrawl-client";
+import { resolveCityNewsCover } from "@/lib/news/city-editorial-images";
 /**
  * mining.functions.ts — BFF Server Functions para o Mining Hub & Crawlers
  * Extração de Notícias, Feeds RSS, Scrapers de Domínio, Curadoria IA e Fila de Descoberta.
@@ -137,6 +138,17 @@ export async function autoPromoteMinedArticle(supabase: any, article: any) {
     const { data: existingNews } = await existingQuery.maybeSingle();
 
     if (!existingNews) {
+      const articleCity = article.city || article.metadata?.city || article.metadata?.region || article.region || null;
+      const articleState = article.state || article.metadata?.state || article.metadata?.uf || "SC";
+      const effectiveCover = resolveCityNewsCover({
+        coverUrl,
+        city: articleCity,
+        state: articleState,
+        category: article.ai_category || "cidade",
+        tags: Array.isArray(article.ai_tags) ? article.ai_tags : [],
+        title,
+      });
+
       await supabase.from("news_articles").insert({
         store_id: article.store_id || "5108ce27-2df1-4ce2-89f2-681fea6dba95",
         title,
@@ -144,7 +156,7 @@ export async function autoPromoteMinedArticle(supabase: any, article: any) {
         subtitle,
         content_sections: contentSections,
         kicker: article.ai_suggested_kicker || "SANTA CATARINA",
-        cover_media_url: coverUrl,
+        cover_media_url: effectiveCover,
         cover_media_type: "image",
         category: article.ai_category || "cidade",
         tags: Array.isArray(article.ai_tags) && article.ai_tags.length > 0 ? article.ai_tags : ["notícias", "santa catarina"],

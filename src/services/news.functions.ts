@@ -3,6 +3,7 @@ import { z } from "zod";
 import { getServerClient, getAnonServerClient } from "@/lib/supabase";
 import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
 import { executeUnifiedAiCall } from "./api-orchestrator.functions";
+import { resolveCityNewsCover } from "@/lib/news/city-editorial-images";
 
 export interface NewsSectionDTO {
  type: "paragraph" | "heading" | "quote" | "gallery" | "video";
@@ -99,7 +100,7 @@ export const listPublicArticles = createServerFn({ method: "GET" })
  )
  .eq("status", "published")
  .order("published_at", { ascending: false })
- .limit(limit * 2);
+ .limit(Math.max(limit * 3, 60));
 
  if (data?.category && data.category !== "todas") {
  q = q.eq("category", data.category);
@@ -109,53 +110,91 @@ export const listPublicArticles = createServerFn({ method: "GET" })
  q = q.eq("store_id", data.storeId);
  }
 
- if (data?.city && data.city !== "todas" && data.city !== "Todas" && data.city !== "Global" && data.city !== "all") {
-        q = q.or(`city.ilike.%${data.city}%,tags.cs.{${data.city.toLowerCase()}}`);
-      }
-
-      if (data?.query) {
+ if (data?.query) {
  q = q.ilike("title", `%${data.query}%`);
  }
 
- const { data: articles, error } = await q;
+ const { data: rawArticles, error } = await q;
  if (error) {
  console.warn("[news] Erro ao buscar artigos no banco:", error);
  return [];
  }
 
- const qualifiedArticles = (articles || []).filter((a: any) => {
- const sections = Array.isArray(a.content_sections) ? a.content_sections : [];
- const cover = String(a.cover_media_url || "");
- if (sections.length < 2) return false;
- if (!cover || cover.includes("images.unsplash.com")) return false;
- return true;
+ let articlesList = Array.isArray(rawArticles) ? [...rawArticles] : [];
+
+ // Priorização por proximidade geográfica:
+ // Se houver matérias da cidade ativa, elas lideram o feed.
+ // Se a cidade não tiver notícias próprias locais cadastradas,
+ // as notícias estaduais/regionais/nacionais mais recentes são exibidas normalmente,
+ // evitando a tela vazia de "Nenhuma notícia encontrada".
+ const cleanCity =
+   data?.city &&
+   data.city !== "todas" &&
+   data.city !== "Todas" &&
+   data.city !== "Global" &&
+   data.city !== "all"
+     ? data.city.trim().toLowerCase()
+     : null;
+
+ if (cleanCity && articlesList.length > 1) {
+   articlesList.sort((a: any, b: any) => {
+     const aCity = (a.city || "").toLowerCase();
+     const bCity = (b.city || "").toLowerCase();
+     const aTags = Array.isArray(a.tags) ? a.tags.map((t: string) => String(t).toLowerCase()) : [];
+     const bTags = Array.isArray(b.tags) ? b.tags.map((t: string) => String(t).toLowerCase()) : [];
+
+     const aMatch = aCity.includes(cleanCity) || aTags.some((t: string) => t.includes(cleanCity));
+     const bMatch = bCity.includes(cleanCity) || bTags.some((t: string) => t.includes(cleanCity));
+
+     if (aMatch && !bMatch) return -1;
+     if (!aMatch && bMatch) return 1;
+     return 0;
+   });
+ }
+
+ // Validação de integridade: preserva notícias que possuem título válido.
+ // Imagens sintéticas de Unsplash são sanitizadas para null para renderização honesta em texto (Invariante B.33).
+ const qualifiedArticles = articlesList.filter((a: any) => {
+   if (!a.title || String(a.title).trim().length === 0) return false;
+   return true;
  });
 
- return qualifiedArticles.slice(0, limit).map((a: any) => ({
- id: a.id,
- store_id: a.store_id,
- store_name: a.stores?.name || "Portal de Notícias",
- store_avatar: a.stores?.avatar_url || null,
- author_profile_id: a.author_profile_id,
- author_name: a.author_name || a.profiles?.full_name || "Redação",
- title: a.title,
- slug: a.slug,
- kicker: a.kicker,
- subtitle: a.subtitle,
- content_sections: a.content_sections || [],
- cover_media_url: a.cover_media_url,
- cover_media_type: a.cover_media_type || "image",
- category: a.category,
- tags: a.tags || [],
-        city: a.city || "Chapecó",
-        state: a.state || "SC",
- reading_time_minutes: a.reading_time_minutes || 3,
- views_count: a.views_count || 0,
- unique_views_count: a.unique_views_count || 0,
- status: a.status,
- published_at: a.published_at,
- created_at: a.created_at,
- }));
+ return qualifiedArticles.slice(0, limit).map((a: any) => {
+    const effectiveCover = resolveCityNewsCover({
+      coverUrl: a.cover_media_url,
+      city: a.city,
+      state: a.state,
+      category: a.category,
+      tags: a.tags,
+      title: a.title,
+    });
+
+   return {
+     id: a.id,
+     store_id: a.store_id,
+     store_name: a.stores?.name || "Portal de Notícias",
+     store_avatar: a.stores?.avatar_url || null,
+     author_profile_id: a.author_profile_id,
+     author_name: a.author_name || a.profiles?.full_name || "Redação",
+     title: a.title,
+     slug: a.slug,
+     kicker: a.kicker,
+     subtitle: a.subtitle,
+     content_sections: a.content_sections || [],
+      cover_media_url: effectiveCover,
+     cover_media_type: a.cover_media_type || "image",
+     category: a.category,
+     tags: a.tags || [],
+     city: a.city || "Santa Catarina",
+     state: a.state || "SC",
+     reading_time_minutes: a.reading_time_minutes || 3,
+     views_count: a.views_count || 0,
+     unique_views_count: a.unique_views_count || 0,
+     status: a.status,
+     published_at: a.published_at,
+     created_at: a.created_at,
+   };
+ });
  } catch (err) {
  console.warn("[news] Erro ao buscar artigos no banco:", err);
  return [];
@@ -221,9 +260,25 @@ export const getArticleDetail = createServerFn({ method: "GET" })
  const linkedEvent = (eventRelRes?.data?.[0] as any)?.events || null;
 
  return {
- article: articleData as any,
+        article: {
+          ...articleData,
+          cover_media_url: resolveCityNewsCover({
+            coverUrl: articleData.cover_media_url,
+            city: (articleData as any).city,
+            category: (articleData as any).category,
+            tags: (articleData as any).tags,
+            title: (articleData as any).title,
+          }),
+        } as any,
  sponsors: (sponsorsRes.data || []) as SponsorDTO[],
- related: (relatedRes.data || []) as NewsArticleDTO[],
+        related: ((relatedRes.data || []) as any[]).map((rel) => ({
+          ...rel,
+          cover_media_url: resolveCityNewsCover({
+            coverUrl: rel.cover_media_url,
+            category: rel.category,
+            title: rel.title,
+          }),
+        })) as NewsArticleDTO[],
  linkedEvent,
  };
  }

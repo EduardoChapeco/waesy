@@ -11,3 +11,4 @@ export { EventoDocumentos } from './evento-documentos';
 export { EventoAuditoria } from './evento-auditoria';
 export { EventoCredenciais } from './evento-credenciais';
 export { AlocarEquipeSheet } from './alocar-equipe-sheet';
+export { EventoPesquisas } from './evento-pesquisas';

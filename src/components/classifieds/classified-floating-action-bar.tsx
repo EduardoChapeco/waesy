@@ -336,7 +336,7 @@ export function ClassifiedFloatingActionBar({
                 onClick={handleConfirmReadyPackage}
                 className="h-11 min-h-11 flex-1 rounded-lg text-xs font-bold bg-primary text-primary-foreground hover:brightness-105 active:scale-95 transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
-                <span>Confirmar e Cotar</span>
+                <span>Avançar com a Reserva</span>
                 <ArrowRight className="size-4 ml-1" />
               </Button>
             </div>

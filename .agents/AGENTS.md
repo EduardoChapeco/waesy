@@ -177,3 +177,19 @@ O agente deve interromper imediatamente o trabalho e devolver a decisão ao huma
 ## B.36 Invariante de Unificação Canônica do Template Editorial & Desambiguação de Showcase
 - O ecossistema de exibição de anúncios opera com bifurcação unificada e clara: (1) `ConvenienceShowcaseView` para itens de catálogo/delivery rápido (modo produto/conveniência); (2) `UniversalClassifiedShowcase` para todos os classificados, turismo, veículos, serviços e imóveis, integrando em sua casca a exibição nativa mobile (`ClassifiedDetailMobile`) e desktop (`ClassifiedDetailDesktop`). É expressamente vedada a existência de templates concorrentes na mesma rota interceptando requisições e gerando quebras de layout.
 
+## B.37 Invariante de Isolamento Semântico Estrito de Nichos & Erradicação de Vazamento Cruzado
+- Nenhum campo, badge ou especificação de um nicho específico (ex.: "Finalidade: Venda" de Imóveis/Veículos, "Logística: Retirada no Local" de Produtos Físicos, "Temperatura: Gelada" de Bebidas/Conveniência, ou "Caução" de Equipamentos) pode vazar para nichos não correlacionados (como Turismo/Viagens, Serviços, Vagas de Emprego ou Assinaturas). Toda resolução de especificações (`canonical-specs-resolver.ts`) e renderização de cards DEVE validar a categoria/nicho ativo do anúncio antes de inspecionar colunas herdadas ou atributos com valores padrão no banco.
+
+## B.38 Invariante de Integridade Textual Plena em Cards Squircles (Anti-Truncate)
+- É terminantemente proibido truncar ou cortar rótulos de especificações e valores de destaque com a classe CSS `truncate` ou reticências silenciosas (`...`) em cards de ficha técnica, destaques principais (`NicheSpecificationsDisplay`) e parâmetros de pacotes. O container deve acomodar o texto na íntegra através de escala tipográfica proporcional e quebra natural de linha (`break-words text-wrap leading-tight`).
+
+## B.39 Invariante de Régua de Abas em Linha Única Horizontal Contínua
+- Controles de navegação por abas (`TabsList`, réguas editoriais, perfis públicos e fichas técnicas) DEVEM operar estritamente em linha horizontal contínua (`flex flex-nowrap overflow-x-auto no-scrollbar`), inspirados na ergonomia tátil nativa mobile de perfis sociais (Instagram/TikTok). É expressamente vedado o uso de grades estáticas (`grid-cols-1`) que causem quebra de linha ou empilhamento vertical de abas quando houver 3 ou mais itens cadastrados.
+
+## B.40 Invariante de Criptografia Tamper-Proof & Anti-Injeção de Ingressos
+- Todo ingresso emitido no ecossistema de eventos DEVE possuir identificador único imutável e assinatura criptográfica server-side (HMAC-SHA256) amarrada a chave secreta do servidor e aos dados do bilhete (`ticket_id`, `event_id`, `lot_id`, `owner_profile_id`, `issued_at`). É terminantemente proibido aceitar ingressos sem validação criptográfica ou permitir inserção direta de registros na tabela `tickets` por roles de cliente (`anon` / `authenticated`). Toda emissão é exclusividade de funções BFF seguras sob `service_role` com registro auditado.
+
+## B.41 Invariante de Blindagem Server-Side de Preços e Concessões em Subpainéis
+- Toda função BFF de criação de pedidos operacionais ou de concessão (`createSubpanelOrder`) DEVE obter e validar os preços unitários diretamente do banco de dados oficial (`event_store_products` / `event_subpanel_products`), sendo expressamente vedado calcular totais ou taxas de comissão confiando em preços enviados pelo cliente HTTP em pedidos de participantes civis (`mobile_attendee`). O cálculo de repasse da produtora (`concession_fee_cents`) e saldo líquido do parceiro deve ser executado de forma determinística e selada no servidor.
+
+

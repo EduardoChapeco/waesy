@@ -208,10 +208,20 @@ function CustomerTripsPage() {
                   </div>
 
                   <div className="flex flex-row md:flex-col gap-2 w-full md:w-auto shrink-0 pt-2 md:pt-0 border-t md:border-t-0 border-border">
+                    <Button
+                      asChild
+                      className="flex-1 md:flex-initial rounded-lg font-bold text-xs gap-2 h-11 min-h-11 bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+                    >
+                      <Link to="/viajante/viagem/$id" params={{ id: String(agencyTrip.id) }}>
+                        <Compass size={16} weight="bold" />
+                        <span>Portal da Viagem & Boletos</span>
+                      </Link>
+                    </Button>
                     {voucherUrl ? (
                       <Button
                         asChild
-                        className="flex-1 md:flex-initial rounded-lg font-bold text-xs gap-2 h-11 min-h-11 bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+                        variant="outline"
+                        className="flex-1 md:flex-initial rounded-lg font-bold text-xs gap-2 h-11 min-h-11 border-border cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
                       >
                         <a href={voucherUrl} target="_blank" rel="noopener noreferrer">
                           <QrCode size={16} weight="bold" />

@@ -283,10 +283,30 @@ export function EditorialShowcaseView({
   const storyHighlights = Array.isArray(attrs.story_highlights) ? attrs.story_highlights : [];
   const bioBullets: string[] = Array.isArray(attrs.bio_bullets) ? attrs.bio_bullets : [];
   const flightDetails = attrs.flight_details || null;
-  const transportType: string = flightDetails?.transport_type || attrs.transport_type || "";
-  const itineraryDays = Array.isArray(attrs.itinerary_days) ? attrs.itinerary_days : [];
+  const rawTransportType: string = flightDetails?.transport_type || attrs.transport_type || "";
+  const transportType: string =
+    rawTransportType === "flight" || rawTransportType === "aereo"
+      ? "airplane"
+      : rawTransportType === "terrestre" || rawTransportType === "onibus"
+      ? "bus"
+      : rawTransportType === "cruzeiro"
+      ? "cruise"
+      : rawTransportType === "misto"
+      ? "combo"
+      : rawTransportType === "ferrovia" || rawTransportType === "trem"
+      ? "train"
+      : rawTransportType === "rodoviario"
+      ? "car"
+      : rawTransportType;
+  const itineraryDays = Array.isArray(attrs.itinerary_days) && attrs.itinerary_days.length > 0
+    ? attrs.itinerary_days
+    : Array.isArray(classified?.itinerary_days) && classified.itinerary_days.length > 0
+    ? classified.itinerary_days
+    : Array.isArray(attrs.itinerary) && attrs.itinerary.length > 0
+    ? attrs.itinerary
+    : [];
   const departureOptions: DepartureOption[] = Array.isArray(attrs.departure_options) ? attrs.departure_options : [];
-  const selectedDeparture = departureOptions.find(d => (d.id || "") === selectedDepartureId) || null;
+  const selectedDeparture = departureOptions.find((d: DepartureOption) => (d.id || "") === selectedDepartureId) || null;
 
   const departureCity: string =
     attrs.departure_city ||
@@ -483,10 +503,10 @@ export function EditorialShowcaseView({
       });
     }
 
-    // Aba 3: Roteiro (somente se houver dias cadastrados com conteúdo ou skills/benefícios)
-    const hasItineraryContent = isTravel
-      ? itineraryDays.some((d: any) => Boolean(d && (d.title?.trim() || d.description?.trim() || d.day || d.activities?.length || d.images?.length)))
-      : Boolean(attrs.benefits?.length || attrs.skills?.length || attrs.available_weekdays?.length);
+    // Aba 3: Roteiro (sempre visível para viagens, ou se houver dias/skills/benefícios cadastrados)
+    const hasItineraryContent = isTravel ||
+      itineraryDays.length > 0 ||
+      Boolean(attrs.benefits?.length || attrs.skills?.length || attrs.available_weekdays?.length);
     if (hasItineraryContent) {
       tabs.push({
         id: "itinerary",
@@ -663,14 +683,14 @@ export function EditorialShowcaseView({
         <button
           type="button"
           onClick={() => navigate({ to: "/classificados", search: {} as any })}
-          className="p-2 -ml-1 text-foreground hover:bg-muted rounded-full transition-colors active:scale-95"
+          className="p-2 -ml-1 text-foreground hover:bg-muted rounded-lg transition-colors active:scale-95"
           aria-label="Voltar"
         >
           <ArrowLeft className="size-5" />
         </button>
 
-        <div className="flex items-center gap-2 max-w-52 truncate">
-          <span className="font-extrabold text-xs tracking-tight text-foreground truncate">
+        <div className="flex items-center gap-2 max-w-[200px] sm:max-w-md min-w-0">
+          <span className="font-extrabold text-xs tracking-tight text-foreground line-clamp-1 break-words">
             {classified.title || "Vitrine Imersiva"}
           </span>
         </div>
@@ -681,7 +701,7 @@ export function EditorialShowcaseView({
             <button
               type="button"
               onClick={handleEditClick}
-              className="p-2 text-primary hover:bg-primary/10 rounded-full transition-colors active:scale-95 cursor-pointer"
+              className="p-2 text-primary hover:bg-primary/10 rounded-lg transition-colors active:scale-95 cursor-pointer"
               title="Editar Anúncio"
               aria-label="Editar Anúncio"
             >
@@ -693,7 +713,7 @@ export function EditorialShowcaseView({
             <button
               type="button"
               onClick={onOpenCompanionCard}
-              className="p-2 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 rounded-full transition-colors active:scale-95 cursor-pointer"
+              className="p-2 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 rounded-lg transition-colors active:scale-95 cursor-pointer"
               title="Guia Digital 9:16 (WhatsApp)"
               aria-label="Guia Digital 9:16"
             >
@@ -706,7 +726,7 @@ export function EditorialShowcaseView({
             <button
               type="button"
               onClick={() => setIsPromoFlyerOpen(true)}
-              className="p-2 text-primary hover:bg-primary/10 rounded-full transition-colors active:scale-95 cursor-pointer"
+              className="p-2 text-primary hover:bg-primary/10 rounded-lg transition-colors active:scale-95 cursor-pointer"
               title="Gerar Story 9:16 com IA"
               aria-label="Gerar Story 9:16"
             >
@@ -717,7 +737,7 @@ export function EditorialShowcaseView({
           <button
             type="button"
             onClick={handleShare}
-            className="p-2 text-foreground hover:bg-muted rounded-full transition-colors active:scale-95"
+            className="p-2 text-foreground hover:bg-muted rounded-lg transition-colors active:scale-95"
             aria-label="Compartilhar"
           >
             <Share2 className="size-4.5" />
@@ -733,7 +753,7 @@ export function EditorialShowcaseView({
         </div>
       </div>
 
-      <div className="w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-0 pt-2 sm:pt-4 space-y-4 animate-in fade-in duration-200">
+      <div className="w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-0 pt-0 sm:pt-4 space-y-4 animate-in fade-in duration-200">
 
         {/* ── Desktop Contextual Header / Breadcrumbs (Apenas Desktop) ── */}
         <div className="hidden md:flex items-center justify-between py-2 border-b border-border/40">
@@ -809,35 +829,35 @@ export function EditorialShowcaseView({
         {/* ── Grid Principal Responsiva (Desktop 2 Colunas Estilo Mercado Livre / Airbnb) ── */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* Coluna Esquerda: Mídias, Roteiro & Abas Editoriais (7 colunas no Desktop) */}
-          <div className="lg:col-span-7 space-y-5">
+          <div className="lg:col-span-7 space-y-4">
             {/* ── Galeria Editorial Proporcional (Hero Natural 16:10 + Miniaturas) ── */}
             {images.length > 0 && (
               <div className="w-full space-y-2">
-                <div className="relative w-full aspect-[16/10] rounded-lg sm:rounded-lg overflow-hidden bg-muted/30 border border-border/40 group">
+                <div className="relative w-full aspect-[4/3] sm:aspect-[16/10] rounded-none sm:rounded-lg overflow-hidden bg-muted/30 border-0 sm:border sm:border-border/40 group">
                   <img
                     src={images[activeImageIndex] || images[0]}
                     alt={classified.title}
-                    className="size-full object-cover cursor-pointer group-hover:scale-[1.01] transition-transform duration-300"
+                    className="size-full object-cover object-center cursor-pointer group-hover:scale-[1.01] transition-transform duration-300"
                     onClick={() => setFullscreenImage(images[activeImageIndex] || images[0])}
                   />
                   <div className="absolute top-3 right-3 flex items-center gap-2">
-                    <span className="px-3 py-1 rounded-full bg-black/60 backdrop-blur-sm text-white text-xs font-mono font-medium">
+                    <span className="px-3 py-1 rounded-md bg-black/60 backdrop-blur-sm text-white text-xs font-mono font-medium">
                       {images.length} {images.length === 1 ? "foto" : "fotos"}
                     </span>
                   </div>
                   <button
                     type="button"
                     onClick={() => setFullscreenImage(images[activeImageIndex] || images[0])}
-                    className="absolute bottom-3.5 right-3.5 px-3 py-2 rounded-lg bg-background/85 hover:bg-background text-foreground text-xs font-semibold backdrop-blur-md border border-border/50 flex items-center gap-2 transition-colors"
+                    className="absolute bottom-4 right-4 px-3 py-2 rounded-lg bg-background/85 hover:bg-background text-foreground text-xs font-semibold backdrop-blur-md border border-border/50 flex items-center gap-2 transition-colors"
                   >
                     <Maximize2 className="size-3.5" />
                     <span>Expandir</span>
                   </button>
                 </div>
 
-                {/* Miniaturas de Acesso Rápido com Alternância Fiel da Foto Principal (Até 10 fotos no Topo sem espaço vazio) */}
+                {/* Miniaturas de Acesso Rápido com Alternância Fiel da Foto Principal (Início 100% visível na margem esquerda) */}
                 {images.length > 1 && (
-                  <div className="flex items-center gap-2 sm:gap-2 overflow-x-auto carousel no-scrollbar py-1 w-full">
+                  <div className="flex items-center gap-2 overflow-x-auto no-scrollbar px-4 sm:px-0 py-1.5 w-full">
                     {images.slice(0, images.length > 10 ? 9 : 10).map((img, idx) => {
                       const isActive = activeImageIndex === idx;
                       return (
@@ -846,7 +866,7 @@ export function EditorialShowcaseView({
                           type="button"
                           onClick={() => setActiveImageIndex(idx)}
                           className={cn(
-                            "relative aspect-square h-14 sm:h-16 rounded-lg overflow-hidden border bg-muted shrink-0 flex-1 min-w-[52px] max-w-[76px] group cursor-pointer transition-colors",
+                            "relative aspect-square size-14 sm:size-16 rounded-lg overflow-hidden border bg-muted shrink-0 group cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                             isActive
                               ? "border-primary ring-2 ring-primary ring-offset-2 ring-offset-background scale-[1.02]"
                               : "border-border/50 hover:border-primary/50 opacity-80 hover:opacity-100"
@@ -861,7 +881,7 @@ export function EditorialShowcaseView({
                       <button
                         type="button"
                         onClick={() => setActiveTab("grid")}
-                        className="aspect-square h-14 sm:h-16 rounded-lg border border-dashed border-border/70 flex flex-col items-center justify-center text-muted-foreground hover:text-foreground hover:border-primary text-xs font-bold shrink-0 flex-1 min-w-[52px] max-w-[76px] transition-colors"
+                        className="aspect-square size-14 sm:size-16 rounded-lg border border-dashed border-border/70 flex flex-col items-center justify-center text-muted-foreground hover:text-foreground hover:border-primary text-xs font-bold shrink-0 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                       >
                         <span>+{images.length - 9}</span>
                         <span className="text-xs font-normal">fotos</span>
@@ -876,7 +896,7 @@ export function EditorialShowcaseView({
             {/* Stats movidos para a coluna direita — sem pills repetitivos aqui */}
 
         {/* ── Título, Subtítulo & Bullets ── */}
-        <div className="space-y-2">
+        <div className="space-y-2 px-4 sm:px-0">
           {/* Título & Localização — Apenas no Mobile (no Desktop está em destaque no card fixo à direita) */}
           <div className="lg:hidden space-y-1">
             {isTravel ? (
@@ -906,7 +926,7 @@ export function EditorialShowcaseView({
                 </p>
               )
             )}
-            <h1 className="text-base sm:text-lg font-black text-foreground tracking-tight leading-snug">
+            <h1 className="text-lg sm:text-xl font-black text-foreground tracking-tight leading-snug break-words text-wrap w-full">
               {classified.title || "Sem título"}
             </h1>
           </div>
@@ -919,7 +939,7 @@ export function EditorialShowcaseView({
               </p>
               <ul className="space-y-2">
                 {bioBullets.map((bullet, idx) => (
-                  <li key={idx} className="text-xs text-foreground/90 flex items-start gap-2 font-medium">
+                  <li key={idx} className="text-sm sm:text-base text-foreground/90 flex items-start gap-2 font-medium">
                     <span className="leading-relaxed">{bullet}</span>
                   </li>
                 ))}
@@ -927,7 +947,7 @@ export function EditorialShowcaseView({
             </div>
           ) : (
             classified.content && (
-              <p className="text-xs text-muted-foreground line-clamp-3 leading-relaxed">
+              <p className="text-sm sm:text-base text-foreground/90 leading-relaxed whitespace-pre-line">
                 {classified.content}
               </p>
             )
@@ -935,9 +955,9 @@ export function EditorialShowcaseView({
         </div>
 
         {/* ── Card do Anunciante / Loja Parceira (Visível no Mobile) ── */}
-        <div className="lg:hidden p-4 rounded-lg bg-muted/30 border border-border/50 flex items-center justify-between gap-3 transition-colors hover:bg-muted/40">
+        <div className="lg:hidden mx-4 sm:mx-0 p-4 rounded-lg bg-muted/30 border border-border/50 flex items-center justify-between gap-3 transition-colors hover:bg-muted/40">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="size-11 rounded-full bg-background border border-border/60 overflow-hidden shrink-0 flex items-center justify-center">
+            <div className="size-11 rounded-lg bg-background border border-border/60 overflow-hidden shrink-0 flex items-center justify-center">
               {advertiserAvatar ? (
                 <img src={advertiserAvatar} alt={advertiserName} className="size-full object-cover" />
               ) : isCompany ? (
@@ -948,14 +968,14 @@ export function EditorialShowcaseView({
             </div>
             <div className="min-w-0 flex flex-col">
               <div className="flex items-center gap-2 min-w-0">
-                <span className="font-extrabold text-xs sm:text-sm text-foreground truncate">
+                <span className="font-extrabold text-xs sm:text-sm text-foreground break-words">
                   {advertiserName}
                 </span>
                 <span title="Verificado Waesy" className="inline-flex shrink-0">
                   <CheckCircle2 className="size-3.5 text-blue-500" />
                 </span>
               </div>
-              <span className="text-xs text-muted-foreground truncate">
+              <span className="text-xs text-muted-foreground break-words">
                 {isTravel ? (isCompany ? "Agência / Operadora Oficial" : "Organizador da Excursão") : (advertiserCity ? `${advertiserCity} • ` : "") + (isCompany ? "Loja Oficial" : "Anunciante Verificado")}
               </span>
             </div>
@@ -987,14 +1007,14 @@ export function EditorialShowcaseView({
                 onClick={() => setActiveStoryModal(hl)}
                 className="flex flex-col items-center gap-2 shrink-0 group active:scale-95 transition-colors"
               >
-                <div className="size-15 sm:size-16 rounded-full p-1 bg-border hover:bg-gradient-to-tr hover:from-amber-500 hover:via-rose-500 hover:to-purple-600 transition-colors">
+                <div className="size-16 rounded-lg p-1 bg-border hover:bg-gradient-to-tr hover:from-amber-500 hover:via-rose-500 hover:to-purple-600 transition-colors">
                   <img
                     src={hl.image || images[0]}
                     alt={hl.title}
-                    className="size-full rounded-full object-cover border border-background"
+                    className="size-full rounded-lg object-cover border border-background"
                   />
                 </div>
-                <span className="text-xs font-medium text-foreground tracking-tight max-w-[64px] truncate">
+                <span className="text-xs font-medium text-foreground tracking-tight w-16 text-center line-clamp-2 break-words">
                   {hl.title}
                 </span>
               </button>
@@ -1002,14 +1022,9 @@ export function EditorialShowcaseView({
           </div>
         )}
 
-        {/* ── Abas Canônicas (Fotos, Ficha Técnica, Aprofundamento, Explore/Pagamento) ── */}
-        <div className="border-t border-border/40 pt-1">
-          <div className={cn(
-            "grid border-b border-border/40 gap-1",
-            availableTabs.length === 2 && "grid-cols-2",
-            availableTabs.length === 3 && "grid-cols-1 sm:grid-cols-",
-            availableTabs.length >= 4 && "grid-cols-2 sm:grid-cols-4"
-          )}>
+        {/* ── Abas Canônicas em Linha Única Horizontal Contínua (Invariante B.39) ── */}
+        <div className="border-t border-border/40 pt-1 px-4 sm:px-0">
+          <div className="flex flex-nowrap items-center border-b border-border/40 overflow-x-auto no-scrollbar gap-1 pb-px w-full">
             {availableTabs.map((tab) => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
@@ -1019,17 +1034,15 @@ export function EditorialShowcaseView({
                   type="button"
                   onClick={() => setActiveTab(tab.id)}
                   className={cn(
-                    "min-h-11 py-2 flex flex-col items-center justify-center gap-1 border-b-2 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                    "h-11 min-h-11 px-3 flex-1 min-w-max sm:min-w-0 flex flex-row items-center justify-center gap-2 border-b-2 text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                     isActive
                       ? "border-foreground text-foreground font-bold"
-                      : "border-transparent text-muted-foreground hover:text-foreground"
+                      : "border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/30"
                   )}
                   aria-label={tab.label}
                 >
-                  <Icon className="size-4.5" />
-                  <span className="text-xs sm:text-xs font-semibold tracking-tight truncate max-w-[84px] sm:max-w-none">
-                    {tab.label}
-                  </span>
+                  <Icon className="size-4 shrink-0" />
+                  <span>{tab.label}</span>
                 </button>
               );
             })}
@@ -1039,7 +1052,7 @@ export function EditorialShowcaseView({
           {activeTab === "grid" && (
             <div className="pt-3">
               {feedImages.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols- gap-2 sm:gap-2 rounded-lg overflow-hidden">
+                <div className="grid grid-cols-3 gap-2 rounded-lg overflow-hidden">
                   {feedImages.slice(0, 12).map((item, i) => {
                     const rawUrl = typeof item === "string" ? item : (item?.url || item?.src || "");
                     const isVideo = /\.(mp4|webm|mov|m4v|ogg)(\?.*)?$/i.test(rawUrl) || item?.type === "video";
@@ -1067,11 +1080,11 @@ export function EditorialShowcaseView({
                               preload="metadata"
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 flex items-center justify-center">
-                              <div className="size-9 rounded-full bg-white/20 backdrop-blur-md border border-white/40 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                              <div className="size-9 rounded-lg bg-white/20 backdrop-blur-md border border-white/40 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
                                 <Play className="size-4 fill-white text-white ml-1" />
                               </div>
                             </div>
-                            <span className="absolute top-2 right-1.5 px-2 py-1 rounded-md bg-black/70 text-xs font-bold text-white uppercase tracking-wider backdrop-blur-xs font-mono">
+                            <span className="absolute top-2 right-2 px-2 py-1 rounded-md bg-black/70 text-xs font-bold text-white uppercase tracking-wider backdrop-blur-xs font-mono">
                               Vídeo
                             </span>
                           </div>
@@ -1229,7 +1242,7 @@ export function EditorialShowcaseView({
                                 </div>
                                 <div className="flex items-center gap-2 flex-wrap">
                                   {lodging.stars ? (
-                                    <span className="text-xs font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2 py-1 rounded-full border border-amber-500/20">
+                                    <span className="text-xs font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2 py-1 rounded-md border border-amber-500/20">
                                       {lodging.stars} estrelas
                                     </span>
                                   ) : null}
@@ -1257,7 +1270,7 @@ export function EditorialShowcaseView({
                                         className="size-full object-cover group-hover:scale-105 transition-transform duration-200"
                                         loading="lazy"
                                       />
-                                      <span className="absolute bottom-1.5 right-1.5 px-2 py-1 rounded-md bg-neutral-950/70 text-white text-xs font-mono">
+                                      <span className="absolute bottom-2 right-2 px-2 py-1 rounded-md bg-neutral-950/70 text-white text-xs font-mono">
                                         {pIdx + 1}/{lodgingPhotos.length}
                                       </span>
                                     </button>
@@ -1432,7 +1445,7 @@ export function EditorialShowcaseView({
                 <div className="relative pl-7 space-y-6 before:absolute before:left-3 before:top-3 before:bottom-3 before:w-[2px] before:bg-border/80">
                     {itineraryDays.map((item: any, idx: number) => (
                     <div key={idx} className="relative space-y-3">
-                      <div className="absolute -left-7 top-0.5 size-7 rounded-full bg-card border-2 border-primary/90 flex items-center justify-center text-xs font-bold text-foreground">
+                      <div className="absolute -left-7 top-0.5 size-7 rounded-lg bg-card border-2 border-primary/90 flex items-center justify-center text-xs font-bold text-foreground">
                         {item.day_number || idx + 1}
                       </div>
                       <div className="space-y-2">
@@ -1500,6 +1513,18 @@ export function EditorialShowcaseView({
                       </div>
                     </div>
                   ))}
+                </div>
+              ) : isTravel ? (
+                <div className="p-6 rounded-lg bg-card border border-border/60 text-center space-y-3 shadow-2xs">
+                  <div className="size-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center mx-auto">
+                    <Calendar className="size-5" />
+                  </div>
+                  <div className="space-y-1">
+                    <h4 className="font-bold text-sm text-foreground">Roteiro Dinâmico e Personalizável</h4>
+                    <p className="text-xs text-muted-foreground max-w-md mx-auto leading-relaxed">
+                      {attrs.itinerary_summary || classified.description || "Este pacote conta com cronograma personalizado. Fale com nossos consultores para detalhar paradas, passeios adicionais e itinerários sob medida."}
+                    </p>
+                  </div>
                 </div>
               ) : (
                 /* Fallback semântico rico para outros nichos: diferenciais, requisitos e vantagens */
@@ -2050,7 +2075,7 @@ export function EditorialShowcaseView({
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-xs font-bold text-foreground">Voo</p>
-                          <p className="text-xs text-muted-foreground truncate">
+                          <p className="text-xs text-muted-foreground break-words text-wrap">
                             {flightDetails.combo_flight_from_iata}
                             {flightDetails.combo_flight_from_iata && flightDetails.combo_flight_to_iata && " → "}
                             {flightDetails.combo_flight_to_iata}
@@ -2080,7 +2105,7 @@ export function EditorialShowcaseView({
                           <p className="text-xs font-bold text-foreground">
                             Transfer {flightDetails.transfer_duration ? `(${flightDetails.transfer_duration})` : ""}
                           </p>
-                          <p className="text-xs text-muted-foreground truncate">
+                          <p className="text-xs text-muted-foreground break-words text-wrap">
                             {flightDetails.transfer_from}
                             {flightDetails.transfer_from && flightDetails.transfer_to && " → "}
                             {flightDetails.transfer_to}
@@ -2149,8 +2174,8 @@ export function EditorialShowcaseView({
                     Saídas Disponíveis
                   </h4>
                   <div className="space-y-2">
-                    {departureOptions.map((opt, i) => {
-                      const cfg = DEPARTURE_STATUS_CONFIG[opt.status] || DEPARTURE_STATUS_CONFIG.confirmed;
+                    {departureOptions.map((opt: DepartureOption, i: number) => {
+                      const cfg = (opt.status && DEPARTURE_STATUS_CONFIG[opt.status as keyof typeof DEPARTURE_STATUS_CONFIG]) || DEPARTURE_STATUS_CONFIG.confirmed;
                       const depDate = opt.departure_date ? new Date(opt.departure_date + "T00:00:00").toLocaleDateString("pt-BR", { day: "2-digit", month: "short" }) : "";
                       const retDate = opt.return_date ? new Date(opt.return_date + "T00:00:00").toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" }) : "";
                       const optId = opt.id || String(i);
@@ -2172,7 +2197,7 @@ export function EditorialShowcaseView({
                               <div className="flex items-center gap-2">
                                 {opt.label && <p className="text-xs font-bold text-foreground">{opt.label}</p>}
                                 {isSelected && (
-                                  <span className="text-xs font-bold text-primary bg-primary/10 px-2 py-1 rounded-full">
+                                  <span className="text-xs font-bold text-primary bg-primary/10 px-2 py-1 rounded-md">
                                     Selecionada
                                   </span>
                                 )}
@@ -2187,7 +2212,7 @@ export function EditorialShowcaseView({
                             {opt.available_seats !== undefined && opt.available_seats > 0 && (
                               <span className="text-xs text-muted-foreground">{opt.available_seats} vagas</span>
                             )}
-                            <span className={cn("text-xs font-bold px-2 py-1 rounded-full border", cfg.color)}>
+                            <span className={cn("text-xs font-bold px-2 py-1 rounded-md border", cfg.color)}>
                               {cfg.icon} {cfg.label}
                             </span>
                           </div>
@@ -2269,7 +2294,7 @@ export function EditorialShowcaseView({
             const heroHighlight = getClassifiedHeroHighlight(classified, selectedDeparture);
             if (!heroHighlight) return null;
             const gridCols = heroHighlight.tertiaryValue
-              ? "grid-cols-1 sm:grid-cols-"
+              ? "grid-cols-1 sm:grid-cols-3"
               : heroHighlight.secondaryValue
               ? "grid-cols-2"
               : "grid-cols-1";
@@ -2378,7 +2403,7 @@ export function EditorialShowcaseView({
                           <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">À vista no PIX:</span>
                           <span className="text-xs font-black text-foreground font-display">{formatMoney(pixPrice)}</span>
                         </div>
-                        <span className="text-xs font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-500/10 px-2 py-1 rounded-full border border-emerald-500/20">
+                        <span className="text-xs font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-500/10 px-2 py-1 rounded-md border border-emerald-500/20">
                           Economize {formatMoney(pixSavings)} (-{pixDiscountPercent}%)
                         </span>
                       </div>
@@ -2481,14 +2506,14 @@ export function EditorialShowcaseView({
               </div>
               <div className="min-w-0 flex flex-col">
                 <div className="flex items-center gap-2 min-w-0">
-                  <span className="font-bold text-sm text-foreground truncate">
+                  <span className="font-bold text-sm text-foreground break-words">
                     {advertiserName}
                   </span>
                   <span title="Verificado Waesy" className="inline-flex shrink-0">
                     <CheckCircle2 className="size-3.5 text-blue-500" />
                   </span>
                 </div>
-                <span className="text-xs text-muted-foreground truncate">
+                <span className="text-xs text-muted-foreground break-words">
                   {isTravel ? (isCompany ? "Agência / Operadora Oficial" : "Organizador da Excursão") : (advertiserCity ? `${advertiserCity} • ` : "") + (isCompany ? "Loja Oficial" : "Anunciante")}
                 </span>
               </div>
@@ -2546,18 +2571,18 @@ export function EditorialShowcaseView({
                       <span className="text-xs sm:text-sm font-bold text-muted-foreground uppercase tracking-tight shrink-0">
                         {maxInstallments}x de
                       </span>
-                      <span className="text-base sm:text-lg font-black text-foreground tracking-tight font-display truncate">
+                      <span className="text-base sm:text-lg font-black text-foreground tracking-tight font-display whitespace-nowrap shrink-0">
                         {formatMoney(installmentCents)}
                       </span>
                     </>
                   ) : (
-                    <span className="text-base sm:text-lg font-black text-foreground tracking-tight font-display truncate">
+                    <span className="text-base sm:text-lg font-black text-foreground tracking-tight font-display whitespace-nowrap shrink-0">
                       {formatMoney(priceCents)}
                     </span>
                   )}
                   <ChevronUp className="size-3.5 text-muted-foreground shrink-0 group-hover:translate-y-[-1px] transition-transform" />
                 </div>
-                <div className="flex items-center gap-2 text-xs sm:text-xs text-muted-foreground truncate">
+                <div className="flex items-center gap-2 text-xs sm:text-xs text-muted-foreground flex-wrap gap-1">
                   {maxInstallments > 1 ? (
                     <>
                       <span>Total: {formatMoney(priceCents)}</span>
@@ -2570,7 +2595,7 @@ export function EditorialShowcaseView({
                     <span>À vista</span>
                   )}
                   {pixDiscountPercent > 0 && (
-                    <span className="ml-1 text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-500/10 px-2 py-1 rounded text-xs">
+                    <span className="ml-1 text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-500/10 px-2 py-1 rounded-md text-xs">
                       -{pixDiscountPercent}% PIX
                     </span>
                   )}
@@ -2588,7 +2613,7 @@ export function EditorialShowcaseView({
           <Button
             type="button"
             onClick={handlePrimaryCtaClick}
-            className="h-11 px-5 sm:px-7 rounded-full bg-foreground text-background hover:bg-foreground/90 font-extrabold text-xs tracking-tight active:scale-95 transition-colors shrink-0 cursor-pointer"
+            className="h-11 px-5 sm:px-7 rounded-lg bg-foreground text-background hover:bg-foreground/90 font-extrabold text-xs tracking-tight active:scale-95 transition-colors shrink-0 cursor-pointer"
           >
             {getPrimaryCtaLabel()}
           </Button>
@@ -2621,13 +2646,13 @@ export function EditorialShowcaseView({
           <DialogContent className="max-w-4xl p-0 bg-black/95 border-none overflow-hidden sm:rounded-lg text-white select-none">
             {/* Topbar do Modal: Contador e Botão Fechar */}
             <div className="absolute top-3 left-3 right-3 z-50 flex items-center justify-between pointer-events-none">
-              <span className="px-3 py-2 rounded-full bg-black/70 backdrop-blur-md text-white text-xs font-mono font-medium border border-white/10 pointer-events-auto">
+              <span className="px-3 py-2 rounded-md bg-black/70 backdrop-blur-md text-white text-xs font-mono font-medium border border-white/10 pointer-events-auto">
                 Foto {activeImageIndex + 1} de {images.length}
               </span>
               <button
                 type="button"
                 onClick={() => setFullscreenImage(null)}
-                className="size-9 rounded-full bg-black/70 hover:bg-black/90 text-white flex items-center justify-center backdrop-blur-md border border-white/10 transition-colors pointer-events-auto cursor-pointer"
+                className="size-9 rounded-lg bg-black/70 hover:bg-black/90 text-white flex items-center justify-center backdrop-blur-md border border-white/10 transition-colors pointer-events-auto cursor-pointer"
                 title="Fechar (Esc)"
                 aria-label="Fechar ampliação"
               >
@@ -2654,7 +2679,7 @@ export function EditorialShowcaseView({
                       setActiveImageIndex(prevIdx);
                       setFullscreenImage(images[prevIdx]);
                     }}
-                    className="absolute left-3 sm:left-5 top-1/2 -translate-y-1/2 size-11 rounded-full bg-black/60 hover:bg-black/85 text-white flex items-center justify-center backdrop-blur-md border border-white/20 transition-colors cursor-pointer hover:scale-105 active:scale-95"
+                    className="absolute left-3 sm:left-5 top-1/2 -translate-y-1/2 size-11 rounded-lg bg-black/60 hover:bg-black/85 text-white flex items-center justify-center backdrop-blur-md border border-white/20 transition-colors cursor-pointer hover:scale-105 active:scale-95"
                     title="Foto anterior (Seta esquerda)"
                     aria-label="Foto anterior"
                   >
@@ -2669,7 +2694,7 @@ export function EditorialShowcaseView({
                       setActiveImageIndex(nextIdx);
                       setFullscreenImage(images[nextIdx]);
                     }}
-                    className="absolute right-3 sm:right-5 top-1/2 -translate-y-1/2 size-11 rounded-full bg-black/60 hover:bg-black/85 text-white flex items-center justify-center backdrop-blur-md border border-white/20 transition-colors cursor-pointer hover:scale-105 active:scale-95"
+                    className="absolute right-3 sm:right-5 top-1/2 -translate-y-1/2 size-11 rounded-lg bg-black/60 hover:bg-black/85 text-white flex items-center justify-center backdrop-blur-md border border-white/20 transition-colors cursor-pointer hover:scale-105 active:scale-95"
                     title="Próxima foto (Seta direita)"
                     aria-label="Próxima foto"
                   >
@@ -2739,7 +2764,7 @@ export function EditorialShowcaseView({
                     <div className="flex items-center gap-2">
                       <span className="text-muted-foreground font-medium">À Vista no PIX</span>
                       {pixDiscountPercent > 0 && (
-                        <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded-full">
+                        <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded-md">
                           -{pixDiscountPercent}% OFF
                         </span>
                       )}

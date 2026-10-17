@@ -83,7 +83,7 @@ export function HomeDesktopWebApp({
         <section aria-label={heroSection.title || "Destaques Principais"} className="w-full">
           {heroSection.show_title && heroSection.title && (
             <div className="mb-2">
-              <h2 className="text-lg font-bold text-foreground tracking-tight truncate">
+              <h2 className="text-lg font-bold text-foreground tracking-tight break-words text-wrap">
                 {heroSection.title}
               </h2>
               {heroSection.show_subtitle && heroSection.subtitle && (
@@ -150,12 +150,16 @@ export function HomeDesktopWebApp({
                 )}
               </div>
             )}
-            {sec.layout_variant === "carousel" ? (
+            {sec.layout_variant === "bento_grid" ? (
+              <BentoGridTetris items={activeSecItems} aspectRatio={sec.aspect_ratio} />
+            ) : sec.layout_variant === "carousel" ? (
               <MetamorphicBannerSlider
                 items={activeSecItems}
                 aspectRatio={sec.aspect_ratio}
                 columnsDesktop={activeSecItems.length >= 2 ? 2 : 1}
               />
+            ) : sec.layout_variant === "horizontal_scroll" ? (
+              <NoorNativeCategoryDock items={activeSecItems} />
             ) : (
               <div className={`grid ${desktopColsClass} gap-4`}>
                 {activeSecItems.map((it) => (
@@ -264,7 +268,7 @@ export function HomeDesktopWebApp({
 
                       <div className="p-4 space-y-1 h-16 flex flex-col justify-start">
                         <div className="flex items-center justify-between gap-2">
-                          <h3 className="font-bold text-sm text-foreground truncate group-hover:text-primary transition-colors">
+                          <h3 className="font-bold text-sm text-foreground break-words text-wrap group-hover:text-primary transition-colors">
                             {item.business_name}
                           </h3>
                           {item.is_verified && (
@@ -415,7 +419,7 @@ export function HomeDesktopWebApp({
                         <p className="text-xs font-black text-foreground font-mono mt-1">
                           {priceDisplay}
                         </p>
-                        <p className="text-xs text-muted-foreground truncate">
+                        <p className="text-xs text-muted-foreground break-words text-wrap">
                           {item.location_name || item.location_text || "Na sua região"}
                         </p>
                       </div>
@@ -500,7 +504,7 @@ export function HomeDesktopWebApp({
                         </h3>
                         <p className="text-xs text-muted-foreground font-medium flex items-center gap-1">
                           <Buildings size={13} className="shrink-0" />
-                          <span className="truncate">{job.company_name}</span>
+                          <span className="break-words text-wrap">{job.company_name}</span>
                         </p>
                       </div>
                     </div>
@@ -508,7 +512,7 @@ export function HomeDesktopWebApp({
                     <div className="flex items-center justify-between pt-2 border-t border-border/30 text-xs text-muted-foreground">
                       <span className="flex items-center gap-1">
                         <MapPin size={12} />
-                        <span className="truncate max-w-36">{job.location}</span>
+                        <span className="break-words text-wrap">{job.location}</span>
                       </span>
                       <span className="font-bold text-foreground">
                         {job.salary_display || "A combinar"}
@@ -750,7 +754,7 @@ export function HomeDesktopWebApp({
                     <div className="p-4 space-y-2 flex-1 flex flex-col justify-between">
                       <div className="space-y-1">
                         {item.priceOrDate && (
-                          <p className="text-lg font-black text-foreground font-mono truncate">
+                          <p className="text-lg font-black text-foreground font-mono whitespace-nowrap shrink-0">
                             {item.priceOrDate}
                           </p>
                         )}
@@ -761,9 +765,9 @@ export function HomeDesktopWebApp({
 
                       {item.location && (
                         <div className="pt-2 border-t border-border/30 flex items-center justify-between text-xs text-muted-foreground">
-                          <span className="flex items-center gap-1 truncate">
+                          <span className="flex items-center gap-1 break-words text-wrap">
                             <MapPin size={12} className="shrink-0 text-primary" />
-                            <span className="truncate">{item.location}</span>
+                            <span className="break-words text-wrap">{item.location}</span>
                           </span>
                         </div>
                       )}
@@ -854,9 +858,9 @@ export function HomeDesktopWebApp({
                     </Link>
 
                     <div className="flex items-center justify-between gap-2 pt-2 border-t border-border/30">
-                      <span className="flex items-center gap-1 text-xs text-muted-foreground truncate">
+                      <span className="flex items-center gap-1 text-xs text-muted-foreground break-words text-wrap">
                         <MapPin size={12} className="shrink-0 text-muted-foreground" />
-                        <span className="truncate">{item.location || "Na sua região"}</span>
+                        <span className="break-words text-wrap">{item.location || "Na sua região"}</span>
                       </span>
 
                       <div className="flex items-center gap-2">

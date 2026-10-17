@@ -137,7 +137,7 @@ export function ProductCard({
       {/* Info */}
       <div className="space-y-1">
         {product.brand ? <p className="eyebrow text-muted-foreground">{product.brand}</p> : null}
-        <h3 className="line-clamp-2 text-sm font-medium text-foreground group-hover:text-primary transition-colors">
+        <h3 className="break-words text-wrap text-sm font-medium text-foreground group-hover:text-primary transition-colors">
           {product.title} {product.variantName ? `— ${product.variantName}` : ""}
         </h3>
         <PriceDisplay

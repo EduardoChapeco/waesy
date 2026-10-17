@@ -43,7 +43,7 @@ const DrawerContent = React.forwardRef<
  )}
  {...props}
  >
- <div className="mx-auto mt-4 h-2 w-24 rounded-full bg-muted" />
+ <div className="mx-auto mt-3 mb-2 h-1.5 w-12 rounded-full bg-muted-foreground/30" />
  {children}
  </DrawerPrimitive.Content>
  </DrawerPortal>
@@ -51,7 +51,7 @@ const DrawerContent = React.forwardRef<
 DrawerContent.displayName = "DrawerContent";
 
 const DrawerHeader = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
- <div className={cn("grid gap-2 p-4 text-center sm:text-left", className)} {...props} />
+ <div className={cn("grid gap-2 px-4 pt-2 pb-4 text-left", className)} {...props} />
 );
 DrawerHeader.displayName = "DrawerHeader";
 

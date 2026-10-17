@@ -10,6 +10,11 @@ import { toast } from "sonner";
 import { CrudActionsMenu } from "@/components/ui/crud-actions-menu";
 import { getStoreSettings } from "@/services/store.functions";
 import { listTravelVisas, updateTravelVisaStatus, deleteTravelVisa } from "@/services/travel-visas.functions";
+import {
+  evaluateUsVisaDs160ConsularTies,
+  parseAndValidatePassportMrz,
+  type VisaDs160EvaluationResult,
+} from "@/services/travel-ecosystem-engines.functions";
 import { VISA_STATUS_LABELS, type VisaStatus, type TravelVisaDTO } from "@/types/travel-visas";
 import { NewVisaWizard } from "@/components/tourism/visas/new-visa-wizard";
 import { NicheOperationalGuard } from "@/components/workspace/niche-operational-guard";
@@ -36,6 +41,71 @@ function WorkspaceVisasPage() {
   const [search, setSearch] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("all");
   const [wizardOpen, setWizardOpen] = useState(false);
+  const [consularStudioOpen, setConsularStudioOpen] = useState(false);
+
+  // Estados da Pré-Análise Consular DS-160 (INA 214b) & Scanner MRZ
+  const [dsApplicantName, setDsApplicantName] = useState("Passageiro Titular");
+  const [dsEmploymentType, setDsEmploymentType] = useState<
+    "clt" | "empresario" | "servidor_publico" | "autonomo" | "estudante" | "desempregado"
+  >("empresario");
+  const [dsMonthsInJob, setDsMonthsInJob] = useState(48);
+  const [dsMonthlyIncomeCents, setDsMonthlyIncomeCents] = useState(1450000);
+  const [dsEvaluation, setDsEvaluation] = useState<VisaDs160EvaluationResult>(() =>
+    evaluateUsVisaDs160ConsularTies({
+      applicantName: "Passageiro Titular",
+      destinationCountry: "Estados Unidos",
+      visaType: "B1/B2 Turismo e Negócios",
+      occupationType: "empresario",
+      employmentTenureMonths: 48,
+      monthlyIncomeCents: 1450000,
+      hasIncomeTaxReturn: true,
+      hasPropertyInBrazil: true,
+      hasDependentsInBrazil: true,
+      hasRelativesInDestination: false,
+      relativesLegalStatus: "none",
+      previousInternationalTrips: ["Europa Schengen", "Argentina"],
+      previousVisaRefusal: false,
+      tripSponsorType: "self",
+      estimatedTripCostCents: 1800000,
+      plannedStayDays: 12,
+    }),
+  );
+
+  const [mrzLine1, setMrzLine1] = useState("P<BRASILVA<<CARLOS<EDUARDO<<<<<<<<<<<<<<<<<<");
+  const [mrzLine2, setMrzLine2] = useState("FP849201<4BRA8804158M3108206<<<<<<<<<<<<<<02");
+  const [tripReturnDate, setTripReturnDate] = useState("2026-12-15");
+  const [mrzResult, setMrzResult] = useState(() =>
+    parseAndValidatePassportMrz(
+      "P<BRASILVA<<CARLOS<EDUARDO<<<<<<<<<<<<<<<<<<",
+      "FP849201<4BRA8804158M3108206<<<<<<<<<<<<<<02",
+      "2026-12-15",
+    ),
+  );
+
+  const handleRunConsularEvaluation = () => {
+    const evalRes = evaluateUsVisaDs160ConsularTies({
+      applicantName: dsApplicantName,
+      destinationCountry: "Estados Unidos",
+      visaType: "B1/B2 Turismo e Negócios",
+      occupationType: dsEmploymentType,
+      employmentTenureMonths: dsMonthsInJob,
+      monthlyIncomeCents: dsMonthlyIncomeCents,
+      hasIncomeTaxReturn: true,
+      hasPropertyInBrazil: true,
+      hasDependentsInBrazil: true,
+      hasRelativesInDestination: false,
+      relativesLegalStatus: "none",
+      previousInternationalTrips: ["América do Sul"],
+      previousVisaRefusal: false,
+      tripSponsorType: "self",
+      estimatedTripCostCents: 1800000,
+      plannedStayDays: 10,
+    });
+    setDsEvaluation(evalRes);
+    const mrzRes = parseAndValidatePassportMrz(mrzLine1, mrzLine2, tripReturnDate);
+    setMrzResult(mrzRes);
+    toast.success("Auditoria DS-160 (INA 214b) e validação MRZ 6 meses concluídas!");
+  };
 
   const { data: visas = [], refetch, isLoading } = useQuery({
     queryKey: ["travel-visas", storeId, selectedStatus],
@@ -188,12 +258,22 @@ function WorkspaceVisasPage() {
           title="Vistos Consulares"
           description="Acompanhamento de processos de vistos (EUA, Canadá, ETIAS Europa), formulários DS-160 e agendamentos de entrevista no CASV/Consulado."
           actions={
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                type="button"
+                onClick={() => setConsularStudioOpen((prev) => !prev)}
+                variant="outline"
+                size="sm"
+                className="font-bold text-xs gap-2 h-11 min-h-11 px-4 rounded-lg cursor-pointer focus-visible:ring-2"
+              >
+                <ShieldCheck className="size-4 text-primary" />
+                <span>{consularStudioOpen ? "Ocultar Pré-Análise DS-160 & MRZ" : "Pré-Análise DS-160 & Scanner MRZ"}</span>
+              </Button>
               <Button
                 onClick={handleExportCSV}
                 variant="outline"
                 size="sm"
-                className="font-bold text-xs gap-2 h-10 px-4 rounded-lg cursor-pointer"
+                className="font-bold text-xs gap-2 h-11 min-h-11 px-4 rounded-lg cursor-pointer focus-visible:ring-2"
               >
                 <FileSpreadsheet className="size-4 text-emerald-600" />
                 <span>Exportar Relatório (CSV)</span>
@@ -202,7 +282,7 @@ function WorkspaceVisasPage() {
                 type="button"
                 onClick={() => setWizardOpen(true)}
                 size="sm"
-                className="rounded-lg bg-primary text-primary-foreground font-bold text-xs gap-2 h-10 px-4 cursor-pointer shadow-2xs"
+                className="rounded-lg bg-primary text-primary-foreground font-bold text-xs gap-2 h-11 min-h-11 px-4 cursor-pointer focus-visible:ring-2"
               >
                 <Plus className="size-4" />
                 <span>Novo Processo</span>
@@ -210,6 +290,152 @@ function WorkspaceVisasPage() {
             </div>
           }
         />
+
+        {/* ── ESTÚDIO DE PRÉ-ANÁLISE CONSULAR DS-160 (INA 214b) & VALIDADOR MRZ (ICAO 9303) ── */}
+        {consularStudioOpen && (
+          <div className="rounded-lg bg-card border border-border p-5 sm:p-6 space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border pb-4">
+              <div className="space-y-1">
+                <Badge variant="outline" className="text-xs font-bold">
+                  Motor Consular Federal • INA Section 214(b) & ICAO Doc 9303
+                </Badge>
+                <h2 className="text-base sm:text-lg font-bold text-foreground">
+                  Auditoria de Vínculos DS-160 (Visto Americano B1/B2) & Validador MRZ de Passaporte
+                </h2>
+              </div>
+              <Button
+                type="button"
+                onClick={handleRunConsularEvaluation}
+                className="h-11 min-h-11 px-5 rounded-lg font-bold text-xs focus-visible:ring-2"
+              >
+                Executar Simulação Consular & Checksum MRZ
+              </Button>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Coluna 1: Matriz de Vínculos DS-160 */}
+              <div className="rounded-lg bg-muted/20 border border-border p-4 space-y-4">
+                <div className="flex items-center justify-between gap-2">
+                  <h3 className="text-sm font-bold text-foreground">1. Matriz de Vínculos Socioeconômicos (DS-160)</h3>
+                  <Badge variant={dsEvaluation.consularTiesScore >= 75 ? "default" : "outline"} className="text-xs font-bold">
+                    Score: {dsEvaluation.consularTiesScore}/100 ({dsEvaluation.readinessTier})
+                  </Badge>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-muted-foreground">Nome do Solicitante</label>
+                    <Input
+                      value={dsApplicantName}
+                      onChange={(e) => setDsApplicantName(e.target.value)}
+                      className="h-11 min-h-11 rounded-lg text-xs"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-muted-foreground">Vínculo Profissional</label>
+                    <select
+                      value={dsEmploymentType}
+                      onChange={(e) => setDsEmploymentType(e.target.value as any)}
+                      className="w-full h-11 min-h-11 rounded-lg border border-input bg-background px-3 text-xs font-semibold focus-visible:ring-2"
+                    >
+                      <option value="empresario">Empresário / Sócio (CNPJ)</option>
+                      <option value="servidor_publico">Servidor Público Concursado</option>
+                      <option value="clt">Empregado CLT</option>
+                      <option value="autonomo">Autônomo / Profissional Liberal</option>
+                      <option value="estudante">Estudante</option>
+                      <option value="desempregado">Sem Vínculo Formal</option>
+                    </select>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-muted-foreground">Tempo na Ocupação (meses)</label>
+                    <Input
+                      type="number"
+                      value={dsMonthsInJob}
+                      onChange={(e) => setDsMonthsInJob(Number(e.target.value) || 0)}
+                      className="h-11 min-h-11 rounded-lg text-xs"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-muted-foreground">Renda Mensal (R$)</label>
+                    <Input
+                      type="number"
+                      value={Math.round(dsMonthlyIncomeCents / 100)}
+                      onChange={(e) => setDsMonthlyIncomeCents((Number(e.target.value) || 0) * 100)}
+                      className="h-11 min-h-11 rounded-lg text-xs"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2 pt-2 border-t border-border">
+                  <p className="text-xs font-bold text-foreground">Fatores Positivos Verificados:</p>
+                  <ul className="space-y-1">
+                    {dsEvaluation.strengths.map((s: string, idx: number) => (
+                      <li key={idx} className="text-xs text-muted-foreground break-words leading-relaxed">
+                        • {s}
+                      </li>
+                    ))}
+                  </ul>
+                  {dsEvaluation.redFlags.length > 0 && (
+                    <>
+                      <p className="text-xs font-bold text-amber-600 pt-2">Alertas de Atenção Consular (INA 214b):</p>
+                      <ul className="space-y-1">
+                        {dsEvaluation.redFlags.map((f: string, idx: number) => (
+                          <li key={idx} className="text-xs text-amber-700 dark:text-amber-300 break-words leading-relaxed">
+                            • {f}
+                          </li>
+                        ))}
+                      </ul>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              {/* Coluna 2: Scanner MRZ ICAO 9303 e Regra dos 6 Meses */}
+              <div className="rounded-lg bg-muted/20 border border-border p-4 space-y-4">
+                <div className="flex items-center justify-between gap-2">
+                  <h3 className="text-sm font-bold text-foreground">2. Validador MRZ (ICAO 9303) & Regra de 6 Meses</h3>
+                  <Badge variant={mrzResult.meetsSixMonthValidityRule && mrzResult.isValidMrz ? "default" : "outline"} className="text-xs font-bold">
+                    {mrzResult.meetsSixMonthValidityRule ? "Apto para Embarque" : "Alerta de Validade"}
+                  </Badge>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs font-semibold text-muted-foreground">Linha 1 MRZ (44 caracteres)</label>
+                  <Input
+                    value={mrzLine1}
+                    onChange={(e) => setMrzLine1(e.target.value)}
+                    className="h-11 min-h-11 rounded-lg font-mono text-xs"
+                  />
+                  <label className="text-xs font-semibold text-muted-foreground">Linha 2 MRZ (44 caracteres)</label>
+                  <Input
+                    value={mrzLine2}
+                    onChange={(e) => setMrzLine2(e.target.value)}
+                    className="h-11 min-h-11 rounded-lg font-mono text-xs"
+                  />
+                  <label className="text-xs font-semibold text-muted-foreground">Data de Retorno da Viagem</label>
+                  <Input
+                    type="date"
+                    value={tripReturnDate}
+                    onChange={(e) => setTripReturnDate(e.target.value)}
+                    className="h-11 min-h-11 rounded-lg text-xs"
+                  />
+                </div>
+
+                <div className="rounded-lg bg-card border border-border p-3 space-y-2 text-xs">
+                  <p className="font-bold text-foreground">
+                    Titular Extraído: {mrzResult.holderFirstName} {mrzResult.holderLastName} • Passaporte: {mrzResult.passportNumber}
+                  </p>
+                  <p className="text-muted-foreground">
+                    Validade: {mrzResult.expiryDateIso} ({mrzResult.daysUntilExpiryFromReturn} dias após o retorno)
+                  </p>
+                  <p className="text-amber-600 font-semibold break-words">
+                    • {mrzResult.validationMessagePt}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* ── 4 KPIS NO PARADIGMA CLEAN ── */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

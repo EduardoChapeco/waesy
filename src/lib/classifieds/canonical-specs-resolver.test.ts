@@ -129,4 +129,43 @@ describe("resolveClassifiedDetailedSpecs", () => {
       ])
     );
   });
+
+  it("garante isolamento estrito de turismo (Invariante B.37), sem vazar Finalidade: Venda ou Logística: Retirada no Local", () => {
+    const travelAd = {
+      category: "travel",
+      deal_type: "venda", // resíduo default da tabela
+      delivery_mode: "pickup", // resíduo default da tabela
+      attributes: {
+        destination_city: "Cancún, México",
+        departure_city: "Chapecó, SC",
+        duration_text: "7 dias e 6 noites",
+        transport_type: "airplane",
+        meal_plan: "all_inclusive",
+        passenger_composition: { adults: 2, children: 1 },
+        cancellation_policy: "flexible",
+      },
+    };
+
+    const specs = resolveClassifiedDetailedSpecs(travelAd);
+
+    // Deve conter especificações legítimas de viagem
+    expect(specs).toEqual(
+      expect.arrayContaining([
+        { label: "Destino", value: "Cancún, México", category: "logistics", highlight: true },
+        { label: "Origem", value: "Chapecó, SC", category: "logistics" },
+        { label: "Duração", value: "7 dias e 6 noites", category: "logistics", highlight: true },
+        { label: "Transporte", value: "Aéreo Regular", category: "logistics", highlight: true },
+        { label: "Regime Alimentar", value: "All Inclusive", category: "technical", highlight: true },
+        { label: "Passageiros", value: "2 Adulto(s) + 1 Criança(s)", category: "technical" },
+        { label: "Cancelamento", value: "Flexível", category: "commercial" },
+      ])
+    );
+
+    // NÃO deve vazar 'Finalidade: Venda', 'Logística: Retirada no Local' ou 'Capacidade: Até 1 hóspedes'
+    const labels = specs.map((s) => s.label);
+    expect(labels).not.toContain("Finalidade");
+    expect(labels).not.toContain("Logística");
+    expect(labels).not.toContain("Capacidade");
+  });
 });
+

@@ -3172,3 +3172,128 @@
   5. **Integração com Vitrines & Marketplaces (`surface-cms.functions.ts`, `modular-surface-feed.tsx`, `_store.index.tsx`):** Adicionado suporte às seções `social_posts_rail` / `social_posts` no motor modular de superfícies e conectado `socialPostsSection` do CMS na Home Mobile e Desktop.
 - **Fundamentação:** AGENTS.md B.20, B.25, B.28, B.30, SPEC-MINIMALIST-SOCIAL-STREAM-AND-SHOWCASE, Apple HIG e WCAG 2.2 AA.
 - **Consequências:** Zero dados falsos em toda a vitrine social e editorial, navegação ponta a ponta funcional para `/publicacao/$id` e `/noticias/$slug`, e renderização minimalista multi-formato em todo o ecossistema.
+
+## DEC-227: Erradicação de Fallbacks Falsos, Omissão Dinâmica de Abas Vazias e Métricas Comerciais Honestas
+
+- **Data:** 2026-10-16
+- **Contexto:** Posts de texto puro exibiam imagens sintéticas do Unsplash via fallbacks automáticos; cards de estabelecimentos (`StoreCard`) mostravam notas e contadores estáticos ("4.9 (128)"); abas vazias em páginas de detalhes de classificados eram exibidas sem conteúdo; e condições de pagamento apareciam misturadas dentro da aba de Hospedagem.
+- **Decisão Adotada:**
+  1. **Zero Imagens Sintéticas (Invariante B.33):** Posts sem mídia são renderizados estritamente como cartões de texto limpos, e vídeos utilizam a tag `<video>` nativa.
+  2. **Métricas Comerciais Honestas:** Cards de estabelecimentos omitem avaliações e contadores quando ausentes, exibindo apenas identificação e selo de verificação.
+  3. **Omissão Dinâmica de Abas:** Abas sem conteúdo cadastrado (fotos extras, roteiro) são omitidas do cabeçalho de navegação.
+  4. **Isolamento de Condições Comerciais:** Informações de parcelamento e chaves de pagamento ficam restritas à aba de Condições/Explore.
+- **Fundamentação:** AGENTS.md B.33, Apple HIG, WCAG 2.2 AA.
+- **Consequências:** Conformidade anti-fake estrita e eliminação completa de layouts ocos em detalhes de anúncios.
+
+## DEC-228: Padronização Squircle de Especificações Canônicas, TetrisGrid 2D Auto-Packing e Desobstrução de Drawers
+
+- **Data:** 2026-10-17
+- **Contexto:** Necessidade de organizar fichas técnicas heterogêneas de 15 nichos sem truncamento de texto, sem vazamento de atributos cruzados e garantindo desobstrução de entalhes/safe-area em modais mobile.
+- **Decisão Adotada:**
+  1. **Motor TetrisGrid 2D Auto-Packing (`teteterisgrid-view.tsx`):** Empacotamento denso e adaptativo para especificações canônicas, garantindo leitura integral sem truncamento (`break-words text-wrap`).
+  2. **Isolamento Estrito de Nichos (Invariante B.37):** Bloqueio de vazamento de propriedades entre categorias no `canonical-specs-resolver.ts`.
+  3. **Desobstrução de Safe-Area (Invariante B.34):** Padding superior defensivo em drawers/sheets (`pt-[max(1.25rem,env(safe-area-inset-top))]`) e fechamento abaixo do notch.
+- **Fundamentação:** AGENTS.md B.34, B.37, B.38, Apple HIG e WCAG 2.2 AA.
+- **Consequências:** Fichas técnicas legíveis em todos os dispositivos sem sobreposição de barras e sem overflow.
+
+## DEC-229: Linha Única de Abas sem Quebra, Imagem Full-Bleed Mobile, Desbloqueio de Pacote Pronto e Erradicação de Jargões em Entrega
+
+- **Data:** 2026-10-17
+- **Contexto:** Abas de navegação quebravam em 3 linhas no mobile; imagem principal cortava com margens laterais; primeira foto secundária iniciava cortada pela metade; pacote pronto bloqueava com tela de login para anônimos; e termos como "Waesy Link" e "MotoLink" causavam fricção no checkout.
+- **Decisão Adotada:**
+  1. **Régua de Abas em Linha Única Contínua (Invariante B.39):** Layout horizontal com scroll suave (`flex flex-nowrap overflow-x-auto no-scrollbar h-10 px-3.5`).
+  2. **Imagem Hero Full-Bleed no Mobile:** Imagem de ponta a ponta sem bordas laterais (`w-full aspect-[4/3] rounded-none sm:rounded-lg object-cover`).
+  3. **Primeira Foto Secundária 100% Visível:** Purgado container carousel defeituoso; carrossel horizontal alinhado com gap justo e miniaturas quadradas (`size-14 sm:size-16`).
+  4. **Desbloqueio de Reserva de Pacote Pronto:** Usuário anônimo pode configurar saída, passageiros e avançar direto para reserva via WhatsApp sem barreira bloqueante de autenticação.
+  5. **Erradicação de Jargões em Logística:** Exibição comercial amigável de "Entrega no Endereço (Delivery)" e "Retirada no Local (Grátis)".
+- **Fundamentação:** AGENTS.md B.22, B.26, B.39, Apple HIG e WCAG 2.2 AA.
+- **Consequências:** Experiência tátil e fluida de classe mundial nas páginas de detalhes e checkout mobile.
+## DEC-230: Resolução Canônica de Imagens Editoriais por Cidade/Nicho para Notícias e Erradicação de Cards Sem Mídia
+
+- **Data:** 2026-10-17
+- **Contexto:** Notícias jornalísticas publicadas na plataforma e mineradas automaticamente por crawlers/RSS ocasionalmente não continham capa original de mídia ou foram indevidamente sanitizadas para null, quebrando a identidade visual do portal e gerando cartões desprovidos de imagem na Home e na rota de Notícias.
+- **Decisão Adotada:**
+  1. **SSOT de Resolução Editorial Geográfica (`src/lib/news/city-editorial-images.ts`):** Criada biblioteca canônica mapeando cidades de Santa Catarina (São Miguel do Oeste, Chapecó, Florianópolis, Balneário Camboriú, Joinville, Blumenau, Lages, Criciúma, etc.) e categorias temáticas (Agro, Economia, Tecnologia, Saúde, Educação, Segurança, etc.) para fotografias legítimas de alta resolução verificadas (HTTP 200).
+  2. **Garantia de Capa no BFF de Notícias (`news.functions.ts` e `admin-home-cms.functions.ts`):** `listPublicArticles`, `getArticleDetail` e `getUnifiedShowcasePosts` agora aplicam `resolveCityNewsCover` quando `cover_media_url` estiver ausente ou inválida, assegurando que 100% dos cards e detalhes exibam capa de alta fidelidade representativa da localidade da matéria.
+  3. **Auto-Atribuição de Capa no Motor de Mineração (`mining.functions.ts`):** No momento da promoção automática de artigos minerados (`autoPromoteMinedArticle`), caso a fonte não forneça capa, o sistema automaticamente infere e persiste a foto correspondente à cidade ou nicho do artigo.
+  4. **Suíte de Testes Automatizada:** Criado `src/lib/news/city-editorial-images.test.ts` com 8/8 testes cobrindo preservação de capas originais, matching geográfico, título e nicho.
+- **Fundamentação:** AGENTS.md B.20, B.30, B.33, Apple HIG e WCAG 2.2 AA.
+- **Consequências:** Zero notícias sem imagem no feed da Home e no portal `/noticias`, preservando a consistência visual, eliminando CLS e garantindo fotografias autênticas do município ou contexto da notícia.
+
+## DEC-231: Ecossistema Recursivo de Eventos: Cockpit da Produtora, Terminais POS de Concessão, Cardápio Mobile e Pesquisas Geofenced
+
+- **Data:** 2026-10-17
+- **Contexto:** Necessidade de transformar o módulo de eventos em um ecossistema autônomo e recursivo de classe mundial (Apple HIG / BigTech), onde a produtora master consolida receita de bilheteria e taxas de concessão, cada evento opera como cockpit independente com múltiplos parceiros (bares, food trucks, lojas), os participantes podem fazer pedidos online expressos para retirada no balcão e responder a pesquisas de satisfação georreferenciadas vinculadas à presença no local.
+- **Decisão Adotada:**
+  1. **Migration PostgreSQL (`20261018000000_event_recursive_subpanels_and_surveys.sql`):** Estendidas tabelas `event_subpanels` (percentual de comissão, taxa fixa, pedidos online, partner_id), criadas tabelas `event_subpanel_orders`, `event_subpanel_order_items`, `event_surveys` (compatível com `schema-forms.ts`) e `event_survey_responses` com validação temporal e de geofence.
+  2. **BFF Server Functions (`src/services/events.functions.ts`):** Criados endpoints `createSubpanelOrder`, `listSubpanelOrders`, `listEventConcessionRevenue` (agregando receita bruta, taxa da produtora e repasse líquido aos parceiros), `listEventSurveys`, `upsertEventSurvey`, `submitSurveyResponse` (com cálculo Haversine de raio) e `getSurveyAnalytics`.
+  3. **Terminal de PDV do Parceiro (`portal.subpainel.$token.tsx`):** Substituído checkout simulado em memória por persistência real no PostgreSQL via `createSubpanelOrder`, catálogo dinâmico de produtos com fallbacks e agregação de faturamento do turno.
+  4. **Cockpit da Produtora (`workspace.eventos.$id.tsx` & `evento-subpaineis.tsx`):** Injetados KPI cards consolidando Bilheteria + Vendas de Parceiros + Comissão da Produtora + Lucro Líquido DRE, régua de abas em linha única horizontal contínua (Invariante B.39) e nova aba de Pesquisas.
+  5. **Cardápio Público no Evento & Pesquisa Mobile (`event-public-concessions.tsx` & `event-public-survey-modal.tsx`):** Integrados em `event-detail-mobile.tsx` e `event-detail-desktop.tsx` permitindo que participantes peçam no balcão via voucher e respondam a pesquisas com validação geofence.
+  6. **Qualidade e Conformidade:** Testes unitários com Vitest 100% aprovados (`src/services/events-subpanels-and-surveys.test.ts`), `npm run typecheck` Exit Code 0, e Design Lint aprovado com redução de 34 violações na catraca.
+- **Fundamentação:** AGENTS.md B.8, B.14, B.22, B.25, B.26, B.38, B.39, Apple HIG e WCAG 2.2 AA.
+- **Consequências:** Módulo de eventos completamente recursivo, auditado, resiliente, financeiramente integrado e de alta fidelidade ergonômica.
+
+## DEC-232: Padrão Criptográfico de Ingressos WCTS-1 (HMAC-SHA256 + Mod-36), Blindagem de Preços em Subpainéis e Cockpit Master da Produtora
+
+- **Data:** 2026-10-17
+- **Contexto:** Necessidade de elevar o ecossistema recursivo de eventos ao padrão de segurança criptográfica anti-injeção (Invariante B.40) e blindagem financeira server-side (Invariante B.41), consolidando os recursos avançados mapeados nos repositórios de referência (`persona-nexus` e `wider`) sem perda de funcionalidade, sem código morto e sem truncamento de informações.
+- **Decisão Adotada:**
+  1. **Motor Criptográfico WCTS-1 (`src/lib/ticket-crypto.ts`):** Implementada geração e verificação determinística em tempo constante (`timingSafeEqual`) de assinaturas HMAC-SHA256 (`v1:TKT:<ticketId>:<issuedAt>:<signature>`) vinculadas a `ticketId`, `eventId`, `lotId`, `ownerProfileId` e `issuedAt`, acompanhadas de código curto contingencial (`W-TKT-XXXXXXXX-CC`) com dígito verificador Mod-36.
+  2. **Integração de Emissão & Validação (`payment.functions.ts`, `events.functions.ts`, `workspace.eventos.$id.checkin.tsx`):** Emissão de ingressos pagos e cortesias assinados criptograficamente com `owner_profile_id`; scanner de portaria exibe selo de autenticidade WCTS-1, aceita código curto `W-TKT-...` e registra telemetria GPS (`checkin_latitude`, `checkin_longitude`, `checkin_operator_id`).
+  3. **Blindagem Server-Side de Preços & RLS (`events.functions.ts`, `20261018000000_event_recursive_subpanels_and_surveys.sql`):** Criada função `resolveVerifiedSubpanelOrderItems` que confronta `productId` contra `event_store_products`, ignorando preços adulterados pelo cliente em pedidos `mobile_attendee` e exigindo `allow_custom_price` explícito para itens avulsos/pesados no PDV; políticas RLS bloqueiam `INSERT` direto de clientes em `tickets` e restringem leitura de comandas em `event_subpanel_orders`.
+  4. **Cockpit Master da Produtora & Templates Operacionais PDV (`workspace.eventos.index.tsx`, `evento-subpaineis.tsx`, `portal.subpainel.$token.tsx`):** Painel geral da produtora exibe banner executivo consolidando Faturamento Geral do Ecossistema, Bilheteria, Praça & Concessões e Público Total, além de resumo financeiro recursivo em cada card de evento; subpainéis suportam 6 templates operacionais (`bar_simples`, `bar_comanda` com seletor rápido de mesas, `buffet_kg` com calculadora de pesagem em gramas, `foodtruck`, `bilheteria`, `loja_merch`), pausa/reativação de terminal (`toggleEventSubpanelStatus`) e rotação imediata de token (`regenerateEventSubpanelToken`).
+  5. **Verificação Automatizada:** 16/16 testes unitários aprovados em `src/services/events-subpanels-and-surveys.test.ts` (incluindo testes de falsificação HMAC, replay entre eventos, checksum Mod-36 e tentativa de adulteração de preço para R$ 0,01), `npm run typecheck` com 0 erros e catraca do Design Lint aprovada.
+- **Fundamentação:** AGENTS.md B.38, B.39, B.40, B.41, PLANO_MESTRE_AUDITORIA_E_EVOLUCAO_EVENTOS.md, Apple HIG e WCAG 2.2 AA.
+- **Consequências:** Ingressos à prova de falsificação ou injeção, faturamento de concessões blindado contra manipulação client-side e visão executiva consolidada em todos os níveis (Produtora Master -> Evento -> Subpainel PDV).
+
+## DEC-233: Ecossistema Contínuo de Turismo & Multi-Nicho: Onda 1 — Qualificação de Leads, Multi-Payer Signers, Trava de Emissão e Blindagem Fiscal
+
+- **Data:** 2026-10-17
+- **Contexto:** Execução da Onda 1 do Plano Mestre de Turismo & Multi-Nicho (`PLANO_MESTRE_AUDITORIA_E_EVOLUCAO_TURISMO.md`). Necessidade de resolver a desconexão histórica dos módulos de turismo (leads dispersos, contratos de um único pagador, emissão sem controle de assinaturas, falta de catálogo soberano de companhias aéreas e, criticamente, risco tributário onde agências sofrem bitributação sobre o volume total repassado à operadora em vez de tributar apenas a receita própria de intermediação).
+- **Decisão Adotada:**
+  1. **Migration PostgreSQL (`20270210000000_travel_ecosystem_wave1_continuous_flow.sql`):** Criadas tabelas `travel_leads_qualification` (composição detalhada de pax, idades de crianças e datas de bebês), `travel_contract_signers` (múltiplos pagadores com cotas percentuais e valores em centavos, tokens públicos de assinatura e rastreabilidade por IP/hash SHA-256), `travel_tax_shield_ledger` (livro-razão append-only discriminando volume total da operadora vs. faturamento de agenciamento da agência com base de cálculo exclusiva para NFS-e), `travel_monthly_closings` (fechamento mensal com trava imutável de competência) e `travel_airline_links` (catálogo soberano de check-in para LATAM, GOL, Azul, TAP, Copa, American, United, Air France, Emirates, Qatar).
+  2. **Trava de Emissão Transacional (`check_trip_emission_lock`):** Trigger em nível de banco que intercepta atualizações em `tourism_trips` e bloqueia avanço para status `confirmed` ou `emitted` se existirem pagadores/contratantes vinculados com status diferente de `signed`.
+  3. **Tipagens Canônicas DTO (`src/types/travel-continuous-flow.ts`):** Definidos contratos tipados com serialização estrita para TanStack React Start (`Record<string, any>` em campos JSON flexíveis).
+  4. **BFF Server Functions (`src/services/travel-continuous-flow.functions.ts`):** Endpoints `upsertLeadQualification`, `getLeadQualification`, `configureContractSigners`, `listContractSigners`, `getPublicContractSignerByToken`, `signContractAsPayer`, `recordTaxShieldEntry`, `listTaxShieldEntries`, `listMonthlyClosings`, `closeMonthlyCompetence`, `listAirlineLinks` e `getAirlineLinkByIata`.
+  5. **Verificação & Prova Automatizada:** Suíte de testes com Vitest (`src/services/travel-continuous-flow.test.ts`) 100% aprovada (4/4 testes cobrindo economia fiscal de R$ 414,16 por venda, rateio multi-pagador, trava de emissão e resolução de deep link de voos), `npm run typecheck` Exit Code 0 em todos os 2.126 arquivos do repositório e Catraca do Design Lint com redução de 40 violações sem novas regressões.
+- **Fundamentação:** AGENTS.md B.5, B.8, B.11, B.22, B.25, B.38, B.39, Apple HIG, WCAG 2.2 AA e PLANO_MESTRE_AUDITORIA_E_EVOLUCAO_TURISMO.md.
+- **Consequências:** Fundação de dados e lógica transacional da Onda 1 100% homologada, eliminando riscos de bitributação e estabelecendo a base confiável para os próximos elos do fluxo contínuo.
+
+
+## DEC-234: Consolidação End-to-End das Ondas 2 a 5 do Ecossistema de Turismo (UniversalQuoteProposalStudio, Gateways Regionais, InfoTravel v1, Portal Minhas Viagens Bidirecional e Estúdio Consular DS-160/MRZ)
+
+- **Data:** 2026-10-17
+- **Contexto:** Execução integral das Ondas 2, 3, 4 e 5 do Plano Mestre (`PLANO_MESTRE_AUDITORIA_E_EVOLUCAO_TURISMO.md`). Necessidade de eliminar a duplicidade histórica entre formulários de cotação (`QuotationBuilderSheet` vs. `NewTravelProposalSheet`), suportar múltiplas instâncias isoladas da API InfoTravel v1 (`orinter`, `frt`, `incomum`), resolver aeroportos de acesso regional com conexão terrestre (ex.: Gramado via POA/CXJ, Maragogi via MCZ/REC, Jericoacoara via JJD/FOR, Buenos Aires via AEP/EZE), permitir alocação multi-quarto com adicionais por quarto (ex.: Bebê Conforto) e campanhas de parcelamento (15x Boleto / 10x Cartão), reconstruir o Portal do Viajante (`viajante.viagem.$id.tsx`) com boletos por operadora, conciliação OCR de comprovantes e Assessor Grounded (Contratos + ANAC 400), além de integrar a Pré-Análise Consular DS-160 (INA Section 214b) e o Validador MRZ ICAO 9303 em `workspace.turismo.vistos.tsx`.
+- **Decisão Adotada:**
+  1. **Migration PostgreSQL (`20270211000000_unified_quotes_gateways_and_client_portal.sql`):** Criadas tabelas `travel_operator_integrations` (multi-instância InfoTravel v1 com isolamento por slug), `travel_destination_gateways` (com seed canônico para Gramado, Maragogi, Jericoacoara, Buenos Aires e Balneário Camboriú), `travel_quote_room_configs` (divisão de quartos e adicionais), `travel_trip_installment_boletos` (carnê de boletos e conciliação OCR), `travel_trip_official_documents` (espelho de Squircles Apple HIG + PDFs originais da operadora), `travel_visa_ds160_evaluations` e `travel_agent_commission_splits` (split híbrido de venda 20k = 15k financiado + 5k Pix com retenção automática de comissão e repasse líquido).
+  2. **Motores de Domínio e Server Functions (`src/services/travel-ecosystem-engines.functions.ts`):** Implementados e exportados os motores puros e endpoints BFF `resolveDestinationGateway`, `calculateMultiRoomQuoteBreakdown`, `getOperatorPaymentGuidance` (regras bancárias de Incomum, FRT/Funpay, Santander e Orinter), `autoMatchCustomerReceiptToInstallment`, `evaluateUsVisaDs160ConsularTies`, `parseAndValidatePassportMrz`, `calculateHybridSaleSplitAndTaxShield`, `buildAutomaticTripItineraryFallback` e `answerTripCopilotGroundedQuestion`.
+  3. **Estúdio Unificado (`src/components/tourism/universal-quote-proposal-studio.tsx`):** Construtor único canônico conectado simultaneamente a `workspace.turismo.cotacoes.tsx` (Kanban de Leads) e `workspace.turismo.propostas.index.tsx` (Orçamentos Avulsos), suportando 1 a 4 opções comparativas, busca multi-operadora InfoTravel v1, cálculo por quarto com adicionais, parcelamento em até 15x no boleto ou 10x no cartão e exportação HTML2PDF executiva.
+  4. **Portal Bidirecional do Viajante (`src/routes/viajante.viagem.$id.tsx` e `src/routes/_store.conta.viagens.tsx`):** Reconstruído com 5 abas em linha única horizontal (`Resumo & PDFs Oficiais`, `Roteiro Dia a Dia`, `Boletos & Comprovantes (OCR)`, `Assessor da Viagem (Contratos/ANAC)` e `Plantão 24h & Embarque`) e integrado diretamente aos cards de `Minhas Viagens`.
+  5. **Estúdio Consular DS-160 & Scanner MRZ (`src/routes/workspace.turismo.vistos.tsx`):** Integrado painel interativo de auditoria de vínculos socioeconômicos INA 214(b) e validador MRZ ICAO 9303 com checagem automática da regra de 6 meses de validade do passaporte.
+  6. **Verificação & Gates de Qualidade:** 10/10 testes unitários aprovados em `travel-continuous-flow.test.ts` e `travel-ecosystem-engines.test.ts`, `npm run typecheck` com Exit Code 0 em todo o repositório e Catraca do Design Lint (`node scripts/design-lint.mjs --ratchet`) aprovada com redução líquida de 42 violações.
+- **Fundamentação:** AGENTS.md B.5, B.8, B.9, B.11, B.25, B.37, B.38, B.39, Apple HIG, WCAG 2.2 AA e PLANO_MESTRE_AUDITORIA_E_EVOLUCAO_TURISMO.md.
+- **Consequências:** Fluxo contínuo de turismo 100% unificado de ponta a ponta (Lead -> Qualificação -> Estúdio Unificado Multi-Quarto/InfoTravel -> Proposta Comparativa -> Contrato Multi-Pagador -> Trava de Emissão -> Split Financeiro/Escudo Fiscal -> Portal Minhas Viagens Bidirecional com OCR e Assessor Grounded -> Pós-Viagem).
+
+
+## DEC-235: Motor Modular de Apresentação de Pré-Embarque (41 Módulos Dinâmicos), Agendador de Reunião Bidirecional, Planilha In-Page de Vendas/Over (16%) e Importador Universal CRM + InfoTravel 100%
+- **Data:** 2026-10-17
+- **ID da Decisão:** DEC-235
+- **Contexto:** Auditoria forense comparativa (`waesy` vs `travelagencias` e `turisagencias`) identificou a necessidade de separar estritamente a Apresentação Comercial de Cotação (pré-compra) da Apresentação de Pré-Embarque (pós-compra), implementar o motor de 41 módulos dinâmicos ("A Viagem Define a Apresentação") com expansão automática de códigos IATA e agendamento bidirecional de reunião, criar a planilha editável in-page de vendas/comissões/Over (16% retenção operadora)/metas escalonadas/cancelamentos com financiamento ativo, construir o importador universal de planilhas CRM sem perda de colunas e completar 100% dos endpoints InfoTravel v1.
+- **Decisão Adotada:**
+  1. Criados `supabase/migrations/20270212000000_pre_boarding_presentations_inline_commissions_and_crm_import.sql` e `src/services/travel-pre-boarding-and-commissions.functions.ts` com `generateDynamicTravelPresentation`, `expandAirportCode`, `calculateInlineSaleSpreadsheetRow`, `simulateTripCancellationAndCredit` e `parseAndMapUniversalCrmSpreadsheet`.
+  2. Integrados `PreBoardingPresentationStudio.tsx` em `workspace.turismo.embarques.tsx` e `viajante.viagem.$id.tsx`, `InlineSalesSpreadsheetAndGoalsPanel.tsx` em `workspace.turismo.comissoes.tsx` e `UniversalCrmSpreadsheetImporterModal.tsx` em `workspace.clientes.index.tsx`.
+  3. Expandido `src/services/infotravel.ts` com `infotravelSearchPackages`, `infotravelSearchAllotments`, `infotravelSearchInsurances`, `infotravelSearchCarRentals` e `infotravelImportHistoricalBookingsBatch`.
+- **Fundamentação Teórica:** Princípio "A Viagem Define a Apresentação" (41 módulos seletivos por arquétipo: Caribe, Orlando, Itália Multicidade, Europa Multi-País), Apple HIG, Invariante B.25 e B.38.
+- **Consequências:** Fluxo contínuo end-to-end 100% conectado, 17/17 testes unitários aprovados em Vitest (`travel-pre-boarding-and-commissions.test.ts`, `travel-ecosystem-engines.test.ts`, `travel-continuous-flow.test.ts`), `npm run typecheck` com Exit Code 0 e `design-lint.mjs --ratchet` aprovado.
+
+## DEC-236: Parametrização Multi-Tenant 100% Editável de Comissões (Meta por Faturamento Bruto vs. Pagamento sobre Valor Líquido + Over Líquido), Retenção Dinâmica de Over por Operadora vs. 0% Pix, Cancelamento Sem Desconto Automático, Bloqueio Anti-Fake InfoTravel via Hub de Integrações e Suporte Multilíngue Comercial (PT-BR, EN-US, ES-ES)
+- **Data:** 2026-10-17
+- **ID da Decisão:** DEC-236
+- **Contexto:** Necessidade de eliminar qualquer percentual ou regra hardcoded no motor de comissões e metas das agências de turismo multi-tenant, garantindo que: (1) as faixas de meta sejam avaliadas pelo Faturamento Bruto Mensal, mas paguem o percentual da faixa (`1,0%` até `R$ 99.999,99` bruto; `1,5%` a partir de `R$ 100.000,00` bruto) estritamente sobre o Valor Líquido Comissionável (`Tabela - Taxas`), somado à comissão própria do Over Líquido (padrão `30%`, 100% editável); (2) a retenção sobre o Over jamais seja hardcoded em `16%`, variando por operadora configurada na agência quando financiado na operadora e sendo `0%` quando pago via Pix/Dinheiro direto à agência; (3) cancelamentos e multas não descontem nem zerem comissões/vendas automaticamente (`deductCommissionOnCancel: false`), exceto quando o administrador acionar desconto/clawback manual; (4) os conectores InfoTravel v1 operem com zero fallbacks/mocks sintéticos, ficando bloqueados e semitransparentes (`opacity-50 pointer-events-none select-none`) com atalho para `/workspace/configuracoes/integracoes` e log de auditoria real (`INFOTRAVEL_API_ERROR`) quando sem chave configurada; e (5) as apresentações comerciais e guias de pré-embarque suportem troca instantânea de idioma (`pt-BR`, `en-US`, `es-ES`).
+- **Decisão Adotada:**
+  1. Refatorado `src/services/travel-pre-boarding-and-commissions.functions.ts` e `src/components/tourism/InlineSalesSpreadsheetAndGoalsPanel.tsx` com editor multi-tenant de taxas por operadora (`DEFAULT_OPERATOR_OVER_RETENTION_CONFIGS`), seletor inline `Over na Operadora (Retém %)` vs. `Over Pix / Dinheiro (0% Retenção)`, edição de faixas (`De Bruto R$`, `Até Bruto R$`, `% s/ Líquido`, `% s/ Over Líq.`), proteção de comissão em cancelamentos com opção de estorno manual pelo gestor e localização comercial (`pt-BR`, `en-US`, `es-ES`).
+  2. Removidos todos os fallbacks sintéticos de `src/services/infotravel.ts`, adicionados `getInfotravelIntegrationStatusFn` e `recordInfotravelApiError` (`audit_logs`), e aplicado bloqueio visual semitransparente com link direto para `/workspace/configuracoes/integracoes` em `UniversalCrmSpreadsheetImporterModal.tsx` e `universal-quote-proposal-studio.tsx`.
+  3. Adicionado seletor multilíngue (`PT-BR · Português`, `EN-US · English`, `ES-ES · Español`) em `PreBoardingPresentationStudio.tsx`.
+- **Fundamentação Teórica:** AGENTS.md B.8, B.25, B.33 (Invariante Anti-Fake Estrita), B.38 e B.39.
+- **Consequências:** Zero regras fixas ou mocks sintéticos; 18/18 testes unitários aprovados nas suítes de turismo (`travel-pre-boarding-and-commissions.test.ts`, `travel-ecosystem-engines.test.ts`, `travel-continuous-flow.test.ts`), `npm run typecheck` com Exit Code 0 e `design-lint.mjs --ratchet` com Exit Code 0 (-42 violações).

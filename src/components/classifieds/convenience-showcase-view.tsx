@@ -12,6 +12,8 @@ import { cn } from "@/lib/utils";
 import { getMyStoresList } from "@/services/store.functions";
 import { linkClassifiedToStore } from "@/services/classifieds.functions";
 import { GroceryFreshPricing, GroceryRipenessConfig, ProgressiveDiscountTier, OrderBumpOffer, RipenessStage, DEFAULT_RIPENESS_LABELS, calculateProgressiveDiscount } from "@/lib/classifieds/canonical-taxonomy";
+import { NicheSpecificationsDisplay } from "@/components/common/niche-specifications-display";
+import { resolveClassifiedDetailedSpecs } from "@/lib/classifieds/canonical-specs-resolver";
 
 export interface ConveniencePreviewData {
   title: string;
@@ -540,7 +542,7 @@ export function ConvenienceShowcaseView({
     <div className="p-4 rounded-lg border border-border/60 bg-muted/15 space-y-3">
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-3 min-w-0">
-          <div className="size-9 rounded-full bg-background border border-border/60 overflow-hidden shrink-0 flex items-center justify-center">
+          <div className="size-9 rounded-lg bg-background border border-border/60 overflow-hidden shrink-0 flex items-center justify-center">
             {advertiserAvatar ? (
               <img src={advertiserAvatar} alt={advertiserName} className="size-full object-cover" />
             ) : isCompany ? (
@@ -551,7 +553,7 @@ export function ConvenienceShowcaseView({
           </div>
           <div className="min-w-0">
             <div className="flex items-center gap-2 min-w-0">
-              <p className="text-xs font-bold text-foreground truncate">{advertiserName}</p>
+              <p className="text-xs font-bold text-foreground break-words text-wrap">{advertiserName}</p>
               {isCompany ? (
                 <span title="Loja Oficial Verificada" className="inline-flex shrink-0">
                   <CheckCircle2 className="size-3.5 text-blue-500" />
@@ -562,7 +564,7 @@ export function ConvenienceShowcaseView({
                 </span>
               )}
             </div>
-            <p className="text-xs text-muted-foreground truncate">
+            <p className="text-xs text-muted-foreground break-words text-wrap">
               {isCompany ? "Loja Oficial" : "Vendedor Particular"} • {locationName}
             </p>
           </div>
@@ -886,7 +888,7 @@ export function ConvenienceShowcaseView({
                   {isUnlocked ? (
                     <CheckCircle2 className="size-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
                   ) : (
-                    <div className="size-4 rounded-full border border-border/80 shrink-0" />
+                    <div className="size-4 rounded-md border border-border/80 shrink-0" />
                   )}
                   <span>
                     Compre <strong>{tier.min_quantity}+ un</strong>: ganhe <strong>{discountLabel}</strong>
@@ -922,7 +924,7 @@ export function ConvenienceShowcaseView({
     <div className="flex items-center justify-between p-3 rounded-lg bg-muted/20 border border-border/60 text-xs">
       <div className="flex items-center gap-2 text-foreground min-w-0">
         <Truck className="size-4 text-primary shrink-0" />
-        <div className="truncate">
+        <div className="break-words text-wrap">
           <span className="font-semibold">Entrega local</span>
           <span className="text-muted-foreground ml-1">{deliveryFeeCents > 0 ? `a partir de ${formatMoney(deliveryFeeCents)}` : "Grátis / A combinar com a loja"}</span>
           <span className="text-muted-foreground text-xs block">• Estimativa {deliveryEstimate}</span>
@@ -943,7 +945,7 @@ export function ConvenienceShowcaseView({
       <header className="sticky top-0 z-30 bg-background/85 backdrop-blur-md border-b border-border/40 px-3 sm:px-6 h-12 flex items-center justify-between">
         <div className="flex items-center gap-2 min-w-0">
           {!isPreview ? (
-            <Button asChild variant="ghost" size="icon" className="size-11 min-h-11 min-w-11 rounded-full shrink-0 flex items-center justify-center text-foreground hover:bg-muted active:scale-95 transition-colors">
+            <Button asChild variant="ghost" size="icon" className="size-11 min-h-11 min-w-11 rounded-lg shrink-0 flex items-center justify-center text-foreground hover:bg-muted active:scale-95 transition-colors">
               <Link to="/mercado">
                 <ArrowLeft className="size-5" />
                 <span className="sr-only">Voltar ao Mercado</span>
@@ -955,9 +957,9 @@ export function ConvenienceShowcaseView({
               <span>Prévia Mercado</span>
             </div>
           )}
-          <span className="text-xs font-medium text-muted-foreground truncate flex items-center gap-1">
+          <span className="text-xs font-medium text-muted-foreground break-words text-wrap flex items-center gap-1">
             <MapPin className="size-3 text-muted-foreground/80 shrink-0" />
-            <span className="truncate">{locationName}</span>
+            <span className="break-words text-wrap">{locationName}</span>
           </span>
         </div>
 
@@ -968,7 +970,7 @@ export function ConvenienceShowcaseView({
               variant="outline"
               size="sm"
               onClick={onEdit}
-              className="h-11 min-h-11 px-4 rounded-full text-xs font-semibold text-muted-foreground hover:text-foreground gap-2 border-border/60 bg-background/60 hover:bg-muted cursor-pointer active:scale-95 transition-colors"
+              className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold text-muted-foreground hover:text-foreground gap-2 border-border/60 bg-background/60 hover:bg-muted cursor-pointer active:scale-95 transition-colors"
             >
               <Edit3 className="size-4" />
               <span className="hidden sm:inline">Editar</span>
@@ -979,7 +981,7 @@ export function ConvenienceShowcaseView({
             variant="ghost"
             size="icon"
             onClick={handleShare}
-            className="size-11 min-h-11 min-w-11 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground cursor-pointer active:scale-95 transition-colors"
+            className="size-11 min-h-11 min-w-11 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground cursor-pointer active:scale-95 transition-colors"
             title="Compartilhar Produto"
           >
             <Share2 className="size-5" />
@@ -987,24 +989,24 @@ export function ConvenienceShowcaseView({
         </div>
       </header>
 
-      {/* Container Principal: Desktop em 2 Colunas | Mobile em Ordem Sequencial Natural */}
-      <main className={cn(isForcedMobile ? "w-full max-w-full px-0 pt-0" : "max-w-5xl mx-auto px-0 sm:px-6 pt-0 sm:pt-6")}>
-        <div className={cn(isForcedMobile ? "flex flex-col gap-3" : "grid grid-cols-1 md:grid-cols-12 gap-0 sm:gap-8 items-start")}>
+      {/* Container Principal: Desktop em 2 Colunas Widescreen (50/50 balanceado) | Mobile em Ordem Sequencial Natural */}
+      <main className={cn(isForcedMobile ? "w-full max-w-full px-0 pt-0" : "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-0 sm:pt-6")}>
+        <div className={cn(isForcedMobile ? "flex flex-col gap-3" : "grid grid-cols-1 md:grid-cols-12 gap-0 sm:gap-8 lg:gap-10 items-start")}>
           
           {/* ═══════════════════════════════════════════════════════════════════
-              COLUNA 1 (ESQUERDA - MD: 7 COLUNAS / FULL NO MOBILE):
+              COLUNA 1 (ESQUERDA - MD: 6 COLUNAS / FULL NO MOBILE):
               1. FOTO PRINCIPAL LIMPA (SEM BADGES NEON, SEM EMOJIS, FULL-BLEED NO MOBILE)
               2. MINIATURAS
               [NO MOBILE: HEADER DO PRODUTO + PREÇO AQUI LOGO APÓS A FOTO]
               3. DETALHES DO PRODUTO (DESCRIÇÃO)
-              4. ESPECIFICAÇÕES TÉCNICAS E ATRIBUTOS
+              4. ESPECIFICAÇÕES TÉCNICAS E ATRIBUTOS (CANÔNICO EM CARDS SQUIRCLES)
              ═══════════════════════════════════════════════════════════════════ */}
-          <div className={cn(isForcedMobile ? "w-full space-y-4" : "md:col-span-7 space-y-4 sm:space-y-6")}>
+          <div className={cn(isForcedMobile ? "w-full space-y-4" : "md:col-span-6 lg:col-span-6 space-y-4 sm:space-y-6")}>
             
-            {/* Box da Foto: Grande, full-bleed, limpo */}
+            {/* Box da Foto: Grande, proporção controlada e cantos suaves */}
             <div className="space-y-2 sm:space-y-3">
               <div
-                className="relative aspect-square w-full rounded-none sm:rounded-lg overflow-hidden bg-muted/20 border-b sm:border border-border/60 flex items-center justify-center shadow-none sm: group cursor-pointer"
+                className="relative aspect-square w-full max-h-[500px] rounded-none sm:rounded-2xl overflow-hidden bg-muted/20 border-b sm:border border-border/60 flex items-center justify-center shadow-none sm:shadow-2xs group cursor-pointer"
                 onClick={() => images.length > 0 && setFullscreenImage(images[activePhotoIdx] || images[0])}
               >
                 {images.length > 0 ? (
@@ -1134,98 +1136,21 @@ export function ConvenienceShowcaseView({
             )}
 
             {/* ─────────────────────────────────────────────────────────────
-                SEÇÃO: ESPECIFICAÇÕES TÉCNICAS E TABELA DE ATRIBUTOS
+                SEÇÃO: ESPECIFICAÇÕES TÉCNICAS E TABELA DE ATRIBUTOS (SQUIRCLE CANÔNICO)
                ───────────────────────────────────────────────────────────── */}
-            <div className="mx-4 sm:mx-0 p-5 sm:p-6 rounded-lg bg-card border border-border/60 space-y-5 shadow-2xs">
-              <div className="flex items-center justify-between border-b border-border/40 pb-3">
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="size-4 text-primary shrink-0" />
-                  <h2 className="text-xs font-bold uppercase tracking-wider text-foreground">
-                    Especificações e Características
-                  </h2>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {brand && (
-                  <div className="p-3.5 sm:p-4 rounded-lg border border-border/50 bg-muted/20 space-y-1">
-                    <span className="text-xs text-muted-foreground uppercase font-bold tracking-wider block">Marca</span>
-                    <p className="text-sm font-bold text-foreground truncate">{brand}</p>
-                  </div>
-                )}
-
-                <div className="p-3.5 sm:p-4 rounded-lg border border-border/50 bg-muted/20 space-y-1">
-                  <span className="text-xs text-muted-foreground uppercase font-bold tracking-wider block">Departamento</span>
-                  <p className="text-sm font-bold text-foreground truncate">{department}</p>
-                </div>
-
-                {unitSuffix && (
-                  <div className="p-3.5 sm:p-4 rounded-lg border border-border/50 bg-muted/20 space-y-1">
-                    <span className="text-xs text-muted-foreground uppercase font-bold tracking-wider block">Conteúdo / Peso</span>
-                    <p className="text-sm font-bold text-foreground truncate font-mono">{unitSuffix}</p>
-                  </div>
-                )}
-
-                {estimatedWeightPerUnit && (
-                  <div className="p-3.5 sm:p-4 rounded-lg border border-border/50 bg-muted/20 space-y-1">
-                    <span className="text-xs text-muted-foreground uppercase font-bold tracking-wider block">Peso Aprox. Peça</span>
-                    <p className="text-sm font-bold text-foreground truncate font-mono">{estimatedWeightPerUnit}</p>
-                  </div>
-                )}
-
-                <div className="p-3.5 sm:p-4 rounded-lg border border-border/50 bg-muted/20 space-y-1">
-                  <span className="text-xs text-muted-foreground uppercase font-bold tracking-wider block">Conservação</span>
-                  <p className="text-sm font-bold text-foreground capitalize">
-                    {temperature === "gelada"
-                      ? "Gelada / Imediata"
-                      : temperature === "resfriado"
-                      ? "Resfriado (0° a 4°C)"
-                      : temperature === "congelado"
-                      ? "Congelado (-18°C)"
-                      : "Ambiente / Seco"}
-                  </p>
-                </div>
-
-                <div className="p-3.5 sm:p-4 rounded-lg border border-border/50 bg-muted/20 space-y-1">
-                  <span className="text-xs text-muted-foreground uppercase font-bold tracking-wider block">Disponibilidade</span>
-                  <p className="text-sm font-bold text-foreground">
-                    {readyDelivery ? "Em estoque para envio" : "Sob encomenda"}
-                  </p>
-                </div>
-
-                {barcodeEan && (
-                  <div className="p-3.5 sm:p-4 rounded-lg border border-border/50 bg-muted/20 space-y-1">
-                    <span className="text-xs text-muted-foreground uppercase font-bold tracking-wider block">Código EAN</span>
-                    <p className="text-sm font-bold text-foreground font-mono truncate">{barcodeEan}</p>
-                  </div>
-                )}
-
-                {containsGluten !== undefined && (
-                  <div className="p-3.5 sm:p-4 rounded-lg border border-border/50 bg-muted/20 space-y-1">
-                    <span className="text-xs text-muted-foreground uppercase font-bold tracking-wider block">Glúten</span>
-                    <p className="text-sm font-bold text-foreground">
-                      {containsGluten ? "Contém Glúten" : "Sem Glúten"}
-                    </p>
-                  </div>
-                )}
-
-                {containsLactose !== undefined && (
-                  <div className="p-3.5 sm:p-4 rounded-lg border border-border/50 bg-muted/20 space-y-1">
-                    <span className="text-xs text-muted-foreground uppercase font-bold tracking-wider block">Lactose</span>
-                    <p className="text-sm font-bold text-foreground">
-                      {containsLactose ? "Contém Lactose" : "Sem Lactose"}
-                    </p>
-                  </div>
-                )}
-              </div>
-
-              {ingredients && (
-                <div className="pt-3 border-t border-border/40 space-y-1">
-                  <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider block">Ingredientes / Composição:</span>
-                  <p className="text-xs text-foreground/85 leading-relaxed">{ingredients}</p>
-                </div>
-              )}
+            <div className="mx-4 sm:mx-0">
+              <NicheSpecificationsDisplay
+                items={resolveClassifiedDetailedSpecs(classified || { attributes: attrs, title, category: "grocery" })}
+                title="Especificações e Características"
+              />
             </div>
+
+            {ingredients && (
+              <div className="mx-4 sm:mx-0 p-4 sm:p-5 rounded-lg border border-border/60 bg-card space-y-2 shadow-2xs">
+                <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider block">Ingredientes / Composição:</span>
+                <p className="text-xs sm:text-sm text-foreground/85 leading-relaxed break-words text-wrap">{ingredients}</p>
+              </div>
+            )}
 
             {/* Aviso Legal Regulatório */}
             {isAlcoholic && (
@@ -1258,7 +1183,7 @@ export function ConvenienceShowcaseView({
               8. BOTÃO PEDIR AGORA (ABRE O CHECKOUT DRAWER)
               9. CARD DA LOJA
              ═══════════════════════════════════════════════════════════════════ */}
-          <div className={cn(isForcedMobile ? "hidden" : "hidden md:block md:col-span-5 space-y-4 md:sticky md:top-16")}>
+          <div className={cn(isForcedMobile ? "hidden" : "hidden md:block md:col-span-6 lg:col-span-6 space-y-4 md:sticky md:top-16")}>
             
             {/* Header de Categoria / Loja */}
             <div className="space-y-2">
@@ -1438,10 +1363,10 @@ export function ConvenienceShowcaseView({
         </div>
 
         <div className="min-w-0 flex-1">
-          <span className="text-xs text-muted-foreground block font-medium truncate">
+          <span className="text-xs text-muted-foreground block font-medium break-words text-wrap">
             Total ({quantity} un)
           </span>
-          <span className="text-sm font-black font-mono text-foreground truncate block">
+          <span className="text-sm font-black font-mono text-foreground whitespace-nowrap shrink-0 block">
             {priceCents > 0 ? formatMoney(subtotalCents) : "Sob Consulta"}
           </span>
         </div>
@@ -1481,7 +1406,7 @@ export function ConvenienceShowcaseView({
                 </div>
               )}
               <div className="min-w-0 flex-1">
-                <p className="text-xs font-bold text-foreground truncate">{title}</p>
+                <p className="text-xs font-bold text-foreground break-words text-wrap">{title}</p>
                 <p className="text-xs text-muted-foreground">
                   {quantity}x de {formatMoney(effectiveUnitPriceCents)} {unitSuffix ? `(${unitSuffix})` : ""}
                   {isFreshPricingActive && (
@@ -1555,7 +1480,7 @@ export function ConvenienceShowcaseView({
                       </div>
                     )}
                     <div className="min-w-0">
-                      <p className="text-xs font-bold text-foreground truncate">{orderBumpOffer.target_title}</p>
+                      <p className="text-xs font-bold text-foreground break-words text-wrap">{orderBumpOffer.target_title}</p>
                       <div className="flex items-center gap-2 text-xs font-mono">
                         {orderBumpOffer.original_price_cents && (
                           <span className="line-through text-muted-foreground text-xs">
@@ -1639,10 +1564,10 @@ export function ConvenienceShowcaseView({
                 <div className="p-3 rounded-lg bg-muted/20 border border-border/40 text-xs space-y-1">
                   <p className="font-semibold text-foreground flex items-center gap-2">
                     <Clock3 className="size-3.5 text-primary" />
-                    <span>Despacho Sob Demanda via MotoLink</span>
+                    <span>Entrega Expressa no seu Endereço</span>
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    A loja prepara o pedido e aloca o entregador autônomo assim que confirmado ({deliveryEstimate}).
+                    A loja prepara o pedido e envia para entrega assim que confirmado ({deliveryEstimate}).
                   </p>
                 </div>
               )}
@@ -1785,7 +1710,7 @@ export function ConvenienceShowcaseView({
               </div>
               {isOrderBumpAdded && orderBumpOffer && (
                 <div className="flex justify-between text-amber-700 dark:text-amber-400 font-medium">
-                  <span className="truncate">Oferta Relâmpago ({orderBumpOffer.target_title}):</span>
+                  <span className="break-words text-wrap">Oferta Relâmpago ({orderBumpOffer.target_title}):</span>
                   <span className="font-mono font-bold">+{formatMoney(orderBumpOffer.special_price_cents || 0)}</span>
                 </div>
               )}
@@ -1892,8 +1817,8 @@ export function ConvenienceShowcaseView({
                           )}
                         </div>
                         <div className="min-w-0">
-                          <p className="text-xs font-bold text-foreground truncate">{st.name}</p>
-                          <p className="text-xs text-muted-foreground truncate">
+                          <p className="text-xs font-bold text-foreground break-words text-wrap">{st.name}</p>
+                          <p className="text-xs text-muted-foreground break-words text-wrap">
                             {st.city ? `${st.city}${st.state ? ` - ${st.state}` : ""}` : "Loja Waesy"}
                           </p>
                         </div>

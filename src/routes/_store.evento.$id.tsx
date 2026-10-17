@@ -53,6 +53,9 @@ export const Route = createFileRoute("/_store/evento/$id")({
         lots: eventData?.lots || [],
         linkedNews: eventData?.linkedNews || null,
         partners: eventData?.partners || [],
+        concessions: eventData?.concessions || [],
+        products: eventData?.products || [],
+        surveys: eventData?.surveys || [],
         userRsvp: rsvpRes?.user_status || null,
         isOwner,
       };
@@ -70,6 +73,9 @@ function EventDetailPage() {
   const lots = data?.lots || [];
   const linkedNews = data?.linkedNews;
   const partners = data?.partners || [];
+  const concessions = data?.concessions || [];
+  const products = data?.products || [];
+  const surveys = data?.surveys || [];
   const isOwner = data?.isOwner || false;
   const router = useRouter();
 
@@ -263,6 +269,9 @@ function EventDetailPage() {
           lots={lots}
           linkedNews={linkedNews}
           partners={partners}
+          concessions={concessions}
+          products={products}
+          surveys={surveys}
           userRsvp={userRsvp}
           rsvpCounts={rsvpCounts}
           isSubmittingRsvp={isSubmittingRsvp}
@@ -282,6 +291,9 @@ function EventDetailPage() {
         lots={lots}
         linkedNews={linkedNews}
         partners={partners}
+        concessions={concessions}
+        products={products}
+        surveys={surveys}
         userRsvp={userRsvp}
         rsvpCounts={rsvpCounts}
         isSubmittingRsvp={isSubmittingRsvp}

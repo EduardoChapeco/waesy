@@ -152,12 +152,12 @@ export function GroceryProductCard({
             className="space-y-1 focus-visible:outline-none block"
           >
             {((product as any).store_name || (product as any).storeName || product.brand) && (
-              <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-muted-foreground truncate block">
+              <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-muted-foreground break-words text-wrap block">
                 {(product as any).store_name || (product as any).storeName || product.brand}
               </span>
             )}
 
-            <h3 className="text-xs sm:text-sm font-bold text-foreground line-clamp-2 leading-snug group-hover:text-primary transition-colors">
+            <h3 className="text-xs sm:text-sm font-bold text-foreground break-words text-wrap leading-snug group-hover:text-primary transition-colors">
               {product.title}
             </h3>
 
@@ -188,7 +188,7 @@ export function GroceryProductCard({
                   type="button"
                   onClick={handleDecrement}
                   disabled={isAdding}
-                  className="size-5 rounded bg-background hover:bg-background/80 text-primary flex items-center justify-center transition-colors cursor-pointer"
+                  className="size-5 rounded-md bg-background hover:bg-background/80 text-primary flex items-center justify-center transition-colors cursor-pointer"
                   aria-label="Diminuir quantidade"
                 >
                   <Minus className="size-2.5" />
@@ -202,7 +202,7 @@ export function GroceryProductCard({
                   type="button"
                   onClick={handleIncrement}
                   disabled={isAdding}
-                  className="size-5 rounded bg-background hover:bg-background/80 text-primary flex items-center justify-center transition-colors cursor-pointer"
+                  className="size-5 rounded-md bg-background hover:bg-background/80 text-primary flex items-center justify-center transition-colors cursor-pointer"
                   aria-label="Aumentar quantidade"
                 >
                   <Plus className="size-2.5" />
@@ -294,19 +294,19 @@ export function GroceryProductCard({
  className="space-y-1 focus-visible:outline-none block"
  >
  {((product as any).store_name || (product as any).storeName || product.brand) && (
- <div className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground truncate">
- <span className="truncate text-primary/80">
+ <div className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground break-words text-wrap">
+ <span className="break-words text-wrap text-primary/80">
  {(product as any).store_name || (product as any).storeName || product.brand}
  </span>
  </div>
  )}
 
- <h3 className="text-xs sm:text-sm font-bold text-foreground line-clamp-2 leading-snug h-9 group-hover:text-primary transition-colors">
+ <h3 className="text-xs sm:text-sm font-bold text-foreground break-words text-wrap leading-snug min-h-9 group-hover:text-primary transition-colors">
  {product.title}
  </h3>
 
  {unitLabel ? (
- <span className="text-[11px] text-muted-foreground font-medium block h-4 truncate">
+ <span className="text-[11px] text-muted-foreground font-medium block min-h-4 break-words text-wrap">
  {unitLabel}
  </span>
  ) : (
@@ -316,13 +316,13 @@ export function GroceryProductCard({
 
  {/* Pricing & Cart Action Area */}
  <div className="pt-2 mt-2 flex items-center justify-between gap-2 border-t border-border/40">
- <div className="flex flex-col min-w-0 h-9 justify-center">
+ <div className="flex flex-col min-w-0 min-h-9 justify-center">
  {hasDiscount && typeof compareAtCents === "number" && (
  <span className="text-[10px] text-muted-foreground line-through font-mono">
  {formatMoney(compareAtCents)}
  </span>
  )}
- <span className="font-mono font-black text-xs sm:text-sm text-foreground truncate">
+ <span className="font-mono font-black text-xs sm:text-sm text-foreground whitespace-nowrap shrink-0">
  {formatMoney(priceCents)}
  </span>
  </div>

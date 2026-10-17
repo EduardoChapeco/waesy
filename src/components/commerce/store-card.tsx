@@ -55,7 +55,7 @@ export function StoreCard({
         {/* Status Badge */}
         <div className="absolute top-3 right-3 z-10">
           <span
-            className={`px-3 py-1 rounded-full text-xs font-mono font-bold uppercase tracking-wider ${
+            className={`px-3 py-1 rounded-md text-xs font-mono font-bold uppercase tracking-wider ${
               is_open
                 ? "bg-emerald-600/95 text-white"
                 : "bg-black/60 text-white/80 border border-white/20"
@@ -79,12 +79,12 @@ export function StoreCard({
 
         <div>
           <div className="flex items-center gap-2">
-            <h3 className="text-base font-bold text-foreground group-hover:text-primary transition-colors line-clamp-1">
+            <h3 className="text-base font-bold text-foreground group-hover:text-primary transition-colors break-words text-wrap">
               {name}
             </h3>
             <ShieldCheck className="size-4 text-primary shrink-0" />
           </div>
-          <p className="text-xs text-muted-foreground line-clamp-1 mt-1">{displayCategory}</p>
+          <p className="text-xs text-muted-foreground break-words text-wrap mt-1">{displayCategory}</p>
         </div>
 
         {/* Badges de Distância, Avaliação e Tempo (Apenas dados autênticos — Zero Fakes) */}

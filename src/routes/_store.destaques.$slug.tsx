@@ -399,7 +399,7 @@ function DedicatedHotpageView() {
  size="icon"
  variant="ghost"
  onClick={handleShare}
- className="size-9 sm:size-10 rounded-full bg-black/30 hover:bg-black/50 text-white backdrop-blur-md border border-white/15 cursor-pointer"
+ className="size-9 sm:size-10 rounded-lg bg-black/30 hover:bg-black/50 text-white backdrop-blur-md border border-white/15 cursor-pointer"
  title="Compartilhar"
  >
  <ShareNetwork size={18} weight="bold" />
@@ -422,7 +422,7 @@ function DedicatedHotpageView() {
  />
  </div>
  )}
- <span className={`px-3 py-1 rounded-full text-xs font-mono font-black uppercase tracking-wider  ${theme.badgeBg}`}>
+ <span className={`px-3 py-1 rounded-md text-xs font-mono font-black uppercase tracking-wider ${theme.badgeBg}`}>
  {badgeLabel}
  </span>
  </div>
@@ -440,7 +440,7 @@ function DedicatedHotpageView() {
  {theme.heroPills.map((pill, idx) => (
  <span
  key={idx}
- className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-black/35 text-white text-[11px] sm:text-xs font-bold border border-white/15 drop-"
+ className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-black/35 text-white text-[11px] sm:text-xs font-bold border border-white/15 drop-"
  >
  {pill}
  </span>
@@ -453,7 +453,7 @@ function DedicatedHotpageView() {
       <div className="relative z-20 -mt-8 rounded-t-[32px] bg-background px-0 sm:px-4 md:px-0 pt-6 pb-12 space-y-6 max-w-7xl mx-auto">
  
         {/* ── 2.1. Sub-abas de Navegação por Nicho (Padrão Botão Grande) ── */}
-        <div className="flex items-center gap-2 sm:gap-2 overflow-x-auto no-scrollbar py-1">
+        <div className="flex items-center gap-2 sm:gap-3 overflow-x-auto sm:overflow-visible sm:flex-wrap no-scrollbar py-1">
           {activeChips.map((chip) => {
             const Icon = chip.icon;
             const isSelected = selectedSubCategory === chip.id;
@@ -488,7 +488,7 @@ function DedicatedHotpageView() {
  value={search}
  onChange={(e) => setSearch(e.target.value)}
  placeholder={`Buscar em ${title}...`}
- className="pl-9.5 h-10 rounded-lg bg-card border-border text-xs focus:ring-1 focus:ring-primary w-full"
+ className="pl-9 h-10 rounded-lg bg-card border-border text-xs focus:ring-1 focus:ring-primary w-full"
  />
  </div>
 
@@ -496,7 +496,7 @@ function DedicatedHotpageView() {
  <button
  type="button"
  onClick={() => setSelectedFastFilter(selectedFastFilter === "desconto" ? null : "desconto")}
- className={`h-8.5 px-3 rounded-lg text-xs font-semibold border transition-all cursor-pointer shrink-0 flex items-center gap-2 ${
+ className={`h-9 px-3 rounded-lg text-xs font-semibold border transition-all cursor-pointer shrink-0 flex items-center gap-2 ${
  selectedFastFilter === "desconto"
  ? "bg-primary text-primary-foreground border-primary"
  : "bg-card border-border text-muted-foreground hover:text-foreground"
@@ -621,7 +621,7 @@ function DedicatedHotpageView() {
  <div className="min-w-0 flex-1 flex flex-col justify-between space-y-1">
  <div>
  {p.brand && (
- <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider truncate block">
+ <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider break-words text-wrap block">
  {p.brand}
  </span>
  )}

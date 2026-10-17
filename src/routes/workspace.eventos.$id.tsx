@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Calendar, Ticket, QrCode, Users, DollarSign, Plus, ArrowLeft, ExternalLink, Clock, MapPin, CheckCircle2, Utensils, Megaphone, Settings, Edit, Trash2, Gift, Search, Receipt, TrendingUp, Percent, Kanban, FileSpreadsheet, Layers, Mic2, ShieldCheck, FileText, ShoppingBag } from "lucide-react";
+import { Calendar, Ticket, QrCode, Users, DollarSign, Plus, ArrowLeft, ExternalLink, Clock, MapPin, CheckCircle2, Utensils, Megaphone, Settings, Edit, Trash2, Gift, Search, Receipt, TrendingUp, Percent, Kanban, FileSpreadsheet, Layers, Mic2, ShieldCheck, FileText, ShoppingBag, ClipboardList, Store } from "lucide-react";
 import { EventoKanban } from "@/components/eventos/evento-kanban";
 import { EventoOrcamentos } from "@/components/eventos/evento-orcamentos";
 import { EventoCustos } from "@/components/eventos/evento-custos";
@@ -13,6 +13,7 @@ import { EventoDocumentos } from "@/components/eventos/evento-documentos";
 import { EventoAuditoria } from "@/components/eventos/evento-auditoria";
 import { EventoCredenciais } from "@/components/eventos/evento-credenciais";
 import { EventoLoja } from "@/components/eventos/evento-loja";
+import { EventoPesquisas } from "@/components/eventos/evento-pesquisas";
 import { TicketPreview } from "@/components/eventos/ticket-preview";
 import { AlocarEquipeSheet } from "@/components/eventos/alocar-equipe-sheet";
 import { PageHeader } from "@/components/commerce/page-header";
@@ -26,7 +27,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { CurrencyField } from "@/components/ui/currency-field";
 import { EmptyState } from "@/components/state/states";
-import { getAdminEventById, listEventLots, listEventTickets, listEventBudgets, upsertEventLot, deleteEventLot, issueComplimentaryTicket, validateTicketCheckin } from "@/services/events.functions";
+import { getAdminEventById, listEventLots, listEventTickets, listEventBudgets, upsertEventLot, deleteEventLot, issueComplimentaryTicket, validateTicketCheckin, listEventConcessionRevenue } from "@/services/events.functions";
 import { formatMoney } from "@/lib/money";
 
 export const Route = createFileRoute("/workspace/eventos/$id")({
@@ -41,22 +42,23 @@ export const Route = createFileRoute("/workspace/eventos/$id")({
  }),
  loader: async ({ params }) => {
  try {
- const [event, lots, tickets, budgets] = await Promise.all([
+ const [event, lots, tickets, budgets, concessionRevenue] = await Promise.all([
  getAdminEventById({ data: params.id }),
  listEventLots({ data: params.id }),
  listEventTickets({ data: params.id }),
  listEventBudgets({ data: { eventId: params.id } }).catch(() => []),
+ listEventConcessionRevenue({ data: { eventId: params.id } }).catch(() => null),
  ]);
- return { event, lots: lots || [], tickets: tickets || [], budgets: budgets || [] };
+ return { event, lots: lots || [], tickets: tickets || [], budgets: budgets || [], concessionRevenue };
  } catch {
- return { event: null, lots: [], tickets: [], budgets: [] };
+ return { event: null, lots: [], tickets: [], budgets: [], concessionRevenue: null };
  }
  },
  component: SubPainelEventoPage,
 });
 
 function SubPainelEventoPage() {
- const { event, lots: initialLots, tickets: initialTickets, budgets = [] } = ((Route.useLoaderData?.() as any) || {});
+ const { event, lots: initialLots, tickets: initialTickets, budgets = [], concessionRevenue } = ((Route.useLoaderData?.() as any) || {});
  const router = useRouter();
 
  const [activeTab, setActiveTab] = useState("ingressos");
@@ -100,17 +102,22 @@ function SubPainelEventoPage() {
  );
  }
 
- // Métricas calculadas
+ // Métricas calculadas consolidando Ingressos e Concessões dos Subpainéis
  const totalCapacity = lots.reduce((acc, l) => acc + (l.capacity || 0), 0);
  const totalSold = lots.reduce((acc, l) => acc + (l.sold_count || 0), 0);
- const totalRevenueCents = lots.reduce(
+ const ticketRevenueCents = lots.reduce(
  (acc, l) => acc + (l.sold_count || 0) * (l.price_cents || 0),
  0
  );
+ const partnerGrossCents = concessionRevenue?.grossRevenueCents || 0;
+ const concessionFeeCents = concessionRevenue?.concessionFeeCents || 0;
+ const producerTotalRevenueCents = ticketRevenueCents + concessionFeeCents;
+ const ecosystemTotalGrossCents = ticketRevenueCents + partnerGrossCents;
+
  const totalCheckins = tickets.filter((t) => t.status === "used").length;
  const activeBudget = (budgets || []).find((b: any) => b.status === "aprovado") || budgets?.[0];
  const totalCostsCents = activeBudget ? Math.round((activeBudget.total_despesas || 0) * 100) : 0;
- const netProfitCents = totalRevenueCents - totalCostsCents;
+ const netProfitCents = producerTotalRevenueCents - totalCostsCents;
 
  const handleCreateLot = async (e: React.FormEvent) => {
  e.preventDefault();
@@ -262,100 +269,121 @@ function SubPainelEventoPage() {
  </div>
  </div>
 
- {/* KPI Cards do Evento */}
+ {/* KPI Cards Squircles do Evento com Faturamento Consolidado */}
  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
- <div className="bg-card rounded-lg p-4 border border-border/60">
+ <div className="bg-card rounded-lg p-4 border border-border/60 shadow-xs space-y-1">
  <span className="text-xs font-semibold text-muted-foreground">Ingressos Vendidos</span>
- <div className="text-2xl font-bold text-foreground mt-1">
+ <div className="text-2xl font-bold text-foreground">
  {totalSold} / {totalCapacity || "∞"}
  </div>
+ <span className="text-xs text-muted-foreground block">
+ {totalCheckins} check-ins ({totalSold > 0 ? Math.round((totalCheckins / totalSold) * 100) : 0}%)
+ </span>
  </div>
 
- <div className="bg-card rounded-lg p-4 border border-border/60">
- <span className="text-xs font-semibold text-muted-foreground">Faturamento Bruto</span>
- <div className="text-2xl font-bold text-foreground mt-1">
- {formatMoney(totalRevenueCents)}
+ <div className="bg-card rounded-lg p-4 border border-border/60 shadow-xs space-y-1">
+ <span className="text-xs font-semibold text-muted-foreground">Bilheteria (Ingressos)</span>
+ <div className="text-2xl font-bold text-foreground">
+ {formatMoney(ticketRevenueCents)}
  </div>
- </div>
-
- <div className="bg-card rounded-lg p-4 border border-border/60">
- <span className="text-xs font-semibold text-muted-foreground">Entradas Validadas</span>
- <div className="text-2xl font-bold text-foreground mt-1">
- {totalCheckins} ({totalSold > 0 ? Math.round((totalCheckins / totalSold) * 100) : 0}%)
- </div>
+ <span className="text-xs text-muted-foreground block">
+ {lots.length} {lots.length === 1 ? "lote ativo" : "lotes ativos"}
+ </span>
  </div>
 
- <div className="bg-card rounded-lg p-4 border border-border/60">
- <span className="text-xs font-semibold text-muted-foreground">Lucro Líquido Estimado</span>
+ <div className="bg-card rounded-lg p-4 border border-border/60 shadow-xs space-y-1">
+ <div className="flex items-center justify-between">
+ <span className="text-xs font-semibold text-muted-foreground">Praça & Bares (Parceiros)</span>
+ <Badge variant="outline" className="text-xs font-mono border-primary/30 text-primary">
+ +{formatMoney(concessionFeeCents)} comissão
+ </Badge>
+ </div>
+ <div className="text-2xl font-bold text-foreground">
+ {formatMoney(partnerGrossCents)}
+ </div>
+ <span className="text-xs text-muted-foreground block">
+ {concessionRevenue?.totalOrders || 0} pedidos nos subpainéis
+ </span>
+ </div>
+
+ <div className="bg-card rounded-lg p-4 border border-border/60 shadow-xs space-y-1">
+ <span className="text-xs font-semibold text-muted-foreground">Faturamento Geral Produtora</span>
  <div
- className={`text-2xl font-bold mt-1 ${
+ className={`text-2xl font-bold ${
  netProfitCents >= 0 ? "text-emerald-600" : "text-rose-600"
  }`}
  >
- {formatMoney(netProfitCents)}
+ {formatMoney(producerTotalRevenueCents)}
  </div>
+ <span className="text-xs text-muted-foreground block">
+ Lucro est.: {formatMoney(netProfitCents)} (DRE)
+ </span>
  </div>
  </div>
 
- {/* Abas do Sub-Painel Recursivo */}
+ {/* Abas do Sub-Painel Recursivo (Invariante B.39: Linha Única Horizontal Contínua) */}
  <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
- <TabsList className="flex items-center gap-2 w-full overflow-x-auto no-scrollbar p-2 rounded-lg h-auto mb-6 bg-muted/40 border border-border/40">
- <TabsTrigger value="ingressos" className="text-xs font-semibold gap-2 py-2 px-3 shrink-0">
+ <TabsList className="flex flex-nowrap overflow-x-auto no-scrollbar gap-1 border-b border-border/40 pb-px mb-6 bg-transparent h-auto w-full justify-start rounded-none">
+ <TabsTrigger value="ingressos" className="text-xs font-semibold gap-2 py-2 px-3 shrink-0 whitespace-nowrap rounded-t-lg data-[state=active]:bg-card data-[state=active]:border-b-2 data-[state=active]:border-primary focus-visible:ring-2 focus-visible:ring-primary cursor-pointer">
  <Ticket className="size-3.5" />
  Lotes ({lots.length})
  </TabsTrigger>
- <TabsTrigger value="participantes" className="text-xs font-semibold gap-2 py-2 px-3 shrink-0">
+ <TabsTrigger value="participantes" className="text-xs font-semibold gap-2 py-2 px-3 shrink-0 whitespace-nowrap rounded-t-lg data-[state=active]:bg-card data-[state=active]:border-b-2 data-[state=active]:border-primary focus-visible:ring-2 focus-visible:ring-primary cursor-pointer">
  <Users className="size-3.5" />
  Inscritos ({tickets.length})
  </TabsTrigger>
- <TabsTrigger value="portaria" className="text-xs font-semibold gap-2 py-2 px-3 shrink-0">
+ <TabsTrigger value="portaria" className="text-xs font-semibold gap-2 py-2 px-3 shrink-0 whitespace-nowrap rounded-t-lg data-[state=active]:bg-card data-[state=active]:border-b-2 data-[state=active]:border-primary focus-visible:ring-2 focus-visible:ring-primary cursor-pointer">
  <QrCode className="size-3.5" />
  Portaria
  </TabsTrigger>
- <TabsTrigger value="kanban" className="text-xs font-semibold gap-2 py-2 px-3 shrink-0">
+ <TabsTrigger value="subpaineis" className="text-xs font-semibold gap-2 py-2 px-3 shrink-0 whitespace-nowrap rounded-t-lg data-[state=active]:bg-card data-[state=active]:border-b-2 data-[state=active]:border-primary focus-visible:ring-2 focus-visible:ring-primary cursor-pointer">
+ <Utensils className="size-3.5" />
+ Bares & Praça
+ </TabsTrigger>
+ <TabsTrigger value="pesquisas" className="text-xs font-semibold gap-2 py-2 px-3 shrink-0 whitespace-nowrap rounded-t-lg data-[state=active]:bg-card data-[state=active]:border-b-2 data-[state=active]:border-primary focus-visible:ring-2 focus-visible:ring-primary cursor-pointer">
+ <ClipboardList className="size-3.5" />
+ Pesquisas
+ </TabsTrigger>
+ <TabsTrigger value="kanban" className="text-xs font-semibold gap-2 py-2 px-3 shrink-0 whitespace-nowrap rounded-t-lg data-[state=active]:bg-card data-[state=active]:border-b-2 data-[state=active]:border-primary focus-visible:ring-2 focus-visible:ring-primary cursor-pointer">
  <Kanban className="size-3.5" />
  Produção
  </TabsTrigger>
- <TabsTrigger value="lineup" className="text-xs font-semibold gap-2 py-2 px-3 shrink-0">
+ <TabsTrigger value="lineup" className="text-xs font-semibold gap-2 py-2 px-3 shrink-0 whitespace-nowrap rounded-t-lg data-[state=active]:bg-card data-[state=active]:border-b-2 data-[state=active]:border-primary focus-visible:ring-2 focus-visible:ring-primary cursor-pointer">
  <Mic2 className="size-3.5" />
  Line-up
  </TabsTrigger>
- <TabsTrigger value="setores" className="text-xs font-semibold gap-2 py-2 px-3 shrink-0">
+ <TabsTrigger value="setores" className="text-xs font-semibold gap-2 py-2 px-3 shrink-0 whitespace-nowrap rounded-t-lg data-[state=active]:bg-card data-[state=active]:border-b-2 data-[state=active]:border-primary focus-visible:ring-2 focus-visible:ring-primary cursor-pointer">
  <Layers className="size-3.5" />
  Setores e Mapa
  </TabsTrigger>
- <TabsTrigger value="subpaineis" className="text-xs font-semibold gap-2 py-2 px-3 shrink-0">
- <Utensils className="size-3.5" />
- Bares e PDVs
- </TabsTrigger>
- <TabsTrigger value="orcamentos" className="text-xs font-semibold gap-2 py-2 px-3 shrink-0">
+ <TabsTrigger value="orcamentos" className="text-xs font-semibold gap-2 py-2 px-3 shrink-0 whitespace-nowrap rounded-t-lg data-[state=active]:bg-card data-[state=active]:border-b-2 data-[state=active]:border-primary focus-visible:ring-2 focus-visible:ring-primary cursor-pointer">
  <FileSpreadsheet className="size-3.5" />
  Orçamentos
  </TabsTrigger>
- <TabsTrigger value="custos" className="text-xs font-semibold gap-2 py-2 px-3 shrink-0">
+ <TabsTrigger value="custos" className="text-xs font-semibold gap-2 py-2 px-3 shrink-0 whitespace-nowrap rounded-t-lg data-[state=active]:bg-card data-[state=active]:border-b-2 data-[state=active]:border-primary focus-visible:ring-2 focus-visible:ring-primary cursor-pointer">
  <TrendingUp className="size-3.5" />
  DRE / Custos
  </TabsTrigger>
- <TabsTrigger value="patrocinadores" className="text-xs font-semibold gap-2 py-2 px-3 shrink-0">
+ <TabsTrigger value="patrocinadores" className="text-xs font-semibold gap-2 py-2 px-3 shrink-0 whitespace-nowrap rounded-t-lg data-[state=active]:bg-card data-[state=active]:border-b-2 data-[state=active]:border-primary focus-visible:ring-2 focus-visible:ring-primary cursor-pointer">
  <Megaphone className="size-3.5" />
  Patrocínio
  </TabsTrigger>
- <TabsTrigger value="documentos" className="text-xs font-semibold gap-2 py-2 px-3 shrink-0">
+ <TabsTrigger value="documentos" className="text-xs font-semibold gap-2 py-2 px-3 shrink-0 whitespace-nowrap rounded-t-lg data-[state=active]:bg-card data-[state=active]:border-b-2 data-[state=active]:border-primary focus-visible:ring-2 focus-visible:ring-primary cursor-pointer">
  <FileText className="size-3.5" />
- Alvarás e Legal
+ Alvarás & Legal
  </TabsTrigger>
- <TabsTrigger value="credenciais" className="text-xs font-semibold gap-2 py-2 px-3 shrink-0">
+ <TabsTrigger value="credenciais" className="text-xs font-semibold gap-2 py-2 px-3 shrink-0 whitespace-nowrap rounded-t-lg data-[state=active]:bg-card data-[state=active]:border-b-2 data-[state=active]:border-primary focus-visible:ring-2 focus-visible:ring-primary cursor-pointer">
  <QrCode className="size-3.5" />
- Credenciais e Staff
+ Credenciais
  </TabsTrigger>
- <TabsTrigger value="auditoria" className="text-xs font-semibold gap-2 py-2 px-3 shrink-0">
+ <TabsTrigger value="auditoria" className="text-xs font-semibold gap-2 py-2 px-3 shrink-0 whitespace-nowrap rounded-t-lg data-[state=active]:bg-card data-[state=active]:border-b-2 data-[state=active]:border-primary focus-visible:ring-2 focus-visible:ring-primary cursor-pointer">
  <ShieldCheck className="size-3.5" />
  Auditoria
  </TabsTrigger>
-  <TabsTrigger value="loja" className="text-xs font-semibold gap-2 py-2 px-3 shrink-0">
-  <ShoppingBag className="size-3.5" />
-  Lojinha
-  </TabsTrigger>
+ <TabsTrigger value="loja" className="text-xs font-semibold gap-2 py-2 px-3 shrink-0 whitespace-nowrap rounded-t-lg data-[state=active]:bg-card data-[state=active]:border-b-2 data-[state=active]:border-primary focus-visible:ring-2 focus-visible:ring-primary cursor-pointer">
+ <ShoppingBag className="size-3.5" />
+ Lojinha
+ </TabsTrigger>
  </TabsList>
 
  {/* ── Aba 1: Lotes de Ingressos ── */}
@@ -581,6 +609,11 @@ function SubPainelEventoPage() {
         {/* ── Aba 7: Bares, Caixas & PDVs Subpainéis ── */}
         <TabsContent value="subpaineis" className="space-y-4">
           <EventoSubpaineis eventId={event.id} />
+        </TabsContent>
+
+        {/* ── Aba: Pesquisas & Enquetes Inteligentes ── */}
+        <TabsContent value="pesquisas" className="space-y-4">
+          <EventoPesquisas eventId={event.id} />
         </TabsContent>
 
         {/* ── Aba 8: Orçamentos de Fornecedores ── */}

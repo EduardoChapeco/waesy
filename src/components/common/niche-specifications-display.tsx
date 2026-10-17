@@ -29,6 +29,7 @@ import {
   Truck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { TeteterisGridView } from "@/components/common/teteterisgrid-view";
 
 export interface SpecDisplayItem {
   key?: string;
@@ -242,29 +243,32 @@ export function NicheSpecificationsDisplay({
         </span>
       </div>
 
-      {/* ── 1. CARDS GRANDES SQUIRCLES: DESTAQUES PRINCIPAIS (HIGHLIGHT STATS) ── */}
+      {/* ── 1. CARDS GRANDES SQUIRCLES: DESTAQUES PRINCIPAIS (TETETERISGRID AUTO-PACKING) ── */}
       {topHighlights.length > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-          {topHighlights.map((item, idx) => {
+        <TeteterisGridView
+          items={topHighlights.map((item, idx) => ({
+            id: `highlight-${idx}`,
+            preferredSpan: topHighlights.length === 3 && idx === 2 ? "4:1" : "auto",
+            content: item,
+          }))}
+          maxCols={4}
+          renderCard={(item) => {
             const IconComp = item.icon || resolveSpecIcon(item.label);
             return (
-              <div
-                key={`highlight-${idx}`}
-                className="p-4 sm:p-5 rounded-lg bg-card border border-border/60 hover:border-primary/40 transition-colors flex flex-col justify-between gap-2 shadow-2xs group"
-              >
+              <>
                 <div className="flex items-center gap-2 text-muted-foreground min-w-0">
                   <IconComp className="size-4 text-primary shrink-0 transition-transform group-hover:scale-110" />
-                  <span className="text-xs font-bold uppercase tracking-wider truncate">
+                  <span className="text-xs font-bold uppercase tracking-wider leading-tight break-words text-wrap">
                     {item.label}
                   </span>
                 </div>
-                <p className="text-lg sm:text-xl font-extrabold text-foreground font-mono tracking-tight truncate pt-0.5">
+                <p className="text-base sm:text-lg lg:text-xl font-extrabold text-foreground font-mono tracking-tight leading-snug break-words text-wrap pt-0.5">
                   {item.value}
                 </p>
-              </div>
+              </>
             );
-          })}
-        </div>
+          }}
+        />
       )}
 
       {/* ── 2. GRID TÉCNICO ESTRUTURADO: DETALHES SECUNDÁRIOS ── */}
@@ -287,15 +291,15 @@ export function NicheSpecificationsDisplay({
               return (
                 <div
                   key={`spec-${idx}`}
-                  className="p-3.5 sm:p-4 rounded-lg bg-card border border-border/50 hover:border-border transition-colors flex items-center justify-between gap-3 shadow-2xs"
+                  className="p-4 rounded-lg bg-card border border-border/50 hover:border-border transition-colors flex items-center justify-between gap-3 shadow-2xs min-w-0"
                 >
-                  <div className="flex items-center gap-2 text-muted-foreground min-w-0">
+                  <div className="flex items-center gap-2 text-muted-foreground min-w-0 flex-1">
                     <IconComp className="size-4 text-primary/80 shrink-0" />
-                    <span className="text-xs font-semibold text-muted-foreground truncate">
+                    <span className="text-xs font-semibold text-muted-foreground leading-tight break-words text-wrap">
                       {item.label}
                     </span>
                   </div>
-                  <span className="text-xs sm:text-sm font-bold text-foreground font-mono truncate shrink-0 text-right">
+                  <span className="text-xs sm:text-sm font-bold text-foreground font-mono leading-tight break-words text-wrap text-right max-w-[55%]">
                     {item.value}
                   </span>
                 </div>
