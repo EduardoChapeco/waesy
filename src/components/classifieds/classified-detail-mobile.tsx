@@ -513,7 +513,7 @@ export function ClassifiedDetailMobile({
         <div
           role="tablist"
           aria-label="Seções do anúncio"
-          className="tab-list flex flex-nowrap overflow-x-auto no-scrollbar gap-1 border-b border-border/40 pb-px whitespace-nowrap"
+          className="tab-list flex flex-nowrap overflow-x-auto no-scrollbar gap-1 border-b border-border/40 pb-px whitespace-nowrap w-full"
         >
           {tabs.map((tab) => {
             const isActive = activeTab === tab.id;
@@ -525,7 +525,7 @@ export function ClassifiedDetailMobile({
                 aria-selected={isActive}
                 onClick={() => setActiveTab(tab.id)}
                 className={cn(
-                  "h-11 min-h-11 px-4 text-xs font-semibold rounded-t-lg transition-colors border-b-2 flex items-center justify-center shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                  "h-11 min-h-11 px-3 flex-1 min-w-max text-xs font-semibold rounded-t-lg transition-colors border-b-2 flex items-center justify-center cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                   isActive
                     ? "border-primary text-primary font-bold bg-primary/5"
                     : "border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/40"

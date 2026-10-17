@@ -1023,7 +1023,7 @@ export function EditorialShowcaseView({
 
         {/* ── Abas Canônicas em Linha Única Horizontal Contínua (Invariante B.39) ── */}
         <div className="border-t border-border/40 pt-1 px-4 sm:px-0">
-          <div className="flex flex-nowrap items-center border-b border-border/40 overflow-x-auto no-scrollbar gap-1 pb-px">
+          <div className="flex flex-nowrap items-center border-b border-border/40 overflow-x-auto no-scrollbar gap-1 pb-px w-full">
             {availableTabs.map((tab) => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
@@ -1033,7 +1033,7 @@ export function EditorialShowcaseView({
                   type="button"
                   onClick={() => setActiveTab(tab.id)}
                   className={cn(
-                    "h-10 px-3 flex flex-row items-center justify-center gap-2 border-b-2 text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                    "h-11 min-h-11 px-3 flex-1 min-w-max sm:min-w-0 flex flex-row items-center justify-center gap-2 border-b-2 text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                     isActive
                       ? "border-foreground text-foreground font-bold"
                       : "border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/30"

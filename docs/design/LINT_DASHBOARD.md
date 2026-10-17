@@ -1,6 +1,6 @@
 # LINT_DASHBOARD.md — Painel Canônico de Saúde Visual e Catraca
 
-> Gerado automaticamente pelo Design Lint V2 em: `2026-10-17T14:38:41.505Z`
+> Gerado automaticamente pelo Design Lint V2 em: `2026-10-17T14:44:59.056Z`
 
 ## 1. Resumo Executivo
 
@@ -8,9 +8,9 @@
 | :--- | :--- | :--- | :--- |
 | **Total de Arquivos** | 2118 | 2118 | Estável |
 | **Arquivos com Débito** | 884 | 884 | Monitorado |
-| **Total de Violações** | **12652** | **12652** | PASS (<= Baseline) |
+| **Total de Violações** | **12651** | **12651** | PASS (<= Baseline) |
 | **P0 (Bloqueia Entrega)** | **1453** | 1453 | PASS |
-| **P1 (Bloqueia Merge)** | **8555** | 8555 | PASS |
+| **P1 (Bloqueia Merge)** | **8554** | 8554 | PASS |
 | **P2 (Fila de Correção)** | 1339 | 1339 | Acompanhamento |
 | **P3 (Polimento)** | 1305 | 1305 | Acompanhamento |
 
@@ -18,7 +18,7 @@
 
 | Módulo | Total | P0 | P1 | P2 | P3 |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| `components/app` | 5505 | 575 | 3716 | 673 | 541 |
+| `components/app` | 5504 | 575 | 3715 | 673 | 541 |
 | `routes/workspace` | 2249 | 453 | 1396 | 124 | 276 |
 | `routes/store` | 1504 | 135 | 1002 | 140 | 227 |
 | `components/tourism` | 1135 | 95 | 791 | 178 | 71 |
@@ -39,7 +39,7 @@
 | Regra | Descrição Sumária | Severidade | Ocorrências |
 | :--- | :--- | :--- | :--- |
 | **DL-02** | Diretriz do Catálogo | `P1` | 3616 |
-| **DL-14** | Diretriz do Catálogo | `P1` | 2131 |
+| **DL-14** | Diretriz do Catálogo | `P1` | 2130 |
 | **DL-15** | Diretriz do Catálogo | `P0` | 1450 |
 | **DL-18** | Diretriz do Catálogo | `P1` | 1164 |
 | **DL-27** | Diretriz do Catálogo | `P3` | 1051 |
