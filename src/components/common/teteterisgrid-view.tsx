@@ -1,24 +1,45 @@
 import React from "react";
 import { cn } from "@/lib/utils";
-import { computeTeteterisGrid, type TeteterisItemInput, type TeteterisRatio } from "@/lib/layout/teteterisgrid-engine";
+import {
+  computeTeteterisGrid,
+  type TeteterisItemInput,
+  type TeteterisRatio,
+  type TeteterisCalculatedSlot,
+} from "@/lib/layout/teteterisgrid-engine";
+
+export interface TeteterisSlotMeta {
+  id: string;
+  colSpan: number;
+  rowSpan: number;
+  col: number;
+  row: number;
+  aspectRatio: TeteterisRatio;
+}
 
 export interface TeteterisGridViewProps<T = any> {
   items: TeteterisItemInput<T>[];
   maxCols?: 4 | 6;
   className?: string;
-  renderCard: (
-    item: T,
-    meta: { id: string; colSpan: number; rowSpan: number; aspectRatio: TeteterisRatio }
-  ) => React.ReactNode;
+  slotClassName?: string;
+  renderCard: (item: T, meta: TeteterisSlotMeta) => React.ReactNode;
 }
 
+/**
+ * TeteterisGridView
+ * Componente visual canônico do sistema teteterisgrid com geometria squircle Apple HIG.
+ * Garante preenchimento de 100% da grade (zero lacunas) e prevenção absoluta de truncamento.
+ */
 export function TeteterisGridView<T = any>({
   items,
   maxCols = 4,
   className,
+  slotClassName,
   renderCard,
 }: TeteterisGridViewProps<T>) {
-  const slots = React.useMemo(() => computeTeteterisGrid(items, maxCols), [items, maxCols]);
+  const slots: TeteterisCalculatedSlot<T>[] = React.useMemo(
+    () => computeTeteterisGrid(items, maxCols),
+    [items, maxCols]
+  );
 
   if (!slots || slots.length === 0) return null;
 
@@ -52,13 +73,16 @@ export function TeteterisGridView<T = any>({
             className={cn(
               colSpanClass,
               rowSpanClass,
-              "rounded-lg bg-card border border-border/60 p-4 sm:p-5 flex flex-col justify-between transition-colors hover:border-primary/40 shadow-2xs min-w-0"
+              "rounded-lg bg-card border border-border/60 p-4 sm:p-5 flex flex-col justify-between transition-colors hover:border-primary/40 shadow-2xs min-w-0",
+              slotClassName
             )}
           >
             {renderCard(slot.content, {
               id: slot.id,
               colSpan: slot.colSpan,
               rowSpan: slot.rowSpan,
+              col: slot.col,
+              row: slot.row,
               aspectRatio: slot.aspectRatio,
             })}
           </div>
