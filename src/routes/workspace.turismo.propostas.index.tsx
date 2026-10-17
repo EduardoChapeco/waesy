@@ -12,7 +12,7 @@ import { listAgencyTravelProposals, duplicateTravelProposal, deleteTravelProposa
 import { convertProposalToTrip } from "@/services/travel-lifecycle.functions";
 import { getStoreSettings } from "@/services/store.functions";
 import { NicheOperationalGuard } from "@/components/workspace/niche-operational-guard";
-import { NewTravelProposalSheet } from "@/components/tourism/new-travel-proposal-sheet";
+import { UniversalQuoteProposalStudio } from "@/components/tourism/universal-quote-proposal-studio";
 import { formatMoney } from "@/lib/money";
 import { WorkspaceCanonicalToolbar } from "@/components/workspace/workspace-canonical-toolbar";
 import { WorkspaceDashboardSheet } from "@/components/workspace/workspace-dashboard-sheet";
@@ -320,10 +320,11 @@ function WorkspaceProposalsIndexPage() {
  </div>
  )}
 
- {/* ── 5. SHEET DE CRIAÇÃO AVANÇADA (TRAVELOS STUDIO) ── */}
- <NewTravelProposalSheet
- isOpen={isNewModalOpen}
+ {/* ── 5. GERADOR CANÔNICO UNIFICADO DE COTAÇÃO & PROPOSTA (WEB + HTML2PDF + INFOTRAVEL) ── */}
+ <UniversalQuoteProposalStudio
+ open={isNewModalOpen}
  onOpenChange={setIsNewModalOpen}
+ mode="standalone_proposal"
  initialLeadId={searchParams?.leadId}
  initialClientName={searchParams?.clientName}
  initialClientPhone={searchParams?.clientPhone}

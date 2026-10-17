@@ -20,6 +20,7 @@ import {
   listTravelSaleFinancialSheets,
   upsertTravelSaleFinancialSheet,
 } from "@/services/travel-financials.functions";
+import { InlineSalesSpreadsheetAndGoalsPanel } from "@/components/tourism/InlineSalesSpreadsheetAndGoalsPanel";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -799,6 +800,9 @@ function TravelSalesFinancialCompositionPage() {
           </div>
         </div>
       </div>
+
+      {/* ── Planilha Editável In-Page de Vendas, Over (16% Operadora), Metas de Agentes e Cancelamentos ── */}
+      <InlineSalesSpreadsheetAndGoalsPanel />
 
       {/* ── Barra de Filtros Operacionais (Operadora, Recebimento, Nota Fiscal, Busca) ── */}
       <div className="p-4 rounded-lg border border-border/60 bg-card space-y-3">

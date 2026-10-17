@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Calendar, Plus, Plane, Hotel, CheckCircle2, Circle, ChevronLeft, ChevronRight, Send, FileText, ShieldAlert, ExternalLink, Loader2, AlertTriangle, Users, MapPin, Clock, Upload, X, Star, Download, Smartphone } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { CardDetailPanel } from '@/components/tourism/boarding/CardDetailPanel';
+import { PreBoardingPresentationStudio } from '@/components/tourism/boarding/PreBoardingPresentationStudio';
 import { DigitalCompanionCard } from '@/components/documents/digital-companion-card';
 import { MultimodalOcrUploader } from '@/components/documents/multimodal-ocr-uploader';
 import type { UniversalOcrResult } from '@/services/multimodal-ocr.functions';
@@ -114,7 +115,7 @@ function WorkspaceBoardingPage() {
   const storeId = loaderData?.store?.id || currentStore?.id || '';
 
   // View mode
-  const [viewMode, setViewMode] = useState<'calendar' | 'kanban'>('calendar');
+  const [viewMode, setViewMode] = useState<'calendar' | 'kanban' | 'pre_boarding_studio'>('calendar');
   const [activeTab, setActiveTab] = useState('all');
   const [search, setSearch] = useState('');
 
@@ -523,6 +524,7 @@ function WorkspaceBoardingPage() {
         viewModes={[
           { id: 'calendar', label: 'Calendário', icon: Calendar },
           { id: 'kanban', label: 'Kanban', icon: Users },
+          { id: 'pre_boarding_studio', label: 'Apresentação Pré-Embarque & Reunião', icon: FileText },
         ]}
         activeViewMode={viewMode}
         onViewModeChange={(m) => setViewMode(m as any)}
@@ -763,6 +765,11 @@ function WorkspaceBoardingPage() {
               })}
             </div>
           )
+        )}
+
+        {/* ── PRE-BOARDING STUDIO & MEETING SCHEDULER VIEW ── */}
+        {viewMode === 'pre_boarding_studio' && (
+          <PreBoardingPresentationStudio />
         )}
       </div>
 

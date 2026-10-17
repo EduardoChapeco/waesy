@@ -17,6 +17,7 @@ import { listTeamMembers } from "@/services/admin-team.functions";
 import { getStoreSettings } from "@/services/store.functions";
 import { formatMoney } from "@/lib/money";
 import { NewClientWizard } from "@/components/crm/NewClientWizard";
+import { UniversalCrmSpreadsheetImporterModal } from "@/components/crm/UniversalCrmSpreadsheetImporterModal";
 import { useNicheTranslation } from "@/hooks/use-niche-translation";
 
 export const Route = createFileRoute("/workspace/clientes/")({
@@ -55,6 +56,7 @@ function CarteiraClientesPage() {
  store?.category === "tourism";
 
  const [isWizardOpen, setIsWizardOpen] = useState(false);
+ const [isImporterOpen, setIsImporterOpen] = useState(false);
  const [searchTerm, setSearchTerm] = useState("");
  const [statusFilter, setStatusFilter] = useState("all");
  const [kindFilter, setKindFilter] = useState("all");
@@ -238,9 +240,9 @@ function CarteiraClientesPage() {
         onMetricsClick={() => setIsMetricsOpen(true)}
         metricsBadge={totalCount > 0 ? `${totalCount} ${isTourism ? "Passageiros" : "Clientes"}` : undefined}
         secondaryAction={{
-          label: "Funil Comercial",
-          icon: ArrowRight,
-          onClick: () => router.navigate({ to: "/workspace/comercial" }),
+          label: "Importar Planilha / Crédito Operadora",
+          icon: FileText,
+          onClick: () => setIsImporterOpen(true),
           variant: "outline",
         }}
         primaryAction={{
@@ -248,6 +250,12 @@ function CarteiraClientesPage() {
           icon: Plus,
           onClick: () => setIsWizardOpen(true),
         }}
+      />
+
+      <UniversalCrmSpreadsheetImporterModal
+        open={isImporterOpen}
+        onOpenChange={setIsImporterOpen}
+        onImportedSuccess={() => router.invalidate()}
       />
 
       <WorkspaceDashboardSheet

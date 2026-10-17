@@ -1,25 +1,25 @@
 {
   "version": "2.0.0",
-  "timestamp": "2026-10-17T16:51:30.699Z",
-  "inspectedFiles": 2123,
-  "totalViolations": 12611,
+  "timestamp": "2026-10-17T19:47:59.460Z",
+  "inspectedFiles": 2134,
+  "totalViolations": 12609,
   "summary": {
-    "totalViolations": 12611,
+    "totalViolations": 12609,
     "bySeverity": {
       "P0": 1448,
-      "P1": 8527,
+      "P1": 8526,
       "P2": 1336,
-      "P3": 1300
+      "P3": 1299
     },
     "byRule": {
       "DL-18": 1164,
-      "DL-02": 3597,
+      "DL-02": 3596,
       "DL-14": 2123,
       "DL-28": 287,
       "DL-15": 1445,
       "DL-07": 503,
       "DL-27": 1046,
-      "DL-30": 254,
+      "DL-30": 253,
       "DL-26": 85,
       "DL-01": 939,
       "DL-29": 118,
@@ -101,11 +101,11 @@
         "P3": 0
       },
       "routes/other": {
-        "total": 138,
+        "total": 136,
         "P0": 10,
-        "P1": 106,
+        "P1": 105,
         "P2": 15,
-        "P3": 7
+        "P3": 6
       },
       "routes/workspace": {
         "total": 2243,
@@ -143,8 +143,8 @@
         "P3": 0
       }
     },
-    "filesWithViolations": 882,
-    "filesCount": 2123
+    "filesWithViolations": 881,
+    "filesCount": 2134
   },
   "config": {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
