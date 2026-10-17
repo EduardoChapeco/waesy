@@ -27,6 +27,7 @@ import {
   MapPin,
   Utensils,
   Truck,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { TeteterisGridView } from "@/components/common/teteterisgrid-view";
 

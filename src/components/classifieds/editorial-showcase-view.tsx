@@ -283,6 +283,7 @@ export function EditorialShowcaseView({
   const storyHighlights = Array.isArray(attrs.story_highlights) ? attrs.story_highlights : [];
   const bioBullets: string[] = Array.isArray(attrs.bio_bullets) ? attrs.bio_bullets : [];
   const flightDetails = attrs.flight_details || null;
+  const transportType: string = flightDetails?.transport_type || attrs.transport_type || "";
   const itineraryDays = Array.isArray(attrs.itinerary_days) && attrs.itinerary_days.length > 0
     ? attrs.itinerary_days
     : Array.isArray(classified?.itinerary_days) && classified.itinerary_days.length > 0
@@ -290,7 +291,8 @@ export function EditorialShowcaseView({
     : Array.isArray(attrs.itinerary) && attrs.itinerary.length > 0
     ? attrs.itinerary
     : [];
-  const selectedDeparture = departureOptions.find(d => (d.id || "") === selectedDepartureId) || null;
+  const departureOptions: DepartureOption[] = Array.isArray(attrs.departure_options) ? attrs.departure_options : [];
+  const selectedDeparture = departureOptions.find((d: DepartureOption) => (d.id || "") === selectedDepartureId) || null;
 
   const departureCity: string =
     attrs.departure_city ||
@@ -2158,8 +2160,8 @@ export function EditorialShowcaseView({
                     Saídas Disponíveis
                   </h4>
                   <div className="space-y-2">
-                    {departureOptions.map((opt, i) => {
-                      const cfg = DEPARTURE_STATUS_CONFIG[opt.status] || DEPARTURE_STATUS_CONFIG.confirmed;
+                    {departureOptions.map((opt: DepartureOption, i: number) => {
+                      const cfg = (opt.status && DEPARTURE_STATUS_CONFIG[opt.status as keyof typeof DEPARTURE_STATUS_CONFIG]) || DEPARTURE_STATUS_CONFIG.confirmed;
                       const depDate = opt.departure_date ? new Date(opt.departure_date + "T00:00:00").toLocaleDateString("pt-BR", { day: "2-digit", month: "short" }) : "";
                       const retDate = opt.return_date ? new Date(opt.return_date + "T00:00:00").toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" }) : "";
                       const optId = opt.id || String(i);
