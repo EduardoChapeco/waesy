@@ -282,6 +282,7 @@ export function EditorialShowcaseView({
   // ── Destaques e Diferenciais ──────────────────────────────────────────────
   const storyHighlights = Array.isArray(attrs.story_highlights) ? attrs.story_highlights : [];
   const bioBullets: string[] = Array.isArray(attrs.bio_bullets) ? attrs.bio_bullets : [];
+  const flightDetails = attrs.flight_details || null;
   const rawTransportType: string = flightDetails?.transport_type || attrs.transport_type || "";
   const transportType: string =
     rawTransportType === "flight" || rawTransportType === "aereo"

@@ -177,13 +177,14 @@ export function buildClassifiedCompanionData(classified: any): DigitalCompanionC
     rules.push({
       title: "Documentação",
       description: "Apresente documento original com foto (RG ou Passaporte válido) no momento do embarque.",
-      priority: "high",
+      highlight: true,
+      badge: "Obrigatório",
     });
     if (attrs.cancellation_policy) {
       rules.push({
         title: "Cancelamento",
         description: attrs.cancellation_policy,
-        priority: "medium",
+        badge: "Política",
       });
     }
   } else if (nicheType === "real_estate") {

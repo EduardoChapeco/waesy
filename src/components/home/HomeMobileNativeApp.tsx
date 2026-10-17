@@ -140,7 +140,7 @@ export function HomeMobileNativeApp({
         <section aria-label={heroSection.title || "Destaques Principais"} className="w-full">
           {heroSection.show_title && heroSection.title && (
             <div className="mb-2">
-              <h2 className="text-base font-bold text-foreground tracking-tight truncate">
+              <h2 className="text-base font-bold text-foreground tracking-tight break-words text-wrap">
                 {heroSection.title}
               </h2>
               {heroSection.show_subtitle && heroSection.subtitle && (
@@ -164,7 +164,7 @@ export function HomeMobileNativeApp({
         <section aria-label={quickCategoriesSection.title || "Categorias Rápidas"} className="w-full">
           {quickCategoriesSection.show_title && quickCategoriesSection.title && (
             <div className="mb-2">
-              <h2 className="text-base font-bold text-foreground tracking-tight truncate">
+              <h2 className="text-base font-bold text-foreground tracking-tight break-words text-wrap">
                 {quickCategoriesSection.title}
               </h2>
               {quickCategoriesSection.show_subtitle && quickCategoriesSection.subtitle && (
@@ -200,7 +200,7 @@ export function HomeMobileNativeApp({
         <section key={sec.id} aria-label={sec.title || "Destaques"} className="w-full space-y-2">
           {sec.show_title && sec.title && (
             <div>
-              <h2 className="text-base font-bold text-foreground tracking-tight truncate">
+              <h2 className="text-base font-bold text-foreground tracking-tight break-words text-wrap">
                 {sec.title}
               </h2>
               {sec.show_subtitle && sec.subtitle && (
@@ -284,7 +284,7 @@ export function HomeMobileNativeApp({
 
                       <div className="p-3 space-y-1">
                         <div className="flex items-center justify-between gap-2">
-                          <h3 className="font-bold text-sm text-foreground truncate group-hover:text-primary transition-colors">
+                          <h3 className="font-bold text-sm text-foreground break-words text-wrap group-hover:text-primary transition-colors">
                             {item.business_name}
                           </h3>
                           {item.is_verified && (
@@ -426,7 +426,7 @@ export function HomeMobileNativeApp({
                         <p className="text-xs font-black text-foreground font-mono">
                           {priceDisplay}
                         </p>
-                        <p className="text-xs text-muted-foreground truncate">
+                        <p className="text-xs text-muted-foreground break-words text-wrap">
                           {item.location_name || item.location_text || "Na sua região"}
                         </p>
                       </div>
@@ -508,7 +508,7 @@ export function HomeMobileNativeApp({
                         </h3>
                         <p className="text-xs text-muted-foreground font-medium flex items-center gap-1">
                           <Buildings size={13} className="shrink-0" />
-                          <span className="truncate">{job.company_name}</span>
+                          <span className="break-words text-wrap">{job.company_name}</span>
                         </p>
                       </div>
                     </div>
@@ -516,7 +516,7 @@ export function HomeMobileNativeApp({
                     <div className="flex items-center justify-between pt-2 border-t border-border/30 text-xs text-muted-foreground">
                       <span className="flex items-center gap-1">
                         <MapPin size={12} />
-                        <span className="truncate max-w-28">{job.location}</span>
+                        <span className="break-words text-wrap">{job.location}</span>
                       </span>
                       <span className="font-bold text-foreground">
                         {job.salary_display || "A combinar"}
@@ -707,7 +707,7 @@ export function HomeMobileNativeApp({
                     <div className="p-3 space-y-1 flex-1 flex flex-col justify-between">
                       <div className="space-y-1">
                         {item.priceOrDate && (
-                          <p className="text-sm font-black text-foreground font-mono truncate">
+                          <p className="text-sm font-black text-foreground font-mono whitespace-nowrap shrink-0">
                             {item.priceOrDate}
                           </p>
                         )}
@@ -719,7 +719,7 @@ export function HomeMobileNativeApp({
                       {item.location && (
                         <div className="pt-2 border-t border-border/30 flex items-center text-xs text-muted-foreground">
                           <MapPin size={12} className="shrink-0 text-primary mr-1" />
-                          <span className="truncate">{item.location}</span>
+                          <span className="break-words text-wrap">{item.location}</span>
                         </div>
                       )}
                     </div>
@@ -777,7 +777,7 @@ export function HomeMobileNativeApp({
                   }
                   metadataSlot={
                     item.priceOrDate ? (
-                      <span className="font-mono font-bold text-xs text-foreground truncate">
+                      <span className="font-mono font-bold text-xs text-foreground whitespace-nowrap shrink-0">
                         {item.priceOrDate}
                       </span>
                     ) : undefined

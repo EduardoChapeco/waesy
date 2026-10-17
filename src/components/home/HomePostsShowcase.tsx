@@ -134,7 +134,7 @@ export function HomePostsShowcase({
 
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
-                      <span className="text-xs sm:text-sm font-bold text-foreground truncate">
+                      <span className="text-xs sm:text-sm font-bold text-foreground break-words text-wrap">
                         {post.authorName || "Membro da comunidade"}
                       </span>
                       {post.isVerified && (
@@ -145,14 +145,14 @@ export function HomePostsShowcase({
                       </span>
                     </div>
 
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground truncate">
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground break-words text-wrap">
                       {post.locationName ? (
-                        <span className="inline-flex items-center gap-1 truncate">
+                        <span className="inline-flex items-center gap-1 break-words text-wrap">
                           <MapPin size={11} className="text-primary shrink-0" />
-                          <span className="truncate">{post.locationName}</span>
+                          <span className="break-words text-wrap">{post.locationName}</span>
                         </span>
                       ) : post.authorHandle ? (
-                        <span className="truncate text-muted-foreground/80">
+                        <span className="break-words text-wrap text-muted-foreground/80">
                           {post.authorHandle.startsWith("@")
                             ? post.authorHandle
                             : `@${post.authorHandle}`}

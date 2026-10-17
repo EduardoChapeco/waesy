@@ -464,7 +464,7 @@ export function resolveClassifiedDetailedSpecs(classified: any): ClassifiedSpecI
       else if (tempLabel === "ambiente") tempLabel = "Temperatura Ambiente";
       else if (tempLabel === "congelado") tempLabel = "Congelado";
       else if (tempLabel === "resfriado") tempLabel = "Resfriado";
-      list.push({ label: "Conservação", value: tempLabel, category: "technical" });
+      list.push({ label: "Temperatura", value: tempLabel, category: "technical" });
     }
     if (attrs.is_alcoholic !== undefined) {
       list.push({ label: "Bebida Alcoólica", value: attrs.is_alcoholic ? "Sim (+18)" : "Não alcoólico", category: "technical" });
