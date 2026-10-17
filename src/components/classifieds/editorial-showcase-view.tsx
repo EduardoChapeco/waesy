@@ -669,14 +669,14 @@ export function EditorialShowcaseView({
         <button
           type="button"
           onClick={() => navigate({ to: "/classificados", search: {} as any })}
-          className="p-2 -ml-1 text-foreground hover:bg-muted rounded-full transition-colors active:scale-95"
+          className="p-2 -ml-1 text-foreground hover:bg-muted rounded-lg transition-colors active:scale-95"
           aria-label="Voltar"
         >
           <ArrowLeft className="size-5" />
         </button>
 
-        <div className="flex items-center gap-2 max-w-52 truncate">
-          <span className="font-extrabold text-xs tracking-tight text-foreground truncate">
+        <div className="flex items-center gap-2 max-w-[200px] sm:max-w-md min-w-0">
+          <span className="font-extrabold text-xs tracking-tight text-foreground line-clamp-1 break-words">
             {classified.title || "Vitrine Imersiva"}
           </span>
         </div>
@@ -687,7 +687,7 @@ export function EditorialShowcaseView({
             <button
               type="button"
               onClick={handleEditClick}
-              className="p-2 text-primary hover:bg-primary/10 rounded-full transition-colors active:scale-95 cursor-pointer"
+              className="p-2 text-primary hover:bg-primary/10 rounded-lg transition-colors active:scale-95 cursor-pointer"
               title="Editar Anúncio"
               aria-label="Editar Anúncio"
             >
@@ -699,7 +699,7 @@ export function EditorialShowcaseView({
             <button
               type="button"
               onClick={onOpenCompanionCard}
-              className="p-2 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 rounded-full transition-colors active:scale-95 cursor-pointer"
+              className="p-2 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 rounded-lg transition-colors active:scale-95 cursor-pointer"
               title="Guia Digital 9:16 (WhatsApp)"
               aria-label="Guia Digital 9:16"
             >
@@ -712,7 +712,7 @@ export function EditorialShowcaseView({
             <button
               type="button"
               onClick={() => setIsPromoFlyerOpen(true)}
-              className="p-2 text-primary hover:bg-primary/10 rounded-full transition-colors active:scale-95 cursor-pointer"
+              className="p-2 text-primary hover:bg-primary/10 rounded-lg transition-colors active:scale-95 cursor-pointer"
               title="Gerar Story 9:16 com IA"
               aria-label="Gerar Story 9:16"
             >
@@ -723,7 +723,7 @@ export function EditorialShowcaseView({
           <button
             type="button"
             onClick={handleShare}
-            className="p-2 text-foreground hover:bg-muted rounded-full transition-colors active:scale-95"
+            className="p-2 text-foreground hover:bg-muted rounded-lg transition-colors active:scale-95"
             aria-label="Compartilhar"
           >
             <Share2 className="size-4.5" />
@@ -827,14 +827,14 @@ export function EditorialShowcaseView({
                     onClick={() => setFullscreenImage(images[activeImageIndex] || images[0])}
                   />
                   <div className="absolute top-3 right-3 flex items-center gap-2">
-                    <span className="px-3 py-1 rounded-full bg-black/60 backdrop-blur-sm text-white text-xs font-mono font-medium">
+                    <span className="px-3 py-1 rounded-md bg-black/60 backdrop-blur-sm text-white text-xs font-mono font-medium">
                       {images.length} {images.length === 1 ? "foto" : "fotos"}
                     </span>
                   </div>
                   <button
                     type="button"
                     onClick={() => setFullscreenImage(images[activeImageIndex] || images[0])}
-                    className="absolute bottom-3.5 right-3.5 px-3 py-2 rounded-lg bg-background/85 hover:bg-background text-foreground text-xs font-semibold backdrop-blur-md border border-border/50 flex items-center gap-2 transition-colors"
+                    className="absolute bottom-4 right-4 px-3 py-2 rounded-lg bg-background/85 hover:bg-background text-foreground text-xs font-semibold backdrop-blur-md border border-border/50 flex items-center gap-2 transition-colors"
                   >
                     <Maximize2 className="size-3.5" />
                     <span>Expandir</span>
@@ -943,7 +943,7 @@ export function EditorialShowcaseView({
         {/* ── Card do Anunciante / Loja Parceira (Visível no Mobile) ── */}
         <div className="lg:hidden mx-4 sm:mx-0 p-4 rounded-lg bg-muted/30 border border-border/50 flex items-center justify-between gap-3 transition-colors hover:bg-muted/40">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="size-11 rounded-full bg-background border border-border/60 overflow-hidden shrink-0 flex items-center justify-center">
+            <div className="size-11 rounded-lg bg-background border border-border/60 overflow-hidden shrink-0 flex items-center justify-center">
               {advertiserAvatar ? (
                 <img src={advertiserAvatar} alt={advertiserName} className="size-full object-cover" />
               ) : isCompany ? (
@@ -954,14 +954,14 @@ export function EditorialShowcaseView({
             </div>
             <div className="min-w-0 flex flex-col">
               <div className="flex items-center gap-2 min-w-0">
-                <span className="font-extrabold text-xs sm:text-sm text-foreground truncate">
+                <span className="font-extrabold text-xs sm:text-sm text-foreground break-words">
                   {advertiserName}
                 </span>
                 <span title="Verificado Waesy" className="inline-flex shrink-0">
                   <CheckCircle2 className="size-3.5 text-blue-500" />
                 </span>
               </div>
-              <span className="text-xs text-muted-foreground truncate">
+              <span className="text-xs text-muted-foreground break-words">
                 {isTravel ? (isCompany ? "Agência / Operadora Oficial" : "Organizador da Excursão") : (advertiserCity ? `${advertiserCity} • ` : "") + (isCompany ? "Loja Oficial" : "Anunciante Verificado")}
               </span>
             </div>
@@ -993,14 +993,14 @@ export function EditorialShowcaseView({
                 onClick={() => setActiveStoryModal(hl)}
                 className="flex flex-col items-center gap-2 shrink-0 group active:scale-95 transition-colors"
               >
-                <div className="size-15 sm:size-16 rounded-full p-1 bg-border hover:bg-gradient-to-tr hover:from-amber-500 hover:via-rose-500 hover:to-purple-600 transition-colors">
+                <div className="size-16 rounded-lg p-1 bg-border hover:bg-gradient-to-tr hover:from-amber-500 hover:via-rose-500 hover:to-purple-600 transition-colors">
                   <img
                     src={hl.image || images[0]}
                     alt={hl.title}
-                    className="size-full rounded-full object-cover border border-background"
+                    className="size-full rounded-lg object-cover border border-background"
                   />
                 </div>
-                <span className="text-xs font-medium text-foreground tracking-tight max-w-[64px] truncate">
+                <span className="text-xs font-medium text-foreground tracking-tight w-16 text-center line-clamp-2 break-words">
                   {hl.title}
                 </span>
               </button>
@@ -1066,11 +1066,11 @@ export function EditorialShowcaseView({
                               preload="metadata"
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 flex items-center justify-center">
-                              <div className="size-9 rounded-full bg-white/20 backdrop-blur-md border border-white/40 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                              <div className="size-9 rounded-lg bg-white/20 backdrop-blur-md border border-white/40 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
                                 <Play className="size-4 fill-white text-white ml-1" />
                               </div>
                             </div>
-                            <span className="absolute top-2 right-1.5 px-2 py-1 rounded-md bg-black/70 text-xs font-bold text-white uppercase tracking-wider backdrop-blur-xs font-mono">
+                            <span className="absolute top-2 right-2 px-2 py-1 rounded-md bg-black/70 text-xs font-bold text-white uppercase tracking-wider backdrop-blur-xs font-mono">
                               Vídeo
                             </span>
                           </div>
@@ -1228,7 +1228,7 @@ export function EditorialShowcaseView({
                                 </div>
                                 <div className="flex items-center gap-2 flex-wrap">
                                   {lodging.stars ? (
-                                    <span className="text-xs font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2 py-1 rounded-full border border-amber-500/20">
+                                    <span className="text-xs font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2 py-1 rounded-md border border-amber-500/20">
                                       {lodging.stars} estrelas
                                     </span>
                                   ) : null}
@@ -2061,7 +2061,7 @@ export function EditorialShowcaseView({
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-xs font-bold text-foreground">Voo</p>
-                          <p className="text-xs text-muted-foreground truncate">
+                          <p className="text-xs text-muted-foreground break-words text-wrap">
                             {flightDetails.combo_flight_from_iata}
                             {flightDetails.combo_flight_from_iata && flightDetails.combo_flight_to_iata && " → "}
                             {flightDetails.combo_flight_to_iata}
@@ -2091,7 +2091,7 @@ export function EditorialShowcaseView({
                           <p className="text-xs font-bold text-foreground">
                             Transfer {flightDetails.transfer_duration ? `(${flightDetails.transfer_duration})` : ""}
                           </p>
-                          <p className="text-xs text-muted-foreground truncate">
+                          <p className="text-xs text-muted-foreground break-words text-wrap">
                             {flightDetails.transfer_from}
                             {flightDetails.transfer_from && flightDetails.transfer_to && " → "}
                             {flightDetails.transfer_to}
@@ -2183,7 +2183,7 @@ export function EditorialShowcaseView({
                               <div className="flex items-center gap-2">
                                 {opt.label && <p className="text-xs font-bold text-foreground">{opt.label}</p>}
                                 {isSelected && (
-                                  <span className="text-xs font-bold text-primary bg-primary/10 px-2 py-1 rounded-full">
+                                  <span className="text-xs font-bold text-primary bg-primary/10 px-2 py-1 rounded-md">
                                     Selecionada
                                   </span>
                                 )}
@@ -2198,7 +2198,7 @@ export function EditorialShowcaseView({
                             {opt.available_seats !== undefined && opt.available_seats > 0 && (
                               <span className="text-xs text-muted-foreground">{opt.available_seats} vagas</span>
                             )}
-                            <span className={cn("text-xs font-bold px-2 py-1 rounded-full border", cfg.color)}>
+                            <span className={cn("text-xs font-bold px-2 py-1 rounded-md border", cfg.color)}>
                               {cfg.icon} {cfg.label}
                             </span>
                           </div>
@@ -2389,7 +2389,7 @@ export function EditorialShowcaseView({
                           <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">À vista no PIX:</span>
                           <span className="text-xs font-black text-foreground font-display">{formatMoney(pixPrice)}</span>
                         </div>
-                        <span className="text-xs font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-500/10 px-2 py-1 rounded-full border border-emerald-500/20">
+                        <span className="text-xs font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-500/10 px-2 py-1 rounded-md border border-emerald-500/20">
                           Economize {formatMoney(pixSavings)} (-{pixDiscountPercent}%)
                         </span>
                       </div>
@@ -2492,14 +2492,14 @@ export function EditorialShowcaseView({
               </div>
               <div className="min-w-0 flex flex-col">
                 <div className="flex items-center gap-2 min-w-0">
-                  <span className="font-bold text-sm text-foreground truncate">
+                  <span className="font-bold text-sm text-foreground break-words">
                     {advertiserName}
                   </span>
                   <span title="Verificado Waesy" className="inline-flex shrink-0">
                     <CheckCircle2 className="size-3.5 text-blue-500" />
                   </span>
                 </div>
-                <span className="text-xs text-muted-foreground truncate">
+                <span className="text-xs text-muted-foreground break-words">
                   {isTravel ? (isCompany ? "Agência / Operadora Oficial" : "Organizador da Excursão") : (advertiserCity ? `${advertiserCity} • ` : "") + (isCompany ? "Loja Oficial" : "Anunciante")}
                 </span>
               </div>
@@ -2557,18 +2557,18 @@ export function EditorialShowcaseView({
                       <span className="text-xs sm:text-sm font-bold text-muted-foreground uppercase tracking-tight shrink-0">
                         {maxInstallments}x de
                       </span>
-                      <span className="text-base sm:text-lg font-black text-foreground tracking-tight font-display truncate">
+                      <span className="text-base sm:text-lg font-black text-foreground tracking-tight font-display whitespace-nowrap shrink-0">
                         {formatMoney(installmentCents)}
                       </span>
                     </>
                   ) : (
-                    <span className="text-base sm:text-lg font-black text-foreground tracking-tight font-display truncate">
+                    <span className="text-base sm:text-lg font-black text-foreground tracking-tight font-display whitespace-nowrap shrink-0">
                       {formatMoney(priceCents)}
                     </span>
                   )}
                   <ChevronUp className="size-3.5 text-muted-foreground shrink-0 group-hover:translate-y-[-1px] transition-transform" />
                 </div>
-                <div className="flex items-center gap-2 text-xs sm:text-xs text-muted-foreground truncate">
+                <div className="flex items-center gap-2 text-xs sm:text-xs text-muted-foreground flex-wrap gap-1">
                   {maxInstallments > 1 ? (
                     <>
                       <span>Total: {formatMoney(priceCents)}</span>
@@ -2581,7 +2581,7 @@ export function EditorialShowcaseView({
                     <span>À vista</span>
                   )}
                   {pixDiscountPercent > 0 && (
-                    <span className="ml-1 text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-500/10 px-2 py-1 rounded text-xs">
+                    <span className="ml-1 text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-500/10 px-2 py-1 rounded-md text-xs">
                       -{pixDiscountPercent}% PIX
                     </span>
                   )}
@@ -2599,7 +2599,7 @@ export function EditorialShowcaseView({
           <Button
             type="button"
             onClick={handlePrimaryCtaClick}
-            className="h-11 px-5 sm:px-7 rounded-full bg-foreground text-background hover:bg-foreground/90 font-extrabold text-xs tracking-tight active:scale-95 transition-colors shrink-0 cursor-pointer"
+            className="h-11 px-5 sm:px-7 rounded-lg bg-foreground text-background hover:bg-foreground/90 font-extrabold text-xs tracking-tight active:scale-95 transition-colors shrink-0 cursor-pointer"
           >
             {getPrimaryCtaLabel()}
           </Button>
@@ -2632,13 +2632,13 @@ export function EditorialShowcaseView({
           <DialogContent className="max-w-4xl p-0 bg-black/95 border-none overflow-hidden sm:rounded-lg text-white select-none">
             {/* Topbar do Modal: Contador e Botão Fechar */}
             <div className="absolute top-3 left-3 right-3 z-50 flex items-center justify-between pointer-events-none">
-              <span className="px-3 py-2 rounded-full bg-black/70 backdrop-blur-md text-white text-xs font-mono font-medium border border-white/10 pointer-events-auto">
+              <span className="px-3 py-2 rounded-md bg-black/70 backdrop-blur-md text-white text-xs font-mono font-medium border border-white/10 pointer-events-auto">
                 Foto {activeImageIndex + 1} de {images.length}
               </span>
               <button
                 type="button"
                 onClick={() => setFullscreenImage(null)}
-                className="size-9 rounded-full bg-black/70 hover:bg-black/90 text-white flex items-center justify-center backdrop-blur-md border border-white/10 transition-colors pointer-events-auto cursor-pointer"
+                className="size-9 rounded-lg bg-black/70 hover:bg-black/90 text-white flex items-center justify-center backdrop-blur-md border border-white/10 transition-colors pointer-events-auto cursor-pointer"
                 title="Fechar (Esc)"
                 aria-label="Fechar ampliação"
               >
@@ -2665,7 +2665,7 @@ export function EditorialShowcaseView({
                       setActiveImageIndex(prevIdx);
                       setFullscreenImage(images[prevIdx]);
                     }}
-                    className="absolute left-3 sm:left-5 top-1/2 -translate-y-1/2 size-11 rounded-full bg-black/60 hover:bg-black/85 text-white flex items-center justify-center backdrop-blur-md border border-white/20 transition-colors cursor-pointer hover:scale-105 active:scale-95"
+                    className="absolute left-3 sm:left-5 top-1/2 -translate-y-1/2 size-11 rounded-lg bg-black/60 hover:bg-black/85 text-white flex items-center justify-center backdrop-blur-md border border-white/20 transition-colors cursor-pointer hover:scale-105 active:scale-95"
                     title="Foto anterior (Seta esquerda)"
                     aria-label="Foto anterior"
                   >
@@ -2680,7 +2680,7 @@ export function EditorialShowcaseView({
                       setActiveImageIndex(nextIdx);
                       setFullscreenImage(images[nextIdx]);
                     }}
-                    className="absolute right-3 sm:right-5 top-1/2 -translate-y-1/2 size-11 rounded-full bg-black/60 hover:bg-black/85 text-white flex items-center justify-center backdrop-blur-md border border-white/20 transition-colors cursor-pointer hover:scale-105 active:scale-95"
+                    className="absolute right-3 sm:right-5 top-1/2 -translate-y-1/2 size-11 rounded-lg bg-black/60 hover:bg-black/85 text-white flex items-center justify-center backdrop-blur-md border border-white/20 transition-colors cursor-pointer hover:scale-105 active:scale-95"
                     title="Próxima foto (Seta direita)"
                     aria-label="Próxima foto"
                   >
@@ -2750,7 +2750,7 @@ export function EditorialShowcaseView({
                     <div className="flex items-center gap-2">
                       <span className="text-muted-foreground font-medium">À Vista no PIX</span>
                       {pixDiscountPercent > 0 && (
-                        <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded-full">
+                        <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded-md">
                           -{pixDiscountPercent}% OFF
                         </span>
                       )}
