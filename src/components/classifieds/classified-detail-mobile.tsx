@@ -607,92 +607,48 @@ export function ClassifiedDetailMobile({
               </div>
             </div>
 
-            {/* Destaque por nicho temático (Automotivo, Imobiliário, Resort, Serviços) */}
-            {templateStyle === "automotivo" && (
-              <div className="space-y-3">
-                <div className="rounded-lg border border-border/60 bg-muted/20 p-3 grid grid-cols-2 gap-2 text-xs">
-                  <div>
-                    <span className="text-xs uppercase font-semibold text-muted-foreground block">Ano/Mod</span>
-                    <span className="font-bold text-foreground">{attrs.year_fab || attrs.year_model ? `${attrs.year_fab || ""}/${attrs.year_model || ""}` : "Consulte"}</span>
-                  </div>
-                  <div>
-                    <span className="text-xs uppercase font-semibold text-muted-foreground block">KM</span>
-                    <span className="font-bold text-foreground">{attrs.mileage_km != null ? `${Number(attrs.mileage_km).toLocaleString("pt-BR")} km` : "Consulte"}</span>
-                  </div>
-                  <div>
-                    <span className="text-xs uppercase font-semibold text-muted-foreground block">Câmbio</span>
-                    <span className="font-bold text-foreground">{attrs.transmission || "Manual"}</span>
-                  </div>
-                  <div>
-                    <span className="text-xs uppercase font-semibold text-muted-foreground block">Combustível</span>
-                    <span className="font-bold text-foreground">{attrs.fuel_type || "Flex"}</span>
-                  </div>
+            {/* Negociação e Agendamento Específico por Nicho */}
+            {templateStyle === "automotivo" && (attrs.accepts_trade || attrs.accepts_financing || attrs.negotiable) && (
+              <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 flex items-center justify-between gap-3">
+                <div className="space-y-0.5 min-w-0">
+                  <span className="text-xs font-bold text-foreground block truncate">Negociação & Troca</span>
+                  <p className="text-xs text-muted-foreground truncate">
+                    {attrs.accepts_trade ? "Aceita veículo na troca como parte do pagamento." : "Propostas comerciais e financiamento sob consulta."}
+                  </p>
                 </div>
-
-                {Array.isArray(attrs.features) && attrs.features.length > 0 && (
-                  <div className="rounded-lg border border-border/50 bg-card p-3 space-y-2">
-                    <span className="text-xs uppercase font-bold text-muted-foreground tracking-wider block">
-                      Opcionais & Equipamentos
-                    </span>
-                    <div className="flex flex-wrap gap-2">
-                      {attrs.features.map((feat: string, idx: number) => (
-                        <span
-                          key={idx}
-                          className="inline-flex items-center gap-2 px-3 py-1 rounded-lg text-xs font-semibold bg-muted/60 text-foreground border border-border/50"
-                        >
-                          <Check className="size-3 text-primary shrink-0" />
-                          <span>{feat}</span>
-                        </span>
-                      ))}
-                    </div>
-                  </div>
+                {onOpenProposalModal && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={onOpenProposalModal}
+                    className="h-11 min-h-11 px-3 text-xs font-bold rounded-lg border-primary/40 text-primary hover:bg-primary/10 shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  >
+                    Enviar Proposta
+                  </Button>
                 )}
               </div>
             )}
 
             {templateStyle === "imobiliario" && (
-              <div className="space-y-3">
-                <div className="rounded-lg border border-border/60 bg-muted/20 p-3 grid grid-cols-2 gap-2 text-xs">
-                  <div>
-                    <span className="text-xs uppercase font-semibold text-muted-foreground block">Área Útil</span>
-                    <span className="font-bold text-foreground">{attrs.area_sqm ? `${attrs.area_sqm} m²` : "Consulte"}</span>
-                  </div>
-                  <div>
-                    <span className="text-xs uppercase font-semibold text-muted-foreground block">Quartos</span>
-                    <span className="font-bold text-foreground">{attrs.bedrooms || 0} qtos {attrs.suites ? `(${attrs.suites} suítes)` : ""}</span>
-                  </div>
-                  <div>
-                    <span className="text-xs uppercase font-semibold text-muted-foreground block">Vagas</span>
-                    <span className="font-bold text-foreground">{attrs.parking_spots || 0} vagas</span>
-                  </div>
-                  <div>
-                    <span className="text-xs uppercase font-semibold text-muted-foreground block">Condomínio</span>
-                    <span className="font-bold text-foreground">{attrs.condo_cents ? formatMoney(attrs.condo_cents) : "Isento"}</span>
-                  </div>
+              <div className="rounded-lg border border-border/60 bg-muted/20 p-4 flex items-center justify-between gap-3">
+                <div className="space-y-0.5 min-w-0">
+                  <span className="text-xs font-bold text-foreground block truncate">Agendar Visita</span>
+                  <p className="text-xs text-muted-foreground truncate">Conheça o imóvel presencialmente com o anunciante.</p>
                 </div>
-
-                {Array.isArray(attrs.amenities) && attrs.amenities.length > 0 && (
-                  <div className="rounded-lg border border-border/50 bg-card p-3 space-y-2">
-                    <span className="text-xs uppercase font-bold text-muted-foreground tracking-wider block">
-                      Comodidades do Imóvel & Condomínio
-                    </span>
-                    <div className="flex flex-wrap gap-2">
-                      {attrs.amenities.map((amenity: string, idx: number) => (
-                        <span
-                          key={idx}
-                          className="inline-flex items-center gap-2 px-3 py-1 rounded-lg text-xs font-semibold bg-muted/60 text-foreground border border-border/50"
-                        >
-                          <Check className="size-3 text-primary shrink-0" />
-                          <span>{amenity}</span>
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleStartNativeChat("Olá, gostaria de agendar uma visita para este imóvel.")}
+                  className="h-11 min-h-11 px-3 text-xs font-bold rounded-lg border-primary/40 text-primary hover:bg-primary/10 shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                >
+                  Agendar
+                </Button>
               </div>
             )}
 
-            {isTravelOrHospitality ? (
+            {isTravelOrHospitality && (
               <div className="space-y-4">
                 {/* ── CARD 1: Destino & Localização ── */}
                 <div className="rounded-lg border border-border/60 bg-card p-4 space-y-3">
@@ -865,12 +821,14 @@ export function ClassifiedDetailMobile({
                   </div>
                 </div>
               </div>
-            ) : (
-              /* Especificações Técnicas para Demais Categorias */
-              <div className="space-y-3">
+            )}
+
+            {/* Ficha Técnica & Especificações Canônicas em Cards Grandes Squircles */}
+            {featureList.length > 0 && (
+              <div className="space-y-4">
                 <NicheSpecificationsDisplay
                   items={featureList}
-                  title="Especificações"
+                  title={isTravelOrHospitality ? "Destaques & Especificações do Pacote" : "Ficha Técnica & Especificações"}
                 />
               </div>
             )}

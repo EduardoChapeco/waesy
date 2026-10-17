@@ -1368,6 +1368,33 @@ function SpecializedClassifiedEditor({
   const [travelDates, setTravelDates] = useState(
     initialData?.attributes?.dates_text || ""
   );
+  const [travelVisibilityMode, setTravelVisibilityMode] = useState<"public" | "unlisted" | "private">(
+    (initialData?.attributes?.visibility_mode as "public" | "unlisted" | "private") || "public"
+  );
+  const [travelIsCustomQuote, setTravelIsCustomQuote] = useState<boolean>(
+    Boolean(initialData?.attributes?.is_custom_quote)
+  );
+  const [travelAdultsCount, setTravelAdultsCount] = useState<number>(
+    Number(initialData?.attributes?.passenger_composition?.adults ?? 2)
+  );
+  const [travelChildrenCount, setTravelChildrenCount] = useState<number>(
+    Number(initialData?.attributes?.passenger_composition?.children ?? 0)
+  );
+  const [travelChildrenMaxAge, setTravelChildrenMaxAge] = useState<number>(
+    Number(initialData?.attributes?.passenger_composition?.children_max_age ?? 12)
+  );
+  const [travelBaggagePersonalItem, setTravelBaggagePersonalItem] = useState<boolean>(
+    initialData?.attributes?.flight_details?.baggage?.personal_item ?? true
+  );
+  const [travelBaggageCarryOn, setTravelBaggageCarryOn] = useState<boolean>(
+    initialData?.attributes?.flight_details?.baggage?.carry_on ?? true
+  );
+  const [travelBaggageChecked, setTravelBaggageChecked] = useState<number>(
+    Number(initialData?.attributes?.flight_details?.baggage?.checked_bags ?? 0)
+  );
+  const [travelConnectionCity, setTravelConnectionCity] = useState<string>(
+    initialData?.attributes?.flight_details?.connection_city || ""
+  );
 
   // ── Novos campos de viagem: Destino e Aeroportos ──
   const [travelDestinationCity, setTravelDestinationCity] = useState(
@@ -2563,21 +2590,24 @@ function SpecializedClassifiedEditor({
           activate_sdr_ai: civilInquiryActivateSdr,
           questions: civilInquiryQuestions,
         },
-        volume: convenienceVolume || undefined,
-        temperature: convenienceTemp,
-        is_alcoholic: isAlcoholic,
-        brand: convenienceBrand || undefined,
-        delivery_estimate: deliveryEstimateText,
-        ready_delivery: readyDelivery,
         story_highlights: travelStoryHighlights,
         itinerary_days: travelItineraryDays,
         bio_bullets: travelBioBullets.map((b) => b.trim()).filter(Boolean),
       };
 
+      if (niche.id === "mercado" || niche.id === "gastronomia" || templateStyle === "conveniencia") {
+        attributes.volume = convenienceVolume || undefined;
+        attributes.temperature = convenienceTemp;
+        attributes.is_alcoholic = isAlcoholic;
+        attributes.brand = convenienceBrand || undefined;
+        attributes.delivery_estimate = deliveryEstimateText;
+        attributes.ready_delivery = readyDelivery;
+      }
+
       if (niche.id === "viagem") {
         attributes.duration_text = travelDuration;
         attributes.meal_plan = travelMealPlan;
-        attributes.guests_text = travelGuests;
+        attributes.guests_text = travelGuests || `${travelAdultsCount} Adulto${travelAdultsCount > 1 ? "s" : ""}${travelChildrenCount > 0 ? ` + ${travelChildrenCount} Criança${travelChildrenCount > 1 ? "s" : ""} (até ${travelChildrenMaxAge} anos)` : ""}`;
         attributes.dates_text = travelDates;
         attributes.destination_city = travelDestinationCity;
         attributes.departure_date = travelDepartureDate;
@@ -2585,6 +2615,13 @@ function SpecializedClassifiedEditor({
         attributes.max_installments = maxInstallments;
         attributes.bio_bullets = travelBioBullets.map((b) => b.trim()).filter(Boolean);
         attributes.departure_options = travelDepartureOptions;
+        attributes.visibility_mode = travelVisibilityMode;
+        attributes.is_custom_quote = travelIsCustomQuote;
+        attributes.passenger_composition = {
+          adults: Math.max(1, Number(travelAdultsCount) || 1),
+          children: Math.max(0, Number(travelChildrenCount) || 0),
+          children_max_age: Math.max(1, Number(travelChildrenMaxAge) || 12),
+        };
         attributes.flight_details = {
           transport_type: travelTransportType,
           // Aéreo
@@ -2592,10 +2629,16 @@ function SpecializedClassifiedEditor({
           arrival_iata: travelArrivalIATA,
           airline: travelAirline,
           connections: travelConnections,
+          connection_city: travelConnectionCity || undefined,
           departure_time: travelDepartureTime,
           arrival_time: travelArrivalTime,
           price_text: travelFlightPrice,
           duration_text: travelFlightDuration,
+          baggage: {
+            personal_item: travelBaggagePersonalItem,
+            carry_on: travelBaggageCarryOn,
+            checked_bags: Math.max(0, Number(travelBaggageChecked) || 0),
+          },
           // Terrestre / Excursão
           bus_category: travelBusCategory,
           bus_company: travelBusCompany,
@@ -4355,6 +4398,83 @@ function SpecializedClassifiedEditor({
                   </div>
                 </div>
 
+                {/* 2.0 — Modo de Visibilidade & Orçamento Privado (Link Direto) */}
+                <div className="rounded-lg border border-border/50 bg-muted/20 p-4 space-y-3">
+                  <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                    Visibilidade & Formato Comercial
+                  </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <Label className="text-xs text-foreground font-medium">Modo de Exibição</Label>
+                      <Select
+                        value={travelVisibilityMode}
+                        onValueChange={(v) => setTravelVisibilityMode(v as "public" | "unlisted" | "private")}
+                      >
+                        <SelectTrigger className="h-11 rounded-lg text-xs bg-background font-medium">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="public">Público na Vitrine & Catálogo</SelectItem>
+                          <SelectItem value="unlisted">Não Listado (Apenas Link Direto p/ Cliente)</SelectItem>
+                          <SelectItem value="private">Rascunho Interno Privado</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs text-foreground font-medium">Tipo de Oferta</Label>
+                      <Select
+                        value={travelIsCustomQuote ? "custom_quote" : "standard_package"}
+                        onValueChange={(v) => setTravelIsCustomQuote(v === "custom_quote")}
+                      >
+                        <SelectTrigger className="h-11 rounded-lg text-xs bg-background font-medium">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="standard_package">Pacote de Vitrine (CTA: Garantir Reserva)</SelectItem>
+                          <SelectItem value="custom_quote">Orçamento Sob Medida (CTA: Aceitar Orçamento)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  {/* Composição Exata de Passageiros */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-border/40">
+                    <div className="space-y-1">
+                      <Label className="text-xs text-foreground font-medium">Qtd. Adultos no Pacote</Label>
+                      <Input
+                        type="number"
+                        min={1}
+                        max={20}
+                        value={travelAdultsCount}
+                        onChange={(e) => setTravelAdultsCount(Math.max(1, Number(e.target.value) || 1))}
+                        className="h-11 rounded-lg text-xs bg-background font-mono"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs text-foreground font-medium">Qtd. Crianças no Pacote</Label>
+                      <Input
+                        type="number"
+                        min={0}
+                        max={10}
+                        value={travelChildrenCount}
+                        onChange={(e) => setTravelChildrenCount(Math.max(0, Number(e.target.value) || 0))}
+                        className="h-11 rounded-lg text-xs bg-background font-mono"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs text-foreground font-medium">Idade Máx. Criança (Anos)</Label>
+                      <Input
+                        type="number"
+                        min={1}
+                        max={17}
+                        value={travelChildrenMaxAge}
+                        onChange={(e) => setTravelChildrenMaxAge(Math.max(1, Number(e.target.value) || 12))}
+                        className="h-11 rounded-lg text-xs bg-background font-mono"
+                      />
+                    </div>
+                  </div>
+                </div>
+
                 {/* 2.1 — Resumo Rápido: Duração, Regime, Hóspedes */}
                 <div className="space-y-2">
                   <p className="text-xs text-muted-foreground/75 font-bold uppercase tracking-wider text-muted-foreground">Resumo do Pacote</p>
@@ -4384,11 +4504,11 @@ function SpecializedClassifiedEditor({
                       </Select>
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-xs text-foreground font-medium">Hóspedes Indicados</Label>
+                      <Label className="text-xs text-foreground font-medium">Hóspedes Indicados (Rótulo)</Label>
                       <Input
                         value={travelGuests}
                         onChange={(e) => setTravelGuests(e.target.value)}
-                        placeholder="Ex: 2 Adultos"
+                        placeholder="Ex: 2 Adultos + 1 Criança"
                         className="h-11 rounded-lg text-xs bg-background font-medium"
                       />
                     </div>
@@ -4535,6 +4655,17 @@ function SpecializedClassifiedEditor({
                             </SelectContent>
                           </Select>
                         </div>
+                        {travelConnections > 0 && (
+                          <div className="sm:col-span-2 space-y-2">
+                            <Label className="text-xs font-medium">Aeroporto / Cidade de Conexão</Label>
+                            <Input
+                              value={travelConnectionCity}
+                              onChange={(e) => setTravelConnectionCity(e.target.value)}
+                              placeholder="Ex: Aeroporto Internacional de Guarulhos (GRU)"
+                              className="h-11 rounded-lg text-xs bg-background"
+                            />
+                          </div>
+                        )}
                         <div className="space-y-2">
                           <Label className="text-xs font-medium">Horário Embarque</Label>
                           <Input type="time" value={travelDepartureTime} onChange={(e) => setTravelDepartureTime(e.target.value)} className="h-11 rounded-lg text-xs bg-background font-mono" />
@@ -4550,6 +4681,50 @@ function SpecializedClassifiedEditor({
                         <div className="space-y-2">
                           <Label className="text-xs font-medium">Duração do Voo</Label>
                           <Input value={travelFlightDuration} onChange={(e) => setTravelFlightDuration(e.target.value)} placeholder="Ex: 2h 15min" className="h-11 rounded-lg text-xs bg-background" />
+                        </div>
+                      </div>
+
+                      {/* Franquia de Bagagem */}
+                      <div className="pt-3 border-t border-border/40 space-y-2">
+                        <Label className="text-xs font-semibold text-foreground">Franquia de Bagagem Inclusa</Label>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setTravelBaggagePersonalItem((p) => !p)}
+                            className={cn(
+                              "h-11 px-3 rounded-lg border text-xs font-semibold flex items-center justify-between cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                              travelBaggagePersonalItem
+                                ? "bg-primary/10 border-primary/40 text-primary"
+                                : "bg-background border-border/50 text-muted-foreground"
+                            )}
+                          >
+                            <span>Item Pessoal (10kg)</span>
+                            <span>{travelBaggagePersonalItem ? "Incluso" : "Não"}</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setTravelBaggageCarryOn((p) => !p)}
+                            className={cn(
+                              "h-11 px-3 rounded-lg border text-xs font-semibold flex items-center justify-between cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                              travelBaggageCarryOn
+                                ? "bg-primary/10 border-primary/40 text-primary"
+                                : "bg-background border-border/50 text-muted-foreground"
+                            )}
+                          >
+                            <span>Bagagem de Mão (10kg)</span>
+                            <span>{travelBaggageCarryOn ? "Inclusa" : "Não"}</span>
+                          </button>
+                          <div className="flex items-center gap-2">
+                            <Label className="text-xs font-medium shrink-0">Despachada (23kg):</Label>
+                            <Input
+                              type="number"
+                              min={0}
+                              max={5}
+                              value={travelBaggageChecked}
+                              onChange={(e) => setTravelBaggageChecked(Math.max(0, Number(e.target.value) || 0))}
+                              className="h-11 rounded-lg text-xs bg-background font-mono"
+                            />
+                          </div>
                         </div>
                       </div>
                     </div>

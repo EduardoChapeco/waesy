@@ -11,6 +11,21 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Heart, MessageSquare, Share2, Bookmark, ChevronLeft, ShoppingBag, Calendar, MapPin, ExternalLink, Send, Star } from "lucide-react";
 import { toast } from "sonner";
+import { RichPostContent } from "@/components/community/rich-post-content";
+
+function isVideoUrl(url?: string | null): boolean {
+  if (!url) return false;
+  const clean = url.split("?")[0].toLowerCase();
+  return (
+    clean.endsWith(".mp4") ||
+    clean.endsWith(".webm") ||
+    clean.endsWith(".mov") ||
+    clean.endsWith(".quicktime") ||
+    clean.endsWith(".m4v") ||
+    clean.endsWith(".ogg") ||
+    clean.includes("video")
+  );
+}
 
 export const Route = createFileRoute("/_store/publicacao/$id")({
   head: ({ loaderData }) => {
@@ -216,39 +231,59 @@ function PostThreadPage() {
 
         {/* Texto da Publicação */}
         {bodyText && (
-          <div className="text-sm sm:text-base leading-relaxed text-foreground whitespace-pre-line">
-            {bodyText}
+          <div className="text-sm sm:text-base leading-relaxed text-foreground">
+            <RichPostContent content={bodyText} isExpanded />
           </div>
         )}
 
         {/* Galeria de Mídias (Galeria Deslizante 3:4 quando > 1 ou Destaque Único) */}
-        {post.media_urls && post.media_urls.length > 1 ? (
+        {post.media_urls && post.media_urls.filter(Boolean).length > 1 ? (
           <div className="carousel flex gap-2 overflow-x-auto snap-x mandatory no-scrollbar pb-1">
-            {post.media_urls.map((url: string, idx: number) => (
+            {post.media_urls.filter(Boolean).map((url: string, idx: number, arr: string[]) => (
               <div
                 key={idx}
                 className="relative shrink-0 snap-start w-56 sm:w-64 aspect-post-portrait rounded-lg overflow-hidden border border-border/50 bg-muted"
               >
-                <img
-                  src={url}
-                  alt={`Mídia ${idx + 1}`}
-                  className="size-full object-cover"
-                  loading="lazy"
-                />
-                <span className="absolute bottom-2 right-2 px-2 py-1 rounded-full bg-foreground/80 text-background text-xs font-medium">
-                  {idx + 1}/{post.media_urls.length}
+                {isVideoUrl(url) ? (
+                  <video
+                    src={url}
+                    controls
+                    playsInline
+                    preload="metadata"
+                    className="size-full object-cover bg-neutral-950"
+                  />
+                ) : (
+                  <img
+                    src={url}
+                    alt={`Mídia ${idx + 1}`}
+                    className="size-full object-cover"
+                    loading="lazy"
+                  />
+                )}
+                <span className="absolute bottom-2 right-2 px-2 py-1 rounded-full bg-foreground/80 text-background text-xs font-medium pointer-events-none">
+                  {idx + 1}/{arr.length}
                 </span>
               </div>
             ))}
           </div>
-        ) : post.media_urls && post.media_urls.length === 1 ? (
+        ) : post.media_urls && post.media_urls.filter(Boolean).length === 1 ? (
           <div className="rounded-lg overflow-hidden border border-border/60 bg-muted aspect-post-card">
-            <img
-              src={post.media_urls[0]}
-              alt="Mídia da publicação"
-              className="size-full object-cover"
-              loading="lazy"
-            />
+            {isVideoUrl(post.media_urls.filter(Boolean)[0]) ? (
+              <video
+                src={post.media_urls.filter(Boolean)[0]}
+                controls
+                playsInline
+                preload="metadata"
+                className="size-full object-cover bg-neutral-950"
+              />
+            ) : (
+              <img
+                src={post.media_urls.filter(Boolean)[0]}
+                alt="Mídia da publicação"
+                className="size-full object-cover"
+                loading="lazy"
+              />
+            )}
           </div>
         ) : null}
 

@@ -197,6 +197,7 @@ import { Route as StoreMembroIdRouteImport } from './routes/_store.membro.$id'
 import { Route as StoreMotoristaSlugRouteImport } from './routes/_store.motorista.$slug'
 import { Route as StoreNoticiasIndexRouteImport } from './routes/_store.noticias.index'
 import { Route as StoreNoticiasSlugRouteImport } from './routes/_store.noticias.$slug'
+import { Route as StoreOrcamentosBundleSlugRouteImport } from './routes/_store.orcamentos.$bundleSlug'
 import { Route as StorePaginasSlugRouteImport } from './routes/_store.paginas.$slug'
 import { Route as StorePatrocinadorTokenRouteImport } from './routes/_store.patrocinador.$token'
 import { Route as StorePlacesIndexRouteImport } from './routes/_store.places.index'
@@ -1360,6 +1361,12 @@ const StoreNoticiasSlugRoute = StoreNoticiasSlugRouteImport.update({
   path: '/noticias/$slug',
   getParentRoute: () => StoreRoute,
 } as any)
+const StoreOrcamentosBundleSlugRoute =
+  StoreOrcamentosBundleSlugRouteImport.update({
+    id: '/orcamentos/$bundleSlug',
+    path: '/orcamentos/$bundleSlug',
+    getParentRoute: () => StoreRoute,
+  } as any)
 const StorePaginasSlugRoute = StorePaginasSlugRouteImport.update({
   id: '/paginas/$slug',
   path: '/paginas/$slug',
@@ -2750,6 +2757,7 @@ export interface FileRoutesByFullPath {
   '/membro/$id': typeof StoreMembroIdRoute
   '/motorista/$slug': typeof StoreMotoristaSlugRoute
   '/noticias/$slug': typeof StoreNoticiasSlugRoute
+  '/orcamentos/$bundleSlug': typeof StoreOrcamentosBundleSlugRoute
   '/paginas/$slug': typeof StorePaginasSlugRoute
   '/patrocinador/$token': typeof StorePatrocinadorTokenRoute
   '/places/$placeSlug': typeof StorePlacesPlaceSlugRoute
@@ -3148,6 +3156,7 @@ export interface FileRoutesByTo {
   '/membro/$id': typeof StoreMembroIdRoute
   '/motorista/$slug': typeof StoreMotoristaSlugRoute
   '/noticias/$slug': typeof StoreNoticiasSlugRoute
+  '/orcamentos/$bundleSlug': typeof StoreOrcamentosBundleSlugRoute
   '/paginas/$slug': typeof StorePaginasSlugRoute
   '/patrocinador/$token': typeof StorePatrocinadorTokenRoute
   '/places/$placeSlug': typeof StorePlacesPlaceSlugRoute
@@ -3555,6 +3564,7 @@ export interface FileRoutesById {
   '/_store/membro/$id': typeof StoreMembroIdRoute
   '/_store/motorista/$slug': typeof StoreMotoristaSlugRoute
   '/_store/noticias/$slug': typeof StoreNoticiasSlugRoute
+  '/_store/orcamentos/$bundleSlug': typeof StoreOrcamentosBundleSlugRoute
   '/_store/paginas/$slug': typeof StorePaginasSlugRoute
   '/_store/patrocinador/$token': typeof StorePatrocinadorTokenRoute
   '/_store/places/$placeSlug': typeof StorePlacesPlaceSlugRoute
@@ -3963,6 +3973,7 @@ export interface FileRouteTypes {
     | '/membro/$id'
     | '/motorista/$slug'
     | '/noticias/$slug'
+    | '/orcamentos/$bundleSlug'
     | '/paginas/$slug'
     | '/patrocinador/$token'
     | '/places/$placeSlug'
@@ -4361,6 +4372,7 @@ export interface FileRouteTypes {
     | '/membro/$id'
     | '/motorista/$slug'
     | '/noticias/$slug'
+    | '/orcamentos/$bundleSlug'
     | '/paginas/$slug'
     | '/patrocinador/$token'
     | '/places/$placeSlug'
@@ -4767,6 +4779,7 @@ export interface FileRouteTypes {
     | '/_store/membro/$id'
     | '/_store/motorista/$slug'
     | '/_store/noticias/$slug'
+    | '/_store/orcamentos/$bundleSlug'
     | '/_store/paginas/$slug'
     | '/_store/patrocinador/$token'
     | '/_store/places/$placeSlug'
@@ -6357,6 +6370,13 @@ declare module '@tanstack/react-router' {
       path: '/noticias/$slug'
       fullPath: '/noticias/$slug'
       preLoaderRoute: typeof StoreNoticiasSlugRouteImport
+      parentRoute: typeof StoreRoute
+    }
+    '/_store/orcamentos/$bundleSlug': {
+      id: '/_store/orcamentos/$bundleSlug'
+      path: '/orcamentos/$bundleSlug'
+      fullPath: '/orcamentos/$bundleSlug'
+      preLoaderRoute: typeof StoreOrcamentosBundleSlugRouteImport
       parentRoute: typeof StoreRoute
     }
     '/_store/paginas/$slug': {
@@ -8127,6 +8147,7 @@ interface StoreRouteChildren {
   StoreMembroIdRoute: typeof StoreMembroIdRoute
   StoreMotoristaSlugRoute: typeof StoreMotoristaSlugRoute
   StoreNoticiasSlugRoute: typeof StoreNoticiasSlugRoute
+  StoreOrcamentosBundleSlugRoute: typeof StoreOrcamentosBundleSlugRoute
   StorePaginasSlugRoute: typeof StorePaginasSlugRoute
   StorePatrocinadorTokenRoute: typeof StorePatrocinadorTokenRoute
   StorePlacesPlaceSlugRoute: typeof StorePlacesPlaceSlugRoute
@@ -8221,6 +8242,7 @@ const StoreRouteChildren: StoreRouteChildren = {
   StoreMembroIdRoute: StoreMembroIdRoute,
   StoreMotoristaSlugRoute: StoreMotoristaSlugRoute,
   StoreNoticiasSlugRoute: StoreNoticiasSlugRoute,
+  StoreOrcamentosBundleSlugRoute: StoreOrcamentosBundleSlugRoute,
   StorePaginasSlugRoute: StorePaginasSlugRoute,
   StorePatrocinadorTokenRoute: StorePatrocinadorTokenRoute,
   StorePlacesPlaceSlugRoute: StorePlacesPlaceSlugRoute,

@@ -1,36 +1,36 @@
 {
   "version": "2.0.0",
-  "timestamp": "2026-10-16T22:15:04.575Z",
-  "inspectedFiles": 2108,
-  "totalViolations": 12667,
+  "timestamp": "2026-10-16T23:52:11.827Z",
+  "inspectedFiles": 2113,
+  "totalViolations": 12658,
   "summary": {
-    "totalViolations": 12667,
+    "totalViolations": 12658,
     "bySeverity": {
-      "P0": 1457,
-      "P1": 8562,
-      "P2": 1341,
-      "P3": 1307
+      "P0": 1456,
+      "P1": 8563,
+      "P2": 1337,
+      "P3": 1302
     },
     "byRule": {
-      "DL-18": 1166,
-      "DL-02": 3622,
+      "DL-18": 1167,
+      "DL-02": 3617,
       "DL-14": 2131,
-      "DL-28": 290,
-      "DL-15": 1454,
-      "DL-07": 506,
-      "DL-27": 1053,
-      "DL-30": 254,
+      "DL-28": 288,
+      "DL-15": 1453,
+      "DL-07": 505,
+      "DL-27": 1051,
+      "DL-30": 251,
       "DL-26": 85,
       "DL-01": 939,
-      "DL-29": 121,
+      "DL-29": 118,
       "DL-05": 135,
       "DL-23": 421,
-      "DL-03": 215,
+      "DL-03": 223,
       "DL-09": 76,
       "DL-08": 104,
       "DL-24": 2,
       "DL-11": 21,
-      "DL-12": 32,
+      "DL-12": 31,
       "DL-13": 11,
       "DL-25": 23,
       "DL-06": 3,
@@ -38,11 +38,11 @@
     },
     "byModule": {
       "components/app": {
-        "total": 5518,
-        "P0": 579,
-        "P1": 3721,
-        "P2": 675,
-        "P3": 543
+        "total": 5511,
+        "P0": 578,
+        "P1": 3724,
+        "P2": 671,
+        "P3": 538
       },
       "components/builder": {
         "total": 135,
@@ -108,9 +108,9 @@
         "P3": 9
       },
       "routes/workspace": {
-        "total": 2251,
+        "total": 2249,
         "P0": 453,
-        "P1": 1398,
+        "P1": 1396,
         "P2": 124,
         "P3": 276
       },
@@ -143,8 +143,8 @@
         "P3": 0
       }
     },
-    "filesWithViolations": 885,
-    "filesCount": 2108
+    "filesWithViolations": 884,
+    "filesCount": 2113
   },
   "config": {
     "$schema": "https://json-schema.org/draft/2020-12/schema",

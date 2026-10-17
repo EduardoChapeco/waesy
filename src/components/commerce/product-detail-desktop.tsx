@@ -9,6 +9,7 @@ import { PriceDisplay } from "@/components/commerce/price-display";
 import { FavoriteButton } from "@/components/common/favorite-button";
 import { ProductQuickOrderDialog } from "./product-quick-order-dialog";
 import { NicheSpecificationsDisplay } from "@/components/common/niche-specifications-display";
+import { resolveClassifiedDetailedSpecs } from "@/lib/classifieds/canonical-specs-resolver";
 import { cn } from "@/lib/utils";
 import type { ProductMediaDTO, VariantDTO } from "@/types/catalog";
 import type { ProductDetailViewProps } from "./product-detail-mobile";
@@ -166,6 +167,7 @@ export function ProductDetailDesktop({
           {product.attributes && (
             <div className="pt-4 border-t border-border/50">
               <NicheSpecificationsDisplay
+                items={resolveClassifiedDetailedSpecs(product)}
                 attributes={product.attributes}
                 title="Especificações"
               />

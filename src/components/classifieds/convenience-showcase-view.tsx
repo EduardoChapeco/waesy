@@ -1136,42 +1136,46 @@ export function ConvenienceShowcaseView({
             {/* ─────────────────────────────────────────────────────────────
                 SEÇÃO: ESPECIFICAÇÕES TÉCNICAS E TABELA DE ATRIBUTOS
                ───────────────────────────────────────────────────────────── */}
-            <div className="mx-4 sm:mx-0 p-4 sm:p-6 rounded-lg bg-card border border-border/60 space-y-4">
-              <h2 className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-2">
-                <CheckCircle2 className="size-4 text-primary" />
-                <span>Especificações e Características</span>
-              </h2>
+            <div className="mx-4 sm:mx-0 p-5 sm:p-6 rounded-lg bg-card border border-border/60 space-y-5 shadow-2xs">
+              <div className="flex items-center justify-between border-b border-border/40 pb-3">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="size-4 text-primary shrink-0" />
+                  <h2 className="text-xs font-bold uppercase tracking-wider text-foreground">
+                    Especificações e Características
+                  </h2>
+                </div>
+              </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {brand && (
-                  <div className="p-3 rounded-lg border border-border/50 bg-muted/20 space-y-1">
-                    <span className="text-xs text-muted-foreground uppercase font-bold tracking-wider">Marca</span>
-                    <p className="font-semibold text-foreground truncate">{brand}</p>
+                  <div className="p-3.5 sm:p-4 rounded-lg border border-border/50 bg-muted/20 space-y-1">
+                    <span className="text-xs text-muted-foreground uppercase font-bold tracking-wider block">Marca</span>
+                    <p className="text-sm font-bold text-foreground truncate">{brand}</p>
                   </div>
                 )}
 
-                <div className="p-3 rounded-lg border border-border/50 bg-muted/20 space-y-1">
-                  <span className="text-xs text-muted-foreground uppercase font-bold tracking-wider">Departamento</span>
-                  <p className="font-semibold text-foreground truncate">{department}</p>
+                <div className="p-3.5 sm:p-4 rounded-lg border border-border/50 bg-muted/20 space-y-1">
+                  <span className="text-xs text-muted-foreground uppercase font-bold tracking-wider block">Departamento</span>
+                  <p className="text-sm font-bold text-foreground truncate">{department}</p>
                 </div>
 
                 {unitSuffix && (
-                  <div className="p-3 rounded-lg border border-border/50 bg-muted/20 space-y-1">
-                    <span className="text-xs text-muted-foreground uppercase font-bold tracking-wider">Conteúdo / Peso</span>
-                    <p className="font-semibold text-foreground truncate font-mono">{unitSuffix}</p>
+                  <div className="p-3.5 sm:p-4 rounded-lg border border-border/50 bg-muted/20 space-y-1">
+                    <span className="text-xs text-muted-foreground uppercase font-bold tracking-wider block">Conteúdo / Peso</span>
+                    <p className="text-sm font-bold text-foreground truncate font-mono">{unitSuffix}</p>
                   </div>
                 )}
 
                 {estimatedWeightPerUnit && (
-                  <div className="p-3 rounded-lg border border-border/50 bg-muted/20 space-y-1">
-                    <span className="text-xs text-muted-foreground uppercase font-bold tracking-wider">Peso Aprox. Peça</span>
-                    <p className="font-semibold text-foreground truncate font-mono">{estimatedWeightPerUnit}</p>
+                  <div className="p-3.5 sm:p-4 rounded-lg border border-border/50 bg-muted/20 space-y-1">
+                    <span className="text-xs text-muted-foreground uppercase font-bold tracking-wider block">Peso Aprox. Peça</span>
+                    <p className="text-sm font-bold text-foreground truncate font-mono">{estimatedWeightPerUnit}</p>
                   </div>
                 )}
 
-                <div className="p-3 rounded-lg border border-border/50 bg-muted/20 space-y-1">
-                  <span className="text-xs text-muted-foreground uppercase font-bold tracking-wider">Conservação</span>
-                  <p className="font-semibold text-foreground capitalize">
+                <div className="p-3.5 sm:p-4 rounded-lg border border-border/50 bg-muted/20 space-y-1">
+                  <span className="text-xs text-muted-foreground uppercase font-bold tracking-wider block">Conservação</span>
+                  <p className="text-sm font-bold text-foreground capitalize">
                     {temperature === "gelada"
                       ? "Gelada / Imediata"
                       : temperature === "resfriado"
@@ -1182,33 +1186,33 @@ export function ConvenienceShowcaseView({
                   </p>
                 </div>
 
-                <div className="p-3 rounded-lg border border-border/50 bg-muted/20 space-y-1">
-                  <span className="text-xs text-muted-foreground uppercase font-bold tracking-wider">Disponibilidade</span>
-                  <p className="font-semibold text-foreground">
+                <div className="p-3.5 sm:p-4 rounded-lg border border-border/50 bg-muted/20 space-y-1">
+                  <span className="text-xs text-muted-foreground uppercase font-bold tracking-wider block">Disponibilidade</span>
+                  <p className="text-sm font-bold text-foreground">
                     {readyDelivery ? "Em estoque para envio" : "Sob encomenda"}
                   </p>
                 </div>
 
                 {barcodeEan && (
-                  <div className="p-3 rounded-lg border border-border/50 bg-muted/20 space-y-1">
-                    <span className="text-xs text-muted-foreground uppercase font-bold tracking-wider">Código EAN</span>
-                    <p className="font-semibold text-foreground font-mono truncate">{barcodeEan}</p>
+                  <div className="p-3.5 sm:p-4 rounded-lg border border-border/50 bg-muted/20 space-y-1">
+                    <span className="text-xs text-muted-foreground uppercase font-bold tracking-wider block">Código EAN</span>
+                    <p className="text-sm font-bold text-foreground font-mono truncate">{barcodeEan}</p>
                   </div>
                 )}
 
                 {containsGluten !== undefined && (
-                  <div className="p-3 rounded-lg border border-border/50 bg-muted/20 space-y-1">
-                    <span className="text-xs text-muted-foreground uppercase font-bold tracking-wider">Glúten</span>
-                    <p className="font-semibold text-foreground">
+                  <div className="p-3.5 sm:p-4 rounded-lg border border-border/50 bg-muted/20 space-y-1">
+                    <span className="text-xs text-muted-foreground uppercase font-bold tracking-wider block">Glúten</span>
+                    <p className="text-sm font-bold text-foreground">
                       {containsGluten ? "Contém Glúten" : "Sem Glúten"}
                     </p>
                   </div>
                 )}
 
                 {containsLactose !== undefined && (
-                  <div className="p-3 rounded-lg border border-border/50 bg-muted/20 space-y-1">
-                    <span className="text-xs text-muted-foreground uppercase font-bold tracking-wider">Lactose</span>
-                    <p className="font-semibold text-foreground">
+                  <div className="p-3.5 sm:p-4 rounded-lg border border-border/50 bg-muted/20 space-y-1">
+                    <span className="text-xs text-muted-foreground uppercase font-bold tracking-wider block">Lactose</span>
+                    <p className="text-sm font-bold text-foreground">
                       {containsLactose ? "Contém Lactose" : "Sem Lactose"}
                     </p>
                   </div>
@@ -1216,9 +1220,9 @@ export function ConvenienceShowcaseView({
               </div>
 
               {ingredients && (
-                <div className="pt-2 border-t border-border/40 space-y-1">
+                <div className="pt-3 border-t border-border/40 space-y-1">
                   <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider block">Ingredientes / Composição:</span>
-                  <p className="text-xs text-foreground/80 leading-relaxed">{ingredients}</p>
+                  <p className="text-xs text-foreground/85 leading-relaxed">{ingredients}</p>
                 </div>
               )}
             </div>
