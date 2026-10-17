@@ -3310,3 +3310,15 @@
 - **Fundamentação Teórica:** AGENTS.md B.1 a B.12, B.22, B.25, B.26, B.33 (Invariante Anti-Fake Estrita) e B.37 (Isolamento Semântico Estrito de Nichos).
 - **Consequências:** Zero rotas concorrentes, 2.049/2.049 testes aprovados em Vitest, `npm run typecheck` com Exit Code 0 em todos os 2.134 arquivos do repositório e `design-lint.mjs --ratchet` aprovado com 0 violações bloqueantes.
 
+## DEC-238: Nativização Mobile & Desktop do Showcase de Conveniência/Produtos (Touch Targets 44px, Zero Emojis e Erradicação de Cores Literais)
+- **Data:** 2026-10-17
+- **ID da Decisão:** DEC-238
+- **Contexto:** Auditoria de acessibilidade e ergonomia tátil no componente de vitrine e catálogo de conveniência/produtos (`src/components/classifieds/convenience-showcase-view.tsx`) detectou alvos de toque móveis com altura inferior ao piso de 44px (`size-8`, `size-9`, `h-6`, `h-7`, `h-8`), ausência de anéis de foco explícitos em botões táteis da barra flutuante inferior e do modal de pedidos, presença de caracteres decorativos proibidos (`✔`) e cores não semânticas (`bg-emerald-600`, `text-rose-600`).
+- **Decisão Adotada:**
+  1. **Elevação Canônica de Alvos de Toque (Piso 44px):** Todos os seletores de quantidade móveis e desktop (`size-11 min-h-11 min-w-11`), botões de ação do anunciante, inputs de identificação (`h-11 min-h-11`) e botões de finalização foram unificados no piso mínimo de 44x44px.
+  2. **Erradicação de Emojis e Cores Literais:** Removido o glifo textual `✔` e substituído pelo componente canônico `<Check className="size-3.5 mr-1" />`. Cores brutas (`emerald-600`, `rose-600`) convertidas em tokens semânticos (`bg-primary`, `text-destructive`, `text-primary-foreground`).
+  3. **Acessibilidade e Navegação Teclado:** Adicionados anéis de foco explícitos (`focus-visible:ring-2 focus-visible:ring-ring`) e rótulos acessíveis (`aria-label`) em 100% dos controles interativos.
+- **Fundamentação Teórica:** AGENTS.md B.4, B.8, B.12, B.22, B.26 (Piso 44px) e WCAG 2.2 AA (Critério 2.5.5 e 2.5.8 Target Size).
+- **Consequências:** Catraca de design lint aprovada com 0 violações P0/P1 novas e redução adicional de 12 violações no débito consolidado (total reduzido em 79 violações na base). Testes unitários 7/7 aprovados.
+
+

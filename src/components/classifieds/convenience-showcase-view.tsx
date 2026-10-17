@@ -572,10 +572,10 @@ export function ConvenienceShowcaseView({
 
         <div className="flex items-center gap-1 shrink-0">
           {advertiserProfileUrl && !isPreview && (
-            <Button asChild variant="ghost" size="sm" className="h-7 px-3 text-xs text-foreground/80 hover:text-foreground gap-1">
+            <Button asChild variant="ghost" size="sm" className="h-11 min-h-11 px-3 text-xs text-foreground/80 hover:text-foreground gap-1 focus-visible:ring-2 focus-visible:ring-ring">
               <Link to={advertiserProfileUrl}>
                 <span>{isCompany ? "Ver Loja" : "Ver Perfil"}</span>
-                <ExternalLink className="size-3" />
+                <ExternalLink className="size-3.5" />
               </Link>
             </Button>
           )}
@@ -593,9 +593,9 @@ export function ConvenienceShowcaseView({
             variant="outline"
             size="sm"
             onClick={handleOpenLinkStoreModal}
-            className="h-6 px-2 text-xs font-semibold text-primary border-primary/30 bg-primary/5 hover:bg-primary/10 gap-1 rounded-lg cursor-pointer"
+            className="h-11 min-h-11 px-3 text-xs font-semibold text-primary border-primary/30 bg-primary/5 hover:bg-primary/10 gap-2 rounded-lg cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
           >
-            <Building2 className="size-3" />
+            <Building2 className="size-3.5" />
             <span>Vincular a Loja</span>
           </Button>
         </div>
@@ -1257,7 +1257,7 @@ export function ConvenienceShowcaseView({
                     size="icon"
                     disabled={quantity <= 1}
                     onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                    className="size-9 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer disabled:opacity-30"
+                    className="size-11 min-h-11 min-w-11 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer disabled:opacity-30 focus-visible:ring-2 focus-visible:ring-ring"
                     aria-label="Diminuir quantidade"
                   >
                     <Minus className="size-4" />
@@ -1270,7 +1270,7 @@ export function ConvenienceShowcaseView({
                     variant="ghost"
                     size="icon"
                     onClick={() => setQuantity((q) => q + 1)}
-                    className="size-9 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
+                    className="size-11 min-h-11 min-w-11 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
                     aria-label="Aumentar quantidade"
                   >
                     <Plus className="size-4" />
@@ -1344,11 +1344,12 @@ export function ConvenienceShowcaseView({
             size="icon"
             disabled={quantity <= 1}
             onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-            className="size-8 rounded-lg text-muted-foreground disabled:opacity-30"
+            className="size-11 min-h-11 min-w-11 rounded-lg text-muted-foreground disabled:opacity-30 focus-visible:ring-2 focus-visible:ring-ring"
+            aria-label="Diminuir quantidade"
           >
-            <Minus className="size-3.5" />
+            <Minus className="size-4" />
           </Button>
-          <span className="w-6 text-center text-xs font-black font-mono">
+          <span className="w-8 text-center text-xs font-black font-mono">
             {quantity}
           </span>
           <Button
@@ -1356,9 +1357,10 @@ export function ConvenienceShowcaseView({
             variant="ghost"
             size="icon"
             onClick={() => setQuantity((q) => q + 1)}
-            className="size-8 rounded-lg text-muted-foreground"
+            className="size-11 min-h-11 min-w-11 rounded-lg text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
+            aria-label="Aumentar quantidade"
           >
-            <Plus className="size-3.5" />
+            <Plus className="size-4" />
           </Button>
         </div>
 
@@ -1373,7 +1375,7 @@ export function ConvenienceShowcaseView({
 
         <Button
           onClick={() => setIsOrderModalOpen(true)}
-          className="h-11 px-4 rounded-lg text-xs font-bold gap-2 bg-emerald-600 text-white hover:bg-emerald-700 cursor-pointer shrink-0"
+          className="h-11 min-h-11 px-5 rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer shrink-0 focus-visible:ring-2 focus-visible:ring-ring"
         >
           <ShoppingBag className="size-4" />
           <span>Pedir Agora</span>
@@ -1439,7 +1441,7 @@ export function ConvenienceShowcaseView({
                   value={customerName}
                   onChange={(e) => setCustomerName(e.target.value)}
                   placeholder="Como podemos te chamar?"
-                  className="h-9 rounded-lg text-xs bg-background"
+                  className="h-11 rounded-lg text-xs bg-background"
                 />
               </div>
               <div className="space-y-1">
@@ -1450,7 +1452,7 @@ export function ConvenienceShowcaseView({
                   value={customerPhone}
                   onChange={(e) => setCustomerPhone(e.target.value)}
                   placeholder="(00) 00000-0000"
-                  className="h-9 rounded-lg text-xs bg-background"
+                  className="h-11 rounded-lg text-xs bg-background"
                 />
               </div>
             </div>
@@ -1500,13 +1502,20 @@ export function ConvenienceShowcaseView({
                     variant={isOrderBumpAdded ? "default" : "outline"}
                     onClick={() => setIsOrderBumpAdded(!isOrderBumpAdded)}
                     className={cn(
-                      "h-8 px-3 rounded-lg text-xs font-bold cursor-pointer shrink-0 transition-all",
+                      "h-11 min-h-11 px-4 rounded-lg text-xs font-bold cursor-pointer shrink-0 transition-all focus-visible:ring-2 focus-visible:ring-ring",
                       isOrderBumpAdded
                         ? "bg-foreground text-background hover:bg-foreground/90"
                         : "border-amber-500/40 text-amber-700 dark:text-amber-300 hover:bg-amber-500/10"
                     )}
                   >
-                    {isOrderBumpAdded ? "✔ Adicionado" : "+ Adicionar"}
+                    {isOrderBumpAdded ? (
+                      <>
+                        <Check className="size-3.5 mr-1" />
+                        <span>Adicionado</span>
+                      </>
+                    ) : (
+                      <span>+ Adicionar</span>
+                    )}
                   </Button>
                 </div>
               </div>
@@ -1790,7 +1799,7 @@ export function ConvenienceShowcaseView({
                 <p className="text-xs text-muted-foreground">
                   Você ainda não possui lojas cadastradas no Workspace.
                 </p>
-                <Button asChild size="sm" variant="outline" className="h-8 text-xs">
+                <Button asChild size="sm" variant="outline" className="h-11 min-h-11 px-4 text-xs font-semibold focus-visible:ring-2 focus-visible:ring-ring">
                   <Link to="/workspace">Criar ou Gerenciar Lojas</Link>
                 </Button>
               </div>
@@ -1833,9 +1842,9 @@ export function ConvenienceShowcaseView({
                           size="sm"
                           disabled={isLinkingStore}
                           onClick={() => handleSelectStoreLink(st.id)}
-                          className="h-7 px-3 text-xs font-bold cursor-pointer"
+                          className="h-11 min-h-11 px-4 text-xs font-bold cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
                         >
-                          {isLinkingStore ? <Loader2 className="size-3 animate-spin" /> : "Vincular"}
+                          {isLinkingStore ? <Loader2 className="size-3.5 animate-spin" /> : "Vincular"}
                         </Button>
                       )}
                     </div>
@@ -1849,7 +1858,7 @@ export function ConvenienceShowcaseView({
                     size="sm"
                     disabled={isLinkingStore}
                     onClick={() => handleSelectStoreLink(null)}
-                    className="w-full h-8 text-xs text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/20 cursor-pointer mt-1"
+                    className="w-full h-11 min-h-11 text-xs font-semibold text-destructive hover:bg-destructive/10 cursor-pointer mt-1 focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     Desvincular loja (tornar anúncio de perfil pessoal)
                   </Button>
