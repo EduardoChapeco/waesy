@@ -420,7 +420,7 @@ export function TravelFlightItineraryCard({
                     {seg.departure_time || "09:50"}
                   </p>
                   <p className="text-xs font-bold text-foreground font-mono">{depMeta.code}</p>
-                  <p className="text-xs text-muted-foreground truncate">{depMeta.city}</p>
+                  <p className="text-xs text-muted-foreground break-words">{depMeta.city}</p>
                 </div>
 
                 {/* Linha Central com Indicador de Paradas e Duração */}
@@ -465,7 +465,7 @@ export function TravelFlightItineraryCard({
                     {seg.arrival_time || "14:15"}
                   </p>
                   <p className="text-xs font-bold text-foreground font-mono">{arrMeta.code}</p>
-                  <p className="text-xs text-muted-foreground truncate">{arrMeta.city}</p>
+                  <p className="text-xs text-muted-foreground break-words">{arrMeta.city}</p>
                 </div>
               </div>
 

@@ -282,8 +282,21 @@ export function EditorialShowcaseView({
   // ── Destaques e Diferenciais ──────────────────────────────────────────────
   const storyHighlights = Array.isArray(attrs.story_highlights) ? attrs.story_highlights : [];
   const bioBullets: string[] = Array.isArray(attrs.bio_bullets) ? attrs.bio_bullets : [];
-  const flightDetails = attrs.flight_details || null;
-  const transportType: string = flightDetails?.transport_type || attrs.transport_type || "";
+  const rawTransportType: string = flightDetails?.transport_type || attrs.transport_type || "";
+  const transportType: string =
+    rawTransportType === "flight" || rawTransportType === "aereo"
+      ? "airplane"
+      : rawTransportType === "terrestre" || rawTransportType === "onibus"
+      ? "bus"
+      : rawTransportType === "cruzeiro"
+      ? "cruise"
+      : rawTransportType === "misto"
+      ? "combo"
+      : rawTransportType === "ferrovia" || rawTransportType === "trem"
+      ? "train"
+      : rawTransportType === "rodoviario"
+      ? "car"
+      : rawTransportType;
   const itineraryDays = Array.isArray(attrs.itinerary_days) && attrs.itinerary_days.length > 0
     ? attrs.itinerary_days
     : Array.isArray(classified?.itinerary_days) && classified.itinerary_days.length > 0
