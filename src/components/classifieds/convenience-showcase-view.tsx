@@ -1564,10 +1564,10 @@ export function ConvenienceShowcaseView({
                 <div className="p-3 rounded-lg bg-muted/20 border border-border/40 text-xs space-y-1">
                   <p className="font-semibold text-foreground flex items-center gap-2">
                     <Clock3 className="size-3.5 text-primary" />
-                    <span>Despacho Sob Demanda via MotoLink</span>
+                    <span>Entrega Expressa no seu Endereço</span>
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    A loja prepara o pedido e aloca o entregador autônomo assim que confirmado ({deliveryEstimate}).
+                    A loja prepara o pedido e envia para entrega assim que confirmado ({deliveryEstimate}).
                   </p>
                 </div>
               )}
