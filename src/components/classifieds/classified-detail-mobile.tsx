@@ -402,7 +402,7 @@ export function ClassifiedDetailMobile({
             <button
               type="button"
               onClick={onOpenCompanion}
-              className="size-11 min-h-11 min-w-11 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/50 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              className="size-11 min-h-11 min-w-11 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/50 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               title="Guia Digital 9:16"
               aria-label="Guia Digital"
             >
@@ -412,7 +412,7 @@ export function ClassifiedDetailMobile({
           <button
             type="button"
             onClick={handleShare}
-            className="size-11 min-h-11 min-w-11 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/50 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            className="size-11 min-h-11 min-w-11 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/50 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             aria-label="Compartilhar anúncio"
           >
             <Share2 className="size-5" />
@@ -603,7 +603,7 @@ export function ClassifiedDetailMobile({
               {/* Localização */}
               <div className="flex items-center gap-1 text-xs text-muted-foreground pt-1">
                 <MapPin className="size-3.5 shrink-0 text-muted-foreground/70" />
-                <span className="truncate">{locationText}</span>
+                <span className="break-words text-wrap">{locationText}</span>
               </div>
             </div>
 
@@ -611,8 +611,8 @@ export function ClassifiedDetailMobile({
             {templateStyle === "automotivo" && (attrs.accepts_trade || attrs.accepts_financing || attrs.negotiable) && (
               <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 flex items-center justify-between gap-3">
                 <div className="space-y-0.5 min-w-0">
-                  <span className="text-xs font-bold text-foreground block truncate">Negociação & Troca</span>
-                  <p className="text-xs text-muted-foreground truncate">
+                  <span className="text-xs font-bold text-foreground block break-words text-wrap">Negociação & Troca</span>
+                  <p className="text-xs text-muted-foreground break-words text-wrap">
                     {attrs.accepts_trade ? "Aceita veículo na troca como parte do pagamento." : "Propostas comerciais e financiamento sob consulta."}
                   </p>
                 </div>
@@ -633,8 +633,8 @@ export function ClassifiedDetailMobile({
             {templateStyle === "imobiliario" && (
               <div className="rounded-lg border border-border/60 bg-muted/20 p-4 flex items-center justify-between gap-3">
                 <div className="space-y-0.5 min-w-0">
-                  <span className="text-xs font-bold text-foreground block truncate">Agendar Visita</span>
-                  <p className="text-xs text-muted-foreground truncate">Conheça o imóvel presencialmente com o anunciante.</p>
+                  <span className="text-xs font-bold text-foreground block break-words text-wrap">Agendar Visita</span>
+                  <p className="text-xs text-muted-foreground break-words text-wrap">Conheça o imóvel presencialmente com o anunciante.</p>
                 </div>
                 <Button
                   type="button"
@@ -679,7 +679,7 @@ export function ClassifiedDetailMobile({
                         <MapPin className="size-5" />
                       </div>
                       <div className="min-w-0 text-xs">
-                        <span className="font-bold text-foreground block truncate">{locationText}</span>
+                        <span className="font-bold text-foreground block break-words text-wrap">{locationText}</span>
                         <span className="text-muted-foreground">Localização turística aproximada</span>
                       </div>
                     </div>
@@ -761,7 +761,7 @@ export function ClassifiedDetailMobile({
                     {travelDetails.hotelAddress && (
                       <div className="col-span-2 pt-1 text-muted-foreground flex items-center gap-2">
                         <MapPin className="size-3 text-primary shrink-0" />
-                        <span className="truncate">{travelDetails.hotelAddress}</span>
+                        <span className="break-words text-wrap">{travelDetails.hotelAddress}</span>
                       </div>
                     )}
                   </div>
@@ -976,7 +976,7 @@ export function ClassifiedDetailMobile({
           <div className="space-y-4 animate-in fade-in duration-150">
             <div className="rounded-lg border border-border/60 bg-card p-4 space-y-4">
               <div className="flex items-center gap-3">
-                <div className="size-12 rounded-full bg-muted flex items-center justify-center font-bold text-muted-foreground text-sm overflow-hidden shrink-0 border border-border/40">
+                <div className="size-12 rounded-lg bg-muted flex items-center justify-center font-bold text-muted-foreground text-sm overflow-hidden shrink-0 border border-border/40">
                   {author?.avatar_url ? (
                     <img src={author.avatar_url} alt="" className="size-full object-cover" />
                   ) : (
@@ -984,7 +984,7 @@ export function ClassifiedDetailMobile({
                   )}
                 </div>
                 <div className="flex flex-col min-w-0">
-                  <span className="text-sm font-bold text-foreground truncate">
+                  <span className="text-sm font-bold text-foreground break-words text-wrap">
                     {classified.store_name || author?.full_name || "Anunciante Waesy"}
                   </span>
                   <div className="flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400">
@@ -1100,7 +1100,7 @@ export function ClassifiedDetailMobile({
               </p>
               <div className="flex items-center gap-2 pt-1 text-foreground font-medium">
                 <MapPin className="size-3.5 text-primary shrink-0" />
-                <span className="truncate">{locationText}</span>
+                <span className="break-words text-wrap">{locationText}</span>
               </div>
             </div>
           </div>
@@ -1180,7 +1180,7 @@ export function ClassifiedDetailMobile({
           <button
             type="button"
             onClick={() => setFullscreenImage(null)}
-            className="absolute top-4 right-4 z-10 size-11 min-h-11 min-w-11 rounded-full bg-muted/80 text-foreground flex items-center justify-center active:scale-95 transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary cursor-pointer"
+            className="absolute top-4 right-4 z-10 size-11 min-h-11 min-w-11 rounded-lg bg-muted/80 text-foreground flex items-center justify-center active:scale-95 transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary cursor-pointer"
             aria-label="Fechar tela cheia"
           >
             <X className="size-6" />

@@ -3,6 +3,7 @@ import { z } from "zod";
 import { getServerClient, getAnonServerClient } from "@/lib/supabase";
 import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
 import { executeUnifiedAiCall } from "./api-orchestrator.functions";
+import { resolveCityNewsCover } from "@/lib/news/city-editorial-images";
 
 export interface NewsSectionDTO {
  type: "paragraph" | "heading" | "quote" | "gallery" | "video";
@@ -159,8 +160,14 @@ export const listPublicArticles = createServerFn({ method: "GET" })
  });
 
  return qualifiedArticles.slice(0, limit).map((a: any) => {
-   const rawCover = a.cover_media_url ? String(a.cover_media_url).trim() : null;
-   const cleanCover = rawCover && !rawCover.includes("images.unsplash.com") ? rawCover : null;
+    const effectiveCover = resolveCityNewsCover({
+      coverUrl: a.cover_media_url,
+      city: a.city,
+      state: a.state,
+      category: a.category,
+      tags: a.tags,
+      title: a.title,
+    });
 
    return {
      id: a.id,
@@ -174,7 +181,7 @@ export const listPublicArticles = createServerFn({ method: "GET" })
      kicker: a.kicker,
      subtitle: a.subtitle,
      content_sections: a.content_sections || [],
-     cover_media_url: cleanCover,
+      cover_media_url: effectiveCover,
      cover_media_type: a.cover_media_type || "image",
      category: a.category,
      tags: a.tags || [],
@@ -253,9 +260,25 @@ export const getArticleDetail = createServerFn({ method: "GET" })
  const linkedEvent = (eventRelRes?.data?.[0] as any)?.events || null;
 
  return {
- article: articleData as any,
+        article: {
+          ...articleData,
+          cover_media_url: resolveCityNewsCover({
+            coverUrl: articleData.cover_media_url,
+            city: (articleData as any).city,
+            category: (articleData as any).category,
+            tags: (articleData as any).tags,
+            title: (articleData as any).title,
+          }),
+        } as any,
  sponsors: (sponsorsRes.data || []) as SponsorDTO[],
- related: (relatedRes.data || []) as NewsArticleDTO[],
+        related: ((relatedRes.data || []) as any[]).map((rel) => ({
+          ...rel,
+          cover_media_url: resolveCityNewsCover({
+            coverUrl: rel.cover_media_url,
+            category: rel.category,
+            title: rel.title,
+          }),
+        })) as NewsArticleDTO[],
  linkedEvent,
  };
  }

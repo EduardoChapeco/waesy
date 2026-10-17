@@ -1444,7 +1444,7 @@ function SpecializedClassifiedEditor({
     initialData?.attributes?.story_highlights || []
   );
   const [travelItineraryDays, setTravelItineraryDays] = useState<ItineraryDay[]>(
-    initialData?.attributes?.itinerary_days || []
+    initialData?.attributes?.itinerary_days || initialData?.attributes?.itinerary || []
   );
 
   const [travelFlightPrice, setTravelFlightPrice] = useState(
@@ -2269,7 +2269,11 @@ function SpecializedClassifiedEditor({
 
       // Viagem
       if (Array.isArray(initialData.attributes.story_highlights)) setTravelStoryHighlights(initialData.attributes.story_highlights);
-      if (Array.isArray(initialData.attributes.itinerary_days)) setTravelItineraryDays(initialData.attributes.itinerary_days);
+      if (Array.isArray(initialData.attributes.itinerary_days)) {
+        setTravelItineraryDays(initialData.attributes.itinerary_days);
+      } else if (Array.isArray(initialData.attributes.itinerary)) {
+        setTravelItineraryDays(initialData.attributes.itinerary);
+      }
       if (initialData.attributes.destination_city) setTravelDestinationCity(initialData.attributes.destination_city);
       if (initialData.attributes.departure_date) setTravelDepartureDate(initialData.attributes.departure_date);
       if (initialData.attributes.return_date) setTravelReturnDate(initialData.attributes.return_date);

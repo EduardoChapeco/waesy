@@ -395,7 +395,7 @@ export function ClassifiedDetailDesktop({
           <span>/</span>
           <span className="text-foreground/80 font-medium">{niche.shortLabel || niche.title}</span>
           <span>/</span>
-          <span className="text-foreground truncate max-w-xs font-semibold">{classified.title}</span>
+          <span className="text-foreground break-words text-wrap font-semibold">{classified.title}</span>
         </div>
 
         {/* Ações Desktop */}
@@ -654,7 +654,7 @@ export function ClassifiedDetailDesktop({
                           <MapPin className="size-5" />
                         </div>
                         <div className="min-w-0 text-xs">
-                          <span className="font-bold text-foreground block truncate">{locationText}</span>
+                          <span className="font-bold text-foreground block break-words text-wrap">{locationText}</span>
                           <span className="text-muted-foreground">Localização turística confirmada da viagem</span>
                         </div>
                       </div>
@@ -736,7 +736,7 @@ export function ClassifiedDetailDesktop({
                       {travelDetails.hotelAddress && (
                         <div className="col-span-2 pt-1 text-muted-foreground flex items-center gap-2">
                           <MapPin className="size-3 text-primary shrink-0" />
-                          <span className="truncate">{travelDetails.hotelAddress}</span>
+                          <span className="break-words text-wrap">{travelDetails.hotelAddress}</span>
                         </div>
                       )}
                     </div>
@@ -1018,7 +1018,7 @@ export function ClassifiedDetailDesktop({
                 <h2 className="text-sm font-bold text-foreground">Sobre o Anunciante</h2>
                 <div className="flex items-center justify-between gap-4">
                   <div className="flex items-center gap-3">
-                    <div className="size-14 rounded-full bg-muted flex items-center justify-center font-bold text-muted-foreground text-lg overflow-hidden border border-border/50 shrink-0">
+                    <div className="size-14 rounded-lg bg-muted flex items-center justify-center font-bold text-muted-foreground text-lg overflow-hidden border border-border/50 shrink-0">
                       {author?.avatar_url ? (
                         <img src={author.avatar_url} alt="" className="size-full object-cover" />
                       ) : (
@@ -1333,7 +1333,7 @@ export function ClassifiedDetailDesktop({
           <button
             type="button"
             onClick={() => setFullscreenImage(null)}
-            className="absolute top-4 right-4 z-10 size-10 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors"
+            className="absolute top-4 right-4 z-10 size-10 rounded-lg bg-muted/80 hover:bg-muted text-foreground flex items-center justify-center transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             aria-label="Fechar tela cheia"
           >
             <X className="size-6" />

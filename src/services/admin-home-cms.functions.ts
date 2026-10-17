@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient, getAnonServerClient } from "@/lib/supabase";
 import { getUserSession } from "@/services/auth.functions";
+import { resolveCityNewsCover } from "@/lib/news/city-editorial-images";
 
 export type HomeLayoutVariant = "carousel" | "bento_grid" | "horizontal_scroll" | "grid_2d" | "native_dock";
 export type HomeAspectRatio = "ifood" | "16:9" | "4:3" | "1:1" | "auto";
@@ -933,9 +934,13 @@ export const getUnifiedShowcasePosts = createServerFn({ method: "GET" })
         }
 
         articlesData.forEach((art: any, idx: number) => {
-          const validMedia = isHealthyImageUrl(art.cover_media_url) ? [art.cover_media_url.trim()] : [];
-          // Invariante Anti-Fake: Notícia sem imagem de capa NÃO deve receber Unsplash como fallback
-          const cover = validMedia[0] || null;
+          const cover = resolveCityNewsCover({
+            coverUrl: art.cover_media_url,
+            city: art.city,
+            category: art.category,
+            title: art.title,
+          });
+          const validMedia = [cover];
           normalizedList.push({
             id: `article-${art.id}`,
             title: art.title,

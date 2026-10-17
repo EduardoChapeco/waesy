@@ -139,11 +139,11 @@ export function ItineraryDayEditor({
               className="w-full flex items-center justify-between px-4 py-3 hover:bg-muted/30 transition-colors"
             >
               <div className="flex items-center gap-3">
-                <div className="size-7 rounded-full bg-foreground text-background flex items-center justify-center text-xs font-black shrink-0">
+                <div className="size-7 rounded-lg bg-foreground text-background flex items-center justify-center text-xs font-black shrink-0">
                   {day.day_number}
                 </div>
                 <div className="text-left">
-                  <p className="text-xs font-bold text-foreground truncate max-w-52">
+                  <p className="text-xs font-bold text-foreground break-words text-wrap">
                     {day.title || `Dia ${day.day_number} — sem título`}
                   </p>
                   <p className="text-[10.5px] text-muted-foreground">
@@ -318,13 +318,13 @@ export function ItineraryDayEditor({
                         {day.activities?.map((act) => (
                           <span
                             key={act}
-                            className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-muted/60 border border-border/40 text-[11px] font-medium text-foreground"
+                            className="inline-flex items-center gap-1 px-3 py-1 rounded-md bg-muted/60 border border-border/40 text-[11px] font-medium text-foreground"
                           >
                             {act}
                             <button
                               type="button"
                               onClick={() => removeActivity(index, act)}
-                              className="size-3.5 rounded-full hover:bg-destructive/20 flex items-center justify-center"
+                              className="size-3.5 rounded-md hover:bg-destructive/20 flex items-center justify-center"
                             >
                               ×
                             </button>
@@ -353,7 +353,7 @@ export function ItineraryDayEditor({
                           <button
                             type="button"
                             onClick={() => removeImage(index, imgIdx)}
-                            className="absolute -top-1.5 -right-1.5 size-5 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center shadow-sm opacity-0 group-hover:opacity-100 transition-opacity"
+                            className="absolute -top-1.5 -right-1.5 size-5 rounded-md bg-destructive text-destructive-foreground flex items-center justify-center shadow-sm opacity-0 group-hover:opacity-100 transition-opacity"
                           >
                             <span className="text-[10px] font-bold">×</span>
                           </button>

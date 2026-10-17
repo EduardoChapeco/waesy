@@ -542,7 +542,7 @@ export function ConvenienceShowcaseView({
     <div className="p-4 rounded-lg border border-border/60 bg-muted/15 space-y-3">
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-3 min-w-0">
-          <div className="size-9 rounded-full bg-background border border-border/60 overflow-hidden shrink-0 flex items-center justify-center">
+          <div className="size-9 rounded-lg bg-background border border-border/60 overflow-hidden shrink-0 flex items-center justify-center">
             {advertiserAvatar ? (
               <img src={advertiserAvatar} alt={advertiserName} className="size-full object-cover" />
             ) : isCompany ? (
@@ -553,7 +553,7 @@ export function ConvenienceShowcaseView({
           </div>
           <div className="min-w-0">
             <div className="flex items-center gap-2 min-w-0">
-              <p className="text-xs font-bold text-foreground truncate">{advertiserName}</p>
+              <p className="text-xs font-bold text-foreground break-words text-wrap">{advertiserName}</p>
               {isCompany ? (
                 <span title="Loja Oficial Verificada" className="inline-flex shrink-0">
                   <CheckCircle2 className="size-3.5 text-blue-500" />
@@ -564,7 +564,7 @@ export function ConvenienceShowcaseView({
                 </span>
               )}
             </div>
-            <p className="text-xs text-muted-foreground truncate">
+            <p className="text-xs text-muted-foreground break-words text-wrap">
               {isCompany ? "Loja Oficial" : "Vendedor Particular"} • {locationName}
             </p>
           </div>
@@ -888,7 +888,7 @@ export function ConvenienceShowcaseView({
                   {isUnlocked ? (
                     <CheckCircle2 className="size-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
                   ) : (
-                    <div className="size-4 rounded-full border border-border/80 shrink-0" />
+                    <div className="size-4 rounded-md border border-border/80 shrink-0" />
                   )}
                   <span>
                     Compre <strong>{tier.min_quantity}+ un</strong>: ganhe <strong>{discountLabel}</strong>
@@ -924,7 +924,7 @@ export function ConvenienceShowcaseView({
     <div className="flex items-center justify-between p-3 rounded-lg bg-muted/20 border border-border/60 text-xs">
       <div className="flex items-center gap-2 text-foreground min-w-0">
         <Truck className="size-4 text-primary shrink-0" />
-        <div className="truncate">
+        <div className="break-words text-wrap">
           <span className="font-semibold">Entrega local</span>
           <span className="text-muted-foreground ml-1">{deliveryFeeCents > 0 ? `a partir de ${formatMoney(deliveryFeeCents)}` : "Grátis / A combinar com a loja"}</span>
           <span className="text-muted-foreground text-xs block">• Estimativa {deliveryEstimate}</span>
@@ -945,7 +945,7 @@ export function ConvenienceShowcaseView({
       <header className="sticky top-0 z-30 bg-background/85 backdrop-blur-md border-b border-border/40 px-3 sm:px-6 h-12 flex items-center justify-between">
         <div className="flex items-center gap-2 min-w-0">
           {!isPreview ? (
-            <Button asChild variant="ghost" size="icon" className="size-11 min-h-11 min-w-11 rounded-full shrink-0 flex items-center justify-center text-foreground hover:bg-muted active:scale-95 transition-colors">
+            <Button asChild variant="ghost" size="icon" className="size-11 min-h-11 min-w-11 rounded-lg shrink-0 flex items-center justify-center text-foreground hover:bg-muted active:scale-95 transition-colors">
               <Link to="/mercado">
                 <ArrowLeft className="size-5" />
                 <span className="sr-only">Voltar ao Mercado</span>
@@ -957,9 +957,9 @@ export function ConvenienceShowcaseView({
               <span>Prévia Mercado</span>
             </div>
           )}
-          <span className="text-xs font-medium text-muted-foreground truncate flex items-center gap-1">
+          <span className="text-xs font-medium text-muted-foreground break-words text-wrap flex items-center gap-1">
             <MapPin className="size-3 text-muted-foreground/80 shrink-0" />
-            <span className="truncate">{locationName}</span>
+            <span className="break-words text-wrap">{locationName}</span>
           </span>
         </div>
 
@@ -970,7 +970,7 @@ export function ConvenienceShowcaseView({
               variant="outline"
               size="sm"
               onClick={onEdit}
-              className="h-11 min-h-11 px-4 rounded-full text-xs font-semibold text-muted-foreground hover:text-foreground gap-2 border-border/60 bg-background/60 hover:bg-muted cursor-pointer active:scale-95 transition-colors"
+              className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold text-muted-foreground hover:text-foreground gap-2 border-border/60 bg-background/60 hover:bg-muted cursor-pointer active:scale-95 transition-colors"
             >
               <Edit3 className="size-4" />
               <span className="hidden sm:inline">Editar</span>
@@ -981,7 +981,7 @@ export function ConvenienceShowcaseView({
             variant="ghost"
             size="icon"
             onClick={handleShare}
-            className="size-11 min-h-11 min-w-11 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground cursor-pointer active:scale-95 transition-colors"
+            className="size-11 min-h-11 min-w-11 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground cursor-pointer active:scale-95 transition-colors"
             title="Compartilhar Produto"
           >
             <Share2 className="size-5" />
@@ -1363,10 +1363,10 @@ export function ConvenienceShowcaseView({
         </div>
 
         <div className="min-w-0 flex-1">
-          <span className="text-xs text-muted-foreground block font-medium truncate">
+          <span className="text-xs text-muted-foreground block font-medium break-words text-wrap">
             Total ({quantity} un)
           </span>
-          <span className="text-sm font-black font-mono text-foreground truncate block">
+          <span className="text-sm font-black font-mono text-foreground whitespace-nowrap shrink-0 block">
             {priceCents > 0 ? formatMoney(subtotalCents) : "Sob Consulta"}
           </span>
         </div>
@@ -1406,7 +1406,7 @@ export function ConvenienceShowcaseView({
                 </div>
               )}
               <div className="min-w-0 flex-1">
-                <p className="text-xs font-bold text-foreground truncate">{title}</p>
+                <p className="text-xs font-bold text-foreground break-words text-wrap">{title}</p>
                 <p className="text-xs text-muted-foreground">
                   {quantity}x de {formatMoney(effectiveUnitPriceCents)} {unitSuffix ? `(${unitSuffix})` : ""}
                   {isFreshPricingActive && (
@@ -1480,7 +1480,7 @@ export function ConvenienceShowcaseView({
                       </div>
                     )}
                     <div className="min-w-0">
-                      <p className="text-xs font-bold text-foreground truncate">{orderBumpOffer.target_title}</p>
+                      <p className="text-xs font-bold text-foreground break-words text-wrap">{orderBumpOffer.target_title}</p>
                       <div className="flex items-center gap-2 text-xs font-mono">
                         {orderBumpOffer.original_price_cents && (
                           <span className="line-through text-muted-foreground text-xs">
@@ -1710,7 +1710,7 @@ export function ConvenienceShowcaseView({
               </div>
               {isOrderBumpAdded && orderBumpOffer && (
                 <div className="flex justify-between text-amber-700 dark:text-amber-400 font-medium">
-                  <span className="truncate">Oferta Relâmpago ({orderBumpOffer.target_title}):</span>
+                  <span className="break-words text-wrap">Oferta Relâmpago ({orderBumpOffer.target_title}):</span>
                   <span className="font-mono font-bold">+{formatMoney(orderBumpOffer.special_price_cents || 0)}</span>
                 </div>
               )}
@@ -1817,8 +1817,8 @@ export function ConvenienceShowcaseView({
                           )}
                         </div>
                         <div className="min-w-0">
-                          <p className="text-xs font-bold text-foreground truncate">{st.name}</p>
-                          <p className="text-xs text-muted-foreground truncate">
+                          <p className="text-xs font-bold text-foreground break-words text-wrap">{st.name}</p>
+                          <p className="text-xs text-muted-foreground break-words text-wrap">
                             {st.city ? `${st.city}${st.state ? ` - ${st.state}` : ""}` : "Loja Waesy"}
                           </p>
                         </div>
