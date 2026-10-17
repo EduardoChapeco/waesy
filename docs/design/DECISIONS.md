@@ -3208,4 +3208,14 @@
   5. **Erradicação de Jargões em Logística:** Exibição comercial amigável de "Entrega no Endereço (Delivery)" e "Retirada no Local (Grátis)".
 - **Fundamentação:** AGENTS.md B.22, B.26, B.39, Apple HIG e WCAG 2.2 AA.
 - **Consequências:** Experiência tátil e fluida de classe mundial nas páginas de detalhes e checkout mobile.
+## DEC-230: Resolução Canônica de Imagens Editoriais por Cidade/Nicho para Notícias e Erradicação de Cards Sem Mídia
 
+- **Data:** 2026-10-17
+- **Contexto:** Notícias jornalísticas publicadas na plataforma e mineradas automaticamente por crawlers/RSS ocasionalmente não continham capa original de mídia ou foram indevidamente sanitizadas para null, quebrando a identidade visual do portal e gerando cartões desprovidos de imagem na Home e na rota de Notícias.
+- **Decisão Adotada:**
+  1. **SSOT de Resolução Editorial Geográfica (`src/lib/news/city-editorial-images.ts`):** Criada biblioteca canônica mapeando cidades de Santa Catarina (São Miguel do Oeste, Chapecó, Florianópolis, Balneário Camboriú, Joinville, Blumenau, Lages, Criciúma, etc.) e categorias temáticas (Agro, Economia, Tecnologia, Saúde, Educação, Segurança, etc.) para fotografias legítimas de alta resolução verificadas (HTTP 200).
+  2. **Garantia de Capa no BFF de Notícias (`news.functions.ts` e `admin-home-cms.functions.ts`):** `listPublicArticles`, `getArticleDetail` e `getUnifiedShowcasePosts` agora aplicam `resolveCityNewsCover` quando `cover_media_url` estiver ausente ou inválida, assegurando que 100% dos cards e detalhes exibam capa de alta fidelidade representativa da localidade da matéria.
+  3. **Auto-Atribuição de Capa no Motor de Mineração (`mining.functions.ts`):** No momento da promoção automática de artigos minerados (`autoPromoteMinedArticle`), caso a fonte não forneça capa, o sistema automaticamente infere e persiste a foto correspondente à cidade ou nicho do artigo.
+  4. **Suíte de Testes Automatizada:** Criado `src/lib/news/city-editorial-images.test.ts` com 8/8 testes cobrindo preservação de capas originais, matching geográfico, título e nicho.
+- **Fundamentação:** AGENTS.md B.20, B.30, B.33, Apple HIG e WCAG 2.2 AA.
+- **Consequências:** Zero notícias sem imagem no feed da Home e no portal `/noticias`, preservando a consistência visual, eliminando CLS e garantindo fotografias autênticas do município ou contexto da notícia.
