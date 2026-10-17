@@ -150,12 +150,16 @@ export function HomeDesktopWebApp({
                 )}
               </div>
             )}
-            {sec.layout_variant === "carousel" ? (
+            {sec.layout_variant === "bento_grid" ? (
+              <BentoGridTetris items={activeSecItems} aspectRatio={sec.aspect_ratio} />
+            ) : sec.layout_variant === "carousel" ? (
               <MetamorphicBannerSlider
                 items={activeSecItems}
                 aspectRatio={sec.aspect_ratio}
                 columnsDesktop={activeSecItems.length >= 2 ? 2 : 1}
               />
+            ) : sec.layout_variant === "horizontal_scroll" ? (
+              <NoorNativeCategoryDock items={activeSecItems} />
             ) : (
               <div className={`grid ${desktopColsClass} gap-4`}>
                 {activeSecItems.map((it) => (

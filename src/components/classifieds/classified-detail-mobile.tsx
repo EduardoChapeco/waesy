@@ -428,7 +428,7 @@ export function ClassifiedDetailMobile({
       </header>
 
       {/* ── 2. HERO DE MÍDIA NATIVO FULL BLEED NO MOBILE ── */}
-      <div className="relative w-full aspect-square sm:aspect-video bg-muted/20 overflow-hidden">
+      <div className="relative w-full aspect-[4/3] sm:aspect-video bg-muted/20 overflow-hidden">
         {images.length > 0 ? (
           <div className="relative size-full overflow-hidden flex items-center justify-center">
             {isVideoUrl(images[activeImage]) ? (
@@ -455,7 +455,7 @@ export function ClassifiedDetailMobile({
                   <img
                     src={images[activeImage]}
                     alt={`${classified.title} - foto ${activeImage + 1}`}
-                    className="size-full object-contain pointer-events-none"
+                    className="size-full object-cover object-center pointer-events-none"
                   />
                 </button>
               </>
@@ -476,16 +476,16 @@ export function ClassifiedDetailMobile({
         )}
       </div>
 
-      {/* ── 2.1 MINIATURAS INICIANDO RENTE À MARGEM ESQUERDA (gap-1) ── */}
+      {/* ── 2.1 MINIATURAS INICIANDO RENTE À MARGEM ESQUERDA (100% visíveis com px-4) ── */}
       {images.length > 1 && (
-        <div className="carousel px-4 py-2 flex gap-1 overflow-x-auto no-scrollbar">
+        <div className="px-4 py-1.5 flex gap-2 overflow-x-auto no-scrollbar w-full">
           {images.map((imgUrl, idx) => (
             <button
               key={idx}
               type="button"
               onClick={() => setActiveImage(idx)}
               className={cn(
-                "size-16 rounded-lg overflow-hidden shrink-0 border cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                "size-14 sm:size-16 rounded-lg overflow-hidden shrink-0 border cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                 activeImage === idx
                   ? "border-primary ring-2 ring-primary/40"
                   : "border-border/60 hover:opacity-80"
@@ -596,7 +596,7 @@ export function ClassifiedDetailMobile({
               </div>
 
               {/* Título do Anúncio */}
-              <h1 className="text-lg sm:text-xl font-bold text-foreground leading-snug pt-1">
+              <h1 className="text-lg sm:text-xl font-black text-foreground leading-snug pt-1 break-words text-wrap w-full">
                 {classified.title}
               </h1>
 
@@ -839,7 +839,7 @@ export function ClassifiedDetailMobile({
                 <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
                   Descrição
                 </h2>
-                <div className="rounded-lg border border-border/50 bg-card p-4 space-y-2 text-xs text-foreground/90 leading-relaxed">
+                <div className="rounded-lg border border-border/50 bg-card p-4 space-y-2 text-sm sm:text-base text-foreground/90 leading-relaxed">
                   <p className={isDescExpanded ? "whitespace-pre-line" : "whitespace-pre-line line-clamp-4"}>
                     {classified.content}
                   </p>

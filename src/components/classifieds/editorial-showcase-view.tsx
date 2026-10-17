@@ -283,9 +283,13 @@ export function EditorialShowcaseView({
   const storyHighlights = Array.isArray(attrs.story_highlights) ? attrs.story_highlights : [];
   const bioBullets: string[] = Array.isArray(attrs.bio_bullets) ? attrs.bio_bullets : [];
   const flightDetails = attrs.flight_details || null;
-  const transportType: string = flightDetails?.transport_type || attrs.transport_type || "";
-  const itineraryDays = Array.isArray(attrs.itinerary_days) ? attrs.itinerary_days : [];
-  const departureOptions: DepartureOption[] = Array.isArray(attrs.departure_options) ? attrs.departure_options : [];
+  const itineraryDays = Array.isArray(attrs.itinerary_days) && attrs.itinerary_days.length > 0
+    ? attrs.itinerary_days
+    : Array.isArray(classified?.itinerary_days) && classified.itinerary_days.length > 0
+    ? classified.itinerary_days
+    : Array.isArray(attrs.itinerary) && attrs.itinerary.length > 0
+    ? attrs.itinerary
+    : [];
   const selectedDeparture = departureOptions.find(d => (d.id || "") === selectedDepartureId) || null;
 
   const departureCity: string =
@@ -483,10 +487,10 @@ export function EditorialShowcaseView({
       });
     }
 
-    // Aba 3: Roteiro (somente se houver dias cadastrados com conteúdo ou skills/benefícios)
-    const hasItineraryContent = isTravel
-      ? itineraryDays.some((d: any) => Boolean(d && (d.title?.trim() || d.description?.trim() || d.day || d.activities?.length || d.images?.length)))
-      : Boolean(attrs.benefits?.length || attrs.skills?.length || attrs.available_weekdays?.length);
+    // Aba 3: Roteiro (sempre visível para viagens, ou se houver dias/skills/benefícios cadastrados)
+    const hasItineraryContent = isTravel ||
+      itineraryDays.length > 0 ||
+      Boolean(attrs.benefits?.length || attrs.skills?.length || attrs.available_weekdays?.length);
     if (hasItineraryContent) {
       tabs.push({
         id: "itinerary",
@@ -733,7 +737,7 @@ export function EditorialShowcaseView({
         </div>
       </div>
 
-      <div className="w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-0 pt-2 sm:pt-4 space-y-4 animate-in fade-in duration-200">
+      <div className="w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-0 pt-0 sm:pt-4 space-y-4 animate-in fade-in duration-200">
 
         {/* ── Desktop Contextual Header / Breadcrumbs (Apenas Desktop) ── */}
         <div className="hidden md:flex items-center justify-between py-2 border-b border-border/40">
@@ -809,15 +813,15 @@ export function EditorialShowcaseView({
         {/* ── Grid Principal Responsiva (Desktop 2 Colunas Estilo Mercado Livre / Airbnb) ── */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* Coluna Esquerda: Mídias, Roteiro & Abas Editoriais (7 colunas no Desktop) */}
-          <div className="lg:col-span-7 space-y-5">
+          <div className="lg:col-span-7 space-y-4">
             {/* ── Galeria Editorial Proporcional (Hero Natural 16:10 + Miniaturas) ── */}
             {images.length > 0 && (
               <div className="w-full space-y-2">
-                <div className="relative w-full aspect-[16/10] rounded-lg sm:rounded-lg overflow-hidden bg-muted/30 border border-border/40 group">
+                <div className="relative w-full aspect-[4/3] sm:aspect-[16/10] rounded-none sm:rounded-lg overflow-hidden bg-muted/30 border-0 sm:border sm:border-border/40 group">
                   <img
                     src={images[activeImageIndex] || images[0]}
                     alt={classified.title}
-                    className="size-full object-cover cursor-pointer group-hover:scale-[1.01] transition-transform duration-300"
+                    className="size-full object-cover object-center cursor-pointer group-hover:scale-[1.01] transition-transform duration-300"
                     onClick={() => setFullscreenImage(images[activeImageIndex] || images[0])}
                   />
                   <div className="absolute top-3 right-3 flex items-center gap-2">
@@ -835,9 +839,9 @@ export function EditorialShowcaseView({
                   </button>
                 </div>
 
-                {/* Miniaturas de Acesso Rápido com Alternância Fiel da Foto Principal (Até 10 fotos no Topo sem espaço vazio) */}
+                {/* Miniaturas de Acesso Rápido com Alternância Fiel da Foto Principal (Início 100% visível na margem esquerda) */}
                 {images.length > 1 && (
-                  <div className="flex items-center gap-2 sm:gap-2 overflow-x-auto carousel no-scrollbar py-1 w-full">
+                  <div className="flex items-center gap-2 overflow-x-auto no-scrollbar px-4 sm:px-0 py-1.5 w-full">
                     {images.slice(0, images.length > 10 ? 9 : 10).map((img, idx) => {
                       const isActive = activeImageIndex === idx;
                       return (
@@ -846,7 +850,7 @@ export function EditorialShowcaseView({
                           type="button"
                           onClick={() => setActiveImageIndex(idx)}
                           className={cn(
-                            "relative aspect-square h-14 sm:h-16 rounded-lg overflow-hidden border bg-muted shrink-0 flex-1 min-w-[52px] max-w-[76px] group cursor-pointer transition-colors",
+                            "relative aspect-square size-14 sm:size-16 rounded-lg overflow-hidden border bg-muted shrink-0 group cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                             isActive
                               ? "border-primary ring-2 ring-primary ring-offset-2 ring-offset-background scale-[1.02]"
                               : "border-border/50 hover:border-primary/50 opacity-80 hover:opacity-100"
@@ -861,7 +865,7 @@ export function EditorialShowcaseView({
                       <button
                         type="button"
                         onClick={() => setActiveTab("grid")}
-                        className="aspect-square h-14 sm:h-16 rounded-lg border border-dashed border-border/70 flex flex-col items-center justify-center text-muted-foreground hover:text-foreground hover:border-primary text-xs font-bold shrink-0 flex-1 min-w-[52px] max-w-[76px] transition-colors"
+                        className="aspect-square size-14 sm:size-16 rounded-lg border border-dashed border-border/70 flex flex-col items-center justify-center text-muted-foreground hover:text-foreground hover:border-primary text-xs font-bold shrink-0 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                       >
                         <span>+{images.length - 9}</span>
                         <span className="text-xs font-normal">fotos</span>
@@ -876,7 +880,7 @@ export function EditorialShowcaseView({
             {/* Stats movidos para a coluna direita — sem pills repetitivos aqui */}
 
         {/* ── Título, Subtítulo & Bullets ── */}
-        <div className="space-y-2">
+        <div className="space-y-2 px-4 sm:px-0">
           {/* Título & Localização — Apenas no Mobile (no Desktop está em destaque no card fixo à direita) */}
           <div className="lg:hidden space-y-1">
             {isTravel ? (
@@ -906,7 +910,7 @@ export function EditorialShowcaseView({
                 </p>
               )
             )}
-            <h1 className="text-base sm:text-lg font-black text-foreground tracking-tight leading-snug">
+            <h1 className="text-lg sm:text-xl font-black text-foreground tracking-tight leading-snug break-words text-wrap w-full">
               {classified.title || "Sem título"}
             </h1>
           </div>
@@ -919,7 +923,7 @@ export function EditorialShowcaseView({
               </p>
               <ul className="space-y-2">
                 {bioBullets.map((bullet, idx) => (
-                  <li key={idx} className="text-xs text-foreground/90 flex items-start gap-2 font-medium">
+                  <li key={idx} className="text-sm sm:text-base text-foreground/90 flex items-start gap-2 font-medium">
                     <span className="leading-relaxed">{bullet}</span>
                   </li>
                 ))}
@@ -927,7 +931,7 @@ export function EditorialShowcaseView({
             </div>
           ) : (
             classified.content && (
-              <p className="text-xs text-muted-foreground line-clamp-3 leading-relaxed">
+              <p className="text-sm sm:text-base text-foreground/90 leading-relaxed whitespace-pre-line">
                 {classified.content}
               </p>
             )
@@ -935,7 +939,7 @@ export function EditorialShowcaseView({
         </div>
 
         {/* ── Card do Anunciante / Loja Parceira (Visível no Mobile) ── */}
-        <div className="lg:hidden p-4 rounded-lg bg-muted/30 border border-border/50 flex items-center justify-between gap-3 transition-colors hover:bg-muted/40">
+        <div className="lg:hidden mx-4 sm:mx-0 p-4 rounded-lg bg-muted/30 border border-border/50 flex items-center justify-between gap-3 transition-colors hover:bg-muted/40">
           <div className="flex items-center gap-3 min-w-0">
             <div className="size-11 rounded-full bg-background border border-border/60 overflow-hidden shrink-0 flex items-center justify-center">
               {advertiserAvatar ? (
@@ -1003,8 +1007,8 @@ export function EditorialShowcaseView({
         )}
 
         {/* ── Abas Canônicas em Linha Única Horizontal Contínua (Invariante B.39) ── */}
-        <div className="border-t border-border/40 pt-1">
-          <div className="flex flex-nowrap items-center border-b border-border/40 overflow-x-auto no-scrollbar gap-1">
+        <div className="border-t border-border/40 pt-1 px-4 sm:px-0">
+          <div className="flex flex-nowrap items-center border-b border-border/40 overflow-x-auto no-scrollbar gap-1 pb-px">
             {availableTabs.map((tab) => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
@@ -1014,17 +1018,15 @@ export function EditorialShowcaseView({
                   type="button"
                   onClick={() => setActiveTab(tab.id)}
                   className={cn(
-                    "min-h-11 py-2 px-3 flex-1 min-w-[76px] sm:min-w-[100px] flex flex-col items-center justify-center gap-1 border-b-2 transition-colors cursor-pointer shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                    "h-10 px-3 flex flex-row items-center justify-center gap-2 border-b-2 text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                     isActive
                       ? "border-foreground text-foreground font-bold"
                       : "border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/30"
                   )}
                   aria-label={tab.label}
                 >
-                  <Icon className="size-4.5 shrink-0" />
-                  <span className="text-xs font-semibold tracking-tight whitespace-nowrap leading-none">
-                    {tab.label}
-                  </span>
+                  <Icon className="size-4 shrink-0" />
+                  <span>{tab.label}</span>
                 </button>
               );
             })}
@@ -1034,7 +1036,7 @@ export function EditorialShowcaseView({
           {activeTab === "grid" && (
             <div className="pt-3">
               {feedImages.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols- gap-2 sm:gap-2 rounded-lg overflow-hidden">
+                <div className="grid grid-cols-3 gap-2 rounded-lg overflow-hidden">
                   {feedImages.slice(0, 12).map((item, i) => {
                     const rawUrl = typeof item === "string" ? item : (item?.url || item?.src || "");
                     const isVideo = /\.(mp4|webm|mov|m4v|ogg)(\?.*)?$/i.test(rawUrl) || item?.type === "video";
@@ -1427,7 +1429,7 @@ export function EditorialShowcaseView({
                 <div className="relative pl-7 space-y-6 before:absolute before:left-3 before:top-3 before:bottom-3 before:w-[2px] before:bg-border/80">
                     {itineraryDays.map((item: any, idx: number) => (
                     <div key={idx} className="relative space-y-3">
-                      <div className="absolute -left-7 top-0.5 size-7 rounded-full bg-card border-2 border-primary/90 flex items-center justify-center text-xs font-bold text-foreground">
+                      <div className="absolute -left-7 top-0.5 size-7 rounded-lg bg-card border-2 border-primary/90 flex items-center justify-center text-xs font-bold text-foreground">
                         {item.day_number || idx + 1}
                       </div>
                       <div className="space-y-2">
@@ -1495,6 +1497,18 @@ export function EditorialShowcaseView({
                       </div>
                     </div>
                   ))}
+                </div>
+              ) : isTravel ? (
+                <div className="p-6 rounded-lg bg-card border border-border/60 text-center space-y-3 shadow-2xs">
+                  <div className="size-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center mx-auto">
+                    <Calendar className="size-5" />
+                  </div>
+                  <div className="space-y-1">
+                    <h4 className="font-bold text-sm text-foreground">Roteiro Dinâmico e Personalizável</h4>
+                    <p className="text-xs text-muted-foreground max-w-md mx-auto leading-relaxed">
+                      {attrs.itinerary_summary || classified.description || "Este pacote conta com cronograma personalizado. Fale com nossos consultores para detalhar paradas, passeios adicionais e itinerários sob medida."}
+                    </p>
+                  </div>
                 </div>
               ) : (
                 /* Fallback semântico rico para outros nichos: diferenciais, requisitos e vantagens */
@@ -2264,7 +2278,7 @@ export function EditorialShowcaseView({
             const heroHighlight = getClassifiedHeroHighlight(classified, selectedDeparture);
             if (!heroHighlight) return null;
             const gridCols = heroHighlight.tertiaryValue
-              ? "grid-cols-1 sm:grid-cols-"
+              ? "grid-cols-1 sm:grid-cols-3"
               : heroHighlight.secondaryValue
               ? "grid-cols-2"
               : "grid-cols-1";

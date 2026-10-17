@@ -1,11 +1,12 @@
 import { Link } from "@tanstack/react-router";
-import { Calendar, Users, Check, MapPin, Loader2, AlertTriangle, Clock, Wrench } from "lucide-react";
+import { Calendar, Users, Check, MapPin, Loader2, AlertTriangle, Clock, Wrench, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { formatMoney } from "@/lib/money";
+import { trackAndOpenWhatsApp } from "@/lib/whatsapp";
 import { DEPARTURE_STATUS_CONFIG, type DepartureOption } from "@/lib/classifieds/canonical-airports";
 import { cn } from "@/lib/utils";
 
@@ -94,33 +95,14 @@ export function ClassifiedBookingDialog({
   serviceAppointmentNotes = "",
   setServiceAppointmentNotes,
 }: ClassifiedBookingDialogProps) {
+  const author = classified?.profiles as any;
+  const rawPhone = classified?.contact_whatsapp || classified?.whatsapp || author?.phone;
+  const cleanPhone = rawPhone ? String(rawPhone).replace(/\D/g, "") : null;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg rounded-lg max-h-screen overflow-y-auto">
-        {viewerContext === "anonymous" ? (
-          <div className="text-center py-6 space-y-4">
-            <Calendar className="size-10 text-primary mx-auto" />
-            <div className="space-y-1">
-              <DialogTitle className="text-lg font-bold">
-                Identifique-se para reservar
-              </DialogTitle>
-              <DialogDescription className="text-xs text-muted-foreground">
-                Para solicitar sua reserva, faça login na sua conta Waesy.
-              </DialogDescription>
-            </div>
-            <Button
-              asChild
-              className="w-full h-11 rounded-lg font-bold bg-primary text-primary-foreground text-sm focus-visible:ring-2 focus-visible:ring-ring"
-            >
-              <Link
-                to="/entrar"
-                search={{ returnUrl: `/classificados/${classified?.id}` }}
-              >
-                Entrar na Minha Conta
-              </Link>
-            </Button>
-          </div>
-        ) : isTravelPackage ? (
+        {isTravelPackage ? (
           <>
             <DialogHeader>
               <div className="flex items-center gap-2">
@@ -304,23 +286,77 @@ export function ClassifiedBookingDialog({
                 </div>
               </div>
 
-              <Button
-                onClick={handleDirectBooking} /* focus-visible: */
-                disabled={isBooking}
-                className="w-full h-11 rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground shadow-xs cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                {isBooking ? (
-                  <>
-                    <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
-                    <span>Enviando Solicitação de Reserva...</span>
-                  </>
-                ) : (
-                  <>
-                    <Check className="size-4" />
-                    <span>Confirmar Reserva — {formatMoney(travelTotalCents)}</span>
-                  </>
-                )}
-              </Button>
+              {viewerContext === "anonymous" ? (
+                <div className="space-y-2">
+                  {cleanPhone ? (
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        const depDate = selectedDeparture?.departure_date || "";
+                        const retDate = selectedDeparture?.return_date || "";
+                        const depTime = selectedDeparture?.departure_time ? ` às ${selectedDeparture.departure_time}` : "";
+                        const boarding = selectedBoardingPoint || flightDetails?.meeting_point || boardingGateways[0] || "A combinar com a agência";
+                        const message = `Olá! Gostaria de reservar o pacote *${classified?.title}*:\n- Saída: ${selectedDeparture?.label || "Saída Confirmada"}${depDate ? ` (${depDate}${retDate ? ` até ${retDate}` : ""}${depTime})` : ""}\n- Embarque: ${boarding}\n- Viajantes: ${travelPassengers} passageiro(s)\n- Total: ${formatMoney(travelTotalCents)}`;
+                        trackAndOpenWhatsApp({
+                          phone: cleanPhone,
+                          message,
+                          storeId: classified?.store_id || classified?.storeId || author?.id,
+                          entityId: classified?.id,
+                          entityType: "classified",
+                          entityTitle: classified?.title,
+                        });
+                        onOpenChange(false);
+                      }}
+                      className="w-full h-11 rounded-lg text-xs font-bold gap-2 bg-emerald-600 hover:bg-emerald-700 text-white shadow-2xs cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    >
+                      <MessageCircle className="size-4" />
+                      <span>Solicitar Reserva via WhatsApp — {formatMoney(travelTotalCents)}</span>
+                    </Button>
+                  ) : (
+                    <Button
+                      asChild
+                      className="w-full h-11 rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground shadow-2xs cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    >
+                      <Link
+                        to="/entrar"
+                        search={{ returnUrl: `/classificados/${classified?.id}` }}
+                      >
+                        Entrar para Concluir Reserva — {formatMoney(travelTotalCents)}
+                      </Link>
+                    </Button>
+                  )}
+                  {cleanPhone && (
+                    <p className="text-center text-xs text-muted-foreground pt-0.5">
+                      Possui cadastro?{" "}
+                      <Link
+                        to="/entrar"
+                        search={{ returnUrl: `/classificados/${classified?.id}` }}
+                        className="text-primary font-semibold hover:underline"
+                      >
+                        Entrar na conta Waesy
+                      </Link>
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <Button
+                  onClick={handleDirectBooking}
+                  disabled={isBooking}
+                  className="w-full h-11 rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground shadow-2xs cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                >
+                  {isBooking ? (
+                    <>
+                      <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
+                      <span>Enviando Solicitação de Reserva...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Check className="size-4" />
+                      <span>Confirmar Reserva — {formatMoney(travelTotalCents)}</span>
+                    </>
+                  )}
+                </Button>
+              )}
             </div>
           </>
         ) : isService ? (
