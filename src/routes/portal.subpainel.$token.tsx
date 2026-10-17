@@ -111,6 +111,12 @@ function EventSubpanelPortalPage() {
   const [isSubmitting, startTransition] = useTransition();
   const [showHistory, setShowHistory] = useState(false);
 
+  // Calculadora de Buffet a Quilo / Valor Avulso
+  const [customLabel, setCustomLabel] = useState("");
+  const [weightGrams, setWeightGrams] = useState("");
+  const [pricePerKgReais, setPricePerKgReais] = useState("69.90");
+  const [customValueReais, setCustomValueReais] = useState("");
+
   if (!subpanel || error) {
     return (
       <div className="min-h-screen bg-background text-foreground flex items-center justify-center p-4">
@@ -130,7 +136,9 @@ function EventSubpanelPortalPage() {
   }
 
   const panelType = subpanel.panel_type || "bar";
-  
+  const templateTipo = subpanel.template_tipo || "bar_simples";
+  const allowCustomPrice = Boolean(subpanel.allow_custom_price || templateTipo === "buffet_kg");
+
   // Catálogo dinâmico: usa produtos do banco se cadastrados, ou os defaults canônicos
   const quickProducts: QuickProduct[] =
     dbProducts && dbProducts.length > 0
@@ -159,6 +167,36 @@ function EventSubpanelPortalPage() {
     });
   };
 
+  const handleAddWeighedOrCustomItem = () => {
+    let computedCents = 0;
+    let finalName = customLabel.trim() || (templateTipo === "buffet_kg" ? "Buffet Livre / Peso" : "Item Avulso Balcão");
+
+    if (templateTipo === "buffet_kg" && Number(weightGrams) > 0 && Number(pricePerKgReais) > 0) {
+      const kg = Number(weightGrams) / 1000;
+      computedCents = Math.round(kg * Number(pricePerKgReais) * 100);
+      finalName = `${finalName} (${weightGrams}g)`;
+    } else if (Number(customValueReais) > 0) {
+      computedCents = Math.round(Number(customValueReais) * 100);
+    }
+
+    if (computedCents <= 0) {
+      toast.error("Informe um peso ou valor válido em R$.");
+      return;
+    }
+
+    const customProduct: QuickProduct = {
+      id: `custom_${Date.now()}`,
+      name: finalName,
+      priceCents: computedCents,
+    };
+
+    handleAddToCart(customProduct);
+    setCustomLabel("");
+    setWeightGrams("");
+    setCustomValueReais("");
+    toast.success(`${finalName} adicionado à comanda!`);
+  };
+
   const handleUpdateQty = (productId: string, delta: number) => {
     setCart((prev) =>
       prev
@@ -183,8 +221,9 @@ function EventSubpanelPortalPage() {
 
     startTransition(async () => {
       try {
+        const isUuid = (val: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(val);
         const payloadItems = cart.map((i) => ({
-          productId: i.product.id.length > 10 ? i.product.id : undefined,
+          productId: isUuid(i.product.id) ? i.product.id : undefined,
           productName: i.product.name,
           quantity: i.qty,
           unitPriceCents: i.product.priceCents,
@@ -243,15 +282,15 @@ function EventSubpanelPortalPage() {
               {getPanelIcon()}
             </div>
             <div className="min-w-0">
-              <div className="flex items-center gap-2">
-                <h1 className="text-sm font-bold text-foreground truncate">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h1 className="text-sm font-bold text-foreground break-words">
                   {subpanel.name}
                 </h1>
                 <Badge variant="outline" className="text-xs px-2 py-0 border-emerald-500/40 text-emerald-600 bg-emerald-500/10 shrink-0">
                   Online
                 </Badge>
               </div>
-              <p className="text-xs text-muted-foreground truncate">
+              <p className="text-xs text-muted-foreground break-words">
                 {subpanel.event?.title || "Evento Oficial"} • {subpanel.manager_name ? `Operador: ${subpanel.manager_name}` : "Terminal Autorizado"}
               </p>
             </div>
@@ -283,12 +322,101 @@ function EventSubpanelPortalPage() {
       <main className="flex-1 max-w-5xl w-full mx-auto p-4 sm:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Catálogo de Itens Rápidos */}
         <div className="lg:col-span-7 space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between flex-wrap gap-2">
             <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
               Catálogo de Produtos
             </h2>
             <span className="text-xs text-muted-foreground">Toque para adicionar à comanda</span>
           </div>
+
+          {/* Seletor Rápido de Mesas / Comandas (quando template_tipo === 'bar_comanda') */}
+          {templateTipo === "bar_comanda" && (
+            <div className="p-3 rounded-lg border border-border/60 bg-card space-y-2">
+              <span className="text-xs font-bold text-foreground block">Seleção Rápida de Mesa / Camarote</span>
+              <div className="tab-list flex flex-nowrap overflow-x-auto no-scrollbar gap-2 pb-1">
+                {["Mesa 01", "Mesa 02", "Mesa 03", "Mesa 04", "Mesa 05", "Mesa 06", "Camarote 01", "Camarote 02"].map((mesa) => (
+                  <button
+                    key={mesa}
+                    type="button"
+                    onClick={() => setCustomerName(mesa)}
+                    className={`h-11 min-h-11 px-3 rounded-lg text-xs font-bold whitespace-nowrap shrink-0 border transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-primary ${
+                      customerName === mesa
+                        ? "bg-primary text-primary-foreground border-primary"
+                        : "bg-muted/40 text-foreground border-border/60 hover:bg-muted"
+                    }`}
+                  >
+                    {mesa}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Calculadora de Pesagem (Buffet Kg) ou Valor Avulso */}
+          {allowCustomPrice && (
+            <div className="p-4 rounded-lg border border-amber-500/30 bg-amber-500/5 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-foreground">
+                  {templateTipo === "buffet_kg" ? "Balança & Pesagem de Prato (Buffet a Quilo)" : "Lançamento de Valor Avulso"}
+                </span>
+                <Badge variant="outline" className="text-xs font-mono border-amber-500/40 text-amber-600">
+                  {templateTipo === "buffet_kg" ? "Kg / Gramas" : "Valor Livre"}
+                </Badge>
+              </div>
+
+              {templateTipo === "buffet_kg" ? (
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  <Input
+                    value={weightGrams}
+                    onChange={(e) => setWeightGrams(e.target.value)}
+                    type="number"
+                    min="1"
+                    placeholder="Peso em gramas (ex: 450)"
+                    className="h-11 min-h-11 rounded-lg text-xs bg-background"
+                  />
+                  <Input
+                    value={pricePerKgReais}
+                    onChange={(e) => setPricePerKgReais(e.target.value)}
+                    type="number"
+                    step="0.1"
+                    placeholder="Preço do Kg (R$)"
+                    className="h-11 min-h-11 rounded-lg text-xs bg-background"
+                  />
+                  <Button
+                    type="button"
+                    onClick={handleAddWeighedOrCustomItem}
+                    className="h-11 min-h-11 rounded-lg text-xs font-bold cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+                  >
+                    Lançar Prato
+                  </Button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  <Input
+                    value={customLabel}
+                    onChange={(e) => setCustomLabel(e.target.value)}
+                    placeholder="Descrição (ex: Combo Especial)"
+                    className="h-11 min-h-11 rounded-lg text-xs bg-background"
+                  />
+                  <Input
+                    value={customValueReais}
+                    onChange={(e) => setCustomValueReais(e.target.value)}
+                    type="number"
+                    step="0.5"
+                    placeholder="Valor (R$)"
+                    className="h-11 min-h-11 rounded-lg text-xs bg-background"
+                  />
+                  <Button
+                    type="button"
+                    onClick={handleAddWeighedOrCustomItem}
+                    className="h-11 min-h-11 rounded-lg text-xs font-bold cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+                  >
+                    Adicionar Valor
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
 
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {quickProducts.map((item) => (
@@ -298,7 +426,7 @@ function EventSubpanelPortalPage() {
                 onClick={() => handleAddToCart(item)}
                 className="p-4 rounded-lg bg-card border border-border/60 hover:border-primary/50 active:scale-95 transition-transform text-left flex flex-col justify-between min-h-28 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
               >
-                <span className="text-xs font-semibold text-foreground line-clamp-2 leading-tight break-words">
+                <span className="text-xs font-semibold text-foreground leading-tight break-words text-wrap">
                   {item.name}
                 </span>
                 <span className="text-xs font-bold font-mono text-primary mt-2">
@@ -383,7 +511,7 @@ function EventSubpanelPortalPage() {
                 {cart.map((entry) => (
                   <div key={entry.product.id} className="py-3 flex items-center justify-between gap-2">
                     <div className="min-w-0 flex-1">
-                      <p className="text-xs font-semibold text-foreground truncate">
+                      <p className="text-xs font-semibold text-foreground break-words leading-tight">
                         {entry.product.name}
                       </p>
                       <p className="text-xs font-mono text-muted-foreground">
@@ -422,13 +550,13 @@ function EventSubpanelPortalPage() {
             {/* Nome Opcional do Cliente */}
             <div className="space-y-2">
               <label htmlFor="customerName" className="text-xs font-semibold text-muted-foreground block">
-                Nome ou Comanda (Opcional)
+                Nome, Mesa ou Comanda (Opcional)
               </label>
               <Input
                 id="customerName"
                 value={customerName}
                 onChange={(e) => setCustomerName(e.target.value)}
-                placeholder="Ex: João Silva ou Ficha 12"
+                placeholder="Ex: João Silva ou Mesa 04"
                 className="h-11 min-h-11 rounded-lg text-xs"
               />
             </div>

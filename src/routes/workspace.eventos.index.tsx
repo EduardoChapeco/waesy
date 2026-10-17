@@ -2,6 +2,7 @@ import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
 import { Calendar, Plus, QrCode, ExternalLink, MapPin, Clock, Ticket, Users, CheckCircle2, Trash2, Flame, Building, TrendingUp } from "lucide-react";
+import { formatMoney } from "@/lib/money";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -63,15 +64,34 @@ export default function WorkspaceEventosPage() {
     external_ticket_url: "",
   });
 
-  // Métricas Executivas da Produtora de Eventos
+  // Métricas Executivas Consolidada da Produtora de Eventos
   const metrics = useMemo(() => {
     const total = eventsList.length;
     const now = new Date().getTime();
     const upcoming = eventsList.filter((e) => new Date(e.event_date).getTime() >= now).length;
     const past = total - upcoming;
     const totalCapacity = eventsList.reduce((acc, e) => acc + (e.capacity || 0), 0);
+    const totalTicketsSold = eventsList.reduce((acc, e) => acc + Number(e.tickets_sold || 0), 0);
+    const ticketRevenueCents = eventsList.reduce((acc, e) => acc + Number(e.ticket_revenue_cents || 0), 0);
+    const concessionGrossCents = eventsList.reduce((acc, e) => acc + Number(e.concession_gross_cents || 0), 0);
+    const concessionFeeCents = eventsList.reduce((acc, e) => acc + Number(e.concession_fee_cents || 0), 0);
+    const totalSubpanels = eventsList.reduce((acc, e) => acc + Number(e.subpanels_count || 0), 0);
+    const totalEcosystemRevenueCents = ticketRevenueCents + concessionGrossCents;
+    const producerNetRevenueCents = ticketRevenueCents + concessionFeeCents;
 
-    return { total, upcoming, past, totalCapacity };
+    return {
+      total,
+      upcoming,
+      past,
+      totalCapacity,
+      totalTicketsSold,
+      ticketRevenueCents,
+      concessionGrossCents,
+      concessionFeeCents,
+      totalSubpanels,
+      totalEcosystemRevenueCents,
+      producerNetRevenueCents,
+    };
   }, [eventsList]);
 
   // Filtro
@@ -92,24 +112,24 @@ export default function WorkspaceEventosPage() {
 
   const metricsItems: MetricCardItem[] = [
     {
-      label: "Eventos Cadastrados",
-      value: `${metrics.total} produções`,
-      description: "Total de atrações no histórico",
+      label: "Faturamento Ecossistema",
+      value: formatMoney(metrics.totalEcosystemRevenueCents),
+      description: `Receita Produtora: ${formatMoney(metrics.producerNetRevenueCents)}`,
     },
     {
-      label: "Próximos Shows e Eventos",
-      value: `${metrics.upcoming} ativos`,
-      description: "Com ingressos ou cronograma aberto",
+      label: "Bilheteria Acumulada",
+      value: formatMoney(metrics.ticketRevenueCents),
+      description: `${metrics.totalTicketsSold.toLocaleString("pt-BR")} ingressos emitidos`,
     },
     {
-      label: "Capacidade Ofertada",
-      value: `${metrics.totalCapacity.toLocaleString("pt-BR")} pessoas`,
-      description: "Público máximo estimado em todos os locais",
+      label: "Praça, Bares & Concessões",
+      value: formatMoney(metrics.concessionGrossCents),
+      description: `Comissão retida: ${formatMoney(metrics.concessionFeeCents)} (${metrics.totalSubpanels} PDVs)`,
     },
     {
-      label: "Eventos Concluídos",
-      value: `${metrics.past} realizados`,
-      description: "Histórico de portarias encerradas",
+      label: "Produções & Capacidade",
+      value: `${metrics.upcoming} ativos / ${metrics.total} total`,
+      description: `${metrics.totalCapacity.toLocaleString("pt-BR")} lugares ofertados`,
     },
   ];
 
@@ -211,6 +231,59 @@ export default function WorkspaceEventosPage() {
           }}
         />
 
+        {/* ── 1.B VISÃO GERAL FINANCEIRA DA PRODUTORA ── */}
+        {eventsList.length > 0 && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <Card className="p-4 rounded-lg border border-border/70 bg-card space-y-1">
+              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                Faturamento Geral
+              </span>
+              <p className="text-xl font-black text-foreground">
+                {formatMoney(metrics.totalEcosystemRevenueCents)}
+              </p>
+              <span className="text-xs text-muted-foreground block break-words text-wrap">
+                Líquido Produtora: {formatMoney(metrics.producerNetRevenueCents)}
+              </span>
+            </Card>
+
+            <Card className="p-4 rounded-lg border border-border/70 bg-card space-y-1">
+              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                Bilheteria Acumulada
+              </span>
+              <p className="text-xl font-black text-foreground">
+                {formatMoney(metrics.ticketRevenueCents)}
+              </p>
+              <span className="text-xs text-muted-foreground block break-words text-wrap">
+                {metrics.totalTicketsSold.toLocaleString("pt-BR")} ingressos emitidos
+              </span>
+            </Card>
+
+            <Card className="p-4 rounded-lg border border-border/70 bg-card space-y-1">
+              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                Praça & Concessões
+              </span>
+              <p className="text-xl font-black text-foreground">
+                {formatMoney(metrics.concessionGrossCents)}
+              </p>
+              <span className="text-xs text-muted-foreground block break-words text-wrap">
+                Comissão: {formatMoney(metrics.concessionFeeCents)} ({metrics.totalSubpanels} PDVs)
+              </span>
+            </Card>
+
+            <Card className="p-4 rounded-lg border border-border/70 bg-card space-y-1">
+              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                Produções & Público
+              </span>
+              <p className="text-xl font-black text-foreground">
+                {metrics.upcoming} ativos / {metrics.total} total
+              </p>
+              <span className="text-xs text-muted-foreground block break-words text-wrap">
+                Capacidade: {metrics.totalCapacity.toLocaleString("pt-BR")} pessoas
+              </span>
+            </Card>
+          </div>
+        )}
+
         {/* ── 2. GRID DE EVENTOS ── */}
         {filteredEvents.length === 0 ? (
           <div className="py-20 text-center space-y-3 bg-card rounded-lg border border-dashed border-border/70 p-8">
@@ -220,49 +293,51 @@ export default function WorkspaceEventosPage() {
               Cadastre sua atração, configure os lotes de ingressos e ative o validador de portaria QR Code para o público.
             </p>
             <Button
-              size="sm"
               onClick={() => setIsOpen(true)}
-              className="rounded-lg text-xs font-bold gap-2 h-9 mt-2 cursor-pointer"
+              className="rounded-lg text-xs font-bold gap-2 h-11 min-h-11 px-4 mt-2 cursor-pointer focus-visible:ring-2"
             >
               <Plus className="size-4" />
               <span>Criar Primeiro Evento</span>
             </Button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredEvents.map((event: any) => {
               const evtTime = new Date(event.event_date).getTime();
               const isPast = evtTime < new Date().getTime();
+              const ticketRevCents = Number(event.ticket_revenue_cents || 0);
+              const concRevCents = Number(event.concession_gross_cents || 0);
+              const totalRevCents = Number(event.total_ecosystem_revenue_cents || ticketRevCents + concRevCents);
 
               return (
                 <Card
                   key={event.id}
-                  className="rounded-lg border border-border/70 bg-card overflow-hidden hover:border-foreground/20 transition-all flex flex-col justify-between shadow-2xs"
+                  className="rounded-lg border border-border/70 bg-card overflow-hidden hover:border-foreground/20 transition-colors flex flex-col justify-between"
                 >
                   <div>
                     {event.cover_image ? (
-                      <div className="w-full aspect-[16/9] bg-muted overflow-hidden relative">
+                      <div className="w-full aspect-video bg-muted overflow-hidden relative">
                         <img
                           src={event.cover_image}
                           alt={event.title}
                           className="w-full h-full object-cover"
                         />
                         <div className="absolute top-3 left-3">
-                          <Badge className="bg-background/95 text-foreground border border-border/80 text-xs font-semibold shadow-xs">
+                          <Badge className="bg-background/95 text-foreground border border-border/80 text-xs font-semibold">
                             {event.category || "Evento"}
                           </Badge>
                         </div>
                         <div className="absolute top-3 right-3">
                           <Badge
                             variant={isPast ? "secondary" : "default"}
-                            className="text-xs font-semibold uppercase shadow-xs"
+                            className="text-xs font-semibold uppercase"
                           >
                             {isPast ? "Encerrado" : "Confirmado"}
                           </Badge>
                         </div>
                       </div>
                     ) : (
-                      <div className="w-full aspect-[16/9] bg-muted/40 flex items-center justify-center text-muted-foreground relative">
+                      <div className="w-full aspect-video bg-muted/40 flex items-center justify-center text-muted-foreground relative">
                         <Calendar className="size-8 opacity-40" />
                         <div className="absolute top-3 left-3">
                           <Badge variant="outline" className="text-xs font-mono uppercase">
@@ -273,13 +348,13 @@ export default function WorkspaceEventosPage() {
                     )}
 
                     <div className="p-4 space-y-2">
-                      <h3 className="font-bold text-base text-foreground line-clamp-1">
+                      <h3 className="font-bold text-base text-foreground break-words text-wrap leading-tight">
                         {event.title}
                       </h3>
 
                       {event.event_date && (
                         <p className="text-xs text-muted-foreground flex items-center gap-2 font-mono">
-                          <Clock className="size-3.5 shrink-0" />
+                          <Clock className="size-4 shrink-0" />
                           <span>
                             {new Date(event.event_date).toLocaleDateString("pt-BR", {
                               day: "2-digit",
@@ -293,32 +368,62 @@ export default function WorkspaceEventosPage() {
                       )}
 
                       {event.location && (
-                        <p className="text-xs text-muted-foreground flex items-center gap-2 line-clamp-1 font-mono">
-                          <MapPin className="size-3.5 shrink-0" />
+                        <p className="text-xs text-muted-foreground flex items-center gap-2 font-mono break-words text-wrap leading-tight">
+                          <MapPin className="size-4 shrink-0" />
                           <span>{event.location}</span>
                         </p>
                       )}
 
                       {event.capacity && (
                         <p className="text-xs text-muted-foreground flex items-center gap-2 font-mono pt-1">
-                          <Users className="size-3.5 shrink-0" />
-                          <span>Capacidade: {event.capacity} pessoas</span>
+                          <Users className="size-4 shrink-0" />
+                          <span>
+                            Público: {Number(event.tickets_sold || 0)} / {event.capacity} pessoas
+                          </span>
                         </p>
+                      )}
+
+                      {/* Resumo Financeiro Recursivo do Subsistema do Evento */}
+                      <div className="mt-3 pt-3 border-t border-border/50 grid grid-cols-2 gap-2">
+                        <div className="p-2 rounded-md bg-muted/40">
+                          <span className="text-xs text-muted-foreground block">Bilheteria</span>
+                          <span className="text-xs font-bold text-foreground">
+                            {formatMoney(ticketRevCents)}
+                          </span>
+                        </div>
+                        <div className="p-2 rounded-md bg-muted/40">
+                          <span className="text-xs text-muted-foreground block">
+                            Praça ({Number(event.subpanels_count || 0)} PDVs)
+                          </span>
+                          <span className="text-xs font-bold text-foreground">
+                            {formatMoney(concRevCents)}
+                          </span>
+                        </div>
+                      </div>
+
+                      {totalRevCents > 0 && (
+                        <div className="flex items-center justify-between pt-1">
+                          <span className="text-xs font-semibold text-muted-foreground">
+                            Faturamento do Evento
+                          </span>
+                          <span className="text-sm font-black text-primary">
+                            {formatMoney(totalRevCents)}
+                          </span>
+                        </div>
                       )}
                     </div>
                   </div>
 
                   {/* Ações Rápidas do Evento (Apple HIG / Padrão Silencioso) */}
-                  <div className="p-4 pt-0 flex items-center justify-between gap-2 border-t border-border/40 mt-3 pt-3">
+                  <div className="p-4 pt-3 flex items-center justify-between gap-2 border-t border-border/40 mt-3">
                     <Button
                       asChild
                       variant="default"
-                      size="sm"
-                      className="flex-1 h-9 rounded-lg text-xs font-semibold gap-2 cursor-pointer shadow-2xs"
+                      className="flex-1 h-11 min-h-11 rounded-lg text-xs font-semibold gap-2 cursor-pointer focus-visible:ring-2"
                     >
                       <Link to="/workspace/eventos/$id" params={{ id: event.id }}>
-                        <Ticket className="size-3.5" />
-                        <span>Lotes e Ingressos</span>
+                        <Ticket className="size-4" />
+                        <span>Cockpit do Evento</span>
                       </Link>
                     </Button>
 

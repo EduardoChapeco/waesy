@@ -5,15 +5,48 @@
 -- =============================================================================
 
 -- ---------------------------------------------------------------------------
--- 1. Estender event_subpanels com Colunas Comerciais e Vínculo a Parceiros
+-- 1. Estender event_subpanels com Colunas Comerciais, Templates POS e Vínculo a Parceiros
 -- ---------------------------------------------------------------------------
 ALTER TABLE public.event_subpanels 
   ADD COLUMN IF NOT EXISTS concession_percentage NUMERIC(5,2) NOT NULL DEFAULT 10.00,
   ADD COLUMN IF NOT EXISTS concession_fixed_cents INT NOT NULL DEFAULT 0,
   ADD COLUMN IF NOT EXISTS allow_online_orders BOOLEAN NOT NULL DEFAULT true,
+  ADD COLUMN IF NOT EXISTS allow_custom_price BOOLEAN NOT NULL DEFAULT false,
+  ADD COLUMN IF NOT EXISTS template_tipo TEXT NOT NULL DEFAULT 'bar_simples',
+  ADD COLUMN IF NOT EXISTS token_expires_at TIMESTAMPTZ,
   ADD COLUMN IF NOT EXISTS partner_id UUID REFERENCES public.eventos_parceiros(id) ON DELETE SET NULL;
 
 CREATE INDEX IF NOT EXISTS idx_subpanels_partner ON public.event_subpanels(partner_id) WHERE partner_id IS NOT NULL;
+
+-- ---------------------------------------------------------------------------
+-- 1.B Estender public.tickets com Padrão Criptográfico WCTS-1 (HMAC-SHA256 & Telemetria)
+-- ---------------------------------------------------------------------------
+ALTER TABLE public.tickets
+  ADD COLUMN IF NOT EXISTS human_code TEXT,
+  ADD COLUMN IF NOT EXISTS hmac_signature TEXT,
+  ADD COLUMN IF NOT EXISTS issued_at_epoch BIGINT,
+  ADD COLUMN IF NOT EXISTS recipient_name TEXT,
+  ADD COLUMN IF NOT EXISTS recipient_email TEXT,
+  ADD COLUMN IF NOT EXISTS recipient_tax_id TEXT,
+  ADD COLUMN IF NOT EXISTS checkin_at TIMESTAMPTZ,
+  ADD COLUMN IF NOT EXISTS checkin_latitude NUMERIC(10,7),
+  ADD COLUMN IF NOT EXISTS checkin_longitude NUMERIC(10,7),
+  ADD COLUMN IF NOT EXISTS checkin_operator_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL;
+
+CREATE INDEX IF NOT EXISTS idx_tickets_human_code ON public.tickets(human_code) WHERE human_code IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_tickets_qr_hash ON public.tickets(qr_hash) WHERE qr_hash IS NOT NULL;
+
+-- Garantir anti-injeção em public.tickets: remover qualquer política de INSERT aberta a clientes
+DROP POLICY IF EXISTS "tickets_public_insert" ON public.tickets;
+DROP POLICY IF EXISTS "tickets_authenticated_insert" ON public.tickets;
+DROP POLICY IF EXISTS "tickets_staff_insert" ON public.tickets;
+CREATE POLICY "tickets_staff_insert" ON public.tickets
+  FOR INSERT WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM public.events e
+      WHERE e.id = tickets.event_id AND public.is_store_staff(e.store_id)
+    )
+  );
 
 -- ---------------------------------------------------------------------------
 -- 2. Tabela de Pedidos do Subpainel (POS no Local e Pedidos Mobile de Participantes)
@@ -126,17 +159,13 @@ CREATE POLICY staff_manage_subpanel_orders
   ON public.event_subpanel_orders FOR ALL
   USING (public.is_store_staff(store_id));
 
--- Leitura pública de pedidos para quem possui token de subpainel válido
+-- Leitura restrita ao cliente dono do pedido ou staff da produtora (acesso por token via BFF service_role)
 DROP POLICY IF EXISTS token_or_customer_read_subpanel_orders ON public.event_subpanel_orders;
 CREATE POLICY token_or_customer_read_subpanel_orders
   ON public.event_subpanel_orders FOR SELECT
   USING (
     customer_id = auth.uid() 
-    OR EXISTS (
-      SELECT 1 FROM public.event_subpanels sp 
-      WHERE sp.id = event_subpanel_orders.subpanel_id 
-        AND sp.is_active = true
-    )
+    OR public.is_store_staff(store_id)
   );
 
 -- event_subpanel_order_items: Segue a política do pedido pai
@@ -152,9 +181,16 @@ CREATE POLICY staff_manage_subpanel_order_items
   );
 
 DROP POLICY IF EXISTS public_read_subpanel_order_items ON public.event_subpanel_order_items;
-CREATE POLICY public_read_subpanel_order_items
+DROP POLICY IF EXISTS customer_or_staff_read_subpanel_order_items ON public.event_subpanel_order_items;
+CREATE POLICY customer_or_staff_read_subpanel_order_items
   ON public.event_subpanel_order_items FOR SELECT
-  USING (true);
+  USING (
+    EXISTS (
+      SELECT 1 FROM public.event_subpanel_orders ord
+      WHERE ord.id = event_subpanel_order_items.order_id
+        AND (ord.customer_id = auth.uid() OR public.is_store_staff(ord.store_id))
+    )
+  );
 
 -- event_surveys: Staff gerencia
 DROP POLICY IF EXISTS staff_manage_event_surveys ON public.event_surveys;
@@ -189,3 +225,4 @@ CREATE POLICY staff_read_survey_responses
       WHERE s.id = survey_id AND public.is_store_staff(s.store_id)
     )
   );
+

@@ -6,6 +6,7 @@ import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
 import { applyServerFnEdgeCache } from "@/lib/cache/edge-cache";
 import { eventSchema, ticketLotSchema } from "@/types/community";
 import { generateTicketQRHash } from "@/lib/tokens";
+import { signTicketPayload, verifyTicketPayload } from "@/lib/ticket-crypto";
 import { logAuditAction } from "./audit.functions";
 
 // ---------------------------------------------------------------------------
@@ -13,22 +14,87 @@ import { logAuditAction } from "./audit.functions";
 // ---------------------------------------------------------------------------
 
 async function _listAdminEvents() {
- const supabase = getServerClient();
- const identity = await getServerIdentity();
+  const supabase = getServerClient();
+  const identity = await getServerIdentity();
 
- if (!identity.store_id) return [];
+  if (!identity.store_id) return [];
 
- // Check if they are at least staff
- assertStoreAccess(identity, ["owner", "admin", "manager", "content", "seller"]);
+  // Check if they are at least staff
+  assertStoreAccess(identity, ["owner", "admin", "manager", "content", "seller"]);
 
- const { data: events, error } = await supabase
- .from("events")
- .select("*")
- .eq("store_id", identity.store_id)
- .order("created_at", { ascending: false });
+  const { data: events, error } = await supabase
+    .from("events")
+    .select("*")
+    .eq("store_id", identity.store_id)
+    .order("created_at", { ascending: false });
 
- if (error) throw new Error(error.message);
- return events || [];
+  if (error) throw new Error(error.message);
+  if (!events || events.length === 0) return [];
+
+  const eventIds = events.map((e: any) => e.id);
+
+  // Agrega lotes/ingressos, pedidos de subpainéis e pontos operacionais para o Cockpit Master da Produtora
+  const [{ data: lots }, { data: subpanelOrders }, { data: subpanels }] = await Promise.all([
+    supabase
+      .from("ticket_lots")
+      .select("event_id, price_cents, sold_count")
+      .in("event_id", eventIds)
+      .then((r) => r, () => ({ data: [] as any[] })),
+    supabase
+      .from("event_subpanel_orders")
+      .select("event_id, total_cents, concession_fee_cents, status")
+      .in("event_id", eventIds)
+      .neq("status", "cancelled")
+      .then((r) => r, () => ({ data: [] as any[] })),
+    supabase
+      .from("event_subpanels")
+      .select("id, event_id, is_active")
+      .in("event_id", eventIds)
+      .then((r) => r, () => ({ data: [] as any[] })),
+  ]);
+
+  const lotsByEvent = new Map<string, { sold: number; revCents: number }>();
+  for (const l of lots || []) {
+    const cur = lotsByEvent.get(l.event_id) || { sold: 0, revCents: 0 };
+    const sold = Number(l.sold_count || 0);
+    cur.sold += sold;
+    cur.revCents += sold * Number(l.price_cents || 0);
+    lotsByEvent.set(l.event_id, cur);
+  }
+
+  const ordersByEvent = new Map<string, { grossCents: number; feeCents: number; count: number }>();
+  for (const o of subpanelOrders || []) {
+    const cur = ordersByEvent.get(o.event_id) || { grossCents: 0, feeCents: 0, count: 0 };
+    cur.grossCents += Number(o.total_cents || 0);
+    cur.feeCents += Number(o.concession_fee_cents || 0);
+    cur.count += 1;
+    ordersByEvent.set(o.event_id, cur);
+  }
+
+  const subpanelsByEvent = new Map<string, number>();
+  for (const sp of subpanels || []) {
+    if (sp.is_active !== false) {
+      subpanelsByEvent.set(sp.event_id, (subpanelsByEvent.get(sp.event_id) || 0) + 1);
+    }
+  }
+
+  return events.map((ev: any) => {
+    const lotStat = lotsByEvent.get(ev.id) || { sold: 0, revCents: 0 };
+    const ordStat = ordersByEvent.get(ev.id) || { grossCents: 0, feeCents: 0, count: 0 };
+    const spCount = subpanelsByEvent.get(ev.id) || 0;
+
+    return {
+      ...ev,
+      tickets_sold: lotStat.sold,
+      ticket_revenue_cents: lotStat.revCents,
+      concession_gross_cents: ordStat.grossCents,
+      concession_fee_cents: ordStat.feeCents,
+      concession_orders_count: ordStat.count,
+      subpanels_count: spCount,
+      total_ecosystem_revenue_cents: lotStat.revCents + ordStat.grossCents,
+      producer_net_revenue_cents: lotStat.revCents + ordStat.feeCents,
+    };
+  });
 }
 
 export const listAdminEvents = createServerFn({ method: "GET" }).handler(_listAdminEvents);
@@ -250,14 +316,40 @@ async function _listEventTickets(eventId: string) {
  id,
  status,
  qr_hash,
+ human_code,
+ recipient_name,
+ recipient_email,
+ recipient_tax_id,
+ checkin_at,
  created_at,
  ticket_lots(id, name, price_cents),
- profiles(id, full_name, tax_id, phone, email)
+ profiles!tickets_owner_profile_id_fkey(id, full_name, tax_id, phone, email)
  `)
  .eq("event_id", eventId)
  .order("created_at", { ascending: false });
 
- if (error) throw new Error(error.message);
+ if (error) {
+   // Fallback caso a constraint tenha nome distinto no ambiente
+   const { data: fallbackTickets, error: fbErr } = await supabase
+     .from("tickets")
+     .select(`
+       id,
+       status,
+       qr_hash,
+       human_code,
+       recipient_name,
+       recipient_email,
+       recipient_tax_id,
+       checkin_at,
+       created_at,
+       ticket_lots(id, name, price_cents),
+       profiles(id, full_name, tax_id, phone, email)
+     `)
+     .eq("event_id", eventId)
+     .order("created_at", { ascending: false });
+   if (fbErr) throw new Error(fbErr.message);
+   return fallbackTickets || [];
+ }
  return tickets || [];
 }
 
@@ -285,15 +377,28 @@ async function _issueComplimentaryTicket(params: {
  .single();
  if (!evt) throw new Error("Acesso negado");
 
- const qrHash = generateTicketQRHash();
+ const ticketId = crypto.randomUUID();
+ const signed = signTicketPayload({
+   ticketId,
+   eventId: params.eventId,
+   lotId: params.lotId,
+   ownerProfileId: identity.id,
+ });
 
  const { data: ticket, error } = await supabase
  .from("tickets")
  .insert({
+ id: ticketId,
  event_id: params.eventId,
  lot_id: params.lotId,
- user_id: identity.id, // issuer or holder profile
- qr_hash: qrHash,
+ owner_profile_id: identity.id,
+ qr_hash: signed.qrPayload,
+ human_code: signed.humanCode,
+ hmac_signature: signed.signature,
+ issued_at_epoch: signed.issuedAt,
+ recipient_name: params.recipientName,
+ recipient_email: params.recipientEmail || null,
+ recipient_tax_id: params.recipientTaxId || null,
  status: "valid",
  })
  .select()
@@ -312,6 +417,7 @@ async function _issueComplimentaryTicket(params: {
   await logAuditAction(identity, "INSERT", "tickets", ticket.id, {
     type: "complimentary",
     recipient: params.recipientName,
+    humanCode: signed.humanCode,
   });
 
   return ticket;
@@ -399,85 +505,149 @@ export const triggerLotRolloverCheck = createServerFn({ method: "POST" })
 
 
 // ---------------------------------------------------------------------------
-// TICKETS / CHECK-IN
+// TICKETS / CHECK-IN (WCTS-1 CRYPTOGRAPHIC VALIDATION)
 // ---------------------------------------------------------------------------
 
-async function _validateTicketCheckin(eventId: string, ticketCode: string) {
- const supabase = getServerClient();
- const identity = await getServerIdentity();
- assertStoreAccess(identity, ["owner", "admin", "manager", "seller"]); // sellers can check-in
+async function _validateTicketCheckin(
+  eventId: string,
+  ticketCode: string,
+  latitude?: number,
+  longitude?: number
+) {
+  const supabase = getServerClient();
+  const identity = await getServerIdentity();
+  assertStoreAccess(identity, ["owner", "admin", "manager", "seller"]); // sellers can check-in
 
- // Ensure event ownership
- const { data: evt } = await supabase
- .from("events")
- .select("id")
- .eq("id", eventId)
- .eq("store_id", identity.store_id)
- .single();
- if (!evt) throw new Error("Acesso negado ao evento");
+  // Ensure event ownership
+  const { data: evt } = await supabase
+    .from("events")
+    .select("id")
+    .eq("id", eventId)
+    .eq("store_id", identity.store_id)
+    .single();
+  if (!evt) throw new Error("Acesso negado ao evento");
 
- // Find the ticket by ID (uuid), QR Hash, or participant name/document
- let query = supabase
- .from("tickets")
- .select("id, status, qr_hash, updated_at, profiles!inner(full_name, tax_id, phone), ticket_lots!inner(name)")
- .eq("event_id", eventId);
+  const cleanInput = ticketCode.trim();
 
- const cleanInput = ticketCode.trim();
- const isUuid =
- /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(
- cleanInput,
- );
+  // 1. Pré-validação sintática e de checksum/assinatura WCTS-1
+  const preliminaryCheck = verifyTicketPayload(cleanInput);
+  if (!preliminaryCheck.isValid) {
+    throw new Error(
+      preliminaryCheck.errorMessage || "Código ou assinatura criptográfica do ingresso inválida."
+    );
+  }
 
- if (isUuid) {
- query = query.eq("id", cleanInput);
- } else if (cleanInput.startsWith("TKT-") || cleanInput.length >= 8) {
- query = query.or(`qr_hash.eq.${cleanInput},id.ilike.%${cleanInput}%`);
- } else {
- // Busca por CPF ou nome do titular
- query = query.or(`qr_hash.eq.${cleanInput},profiles.tax_id.eq.${cleanInput},profiles.full_name.ilike.%${cleanInput}%`);
- }
+  // 2. Localizar o registro do ingresso no banco
+  let query = supabase
+    .from("tickets")
+    .select(
+      "id, event_id, lot_id, owner_profile_id, status, qr_hash, human_code, hmac_signature, issued_at_epoch, recipient_name, checkin_at, updated_at, profiles(full_name, tax_id, phone), ticket_lots(name)"
+    )
+    .eq("event_id", eventId);
 
- const { data: ticket, error } = await query.maybeSingle();
+  const isUuid =
+    /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(
+      preliminaryCheck.ticketId || cleanInput
+    );
 
- if (error || !ticket) {
- throw new Error("Ingresso não localizado para este evento. Verifique o código, QR ou CPF.");
- }
+  if (cleanInput.startsWith("v1:TKT:") && preliminaryCheck.ticketId) {
+    query = query.eq("id", preliminaryCheck.ticketId);
+  } else if (cleanInput.startsWith("W-TKT-")) {
+    query = query.eq("human_code", cleanInput);
+  } else if (isUuid) {
+    query = query.eq("id", cleanInput);
+  } else if (cleanInput.startsWith("TKT-") || cleanInput.length >= 8) {
+    query = query.or(`qr_hash.eq.${cleanInput},human_code.eq.${cleanInput}`);
+  } else {
+    query = query.or(
+      `qr_hash.eq.${cleanInput},human_code.eq.${cleanInput},recipient_tax_id.eq.${cleanInput},recipient_name.ilike.%${cleanInput}%`
+    );
+  }
 
- if (ticket.status === "used") {
- const usedTime = ticket.updated_at
- ? new Date(ticket.updated_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })
- : "anteriormente";
- throw new Error(`Ingresso já utilizado às ${usedTime}. Entrada duplicada bloqueada.`);
- }
+  const { data: ticket, error } = await query.maybeSingle();
 
- if (ticket.status === "revoked") {
- throw new Error("Ingresso cancelado ou revogado pela organização.");
- }
+  if (error || !ticket) {
+    throw new Error("Ingresso não localizado para este evento. Verifique o código, QR ou CPF.");
+  }
 
- // Atomically update the status to 'used' with timestamp
- const { error: updateErr } = await supabase
- .from("tickets")
- .update({ status: "used", updated_at: new Date().toISOString() })
- .eq("id", ticket.id)
- .eq("status", "valid"); // extra concurrency safety
+  // 3. Se o ingresso possui assinatura HMAC ou o input veio como QR WCTS-1, validar assinatura criptográfica completa
+  if (cleanInput.startsWith("v1:TKT:")) {
+    const fullCryptoVerify = verifyTicketPayload(cleanInput, {
+      eventId: ticket.event_id,
+      lotId: ticket.lot_id,
+      ownerProfileId: ticket.owner_profile_id,
+    });
+    if (!fullCryptoVerify.isValid) {
+      throw new Error(
+        fullCryptoVerify.errorMessage ||
+          "Assinatura digital HMAC-SHA256 divergente! Tentativa de fraude bloqueada."
+      );
+    }
+  }
 
- if (updateErr) {
- throw new Error("Falha ao registrar check-in.");
- }
+  if (ticket.status === "used") {
+    const usedTimestamp = ticket.checkin_at || ticket.updated_at;
+    const usedTime = usedTimestamp
+      ? new Date(usedTimestamp).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })
+      : "anteriormente";
+    throw new Error(`Ingresso já utilizado às ${usedTime}. Entrada duplicada bloqueada.`);
+  }
 
- await logAuditAction(identity, "UPDATE", "tickets", ticket.id, { action: "checkin" });
+  if (ticket.status === "revoked") {
+    throw new Error("Ingresso cancelado ou revogado pela organização.");
+  }
 
- return {
- status: "success" as const,
- message: "Ingresso Validado!",
- name: (ticket.profiles as any)?.full_name || "Participante",
- lotName: (ticket.ticket_lots as any)?.name || "Lote Padrão",
- };
+  const nowIso = new Date().toISOString();
+
+  // Atomically update the status to 'used' with timestamp and telemetry
+  const { error: updateErr } = await supabase
+    .from("tickets")
+    .update({
+      status: "used",
+      checkin_at: nowIso,
+      checkin_operator_id: identity.id,
+      checkin_latitude: latitude ?? null,
+      checkin_longitude: longitude ?? null,
+      updated_at: nowIso,
+    })
+    .eq("id", ticket.id)
+    .eq("status", "valid");
+
+  if (updateErr) {
+    throw new Error("Falha ao registrar check-in.");
+  }
+
+  await logAuditAction(identity, "UPDATE", "tickets", ticket.id, {
+    action: "checkin",
+    cryptoVerified: cleanInput.startsWith("v1:TKT:"),
+    latitude,
+    longitude,
+  });
+
+  const holderName =
+    ticket.recipient_name || (ticket.profiles as any)?.full_name || "Participante";
+
+  return {
+    status: "success" as const,
+    message: "Ingresso Validado com Criptografia!",
+    name: holderName,
+    lotName: (ticket.ticket_lots as any)?.name || "Lote Padrão",
+    humanCode: ticket.human_code || undefined,
+  };
 }
 
 export const validateTicketCheckin = createServerFn({ method: "POST" })
- .validator(z.object({ eventId: z.string().uuid(), ticketCode: z.string() }))
- .handler(async ({ data }) => _validateTicketCheckin(data.eventId, data.ticketCode));
+  .validator(
+    z.object({
+      eventId: z.string().uuid(),
+      ticketCode: z.string(),
+      latitude: z.number().optional(),
+      longitude: z.number().optional(),
+    })
+  )
+  .handler(async ({ data }) =>
+    _validateTicketCheckin(data.eventId, data.ticketCode, data.latitude, data.longitude)
+  );
 
 // ---------------------------------------------------------------------------
 // PUBLIC EVENTS API
@@ -675,11 +845,13 @@ export const createEventSubpanelSchema = z.object({
   eventId: z.string().uuid(),
   name: z.string().min(2),
   panelType: z.enum(["bar", "foodtruck", "restaurant", "merchandise", "ticketing_box", "vip_lounge", "security_checkpoint", "other"]).default("bar"),
+  templateTipo: z.enum(["bar_simples", "bar_comanda", "buffet_kg", "foodtruck", "bilheteria", "loja_merch"]).default("bar_simples"),
   managerName: z.string().optional(),
   managerContact: z.string().optional(),
   concessionPercentage: z.number().min(0).max(100).default(10),
   concessionFixedCents: z.number().int().min(0).default(0),
   allowOnlineOrders: z.boolean().default(true),
+  allowCustomPrice: z.boolean().default(false),
   partnerId: z.string().uuid().optional().nullable(),
   config: z.record(z.unknown()).default({}),
   expireDays: z.number().int().min(1).default(30),
@@ -687,56 +859,104 @@ export const createEventSubpanelSchema = z.object({
 
 export const createEventSubpanel = createServerFn({ method: "POST" })
   .validator(createEventSubpanelSchema)
- .handler(async ({ data }) => {
- const supabase = getServerClient();
- const identity = await getServerIdentity();
- assertStoreAccess(identity, ["owner", "admin", "manager", "content"]);
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin", "manager", "content"]);
 
- const generatedToken = `spk_${crypto.randomUUID().replace(/-/g, "")}`;
- const expiresAt = new Date();
- expiresAt.setDate(expiresAt.getDate() + data.expireDays);
+    const generatedToken = `spk_${crypto.randomUUID().replace(/-/g, "")}`;
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + data.expireDays);
 
- // 1. Inserir Subpainel
- const { data: subpanel, error } = await supabase
- .from("event_subpanels")
- .insert({
- store_id: identity.store_id,
- event_id: data.eventId,
- name: data.name,
- panel_type: data.panelType,
- manager_name: data.managerName,
- manager_contact: data.managerContact,
- concession_percentage: data.concessionPercentage,
- concession_fixed_cents: data.concessionFixedCents,
- allow_online_orders: data.allowOnlineOrders,
- partner_id: data.partnerId,
- access_token: generatedToken,
- token_expires_at: expiresAt.toISOString(),
- config: data.config,
- is_active: true,
- })
- .select()
- .single();
+    // 1. Inserir Subpainel
+    const { data: subpanel, error } = await supabase
+      .from("event_subpanels")
+      .insert({
+        store_id: identity.store_id,
+        event_id: data.eventId,
+        name: data.name,
+        panel_type: data.panelType,
+        template_tipo: data.templateTipo,
+        manager_name: data.managerName,
+        manager_contact: data.managerContact,
+        concession_percentage: data.concessionPercentage,
+        concession_fixed_cents: data.concessionFixedCents,
+        allow_online_orders: data.allowOnlineOrders,
+        allow_custom_price: data.allowCustomPrice,
+        partner_id: data.partnerId,
+        access_token: generatedToken,
+        token_expires_at: expiresAt.toISOString(),
+        config: data.config,
+        is_active: true,
+      })
+      .select()
+      .single();
 
- if (error || !subpanel) {
- throw new Error("Erro ao criar subpainel: " + (error?.message || "Registro não criado"));
- }
+    if (error || !subpanel) {
+      throw new Error("Erro ao criar subpainel: " + (error?.message || "Registro não criado"));
+    }
 
- // 2. Tentar RPC se houver
- try {
- const { data: token, error: tokenErr } = await supabase.rpc("generate_event_subpanel_token", {
- p_subpanel_id: subpanel.id,
- p_expire_days: data.expireDays,
- });
- if (!tokenErr && token) {
- subpanel.access_token = token;
- }
- } catch {
- // Mantém generatedToken
- }
+    // 2. Tentar RPC se houver
+    try {
+      const { data: token, error: tokenErr } = await supabase.rpc("generate_event_subpanel_token", {
+        p_subpanel_id: subpanel.id,
+        p_expire_days: data.expireDays,
+      });
+      if (!tokenErr && token) {
+        subpanel.access_token = token;
+      }
+    } catch {
+      // Mantém generatedToken
+    }
 
- return { status: "success", subpanel };
- });
+    return { status: "success", subpanel };
+  });
+
+export const toggleEventSubpanelStatus = createServerFn({ method: "POST" })
+  .validator(z.object({ subpanelId: z.string().uuid(), isActive: z.boolean() }))
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin", "manager"]);
+
+    const { data: updated, error } = await supabase
+      .from("event_subpanels")
+      .update({ is_active: data.isActive, updated_at: new Date().toISOString() })
+      .eq("id", data.subpanelId)
+      .eq("store_id", identity.store_id)
+      .select()
+      .single();
+
+    if (error) throw new Error("Erro ao alterar status do subpainel: " + error.message);
+    return { status: "success", subpanel: updated };
+  });
+
+export const regenerateEventSubpanelToken = createServerFn({ method: "POST" })
+  .validator(z.object({ subpanelId: z.string().uuid(), expireDays: z.number().int().min(1).default(30) }))
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin", "manager"]);
+
+    const newToken = `spk_${crypto.randomUUID().replace(/-/g, "")}`;
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + data.expireDays);
+
+    const { data: updated, error } = await supabase
+      .from("event_subpanels")
+      .update({
+        access_token: newToken,
+        token_expires_at: expiresAt.toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", data.subpanelId)
+      .eq("store_id", identity.store_id)
+      .select()
+      .single();
+
+    if (error) throw new Error("Erro ao regenerar token do subpainel: " + error.message);
+    return { status: "success", subpanel: updated };
+  });
 
 export const getEventSubpanelByToken = createServerFn({ method: "GET" })
  .validator(z.object({ token: z.string() }))
@@ -1926,7 +2146,7 @@ export const validateCredentialCheckin = createServerFn({ method: "POST" })
   });
 
 // ---------------------------------------------------------------------------
-// SUBPANEL ORDERS & CONCESSION REVENUE (ONDA 2)
+// SUBPANEL ORDERS & CONCESSION REVENUE (ONDA 2 & INVARIANTE B.41)
 export const createSubpanelOrderSchema = z.object({
   token: z.string().optional(),
   subpanelId: z.string().uuid().optional(),
@@ -1946,6 +2166,84 @@ export const createSubpanelOrderSchema = z.object({
   ).min(1),
 });
 
+export interface VerifiedSubpanelOrderItem {
+  productId: string | null;
+  productName: string;
+  quantity: number;
+  unitPriceCents: number;
+  totalPriceCents: number;
+  notes: string | null;
+}
+
+/**
+ * Resolve e sela os preços unitários dos itens de pedido do subpainel contra o catálogo do banco.
+ * Cumpre estritamente a Invariante B.41:
+ * - Em pedidos `mobile_attendee`, exige `productId` válido no banco e ignora `unitPriceCents` do cliente.
+ * - Em pedidos `counter_pos` / `table_service`, se `productId` existir no banco, usa o preço oficial salvo se `allowCustomPrice` estiver habilitado.
+ * - Itens avulsos sem `productId` só são aceitos se `allowCustomPrice === true` e não forem de `mobile_attendee`.
+ */
+export function resolveVerifiedSubpanelOrderItems(
+  clientItems: z.infer<typeof createSubpanelOrderSchema>["items"],
+  dbProductsMap: Map<string, { id: string; nome: string; price_cents: number; ativo?: boolean }>,
+  orderType: "counter_pos" | "mobile_attendee" | "table_service",
+  allowCustomPrice: boolean
+): VerifiedSubpanelOrderItem[] {
+  return clientItems.map((item) => {
+    const dbProd = item.productId ? dbProductsMap.get(item.productId) : undefined;
+
+    if (orderType === "mobile_attendee") {
+      if (!item.productId || !dbProd) {
+        throw new Error(
+          `Produto "${item.productName}" inválido ou indisponível para pedido mobile.`
+        );
+      }
+      if (dbProd.ativo === false) {
+        throw new Error(`O item "${dbProd.nome}" está esgotado no momento.`);
+      }
+      const officialPrice = Math.max(0, Number(dbProd.price_cents || 0));
+      return {
+        productId: dbProd.id,
+        productName: dbProd.nome || item.productName,
+        quantity: item.quantity,
+        unitPriceCents: officialPrice,
+        totalPriceCents: officialPrice * item.quantity,
+        notes: item.notes || null,
+      };
+    }
+
+    // Operação de balcão (counter_pos) ou mesa (table_service)
+    if (dbProd) {
+      const effectivePrice = allowCustomPrice
+        ? Math.max(0, item.unitPriceCents)
+        : Math.max(0, Number(dbProd.price_cents || 0));
+      return {
+        productId: dbProd.id,
+        productName: dbProd.nome || item.productName,
+        quantity: item.quantity,
+        unitPriceCents: effectivePrice,
+        totalPriceCents: effectivePrice * item.quantity,
+        notes: item.notes || null,
+      };
+    }
+
+    if (!allowCustomPrice) {
+      throw new Error(
+        `Item avulso "${item.productName}" bloqueado: este subpainel exige produtos cadastrados no catálogo oficial.`
+      );
+    }
+
+    const customPrice = Math.max(0, item.unitPriceCents);
+    return {
+      productId: null,
+      productName: item.productName,
+      quantity: item.quantity,
+      unitPriceCents: customPrice,
+      totalPriceCents: customPrice * item.quantity,
+      notes: item.notes || null,
+    };
+  });
+}
+
 export const createSubpanelOrder = createServerFn({ method: "POST" })
   .validator(createSubpanelOrderSchema)
   .handler(async ({ data }) => {
@@ -1955,36 +2253,77 @@ export const createSubpanelOrder = createServerFn({ method: "POST" })
     if (data.token) {
       const { data: sp, error: spErr } = await supabase
         .from("event_subpanels")
-        .select("id, store_id, event_id, name, panel_type, concession_percentage, concession_fixed_cents, allow_online_orders, is_active")
+        .select("id, store_id, event_id, name, panel_type, concession_percentage, concession_fixed_cents, allow_online_orders, allow_custom_price, token_expires_at, config, is_active")
         .eq("access_token", data.token)
         .single();
       if (spErr || !sp) throw new Error("Subpainel inválido ou token expirado.");
       if (!sp.is_active) throw new Error("Este subpainel operacional está desativado.");
+      if (sp.token_expires_at && new Date(sp.token_expires_at) < new Date()) {
+        throw new Error("O token de operação deste subpainel expirou.");
+      }
       subpanel = sp;
     } else if (data.subpanelId) {
       const { data: sp, error: spErr } = await supabase
         .from("event_subpanels")
-        .select("id, store_id, event_id, name, panel_type, concession_percentage, concession_fixed_cents, allow_online_orders, is_active")
+        .select("id, store_id, event_id, name, panel_type, concession_percentage, concession_fixed_cents, allow_online_orders, allow_custom_price, token_expires_at, config, is_active")
         .eq("id", data.subpanelId)
         .single();
       if (spErr || !sp) throw new Error("Subpainel não encontrado.");
+      if (!sp.is_active) throw new Error("Este subpainel operacional está desativado.");
       subpanel = sp;
     } else {
       throw new Error("Identificador do subpainel (token ou subpanelId) obrigatório.");
     }
 
-    const subtotalCents = data.items.reduce(
-      (acc, item) => acc + item.quantity * item.unitPriceCents,
-      0
+    if (data.orderType === "mobile_attendee" && subpanel.allow_online_orders === false) {
+      throw new Error("Este ponto de venda não está recebendo pedidos online no momento.");
+    }
+
+    // Buscar preços oficiais no banco para todos os produtos referenciados
+    const productIds = Array.from(
+      new Set(data.items.map((i) => i.productId).filter((id): id is string => Boolean(id)))
     );
+
+    const dbProductsMap = new Map<
+      string,
+      { id: string; nome: string; price_cents: number; ativo?: boolean }
+    >();
+
+    if (productIds.length > 0) {
+      const { data: dbProds } = await supabase
+        .from("event_store_products")
+        .select("id, nome, price_cents, ativo")
+        .in("id", productIds)
+        .eq("event_id", subpanel.event_id);
+
+      for (const p of dbProds || []) {
+        dbProductsMap.set(p.id, p);
+      }
+    }
+
+    const allowCustomPrice = Boolean(
+      subpanel.allow_custom_price || (subpanel.config as any)?.allow_custom_price
+    );
+
+    const verifiedItems = resolveVerifiedSubpanelOrderItems(
+      data.items,
+      dbProductsMap,
+      data.orderType,
+      allowCustomPrice
+    );
+
+    const subtotalCents = verifiedItems.reduce((acc, item) => acc + item.totalPriceCents, 0);
 
     const concessionPercentage = Number(subpanel.concession_percentage ?? 10);
     const concessionFixedCents = Number(subpanel.concession_fixed_cents ?? 0);
-    const concessionFeeCents = Math.round((subtotalCents * concessionPercentage) / 100) + concessionFixedCents;
+    const concessionFeeCents =
+      Math.round((subtotalCents * concessionPercentage) / 100) + concessionFixedCents;
     const totalCents = subtotalCents;
 
     const prefix = subpanel.panel_type ? subpanel.panel_type.slice(0, 3).toUpperCase() : "PED";
-    const randomSuffix = Math.floor(1000 + Math.random() * 9000);
+    const randomBytes = new Uint32Array(1);
+    crypto.getRandomValues(randomBytes);
+    const randomSuffix = 1000 + (randomBytes[0] % 9000);
     const orderNumber = `${prefix}-${randomSuffix}`;
 
     const { data: order, error: orderErr } = await supabase
@@ -2008,17 +2347,19 @@ export const createSubpanelOrder = createServerFn({ method: "POST" })
       .single();
 
     if (orderErr || !order) {
-      throw new Error("Erro ao criar pedido do subpainel: " + (orderErr?.message || "Registro falhou"));
+      throw new Error(
+        "Erro ao criar pedido do subpainel: " + (orderErr?.message || "Registro falhou")
+      );
     }
 
-    const orderItems = data.items.map((i) => ({
+    const orderItems = verifiedItems.map((i) => ({
       order_id: order.id,
-      product_id: i.productId || null,
+      product_id: i.productId,
       product_name: i.productName,
       quantity: i.quantity,
       unit_price_cents: i.unitPriceCents,
-      total_price_cents: i.quantity * i.unitPriceCents,
-      notes: i.notes || null,
+      total_price_cents: i.totalPriceCents,
+      notes: i.notes,
     }));
 
     const { error: itemsErr } = await supabase

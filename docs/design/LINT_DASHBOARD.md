@@ -1,25 +1,25 @@
 # LINT_DASHBOARD.md — Painel Canônico de Saúde Visual e Catraca
 
-> Gerado automaticamente pelo Design Lint V2 em: `2026-10-17T15:55:51.135Z`
+> Gerado automaticamente pelo Design Lint V2 em: `2026-10-17T16:51:30.699Z`
 
 ## 1. Resumo Executivo
 
 | Métrica | Atual | Baseline Congelada | Status Catraca |
 | :--- | :--- | :--- | :--- |
-| **Total de Arquivos** | 2122 | 2118 | Estável |
+| **Total de Arquivos** | 2123 | 2118 | Estável |
 | **Arquivos com Débito** | 882 | 884 | Monitorado |
-| **Total de Violações** | **12617** | **12651** | PASS (<= Baseline) |
+| **Total de Violações** | **12611** | **12651** | PASS (<= Baseline) |
 | **P0 (Bloqueia Entrega)** | **1448** | 1453 | PASS |
-| **P1 (Bloqueia Merge)** | **8531** | 8554 | PASS |
+| **P1 (Bloqueia Merge)** | **8527** | 8554 | PASS |
 | **P2 (Fila de Correção)** | 1336 | 1339 | Acompanhamento |
-| **P3 (Polimento)** | 1302 | 1305 | Acompanhamento |
+| **P3 (Polimento)** | 1300 | 1305 | Acompanhamento |
 
 ## 2. Débito Visual por Módulo
 
 | Módulo | Total | P0 | P1 | P2 | P3 |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | `components/app` | 5494 | 575 | 3706 | 673 | 540 |
-| `routes/workspace` | 2249 | 453 | 1396 | 124 | 276 |
+| `routes/workspace` | 2243 | 453 | 1392 | 124 | 274 |
 | `routes/store` | 1504 | 135 | 1002 | 140 | 227 |
 | `components/tourism` | 1135 | 95 | 791 | 178 | 71 |
 | `routes/admin` | 1024 | 90 | 765 | 51 | 118 |
@@ -38,11 +38,11 @@
 
 | Regra | Descrição Sumária | Severidade | Ocorrências |
 | :--- | :--- | :--- | :--- |
-| **DL-02** | Diretriz do Catálogo | `P1` | 3599 |
-| **DL-14** | Diretriz do Catálogo | `P1` | 2125 |
+| **DL-02** | Diretriz do Catálogo | `P1` | 3597 |
+| **DL-14** | Diretriz do Catálogo | `P1` | 2123 |
 | **DL-15** | Diretriz do Catálogo | `P0` | 1445 |
 | **DL-18** | Diretriz do Catálogo | `P1` | 1164 |
-| **DL-27** | Diretriz do Catálogo | `P3` | 1048 |
+| **DL-27** | Diretriz do Catálogo | `P3` | 1046 |
 | **DL-01** | Diretriz do Catálogo | `P1` | 939 |
 | **DL-07** | Diretriz do Catálogo | `P2` | 503 |
 | **DL-23** | Diretriz do Catálogo | `P2` | 421 |
