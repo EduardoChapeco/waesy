@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { CalendarBlank, Ticket, ArrowLeft, MapPin, ArrowSquareOut, Users, CheckCircle, Star, XCircle, Newspaper, PencilSimple, Handshake } from "@phosphor-icons/react";
 import { ContentActionsMenu } from "@/components/common/content-actions-menu";
-
+import { EventPublicConcessions } from "@/components/events/event-public-concessions";
+import { EventPublicSurveyModal } from "@/components/events/event-public-survey-modal";
 import { NativeBackButton } from "@/components/ui/native-back-button";
 
 export interface EventDetailDesktopProps {
@@ -13,6 +14,9 @@ export interface EventDetailDesktopProps {
   lots: any[];
   linkedNews?: any;
   partners?: any[];
+  concessions?: any[];
+  products?: any[];
+  surveys?: any[];
   userRsvp: string | null;
   rsvpCounts: { going: number; interested: number; not_going: number };
   isSubmittingRsvp: boolean;
@@ -26,6 +30,9 @@ export function EventDetailDesktop({
   lots,
   linkedNews,
   partners = [],
+  concessions = [],
+  products = [],
+  surveys = [],
   userRsvp,
   rsvpCounts,
   isSubmittingRsvp,
@@ -271,6 +278,19 @@ export function EventDetailDesktop({
                 </div>
               </div>
             )}
+
+            {/* ── Praça de Alimentação, Bares & Concessões do Evento ── */}
+            <EventPublicConcessions
+              eventId={event.id}
+              concessions={concessions}
+              products={products}
+            />
+
+            {/* ── Pesquisa & Avaliação de Participantes ── */}
+            <EventPublicSurveyModal
+              eventId={event.id}
+              surveys={surveys}
+            />
           </div>
         </div>
 

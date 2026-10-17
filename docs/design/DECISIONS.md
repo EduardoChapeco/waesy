@@ -3219,3 +3219,18 @@
   4. **Suíte de Testes Automatizada:** Criado `src/lib/news/city-editorial-images.test.ts` com 8/8 testes cobrindo preservação de capas originais, matching geográfico, título e nicho.
 - **Fundamentação:** AGENTS.md B.20, B.30, B.33, Apple HIG e WCAG 2.2 AA.
 - **Consequências:** Zero notícias sem imagem no feed da Home e no portal `/noticias`, preservando a consistência visual, eliminando CLS e garantindo fotografias autênticas do município ou contexto da notícia.
+
+## DEC-231: Ecossistema Recursivo de Eventos: Cockpit da Produtora, Terminais POS de Concessão, Cardápio Mobile e Pesquisas Geofenced
+
+- **Data:** 2026-10-17
+- **Contexto:** Necessidade de transformar o módulo de eventos em um ecossistema autônomo e recursivo de classe mundial (Apple HIG / BigTech), onde a produtora master consolida receita de bilheteria e taxas de concessão, cada evento opera como cockpit independente com múltiplos parceiros (bares, food trucks, lojas), os participantes podem fazer pedidos online expressos para retirada no balcão e responder a pesquisas de satisfação georreferenciadas vinculadas à presença no local.
+- **Decisão Adotada:**
+  1. **Migration PostgreSQL (`20261018000000_event_recursive_subpanels_and_surveys.sql`):** Estendidas tabelas `event_subpanels` (percentual de comissão, taxa fixa, pedidos online, partner_id), criadas tabelas `event_subpanel_orders`, `event_subpanel_order_items`, `event_surveys` (compatível com `schema-forms.ts`) e `event_survey_responses` com validação temporal e de geofence.
+  2. **BFF Server Functions (`src/services/events.functions.ts`):** Criados endpoints `createSubpanelOrder`, `listSubpanelOrders`, `listEventConcessionRevenue` (agregando receita bruta, taxa da produtora e repasse líquido aos parceiros), `listEventSurveys`, `upsertEventSurvey`, `submitSurveyResponse` (com cálculo Haversine de raio) e `getSurveyAnalytics`.
+  3. **Terminal de PDV do Parceiro (`portal.subpainel.$token.tsx`):** Substituído checkout simulado em memória por persistência real no PostgreSQL via `createSubpanelOrder`, catálogo dinâmico de produtos com fallbacks e agregação de faturamento do turno.
+  4. **Cockpit da Produtora (`workspace.eventos.$id.tsx` & `evento-subpaineis.tsx`):** Injetados KPI cards consolidando Bilheteria + Vendas de Parceiros + Comissão da Produtora + Lucro Líquido DRE, régua de abas em linha única horizontal contínua (Invariante B.39) e nova aba de Pesquisas.
+  5. **Cardápio Público no Evento & Pesquisa Mobile (`event-public-concessions.tsx` & `event-public-survey-modal.tsx`):** Integrados em `event-detail-mobile.tsx` e `event-detail-desktop.tsx` permitindo que participantes peçam no balcão via voucher e respondam a pesquisas com validação geofence.
+  6. **Qualidade e Conformidade:** Testes unitários com Vitest 100% aprovados (`src/services/events-subpanels-and-surveys.test.ts`), `npm run typecheck` Exit Code 0, e Design Lint aprovado com redução de 34 violações na catraca.
+- **Fundamentação:** AGENTS.md B.8, B.14, B.22, B.25, B.26, B.38, B.39, Apple HIG e WCAG 2.2 AA.
+- **Consequências:** Módulo de eventos completamente recursivo, auditado, resiliente, financeiramente integrado e de alta fidelidade ergonômica.
+

@@ -495,7 +495,7 @@ async function _getEventWithLots(eventId: string) {
  .single();
 
     if (!eventError && event) {
-      const [{ data: lots }, { data: relations }, { data: partners }] = await Promise.all([
+      const [{ data: lots }, { data: relations }, { data: partners }, { data: subpanels }, { data: products }, { data: surveys }] = await Promise.all([
         supabase
           .from("ticket_lots")
           .select("*")
@@ -515,11 +515,39 @@ async function _getEventWithLots(eventId: string) {
             (res) => res,
             () => ({ data: [] })
           ),
+        supabase
+          .from("event_subpanels")
+          .select("id, name, panel_type, allow_online_orders")
+          .eq("event_id", eventId)
+          .eq("is_active", true)
+          .eq("allow_online_orders", true)
+          .then((res) => res, () => ({ data: [] })),
+        supabase
+          .from("event_store_products")
+          .select("id, subpanel_id, nome, descricao, price_cents, imagem_url, estoque_atual")
+          .eq("event_id", eventId)
+          .eq("ativo", true)
+          .then((res) => res, () => ({ data: [] })),
+        supabase
+          .from("event_surveys")
+          .select("id, title, description, form_schema, require_geofence, venue_latitude, venue_longitude, geo_radius_meters")
+          .eq("event_id", eventId)
+          .eq("is_active", true)
+          .eq("target_audience", "attendees")
+          .then((res) => res, () => ({ data: [] })),
       ]);
 
       const linkedNews = relations?.[0]?.news_articles || null;
 
-      return { event, lots: lots || [], linkedNews, partners: partners || [] };
+      return {
+        event,
+        lots: lots || [],
+        linkedNews,
+        partners: partners || [],
+        concessions: subpanels || [],
+        products: products || [],
+        surveys: surveys || [],
+      };
     }
  } catch (err) {
  console.warn("[events] Erro ao buscar evento no banco:", err);
@@ -643,22 +671,30 @@ export const listEventSubpanels = createServerFn({ method: "GET" })
  return subpanels || [];
  });
 
+export const createEventSubpanelSchema = z.object({
+  eventId: z.string().uuid(),
+  name: z.string().min(2),
+  panelType: z.enum(["bar", "foodtruck", "restaurant", "merchandise", "ticketing_box", "vip_lounge", "security_checkpoint", "other"]).default("bar"),
+  managerName: z.string().optional(),
+  managerContact: z.string().optional(),
+  concessionPercentage: z.number().min(0).max(100).default(10),
+  concessionFixedCents: z.number().int().min(0).default(0),
+  allowOnlineOrders: z.boolean().default(true),
+  partnerId: z.string().uuid().optional().nullable(),
+  config: z.record(z.unknown()).default({}),
+  expireDays: z.number().int().min(1).default(30),
+});
+
 export const createEventSubpanel = createServerFn({ method: "POST" })
- .validator(
- z.object({
- eventId: z.string().uuid(),
- name: z.string().min(2),
- panelType: z.enum(["bar", "foodtruck", "restaurant", "merchandise", "ticketing_box", "vip_lounge", "security_checkpoint", "other"]).default("bar"),
- managerName: z.string().optional(),
- managerContact: z.string().optional(),
- config: z.record(z.unknown()).default({}),
- expireDays: z.number().int().min(1).default(30),
- }),
- )
+  .validator(createEventSubpanelSchema)
  .handler(async ({ data }) => {
  const supabase = getServerClient();
  const identity = await getServerIdentity();
  assertStoreAccess(identity, ["owner", "admin", "manager", "content"]);
+
+ const generatedToken = `spk_${crypto.randomUUID().replace(/-/g, "")}`;
+ const expiresAt = new Date();
+ expiresAt.setDate(expiresAt.getDate() + data.expireDays);
 
  // 1. Inserir Subpainel
  const { data: subpanel, error } = await supabase
@@ -670,6 +706,12 @@ export const createEventSubpanel = createServerFn({ method: "POST" })
  panel_type: data.panelType,
  manager_name: data.managerName,
  manager_contact: data.managerContact,
+ concession_percentage: data.concessionPercentage,
+ concession_fixed_cents: data.concessionFixedCents,
+ allow_online_orders: data.allowOnlineOrders,
+ partner_id: data.partnerId,
+ access_token: generatedToken,
+ token_expires_at: expiresAt.toISOString(),
  config: data.config,
  is_active: true,
  })
@@ -680,17 +722,20 @@ export const createEventSubpanel = createServerFn({ method: "POST" })
  throw new Error("Erro ao criar subpainel: " + (error?.message || "Registro não criado"));
  }
 
- // 2. Gerar Token Seguro de Acesso Externo
+ // 2. Tentar RPC se houver
+ try {
  const { data: token, error: tokenErr } = await supabase.rpc("generate_event_subpanel_token", {
  p_subpanel_id: subpanel.id,
  p_expire_days: data.expireDays,
  });
-
- if (tokenErr) {
- console.warn("Aviso: falha ao chamar RPC generate_event_subpanel_token:", tokenErr);
+ if (!tokenErr && token) {
+ subpanel.access_token = token;
+ }
+ } catch {
+ // Mantém generatedToken
  }
 
- return { status: "success", subpanel: { ...subpanel, access_token: token } };
+ return { status: "success", subpanel };
  });
 
 export const getEventSubpanelByToken = createServerFn({ method: "GET" })
@@ -1877,5 +1922,453 @@ export const validateCredentialCheckin = createServerFn({ method: "POST" })
       alreadyCheckedIn: false,
       credential: updated,
       message: `Acesso Liberado: ${updated.nome} [${updated.tipo.toUpperCase()}]`,
+    };
+  });
+
+// ---------------------------------------------------------------------------
+// SUBPANEL ORDERS & CONCESSION REVENUE (ONDA 2)
+export const createSubpanelOrderSchema = z.object({
+  token: z.string().optional(),
+  subpanelId: z.string().uuid().optional(),
+  orderType: z.enum(["counter_pos", "mobile_attendee", "table_service"]).default("counter_pos"),
+  tableOrLocation: z.string().optional().nullable(),
+  customerName: z.string().optional().nullable(),
+  customerPhone: z.string().optional().nullable(),
+  paymentMethod: z.enum(["pix", "credit_card", "debit_card", "cash", "cashless_token"]).default("pix"),
+  items: z.array(
+    z.object({
+      productId: z.string().uuid().optional().nullable(),
+      productName: z.string().min(1),
+      quantity: z.number().int().min(1).default(1),
+      unitPriceCents: z.number().int().min(0),
+      notes: z.string().optional().nullable(),
+    })
+  ).min(1),
+});
+
+export const createSubpanelOrder = createServerFn({ method: "POST" })
+  .validator(createSubpanelOrderSchema)
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+
+    let subpanel: any = null;
+    if (data.token) {
+      const { data: sp, error: spErr } = await supabase
+        .from("event_subpanels")
+        .select("id, store_id, event_id, name, panel_type, concession_percentage, concession_fixed_cents, allow_online_orders, is_active")
+        .eq("access_token", data.token)
+        .single();
+      if (spErr || !sp) throw new Error("Subpainel inválido ou token expirado.");
+      if (!sp.is_active) throw new Error("Este subpainel operacional está desativado.");
+      subpanel = sp;
+    } else if (data.subpanelId) {
+      const { data: sp, error: spErr } = await supabase
+        .from("event_subpanels")
+        .select("id, store_id, event_id, name, panel_type, concession_percentage, concession_fixed_cents, allow_online_orders, is_active")
+        .eq("id", data.subpanelId)
+        .single();
+      if (spErr || !sp) throw new Error("Subpainel não encontrado.");
+      subpanel = sp;
+    } else {
+      throw new Error("Identificador do subpainel (token ou subpanelId) obrigatório.");
+    }
+
+    const subtotalCents = data.items.reduce(
+      (acc, item) => acc + item.quantity * item.unitPriceCents,
+      0
+    );
+
+    const concessionPercentage = Number(subpanel.concession_percentage ?? 10);
+    const concessionFixedCents = Number(subpanel.concession_fixed_cents ?? 0);
+    const concessionFeeCents = Math.round((subtotalCents * concessionPercentage) / 100) + concessionFixedCents;
+    const totalCents = subtotalCents;
+
+    const prefix = subpanel.panel_type ? subpanel.panel_type.slice(0, 3).toUpperCase() : "PED";
+    const randomSuffix = Math.floor(1000 + Math.random() * 9000);
+    const orderNumber = `${prefix}-${randomSuffix}`;
+
+    const { data: order, error: orderErr } = await supabase
+      .from("event_subpanel_orders")
+      .insert({
+        subpanel_id: subpanel.id,
+        event_id: subpanel.event_id,
+        store_id: subpanel.store_id,
+        order_number: orderNumber,
+        customer_name: data.customerName,
+        customer_phone: data.customerPhone,
+        order_type: data.orderType,
+        table_or_location: data.tableOrLocation,
+        status: data.orderType === "mobile_attendee" ? "pending" : "completed",
+        payment_method: data.paymentMethod,
+        subtotal_cents: subtotalCents,
+        concession_fee_cents: concessionFeeCents,
+        total_cents: totalCents,
+      })
+      .select()
+      .single();
+
+    if (orderErr || !order) {
+      throw new Error("Erro ao criar pedido do subpainel: " + (orderErr?.message || "Registro falhou"));
+    }
+
+    const orderItems = data.items.map((i) => ({
+      order_id: order.id,
+      product_id: i.productId || null,
+      product_name: i.productName,
+      quantity: i.quantity,
+      unit_price_cents: i.unitPriceCents,
+      total_price_cents: i.quantity * i.unitPriceCents,
+      notes: i.notes || null,
+    }));
+
+    const { error: itemsErr } = await supabase
+      .from("event_subpanel_order_items")
+      .insert(orderItems);
+
+    if (itemsErr) {
+      console.warn("Aviso ao salvar itens do pedido:", itemsErr);
+    }
+
+    return {
+      success: true,
+      order: {
+        ...order,
+        items: orderItems,
+      },
+    };
+  });
+
+export const listSubpanelOrders = createServerFn({ method: "GET" })
+  .validator(
+    z.object({
+      token: z.string().optional(),
+      subpanelId: z.string().uuid().optional(),
+      eventId: z.string().uuid().optional(),
+    })
+  )
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+
+    let query = supabase
+      .from("event_subpanel_orders")
+      .select("*, items:event_subpanel_order_items(*)")
+      .order("created_at", { ascending: false });
+
+    if (data.token) {
+      const { data: sp } = await supabase
+        .from("event_subpanels")
+        .select("id")
+        .eq("access_token", data.token)
+        .single();
+      if (!sp) return [];
+      query = query.eq("subpanel_id", sp.id);
+    } else if (data.subpanelId) {
+      query = query.eq("subpanel_id", data.subpanelId);
+    } else if (data.eventId) {
+      query = query.eq("event_id", data.eventId);
+    }
+
+    const { data: orders, error } = await query;
+    if (error) throw new Error("Erro ao listar pedidos: " + error.message);
+    return orders || [];
+  });
+
+export const listEventConcessionRevenue = createServerFn({ method: "GET" })
+  .validator(z.object({ eventId: z.string().uuid() }))
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+
+    const { data: orders, error } = await supabase
+      .from("event_subpanel_orders")
+      .select("id, subpanel_id, subtotal_cents, concession_fee_cents, total_cents, status, created_at, subpanel:event_subpanels(id, name, panel_type)")
+      .eq("event_id", data.eventId)
+      .neq("status", "cancelled");
+
+    if (error) {
+      console.warn("Aviso ao buscar faturamento de concessão:", error);
+      return {
+        totalOrders: 0,
+        grossRevenueCents: 0,
+        concessionFeeCents: 0,
+        netPartnerRevenueCents: 0,
+        bySubpanel: [],
+      };
+    }
+
+    const list = orders || [];
+    const totalOrders = list.length;
+    const grossRevenueCents = list.reduce((acc, o) => acc + (o.total_cents || 0), 0);
+    const concessionFeeCents = list.reduce((acc, o) => acc + (o.concession_fee_cents || 0), 0);
+    const netPartnerRevenueCents = grossRevenueCents - concessionFeeCents;
+
+    const map = new Map<string, { subpanelId: string; name: string; panelType: string; ordersCount: number; grossCents: number; feeCents: number }>();
+    for (const o of list) {
+      const spId = o.subpanel_id;
+      const sp = (o as any).subpanel || { id: spId, name: "Ponto Operacional", panel_type: "geral" };
+      if (!map.has(spId)) {
+        map.set(spId, {
+          subpanelId: spId,
+          name: sp.name,
+          panelType: sp.panel_type,
+          ordersCount: 0,
+          grossCents: 0,
+          feeCents: 0,
+        });
+      }
+      const item = map.get(spId)!;
+      item.ordersCount += 1;
+      item.grossCents += (o.total_cents || 0);
+      item.feeCents += (o.concession_fee_cents || 0);
+    }
+
+    return {
+      totalOrders,
+      grossRevenueCents,
+      concessionFeeCents,
+      netPartnerRevenueCents,
+      bySubpanel: Array.from(map.values()),
+    };
+  });
+
+export const listSubpanelProducts = createServerFn({ method: "GET" })
+  .validator(
+    z.object({
+      token: z.string().optional(),
+      subpanelId: z.string().uuid().optional(),
+      eventId: z.string().uuid().optional(),
+    })
+  )
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+
+    let targetSubpanelId = data.subpanelId;
+    let targetEventId = data.eventId;
+
+    if (data.token) {
+      const { data: sp } = await supabase
+        .from("event_subpanels")
+        .select("id, event_id")
+        .eq("access_token", data.token)
+        .single();
+      if (!sp) return [];
+      targetSubpanelId = sp.id;
+      targetEventId = sp.event_id;
+    }
+
+    let query = supabase
+      .from("event_store_products")
+      .select("*")
+      .eq("ativo", true)
+      .order("price_cents", { ascending: true });
+
+    if (targetSubpanelId) {
+      query = query.eq("subpanel_id", targetSubpanelId);
+    } else if (targetEventId) {
+      query = query.eq("event_id", targetEventId);
+    }
+
+    const { data: products, error } = await query;
+    if (error) {
+      console.warn("Aviso ao carregar produtos:", error);
+      return [];
+    }
+    return products || [];
+  });
+
+// ---------------------------------------------------------------------------
+// EVENT SURVEYS & SMART FORMS (ONDA 2 & ONDA 6)
+// ---------------------------------------------------------------------------
+
+export const listEventSurveys = createServerFn({ method: "GET" })
+  .validator(z.object({ eventId: z.string().uuid() }))
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+
+    const { data: surveys, error } = await supabase
+      .from("event_surveys")
+      .select("*, responses:event_survey_responses(count)")
+      .eq("event_id", data.eventId)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.warn("Aviso ao listar pesquisas do evento:", error);
+      return [];
+    }
+    return surveys || [];
+  });
+
+export const upsertEventSurveySchema = z.object({
+  id: z.string().uuid().optional(),
+  eventId: z.string().uuid(),
+  title: z.string().min(3),
+  description: z.string().optional().nullable(),
+  targetAudience: z.enum(["attendees", "sponsors", "vendors", "staff"]).default("attendees"),
+  formSchema: z.record(z.unknown()).default({}),
+  startsAt: z.string().optional().nullable(),
+  endsAt: z.string().optional().nullable(),
+  requireGeofence: z.boolean().default(false),
+  venueLatitude: z.number().optional().nullable(),
+  venueLongitude: z.number().optional().nullable(),
+  geoRadiusMeters: z.number().int().min(50).default(500),
+  isActive: z.boolean().default(true),
+});
+
+export const upsertEventSurvey = createServerFn({ method: "POST" })
+  .validator(upsertEventSurveySchema)
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin", "manager"]);
+
+    const payload = {
+      event_id: data.eventId,
+      store_id: identity.store_id,
+      title: data.title,
+      description: data.description,
+      target_audience: data.targetAudience,
+      form_schema: data.formSchema,
+      starts_at: data.startsAt,
+      ends_at: data.endsAt,
+      require_geofence: data.requireGeofence,
+      venue_latitude: data.venueLatitude,
+      venue_longitude: data.venueLongitude,
+      geo_radius_meters: data.geoRadiusMeters,
+      is_active: data.isActive,
+      updated_at: new Date().toISOString(),
+    };
+
+    if (data.id) {
+      const { data: updated, error } = await supabase
+        .from("event_surveys")
+        .update(payload)
+        .eq("id", data.id)
+        .eq("store_id", identity.store_id)
+        .select()
+        .single();
+      if (error) throw new Error("Erro ao atualizar pesquisa: " + error.message);
+      return updated;
+    } else {
+      const { data: created, error } = await supabase
+        .from("event_surveys")
+        .insert(payload)
+        .select()
+        .single();
+      if (error) throw new Error("Erro ao criar pesquisa: " + error.message);
+      return created;
+    }
+  });
+
+export const submitSurveyResponseSchema = z.object({
+  surveyId: z.string().uuid(),
+  eventId: z.string().uuid(),
+  respondentName: z.string().optional().nullable(),
+  respondentEmail: z.string().optional().nullable(),
+  answers: z.record(z.unknown()),
+  latitude: z.number().optional().nullable(),
+  longitude: z.number().optional().nullable(),
+});
+
+export const submitSurveyResponse = createServerFn({ method: "POST" })
+  .validator(submitSurveyResponseSchema)
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+
+    const { data: survey, error: survErr } = await supabase
+      .from("event_surveys")
+      .select("*")
+      .eq("id", data.surveyId)
+      .eq("is_active", true)
+      .single();
+
+    if (survErr || !survey) throw new Error("Pesquisa não encontrada ou inativa.");
+
+    const now = new Date();
+    if (survey.starts_at && new Date(survey.starts_at) > now) {
+      throw new Error("Esta pesquisa ainda não está aberta para respostas.");
+    }
+    if (survey.ends_at && new Date(survey.ends_at) < now) {
+      throw new Error("Esta pesquisa já foi encerrada.");
+    }
+
+    let verifiedLocation = false;
+    if (survey.require_geofence && survey.venue_latitude && survey.venue_longitude) {
+      if (data.latitude != null && data.longitude != null) {
+        const R = 6371e3;
+        const phi1 = (survey.venue_latitude * Math.PI) / 180;
+        const phi2 = (data.latitude * Math.PI) / 180;
+        const deltaPhi = ((data.latitude - survey.venue_latitude) * Math.PI) / 180;
+        const deltaLambda = ((data.longitude - survey.venue_longitude) * Math.PI) / 180;
+        const a =
+          Math.sin(deltaPhi / 2) * Math.sin(deltaPhi / 2) +
+          Math.cos(phi1) * Math.cos(phi2) * Math.sin(deltaLambda / 2) * Math.sin(deltaLambda / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        const distance = R * c;
+
+        const maxDist = survey.geo_radius_meters || 500;
+        if (distance <= maxDist) {
+          verifiedLocation = true;
+        } else {
+          throw new Error("Você precisa estar presente no local do evento para responder a esta pesquisa.");
+        }
+      } else {
+        throw new Error("Localização necessária para responder a esta pesquisa.");
+      }
+    }
+
+    const { data: response, error: respErr } = await supabase
+      .from("event_survey_responses")
+      .insert({
+        survey_id: data.surveyId,
+        event_id: data.eventId,
+        respondent_name: data.respondentName,
+        respondent_email: data.respondentEmail,
+        answers: data.answers,
+        verified_location: verifiedLocation,
+      })
+      .select()
+      .single();
+
+    if (respErr || !response) {
+      throw new Error("Erro ao salvar resposta da pesquisa: " + (respErr?.message || "Erro desconhecido"));
+    }
+
+    await supabase
+      .from("event_surveys")
+      .update({ responses_count: (survey.responses_count || 0) + 1 })
+      .eq("id", survey.id);
+
+    return { success: true, responseId: response.id };
+  });
+
+export const getSurveyAnalytics = createServerFn({ method: "GET" })
+  .validator(z.object({ surveyId: z.string().uuid() }))
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+
+    const { data: responses, error } = await supabase
+      .from("event_survey_responses")
+      .select("answers, verified_location, submitted_at")
+      .eq("survey_id", data.surveyId);
+
+    if (error) throw new Error("Erro ao carregar métricas da pesquisa: " + error.message);
+
+    const list = responses || [];
+    const totalResponses = list.length;
+    const verifiedLocationCount = list.filter((r) => r.verified_location).length;
+
+    const fieldSummaries: Record<string, Record<string, number>> = {};
+    for (const r of list) {
+      const answers = (r.answers || {}) as Record<string, any>;
+      for (const [key, value] of Object.entries(answers)) {
+        if (!fieldSummaries[key]) fieldSummaries[key] = {};
+        const strVal = String(value);
+        fieldSummaries[key][strVal] = (fieldSummaries[key][strVal] || 0) + 1;
+      }
+    }
+
+    return {
+      totalResponses,
+      verifiedLocationCount,
+      fieldSummaries,
     };
   });
