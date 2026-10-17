@@ -33,10 +33,10 @@ describe("resolveClassifiedDetailedSpecs", () => {
         { label: "Marca", value: "Toyota", category: "technical" },
         { label: "Modelo", value: "Corolla", category: "technical" },
         { label: "Versão", value: "2.0 XEi", category: "technical" },
-        { label: "Ano", value: "2022/2023", category: "technical" },
-        { label: "Quilometragem", value: "28.500 km", category: "technical" },
-        { label: "Combustível", value: "Flex", category: "technical" },
-        { label: "Câmbio", value: "Automático CVT", category: "technical" },
+        { label: "Ano", value: "2022/2023", category: "technical", highlight: true },
+        { label: "Quilometragem", value: "28.500 km", category: "technical", highlight: true },
+        { label: "Combustível", value: "Flex", category: "technical", highlight: true },
+        { label: "Câmbio", value: "Automático CVT", category: "technical", highlight: true },
         { label: "Cor", value: "Prata", category: "technical" },
         { label: "Opcionais", value: "Bancos de Couro, Sensor de Ré", category: "technical" },
       ])
@@ -65,11 +65,11 @@ describe("resolveClassifiedDetailedSpecs", () => {
       expect.arrayContaining([
         { label: "Tipo de Imóvel", value: "Apartamento", category: "technical" },
         { label: "Finalidade", value: "Venda", category: "commercial" },
-        { label: "Área Útil", value: "110 m²", category: "dimensions" },
-        { label: "Quartos", value: "3", category: "technical" },
-        { label: "Suítes", value: "1", category: "technical" },
+        { label: "Área Útil", value: "110 m²", category: "dimensions", highlight: true },
+        { label: "Quartos", value: "3", category: "technical", highlight: true },
+        { label: "Suítes", value: "1", category: "technical", highlight: true },
         { label: "Banheiros", value: "2", category: "technical" },
-        { label: "Vagas", value: "2", category: "technical" },
+        { label: "Vagas", value: "2", category: "technical", highlight: true },
         { label: "Condomínio", value: formatMoney(65000), category: "commercial" },
         { label: "IPTU", value: formatMoney(12000), category: "commercial" },
         { label: "Mobiliado", value: "Sim, completo", category: "technical" },
@@ -94,9 +94,9 @@ describe("resolveClassifiedDetailedSpecs", () => {
     const specs = resolveClassifiedDetailedSpecs(serviceAd);
     expect(specs).toEqual(
       expect.arrayContaining([
-        { label: "Modalidade", value: "Atendimento a Domicílio", category: "technical" },
-        { label: "Região de Atendimento", value: "Zona Sul de São Paulo", category: "logistics" },
-        { label: "Duração Média", value: "90 minutos", category: "technical" },
+        { label: "Modalidade", value: "Atendimento a Domicílio", category: "technical", highlight: true },
+        { label: "Região de Atendimento", value: "Zona Sul de São Paulo", category: "logistics", highlight: true },
+        { label: "Duração Média", value: "90 minutos", category: "technical", highlight: true },
         { label: "Especialidade", value: "Manutenção Elétrica", category: "technical" },
         { label: "Horário de Atendimento", value: "08:00 às 18:00", category: "logistics" },
         { label: "Dias de Atendimento", value: "Seg, Ter, Qua, Qui, Sex", category: "logistics" },

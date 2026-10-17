@@ -278,7 +278,7 @@ export function resolveClassifiedDetailedSpecs(classified: any): ClassifiedSpecI
       : mealPlan === "pensao_completa" || mealPlan === "completa"
       ? "Pensão Completa"
       : String(mealPlan);
-    list.push({ label: "Regime", value: mLabel, category: "technical", highlight: true });
+    list.push({ label: "Regime Alimentar", value: mLabel, category: "technical", highlight: true });
   }
   if (departureDate) {
     list.push({ label: "Embarque", value: String(departureDate), category: "logistics" });
