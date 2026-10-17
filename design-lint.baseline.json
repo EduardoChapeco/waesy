@@ -1,8 +1,8 @@
 {
   "version": "2.0.0",
-  "timestamp": "2026-10-17T13:38:00.327Z",
+  "timestamp": "2026-10-17T13:42:34.091Z",
   "totalViolations": 12657,
-  "filesInspected": 2113,
+  "filesInspected": 2116,
   "filesWithViolations": 884,
   "bySeverity": {
     "P0": 1454,
