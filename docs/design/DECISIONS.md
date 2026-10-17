@@ -3297,3 +3297,16 @@
   3. Adicionado seletor multilíngue (`PT-BR · Português`, `EN-US · English`, `ES-ES · Español`) em `PreBoardingPresentationStudio.tsx`.
 - **Fundamentação Teórica:** AGENTS.md B.8, B.25, B.33 (Invariante Anti-Fake Estrita), B.38 e B.39.
 - **Consequências:** Zero regras fixas ou mocks sintéticos; 18/18 testes unitários aprovados nas suítes de turismo (`travel-pre-boarding-and-commissions.test.ts`, `travel-ecosystem-engines.test.ts`, `travel-continuous-flow.test.ts`), `npm run typecheck` com Exit Code 0 e `design-lint.mjs --ratchet` com Exit Code 0 (-42 violações).
+
+## DEC-237: Unificação Arquitetural do Ecossistema, Paridade Multi-Nicho, Erradicação de Mocks em Dashboards e Nativização de Dispositivos (Anti-Jank / Anti-Sanfona)
+- **Data:** 2026-10-17
+- **ID da Decisão:** DEC-237
+- **Contexto:** Auditoria transversal do ecossistema identificou fragmentação arquitetural (rotas duplicadas de checkout e vitrines de lojas concorrentes em `/marketplace/$storeSlug` vs `/loja/$slug`), perda silenciosa de especificações de nichos no catálogo público devido a divergências de nomenclatura de atributos (`usable_area`, `total_area`, `parking_spaces`, `license_plate_end`), fallbacks fictícios e dados sintéticos em dashboards do Workspace (`PolymorphicDashboardRenderer.tsx`) e desvios de layout causados por responsividade monolítica em vez de cascas nativas bifurcadas.
+- **Decisão Adotada:**
+  1. **Normalização Multi-Nicho e Resolução Canônica:** Expandido `src/lib/classifieds/canonical-specs-resolver.ts` para mapear sinônimos de atributos (`usable_area`/`area_sqm`, `total_area`/`total_area_sqm`, `parking_spaces`/`parking_spots`, `license_plate_end`/`plate_end`, `service_duration`, `weight_kg`, `dimensions`), garantindo que campos preenchidos no Workspace apareçam integralmente nos cards e vitrines públicas. Testado e validado em `src/lib/classifieds/canonical-specs-resolver.test.ts`.
+  2. **Consolidação do Checkout e Vitrines de Lojas:** Redirecionada a rota duplicada `src/routes/_store.marketplace.checkout.tsx` para o checkout canônico `/checkout`, e `src/routes/_store.marketplace.$storeSlug.tsx` para o perfil oficial `/loja/$slug` renderizado pelo `CanonicalStoreProfileView`.
+  3. **Erradicação de Mocks em Dashboards:** Removidos todos os dados sintéticos em `src/components/workspace/dashboard/PolymorphicDashboardRenderer.tsx` (VGV fictício de R$ 14,8M, arrays hardcoded de clientes e contagens arbitrárias), conectando agregação real e adicionando suporte nativo para Turismo (`TourismAgencyDashboard`) e Eventos (`EventsMasterDashboard`).
+  4. **Conformidade Estrita com Design Tokens e Catraca:** Ajustadas microclasses fora da grade de 4px (`mt-0.5` -> `mt-1`) e substituídos colchetes arbitrários por tokens semânticos (`text-xs`). Catraca de design lint aprovada com redução de 67 violações.
+- **Fundamentação Teórica:** AGENTS.md B.1 a B.12, B.22, B.25, B.26, B.33 (Invariante Anti-Fake Estrita) e B.37 (Isolamento Semântico Estrito de Nichos).
+- **Consequências:** Zero rotas concorrentes, 2.049/2.049 testes aprovados em Vitest, `npm run typecheck` com Exit Code 0 em todos os 2.134 arquivos do repositório e `design-lint.mjs --ratchet` aprovado com 0 violações bloqueantes.
+

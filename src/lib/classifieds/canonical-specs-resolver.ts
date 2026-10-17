@@ -152,7 +152,7 @@ export function resolveClassifiedDetailedSpecs(classified: any): ClassifiedSpecI
     list.push({ label: "Condição", value: condLabel, category: "technical", highlight: true });
   }
 
-  const rawWarranty = attrs.warranty || classified.warranty;
+  const rawWarranty = attrs.service_warranty || attrs.warranty || classified.warranty;
   if (rawWarranty && !isTravel && !isJobs && !isSubscription) {
     list.push({ label: "Garantia", value: String(rawWarranty), category: "commercial" });
   }
@@ -196,7 +196,7 @@ export function resolveClassifiedDetailedSpecs(classified: any): ClassifiedSpecI
     const bodyType = attrs.body_type || classified.body_type;
     if (bodyType) list.push({ label: "Carroceria", value: String(bodyType), category: "technical" });
 
-    const plateFinal = attrs.chassis_plate_final || attrs.plate_end || classified.plate_end;
+    const plateFinal = attrs.license_plate_end ?? attrs.chassis_plate_final ?? attrs.plate_end ?? classified.plate_end;
     if (plateFinal !== undefined && plateFinal !== null && plateFinal !== "") {
       list.push({ label: "Final da Placa", value: String(plateFinal), category: "technical" });
     }
@@ -222,12 +222,12 @@ export function resolveClassifiedDetailedSpecs(classified: any): ClassifiedSpecI
   if (!isTravel) {
     const propertyType = classified.property_type || attrs.property_type;
     const dealType = classified.deal_type || attrs.deal_type;
-    const areaSqm = classified.area_sqm ?? attrs.area_sqm;
-    const totalAreaSqm = classified.total_area_sqm ?? attrs.total_area_sqm;
+    const areaSqm = classified.area_sqm ?? attrs.area_sqm ?? attrs.usable_area;
+    const totalAreaSqm = classified.total_area_sqm ?? attrs.total_area_sqm ?? attrs.total_area;
     const bedrooms = classified.bedrooms ?? attrs.bedrooms;
     const suites = classified.suites ?? attrs.suites;
     const bathrooms = classified.bathrooms ?? attrs.bathrooms;
-    const parkingSpots = classified.parking_spots ?? attrs.parking_spots ?? attrs.garage_spots;
+    const parkingSpots = classified.parking_spots ?? attrs.parking_spots ?? attrs.garage_spots ?? attrs.parking_spaces;
     const maxGuests = classified.max_guests ?? attrs.max_guests;
     const cleaningFeeCents = classified.cleaning_fee_cents ?? attrs.cleaning_fee_cents;
     const condoCents = attrs.condo_cents ?? attrs.condominium_cents;
@@ -300,7 +300,7 @@ export function resolveClassifiedDetailedSpecs(classified: any): ClassifiedSpecI
   if (!isTravel) {
     const modality = attrs.modality;
     const serviceArea = attrs.service_area;
-    const serviceDuration = classified.service_duration_minutes ?? attrs.service_duration_minutes ?? attrs.estimated_duration;
+    const serviceDuration = classified.service_duration_minutes ?? attrs.service_duration_minutes ?? attrs.service_duration ?? attrs.estimated_duration;
     const serviceSubNiche = attrs.service_subniche;
     const council = attrs.professional_council;
     const specialty = attrs.specialty;
@@ -324,7 +324,7 @@ export function resolveClassifiedDetailedSpecs(classified: any): ClassifiedSpecI
     }
   }
 
-  // ── 5. DESAPEGO / ELETRÔNICOS / INFORMÁTICA / MÓVEIS / MODA ──
+  // ── 5. DESAPEGO / ELETRÔNICOS / INFORMÁTICA / MÓVEIS / MODA / PRODUTO FÍSICO ──
   if (!isTravel && !isJobs && !isServices) {
     const storage = attrs.storage;
     const batteryHealth = attrs.battery_health;
@@ -339,7 +339,11 @@ export function resolveClassifiedDetailedSpecs(classified: any): ClassifiedSpecI
     const fashionCategory = attrs.fashion_category;
     const fashionGender = attrs.gender;
     const fashionSize = attrs.size;
+    const weightKg = attrs.weight_kg ?? classified.weight_kg;
+    const dimensions = attrs.dimensions ?? classified.dimensions;
 
+    if (weightKg) list.push({ label: "Peso", value: `${weightKg} kg`, category: "dimensions" });
+    if (dimensions) list.push({ label: "Dimensões", value: String(dimensions), category: "dimensions" });
     if (storage) list.push({ label: "Armazenamento", value: String(storage), category: "technical", highlight: true });
     if (batteryHealth) list.push({ label: "Saúde da Bateria", value: `${batteryHealth}%`, category: "technical", highlight: true });
     if (computerType) list.push({ label: "Tipo", value: String(computerType), category: "technical" });

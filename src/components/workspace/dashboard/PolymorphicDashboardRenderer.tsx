@@ -1,10 +1,12 @@
 /**
- * PolymorphicDashboardRenderer.tsx — Motor de Metamorfose Estrutural do Dashboard (V137)
+ * PolymorphicDashboardRenderer.tsx — Motor de Metamorfose Estrutural do Dashboard
  * 
- * Substitui a "Miopia Estrutural" por layouts hiper-especializados por vertical:
- * 1. Agendamento & Clínicas (Services / Barbearias / Clínicas): Timeline Apple Calendar, Ocupação, No-Shows e Especialistas.
- * 2. Alto Valor & Imobiliária (Real Estate / Veículos): VGV da Carteira, Funil Kanban de Negociações, Imóveis Estagnados.
- * 3. Comércio & Gastronomia (Retail / Gastro / Dark Kitchen): KDS Live, Separação/Expedição, Ticket Médio e Estoque Crítico.
+ * Substitui a "Miopia Estrutural" por layouts hiper-especializados por vertical sem mocks:
+ * 1. Agendamento & Clínicas (Services / Barbearias / Clínicas / Saúde)
+ * 2. Alto Valor & Imobiliária (Real Estate / Veículos)
+ * 3. Comércio & Gastronomia (Retail / Gastro / Alimentação)
+ * 4. Turismo & Viagens (Agências de Viagens / Operadoras / Roteiros)
+ * 5. Eventos & Festivais (Produtoras / Bilheteria / Subpainéis PDV)
  */
 
 import React from "react";
@@ -13,7 +15,7 @@ import {
   Calendar, Clock, Users, CheckCircle2, AlertTriangle, ArrowUpRight, 
   TrendingUp, TrendingDown, DollarSign, FileText, Building2, ShoppingBag, 
   ChefHat, Package, Flame, QrCode, Phone, MessageSquare, ChevronRight,
-  Boxes, UserCheck, Stethoscope, Car
+  Boxes, UserCheck, Stethoscope, Car, Plane, Ticket, ShieldCheck
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -45,23 +47,14 @@ function AppointmentServicesDashboard({
   isTogglingStatus,
   onOpenShareModal,
 }: PolymorphicDashboardProps) {
-  // Horas canônicas do dia útil (Timeline estilo Apple Calendar)
-  const timelineHours = [
-    { hour: "08:00", status: "past", client: "Consulta Concluída", specialist: "Dr. André", service: "Avaliação Geral" },
-    { hour: "09:30", status: "past", client: "Marcos Silveira", specialist: "Dra. Camila", service: "Retorno Clínico" },
-    { hour: "11:00", status: "current", client: "Ana Beatriz Rocha", specialist: "Dr. André", service: "Procedimento Especial" },
-    { hour: "14:00", status: "upcoming", client: "Lucas Fontes", specialist: "Dra. Camila", service: "Atendimento Inicial" },
-    { hour: "15:30", status: "upcoming", client: "Patrícia Lima", specialist: "Dr. André", service: "Sessão Terapêutica" },
-    { hour: "17:00", status: "free", client: "Horário Disponível", specialist: "Livre", service: "Encaixe Aberto" },
-  ];
-
-  const occupancyRate = metrics?.nicheMetrics?.occupancyRatePercentage ?? 84;
-  const todayCount = metrics?.nicheMetrics?.todayAppointmentsCount ?? Math.max(6, metrics?.ordersTodayCount || 0);
+  const occupancyRate = metrics?.nicheMetrics?.occupancyRatePercentage ?? 0;
+  const todayCount = metrics?.nicheMetrics?.todayAppointmentsCount ?? (metrics?.ordersTodayCount || 0);
   const noShows = metrics?.nicheMetrics?.noShowsTodayCount ?? 0;
+  const recentActivities = metrics?.recentActivities || [];
 
   return (
     <div className="space-y-4 sm:space-y-6">
-      {/* ── Topo: Timeline Horizontal Apple Calendar ── */}
+      {/* ── Topo: Timeline e Status do Dia ── */}
       <div className="p-4 sm:p-5 rounded-lg bg-card border border-border/60 space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -69,8 +62,8 @@ function AppointmentServicesDashboard({
               <Calendar className="size-4" />
             </div>
             <div>
-              <h2 className="text-sm sm:text-base font-bold text-foreground">Timeline de Atendimentos de Hoje</h2>
-              <p className="text-[11px] text-muted-foreground">Grade dinâmica em tempo real para especialistas</p>
+              <h2 className="text-sm sm:text-base font-bold text-foreground">Timeline de Atendimentos</h2>
+              <p className="text-xs text-muted-foreground">Grade de especialistas e agendamentos</p>
             </div>
           </div>
           <Button asChild size="sm" variant="outline" className="h-8 rounded-lg text-xs font-semibold gap-2 border-border/80">
@@ -81,129 +74,86 @@ function AppointmentServicesDashboard({
           </Button>
         </div>
 
-        {/* Trilho de Horários com Scroll Suave */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 pt-1">
-          {timelineHours.map((slot, idx) => (
-            <div
-              key={idx}
-              className={cn(
-                "p-3 rounded-lg border text-xs transition-all select-none space-y-1",
-                slot.status === "current"
-                  ? "bg-primary/10 border-primary text-primary shadow-2xs font-semibold"
-                  : slot.status === "past"
-                  ? "bg-muted/40 border-border/40 text-muted-foreground opacity-70"
-                  : slot.status === "free"
-                  ? "bg-emerald-500/5 border-dashed border-emerald-500/30 text-emerald-600 dark:text-emerald-400"
-                  : "bg-card border-border/60 text-foreground"
-              )}
-            >
-              <div className="flex items-center justify-between text-[11px] font-mono font-bold">
-                <span>{slot.hour}</span>
-                {slot.status === "current" && (
-                  <span className="size-1.5 rounded-full bg-primary animate-pulse" />
-                )}
-                {slot.status === "free" && (
-                  <span className="text-[9px] font-bold uppercase tracking-wider">Vago</span>
-                )}
+        {todayCount === 0 ? (
+          <div className="p-6 text-center rounded-lg border border-dashed border-border/60 text-muted-foreground text-xs">
+            Nenhum atendimento agendado para o dia de hoje.
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 pt-1">
+            <div className="p-3 rounded-lg border text-xs bg-card border-border/60 text-foreground space-y-1">
+              <div className="flex items-center justify-between text-xs font-mono font-bold">
+                <span>Confirmados</span>
+                <span className="size-1.5 rounded-full bg-primary" />
               </div>
-              <div className="font-bold text-xs truncate" title={slot.client}>
-                {slot.client}
-              </div>
-              <div className="text-[10px] text-muted-foreground truncate">
-                {slot.service} • {slot.specialist}
-              </div>
+              <div className="font-bold text-xs">{todayCount} cliente(s)</div>
+              <div className="text-xs text-muted-foreground">No dia</div>
             </div>
-          ))}
-        </div>
+          </div>
+        )}
       </div>
 
       {/* ── KPIs Estruturais de Agenda (Bento Grid) ── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        {/* Taxa de Ocupação da Grade */}
         <div className="p-4 rounded-lg bg-card border border-border/60 space-y-1">
           <span className="text-xs font-semibold text-muted-foreground">Taxa de Ocupação</span>
           <div className="text-2xl sm:text-3xl font-bold font-mono tracking-tight text-foreground">
-            {occupancyRate}%
+            {occupancyRate > 0 ? `${occupancyRate}%` : "--"}
           </div>
-          <div className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
-            <TrendingUp className="size-3" />
-            <span>Grade quase cheia</span>
-          </div>
+          <div className="text-xs text-muted-foreground">Grade do dia</div>
         </div>
 
-        {/* Atendimentos Hoje */}
         <div className="p-4 rounded-lg bg-card border border-border/60 space-y-1">
           <span className="text-xs font-semibold text-muted-foreground">Atendimentos Hoje</span>
           <div className="text-2xl sm:text-3xl font-bold font-mono tracking-tight text-foreground">
             {todayCount}
           </div>
-          <div className="text-[11px] text-muted-foreground">
-            Confirmados na recepção
-          </div>
+          <div className="text-xs text-muted-foreground">Confirmados</div>
         </div>
 
-        {/* No-Shows / Faltas */}
         <div className="p-4 rounded-lg bg-card border border-border/60 space-y-1">
           <span className="text-xs font-semibold text-muted-foreground">Faltas (No-Shows)</span>
           <div className="text-2xl sm:text-3xl font-bold font-mono tracking-tight text-foreground">
             {noShows}
           </div>
-          <div className="text-[11px] text-muted-foreground">
-            Zero ausências registradas
-          </div>
+          <div className="text-xs text-muted-foreground">Ausências registradas</div>
         </div>
 
-        {/* Faturamento de Procedimentos */}
         <div className="p-4 rounded-lg bg-card border border-border/60 space-y-1">
           <span className="text-xs font-semibold text-muted-foreground">Faturamento Mês</span>
           <div className="text-2xl sm:text-3xl font-bold font-mono tracking-tight text-foreground">
             {formatMoney(metrics?.salesMonthCents || 0)}
           </div>
-          <div className="text-[11px] text-muted-foreground truncate">
+          <div className="text-xs text-muted-foreground truncate">
             {metrics?.growthPercentage ? `+${metrics.growthPercentage}% vs mês ant.` : "Em dia"}
           </div>
         </div>
       </div>
 
-      {/* ── Seção Inferior Bifurcada: Lista Mobile vs Tabela Desktop ── */}
+      {/* ── Seção Inferior: Atividades Recentes ── */}
       <div className="p-4 sm:p-5 rounded-lg bg-card border border-border/60 space-y-3">
         <div className="flex items-center justify-between">
           <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-            Próximos Pacientes / Clientes
+            Atividades Recentes
           </h3>
           <Link to="/workspace/agenda/recursos" className="text-xs font-semibold text-primary hover:underline">
             Ver Equipe & Escalas
           </Link>
         </div>
 
-        {/* WhatsApp List Style Edge-to-Edge no Mobile */}
-        <div className="divide-y divide-border/40 border-y border-border/40 -mx-4 sm:mx-0 sm:border-0 sm:divide-y-0 sm:grid sm:grid-cols-2 sm:gap-3">
-          {[
-            { name: "Ana Beatriz Rocha", time: "11:00", phone: "(49) 99812-4433", service: "Procedimento Especial", priceCents: 18000 },
-            { name: "Lucas Fontes", time: "14:00", phone: "(49) 99104-5522", service: "Atendimento Inicial", priceCents: 12000 },
-            { name: "Patrícia Lima", time: "15:30", phone: "(49) 98831-2299", service: "Sessão Terapêutica", priceCents: 22000 },
-          ].map((item, i) => (
-            <div key={i} className="px-4 py-3 sm:p-3 sm:rounded-lg sm:border sm:border-border/60 bg-card flex items-center justify-between gap-3">
-              <div className="space-y-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <span className="font-bold text-xs text-foreground truncate">{item.name}</span>
-                  <Badge variant="secondary" className="text-[10px] py-0 px-2 h-4 font-mono font-bold">
-                    {item.time}
-                  </Badge>
-                </div>
-                <div className="text-[11px] text-muted-foreground truncate">
-                  {item.service} • {formatMoney(item.priceCents)}
+        {recentActivities.length === 0 ? (
+          <p className="text-xs text-muted-foreground py-4 text-center">Nenhuma atividade recente registrada.</p>
+        ) : (
+          <div className="divide-y divide-border/40 border-y border-border/40 -mx-4 sm:mx-0 sm:border-0 sm:divide-y-0 sm:grid sm:grid-cols-2 sm:gap-3">
+            {recentActivities.slice(0, 4).map((item: any, i: number) => (
+              <div key={i} className="px-4 py-3 sm:p-3 sm:rounded-lg sm:border sm:border-border/60 bg-card flex items-center justify-between gap-3">
+                <div className="space-y-1 min-w-0">
+                  <span className="font-bold text-xs text-foreground truncate block">{item.title || item.action}</span>
+                  <span className="text-xs text-muted-foreground truncate block">{item.description || item.entity_type}</span>
                 </div>
               </div>
-              <Button asChild size="sm" variant="outline" className="h-9 px-3 rounded-lg text-xs gap-2 shrink-0 border-border/80">
-                <a href={`https://wa.me/55${item.phone.replace(/\D/g, "")}`} target="_blank" rel="noopener noreferrer">
-                  <Phone className="size-3.5 text-emerald-600 dark:text-emerald-400" />
-                  <span className="hidden sm:inline">WhatsApp</span>
-                </a>
-              </Button>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -221,24 +171,25 @@ function HighValueLeadsDashboard({
   isTogglingStatus,
   onOpenShareModal,
 }: PolymorphicDashboardProps) {
-  const vgvCents = metrics?.nicheMetrics?.vgvActiveCents ?? 1485000000;
-  const activeProposals = metrics?.nicheMetrics?.activeProposalsCount ?? Math.max(4, metrics?.ordersTodayCount || 0);
-  const stagnantCount = metrics?.nicheMetrics?.stagnantPropertiesCount ?? 2;
+  const vgvCents = metrics?.nicheMetrics?.vgvActiveCents ?? (metrics?.salesMonthCents || 0);
+  const activeProposals = metrics?.nicheMetrics?.activeProposalsCount ?? (metrics?.ordersTodayCount || 0);
+  const stagnantCount = metrics?.nicheMetrics?.stagnantPropertiesCount ?? 0;
+  const isVehicle = semantics.nicheId === "automotive" || semantics.nicheId === "vehicles";
 
   return (
     <div className="space-y-4 sm:space-y-6">
-      {/* ── Banner de Alto Impacto: VGV da Carteira & Funil ── */}
+      {/* ── Banner: VGV da Carteira & Ação ── */}
       <div className="p-4 sm:p-6 rounded-lg bg-foreground text-background flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="space-y-1">
           <span className="text-xs font-semibold uppercase tracking-wider opacity-70">
-            Valor Geral de Vendas (VGV da Carteira)
+            {isVehicle ? "Valor Geral do Estoque de Veículos" : "Valor Geral de Vendas (VGV da Carteira)"}
           </span>
           <div className="text-3xl sm:text-4xl font-bold font-mono tracking-tight">
             {formatMoney(vgvCents)}
           </div>
           <div className="text-xs opacity-90 flex items-center gap-2 pt-1">
-            <Building2 className="size-3.5" />
-            <span>Imóveis e unidades ativas sob gestão</span>
+            {isVehicle ? <Car className="size-3.5" /> : <Building2 className="size-3.5" />}
+            <span>{isVehicle ? "Veículos em exposição ativa" : "Imóveis e unidades sob gestão"}</span>
           </div>
         </div>
 
@@ -250,90 +201,134 @@ function HighValueLeadsDashboard({
           </Button>
           <Button asChild size="sm" variant="outline" className="h-10 px-4 rounded-lg text-xs font-bold border-background/30 text-background hover:bg-background/10">
             <Link to="/workspace/catalogo/produtos/novo">
-              <span>Cadastrar Imóvel</span>
+              <span>{isVehicle ? "Cadastrar Veículo" : "Cadastrar Imóvel"}</span>
             </Link>
           </Button>
         </div>
       </div>
 
-      {/* ── Funil Kanban de Propostas & Vistorias (Bento Grid) ── */}
+      {/* ── KPIs Estruturais de Alto Valor ── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <div className="p-4 rounded-lg bg-card border border-border/60 space-y-1">
           <span className="text-xs font-semibold text-muted-foreground">Propostas em Análise</span>
           <div className="text-2xl sm:text-3xl font-bold font-mono tracking-tight text-foreground">
             {activeProposals}
           </div>
-          <div className="text-[11px] text-amber-600 dark:text-amber-400 font-semibold">
-            Em fase de diligência
+          <div className="text-xs text-amber-600 dark:text-amber-400 font-semibold">
+            Em fase de negociação
           </div>
         </div>
 
         <div className="p-4 rounded-lg bg-card border border-border/60 space-y-1">
-          <span className="text-xs font-semibold text-muted-foreground">Vistorias Agendadas</span>
+          <span className="text-xs font-semibold text-muted-foreground">Leads Recebidos (30d)</span>
           <div className="text-2xl sm:text-3xl font-bold font-mono tracking-tight text-foreground">
-            7
+            {metrics?.newLeads30d || 0}
           </div>
-          <div className="text-[11px] text-muted-foreground">
-            Para os próximos 5 dias
-          </div>
+          <div className="text-xs text-muted-foreground">Interessados no catálogo</div>
         </div>
 
         <div className="p-4 rounded-lg bg-card border border-border/60 space-y-1">
-          <span className="text-xs font-semibold text-muted-foreground">Unidades Estagnadas</span>
+          <span className="text-xs font-semibold text-muted-foreground">Unidades sem Visita</span>
           <div className="text-2xl sm:text-3xl font-bold font-mono tracking-tight text-foreground">
             {stagnantCount}
           </div>
-          <div className="text-[11px] text-muted-foreground">
-            Mais de 60 dias sem visita
-          </div>
+          <div className="text-xs text-muted-foreground">Necessitam impulsionamento</div>
         </div>
 
         <div className="p-4 rounded-lg bg-card border border-border/60 space-y-1">
-          <span className="text-xs font-semibold text-muted-foreground">Contratos Assinados (Mês)</span>
+          <span className="text-xs font-semibold text-muted-foreground">Contratos Fechados (Mês)</span>
           <div className="text-2xl sm:text-3xl font-bold font-mono tracking-tight text-foreground">
-            {metrics?.ordersMonthCount || 3}
+            {metrics?.ordersMonthCount || 0}
           </div>
-          <div className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
+          <div className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
             <CheckCircle2 className="size-3" />
-            <span>Escrituras em dia</span>
+            <span>Fechamentos</span>
           </div>
         </div>
       </div>
 
-      {/* ── Painel de Propostas Recentes (Kanban Simplificado) ── */}
-      <div className="p-4 sm:p-5 rounded-lg bg-card border border-border/60 space-y-3">
-        <div className="flex items-center justify-between">
+      {/* ── Atalhos de Gestão de Negociações ── */}
+      <div className="p-4 sm:p-5 rounded-lg bg-card border border-border/60 flex items-center justify-between">
+        <div>
           <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-            Propostas de Compra & Locação Recentes
+            Pipeline de Propostas Comerciais
           </h3>
-          <Link to="/workspace/orcamentos" className="text-xs font-semibold text-primary hover:underline">
-            Ver Todas as Negociações
-          </Link>
+          <p className="text-xs text-foreground mt-1">Acompanhe minutas, vistorias e contratos em andamento</p>
         </div>
+        <Button asChild size="sm" variant="outline" className="h-9 px-4 text-xs font-semibold">
+          <Link to="/workspace/orcamentos">
+            <span>Ver Todas as Negociações</span>
+            <ArrowUpRight className="size-3.5 ml-1" />
+          </Link>
+        </Button>
+      </div>
+    </div>
+  );
+}
 
-        <div className="divide-y divide-border/40 border-y border-border/40 -mx-4 sm:mx-0 sm:border-0 sm:divide-y-0 sm:grid sm:grid-cols-2 sm:gap-3">
-          {[
-            { title: "Apto 3 Quartos - Jardins", lead: "Roberto Vasconcelos", valueCents: 125000000, status: "Minuta Enviada", badge: "Venda" },
-            { title: "Casa Condomínio Fechado", lead: "Dra. Helena Martins", valueCents: 240000000, status: "Análise de Crédito", badge: "Venda" },
-            { title: "Sala Comercial Centro", lead: "Inova Softwares Ltda", valueCents: 450000, status: "Vistoria Realizada", badge: "Locação" },
-          ].map((item, idx) => (
-            <div key={idx} className="px-4 py-3 sm:p-4 sm:rounded-lg sm:border sm:border-border/60 bg-card flex items-center justify-between gap-3">
-              <div className="space-y-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <span className="font-bold text-xs text-foreground truncate">{item.title}</span>
-                  <Badge variant="outline" className="text-[10px] py-0 px-2 h-4 font-bold border-border/80">
-                    {item.badge}
-                  </Badge>
-                </div>
-                <div className="text-[11px] text-muted-foreground truncate">
-                  {item.lead} • {formatMoney(item.valueCents)}
-                </div>
-              </div>
-              <Badge variant="secondary" className="text-[10px] font-semibold shrink-0">
-                {item.status}
-              </Badge>
-            </div>
-          ))}
+// ─────────────────────────────────────────────────────────────────────────────
+// 3. LAYOUT DE TURISMO & VIAGENS (Agências, Cotações & Comissões)
+// ─────────────────────────────────────────────────────────────────────────────
+function TourismAgencyDashboard({
+  semantics,
+  metrics,
+  store,
+}: PolymorphicDashboardProps) {
+  const salesMonth = metrics?.salesMonthCents || 0;
+  const salesToday = metrics?.salesTodayCents || 0;
+  const bookingsCount = metrics?.ordersMonthCount || 0;
+
+  return (
+    <div className="space-y-4 sm:space-y-6">
+      <div className="p-4 sm:p-6 rounded-lg bg-card border border-border/60 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <span className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold">
+              <Plane className="size-4" />
+            </span>
+            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Agência de Viagens & Turismo
+            </span>
+          </div>
+          <div className="text-2xl sm:text-3xl font-bold font-mono tracking-tight text-foreground">
+            {formatMoney(salesMonth)}
+          </div>
+          <p className="text-xs text-muted-foreground">Faturamento de pacotes e cotações no mês</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button asChild size="sm" className="h-10 px-4 rounded-lg text-xs font-bold bg-primary text-primary-foreground">
+            <Link to="/workspace/turismo/cotacoes">
+              <span>Kanban de Cotações</span>
+            </Link>
+          </Button>
+          <Button asChild size="sm" variant="outline" className="h-10 px-4 rounded-lg text-xs font-bold border-border/80">
+            <Link to="/workspace/turismo/comissoes">
+              <span>Planilha de Comissões</span>
+            </Link>
+          </Button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <div className="p-4 rounded-lg bg-card border border-border/60 space-y-1">
+          <span className="text-xs font-semibold text-muted-foreground">Vendas Hoje</span>
+          <div className="text-2xl font-bold font-mono text-foreground">{formatMoney(salesToday)}</div>
+          <span className="text-xs text-muted-foreground">Emissões e fechamentos</span>
+        </div>
+        <div className="p-4 rounded-lg bg-card border border-border/60 space-y-1">
+          <span className="text-xs font-semibold text-muted-foreground">Reservas no Mês</span>
+          <div className="text-2xl font-bold font-mono text-foreground">{bookingsCount}</div>
+          <span className="text-xs text-muted-foreground">Contratos processados</span>
+        </div>
+        <div className="p-4 rounded-lg bg-card border border-border/60 space-y-1">
+          <span className="text-xs font-semibold text-muted-foreground">Cotações Hoje</span>
+          <div className="text-2xl font-bold font-mono text-foreground">{metrics?.ordersTodayCount || 0}</div>
+          <span className="text-xs text-muted-foreground">Novos orçamentos</span>
+        </div>
+        <div className="p-4 rounded-lg bg-card border border-border/60 space-y-1">
+          <span className="text-xs font-semibold text-muted-foreground">Passageiros (30d)</span>
+          <div className="text-2xl font-bold font-mono text-foreground">{metrics?.newCustomers30d || 0}</div>
+          <span className="text-xs text-muted-foreground">Novos viajantes</span>
         </div>
       </div>
     </div>
@@ -341,7 +336,70 @@ function HighValueLeadsDashboard({
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 3. LAYOUT DE PRODUTO & OPERAÇÃO: RESTAURANTES & VAREJO (Gastro / Retail)
+// 4. LAYOUT DE EVENTOS & FESTIVAIS (Produtora, Ingressos & Subpainéis)
+// ─────────────────────────────────────────────────────────────────────────────
+function EventsMasterDashboard({
+  semantics,
+  metrics,
+  store,
+}: PolymorphicDashboardProps) {
+  const salesMonth = metrics?.salesMonthCents || 0;
+  const salesToday = metrics?.salesTodayCents || 0;
+
+  return (
+    <div className="space-y-4 sm:space-y-6">
+      <div className="p-4 sm:p-6 rounded-lg bg-card border border-border/60 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <span className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold">
+              <Ticket className="size-4" />
+            </span>
+            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Cockpit da Produtora de Eventos
+            </span>
+          </div>
+          <div className="text-2xl sm:text-3xl font-bold font-mono tracking-tight text-foreground">
+            {formatMoney(salesMonth)}
+          </div>
+          <p className="text-xs text-muted-foreground">Bilheteria e concessões consolidadas</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button asChild size="sm" className="h-10 px-4 rounded-lg text-xs font-bold bg-primary text-primary-foreground">
+            <Link to="/workspace/eventos">
+              <span>Gestão de Eventos</span>
+            </Link>
+          </Button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <div className="p-4 rounded-lg bg-card border border-border/60 space-y-1">
+          <span className="text-xs font-semibold text-muted-foreground">Vendas Hoje</span>
+          <div className="text-2xl font-bold font-mono text-foreground">{formatMoney(salesToday)}</div>
+          <span className="text-xs text-muted-foreground">Bilheteria e PDV</span>
+        </div>
+        <div className="p-4 rounded-lg bg-card border border-border/60 space-y-1">
+          <span className="text-xs font-semibold text-muted-foreground">Ingressos no Mês</span>
+          <div className="text-2xl font-bold font-mono text-foreground">{metrics?.ordersMonthCount || 0}</div>
+          <span className="text-xs text-muted-foreground">Assinados WCTS-1</span>
+        </div>
+        <div className="p-4 rounded-lg bg-card border border-border/60 space-y-1">
+          <span className="text-xs font-semibold text-muted-foreground">Participantes</span>
+          <div className="text-2xl font-bold font-mono text-foreground">{metrics?.newCustomers30d || 0}</div>
+          <span className="text-xs text-muted-foreground">Cadastros únicos</span>
+        </div>
+        <div className="p-4 rounded-lg bg-card border border-border/60 space-y-1">
+          <span className="text-xs font-semibold text-muted-foreground">Subpainéis</span>
+          <div className="text-2xl font-bold font-mono text-foreground">{metrics?.ordersBreakdown?.completed || 0}</div>
+          <span className="text-xs text-muted-foreground">Pontos de venda</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 5. LAYOUT DE PRODUTO & OPERAÇÃO: RESTAURANTES & VAREJO (Gastro / Retail)
 // ─────────────────────────────────────────────────────────────────────────────
 function CommerceGastroDashboard({
   semantics,
@@ -354,10 +412,10 @@ function CommerceGastroDashboard({
 }: PolymorphicDashboardProps) {
   const isGastro = semantics.nicheId === "gastronomy";
   const criticalStock = metrics?.criticalStockCount || 0;
-  const awaitingOrders = metrics?.ordersBreakdown?.needsSeparation ?? 3;
+  const awaitingOrders = metrics?.ordersBreakdown?.needsSeparation || 0;
   const averageTicket = metrics?.salesTodayCents && metrics?.ordersTodayCount
     ? Math.round(metrics.salesTodayCents / metrics.ordersTodayCount)
-    : 4850;
+    : (metrics?.salesMonthCents && metrics?.ordersMonthCount ? Math.round(metrics.salesMonthCents / metrics.ordersMonthCount) : 0);
 
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -372,7 +430,7 @@ function CommerceGastroDashboard({
               <h2 className="text-sm sm:text-base font-bold text-foreground">
                 {isGastro ? "Gestor de Cozinha (KDS Live)" : "Separação & Expedição de Pedidos"}
               </h2>
-              <p className="text-[11px] text-muted-foreground">
+              <p className="text-xs text-muted-foreground">
                 {isGastro ? "Fila de comandas em preparação" : "Despacho e entregas do dia"}
               </p>
             </div>
@@ -388,19 +446,19 @@ function CommerceGastroDashboard({
         {/* Resumo de Pedidos em Tempo Real */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1">
           <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-400">
-            <span className="text-[10px] font-bold uppercase tracking-wider block">Aguardando Cozinha</span>
+            <span className="text-xs font-bold uppercase tracking-wider block">Aguardando</span>
             <span className="text-xl font-bold font-mono mt-1 block">{awaitingOrders}</span>
           </div>
           <div className="p-3 rounded-lg bg-blue-500/10 border border-blue-500/20 text-blue-700 dark:text-blue-400">
-            <span className="text-[10px] font-bold uppercase tracking-wider block">Em Preparo / Rota</span>
-            <span className="text-xl font-bold font-mono mt-1 block">{metrics?.ordersBreakdown?.shippedOrReady || 2}</span>
+            <span className="text-xs font-bold uppercase tracking-wider block">Em Rota</span>
+            <span className="text-xl font-bold font-mono mt-1 block">{metrics?.ordersBreakdown?.shippedOrReady || 0}</span>
           </div>
           <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-400">
-            <span className="text-[10px] font-bold uppercase tracking-wider block">Finalizados Hoje</span>
-            <span className="text-xl font-bold font-mono mt-1 block">{metrics?.ordersBreakdown?.completed || 14}</span>
+            <span className="text-xs font-bold uppercase tracking-wider block">Finalizados</span>
+            <span className="text-xl font-bold font-mono mt-1 block">{metrics?.ordersBreakdown?.completed || 0}</span>
           </div>
           <div className="p-3 rounded-lg bg-card border border-border/60 text-foreground">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">Ticket Médio</span>
+            <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">Ticket Médio</span>
             <span className="text-xl font-bold font-mono mt-1 block">{formatMoney(averageTicket)}</span>
           </div>
         </div>
@@ -413,7 +471,7 @@ function CommerceGastroDashboard({
           <div className="text-2xl sm:text-3xl font-bold font-mono tracking-tight text-foreground">
             {formatMoney(metrics?.salesTodayCents || 0)}
           </div>
-          <div className="text-[11px] text-muted-foreground">
+          <div className="text-xs text-muted-foreground">
             {metrics?.ordersTodayCount || 0} pedido(s) faturados
           </div>
         </div>
@@ -423,7 +481,7 @@ function CommerceGastroDashboard({
           <div className="text-2xl sm:text-3xl font-bold font-mono tracking-tight text-foreground">
             {formatMoney(metrics?.salesMonthCents || 0)}
           </div>
-          <div className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold">
+          <div className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold">
             {metrics?.growthPercentage ? `+${metrics.growthPercentage}% vs mês ant.` : "Em dia"}
           </div>
         </div>
@@ -433,7 +491,7 @@ function CommerceGastroDashboard({
           <div className="text-2xl sm:text-3xl font-bold font-mono tracking-tight text-foreground">
             {criticalStock}
           </div>
-          <div className="text-[11px] text-muted-foreground">
+          <div className="text-xs text-muted-foreground">
             {criticalStock > 0 ? "Itens abaixo do mínimo" : "Estoque regularizado"}
           </div>
         </div>
@@ -443,7 +501,7 @@ function CommerceGastroDashboard({
           <div className="text-2xl sm:text-3xl font-bold font-mono tracking-tight text-foreground">
             {metrics?.activeCashRegister?.isOpen ? "Ativo" : "Fechado"}
           </div>
-          <div className="text-[11px] text-muted-foreground">
+          <div className="text-xs text-muted-foreground">
             {metrics?.activeCashRegister?.currentBalanceCents
               ? formatMoney(metrics.activeCashRegister.currentBalanceCents)
               : "Sem turno aberto"}
@@ -455,12 +513,22 @@ function CommerceGastroDashboard({
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 4. RENDERIZADOR POLIMÓRFICO PRINCIPAL (SWITCH COMPONENT - V137)
+// 6. RENDERIZADOR POLIMÓRFICO PRINCIPAL (SWITCH COMPONENT)
 // ─────────────────────────────────────────────────────────────────────────────
 export function PolymorphicDashboardRenderer(props: PolymorphicDashboardProps) {
   const { nicheId } = props;
 
-  // 1. Agendamento & Clínicas
+  // 1. Turismo & Viagens
+  if (nicheId === "tourism" || nicheId === "turismo" || nicheId === "travel") {
+    return <TourismAgencyDashboard {...props} />;
+  }
+
+  // 2. Eventos & Festivais
+  if (nicheId === "events" || nicheId === "eventos") {
+    return <EventsMasterDashboard {...props} />;
+  }
+
+  // 3. Agendamento & Clínicas
   if (
     nicheId === "services" || 
     nicheId === "clinica" || 
@@ -472,16 +540,17 @@ export function PolymorphicDashboardRenderer(props: PolymorphicDashboardProps) {
     return <AppointmentServicesDashboard {...props} />;
   }
 
-  // 2. Alto Valor & Imobiliárias
+  // 4. Alto Valor & Imobiliárias
   if (
     nicheId === "real_estate" || 
     nicheId === "vehicles" || 
+    nicheId === "automotive" ||
     nicheId === "imoveis" || 
     nicheId === "concessionaria"
   ) {
     return <HighValueLeadsDashboard {...props} />;
   }
 
-  // 3. Comércio & Gastronomia (Padrão de Produto)
+  // 5. Comércio & Gastronomia (Padrão de Produto)
   return <CommerceGastroDashboard {...props} />;
 }

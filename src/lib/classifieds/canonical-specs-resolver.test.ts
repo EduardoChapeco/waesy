@@ -167,5 +167,66 @@ describe("resolveClassifiedDetailedSpecs", () => {
     expect(labels).not.toContain("Logística");
     expect(labels).not.toContain("Capacidade");
   });
+
+  it("resolve sinônimos de atributos cadastrados pelo Workspace Catalog (usable_area, parking_spaces, license_plate_end, dimensions)", () => {
+    const catalogItem = {
+      category: "real_estate",
+      attributes: {
+        usable_area: 88,
+        total_area: 120,
+        parking_spaces: 2,
+        bedrooms: 2,
+      },
+    };
+
+    const specsRealEstate = resolveClassifiedDetailedSpecs(catalogItem);
+    expect(specsRealEstate).toEqual(
+      expect.arrayContaining([
+        { label: "Área Útil", value: "88 m²", category: "dimensions", highlight: true },
+        { label: "Área Total", value: "120 m²", category: "dimensions" },
+        { label: "Vagas", value: "2", category: "technical", highlight: true },
+      ])
+    );
+
+    const vehicleCatalogItem = {
+      category: "vehicle",
+      attributes: {
+        brand: "Honda",
+        model: "Civic",
+        year: "2021",
+        license_plate_end: "9",
+        mileage: 45000,
+      },
+    };
+
+    const specsVehicle = resolveClassifiedDetailedSpecs(vehicleCatalogItem);
+    expect(specsVehicle).toEqual(
+      expect.arrayContaining([
+        { label: "Marca", value: "Honda", category: "technical" },
+        { label: "Modelo", value: "Civic", category: "technical" },
+        { label: "Final da Placa", value: "9", category: "technical" },
+        { label: "Quilometragem", value: "45.000 km", category: "technical", highlight: true },
+      ])
+    );
+
+    const physicalProductItem = {
+      category: "retail",
+      attributes: {
+        weight_kg: 1.5,
+        dimensions: "30 x 20 x 10 cm",
+        material: "Aço Inox",
+      },
+    };
+
+    const specsPhysical = resolveClassifiedDetailedSpecs(physicalProductItem);
+    expect(specsPhysical).toEqual(
+      expect.arrayContaining([
+        { label: "Peso", value: "1.5 kg", category: "dimensions" },
+        { label: "Dimensões", value: "30 x 20 x 10 cm", category: "dimensions" },
+        { label: "Material", value: "Aço Inox", category: "technical" },
+      ])
+    );
+  });
 });
+
 
