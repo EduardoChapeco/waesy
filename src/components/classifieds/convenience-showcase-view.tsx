@@ -12,6 +12,8 @@ import { cn } from "@/lib/utils";
 import { getMyStoresList } from "@/services/store.functions";
 import { linkClassifiedToStore } from "@/services/classifieds.functions";
 import { GroceryFreshPricing, GroceryRipenessConfig, ProgressiveDiscountTier, OrderBumpOffer, RipenessStage, DEFAULT_RIPENESS_LABELS, calculateProgressiveDiscount } from "@/lib/classifieds/canonical-taxonomy";
+import { NicheSpecificationsDisplay } from "@/components/common/niche-specifications-display";
+import { resolveClassifiedDetailedSpecs } from "@/lib/classifieds/canonical-specs-resolver";
 
 export interface ConveniencePreviewData {
   title: string;
@@ -987,24 +989,24 @@ export function ConvenienceShowcaseView({
         </div>
       </header>
 
-      {/* Container Principal: Desktop em 2 Colunas | Mobile em Ordem Sequencial Natural */}
-      <main className={cn(isForcedMobile ? "w-full max-w-full px-0 pt-0" : "max-w-5xl mx-auto px-0 sm:px-6 pt-0 sm:pt-6")}>
-        <div className={cn(isForcedMobile ? "flex flex-col gap-3" : "grid grid-cols-1 md:grid-cols-12 gap-0 sm:gap-8 items-start")}>
+      {/* Container Principal: Desktop em 2 Colunas Widescreen (50/50 balanceado) | Mobile em Ordem Sequencial Natural */}
+      <main className={cn(isForcedMobile ? "w-full max-w-full px-0 pt-0" : "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-0 sm:pt-6")}>
+        <div className={cn(isForcedMobile ? "flex flex-col gap-3" : "grid grid-cols-1 md:grid-cols-12 gap-0 sm:gap-8 lg:gap-10 items-start")}>
           
           {/* ═══════════════════════════════════════════════════════════════════
-              COLUNA 1 (ESQUERDA - MD: 7 COLUNAS / FULL NO MOBILE):
+              COLUNA 1 (ESQUERDA - MD: 6 COLUNAS / FULL NO MOBILE):
               1. FOTO PRINCIPAL LIMPA (SEM BADGES NEON, SEM EMOJIS, FULL-BLEED NO MOBILE)
               2. MINIATURAS
               [NO MOBILE: HEADER DO PRODUTO + PREÇO AQUI LOGO APÓS A FOTO]
               3. DETALHES DO PRODUTO (DESCRIÇÃO)
-              4. ESPECIFICAÇÕES TÉCNICAS E ATRIBUTOS
+              4. ESPECIFICAÇÕES TÉCNICAS E ATRIBUTOS (CANÔNICO EM CARDS SQUIRCLES)
              ═══════════════════════════════════════════════════════════════════ */}
-          <div className={cn(isForcedMobile ? "w-full space-y-4" : "md:col-span-7 space-y-4 sm:space-y-6")}>
+          <div className={cn(isForcedMobile ? "w-full space-y-4" : "md:col-span-6 lg:col-span-6 space-y-4 sm:space-y-6")}>
             
-            {/* Box da Foto: Grande, full-bleed, limpo */}
+            {/* Box da Foto: Grande, proporção controlada e cantos suaves */}
             <div className="space-y-2 sm:space-y-3">
               <div
-                className="relative aspect-square w-full rounded-none sm:rounded-lg overflow-hidden bg-muted/20 border-b sm:border border-border/60 flex items-center justify-center shadow-none sm: group cursor-pointer"
+                className="relative aspect-square w-full max-h-[500px] rounded-none sm:rounded-2xl overflow-hidden bg-muted/20 border-b sm:border border-border/60 flex items-center justify-center shadow-none sm:shadow-2xs group cursor-pointer"
                 onClick={() => images.length > 0 && setFullscreenImage(images[activePhotoIdx] || images[0])}
               >
                 {images.length > 0 ? (
@@ -1134,98 +1136,21 @@ export function ConvenienceShowcaseView({
             )}
 
             {/* ─────────────────────────────────────────────────────────────
-                SEÇÃO: ESPECIFICAÇÕES TÉCNICAS E TABELA DE ATRIBUTOS
+                SEÇÃO: ESPECIFICAÇÕES TÉCNICAS E TABELA DE ATRIBUTOS (SQUIRCLE CANÔNICO)
                ───────────────────────────────────────────────────────────── */}
-            <div className="mx-4 sm:mx-0 p-5 sm:p-6 rounded-lg bg-card border border-border/60 space-y-5 shadow-2xs">
-              <div className="flex items-center justify-between border-b border-border/40 pb-3">
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="size-4 text-primary shrink-0" />
-                  <h2 className="text-xs font-bold uppercase tracking-wider text-foreground">
-                    Especificações e Características
-                  </h2>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {brand && (
-                  <div className="p-3.5 sm:p-4 rounded-lg border border-border/50 bg-muted/20 space-y-1">
-                    <span className="text-xs text-muted-foreground uppercase font-bold tracking-wider block">Marca</span>
-                    <p className="text-sm font-bold text-foreground truncate">{brand}</p>
-                  </div>
-                )}
-
-                <div className="p-3.5 sm:p-4 rounded-lg border border-border/50 bg-muted/20 space-y-1">
-                  <span className="text-xs text-muted-foreground uppercase font-bold tracking-wider block">Departamento</span>
-                  <p className="text-sm font-bold text-foreground truncate">{department}</p>
-                </div>
-
-                {unitSuffix && (
-                  <div className="p-3.5 sm:p-4 rounded-lg border border-border/50 bg-muted/20 space-y-1">
-                    <span className="text-xs text-muted-foreground uppercase font-bold tracking-wider block">Conteúdo / Peso</span>
-                    <p className="text-sm font-bold text-foreground truncate font-mono">{unitSuffix}</p>
-                  </div>
-                )}
-
-                {estimatedWeightPerUnit && (
-                  <div className="p-3.5 sm:p-4 rounded-lg border border-border/50 bg-muted/20 space-y-1">
-                    <span className="text-xs text-muted-foreground uppercase font-bold tracking-wider block">Peso Aprox. Peça</span>
-                    <p className="text-sm font-bold text-foreground truncate font-mono">{estimatedWeightPerUnit}</p>
-                  </div>
-                )}
-
-                <div className="p-3.5 sm:p-4 rounded-lg border border-border/50 bg-muted/20 space-y-1">
-                  <span className="text-xs text-muted-foreground uppercase font-bold tracking-wider block">Conservação</span>
-                  <p className="text-sm font-bold text-foreground capitalize">
-                    {temperature === "gelada"
-                      ? "Gelada / Imediata"
-                      : temperature === "resfriado"
-                      ? "Resfriado (0° a 4°C)"
-                      : temperature === "congelado"
-                      ? "Congelado (-18°C)"
-                      : "Ambiente / Seco"}
-                  </p>
-                </div>
-
-                <div className="p-3.5 sm:p-4 rounded-lg border border-border/50 bg-muted/20 space-y-1">
-                  <span className="text-xs text-muted-foreground uppercase font-bold tracking-wider block">Disponibilidade</span>
-                  <p className="text-sm font-bold text-foreground">
-                    {readyDelivery ? "Em estoque para envio" : "Sob encomenda"}
-                  </p>
-                </div>
-
-                {barcodeEan && (
-                  <div className="p-3.5 sm:p-4 rounded-lg border border-border/50 bg-muted/20 space-y-1">
-                    <span className="text-xs text-muted-foreground uppercase font-bold tracking-wider block">Código EAN</span>
-                    <p className="text-sm font-bold text-foreground font-mono truncate">{barcodeEan}</p>
-                  </div>
-                )}
-
-                {containsGluten !== undefined && (
-                  <div className="p-3.5 sm:p-4 rounded-lg border border-border/50 bg-muted/20 space-y-1">
-                    <span className="text-xs text-muted-foreground uppercase font-bold tracking-wider block">Glúten</span>
-                    <p className="text-sm font-bold text-foreground">
-                      {containsGluten ? "Contém Glúten" : "Sem Glúten"}
-                    </p>
-                  </div>
-                )}
-
-                {containsLactose !== undefined && (
-                  <div className="p-3.5 sm:p-4 rounded-lg border border-border/50 bg-muted/20 space-y-1">
-                    <span className="text-xs text-muted-foreground uppercase font-bold tracking-wider block">Lactose</span>
-                    <p className="text-sm font-bold text-foreground">
-                      {containsLactose ? "Contém Lactose" : "Sem Lactose"}
-                    </p>
-                  </div>
-                )}
-              </div>
-
-              {ingredients && (
-                <div className="pt-3 border-t border-border/40 space-y-1">
-                  <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider block">Ingredientes / Composição:</span>
-                  <p className="text-xs text-foreground/85 leading-relaxed">{ingredients}</p>
-                </div>
-              )}
+            <div className="mx-4 sm:mx-0">
+              <NicheSpecificationsDisplay
+                items={resolveClassifiedDetailedSpecs(classified || { attributes: attrs, title, category: "grocery" })}
+                title="Especificações e Características"
+              />
             </div>
+
+            {ingredients && (
+              <div className="mx-4 sm:mx-0 p-4 sm:p-5 rounded-lg border border-border/60 bg-card space-y-2 shadow-2xs">
+                <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider block">Ingredientes / Composição:</span>
+                <p className="text-xs sm:text-sm text-foreground/85 leading-relaxed break-words text-wrap">{ingredients}</p>
+              </div>
+            )}
 
             {/* Aviso Legal Regulatório */}
             {isAlcoholic && (
@@ -1258,7 +1183,7 @@ export function ConvenienceShowcaseView({
               8. BOTÃO PEDIR AGORA (ABRE O CHECKOUT DRAWER)
               9. CARD DA LOJA
              ═══════════════════════════════════════════════════════════════════ */}
-          <div className={cn(isForcedMobile ? "hidden" : "hidden md:block md:col-span-5 space-y-4 md:sticky md:top-16")}>
+          <div className={cn(isForcedMobile ? "hidden" : "hidden md:block md:col-span-6 lg:col-span-6 space-y-4 md:sticky md:top-16")}>
             
             {/* Header de Categoria / Loja */}
             <div className="space-y-2">

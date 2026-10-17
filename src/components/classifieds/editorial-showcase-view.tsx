@@ -1002,14 +1002,9 @@ export function EditorialShowcaseView({
           </div>
         )}
 
-        {/* ── Abas Canônicas (Fotos, Ficha Técnica, Aprofundamento, Explore/Pagamento) ── */}
+        {/* ── Abas Canônicas em Linha Única Horizontal Contínua (Invariante B.39) ── */}
         <div className="border-t border-border/40 pt-1">
-          <div className={cn(
-            "grid border-b border-border/40 gap-1",
-            availableTabs.length === 2 && "grid-cols-2",
-            availableTabs.length === 3 && "grid-cols-1 sm:grid-cols-",
-            availableTabs.length >= 4 && "grid-cols-2 sm:grid-cols-4"
-          )}>
+          <div className="flex flex-nowrap items-center border-b border-border/40 overflow-x-auto no-scrollbar gap-1">
             {availableTabs.map((tab) => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
@@ -1019,15 +1014,15 @@ export function EditorialShowcaseView({
                   type="button"
                   onClick={() => setActiveTab(tab.id)}
                   className={cn(
-                    "min-h-11 py-2 flex flex-col items-center justify-center gap-1 border-b-2 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                    "min-h-11 py-2 px-3 flex-1 min-w-[76px] sm:min-w-[100px] flex flex-col items-center justify-center gap-1 border-b-2 transition-colors cursor-pointer shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                     isActive
                       ? "border-foreground text-foreground font-bold"
-                      : "border-transparent text-muted-foreground hover:text-foreground"
+                      : "border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/30"
                   )}
                   aria-label={tab.label}
                 >
-                  <Icon className="size-4.5" />
-                  <span className="text-xs sm:text-xs font-semibold tracking-tight truncate max-w-[84px] sm:max-w-none">
+                  <Icon className="size-4.5 shrink-0" />
+                  <span className="text-xs font-semibold tracking-tight whitespace-nowrap leading-none">
                     {tab.label}
                   </span>
                 </button>
