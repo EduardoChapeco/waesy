@@ -3172,3 +3172,40 @@
   5. **Integração com Vitrines & Marketplaces (`surface-cms.functions.ts`, `modular-surface-feed.tsx`, `_store.index.tsx`):** Adicionado suporte às seções `social_posts_rail` / `social_posts` no motor modular de superfícies e conectado `socialPostsSection` do CMS na Home Mobile e Desktop.
 - **Fundamentação:** AGENTS.md B.20, B.25, B.28, B.30, SPEC-MINIMALIST-SOCIAL-STREAM-AND-SHOWCASE, Apple HIG e WCAG 2.2 AA.
 - **Consequências:** Zero dados falsos em toda a vitrine social e editorial, navegação ponta a ponta funcional para `/publicacao/$id` e `/noticias/$slug`, e renderização minimalista multi-formato em todo o ecossistema.
+
+## DEC-227: Erradicação de Fallbacks Falsos, Omissão Dinâmica de Abas Vazias e Métricas Comerciais Honestas
+
+- **Data:** 2026-10-16
+- **Contexto:** Posts de texto puro exibiam imagens sintéticas do Unsplash via fallbacks automáticos; cards de estabelecimentos (`StoreCard`) mostravam notas e contadores estáticos ("4.9 (128)"); abas vazias em páginas de detalhes de classificados eram exibidas sem conteúdo; e condições de pagamento apareciam misturadas dentro da aba de Hospedagem.
+- **Decisão Adotada:**
+  1. **Zero Imagens Sintéticas (Invariante B.33):** Posts sem mídia são renderizados estritamente como cartões de texto limpos, e vídeos utilizam a tag `<video>` nativa.
+  2. **Métricas Comerciais Honestas:** Cards de estabelecimentos omitem avaliações e contadores quando ausentes, exibindo apenas identificação e selo de verificação.
+  3. **Omissão Dinâmica de Abas:** Abas sem conteúdo cadastrado (fotos extras, roteiro) são omitidas do cabeçalho de navegação.
+  4. **Isolamento de Condições Comerciais:** Informações de parcelamento e chaves de pagamento ficam restritas à aba de Condições/Explore.
+- **Fundamentação:** AGENTS.md B.33, Apple HIG, WCAG 2.2 AA.
+- **Consequências:** Conformidade anti-fake estrita e eliminação completa de layouts ocos em detalhes de anúncios.
+
+## DEC-228: Padronização Squircle de Especificações Canônicas, TetrisGrid 2D Auto-Packing e Desobstrução de Drawers
+
+- **Data:** 2026-10-17
+- **Contexto:** Necessidade de organizar fichas técnicas heterogêneas de 15 nichos sem truncamento de texto, sem vazamento de atributos cruzados e garantindo desobstrução de entalhes/safe-area em modais mobile.
+- **Decisão Adotada:**
+  1. **Motor TetrisGrid 2D Auto-Packing (`teteterisgrid-view.tsx`):** Empacotamento denso e adaptativo para especificações canônicas, garantindo leitura integral sem truncamento (`break-words text-wrap`).
+  2. **Isolamento Estrito de Nichos (Invariante B.37):** Bloqueio de vazamento de propriedades entre categorias no `canonical-specs-resolver.ts`.
+  3. **Desobstrução de Safe-Area (Invariante B.34):** Padding superior defensivo em drawers/sheets (`pt-[max(1.25rem,env(safe-area-inset-top))]`) e fechamento abaixo do notch.
+- **Fundamentação:** AGENTS.md B.34, B.37, B.38, Apple HIG e WCAG 2.2 AA.
+- **Consequências:** Fichas técnicas legíveis em todos os dispositivos sem sobreposição de barras e sem overflow.
+
+## DEC-229: Linha Única de Abas sem Quebra, Imagem Full-Bleed Mobile, Desbloqueio de Pacote Pronto e Erradicação de Jargões em Entrega
+
+- **Data:** 2026-10-17
+- **Contexto:** Abas de navegação quebravam em 3 linhas no mobile; imagem principal cortava com margens laterais; primeira foto secundária iniciava cortada pela metade; pacote pronto bloqueava com tela de login para anônimos; e termos como "Waesy Link" e "MotoLink" causavam fricção no checkout.
+- **Decisão Adotada:**
+  1. **Régua de Abas em Linha Única Contínua (Invariante B.39):** Layout horizontal com scroll suave (`flex flex-nowrap overflow-x-auto no-scrollbar h-10 px-3.5`).
+  2. **Imagem Hero Full-Bleed no Mobile:** Imagem de ponta a ponta sem bordas laterais (`w-full aspect-[4/3] rounded-none sm:rounded-lg object-cover`).
+  3. **Primeira Foto Secundária 100% Visível:** Purgado container carousel defeituoso; carrossel horizontal alinhado com gap justo e miniaturas quadradas (`size-14 sm:size-16`).
+  4. **Desbloqueio de Reserva de Pacote Pronto:** Usuário anônimo pode configurar saída, passageiros e avançar direto para reserva via WhatsApp sem barreira bloqueante de autenticação.
+  5. **Erradicação de Jargões em Logística:** Exibição comercial amigável de "Entrega no Endereço (Delivery)" e "Retirada no Local (Grátis)".
+- **Fundamentação:** AGENTS.md B.22, B.26, B.39, Apple HIG e WCAG 2.2 AA.
+- **Consequências:** Experiência tátil e fluida de classe mundial nas páginas de detalhes e checkout mobile.
+
