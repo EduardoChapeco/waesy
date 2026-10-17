@@ -1256,7 +1256,7 @@ export function EditorialShowcaseView({
                                         className="size-full object-cover group-hover:scale-105 transition-transform duration-200"
                                         loading="lazy"
                                       />
-                                      <span className="absolute bottom-1.5 right-1.5 px-2 py-1 rounded-md bg-neutral-950/70 text-white text-xs font-mono">
+                                      <span className="absolute bottom-2 right-2 px-2 py-1 rounded-md bg-neutral-950/70 text-white text-xs font-mono">
                                         {pIdx + 1}/{lodgingPhotos.length}
                                       </span>
                                     </button>
