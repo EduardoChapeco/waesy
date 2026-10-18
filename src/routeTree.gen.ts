@@ -134,6 +134,7 @@ import { Route as WorkspaceSquadsRouteImport } from './routes/workspace.squads'
 import { Route as WorkspaceSuporteRouteImport } from './routes/workspace.suporte'
 import { Route as WorkspaceTarefasRouteImport } from './routes/workspace.tarefas'
 import { Route as WorkspaceTokensRouteImport } from './routes/workspace.tokens'
+import { Route as WorkspaceViabilidadeRouteImport } from './routes/workspace.viabilidade'
 import { Route as StoreAgendarIndexRouteImport } from './routes/_store.agendar.index'
 import { Route as StoreAgendarIdRouteImport } from './routes/_store.agendar.$id'
 import { Route as StoreBioSlugRouteImport } from './routes/_store.bio.$slug'
@@ -240,6 +241,7 @@ import { Route as PortalSubpainelTokenRouteImport } from './routes/portal.subpai
 import { Route as VerifyDocumentCodeRouteImport } from './routes/verify.document.$code'
 import { Route as ViajanteViagemIdRouteImport } from './routes/viajante.viagem.$id'
 import { Route as WorkspaceAdvocaciaIndexRouteImport } from './routes/workspace.advocacia.index'
+import { Route as WorkspaceAfiliadosConciliacaoRouteImport } from './routes/workspace.afiliados.conciliacao'
 import { Route as WorkspaceAgendaIndexRouteImport } from './routes/workspace.agenda.index'
 import { Route as WorkspaceAgendaRecursosRouteImport } from './routes/workspace.agenda.recursos'
 import { Route as WorkspaceAtendimentoIndexRouteImport } from './routes/workspace.atendimento.index'
@@ -1044,6 +1046,11 @@ const WorkspaceTokensRoute = WorkspaceTokensRouteImport.update({
   path: '/tokens',
   getParentRoute: () => WorkspaceRoute,
 } as any)
+const WorkspaceViabilidadeRoute = WorkspaceViabilidadeRouteImport.update({
+  id: '/viabilidade',
+  path: '/viabilidade',
+  getParentRoute: () => WorkspaceRoute,
+} as any)
 const StoreAgendarIndexRoute = StoreAgendarIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -1584,6 +1591,12 @@ const WorkspaceAdvocaciaIndexRoute = WorkspaceAdvocaciaIndexRouteImport.update({
   path: '/advocacia/',
   getParentRoute: () => WorkspaceRoute,
 } as any)
+const WorkspaceAfiliadosConciliacaoRoute =
+  WorkspaceAfiliadosConciliacaoRouteImport.update({
+    id: '/afiliados/conciliacao',
+    path: '/afiliados/conciliacao',
+    getParentRoute: () => WorkspaceRoute,
+  } as any)
 const WorkspaceAgendaIndexRoute = WorkspaceAgendaIndexRouteImport.update({
   id: '/agenda/',
   path: '/agenda/',
@@ -2705,6 +2718,7 @@ export interface FileRoutesByFullPath {
   '/workspace/suporte': typeof WorkspaceSuporteRoute
   '/workspace/tarefas': typeof WorkspaceTarefasRoute
   '/workspace/tokens': typeof WorkspaceTokensRoute
+  '/workspace/viabilidade': typeof WorkspaceViabilidadeRoute
   '/admin-master/': typeof AdminMasterIndexRoute
   '/workspace/': typeof WorkspaceIndexRoute
   '/agendar/$id': typeof StoreAgendarIdRoute
@@ -2801,6 +2815,7 @@ export interface FileRoutesByFullPath {
   '/portal/subpainel/$token': typeof PortalSubpainelTokenRoute
   '/verify/document/$code': typeof VerifyDocumentCodeRoute
   '/viajante/viagem/$id': typeof ViajanteViagemIdRoute
+  '/workspace/afiliados/conciliacao': typeof WorkspaceAfiliadosConciliacaoRoute
   '/workspace/agenda/recursos': typeof WorkspaceAgendaRecursosRoute
   '/workspace/captacao/ndas': typeof WorkspaceCaptacaoNdasRoute
   '/workspace/catalogo/atributos': typeof WorkspaceCatalogoAtributosRoute
@@ -3104,6 +3119,7 @@ export interface FileRoutesByTo {
   '/workspace/suporte': typeof WorkspaceSuporteRoute
   '/workspace/tarefas': typeof WorkspaceTarefasRoute
   '/workspace/tokens': typeof WorkspaceTokensRoute
+  '/workspace/viabilidade': typeof WorkspaceViabilidadeRoute
   '/': typeof StoreIndexRoute
   '/admin-master': typeof AdminMasterIndexRoute
   '/workspace': typeof WorkspaceIndexRoute
@@ -3201,6 +3217,7 @@ export interface FileRoutesByTo {
   '/portal/subpainel/$token': typeof PortalSubpainelTokenRoute
   '/verify/document/$code': typeof VerifyDocumentCodeRoute
   '/viajante/viagem/$id': typeof ViajanteViagemIdRoute
+  '/workspace/afiliados/conciliacao': typeof WorkspaceAfiliadosConciliacaoRoute
   '/workspace/agenda/recursos': typeof WorkspaceAgendaRecursosRoute
   '/workspace/captacao/ndas': typeof WorkspaceCaptacaoNdasRoute
   '/workspace/catalogo/atributos': typeof WorkspaceCatalogoAtributosRoute
@@ -3513,6 +3530,7 @@ export interface FileRoutesById {
   '/workspace/suporte': typeof WorkspaceSuporteRoute
   '/workspace/tarefas': typeof WorkspaceTarefasRoute
   '/workspace/tokens': typeof WorkspaceTokensRoute
+  '/workspace/viabilidade': typeof WorkspaceViabilidadeRoute
   '/_store/': typeof StoreIndexRoute
   '/admin-master/': typeof AdminMasterIndexRoute
   '/workspace/': typeof WorkspaceIndexRoute
@@ -3610,6 +3628,7 @@ export interface FileRoutesById {
   '/portal/subpainel/$token': typeof PortalSubpainelTokenRoute
   '/verify/document/$code': typeof VerifyDocumentCodeRoute
   '/viajante/viagem/$id': typeof ViajanteViagemIdRoute
+  '/workspace/afiliados/conciliacao': typeof WorkspaceAfiliadosConciliacaoRoute
   '/workspace/agenda/recursos': typeof WorkspaceAgendaRecursosRoute
   '/workspace/captacao/ndas': typeof WorkspaceCaptacaoNdasRoute
   '/workspace/catalogo/atributos': typeof WorkspaceCatalogoAtributosRoute
@@ -3924,6 +3943,7 @@ export interface FileRouteTypes {
     | '/workspace/suporte'
     | '/workspace/tarefas'
     | '/workspace/tokens'
+    | '/workspace/viabilidade'
     | '/admin-master/'
     | '/workspace/'
     | '/agendar/$id'
@@ -4020,6 +4040,7 @@ export interface FileRouteTypes {
     | '/portal/subpainel/$token'
     | '/verify/document/$code'
     | '/viajante/viagem/$id'
+    | '/workspace/afiliados/conciliacao'
     | '/workspace/agenda/recursos'
     | '/workspace/captacao/ndas'
     | '/workspace/catalogo/atributos'
@@ -4323,6 +4344,7 @@ export interface FileRouteTypes {
     | '/workspace/suporte'
     | '/workspace/tarefas'
     | '/workspace/tokens'
+    | '/workspace/viabilidade'
     | '/'
     | '/admin-master'
     | '/workspace'
@@ -4420,6 +4442,7 @@ export interface FileRouteTypes {
     | '/portal/subpainel/$token'
     | '/verify/document/$code'
     | '/viajante/viagem/$id'
+    | '/workspace/afiliados/conciliacao'
     | '/workspace/agenda/recursos'
     | '/workspace/captacao/ndas'
     | '/workspace/catalogo/atributos'
@@ -4731,6 +4754,7 @@ export interface FileRouteTypes {
     | '/workspace/suporte'
     | '/workspace/tarefas'
     | '/workspace/tokens'
+    | '/workspace/viabilidade'
     | '/_store/'
     | '/admin-master/'
     | '/workspace/'
@@ -4828,6 +4852,7 @@ export interface FileRouteTypes {
     | '/portal/subpainel/$token'
     | '/verify/document/$code'
     | '/viajante/viagem/$id'
+    | '/workspace/afiliados/conciliacao'
     | '/workspace/agenda/recursos'
     | '/workspace/captacao/ndas'
     | '/workspace/catalogo/atributos'
@@ -5944,6 +5969,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WorkspaceTokensRouteImport
       parentRoute: typeof WorkspaceRoute
     }
+    '/workspace/viabilidade': {
+      id: '/workspace/viabilidade'
+      path: '/viabilidade'
+      fullPath: '/workspace/viabilidade'
+      preLoaderRoute: typeof WorkspaceViabilidadeRouteImport
+      parentRoute: typeof WorkspaceRoute
+    }
     '/_store/agendar/': {
       id: '/_store/agendar/'
       path: '/'
@@ -6684,6 +6716,13 @@ declare module '@tanstack/react-router' {
       path: '/advocacia'
       fullPath: '/workspace/advocacia/'
       preLoaderRoute: typeof WorkspaceAdvocaciaIndexRouteImport
+      parentRoute: typeof WorkspaceRoute
+    }
+    '/workspace/afiliados/conciliacao': {
+      id: '/workspace/afiliados/conciliacao'
+      path: '/afiliados/conciliacao'
+      fullPath: '/workspace/afiliados/conciliacao'
+      preLoaderRoute: typeof WorkspaceAfiliadosConciliacaoRouteImport
       parentRoute: typeof WorkspaceRoute
     }
     '/workspace/agenda/': {
@@ -8487,7 +8526,9 @@ interface WorkspaceRouteChildren {
   WorkspaceSuporteRoute: typeof WorkspaceSuporteRoute
   WorkspaceTarefasRoute: typeof WorkspaceTarefasRoute
   WorkspaceTokensRoute: typeof WorkspaceTokensRoute
+  WorkspaceViabilidadeRoute: typeof WorkspaceViabilidadeRoute
   WorkspaceIndexRoute: typeof WorkspaceIndexRoute
+  WorkspaceAfiliadosConciliacaoRoute: typeof WorkspaceAfiliadosConciliacaoRoute
   WorkspaceAgendaRecursosRoute: typeof WorkspaceAgendaRecursosRoute
   WorkspaceCaptacaoNdasRoute: typeof WorkspaceCaptacaoNdasRoute
   WorkspaceCatalogoAtributosRoute: typeof WorkspaceCatalogoAtributosRoute
@@ -8659,7 +8700,9 @@ const WorkspaceRouteChildren: WorkspaceRouteChildren = {
   WorkspaceSuporteRoute: WorkspaceSuporteRoute,
   WorkspaceTarefasRoute: WorkspaceTarefasRoute,
   WorkspaceTokensRoute: WorkspaceTokensRoute,
+  WorkspaceViabilidadeRoute: WorkspaceViabilidadeRoute,
   WorkspaceIndexRoute: WorkspaceIndexRoute,
+  WorkspaceAfiliadosConciliacaoRoute: WorkspaceAfiliadosConciliacaoRoute,
   WorkspaceAgendaRecursosRoute: WorkspaceAgendaRecursosRoute,
   WorkspaceCaptacaoNdasRoute: WorkspaceCaptacaoNdasRoute,
   WorkspaceCatalogoAtributosRoute: WorkspaceCatalogoAtributosRoute,

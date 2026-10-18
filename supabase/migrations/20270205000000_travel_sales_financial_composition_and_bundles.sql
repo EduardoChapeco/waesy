@@ -7,10 +7,10 @@
 -- ============================================================================
 
 -- 1. Saneamento de atributos residuais de conveniência em anúncios de viagens, imóveis, veículos e serviços
-UPDATE public.classified_listings
+UPDATE public.classifieds
 SET attributes = attributes - 'temperature' - 'is_alcoholic' - 'volume'
 WHERE (
-  template_style = 'editorial'
+  attributes->>'template_style' = 'editorial'
   OR attributes ? 'destination_city'
   OR attributes ? 'itinerary_days'
   OR attributes ? 'lodgings'
@@ -19,15 +19,17 @@ WHERE (
   OR attributes ? 'mileage_km'
 );
 
--- 2. Colunas de Visibilidade Direta (Unlisted) e Composição de Passageiros em classified_listings
-ALTER TABLE public.classified_listings
+-- 2. Colunas de Visibilidade Direta (Unlisted) e Composição de Passageiros em classifieds
+ALTER TABLE public.classifieds
   ADD COLUMN IF NOT EXISTS visibility_mode TEXT NOT NULL DEFAULT 'public'
     CHECK (visibility_mode IN ('public', 'unlisted', 'private')),
   ADD COLUMN IF NOT EXISTS is_custom_quote BOOLEAN NOT NULL DEFAULT FALSE,
   ADD COLUMN IF NOT EXISTS passenger_composition JSONB NOT NULL DEFAULT '{"adults": 2, "children": 0, "children_max_age": 12, "infants": 0, "allow_custom_count": true}'::jsonb;
 
-CREATE INDEX IF NOT EXISTS idx_classified_listings_visibility_mode
-  ON public.classified_listings (visibility_mode, status);
+CREATE INDEX IF NOT EXISTS idx_classifieds_visibility_mode
+  ON public.classifieds (visibility_mode, status);
+
+CREATE OR REPLACE VIEW public.classified_listings AS SELECT * FROM public.classifieds;
 
 -- 3. Agrupador de Multi-Orçamentos (1 Link Único com Header Comparativo de Opções)
 CREATE TABLE IF NOT EXISTS public.travel_quote_bundles (
@@ -43,7 +45,7 @@ CREATE TABLE IF NOT EXISTS public.travel_quote_bundles (
   passenger_composition JSONB NOT NULL DEFAULT '{"adults": 2, "children": 0, "children_max_age": 12, "infants": 0, "allow_custom_count": false}'::jsonb,
   status TEXT NOT NULL DEFAULT 'sent'
     CHECK (status IN ('draft', 'sent', 'viewed', 'accepted', 'expired', 'cancelled')),
-  accepted_listing_id UUID REFERENCES public.classified_listings(id) ON DELETE SET NULL,
+  accepted_listing_id UUID REFERENCES public.classifieds(id) ON DELETE SET NULL,
   accepted_at TIMESTAMPTZ,
   expires_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -53,7 +55,7 @@ CREATE TABLE IF NOT EXISTS public.travel_quote_bundles (
 CREATE TABLE IF NOT EXISTS public.travel_quote_bundle_items (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   bundle_id UUID NOT NULL REFERENCES public.travel_quote_bundles(id) ON DELETE CASCADE,
-  listing_id UUID NOT NULL REFERENCES public.classified_listings(id) ON DELETE CASCADE,
+  listing_id UUID NOT NULL REFERENCES public.classifieds(id) ON DELETE CASCADE,
   option_label TEXT NOT NULL DEFAULT 'Opção 1',
   badge_text TEXT,
   custom_price_cents BIGINT,
@@ -71,7 +73,7 @@ CREATE TABLE IF NOT EXISTS public.travel_sale_financial_sheets (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   store_id UUID NOT NULL REFERENCES public.stores(id) ON DELETE CASCADE,
   proposal_id UUID REFERENCES public.travel_proposals(id) ON DELETE SET NULL,
-  listing_id UUID REFERENCES public.classified_listings(id) ON DELETE SET NULL,
+  listing_id UUID REFERENCES public.classifieds(id) ON DELETE SET NULL,
 
   -- Identificação da Venda
   internal_code TEXT NOT NULL,

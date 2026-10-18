@@ -700,7 +700,7 @@ BEGIN
   IF v_clauses IS NULL OR jsonb_typeof(v_clauses) <> 'array' THEN
     v_clauses := v_store.settings -> 'tourism_contract_clauses';
   END IF;
-  IF CASE WHEN jsonb_typeof(v_clauses) = 'array' THEN jsonb_array_length(v_clauses) = 0 ELSE TRUE END THEN
+  IF jsonb_typeof(v_clauses) <> 'array' OR jsonb_array_length(v_clauses) = 0 THEN
     v_clauses := jsonb_build_array(
       jsonb_build_object('number', 1, 'section', 'DO OBJETO DO CONTRATO', 'clause_text', 'O presente contrato tem por objeto os serviços de turismo especificados neste instrumento.', 'is_mandatory', TRUE),
       jsonb_build_object('number', 2, 'section', 'DAS CONDIÇÕES DE PAGAMENTO', 'clause_text', 'Os valores e condições indicados neste instrumento representam preferências e negociação; não há confirmação de pagamento por este contrato.', 'is_mandatory', TRUE),

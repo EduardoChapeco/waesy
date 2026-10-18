@@ -36,7 +36,7 @@ import {
 import { GeomarketingInteractiveMap } from "@/components/simlab/GeomarketingInteractiveMap";
 import { NICHE_ECONOMIC_BENCHMARKS } from "@/lib/geo-analytics";
 
-export const Route = createFileRoute("/workspace/viabilidade" as any)({
+export const Route = createFileRoute("/workspace/viabilidade")({
   head: () => ({
     meta: [
       {

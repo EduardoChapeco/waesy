@@ -40,6 +40,24 @@ CREATE TABLE IF NOT EXISTS public.travel_operator_integrations (
   UNIQUE (store_id, operator_slug)
 );
 
+ALTER TABLE public.travel_operator_integrations
+  ADD COLUMN IF NOT EXISTS operator_slug TEXT,
+  ADD COLUMN IF NOT EXISTS operator_display_name TEXT,
+  ADD COLUMN IF NOT EXISTS engine_type TEXT NOT NULL DEFAULT 'infotravel_v1',
+  ADD COLUMN IF NOT EXISTS base_url TEXT NOT NULL DEFAULT 'https://api.infotravel.com.br/api/v1',
+  ADD COLUMN IF NOT EXISTS client_code TEXT,
+  ADD COLUMN IF NOT EXISTS agency_code TEXT,
+  ADD COLUMN IF NOT EXISTS username TEXT,
+  ADD COLUMN IF NOT EXISTS vault_secret_id TEXT,
+  ADD COLUMN IF NOT EXISTS default_markup_percent NUMERIC(5,2) NOT NULL DEFAULT 12.00,
+  ADD COLUMN IF NOT EXISTS max_boleto_installments INTEGER NOT NULL DEFAULT 15,
+  ADD COLUMN IF NOT EXISTS max_card_installments INTEGER NOT NULL DEFAULT 10,
+  ADD COLUMN IF NOT EXISTS boleto_min_downpayment_pct NUMERIC(5,2) NOT NULL DEFAULT 20.00,
+  ADD COLUMN IF NOT EXISTS boleto_provider_type TEXT NOT NULL DEFAULT 'agency_direct',
+  ADD COLUMN IF NOT EXISTS payment_instructions_pt TEXT,
+  ADD COLUMN IF NOT EXISTS is_active BOOLEAN NOT NULL DEFAULT true,
+  ADD COLUMN IF NOT EXISTS last_sync_error TEXT;
+
 CREATE INDEX IF NOT EXISTS idx_travel_operator_integrations_store
   ON public.travel_operator_integrations(store_id, is_active);
 
@@ -50,33 +68,15 @@ CREATE POLICY "travel_operator_integrations_tenant_select"
   ON public.travel_operator_integrations
   FOR SELECT
   TO authenticated
-  USING (
-    EXISTS (
-      SELECT 1 FROM public.stores s
-      WHERE s.id = travel_operator_integrations.store_id
-        AND s.owner_id = auth.uid()
-    )
-  );
+  USING (public.is_store_staff(store_id));
 
 DROP POLICY IF EXISTS "travel_operator_integrations_tenant_write" ON public.travel_operator_integrations;
 CREATE POLICY "travel_operator_integrations_tenant_write"
   ON public.travel_operator_integrations
   FOR ALL
   TO authenticated
-  USING (
-    EXISTS (
-      SELECT 1 FROM public.stores s
-      WHERE s.id = travel_operator_integrations.store_id
-        AND s.owner_id = auth.uid()
-    )
-  )
-  WITH CHECK (
-    EXISTS (
-      SELECT 1 FROM public.stores s
-      WHERE s.id = travel_operator_integrations.store_id
-        AND s.owner_id = auth.uid()
-    )
-  );
+  USING (public.is_store_staff(store_id))
+  WITH CHECK (public.is_store_staff(store_id));
 
 -- ----------------------------------------------------------------------------
 -- 2. INTELIGÊNCIA DE AEROPORTOS GATEWAY REGIONAIS (DESTINOS SEM AEROPORTO DIRETO)
@@ -164,20 +164,8 @@ CREATE POLICY "travel_quote_room_configs_tenant_all"
   ON public.travel_quote_room_configs
   FOR ALL
   TO authenticated
-  USING (
-    EXISTS (
-      SELECT 1 FROM public.stores s
-      WHERE s.id = travel_quote_room_configs.store_id
-        AND s.owner_id = auth.uid()
-    )
-  )
-  WITH CHECK (
-    EXISTS (
-      SELECT 1 FROM public.stores s
-      WHERE s.id = travel_quote_room_configs.store_id
-        AND s.owner_id = auth.uid()
-    )
-  );
+  USING (public.is_store_staff(store_id))
+  WITH CHECK (public.is_store_staff(store_id));
 
 -- ----------------------------------------------------------------------------
 -- 4. PORTAL "MINHAS VIAGENS": BOLETOS, PARCELAS E AUTO-MATCH DE COMPROVANTES OCR
@@ -227,19 +215,11 @@ CREATE POLICY "travel_trip_installment_boletos_access"
   TO authenticated
   USING (
     client_profile_id = auth.uid()
-    OR EXISTS (
-      SELECT 1 FROM public.stores s
-      WHERE s.id = travel_trip_installment_boletos.store_id
-        AND s.owner_id = auth.uid()
-    )
+    OR public.is_store_staff(store_id)
   )
   WITH CHECK (
     client_profile_id = auth.uid()
-    OR EXISTS (
-      SELECT 1 FROM public.stores s
-      WHERE s.id = travel_trip_installment_boletos.store_id
-        AND s.owner_id = auth.uid()
-    )
+    OR public.is_store_staff(store_id)
   );
 
 -- ----------------------------------------------------------------------------
@@ -285,11 +265,7 @@ CREATE POLICY "travel_trip_official_documents_read"
   TO authenticated
   USING (
     is_visible_to_client = true
-    OR EXISTS (
-      SELECT 1 FROM public.stores s
-      WHERE s.id = travel_trip_official_documents.store_id
-        AND s.owner_id = auth.uid()
-    )
+    OR public.is_store_staff(store_id)
   );
 
 -- ----------------------------------------------------------------------------
@@ -344,20 +320,8 @@ CREATE POLICY "travel_visa_ds160_evaluations_tenant_all"
   ON public.travel_visa_ds160_evaluations
   FOR ALL
   TO authenticated
-  USING (
-    EXISTS (
-      SELECT 1 FROM public.stores s
-      WHERE s.id = travel_visa_ds160_evaluations.store_id
-        AND s.owner_id = auth.uid()
-    )
-  )
-  WITH CHECK (
-    EXISTS (
-      SELECT 1 FROM public.stores s
-      WHERE s.id = travel_visa_ds160_evaluations.store_id
-        AND s.owner_id = auth.uid()
-    )
-  );
+  USING (public.is_store_staff(store_id))
+  WITH CHECK (public.is_store_staff(store_id));
 
 -- ----------------------------------------------------------------------------
 -- 7. SPLIT FINANCEIRO COM RETENÇÃO DE COMISSÃO & FOLHA DE COMISSÕES DE AGENTES
@@ -398,19 +362,7 @@ CREATE POLICY "travel_agent_commission_splits_tenant_all"
   ON public.travel_agent_commission_splits
   FOR ALL
   TO authenticated
-  USING (
-    EXISTS (
-      SELECT 1 FROM public.stores s
-      WHERE s.id = travel_agent_commission_splits.store_id
-        AND s.owner_id = auth.uid()
-    )
-  )
-  WITH CHECK (
-    EXISTS (
-      SELECT 1 FROM public.stores s
-      WHERE s.id = travel_agent_commission_splits.store_id
-        AND s.owner_id = auth.uid()
-    )
-  );
+  USING (public.is_store_staff(store_id))
+  WITH CHECK (public.is_store_staff(store_id));
 
 COMMIT;

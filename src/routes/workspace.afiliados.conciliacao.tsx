@@ -19,7 +19,7 @@ import {
   listMerchantAffiliateInvoices,
 } from "@/services/affiliate-ledger.functions";
 
-export const Route = createFileRoute("/workspace/afiliados/conciliacao" as any)({
+export const Route = createFileRoute("/workspace/afiliados/conciliacao")({
   head: () => ({
     meta: [
       {
