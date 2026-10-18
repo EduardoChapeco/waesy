@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { generateSocialStoryCard, type SocialCardResultDTO } from "@/services/studio.functions";
 import { listAdminProducts } from "@/services/admin-catalog.functions";
 import { getStoreSettings } from "@/services/store.functions";
+import { SimLabQuickTestSheet } from "@/components/simlab/SimLabQuickTestSheet";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -39,7 +40,7 @@ export default function WorkspaceMarketingStoriesPage() {
   const { products, storeName: initialStoreName, storeSlug } = Route.useLoaderData();
 
   const [format, setFormat] = useState<"story_9_16" | "feed_1_1" | "banner_16_9">("story_9_16");
-  const [theme, setTheme] = useState<"dark" | "light">("dark");
+  const [theme, setTheme] = useState<"dark" | "light" | "swiss" | "cyber" | "gourmet">("dark");
   const [title, setTitle] = useState("Oferta Especial Exclusiva");
   const [subtitle, setSubtitle] = useState("Escaneie o QR Code ou acesse o link para comprar");
   const [priceCents, setPriceCents] = useState<number>(14990);
@@ -197,6 +198,15 @@ export default function WorkspaceMarketingStoriesPage() {
             <Maximize2 className="size-3.5" />
             <span>Banner (16:9)</span>
           </button>
+          <SimLabQuickTestSheet
+            initialTitle={title}
+            initialDescription={subtitle}
+            initialPriceBrl={Math.round((priceCents / 100) * 100) / 100}
+            sourceEntityType="social_story"
+            creativeMediaUrl={imageUrl || null}
+            triggerLabel="Simular no SimLabs 4.0"
+            onApplyOptimalPrice={(optimalPrice) => setPriceCents(Math.round(optimalPrice * 100))}
+          />
         </div>
       </div>
 
@@ -291,12 +301,12 @@ export default function WorkspaceMarketingStoriesPage() {
 
                 <div>
                   <Label className="text-xs font-bold text-muted-foreground">Tema Visual</Label>
-                  <div className="mt-2 flex gap-2">
+                  <div className="mt-2 grid grid-cols-2 sm:grid-cols-5 gap-2">
                     <button
                       type="button"
                       onClick={() => setTheme("dark")}
                       className={cn(
-                        "flex-1 h-11 rounded-lg border text-xs font-bold transition-colors",
+                        "h-11 rounded-lg border text-xs font-bold transition-colors cursor-pointer",
                         theme === "dark"
                           ? "border-primary bg-primary/10 text-primary"
                           : "border-border bg-background text-muted-foreground",
@@ -308,13 +318,49 @@ export default function WorkspaceMarketingStoriesPage() {
                       type="button"
                       onClick={() => setTheme("light")}
                       className={cn(
-                        "flex-1 h-11 rounded-lg border text-xs font-bold transition-colors",
+                        "h-11 rounded-lg border text-xs font-bold transition-colors cursor-pointer",
                         theme === "light"
                           ? "border-primary bg-primary/10 text-primary"
                           : "border-border bg-background text-muted-foreground",
                       )}
                     >
                       Claro
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setTheme("swiss")}
+                      className={cn(
+                        "h-11 rounded-lg border text-xs font-bold transition-colors cursor-pointer",
+                        theme === "swiss"
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "border-border bg-background text-muted-foreground",
+                      )}
+                    >
+                      Swiss
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setTheme("cyber")}
+                      className={cn(
+                        "h-11 rounded-lg border text-xs font-bold transition-colors cursor-pointer",
+                        theme === "cyber"
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "border-border bg-background text-muted-foreground",
+                      )}
+                    >
+                      Cyber
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setTheme("gourmet")}
+                      className={cn(
+                        "h-11 rounded-lg border text-xs font-bold transition-colors cursor-pointer",
+                        theme === "gourmet"
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "border-border bg-background text-muted-foreground",
+                      )}
+                    >
+                      Gourmet
                     </button>
                   </div>
                 </div>

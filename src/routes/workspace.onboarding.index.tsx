@@ -128,7 +128,7 @@ export default function WorkspaceOnboardingPage() {
   return (
     <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
       {/* ── 1. HEADER DE ATIVAÇÃO APPLE HIG ── */}
-      <div className="relative overflow-hidden rounded-lg border border-border/70 bg-gradient-to-br from-card via-card to-muted/30 p-6 sm:p-8 space-y-6">
+      <div className="relative overflow-hidden rounded-lg border border-border/70 bg-card p-6 sm:p-8 space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
           <div className="space-y-2">
             <div className="flex items-center gap-2">
@@ -187,10 +187,34 @@ export default function WorkspaceOnboardingPage() {
               </p>
             </div>
           </div>
-          <Button asChild className="h-9 px-4 rounded-lg text-xs font-bold gap-2 shrink-0 w-full sm:w-auto">
+          <Button asChild className="h-11 px-4 rounded-lg text-xs font-bold gap-2 shrink-0 w-full sm:w-auto">
             <Link to="/workspace/onboarding/revisao">
               <span>Abrir Configuração Inteligente</span>
-              <ArrowRight className="size-3.5" />
+              <ArrowRight className="size-4" />
+            </Link>
+          </Button>
+        </div>
+
+        {/* Banner de Geomarketing, Isócronas GOAT & Viabilidade Pré-Negócio (Cortex 360) */}
+        <div className="p-4 sm:p-5 rounded-lg bg-card border border-border/70 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className="size-11 rounded-lg bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+              <ShieldCheck className="size-5" />
+            </div>
+            <div>
+              <h3 className="font-bold text-sm text-foreground flex flex-wrap items-center gap-2">
+                <span>Estudo de Viabilidade & Geomarketing Pré-Negócio</span>
+                <Badge variant="secondary" className="text-xs font-mono">Cortex 360 + IBGE</Badge>
+              </h3>
+              <p className="text-xs text-muted-foreground">
+                Simule qualquer esquina no mapa por isócronas (500m, 1km, 2km), descubra concorrentes via OpenStreetMap e gere seu Business Model Canvas e SWOT antes mesmo de abrir a loja.
+              </p>
+            </div>
+          </div>
+          <Button asChild variant="outline" className="h-11 px-4 rounded-lg text-xs font-bold gap-2 shrink-0 w-full sm:w-auto">
+            <Link to={"/workspace/viabilidade" as any}>
+              <span>Abrir Mapa & Viabilidade</span>
+              <ArrowRight className="size-4" />
             </Link>
           </Button>
         </div>
@@ -214,7 +238,7 @@ export default function WorkspaceOnboardingPage() {
             return (
               <div
                 key={step.id}
-                className={`p-5 rounded-lg border transition-all flex flex-col justify-between gap-4 ${
+                className={`p-5 rounded-lg border transition-colors flex flex-col justify-between gap-4 ${
                   isDone
                     ? "bg-card/40 border-border/50"
                     : "bg-card border-border/80 hover:border-primary/40 shadow-xs"
@@ -256,7 +280,7 @@ export default function WorkspaceOnboardingPage() {
                     asChild
                     variant={isDone ? "ghost" : "outline"}
                     size="sm"
-                    className="h-8 text-xs font-semibold gap-1 rounded-lg"
+                    className="h-11 text-xs font-semibold gap-1 rounded-lg"
                   >
                     <Link to={step.targetRoute as any}>
                       <span>{isDone ? "Revisar" : "Configurar"}</span>

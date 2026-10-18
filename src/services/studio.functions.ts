@@ -1102,7 +1102,7 @@ export const generateSocialStoryCard = createServerFn({ method: "POST" })
       storeName: z.string().min(1),
       targetUrl: z.string().url(),
       format: z.enum(["story_9_16", "feed_1_1", "banner_16_9"]).default("story_9_16"),
-      theme: z.enum(["dark", "light", "brand"]).default("dark"),
+      theme: z.enum(["dark", "light", "brand", "swiss", "cyber", "gourmet"]).default("dark"),
     }),
   )
   .handler(async ({ data }): Promise<SocialCardResultDTO> => {
@@ -1117,18 +1117,47 @@ export const generateSocialStoryCard = createServerFn({ method: "POST" })
         )
       : null;
 
-    const bgColor = data.theme === "light" ? "#f8fafc" : "#09090b";
-    const textColor = data.theme === "light" ? "#0f172a" : "#fafafa";
-    const mutedColor = data.theme === "light" ? "#64748b" : "#a1a1aa";
-    const cardBg = data.theme === "light" ? "rgba(255,255,255,0.9)" : "rgba(24,24,27,0.85)";
-    const accentColor = "#f59e0b";
+    let bgColor = data.theme === "light" ? "#f8fafc" : "#09090b";
+    let bgEndColor = data.theme === "light" ? "#e2e8f0" : "#18181b";
+    let textColor = data.theme === "light" ? "#0f172a" : "#fafafa";
+    let mutedColor = data.theme === "light" ? "#64748b" : "#a1a1aa";
+    let cardBg = data.theme === "light" ? "rgba(255,255,255,0.92)" : "rgba(24,24,27,0.88)";
+    let cardBorder = data.theme === "light" ? "#cbd5e1" : "#27272a";
+    let accentColor = "#f59e0b";
+    let fontPrimary = "-apple-system, BlinkMacSystemFont, 'Inter', 'SF Pro Display', sans-serif";
 
-    // Gera SVG responsivo vetorial
+    if (data.theme === "swiss") {
+      bgColor = "#ffffff";
+      bgEndColor = "#f1f5f9";
+      textColor = "#09090b";
+      mutedColor = "#475569";
+      cardBg = "#ffffff";
+      cardBorder = "#09090b";
+      accentColor = "#e11d48";
+    } else if (data.theme === "cyber") {
+      bgColor = "#050508";
+      bgEndColor = "#0f172a";
+      textColor = "#f8fafc";
+      mutedColor = "#94a3b8";
+      cardBg = "rgba(15, 23, 42, 0.9)";
+      cardBorder = "#38bdf8";
+      accentColor = "#06b6d4";
+    } else if (data.theme === "gourmet") {
+      bgColor = "#1c1917";
+      bgEndColor = "#292524";
+      textColor = "#f5f5f4";
+      mutedColor = "#a8a29e";
+      cardBg = "rgba(41, 37, 36, 0.9)";
+      cardBorder = "#78716c";
+      accentColor = "#d97706";
+    }
+
+    // Gera SVG responsivo vetorial com design avançado
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}">
       <defs>
         <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%" stop-color="${bgColor}"/>
-          <stop offset="100%" stop-color="${data.theme === "light" ? "#e2e8f0" : "#18181b"}"/>
+          <stop offset="100%" stop-color="${bgEndColor}"/>
         </linearGradient>
         <clipPath id="imgClip">
           <rect x="80" y="${isStory ? 280 : 160}" width="${width - 160}" height="${isStory ? 900 : height - 440}" rx="32" ry="32" />
@@ -1138,41 +1167,41 @@ export const generateSocialStoryCard = createServerFn({ method: "POST" })
       <!-- Fundo -->
       <rect width="${width}" height="${height}" fill="url(#bgGrad)" />
 
-      <!-- Cabeçalho / Loja -->
+      <!-- Cabeçalho / Loja com Squircle Suave -->
       <g transform="translate(80, ${isStory ? 140 : 80})">
         <rect width="48" height="48" rx="14" fill="${accentColor}" />
-        <text x="24" y="32" font-family="-apple-system, BlinkMacSystemFont, 'Inter', sans-serif" font-size="22" font-weight="900" fill="#000" text-anchor="middle">W</text>
-        <text x="64" y="32" font-family="-apple-system, BlinkMacSystemFont, 'Inter', sans-serif" font-size="28" font-weight="800" fill="${textColor}">${data.storeName}</text>
+        <text x="24" y="32" font-family="${fontPrimary}" font-size="22" font-weight="900" fill="#ffffff" text-anchor="middle">W</text>
+        <text x="64" y="32" font-family="${fontPrimary}" font-size="28" font-weight="800" fill="${textColor}">${data.storeName}</text>
       </g>
 
-      <!-- Imagem do Produto/Passeio (se houver) -->
+      <!-- Imagem do Produto/Passeio (se houver) com Enquadramento Fiel -->
       ${
         data.imageUrl
           ? `<image href="${data.imageUrl}" x="80" y="${isStory ? 280 : 160}" width="${width - 160}" height="${isStory ? 900 : height - 440}" preserveAspectRatio="xMidYMid slice" clip-path="url(#imgClip)" />`
-          : `<rect x="80" y="${isStory ? 280 : 160}" width="${width - 160}" height="${isStory ? 900 : height - 440}" rx="32" fill="${cardBg}" />`
+          : `<rect x="80" y="${isStory ? 280 : 160}" width="${width - 160}" height="${isStory ? 900 : height - 440}" rx="32" fill="${cardBg}" stroke="${cardBorder}" stroke-width="2" />`
       }
 
       <!-- Card Inferior de Preço e Título -->
       <g transform="translate(80, ${isStory ? 1240 : height - 240})">
-        <rect width="${width - 160}" height="${isStory ? 560 : 180}" rx="32" fill="${cardBg}" stroke="${data.theme === "light" ? "#e2e8f0" : "#27272a"}" stroke-width="2" />
+        <rect width="${width - 160}" height="${isStory ? 560 : 180}" rx="32" fill="${cardBg}" stroke="${cardBorder}" stroke-width="2" />
         
         <!-- Preço Destaque -->
         ${
           formattedPrice
             ? `<g transform="translate(48, 70)">
-                <rect width="260" height="60" rx="16" fill="${accentColor}" />
-                <text x="130" y="40" font-family="-apple-system, BlinkMacSystemFont, 'Inter', sans-serif" font-size="30" font-weight="900" fill="#000" text-anchor="middle">${formattedPrice}</text>
+                <rect width="280" height="64" rx="16" fill="${accentColor}" />
+                <text x="140" y="42" font-family="${fontPrimary}" font-size="32" font-weight="900" fill="#ffffff" text-anchor="middle">${formattedPrice}</text>
               </g>`
             : ""
         }
 
         <!-- Título -->
-        <text x="48" y="${formattedPrice ? (isStory ? 200 : 120) : 100}" font-family="-apple-system, BlinkMacSystemFont, 'Inter', sans-serif" font-size="${isStory ? 44 : 34}" font-weight="900" fill="${textColor}">
+        <text x="48" y="${formattedPrice ? (isStory ? 200 : 120) : 100}" font-family="${fontPrimary}" font-size="${isStory ? 44 : 34}" font-weight="900" fill="${textColor}">
           ${data.title.slice(0, 45)}
         </text>
 
         <!-- Subtítulo / Chamada -->
-        <text x="48" y="${formattedPrice ? (isStory ? 260 : 155) : 140}" font-family="-apple-system, BlinkMacSystemFont, 'Inter', sans-serif" font-size="24" font-weight="500" fill="${mutedColor}">
+        <text x="48" y="${formattedPrice ? (isStory ? 260 : 155) : 140}" font-family="${fontPrimary}" font-size="24" font-weight="500" fill="${mutedColor}">
           ${(data.subtitle || "Escaneie o QR Code ou acesse o link para comprar").slice(0, 60)}
         </text>
 
@@ -1181,7 +1210,7 @@ export const generateSocialStoryCard = createServerFn({ method: "POST" })
           isStory
             ? `<g transform="translate(48, 420)">
                 <rect width="${width - 256}" height="80" rx="24" fill="${textColor}" />
-                <text x="${(width - 256) / 2}" y="50" font-family="-apple-system, BlinkMacSystemFont, 'Inter', sans-serif" font-size="28" font-weight="800" fill="${bgColor}" text-anchor="middle">
+                <text x="${(width - 256) / 2}" y="50" font-family="${fontPrimary}" font-size="28" font-weight="800" fill="${bgColor}" text-anchor="middle">
                   Comprar Online no Waesy
                 </text>
               </g>`

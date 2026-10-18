@@ -245,7 +245,7 @@ export function SocialCardGeneratorModal({
                 type="button"
                 onClick={() => setFormat(f)}
                 className={cn(
-                  "p-3 rounded-lg border text-center transition-all flex flex-col items-center gap-2 cursor-pointer",
+                  "p-3 rounded-lg border text-center transition-all flex flex-col items-center gap-2 cursor-pointer focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-foreground",
                   isSelected
                     ? "border-foreground bg-foreground/5 shadow-xs"
                     : "border-border/60 hover:border-border text-muted-foreground"
@@ -253,7 +253,7 @@ export function SocialCardGeneratorModal({
               >
                 <Icon className={cn("size-4", isSelected ? "text-foreground" : "text-muted-foreground")} />
                 <span className="text-xs font-semibold text-foreground">{item.label}</span>
-                <Badge variant="secondary" className="text-[10px] h-4 px-1">
+                <Badge variant="secondary" className="text-xs h-4 px-2 leading-none">
                   {item.ratioLabel}
                 </Badge>
               </button>
@@ -276,7 +276,7 @@ export function SocialCardGeneratorModal({
         <div className="flex items-center justify-between pt-3 border-t border-border/60">
           <Button
             variant="outline"
-            className="h-10 rounded-lg text-xs font-medium cursor-pointer"
+            className="h-11 min-h-11 rounded-lg text-xs font-medium cursor-pointer focus-visible:ring-2 focus-visible:ring-foreground"
             onClick={handleCopy}
           >
             {isCopied ? <Check className="size-3.5 mr-1 text-emerald-500" /> : <Copy className="size-3.5 mr-1" />}
@@ -286,13 +286,13 @@ export function SocialCardGeneratorModal({
           <div className="flex items-center gap-2">
             <Button
               variant="outline"
-              className="h-10 rounded-lg text-xs font-medium cursor-pointer"
+              className="h-11 min-h-11 rounded-lg text-xs font-medium cursor-pointer focus-visible:ring-2 focus-visible:ring-foreground"
               onClick={handleNativeShare}
             >
               <Share2 className="size-3.5 mr-1" /> Compartilhar
             </Button>
             <Button
-              className="h-10 rounded-lg text-xs font-semibold bg-foreground text-background cursor-pointer"
+              className="h-11 min-h-11 rounded-lg text-xs font-semibold bg-foreground text-background cursor-pointer focus-visible:ring-2 focus-visible:ring-foreground"
               onClick={handleDownload}
             >
               <Download className="size-3.5 mr-1" /> Baixar PNG

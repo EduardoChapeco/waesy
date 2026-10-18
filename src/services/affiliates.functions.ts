@@ -32,9 +32,15 @@ export const upsertCreatorProfileInput = z.object({
   bio: z.string().max(500).optional(),
   avatarUrl: z.string().url().optional().or(z.literal("")),
   coverUrl: z.string().url().optional().or(z.literal("")),
+  bannerUrl: z.string().url().optional().or(z.literal("")),
+  bannerTitle: z.string().max(160).optional(),
+  bannerLink: z.string().max(500).optional(),
   category: z.string().default("general"),
-  socialLinks: z.record(z.string()).default({}),
+  socialLinks: z.record(z.any()).default({}),
   pinnedProducts: z.array(z.string()).default([]),
+  showcaseOrder: z.array(z.string()).optional(),
+  partnerStoreIds: z.array(z.string()).optional(),
+  ownBrandStoreIds: z.array(z.string()).optional(),
 });
 
 export const toggleProfilePrivacyInput = z.object({
@@ -104,6 +110,8 @@ export const getMyAffiliateProfile = createServerFn({ method: "GET" }).handler(a
       .from("affiliate_partners")
       .select("*")
       .eq("user_id", effectiveUserId)
+      .order("updated_at", { ascending: false })
+      .limit(1)
       .maybeSingle();
 
     if (error) {
@@ -147,6 +155,8 @@ export const getMyAffiliateTokensOverview = createServerFn({ method: "GET" }).ha
       .from("affiliate_partners")
       .select("*")
       .eq("user_id", effectiveUserId)
+      .order("updated_at", { ascending: false })
+      .limit(1)
       .maybeSingle();
 
     // 1b. Se não encontrou parceiro mas tem perfil de criador ou username, auto-cura
@@ -154,6 +164,8 @@ export const getMyAffiliateTokensOverview = createServerFn({ method: "GET" }).ha
       .from("creator_profiles")
       .select("*")
       .eq("user_id", effectiveUserId)
+      .order("updated_at", { ascending: false })
+      .limit(1)
       .maybeSingle();
 
     if (!partner && creator) {
@@ -539,6 +551,8 @@ export const getMyCreatorProfile = createServerFn({ method: "GET" }).handler(asy
     .from("creator_profiles")
     .select("*")
     .eq("user_id", effectiveUserId)
+    .order("updated_at", { ascending: false })
+    .limit(1)
     .maybeSingle();
 
   if (error) {
@@ -551,6 +565,8 @@ export const getMyCreatorProfile = createServerFn({ method: "GET" }).handler(asy
       .from("affiliate_partners")
       .select("*")
       .eq("user_id", effectiveUserId)
+      .order("updated_at", { ascending: false })
+      .limit(1)
       .maybeSingle();
 
     if (partner) {
@@ -602,12 +618,12 @@ export const upsertCreatorProfile = createServerFn({ method: "POST" })
       throw new Error("Não autenticado.");
     }
 
-    const cleanHandle = input.handle.toLowerCase().trim();
+    const cleanHandle = input.handle.toLowerCase().trim().replace(/^@/, "");
 
     // Verifica disponibilidade se alterou o handle
     const { data: existing } = await supabase
       .from("creator_profiles")
-      .select("id, user_id")
+      .select("id, user_id, social_links, showcase_order, partner_store_ids")
       .eq("handle", cleanHandle)
       .maybeSingle();
 
@@ -615,23 +631,34 @@ export const upsertCreatorProfile = createServerFn({ method: "POST" })
       throw new Error("Este identificador (@handle) já está em uso por outro criador.");
     }
 
+    const mergedSocialLinks: Record<string, any> = {
+      ...(existing?.social_links || {}),
+      ...(input.socialLinks || {}),
+      ...(input.ownBrandStoreIds !== undefined ? { own_brand_store_ids: input.ownBrandStoreIds } : {}),
+    };
+
+    const upsertPayload: Record<string, any> = {
+      user_id: effectiveUserId,
+      handle: cleanHandle,
+      name: input.stageName.trim(),
+      bio: input.bio?.trim() || null,
+      avatar_url: input.avatarUrl || null,
+      cover_url: input.coverUrl || null,
+      niche: input.category || "Geral",
+      social_links: mergedSocialLinks,
+      status: "active",
+      updated_at: new Date().toISOString(),
+    };
+
+    if (input.bannerUrl !== undefined) upsertPayload.banner_url = input.bannerUrl || null;
+    if (input.bannerTitle !== undefined) upsertPayload.banner_title = input.bannerTitle || null;
+    if (input.bannerLink !== undefined) upsertPayload.banner_link = input.bannerLink || null;
+    if (input.showcaseOrder !== undefined) upsertPayload.showcase_order = input.showcaseOrder;
+    if (input.partnerStoreIds !== undefined) upsertPayload.partner_store_ids = input.partnerStoreIds;
+
     const { data: creator, error } = await supabase
       .from("creator_profiles")
-      .upsert(
-        {
-          user_id: effectiveUserId,
-          handle: cleanHandle,
-          name: input.stageName.trim(),
-          bio: input.bio?.trim() || null,
-          avatar_url: input.avatarUrl || null,
-          cover_url: input.coverUrl || null,
-          niche: input.category || "Geral",
-          social_links: input.socialLinks || {},
-          status: "active",
-          updated_at: new Date().toISOString(),
-        },
-        { onConflict: "handle" }
-      )
+      .upsert(upsertPayload, { onConflict: "handle" })
       .select()
       .single();
 
@@ -640,7 +667,7 @@ export const upsertCreatorProfile = createServerFn({ method: "POST" })
       throw new Error(error?.message || "Falha ao salvar sub-perfil.");
     }
 
-    // Vincula o handle ativo no profile do usuário
+    // Vincula o handle ativo no profile do usuário (sem sobrescrever full_name ou username civil!)
     await supabase
       .from("profiles")
       .update({ active_creator_handle: cleanHandle })
@@ -1219,10 +1246,17 @@ export const getCreatorAnalytics = createServerFn({ method: "GET" })
     const effectiveUserId = await resolveEffectiveUserId();
     if (!effectiveUserId) return null;
 
-    const { data: creator } = await supabase
+    const cleanRequestedHandle = input?.handle?.toLowerCase().trim().replace(/^@/, "");
+    let creatorQuery = supabase
       .from("creator_profiles")
       .select("id, handle, name, niche")
-      .eq("user_id", effectiveUserId)
+      .eq("user_id", effectiveUserId);
+    if (cleanRequestedHandle) {
+      creatorQuery = creatorQuery.eq("handle", cleanRequestedHandle);
+    }
+    const { data: creator } = await creatorQuery
+      .order("updated_at", { ascending: false })
+      .limit(1)
       .maybeSingle();
 
     const { data: partner } = await supabase
@@ -1231,6 +1265,8 @@ export const getCreatorAnalytics = createServerFn({ method: "GET" })
         "id, handle, display_name, total_clicks, total_orders, total_gmv_cents, pending_commission_cents, paid_commission_cents"
       )
       .eq("user_id", effectiveUserId)
+      .order("updated_at", { ascending: false })
+      .limit(1)
       .maybeSingle();
 
     if (!creator && !partner) return null;
@@ -1400,6 +1436,7 @@ export const togglePinShowcaseProduct = createServerFn({ method: "POST" })
       storeId: z.string().uuid(),
       isPinned: z.boolean().default(true),
       customTitle: z.string().optional(),
+      handle: z.string().optional(),
     })
   )
   .handler(async ({ data: input }) => {
@@ -1407,10 +1444,16 @@ export const togglePinShowcaseProduct = createServerFn({ method: "POST" })
     const effectiveUserId = await resolveEffectiveUserId();
     if (!effectiveUserId) throw new Error("Não autenticado.");
 
-    const { data: creator } = await supabase
+    let creatorQuery = supabase
       .from("creator_profiles")
       .select("id")
-      .eq("user_id", effectiveUserId)
+      .eq("user_id", effectiveUserId);
+    if (input.handle) {
+      creatorQuery = creatorQuery.eq("handle", input.handle.toLowerCase().trim().replace(/^@/, ""));
+    }
+    const { data: creator } = await creatorQuery
+      .order("updated_at", { ascending: false })
+      .limit(1)
       .maybeSingle();
 
     if (!creator) throw new Error("Perfil de criador não encontrado.");
@@ -1449,7 +1492,7 @@ export const togglePinShowcaseProduct = createServerFn({ method: "POST" })
   });
 
 /**
- * Salva as configurações de CMS e Vitrine do Criador (Banner, Ordem de Seções, Lojas Parceiras).
+ * Salva as configurações de CMS e Vitrine do Criador (Banner, Ordem de Seções, Lojas Parceiras, Marcas Próprias).
  */
 export const saveCreatorShowcaseSettings = createServerFn({ method: "POST" })
   .validator(
@@ -1459,7 +1502,8 @@ export const saveCreatorShowcaseSettings = createServerFn({ method: "POST" })
       bannerTitle: z.string().optional().nullable(),
       bannerLink: z.string().optional().nullable(),
       showcaseOrder: z.array(z.string()).optional(),
-      partnerStoreIds: z.array(z.string().uuid()).optional(),
+      partnerStoreIds: z.array(z.string()).optional(),
+      ownBrandStoreIds: z.array(z.string()).optional(),
     })
   )
   .handler(async ({ data: input }) => {
@@ -1469,11 +1513,22 @@ export const saveCreatorShowcaseSettings = createServerFn({ method: "POST" })
 
     const cleanHandle = input.handle.toLowerCase().trim().replace(/^@/, "");
 
-    const { data: creator } = await supabase
+    let { data: creator } = await supabase
       .from("creator_profiles")
-      .select("id, user_id")
+      .select("id, user_id, social_links")
       .eq("handle", cleanHandle)
       .maybeSingle();
+
+    if (!creator) {
+      const { data: fallbackCreator } = await supabase
+        .from("creator_profiles")
+        .select("id, user_id, social_links")
+        .eq("user_id", effectiveUserId)
+        .order("updated_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      creator = fallbackCreator || null;
+    }
 
     if (!creator || creator.user_id !== effectiveUserId) {
       throw new Error("Perfil de criador não encontrado ou sem permissão.");
@@ -1487,6 +1542,12 @@ export const saveCreatorShowcaseSettings = createServerFn({ method: "POST" })
     if (input.bannerLink !== undefined) updatePayload.banner_link = input.bannerLink;
     if (input.showcaseOrder !== undefined) updatePayload.showcase_order = input.showcaseOrder;
     if (input.partnerStoreIds !== undefined) updatePayload.partner_store_ids = input.partnerStoreIds;
+    if (input.ownBrandStoreIds !== undefined) {
+      updatePayload.social_links = {
+        ...(creator.social_links || {}),
+        own_brand_store_ids: input.ownBrandStoreIds,
+      };
+    }
 
     const { error } = await supabase
       .from("creator_profiles")
@@ -1519,11 +1580,22 @@ export const togglePartnerStoreConnection = createServerFn({ method: "POST" })
 
     const cleanHandle = handle.toLowerCase().trim().replace(/^@/, "");
 
-    const { data: creator } = await supabase
+    let { data: creator } = await supabase
       .from("creator_profiles")
       .select("id, user_id, partner_store_ids")
       .eq("handle", cleanHandle)
       .maybeSingle();
+
+    if (!creator) {
+      const { data: fallbackCreator } = await supabase
+        .from("creator_profiles")
+        .select("id, user_id, partner_store_ids")
+        .eq("user_id", effectiveUserId)
+        .order("updated_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      creator = fallbackCreator || null;
+    }
 
     if (!creator || creator.user_id !== effectiveUserId) {
       throw new Error("Perfil de criador não encontrado ou sem permissão.");

@@ -1018,6 +1018,10 @@ Retorne EXCLUSIVAMENTE um JSON estrito no formato:
       prompt: `Texto da vaga:\n${textToAnalyze.slice(0, 5000)}`,
       temperature: 0.1,
       expectJson: true,
+      taskType: "fast_json",
+      feature: "mining_jobs_extractor",
+      isSystemTask: true,
+      responseFormat: "json_object",
     });
 
     const parsed = aiRes.parsedJson as any;

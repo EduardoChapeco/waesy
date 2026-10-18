@@ -474,16 +474,20 @@ function isKeyInMemoryCooldown(keyId: string): boolean {
  */
 export async function getAllActiveKeysForProvider(
   provider: ApiProvider,
-  ownerId?: string
+  ownerId?: string,
+  storeId?: string
 ): Promise<Array<{ id: string; rawKey: string }>> {
   const keys: Array<{ id: string; rawKey: string }> = [];
 
   // 1. BYOK do usuário ou loja (se houver no cofre)
-  if (ownerId) {
+  if (ownerId || storeId) {
     try {
-      const byokSecret = await getActiveSecretForProvider(provider, ownerId).catch(() => null);
+      const byokSecret = await getActiveSecretForProvider(provider, ownerId, storeId).catch(() => null);
       if (byokSecret) {
-        keys.push({ id: `byok-${provider}`, rawKey: byokSecret });
+        const byokKeyId = `byok-${provider}-${storeId || ownerId || "user"}`;
+        if (!isKeyInMemoryCooldown(byokKeyId)) {
+          keys.push({ id: byokKeyId, rawKey: byokSecret });
+        }
       }
     } catch {}
   }
@@ -856,13 +860,29 @@ export const getSimLabKeyStatus = createServerFn({ method: "GET" }).handler(
 );
 
 
+export const unifiedAiTaskTypeEnum = z.enum([
+  "vision",
+  "ocr",
+  "fast_json",
+  "scraping",
+  "editorial_squad",
+  "deep_reasoning",
+  "chat",
+]);
+
+export type UnifiedAiTaskType = z.infer<typeof unifiedAiTaskTypeEnum>;
+
+export const TEXT_ONLY_PROVIDERS = ["groq"] as const;
+export const MULTIMODAL_PROVIDERS = ["gemini", "anthropic", "openai", "openrouter"] as const;
+
 export interface UnifiedAiCallOptions {
   systemPrompt?: string;
   systemInstruction?: string;
   userPrompt?: string;
   prompt?: string;
   feature?: string;
-  taskType?: string;
+  taskType?: UnifiedAiTaskType | "multimodal" | string;
+  isSystemTask?: boolean;
   fileBase64?: string;
   fileMime?: string;
   responseFormat?: "json_object" | "text";
@@ -884,6 +904,7 @@ export interface UnifiedAiResult {
   text: string;
   provider: ApiProvider;
   model: string;
+  modelUsed?: string;
   parsedJson?: any;
 }
 
@@ -909,43 +930,104 @@ export async function executeUnifiedAiCall(options: UnifiedAiCallOptions): Promi
   const targetOwner = options.ownerId || (await getServerIdentity().then((id) => id?.id || undefined).catch(() => undefined));
   const targetStore = options.storeId || (await getServerIdentity().then((id) => id?.store_id || undefined).catch(() => undefined));
 
-  const providersToTry: ApiProvider[] = [];
-  if (preferred) {
-    providersToTry.push(preferred);
+  // Priorização baseada em afinidade de tarefa (Task Aptitude) e economia de cotas:
+  // - Visão/OCR: Gemini / Claude / OpenAI / OpenRouter (multimodal nativo; ignora Groq text-only)
+  // - Fast JSON / Scraping: Groq primeiro (latência sub-200ms, Qwen 3.8, cota alta), seguido de OpenAI e OpenRouter
+  // - Editorial Squad: Groq primeiro para velocidade, seguido de OpenRouter e Gemini
+  // - Deep Reasoning: OpenAI / Anthropic / Gemini
+  const isVisionTask =
+    images.length > 0 ||
+    options.taskType === "vision" ||
+    options.taskType === "ocr" ||
+    options.taskType === "multimodal";
+
+  const isFastJsonTask =
+    options.taskType === "fast_json" ||
+    options.taskType === "scraping" ||
+    (isJson && !isVisionTask);
+
+  const isEditorialSquadTask =
+    options.taskType === "editorial_squad" ||
+    Boolean(options.feature?.includes("editorial")) ||
+    Boolean(options.feature?.includes("curation"));
+
+  const isDeepReasoningTask =
+    options.taskType === "deep_reasoning" ||
+    options.taskType === "code" ||
+    Boolean(options.feature?.includes("planning")) ||
+    Boolean(options.feature?.includes("contract_analysis"));
+
+  let defaultCascade: ApiProvider[];
+  if (isVisionTask) {
+    defaultCascade = ["gemini", "anthropic", "openai", "openrouter"];
+  } else if (isFastJsonTask) {
+    defaultCascade = ["groq", "openai", "openrouter", "gemini", "anthropic"];
+  } else if (isEditorialSquadTask) {
+    defaultCascade = ["groq", "openrouter", "gemini", "openai", "anthropic"];
+  } else if (isDeepReasoningTask) {
+    defaultCascade = ["openai", "anthropic", "openrouter", "gemini", "groq"];
+  } else {
+    defaultCascade = ["groq", "gemini", "openrouter", "openai", "anthropic"];
   }
 
-  // Priorização baseada em afinidade de tarefa e quotas gratuitas:
-  // - Visão/OCR: Gemini primeiro (suporte nativo multimodal gratuito)
-  // - Texto/Editorial/JSON/Extração: Groq primeiro (latência ~200ms, Qwen 3.8, cota gratuita alta)
-  const isVisionTask = images.length > 0 || options.taskType === "vision" || options.taskType === "ocr" || options.taskType === "multimodal";
-  const defaultCascade: ApiProvider[] = isVisionTask
-    ? ["gemini", "openai", "openrouter", "anthropic"]
-    : ["groq", "gemini", "openrouter", "openai", "anthropic"];
+  const providersToTry: ApiProvider[] = [];
+  if (preferred) {
+    const isPreferredAllowed = isVisionTask ? !TEXT_ONLY_PROVIDERS.includes(preferred as any) : true;
+    if (isPreferredAllowed) {
+      providersToTry.push(preferred);
+    }
+  }
 
   for (const p of defaultCascade) {
     if (!providersToTry.includes(p)) {
+      if (isVisionTask && TEXT_ONLY_PROVIDERS.includes(p as any)) continue;
       providersToTry.push(p);
     }
   }
 
+  const finalProvidersToTry = isVisionTask
+    ? providersToTry.filter((p) => !TEXT_ONLY_PROVIDERS.includes(p as any))
+    : providersToTry;
+
+  // Isolamento estrito: Tarefas de background da plataforma (crawlers, cron, DataJud) NUNCA consomem BYOK de lojistas
+  const isPlatformBackground =
+    Boolean(options.isSystemTask) ||
+    Boolean(options.feature?.startsWith("mining_")) ||
+    Boolean(options.feature?.startsWith("cron_")) ||
+    Boolean(options.feature?.startsWith("crawler_")) ||
+    Boolean(options.feature?.startsWith("datajud_")) ||
+    options.taskType === "scraping" ||
+    options.taskType === "background" ||
+    (!options.storeId && !options.ownerId && (Boolean(options.feature?.includes("harvest")) || Boolean(options.feature?.includes("crawler"))));
+
+  const canUseByok = !isPlatformBackground && (Boolean(targetOwner) || Boolean(targetStore));
+
   const errors: string[] = [];
 
-  for (const provider of providersToTry) {
+  for (const provider of finalProvidersToTry) {
     const keysToTry: Array<{ id: string; rawKey: string }> = [];
     if (options.overrideApiKey && provider === preferred) {
       keysToTry.push({ id: "override-key", rawKey: options.overrideApiKey });
     }
 
     // 1. BYOK: Verifica se o lojista/usuário possui chave ativa configurada no secret_vault
-    if (targetOwner || targetStore) {
-      const byokSecret = await getActiveSecretForProvider(provider, targetOwner || undefined, targetStore || undefined).catch(() => null);
-      if (byokSecret && !keysToTry.some((k) => k.rawKey === byokSecret)) {
-        keysToTry.push({ id: `byok-${provider}`, rawKey: byokSecret });
+    // Compatibilidade de aptidão: se tarefa for vision, ignora BYOK do Groq (pois é text-only)
+    if (canUseByok) {
+      const isProviderCompatibleWithTask = isVisionTask ? !TEXT_ONLY_PROVIDERS.includes(provider as any) : true;
+      if (isProviderCompatibleWithTask) {
+        const byokSecret = await getActiveSecretForProvider(provider, targetOwner || undefined, targetStore || undefined).catch(() => null);
+        if (byokSecret && !keysToTry.some((k) => k.rawKey === byokSecret)) {
+          const byokKeyId = `byok-${provider}-${targetStore || targetOwner || "user"}`;
+          if (!isKeyInMemoryCooldown(byokKeyId)) {
+            keysToTry.push({ id: byokKeyId, rawKey: byokSecret });
+          }
+        }
       }
     }
 
     // 2. Pool de Chaves Gerenciadas da Plataforma (Admin Master) - Carrega todas as chaves ativas do provedor balanceadas
-    const poolKeys = await getAllActiveKeysForProvider(provider, targetOwner).catch(() => []);
+    // Se for background da plataforma, não passa targetOwner para não atrelar chave de lojista ao pool
+    const poolKeys = await getAllActiveKeysForProvider(provider, undefined).catch(() => []);
     for (const pk of poolKeys) {
       if (pk.rawKey && !keysToTry.some((k) => k.rawKey === pk.rawKey)) {
         keysToTry.push(pk);
@@ -976,13 +1058,13 @@ export async function executeUnifiedAiCall(options: UnifiedAiCallOptions): Promi
           storeId: targetStore,
           userId: targetOwner,
         });
-        return { content, text: content, provider, model, parsedJson };
+        return { content, text: content, provider, model, modelUsed: model, parsedJson };
       };
 
       try {
       if (provider === "openrouter") {
         const openRouterModels =
-          images.length > 0
+          isVisionTask
             ? ["google/gemini-2.5-flash", "qwen/qwen2.5-vl-72b-instruct:free"]
             : [
                 "meta-llama/llama-3.3-70b-instruct:free",
@@ -1055,7 +1137,7 @@ export async function executeUnifiedAiCall(options: UnifiedAiCallOptions): Promi
 
           lastOrStatus = attemptRes.status;
           lastOrErrText = await attemptRes.text().catch(() => "");
-          if (attemptRes.status === 401 || attemptRes.status === 402 || attemptRes.status === 403) {
+          if (attemptRes.status === 401 || attemptRes.status === 402 || attemptRes.status === 403 || attemptRes.status === 429) {
             break;
           }
         }
@@ -1091,7 +1173,7 @@ export async function executeUnifiedAiCall(options: UnifiedAiCallOptions): Promi
       }
 
       if (provider === "groq") {
-        if (images.length > 0) {
+        if (isVisionTask) {
           // Groq é text-only neste pool — segue para próximo provedor da cascata
           continue;
         }
@@ -1110,11 +1192,25 @@ export async function executeUnifiedAiCall(options: UnifiedAiCallOptions): Promi
           }
         }
 
-        const messages: any[] = [];
-        if (systemPrompt) {
-          messages.push({ role: "system", content: systemPrompt });
+        const isJsonMode = isFastJsonTask || isJson;
+        let finalSystemPrompt = systemPrompt;
+        let finalUserPrompt = userPrompt;
+        if (isJsonMode) {
+          const hasJsonWord =
+            (finalSystemPrompt && /json/i.test(finalSystemPrompt)) ||
+            (finalUserPrompt && /json/i.test(finalUserPrompt));
+          if (!hasJsonWord) {
+            finalSystemPrompt = finalSystemPrompt
+              ? `${finalSystemPrompt}\nResponda estritamente em formato JSON válido.`
+              : "Responda estritamente em formato JSON válido.";
+          }
         }
-        messages.push({ role: "user", content: userPrompt });
+
+        const messages: any[] = [];
+        if (finalSystemPrompt) {
+          messages.push({ role: "system", content: finalSystemPrompt });
+        }
+        messages.push({ role: "user", content: finalUserPrompt });
 
         let groqRes: Response | null = null;
         let activeGroqModel = groqModels[0];
@@ -1126,10 +1222,10 @@ export async function executeUnifiedAiCall(options: UnifiedAiCallOptions): Promi
           const bodyPayload: any = {
             model: candidateModel,
             messages,
-            temperature: options.temperature ?? 0.3,
+            temperature: isFastJsonTask ? (options.temperature ?? 0.1) : (options.temperature ?? 0.3),
             max_tokens: options.maxTokens ?? 4096,
           };
-          if (isJson) {
+          if (isJsonMode) {
             bodyPayload.response_format = { type: "json_object" };
           }
 
@@ -1150,8 +1246,8 @@ export async function executeUnifiedAiCall(options: UnifiedAiCallOptions): Promi
 
           lastGroqStatus = attemptRes.status;
           lastGroqErrText = await attemptRes.text().catch(() => "");
-          // Se for erro de autenticação (401/403), a chave em si é inválida; não adianta trocar modelo na mesma chave
-          if (attemptRes.status === 401 || attemptRes.status === 403) {
+          // Se for erro de autenticação (401/403) ou cota (402/429), a chave em si está impedida; passa para próxima chave
+          if (attemptRes.status === 401 || attemptRes.status === 402 || attemptRes.status === 403 || attemptRes.status === 429) {
             break;
           }
         }
@@ -1333,7 +1429,7 @@ export async function executeUnifiedAiCall(options: UnifiedAiCallOptions): Promi
       }
 
       if (provider === "anthropic") {
-        const model = options.modelOverride || (images.length > 0 ? "claude-3-5-sonnet-20241022" : "claude-3-5-haiku-20241022");
+        const model = options.modelOverride || (isVisionTask ? "claude-3-5-sonnet-20241022" : "claude-3-5-haiku-20241022");
         const messages: any[] = [];
         if (images.length > 0) {
           const contentParts: any[] = [];

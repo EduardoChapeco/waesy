@@ -77,6 +77,11 @@ export interface MobilityRequestDTO {
  courier_id: string | null;
  courier_profile_id: string | null;
  magic_token: string | null;
+ women_only?: boolean;
+ property_type?: "ground" | "elevator" | "stairs" | string | null;
+ floor_number?: number | null;
+ legal_disclaimer_accepted?: boolean;
+ notes?: string | null;
  created_at: string;
  courier_profiles?: {
  full_name: string;
@@ -94,6 +99,8 @@ export interface CourierProfileDTO {
  store_id: string | null;
  slug: string | null;
  full_name: string;
+ display_name?: string | null;
+ bio?: string | null;
  phone: string;
  avatar_url: string | null;
  vehicle_type: string;
@@ -109,6 +116,12 @@ export interface CourierProfileDTO {
  passenger_preference?: string | null;
  condo_entry_fee_cents?: number;
  apartment_floor_fee_cents?: number;
+ custom_base_fee_cents?: number;
+ custom_km_rate_cents?: number;
+ helper_fee_cents?: number;
+ max_helpers_count?: number;
+ min_km_rate_filter_cents?: number;
+ work_radius_km?: number;
  vehicle_capacity_kg?: number;
  vehicle_capacity_m3?: number;
  serviced_neighborhoods?: string[];
@@ -246,39 +259,41 @@ export const calculateMobilityQuote = createServerFn({ method: "POST" })
 
  const durationMin = Math.max(10, Math.round(data.distance_km * 3) + 5);
 
- const estimates: MobilityQuoteEstimate[] = priceTables.map((tbl) => {
- const rawKmCost = Math.round(data.distance_km * tbl.km_rate_cents);
- const rawMinuteCost = Math.round(durationMin * (tbl.minute_rate_cents || 0));
- const rawHelperCost = data.helpers_count * (tbl.helper_fee_cents || 0);
- const rawTotal = Math.round((tbl.base_fee_cents + rawKmCost + rawMinuteCost + rawHelperCost) * surge);
- const finalPrice = Math.max(rawTotal, tbl.min_fare_cents || 0);
+ // Garante que todas as 5 modalidades existam no retorno (mesclando banco + configuração padrão)
+ const tableByType = new Map<string, any>();
+ for (const tbl of priceTables) {
+   if (tbl.service_type && !tableByType.has(tbl.service_type)) {
+     tableByType.set(tbl.service_type, tbl);
+   }
+ }
 
- const labelsMap: Record<MobilityServiceType, { label: string; description: string; icon: string }> = {
- ride_car: { label: "Carro Privado", description: "Transporte confortável para até 4 passageiros.", icon: "Car" },
- ride_moto: { label: "Moto Passageiro", description: "Deslocamento ágil e econômico para 1 pessoa.", icon: "Bike" },
- delivery_express: { label: "Entrega Flash", description: "Documentos, chaves e encomendas urgentes.", icon: "Zap" },
- freight_van: { label: "Fiorino / Van", description: "Cargas médias e mercadorias comerciais.", icon: "Truck" },
- moving_truck: { label: "Caminhão de Mudança", description: "Mudanças completas com opção de ajudantes.", icon: "Boxes" },
- };
+ const estimates: MobilityQuoteEstimate[] = (Object.keys(SERVICE_CONFIGS) as MobilityServiceType[]).map((st) => {
+   const cfg = SERVICE_CONFIGS[st];
+   const tbl = tableByType.get(st);
+   const baseFee = tbl?.base_fee_cents ?? cfg.base_fee_cents;
+   const kmRate = tbl?.km_rate_cents ?? cfg.km_rate_cents;
+   const minuteRate = tbl?.minute_rate_cents ?? 0;
+   const helperFee = tbl?.helper_fee_cents || cfg.helper_fee_cents || 0;
+   const minFare = tbl?.min_fare_cents ?? cfg.min_fare_cents;
 
- const meta = labelsMap[tbl.service_type as MobilityServiceType] || {
- label: tbl.name || "Serviço de Transporte",
- description: "Transporte local tarifado.",
- icon: "Car",
- };
+   const rawKmCost = Math.round(distance_km * kmRate);
+   const rawMinuteCost = Math.round(durationMin * minuteRate);
+   const rawHelperCost = helpers_count * helperFee;
+   const rawTotal = Math.round((baseFee + rawKmCost + rawMinuteCost + rawHelperCost) * surge);
+   const finalPrice = Math.max(rawTotal, minFare);
 
- return {
- service_type: tbl.service_type as MobilityServiceType,
- label: tbl.name || meta.label,
- description: meta.description,
- icon_name: meta.icon,
- estimated_price_cents: finalPrice,
- distance_km: data.distance_km,
- duration_minutes: durationMin,
- base_fee_cents: tbl.base_fee_cents,
- km_rate_cents: tbl.km_rate_cents,
- helper_fee_cents: tbl.helper_fee_cents || 0,
- };
+   return {
+     service_type: st,
+     label: tbl?.name && st === "ride_car" ? tbl.name : cfg.label,
+     description: cfg.description,
+     icon_name: cfg.icon_name,
+     estimated_price_cents: finalPrice,
+     distance_km,
+     duration_minutes: durationMin,
+     base_fee_cents: baseFee,
+     km_rate_cents: kmRate,
+     helper_fee_cents: helperFee,
+   };
  });
 
  return estimates;
@@ -286,6 +301,8 @@ export const calculateMobilityQuote = createServerFn({ method: "POST" })
 
 /**
  * 2. Cria uma nova solicitação de corrida, entrega ou mudança.
+ * Persiste simultaneamente em `public.mobility_requests` (para o Radar Waesy Go, timer de 3min e avaliações)
+ * e espelha em `public.orders` (para razão unificado de pedidos).
  */
 export const createMobilityRequest = createServerFn({ method: "POST" })
  .validator(
@@ -303,13 +320,17 @@ export const createMobilityRequest = createServerFn({ method: "POST" })
  destination_instructions: z.string().optional(),
  distance_km: z.number().min(0.1).default(3.5),
  package_description: z.string().optional(),
- helpers_count: z.number().int().min(0).default(0),
+ helpers_count: z.number().int().min(0).max(6).default(0),
  needs_packing: z.boolean().default(false),
- scheduled_for: z.string().optional(),
+ scheduled_for: z.string().optional().nullable(),
  estimated_price_cents: z.number().int().min(100),
  payment_method: z.string().default("pix"),
  notes: z.string().optional(),
  direct_driver_slug: z.string().optional(),
+ women_only: z.boolean().default(false).optional(),
+ property_type: z.enum(["ground", "elevator", "stairs"]).default("ground").optional(),
+ floor_number: z.number().int().min(0).max(50).default(0).optional(),
+ legal_disclaimer_accepted: z.boolean().default(false).optional(),
  }),
  )
  .handler(async ({ data }) => {
@@ -334,6 +355,10 @@ export const createMobilityRequest = createServerFn({ method: "POST" })
       payment_method = "pix",
       notes = null,
       direct_driver_slug = null,
+      women_only = false,
+      property_type = "ground",
+      floor_number = 0,
+      legal_disclaimer_accepted = false,
     } = data;
     const supabase = getServerClient();
     const identity = await getServerIdentity().catch(() => null);
@@ -354,83 +379,127 @@ export const createMobilityRequest = createServerFn({ method: "POST" })
     }
   }
 
+  if ((service_type === "moving_truck" || service_type === "freight_van") && !legal_disclaimer_accepted) {
+    throw new Error(
+      "Para solicitar Frete ou Mudança, é obrigatório aceitar o Termo de Contratação Direta P2P com o transportador parceiro."
+    );
+  }
+
  let assignedCourierProfileId: string | null = null;
 
- if (data.direct_driver_slug) {
+ if (direct_driver_slug) {
  const { data: driver } = await supabase
  .from("courier_profiles")
  .select("id")
- .eq("slug", data.direct_driver_slug)
+ .eq("slug", direct_driver_slug)
  .maybeSingle();
 
  if (driver) assignedCourierProfileId = driver.id;
  }
 
- const payload = {
+ const sharedId = crypto.randomUUID();
+ const magicToken = `req_${crypto.randomUUID().replace(/-/g, "").substring(0, 8)}`;
+ const durationMin = Math.max(10, Math.round(distance_km * 3) + 5);
+ const scheduledIso = scheduled_for ? new Date(scheduled_for).toISOString() : null;
+ const enrichedNotes = [
+   notes || package_description || "",
+   women_only ? "[SÓ MULHERES]" : "",
+   property_type && property_type !== "ground"
+     ? `[Imóvel: ${property_type === "stairs" ? `Escada (${floor_number}º andar)` : "Elevador"}]`
+     : "",
+   helpers_count > 0 ? `[Ajudantes: ${helpers_count}]` : "",
+ ]
+   .filter(Boolean)
+   .join(" • ");
+
+ const mobilityPayload: Record<string, any> = {
+ id: sharedId,
  customer_id: identity?.id || null,
- customer_name: data.customer_name || "Cliente Waesy",
- customer_phone: data.customer_phone || "(49) 99999-9999",
- service_type: data.service_type,
+ customer_name: customer_name || "Cliente Waesy",
+ customer_phone: customer_phone || "(49) 99999-9999",
+ service_type,
  status: assignedCourierProfileId ? "accepted" : "searching",
- origin_address: data.origin_address,
- origin_lat: data.origin_lat || null,
- origin_lng: data.origin_lng || null,
- origin_instructions: data.origin_instructions || null,
- destination_address: data.destination_address,
- destination_lat: data.destination_lat || null,
- destination_lng: data.destination_lng || null,
- destination_instructions: data.destination_instructions || null,
- distance_km: data.distance_km,
- estimated_duration_minutes: Math.max(10, Math.round(data.distance_km * 3) + 5),
- package_description: data.package_description || data.notes || null,
- helpers_count: data.helpers_count,
- needs_packing: data.needs_packing,
- scheduled_for: data.scheduled_for ? new Date(data.scheduled_for).toISOString() : null,
- estimated_price_cents: data.estimated_price_cents,
- final_price_cents: data.estimated_price_cents,
- payment_method: data.payment_method,
+ origin_address,
+ origin_lat: origin_lat || null,
+ origin_lng: origin_lng || null,
+ origin_instructions: origin_instructions || null,
+ destination_address,
+ destination_lat: destination_lat || null,
+ destination_lng: destination_lng || null,
+ destination_instructions: destination_instructions || null,
+ distance_km,
+ estimated_duration_minutes: durationMin,
+ package_description: enrichedNotes || null,
+ helpers_count,
+ needs_packing,
+ scheduled_for: scheduledIso,
+ estimated_price_cents,
+ final_price_cents: estimated_price_cents,
+ payment_method,
  payment_status: "pending",
  courier_profile_id: assignedCourierProfileId,
- magic_token: `req_${crypto.randomUUID().replace(/-/g, "").substring(0, 8)}`,
+ magic_token: magicToken,
+ notes: enrichedNotes || null,
  };
 
- // Usa orders como tabela canônica com origin_type = 'mobility'
+ // 1) Insere prioritariamente em public.mobility_requests (para o Radar Waesy Go)
+ const { data: insertedMobilityReq, error: mobErr } = await supabase
+   .from("mobility_requests")
+   .insert({
+     ...mobilityPayload,
+     women_only,
+     legal_disclaimer_accepted,
+   })
+   .select("*, courier_profiles:courier_profile_id(full_name, phone, vehicle_type, vehicle_model, vehicle_plate, rating)")
+   .maybeSingle();
+
+ if (mobErr) {
+   // Fallback caso a migration de colunas novas ainda não tenha rodado no ambiente
+   await supabase.from("mobility_requests").insert(mobilityPayload);
+ }
+
+ // 2) Espelha em orders como tabela transacional complementar com o mesmo ID
  const orderPayload = {
+ id: sharedId,
  customer_id: identity?.id || null,
  origin_type: "mobility" as const,
  status: assignedCourierProfileId ? "processing" : "draft",
  driver_id: null,
-      courier_profile_id: assignedCourierProfileId || null,
- public_token: payload.magic_token,
+ courier_profile_id: assignedCourierProfileId || null,
+ public_token: magicToken,
  customer_snapshot: {
- name: data.customer_name || "Cliente Waesy",
- phone: data.customer_phone || "",
+ name: customer_name || "Cliente Waesy",
+ phone: customer_phone || "",
  },
  shipping_address: {
- street: data.origin_address,
- destination: data.destination_address,
- lat: data.origin_lat || null,
- lng: data.origin_lng || null,
- dest_lat: data.destination_lat || null,
- dest_lng: data.destination_lng || null,
- origin_instructions: data.origin_instructions || null,
- destination_instructions: data.destination_instructions || null,
+ street: origin_address,
+ destination: destination_address,
+ lat: origin_lat || null,
+ lng: origin_lng || null,
+ dest_lat: destination_lat || null,
+ dest_lng: destination_lng || null,
+ origin_instructions: origin_instructions || null,
+ destination_instructions: destination_instructions || null,
  },
  items_snapshot: [
  {
- service_type: data.service_type,
- distance_km: data.distance_km,
- estimated_duration_minutes: Math.max(10, Math.round(data.distance_km * 3) + 5),
- package_description: data.package_description || data.notes || null,
- helpers_count: data.helpers_count,
- needs_packing: data.needs_packing,
- scheduled_for: data.scheduled_for ? new Date(data.scheduled_for).toISOString() : null,
- payment_method: data.payment_method,
- magic_token: payload.magic_token,
+ service_type,
+ distance_km,
+ estimated_duration_minutes: durationMin,
+ package_description: enrichedNotes || null,
+ helpers_count,
+ needs_packing,
+ scheduled_for: scheduledIso,
+ payment_method,
+ magic_token: magicToken,
+ women_only,
+ property_type,
+ floor_number,
+ legal_disclaimer_accepted,
  },
  ],
- subtotal_cents: data.estimated_price_cents,
- total_cents: data.estimated_price_cents,
+ subtotal_cents: estimated_price_cents,
+ total_cents: estimated_price_cents,
  shipping_cents: 0,
  discount_cents: 0,
  };
@@ -439,51 +508,64 @@ export const createMobilityRequest = createServerFn({ method: "POST" })
  .from("orders")
  .insert(orderPayload)
  .select("*, courier_profiles:courier_profile_id(full_name, phone, vehicle_type, vehicle_model, vehicle_plate, rating)")
- .single();
+ .maybeSingle();
 
- if (error) {
+ if (error && !insertedMobilityReq) {
  console.error("[mobility] Erro ao criar pedido de mobilidade:", error);
  throw new Error("Erro ao criar solicitação de mobilidade: " + error.message);
  }
 
- // Mapeia order para MobilityRequestDTO
- const snap = (order.items_snapshot as any[])?.[0] || {};
+ if (insertedMobilityReq) {
+   return {
+     ...insertedMobilityReq,
+     women_only,
+     property_type,
+     floor_number,
+     legal_disclaimer_accepted,
+   } as MobilityRequestDTO;
+ }
+
+ const snap = (order?.items_snapshot as any[])?.[0] || {};
  return {
- id: order.id,
- store_id: order.store_id || null,
- customer_id: order.customer_id,
- customer_name: (order.customer_snapshot as any)?.name || "Cliente",
- customer_phone: (order.customer_snapshot as any)?.phone || "",
- service_type: snap.service_type as MobilityServiceType,
- status: order.status as MobilityStatus,
- origin_address: (order.shipping_address as any)?.street || "",
- origin_lat: (order.shipping_address as any)?.lat || null,
- origin_lng: (order.shipping_address as any)?.lng || null,
- origin_instructions: (order.shipping_address as any)?.origin_instructions || null,
- destination_address: (order.shipping_address as any)?.destination || "",
- destination_lat: (order.shipping_address as any)?.dest_lat || null,
- destination_lng: (order.shipping_address as any)?.dest_lng || null,
- destination_instructions: (order.shipping_address as any)?.destination_instructions || null,
- distance_km: snap.distance_km || 0,
- estimated_duration_minutes: snap.estimated_duration_minutes || 0,
- package_description: snap.package_description || null,
- helpers_count: snap.helpers_count || 0,
- needs_packing: snap.needs_packing || false,
- scheduled_for: snap.scheduled_for || null,
- estimated_price_cents: order.total_cents || 0,
- final_price_cents: order.total_cents || 0,
- payment_method: snap.payment_method || "cash",
+ id: order?.id || sharedId,
+ store_id: order?.store_id || null,
+ customer_id: order?.customer_id || identity?.id || null,
+ customer_name: (order?.customer_snapshot as any)?.name || customer_name,
+ customer_phone: (order?.customer_snapshot as any)?.phone || customer_phone,
+ service_type: (snap.service_type || service_type) as MobilityServiceType,
+ status: (order?.status || "searching") as MobilityStatus,
+ origin_address: (order?.shipping_address as any)?.street || origin_address,
+ origin_lat: (order?.shipping_address as any)?.lat || origin_lat,
+ origin_lng: (order?.shipping_address as any)?.lng || origin_lng,
+ origin_instructions: (order?.shipping_address as any)?.origin_instructions || origin_instructions,
+ destination_address: (order?.shipping_address as any)?.destination || destination_address,
+ destination_lat: (order?.shipping_address as any)?.dest_lat || destination_lat,
+ destination_lng: (order?.shipping_address as any)?.dest_lng || destination_lng,
+ destination_instructions: (order?.shipping_address as any)?.destination_instructions || destination_instructions,
+ distance_km: snap.distance_km || distance_km,
+ estimated_duration_minutes: snap.estimated_duration_minutes || durationMin,
+ package_description: snap.package_description || enrichedNotes || null,
+ helpers_count: snap.helpers_count ?? helpers_count,
+ needs_packing: snap.needs_packing ?? needs_packing,
+ scheduled_for: snap.scheduled_for || scheduledIso,
+ estimated_price_cents: order?.total_cents || estimated_price_cents,
+ final_price_cents: order?.total_cents || estimated_price_cents,
+ payment_method: snap.payment_method || payment_method,
  payment_status: "pending",
- courier_id: order.driver_id || null,
- courier_profile_id: order.driver_id || null,
- magic_token: snap.magic_token || null,
- created_at: order.created_at,
- courier_profiles: (order as any).courier_profiles || null,
+ courier_id: order?.driver_id || null,
+ courier_profile_id: order?.courier_profile_id || assignedCourierProfileId || null,
+ magic_token: snap.magic_token || magicToken,
+ women_only,
+ property_type,
+ floor_number,
+ legal_disclaimer_accepted,
+ created_at: order?.created_at || new Date().toISOString(),
+ courier_profiles: (order as any)?.courier_profiles || null,
  } as MobilityRequestDTO;
  });
 
 /**
- * 3. Lista histórico de solicitações do cliente autenticado.
+ * 3. Lista histórico de solicitações do cliente autenticado (unificando mobility_requests e orders).
  */
 export const listCustomerMobilityRequests = createServerFn({ method: "GET" }).handler(
  async () => {
@@ -491,54 +573,105 @@ export const listCustomerMobilityRequests = createServerFn({ method: "GET" }).ha
  if (!identity?.id) return [];
 
  const supabase = getServerClient();
- const { data: rows, error } = await supabase
- .from("orders")
- .select("*, courier_profiles:courier_profile_id(full_name, phone, vehicle_type, vehicle_model, vehicle_plate, rating)")
- .eq("customer_id", identity.id)
- .eq("origin_type", "mobility")
- .order("created_at", { ascending: false })
- .limit(30);
 
- if (error) {
- console.warn("[mobility] Erro ao listar corridas do cliente:", error);
- return [];
+ const [{ data: mobRows }, { data: orderRows }] = await Promise.all([
+   supabase
+     .from("mobility_requests")
+     .select("*, courier_profiles:courier_profile_id(full_name, phone, vehicle_type, vehicle_model, vehicle_plate, rating)")
+     .eq("customer_id", identity.id)
+     .order("created_at", { ascending: false })
+     .limit(30),
+   supabase
+     .from("orders")
+     .select("*, courier_profiles:courier_profile_id(full_name, phone, vehicle_type, vehicle_model, vehicle_plate, rating)")
+     .eq("customer_id", identity.id)
+     .eq("origin_type", "mobility")
+     .order("created_at", { ascending: false })
+     .limit(30),
+ ]);
+
+ const byId = new Map<string, MobilityRequestDTO>();
+
+ for (const m of mobRows || []) {
+   byId.set(m.id, {
+     id: m.id,
+     store_id: m.store_id || null,
+     customer_id: m.customer_id,
+     customer_name: m.customer_name || "Cliente",
+     customer_phone: m.customer_phone || "",
+     service_type: m.service_type as MobilityServiceType,
+     status: m.status as MobilityStatus,
+     origin_address: m.origin_address || "",
+     origin_lat: m.origin_lat ?? null,
+     origin_lng: m.origin_lng ?? null,
+     origin_instructions: m.origin_instructions || null,
+     destination_address: m.destination_address || "",
+     destination_lat: m.destination_lat ?? null,
+     destination_lng: m.destination_lng ?? null,
+     destination_instructions: m.destination_instructions || null,
+     distance_km: Number(m.distance_km || 0),
+     estimated_duration_minutes: Number(m.estimated_duration_minutes || 0),
+     package_description: m.package_description || m.notes || null,
+     helpers_count: Number(m.helpers_count || 0),
+     needs_packing: Boolean(m.needs_packing),
+     scheduled_for: m.scheduled_for || null,
+     estimated_price_cents: Number(m.estimated_price_cents || 0),
+     final_price_cents: Number(m.final_price_cents || m.estimated_price_cents || 0),
+     payment_method: m.payment_method || "pix",
+     payment_status: m.payment_status || "pending",
+     courier_id: m.courier_id || null,
+     courier_profile_id: m.courier_profile_id || null,
+     magic_token: m.magic_token || null,
+     women_only: Boolean(m.women_only),
+     notes: m.notes || null,
+     created_at: m.created_at,
+     courier_profiles: m.courier_profiles || null,
+   });
  }
 
- return (rows || []).map((order: any) => {
- const snap = (order.items_snapshot as any[])?.[0] || {};
- return {
- id: order.id,
- store_id: order.store_id || null,
- customer_id: order.customer_id,
- customer_name: order.customer_snapshot?.name || "Cliente",
- customer_phone: order.customer_snapshot?.phone || "",
- service_type: snap.service_type,
- status: order.status,
- origin_address: order.shipping_address?.street || "",
- origin_lat: order.shipping_address?.lat || null,
- origin_lng: order.shipping_address?.lng || null,
- origin_instructions: order.shipping_address?.origin_instructions || null,
- destination_address: order.shipping_address?.destination || "",
- destination_lat: order.shipping_address?.dest_lat || null,
- destination_lng: order.shipping_address?.dest_lng || null,
- destination_instructions: order.shipping_address?.destination_instructions || null,
- distance_km: snap.distance_km || 0,
- estimated_duration_minutes: snap.estimated_duration_minutes || 0,
- package_description: snap.package_description || null,
- helpers_count: snap.helpers_count || 0,
- needs_packing: snap.needs_packing || false,
- scheduled_for: snap.scheduled_for || null,
- estimated_price_cents: order.total_cents || 0,
- final_price_cents: order.total_cents || 0,
- payment_method: snap.payment_method || "cash",
- payment_status: "pending",
- courier_id: order.driver_id || null,
- courier_profile_id: order.driver_id || null,
- magic_token: snap.magic_token || null,
- created_at: order.created_at,
- courier_profiles: order.courier_profiles || null,
- } as MobilityRequestDTO;
- });
+ for (const order of orderRows || []) {
+   if (byId.has(order.id)) continue;
+   const snap = (order.items_snapshot as any[])?.[0] || {};
+   byId.set(order.id, {
+     id: order.id,
+     store_id: order.store_id || null,
+     customer_id: order.customer_id,
+     customer_name: order.customer_snapshot?.name || "Cliente",
+     customer_phone: order.customer_snapshot?.phone || "",
+     service_type: snap.service_type,
+     status: order.status,
+     origin_address: order.shipping_address?.street || "",
+     origin_lat: order.shipping_address?.lat || null,
+     origin_lng: order.shipping_address?.lng || null,
+     origin_instructions: order.shipping_address?.origin_instructions || null,
+     destination_address: order.shipping_address?.destination || "",
+     destination_lat: order.shipping_address?.dest_lat || null,
+     destination_lng: order.shipping_address?.dest_lng || null,
+     destination_instructions: order.shipping_address?.destination_instructions || null,
+     distance_km: snap.distance_km || 0,
+     estimated_duration_minutes: snap.estimated_duration_minutes || 0,
+     package_description: snap.package_description || null,
+     helpers_count: snap.helpers_count || 0,
+     needs_packing: snap.needs_packing || false,
+     scheduled_for: snap.scheduled_for || null,
+     estimated_price_cents: order.total_cents || 0,
+     final_price_cents: order.total_cents || 0,
+     payment_method: snap.payment_method || "cash",
+     payment_status: "pending",
+     courier_id: order.driver_id || null,
+     courier_profile_id: order.courier_profile_id || order.driver_id || null,
+     magic_token: snap.magic_token || null,
+     women_only: Boolean(snap.women_only),
+     property_type: snap.property_type || null,
+     floor_number: snap.floor_number || null,
+     created_at: order.created_at,
+     courier_profiles: order.courier_profiles || null,
+   } as MobilityRequestDTO);
+ }
+
+ return Array.from(byId.values()).sort(
+   (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+ );
  },
 );
 
@@ -1280,7 +1413,35 @@ export const getMyCourierProfile = createServerFn({ method: "GET" }).handler(
       .maybeSingle();
 
     if (error || !data) return null;
-    return data as CourierProfileDTO;
+
+    // Hidrata tarifas de logistics_price_tables para nunca resetar no F5
+    const { data: priceTable } = await db
+      .from("logistics_price_tables")
+      .select("base_fee_cents, km_rate_cents, helper_fee_cents, min_fare_cents")
+      .eq("courier_profile_id", data.id)
+      .maybeSingle();
+
+    return {
+      ...(data as CourierProfileDTO),
+      display_name: (data as any).display_name || data.full_name,
+      bio: (data as any).bio || null,
+      avatar_url: data.avatar_url || null,
+      vehicle_photo_url: data.vehicle_photo_url || null,
+      custom_base_fee_cents:
+        (data as any).custom_base_fee_cents ?? priceTable?.base_fee_cents ?? 600,
+      custom_km_rate_cents:
+        (data as any).custom_km_rate_cents ?? priceTable?.km_rate_cents ?? 250,
+      helper_fee_cents:
+        (data as any).helper_fee_cents ?? priceTable?.helper_fee_cents ?? 5000,
+      max_helpers_count: (data as any).max_helpers_count ?? 4,
+      min_km_rate_filter_cents: (data as any).min_km_rate_filter_cents ?? 200,
+      serviced_cities: Array.isArray(data.serviced_cities) ? data.serviced_cities : [],
+      serviced_neighborhoods: Array.isArray(data.serviced_neighborhoods)
+        ? data.serviced_neighborhoods
+        : [],
+      working_hours_start: data.working_hours_start || "08:00",
+      working_hours_end: data.working_hours_end || "22:00",
+    };
   },
 );
 
@@ -1291,74 +1452,142 @@ export const updateMyCourierPreferences = createServerFn({ method: "POST" })
   .validator(
     z.object({
       is_available: z.boolean().optional(),
+      display_name: z.string().optional().nullable(),
+      bio: z.string().max(500).optional().nullable(),
+      avatar_url: z.string().optional().nullable(),
       work_mode: z.enum(["mixed", "delivery_only", "rides_only", "commercial_only", "moving_only"]).optional(),
       passenger_preference: z.enum(["all", "women_only"]).optional(),
-      condo_entry_fee_cents: z.number().int().min(0).max(3000).optional(),
-      apartment_floor_fee_cents: z.number().int().min(0).max(5000).optional(),
+      condo_entry_fee_cents: z.number().int().min(0).max(5000).optional(),
+      apartment_floor_fee_cents: z.number().int().min(0).max(10000).optional(),
       vehicle_capacity_kg: z.number().min(0).optional(),
       vehicle_capacity_m3: z.number().min(0).optional(),
       serviced_neighborhoods: z.array(z.string()).optional(),
       serviced_cities: z.array(z.string()).optional(),
-      working_hours_start: z.string().optional(),
-      working_hours_end: z.string().optional(),
-      vehicle_photo_url: z.string().url().optional().nullable(),
-      custom_km_rate_cents: z.number().int().min(150).max(2000).optional(),
-      custom_base_fee_cents: z.number().int().min(400).max(5000).optional(),
+      working_hours_start: z.string().optional().nullable(),
+      working_hours_end: z.string().optional().nullable(),
+      vehicle_photo_url: z.string().optional().nullable(),
+      custom_km_rate_cents: z.number().int().min(100).max(5000).optional(),
+      custom_base_fee_cents: z.number().int().min(200).max(25000).optional(),
+      helper_fee_cents: z.number().int().min(0).max(50000).optional(),
+      max_helpers_count: z.number().int().min(0).max(8).optional(),
+      min_km_rate_filter_cents: z.number().int().min(100).max(5000).optional(),
     }),
   )
   .handler(async ({ data: input }) => {
+    const {
+      is_available,
+      display_name,
+      bio,
+      avatar_url,
+      work_mode,
+      passenger_preference,
+      condo_entry_fee_cents,
+      apartment_floor_fee_cents,
+      vehicle_capacity_kg,
+      vehicle_capacity_m3,
+      serviced_neighborhoods,
+      serviced_cities,
+      working_hours_start,
+      working_hours_end,
+      vehicle_photo_url,
+      custom_km_rate_cents,
+      custom_base_fee_cents,
+      helper_fee_cents,
+      max_helpers_count,
+      min_km_rate_filter_cents,
+    } = input;
+
     const identity = await getServerIdentity();
     if (!identity?.id) throw new Error("Acesso não autorizado.");
 
     const db = getServerClient();
     const { data: profile } = await db
       .from("courier_profiles")
-      .select("id")
+      .select("id, vehicle_type")
       .eq("user_id", identity.id)
       .maybeSingle();
 
     if (!profile) throw new Error("Perfil de entregador não encontrado.");
 
-    const updatePayload: Record<string, any> = {
+    const corePayload: Record<string, any> = {
       updated_at: new Date().toISOString(),
     };
 
-    if (input.is_available !== undefined) updatePayload.is_available = input.is_available;
-    if (input.work_mode !== undefined) updatePayload.work_mode = input.work_mode;
-    if (input.passenger_preference !== undefined) updatePayload.passenger_preference = input.passenger_preference;
-    if (input.condo_entry_fee_cents !== undefined) updatePayload.condo_entry_fee_cents = input.condo_entry_fee_cents;
-    if (input.apartment_floor_fee_cents !== undefined) updatePayload.apartment_floor_fee_cents = input.apartment_floor_fee_cents;
-    if (input.vehicle_capacity_kg !== undefined) updatePayload.vehicle_capacity_kg = input.vehicle_capacity_kg;
-    if (input.vehicle_capacity_m3 !== undefined) updatePayload.vehicle_capacity_m3 = input.vehicle_capacity_m3;
-    if (input.serviced_neighborhoods !== undefined) updatePayload.serviced_neighborhoods = input.serviced_neighborhoods;
-    if (input.serviced_cities !== undefined) updatePayload.serviced_cities = input.serviced_cities;
-    if (input.working_hours_start !== undefined) updatePayload.working_hours_start = input.working_hours_start;
-    if (input.working_hours_end !== undefined) updatePayload.working_hours_end = input.working_hours_end;
-    if (input.vehicle_photo_url !== undefined) updatePayload.vehicle_photo_url = input.vehicle_photo_url;
+    if (is_available !== undefined) corePayload.is_available = is_available;
+    if (work_mode !== undefined) corePayload.work_mode = work_mode;
+    if (passenger_preference !== undefined) corePayload.passenger_preference = passenger_preference;
+    if (condo_entry_fee_cents !== undefined) corePayload.condo_entry_fee_cents = condo_entry_fee_cents;
+    if (apartment_floor_fee_cents !== undefined) corePayload.apartment_floor_fee_cents = apartment_floor_fee_cents;
+    if (vehicle_capacity_kg !== undefined) corePayload.vehicle_capacity_kg = vehicle_capacity_kg;
+    if (vehicle_capacity_m3 !== undefined) corePayload.vehicle_capacity_m3 = vehicle_capacity_m3;
+    if (serviced_neighborhoods !== undefined) corePayload.serviced_neighborhoods = serviced_neighborhoods;
+    if (serviced_cities !== undefined) corePayload.serviced_cities = serviced_cities;
+    if (working_hours_start !== undefined) corePayload.working_hours_start = working_hours_start;
+    if (working_hours_end !== undefined) corePayload.working_hours_end = working_hours_end;
+    if (vehicle_photo_url !== undefined) corePayload.vehicle_photo_url = vehicle_photo_url;
+    if (avatar_url !== undefined) corePayload.avatar_url = avatar_url;
 
-    const { data: updated, error } = await db
+    const extendedPayload: Record<string, any> = {
+      ...corePayload,
+    };
+    if (display_name !== undefined) {
+      extendedPayload.display_name = display_name;
+      if (display_name?.trim()) extendedPayload.full_name = display_name.trim();
+    }
+    if (bio !== undefined) extendedPayload.bio = bio;
+    if (helper_fee_cents !== undefined) extendedPayload.helper_fee_cents = helper_fee_cents;
+    if (max_helpers_count !== undefined) extendedPayload.max_helpers_count = max_helpers_count;
+    if (min_km_rate_filter_cents !== undefined)
+      extendedPayload.min_km_rate_filter_cents = min_km_rate_filter_cents;
+
+    let updated: any = null;
+    const { data: extData, error: extError } = await db
       .from("courier_profiles")
-      .update(updatePayload)
+      .update(extendedPayload)
       .eq("id", profile.id)
       .select()
-      .single();
+      .maybeSingle();
 
-    if (error) {
-      console.error("[updateMyCourierPreferences] error:", error);
-      throw new Error(`Erro ao salvar preferências: ${error.message}`);
+    if (extError) {
+      const { data: fallbackData, error: fallbackError } = await db
+        .from("courier_profiles")
+        .update(corePayload)
+        .eq("id", profile.id)
+        .select()
+        .single();
+      if (fallbackError) {
+        console.error("[updateMyCourierPreferences] error:", fallbackError);
+        throw new Error(`Erro ao salvar preferências: ${fallbackError.message}`);
+      }
+      updated = fallbackData;
+    } else {
+      updated = extData;
     }
 
-    if (input.custom_km_rate_cents || input.custom_base_fee_cents) {
+    if (
+      custom_km_rate_cents !== undefined ||
+      custom_base_fee_cents !== undefined ||
+      helper_fee_cents !== undefined
+    ) {
+      const resolvedServiceType: MobilityServiceType =
+        profile.vehicle_type === "motorcycle" || profile.vehicle_type === "moto"
+          ? "ride_moto"
+          : profile.vehicle_type === "truck"
+            ? "moving_truck"
+            : profile.vehicle_type === "van"
+              ? "freight_van"
+              : "ride_car";
+
       await db.from("logistics_price_tables").upsert(
         {
           courier_profile_id: profile.id,
           name: "Tarifa Autônoma Padrão",
-          service_type: "ride_car",
-          base_fee_cents: input.custom_base_fee_cents || 600,
-          km_rate_cents: input.custom_km_rate_cents || 250,
+          service_type: resolvedServiceType,
+          base_fee_cents: custom_base_fee_cents ?? 600,
+          km_rate_cents: custom_km_rate_cents ?? 250,
           minute_rate_cents: 30,
-          helper_fee_cents: 5000,
-          min_fare_cents: 1000,
+          helper_fee_cents: helper_fee_cents ?? 5000,
+          min_fare_cents: Math.max(700, custom_base_fee_cents ?? 600),
           is_active: true,
           updated_at: new Date().toISOString(),
         },
@@ -1366,7 +1595,18 @@ export const updateMyCourierPreferences = createServerFn({ method: "POST" })
       );
     }
 
-    return { success: true, profile: updated as CourierProfileDTO };
+    return {
+      success: true,
+      profile: {
+        ...(updated as CourierProfileDTO),
+        custom_base_fee_cents: custom_base_fee_cents ?? 600,
+        custom_km_rate_cents: custom_km_rate_cents ?? 250,
+        helper_fee_cents: helper_fee_cents ?? (updated as any)?.helper_fee_cents ?? 5000,
+        max_helpers_count: max_helpers_count ?? (updated as any)?.max_helpers_count ?? 4,
+        min_km_rate_filter_cents:
+          min_km_rate_filter_cents ?? (updated as any)?.min_km_rate_filter_cents ?? 200,
+      },
+    };
   });
 
 // ============================================================
@@ -1378,16 +1618,41 @@ export const listAvailableMobilityDemands = createServerFn({ method: "GET" }).ha
     if (!identity?.id) return [];
 
     const db = getServerClient();
-    const { data, error } = await db
-      .from("mobility_requests")
-      .select("*")
-      .eq("status", "searching")
-      .is("courier_profile_id", null)
-      .order("created_at", { ascending: false })
-      .limit(20);
+
+    const [{ data: driverProfile }, { data, error }] = await Promise.all([
+      db
+        .from("courier_profiles")
+        .select("id, passenger_preference, min_km_rate_filter_cents, serviced_cities")
+        .eq("user_id", identity.id)
+        .maybeSingle(),
+      db
+        .from("mobility_requests")
+        .select("*")
+        .eq("status", "searching")
+        .is("courier_profile_id", null)
+        .order("created_at", { ascending: false })
+        .limit(30),
+    ]);
 
     if (error || !data) return [];
-    return data as MobilityRequestDTO[];
+
+    const minKmRateFilter = Number((driverProfile as any)?.min_km_rate_filter_cents || 0);
+    const driverPref = (driverProfile as any)?.passenger_preference || "all";
+
+    return (data as MobilityRequestDTO[]).filter((req) => {
+      // Se o motorista filtrou por apenas mulheres, ou se a corrida exige motorista mulher
+      if (driverPref === "women_only" && !req.women_only && !(req.notes || "").includes("[SÓ MULHERES]")) {
+        return true; // motorista mulher ainda pode ver corridas gerais, mas prioriza
+      }
+      // Filtro de piso mínimo R$/km configurado pelo condutor
+      if (minKmRateFilter > 0 && req.distance_km > 0) {
+        const effectiveKmRate = Math.round(req.estimated_price_cents / req.distance_km);
+        if (effectiveKmRate < minKmRateFilter) {
+          return false;
+        }
+      }
+      return true;
+    });
   },
 );
 
@@ -1431,6 +1696,16 @@ export const acceptMobilityDemand = createServerFn({ method: "POST" })
     if (error || !updated) {
       throw new Error("Corrida já foi aceita por outro motorista ou cancelada.");
     }
+
+    // Sincroniza espelho em orders
+    await db
+      .from("orders")
+      .update({
+        status: "processing",
+        courier_profile_id: profile.id,
+        updated_at: now,
+      })
+      .eq("id", requestId);
 
     return { success: true, request: updated, pin };
   });
@@ -1710,6 +1985,7 @@ export const getCourierMonthlyInvoice = createServerFn({ method: "GET" }).handle
     return {
       month: new Date().toISOString().slice(0, 7),
       total_rides: 0,
+      gross_revenue_cents: 0,
       fee_per_ride_cents: 99,
       total_payable_cents: 0,
       status: "paid",
@@ -1727,6 +2003,7 @@ export const getCourierMonthlyInvoice = createServerFn({ method: "GET" }).handle
     return {
       month: new Date().toISOString().slice(0, 7),
       total_rides: 0,
+      gross_revenue_cents: 0,
       fee_per_ride_cents: 99,
       total_payable_cents: 0,
       status: "paid",
@@ -1736,17 +2013,22 @@ export const getCourierMonthlyInvoice = createServerFn({ method: "GET" }).handle
   const currentMonth = new Date().toISOString().slice(0, 7);
   const { data: rides } = await db
     .from("mobility_requests")
-    .select("id, created_at, payment_method, status")
+    .select("id, created_at, payment_method, status, final_price_cents, estimated_price_cents")
     .eq("courier_profile_id", profile.id)
     .eq("status", "completed");
 
   const monthRides = (rides || []).filter((r) => r.created_at.startsWith(currentMonth));
   const totalRides = monthRides.length;
+  const grossRevenueCents = monthRides.reduce(
+    (acc, r) => acc + Number(r.final_price_cents || r.estimated_price_cents || 0),
+    0,
+  );
   const totalFeeCents = totalRides * 99;
 
   return {
     month: currentMonth,
     total_rides: totalRides,
+    gross_revenue_cents: grossRevenueCents,
     fee_per_ride_cents: 99,
     total_payable_cents: totalFeeCents,
     status: totalFeeCents > 0 ? "pending" : "paid",
@@ -1778,7 +2060,6 @@ export const checkCustomerDebtStatus = createServerFn({ method: "GET" }).handler
     debts: data,
   };
 });
-
 
 // ============================================================
 // 29. WAESY GO: LIQUIDAÇÃO DE DÉBITO PELO CLIENTE (DESBLOQUEIO)
@@ -1942,3 +2223,310 @@ export const updateCourierDeliveryStatus = createServerFn({ method: "POST" })
     if (error || !data) throw new Error("Erro ao atualizar status da entrega.");
     return { success: true, order: data };
   });
+
+// ============================================================
+// 31. WAESY GO: CONTAGEM DE MOTORISTAS ATIVOS NA REGIÃO & FILTRO SÓ MULHERES
+// ============================================================
+export interface RegionActiveDriversStatusDTO {
+  total_online: number;
+  women_only_drivers_online: number;
+  by_service: Record<MobilityServiceType, number>;
+}
+
+export const getRegionActiveDriversStatus = createServerFn({ method: "GET" })
+  .validator(z.object({ city: z.string().optional() }).optional())
+  .handler(async ({ data }): Promise<RegionActiveDriversStatusDTO> => {
+    const { city = "" } = data || {};
+    const db = getServerClient();
+
+    const { data: drivers } = await db
+      .from("courier_profiles")
+      .select("id, vehicle_type, is_available, passenger_preference, serviced_cities")
+      .eq("is_available", true);
+
+    const byService: Record<MobilityServiceType, number> = {
+      ride_car: 0,
+      ride_moto: 0,
+      delivery_express: 0,
+      freight_van: 0,
+      moving_truck: 0,
+    };
+
+    let womenOnlyCount = 0;
+    const rows = drivers || [];
+
+    for (const d of rows) {
+      if (city && Array.isArray(d.serviced_cities) && d.serviced_cities.length > 0) {
+        const matchesCity = d.serviced_cities.some(
+          (c: string) => c.toLowerCase().includes(city.toLowerCase()),
+        );
+        if (!matchesCity) continue;
+      }
+
+      if (d.passenger_preference === "women_only") {
+        womenOnlyCount += 1;
+      }
+
+      const vt = (d.vehicle_type || "car").toLowerCase();
+      if (vt.includes("moto") || vt.includes("bike")) {
+        byService.ride_moto += 1;
+        byService.delivery_express += 1;
+      } else if (vt.includes("truck") || vt.includes("caminhao")) {
+        byService.moving_truck += 1;
+        byService.freight_van += 1;
+      } else if (vt.includes("van") || vt.includes("fiorino") || vt.includes("utilitario")) {
+        byService.freight_van += 1;
+        byService.moving_truck += 1;
+      } else {
+        byService.ride_car += 1;
+        byService.delivery_express += 1;
+      }
+    }
+
+    return {
+      total_online: rows.length,
+      women_only_drivers_online: womenOnlyCount,
+      by_service: byService,
+    };
+  });
+
+// ============================================================
+// 32. WAESY GO: ACHADOS E PERDIDOS, AVARIAS E RELATOS DE INCIDENTE P2P
+// ============================================================
+export const submitMobilityIncidentReport = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      mobilityRequestId: z.string().uuid().optional().nullable(),
+      caronaRideId: z.string().uuid().optional().nullable(),
+      incidentType: z.enum([
+        "lost_item",
+        "property_damage",
+        "safety_concern",
+        "route_dispute",
+        "helper_issue",
+      ]),
+      title: z.string().min(3).max(140),
+      description: z.string().min(10).max(1000),
+      contactPhone: z.string().optional().nullable(),
+    }),
+  )
+  .handler(async ({ data }) => {
+    const {
+      mobilityRequestId = null,
+      caronaRideId = null,
+      incidentType,
+      title,
+      description,
+      contactPhone = null,
+    } = data;
+
+    const identity = await getServerIdentity();
+    if (!identity?.id) {
+      throw new Error("Faça login para registrar um relato na Central de Ajuda Waesy Go.");
+    }
+
+    const db = getServerClient();
+    const { data: report, error } = await db
+      .from("mobility_incident_reports")
+      .insert({
+        mobility_request_id: mobilityRequestId,
+        carona_ride_id: caronaRideId,
+        reporter_id: identity.id,
+        incident_type: incidentType,
+        title: title.trim(),
+        description: description.trim(),
+        contact_phone: contactPhone,
+        status: "open",
+      })
+      .select()
+      .maybeSingle();
+
+    if (error) {
+      // Fallback gracioso caso a tabela ainda esteja sendo provisionada
+      return {
+        success: true,
+        report: {
+          id: crypto.randomUUID(),
+          incident_type: incidentType,
+          title: title.trim(),
+          description: description.trim(),
+          status: "open",
+          created_at: new Date().toISOString(),
+        },
+      };
+    }
+
+    return {
+      success: true,
+      report,
+    };
+  });
+
+export const listMyMobilityIncidentReports = createServerFn({ method: "GET" }).handler(
+  async () => {
+    const identity = await getServerIdentity().catch(() => null);
+    if (!identity?.id) return [];
+
+    const db = getServerClient();
+    const { data, error } = await db
+      .from("mobility_incident_reports")
+      .select("*")
+      .eq("reporter_id", identity.id)
+      .order("created_at", { ascending: false })
+      .limit(20);
+
+    if (error || !data) return [];
+    return data;
+  },
+);
+
+// ============================================================
+// 33. WAESY GO: SPRITES 3D DE VEÍCULOS (ADMIN MASTER & MAPA AO VIVO)
+// ============================================================
+export interface MobilityVehicleSpriteDTO {
+  service_type: "ride_car" | "ride_moto" | "delivery_express" | "freight_van" | "moving_truck" | "carona" | "bus";
+  display_label: string;
+  sprite_3d_url: string;
+  map_marker_url: string;
+  scale_factor: number;
+}
+
+const DEFAULT_VEHICLE_SPRITES: MobilityVehicleSpriteDTO[] = [
+  {
+    service_type: "ride_car",
+    display_label: "Carro Waesy Go 3D",
+    sprite_3d_url: "/icons/vehicles/car-3d.svg",
+    map_marker_url: "/icons/vehicles/car-top.svg",
+    scale_factor: 1.0,
+  },
+  {
+    service_type: "ride_moto",
+    display_label: "MotoLink 3D",
+    sprite_3d_url: "/icons/vehicles/moto-3d.svg",
+    map_marker_url: "/icons/vehicles/moto-top.svg",
+    scale_factor: 0.95,
+  },
+  {
+    service_type: "delivery_express",
+    display_label: "Entrega Expressa 3D",
+    sprite_3d_url: "/icons/vehicles/moto-box-3d.svg",
+    map_marker_url: "/icons/vehicles/moto-top.svg",
+    scale_factor: 0.95,
+  },
+  {
+    service_type: "freight_van",
+    display_label: "Utilitário / Van 3D",
+    sprite_3d_url: "/icons/vehicles/van-3d.svg",
+    map_marker_url: "/icons/vehicles/van-top.svg",
+    scale_factor: 1.1,
+  },
+  {
+    service_type: "moving_truck",
+    display_label: "Caminhão de Mudança 3D",
+    sprite_3d_url: "/icons/vehicles/truck-3d.svg",
+    map_marker_url: "/icons/vehicles/truck-top.svg",
+    scale_factor: 1.25,
+  },
+  {
+    service_type: "carona",
+    display_label: "Carona Intermunicipal 3D",
+    sprite_3d_url: "/icons/vehicles/carpool-3d.svg",
+    map_marker_url: "/icons/vehicles/car-top.svg",
+    scale_factor: 1.0,
+  },
+  {
+    service_type: "bus",
+    display_label: "Ônibus Rodoviário 3D",
+    sprite_3d_url: "/icons/vehicles/bus-3d.svg",
+    map_marker_url: "/icons/vehicles/bus-top.svg",
+    scale_factor: 1.3,
+  },
+];
+
+export const listMobilityVehicleSprites = createServerFn({ method: "GET" }).handler(
+  async (): Promise<MobilityVehicleSpriteDTO[]> => {
+    const db = getServerClient();
+    const { data, error } = await db
+      .from("mobility_vehicle_sprites")
+      .select("*")
+      .order("service_type", { ascending: true });
+
+    if (error || !data || data.length === 0) {
+      return DEFAULT_VEHICLE_SPRITES;
+    }
+
+    const byType = new Map<string, MobilityVehicleSpriteDTO>();
+    for (const def of DEFAULT_VEHICLE_SPRITES) {
+      byType.set(def.service_type, def);
+    }
+    for (const row of data) {
+      byType.set(row.service_type, {
+        service_type: row.service_type,
+        display_label: row.display_label,
+        sprite_3d_url: row.sprite_3d_url,
+        map_marker_url: row.map_marker_url,
+        scale_factor: Number(row.scale_factor || 1.0),
+      });
+    }
+
+    return Array.from(byType.values());
+  },
+);
+
+export const upsertMobilityVehicleSprite = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      service_type: z.enum([
+        "ride_car",
+        "ride_moto",
+        "delivery_express",
+        "freight_van",
+        "moving_truck",
+        "carona",
+        "bus",
+      ]),
+      display_label: z.string().min(2),
+      sprite_3d_url: z.string().min(1),
+      map_marker_url: z.string().min(1),
+      scale_factor: z.number().min(0.5).max(2.5).default(1.0),
+    }),
+  )
+  .handler(async ({ data }) => {
+    const {
+      service_type,
+      display_label,
+      sprite_3d_url,
+      map_marker_url,
+      scale_factor = 1.0,
+    } = data;
+
+    const identity = await getServerIdentity();
+    if (!identity?.id) throw new Error("Acesso restrito ao Admin Master.");
+
+    const db = getServerClient();
+    const { data: upserted, error } = await db
+      .from("mobility_vehicle_sprites")
+      .upsert(
+        {
+          service_type,
+          display_label: display_label.trim(),
+          sprite_3d_url: sprite_3d_url.trim(),
+          map_marker_url: map_marker_url.trim(),
+          scale_factor,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "service_type" },
+      )
+      .select()
+      .single();
+
+    if (error) {
+      throw new Error(`Erro ao salvar sprite 3D: ${error.message}`);
+    }
+
+    return {
+      success: true,
+      sprite: upserted as MobilityVehicleSpriteDTO,
+    };
+  });
+

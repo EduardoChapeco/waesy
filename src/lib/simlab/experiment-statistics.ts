@@ -135,7 +135,7 @@ function normalCdf(x: number): number {
   return x >= 0 ? 1 - tail : tail;
 }
 
-function wilsonInterval(successes: number, trials: number, confidenceLevel: number): [number, number] {
+export function wilsonInterval(successes: number, trials: number, confidenceLevel: number): [number, number] {
   const z = inverseNormalCdf(1 - (1 - confidenceLevel) / 2);
   const p = successes / trials;
   const z2 = z * z;

@@ -92,6 +92,7 @@ describe("Bridge dos 5 Builders do Workspace", () => {
     expect(post.copyStory).toContain("ATENÇÃO");
     expect(post.hashtags.length).toBeGreaterThan(2);
     expect(post.callToAction).toBeTruthy();
+    expect(["dark", "light", "brand", "swiss", "cyber", "gourmet"]).toContain(post.theme);
   });
 
   it("gera dossiê de turismo com cronograma e código Pix BACEN EMV válido", () => {

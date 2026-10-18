@@ -770,15 +770,16 @@ export async function executeAiCoreGateway(request: AIGatewayRequest): Promise<A
 
       // 5.2 Obter todas as chaves ativas do Provedor para rotação Multi-Key intra-provedor
       let providerKeys: Array<{ id: string; rawKey: string; label?: string }> = [];
+      const targetOwnerId = request.authContext?.userId || request.authContext?.storeId;
       try {
         if (typeof getAllActiveKeysForProvider === "function") {
-          const allKeys = await getAllActiveKeysForProvider(candidate.provider as any);
+          const allKeys = await getAllActiveKeysForProvider(candidate.provider as any, targetOwnerId);
           if (Array.isArray(allKeys) && allKeys.length > 0) {
             providerKeys = allKeys;
           }
         }
         if (providerKeys.length === 0) {
-          const singleKey = await getNextActiveKey(candidate.provider as any);
+          const singleKey = await getNextActiveKey(candidate.provider as any, targetOwnerId);
           if (singleKey && singleKey.rawKey) {
             providerKeys = [singleKey];
           }

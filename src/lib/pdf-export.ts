@@ -29,10 +29,12 @@ export async function exportElementAsImage(
   }
 
   const canvas = await html2canvas(element, {
-    scale: 2,
+    scale: Math.max(2, Math.min(3, typeof window !== "undefined" ? window.devicePixelRatio || 2 : 2)),
     useCORS: true,
-    backgroundColor: "#ffffff",
+    allowTaint: false,
+    backgroundColor: null,
     logging: false,
+    imageTimeout: 15000,
   });
 
   const imgData = canvas.toDataURL("image/png");
@@ -80,8 +82,10 @@ export async function exportElementAsPdf(
   const canvas = await html2canvas(element, {
     scale: 2,
     useCORS: true,
+    allowTaint: false,
     backgroundColor: "#ffffff",
     logging: false,
+    imageTimeout: 15000,
   });
 
   // Restaura exibição dos elementos no-print

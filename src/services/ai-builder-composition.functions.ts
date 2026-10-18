@@ -25,6 +25,7 @@ import {
   OmniBlockInstance,
   CANONICAL_BUILDER_BLOCK_IDS,
 } from "@/types/omni-builder";
+import { executeUnifiedAiCall } from "./api-orchestrator.functions";
 
 // Helper dinâmico para montagem de cores de renderização sem violar DL-01 no linter
 const hexColor = (hex: string): string => String.fromCharCode(35) + hex;
@@ -849,14 +850,65 @@ export const generateAiBuilderArtifact = createServerFn({ method: "POST" })
         throw new Error("Loja ativa não identificada na sessão segura.");
       }
 
-      // 1. Gera o documento estruturado e calcula a rubrica
-      const { document, rubric } = composeAiArtifactDocument({
-        briefing: input.briefing,
-        storeName: input.storeName,
-        niche: input.niche,
-        archetype: input.archetype,
-        targetAudience: input.targetAudience,
-      });
+      // 1. Gera o documento estruturado via IA Soberana com fallback determinístico de alta fidelidade
+      let document: OmniPageDocument;
+      let rubric: QualityRubricDimension;
+
+      try {
+        const aiRes = await executeUnifiedAiCall({
+          feature: "ai_builder_composition",
+          taskType: "deep_reasoning",
+          storeId: identity.store_id || undefined,
+          ownerId: identity.id || undefined,
+          responseFormat: "json_object",
+          expectJson: true,
+          temperature: 0.3,
+          systemPrompt: `Você é o Arquiteto Master de Composição do Waesy Omni-Builder.
+Com base no briefing, empresa, nicho, arquétipo e público-alvo, elabore uma estrutura rica e completa de blocos canônicos para a experiência digital.
+Retorne ESTRITAMENTE um objeto JSON com:
+{
+  "title": string,
+  "description": string,
+  "blocks": Array<{ id: string, type: string, config: Record<string, any> }>
+}`,
+          userPrompt: `Briefing: "${input.briefing}"
+Empresa: "${input.storeName}"
+Nicho: "${input.niche}"
+Arquétipo: "${input.archetype}"
+Público-alvo: "${input.targetAudience || 'Clientes exigentes'}"`,
+        });
+
+        const parsed = (aiRes?.parsedJson || (typeof aiRes?.content === "string" ? JSON.parse(aiRes.content) : null)) as any;
+        if (parsed?.blocks && Array.isArray(parsed.blocks) && parsed.blocks.length > 0) {
+          const blueprintDoc = composeAiArtifactDocument({
+            briefing: input.briefing,
+            storeName: input.storeName,
+            niche: input.niche,
+            archetype: input.archetype,
+            targetAudience: input.targetAudience,
+          });
+          document = {
+            ...blueprintDoc.document,
+            title: parsed.title || blueprintDoc.document.title,
+            description: parsed.description || blueprintDoc.document.description,
+            blocks: parsed.blocks,
+          };
+          rubric = evaluateArtifactQuality(document, input.archetype, input.niche);
+        } else {
+          throw new Error("Blocos não retornados ou inválidos pela IA.");
+        }
+      } catch (aiErr) {
+        console.warn("[ai-builder-composition] Fallback para blueprint determinístico:", aiErr);
+        const fallback = composeAiArtifactDocument({
+          briefing: input.briefing,
+          storeName: input.storeName,
+          niche: input.niche,
+          archetype: input.archetype,
+          targetAudience: input.targetAudience,
+        });
+        document = fallback.document;
+        rubric = fallback.rubric;
+      }
 
       // Se a rubrica reprovar (score < 80), bloqueia persistência de publicação
       const canPublish = rubric.approved;

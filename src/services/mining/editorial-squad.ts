@@ -200,7 +200,11 @@ Formate o resultado rigorosamente no JSON:
     const aiResult = await executeUnifiedAiCall({
       systemPrompt: SQUAD_SYSTEM_PROMPT,
       userPrompt,
+      taskType: "editorial_squad",
+      feature: "mining_editorial_squad",
+      isSystemTask: true,
       responseFormat: "json_object",
+      expectJson: true,
       temperature: 0.25,
     });
 

@@ -7,6 +7,10 @@ import {
   FaqBlockDataSchema,
   HeroBlockDataSchema,
   HeroCarouselBlockDataSchema,
+  InteractiveCalculatorBlockDataSchema,
+  InfiniteMarqueeBlockDataSchema,
+  ComparisonSliderBlockDataSchema,
+  LeadQuizBlockDataSchema,
   MediaGalleryBlockDataSchema,
   MediaGalleryItemSchema,
   OmniBlockStylingSchema,
@@ -91,6 +95,10 @@ export const STUDIO_TEMPLATE_BLOCK_CONFIG_SCHEMAS = {
   testimonials_social_proof: StudioTestimonialsConfigSchema,
   contact_form_direct: StudioContactFormConfigSchema,
   faq_clean_accordion: FaqBlockDataSchema.strict(),
+  interactive_quote_calculator: InteractiveCalculatorBlockDataSchema.strict(),
+  infinite_marquee_ribbon: InfiniteMarqueeBlockDataSchema.strict(),
+  interactive_comparison_slider: ComparisonSliderBlockDataSchema.strict(),
+  interactive_lead_quiz_flow: LeadQuizBlockDataSchema.strict(),
 } as const;
 
 export const StudioAssetSlotSchema = z.object({

@@ -3631,6 +3631,139 @@ export const provisionServicesWixAppSuiteFn = createServerFn({ method: "POST" })
   },
 );
 
+export const provisionFormLeadWixAppSuiteFn = createServerFn({ method: "POST" }).handler(
+  async () => {
+    await requireAdmin();
+    const { getServerIdentity } = await import("@/lib/server-access");
+    const identity = await getServerIdentity();
+    if (!identity.store_id) throw new Error("Loja não identificada para instalar a suíte de formulários.");
+
+    const db = getServerClient();
+    const { createEmptyOmniPage } = await import("@/types/omni-builder");
+    const { FORM_LEAD_WIX_APP_PAGES, applyTemplateToPage } = await import("@/lib/builder/omni-templates");
+
+    const suiteDefinitions = [
+      {
+        templateId: "wix_lead_quiz",
+        title: "Quiz Diagnóstico de Perfil",
+        slug: "quiz-diagnostico",
+        documentType: "campaign",
+      },
+      {
+        templateId: "wix_lead_survey",
+        title: "Pesquisa de Satisfação & NPS",
+        slug: "pesquisa-satisfacao",
+        documentType: "campaign",
+      },
+      {
+        templateId: "wix_lead_careers",
+        title: "Trabalhe Conosco & Banco de Talentos",
+        slug: "trabalhe-conosco",
+        documentType: "campaign",
+      },
+    ] as const;
+
+    const provisionedPages: Array<{ id: string; slug: string; title: string; created: boolean }> = [];
+
+    for (const def of suiteDefinitions) {
+      const tplExists = FORM_LEAD_WIX_APP_PAGES.some((t) => t.id === def.templateId);
+      if (!tplExists) continue;
+
+      let omniDoc = createEmptyOmniPage(def.slug, def.title, "general" as any);
+      omniDoc = applyTemplateToPage(omniDoc, def.templateId);
+      omniDoc.published_at = new Date().toISOString();
+
+      const { data: existing } = await db
+        .from("experience_documents")
+        .select("id, settings")
+        .eq("store_id", identity.store_id)
+        .eq("slug", def.slug)
+        .maybeSingle();
+
+      if (existing?.id) {
+        omniDoc.id = existing.id;
+        const mergedSettings = {
+          ...((existing.settings as Record<string, unknown>) || {}),
+          template_id: def.templateId,
+          omni_page_draft: omniDoc,
+          omni_page: omniDoc,
+          wix_app_suite: "form_lead_suite_v1",
+        };
+        await db
+          .from("experience_documents")
+          .update({
+            title: def.title,
+            is_active: true,
+            settings: mergedSettings,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", existing.id);
+
+        provisionedPages.push({
+          id: existing.id,
+          slug: def.slug,
+          title: def.title,
+          created: false,
+        });
+      } else {
+        const { data: createdDoc, error: createErr } = await db
+          .from("experience_documents")
+          .insert({
+            store_id: identity.store_id,
+            title: def.title,
+            slug: def.slug,
+            document_type: def.documentType,
+            is_active: true,
+            settings: {
+              template_id: def.templateId,
+              omni_page_draft: omniDoc,
+              omni_page: omniDoc,
+              wix_app_suite: "form_lead_suite_v1",
+            },
+          })
+          .select("id")
+          .single();
+
+        if (createErr || !createdDoc) continue;
+
+        omniDoc.id = createdDoc.id;
+
+        const { data: ver } = await db
+          .from("experience_versions")
+          .insert({
+            document_id: createdDoc.id,
+            version_number: 1,
+            status: "published",
+            document_snapshot: omniDoc,
+            published_at: new Date().toISOString(),
+          })
+          .select("id")
+          .single();
+
+        if (ver?.id) {
+          await db
+            .from("experience_documents")
+            .update({ published_version_id: ver.id })
+            .eq("id", createdDoc.id);
+        }
+
+        provisionedPages.push({
+          id: createdDoc.id,
+          slug: def.slug,
+          title: def.title,
+          created: true,
+        });
+      }
+    }
+
+    return {
+      status: "ok" as const,
+      pagesCount: provisionedPages.length,
+      pages: provisionedPages,
+    };
+  },
+);
+
 const SubmitOmniPageLeadSchema = z.object({
   storeId: z.string().uuid().optional().nullable(),
   storeSlug: z.string().optional().nullable(),

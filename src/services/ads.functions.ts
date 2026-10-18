@@ -1790,8 +1790,12 @@ export const generateAiAdCreativeFromCatalog = createServerFn({ method: "POST" }
       const prompt = `Crie somente uma sugestão de copy publicitária em JSON estrito com as chaves: headline (máx. 38 caracteres), bodyCopy (máx. 200 caracteres), callToActionLabel (máx. 18 caracteres), badgeText (máx. 16 caracteres) e targetInterests (array de 3 strings). Use apenas os dados comprovados abaixo; não invente benefícios, disponibilidade, urgência, descontos, atendimento, localização ou resultados, nem prometa conversão. Se a informação não estiver nos dados, omita-a. A copy é rascunho para revisão humana. Item: "${title}". Descrição cadastrada: "${description}". Preço cadastrado: ${priceFormatted}.${observedCity}`;
       const aiResult = await executeUnifiedAiCall({
         feature: "marketing_ad_copy",
+        taskType: "fast_json",
+        responseFormat: "json_object",
+        expectJson: true,
         prompt,
         storeId: identity.store_id || undefined,
+        ownerId: identity.id || undefined,
       });
 
       const rawText = typeof aiResult === "string" ? aiResult : (aiResult as any)?.text || (aiResult as any)?.content || "";
@@ -2490,14 +2494,15 @@ export const diagnoseAdAccountsHealthMcpFn = createServerFn({ method: "POST" })
     const identity = await getServerIdentity();
     assertStoreAccess(identity, ["owner", "admin", "manager", "content"]);
 
-    return executeDiagnoseAdAccountsHealthMcp(supabase, identity.store_id!, data.question, data.syncLiveFirst);
+    return executeDiagnoseAdAccountsHealthMcp(supabase, identity.store_id!, data.question, data.syncLiveFirst, identity?.id || undefined);
   });
 
 export async function executeDiagnoseAdAccountsHealthMcp(
   supabase: any,
   storeId: string,
   question?: string,
-  syncLiveFirst = true
+  syncLiveFirst = true,
+  ownerId?: string
 ) {
   if (syncLiveFirst) {
     await executeSyncExternalAdCampaignMetrics(supabase, storeId, "all", "LAST_30_DAYS").catch(() => null);
@@ -2659,7 +2664,9 @@ export async function executeDiagnoseAdAccountsHealthMcp(
     const { executeUnifiedAiCall } = await import("./api-orchestrator.functions");
     const aiRes = await executeUnifiedAiCall({
       feature: "ads_mcp_account_diagnostics",
+      taskType: "deep_reasoning",
       storeId,
+      ownerId: ownerId || undefined,
       systemPrompt:
         "Você é o Especialista Sênior de Tráfego Pago (Google Ads MCP & Meta Ads Diagnostics) do Waesy. Analise os achados reais da conta abaixo e responda em português claro, direto e executivo (máximo 4 frases) explicando o diagnóstico principal e a ação imediata de maior impacto no ROI. Não invente métricas que não estejam nos dados.",
       userPrompt: JSON.stringify({

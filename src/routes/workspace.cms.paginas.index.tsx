@@ -19,6 +19,10 @@ import {
   Square,
   Globe,
   Loader2,
+  ShoppingBag,
+  ChevronDown,
+  Layers,
+  ClipboardList,
 } from "lucide-react";
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
@@ -63,9 +67,17 @@ import {
   createExperienceDocument,
   duplicateExperienceDocument,
   provisionTourismWixAppSuiteFn,
+  provisionCommerceWixAppSuiteFn,
+  provisionServicesWixAppSuiteFn,
+  provisionFormLeadWixAppSuiteFn,
 } from "@/services/builder.functions";
-import { NICHE_TEMPLATE_MATRIX } from "@/components/builder/templates";
-import { TOURISM_WIX_APP_PAGES } from "@/lib/builder/omni-templates";
+import {
+  NICHE_TEMPLATE_MATRIX,
+  TOURISM_WIX_APP_PAGES,
+  COMMERCE_WIX_APP_PAGES,
+  SERVICES_WIX_APP_PAGES,
+  FORM_LEAD_WIX_APP_PAGES,
+} from "@/lib/builder/omni-templates";
 
 export const Route = createFileRoute("/workspace/cms/paginas/")({
   head: () => ({ meta: [{ title: "Páginas | Workspace Waesy" }] }),
@@ -89,14 +101,22 @@ const TEMPLATE_OPTIONS = [
     icon: Square,
     description: "Inicie sem blocos pré-definidos.",
   },
-  ...[...NICHE_TEMPLATE_MATRIX, ...TOURISM_WIX_APP_PAGES].map((t) => {
+  ...[
+    ...NICHE_TEMPLATE_MATRIX,
+    ...TOURISM_WIX_APP_PAGES,
+    ...COMMERCE_WIX_APP_PAGES,
+    ...SERVICES_WIX_APP_PAGES,
+    ...FORM_LEAD_WIX_APP_PAGES,
+  ].map((t) => {
     let icon = LayoutTemplate;
     if (t.niche === "legal") icon = Scale;
     if (t.niche === "gastronomy") icon = Utensils;
     if (t.niche === "tourism") icon = Compass;
+    if (t.niche === "commerce") icon = ShoppingBag;
     if (t.niche === "creators") icon = Camera;
     if (t.niche === "real_estate") icon = Building2;
     if (t.niche === "services") icon = HeartPulse;
+    if (t.niche === "general" || t.id.startsWith("wix_lead")) icon = ClipboardList;
     return {
       id: t.id,
       name: t.name,
@@ -119,7 +139,7 @@ function CmsPagesPage() {
   const [title, setTitle] = useState("");
   const [slug, setSlug] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isProvisioningTourismApp, setIsProvisioningTourismApp] = useState(false);
+  const [provisioningSuite, setProvisioningSuite] = useState<"tourism" | "commerce" | "services" | "form_lead" | null>(null);
   const [isDuplicating, setIsDuplicating] = useState<string | null>(null);
   const [pageToDelete, setPageToDelete] = useState<{ id: string; title: string } | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -145,18 +165,35 @@ function CmsPagesPage() {
     setSlug(generatedSlug);
   };
 
-  const handleProvisionTourismSuite = async () => {
-    setIsProvisioningTourismApp(true);
+  const handleProvisionSuite = async (suite: "tourism" | "commerce" | "services" | "form_lead") => {
+    setProvisioningSuite(suite);
     try {
-      const res = await provisionTourismWixAppSuiteFn();
-      toast.success(
-        `App Turismo instalado (${res?.pagesCount || 5} páginas interligadas provisionadas).`,
-      );
+      if (suite === "tourism") {
+        const res = await provisionTourismWixAppSuiteFn();
+        toast.success(
+          `App Turismo instalado (${res?.pagesCount || 5} páginas interligadas provisionadas).`,
+        );
+      } else if (suite === "commerce") {
+        const res = await provisionCommerceWixAppSuiteFn();
+        toast.success(
+          `App E-Commerce instalado (${res?.pagesCount || 4} páginas interligadas provisionadas).`,
+        );
+      } else if (suite === "services") {
+        const res = await provisionServicesWixAppSuiteFn();
+        toast.success(
+          `App Serviços & Clínicas instalado (${res?.pagesCount || 4} páginas interligadas provisionadas).`,
+        );
+      } else if (suite === "form_lead") {
+        const res = await provisionFormLeadWixAppSuiteFn();
+        toast.success(
+          `App Formulários & Leads instalado (${res?.pagesCount || 3} páginas interligadas provisionadas).`,
+        );
+      }
       router.invalidate();
     } catch (error: any) {
-      toast.error(error?.message || "Erro ao instalar a suíte de páginas de Turismo.");
+      toast.error(error?.message || "Erro ao instalar a suíte de páginas.");
     } finally {
-      setIsProvisioningTourismApp(false);
+      setProvisioningSuite(null);
     }
   };
 
@@ -242,20 +279,79 @@ function CmsPagesPage() {
         title="Páginas"
         actions={
           <div className="flex flex-wrap items-center gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              disabled={isProvisioningTourismApp}
-              onClick={handleProvisionTourismSuite}
-              className="h-11 min-h-11 px-4 rounded-lg font-semibold text-xs gap-2"
-            >
-              {isProvisioningTourismApp ? (
-                <Loader2 className="size-4 animate-spin" />
-              ) : (
-                <Compass className="size-4 text-primary" />
-              )}
-              <span>Instalar App Turismo (5 Páginas)</span>
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={Boolean(provisioningSuite)}
+                  className="h-11 min-h-11 px-4 rounded-lg font-semibold text-xs gap-2"
+                >
+                  {provisioningSuite ? (
+                    <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
+                  ) : (
+                    <Layers className="size-4 text-primary" />
+                  )}
+                  <span>
+                    {provisioningSuite === "tourism"
+                      ? "Instalando Turismo..."
+                      : provisioningSuite === "commerce"
+                      ? "Instalando E-Commerce..."
+                      : provisioningSuite === "services"
+                      ? "Instalando Serviços..."
+                      : "Instalar Suíte Wix App"}
+                  </span>
+                  <ChevronDown className="size-4 text-muted-foreground ml-1" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-64 rounded-lg">
+                <DropdownMenuItem
+                  onClick={() => handleProvisionSuite("tourism")}
+                  disabled={Boolean(provisioningSuite)}
+                  className="text-xs gap-2 cursor-pointer p-2 rounded-md"
+                >
+                  <Compass className="size-4 text-primary shrink-0" />
+                  <div className="flex flex-col">
+                    <span className="font-semibold text-foreground">App Turismo & Viagens</span>
+                    <span className="text-muted-foreground text-xs">5 páginas com buscador e cotação</span>
+                  </div>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => handleProvisionSuite("commerce")}
+                  disabled={Boolean(provisioningSuite)}
+                  className="text-xs gap-2 cursor-pointer p-2 rounded-md"
+                >
+                  <ShoppingBag className="size-4 text-primary shrink-0" />
+                  <div className="flex flex-col">
+                    <span className="font-semibold text-foreground">App E-Commerce & Varejo</span>
+                    <span className="text-muted-foreground text-xs">4 páginas com vitrine, PDP e portal</span>
+                  </div>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => handleProvisionSuite("services")}
+                  disabled={Boolean(provisioningSuite)}
+                  className="text-xs gap-2 cursor-pointer p-2 rounded-md"
+                >
+                  <HeartPulse className="size-4 text-primary shrink-0" />
+                  <div className="flex flex-col">
+                    <span className="font-semibold text-foreground">App Serviços & Consultorias</span>
+                    <span className="text-muted-foreground text-xs">4 páginas com agenda e contratos</span>
+                  </div>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => handleProvisionSuite("form_lead")}
+                  disabled={Boolean(provisioningSuite)}
+                  className="text-xs gap-2 cursor-pointer p-2 rounded-md"
+                >
+                  <ClipboardList className="size-4 text-primary shrink-0" />
+                  <div className="flex flex-col">
+                    <span className="font-semibold text-foreground">App Formulários, Quizzes & RH</span>
+                    <span className="text-muted-foreground text-xs">3 páginas com quiz, NPS e talentos</span>
+                  </div>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
             <Button
               type="button"
               onClick={() => setIsCreateModalOpen(true)}
@@ -295,13 +391,43 @@ function CmsPagesPage() {
             <div className="flex flex-wrap items-center justify-center gap-2">
               <Button
                 type="button"
-                onClick={handleProvisionTourismSuite}
-                disabled={isProvisioningTourismApp}
+                onClick={() => handleProvisionSuite("tourism")}
+                disabled={Boolean(provisioningSuite)}
                 variant="outline"
                 className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold"
               >
                 <Compass className="size-4 mr-2 text-primary" />
-                Instalar App Turismo (5 Páginas)
+                App Turismo (5 Páginas)
+              </Button>
+              <Button
+                type="button"
+                onClick={() => handleProvisionSuite("commerce")}
+                disabled={Boolean(provisioningSuite)}
+                variant="outline"
+                className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold"
+              >
+                <ShoppingBag className="size-4 mr-2 text-primary" />
+                App E-Commerce (4 Páginas)
+              </Button>
+              <Button
+                type="button"
+                onClick={() => handleProvisionSuite("services")}
+                disabled={Boolean(provisioningSuite)}
+                variant="outline"
+                className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold"
+              >
+                <HeartPulse className="size-4 mr-2 text-primary" />
+                App Serviços (4 Páginas)
+              </Button>
+              <Button
+                type="button"
+                onClick={() => handleProvisionSuite("form_lead")}
+                disabled={Boolean(provisioningSuite)}
+                variant="outline"
+                className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold"
+              >
+                <ClipboardList className="size-4 mr-2 text-primary" />
+                App Formulários (3 Páginas)
               </Button>
               <Button
                 type="button"
@@ -508,7 +634,7 @@ function CmsPagesPage() {
                           <div className="min-w-0">
                             <div className="flex items-center gap-2">
                               <h4 className="text-xs font-bold text-foreground truncate">{tpl.name}</h4>
-                              <span className="text-xs font-medium px-2 py-0.5 rounded bg-muted/80 text-muted-foreground">
+                              <span className="text-xs font-medium px-2 py-1 rounded bg-muted/80 text-muted-foreground">
                                 {tpl.badge}
                               </span>
                             </div>
@@ -601,7 +727,7 @@ function CmsPagesPage() {
                 >
                   {isSubmitting ? (
                     <span className="flex items-center gap-2">
-                      <Loader2 className="size-4 animate-spin" />
+                      <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
                       Criando...
                     </span>
                   ) : (

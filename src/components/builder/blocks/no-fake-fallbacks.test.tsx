@@ -3,6 +3,9 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { ContactFormDirect } from "./ContactFormDirect";
 import { FaqCleanAccordion } from "./FaqCleanAccordion";
+import { InfiniteMarqueeRibbon } from "./InfiniteMarqueeRibbon";
+import { InteractiveComparisonSlider } from "./InteractiveComparisonSlider";
+import { InteractiveLeadQuizFlow } from "./InteractiveLeadQuizFlow";
 import { InteractiveQuoteCalculator } from "./InteractiveQuoteCalculator";
 import { PricingTablesClean } from "./PricingTablesClean";
 import { TestimonialsSocialProof } from "./TestimonialsSocialProof";
@@ -76,5 +79,41 @@ describe("empty builder blocks do not fabricate business content", () => {
     expect(html).toContain("Destino de WhatsApp não configurado");
     expect(html).toContain("disabled=\"\"");
     expect(html).toContain("Simulador em Tempo Real");
+  });
+
+  it("renders an honest empty marquee state without fabricating sponsor logos or slogans", () => {
+    const html = renderToStaticMarkup(<InfiniteMarqueeRibbon id="ribbon" data={{
+      direction: "left",
+      speedSeconds: 25,
+      pauseOnHover: true,
+      items: [],
+    }} />);
+    expect(html).toContain("Nenhum item configurado no letreiro dinâmico");
+    expect(html).not.toContain("Google");
+    expect(html).not.toContain("Meta");
+  });
+
+  it("renders an honest empty state for comparison slider when images are missing", () => {
+    const html = renderToStaticMarkup(<InteractiveComparisonSlider id="slider" data={{
+      title: "Antes & Depois",
+      beforeImageUrl: "",
+      afterImageUrl: "",
+      beforeLabel: "Antes",
+      afterLabel: "Depois",
+      defaultSplitPercentage: 50,
+    }} />);
+    expect(html).toContain("Imagens de comparação não configuradas");
+  });
+
+  it("renders an honest empty quiz state when steps are empty", () => {
+    const html = renderToStaticMarkup(<InteractiveLeadQuizFlow id="quiz" data={{
+      title: "Diagnóstico",
+      steps: [],
+      formTitle: "Formulário",
+      formSubtitle: "Subtítulo",
+      submitButtonText: "Enviar",
+      successMessage: "Obrigado",
+    }} />);
+    expect(html).toContain("Nenhuma etapa de diagnóstico configurada");
   });
 });

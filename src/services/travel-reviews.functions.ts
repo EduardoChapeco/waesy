@@ -85,7 +85,12 @@ Retorne ESTRITAMENTE um JSON:
   "agency_service_rating": 4.0
 }`,
           userPrompt: `Comentário: "${data.comment}"`,
+          taskType: "fast_json",
+          feature: "travel_reviews_classification",
+          isSystemTask: true,
+          ownerId: identity?.id || undefined,
           responseFormat: "json_object",
+          expectJson: true,
           temperature: 0.1,
         });
 

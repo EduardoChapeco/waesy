@@ -16,6 +16,9 @@ export const CANONICAL_BUILDER_BLOCK_IDS = [
   "contact_form_direct",
   "faq_clean_accordion",
   "interactive_quote_calculator",
+  "infinite_marquee_ribbon",
+  "interactive_comparison_slider",
+  "interactive_lead_quiz_flow",
 ] as const;
 
 export type CanonicalBuilderBlockId = (typeof CANONICAL_BUILDER_BLOCK_IDS)[number];
@@ -269,6 +272,66 @@ export const InteractiveCalculatorBlockDataSchema = z.object({
   disclaimer: z.string().default("Os valores calculados são estimativas e podem variar conforme especificações finais."),
 });
 export type InteractiveCalculatorBlockData = z.infer<typeof InteractiveCalculatorBlockDataSchema>;
+
+// Infinite Marquee Ribbon Block (Inspirado no Magic UI Marquee)
+export const MarqueeItemSchema = z.object({
+  id: z.string(),
+  text: z.string().min(1),
+  badgeText: z.string().optional(),
+  iconName: z.string().optional(),
+  linkHref: z.string().optional(),
+});
+export type MarqueeItem = z.infer<typeof MarqueeItemSchema>;
+
+export const InfiniteMarqueeBlockDataSchema = z.object({
+  title: z.string().optional(),
+  direction: z.enum(["left", "right"]).default("left"),
+  speedSeconds: z.number().int().min(5).max(120).default(25),
+  pauseOnHover: z.boolean().default(true),
+  items: z.array(MarqueeItemSchema).default([]),
+});
+export type InfiniteMarqueeBlockData = z.infer<typeof InfiniteMarqueeBlockDataSchema>;
+
+// Interactive Comparison Slider Block (Antes & Depois)
+export const ComparisonSliderBlockDataSchema = z.object({
+  title: z.string().default("Antes & Depois"),
+  subtitle: z.string().optional(),
+  beforeImageUrl: z.string().default(""),
+  afterImageUrl: z.string().default(""),
+  beforeLabel: z.string().default("Antes"),
+  afterLabel: z.string().default("Depois"),
+  defaultSplitPercentage: z.number().int().min(10).max(90).default(50),
+});
+export type ComparisonSliderBlockData = z.infer<typeof ComparisonSliderBlockDataSchema>;
+
+// Interactive Lead Quiz Flow Block (Quiz de Qualificação de Leads para CRM)
+export const QuizOptionSchema = z.object({
+  id: z.string(),
+  label: z.string(),
+  description: z.string().optional(),
+  tag: z.string().optional(),
+});
+export type QuizOption = z.infer<typeof QuizOptionSchema>;
+
+export const QuizStepSchema = z.object({
+  id: z.string(),
+  question: z.string(),
+  subtitle: z.string().optional(),
+  options: z.array(QuizOptionSchema).default([]),
+});
+export type QuizStep = z.infer<typeof QuizStepSchema>;
+
+export const LeadQuizBlockDataSchema = z.object({
+  title: z.string().default("Descubra a Solução Sob Medida"),
+  subtitle: z.string().optional(),
+  steps: z.array(QuizStepSchema).default([]),
+  formTitle: z.string().default("Receba sua Proposta Personalizada"),
+  formSubtitle: z.string().default("Informe seus dados para enviarmos a recomendação detalhada."),
+  submitButtonText: z.string().default("Concluir e Receber Diagnóstico"),
+  whatsappNumber: z.string().optional(),
+  successMessage: z.string().default("Diagnóstico enviado com sucesso! Nossa equipe entrará em contato."),
+});
+export type LeadQuizBlockData = z.infer<typeof LeadQuizBlockDataSchema>;
 
 // ── 3. ESTRUTURA DA INSTÂNCIA DO BLOCO (STATE TREE NODE) ──
 

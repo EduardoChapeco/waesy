@@ -18,6 +18,7 @@ import { WorkspaceCanonicalToolbar, type WorkspaceToolbarTab } from "@/component
 import { WorkspaceDashboardSheet, type MetricCardItem } from "@/components/workspace/workspace-dashboard-sheet";
 import { NicheOperationalGuard } from "@/components/workspace/niche-operational-guard";
 import { CampaignDynamicBlock } from "@/components/marketing/campaign-dynamic-block";
+import { SimLabQuickTestSheet } from "@/components/simlab/SimLabQuickTestSheet";
 import { executeMcpTool } from "@/services/mcp-server.functions";
 import { orchestrateCampaignIntent } from "@/services/mcp-orchestrator.functions";
 import type { DynamicRenderableBlock } from "@/types/ad-tech-mcp";
@@ -511,6 +512,12 @@ function AnunciosWorkspacePage() {
               )}
             </div>
             <div className="flex flex-wrap items-center gap-2">
+              <SimLabQuickTestSheet
+                initialTitle={formTitle || campaigns[0]?.title || "Campanha Patrocinada Local"}
+                initialDescription={formHeadline || campaigns[0]?.headline || "Oferta com condição especial para clientes da região"}
+                sourceEntityType="ad_campaign"
+                triggerLabel="Simular Campanha no SimLabs 4.0"
+              />
               <Button
                 size="sm"
                 variant="outline"

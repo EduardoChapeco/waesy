@@ -20,6 +20,7 @@ import {
   Check,
   Building2,
   FileText,
+  Users,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -30,11 +31,14 @@ import { formatMoney } from "@/lib/money";
 import { formatDate } from "@/lib/datetime";
 import {
   getMyCourierProfile,
+  getMyCourierEarnings,
   updateMyCourierPreferences,
   listAvailableMobilityDemands,
   acceptMobilityDemand,
   recordArrivalAndStartTimer,
   cancelByCustomerNoShow,
+  updateMobilityStatus,
+  submitMobilityRating,
   logCourierExpense,
   listCourierExpenses,
   getCourierMonthlyInvoice,
@@ -46,6 +50,15 @@ import {
   type MobilityRequestDTO,
   type CourierCommercialDeliveryDTO,
 } from "@/services/mobility.functions";
+import { ImageUpload } from "@/components/ui/image-upload";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { NativeMobileHeader } from "@/components/navigation/native-mobile-header";
 
@@ -61,20 +74,29 @@ export const Route = createFileRoute("/_store/conta/entregador")({
         throw redirect({ to: "/entrar" });
       }
 
-      const [courierProfile, availableDemands, monthlyInvoice, expenseData, partnerStores, commercialDeliveries] =
-        await Promise.all([
-          getMyCourierProfile().catch(() => null),
-          listAvailableMobilityDemands().catch(() => []),
-          getCourierMonthlyInvoice().catch(() => null),
-          listCourierExpenses().catch(() => ({ expenses: [], total_expense_cents: 0 })),
-          listCourierPartnerStores().catch(() => []),
-          listCourierCommercialDeliveries().catch(() => []),
-        ]);
+      const [
+        courierProfile,
+        availableDemands,
+        monthlyInvoice,
+        earningsData,
+        expenseData,
+        partnerStores,
+        commercialDeliveries,
+      ] = await Promise.all([
+        getMyCourierProfile().catch(() => null),
+        listAvailableMobilityDemands().catch(() => []),
+        getCourierMonthlyInvoice().catch(() => null),
+        getMyCourierEarnings().catch(() => null),
+        listCourierExpenses().catch(() => ({ expenses: [], total_expense_cents: 0 })),
+        listCourierPartnerStores().catch(() => []),
+        listCourierCommercialDeliveries().catch(() => []),
+      ]);
 
       return {
         courierProfile,
         availableDemands,
         monthlyInvoice,
+        earningsData,
         expenseData,
         partnerStores,
         commercialDeliveries,
@@ -87,6 +109,7 @@ export const Route = createFileRoute("/_store/conta/entregador")({
         courierProfile: null,
         availableDemands: [],
         monthlyInvoice: null,
+        earningsData: null,
         expenseData: { expenses: [], total_expense_cents: 0 },
         partnerStores: [],
         commercialDeliveries: [],
@@ -101,6 +124,7 @@ function CourierDriverHubPage() {
   const initialProfile = loaderData.courierProfile as CourierProfileDTO | null;
   const initialDemands = (loaderData.availableDemands || []) as MobilityRequestDTO[];
   const initialInvoice = loaderData.monthlyInvoice;
+  const initialEarnings = loaderData.earningsData;
   const initialExpenses = loaderData.expenseData || { expenses: [], total_expense_cents: 0 };
   const initialStores = (loaderData.partnerStores || []) as Array<{ id: string; name: string }>;
   const initialDeliveries = (loaderData.commercialDeliveries || []) as CourierCommercialDeliveryDTO[];
@@ -126,6 +150,12 @@ function CourierDriverHubPage() {
     queryKey: ["courier-monthly-invoice"],
     queryFn: () => getCourierMonthlyInvoice(),
     initialData: initialInvoice,
+  });
+
+  const { data: earnings, refetch: refetchEarnings } = useQuery({
+    queryKey: ["courier-earnings"],
+    queryFn: () => getMyCourierEarnings(),
+    initialData: initialEarnings,
   });
 
   const { data: expenses, refetch: refetchExpenses } = useQuery({
@@ -161,21 +191,74 @@ function CourierDriverHubPage() {
     enabled: !!profile?.id,
   });
 
-  // Estado das Preferências
+  // Estado das Preferências & Tarifas (hidratado a partir de profile sem resetar no F5)
   const [isOnline, setIsOnline] = useState(profile?.is_available ?? true);
   const [workMode, setWorkMode] = useState(profile?.work_mode || "mixed");
   const [passengerPref, setPassengerPref] = useState(profile?.passenger_preference || "all");
   const [condoFee, setCondoFee] = useState(
-    profile?.condo_entry_fee_cents ? profile.condo_entry_fee_cents / 100 : 3
+    profile?.condo_entry_fee_cents != null ? profile.condo_entry_fee_cents / 100 : 3,
   );
   const [apartmentFee, setApartmentFee] = useState(
-    profile?.apartment_floor_fee_cents ? profile.apartment_floor_fee_cents / 100 : 5
+    profile?.apartment_floor_fee_cents != null ? profile.apartment_floor_fee_cents / 100 : 5,
   );
-  const [customKmRate, setCustomKmRate] = useState(2.5);
-  const [customBaseFee, setCustomBaseFee] = useState(6.0);
+  const [customKmRate, setCustomKmRate] = useState(
+    profile?.custom_km_rate_cents != null ? profile.custom_km_rate_cents / 100 : 2.5,
+  );
+  const [customBaseFee, setCustomBaseFee] = useState(
+    profile?.custom_base_fee_cents != null ? profile.custom_base_fee_cents / 100 : 6.0,
+  );
+  const [helperFee, setHelperFee] = useState(
+    profile?.helper_fee_cents != null ? profile.helper_fee_cents / 100 : 50.0,
+  );
+  const [maxHelpersCount, setMaxHelpersCount] = useState(profile?.max_helpers_count ?? 4);
+  const [minKmRateFilter, setMinKmRateFilter] = useState(
+    profile?.min_km_rate_filter_cents != null ? profile.min_km_rate_filter_cents / 100 : 2.0,
+  );
+  const [servicedCitiesText, setServicedCitiesText] = useState(
+    Array.isArray(profile?.serviced_cities) && profile.serviced_cities.length > 0
+      ? profile.serviced_cities.join(", ")
+      : "Chapecó, São Miguel do Oeste",
+  );
+  const [servicedNeighborhoodsText, setServicedNeighborhoodsText] = useState(
+    Array.isArray(profile?.serviced_neighborhoods) && profile.serviced_neighborhoods.length > 0
+      ? profile.serviced_neighborhoods.join(", ")
+      : "Centro, Efapi, Presidente Médici",
+  );
   const [vehicleCapacityKg, setVehicleCapacityKg] = useState(profile?.vehicle_capacity_kg || 0);
   const [vehicleCapacityM3, setVehicleCapacityM3] = useState(profile?.vehicle_capacity_m3 || 0);
   const [vehiclePhotoUrl, setVehiclePhotoUrl] = useState(profile?.vehicle_photo_url || "");
+
+  // Sincroniza estado se o perfil for recarregado do banco
+  useEffect(() => {
+    if (!profile) return;
+    setIsOnline(profile.is_available ?? true);
+    if (profile.work_mode) setWorkMode(profile.work_mode);
+    if (profile.passenger_preference) setPassengerPref(profile.passenger_preference);
+    if (profile.condo_entry_fee_cents != null) setCondoFee(profile.condo_entry_fee_cents / 100);
+    if (profile.apartment_floor_fee_cents != null)
+      setApartmentFee(profile.apartment_floor_fee_cents / 100);
+    if (profile.custom_km_rate_cents != null) setCustomKmRate(profile.custom_km_rate_cents / 100);
+    if (profile.custom_base_fee_cents != null)
+      setCustomBaseFee(profile.custom_base_fee_cents / 100);
+    if (profile.helper_fee_cents != null) setHelperFee(profile.helper_fee_cents / 100);
+    if (profile.max_helpers_count != null) setMaxHelpersCount(profile.max_helpers_count);
+    if (profile.min_km_rate_filter_cents != null)
+      setMinKmRateFilter(profile.min_km_rate_filter_cents / 100);
+    if (Array.isArray(profile.serviced_cities) && profile.serviced_cities.length > 0) {
+      setServicedCitiesText(profile.serviced_cities.join(", "));
+    }
+    if (Array.isArray(profile.serviced_neighborhoods) && profile.serviced_neighborhoods.length > 0) {
+      setServicedNeighborhoodsText(profile.serviced_neighborhoods.join(", "));
+    }
+    if (profile.vehicle_photo_url != null) setVehiclePhotoUrl(profile.vehicle_photo_url);
+  }, [profile]);
+
+  // Estado de Avaliação Bilateral do Passageiro
+  const [ratingModalOpen, setRatingModalOpen] = useState(false);
+  const [ratingTargetRequestId, setRatingTargetRequestId] = useState<string | null>(null);
+  const [ratingStars, setRatingStars] = useState<number>(5);
+  const [ratingComment, setRatingComment] = useState<string>("");
+  const [ratingTags, setRatingTags] = useState<string[]>(["Pontual", "Educado"]);
 
   // Estado de Lançamento de Combustível / Despesa
   const [expenseForm, setExpenseForm] = useState({
@@ -215,7 +298,7 @@ function CourierDriverHubPage() {
   if (!profile) {
     return (
       <div className="w-full max-w-xl mx-auto py-16 px-4 text-center space-y-6">
-        <div className="size-16 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-600 mx-auto">
+        <div className="size-16 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary mx-auto">
           <Bike className="size-8" />
         </div>
         <div className="space-y-2">
@@ -227,7 +310,7 @@ function CourierDriverHubPage() {
         <div className="pt-2">
           <Button
             asChild
-            className="h-11 min-h-11 px-6 rounded-lg font-bold text-xs bg-emerald-600 hover:bg-emerald-700 text-primary-foreground focus-visible:ring-2 focus-visible:ring-emerald-500"
+            className="h-11 min-h-11 px-6 rounded-lg font-bold text-xs bg-primary text-primary-foreground focus-visible:ring-2 focus-visible:ring-primary"
           >
             <Link to="/entregador/cadastro">Cadastrar Minha CNH e Veículo</Link>
           </Button>
@@ -255,6 +338,15 @@ function CourierDriverHubPage() {
     e.preventDefault();
     startTransition(async () => {
       try {
+        const citiesList = servicedCitiesText
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean);
+        const neighborhoodsList = servicedNeighborhoodsText
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean);
+
         await updateMyCourierPreferences({
           data: {
             work_mode: workMode as any,
@@ -266,9 +358,14 @@ function CourierDriverHubPage() {
             vehicle_photo_url: vehiclePhotoUrl.trim() || null,
             custom_km_rate_cents: Math.round(customKmRate * 100),
             custom_base_fee_cents: Math.round(customBaseFee * 100),
+            helper_fee_cents: Math.round(helperFee * 100),
+            max_helpers_count: Number(maxHelpersCount) || 0,
+            min_km_rate_filter_cents: Math.round(minKmRateFilter * 100),
+            serviced_cities: citiesList,
+            serviced_neighborhoods: neighborhoodsList,
           },
         });
-        toast.success("Tarifas e preferências salvas com sucesso!");
+        toast.success("Tarifas, ajudantes e região de atuação salvas com sucesso!");
         refetchProfile();
       } catch (err: any) {
         toast.error(err?.message || "Erro ao salvar tarifas.");
@@ -338,6 +435,52 @@ function CourierDriverHubPage() {
     });
   };
 
+  // Concluir Corrida e Abrir Avaliação Bilateral do Passageiro
+  const handleCompleteRideAndRate = () => {
+    if (!activeRide) return;
+    const reqId = activeRide.id;
+    startTransition(async () => {
+      try {
+        await updateMobilityStatus({
+          data: { requestId: reqId, status: "completed" },
+        }).catch(() => null);
+        setRatingTargetRequestId(reqId);
+        setRatingModalOpen(true);
+        setActiveRide(null);
+        setRideStartedTimerAt(null);
+        refetchInvoice();
+        refetchEarnings();
+        refetchDemands();
+        toast.success("Corrida concluída! Avalie o passageiro.");
+      } catch (err: any) {
+        toast.error(err?.message || "Erro ao finalizar corrida.");
+      }
+    });
+  };
+
+  const handleSubmitPassengerRating = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!ratingTargetRequestId) return;
+    startTransition(async () => {
+      try {
+        await submitMobilityRating({
+          data: {
+            requestId: ratingTargetRequestId,
+            roleReviewed: "customer",
+            rating: ratingStars,
+            comment: ratingComment.trim() || undefined,
+            tags: ratingTags,
+          },
+        });
+        toast.success("Avaliação do passageiro registrada com sucesso!");
+        setRatingModalOpen(false);
+        setRatingTargetRequestId(null);
+      } catch (err: any) {
+        toast.error(err?.message || "Erro ao enviar avaliação.");
+      }
+    });
+  };
+
   // Lançar Despesa / Combustível
   const handleAddExpense = (e: React.FormEvent) => {
     e.preventDefault();
@@ -392,8 +535,11 @@ function CourierDriverHubPage() {
     });
   };
 
-  // Cálculo de Lucro Líquido Real
-  const grossRevenueCents = (invoice?.total_rides || 0) * 1800; // Média estimada de R$ 18,00 por corrida
+  // Cálculo de Receita Bruta e Lucro Líquido Real (Invariante B.33 — sem multiplicadores sintéticos)
+  const grossRevenueCents =
+    Number((invoice as any)?.gross_revenue_cents) ||
+    Number(earnings?.summary?.month_cents) ||
+    0;
   const totalExpenseCents = expenses?.total_expense_cents || 0;
   const platformFeeCents = invoice?.total_payable_cents || 0;
   const netProfitCents = Math.max(0, grossRevenueCents - totalExpenseCents - platformFeeCents);
@@ -450,6 +596,7 @@ function CourierDriverHubPage() {
           </div>
           <Button
             type="button"
+            variant={isOnline ? "default" : "outline"}
             onClick={() => handleToggleOnline(!isOnline)}
             disabled={isPending}
             className={`h-11 min-h-11 px-5 rounded-lg text-xs font-bold transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-primary ${
@@ -557,14 +704,15 @@ function CourierDriverHubPage() {
               </a>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               {!rideStartedTimerAt ? (
                 <Button
+                  variant="outline"
                   onClick={handleRecordArrival}
                   disabled={isPending}
                   className="h-11 min-h-11 px-4 text-xs font-bold bg-foreground text-background focus-visible:ring-2 focus-visible:ring-primary"
                 >
-                  Cheguei no Ponto (Iniciar 3min GPS)
+                  Cheguei no Ponto (3min GPS)
                 </Button>
               ) : (
                 <Button
@@ -573,30 +721,38 @@ function CourierDriverHubPage() {
                   variant="destructive"
                   className="h-11 min-h-11 px-4 text-xs font-bold focus-visible:ring-2 focus-visible:ring-destructive"
                 >
-                  Não Compareceu (Cobrar no CPF)
+                  Não Compareceu (Cobrar CPF)
                 </Button>
               )}
+              <Button
+                variant="outline"
+                onClick={handleCompleteRideAndRate}
+                disabled={isPending}
+                className="h-11 min-h-11 px-4 text-xs font-bold border-emerald-500/40 bg-emerald-600 text-primary-foreground hover:bg-emerald-700 focus-visible:ring-2 focus-visible:ring-emerald-500"
+              >
+                Concluir & Avaliar Passageiro
+              </Button>
             </div>
           </div>
         </div>
       )}
 
-      {/* ── 4. AS 5 ABAS OPERACIONAIS CANÔNICAS (WAESY GO) ── */}
+      {/* ── 4. AS 5 ABAS OPERACIONAIS CANÔNICAS (WAESY GO — Invariante B.39) ── */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="grid grid-cols-2 sm:grid-cols-5 w-full h-auto min-h-11 bg-muted/60 p-1 rounded-lg gap-1">
-          <TabsTrigger value="radar" className="text-xs font-semibold rounded-md h-11 min-h-11">
+        <TabsList className="flex flex-nowrap overflow-x-auto no-scrollbar w-full justify-start h-auto min-h-11 bg-muted/60 p-1 rounded-lg gap-1">
+          <TabsTrigger value="radar" className="shrink-0 px-4 text-xs font-semibold rounded-md h-11 min-h-11">
             Radar Chamados
           </TabsTrigger>
-          <TabsTrigger value="entregas" className="text-xs font-semibold rounded-md h-11 min-h-11">
+          <TabsTrigger value="entregas" className="shrink-0 px-4 text-xs font-semibold rounded-md h-11 min-h-11">
             Minhas Entregas
           </TabsTrigger>
-          <TabsTrigger value="tarifas" className="text-xs font-semibold rounded-md h-11 min-h-11">
+          <TabsTrigger value="tarifas" className="shrink-0 px-4 text-xs font-semibold rounded-md h-11 min-h-11">
             Minhas Tarifas
           </TabsTrigger>
-          <TabsTrigger value="financeiro" className="text-xs font-semibold rounded-md h-11 min-h-11">
+          <TabsTrigger value="financeiro" className="shrink-0 px-4 text-xs font-semibold rounded-md h-11 min-h-11">
             Combustível & Lucro
           </TabsTrigger>
-          <TabsTrigger value="avaliacoes" className="text-xs font-semibold rounded-md h-11 min-h-11">
+          <TabsTrigger value="avaliacoes" className="shrink-0 px-4 text-xs font-semibold rounded-md h-11 min-h-11">
             Veículo & Notas
           </TabsTrigger>
         </TabsList>
@@ -650,11 +806,11 @@ function CourierDriverHubPage() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
                     <div>
                       <span className="text-muted-foreground block text-xs">Coleta / Origem:</span>
-                      <p className="text-foreground truncate">{req.origin_address}</p>
+                      <p className="text-foreground break-words">{req.origin_address}</p>
                     </div>
                     <div>
                       <span className="text-muted-foreground block text-xs">Destino:</span>
-                      <p className="text-foreground truncate">{req.destination_address}</p>
+                      <p className="text-foreground break-words">{req.destination_address}</p>
                     </div>
                   </div>
 
@@ -663,6 +819,7 @@ function CourierDriverHubPage() {
                       {req.distance_km} km • ~{req.estimated_duration_minutes} min • Taxa Waesy Fixa R$ 0,99
                     </span>
                     <Button
+                      variant="outline"
                       onClick={() => handleAcceptDemand(req)}
                       disabled={isPending || !isOnline}
                       className="h-11 min-h-11 px-5 rounded-lg text-xs font-bold bg-primary text-primary-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
@@ -763,11 +920,11 @@ function CourierDriverHubPage() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
                     <div>
                       <span className="text-muted-foreground block text-xs">Retirada:</span>
-                      <p className="text-foreground truncate">{deliv.origin_address}</p>
+                      <p className="text-foreground break-words">{deliv.origin_address}</p>
                     </div>
                     <div>
                       <span className="text-muted-foreground block text-xs">Entrega:</span>
-                      <p className="text-foreground truncate">{deliv.destination_address}</p>
+                      <p className="text-foreground break-words">{deliv.destination_address}</p>
                     </div>
                   </div>
 
@@ -792,6 +949,7 @@ function CourierDriverHubPage() {
                     <div className="flex items-center gap-2">
                       {deliv.status !== "in_progress" && deliv.status !== "delivered" && (
                         <Button
+                          variant="outline"
                           size="sm"
                           onClick={() => handleUpdateDeliveryStatus(deliv.id, "in_progress")}
                           disabled={isPending}
@@ -802,6 +960,7 @@ function CourierDriverHubPage() {
                       )}
                       {deliv.status === "in_progress" && (
                         <Button
+                          variant="outline"
                           size="sm"
                           onClick={() => handleUpdateDeliveryStatus(deliv.id, "delivered")}
                           disabled={isPending}
@@ -825,11 +984,13 @@ function CourierDriverHubPage() {
 
         {/* ── ABA 3: MINHAS TARIFAS E PREFERÊNCIAS AUTÔNOMAS ── */}
         <TabsContent value="tarifas" className="space-y-4">
-          <form onSubmit={handleSavePreferences} className="bg-card rounded-lg border border-border/70 p-5 space-y-4 shadow-2xs">
-            <h2 className="text-sm font-bold text-foreground">Definição Autônoma de Tarifas & Regras</h2>
-            <p className="text-xs text-muted-foreground">
-              Você decide quanto cobrar por quilômetro e adicionais de condomínio, subida de escada e carga máxima.
-            </p>
+          <form onSubmit={handleSavePreferences} className="bg-card rounded-lg border border-border/70 p-5 space-y-5 shadow-2xs">
+            <div className="space-y-1">
+              <h2 className="text-sm font-bold text-foreground">Definição Autônoma de Tarifas & Regras</h2>
+              <p className="text-xs text-muted-foreground">
+                Você decide quanto cobrar por quilômetro, adicionais de condomínio, escada, equipe de ajudantes e filtro de piso mínimo.
+              </p>
+            </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
               <div className="space-y-1">
@@ -870,7 +1031,7 @@ function CourierDriverHubPage() {
               </div>
 
               <div className="space-y-1">
-                <Label className="text-xs font-semibold text-foreground">Adicional Subir no Apartamento (Porta R$)</Label>
+                <Label className="text-xs font-semibold text-foreground">Adicional Subir no Apartamento / Andar (R$)</Label>
                 <Input
                   type="number"
                   step="0.50"
@@ -882,25 +1043,90 @@ function CourierDriverHubPage() {
               </div>
 
               <div className="space-y-1">
-                <Label className="text-xs font-semibold text-foreground">Capacidade de Carga (kg)</Label>
+                <Label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                  <Users className="size-3.5 text-primary" />
+                  Adicional por Ajudante de Mudança (R$)
+                </Label>
+                <Input
+                  type="number"
+                  step="5.00"
+                  min="0"
+                  value={helperFee}
+                  onChange={(e) => setHelperFee(parseFloat(e.target.value) || 0)}
+                  className="h-11 min-h-11 text-xs"
+                />
+                <span className="text-xs text-muted-foreground">Cobrado por ajudante quando o cliente solicita equipe de carga/descarga.</span>
+              </div>
+
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold text-foreground">Quantidade Máxima de Ajudantes Disponíveis</Label>
                 <Input
                   type="number"
                   step="1"
                   min="0"
-                  value={vehicleCapacityKg}
-                  onChange={(e) => setVehicleCapacityKg(parseFloat(e.target.value) || 0)}
+                  max="6"
+                  value={maxHelpersCount}
+                  onChange={(e) => setMaxHelpersCount(Math.min(6, Math.max(0, parseInt(e.target.value, 10) || 0)))}
+                  className="h-11 min-h-11 text-xs"
+                />
+                <span className="text-xs text-muted-foreground">0 = trabalho sozinho; até 6 ajudantes para caminhão de mudança.</span>
+              </div>
+
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold text-foreground">Filtro de Piso Mínimo no Radar (R$/km)</Label>
+                <Input
+                  type="number"
+                  step="0.10"
+                  min="0"
+                  value={minKmRateFilter}
+                  onChange={(e) => setMinKmRateFilter(parseFloat(e.target.value) || 0)}
+                  className="h-11 min-h-11 text-xs"
+                />
+                <span className="text-xs text-muted-foreground">Oculta chamados cujo valor por km seja inferior ao seu piso.</span>
+              </div>
+
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold text-foreground">Capacidade de Carga (kg) / Volume (m³)</Label>
+                <div className="grid grid-cols-2 gap-2">
+                  <Input
+                    type="number"
+                    step="1"
+                    min="0"
+                    placeholder="Kg"
+                    value={vehicleCapacityKg}
+                    onChange={(e) => setVehicleCapacityKg(parseFloat(e.target.value) || 0)}
+                    className="h-11 min-h-11 text-xs"
+                  />
+                  <Input
+                    type="number"
+                    step="0.5"
+                    min="0"
+                    placeholder="m³"
+                    value={vehicleCapacityM3}
+                    onChange={(e) => setVehicleCapacityM3(parseFloat(e.target.value) || 0)}
+                    className="h-11 min-h-11 text-xs"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold text-foreground">Cidades de Atuação (separadas por vírgula)</Label>
+                <Input
+                  type="text"
+                  placeholder="Ex: Chapecó, Xanxerê, Concórdia"
+                  value={servicedCitiesText}
+                  onChange={(e) => setServicedCitiesText(e.target.value)}
                   className="h-11 min-h-11 text-xs"
                 />
               </div>
 
               <div className="space-y-1">
-                <Label className="text-xs font-semibold text-foreground">Capacidade Volumétrica (m³)</Label>
+                <Label className="text-xs font-semibold text-foreground">Bairros / Zonas Preferenciais (separados por vírgula)</Label>
                 <Input
-                  type="number"
-                  step="0.5"
-                  min="0"
-                  value={vehicleCapacityM3}
-                  onChange={(e) => setVehicleCapacityM3(parseFloat(e.target.value) || 0)}
+                  type="text"
+                  placeholder="Ex: Centro, Efapi, Presidente Médici"
+                  value={servicedNeighborhoodsText}
+                  onChange={(e) => setServicedNeighborhoodsText(e.target.value)}
                   className="h-11 min-h-11 text-xs"
                 />
               </div>
@@ -936,6 +1162,7 @@ function CourierDriverHubPage() {
             <div className="pt-3 flex justify-end">
               <Button
                 type="submit"
+                variant="outline"
                 disabled={isPending}
                 className="h-11 min-h-11 px-6 rounded-lg text-xs font-bold bg-primary text-primary-foreground focus-visible:ring-2 focus-visible:ring-primary"
               >
@@ -1067,6 +1294,7 @@ function CourierDriverHubPage() {
 
                 <Button
                   type="submit"
+                  variant="outline"
                   disabled={isPending}
                   className="w-full h-11 min-h-11 rounded-lg text-xs font-bold bg-primary text-primary-foreground focus-visible:ring-2 focus-visible:ring-primary"
                 >
@@ -1115,7 +1343,7 @@ function CourierDriverHubPage() {
 
         {/* ── ABA 5: AVALIAÇÕES & FOTO DO VEÍCULO ── */}
         <TabsContent value="avaliacoes" className="space-y-4">
-          {/* Card do Veículo & Foto */}
+          {/* Card do Veículo & Foto com Upload Direto */}
           <div className="bg-card rounded-lg border border-border/70 p-5 space-y-4 shadow-2xs">
             <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
               <Camera className="size-4 text-primary" />
@@ -1125,25 +1353,19 @@ function CourierDriverHubPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <span className="text-xs font-semibold text-foreground block">Foto Oficial do Veículo</span>
-                <div className="w-full h-44 rounded-lg overflow-hidden bg-muted/40 border border-border/60 flex items-center justify-center">
-                  {vehiclePhotoUrl ? (
-                    <img
-                      src={vehiclePhotoUrl}
-                      alt="Foto do veículo"
-                      className="size-full object-cover"
-                    />
-                  ) : (
-                    <div className="text-center space-y-1 text-muted-foreground p-4">
-                      <Camera className="size-8 mx-auto opacity-50" />
-                      <p className="text-xs">Nenhuma foto cadastrada</p>
-                    </div>
-                  )}
-                </div>
+                <ImageUpload
+                  value={vehiclePhotoUrl}
+                  onChange={(url) => setVehiclePhotoUrl(url)}
+                  onRemove={() => setVehiclePhotoUrl("")}
+                  bucket="avatars"
+                  aspectPreset="banner"
+                  helperText="Enviar Foto do Veículo (Carro, Moto ou Caminhão)"
+                />
               </div>
 
               <div className="space-y-3">
                 <div className="space-y-1">
-                  <Label className="text-xs font-semibold text-foreground">URL da Foto do Veículo</Label>
+                  <Label className="text-xs font-semibold text-foreground">Ou cole a URL da Foto do Veículo</Label>
                   <Input
                     type="url"
                     placeholder="https://... foto do carro ou moto"
@@ -1173,11 +1395,12 @@ function CourierDriverHubPage() {
 
                 <Button
                   type="button"
+                  variant="outline"
                   onClick={handleSavePreferences}
                   disabled={isPending}
                   className="w-full h-11 min-h-11 rounded-lg text-xs font-bold bg-primary text-primary-foreground focus-visible:ring-2 focus-visible:ring-primary"
                 >
-                  Salvar Foto do Veículo
+                  Salvar Foto & Dados do Veículo
                 </Button>
               </div>
             </div>
@@ -1233,6 +1456,83 @@ function CourierDriverHubPage() {
           </div>
         </TabsContent>
       </Tabs>
+
+      {/* ── MODAL DE AVALIAÇÃO BILATERAL DO PASSAGEIRO ── */}
+      <Dialog open={ratingModalOpen} onOpenChange={setRatingModalOpen}>
+        <DialogContent className="sm:max-w-md rounded-lg">
+          <DialogHeader>
+            <DialogTitle className="text-base font-bold">Avaliar Passageiro / Cliente</DialogTitle>
+            <DialogDescription className="text-xs">
+              Sua avaliação ajuda a manter a comunidade Waesy Go segura e respeitosa para todos os condutores.
+            </DialogDescription>
+          </DialogHeader>
+
+          <form onSubmit={handleSubmitPassengerRating} className="space-y-4">
+            <div className="flex items-center justify-center gap-2 py-2">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <button
+                  key={star}
+                  type="button"
+                  onClick={() => setRatingStars(star)}
+                  className="size-11 rounded-lg border border-border/60 flex items-center justify-center transition-colors focus-visible:ring-2 focus-visible:ring-primary"
+                >
+                  <Star
+                    className={`size-6 ${
+                      star <= ratingStars ? "fill-amber-400 text-amber-400" : "text-muted-foreground/30"
+                    }`}
+                  />
+                </button>
+              ))}
+            </div>
+
+            <div className="flex flex-wrap gap-1.5">
+              {["Pontual no embarque", "Educado e cordial", "Local fácil", "Cuidado com o veículo"].map((tag) => {
+                const selected = ratingTags.includes(tag);
+                return (
+                  <button
+                    key={tag}
+                    type="button"
+                    onClick={() =>
+                      setRatingTags((prev) =>
+                        prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
+                      )
+                    }
+                    className={`h-11 min-h-11 px-3 rounded-lg text-xs font-medium border transition-colors focus-visible:ring-2 focus-visible:ring-primary ${
+                      selected
+                        ? "bg-primary/10 border-primary text-primary font-semibold"
+                        : "bg-muted/30 border-border/60 text-muted-foreground"
+                    }`}
+                  >
+                    {tag}
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="space-y-1">
+              <Label className="text-xs font-semibold">Observação opcional</Label>
+              <Input
+                value={ratingComment}
+                onChange={(e) => setRatingComment(e.target.value)}
+                placeholder="Ex: Passageiro nota 10, estava aguardando no local."
+                className="h-11 min-h-11 text-xs"
+              />
+            </div>
+
+            <DialogFooter>
+              <Button
+                type="submit"
+                variant="outline"
+                disabled={isPending}
+                className="w-full h-11 min-h-11 text-xs font-bold bg-primary text-primary-foreground focus-visible:ring-2 focus-visible:ring-primary"
+              >
+                Enviar Avaliação do Passageiro
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
+

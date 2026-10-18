@@ -5,6 +5,7 @@ import { OmniPageRenderer } from "@/components/builder/OmniPageRenderer";
 import { Surface } from "@/components/ui/surface";
 import { AlertCircle, Loader2, FileQuestion } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { generateOmniPageSeo } from "@/lib/builder/omni-page-seo";
 
 export const Route = createFileRoute("/_store/paginas/$slug")({
   loader: async ({ params }) => {
@@ -45,23 +46,12 @@ export const Route = createFileRoute("/_store/paginas/$slug")({
       return { document: null, tree: null, products: [], categories: [], storeData: null };
     }
   },
-  head: ({ loaderData }) => {
-    if (!loaderData || !loaderData.document) return { meta: [{ title: "Página não encontrada" }] };
-    const storeId = loaderData.document.store_id;
-    return {
-      title: `${loaderData.document.title} — Waesy`,
-      meta: [
-        { name: "description", content: loaderData.document.title },
-        { name: "apple-mobile-web-app-capable", content: "yes" },
-        { name: "mobile-web-app-capable", content: "yes" },
-      ],
-      links: [
-        {
-          rel: "manifest",
-          href: storeId ? `/api/pwa/manifest.json?storeId=${storeId}` : "/manifest.json",
-        },
-      ],
-    };
+  head: ({ loaderData, params }) => {
+    return generateOmniPageSeo({
+      document: loaderData?.document,
+      storeData: loaderData?.storeData,
+      slug: params.slug,
+    });
   },
   component: PublicPage,
   pendingComponent: () => (

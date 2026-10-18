@@ -1572,282 +1572,339 @@ export const getPublicMemberProfile = createServerFn({ method: "GET" })
  fetchIsFollowing(),
  ]);
 
- // Buscar lojas associadas ao perfil via workspace_members (tabela canônica)
- let memberStores: any[] = [];
- try {
- const { data: wsMemRows } = await db
- .from("workspace_members")
- .select("store_id")
- .eq("profile_id", targetUserId)
- .limit(15);
+  // Buscar lojas associadas ao perfil via workspace_members (tabela canônica) e owner_id
+  let memberStores: any[] = [];
+  try {
+    const [{ data: wsMemRows }, { data: ownedStoreRows }] = await Promise.all([
+      db
+        .from("workspace_members")
+        .select("store_id")
+        .eq("profile_id", targetUserId)
+        .limit(15),
+      db
+        .from("stores")
+        .select("id")
+        .eq("owner_id", targetUserId)
+        .limit(15)
+        .then((res) => res, () => ({ data: [] as any[] })),
+    ]);
 
- const storeIds = Array.from(
- new Set((wsMemRows || []).map((m: any) => m.store_id)),
- ).filter(Boolean);
+    const storeIds = Array.from(
+      new Set([
+        ...(wsMemRows || []).map((m: any) => m.store_id),
+        ...(ownedStoreRows || []).map((s: any) => s.id),
+      ]),
+    ).filter(Boolean);
 
- if (storeIds.length > 0) {
- const { data: storesData } = await db
- .from("stores")
- .select("id, name, slug, description, city, state, settings")
- .in("id", storeIds);
+    if (storeIds.length > 0) {
+      const { data: storesData } = await db
+        .from("stores")
+        .select("id, name, slug, description, city, state, logo_url, banner_url, settings")
+        .in("id", storeIds);
 
- // Buscar avaliações reais para calcular métricas verdadeiras (ZERO MOCKS)
- const reviewsMap: Record<string, { total: number; sum: number }> = {};
- try {
- const { data: dealRevs } = await db
- .from("deal_reviews")
- .select("store_id, rating")
- .in("store_id", storeIds);
+      // Buscar avaliações reais para calcular métricas verdadeiras (ZERO MOCKS)
+      const reviewsMap: Record<string, { total: number; sum: number }> = {};
+      try {
+        const { data: dealRevs } = await db
+          .from("deal_reviews")
+          .select("store_id, rating")
+          .in("store_id", storeIds);
 
- (dealRevs || []).forEach((r: any) => {
- if (r.store_id) {
- if (!reviewsMap[r.store_id]) reviewsMap[r.store_id] = { total: 0, sum: 0 };
- reviewsMap[r.store_id].total += 1;
- reviewsMap[r.store_id].sum += Number(r.rating) || 5;
- }
- });
- } catch {
- // deal_reviews fallback seguro
- }
+        (dealRevs || []).forEach((r: any) => {
+          if (r.store_id) {
+            if (!reviewsMap[r.store_id]) reviewsMap[r.store_id] = { total: 0, sum: 0 };
+            reviewsMap[r.store_id].total += 1;
+            reviewsMap[r.store_id].sum += Number(r.rating) || 5;
+          }
+        });
+      } catch {
+        // deal_reviews fallback seguro
+      }
 
-          memberStores = (storesData || []).map((st: any) => {
-            const settings = (st.settings as Record<string, any>) || {};
-            const revStats = reviewsMap[st.id];
-            const realReviewsCount = revStats ? revStats.total : 0;
-            const realRatingAverage = realReviewsCount > 0 ? Number((revStats.sum / realReviewsCount).toFixed(1)) : null;
+      memberStores = (storesData || []).map((st: any) => {
+        const settings = (st.settings as Record<string, any>) || {};
+        const revStats = reviewsMap[st.id];
+        const realReviewsCount = revStats ? revStats.total : 0;
+        const realRatingAverage = realReviewsCount > 0 ? Number((revStats.sum / realReviewsCount).toFixed(1)) : null;
 
-            return {
-              id: st.id,
-              name: st.name,
-              slug: st.slug,
-              description: st.description || "",
-              city: st.city,
-              state: st.state,
-              logo_url: settings.logoUrl || settings.logo_url || null,
-              banner_url: settings.bannerUrl || settings.coverUrl || settings.cover_url || null,
-              rating_average: realRatingAverage,
-              reviews_count: realReviewsCount,
-            };
-          });
- }
- } catch (storeErr) {
- console.warn("[social.functions] Erro ao buscar lojas do membro:", storeErr);
- memberStores = [];
- }
+        return {
+          id: st.id,
+          name: st.name,
+          slug: st.slug,
+          description: st.description || "",
+          city: st.city,
+          state: st.state,
+          logo_url: st.logo_url || settings.logoUrl || settings.logo_url || null,
+          banner_url: st.banner_url || settings.bannerUrl || settings.coverUrl || settings.cover_url || null,
+          rating_average: realRatingAverage,
+          reviews_count: realReviewsCount,
+        };
+      });
+    }
+  } catch (storeErr) {
+    console.warn("[social.functions] Erro ao buscar lojas do membro:", storeErr);
+    memberStores = [];
+  }
 
- const isOwner = !!(currentUserId && currentUserId === targetUserId);
+  const isOwner = !!(currentUserId && currentUserId === targetUserId);
 
- let resolvedAvatarUrl = rawProfile?.avatar_url || rawProfile?.avatarUrl || null;
- if (!resolvedAvatarUrl && rawProfile?._creatorMatch?.avatar_url) {
- resolvedAvatarUrl = rawProfile._creatorMatch.avatar_url;
- }
- if (!resolvedAvatarUrl && targetUserId) {
- try {
- const { data: creatorRow } = await db
- .from("creator_profiles")
- .select("avatar_url")
- .eq("user_id", targetUserId)
- .maybeSingle();
- if (creatorRow?.avatar_url) {
- resolvedAvatarUrl = creatorRow.avatar_url;
- }
- } catch {
- // ignore
- }
- }
+  let resolvedAvatarUrl = rawProfile?.avatar_url || rawProfile?.avatarUrl || null;
+  if (!resolvedAvatarUrl && rawProfile?._creatorMatch?.avatar_url) {
+    resolvedAvatarUrl = rawProfile._creatorMatch.avatar_url;
+  }
+  if (!resolvedAvatarUrl && targetUserId) {
+    try {
+      const { data: creatorRow } = await db
+        .from("creator_profiles")
+        .select("avatar_url")
+        .eq("user_id", targetUserId)
+        .order("updated_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (creatorRow?.avatar_url) {
+        resolvedAvatarUrl = creatorRow.avatar_url;
+      }
+    } catch {
+      // ignore
+    }
+  }
 
- const profileData = {
- id: targetUserId,
- full_name: rawProfile?.full_name || null,
- username: rawProfile?.username || null,
- avatar_url: resolvedAvatarUrl,
- cover_url: rawProfile?.cover_url || null,
- bio: rawProfile?.bio || null,
- occupation: rawProfile?.occupation || null,
- city: rawProfile?.city || null,
- state: rawProfile?.state || null,
- phone: rawProfile?.phone || null,
- instagram: rawProfile?.instagram || null,
- website: rawProfile?.website || null,
- role: rawProfile?.role || "customer",
- is_verified: rawProfile?.is_verified ?? false,
- profile_type: rawProfile?.profile_type || "personal",
- badges: rawProfile?.badges || [],
- biolinks: (rawProfile?.biolinks as any) || [],
- resume_data: (rawProfile?.resume_data as any) || null,
- featured_banner_url: rawProfile?.featured_banner_url || null,
- featured_banner_link: rawProfile?.featured_banner_link || null,
- created_at: rawProfile?.created_at || new Date().toISOString(),
- };
+  const profileData = {
+    id: targetUserId,
+    full_name: rawProfile?.full_name || null,
+    username: rawProfile?.username || null,
+    avatar_url: resolvedAvatarUrl,
+    cover_url: rawProfile?.cover_url || null,
+    bio: rawProfile?.bio || null,
+    occupation: rawProfile?.occupation || null,
+    city: rawProfile?.city || null,
+    state: rawProfile?.state || null,
+    phone: rawProfile?.phone || null,
+    instagram: rawProfile?.instagram || null,
+    website: rawProfile?.website || null,
+    role: rawProfile?.role || "customer",
+    is_verified: rawProfile?.is_verified ?? false,
+    profile_type: rawProfile?.profile_type || "personal",
+    badges: rawProfile?.badges || [],
+    biolinks: (rawProfile?.biolinks as any) || [],
+    resume_data: (rawProfile?.resume_data as any) || null,
+    featured_banner_url: rawProfile?.featured_banner_url || null,
+    featured_banner_link: rawProfile?.featured_banner_link || null,
+    created_at: rawProfile?.created_at || new Date().toISOString(),
+  };
 
- const postIds = (postsRes.data || []).map((p: any) => p.id);
- let realTotalLikes = 0;
- if (postIds.length > 0) {
- try {
- const { count } = await db
- .from("post_likes")
- .select("post_id", { count: "exact", head: true })
- .in("post_id", postIds);
- realTotalLikes = count || 0;
- } catch {
- realTotalLikes = 0;
- }
- }
+  const postIds = (postsRes.data || []).map((p: any) => p.id);
+  let realTotalLikes = 0;
+  if (postIds.length > 0) {
+    try {
+      const { count } = await db
+        .from("post_likes")
+        .select("post_id", { count: "exact", head: true })
+        .in("post_id", postIds);
+      realTotalLikes = count || 0;
+    } catch {
+      realTotalLikes = 0;
+    }
+  }
 
- // 3. Buscar Dados de Criador / Marca & Vitrine se aplicável
- let creatorProfile: any = rawProfile?._creatorMatch || null;
- if (!creatorProfile) {
- try {
- const { data: cp } = await db
- .from("creator_profiles")
- .select("*")
- .eq("user_id", targetUserId)
- .maybeSingle();
- creatorProfile = cp || null;
- } catch {
- creatorProfile = null;
- }
- }
+  // 3. Buscar Dados de Criador / Marca & Vitrine se aplicável
+  let creatorProfile: any = rawProfile?._creatorMatch || null;
+  if (!creatorProfile) {
+    try {
+      const { data: cp } = await db
+        .from("creator_profiles")
+        .select("*")
+        .eq("user_id", targetUserId)
+        .order("updated_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      creatorProfile = cp || null;
+    } catch {
+      creatorProfile = null;
+    }
+  }
+  if (!creatorProfile) {
+    try {
+      const { data: ap } = await db
+        .from("affiliate_partners")
+        .select("*")
+        .eq("user_id", targetUserId)
+        .order("updated_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (ap) {
+        creatorProfile = {
+          id: ap.id,
+          user_id: ap.user_id,
+          handle: ap.handle,
+          name: ap.display_name || rawProfile?.full_name || "Afiliado Waesy",
+          stage_name: ap.display_name || rawProfile?.full_name || "Afiliado Waesy",
+          bio: ap.bio || rawProfile?.bio || null,
+          niche: "Geral",
+          category: "Geral",
+          showcase_order: ["banner", "own_brands", "stores", "products", "events"],
+          partner_store_ids: [],
+        };
+      }
+    } catch {
+      // ignore
+    }
+  }
 
- let partnerStores: any[] = [];
- let pinnedProducts: any[] = [];
- let creatorEvents: any[] = [];
+  let partnerStores: any[] = [];
+  let pinnedProducts: any[] = [];
+  let creatorEvents: any[] = [];
 
- if (creatorProfile) {
- // 3.1 Lojas parceiras vinculadas na vitrine
- const storeIds = Array.isArray(creatorProfile.partner_store_ids) ? creatorProfile.partner_store_ids : [];
- if (storeIds.length > 0) {
- try {
- const { data: stores } = await db
- .from("stores")
-            .select("id, name, slug, logo_url, city, state, settings")
- .in("id", storeIds)
-            .eq("is_active", true);
+  if (creatorProfile) {
+    // 3.1 Lojas parceiras vinculadas na vitrine
+    const storeIds = Array.isArray(creatorProfile.partner_store_ids) ? creatorProfile.partner_store_ids : [];
+    if (storeIds.length > 0) {
+      try {
+        const { data: stores } = await db
+          .from("stores")
+          .select("id, name, slug, logo_url, city, state, settings")
+          .in("id", storeIds)
+          .eq("is_active", true);
 
- partnerStores = (stores || []).map((s: any) => ({
- id: s.id,
- name: s.name,
- slug: s.slug,
- logoUrl: s.logo_url || null,
-            bannerUrl: s.settings?.bannerUrl || s.settings?.banner_url || null,
- city: getDefaultCity(s.city),
-  state: getDefaultState(s.state),
-            segment: s.settings?.segment || s.settings?.niche || "Varejo",
- couponCode: `${(creatorProfile.handle || "WAESY").toUpperCase().slice(0, 6)}10`,
- discountPercent: 10,
- }));
- } catch (err) {
- console.warn("[social.functions] Erro ao buscar lojas da vitrine do criador:", err);
- }
- }
+        partnerStores = (stores || []).map((s: any) => ({
+          id: s.id,
+          name: s.name,
+          slug: s.slug,
+          logoUrl: s.logo_url || null,
+          bannerUrl: s.settings?.bannerUrl || s.settings?.banner_url || null,
+          city: getDefaultCity(s.city),
+          state: getDefaultState(s.state),
+          segment: s.settings?.segment || s.settings?.niche || "Varejo",
+          couponCode: `${(creatorProfile.handle || "WAESY").toUpperCase().slice(0, 6)}10`,
+          discountPercent: 10,
+        }));
+      } catch (err) {
+        console.warn("[social.functions] Erro ao buscar lojas da vitrine do criador:", err);
+      }
+    }
 
- // 3.2 Produtos da Vitrine
- try {
- const { data: pinned } = await db
- .from("creator_showcase_products")
- .select(`
- id,
- custom_title,
- custom_description,
- sort_order,
- is_pinned,
- product:products (
- id,
- name,
- slug,
- description,
- price_cents,
- images,
- store:stores (
- id,
- name,
- slug,
- logo_url
- )
- )
- `)
- .eq("creator_profile_id", creatorProfile.id)
- .order("is_pinned", { ascending: false })
- .order("sort_order", { ascending: true });
- pinnedProducts = pinned || [];
- } catch (err) {
- console.warn("[social.functions] Erro ao buscar produtos da vitrine do criador:", err);
- }
+    // 3.2 Produtos da Vitrine
+    try {
+      const { data: pinned } = await db
+        .from("creator_showcase_products")
+        .select(`
+          id,
+          custom_title,
+          custom_description,
+          sort_order,
+          is_pinned,
+          product:products (
+            id,
+            name,
+            slug,
+            description,
+            price_cents,
+            images,
+            store:stores (
+              id,
+              name,
+              slug,
+              logo_url
+            )
+          )
+        `)
+        .eq("creator_profile_id", creatorProfile.id)
+        .order("is_pinned", { ascending: false })
+        .order("sort_order", { ascending: true });
+      pinnedProducts = pinned || [];
+    } catch (err) {
+      console.warn("[social.functions] Erro ao buscar produtos da vitrine do criador:", err);
+    }
 
- // 3.3 Eventos da Marca / Artista
- try {
- const cleanHandle = (creatorProfile.handle || "").toLowerCase().trim();
- const stageName = creatorProfile.name || creatorProfile.stage_name || cleanHandle;
- const { data: evts } = await db
- .from("events")
- .select("id, title, description, event_date, end_date, location, city, state, cover_image, price_cents, is_free, is_external_ticket, external_ticket_url, category")
- .eq("status", "published")
- .gte("event_date", new Date().toISOString())
- .or(`creator_handle.ilike.%${cleanHandle}%,organizer_name.ilike.%${stageName}%,created_by.eq.${targetUserId}`)
- .order("event_date", { ascending: true })
- .limit(10);
- creatorEvents = evts || [];
- } catch (err) {
- console.warn("[social.functions] Erro ao buscar eventos do criador:", err);
- }
- }
+    // 3.3 Eventos da Marca / Artista
+    try {
+      const cleanHandle = (creatorProfile.handle || "").toLowerCase().trim();
+      const stageName = creatorProfile.name || creatorProfile.stage_name || cleanHandle;
+      const { data: evts } = await db
+        .from("events")
+        .select("id, title, description, event_date, end_date, location, city, state, cover_image, price_cents, is_free, is_external_ticket, external_ticket_url, category")
+        .eq("status", "published")
+        .gte("event_date", new Date().toISOString())
+        .or(`creator_handle.ilike.%${cleanHandle}%,organizer_name.ilike.%${stageName}%,created_by.eq.${targetUserId}`)
+        .order("event_date", { ascending: true })
+        .limit(10);
+      creatorEvents = evts || [];
+    } catch (err) {
+      console.warn("[social.functions] Erro ao buscar eventos do criador:", err);
+    }
+  }
 
- const isCreatorTarget = Boolean(rawProfile?._isCreatorTarget);
+  const isCreatorTarget = Boolean(rawProfile?._isCreatorTarget);
+  const selectedOwnBrandIds: string[] = Array.isArray(creatorProfile?.social_links?.own_brand_store_ids)
+    ? creatorProfile.social_links.own_brand_store_ids
+    : Array.isArray(creatorProfile?.own_brand_store_ids)
+      ? creatorProfile.own_brand_store_ids
+      : [];
+  const ownBrandStores =
+    selectedOwnBrandIds.length > 0
+      ? memberStores.filter((st: any) => selectedOwnBrandIds.includes(st.id))
+      : memberStores;
 
- return {
- profile: profileData,
- creatorProfile: isCreatorTarget && creatorProfile ? {
- ...creatorProfile,
- stage_name: creatorProfile.name || creatorProfile.stage_name,
- category: creatorProfile.niche || creatorProfile.category || "Geral",
- showcase_order: creatorProfile.showcase_order || ["banner", "stores", "products", "events"],
- partner_store_ids: creatorProfile.partner_store_ids || [],
- } : null,
- isCreator: isCreatorTarget,
- partnerStores: isCreatorTarget ? partnerStores : [],
- pinnedProducts: isCreatorTarget ? pinnedProducts : [],
- creatorEvents: isCreatorTarget ? creatorEvents : [],
- posts: (postsRes.data || []).map((p: any) => ({
- id: p.id,
- content_text: p.content_text,
- media_urls: p.media_urls || [],
- post_type: p.post_type || "text",
- location_name: p.location_name,
- created_at: p.created_at,
- })),
- classifieds: (classifiedsRes.data || []).map((c: any) => ({
- id: c.id,
- title: c.title,
- content: c.content,
- price_cents: c.price_cents,
- images: c.images || [],
- category: c.category,
- condition: c.condition,
- location_name: c.location_name,
- created_at: c.created_at,
- })),
- events: (eventsRes.data || []).map((e: any) => ({
- id: e.id,
- title: e.title,
- description: e.description,
- cover_image: e.cover_image,
- event_date: e.event_date,
- location_name: e.location_name,
- is_free: e.is_free,
- price_cents: e.price_cents,
- status: e.status,
- created_at: e.created_at,
- })),
- stores: memberStores,
- stats: {
- postsCount: (postsRes.data || []).length,
- classifiedsCount: (classifiedsRes.data || []).length,
- eventsCount: (eventsRes.data || []).length,
- followersCount: followersCountRes.count || 0,
- followingCount: followingCountRes.count || 0,
- totalLikes: realTotalLikes,
- },
- isFollowing: !!isFollowingRes.data,
+  return {
+    profile: profileData,
+    creatorProfile: creatorProfile
+      ? {
+          ...creatorProfile,
+          stage_name: creatorProfile.name || creatorProfile.stage_name,
+          category: creatorProfile.niche || creatorProfile.category || "Geral",
+          showcase_order: creatorProfile.showcase_order || ["banner", "own_brands", "stores", "products", "events"],
+          partner_store_ids: creatorProfile.partner_store_ids || [],
+          own_brand_store_ids: selectedOwnBrandIds.length > 0 ? selectedOwnBrandIds : memberStores.map((s: any) => s.id),
+        }
+      : null,
+    isCreator: Boolean(isCreatorTarget || creatorProfile),
+    isCreatorTarget,
+    isBrandPersonaView: isCreatorTarget,
+    ownBrandStores,
+    partnerStores,
+    pinnedProducts,
+    creatorEvents,
+    posts: (postsRes.data || []).map((p: any) => ({
+      id: p.id,
+      content_text: p.content_text,
+      media_urls: p.media_urls || [],
+      post_type: p.post_type || "text",
+      location_name: p.location_name,
+      created_at: p.created_at,
+    })),
+    classifieds: (classifiedsRes.data || []).map((c: any) => ({
+      id: c.id,
+      title: c.title,
+      content: c.content,
+      price_cents: c.price_cents,
+      images: c.images || [],
+      category: c.category,
+      condition: c.condition,
+      location_name: c.location_name,
+      created_at: c.created_at,
+    })),
+    events: (eventsRes.data || []).map((e: any) => ({
+      id: e.id,
+      title: e.title,
+      description: e.description,
+      cover_image: e.cover_image,
+      event_date: e.event_date,
+      location_name: e.location_name,
+      is_free: e.is_free,
+      price_cents: e.price_cents,
+      status: e.status,
+      created_at: e.created_at,
+    })),
+    stores: memberStores,
+    stats: {
+      postsCount: (postsRes.data || []).length,
+      classifiedsCount: (classifiedsRes.data || []).length,
+      eventsCount: (eventsRes.data || []).length,
+      followersCount: followersCountRes.count || 0,
+      followingCount: followingCountRes.count || 0,
+      totalLikes: realTotalLikes,
+    },
+    isFollowing: !!isFollowingRes.data,
  isOwner,
  };
  });

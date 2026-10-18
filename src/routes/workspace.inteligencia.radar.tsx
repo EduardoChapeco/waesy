@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { createFileRoute } from "@tanstack/react-router";
-import { Compass, Plus, Globe, Instagram, RefreshCw, Shield, Target, Layers, ArrowUpRight, CheckCircle2, ExternalLink, ChevronRight, TrendingUp, Sliders, DollarSign, AlertCircle, Palette, Eye, FileText } from "lucide-react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { Compass, Plus, Globe, Instagram, RefreshCw, Shield, Target, Layers, ArrowUpRight, CheckCircle2, ExternalLink, ChevronRight, TrendingUp, Sliders, DollarSign, AlertCircle, Palette, Eye, FileText, MapPin } from "lucide-react";
 import { listCompetitors, createCompetitor, captureAndAnalyzeCompetitor, getStoreBrandDna, updateStoreBrandDna } from "@/services/market-radar.functions";
 import { getStoreSettings } from "@/services/store.functions";
 import { MarketCompetitorDTO, CompetitorSnapshotDTO, BrandDnaProfileDTO } from "@/types/squads-and-onboarding";
@@ -170,21 +170,29 @@ export function MarketRadarPage() {
               </p>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3">
+              <Link
+                to={"/workspace/viabilidade" as any}
+                className="h-11 px-4 inline-flex items-center justify-center gap-2 rounded-lg text-sm font-semibold border border-primary/30 bg-primary/10 text-primary hover:bg-primary/15 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              >
+                <MapPin className="w-4 h-4" />
+                <span>Abrir Mapa Geomarketing & Cortex 360</span>
+              </Link>
+
               <button
                 type="button"
                 onClick={() => loadData()}
                 disabled={loading}
-                className="h-11 px-4 inline-flex items-center justify-center gap-2 rounded-lg text-sm font-medium border border-border/60 bg-background hover:bg-muted/40 transition-colors"
+                className="h-11 px-4 inline-flex items-center justify-center gap-2 rounded-lg text-sm font-medium border border-border/60 bg-background hover:bg-muted/40 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
-                <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
+                <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin motion-reduce:animate-none" : ""}`} />
                 Atualizar
               </button>
 
               <button
                 type="button"
                 onClick={() => setShowAddModal(true)}
-                className="h-11 px-5 inline-flex items-center justify-center gap-2 rounded-lg text-sm font-medium bg-primary text-primary-foreground shadow-sm hover:opacity-95 transition-opacity"
+                className="h-11 px-5 inline-flex items-center justify-center gap-2 rounded-lg text-sm font-medium bg-primary text-primary-foreground hover:opacity-95 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
                 <Plus className="w-4 h-4" />
                 Adicionar Concorrente
@@ -193,11 +201,11 @@ export function MarketRadarPage() {
           </div>
 
           {/* Abas Silenciosas */}
-          <div className="flex items-center gap-6 mt-6 border-t border-border/20 pt-4">
+          <div className="flex flex-nowrap overflow-x-auto no-scrollbar tab-list items-center gap-6 mt-6 border-t border-border/20 pt-4">
             <button
               type="button"
               onClick={() => setActiveTab("radar")}
-              className={`text-sm font-medium pb-2 border-b-2 transition-colors ${
+              className={`h-11 px-2 text-sm font-medium border-b-2 transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                 activeTab === "radar"
                   ? "border-primary text-foreground"
                   : "border-transparent text-muted-foreground hover:text-foreground"
@@ -208,7 +216,7 @@ export function MarketRadarPage() {
             <button
               type="button"
               onClick={() => setActiveTab("brand_dna")}
-              className={`text-sm font-medium pb-2 border-b-2 transition-colors ${
+              className={`h-11 px-2 text-sm font-medium border-b-2 transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                 activeTab === "brand_dna"
                   ? "border-primary text-foreground"
                   : "border-transparent text-muted-foreground hover:text-foreground"
@@ -219,7 +227,7 @@ export function MarketRadarPage() {
             <button
               type="button"
               onClick={() => setActiveTab("swot")}
-              className={`text-sm font-medium pb-2 border-b-2 transition-colors ${
+              className={`h-11 px-2 text-sm font-medium border-b-2 transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                 activeTab === "swot"
                   ? "border-primary text-foreground"
                   : "border-transparent text-muted-foreground hover:text-foreground"
@@ -248,7 +256,7 @@ export function MarketRadarPage() {
             <button
               type="button"
               onClick={() => setFeedback(null)}
-              className="text-xs underline opacity-80 hover:opacity-100"
+              className="h-11 px-3 rounded-lg text-xs underline opacity-80 hover:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
               Fechar
             </button>
@@ -260,7 +268,7 @@ export function MarketRadarPage() {
       <div className="max-w-7xl mx-auto px-0 sm:px-0 mt-6">
         {loading ? (
           <div className="h-96 flex flex-col items-center justify-center text-muted-foreground">
-            <RefreshCw className="w-8 h-8 animate-spin mb-3 text-primary" />
+            <RefreshCw className="w-8 h-8 animate-spin motion-reduce:animate-none mb-3 text-primary" />
             <p className="text-sm font-medium">Carregando inteligência competitiva e DNA de marca...</p>
           </div>
         ) : (
@@ -286,7 +294,7 @@ export function MarketRadarPage() {
                       <button
                         type="button"
                         onClick={() => setShowAddModal(true)}
-                        className="h-10 px-4 inline-flex items-center gap-2 rounded-lg text-xs font-medium bg-primary text-primary-foreground"
+                        className="h-11 px-4 inline-flex items-center gap-2 rounded-lg text-xs font-medium bg-primary text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                       >
                         <Plus className="w-3.5 h-3.5" />
                         Cadastrar Primeiro Concorrente
@@ -301,10 +309,15 @@ export function MarketRadarPage() {
                       return (
                         <div
                           key={comp.id}
+                          role="button"
+                          tabIndex={0}
                           onClick={() => setSelectedCompetitor(comp)}
-                          className={`p-4 rounded-lg border transition-all cursor-pointer ${
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" || e.key === " ") setSelectedCompetitor(comp);
+                          }}
+                          className={`p-4 rounded-lg border transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                             isSelected
-                              ? "bg-card border-primary/50 shadow-sm ring-1 ring-primary/20"
+                              ? "bg-card border-primary/50 shadow-xs ring-1 ring-primary/20"
                               : "bg-card/50 border-border/50 hover:bg-card hover:border-border"
                           }`}
                         >
@@ -351,10 +364,11 @@ export function MarketRadarPage() {
                                 {dna.color_palette.slice(0, 4).map((c, idx) => (
                                   <span
                                     key={idx}
-                                    className="w-3.5 h-3.5 rounded-full border border-border/40 shadow-xs"
-                                    style={{ backgroundColor: c }}
+                                    className="px-2 py-1 rounded bg-muted text-foreground font-mono text-xs border border-border/40"
                                     title={c}
-                                  />
+                                  >
+                                    {c}
+                                  </span>
                                 ))}
                               </div>
                             </div>
@@ -396,7 +410,7 @@ export function MarketRadarPage() {
                             </p>
                           )}
                           {selectedCompetitor.latest_snapshot?.source_url && (
-                            <a className="mt-2 block text-xs text-primary underline" href={selectedCompetitor.latest_snapshot.source_url} target="_blank" rel="noreferrer">
+                            <a className="mt-2 inline-flex items-center h-11 text-xs text-primary underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary" href={selectedCompetitor.latest_snapshot.source_url} target="_blank" rel="noreferrer">
                               Abrir fonte capturada
                             </a>
                           )}
@@ -406,11 +420,11 @@ export function MarketRadarPage() {
                           type="button"
                           onClick={() => handleRefreshSnapshot(selectedCompetitor.id)}
                           disabled={actionLoading === `analyzing-${selectedCompetitor.id}`}
-                          className="h-10 px-4 inline-flex items-center gap-2 rounded-lg text-xs font-medium border border-border/60 hover:bg-muted/40 transition-colors"
+                          className="h-11 px-4 inline-flex items-center gap-2 rounded-lg text-xs font-medium border border-border/60 hover:bg-muted/40 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                         >
                           <RefreshCw
                             className={`w-3.5 h-3.5 ${
-                              actionLoading === `analyzing-${selectedCompetitor.id}` ? "animate-spin" : ""
+                              actionLoading === `analyzing-${selectedCompetitor.id}` ? "animate-spin motion-reduce:animate-none" : ""
                             }`}
                           />
                           Reanalisar Agora
@@ -505,7 +519,7 @@ export function MarketRadarPage() {
                                       navigator.clipboard.writeText(h);
                                       setFeedback({ type: "success", message: "Gancho copiado para a área de transferência!" });
                                     }}
-                                    className="text-xs px-2 py-1 rounded bg-muted hover:bg-muted/80 text-foreground font-medium transition-colors"
+                                    className="h-11 px-3 rounded-lg bg-muted hover:bg-muted/80 text-foreground text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                                   >
                                     Copiar
                                   </button>
@@ -522,7 +536,7 @@ export function MarketRadarPage() {
                           <button
                             type="button"
                             onClick={() => handleRefreshSnapshot(selectedCompetitor.id)}
-                            className="h-11 px-5 inline-flex items-center gap-2 rounded-lg text-sm font-medium bg-primary text-primary-foreground"
+                            className="h-11 px-5 inline-flex items-center gap-2 rounded-lg text-sm font-medium bg-primary text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                           >
                             <RefreshCw className="w-4 h-4" />
                             Iniciar Análise Forense
@@ -585,15 +599,11 @@ export function MarketRadarPage() {
                         </label>
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 p-4 rounded-lg bg-muted/20 border border-border/40">
                           {Object.entries(brandDna.color_palette).map(([key, val]) => (
-                            <div key={key} className="text-center">
-                              <div
-                                className="w-full h-12 rounded-lg border border-border/30 shadow-xs mb-1"
-                                style={{ backgroundColor: val }}
-                              />
+                            <div key={key} className="text-center p-2 rounded-lg border border-border/30 bg-card">
                               <span className="text-xs uppercase font-semibold text-muted-foreground block">
                                 {key}
                               </span>
-                              <span className="text-xs font-mono text-foreground block">
+                              <span className="text-xs font-mono text-foreground block mt-1">
                                 {val}
                               </span>
                             </div>
@@ -726,8 +736,16 @@ export function MarketRadarPage() {
 
       {/* ── MODAL DE ADICIONAR CONCORRENTE ── */}
       {showAddModal && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4" onClick={() => setShowAddModal(false)}>
-          <div onClick={(e) => e.stopPropagation()} className="bg-card border-t sm:border border-border/60 rounded-t-lg sm:rounded-lg p-5 sm:p-6 max-w-md w-full max-h-[100dvh] sm:max-h-[90vh] overflow-y-auto no-scrollbar shadow-xs space-y-5">
+        <div
+          role="dialog"
+          aria-modal="true"
+          className="fixed inset-0 z-50 bg-background/80 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          onClick={() => setShowAddModal(false)}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-card border-t sm:border border-border/60 rounded-t-lg sm:rounded-lg p-5 sm:p-6 max-w-md w-full max-h-screen overflow-y-auto no-scrollbar shadow-xs space-y-5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          >
             <div>
               <h3 className="text-lg font-bold text-foreground tracking-tight">
                 Cadastrar Novo Concorrente
@@ -795,18 +813,18 @@ export function MarketRadarPage() {
                 <button
                   type="button"
                   onClick={() => setShowAddModal(false)}
-                  className="h-11 px-4 rounded-lg text-sm font-medium border border-border/60 hover:bg-muted/40 transition-colors"
+                  className="h-11 px-4 rounded-lg text-sm font-medium border border-border/60 hover:bg-muted/40 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
                   disabled={actionLoading === "creating"}
-                  className="h-11 px-5 inline-flex items-center gap-2 rounded-lg text-sm font-medium bg-primary text-primary-foreground hover:opacity-95 transition-opacity"
+                  className="h-11 px-5 inline-flex items-center gap-2 rounded-lg text-sm font-medium bg-primary text-primary-foreground hover:opacity-95 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 >
                   {actionLoading === "creating" ? (
                     <>
-                      <RefreshCw className="w-4 h-4 animate-spin" />
+                      <RefreshCw className="w-4 h-4 animate-spin motion-reduce:animate-none" />
                       Analisando...
                     </>
                   ) : (

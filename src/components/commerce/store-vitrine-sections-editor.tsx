@@ -169,9 +169,9 @@ export function StoreVitrineSectionsEditor({
                 return (
                   <div
                     key={section.id}
-                    className={`flex items-center justify-between p-3 rounded-lg border transition-all ${
+                    className={`flex items-center justify-between p-3 rounded-lg border transition-colors ${
                       section.enabled
-                        ? "bg-card border-border/70 shadow-2xs"
+                        ? "bg-card border-border/70"
                         : "bg-muted/30 border-border/30 opacity-60"
                     }`}
                   >
@@ -179,7 +179,7 @@ export function StoreVitrineSectionsEditor({
                       <button
                         type="button"
                         onClick={() => handleToggleEnabled(section.id)}
-                        className="cursor-pointer text-muted-foreground hover:text-foreground"
+                        className="size-11 min-h-11 min-w-11 inline-flex items-center justify-center rounded-lg cursor-pointer text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary shrink-0"
                         title={section.enabled ? "Ocultar seção" : "Exibir seção"}
                       >
                         {section.enabled ? (
@@ -190,36 +190,36 @@ export function StoreVitrineSectionsEditor({
                       </button>
 
                       <div className="min-w-0">
-                        <p className="text-xs font-bold text-foreground truncate">
+                        <p className="text-xs font-bold text-foreground break-words text-wrap leading-tight">
                           {section.title}
                         </p>
-                        <span className="text-[10px] text-muted-foreground font-mono block">
+                        <span className="text-xs text-muted-foreground font-mono block">
                           {isInfinite ? "Mandatório no final" : `Posição ${idx + 1}`}
                         </span>
                       </div>
                     </div>
 
                     {!isInfinite && (
-                      <div className="flex items-center gap-1">
+                      <div className="flex items-center gap-1 shrink-0">
                         <Button
                           size="sm"
                           variant="ghost"
                           disabled={idx === 0}
                           onClick={() => handleMoveUp(idx)}
-                          className="size-7 p-0 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
+                          className="size-11 min-h-11 min-w-11 p-0 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                           aria-label="Subir Seção"
                         >
-                          <ArrowUp className="size-3.5" />
+                          <ArrowUp className="size-4" />
                         </Button>
                         <Button
                           size="sm"
                           variant="ghost"
                           disabled={idx >= sections.length - 2}
                           onClick={() => handleMoveDown(idx)}
-                          className="size-7 p-0 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
+                          className="size-11 min-h-11 min-w-11 p-0 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                           aria-label="Descer Seção"
                         >
-                          <ArrowDown className="size-3.5" />
+                          <ArrowDown className="size-4" />
                         </Button>
                       </div>
                     )}
@@ -231,12 +231,12 @@ export function StoreVitrineSectionsEditor({
 
           {/* Gestão de Cards Personalizáveis */}
           <div className="space-y-3 pt-2 border-t border-border/40">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-2">
               <div>
                 <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground font-mono">
                   Cards de Destaque Personalizados
                 </h4>
-                <p className="text-[11px] text-muted-foreground">
+                <p className="text-xs text-muted-foreground">
                   Cards com imagem, chamada e link de ação na vitrine.
                 </p>
               </div>
@@ -254,9 +254,9 @@ export function StoreVitrineSectionsEditor({
                   });
                   setIsEditingCardOpen(true);
                 }}
-                className="h-8 px-3 rounded-lg text-xs font-semibold gap-1 cursor-pointer"
+                className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold gap-1 cursor-pointer shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
-                <Plus className="size-3.5" />
+                <Plus className="size-4" />
                 <span>Adicionar Card</span>
               </Button>
             </div>
@@ -272,20 +272,20 @@ export function StoreVitrineSectionsEditor({
                       <img
                         src={card.imageUrl}
                         alt={card.title}
-                        className="size-10 rounded-lg object-cover flex-shrink-0"
+                        className="size-11 rounded-lg object-cover shrink-0"
                       />
                     ) : (
-                      <div className="size-10 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
+                      <div className="size-11 rounded-lg bg-muted flex items-center justify-center shrink-0">
                         <LayoutGrid className="size-4 text-muted-foreground" />
                       </div>
                     )}
                     <div className="min-w-0">
-                      <p className="text-xs font-bold text-foreground truncate">{card.title}</p>
-                      <p className="text-[10px] text-muted-foreground truncate">{card.subtitle || card.linkUrl}</p>
+                      <p className="text-xs font-bold text-foreground break-words text-wrap leading-tight">{card.title}</p>
+                      <p className="text-xs text-muted-foreground break-words text-wrap leading-tight">{card.subtitle || card.linkUrl}</p>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-1 flex-shrink-0">
+                  <div className="flex items-center gap-1 shrink-0">
                     <Button
                       size="sm"
                       variant="ghost"
@@ -293,19 +293,19 @@ export function StoreVitrineSectionsEditor({
                         setEditingCard(card);
                         setIsEditingCardOpen(true);
                       }}
-                      className="size-7 p-0 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
+                      className="size-11 min-h-11 min-w-11 p-0 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                       aria-label="Editar Card"
                     >
-                      <Edit3 className="size-3.5" />
+                      <Edit3 className="size-4" />
                     </Button>
                     <Button
                       size="sm"
                       variant="ghost"
                       onClick={() => handleDeleteCard(card.id)}
-                      className="size-7 p-0 rounded-lg text-destructive hover:bg-destructive/10 cursor-pointer"
+                      className="size-11 min-h-11 min-w-11 p-0 rounded-lg text-destructive hover:bg-destructive/10 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                       aria-label="Excluir Card"
                     >
-                      <Trash2 className="size-3.5" />
+                      <Trash2 className="size-4" />
                     </Button>
                   </div>
                 </div>
@@ -317,13 +317,13 @@ export function StoreVitrineSectionsEditor({
             <Button
               variant="outline"
               onClick={() => onOpenChange(false)}
-              className="h-10 px-4 rounded-lg text-xs font-semibold cursor-pointer"
+              className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
               Cancelar
             </Button>
             <Button
               onClick={handleSaveAll}
-              className="h-10 px-5 rounded-lg text-xs font-bold bg-foreground text-background hover:bg-foreground/90 cursor-pointer"
+              className="h-11 min-h-11 px-5 rounded-lg text-xs font-bold bg-foreground text-background hover:bg-foreground/90 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
               Salvar Vitrine
             </Button>
@@ -334,7 +334,7 @@ export function StoreVitrineSectionsEditor({
       {/* Sub-Modal para Edição de Card de Destaque */}
       {editingCard && (
         <Sheet open={isEditingCardOpen} onOpenChange={setIsEditingCardOpen}>
-          <SheetContent side="bottom" className="rounded-t-lg p-6 space-y-4 max-h-[85vh] overflow-y-auto">
+          <SheetContent side="bottom" className="rounded-t-lg p-6 space-y-4 max-h-dvh overflow-y-auto">
             <SheetHeader className="text-left border-b border-border/40 pb-2">
               <SheetTitle className="text-base font-bold">Editar Card de Destaque</SheetTitle>
               <SheetDescription className="text-xs text-muted-foreground">
@@ -361,7 +361,7 @@ export function StoreVitrineSectionsEditor({
                       setEditingCard((prev) => (prev ? { ...prev, title: e.target.value } : null))
                     }
                     placeholder="Ex: Coleção Inverno 2026"
-                    className="h-10 rounded-lg text-xs"
+                    className="h-11 min-h-11 rounded-lg text-xs"
                   />
                 </div>
 
@@ -373,7 +373,7 @@ export function StoreVitrineSectionsEditor({
                       setEditingCard((prev) => (prev ? { ...prev, tag: e.target.value } : null))
                     }
                     placeholder="Ex: Novo, Exclusivo, Oferta"
-                    className="h-10 rounded-lg text-xs"
+                    className="h-11 min-h-11 rounded-lg text-xs"
                   />
                 </div>
               </div>
@@ -386,7 +386,7 @@ export function StoreVitrineSectionsEditor({
                     setEditingCard((prev) => (prev ? { ...prev, subtitle: e.target.value } : null))
                   }
                   placeholder="Ex: Produtos selecionados com até 20% de desconto"
-                  className="h-10 rounded-lg text-xs"
+                  className="h-11 min-h-11 rounded-lg text-xs"
                 />
               </div>
 
@@ -398,7 +398,7 @@ export function StoreVitrineSectionsEditor({
                     setEditingCard((prev) => (prev ? { ...prev, linkUrl: e.target.value } : null))
                   }
                   placeholder="Ex: whatsapp, #catalogo ou https://..."
-                  className="h-10 rounded-lg text-xs font-mono"
+                  className="h-11 min-h-11 rounded-lg text-xs font-mono"
                 />
               </div>
             </div>
@@ -407,14 +407,15 @@ export function StoreVitrineSectionsEditor({
               <Button
                 variant="outline"
                 onClick={() => setIsEditingCardOpen(false)}
-                className="h-10 px-4 rounded-lg text-xs font-semibold cursor-pointer"
+                className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
                 Cancelar
               </Button>
               <Button
+                variant="outline"
                 onClick={() => handleSaveCard(editingCard)}
                 disabled={!editingCard.title.trim()}
-                className="h-10 px-5 rounded-lg text-xs font-bold bg-foreground text-background hover:bg-foreground/90 cursor-pointer"
+                className="h-11 min-h-11 px-5 rounded-lg text-xs font-bold bg-foreground text-background hover:bg-foreground/90 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
                 Salvar Card
               </Button>

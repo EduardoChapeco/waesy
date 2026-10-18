@@ -231,7 +231,20 @@ export function buildSocialPostPayload(title: string, userPrompt: string): {
   hashtags: string[];
   visualPrompt: string;
   callToAction: string;
+  theme: "dark" | "light" | "brand" | "swiss" | "cyber" | "gourmet";
 } {
+  const lower = userPrompt.toLowerCase();
+  const theme: "dark" | "light" | "brand" | "swiss" | "cyber" | "gourmet" =
+    lower.includes("cyber") || lower.includes("tech")
+      ? "cyber"
+      : lower.includes("gourmet") || lower.includes("restaurante") || lower.includes("sabor")
+        ? "gourmet"
+        : lower.includes("claro") || lower.includes("light")
+          ? "light"
+          : lower.includes("swiss") || lower.includes("minimal")
+            ? "swiss"
+            : "brand";
+
   return {
     platform: "instagram",
     format: "feed_and_story",
@@ -241,6 +254,7 @@ export function buildSocialPostPayload(title: string, userPrompt: string): {
     hashtags: ["#waesy", "#promocao", "#comerciolocal", "#chapeco", "#qualidade", "#ofertas"],
     visualPrompt: "Design moderno, tipografia limpa estilo Apple, foco no produto principal, sem poluição visual, paleta elegante.",
     callToAction: "Ver no WhatsApp / Pedir no App",
+    theme,
   };
 }
 
@@ -532,7 +546,9 @@ export async function createBuilderArtifactFromCopilot(params: {
     const { executeUnifiedAiCall } = await import("./api-orchestrator.functions");
     const aiResult = await executeUnifiedAiCall({
       feature: `builder_artifact_${docType}`,
+      taskType: "fast_json",
       responseFormat: "json_object",
+      expectJson: true,
       temperature: 0.35,
       maxTokens: 2500,
       storeId: params.storeId || undefined,
@@ -594,6 +610,7 @@ export async function createBuilderArtifactFromCopilot(params: {
           caption: parsed.caption || payload.caption,
           hashtags: Array.isArray(parsed.hashtags) ? parsed.hashtags : payload.hashtags,
           callToAction: parsed.callToAction || payload.callToAction,
+          theme: parsed.theme || payload.theme || "swiss",
         };
       } else if (docType === "travel_itinerary" && Array.isArray(parsed.days) && parsed.days.length > 0) {
         const amount = typeof parsed.totalAmountBrl === "number" && parsed.totalAmountBrl > 0 ? parsed.totalAmountBrl : payload.totalAmountBrl;

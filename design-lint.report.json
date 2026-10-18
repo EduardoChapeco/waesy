@@ -1,36 +1,36 @@
 {
   "version": "2.0.0",
-  "timestamp": "2026-10-18T09:13:01.843Z",
-  "inspectedFiles": 2140,
-  "totalViolations": 12461,
+  "timestamp": "2026-10-18T17:50:05.456Z",
+  "inspectedFiles": 2162,
+  "totalViolations": 12325,
   "summary": {
-    "totalViolations": 12461,
+    "totalViolations": 12325,
     "bySeverity": {
-      "P0": 1444,
-      "P1": 8408,
-      "P2": 1310,
-      "P3": 1299
+      "P0": 1425,
+      "P1": 8316,
+      "P2": 1294,
+      "P3": 1290
     },
     "byRule": {
-      "DL-18": 1153,
-      "DL-02": 3530,
-      "DL-14": 2098,
-      "DL-28": 287,
-      "DL-15": 1441,
-      "DL-07": 494,
-      "DL-27": 1047,
-      "DL-30": 252,
+      "DL-18": 1151,
+      "DL-02": 3487,
+      "DL-14": 2093,
+      "DL-28": 286,
+      "DL-15": 1422,
+      "DL-07": 485,
+      "DL-27": 1046,
+      "DL-30": 244,
       "DL-26": 85,
-      "DL-01": 935,
+      "DL-01": 887,
       "DL-29": 118,
-      "DL-05": 135,
-      "DL-23": 421,
-      "DL-03": 207,
+      "DL-05": 133,
+      "DL-23": 415,
+      "DL-03": 217,
       "DL-09": 61,
-      "DL-08": 103,
+      "DL-08": 102,
       "DL-24": 2,
       "DL-11": 21,
-      "DL-12": 31,
+      "DL-12": 30,
       "DL-13": 11,
       "DL-25": 23,
       "DL-06": 3,
@@ -38,11 +38,11 @@
     },
     "byModule": {
       "components/app": {
-        "total": 5380,
-        "P0": 573,
-        "P1": 3617,
-        "P2": 651,
-        "P3": 539
+        "total": 5344,
+        "P0": 568,
+        "P1": 3594,
+        "P2": 649,
+        "P3": 533
       },
       "components/builder": {
         "total": 126,
@@ -80,17 +80,17 @@
         "P3": 0
       },
       "lib": {
-        "total": 255,
+        "total": 254,
         "P0": 1,
-        "P1": 219,
+        "P1": 218,
         "P2": 35,
         "P3": 0
       },
       "routes/admin": {
-        "total": 1021,
-        "P0": 89,
-        "P1": 763,
-        "P2": 51,
+        "total": 998,
+        "P0": 86,
+        "P1": 744,
+        "P2": 50,
         "P3": 118
       },
       "routes/api": {
@@ -108,23 +108,23 @@
         "P3": 6
       },
       "routes/workspace": {
-        "total": 2223,
-        "P0": 452,
-        "P1": 1378,
-        "P2": 121,
-        "P3": 272
+        "total": 2195,
+        "P0": 440,
+        "P1": 1374,
+        "P2": 111,
+        "P3": 270
       },
       "routes/store": {
-        "total": 1502,
-        "P0": 135,
-        "P1": 996,
-        "P2": 141,
-        "P3": 230
+        "total": 1501,
+        "P0": 136,
+        "P1": 998,
+        "P2": 138,
+        "P3": 229
       },
       "services": {
-        "total": 258,
+        "total": 211,
         "P0": 0,
-        "P1": 184,
+        "P1": 137,
         "P2": 72,
         "P3": 2
       },
@@ -143,8 +143,8 @@
         "P3": 0
       }
     },
-    "filesWithViolations": 877,
-    "filesCount": 2140
+    "filesWithViolations": 876,
+    "filesCount": 2162
   },
   "config": {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -305,6 +305,22 @@
         "file": "src/lib/theme-factory.ts",
         "reason": "Definição de códigos hexadecimais dos 10 temas canônicos e motor de luminância",
         "date": "2026-09-29",
+        "expiry": "2027-12-31",
+        "approvedBy": "design-system-architect"
+      },
+      {
+        "id": "DL-01",
+        "file": "src/services/studio.functions.ts",
+        "reason": "Paletas vetoriais de SVG e gerador grafico de stories e banners de marketing",
+        "date": "2026-10-18",
+        "expiry": "2027-12-31",
+        "approvedBy": "design-system-architect"
+      },
+      {
+        "id": "DL-01",
+        "file": "src/services/builder.functions.ts",
+        "reason": "Paletas de temas e templates de canvas para sites do OmniPage Builder",
+        "date": "2026-10-18",
         "expiry": "2027-12-31",
         "approvedBy": "design-system-architect"
       }

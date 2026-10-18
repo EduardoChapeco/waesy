@@ -50,7 +50,7 @@ function DriverDirectPage() {
   return (
     <div className="w-full max-w-xl mx-auto space-y-5 pb-20">
       {/* Profile Card */}
-      <div className="rounded-lg bg-card border border-border/70 p-6 text-center space-y-5 shadow-2xs">
+      <div className="rounded-lg bg-card border border-border/70 p-6 text-center space-y-5">
         <div className="size-24 rounded-lg mx-auto overflow-hidden bg-muted flex items-center justify-center font-bold text-2xl text-foreground border border-border/60">
           {courier.avatar_url ? (
             <img
@@ -134,11 +134,15 @@ function DriverDirectPage() {
           <Button asChild variant="outline" className="w-full h-11 min-h-11 rounded-lg text-xs font-semibold focus-visible:ring-2 focus-visible:ring-primary">
             <Link to="/mobilidade">Solicitar pelo App com Cálculo de Rota</Link>
           </Button>
+
+          <Button asChild variant="outline" className="w-full h-11 min-h-11 rounded-lg text-xs font-semibold text-muted-foreground hover:text-foreground focus-visible:ring-2 focus-visible:ring-primary">
+            <Link to="/conta/entregador">Editar Meu Perfil e Tarifas</Link>
+          </Button>
         </div>
       </div>
 
       {/* Avaliações Verificadas */}
-      <div className="rounded-lg bg-card border border-border/70 p-5 space-y-4 shadow-2xs">
+      <div className="rounded-lg bg-card border border-border/70 p-5 space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-sm font-bold text-foreground">Depoimentos de Passageiros</h2>
           <span className="text-xs text-muted-foreground font-mono">

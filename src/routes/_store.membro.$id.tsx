@@ -28,6 +28,8 @@ import { getPostMediaSignedUrl } from "@/services/storage.functions";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { ProfessionalLicenseEditSheet } from "@/components/profile/professional-resume-editor";
+import { RichBioContent } from "@/components/profile/RichBioContent";
+import { ProfileInPageEditor } from "@/components/profile/ProfileInPageEditor";
 
 export type MembroSearchParams = {
  modo?: "social" | "profissional" | "comercial";
@@ -101,35 +103,36 @@ export function MemberPublicProfileView({
 }) {
  const router = useRouter();
 
- const profile = data?.profile;
- const isOwner = Boolean(data?.isOwner);
- const stores = (data?.stores || []) as any[];
- const classifieds = (data?.classifieds || []) as any[];
- const posts = (data?.posts || []) as any[];
- const stats = data?.stats || { followersCount: 0, followingCount: 0, postsCount: 0 };
- const creatorProfile = data?.creatorProfile || null;
- useEffect(() => { if (typeof window !== "undefined") { window.scrollTo({ top: 0, left: 0, behavior: "instant" as ScrollBehavior }); document.documentElement.scrollTop = 0; document.body.scrollTop = 0; document.querySelector("main")?.scrollTo({ top: 0, left: 0, behavior: "instant" as ScrollBehavior }); } }, [profile?.id, profile?.username]);
+  const profile = data?.profile;
+  const isOwner = Boolean(data?.isOwner);
+  const stores = (data?.stores || []) as any[];
+  const ownBrandStores = (data?.ownBrandStores && data.ownBrandStores.length > 0 ? data.ownBrandStores : stores) as any[];
+  const isBrandPersonaView = Boolean(data?.isBrandPersonaView);
+  const classifieds = (data?.classifieds || []) as any[];
+  const posts = (data?.posts || []) as any[];
+  const stats = data?.stats || { followersCount: 0, followingCount: 0, postsCount: 0 };
+  const creatorProfile = data?.creatorProfile || null;
 
- // FASE 1 (V114): Scroll Restoration imediato ao montar ou trocar de Membro/Perfil
- useEffect(() => {
-   if (typeof window !== "undefined") {
-     window.scrollTo({ top: 0, left: 0, behavior: "instant" as ScrollBehavior });
-     document.documentElement.scrollTop = 0;
-     document.body.scrollTop = 0;
-     const mainContainer = document.querySelector("main");
-     if (mainContainer) {
-       mainContainer.scrollTo({ top: 0, left: 0, behavior: "instant" as ScrollBehavior });
-       mainContainer.scrollTop = 0;
-     }
-   }
- }, [profile?.id, profile?.username]);
- useEffect(() => { if (typeof window !== "undefined") { window.scrollTo({ top: 0, left: 0, behavior: "instant" as ScrollBehavior }); document.documentElement.scrollTop = 0; document.body.scrollTop = 0; document.querySelector("main")?.scrollTo({ top: 0, left: 0, behavior: "instant" as ScrollBehavior }); } }, [profile?.id, profile?.username]);
- const isCreator = Boolean(data?.isCreator);
- const creatorPartnerStores = (data?.partnerStores && data.partnerStores.length > 0) ? data.partnerStores : [];
- const creatorShowcaseProducts = (data?.pinnedProducts && data.pinnedProducts.length > 0)
-   ? data.pinnedProducts.map((p: any) => p.product || p)
-   : [];
- const creatorEvents = (data?.creatorEvents || []) as any[];
+  // FASE 1 (V114): Scroll Restoration imediato ao montar ou trocar de Membro/Perfil
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, left: 0, behavior: "instant" as ScrollBehavior });
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+      const mainContainer = document.querySelector("main");
+      if (mainContainer) {
+        mainContainer.scrollTo({ top: 0, left: 0, behavior: "instant" as ScrollBehavior });
+        mainContainer.scrollTop = 0;
+      }
+    }
+  }, [profile?.id, profile?.username]);
+
+  const isCreator = Boolean(data?.isCreator || creatorProfile);
+  const creatorPartnerStores = (data?.partnerStores && data.partnerStores.length > 0) ? data.partnerStores : [];
+  const creatorShowcaseProducts = (data?.pinnedProducts && data.pinnedProducts.length > 0)
+    ? data.pinnedProducts.map((p: any) => p.product || p)
+    : [];
+  const creatorEvents = (data?.creatorEvents || []) as any[];
 
   // Banners com scroll interno horizontal contínuo ao lado da foto de perfil
   const bannerList = useMemo(() => {
@@ -194,24 +197,26 @@ export function MemberPublicProfileView({
     ? profile.username.slice(0, 2).toUpperCase()
     : "WD";
 
- const [isFollowing, setIsFollowing] = useState(Boolean(data?.isFollowing));
- const [followersCount, setFollowersCount] = useState(stats.followersCount || 0);
- const [isFollowLoading, setIsFollowLoading] = useState(false);
+  const [isFollowing, setIsFollowing] = useState(Boolean(data?.isFollowing));
+  const [followersCount, setFollowersCount] = useState(stats.followersCount || 0);
+  const [isFollowLoading, setIsFollowLoading] = useState(false);
 
- // Resume data do perfil
- const [resumeData, setResumeData] = useState<any>(profile?.resume_data || {});
- const [isSavingResume, setIsSavingResume] = useState(false);
- const [isSettingsOpen, setIsSettingsOpen] = useState(false);
- const [socialTab, setSocialTab] = useState<"posts" | "media" | "saved" | "liked" | "events">("posts");
- const [postViewMode, setPostViewMode] = useState<"feed" | "grid">("grid");
+  // Resume data do perfil
+  const [resumeData, setResumeData] = useState<any>(profile?.resume_data || {});
+  const [isSavingResume, setIsSavingResume] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [socialTab, setSocialTab] = useState<"posts" | "media" | "saved" | "liked" | "events">("posts");
+  const [postViewMode, setPostViewMode] = useState<"feed" | "grid">("grid");
 
- // Lightbox Modal para fotos individuais
- const [previewMediaUrl, setPreviewMediaUrl] = useState<string | null>(null);
- const [selectedLightboxPost, setSelectedLightboxPost] = useState<any | null>(null);
- const [selectedLightboxIndex, setSelectedLightboxIndex] = useState<number>(0);
+  // Lightbox Modal para fotos individuais
+  const [previewMediaUrl, setPreviewMediaUrl] = useState<string | null>(null);
+  const [selectedLightboxPost, setSelectedLightboxPost] = useState<any | null>(null);
+  const [selectedLightboxIndex, setSelectedLightboxIndex] = useState<number>(0);
 
- // Modais de Edição Rápida In-Place
- const [editingSection, setEditingSection] = useState<
+  // Modais de Edição Rápida In-Place
+  const [isProfileInPageEditorOpen, setIsProfileInPageEditorOpen] = useState(false);
+  const [editorInitialTab, setEditorInitialTab] = useState<"identidade" | "links" | "vitrine">("identidade");
+  const [editingSection, setEditingSection] = useState<
  | "availability"
  | "about"
  | "experience"
@@ -404,7 +409,7 @@ export function MemberPublicProfileView({
       {/* ── 2. Seletor de Tipo de Perfil & Ação Editar (Abaixo do Top Bar) ── */}
       <div className="flex items-center justify-between gap-2 px-1">
         {/* Switcher de Modos: Social, Profissional, Comercial / Vitrine */}
-        <div className="flex items-center gap-1 p-1 rounded-lg bg-muted/40 text-xs font-semibold">
+        <div className="flex flex-nowrap overflow-x-auto no-scrollbar tab-list items-center gap-1 p-1 rounded-lg bg-muted/40 text-xs font-semibold">
           {isCreator ? (
             <>
               <Link
@@ -412,9 +417,9 @@ export function MemberPublicProfileView({
                 params={{ id: profile.username || profile.id }}
                 search={{ modo: "comercial" }}
                 className={cn(
-                  "px-4 py-2 rounded-lg transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                  "h-11 min-h-11 px-4 inline-flex items-center justify-center shrink-0 rounded-lg transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                   activeMode === "comercial"
-                    ? "bg-background text-foreground font-bold "
+                    ? "bg-background text-foreground font-bold"
                     : "text-muted-foreground hover:text-foreground"
                 )}
               >
@@ -425,9 +430,9 @@ export function MemberPublicProfileView({
                 params={{ id: profile.username || profile.id }}
                 search={{ modo: "social" }}
                 className={cn(
-                  "px-4 py-2 rounded-lg transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                  "h-11 min-h-11 px-4 inline-flex items-center justify-center shrink-0 rounded-lg transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                   activeMode === "social"
-                    ? "bg-background text-foreground font-bold "
+                    ? "bg-background text-foreground font-bold"
                     : "text-muted-foreground hover:text-foreground"
                 )}
               >
@@ -438,9 +443,9 @@ export function MemberPublicProfileView({
                 params={{ id: profile.username || profile.id }}
                 search={{ modo: "profissional" }}
                 className={cn(
-                  "px-4 py-2 rounded-lg transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                  "h-11 min-h-11 px-4 inline-flex items-center justify-center shrink-0 rounded-lg transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                   activeMode === "profissional"
-                    ? "bg-background text-foreground font-bold "
+                    ? "bg-background text-foreground font-bold"
                     : "text-muted-foreground hover:text-foreground"
                 )}
               >
@@ -454,9 +459,9 @@ export function MemberPublicProfileView({
                 params={{ id: profile.username || profile.id }}
                 search={{ modo: "social" }}
                 className={cn(
-                  "px-4 py-2 rounded-lg transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                  "h-11 min-h-11 px-4 inline-flex items-center justify-center shrink-0 rounded-lg transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                   activeMode === "social"
-                    ? "bg-background text-foreground font-bold "
+                    ? "bg-background text-foreground font-bold"
                     : "text-muted-foreground hover:text-foreground"
                 )}
               >
@@ -467,9 +472,9 @@ export function MemberPublicProfileView({
                 params={{ id: profile.username || profile.id }}
                 search={{ modo: "profissional" }}
                 className={cn(
-                  "px-4 py-2 rounded-lg transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                  "h-11 min-h-11 px-4 inline-flex items-center justify-center shrink-0 rounded-lg transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                   activeMode === "profissional"
-                    ? "bg-background text-foreground font-bold "
+                    ? "bg-background text-foreground font-bold"
                     : "text-muted-foreground hover:text-foreground"
                 )}
               >
@@ -480,9 +485,9 @@ export function MemberPublicProfileView({
                 params={{ id: profile.username || profile.id }}
                 search={{ modo: "comercial" }}
                 className={cn(
-                  "px-4 py-2 rounded-lg transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                  "h-11 min-h-11 px-4 inline-flex items-center justify-center shrink-0 rounded-lg transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                   activeMode === "comercial"
-                    ? "bg-background text-foreground font-bold "
+                    ? "bg-background text-foreground font-bold"
                     : "text-muted-foreground hover:text-foreground"
                 )}
               >
@@ -492,48 +497,66 @@ export function MemberPublicProfileView({
           )}
         </div>
 
-        {/* Botão de Edição Rápida */}
+        {/* Botão de Edição Rápida In-Page */}
         {isOwner && (
           <div className="flex items-center gap-2">
-            {isCreator ? (
-              <Button
-                asChild
-                size="sm"
-                variant="outline"
-                className="h-11 min-h-11 min-h-11 px-4 rounded-lg text-xs font-semibold gap-2 border-border/70 sm:hidden cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-              >
-                <Link to="/conta/perfil" search={{ tab: "criador" }}>
-                  <Layers className="size-4 text-primary" />
-                  <span>Editar Vitrine</span>
-                </Link>
-              </Button>
-            ) : (
-              <Button
-                asChild
-                size="sm"
-                variant="outline"
-                className="h-11 min-h-11 min-h-11 px-4 rounded-lg text-xs font-semibold gap-2 border-border/70 sm:hidden cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-              >
-                <Link to="/conta/perfil" search={{ tab: "dados" }}>
-                  <Edit3 className="size-4" />
-                  <span>Editar Perfil</span>
-                </Link>
-              </Button>
-            )}
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                setEditorInitialTab(activeMode === "comercial" ? "vitrine" : "identidade");
+                setIsProfileInPageEditorOpen(true);
+              }}
+              className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold gap-2 border-border/70 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            >
+              <Edit3 className="size-4" />
+              <span>{activeMode === "comercial" ? "Editar Vitrine" : "Editar Perfil"}</span>
+            </Button>
           </div>
         )}
       </div>
 
-      {/* ── Bloco 1: Header do Perfil (Foto de Perfil + Banner ao lado com Scroll Interno + Stats no final) ── */}
-      <div className="rounded-lg bg-card border border-border/40 p-4 sm:p-6 space-y-5">
-        {/* Linha Superior Panorâmica: Foto + Banner ao lado com Scroll Interno + Stats no Final */}
-        <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-3 sm:gap-4">
-          
-          {/* Lado Esquerdo: Foto de Perfil 1:1 + Banner ao Lado com Scroll Interno */}
-          <div className="flex flex-row items-center gap-3 sm:gap-4 flex-1 min-w-0">
-            {/* Foto de Perfil em Squircle 1:1 */}
+      {/* ── Bloco 1: Header do Perfil (Capa Full-Bleed Twitter-Style + Avatar Sobreposto + Stats em Linha) ── */}
+      <div className="rounded-lg bg-card border border-border/40 overflow-hidden">
+        {/* Capa Panorâmica Superior 4:1 (sem scroll interno) */}
+        {/* design-lint-ignore DL-02 reason:"Aspect ratio canonico da capa panoramica de perfil" expiry:"2027-12-31" */}
+        <div className="w-full aspect-[3/1] sm:aspect-[4/1] bg-muted/30 relative overflow-hidden group">
+          {profile?.cover_url || profile?.coverUrl ? (
+            <img
+              src={profile.cover_url || profile.coverUrl}
+              alt="Capa do Perfil"
+              className="size-full object-cover select-none"
+            />
+          ) : (
+            <div className="size-full bg-muted/40 from-primary/10 via-muted/40 to-primary/15 flex items-center justify-center text-muted-foreground/60 gap-2 text-xs font-medium">
+              <Camera className="size-5 text-primary/30" />
+              <span>Espaço para foto de capa</span>
+            </div>
+          )}
+
+          {isOwner && (
+            <button
+              type="button"
+              onClick={() => {
+                setEditorInitialTab("identidade");
+                setIsProfileInPageEditorOpen(true);
+              }}
+              className="absolute top-3 right-3 bg-background/85 hover:bg-background text-foreground backdrop-blur-md px-3 py-2 rounded-lg border border-border/60 text-xs font-semibold flex items-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-colors z-20 h-11 min-h-11"
+              title="Alterar Capa"
+            >
+              <Camera className="size-3.5" />
+              <span>Alterar Capa</span>
+            </button>
+          )}
+        </div>
+
+        {/* Área de Dados: Avatar Sobreposto com margem negativa e Linha de Informações */}
+        <div className="p-4 sm:p-6 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 -mt-14 sm:-mt-18">
+            {/* Avatar 1:1 Squircle com Anel de Borda */}
             <div className="relative group shrink-0">
-              <Avatar className="size-20 sm:size-24 md:size-28 lg:size-32 rounded-lg ring-2 ring-border/60 bg-muted shrink-0 overflow-hidden flex items-center justify-center">
+              <Avatar className="size-20 sm:size-24 md:size-28 rounded-lg ring-4 ring-card bg-muted shrink-0 overflow-hidden flex items-center justify-center">
                 {avatarSrc ? (
                   <AvatarImage
                     src={avatarSrc}
@@ -541,246 +564,149 @@ export function MemberPublicProfileView({
                     className="object-cover size-full"
                   />
                 ) : null}
-                <AvatarFallback className="text-xl sm:text-2xl md:text-3xl font-black bg-muted/40 from-primary/15 via-muted to-muted/80 text-foreground rounded-lg flex items-center justify-center select-none">
+                <AvatarFallback className="text-xl sm:text-2xl md:text-3xl font-black bg-muted text-foreground rounded-lg flex items-center justify-center select-none">
                   {avatarInitials}
                 </AvatarFallback>
               </Avatar>
               {isOwner && (
-                <Link
-                  to="/conta/perfil"
-                  search={{ tab: isCreator ? "criador" : "dados" }}
-                  className="absolute inset-0 bg-card/40 text-primary-foreground rounded-lg opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-xs font-semibold gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditorInitialTab("identidade");
+                    setIsProfileInPageEditorOpen(true);
+                  }}
+                  className="absolute inset-0 bg-foreground/40 text-background rounded-lg opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-xs font-semibold gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                   title="Alterar Foto"
                 >
                   <Camera className="size-4 sm:size-5" />
                   <span className="text-xs">Alterar</span>
-                </Link>
+                </button>
               )}
             </div>
 
-            {/* Banner AO LADO da Foto de Perfil com Scroll Interno */}
-            <div className="flex-1 min-w-0 h-20 sm:h-24 md:h-28 lg:h-32 rounded-lg border border-border/40 bg-muted/20 relative overflow-hidden flex items-center">
-              <div 
-                tabIndex={0}
-                aria-label="Galeria de banners do perfil"
-                className="size-full overflow-x-auto carousel overflow-y-hidden no-scrollbar scroll-smooth flex items-center gap-2 p-1 snap-x snap-mandatory"
-              >
-                {bannerList.length > 0 ? (
-                  bannerList.map((banner, idx) => (
-                    <div
-                      key={idx}
-                      className="h-full min-w-full sm:min-w-72 md:min-w-80 lg:min-w-96 rounded-lg overflow-hidden relative shrink-0 snap-center bg-muted/40 group"
-                    >
-                      <img
-                        src={banner.imageUrl}
-                        alt={banner.title || "Banner do perfil"}
-                        className="size-full object-cover select-none rounded-lg"
-                      />
-                      {banner.link && (
-                        <a
-                          href={banner.link}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="absolute inset-0 z-10"
-                          aria-label="Abrir link do banner"
-                        />
-                      )}
-                    </div>
-                  ))
-                ) : (
-                  <div className="size-full bg-muted/40 from-primary/10 via-muted/40 to-primary/15 flex items-center justify-center rounded-lg text-muted-foreground/60 gap-2 text-xs font-medium">
-                    <Layers className="size-5 text-primary/30" />
-                    <span>Espaço para banner promocional</span>
-                  </div>
-                )}
-              </div>
-
-              {isOwner && (
-                <Link
-                  to="/conta/perfil"
-                  search={{ tab: isCreator ? "criador" : "dados" }}
-                  className="absolute top-2 right-2 bg-background/85 hover:bg-background text-foreground backdrop-blur-md px-2 sm:px-3 py-1 rounded-lg border border-border/60 text-xs sm:text-xs font-semibold flex items-center gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-colors z-20"
+            {/* Ações do Topo Alinhadas com o Avatar */}
+            <div className="flex items-center gap-2 self-start sm:self-end">
+              {isOwner ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setEditorInitialTab("identidade");
+                    setIsProfileInPageEditorOpen(true);
+                  }}
+                  className="h-11 min-h-11 px-4 rounded-lg text-xs font-bold border-border/70 hover:bg-muted/40 text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 >
-                  <Camera className="size-3" />
-                  <span className="hidden sm:inline">Alterar Capa</span>
-                </Link>
+                  <Edit3 className="size-3.5 mr-2" />
+                  <span>{isBrandPersonaView ? "Editar Marca" : "Editar Perfil"}</span>
+                </Button>
+              ) : (
+                <>
+                  <Button
+                    className={cn(
+                      "h-11 min-h-11 px-4 rounded-lg font-bold text-xs gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-colors",
+                      isFollowing
+                        ? "bg-transparent border border-border/60 text-muted-foreground hover:bg-muted/40 hover:text-foreground"
+                        : "bg-primary text-primary-foreground"
+                    )}
+                    onClick={handleToggleFollow}
+                    disabled={isFollowLoading}
+                  >
+                    {isFollowing ? (
+                      <>
+                        <Check className="size-3.5" />
+                        <span>Seguindo</span>
+                      </>
+                    ) : (
+                      <>
+                        <Plus className="size-3.5" />
+                        <span>Seguir</span>
+                      </>
+                    )}
+                  </Button>
+                  {profile.phone && (
+                    <Button
+                      asChild
+                      variant="outline"
+                      className="h-11 min-h-11 px-3 rounded-lg font-semibold text-xs gap-2 border-border/50 bg-transparent hover:bg-muted/40 text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    >
+                      <a
+                        href={`https://wa.me/${profile.phone.replace(/\D/g, "")}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <MessageCircle className="size-3.5 text-emerald-500" />
+                        <span>Mensagem</span>
+                      </a>
+                    </Button>
+                  )}
+                  <Button
+                    variant="outline"
+                    className="h-11 min-h-11 size-11 p-0 rounded-lg text-muted-foreground hover:text-foreground border border-border/50 bg-transparent hover:bg-muted/40 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    onClick={handleShare}
+                    aria-label="Compartilhar Perfil"
+                  >
+                    <Share2 className="size-3.5" />
+                  </Button>
+                </>
               )}
             </div>
           </div>
 
-          {/* Stats no Final (Seguidores, Seguindo, Curtidas) em Linha Horizontal Unificada */}
-          <div className="h-auto py-2 sm:py-3 px-3 sm:px-4 lg:min-w-64 shrink-0 bg-muted/20 rounded-lg border border-border/40 flex items-center justify-center">
-            <div className="grid grid-cols-3 divide-x divide-border/30 text-center w-full">
-              <div className="px-1">
-                <p className="text-sm sm:text-base font-black text-foreground">{followersCount}</p>
-                <p className="text-xs text-muted-foreground font-medium truncate">Seguidores</p>
+          {/* Nome, Handle e Bio Completa (280 Caracteres) */}
+          <div className="space-y-2 pt-1">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h1 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight">
+                  {profile.full_name}
+                </h1>
+                {profile.is_verified && (
+                  <ShieldCheck className="size-4 text-primary fill-primary/20 shrink-0" />
+                )}
+                {profile.username && (
+                  <span className="text-xs sm:text-sm font-medium text-muted-foreground">
+                    @{profile.username}
+                  </span>
+                )}
+                {isCreator && (
+                  <Badge variant="outline" className="text-xs py-0 px-2 border-primary/30 text-primary">
+                    {isBrandPersonaView ? "Marca / Criador" : "Criador Oficial"}
+                  </Badge>
+                )}
               </div>
-              <div className="px-1">
-                <p className="text-sm sm:text-base font-black text-foreground">{stats.followingCount || 0}</p>
-                <p className="text-xs text-muted-foreground font-medium truncate">Seguindo</p>
-              </div>
-              <div className="px-1">
-                <p className="text-sm sm:text-base font-black text-foreground font-mono">{stats.totalLikes || stats.postsCount || 0}</p>
-                <p className="text-xs text-muted-foreground font-medium truncate">Curtidas</p>
-              </div>
+              {profile.occupation && (
+                <p className="text-xs font-semibold text-muted-foreground">
+                  {profile.occupation}
+                </p>
+              )}
             </div>
-          </div>
-        </div>
 
-  {/* Linha de Identidade e Ações Minimalistas */}
-  <div className="pt-2 border-t border-border/30 space-y-3">
-  {/* Nome, Username, Avaliação Real de Empresas e Menu */}
-  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-  <div className="space-y-1">
-  <div className="flex items-center gap-2 flex-wrap">
-  <h1 className="text-xl md:text-2xl font-bold text-foreground tracking-tight text-balance line-clamp-2">
-  {profile.full_name}
-  </h1>
-  {profile.is_verified && (
-  <ShieldCheck className="size-4 text-primary fill-primary/20 shrink-0" />
-  )}
-  {profile.username && (
-  <span className="text-xs sm:text-sm font-medium text-muted-foreground">
-  @{profile.username}
-  </span>
-  )}
-
-  {/* AVALIAÇÃO REAL AO LADO DO NOME (PARA EMPRESAS / MARCAS / LOJAS — ZERO MOCKS) */}
-  {isEnterpriseOrBrand && (
-    realStoreReviewsCount > 0 && realStoreRating !== null ? (
-      <span className="inline-flex items-center gap-1 px-3 py-1 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 font-bold text-xs border border-amber-500/20">
-        <Star className="size-4 fill-amber-500 text-amber-500" />
-        <span>{realStoreRating.toFixed(1)}</span>
-        <span className="text-xs font-medium text-muted-foreground">({realStoreReviewsCount})</span>
-      </span>
-    ) : (
-      <span className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-muted text-muted-foreground text-xs text-muted-foreground/75 font-medium border border-border/50">
-        Sem avaliações ainda
-      </span>
-    )
-  )}
-  </div>
-
- {profile.occupation && (
- <div className="pt-1">
- <span className="px-3 py-1 rounded-lg text-xs text-muted-foreground/75 font-semibold border border-border/50 bg-transparent text-muted-foreground">
- {profile.occupation}
- </span>
- </div>
- )}
- </div>
-
-          {/* Ações Minimalistas em Linha Compacta (Scroll Horizontal com Snap no Mobile) */}
-          <div className="flex items-center gap-2 overflow-x-auto carousel no-scrollbar py-1 max-w-full sm:flex-wrap snap-x snap-mandatory">
-            {isOwner ? (
-              <>
-                <Button
-                  asChild
-                  size="sm"
-                  variant="outline"
-                  className="h-11 min-h-11 px-3 rounded-lg font-semibold text-xs gap-2 shrink-0 snap-start border-border/50 bg-transparent hover:bg-muted/40 text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                >
-                  <Link to="/conta/metricas">
-                    <Activity className="size-4 text-muted-foreground" />
-                    <span>Painel de Insights</span>
-                  </Link>
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="h-11 min-h-11 px-3 rounded-lg font-semibold text-xs gap-2 shrink-0 snap-start border-border/50 bg-transparent hover:bg-muted/40 text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                  onClick={() => setEditingSection("availability")}
-                >
-                  <span>Disponibilidade</span>
-                </Button>
-                {isCreator ? (
-                  <Button
-                    asChild
-                    size="sm"
-                    variant="outline"
-                    className="hidden sm:inline-flex h-11 min-h-11 px-3 rounded-lg font-semibold text-xs gap-2 shrink-0 snap-start cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                  >
-                    <Link to="/conta/perfil" search={{ tab: "criador" }}>
-                      <Layers className="size-4 text-primary" />
-                      <span>Editar Vitrine</span>
-                    </Link>
-                  </Button>
-                ) : (
-                  <Button
-                    asChild
-                    size="sm"
-                    variant="outline"
-                    className="hidden sm:inline-flex h-11 min-h-11 px-3 rounded-lg font-semibold text-xs gap-2 shrink-0 snap-start cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                  >
-                    <Link to="/conta/perfil" search={{ tab: "dados" }}>
-                      <Edit3 className="size-4" />
-                      <span>Editar Perfil</span>
-                    </Link>
-                  </Button>
-                )}
-              </>
-            ) : (
-              <>
-                <Button
-                  size="sm"
-                  className={cn(
-                    "h-11 min-h-11 px-4 rounded-lg font-bold text-xs gap-2 shrink-0 snap-start cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-colors motion-reduce:transition-none",
-                    isFollowing ? "bg-transparent border border-border/60 text-muted-foreground hover:bg-muted/40 hover:text-foreground" : "bg-primary text-primary-foreground "
-                  )}
-                  onClick={handleToggleFollow}
-                  disabled={isFollowLoading}
-                >
-                  {isFollowing ? (
-                    <>
-                      <Check className="size-4" />
-                      <span>Seguindo</span>
-                    </>
-                  ) : (
-                    <>
-                      <Plus className="size-4" />
-                      <span>Seguir</span>
-                    </>
-                  )}
-                </Button>
-                {profile.phone && (
-                  <Button
-                    asChild
-                    size="sm"
-                    variant="outline"
-                    className="h-11 min-h-11 px-3 rounded-lg font-semibold text-xs gap-2 shrink-0 snap-start border-border/50 bg-transparent hover:bg-muted/40 text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                  >
-                    <a
-                      href={`https://wa.me/${profile.phone.replace(/\D/g, "")}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      <MessageCircle className="size-4 text-emerald-500" />
-                      <span>Mensagem</span>
-                    </a>
-                  </Button>
-                )}
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="h-11 min-h-11 size-11 min-size-11 p-0 rounded-lg shrink-0 text-muted-foreground hover:text-foreground border border-border/50 bg-transparent hover:bg-muted/40 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                  onClick={handleShare}
-                  aria-label="Compartilhar Perfil"
-                >
-                  <Share2 className="size-4" />
-                </Button>
-              </>
+            {/* Bio Rica (280 Caracteres) com parser formatador integral */}
+            {(profile.bio || profile.headline) && (
+              <div className="max-w-xl">
+                <RichBioContent content={profile.bio || profile.headline} />
+              </div>
             )}
+
+            {/* Estatísticas Nativas Twitter-Style em Linha Única */}
+            <div className="flex items-center gap-4 text-xs pt-1">
+              <span className="inline-flex items-center gap-1">
+                <strong className="font-bold text-foreground">{stats.followingCount || 0}</strong>
+                <span className="text-muted-foreground">Seguindo</span>
+              </span>
+              <span className="inline-flex items-center gap-1">
+                <strong className="font-bold text-foreground">{followersCount}</strong>
+                <span className="text-muted-foreground">Seguidores</span>
+              </span>
+              {(stats.totalLikes || stats.postsCount) ? (
+                <span className="inline-flex items-center gap-1">
+                  <strong className="font-bold text-foreground font-mono">{stats.totalLikes || stats.postsCount}</strong>
+                  <span className="text-muted-foreground">Curtidas</span>
+                </span>
+              ) : null}
+            </div>
           </div>
         </div>
-
- {/* Bio / Descrição Formatada com Limite & Expansão */}
- {(profile.bio || profile.headline) && (
- <div className="space-y-1 max-w-xl">
- <p className="text-xs sm:text-sm text-foreground/90 font-medium leading-relaxed whitespace-pre-line break-words">
- {profile.bio || profile.headline}
- </p>
- </div>
- )}
+      </div>
 
  {/* Links e Localização Minimalistas */}
  <div className="flex flex-wrap items-center gap-3 pt-1 text-xs">
@@ -816,7 +742,6 @@ export function MemberPublicProfileView({
  )}
  </div>
 
- {/* Botões de Ação Personalizados / Links na Bio Compactos */}
  {/* Botões de Ação & Biolinks (Banners Gráficos ou Botões Limpos) */}
  {Array.isArray(profile.biolinks) && profile.biolinks.length > 0 && (
  <div className="space-y-3 pt-2 max-w-xl">
@@ -837,7 +762,7 @@ export function MemberPublicProfileView({
  className="size-full object-cover group-hover:scale-102 transition-transform duration-300"
  />
  <div className="absolute inset-0 bg-background/80 from-black/75 via-black/25 to-transparent flex flex-col justify-end p-3">
- <span className="text-xs font-bold text-primary-foreground drop- truncate flex items-center justify-between gap-1">
+ <span className="text-xs font-bold text-primary-foreground break-words text-wrap leading-tight flex items-center justify-between gap-1">
  <span>{link.label || link.title || "Acessar"}</span>
  <ExternalLink className="size-3 text-primary-foreground/80 shrink-0" />
  </span>
@@ -882,7 +807,7 @@ export function MemberPublicProfileView({
  className="size-full object-cover group-hover:scale-102 transition-transform duration-300"
  />
  <div className="absolute inset-0 bg-background/80 from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3">
- <span className="text-xs text-muted-foreground/75 font-bold text-primary-foreground flex items-center gap-1 drop-">
+ <span className="text-xs font-bold text-primary-foreground flex items-center gap-1">
  <span>Acessar</span>
  <ExternalLink className="size-3" />
  </span>
@@ -900,22 +825,20 @@ export function MemberPublicProfileView({
  onClick={() => hl.cover_url && setPreviewMediaUrl(hl.cover_url)}
  className="flex flex-col items-center gap-2 shrink-0 group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
  >
- <div className="size-14 sm:size-16 rounded-full p-1 ring-2 ring-primary/40 group-hover:ring-primary group-hover:scale-105 transition-colors motion-reduce:transition-none bg-background overflow-hidden flex items-center justify-center">
+ <div className="size-14 sm:size-16 rounded-lg p-1 ring-2 ring-primary/40 group-hover:ring-primary group-hover:scale-105 transition-colors motion-reduce:transition-none bg-background overflow-hidden flex items-center justify-center">
  {hl.cover_url ? (
- <img src={hl.cover_url} alt={hl.title} className="size-full object-cover rounded-full" />
+ <img src={hl.cover_url} alt={hl.title} className="size-full object-cover rounded-lg" />
  ) : (
  <Star className="size-6 text-primary" />
  )}
  </div>
- <span className="text-xs text-muted-foreground/75 font-bold text-foreground/90 max-w-16 truncate text-center">
+ <span className="text-xs font-bold text-foreground/90 max-w-20 break-words text-wrap leading-tight text-center">
  {hl.title}
  </span>
  </div>
  ))}
  </div>
  )}
- </div>
- </div>
 
  {/* ── Bloco 2: Perfil Profissional Corporativo (Quando modo === "profissional") ── */}
  {activeMode === "profissional" && (
@@ -1325,7 +1248,7 @@ export function MemberPublicProfileView({
  </h3>
  </div>
  {lic.specialty && (
- <p className="text-xs text-foreground/80 font-medium truncate">
+ <p className="text-xs text-foreground/80 font-medium break-words text-wrap leading-tight">
  {lic.specialty}
  </p>
  )}
@@ -1848,7 +1771,7 @@ export function MemberPublicProfileView({
  )}
  </div>
  <div className="space-y-1 min-w-0 flex-1">
- <h4 className="text-sm font-bold text-foreground truncate">{evt.title}</h4>
+ <h4 className="text-sm font-bold text-foreground break-words text-wrap leading-tight">{evt.title}</h4>
  <p className="text-xs text-muted-foreground">
  {evt.event_date ? formatDate(evt.event_date) : "Data a definir"} • {evt.location || evt.city || "Chapecó"}
  </p>
@@ -1865,17 +1788,45 @@ export function MemberPublicProfileView({
  </div>
  )}
 
- {/* ── Bloco 4: Perfil Comercial / Vitrine da Marca ou Classificados Pessoais ── */}
+ {/* ── Bloco 4: Perfil Comercial Unificado (Vitrine de Marca, Marcas Próprias, Lojas Parceiras, Produtos, Eventos e Classificados) ── */}
  {activeMode === "comercial" && (
- <div className="space-y-6">
- {isCreator ? (
- /* Vitrine Pública de Criador / Marca */
  <div className="space-y-8">
- {(creatorProfile?.showcase_order || ["banner", "stores", "products", "events"]).map((sectionKey: string) => {
+ {isOwner && (
+ <div className="p-4 rounded-lg border border-border/60 bg-card flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+ <div className="space-y-1">
+ <h2 className="text-sm font-bold text-foreground">Gestão In-Page da Vitrine</h2>
+ <p className="text-xs text-muted-foreground">
+ Personalize o banner, vincule suas próprias marcas, conecte lojas parceiras e ordene as seções sem sair da página.
+ </p>
+ </div>
+ <Button
+ type="button"
+ variant="outline"
+ onClick={() => {
+ setEditorInitialTab("vitrine");
+ setIsProfileInPageEditorOpen(true);
+ }}
+ className="h-11 min-h-11 px-4 rounded-lg text-xs font-bold gap-2 shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+ >
+ <Edit3 className="size-4 text-primary" />
+ <span>Configurar Vitrine & Afiliado</span>
+ </Button>
+ </div>
+ )}
+
+ {(() => {
+ const rawOrder = Array.isArray(creatorProfile?.showcase_order) && creatorProfile.showcase_order.length > 0
+ ? creatorProfile.showcase_order
+ : ["banner", "own_brands", "stores", "products", "events"];
+ const orderedSections = rawOrder.includes("own_brands")
+ ? rawOrder
+ : ["banner", "own_brands", ...rawOrder.filter((k: string) => k !== "banner")];
+
+ return orderedSections.map((sectionKey: string) => {
  if (sectionKey === "banner" && creatorProfile?.banner_url) {
  return (
  <div key="banner" className="space-y-3">
- <div className="aspect-video sm:aspect-video w-full rounded-lg overflow-hidden relative border border-border/40">
+ <div className="aspect-video w-full rounded-lg overflow-hidden relative border border-border/40">
  <img
  src={creatorProfile.banner_url}
  alt={creatorProfile.banner_title || "Banner da marca"}
@@ -1885,12 +1836,12 @@ export function MemberPublicProfileView({
  <span className="text-xs uppercase tracking-wider font-semibold text-primary-foreground/80">
  Destaque da Marca
  </span>
- <h3 className="text-lg sm:text-2xl font-black">
+ <h3 className="text-lg sm:text-2xl font-black break-words text-wrap leading-tight">
  {creatorProfile.banner_title || "Novidades & Recomendações"}
  </h3>
  {creatorProfile.banner_link && (
  <div className="pt-2">
- <Button asChild size="sm" className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold gap-2 bg-card text-foreground hover:bg-card/90">
+ <Button asChild variant="outline" size="sm" className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold gap-2 bg-card text-foreground hover:bg-card/90">
  <a href={creatorProfile.banner_link} target="_blank" rel="noopener noreferrer">
  <span>Acessar Destaque</span>
  <ExternalLink className="size-4" />
@@ -1899,6 +1850,60 @@ export function MemberPublicProfileView({
  </div>
  )}
  </div>
+ </div>
+ </div>
+ );
+ }
+
+ if (sectionKey === "own_brands" && ownBrandStores.length > 0) {
+ return (
+ <div key="own_brands" className="space-y-4">
+ <div>
+ <h3 className="text-base font-bold text-foreground tracking-tight flex items-center gap-2">
+ <Store className="size-4 text-primary" />
+ <span>Minhas Marcas e Empresas Oficiais</span>
+ </h3>
+ <p className="text-xs text-muted-foreground">
+ Negócios e operações próprias geridas diretamente por este perfil.
+ </p>
+ </div>
+
+ <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+ {ownBrandStores.map((s: any) => (
+ <Link
+ key={s.id}
+ to="/perfil-da-loja"
+ search={{ slug: s.slug }}
+ className="p-5 rounded-lg border border-border/60 bg-card hover:border-primary/40 transition-colors flex flex-col justify-between gap-4 group"
+ >
+ <div className="flex items-start gap-4">
+ <div className="size-14 rounded-lg bg-muted/60 flex items-center justify-center overflow-hidden shrink-0 border border-border/40">
+ {s.logo_url || s.logoUrl ? (
+ <img src={s.logo_url || s.logoUrl} alt={s.name} className="size-full object-cover" />
+ ) : (
+ <Store className="size-6 text-primary" />
+ )}
+ </div>
+ <div className="space-y-1 min-w-0 flex-1">
+ <div className="flex items-center gap-2 flex-wrap">
+ <h4 className="text-base font-bold text-foreground break-words text-wrap leading-tight group-hover:text-primary transition-colors">
+ {s.name}
+ </h4>
+ <Badge variant="outline" className="text-xs border-primary/30 text-primary">
+ Marca Própria
+ </Badge>
+ </div>
+ <p className="text-xs text-muted-foreground break-words text-wrap leading-tight">
+ {s.description || `${s.city || "Chapecó"} • ${s.segment || "Operação Oficial"}`}
+ </p>
+ </div>
+ </div>
+ <div className="w-full h-11 min-h-11 rounded-lg bg-muted/40 group-hover:bg-muted text-xs font-semibold flex items-center justify-center gap-2 text-foreground transition-colors">
+ <span>Ver Loja</span>
+ <ArrowRight className="size-4" />
+ </div>
+ </Link>
+ ))}
  </div>
  </div>
  );
@@ -1913,7 +1918,7 @@ export function MemberPublicProfileView({
  <span>Lojas Parceiras com Cupons Exclusivos</span>
  </h3>
  <p className="text-xs text-muted-foreground">
- Utilize meus cupons nas compras para garantir 10% de desconto.
+ Utilize meus cupons nas compras para garantir benefícios exclusivos como afiliado.
  </p>
  </div>
 
@@ -1935,8 +1940,8 @@ export function MemberPublicProfileView({
  )}
  </div>
  <div className="space-y-1 min-w-0">
- <h4 className="text-sm font-bold text-foreground truncate">{s.name}</h4>
- <p className="text-xs text-muted-foreground truncate">{s.city} • {s.segment || "Varejo"}</p>
+ <h4 className="text-sm font-bold text-foreground break-words text-wrap leading-tight">{s.name}</h4>
+ <p className="text-xs text-muted-foreground break-words text-wrap leading-tight">{s.city} • {s.segment || "Varejo"}</p>
  </div>
  </div>
 
@@ -1960,7 +1965,7 @@ export function MemberPublicProfileView({
  </Button>
  </div>
 
- <Button asChild size="sm" className="w-full h-11 min-h-11 rounded-lg text-xs font-semibold gap-2">
+ <Button asChild variant="outline" size="sm" className="w-full h-11 min-h-11 rounded-lg text-xs font-semibold gap-2">
  <Link to="/c/$storeSlug" params={{ storeSlug: s.slug }} search={{ ref: creatorProfile?.handle || profile.username, coupon: couponCode }}>
  <span>Visitar Loja com Cupom</span>
  <ArrowRight className="size-4" />
@@ -2022,7 +2027,7 @@ export function MemberPublicProfileView({
  <span className="text-xs text-muted-foreground uppercase font-medium">
  {p.storeName || p.store?.name || "Loja Parceira"}
  </span>
- <h4 className="text-sm font-bold text-foreground line-clamp-1 group-hover:text-primary transition-colors">
+ <h4 className="text-sm font-bold text-foreground break-words text-wrap leading-tight group-hover:text-primary transition-colors">
  {p.name}
  </h4>
  {p.description && (
@@ -2033,7 +2038,7 @@ export function MemberPublicProfileView({
 
  <div className="p-4 pt-0">
  <div className="w-full h-11 min-h-11 rounded-lg bg-muted/40 hover:bg-muted text-xs font-semibold flex items-center justify-center gap-2 text-foreground">
- <span>Ver Detalhes do Produto</span>
+ <span>Ver Oferta</span>
  <ArrowRight className="size-4" />
  </div>
  </div>
@@ -2051,7 +2056,7 @@ export function MemberPublicProfileView({
  <div>
  <h3 className="text-base font-bold text-foreground tracking-tight flex items-center gap-2">
  <Calendar className="size-4 text-primary" />
- <span>Agenda e Próximos Eventos da Marca</span>
+ <span>Agenda e Próximos Eventos</span>
  </h3>
  <p className="text-xs text-muted-foreground">
  Shows, workshops e apresentações em que participo ou coordeno.
@@ -2075,7 +2080,7 @@ export function MemberPublicProfileView({
  </div>
 
  <div className="space-y-1 min-w-0 flex-1">
- <h4 className="text-sm font-bold text-foreground truncate">{evt.title}</h4>
+ <h4 className="text-sm font-bold text-foreground break-words text-wrap leading-tight">{evt.title}</h4>
  <p className="text-xs text-muted-foreground">
  {evt.event_date ? formatDate(evt.event_date) : "A Confirmar"} • {evt.location || evt.city || "Chapecó"}
  </p>
@@ -2091,45 +2096,13 @@ export function MemberPublicProfileView({
  }
 
  return null;
- })}
- </div>
- ) : (
- /* Perfil Comum (Pessoa Física): Lojas Oficiais e Classificados Pessoais */
- <>
- {stores.length > 0 && (
- <div className="pt-8 space-y-6">
- <h2 className="text-lg font-bold text-foreground tracking-tight">Lojas e Espaços Oficiais</h2>
- <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
- {stores.map((s: any) => (
- <Link
- key={s.id}
- to="/perfil-da-loja"
- search={{ slug: s.slug }}
- className="p-4 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors flex items-center gap-4 group"
- >
- <div className="size-14 rounded-lg bg-background flex items-center justify-center overflow-hidden flex-shrink-0">
- {s.logo_url ? (
- <img src={s.logo_url} alt={s.name} className="size-full object-cover" />
- ) : (
- <Store className="size-6 text-primary" />
- )}
- </div>
- <div className="space-y-1 min-w-0 flex-1">
- <h3 className="text-base font-bold text-foreground truncate group-hover:text-primary transition-colors">
- {s.name}
- </h3>
- <p className="text-xs text-muted-foreground truncate">{s.description || "Loja da Rede Waesy"}</p>
- </div>
- </Link>
- ))}
- </div>
- </div>
- )}
+ });
+ })()}
 
- <div className="pt-8 space-y-6">
+ <div className="pt-4 space-y-6">
  <h2 className="text-lg font-bold text-foreground tracking-tight">Classificados e Desapegos</h2>
  {classifieds.length === 0 ? (
- <div className="py-12 text-center text-muted-foreground space-y-2">
+ <div className="py-12 text-center text-muted-foreground space-y-2 rounded-lg border border-dashed border-border/50 bg-muted/10">
  <ShoppingBag className="size-11 min-size-11 mx-auto text-muted-foreground/40" />
  <p className="text-sm">Nenhum anúncio ativo no momento.</p>
  </div>
@@ -2140,8 +2113,9 @@ export function MemberPublicProfileView({
  key={item.id}
  to="/classificados/$id"
  params={{ id: item.id }}
- className="group rounded-lg bg-muted/20 hover:bg-muted/40 transition-colors motion-reduce:transition-none overflow-hidden flex flex-col"
+ className="group rounded-lg bg-muted/20 hover:bg-muted/40 transition-colors motion-reduce:transition-none overflow-hidden flex flex-col justify-between"
  >
+ <div>
  <div className="aspect-4/3 bg-muted/40 relative overflow-hidden">
  {item.images?.[0] ? (
  <img
@@ -2159,18 +2133,23 @@ export function MemberPublicProfileView({
  </div>
  </div>
  <div className="p-4 space-y-1">
- <h4 className="text-sm font-bold text-foreground truncate group-hover:text-primary transition-colors">
+ <h4 className="text-sm font-bold text-foreground break-words text-wrap leading-tight group-hover:text-primary transition-colors">
  {item.title}
  </h4>
- <p className="text-xs text-muted-foreground truncate">{item.category || "Classificado"}</p>
+ <p className="text-xs text-muted-foreground break-words text-wrap leading-tight">{item.category || "Classificado"}</p>
+ </div>
+ </div>
+ <div className="p-4 pt-0">
+ <div className="w-full h-11 min-h-11 rounded-lg bg-muted/40 group-hover:bg-muted text-xs font-semibold flex items-center justify-center gap-2 text-foreground">
+ <span>Ver Anúncio</span>
+ <ArrowRight className="size-4" />
+ </div>
  </div>
  </Link>
  ))}
  </div>
  )}
  </div>
- </>
- )}
  </div>
  )}
 
@@ -2377,8 +2356,22 @@ export function MemberPublicProfileView({
  }}
  />
  )}
- </>
- )}
+  {isOwner && (
+    <ProfileInPageEditor
+      isOpen={isProfileInPageEditorOpen}
+      onClose={() => setIsProfileInPageEditorOpen(false)}
+      profile={profile}
+      creatorProfile={creatorProfile}
+      isCreator={isCreator}
+      isBrandPersonaView={isBrandPersonaView}
+      availableStores={partnerStores}
+      ownBrandStores={ownBrandStores}
+      pinnedProducts={data?.pinnedProducts || []}
+      initialTab={editorInitialTab}
+    />
+  )}
+  </>
+  )}
  </div>
  );
 }

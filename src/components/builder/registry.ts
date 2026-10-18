@@ -14,6 +14,9 @@ import { TestimonialsSocialProof } from "./blocks/TestimonialsSocialProof";
 import { ContactFormDirect } from "./blocks/ContactFormDirect";
 import { FaqCleanAccordion } from "./blocks/FaqCleanAccordion";
 import { InteractiveQuoteCalculator } from "./blocks/InteractiveQuoteCalculator";
+import { InfiniteMarqueeRibbon } from "./blocks/InfiniteMarqueeRibbon";
+import { InteractiveComparisonSlider } from "./blocks/InteractiveComparisonSlider";
+import { InteractiveLeadQuizFlow } from "./blocks/InteractiveLeadQuizFlow";
 
 import { createClassicOmniBlock } from "./ClassicBlockAdapter";
 
@@ -106,6 +109,9 @@ import type {
   ContactFormBlockData,
   FaqBlockData,
   InteractiveCalculatorBlockData,
+  InfiniteMarqueeBlockData,
+  ComparisonSliderBlockData,
+  LeadQuizBlockData,
 } from "./types";
 
 export const SITE_BUILDER_BLOCKS: SiteBuilderBlockDefinition[] = [
@@ -1307,6 +1313,85 @@ export const SITE_BUILDER_BLOCKS: SiteBuilderBlockDefinition[] = [
       ],
     } as FaqBlockData,
   },
+
+  {
+    id: "infinite_marquee_ribbon",
+    name: "Letreiro Contínuo (Marquee)",
+    category: "hero",
+    description: "Faixa dinâmica contínua com rotação fluida, badges e pausa ao passar o cursor.",
+    capabilities: ["responsive", "motion"],
+    component: InfiniteMarqueeRibbon as any,
+    defaultProps: {
+      title: "Destaques e Vantagens Exclusivas",
+      direction: "left",
+      speedSeconds: 25,
+      pauseOnHover: true,
+      items: [
+        { id: "m1", text: "Atendimento Especializado", badgeText: "SLA Rápido" },
+        { id: "m2", text: "Condições Facilitadas", badgeText: "Flexibilidade" },
+        { id: "m3", text: "Garantia e Segurança", badgeText: "Verificado" },
+        { id: "m4", text: "Suporte Direto via WhatsApp", badgeText: "Humanizado" },
+      ],
+    } as InfiniteMarqueeBlockData,
+  },
+
+  {
+    id: "interactive_comparison_slider",
+    name: "Comparação Antes & Depois",
+    category: "media",
+    description: "Slider interativo com divisão ajustável por toque e arrasto para demonstrar resultados visuais.",
+    capabilities: ["responsive", "media", "motion"],
+    component: InteractiveComparisonSlider as any,
+    defaultProps: {
+      title: "Resultados Reais: Antes & Depois",
+      subtitle: "Arraste o divisor para comparar as transformações e entregas do nosso serviço.",
+      beforeImageUrl: "https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=1200&q=80",
+      afterImageUrl: "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=1200&q=80",
+      beforeLabel: "Antes",
+      afterLabel: "Depois",
+      defaultSplitPercentage: 50,
+    } as ComparisonSliderBlockData,
+  },
+
+  {
+    id: "interactive_lead_quiz_flow",
+    name: "Quiz de Qualificação de Leads",
+    category: "contact",
+    description: "Diagnóstico guiado em múltiplas etapas que qualifica o lead e registra a oportunidade diretamente no CRM.",
+    capabilities: ["responsive", "form"],
+    component: InteractiveLeadQuizFlow as any,
+    defaultProps: {
+      title: "Diagnóstico Rápido e Personalizado",
+      subtitle: "Responda a perguntas simples e receba uma recomendação sob medida para o seu perfil.",
+      steps: [
+        {
+          id: "step-1",
+          question: "Qual é o seu principal objetivo?",
+          subtitle: "Selecione o foco principal da sua busca.",
+          options: [
+            { id: "opt-1", label: "Consultoria e Assessoria", tag: "Especialista" },
+            { id: "opt-2", label: "Contratação Imediata de Serviços", tag: "Rápido" },
+            { id: "opt-3", label: "Orçamento Sob Medida", tag: "Cotação" },
+          ],
+        },
+        {
+          id: "step-2",
+          question: "Qual o prazo desejado para início?",
+          subtitle: "Para planejarmos o atendimento com prioridade.",
+          options: [
+            { id: "opt-4", label: "Nos próximos 7 dias", tag: "Urgente" },
+            { id: "opt-5", label: "Neste mês", tag: "Planejado" },
+            { id: "opt-6", label: "Apenas pesquisando opções", tag: "Pesquisa" },
+          ],
+        },
+      ],
+      formTitle: "Receba sua Proposta Personalizada",
+      formSubtitle: "Informe seu contato para enviarmos o resumo do diagnóstico.",
+      submitButtonText: "Concluir e Enviar Diagnóstico",
+      whatsappNumber: "",
+      successMessage: "Diagnóstico enviado com sucesso! Retornaremos em breve.",
+    } as LeadQuizBlockData,
+  },
 ];
 
 export function getSiteBlocksByCategory(category: string): SiteBuilderBlockDefinition[] {
@@ -1365,6 +1450,7 @@ export const BLOCK_TO_WIX_CATEGORY: Record<string, WixBlockCategory> = {
   // Hero
   hero_minimal_split: "hero",
   hero_interactive_carousel: "hero",
+  infinite_marquee_ribbon: "hero",
   split_banner: "hero",
   announcement_bar: "hero",
   countdown_timer: "hero",
@@ -1392,6 +1478,7 @@ export const BLOCK_TO_WIX_CATEGORY: Record<string, WixBlockCategory> = {
 
   // Mídia & Galeria
   media_gallery_mosaic: "gallery",
+  interactive_comparison_slider: "gallery",
   gallery_grid: "gallery",
   before_after_slider: "gallery",
   video_section: "gallery",
@@ -1448,6 +1535,7 @@ export const BLOCK_TO_WIX_CATEGORY: Record<string, WixBlockCategory> = {
   // FAQ & Contato
   faq_clean_accordion: "faq",
   contact_form_direct: "faq",
+  interactive_lead_quiz_flow: "faq",
   location_map_card: "faq",
   store_hours: "faq",
   store_contact: "faq",

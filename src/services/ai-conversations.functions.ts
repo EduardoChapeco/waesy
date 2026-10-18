@@ -986,6 +986,10 @@ Responda SEMPRE em formato JSON com os campos:
           maxTokens: 1024,
           responseFormat: "json_object" as const,
         },
+        authContext: {
+          storeId: context.storeId,
+          userId: context.userId || undefined,
+        },
         context: {
           userLat: context.userLat,
           userLng: context.userLng,
@@ -2235,7 +2239,7 @@ Responda SEMPRE em formato JSON com os campos:
         const synthStart = Date.now();
         const aiSynth = await executeUnifiedAiCall({
           feature: `copilot_stage4_synthesis_${intent}`,
-          taskType: resolvedAttachments.images.length > 0 ? "vision" : undefined,
+          taskType: resolvedAttachments.images.length > 0 ? "vision" : "chat",
           images: resolvedAttachments.images.length > 0 ? resolvedAttachments.images : undefined,
           temperature: 0.35,
           maxTokens: 900,

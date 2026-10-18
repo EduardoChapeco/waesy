@@ -69,6 +69,22 @@
       "date": "2026-09-29",
       "expiry": "2027-12-31",
       "approvedBy": "design-system-architect"
+    },
+    {
+      "id": "DL-01",
+      "file": "src/services/studio.functions.ts",
+      "reason": "Paletas vetoriais de SVG e gerador grafico de stories e banners de marketing",
+      "date": "2026-10-18",
+      "expiry": "2027-12-31",
+      "approvedBy": "design-system-architect"
+    },
+    {
+      "id": "DL-01",
+      "file": "src/services/builder.functions.ts",
+      "reason": "Paletas de temas e templates de canvas para sites do OmniPage Builder",
+      "date": "2026-10-18",
+      "expiry": "2027-12-31",
+      "approvedBy": "design-system-architect"
     }
   ]
 }

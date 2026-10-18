@@ -124,8 +124,13 @@ Retorne ESTRITAMENTE um JSON minificado compatível com este formato:
           systemPrompt,
           userPrompt: `Analise cuidadosamente esta imagem/print de viagem e extraia os dados com fidelidade absoluta.${data.destinationHint ? ` Dica de destino: ${data.destinationHint}` : ""}`,
           images: [{ mimeType: data.fileMime, base64: data.fileBase64 }],
+          taskType: "ocr",
+          feature: "travel_ocr_extractor",
+          storeId: identity.store_id || undefined,
+          ownerId: identity.id || undefined,
           preferredProvider: "gemini",
           responseFormat: "json_object",
+          expectJson: true,
           temperature: 0.1,
         });
 
@@ -140,8 +145,13 @@ Retorne ESTRITAMENTE um JSON minificado compatível com este formato:
         const aiRes = await executeUnifiedAiCall({
           systemPrompt,
           userPrompt: `Analise o seguinte texto de promoção turística:\n\n${data.rawText}`,
+          taskType: "fast_json",
+          feature: "travel_text_extractor",
+          storeId: identity.store_id || undefined,
+          ownerId: identity.id || undefined,
           preferredProvider: "groq",
           responseFormat: "json_object",
+          expectJson: true,
           temperature: 0.1,
         });
 

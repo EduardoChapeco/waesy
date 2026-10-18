@@ -11,7 +11,7 @@
  */
 
 import { getServerClient, getAnonServerClient } from "@/lib/supabase";
-import { getNextActiveKey, markKeyError } from "../api-orchestrator.functions";
+import { getNextActiveKey, markKeyError, executeUnifiedAiCall } from "../api-orchestrator.functions";
 import { sleep, isDomainInCooldown, setDomainCooldown } from "@/lib/mining/scraper-utils";
 import { globalCrawlerCircuitBreaker } from "@/lib/mining/crawler-circuit-breaker";
 
@@ -521,3 +521,75 @@ export async function harvestAndPersistDataJudProcess(params: {
     };
   }
 }
+
+/**
+ * Triagem de processo judicial via IA com roteamento ultra-rápido (fast_json) e isolamento soberano de sistema
+ */
+export async function triageDataJudLawsuit(mined: MinedLawsuitData): Promise<{
+  summary: string;
+  riskLevel: "baixo" | "medio" | "alto";
+  complianceFlags: {
+    has_arrest_warrants: boolean;
+    has_criminal_executions: boolean;
+    has_sanctions_restrictions: boolean;
+  };
+  recommendedAction: string;
+}> {
+  try {
+    const aiResult = await executeUnifiedAiCall({
+      systemPrompt:
+        "Você é o auditor jurídico sênior da plataforma Waesy especializado em análise processual DataJud do CNJ. Avalie os dados do processo e retorne estritamente um objeto JSON com: summary (resumo em até 3 frases), riskLevel ('baixo'|'medio'|'alto'), complianceFlags ({ has_arrest_warrants: boolean, has_criminal_executions: boolean, has_sanctions_restrictions: boolean }) e recommendedAction.",
+      userPrompt: `Analise este processo judicial coletado via DataJud:\n${JSON.stringify({
+        numero: mined.processNumber,
+        tribunal: mined.courtName,
+        classe: mined.className,
+        assunto: mined.subjectName,
+        partes: mined.parties,
+        valor: mined.value,
+        ultimasMovimentacoes: mined.movements.slice(0, 5),
+      })}`,
+      taskType: "fast_json",
+      feature: "datajud_lawsuit_triage",
+      isSystemTask: true,
+      expectJson: true,
+      responseFormat: "json_object",
+      temperature: 0.1,
+    });
+
+    const parsed = (aiResult?.parsedJson || (typeof aiResult?.content === "string" ? JSON.parse(aiResult.content) : null)) as any;
+    if (parsed) {
+      return {
+        summary: parsed.summary || `Processo ${mined.processNumber} em tramitação no ${mined.courtCode}.`,
+        riskLevel: ["baixo", "medio", "alto"].includes(parsed.riskLevel) ? parsed.riskLevel : "baixo",
+        complianceFlags: {
+          has_arrest_warrants: Boolean(parsed.complianceFlags?.has_arrest_warrants),
+          has_criminal_executions: Boolean(parsed.complianceFlags?.has_criminal_executions),
+          has_sanctions_restrictions: Boolean(parsed.complianceFlags?.has_sanctions_restrictions),
+        },
+        recommendedAction: parsed.recommendedAction || "Monitoramento padrão de movimentações.",
+      };
+    }
+  } catch (err) {
+    console.warn("[datajud-harvester] Falha na triagem IA, aplicando flags heurísticas:", err);
+  }
+
+  // Fallback determinístico e seguro
+  const fullText = `${mined.className || ""} ${mined.subjectName || ""} ${mined.lastMovementText || ""}`.toLowerCase();
+  const hasExecution =
+    fullText.includes("execução") ||
+    fullText.includes("penal") ||
+    fullText.includes("penhora");
+  return {
+    summary: `Processo ${mined.processNumber} em tramitação no ${mined.courtName || mined.courtCode} (${mined.className}).`,
+    riskLevel: fullText.includes("penhora") || fullText.includes("prisão") ? "alto" : (hasExecution ? "medio" : "baixo"),
+    complianceFlags: {
+      has_arrest_warrants: fullText.includes("prisão") || fullText.includes("mandado"),
+      has_criminal_executions:
+        fullText.includes("penal") ||
+        fullText.includes("criminal"),
+      has_sanctions_restrictions: fullText.includes("indisponibilidade") || fullText.includes("bloqueio"),
+    },
+    recommendedAction: hasExecution ? "Acompanhar prazo processual prioritário." : "Monitoramento padrão.",
+  };
+}
+

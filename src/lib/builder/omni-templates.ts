@@ -1759,12 +1759,152 @@ export const SERVICES_WIX_APP_PAGES: TourismWixAppPageTemplate[] = [
   },
 ];
 
+export const FORM_LEAD_WIX_APP_PAGES: TourismWixAppPageTemplate[] = [
+  {
+    id: "wix_lead_quiz",
+    name: "Quiz Interativo & Diagnóstico de Leads",
+    niche: "general",
+    slug: "quiz-diagnostico",
+    title: "Quiz Diagnóstico — Descubra a Solução Ideal",
+    document_type: "landing_page",
+    is_home: false,
+    badge: "App Formulários • Quiz",
+    description: "Quiz dinâmico multi-etapas com qualificação de perfil e captura direta para o CRM.",
+    blocks: [
+      {
+        type: "hero_minimal_split",
+        config: {
+          badgeText: "DIAGNÓSTICO PERSONALIZADO EM 2 MINUTOS",
+          title: "Descubra qual a melhor estratégia para o seu momento de vida ou negócio.",
+          subtitle: "Responda a 3 perguntas rápidas e receba uma orientação sob medida dos nossos consultores.",
+          primaryCta: { label: "Iniciar Diagnóstico", href: "#formulario" },
+        },
+      },
+      {
+        type: "routine_steps",
+        config: {
+          title: "Como Funciona o Diagnóstico",
+          steps: [
+            { step: "1", title: "Responda o Briefing", description: "Informe seu perfil e principais desafios atuais." },
+            { step: "2", title: "Análise da Equipe", description: "Cruzamos suas necessidades com nossas soluções." },
+            { step: "3", title: "Receba o Plano", description: "Proposta formal detalhada enviada diretamente no seu WhatsApp." },
+          ],
+        },
+      },
+      {
+        type: "contact_form_direct",
+        config: {
+          title: "Envie seus Dados para Receber o Relatório",
+          subtitle: "Garantimos sigilo absoluto e resposta em até 2 horas úteis.",
+          submitButtonText: "Receber Diagnóstico Gratuito",
+          whatsappNumber: "5511999998888",
+          showPhoneField: true,
+          showMessageField: true,
+          successMessage: "Respostas gravadas com sucesso! Entraremos em contato com a devolutiva.",
+        },
+      },
+      {
+        type: "testimonials_social_proof",
+        config: {
+          title: "Resultados de Quem Já Fez o Diagnóstico",
+          subtitle: "Veja a experiência de outros clientes que transformaram seus resultados.",
+          testimonials: [],
+        },
+      },
+    ],
+  },
+  {
+    id: "wix_lead_survey",
+    name: "Pesquisa de Satisfação & Feedback (NPS)",
+    niche: "general",
+    slug: "pesquisa-satisfacao",
+    title: "Pesquisa de Satisfação — Avalie sua Experiência",
+    document_type: "institutional",
+    is_home: false,
+    badge: "App Formulários • NPS",
+    description: "Formulário de avaliação pós-venda para medir reputação, coletar depoimentos e melhorar processos.",
+    blocks: [
+      {
+        type: "reputation_score_header",
+        config: {
+          company_name: "Atendimento & Qualidade",
+          reputation_score: 9.8,
+          reputation_badge: "Excelente",
+          total_complaints: 0,
+          resolved_percentage: 100,
+        },
+      },
+      {
+        type: "contact_form_direct",
+        config: {
+          title: "Sua Opinião Faz Toda a Diferença",
+          subtitle: "Conte-nos como foi seu atendimento para continuarmos aprimorando nossos serviços.",
+          submitButtonText: "Enviar Avaliação",
+          whatsappNumber: "5511999998888",
+          showPhoneField: false,
+          showMessageField: true,
+          successMessage: "Agradecemos de coração pelo seu feedback!",
+        },
+      },
+      {
+        type: "trust_badges",
+        config: {
+          badges: [
+            { icon: "ShieldCheck", title: "Opinião Verificada", description: "Avaliações auditadas de clientes reais" },
+            { icon: "HeartHandshake", title: "Compromisso com Você", description: "Melhoria contínua de nossos processos" },
+          ],
+        },
+      },
+    ],
+  },
+  {
+    id: "wix_lead_careers",
+    name: "Trabalhe Conosco & Banco de Talentos",
+    niche: "general",
+    slug: "trabalhe-conosco",
+    title: "Carreiras — Venha Fazer Parte da Nossa Equipe",
+    document_type: "institutional",
+    is_home: false,
+    badge: "App Formulários • RH",
+    description: "Página de recrutamento e seleção com mural de vagas abertas e captação de currículos.",
+    blocks: [
+      {
+        type: "careers_hero_banner",
+        config: {
+          title: "Construa sua Carreira Conosco",
+          subtitle: "Buscamos pessoas apaixonadas por excelência, autonomia e crescimento acelerado.",
+        },
+      },
+      {
+        type: "careers_job_grid",
+        config: {
+          title: "Oportunidades em Aberto",
+          subtitle: "Confira as vagas disponíveis e encontre a posição ideal para seu perfil.",
+        },
+      },
+      {
+        type: "contact_form_direct",
+        config: {
+          title: "Banco de Talentos",
+          subtitle: "Não encontrou uma vaga para o seu perfil? Envie seu currículo para posições futuras.",
+          submitButtonText: "Enviar Candidatura",
+          whatsappNumber: "5511999998888",
+          showPhoneField: true,
+          showMessageField: true,
+          successMessage: "Candidatura recebida! Nossa equipe de Gente & Gestão avaliará seu perfil.",
+        },
+      },
+    ],
+  },
+];
+
 export function getTemplateById(id: string): NicheTemplateDefinition | undefined {
   return (
     NICHE_TEMPLATE_MATRIX.find((t) => t.id === id) ||
     TOURISM_WIX_APP_PAGES.find((t) => t.id === id) ||
     COMMERCE_WIX_APP_PAGES.find((t) => t.id === id) ||
-    SERVICES_WIX_APP_PAGES.find((t) => t.id === id)
+    SERVICES_WIX_APP_PAGES.find((t) => t.id === id) ||
+    FORM_LEAD_WIX_APP_PAGES.find((t) => t.id === id)
   );
 }
 

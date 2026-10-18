@@ -386,3 +386,47 @@ Mapear e refatorar as rotas da plataforma para garantir a transformação do mob
 - [ ] Build de produção conclui com sucesso (`npm.cmd run build` Exit Code 0).
 - [ ] Design Lint executa sem novas violações P0 ou P1 (`node scripts/design-lint.mjs --changed` Exit Code 0).
 - [ ] Zero conflitos de git ou regressões na branch final.
+
+## 2026-10-18T09:25:16Z
+
+Orquestração soberana de IA com matriz de aptidão de modelos, isolamento rigoroso entre chaves BYOK de lojistas e tarefas de background da plataforma, failover atômico transparente e roteamento prioritário para o Pool de Chaves do Admin Master (`public.api_key_pools`).
+
+Working directory: c:\Users\Eduardo Antônio Ramo\Documents\waesy
+Integrity mode: development
+
+## Requirements
+
+### R1. Matriz de Especialização e Aptidão por Tipo de Tarefa (`taskType`) no Orquestrador
+- Modificar `executeUnifiedAiCall` em `src/services/api-orchestrator.functions.ts` para avaliar rigorosamente a aptidão do modelo (`vision`, `fast_json`, `editorial_squad`, `deep_reasoning`, `chat`) antes de selecionar o provedor.
+- Se a tarefa for `vision` ou `ocr` (ex: extrator de bilhetes de viagens em `travel-ai-extractor.functions.ts`), rotear estritamente para provedores com suporte multimodal ativo (Gemini, Claude 3.5, OpenAI) e filtrar chaves text-only como Groq.
+- Se a tarefa for `fast_json` ou `scraping` (ex: curadoria editorial em `editorial-squad.ts` e DataJud em `datajud-harvester.ts`), priorizar provedores ultra-rápidos com suporte estrito a `json_object` (Groq `qwen3.8-27b` / `llama-3.3-70b` com latência sub-200ms) para máxima economia de quotas do Gemini/OpenAI.
+
+### R2. Roteamento Híbrido BYOK vs Background da Plataforma com Quarentena Invisível
+- Se um lojista cadastrar chave própria (ex: Gemini) no cofre seguro (`secret_vault`), vincular o uso dessa chave **exclusivamente** às demandas diretas daquele lojista (`store_id`) compatíveis com a aptidão da chave (ex: chat do Copilot, geração de anúncios da loja).
+- Rotinas de background da plataforma (crawlers de notícias, feeds RSS, monitoramento judicial DataJud, auto-harvesting) **NUNCA** devem consumir chaves BYOK de lojistas, operando com 100% de prioridade sobre o Pool Soberano do Admin Master (`public.api_key_pools`).
+- Em caso de estouro de cota (`HTTP 429`) da chave BYOK do lojista, a chave entra em quarentena silenciosa local para aquele tenant e o sistema transborda a requisição imediatamente para o Pool Master sem emitir alerta ou erro para o usuário final.
+
+### R3. Auditoria e Padronização de Todos os Módulos Consumidores de IA
+- Inspecionar e parametrizar 100% das chamadas a `executeUnifiedAiCall` e `executeAiCoreGateway`:
+  - `src/services/ai-conversations.functions.ts` (Copilot Loja & Civil)
+  - `src/services/mining/editorial-squad.ts` (Curadoria Editorial de Notícias)
+  - `src/services/travel-ai-extractor.functions.ts` (Extrator OCR de Viagens)
+  - `src/services/travel-reviews.functions.ts` (Classificador de Avaliações)
+  - `src/services/ai-builder-composition.functions.ts` (Omni Builder)
+  - `src/services/ads.functions.ts` (Criador de Campanhas)
+  - `src/services/mining/datajud-harvester.ts` (Triagem Jurídica)
+- Garantir que nenhum módulo invoque provedores de IA diretamente por `fetch` fora do orquestrador unificado.
+
+## Acceptance Criteria
+
+### Integridade e Aptidão de Roteamento
+- [ ] Teste unitário comprovando que chamadas com `taskType: "vision"` ignoram chaves Groq text-only e selecionam Gemini/Claude do pool.
+- [ ] Teste unitário comprovando que chamadas com `taskType: "fast_json"` selecionam Groq com resposta formatada em JSON válido.
+- [ ] Teste unitário comprovando que tarefas de background sem `store_id` associado consomem exclusivamente o Pool Master e nunca chaves de lojistas.
+- [ ] Teste unitário comprovando failover transparente de chave BYOK com `429` para chave do Pool Master com zero erro retornado.
+
+### Gates de Qualidade do Repositório
+- [ ] `npm run typecheck` com 0 erros (Exit Code 0).
+- [ ] `node scripts/design-lint.mjs --ratchet` com 0 regressões visuais.
+- [ ] `npm run build` gerando bundle de produção Cloudflare Pages com 0 client leaks.
+- [ ] Suíte completa do Vitest passando com 0 falhas.
