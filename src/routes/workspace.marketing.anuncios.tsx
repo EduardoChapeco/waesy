@@ -22,7 +22,8 @@ import { SimLabQuickTestSheet } from "@/components/simlab/SimLabQuickTestSheet";
 import { executeMcpTool } from "@/services/mcp-server.functions";
 import { orchestrateCampaignIntent } from "@/services/mcp-orchestrator.functions";
 import type { DynamicRenderableBlock } from "@/types/ad-tech-mcp";
-import { Mic, MicOff, Send, Wand2 } from "lucide-react";
+import { Mic, MicOff, Send, Wand2, Sparkles } from "lucide-react";
+import { TravelPromoFlyerModal } from "@/components/tourism/promotional-flyer/travel-promo-flyer-modal";
 
 export const Route = createFileRoute("/workspace/marketing/anuncios")({
   head: () => ({ meta: [{ title: "Campanhas | Workspace Waesy" }] }),
@@ -102,6 +103,7 @@ function AnunciosWorkspacePage() {
   const [aiCreativePreview, setAiCreativePreview] = useState<any>(null);
   const [isGeneratingAiCreative, setIsGeneratingAiCreative] = useState(false);
   const [isPublishingExternal, setIsPublishingExternal] = useState(false);
+  const [isPromoFlyerOpen, setIsPromoFlyerOpen] = useState(false);
   const [campaigns, setCampaigns] = useState<AdCampaign[]>(() =>
     Array.isArray(initialCampaigns) ? initialCampaigns : []
   );
@@ -669,18 +671,60 @@ function AnunciosWorkspacePage() {
           </div>
 
           {aiCreativePreview && (
-            <div className="p-4 rounded-lg bg-muted/30 border border-border/50 grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="space-y-1">
-                <span className="text-xs font-bold uppercase text-muted-foreground">Headline (rascunho de IA; revise antes de usar)</span>
-                <p className="text-xs font-bold text-foreground">{aiCreativePreview.creative.headline}</p>
-                <span className="text-xs font-bold uppercase text-muted-foreground block pt-1">Prévia de Canvas — rascunho</span>
-                <p className="text-xs font-mono text-muted-foreground">
-                  {aiCreativePreview.canvasSpec.width}x{aiCreativePreview.canvasSpec.height} ({aiCreativePreview.canvasSpec.aspectRatio}) • {aiCreativePreview.priceFormatted}
-                </p>
+            <div className="p-4 rounded-lg bg-card border border-border/60 space-y-4">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-4 border-b border-border/40">
+                <div className="space-y-1">
+                  <span className="text-xs font-bold uppercase tracking-wider text-primary">Criativo Gerado por IA</span>
+                  <p className="text-sm font-semibold text-foreground">{aiCreativePreview.creative.headline}</p>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  type="button"
+                  className="h-11 min-h-11 rounded-lg text-xs font-semibold px-4 flex items-center gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+                  onClick={() => setIsPromoFlyerOpen(true)}
+                >
+                  <Sparkles className="size-4" />
+                  Abrir Estúdio Visual (Canva Mode)
+                </Button>
               </div>
-              <div className="md:col-span-2 space-y-1">
-                <span className="text-xs font-bold uppercase text-muted-foreground">Copy gerada por IA — rascunho para revisão</span>
-                <p className="text-xs text-foreground leading-relaxed">{aiCreativePreview.creative.bodyCopy}</p>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {aiCreativePreview.imageUrl ? (
+                  <div className="relative aspect-square rounded-lg overflow-hidden border border-border/40 bg-muted/30 max-w-xs">
+                    <img
+                      src={aiCreativePreview.imageUrl}
+                      alt={aiCreativePreview.creative.headline}
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute bottom-2 left-2 right-2 p-2 rounded-lg bg-background/85 backdrop-blur-md border border-border/40">
+                      <p className="text-xs font-bold text-foreground truncate">{aiCreativePreview.creative.headline}</p>
+                      {aiCreativePreview.priceFormatted && (
+                        <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">{aiCreativePreview.priceFormatted}</p>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="aspect-square rounded-lg border border-dashed border-border/60 bg-muted/10 p-4 flex flex-col items-center justify-center text-center max-w-xs">
+                    <ImageIcon className="size-8 text-muted-foreground/60 mb-2" />
+                    <p className="text-xs font-medium text-foreground">{aiCreativePreview.creative.headline}</p>
+                    <Badge variant="outline" className="mt-2 text-xs">{aiCreativePreview.priceFormatted || "Sem Preço"}</Badge>
+                  </div>
+                )}
+
+                <div className="md:col-span-2 space-y-2">
+                  <span className="text-xs font-bold uppercase text-muted-foreground">Copy para Campanha</span>
+                  <p className="text-xs text-foreground leading-relaxed whitespace-pre-line bg-muted/20 p-3 rounded-lg border border-border/30">
+                    {aiCreativePreview.creative.bodyCopy}
+                  </p>
+                  <div className="flex items-center gap-2 pt-1 text-xs text-muted-foreground font-mono">
+                    <span>{aiCreativePreview.canvasSpec.width}x{aiCreativePreview.canvasSpec.height}</span>
+                    <span>•</span>
+                    <span>{aiCreativePreview.canvasSpec.aspectRatio}</span>
+                    <span>•</span>
+                    <span className="text-primary font-sans font-semibold">{aiCreativePreview.creative.callToActionLabel}</span>
+                  </div>
+                </div>
               </div>
             </div>
           )}
@@ -1807,6 +1851,22 @@ function AnunciosWorkspacePage() {
             </form>
           </SheetContent>
         </Sheet>
+
+        {aiCreativePreview && (
+          <TravelPromoFlyerModal
+            open={isPromoFlyerOpen}
+            onOpenChange={setIsPromoFlyerOpen}
+            initialData={{
+              title: aiCreativePreview.creative?.headline || "Oferta Especial",
+              destination: aiTargetLocation || "Oferta Especial",
+              priceCents: typeof aiDailyBudgetCents === "number" ? aiDailyBudgetCents : null,
+              backgroundImageUrl: aiCreativePreview.imageUrl || null,
+              promoBadge: aiCreativePreview.creative?.callToActionLabel || "Destaque",
+              storeName: "Minha Loja",
+              niche: "varejo",
+            }}
+          />
+        )}
       </div>
     </NicheOperationalGuard>
   );
