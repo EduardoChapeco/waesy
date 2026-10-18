@@ -781,23 +781,23 @@ function cleanAddressSegment(text: string): string {
             </div>
 
             {isOwner && (
-              <div className="absolute top-2 right-2 flex items-center gap-1.5 z-20">
+              <div className="absolute top-2 right-2 flex items-center gap-2 z-20">
                 <button
                   type="button"
                   onClick={() => setIsEditCompanyModalOpen(true)}
-                  className="bg-background/85 hover:bg-background text-foreground backdrop-blur-md px-2.5 py-1.5 rounded-lg text-[11px] font-semibold flex items-center gap-1.5 cursor-pointer transition-colors shadow-2xs"
+                  className="bg-background/85 hover:bg-background text-foreground backdrop-blur-md px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 cursor-pointer transition-colors shadow-2xs h-11 min-h-11"
                   title="Alterar Capa (21:9)"
                 >
-                  <Camera className="size-3.5" />
+                  <Camera className="size-4" />
                   <span className="hidden sm:inline">Capa</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setIsSectionsEditorOpen(true)}
-                  className="bg-background/85 hover:bg-background text-foreground backdrop-blur-md px-2.5 py-1.5 rounded-lg text-[11px] font-semibold flex items-center gap-1.5 cursor-pointer transition-colors shadow-2xs"
+                  className="bg-background/85 hover:bg-background text-foreground backdrop-blur-md px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 cursor-pointer transition-colors shadow-2xs h-11 min-h-11"
                   title="Personalizar Vitrine"
                 >
-                  <SlidersHorizontal className="size-3.5" />
+                  <SlidersHorizontal className="size-4" />
                   <span className="hidden sm:inline">Vitrine</span>
                 </button>
               </div>
@@ -858,7 +858,7 @@ function cleanAddressSegment(text: string): string {
                   onClick={() => setActiveTab("avaliacoes")}
                   className="inline-flex items-center gap-1 font-bold text-foreground hover:text-primary transition-colors cursor-pointer"
                 >
-                  <Star className="size-3.5 fill-amber-500 text-amber-500 shrink-0" />
+                  <Star className="size-4 fill-amber-500 text-amber-500 shrink-0" />
                   <span>{realRatingAverage.toFixed(1)}</span>
                   <span className="text-muted-foreground font-medium">({realReviewsCount})</span>
                 </button>
@@ -949,7 +949,7 @@ function cleanAddressSegment(text: string): string {
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1 font-medium text-foreground/80 hover:text-primary hover:underline cursor-pointer"
               >
-                <MapPin className="size-3.5 text-primary shrink-0" />
+                <MapPin className="size-4 text-primary shrink-0" />
                 <span>{formattedAddress.display}</span>
               </a>
             )}
@@ -977,7 +977,7 @@ function cleanAddressSegment(text: string): string {
                   className="flex-1 h-9 sm:h-10 px-3 rounded-lg font-semibold text-xs bg-muted/60 hover:bg-muted text-foreground border border-border/50 transition-colors inline-flex items-center justify-center gap-2 shadow-none"
                 >
                   <Link to="/workspace" search={{ storeId: store.id }}>
-                    <Store className="size-3.5" />
+                    <Store className="size-4" />
                     <span>Workspace</span>
                   </Link>
                 </Button>
@@ -986,7 +986,7 @@ function cleanAddressSegment(text: string): string {
                   onClick={() => setIsEditCompanyModalOpen(true)}
                   className="flex-1 h-9 sm:h-10 px-3 rounded-lg font-semibold text-xs bg-muted/60 hover:bg-muted text-foreground border border-border/50 transition-colors inline-flex items-center justify-center gap-2 shadow-none cursor-pointer"
                 >
-                  <Edit3 className="size-3.5" />
+                  <Edit3 className="size-4" />
                   <span>Editar</span>
                 </Button>
                 <Button
@@ -995,7 +995,7 @@ function cleanAddressSegment(text: string): string {
                   className="size-9 sm:size-10 p-0 sm:px-3 sm:w-auto rounded-lg font-semibold text-xs bg-muted/60 hover:bg-muted text-foreground border border-border/50 transition-colors inline-flex items-center justify-center shrink-0 shadow-none cursor-pointer"
                   title="Social Studio"
                 >
-                  <SlidersHorizontal className="size-3.5" />
+                  <SlidersHorizontal className="size-4" />
                   <span className="hidden sm:inline ml-2">Studio</span>
                 </Button>
                 <Button
@@ -1183,7 +1183,7 @@ function cleanAddressSegment(text: string): string {
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
-              <LayoutGrid className="size-3.5 sm:size-4" />
+              <LayoutGrid className="size-4 sm:size-4" />
               <span>Vitrine</span>
             </button>
 
@@ -1198,7 +1198,7 @@ function cleanAddressSegment(text: string): string {
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
-              <CatalogIcon className="size-3.5 sm:size-4" />
+              <CatalogIcon className="size-4 sm:size-4" />
               <span>{catalogTabTitle}</span>
               {catalog.length > 0 && (
                 <span className="text-xs px-2 py-0.2 rounded-full bg-muted text-muted-foreground font-bold font-mono">
@@ -1218,7 +1218,7 @@ function cleanAddressSegment(text: string): string {
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
-              <Building2 className="size-3.5 sm:size-4" />
+              <Building2 className="size-4 sm:size-4" />
               <span>Sobre</span>
             </button>}
 
@@ -1233,7 +1233,7 @@ function cleanAddressSegment(text: string): string {
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
-              <MessageSquare className="size-3.5 sm:size-4" />
+              <MessageSquare className="size-4 sm:size-4" />
               <span>Posts</span>
               {posts.length > 0 && (
                 <span className="text-xs px-2 py-0.2 rounded-full bg-muted text-muted-foreground font-bold font-mono">
@@ -1253,7 +1253,7 @@ function cleanAddressSegment(text: string): string {
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
-              <Star className="size-3.5 sm:size-4" />
+              <Star className="size-4 sm:size-4" />
               <span>Avaliações</span>
               {reviews.length > 0 && (
                 <span className="text-xs px-2 py-0.2 rounded-full bg-muted text-muted-foreground font-bold font-mono">
@@ -1273,7 +1273,7 @@ function cleanAddressSegment(text: string): string {
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
-              <Briefcase className="size-3.5 sm:size-4" />
+              <Briefcase className="size-4 sm:size-4" />
               <span>Vagas</span>
               {jobs.length > 0 && (
                 <span className="text-xs px-2 py-0.2 rounded-full bg-muted text-muted-foreground font-bold font-mono">
@@ -1294,7 +1294,7 @@ function cleanAddressSegment(text: string): string {
                     : "text-muted-foreground hover:text-foreground"
                 )}
               >
-                <Tag className="size-3.5 sm:size-4" />
+                <Tag className="size-4 sm:size-4" />
                 <span>Classificados</span>
                 <span className="text-xs px-2 py-0.2 rounded-full bg-muted text-muted-foreground font-bold font-mono">
                   {ads.length}
@@ -1314,7 +1314,7 @@ function cleanAddressSegment(text: string): string {
                     : "text-muted-foreground hover:text-foreground"
                 )}
               >
-                <Ticket className="size-3.5 sm:size-4" />
+                <Ticket className="size-4 sm:size-4" />
                 <span>Sorteios</span>
                 <span className="text-xs px-2 py-0.2 rounded-full bg-muted text-muted-foreground font-bold font-mono">
                   {concursos.length}
@@ -1334,7 +1334,7 @@ function cleanAddressSegment(text: string): string {
               {isOwner && (
                 <div className="flex items-center justify-between py-1 px-1">
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <Star className="size-3.5 text-primary" />
+                    <Star className="size-4 text-primary" />
                     <span className="font-semibold text-foreground">Vitrine Modular</span>
                   </div>
                   <Button
@@ -1343,7 +1343,7 @@ function cleanAddressSegment(text: string): string {
                     onClick={() => setIsSectionsEditorOpen(true)}
                     className="h-7 px-3 rounded-lg text-xs font-semibold gap-2 cursor-pointer hover:bg-muted/60 text-muted-foreground hover:text-foreground"
                   >
-                    <SlidersHorizontal className="size-3.5 text-primary" />
+                    <SlidersHorizontal className="size-4 text-primary" />
                     <span>Personalizar</span>
                   </Button>
                 </div>
@@ -1483,7 +1483,7 @@ function cleanAddressSegment(text: string): string {
                                 </div>
                                 <div className="p-4 pt-0 flex items-center justify-between text-xs font-semibold text-primary">
                                   <span>{isWhatsAppAction ? "Falar no WhatsApp" : isCatalogAction ? "Ver no Catálogo" : "Saiba Mais"}</span>
-                                  <ChevronRight className="size-3.5 group-hover:translate-x-0.5 transition-transform" />
+                                  <ChevronRight className="size-4 group-hover:translate-x-0.5 transition-transform" />
                                 </div>
                               </div>
                             );
@@ -1823,7 +1823,7 @@ function cleanAddressSegment(text: string): string {
                                 className="h-10 px-2 rounded-lg text-xs font-semibold gap-1 border-primary/30 text-primary cursor-pointer"
                                 title="Importar para o Catálogo Oficial"
                               >
-                                <Plus className="size-3.5" />
+                                <Plus className="size-4" />
                                 <span className="text-xs">Importar</span>
                               </Button>
                             )}
@@ -1832,7 +1832,7 @@ function cleanAddressSegment(text: string): string {
                               onClick={() => handleAddToCart(p)}
                               className="h-10 px-3 rounded-lg font-bold text-xs bg-foreground text-background hover:bg-foreground/90 gap-1 cursor-pointer"
                             >
-                              <Plus className="size-3.5" />
+                              <Plus className="size-4" />
                               <span>Adicionar</span>
                             </Button>
                           </div>
@@ -1898,7 +1898,7 @@ function cleanAddressSegment(text: string): string {
                                 onClick={() => handleImportMinedProduct(p)}
                                 className="rounded-lg h-10 px-3 font-semibold text-xs border-primary/30 text-primary gap-1 cursor-pointer"
                               >
-                                <Plus className="size-3.5" />
+                                <Plus className="size-4" />
                                 <span>Importar</span>
                               </Button>
                             )}
@@ -1907,7 +1907,7 @@ function cleanAddressSegment(text: string): string {
                               onClick={() => handleAddToCart(p)}
                               className="rounded-lg h-10 px-4 font-bold text-xs bg-foreground text-background hover:bg-foreground/90 gap-2 cursor-pointer w-full sm:w-auto"
                             >
-                              <Plus className="size-3.5" />
+                              <Plus className="size-4" />
                               <span>Adicionar</span>
                             </Button>
                           </div>
@@ -1999,7 +1999,7 @@ function cleanAddressSegment(text: string): string {
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                     <div className="p-4 rounded-lg bg-muted/30 border border-border/40 space-y-1">
                       <span className="text-xs text-muted-foreground font-medium flex items-center gap-2">
-                        <Award className="size-3.5 text-primary" /> Recomendação
+                        <Award className="size-4 text-primary" /> Recomendação
                       </span>
                       <p className="text-base font-black text-foreground font-mono">
                         {employerStats.recommendRate != null ? `${employerStats.recommendRate}%` : null}
@@ -2011,7 +2011,7 @@ function cleanAddressSegment(text: string): string {
 
                     <div className="p-4 rounded-lg bg-muted/30 border border-border/40 space-y-1">
                       <span className="text-xs text-muted-foreground font-medium flex items-center gap-2">
-                        <Briefcase className="size-3.5 text-emerald-600" /> Média Salarial
+                        <Briefcase className="size-4 text-emerald-600" /> Média Salarial
                       </span>
                       <p className="text-base font-black text-foreground font-mono">
                         {employerStats.avgSalaryCents ? formatMoney(employerStats.avgSalaryCents) : null}
@@ -2023,7 +2023,7 @@ function cleanAddressSegment(text: string): string {
 
                     <div className="p-4 rounded-lg bg-muted/30 border border-border/40 space-y-1 col-span-2 sm:col-span-1">
                       <span className="text-xs text-muted-foreground font-medium flex items-center gap-2">
-                        <FileCheck className="size-3.5 text-sky-600" /> Avaliações
+                        <FileCheck className="size-4 text-sky-600" /> Avaliações
                       </span>
                       <p className="text-base font-black text-foreground font-mono">
                         {employerStats.reviewsCount > 0 ? employerStats.reviewsCount : null}
@@ -2160,7 +2160,7 @@ function cleanAddressSegment(text: string): string {
                           <Star
                             key={s}
                             className={cn(
-                              "size-3.5",
+                              "size-4",
                               store.rating && s <= Math.round(Number(store.rating))
                                 ? "fill-amber-500 text-amber-500"
                                 : "text-muted-foreground/30",
@@ -2433,7 +2433,7 @@ function cleanAddressSegment(text: string): string {
                           target="_blank"
                           rel="noopener noreferrer"
                         >
-                          <Navigation className="size-3.5" />
+                          <Navigation className="size-4" />
                           <span>Abrir no Maps</span>
                         </a>
                       </Button>
@@ -2450,7 +2450,7 @@ function cleanAddressSegment(text: string): string {
                           target="_blank"
                           rel="noopener noreferrer"
                         >
-                          <Navigation className="size-3.5" />
+                          <Navigation className="size-4" />
                           <span>Como Chegar</span>
                         </a>
                       </Button>
@@ -2604,7 +2604,7 @@ function cleanAddressSegment(text: string): string {
                             }}
                             className="h-10 px-4 rounded-lg text-xs font-bold gap-2"
                           >
-                            <Ticket className="size-3.5" />
+                            <Ticket className="size-4" />
                             <span>Participar do Sorteio</span>
                           </Button>
                         </div>
@@ -2950,7 +2950,7 @@ function cleanAddressSegment(text: string): string {
                           onClick={() => handleRemoveBiolink(idx)}
                           className="h-7 w-7 p-0 text-destructive hover:bg-destructive/10"
                         >
-                          <Trash2 className="size-3.5" />
+                          <Trash2 className="size-4" />
                         </Button>
                       </div>
                     ))}

@@ -1043,7 +1043,7 @@ function CourierDriverHubPage() {
               </div>
 
               <div className="space-y-1">
-                <Label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                <Label className="text-xs font-semibold text-foreground flex items-center gap-2">
                   <Users className="size-3.5 text-primary" />
                   Adicional por Ajudante de Mudança (R$)
                 </Label>
@@ -1485,7 +1485,7 @@ function CourierDriverHubPage() {
               ))}
             </div>
 
-            <div className="flex flex-wrap gap-1.5">
+            <div className="flex flex-wrap gap-2">
               {["Pontual no embarque", "Educado e cordial", "Local fácil", "Cuidado com o veículo"].map((tag) => {
                 const selected = ratingTags.includes(tag);
                 return (

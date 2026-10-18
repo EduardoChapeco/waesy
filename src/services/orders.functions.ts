@@ -12,6 +12,7 @@ import { z } from "zod";
 import { getServerClient, SupabaseUnconfiguredError } from "@/lib/supabase";
 import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
 import { ORDER_STATUS_VALUES } from "@/services/order.functions";
+import { syncCommissionOnOrderStatusChange } from "@/services/affiliate-ledger.functions";
 
 // ── Schemas de Validação Zod ──────────────────────────────────────────────
 
@@ -273,6 +274,19 @@ export const updateOrderStatusFn = createServerFn({ method: "POST" })
     if (error) {
       console.error("[orders.functions] updateOrderStatusFn error:", error);
       throw new Error("Erro ao atualizar status do pedido no banco de dados.");
+    }
+
+    // Sincroniza comissão de afiliados (Méliuz clawback ou escrow de maturação)
+    try {
+      await syncCommissionOnOrderStatusChange({
+        data: {
+          orderId: data.orderId,
+          newStatus: data.status,
+          cancellationReason: data.status === "cancelled" ? "Cancelado pelo lojista no painel" : undefined,
+        },
+      });
+    } catch (syncErr) {
+      console.warn("[orders.functions] Falha silenciosa ao sincronizar comissão de afiliados:", syncErr);
     }
 
     return {

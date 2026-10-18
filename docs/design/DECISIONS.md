@@ -3446,3 +3446,28 @@
   4. **Waesy Go Multi-Leg & Caronas BlaBlaCar (`src/lib/mobility/carona-graph-engine.ts`, `src/services/carona.functions.ts`, `src/routes/_store.mobilidade.tsx`):** Motor de grafo direcionado para reserva e precificação proporcional por trecho, liberação de vagas quando o passageiro desce em cidades intermediárias, passagens rodoviárias com HMAC QR Code, fretes/mudanças com 0..6 ajudantes e termo de responsabilidade P2P, e catálogo de sprites 3D no Admin Master. Testado em `src/lib/mobility/__tests__/carona-graph-engine.test.ts` (3/3 aprovados).
 - **Fundamentação Teórica:** AGENTS.md B.1 a B.41, docs/specs/SPEC-MASTER-PROFILES-CORTEX360-GEOMARKETING-WAESYGO.md e feedback executivo direto sobre eficiência e consumo de tokens.
 - **Consequências:** Todas as alterações comitadas na branch `main` e enviadas para a branch remota de produção `prod/unified-production-release`. Catraca de Design Lint aprovada com redução de 326 violações em relação à baseline.
+
+## DEC-248: Motor de Afiliados Soberano Méliuz (Escrow Ledger, Faturas B2B Mensais e Estorno Automático) e Catálogo Phia (Curadoria 1-Click e Campanhas Globais)
+- **Data:** 2026-10-18
+- **ID da Decisão:** DEC-248
+- **Contexto:** Auditoria do ecossistema de afiliados e parcerias identificou a necessidade de um salto arquitetural combinando a solidez financeira e contábil do Méliuz (ledger contábil imutável em centavos, carência/escrow anti-fraude, estorno/clawback automático em cancelamentos e faturamento mensal B2B consolidado para lojistas) com a agilidade de curadoria e monetização global da Phia (Phoebe Gates & Sophia Kianni: curadoria com 1 clique para vitrine in-page, split de comissão com a plataforma e monetização com redes parceiras de grande porte como Booking.com, suplementos naturais/saúde e Amazon).
+- **Decisão Adotada:**
+  1. **Schema Relacional Financeiro (`supabase/migrations/20270127000001_affiliate_meliuz_phia_engine.sql`):**
+     - Criadas as tabelas `affiliate_store_partnerships` (governança de parcerias com modos `open`, `approval_required` e `invite_only`), `merchant_affiliate_invoices` (faturamento mensal acumulado por lojista descontando estornos) e `affiliate_commission_ledger` (máquina de estados `tracked_pending` ➔ `awaiting_escrow` ➔ `available` ➔ `paid_out` ou `cancelled_refunded`).
+     - Criada a tabela `external_affiliate_campaigns` com campanhas semeadas de Booking.com Viagens & Hospedagem, Natue Produtos Naturais e Amazon Brasil Tech.
+  2. **Motor Contábil em Centavos (`src/lib/affiliate/affiliate-ledger-engine.ts`):**
+     - Matemática inteira pura para divisão tripartite de comissões (afiliado, plataforma e cashback do cliente), cálculo determinístico de data de maturação (carência de 7 a 30 dias após entrega) e aplicação instantânea de clawback quando um pedido é cancelado ou estornado, deduzindo da fatura aberta do lojista.
+     - 7/7 testes unitários aprovados em `src/lib/affiliate/__tests__/affiliate-ledger-engine.test.ts`.
+  3. **Camada BFF de Domínio (`src/services/affiliate-ledger.functions.ts` & `src/services/orders.functions.ts`):**
+     - Integração de `trackOrderCommissionOnCheckout` e `syncCommissionOnOrderStatusChange` na máquina de estados de pedidos.
+     - Operações de conciliação mensal, listagem de extrato Méliuz e curadoria 1-click para a vitrine do influenciador/criador (`addExternalCampaignToCreatorShowcase`).
+  4. **Superfícies de Interface (`src/routes/_store.afiliados.tsx` & `src/routes/workspace.afiliados.conciliacao.tsx`):**
+     - Aba "Extrato Méliuz" com 4 cards de balanço (Disponível, Em Carência/Escrow, Pendente de Envio, Estornado/Cancelado) e timeline de transações com chips coloridos de status.
+     - Aba "Catálogo Phia" com cards de marcas globais e botão de adição direta em 1 clique para a vitrine pública.
+     - Tela de conciliação mensal no workspace lojista para conferência de faturas e vendas comissionadas.
+  5. **Higienização Design System e Conformidade de Catraca:**
+     - Eliminadas classes fora da grade de 4px (`gap-1.5`, `px-2.5`, `py-1.5`, `size-3.5`) em `src/components/commerce/canonical-store-profile-view.tsx` e `src/routes/_store.conta.entregador.tsx`.
+     - Catraca determinística aprovada com redução de 328 violações em relação à baseline congelada.
+- **Fundamentação Teórica:** AGENTS.md B.1 a B.41, Leis contábeis de Split e Escrow (Méliuz) e benchmark Phia.
+- **Consequências:** Zero vazamento de identidade, zero risco de pagamento de comissão sobre pedidos cancelados, e integração total com vitrines in-page.
+

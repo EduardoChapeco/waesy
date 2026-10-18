@@ -17,6 +17,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { formatDate } from "@/lib/datetime";
 import { formatMoney } from "@/lib/money";
 import { getMyAffiliateTokensOverview, registerAffiliate, upsertCreatorProfile, updateProfilePrivacyMode, getAffiliateShowcaseProducts, getAvailablePartnerStores, getCreatorAnalytics, saveCreatorShowcaseSettings, togglePartnerStoreConnection, getCreatorEvents } from "@/services/affiliates.functions";
+import {
+  listAffiliateCommissionsForPartner,
+  listExternalAffiliateCampaigns,
+  addExternalCampaignToCreatorShowcase,
+} from "@/services/affiliate-ledger.functions";
 import { getProfile } from "@/services/auth.functions";
 
 export const Route = createFileRoute("/_store/afiliados")({
@@ -114,6 +119,31 @@ function AfiliadosPage() {
     enabled: Boolean(referralHandle),
     staleTime: 30_000,
   });
+
+  const { data: ledgerData, isLoading: isLedgerLoading } = useQuery({
+    queryKey: ["affiliate-commissions-ledger"],
+    queryFn: () => listAffiliateCommissionsForPartner(),
+    enabled: Boolean(partner?.id),
+    staleTime: 15_000,
+  });
+
+  const { data: externalCampaigns = [] } = useQuery({
+    queryKey: ["external-affiliate-campaigns"],
+    queryFn: () => listExternalAffiliateCampaigns(),
+    staleTime: 60_000,
+  });
+
+  const handleAddPhiaCampaign = async (campaignId: string, campaignName: string) => {
+    try {
+      await addExternalCampaignToCreatorShowcase({
+        data: { campaignId },
+      });
+      toast.success(`${campaignName} adicionado à sua vitrine!`);
+      await queryClient.invalidateQueries({ queryKey: ["affiliate-showcase-products"] });
+    } catch (err: any) {
+      toast.error(err.message || "Falha ao adicionar campanha à vitrine.");
+    }
+  };
 
   const [activeTab, setActiveTab] = useState<string>("dashboard");
   const [copiedLink, setCopiedLink] = useState<string | null>(null);
@@ -428,29 +458,33 @@ function AfiliadosPage() {
             {/* Navegação em Tabs (Snap & Fade Physics no Mobile) */}
             <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
               <TabsList
-                className="h-10 sm:h-11 p-1 bg-muted/40 rounded-lg border border-border/40 flex items-center gap-1 overflow-x-auto no-scrollbar carousel snap-x snap-mandatory w-full sm:grid sm:grid-cols-5 pr-6 sm:pr-1"
-                style={{
-                  maskImage: "linear-gradient(to right, black 90%, transparent 100%)",
-                  WebkitMaskImage: "linear-gradient(to right, black 90%, transparent 100%)",
-                }}
+                className="h-11 p-1 bg-muted/40 rounded-lg border border-border/40 flex flex-nowrap items-center gap-1 overflow-x-auto no-scrollbar tab-list w-full"
               >
-                <TabsTrigger value="dashboard" className="h-11 min-h-11 px-3 text-xs rounded-lg gap-2 font-medium shrink-0 snap-start sm:shrink">
+                <TabsTrigger value="dashboard" className="h-11 min-h-11 px-3 text-xs rounded-lg gap-2 font-medium shrink-0">
                   <TrendingUp className="size-4" />
                   <span>Visão Geral</span>
                 </TabsTrigger>
-                <TabsTrigger value="showcase" className="h-11 min-h-11 px-3 text-xs rounded-lg gap-2 font-medium shrink-0 snap-start sm:shrink">
-                  <Layers className="size-4" />
-                  <span>Vitrine (Opcional)</span>
-                </TabsTrigger>
-                <TabsTrigger value="stores" className="h-11 min-h-11 px-3 text-xs rounded-lg gap-2 font-medium shrink-0 snap-start sm:shrink">
-                  <Store className="size-4" />
-                  <span>Lojas</span>
-                </TabsTrigger>
-                <TabsTrigger value="referrals" className="h-11 min-h-11 px-3 text-xs rounded-lg gap-2 font-medium shrink-0 snap-start sm:shrink">
+                <TabsTrigger value="ledger" className="h-11 min-h-11 px-3 text-xs rounded-lg gap-2 font-medium shrink-0">
                   <Coins className="size-4" />
-                  <span>Ganhos</span>
+                  <span>Extrato Méliuz</span>
                 </TabsTrigger>
-                <TabsTrigger value="settings" className="h-11 min-h-11 px-3 text-xs rounded-lg gap-2 font-medium shrink-0 snap-start sm:shrink">
+                <TabsTrigger value="phia" className="h-11 min-h-11 px-3 text-xs rounded-lg gap-2 font-medium shrink-0">
+                  <Globe className="size-4" />
+                  <span>Catálogo Phia</span>
+                </TabsTrigger>
+                <TabsTrigger value="showcase" className="h-11 min-h-11 px-3 text-xs rounded-lg gap-2 font-medium shrink-0">
+                  <Layers className="size-4" />
+                  <span>Vitrine</span>
+                </TabsTrigger>
+                <TabsTrigger value="stores" className="h-11 min-h-11 px-3 text-xs rounded-lg gap-2 font-medium shrink-0">
+                  <Store className="size-4" />
+                  <span>Lojas Locais</span>
+                </TabsTrigger>
+                <TabsTrigger value="referrals" className="h-11 min-h-11 px-3 text-xs rounded-lg gap-2 font-medium shrink-0">
+                  <Coins className="size-4" />
+                  <span>Tokens & Vesting</span>
+                </TabsTrigger>
+                <TabsTrigger value="settings" className="h-11 min-h-11 px-3 text-xs rounded-lg gap-2 font-medium shrink-0">
                   <SlidersHorizontal className="size-4" />
                   <span>Configurações</span>
                 </TabsTrigger>
@@ -646,6 +680,173 @@ function AfiliadosPage() {
                     <p className="text-xs text-muted-foreground leading-relaxed">
                       Ganhe tokens e bônus por novos clientes e empresas indicadas, com resgate via Pix.
                     </p>
+                  </div>
+                </div>
+              </TabsContent>
+
+              {/* ─── TAB: EXTRATO MÉLIUZ (COMISSÕES RASTREADAS & ESCROW) ──────── */}
+              <TabsContent value="ledger" className="space-y-4 sm:space-y-6 mt-0">
+                {/* 4 Cards de Saldos do Escrow Méliuz */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <div className="p-4 rounded-lg bg-card border border-border/60 space-y-1">
+                    <span className="text-xs text-muted-foreground block">Em Rastreamento</span>
+                    <p className="text-lg sm:text-xl font-bold text-foreground">
+                      {formatMoney(ledgerData?.summary?.pendingTrackingCents || 0)}
+                    </p>
+                    <span className="text-xs text-muted-foreground block">Aguardando entrega</span>
+                  </div>
+
+                  <div className="p-4 rounded-lg bg-card border border-border/60 space-y-1">
+                    <span className="text-xs text-muted-foreground block">Garantia / Escrow</span>
+                    <p className="text-lg sm:text-xl font-bold text-foreground">
+                      {formatMoney(ledgerData?.summary?.awaitingEscrowCents || 0)}
+                    </p>
+                    <span className="text-xs text-muted-foreground block">Prazo de 7-15 dias</span>
+                  </div>
+
+                  <div className="p-4 rounded-lg bg-card border border-border/60 space-y-1">
+                    <span className="text-xs text-muted-foreground block">Disponível para Saque</span>
+                    <p className="text-lg sm:text-xl font-bold text-foreground">
+                      {formatMoney(ledgerData?.summary?.availableCents || 0)}
+                    </p>
+                    <span className="text-xs text-muted-foreground block">Liberado via Pix</span>
+                  </div>
+
+                  <div className="p-4 rounded-lg bg-card border border-border/60 space-y-1">
+                    <span className="text-xs text-muted-foreground block">Canceladas / Estornos</span>
+                    <p className="text-lg sm:text-xl font-bold text-destructive">
+                      {formatMoney(ledgerData?.summary?.cancelledCents || 0)}
+                    </p>
+                    <span className="text-xs text-muted-foreground block">Clawback Méliuz</span>
+                  </div>
+                </div>
+
+                {/* Lista de Vendas e Comissões */}
+                <div className="p-4 sm:p-5 rounded-lg border border-border/60 bg-card space-y-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border/40 pb-3">
+                    <div>
+                      <h3 className="text-sm font-bold text-foreground">
+                        Livro-Razão de Comissões
+                      </h3>
+                      <p className="text-xs text-muted-foreground">
+                        Acompanhe o status em tempo real de cada venda gerada a partir dos seus links e vitrine.
+                      </p>
+                    </div>
+                  </div>
+
+                  {isLedgerLoading ? (
+                    <div className="py-12 text-center text-xs text-muted-foreground">
+                      Carregando extrato de comissões...
+                    </div>
+                  ) : !ledgerData?.items || ledgerData.items.length === 0 ? (
+                    <div className="py-12 text-center rounded-lg border border-dashed border-border/60 space-y-2">
+                      <Coins className="size-8 text-muted-foreground mx-auto" />
+                      <p className="text-sm font-semibold text-foreground">
+                        Nenhuma venda rastreada ainda
+                      </p>
+                      <p className="text-xs text-muted-foreground max-w-sm mx-auto">
+                        Compartilhe o link da sua vitrine ou produtos parceiros para começar a acumular comissões.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {ledgerData.items.map((item: any) => (
+                        <div
+                          key={item.id}
+                          className="p-4 rounded-lg border border-border/40 bg-muted/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs"
+                        >
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-2">
+                              <span className="font-bold text-foreground">
+                                {item.stores?.name || "Loja Parceira"}
+                              </span>
+                              <Badge variant="secondary" className="text-xs">
+                                {item.status === "tracked_pending" && "Rastreada / Em Análise"}
+                                {item.status === "awaiting_escrow" && "Garantia / Escrow"}
+                                {item.status === "available" && "Disponível para Saque"}
+                                {item.status === "paid_out" && "Liquidada"}
+                                {item.status === "cancelled_refunded" && "Cancelada / Estornada"}
+                              </Badge>
+                            </div>
+                            <div className="flex items-center gap-3 text-muted-foreground flex-wrap">
+                              <span>Pedido: {formatMoney(item.order_gross_cents || 0)}</span>
+                              <span>Taxa: {item.commission_rate_pct}%</span>
+                              <span>Data: {formatDate(item.created_at)}</span>
+                              {item.matures_at && item.status === "awaiting_escrow" && (
+                                <span className="text-foreground">
+                                  Liberação: {formatDate(item.matures_at)}
+                                </span>
+                              )}
+                              {item.cancellation_reason && (
+                                <span className="text-destructive">
+                                  Motivo: {item.cancellation_reason}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="text-right sm:self-center shrink-0">
+                            <span className="text-xs text-muted-foreground block">Sua Comissão</span>
+                            <span className="text-base font-bold text-foreground">
+                              {formatMoney(item.affiliate_share_cents || 0)}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </TabsContent>
+
+              {/* ─── TAB: CATÁLOGO PHIA (CAMPANHAS GLOBAIS E 1-CLICK) ───────── */}
+              <TabsContent value="phia" className="space-y-4 sm:space-y-6 mt-0">
+                <div className="p-4 sm:p-5 rounded-lg border border-border/60 bg-card space-y-4">
+                  <div>
+                    <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+                      <span>Campanhas Globais Curadas (Padrão Phia)</span>
+                      <Badge variant="secondary" className="text-xs">
+                        1-Click Add
+                      </Badge>
+                    </h3>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Monetize sua vitrine indicando marcas consolidadas como Booking.com, produtos naturais e tech com split automático de comissão e cashback.
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+                    {externalCampaigns.map((camp: any) => (
+                      <div
+                        key={camp.id}
+                        className="p-4 rounded-lg border border-border/60 bg-muted/20 flex flex-col justify-between space-y-3"
+                      >
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between gap-2">
+                            <Badge variant="secondary" className="text-xs font-semibold">
+                              {camp.badge_label}
+                            </Badge>
+                            <span className="text-xs text-muted-foreground font-mono">
+                              {camp.default_commission_pct}%
+                            </span>
+                          </div>
+                          <h4 className="text-sm font-bold text-foreground">
+                            {camp.partner_name}
+                          </h4>
+                          <p className="text-xs text-muted-foreground leading-relaxed">
+                            {camp.description}
+                          </p>
+                        </div>
+
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => handleAddPhiaCampaign(camp.id, camp.partner_name)}
+                          className="h-11 min-h-11 w-full rounded-lg text-xs font-semibold gap-2 mt-2 focus-visible:ring-2 focus-visible:ring-primary"
+                        >
+                          <Plus className="size-4" />
+                          <span>Adicionar à Minha Vitrine</span>
+                        </Button>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </TabsContent>
