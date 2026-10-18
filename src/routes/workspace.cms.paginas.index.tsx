@@ -59,8 +59,13 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
 import { listAdminPages, deletePage } from "@/services/cms.functions";
-import { createExperienceDocument, duplicateExperienceDocument } from "@/services/builder.functions";
+import {
+  createExperienceDocument,
+  duplicateExperienceDocument,
+  provisionTourismWixAppSuiteFn,
+} from "@/services/builder.functions";
 import { NICHE_TEMPLATE_MATRIX } from "@/components/builder/templates";
+import { TOURISM_WIX_APP_PAGES } from "@/lib/builder/omni-templates";
 
 export const Route = createFileRoute("/workspace/cms/paginas/")({
   head: () => ({ meta: [{ title: "Páginas | Workspace Waesy" }] }),
@@ -84,7 +89,7 @@ const TEMPLATE_OPTIONS = [
     icon: Square,
     description: "Inicie sem blocos pré-definidos.",
   },
-  ...NICHE_TEMPLATE_MATRIX.map((t) => {
+  ...[...NICHE_TEMPLATE_MATRIX, ...TOURISM_WIX_APP_PAGES].map((t) => {
     let icon = LayoutTemplate;
     if (t.niche === "legal") icon = Scale;
     if (t.niche === "gastronomy") icon = Utensils;
@@ -114,6 +119,7 @@ function CmsPagesPage() {
   const [title, setTitle] = useState("");
   const [slug, setSlug] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isProvisioningTourismApp, setIsProvisioningTourismApp] = useState(false);
   const [isDuplicating, setIsDuplicating] = useState<string | null>(null);
   const [pageToDelete, setPageToDelete] = useState<{ id: string; title: string } | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -137,6 +143,21 @@ function CmsPagesPage() {
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/(^-|-$)+/g, "");
     setSlug(generatedSlug);
+  };
+
+  const handleProvisionTourismSuite = async () => {
+    setIsProvisioningTourismApp(true);
+    try {
+      const res = await provisionTourismWixAppSuiteFn();
+      toast.success(
+        `App Turismo instalado (${res?.pagesCount || 5} páginas interligadas provisionadas).`,
+      );
+      router.invalidate();
+    } catch (error: any) {
+      toast.error(error?.message || "Erro ao instalar a suíte de páginas de Turismo.");
+    } finally {
+      setIsProvisioningTourismApp(false);
+    }
   };
 
   const handleCreate = async (templateId: string) => {
@@ -220,25 +241,42 @@ function CmsPagesPage() {
         eyebrow="CMS"
         title="Páginas"
         actions={
-          <Button
-            onClick={() => setIsCreateModalOpen(true)}
-            className="h-9 px-4 rounded-lg font-semibold text-xs gap-2 bg-foreground text-background hover:bg-foreground/90 shadow-sm"
-          >
-            <Plus className="size-4" />
-            <span>Nova Página</span>
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              disabled={isProvisioningTourismApp}
+              onClick={handleProvisionTourismSuite}
+              className="h-11 min-h-11 px-4 rounded-lg font-semibold text-xs gap-2"
+            >
+              {isProvisioningTourismApp ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <Compass className="size-4 text-primary" />
+              )}
+              <span>Instalar App Turismo (5 Páginas)</span>
+            </Button>
+            <Button
+              type="button"
+              onClick={() => setIsCreateModalOpen(true)}
+              className="h-11 min-h-11 px-4 rounded-lg font-semibold text-xs gap-2 bg-foreground text-background hover:bg-foreground/90"
+            >
+              <Plus className="size-4" />
+              <span>Nova Página</span>
+            </Button>
+          </div>
         }
       />
 
       {/* ── BARRA DE PESQUISA COMPACTA ── */}
       <div className="flex items-center justify-between gap-4">
         <div className="relative flex-1 max-w-xs">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Buscar..."
-            className="pl-8.5 h-9 rounded-lg text-xs bg-background border-border/80"
+            className="pl-9 h-11 min-h-11 rounded-lg text-xs bg-background border-border/80"
           />
         </div>
         <span className="text-xs text-muted-foreground font-mono">
@@ -254,15 +292,27 @@ function CmsPagesPage() {
             {search ? "Nenhum resultado." : "Nenhuma página criada."}
           </p>
           {!search && (
-            <Button
-              onClick={() => setIsCreateModalOpen(true)}
-              variant="outline"
-              size="sm"
-              className="h-8 px-3 rounded-lg text-xs font-medium"
-            >
-              <Plus className="size-3.5 mr-1" />
-              Nova Página
-            </Button>
+            <div className="flex flex-wrap items-center justify-center gap-2">
+              <Button
+                type="button"
+                onClick={handleProvisionTourismSuite}
+                disabled={isProvisioningTourismApp}
+                variant="outline"
+                className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold"
+              >
+                <Compass className="size-4 mr-2 text-primary" />
+                Instalar App Turismo (5 Páginas)
+              </Button>
+              <Button
+                type="button"
+                onClick={() => setIsCreateModalOpen(true)}
+                variant="outline"
+                className="h-11 min-h-11 px-4 rounded-lg text-xs font-medium"
+              >
+                <Plus className="size-4 mr-1" />
+                Nova Página
+              </Button>
+            </div>
           )}
         </div>
       ) : (
@@ -274,9 +324,9 @@ function CmsPagesPage() {
             return (
               <div
                 key={page.id}
-                className="group relative flex flex-col bg-card border border-border/80 rounded-lg overflow-hidden shadow-xs hover:border-foreground/30 hover:shadow-md transition-all"
+                className="group relative flex flex-col bg-card border border-border/80 rounded-lg overflow-hidden hover:border-foreground/30 transition-all"
               >
-                {/* Viewport Preview / Thumbnail Mock */}
+                {/* Viewport Preview / Thumbnail */}
                 <div
                   onClick={() =>
                     navigate({
@@ -289,15 +339,15 @@ function CmsPagesPage() {
                   {/* Browser Bar Minimalista */}
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-1 opacity-40">
-                      <div className="size-1.5 rounded-full bg-foreground" />
-                      <div className="size-1.5 rounded-full bg-foreground" />
-                      <div className="size-1.5 rounded-full bg-foreground" />
+                      <div className="size-2 rounded-full bg-foreground" />
+                      <div className="size-2 rounded-full bg-foreground" />
+                      <div className="size-2 rounded-full bg-foreground" />
                     </div>
                     <Badge
                       variant="outline"
                       className={`text-xs font-mono font-medium px-2 py-0 rounded-md border ${
                         isPublished
-                          ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20"
+                          ? "bg-primary/10 text-primary border-primary/20"
                           : "bg-muted text-muted-foreground border-border/80"
                       }`}
                     >
@@ -308,7 +358,7 @@ function CmsPagesPage() {
                   {/* Wireframe Miniatura da Página */}
                   <div className="space-y-2 px-2 opacity-50 group-hover:opacity-75 transition-opacity">
                     <div className="h-2 w-3/4 bg-foreground/20 rounded-sm" />
-                    <div className="h-1.5 w-1/2 bg-foreground/15 rounded-sm" />
+                    <div className="h-2 w-1/2 bg-foreground/15 rounded-sm" />
                     <div className="grid grid-cols-3 gap-1 pt-1">
                       <div className="h-4 rounded bg-foreground/10" />
                       <div className="h-4 rounded bg-foreground/10" />
@@ -317,9 +367,9 @@ function CmsPagesPage() {
                   </div>
 
                   {/* Overlay Flutuante com Ação Direta */}
-                  <div className="absolute inset-0 bg-background/60 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                    <span className="text-xs font-semibold px-3 py-2 rounded-lg bg-foreground text-background shadow-xs flex items-center gap-2">
-                      <Edit3 className="size-3.5" />
+                  <div className="absolute inset-0 bg-background/60 backdrop-blur-xs opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                    <span className="text-xs font-semibold px-3 py-2 rounded-lg bg-foreground text-background flex items-center gap-2">
+                      <Edit3 className="size-4" />
                       Editar
                     </span>
                   </div>
@@ -351,7 +401,7 @@ function CmsPagesPage() {
                       to="/paginas/$slug"
                       params={{ slug: page.slug }}
                       target="_blank"
-                      className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1 transition-colors"
+                      className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1 transition-colors h-11 min-h-11 px-2"
                       title="Abrir página pública"
                     >
                       <Globe className="size-3" />
@@ -363,7 +413,7 @@ function CmsPagesPage() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="size-7 rounded-lg text-muted-foreground hover:text-foreground"
+                          className="size-11 min-h-11 min-w-11 rounded-lg text-muted-foreground hover:text-foreground"
                           aria-label="Opções"
                         >
                           <MoreHorizontal className="size-4" />
@@ -379,7 +429,7 @@ function CmsPagesPage() {
                           }
                           className="text-xs gap-2 cursor-pointer"
                         >
-                          <Edit3 className="size-3.5" />
+                          <Edit3 className="size-4" />
                           <span>Editar</span>
                         </DropdownMenuItem>
 
@@ -387,7 +437,7 @@ function CmsPagesPage() {
                           onClick={() => handleCopyLink(page.slug)}
                           className="text-xs gap-2 cursor-pointer"
                         >
-                          <LinkIcon className="size-3.5" />
+                          <LinkIcon className="size-4" />
                           <span>Copiar Link</span>
                         </DropdownMenuItem>
 
@@ -396,7 +446,7 @@ function CmsPagesPage() {
                           disabled={isDuplicating === page.id}
                           className="text-xs gap-2 cursor-pointer"
                         >
-                          <Copy className="size-3.5" />
+                          <Copy className="size-4" />
                           <span>Duplicar</span>
                         </DropdownMenuItem>
 
@@ -406,7 +456,7 @@ function CmsPagesPage() {
                           onClick={() => setPageToDelete({ id: page.id, title: page.title })}
                           className="text-xs gap-2 text-destructive focus:text-destructive cursor-pointer"
                         >
-                          <Trash2 className="size-3.5" />
+                          <Trash2 className="size-4" />
                           <span>Excluir</span>
                         </DropdownMenuItem>
                       </DropdownMenuContent>
@@ -422,7 +472,7 @@ function CmsPagesPage() {
       {/* ── CRIAÇÃO VISUAL DE PROJETOS (FASE 3 - DESKTOP MODAL VS MOBILE BOTTOM SHEET) ── */}
       {isMobile ? (
         <Sheet open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
-          <SheetContent side="bottom" className="h-[85vh] rounded-t-lg p-5 flex flex-col">
+          <SheetContent side="bottom" className="max-h-screen rounded-t-lg p-5 flex flex-col">
             <SheetHeader className="mb-3">
               <SheetTitle className="text-sm font-bold tracking-tight">Nova Página</SheetTitle>
             </SheetHeader>
@@ -434,7 +484,7 @@ function CmsPagesPage() {
                   value={title}
                   onChange={(e) => handleTitleChange(e.target.value)}
                   placeholder="Ex: Lançamento de Verão"
-                  className="h-10 rounded-lg text-xs mt-1"
+                  className="h-11 min-h-11 rounded-lg text-xs mt-1"
                 />
               </div>
 
@@ -458,7 +508,7 @@ function CmsPagesPage() {
                           <div className="min-w-0">
                             <div className="flex items-center gap-2">
                               <h4 className="text-xs font-bold text-foreground truncate">{tpl.name}</h4>
-                              <span className="text-xs font-medium px-2 py-0.2 rounded bg-muted/80 text-muted-foreground">
+                              <span className="text-xs font-medium px-2 py-0.5 rounded bg-muted/80 text-muted-foreground">
                                 {tpl.badge}
                               </span>
                             </div>
@@ -490,7 +540,7 @@ function CmsPagesPage() {
                   value={title}
                   onChange={(e) => handleTitleChange(e.target.value)}
                   placeholder="Ex: Lançamento de Verão"
-                  className="h-9 rounded-lg text-xs mt-1"
+                  className="h-11 min-h-11 rounded-lg text-xs mt-1"
                   autoFocus
                 />
               </div>
@@ -499,7 +549,7 @@ function CmsPagesPage() {
                 <Label className="text-xs font-semibold text-muted-foreground mb-2 block">
                   Escolha o modelo inicial
                 </Label>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-[320px] overflow-y-auto p-1">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-80 overflow-y-auto p-1">
                   {TEMPLATE_OPTIONS.map((tpl) => {
                     const Icon = tpl.icon;
                     const isSelected = selectedTemplateId === tpl.id;
@@ -510,14 +560,14 @@ function CmsPagesPage() {
                         onClick={() => setSelectedTemplateId(tpl.id)}
                         className={`p-3 rounded-lg border transition-all cursor-pointer flex flex-col justify-between ${
                           isSelected
-                            ? "border-foreground bg-muted/40 shadow-xs"
+                            ? "border-foreground bg-muted/40"
                             : "border-border/80 bg-card hover:border-foreground/40"
                         }`}
                       >
                         <div>
                           <div className="flex items-center justify-between mb-2">
-                            <div className="size-7 rounded-lg bg-muted flex items-center justify-center">
-                              <Icon className="size-3.5 text-foreground" />
+                            <div className="size-8 rounded-lg bg-muted flex items-center justify-center">
+                              <Icon className="size-4 text-foreground" />
                             </div>
                             <span className="text-xs font-medium px-2 py-1 rounded bg-muted/80 text-muted-foreground">
                               {tpl.badge}
@@ -538,22 +588,20 @@ function CmsPagesPage() {
                 <Button
                   type="button"
                   variant="ghost"
-                  size="sm"
                   onClick={() => setIsCreateModalOpen(false)}
-                  className="h-9 px-3 rounded-lg text-xs"
+                  className="h-11 min-h-11 px-3 rounded-lg text-xs"
                 >
                   Cancelar
                 </Button>
                 <Button
                   type="button"
-                  size="sm"
                   disabled={isSubmitting}
                   onClick={() => handleCreate(selectedTemplateId)}
-                  className="h-9 px-4 rounded-lg text-xs font-bold bg-foreground text-background hover:bg-foreground/90 shadow-sm"
+                  className="h-11 min-h-11 px-4 rounded-lg text-xs font-bold bg-foreground text-background hover:bg-foreground/90"
                 >
                   {isSubmitting ? (
                     <span className="flex items-center gap-2">
-                      <Loader2 className="size-3.5 animate-spin" />
+                      <Loader2 className="size-4 animate-spin" />
                       Criando...
                     </span>
                   ) : (
@@ -580,7 +628,7 @@ function CmsPagesPage() {
           <AlertDialogFooter className="mt-3 gap-2">
             <AlertDialogCancel
               disabled={isDeleting}
-              className="h-9 px-3 rounded-lg text-xs font-medium"
+              className="h-11 min-h-11 px-3 rounded-lg text-xs font-medium"
             >
               Cancelar
             </AlertDialogCancel>
@@ -590,7 +638,7 @@ function CmsPagesPage() {
                 confirmDelete();
               }}
               disabled={isDeleting}
-              className="h-9 px-3 rounded-lg text-xs font-bold bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+              className="h-11 min-h-11 px-3 rounded-lg text-xs font-bold bg-destructive hover:bg-destructive/90 text-destructive-foreground"
             >
               {isDeleting ? "Excluindo..." : "Excluir"}
             </AlertDialogAction>
@@ -600,3 +648,4 @@ function CmsPagesPage() {
     </div>
   );
 }
+

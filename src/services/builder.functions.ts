@@ -680,7 +680,19 @@ export const createExperienceDocument = createServerFn({ method: "POST" })
       const storeData = { id: identity.store_id };
       if (!storeData) throw new Error("No store found");
 
-      // 1. Create Document
+      // 1. Build initial OmniPageDocument snapshot from selected template
+      const { createEmptyOmniPage } = await import("@/types/omni-builder");
+      const { applyTemplateToPage } = await import("@/lib/builder/omni-templates");
+      let initialOmniDoc = createEmptyOmniPage(
+        input.slug,
+        input.title,
+        (input.document_type as any) || "general",
+      );
+      if (input.template_id && input.template_id !== "blank") {
+        initialOmniDoc = applyTemplateToPage(initialOmniDoc, input.template_id);
+      }
+
+      // 2. Create Document with initial OmniPageDocument settings
       const { data: doc, error: docError } = await db
         .from("experience_documents")
         .insert({
@@ -689,26 +701,31 @@ export const createExperienceDocument = createServerFn({ method: "POST" })
           slug: input.slug,
           document_type: input.document_type,
           is_active: true,
+          settings: {
+            template_id: input.template_id || "blank",
+            omni_page_draft: initialOmniDoc,
+          },
         })
         .select()
         .single();
 
       if (docError) throw docError;
 
-      // 2. Create Initial Version
+      // 3. Create Initial Version with document_snapshot
       const { data: version, error: versionError } = await db
         .from("experience_versions")
         .insert({
           document_id: doc.id,
           version_number: 1,
           status: "draft",
+          document_snapshot: initialOmniDoc,
         })
         .select()
         .single();
 
       if (versionError) throw versionError;
 
-      // 3. Inject Seed Template if provided
+      // 4. Inject Seed Template if provided
       if (input.template_id && input.template_id !== "blank") {
         const { randomUUID } = await import("crypto");
         let seedNodes: Partial<ExperienceNode>[] = [];
@@ -3136,3 +3153,149 @@ export const updateExperienceDocumentSettings = createServerFn({ method: "POST" 
       );
     }
   });
+
+export const provisionTourismWixAppSuiteFn = createServerFn({ method: "POST" }).handler(
+  async () => {
+    await requireAdmin();
+    const { getServerIdentity } = await import("@/lib/server-access");
+    const identity = await getServerIdentity();
+    if (!identity.store_id) throw new Error("Loja não identificada para instalar a suíte de turismo.");
+
+    const db = getServerClient();
+    const { createEmptyOmniPage } = await import("@/types/omni-builder");
+    const { TOURISM_WIX_APP_PAGES, applyTemplateToPage } = await import("@/lib/builder/omni-templates");
+
+    const suiteDefinitions = [
+      {
+        templateId: "wix_tourism_home",
+        title: "Turismo — Vitrine & Busca Autoatendimento",
+        slug: "inicio-turismo",
+        documentType: "storefront",
+      },
+      {
+        templateId: "wix_tourism_packages",
+        title: "Catálogo de Pacotes & Roteiros",
+        slug: "pacotes",
+        documentType: "campaign",
+      },
+      {
+        templateId: "wix_tourism_hotels",
+        title: "Hotéis, Resorts & Hospedagens",
+        slug: "hoteis",
+        documentType: "campaign",
+      },
+      {
+        templateId: "wix_tourism_quote",
+        title: "Solicitar Cotação Personalizada",
+        slug: "cotacao",
+        documentType: "campaign",
+      },
+      {
+        templateId: "wix_tourism_portal",
+        title: "Portal do Viajante — Minhas Viagens",
+        slug: "minhas-viagens",
+        documentType: "campaign",
+      },
+    ] as const;
+
+    const provisionedPages: Array<{ id: string; slug: string; title: string; created: boolean }> = [];
+
+    for (const def of suiteDefinitions) {
+      const tplExists = TOURISM_WIX_APP_PAGES.some((t) => t.id === def.templateId);
+      if (!tplExists) continue;
+
+      let omniDoc = createEmptyOmniPage(def.slug, def.title, "tourism" as any);
+      omniDoc = applyTemplateToPage(omniDoc, def.templateId);
+      omniDoc.published_at = new Date().toISOString();
+
+      const { data: existing } = await db
+        .from("experience_documents")
+        .select("id, settings")
+        .eq("store_id", identity.store_id)
+        .eq("slug", def.slug)
+        .maybeSingle();
+
+      if (existing?.id) {
+        omniDoc.id = existing.id;
+        const mergedSettings = {
+          ...((existing.settings as Record<string, unknown>) || {}),
+          template_id: def.templateId,
+          omni_page_draft: omniDoc,
+          omni_page: omniDoc,
+          wix_app_suite: "tourism_suite_v1",
+        };
+        await db
+          .from("experience_documents")
+          .update({
+            title: def.title,
+            is_active: true,
+            settings: mergedSettings,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", existing.id);
+
+        provisionedPages.push({
+          id: existing.id,
+          slug: def.slug,
+          title: def.title,
+          created: false,
+        });
+      } else {
+        const { data: createdDoc, error: createErr } = await db
+          .from("experience_documents")
+          .insert({
+            store_id: identity.store_id,
+            title: def.title,
+            slug: def.slug,
+            document_type: def.documentType,
+            is_active: true,
+            settings: {
+              template_id: def.templateId,
+              omni_page_draft: omniDoc,
+              omni_page: omniDoc,
+              wix_app_suite: "tourism_suite_v1",
+            },
+          })
+          .select("id")
+          .single();
+
+        if (createErr || !createdDoc) continue;
+
+        omniDoc.id = createdDoc.id;
+
+        const { data: ver } = await db
+          .from("experience_versions")
+          .insert({
+            document_id: createdDoc.id,
+            version_number: 1,
+            status: "published",
+            document_snapshot: omniDoc,
+            published_at: new Date().toISOString(),
+          })
+          .select("id")
+          .single();
+
+        if (ver?.id) {
+          await db
+            .from("experience_documents")
+            .update({ published_version_id: ver.id })
+            .eq("id", createdDoc.id);
+        }
+
+        provisionedPages.push({
+          id: createdDoc.id,
+          slug: def.slug,
+          title: def.title,
+          created: true,
+        });
+      }
+    }
+
+    return {
+      status: "ok" as const,
+      pagesCount: provisionedPages.length,
+      pages: provisionedPages,
+    };
+  },
+);
+

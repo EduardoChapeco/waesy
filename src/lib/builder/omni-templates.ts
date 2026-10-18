@@ -1100,8 +1100,206 @@ export const NICHE_TEMPLATE_MATRIX: NicheTemplateDefinition[] = [
   },
 ];
 
+export interface TourismWixAppPageTemplate extends NicheTemplateDefinition {
+  slug: string;
+  title: string;
+  document_type: "storefront" | "campaign" | "landing_page" | "institutional";
+  is_home: boolean;
+}
+
+export const TOURISM_WIX_APP_PAGES: TourismWixAppPageTemplate[] = [
+  {
+    id: "wix_tourism_home",
+    name: "Vitrine Principal & Buscador GDS",
+    niche: "tourism",
+    slug: "inicio-turismo",
+    title: "Início — Viagens & Buscador GDS",
+    document_type: "storefront",
+    is_home: true,
+    badge: "App Turismo • Home",
+    description: "Página principal integrada ao motor de busca InfoTravel GDS, destinos e hotéis parceiros.",
+    blocks: [
+      {
+        type: "dynamic_booking_hero",
+        config: {
+          title: "Sua Próxima Viagem Começa Aqui",
+          subtitle: "Pacotes completos, passagens aéreas e resorts exclusivos com cotação online imediata.",
+          badge: "Tarifas Exclusivas de Agência • InfoTravel GDS",
+          defaultOrigin: "Chapecó, SC",
+          defaultDestination: "Maceió, AL",
+          showBenefitsBar: true,
+        },
+      },
+      {
+        type: "tourism_destinations_carousel",
+        config: {
+          title: "Destinos Mais Desejados",
+          subtitle: "Roteiros com aéreo, hospedagem selecionada e suporte completo da agência.",
+        },
+      },
+      {
+        type: "travel_hotel_slider",
+        config: {
+          title: "Hotéis e Resorts Conveniados",
+          subtitle: "Hospedagens verificadas com tarifas negociadas diretamente com operadoras.",
+        },
+      },
+      {
+        type: "tourism_services_grid",
+        config: {
+          title: "Especialidades da Agência",
+          subtitle: "Assessoria completa antes, durante e após o seu embarque.",
+        },
+      },
+    ],
+  },
+  {
+    id: "wix_tourism_packages",
+    name: "Catálogo de Pacotes & Roteiros",
+    niche: "tourism",
+    slug: "pacotes",
+    title: "Pacotes & Roteiros",
+    document_type: "campaign",
+    is_home: false,
+    badge: "App Turismo • Pacotes",
+    description: "Vitrine dedicada a pacotes promocionais, excursões em grupo e cronograma dia a dia.",
+    blocks: [
+      {
+        type: "travel_package_hero",
+        config: {
+          title: "Pacotes Completos com Aéreo e Resort",
+          subtitle: "Saídas garantidas, bloqueios aéreos exclusivos e parcelamento facilitado.",
+        },
+      },
+      {
+        type: "tourism_destinations_carousel",
+        config: {
+          title: "Saídas Confirmadas da Temporada",
+          subtitle: "Escolha seu destino e garanta tarifa de lote promocional.",
+        },
+      },
+      {
+        type: "travel_itinerary_timeline",
+        config: {
+          title: "Como Funciona a Experiência Dia a Dia",
+          subtitle: "Planejamento transparente do embarque ao retorno.",
+        },
+      },
+      {
+        type: "faq_clean_accordion",
+        config: {
+          title: "Dúvidas sobre Pacotes e Reservas",
+          subtitle: "Informações claras sobre bagagem, documentação e formas de pagamento.",
+          items: [
+            {
+              id: "faq-pkg-1",
+              question: "Como funciona o parcelamento no boleto e cartão?",
+              answer: "Você pode parcelar sua viagem com entrada reduzida via Pix e saldo em até 12x no cartão ou boleto bancário sujeito à aprovação.",
+            },
+            {
+              id: "faq-pkg-2",
+              question: "Os pacotes incluem bagagem despachada e transfer?",
+              answer: "Cada opção da proposta detalha de forma transparente a franquia de bagagem incluída e o tipo de traslado entre aeroporto e hotel.",
+            },
+          ],
+        },
+      },
+    ],
+  },
+  {
+    id: "wix_tourism_hotels",
+    name: "Buscador de Hotéis, Resorts & Voos",
+    niche: "tourism",
+    slug: "hoteis",
+    title: "Hotéis, Resorts & Aéreo",
+    document_type: "campaign",
+    is_home: false,
+    badge: "App Turismo • Hotéis & GDS",
+    description: "Página de autoatendimento conectada ao InfoTravel para pesquisa de hospedagens e malha aérea.",
+    blocks: [
+      {
+        type: "dynamic_booking_hero",
+        config: {
+          title: "Reserve Hotéis, Resorts e Passagens Aéreas",
+          subtitle: "Compare opções verificadas em tempo real e receba sua proposta interativa.",
+          badge: "Conexão Direta Operadoras",
+          defaultOrigin: "São Paulo, SP",
+          defaultDestination: "Gramado, RS",
+          showBenefitsBar: false,
+        },
+      },
+      {
+        type: "travel_hotel_slider",
+        config: {
+          title: "Seleção de Resorts & Hotéis Recomendados",
+          subtitle: "Opções avaliadas por viajantes reais nos principais destinos.",
+        },
+      },
+      {
+        type: "travel_product_detail",
+        config: {
+          title: "Destaque da Semana em Hospedagem",
+          subtitle: "Estrutura completa de lazer, gastronomia e conforto para sua família.",
+        },
+      },
+    ],
+  },
+  {
+    id: "wix_tourism_quote",
+    name: "Central de Cotação Personalizada",
+    niche: "tourism",
+    slug: "cotacao",
+    title: "Solicitar Cotação Sob Medida",
+    document_type: "landing_page",
+    is_home: false,
+    badge: "App Turismo • Cotação",
+    description: "Captura estruturada de orçamento integrada diretamente ao Kanban de Cotações da agência.",
+    blocks: [
+      {
+        type: "tourism_quote_hero",
+        config: {
+          title: "Planeje Sua Viagem Sob Medida",
+          subtitle: "Informe seu destino, datas e configuração de quartos para receber uma proposta comparativa com até 4 opções.",
+          badge: "Atendimento Especializado",
+          destinationPresets: ["Maceió", "Gramado", "Buenos Aires", "Punta Cana", "Orlando", "Europa"],
+        },
+      },
+      {
+        type: "tourism_services_grid",
+        config: {
+          title: "O Que Incluímos no Seu Planejamento",
+          subtitle: "Cuidamos de passagens, hospedagem, seguro viagem, locação de veículos e vistos.",
+        },
+      },
+    ],
+  },
+  {
+    id: "wix_tourism_portal",
+    name: "Portal do Viajante (Vouchers & Contratos)",
+    niche: "tourism",
+    slug: "minhas-viagens",
+    title: "Portal do Viajante — Minhas Viagens",
+    document_type: "institutional",
+    is_home: false,
+    badge: "App Turismo • Portal B2C",
+    description: "Área do passageiro para consulta de reservas, download de vouchers, contratos e pré-embarque.",
+    blocks: [
+      {
+        type: "customer_travel_portal",
+        config: {
+          title: "Portal do Viajante",
+          subtitle: "Acesse seus vouchers, localizadores aéreos, contrato digital e guia de pré-embarque.",
+        },
+      },
+    ],
+  },
+];
+
 export function getTemplateById(id: string): NicheTemplateDefinition | undefined {
-  return NICHE_TEMPLATE_MATRIX.find((t) => t.id === id);
+  return (
+    NICHE_TEMPLATE_MATRIX.find((t) => t.id === id) ||
+    TOURISM_WIX_APP_PAGES.find((t) => t.id === id)
+  );
 }
 
 export function getTemplateByNiche(niche: string): NicheTemplateDefinition {
@@ -1134,3 +1332,4 @@ export function applyTemplateToPage(page: OmniPageDocument, templateId: string):
     updated_at: new Date().toISOString(),
   };
 }
+

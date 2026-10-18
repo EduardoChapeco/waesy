@@ -19,6 +19,198 @@ export class InfotravelNotConfiguredError extends Error {
   }
 }
 
+export class InfotravelCircuitBreakerOpenError extends Error {
+  readonly errorCode = "CIRCUIT_BREAKER_OPEN";
+  readonly retryAfterMs: number;
+  constructor(operatorKey: string, retryAfterMs: number) {
+    const secs = Math.max(1, Math.ceil(retryAfterMs / 1000));
+    super(
+      `Proteção anti-bloqueio ativa para InfoTravel (${operatorKey}): múltiplas falhas ou limite de taxa detectados. Nova tentativa liberada em ${secs}s.`,
+    );
+    this.name = "InfotravelCircuitBreakerOpenError";
+    this.retryAfterMs = retryAfterMs;
+  }
+}
+
+export class InfotravelRateLimitError extends Error {
+  readonly errorCode = "RATE_LIMIT_EXCEEDED";
+  constructor(scopeKey: string) {
+    super(
+      `Limite de segurança atingido para consultas InfoTravel (${scopeKey}). Aguarde alguns instantes antes de pesquisar novamente.`,
+    );
+    this.name = "InfotravelRateLimitError";
+  }
+}
+
+// ── Motor Canônico Anti-Loop, Cache TTL (15 min), Deduplicação e Circuit Breaker ──
+export const INFOTRAVEL_CACHE_TTL_MS = 15 * 60 * 1000; // 15 minutos
+export const INFOTRAVEL_CIRCUIT_FAILURE_THRESHOLD = 3;
+export const INFOTRAVEL_CIRCUIT_COOLDOWN_MS = 60 * 1000; // 60 segundos
+export const INFOTRAVEL_RATE_LIMIT_WINDOW_MS = 60 * 1000; // 1 minuto
+export const INFOTRAVEL_RATE_LIMIT_MAX_REQUESTS = 20;
+const MAX_CACHE_ENTRIES = 500;
+
+interface CacheEntry<T = unknown> {
+  value: T;
+  expiresAt: number;
+}
+
+interface CircuitState {
+  consecutiveFailures: number;
+  openedUntil: number;
+  lastError?: string;
+}
+
+const availabilityCache = new Map<string, CacheEntry>();
+const inFlightRequests = new Map<string, Promise<unknown>>();
+const circuitBreakers = new Map<string, CircuitState>();
+const rateLimitBuckets = new Map<string, number[]>();
+
+export function sanitizeInfotravelSearchText(input: string, maxLength = 80): string {
+  return String(input || "")
+    .replace(/[<>;"'`$\\{}]/g, "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, maxLength);
+}
+
+function buildCanonicalCacheKey(scope: string, params: Record<string, unknown>): string {
+  const sortedEntries = Object.entries(params || {})
+    .filter(([, v]) => v !== undefined && v !== null && v !== "")
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([k, v]) => [k, typeof v === "string" ? v.trim().toLowerCase() : v]);
+  return `${scope}::${JSON.stringify(sortedEntries)}`;
+}
+
+function checkRateLimit(bucketKey: string, maxRequests = INFOTRAVEL_RATE_LIMIT_MAX_REQUESTS): void {
+  const now = Date.now();
+  const windowStart = now - INFOTRAVEL_RATE_LIMIT_WINDOW_MS;
+  const timestamps = (rateLimitBuckets.get(bucketKey) || []).filter((ts) => ts > windowStart);
+  if (timestamps.length >= maxRequests) {
+    rateLimitBuckets.set(bucketKey, timestamps);
+    throw new InfotravelRateLimitError(bucketKey);
+  }
+  timestamps.push(now);
+  rateLimitBuckets.set(bucketKey, timestamps);
+}
+
+function assertCircuitClosed(circuitKey: string): void {
+  const state = circuitBreakers.get(circuitKey);
+  if (!state) return;
+  const now = Date.now();
+  if (state.openedUntil > now) {
+    throw new InfotravelCircuitBreakerOpenError(circuitKey, state.openedUntil - now);
+  }
+}
+
+function recordCircuitSuccess(circuitKey: string): void {
+  if (circuitBreakers.has(circuitKey)) {
+    circuitBreakers.delete(circuitKey);
+  }
+}
+
+function recordCircuitFailure(circuitKey: string, err: unknown): void {
+  // Nunca abrir o circuit breaker por falta de configuração de credencial (erro de onboarding)
+  if (err instanceof InfotravelNotConfiguredError || (err as any)?.errorCode === "CREDENTIALS_NOT_CONFIGURED") {
+    return;
+  }
+  const current = circuitBreakers.get(circuitKey) || { consecutiveFailures: 0, openedUntil: 0 };
+  const nextFailures = current.consecutiveFailures + 1;
+  const openedUntil =
+    nextFailures >= INFOTRAVEL_CIRCUIT_FAILURE_THRESHOLD
+      ? Date.now() + INFOTRAVEL_CIRCUIT_COOLDOWN_MS
+      : 0;
+  circuitBreakers.set(circuitKey, {
+    consecutiveFailures: nextFailures,
+    openedUntil,
+    lastError: err instanceof Error ? err.message : String(err),
+  });
+}
+
+export async function withInfotravelResilience<T>(
+  options: {
+    storeId: string;
+    operatorSlug?: string;
+    action: string;
+    params: Record<string, unknown>;
+    ttlMs?: number;
+    maxRequestsPerMin?: number;
+  },
+  executor: () => Promise<T>,
+): Promise<T> {
+  const operator = options.operatorSlug || "infotravel_default";
+  const cacheKey = buildCanonicalCacheKey(`${options.storeId}:${operator}:${options.action}`, options.params);
+  const circuitKey = `${options.storeId}:${operator}`;
+  const rateKey = `${options.storeId}:${options.action}`;
+  const now = Date.now();
+
+  // 1. Cache Hit imediato (não consome quota nem rate limit)
+  const cached = availabilityCache.get(cacheKey);
+  if (cached && cached.expiresAt > now) {
+    return cached.value as T;
+  }
+  if (cached) {
+    availabilityCache.delete(cacheKey);
+  }
+
+  // 2. Deduplicação de chamadas concorrentes idênticas (In-Flight)
+  const pending = inFlightRequests.get(cacheKey);
+  if (pending) {
+    return (await pending) as T;
+  }
+
+  // 3. Verificação de Circuit Breaker e Rate Limit Anti-Loop
+  assertCircuitClosed(circuitKey);
+  checkRateLimit(rateKey, options.maxRequestsPerMin ?? INFOTRAVEL_RATE_LIMIT_MAX_REQUESTS);
+
+  const promise = (async () => {
+    try {
+      const result = await executor();
+      recordCircuitSuccess(circuitKey);
+
+      if (availabilityCache.size >= MAX_CACHE_ENTRIES) {
+        const oldestKey = availabilityCache.keys().next().value;
+        if (oldestKey) availabilityCache.delete(oldestKey);
+      }
+      availabilityCache.set(cacheKey, {
+        value: result,
+        expiresAt: Date.now() + (options.ttlMs ?? INFOTRAVEL_CACHE_TTL_MS),
+      });
+      return result;
+    } catch (err) {
+      recordCircuitFailure(circuitKey, err);
+      throw err;
+    } finally {
+      inFlightRequests.delete(cacheKey);
+    }
+  })();
+
+  inFlightRequests.set(cacheKey, promise);
+  return await promise;
+}
+
+export function resetInfotravelResilienceStateForTests(): void {
+  availabilityCache.clear();
+  inFlightRequests.clear();
+  circuitBreakers.clear();
+  rateLimitBuckets.clear();
+}
+
+export function getInfotravelResilienceMetrics() {
+  return {
+    cacheSize: availabilityCache.size,
+    inFlightCount: inFlightRequests.size,
+    openCircuits: Array.from(circuitBreakers.entries())
+      .filter(([, state]) => state.openedUntil > Date.now())
+      .map(([key, state]) => ({
+        key,
+        consecutiveFailures: state.consecutiveFailures,
+        retryAfterMs: Math.max(0, state.openedUntil - Date.now()),
+        lastError: state.lastError,
+      })),
+  };
+}
+
 /**
  * BFF Server Function para despachar chamadas com segurança ao Edge Function ou conector GDS
  */
@@ -112,9 +304,20 @@ export async function infotravelSearchHotels(
     scenarioId?: string;
   },
 ): Promise<Hotel[]> {
-  const data = await invokeConnector("search_hotels", agencyId, params);
-  const envelope = requireV1Envelope(data, "search_hotels");
-  return (Array.isArray(envelope.offers) ? envelope.offers : []).map((item: ApiHotelAvail) => mapApiHotelToCanonical(item));
+  const cleanParams = {
+    ...params,
+    city: sanitizeInfotravelSearchText(params.city),
+  };
+  return await withInfotravelResilience(
+    { storeId: agencyId, action: "search_hotels", params: cleanParams },
+    async () => {
+      const data = await invokeConnector("search_hotels", agencyId, cleanParams);
+      const envelope = requireV1Envelope(data, "search_hotels");
+      return (Array.isArray(envelope.offers) ? envelope.offers : []).map((item: ApiHotelAvail) =>
+        mapApiHotelToCanonical(item),
+      );
+    },
+  );
 }
 
 // ── Busca de Voos ──────────────────────────────────────────────────────────
@@ -128,9 +331,21 @@ export async function infotravelSearchFlights(
     scenarioId?: string;
   },
 ): Promise<Flight[]> {
-  const data = await invokeConnector("search_flights", agencyId, params);
-  const envelope = requireV1Envelope(data, "search_flights");
-  return (Array.isArray(envelope.offers) ? envelope.offers : []).map((item: ApiFlightAvail) => mapApiFlightToCanonical(item));
+  const cleanParams = {
+    ...params,
+    origin: sanitizeInfotravelSearchText(params.origin, 40),
+    destination: sanitizeInfotravelSearchText(params.destination, 40),
+  };
+  return await withInfotravelResilience(
+    { storeId: agencyId, action: "search_flights", params: cleanParams },
+    async () => {
+      const data = await invokeConnector("search_flights", agencyId, cleanParams);
+      const envelope = requireV1Envelope(data, "search_flights");
+      return (Array.isArray(envelope.offers) ? envelope.offers : []).map((item: ApiFlightAvail) =>
+        mapApiFlightToCanonical(item),
+      );
+    },
+  );
 }
 
 // ── Busca de Traslados/Transfers ───────────────────────────────────────────
@@ -147,9 +362,19 @@ export async function infotravelSearchTransfers(
     scenarioId?: string;
   },
 ): Promise<any[]> {
-  const data = await invokeConnector("search_transfers", agencyId, params);
-  const envelope = requireV1Envelope(data, "search_transfers");
-  return Array.isArray(envelope.offers) ? envelope.offers : [];
+  const cleanParams = {
+    ...params,
+    destination: params.destination ? sanitizeInfotravelSearchText(params.destination) : undefined,
+    city: params.city ? sanitizeInfotravelSearchText(params.city) : undefined,
+  };
+  return await withInfotravelResilience(
+    { storeId: agencyId, action: "search_transfers", params: cleanParams },
+    async () => {
+      const data = await invokeConnector("search_transfers", agencyId, cleanParams);
+      const envelope = requireV1Envelope(data, "search_transfers");
+      return Array.isArray(envelope.offers) ? envelope.offers : [];
+    },
+  );
 }
 
 // ── Busca de Passeios e Atividades ─────────────────────────────────────────
@@ -166,9 +391,19 @@ export async function infotravelSearchActivities(
     scenarioId?: string;
   },
 ): Promise<any[]> {
-  const data = await invokeConnector("search_activities", agencyId, params);
-  const envelope = requireV1Envelope(data, "search_activities");
-  return Array.isArray(envelope.offers) ? envelope.offers : [];
+  const cleanParams = {
+    ...params,
+    destination: params.destination ? sanitizeInfotravelSearchText(params.destination) : undefined,
+    city: params.city ? sanitizeInfotravelSearchText(params.city) : undefined,
+  };
+  return await withInfotravelResilience(
+    { storeId: agencyId, action: "search_activities", params: cleanParams },
+    async () => {
+      const data = await invokeConnector("search_activities", agencyId, cleanParams);
+      const envelope = requireV1Envelope(data, "search_activities");
+      return Array.isArray(envelope.offers) ? envelope.offers : [];
+    },
+  );
 }
 
 // ── Importação de Reserva ──────────────────────────────────────────────────
@@ -546,70 +781,82 @@ export const infotravelSearchPackages = createServerFn({ method: "POST" })
     const identity = await getServerIdentity();
     assertStoreAccess(identity);
 
-    const creds = await resolveStoreInfotravelCredentials(identity.store_id, data.operatorSlug);
-    if (!creds) {
-      await recordInfotravelApiError(
-        identity,
-        data.operatorSlug,
-        "/api/v1/utility/packageAvail",
-        `Credenciais InfoTravel (${data.operatorSlug.toUpperCase()}) não configuradas no Hub de Integrações.`,
-      );
-      throw new InfotravelNotConfiguredError();
-    }
+    const safeDestination = sanitizeInfotravelSearchText(data.destination);
 
-    const startDate = new Date(data.departureDate);
-    const endDate = new Date(data.returnDate);
-    const nights = Math.max(
-      1,
-      Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)),
+    return await withInfotravelResilience(
+      {
+        storeId: identity.store_id,
+        operatorSlug: data.operatorSlug,
+        action: "packageAvail",
+        params: { ...data, destination: safeDestination },
+      },
+      async () => {
+        const creds = await resolveStoreInfotravelCredentials(identity.store_id, data.operatorSlug);
+        if (!creds) {
+          await recordInfotravelApiError(
+            identity,
+            data.operatorSlug,
+            "/api/v1/utility/packageAvail",
+            `Credenciais InfoTravel (${data.operatorSlug.toUpperCase()}) não configuradas no Hub de Integrações.`,
+          );
+          throw new InfotravelNotConfiguredError();
+        }
+
+        const startDate = new Date(data.departureDate);
+        const endDate = new Date(data.returnDate);
+        const nights = Math.max(
+          1,
+          Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)),
+        );
+
+        const endpoint = `${creds.baseUrl}/api/v1/utility/packageAvail`;
+        let res: Response;
+        try {
+          res = await fetch(endpoint, {
+            method: "POST",
+            headers: creds.authHeader,
+            body: JSON.stringify({
+              destination: safeDestination,
+              departure: data.departureDate,
+              arrival: data.returnDate,
+              occupancies: [{ adults: data.adults, childrenAges: data.childrenAges }],
+              operator: data.operatorSlug,
+            }),
+          });
+        } catch (networkErr: any) {
+          const msg = `Falha de conexão com InfoTravel (${data.operatorSlug.toUpperCase()}): ${networkErr?.message || "Erro de rede"}`;
+          await recordInfotravelApiError(identity, data.operatorSlug, endpoint, msg);
+          throw new Error(msg);
+        }
+
+        if (!res.ok) {
+          const errText = await res.text().catch(() => "");
+          const msg = `Erro HTTP ${res.status} na API InfoTravel (${data.operatorSlug.toUpperCase()}): ${errText.slice(0, 180) || res.statusText}`;
+          await recordInfotravelApiError(identity, data.operatorSlug, endpoint, msg, res.status);
+          throw new Error(msg);
+        }
+
+        const json = await res.json();
+        const list = Array.isArray(json?.packageAvail) ? json.packageAvail : [];
+        return list.map((pkg: any, idx: number) => ({
+          id: String(pkg.id || `PKG-${idx + 1}`),
+          operatorSlug: data.operatorSlug,
+          packageName: String(pkg.name || `Pacote ${safeDestination}`),
+          destinationName: safeDestination,
+          departureDate: data.departureDate,
+          returnDate: data.returnDate,
+          nights,
+          includesFlight: Boolean(pkg.includesFlight ?? true),
+          includesHotel: Boolean(pkg.includesHotel ?? true),
+          includesTransfer: Boolean(pkg.includesTransfer ?? true),
+          hotelName: String(pkg.hotel?.name || ""),
+          boardType: String(pkg.board?.name || ""),
+          priceTotalBrl: Number(pkg.price?.amount || 0),
+          taxesBrl: Number(pkg.taxes?.amount || 0),
+          commissionPercent: Number(pkg.commissionPercent || 0),
+        }));
+      },
     );
-
-    const endpoint = `${creds.baseUrl}/api/v1/utility/packageAvail`;
-    let res: Response;
-    try {
-      res = await fetch(endpoint, {
-        method: "POST",
-        headers: creds.authHeader,
-        body: JSON.stringify({
-          destination: data.destination,
-          departure: data.departureDate,
-          arrival: data.returnDate,
-          occupancies: [{ adults: data.adults, childrenAges: data.childrenAges }],
-          operator: data.operatorSlug,
-        }),
-      });
-    } catch (networkErr: any) {
-      const msg = `Falha de conexão com InfoTravel (${data.operatorSlug.toUpperCase()}): ${networkErr?.message || "Erro de rede"}`;
-      await recordInfotravelApiError(identity, data.operatorSlug, endpoint, msg);
-      throw new Error(msg);
-    }
-
-    if (!res.ok) {
-      const errText = await res.text().catch(() => "");
-      const msg = `Erro HTTP ${res.status} na API InfoTravel (${data.operatorSlug.toUpperCase()}): ${errText.slice(0, 180) || res.statusText}`;
-      await recordInfotravelApiError(identity, data.operatorSlug, endpoint, msg, res.status);
-      throw new Error(msg);
-    }
-
-    const json = await res.json();
-    const list = Array.isArray(json?.packageAvail) ? json.packageAvail : [];
-    return list.map((pkg: any, idx: number) => ({
-      id: String(pkg.id || `PKG-${idx + 1}`),
-      operatorSlug: data.operatorSlug,
-      packageName: String(pkg.name || `Pacote ${data.destination}`),
-      destinationName: data.destination,
-      departureDate: data.departureDate,
-      returnDate: data.returnDate,
-      nights,
-      includesFlight: Boolean(pkg.includesFlight ?? true),
-      includesHotel: Boolean(pkg.includesHotel ?? true),
-      includesTransfer: Boolean(pkg.includesTransfer ?? true),
-      hotelName: String(pkg.hotel?.name || ""),
-      boardType: String(pkg.board?.name || ""),
-      priceTotalBrl: Number(pkg.price?.amount || 0),
-      taxesBrl: Number(pkg.taxes?.amount || 0),
-      commissionPercent: Number(pkg.commissionPercent || 0),
-    }));
   });
 
 export const infotravelSearchAllotments = createServerFn({ method: "POST" })
@@ -636,61 +883,74 @@ export const infotravelSearchAllotments = createServerFn({ method: "POST" })
     const identity = await getServerIdentity();
     assertStoreAccess(identity);
 
-    const creds = await resolveStoreInfotravelCredentials(identity.store_id, data.operatorSlug);
-    if (!creds) {
-      await recordInfotravelApiError(
-        identity,
-        data.operatorSlug,
-        "/api/v1/avail/allotment",
-        `Credenciais InfoTravel (${data.operatorSlug.toUpperCase()}) não configuradas no Hub de Integrações.`,
-      );
-      throw new InfotravelNotConfiguredError();
-    }
+    const safeOrigin = sanitizeInfotravelSearchText(data.originCode, 10).toUpperCase().slice(0, 3);
+    const safeDestination = sanitizeInfotravelSearchText(data.destinationCode, 10).toUpperCase().slice(0, 3);
 
-    const endpoint = `${creds.baseUrl}/api/v1/avail/allotment`;
-    let res: Response;
-    try {
-      res = await fetch(endpoint, {
-        method: "POST",
-        headers: creds.authHeader,
-        body: JSON.stringify({
-          origin: data.originCode.toUpperCase().slice(0, 3),
-          destination: data.destinationCode.toUpperCase().slice(0, 3),
-          monthYear: data.monthYear,
-          operator: data.operatorSlug,
-        }),
-      });
-    } catch (networkErr: any) {
-      const msg = `Falha de conexão com InfoTravel Bloqueios (${data.operatorSlug.toUpperCase()}): ${networkErr?.message || "Erro de rede"}`;
-      await recordInfotravelApiError(identity, data.operatorSlug, endpoint, msg);
-      throw new Error(msg);
-    }
+    return await withInfotravelResilience(
+      {
+        storeId: identity.store_id,
+        operatorSlug: data.operatorSlug,
+        action: "allotment",
+        params: { ...data, originCode: safeOrigin, destinationCode: safeDestination },
+      },
+      async () => {
+        const creds = await resolveStoreInfotravelCredentials(identity.store_id, data.operatorSlug);
+        if (!creds) {
+          await recordInfotravelApiError(
+            identity,
+            data.operatorSlug,
+            "/api/v1/avail/allotment",
+            `Credenciais InfoTravel (${data.operatorSlug.toUpperCase()}) não configuradas no Hub de Integrações.`,
+          );
+          throw new InfotravelNotConfiguredError();
+        }
 
-    if (!res.ok) {
-      const errText = await res.text().catch(() => "");
-      const msg = `Erro HTTP ${res.status} em Bloqueios InfoTravel (${data.operatorSlug.toUpperCase()}): ${errText.slice(0, 180) || res.statusText}`;
-      await recordInfotravelApiError(identity, data.operatorSlug, endpoint, msg, res.status);
-      throw new Error(msg);
-    }
+        const endpoint = `${creds.baseUrl}/api/v1/avail/allotment`;
+        let res: Response;
+        try {
+          res = await fetch(endpoint, {
+            method: "POST",
+            headers: creds.authHeader,
+            body: JSON.stringify({
+              origin: safeOrigin,
+              destination: safeDestination,
+              monthYear: data.monthYear,
+              operator: data.operatorSlug,
+            }),
+          });
+        } catch (networkErr: any) {
+          const msg = `Falha de conexão com InfoTravel Bloqueios (${data.operatorSlug.toUpperCase()}): ${networkErr?.message || "Erro de rede"}`;
+          await recordInfotravelApiError(identity, data.operatorSlug, endpoint, msg);
+          throw new Error(msg);
+        }
 
-    const json = await res.json();
-    const list = Array.isArray(json?.allotments) ? json.allotments : [];
-    return list.map((item: any, idx: number) => ({
-      id: String(item.id || `BLK-${idx + 1}`),
-      operatorSlug: data.operatorSlug,
-      groupCode: String(item.groupCode || ""),
-      title: String(item.title || ""),
-      originCode: String(item.originCode || data.originCode),
-      destinationCode: String(item.destinationCode || data.destinationCode),
-      departureDate: String(item.departureDate || ""),
-      returnDate: String(item.returnDate || ""),
-      airline: String(item.airline || ""),
-      seatsTotal: Number(item.seatsTotal || 0),
-      seatsRemaining: Number(item.seatsRemaining || 0),
-      netTariffBrl: Number(item.netTariffBrl || 0),
-      taxesBrl: Number(item.taxesBrl || 0),
-      timelimitHoldHours: Number(item.timelimitHoldHours || 0),
-    }));
+        if (!res.ok) {
+          const errText = await res.text().catch(() => "");
+          const msg = `Erro HTTP ${res.status} em Bloqueios InfoTravel (${data.operatorSlug.toUpperCase()}): ${errText.slice(0, 180) || res.statusText}`;
+          await recordInfotravelApiError(identity, data.operatorSlug, endpoint, msg, res.status);
+          throw new Error(msg);
+        }
+
+        const json = await res.json();
+        const list = Array.isArray(json?.allotments) ? json.allotments : [];
+        return list.map((item: any, idx: number) => ({
+          id: String(item.id || `BLK-${idx + 1}`),
+          operatorSlug: data.operatorSlug,
+          groupCode: String(item.groupCode || ""),
+          title: String(item.title || ""),
+          originCode: String(item.originCode || safeOrigin),
+          destinationCode: String(item.destinationCode || safeDestination),
+          departureDate: String(item.departureDate || ""),
+          returnDate: String(item.returnDate || ""),
+          airline: String(item.airline || ""),
+          seatsTotal: Number(item.seatsTotal || 0),
+          seatsRemaining: Number(item.seatsRemaining || 0),
+          netTariffBrl: Number(item.netTariffBrl || 0),
+          taxesBrl: Number(item.taxesBrl || 0),
+          timelimitHoldHours: Number(item.timelimitHoldHours || 0),
+        }));
+      },
+    );
   });
 
 export const infotravelSearchInsurances = createServerFn({ method: "POST" })
@@ -712,50 +972,60 @@ export const infotravelSearchInsurances = createServerFn({ method: "POST" })
     const identity = await getServerIdentity();
     assertStoreAccess(identity);
 
-    const creds = await resolveStoreInfotravelCredentials(identity.store_id, "infotravel_default");
-    if (!creds) {
-      await recordInfotravelApiError(
-        identity,
-        "infotravel_default",
-        "/api/v1/avail/insurance",
-        "Credenciais InfoTravel Seguro Viagem não configuradas no Hub de Integrações.",
-      );
-      throw new InfotravelNotConfiguredError();
-    }
+    return await withInfotravelResilience(
+      {
+        storeId: identity.store_id,
+        operatorSlug: "infotravel_default",
+        action: "insurance",
+        params: data,
+      },
+      async () => {
+        const creds = await resolveStoreInfotravelCredentials(identity.store_id, "infotravel_default");
+        if (!creds) {
+          await recordInfotravelApiError(
+            identity,
+            "infotravel_default",
+            "/api/v1/avail/insurance",
+            "Credenciais InfoTravel Seguro Viagem não configuradas no Hub de Integrações.",
+          );
+          throw new InfotravelNotConfiguredError();
+        }
 
-    const endpoint = `${creds.baseUrl}/api/v1/avail/insurance`;
-    let res: Response;
-    try {
-      res = await fetch(endpoint, {
-        method: "POST",
-        headers: creds.authHeader,
-        body: JSON.stringify(data),
-      });
-    } catch (networkErr: any) {
-      const msg = `Falha de conexão com InfoTravel Seguro Viagem: ${networkErr?.message || "Erro de rede"}`;
-      await recordInfotravelApiError(identity, "infotravel_default", endpoint, msg);
-      throw new Error(msg);
-    }
+        const endpoint = `${creds.baseUrl}/api/v1/avail/insurance`;
+        let res: Response;
+        try {
+          res = await fetch(endpoint, {
+            method: "POST",
+            headers: creds.authHeader,
+            body: JSON.stringify(data),
+          });
+        } catch (networkErr: any) {
+          const msg = `Falha de conexão com InfoTravel Seguro Viagem: ${networkErr?.message || "Erro de rede"}`;
+          await recordInfotravelApiError(identity, "infotravel_default", endpoint, msg);
+          throw new Error(msg);
+        }
 
-    if (!res.ok) {
-      const errText = await res.text().catch(() => "");
-      const msg = `Erro HTTP ${res.status} na API InfoTravel Seguro Viagem: ${errText.slice(0, 180) || res.statusText}`;
-      await recordInfotravelApiError(identity, "infotravel_default", endpoint, msg, res.status);
-      throw new Error(msg);
-    }
+        if (!res.ok) {
+          const errText = await res.text().catch(() => "");
+          const msg = `Erro HTTP ${res.status} na API InfoTravel Seguro Viagem: ${errText.slice(0, 180) || res.statusText}`;
+          await recordInfotravelApiError(identity, "infotravel_default", endpoint, msg, res.status);
+          throw new Error(msg);
+        }
 
-    const json = await res.json();
-    const list = Array.isArray(json?.insurances) ? json.insurances : [];
-    return list.map((item: any, idx: number) => ({
-      id: String(item.id || `INS-${idx + 1}`),
-      providerName: String(item.providerName || ""),
-      planName: String(item.planName || ""),
-      coverageMedicalUsd: Number(item.coverageMedicalUsd || 0),
-      coverageBaggageUsd: Number(item.coverageBaggageUsd || 0),
-      includesCovid: Boolean(item.includesCovid),
-      pricePerPassengerBrl: Number(item.pricePerPassengerBrl || 0),
-      totalPriceBrl: Number(item.totalPriceBrl || 0),
-    }));
+        const json = await res.json();
+        const list = Array.isArray(json?.insurances) ? json.insurances : [];
+        return list.map((item: any, idx: number) => ({
+          id: String(item.id || `INS-${idx + 1}`),
+          providerName: String(item.providerName || ""),
+          planName: String(item.planName || ""),
+          coverageMedicalUsd: Number(item.coverageMedicalUsd || 0),
+          coverageBaggageUsd: Number(item.coverageBaggageUsd || 0),
+          includesCovid: Boolean(item.includesCovid),
+          pricePerPassengerBrl: Number(item.pricePerPassengerBrl || 0),
+          totalPriceBrl: Number(item.totalPriceBrl || 0),
+        }));
+      },
+    );
   });
 
 export const infotravelSearchCarRentals = createServerFn({ method: "POST" })
@@ -770,53 +1040,65 @@ export const infotravelSearchCarRentals = createServerFn({ method: "POST" })
     const identity = await getServerIdentity();
     assertStoreAccess(identity);
 
-    const creds = await resolveStoreInfotravelCredentials(identity.store_id, "infotravel_default");
-    if (!creds) {
-      await recordInfotravelApiError(
-        identity,
-        "infotravel_default",
-        "/api/v1/avail/car",
-        "Credenciais InfoTravel Locação de Carros não configuradas no Hub de Integrações.",
-      );
-      throw new InfotravelNotConfiguredError();
-    }
+    const safePickup = sanitizeInfotravelSearchText(data.pickupAirportOrCity);
 
-    const endpoint = `${creds.baseUrl}/api/v1/avail/car`;
-    let res: Response;
-    try {
-      res = await fetch(endpoint, {
-        method: "POST",
-        headers: creds.authHeader,
-        body: JSON.stringify(data),
-      });
-    } catch (networkErr: any) {
-      const msg = `Falha de conexão com InfoTravel Carros: ${networkErr?.message || "Erro de rede"}`;
-      await recordInfotravelApiError(identity, "infotravel_default", endpoint, msg);
-      throw new Error(msg);
-    }
+    return await withInfotravelResilience(
+      {
+        storeId: identity.store_id,
+        operatorSlug: "infotravel_default",
+        action: "car",
+        params: { ...data, pickupAirportOrCity: safePickup },
+      },
+      async () => {
+        const creds = await resolveStoreInfotravelCredentials(identity.store_id, "infotravel_default");
+        if (!creds) {
+          await recordInfotravelApiError(
+            identity,
+            "infotravel_default",
+            "/api/v1/avail/car",
+            "Credenciais InfoTravel Locação de Carros não configuradas no Hub de Integrações.",
+          );
+          throw new InfotravelNotConfiguredError();
+        }
 
-    if (!res.ok) {
-      const errText = await res.text().catch(() => "");
-      const msg = `Erro HTTP ${res.status} na API InfoTravel Carros: ${errText.slice(0, 180) || res.statusText}`;
-      await recordInfotravelApiError(identity, "infotravel_default", endpoint, msg, res.status);
-      throw new Error(msg);
-    }
+        const endpoint = `${creds.baseUrl}/api/v1/avail/car`;
+        let res: Response;
+        try {
+          res = await fetch(endpoint, {
+            method: "POST",
+            headers: creds.authHeader,
+            body: JSON.stringify({ ...data, pickupAirportOrCity: safePickup }),
+          });
+        } catch (networkErr: any) {
+          const msg = `Falha de conexão com InfoTravel Carros: ${networkErr?.message || "Erro de rede"}`;
+          await recordInfotravelApiError(identity, "infotravel_default", endpoint, msg);
+          throw new Error(msg);
+        }
 
-    const json = await res.json();
-    const list = Array.isArray(json?.cars) ? json.cars : [];
-    return list.map((item: any, idx: number) => ({
-      id: String(item.id || `CAR-${idx + 1}`),
-      rentalCompany: String(item.rentalCompany || ""),
-      vehicleCategory: String(item.vehicleCategory || ""),
-      vehicleModelExample: String(item.vehicleModelExample || ""),
-      transmission: item.transmission === "Manual" ? "Manual" : "Automático",
-      includesUnlimitedMileage: Boolean(item.includesUnlimitedMileage),
-      includesFullProtection: Boolean(item.includesFullProtection),
-      pickupLocation: String(item.pickupLocation || data.pickupAirportOrCity),
-      dropoffLocation: String(item.dropoffLocation || data.pickupAirportOrCity),
-      dailyRateBrl: Number(item.dailyRateBrl || 0),
-      totalRateBrl: Number(item.totalRateBrl || 0),
-    }));
+        if (!res.ok) {
+          const errText = await res.text().catch(() => "");
+          const msg = `Erro HTTP ${res.status} na API InfoTravel Carros: ${errText.slice(0, 180) || res.statusText}`;
+          await recordInfotravelApiError(identity, "infotravel_default", endpoint, msg, res.status);
+          throw new Error(msg);
+        }
+
+        const json = await res.json();
+        const list = Array.isArray(json?.cars) ? json.cars : [];
+        return list.map((item: any, idx: number) => ({
+          id: String(item.id || `CAR-${idx + 1}`),
+          rentalCompany: String(item.rentalCompany || ""),
+          vehicleCategory: String(item.vehicleCategory || ""),
+          vehicleModelExample: String(item.vehicleModelExample || ""),
+          transmission: item.transmission === "Manual" ? "Manual" : "Automático",
+          includesUnlimitedMileage: Boolean(item.includesUnlimitedMileage),
+          includesFullProtection: Boolean(item.includesFullProtection),
+          pickupLocation: String(item.pickupLocation || safePickup),
+          dropoffLocation: String(item.dropoffLocation || safePickup),
+          dailyRateBrl: Number(item.dailyRateBrl || 0),
+          totalRateBrl: Number(item.totalRateBrl || 0),
+        }));
+      },
+    );
   });
 
 export interface InfoTravelHistoricalBookingSyncedItem {
@@ -925,3 +1207,355 @@ export const infotravelImportHistoricalBookingsBatch = createServerFn({
       bookings,
     };
   });
+
+// ============================================================================
+// 6. BUSCA REAL DE MALHA AÉREA GDS + BANCO LOCAL (ERRADICAÇÃO DE MOCKS)
+// ============================================================================
+
+export interface AgencyGdsFlightOfferDTO {
+  airline: string;
+  flightNumber: string;
+  departureTime: string;
+  departureAirport: string;
+  arrivalTime: string;
+  arrivalAirport: string;
+  duration: string;
+  stops: number;
+  stopsDescription?: string;
+  baggageIncluded: boolean;
+  priceCents: number;
+  pricePerPersonCents: number;
+  conditions: string;
+  isBestOption: boolean;
+  isCheapest: boolean;
+  source: "infotravel_gds" | "agency_inventory";
+}
+
+export const searchAgencyGdsFlightsFn = createServerFn({ method: "POST" })
+  .inputValidator(
+    z.object({
+      origin: z.string().min(2),
+      destination: z.string().min(2),
+      departureDate: z.string().min(8),
+      returnDate: z.string().optional(),
+      passengers: z.number().min(1).default(2),
+    }),
+  )
+  .handler(async ({ data }): Promise<{
+    isInfotravelConfigured: boolean;
+    offers: AgencyGdsFlightOfferDTO[];
+    statusMessage?: string;
+  }> => {
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity);
+
+    const originClean = sanitizeInfotravelSearchText(data.origin, 40);
+    const destClean = sanitizeInfotravelSearchText(data.destination, 40);
+    const originIata = originClean.match(/\(([A-Z]{3})\)/)?.[1] || originClean.slice(0, 3).toUpperCase();
+    const destIata = destClean.match(/\(([A-Z]{3})\)/)?.[1] || destClean.slice(0, 3).toUpperCase();
+    const pax = Math.max(1, data.passengers);
+
+    const offers: AgencyGdsFlightOfferDTO[] = [];
+    let isInfotravelConfigured = false;
+    let statusMessage: string | undefined;
+
+    // 1. Tenta consultar o conector InfoTravel GDS se configurado
+    try {
+      const gdsFlights = await infotravelSearchFlights(identity.store_id, {
+        origin: originIata,
+        destination: destIata,
+        date: data.departureDate,
+      });
+      isInfotravelConfigured = true;
+
+      for (const f of gdsFlights) {
+        const unitCents = Math.round(Number(f.price || 0) * 100);
+        offers.push({
+          airline: String((f as any).airline || "Cia Aérea GDS"),
+          flightNumber: String(f.flight_number || "GDS"),
+          departureTime: String((f as any).departure_time || "08:00"),
+          departureAirport: String(f.origin || originIata),
+          arrivalTime: String((f as any).arrival_time || "11:15"),
+          arrivalAirport: String(f.destination || destIata),
+          duration: String((f as any).duration || "3h 15m"),
+          stops: Number((f as any).stops || 0),
+          baggageIncluded: Boolean((f as any).baggage_included ?? true),
+          priceCents: unitCents * pax,
+          pricePerPersonCents: unitCents,
+          conditions: "Tarifa tempo real via InfoTravel GDS",
+          isBestOption: false,
+          isCheapest: false,
+          source: "infotravel_gds",
+        });
+      }
+    } catch (err) {
+      if (err instanceof InfotravelNotConfiguredError) {
+        isInfotravelConfigured = false;
+      } else if (err instanceof Error) {
+        statusMessage = err.message;
+      }
+    }
+
+    // 2. Consulta também bloqueios/itinerários reais cadastrados no banco da agência
+    try {
+      const db = getServerClient();
+      const { data: itineraries } = await db
+        .from("travel_flight_itineraries")
+        .select("id, title, notes, segments:travel_flight_segments(*)")
+        .eq("store_id", identity.store_id)
+        .eq("status", "active")
+        .limit(10);
+
+      if (Array.isArray(itineraries)) {
+        for (const it of itineraries) {
+          const segs = Array.isArray((it as any).segments) ? (it as any).segments : [];
+          const firstSeg = segs[0];
+          if (!firstSeg) continue;
+
+          const matchesRoute =
+            firstSeg.destination_iata?.toUpperCase() === destIata ||
+            firstSeg.destination_city?.toLowerCase().includes(destClean.toLowerCase());
+
+          if (matchesRoute || offers.length === 0) {
+            const depTime = firstSeg.departure_at
+              ? new Date(firstSeg.departure_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })
+              : "09:00";
+            const arrTime = firstSeg.arrival_at
+              ? new Date(firstSeg.arrival_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })
+              : "12:10";
+            offers.push({
+              airline: String(firstSeg.airline_name || firstSeg.airline_code || "Bloqueio Agência"),
+              flightNumber: `${firstSeg.airline_code || ""} ${firstSeg.flight_number || ""}`.trim(),
+              departureTime: depTime,
+              departureAirport: String(firstSeg.origin_iata || originIata),
+              arrivalTime: arrTime,
+              arrivalAirport: String(firstSeg.destination_iata || destIata),
+              duration: segs.length > 1 ? `${segs.length} trechos` : "Voo direto",
+              stops: Math.max(0, segs.length - 1),
+              baggageIncluded: !String(firstSeg.baggage || "").toLowerCase().includes("sem"),
+              priceCents: 0,
+              pricePerPersonCents: 0,
+              conditions: String(it.notes || firstSeg.baggage || "Bloqueio registrado na agência"),
+              isBestOption: false,
+              isCheapest: false,
+              source: "agency_inventory",
+            });
+          }
+        }
+      }
+    } catch {
+      // Tabela opcional ou sem registros
+    }
+
+    if (offers.length > 0) {
+      const priced = offers.filter((o) => o.priceCents > 0);
+      if (priced.length > 0) {
+        const minPrice = Math.min(...priced.map((o) => o.priceCents));
+        priced.forEach((o, idx) => {
+          if (o.priceCents === minPrice) o.isCheapest = true;
+          if (idx === 0) o.isBestOption = true;
+        });
+      } else {
+        offers[0].isBestOption = true;
+      }
+    }
+
+    return {
+      isInfotravelConfigured,
+      offers,
+      statusMessage,
+    };
+  });
+
+// ============================================================================
+// 7. AUTO-SERVICE NA VITRINE PÚBLICA (BUSCA EM TEMPO REAL DE PACOTES, HOTÉIS E VOOS)
+// ============================================================================
+
+export interface PublicTourismAutoServiceItemDTO {
+  id: string;
+  category: "packages" | "hotels" | "flights" | "activities" | "cars";
+  title: string;
+  subtitle: string;
+  destination: string;
+  departureDate?: string;
+  returnDate?: string;
+  nights?: number;
+  priceCents: number;
+  badge?: string;
+  includes: string[];
+  imageUrl?: string | null;
+  slug?: string | null;
+  source: "infotravel_live" | "agency_catalog";
+}
+
+export const publicTourismAutoServiceSearchFn = createServerFn({ method: "POST" })
+  .inputValidator(
+    z.object({
+      storeId: z.string().uuid().optional(),
+      service: z.enum(["packages", "hotels", "flights", "activities", "cars"]).default("packages"),
+      origin: z.string().optional().default(""),
+      destination: z.string().min(2),
+      departureDate: z.string().optional().default(""),
+      returnDate: z.string().optional().default(""),
+      guests: z.string().optional().default("2 Adultos"),
+    }),
+  )
+  .handler(async ({ data }): Promise<{
+    results: PublicTourismAutoServiceItemDTO[];
+    infotravelLiveActive: boolean;
+  }> => {
+    const safeDest = sanitizeInfotravelSearchText(data.destination, 60);
+    const safeOrigin = sanitizeInfotravelSearchText(data.origin || "", 60);
+    const scopeKey = `public_autoservice:${data.storeId || "global"}:${data.service}`;
+
+    // Proteção Anti-Bot/Anti-Scraping na vitrine pública (máx 12 buscas/min por escopo)
+    checkRateLimit(scopeKey, 12);
+
+    const db = getServerClient();
+    const results: PublicTourismAutoServiceItemDTO[] = [];
+    let infotravelLiveActive = false;
+
+    // 1. Se houver storeId e a agência tiver credenciais InfoTravel configuradas, consulta em tempo real com cache de 15min
+    if (data.storeId && data.departureDate && data.returnDate) {
+      try {
+        const creds = await resolveStoreInfotravelCredentials(data.storeId, "orinter");
+        if (creds) {
+          infotravelLiveActive = true;
+          if (data.service === "packages" || data.service === "hotels") {
+            const livePackages = await withInfotravelResilience(
+              {
+                storeId: data.storeId,
+                operatorSlug: "orinter",
+                action: `public_${data.service}`,
+                params: {
+                  destination: safeDest,
+                  departureDate: data.departureDate,
+                  returnDate: data.returnDate,
+                },
+                maxRequestsPerMin: 12,
+              },
+              async () => {
+                const res = await fetch(`${creds.baseUrl}/api/v1/utility/packageAvail`, {
+                  method: "POST",
+                  headers: creds.authHeader,
+                  body: JSON.stringify({
+                    destination: safeDest,
+                    departure: data.departureDate,
+                    arrival: data.returnDate,
+                    occupancies: [{ adults: 2, childrenAges: [] }],
+                    operator: "orinter",
+                  }),
+                });
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const json = await res.json();
+                return Array.isArray(json?.packageAvail) ? json.packageAvail : [];
+              },
+            );
+
+            for (const pkg of livePackages.slice(0, 8)) {
+              const priceCents = Math.round(Number(pkg.price?.amount || 0) * 100);
+              results.push({
+                id: String(pkg.id || crypto.randomUUID()),
+                category: data.service,
+                title: String(pkg.name || pkg.hotel?.name || `Roteiro ${safeDest}`),
+                subtitle: String(pkg.hotel?.name || pkg.board?.name || safeDest),
+                destination: safeDest,
+                departureDate: data.departureDate,
+                returnDate: data.returnDate,
+                priceCents,
+                badge: "Disponibilidade Tempo Real",
+                includes: [
+                  pkg.includesFlight !== false ? "Aéreo Ida e Volta" : null,
+                  pkg.includesHotel !== false ? "Hospedagem Confirmada" : null,
+                  pkg.board?.name ? String(pkg.board.name) : "Café da Manhã",
+                  pkg.includesTransfer !== false ? "Transfer Regular" : null,
+                ].filter(Boolean) as string[],
+                imageUrl: null,
+                source: "infotravel_live",
+              });
+            }
+          }
+        }
+      } catch {
+        // Prossegue de forma transparente com o catálogo real do banco de dados
+      }
+    }
+
+    // 2. Consulta o Catálogo Real no Supabase (products de turismo + global_hotels)
+    try {
+      if (data.service === "hotels") {
+        let hotelQuery = db
+          .from("global_hotels")
+          .select("id, name, city, state, country, star_rating, meal_plan_default, amenities, photos")
+          .or(`city.ilike.%${safeDest}%,name.ilike.%${safeDest}%,country.ilike.%${safeDest}%`)
+          .limit(8);
+
+        const { data: hotels } = await hotelQuery;
+        if (Array.isArray(hotels)) {
+          for (const h of hotels) {
+            const photos = Array.isArray((h as any).photos) ? (h as any).photos : [];
+            const amenities = Array.isArray((h as any).amenities) ? (h as any).amenities : [];
+            results.push({
+              id: String(h.id),
+              category: "hotels",
+              title: String(h.name),
+              subtitle: [h.city, h.state, h.country].filter(Boolean).join(", "),
+              destination: String(h.city || safeDest),
+              priceCents: 0,
+              badge: h.star_rating ? `${h.star_rating} Estrelas` : "Hospedagem Verificada",
+              includes: [
+                h.meal_plan_default ? String(h.meal_plan_default) : "Café da Manhã",
+                ...amenities.slice(0, 3).map(String),
+              ],
+              imageUrl: photos[0] ? String(photos[0]) : null,
+              source: "agency_catalog",
+            });
+          }
+        }
+      }
+
+      // Consulta produtos/pacotes publicados na vitrine
+      let prodQuery = db
+        .from("products")
+        .select("id, name, slug, description, price_cents, image_url, metadata, store_id")
+        .eq("is_active", true)
+        .or(`name.ilike.%${safeDest}%,description.ilike.%${safeDest}%`)
+        .limit(8);
+
+      if (data.storeId) {
+        prodQuery = prodQuery.eq("store_id", data.storeId);
+      }
+
+      const { data: products } = await prodQuery;
+      if (Array.isArray(products)) {
+        for (const p of products) {
+          const meta = (p.metadata && typeof p.metadata === "object" ? p.metadata : {}) as Record<string, any>;
+          results.push({
+            id: String(p.id),
+            category: data.service,
+            title: String(p.name),
+            subtitle: String(meta.destination || p.description || safeDest).slice(0, 110),
+            destination: String(meta.destination || safeDest),
+            departureDate: data.departureDate || meta.departure_date || undefined,
+            returnDate: data.returnDate || meta.return_date || undefined,
+            priceCents: Number(p.price_cents || 0),
+            badge: "Pacote da Agência",
+            includes: Array.isArray(meta.includes) && meta.includes.length > 0
+              ? meta.includes.slice(0, 4).map(String)
+              : [safeOrigin ? `Saída: ${safeOrigin}` : "Roteiro Completo", "Assessoria Especializada"],
+            imageUrl: p.image_url ? String(p.image_url) : null,
+            slug: p.slug ? String(p.slug) : null,
+            source: "agency_catalog",
+          });
+        }
+      }
+    } catch {
+      // Continua retornando os resultados acumulados
+    }
+
+    return {
+      results,
+      infotravelLiveActive,
+    };
+  });
+

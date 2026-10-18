@@ -52,7 +52,10 @@ function BuilderEditorPage() {
 
   // Estado Unificado do Waesy Builder (Zero Mocks, Zero Divisão Clássico/Omni)
   const initialOmniDocument: OmniPageDocument = React.useMemo(() => {
-    const draftSnapshot = initialData?.document?.settings?.omni_page_draft ?? initialData?.document?.settings?.omni_page;
+    const draftSnapshot =
+      initialData?.version?.document_snapshot ??
+      initialData?.document?.settings?.omni_page_draft ??
+      initialData?.document?.settings?.omni_page;
     if (draftSnapshot) {
       const parsed = OmniPageDocumentSchema.safeParse(draftSnapshot);
       if (parsed.success) return parsed.data;
@@ -60,11 +63,18 @@ function BuilderEditorPage() {
     const empty = createEmptyOmniPage(
       initialData?.document?.slug || "pagina",
       initialData?.document?.title || "Nova Página",
-      (initialData?.document?.document_type as any) || "general"
+      (initialData?.document?.document_type as any) || "general",
     );
     empty.id = initialData?.document?.id || params.documentId;
-    return applyTemplateToPage(empty, "template_gastronomy");
-  }, [initialData?.document, params.documentId]);
+    const selectedTemplateId = initialData?.document?.settings?.template_id;
+    if (selectedTemplateId === "blank") {
+      return empty;
+    }
+    if (selectedTemplateId && typeof selectedTemplateId === "string") {
+      return applyTemplateToPage(empty, selectedTemplateId);
+    }
+    return empty;
+  }, [initialData?.document, initialData?.version, params.documentId]);
 
   const handleSaveOmni = async (omniDoc: OmniPageDocument) => {
     try {

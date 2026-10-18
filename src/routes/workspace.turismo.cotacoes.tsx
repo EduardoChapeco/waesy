@@ -21,6 +21,7 @@ import { toast } from "sonner";
 import { listAgencyTravelQuotes, createAgencyTravelQuote, updateAgencyTravelQuote, deleteAgencyTravelQuote, type TravelQuoteRequestDTO } from "@/services/tourism.functions";
 import { createTravelProposal } from "@/services/travel-proposal.functions";
 import { listDestinations } from "@/services/travel-catalog.functions";
+import { searchAgencyGdsFlightsFn } from "@/services/infotravel";
 import { getStoreSettings } from "@/services/store.functions";
 import { NicheOperationalGuard } from "@/components/workspace/niche-operational-guard";
 import { UniversalQuoteProposalStudio } from "@/components/tourism/universal-quote-proposal-studio";
@@ -73,75 +74,12 @@ const STATUS_FILTERS = [
 ];
 
 const TRIP_TYPE_OPTIONS = [
- { id: "air_package", label: "️ Pacote Completo (Voo + Hotel)" },
- { id: "hotel_only", label: " Somente Hospedagem / Resort" },
- { id: "cruise", label: " Cruzeiro Marítimo" },
- { id: "bus", label: " Excursão Rodoviária" },
- { id: "visa_assistance", label: " Assessoria de Visto / Passaporte" },
+ { id: "air_package", label: "Pacote Completo (Voo + Hotel)" },
+ { id: "hotel_only", label: "Somente Hospedagem / Resort" },
+ { id: "cruise", label: "Cruzeiro Marítimo" },
+ { id: "bus", label: "Excursão Rodoviária" },
+ { id: "visa_assistance", label: "Assessoria de Visto / Passaporte" },
 ];
-
-function generateFlightOffersForRoute(
-  origin: string,
-  destination: string,
-  _departureDate: string,
-  passengers: number = 2
-): FlightOfferCardProps[] {
-  const originCode = origin.match(/\(([A-Z]{3})\)/)?.[1] || "GRU";
-  const destCode = destination.match(/\(([A-Z]{3})\)/)?.[1] || "REC";
-  const pax = Math.max(1, passengers);
-
-  return [
-    {
-      airline: "LATAM Airlines",
-      flightNumber: "LA 3412",
-      departureTime: "08:15",
-      departureAirport: originCode,
-      arrivalTime: "11:35",
-      arrivalAirport: destCode,
-      duration: "3h 20m",
-      stops: 0,
-      baggageIncluded: true,
-      price: formatMoney(124000 * pax),
-      pricePerPerson: `${formatMoney(124000)} por pessoa`,
-      conditions: "Tarifa com remarcação gratuita",
-      isBestOption: true,
-      isCheapest: false,
-    },
-    {
-      airline: "GOL Linhas Aéreas",
-      flightNumber: "G3 1890",
-      departureTime: "06:40",
-      departureAirport: originCode,
-      arrivalTime: "10:10",
-      arrivalAirport: destCode,
-      duration: "3h 30m",
-      stops: 0,
-      baggageIncluded: false,
-      price: formatMoney(98000 * pax),
-      pricePerPerson: `${formatMoney(98000)} por pessoa`,
-      conditions: "Tarifa Light (sem despacho)",
-      isBestOption: false,
-      isCheapest: true,
-    },
-    {
-      airline: "Azul Linhas Aéreas",
-      flightNumber: "AD 4502",
-      departureTime: "13:20",
-      departureAirport: originCode,
-      arrivalTime: "17:45",
-      arrivalAirport: destCode,
-      duration: "4h 25m",
-      stops: 1,
-      stopsDescription: "1 conexão em VCP (45m)",
-      baggageIncluded: true,
-      price: formatMoney(115000 * pax),
-      pricePerPerson: `${formatMoney(115000)} por pessoa`,
-      conditions: "Conexão garantida pela cia",
-      isBestOption: false,
-      isCheapest: false,
-    },
-  ];
-}
 
 export default function AgencyQuotesPage() {
  const { quotes: initialQuotes, destinations: initialDestinations, store } = ((Route.useLoaderData?.() as any) || {});
@@ -167,6 +105,11 @@ export default function AgencyQuotesPage() {
  const [editQuoteAmount, setEditQuoteAmount] = useState("");
  const [isFlightSimulatorOpen, setIsFlightSimulatorOpen] = useState(false);
  const [flightOffers, setFlightOffers] = useState<FlightOfferCardProps[]>([]);
+ const [flightSearchFeedback, setFlightSearchFeedback] = useState<{
+   searched: boolean;
+   isConfigured: boolean;
+   message?: string;
+ }>({ searched: false, isConfigured: true });
  const [isSearchingFlights, setIsSearchingFlights] = useState(false);
 
  const { data: quotes } = useQuery({
@@ -914,21 +857,84 @@ export default function AgencyQuotesPage() {
                    travelClass: (managingQuote.budget_tier === "luxury" ? "business" : managingQuote.budget_tier === "premium" ? "premium" : "economy") as any,
                  }}
                  isLoading={isSearchingFlights}
-                 onSearch={(params) => {
+                 onSearch={async (params) => {
                    setIsSearchingFlights(true);
-                   setTimeout(() => {
-                     const offers = generateFlightOffersForRoute(
-                       params.origin,
-                       params.destination,
-                       params.departureDate,
-                       params.passengers
-                     );
-                     setFlightOffers(offers);
+                   try {
+                     const res = await searchAgencyGdsFlightsFn({
+                       data: {
+                         origin: params.origin,
+                         destination: params.destination,
+                         departureDate: params.departureDate,
+                         returnDate: params.returnDate,
+                         passengers: params.passengers,
+                       },
+                     });
+                     const mapped: FlightOfferCardProps[] = (res.offers || []).map((o) => ({
+                       airline: o.airline,
+                       flightNumber: o.flightNumber,
+                       departureTime: o.departureTime,
+                       departureAirport: o.departureAirport,
+                       arrivalTime: o.arrivalTime,
+                       arrivalAirport: o.arrivalAirport,
+                       duration: o.duration,
+                       stops: o.stops,
+                       stopsDescription: o.stopsDescription,
+                       baggageIncluded: o.baggageIncluded,
+                       price: o.priceCents > 0 ? formatMoney(o.priceCents) : "Sob consulta",
+                       pricePerPerson:
+                         o.pricePerPersonCents > 0
+                           ? `${formatMoney(o.pricePerPersonCents)} por pessoa`
+                           : "Bloqueio Agência",
+                       conditions: o.conditions,
+                       isBestOption: o.isBestOption,
+                       isCheapest: o.isCheapest,
+                     }));
+                     setFlightOffers(mapped);
+                     setFlightSearchFeedback({
+                       searched: true,
+                       isConfigured: res.isInfotravelConfigured,
+                       message: res.statusMessage,
+                     });
+                     if (mapped.length > 0) {
+                       toast.success(`${mapped.length} opções aéreas reais encontradas para ${params.destination}.`);
+                     } else {
+                       toast.info("Nenhum voo retornado nesta consulta.");
+                     }
+                   } catch (err: any) {
+                     toast.error(err?.message || "Erro ao consultar malha aérea GDS.");
+                   } finally {
                      setIsSearchingFlights(false);
-                     toast.success(`${offers.length} voos encontrados para ${params.destination}!`);
-                   }, 400);
+                   }
                  }}
                />
+
+               {flightSearchFeedback.searched && flightOffers.length === 0 && (
+                 <div className="rounded-lg border border-border bg-muted/30 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                   <div className="space-y-1">
+                     <p className="text-xs font-bold text-foreground">
+                       {flightSearchFeedback.isConfigured
+                         ? "Nenhum voo encontrado para os filtros informados"
+                         : "Conector GDS InfoTravel não configurado nesta agência"}
+                     </p>
+                     <p className="text-xs text-muted-foreground">
+                       {flightSearchFeedback.message ||
+                         (flightSearchFeedback.isConfigured
+                           ? "Tente alterar a data de embarque ou utilize o Studio Universal para importar tarifa via OCR."
+                           : "Ative suas credenciais InfoTravel no Hub de Integrações para consultar disponibilidade aérea em tempo real.")}
+                     </p>
+                   </div>
+                   {!flightSearchFeedback.isConfigured && (
+                     <Button
+                       asChild
+                       variant="outline"
+                       size="sm"
+                       className="h-11 min-h-11 px-4 rounded-lg text-xs font-bold shrink-0"
+                     >
+                       <Link to="/workspace/configuracoes/integracoes">Configurar InfoTravel</Link>
+                     </Button>
+                   )}
+                 </div>
+               )}
 
                {flightOffers.length > 0 && (
                  <TravelSearchResults
