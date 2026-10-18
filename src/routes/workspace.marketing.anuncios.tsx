@@ -527,8 +527,8 @@ function AnunciosWorkspacePage() {
                 onClick={handleSyncLiveMetrics}
                 className="h-11 min-h-11 rounded-lg text-xs font-semibold gap-2 focus-visible:ring-2"
               >
-                <RefreshCw className={`size-3.5 ${isSyncingLiveMetrics ? "animate-spin" : ""}`} />
-                <span>{isSyncingLiveMetrics ? "Sincronizando GAQL..." : "Sincronizar Gasto Real (MCP)"}</span>
+                <RefreshCw className={`size-4 ${isSyncingLiveMetrics ? "animate-spin" : ""}`} />
+                <span>{isSyncingLiveMetrics ? "Sincronizando..." : "Sincronizar Métricas"}</span>
               </Button>
               <Button
                 size="sm"
@@ -537,8 +537,8 @@ function AnunciosWorkspacePage() {
                 onClick={() => handleRunMcpDiagnostics()}
                 className="h-11 min-h-11 rounded-lg text-xs font-semibold gap-2 focus-visible:ring-2"
               >
-                <Activity className="size-3.5" />
-                <span>Diagnosticar Contas (MCP)</span>
+                <Activity className="size-4" />
+                <span>Verificar Contas</span>
               </Button>
               {!tierStatus?.isMaxUnlocked && (
                 <Button
@@ -547,7 +547,7 @@ function AnunciosWorkspacePage() {
                   onClick={() => setMaxUpsellOpen(true)}
                   className="h-11 min-h-11 rounded-lg text-xs font-semibold gap-2 focus-visible:ring-2"
                 >
-                  <Lock className="size-3.5" />
+                  <Lock className="size-4" />
                   Desbloquear Tráfego Externo
                 </Button>
               )}
@@ -557,13 +557,13 @@ function AnunciosWorkspacePage() {
           {/* ── FASE 3: AI AD BUILDER (2 CLIQUES DO CATÁLOGO PARA META/GOOGLE/VITRINE) ── */}
           <div className="pt-3 border-t border-border/40 flex flex-col sm:flex-row items-stretch sm:items-end gap-3">
             <div className="flex-1 space-y-1">
-              <Label className="text-xs font-semibold">Gerador de rascunho de criativo por catálogo</Label>
+              <Label className="text-xs font-semibold">Criar anúncio a partir do catálogo</Label>
               <Select
                 value={selectedCatalogItemId}
                 onValueChange={(v) => setSelectedCatalogItemId(v)}
               >
                 <SelectTrigger className="h-11 rounded-lg bg-background text-xs">
-                  <SelectValue placeholder="Selecione um item do catálogo para gerar copy e arte..." />
+                  <SelectValue placeholder="Selecione um item do catálogo..." />
                 </SelectTrigger>
                 <SelectContent>
                   {(storeTargets?.products || []).map((prod: any) => (
@@ -601,7 +601,7 @@ function AnunciosWorkspacePage() {
                   setAiDailyBudgetCents(undefined);
                   setAiTargetLocation("");
                   setAiTargetRadiusKm(undefined);
-                  toast.success("Rascunho de copy gerado por IA; revise antes de publicar.");
+                  toast.success("Texto do anúncio gerado com sucesso.");
                 } catch (err: any) {
                   toast.error(err?.message || "Falha ao gerar criativo.");
                 } finally {
@@ -610,11 +610,11 @@ function AnunciosWorkspacePage() {
               }}
               className="h-11 rounded-lg text-xs font-semibold px-4"
             >
-              {isGeneratingAiCreative ? "Processando..." : "Gerar rascunho do catálogo"}
+              {isGeneratingAiCreative ? "Gerando..." : "Gerar Anúncio"}
             </Button>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full">
               <div className="space-y-1">
-                <Label className="text-xs font-semibold">Orçamento diário escolhido (obrigatório)</Label>
+                <Label className="text-xs font-semibold">Orçamento diário</Label>
                 <CurrencyField
                   value={aiDailyBudgetCents}
                   onChange={(value) => setAiDailyBudgetCents(value)}
@@ -623,11 +623,11 @@ function AnunciosWorkspacePage() {
                 />
               </div>
               <div className="space-y-1">
-                <Label className="text-xs font-semibold">Localidade de segmentação (obrigatória)</Label>
+                <Label className="text-xs font-semibold">Cidade ou região</Label>
                 <Input value={aiTargetLocation} onChange={(event) => setAiTargetLocation(event.target.value)} placeholder="Informe uma localidade" className="h-11 rounded-lg text-sm" />
               </div>
               <div className="space-y-1">
-                <Label className="text-xs font-semibold">Raio em km (obrigatório)</Label>
+                <Label className="text-xs font-semibold">Raio (km)</Label>
                 <Input type="number" min={1} max={100} value={aiTargetRadiusKm ?? ""} onChange={(event) => setAiTargetRadiusKm(event.target.value ? Number(event.target.value) : undefined)} placeholder="Informe o raio" className="h-11 rounded-lg text-sm" />
               </div>
             </div>
@@ -822,11 +822,11 @@ function AnunciosWorkspacePage() {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/40 pb-5">
                 <div>
                   <div className="flex items-center gap-2">
-                    <h3 className="text-base font-bold text-foreground">Meta Ads & Instagram</h3>
-                    <Badge variant="default" className="text-xs">Conectado (AES-256-GCM + MCP)</Badge>
+                    <h3 className="text-base font-bold text-foreground">Meta Ads e Instagram</h3>
+                    <Badge variant="default" className="text-xs">Conectado</Badge>
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Conta Business ({channelsSettings?.meta_ads?.ad_account_id || "vinculada"}) sincronizada via Graph API v20.0, Insights e Catálogo CSV ativo.
+                    Conta vinculada ({channelsSettings?.meta_ads?.ad_account_id || "ativa"}) com catálogo sincronizado.
                   </p>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
@@ -837,8 +837,8 @@ function AnunciosWorkspacePage() {
                     onClick={handleSyncLiveMetrics}
                     className="h-11 min-h-11 rounded-lg text-xs font-semibold gap-2 focus-visible:ring-2"
                   >
-                    <RefreshCw className={`size-3.5 ${isSyncingLiveMetrics ? "animate-spin" : ""}`} />
-                    <span>Sincronizar Insights</span>
+                    <RefreshCw className={`size-4 ${isSyncingLiveMetrics ? "animate-spin" : ""}`} />
+                    <span>Sincronizar Métricas</span>
                   </Button>
                   <Button
                     size="sm"
@@ -922,10 +922,10 @@ function AnunciosWorkspacePage() {
                 <div>
                   <div className="flex items-center gap-2">
                     <h3 className="text-base font-bold text-foreground">Google Ads e Merchant Center</h3>
-                    <Badge variant="default" className="text-xs">Conectado (AES-256-GCM + GAQL MCP)</Badge>
+                    <Badge variant="default" className="text-xs">Conectado</Badge>
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Sincronização ativa com Google Ads API v17 ({channelsSettings?.google_ads?.customer_id || "Customer ID ativo"}), GAQL SearchStream e Merchant Center XML.
+                    Conta vinculada ({channelsSettings?.google_ads?.customer_id || "ativa"}) com catálogo sincronizado.
                   </p>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
@@ -936,8 +936,8 @@ function AnunciosWorkspacePage() {
                     onClick={handleSyncLiveMetrics}
                     className="h-11 min-h-11 rounded-lg text-xs font-semibold gap-2 focus-visible:ring-2"
                   >
-                    <RefreshCw className={`size-3.5 ${isSyncingLiveMetrics ? "animate-spin" : ""}`} />
-                    <span>Sincronizar GAQL</span>
+                    <RefreshCw className={`size-4 ${isSyncingLiveMetrics ? "animate-spin" : ""}`} />
+                    <span>Sincronizar Métricas</span>
                   </Button>
                   <Button
                     size="sm"
@@ -987,12 +987,12 @@ function AnunciosWorkspacePage() {
         <Sheet open={Boolean(activationSheetPlatform)} onOpenChange={(open) => !open && setActivationSheetPlatform(null)}>
           <SheetContent side="bottom" className="rounded-t-lg max-w-xl mx-auto p-6 space-y-5">
             <SheetHeader className="space-y-1 text-left">
-              <Badge variant="outline" className="w-fit text-xs">Cofre AES-256-GCM & OAuth 2.0 MCP</Badge>
+              <Badge variant="outline" className="w-fit text-xs">Conexão Segura</Badge>
               <SheetTitle className="text-lg font-bold">
                 {activationSheetPlatform === "google_ads" ? "Conectar Google Ads" : "Conectar Meta Ads"}
               </SheetTitle>
               <SheetDescription className="text-xs text-muted-foreground">
-                Conecte em 1 clique via OAuth 2.0 para descobrir automaticamente suas Contas de Anúncios e Pixels, ou informe manualmente o ID e Token.
+                Conecte suas contas de anúncio com um clique ou informe as credenciais manualmente.
               </SheetDescription>
             </SheetHeader>
 
@@ -1005,11 +1005,11 @@ function AnunciosWorkspacePage() {
                 onClick={() => activationSheetPlatform && handleFastOAuthLogin(activationSheetPlatform)}
                 className="h-11 min-h-11 rounded-lg text-xs font-bold gap-2 focus-visible:ring-2"
               >
-                <ExternalLink className="size-3.5" />
+                <ExternalLink className="size-4" />
                 <span>
                   {activationSheetPlatform === "google_ads"
-                    ? "Login Rápido Google OAuth 2.0"
-                    : "Login Rápido Facebook / Instagram OAuth 2.0"}
+                    ? "Entrar com Google"
+                    : "Entrar com Meta / Instagram"}
                 </span>
               </Button>
               <Button
@@ -1020,15 +1020,15 @@ function AnunciosWorkspacePage() {
                 onClick={() => activationSheetPlatform && handleDiscoverAccounts(activationSheetPlatform)}
                 className="h-11 min-h-11 rounded-lg text-xs font-semibold gap-2 focus-visible:ring-2"
               >
-                <RefreshCw className={`size-3.5 ${isDiscoveringAccounts ? "animate-spin" : ""}`} />
-                <span>{isDiscoveringAccounts ? "Buscando..." : "Autodescobrir Contas (MCP)"}</span>
+                <RefreshCw className={`size-4 ${isDiscoveringAccounts ? "animate-spin" : ""}`} />
+                <span>{isDiscoveringAccounts ? "Buscando..." : "Buscar Contas"}</span>
               </Button>
             </div>
 
             {discoveredAccounts.length > 0 && (
               <div className="space-y-2 p-3 rounded-lg bg-muted/30 border border-border/50">
                 <Label className="text-xs font-bold text-foreground">
-                  Contas Descobertas via MCP (Clique para selecionar)
+                  Contas Encontradas
                 </Label>
                 <div className="flex flex-wrap gap-2">
                   {discoveredAccounts.map((acc) => (
@@ -1349,13 +1349,13 @@ function AnunciosWorkspacePage() {
             >
               {isGeneratingMcp ? (
                 <>
-                  <Loader2 className="size-3.5 animate-spin" />
+                  <Loader2 className="size-4 animate-spin" />
                   <span className="hidden sm:inline">Processando...</span>
                 </>
               ) : (
                 <>
-                  <Send className="size-3.5" />
-                  <span className="hidden sm:inline">Executar MCP</span>
+                  <Send className="size-4" />
+                  <span className="hidden sm:inline">Executar</span>
                 </>
               )}
             </Button>
@@ -1364,14 +1364,14 @@ function AnunciosWorkspacePage() {
           {/* Sugestões Rápidas de Prompt em 1 Toque */}
           <div className="flex flex-wrap items-center gap-2 pt-1">
             <span className="text-xs font-medium text-muted-foreground shrink-0 mr-1">
-              Sugestões MCP:
+              Sugestões:
             </span>
             {[
-              "Diagnosticar saúde da conta Google e Meta Ads",
-              "Especial Oktoberfest de R$ 50/dia",
-              "Promoção Relâmpago de R$ 30/dia",
-              "Por que minha campanha caiu de conversão?",
-              "Destaque dos Melhores Produtos no Instagram",
+              "Verificar contas Google e Meta",
+              "Promoção local de R$ 50/dia",
+              "Campanha relâmpago de R$ 30/dia",
+              "Análise de conversão da semana",
+              "Produtos mais vendidos no Instagram",
             ].map((sug) => (
               <button
                 key={sug}
@@ -1395,13 +1395,13 @@ function AnunciosWorkspacePage() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border/40 pb-3">
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
-                  <Badge variant="secondary" className="text-xs">Diagnóstico MCP Oficial</Badge>
+                  <Badge variant="secondary" className="text-xs">Status da Conta</Badge>
                   <span className="text-xs font-mono text-muted-foreground">
-                    Gasto Auditado: {formatMoney(mcpDiagnosticsReport.totalRealSpendCents || 0)} • Receita Atribuída: {formatMoney(mcpDiagnosticsReport.attributedRevenueCents || 0)}
+                    Gasto: {formatMoney(mcpDiagnosticsReport.totalRealSpendCents || 0)} • Receita: {formatMoney(mcpDiagnosticsReport.attributedRevenueCents || 0)}
                   </span>
                 </div>
                 <h3 className="text-sm font-bold text-foreground">
-                  Auditoria de Performance Google Ads (GAQL) & Meta Ads (Graph API)
+                  Desempenho Google Ads e Meta Ads
                 </h3>
               </div>
               <Button
@@ -1843,7 +1843,7 @@ function AnunciosWorkspacePage() {
                   ) : (
                     <>
                       <Megaphone className="size-4 mr-2" />
-                      <span>Publicar Anúncio Imediatamente</span>
+                      <span>Publicar Anúncio</span>
                     </>
                   )}
                 </Button>

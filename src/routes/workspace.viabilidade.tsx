@@ -40,7 +40,7 @@ export const Route = createFileRoute("/workspace/viabilidade" as any)({
   head: () => ({
     meta: [
       {
-        title: "Geomarketing e Viabilidade Cortex 360 | Waesy",
+        title: "Estudo de Viabilidade | Waesy",
       },
     ],
   }),
@@ -446,12 +446,12 @@ export function WorkspaceViabilityPage() {
               {isRunningStudy ? (
                 <>
                   <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
-                  <span>Calculando Viabilidade...</span>
+                  <span>Analisando...</span>
                 </>
               ) : (
                 <>
                   <Sparkles className="size-4" />
-                  <span>Executar Estudo Cortex 360</span>
+                  <span>Analisar Viabilidade</span>
                 </>
               )}
             </Button>
@@ -503,7 +503,7 @@ export function WorkspaceViabilityPage() {
           className="h-11 px-4 rounded-lg text-xs font-bold shrink-0 gap-2"
         >
           <MapPin className="size-4 text-primary" />
-          <span>1. Mapa de Geomarketing & Isócronas</span>
+          <span>1. Mapa da Região</span>
         </Button>
 
         <Button
@@ -513,7 +513,7 @@ export function WorkspaceViabilityPage() {
           className="h-11 px-4 rounded-lg text-xs font-bold shrink-0 gap-2"
         >
           <TrendingUp className="size-4 text-primary" />
-          <span>2. Cortex 360: TAM/SAM/SOM & Preço Dinâmico</span>
+          <span>2. Mercado e Preço</span>
         </Button>
 
         <Button
@@ -524,7 +524,7 @@ export function WorkspaceViabilityPage() {
         >
           <Layers className="size-4 text-primary" />
           <span>
-            3. Matriz Comperator ({activeStudy?.comperator_matrix?.length || 0} Concorrentes)
+            3. Concorrentes ({activeStudy?.comperator_matrix?.length || 0})
           </span>
         </Button>
 
@@ -535,7 +535,7 @@ export function WorkspaceViabilityPage() {
           className="h-11 px-4 rounded-lg text-xs font-bold shrink-0 gap-2"
         >
           <Edit3 className="size-4 text-primary" />
-          <span>4. Business Model Canvas & SWOT Editáveis</span>
+          <span>4. Plano e Estratégia</span>
         </Button>
       </div>
 
@@ -548,7 +548,7 @@ export function WorkspaceViabilityPage() {
               Processando Malha Territorial
             </h2>
             <p className="text-xs text-muted-foreground max-w-md">
-              Consultando Censo IBGE 2022, gerando anéis de isócronas (500m, 1km, 2km) e simulando solvência POF com 24 personas sintéticas locais...
+              Consultando dados demográficos, mapeando a região e calculando viabilidade...
             </p>
           </div>
         </div>
@@ -560,7 +560,7 @@ export function WorkspaceViabilityPage() {
               Nenhum estudo executado
             </h2>
             <p className="text-xs text-muted-foreground">
-              Preencha a ideia e a cidade acima para gerar o diagnóstico espacial e econométrico completo.
+              Preencha a ideia e a cidade acima para analisar o potencial da região.
             </p>
           </div>
           <Button
@@ -570,19 +570,19 @@ export function WorkspaceViabilityPage() {
             className="h-11 px-5 rounded-lg text-xs font-bold gap-2"
           >
             <RefreshCw className="size-4" />
-            <span>Gerar Primeiro Estudo</span>
+            <span>Gerar Estudo</span>
           </Button>
         </div>
       ) : (
         <>
-          {/* ── VISÃO 1: MAPA DE GEOMARKETING & ISÓCRONAS (GOAT / GEOWIRE) ── */}
+          {/* ── VISÃO 1: MAPA DA REGIÃO ── */}
           {activeView === "map" && (
             <div className="space-y-6">
-              {/* KPIs Espaciais GOAT / Geowire */}
+              {/* KPIs da Região */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="p-4 rounded-lg border border-border/60 bg-card space-y-1">
                   <span className="text-xs font-semibold text-muted-foreground uppercase">
-                    Score de Viabilidade
+                    Viabilidade Geral
                   </span>
                   <div className="flex items-baseline justify-between">
                     <span className="text-2xl font-black text-foreground">
@@ -602,47 +602,47 @@ export function WorkspaceViabilityPage() {
                     </Badge>
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Síntese territorial + solvência SimLabs
+                    Potencial comercial estimado
                   </p>
                 </div>
 
                 <div className="p-4 rounded-lg border border-border/60 bg-card space-y-1">
                   <span className="text-xs font-semibold text-muted-foreground uppercase">
-                    Acessibilidade GOAT
+                    Acessibilidade Local
                   </span>
                   <div className="flex items-baseline justify-between">
                     <span className="text-2xl font-black text-foreground">
                       {activeStudy.accessibility_index}/100
                     </span>
                     <span className="text-xs font-mono text-primary">
-                      G={activeStudy.gravitational_score}
+                      {activeStudy.gravitational_score} pts
                     </span>
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    {activeStudy.urban_anchors.length} âncoras geradoras de tráfego
+                    {activeStudy.urban_anchors.length} pontos de interesse próximos
                   </p>
                 </div>
 
                 <div className="p-4 rounded-lg border border-border/60 bg-card space-y-1">
                   <span className="text-xs font-semibold text-muted-foreground uppercase">
-                    Saturação Geowire (2km)
+                    Concorrência (2 km)
                   </span>
                   <div className="flex items-baseline justify-between">
                     <span className="text-2xl font-black text-foreground">
                       {activeStudy.competitor_saturation_index}%
                     </span>
                     <span className="text-xs font-mono text-destructive">
-                      {activeStudy.discovered_competitors.length} players
+                      {activeStudy.discovered_competitors.length} locais
                     </span>
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Pressão competitiva γ = {activeStudy.competitor_pressure_gamma}
+                    Nível de saturação comercial
                   </p>
                 </div>
 
                 <div className="p-4 rounded-lg border border-border/60 bg-card space-y-1">
                   <span className="text-xs font-semibold text-muted-foreground uppercase">
-                    Demografia IBGE 2022
+                    População Estimada
                   </span>
                   <div className="flex items-baseline justify-between">
                     <span className="text-2xl font-black text-foreground">
@@ -698,76 +698,76 @@ export function WorkspaceViabilityPage() {
             </div>
           )}
 
-          {/* ── VISÃO 2: CORTEX 360: TAM/SAM/SOM, PREÇO DINÂMICO & ENXAME SIMLABS ── */}
+          {/* ── VISÃO 2: MERCADO E PREÇO ── */}
           {activeView === "cortex" && (
             <div className="space-y-6">
-              {/* Funil Econômico TAM / SAM / SOM */}
+              {/* Estimativa de Mercado */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="p-5 rounded-lg border border-border/60 bg-card space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold uppercase text-muted-foreground">
-                      TAM Mensal (Município)
+                      Mercado Total (Município)
                     </span>
                     <Badge variant="outline" className="text-xs">
-                      IBGE + POF
+                      Estimativa
                     </Badge>
                   </div>
                   <p className="text-2xl font-black text-foreground">
                     {formatBrlFromCents(activeStudy.tam_monthly_cents)}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    Dispêndio mensal total do município de {activeStudy.city} na categoria selecionada.
+                    Gasto mensal estimado da cidade na categoria do seu negócio.
                   </p>
                 </div>
 
                 <div className="p-5 rounded-lg border border-primary/30 bg-card space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold uppercase text-primary">
-                      SAM Mensal (Bacia 2km)
+                      Mercado Regional (2 km)
                     </span>
                     <Badge variant="secondary" className="text-xs">
-                      Isócrona Ativa
+                      Área de Atendimento
                     </Badge>
                   </div>
                   <p className="text-2xl font-black text-foreground">
                     {formatBrlFromCents(activeStudy.sam_monthly_cents)}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    Mercado endereçável servível pelo ponto físico e raio de entrega MotoLink.
+                    Mercado atendido no raio próximo ao seu endereço.
                   </p>
                 </div>
 
                 <div className="p-5 rounded-lg border border-emerald-500/30 bg-emerald-500/5 space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold uppercase text-emerald-600 dark:text-emerald-400">
-                      SOM Mensal (Captura Realista)
+                      Faturamento Estimado
                     </span>
                     <Badge variant="secondary" className="text-xs">
-                      Quota Alvo
+                      Meta Mensal
                     </Badge>
                   </div>
                   <p className="text-2xl font-black text-foreground">
                     {formatBrlFromCents(activeStudy.som_monthly_cents)}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    Faturamento potencial ponderado pelos {activeStudy.discovered_competitors.length} concorrentes no raio.
+                    Projeção realista de faturamento para o seu ponto comercial.
                   </p>
                 </div>
               </div>
 
-              {/* Equação de Precificação Dinâmica Cortex 360 */}
+              {/* Sugestão de Preço */}
               <div className="p-5 sm:p-6 rounded-lg border border-border/70 bg-card space-y-4">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border/50 pb-4">
                   <div>
                     <h2 className="text-lg font-bold text-foreground">
-                      Equação de Preço Cortex 360
+                      Sugestão de Preço
                     </h2>
                     <p className="text-xs text-muted-foreground">
-                      Preço Dinâmico = Preço Base × (1 + α·Sentimento) × (1 + β·Escassez) × (1 - γ·Concorrência)
+                      Calculado a partir do custo base, demanda e concorrência local.
                     </p>
                   </div>
                   <Badge variant="outline" className="text-xs font-mono">
-                    Multiplicador: {activeStudy.dynamic_price_multiplier}x
+                    Fator: {activeStudy.dynamic_price_multiplier}x
                   </Badge>
                 </div>
 
@@ -832,7 +832,7 @@ export function WorkspaceViabilityPage() {
                       Viabilidade e Ponto de Equilíbrio
                     </h2>
                     <Badge variant="secondary" className="text-xs">
-                      SimLabs 4.0 ({activeStudy.simlab_synthesis.sampleSize} personas)
+                      Pesquisa ({activeStudy.simlab_synthesis.sampleSize} perfis)
                     </Badge>
                   </div>
 
@@ -848,7 +848,7 @@ export function WorkspaceViabilityPage() {
 
                     <div className="p-3 rounded-lg bg-muted/20 border border-border/40">
                       <span className="text-xs text-muted-foreground block">
-                        Aprovação Preço Dinâmico
+                        Aprovação Preço Sugerido
                       </span>
                       <span className="text-lg font-bold text-primary">
                         {activeStudy.simlab_synthesis.dynamicPriceApprovalRatePct}%
@@ -876,12 +876,12 @@ export function WorkspaceViabilityPage() {
 
                   <div className="space-y-2 pt-2 border-t border-border/40">
                     <span className="text-xs font-bold uppercase text-muted-foreground block">
-                      Principais Objeções da Coorte Local:
+                      Principais Objeções:
                     </span>
                     <ul className="space-y-2 text-xs text-foreground">
                       {(activeStudy.simlab_synthesis.topObjections || []).map((obj, i) => (
                         <li key={i} className="flex items-start gap-2">
-                          <AlertCircle className="size-3.5 text-amber-500 shrink-0 mt-1" />
+                          <AlertCircle className="size-4 text-amber-500 shrink-0 mt-1" />
                           <span>{obj}</span>
                         </li>
                       ))}
@@ -889,11 +889,11 @@ export function WorkspaceViabilityPage() {
                   </div>
                 </div>
 
-                {/* Depoimentos Verbatim das Personas Sintéticas do Município */}
+                {/* Opinião dos Clientes Locais */}
                 <div className="lg:col-span-7 p-5 rounded-lg border border-border/70 bg-card space-y-4">
                   <div className="flex items-center justify-between">
                     <h2 className="text-base font-bold text-foreground">
-                      Voz da Coorte Sintética Local
+                      Opinião dos Clientes
                     </h2>
                     <span className="text-xs text-muted-foreground">
                       {activeStudy.simlab_synthesis.municipalityPreset}
@@ -916,7 +916,7 @@ export function WorkspaceViabilityPage() {
                         </div>
                         <div className="flex items-center justify-between text-xs text-muted-foreground font-mono">
                           <span>Bairro: {pv.neighborhood}</span>
-                          <span>P(Compra): {pv.choiceProbabilityPct}%</span>
+                          <span>Interesse: {pv.choiceProbabilityPct}%</span>
                         </div>
                         <p className="text-xs text-foreground leading-relaxed break-words">
                           &ldquo;{pv.verbatim}&rdquo;
@@ -929,21 +929,21 @@ export function WorkspaceViabilityPage() {
             </div>
           )}
 
-          {/* ── VISÃO 3: MATRIZ COMPETITIVA COMPERATOR (CONCORRENTES NO RAIO DE 2KM) ── */}
+          {/* ── VISÃO 3: CONCORRENTES NA REGIÃO ── */}
           {activeView === "comperator" && (
             <div className="space-y-6">
               <div className="p-5 sm:p-6 rounded-lg border border-border/70 bg-card space-y-4">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <div>
                     <h2 className="text-lg font-bold text-foreground">
-                      Matriz Comparativa Comperator
+                      Concorrentes no Raio de {activeStudy.radius_km} km
                     </h2>
                     <p className="text-xs text-muted-foreground">
-                      Concorrentes reais e operadores mapeados no raio de {activeStudy.radius_km} km via Diretório Waesy e OpenStreetMap Overpass.
+                      Locais e estabelecimentos mapeados na região pelo sistema.
                     </p>
                   </div>
                   <Badge variant="secondary" className="text-xs font-mono">
-                    Seu Ticket Ótimo: {formatBrlFromCents(activeStudy.cortex_dynamic_price_cents)}
+                    Preço Sugerido: {formatBrlFromCents(activeStudy.cortex_dynamic_price_cents)}
                   </Badge>
                 </div>
 
@@ -1028,16 +1028,16 @@ export function WorkspaceViabilityPage() {
                   ) : (
                     <>
                       <Save className="size-4 text-primary" />
-                      <span>Salvar BMC e SWOT</span>
+                      <span>Salvar Plano</span>
                     </>
                   )}
                 </Button>
               </div>
 
-              {/* Sumário Executivo Editável */}
+              {/* Resumo do Negócio Editável */}
               <div className="p-5 rounded-lg border border-border/70 bg-card space-y-2">
                 <label className="text-xs font-bold uppercase text-muted-foreground block">
-                  Sumário Executivo de Viabilidade
+                  Resumo do Negócio
                 </label>
                 <textarea
                   rows={2}
@@ -1047,7 +1047,7 @@ export function WorkspaceViabilityPage() {
                 />
               </div>
 
-              {/* Grid de 9 Blocos do Business Model Canvas (BMC) */}
+              {/* Grid de 9 Blocos do Modelo de Negócio */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {BMC_BLOCKS.map((block) => {
                   const currentList = editableBmc[block.key] || [];
@@ -1079,11 +1079,11 @@ export function WorkspaceViabilityPage() {
                 })}
               </div>
 
-              {/* Matriz SWOT 4 Quadrantes Editável */}
+              {/* Matriz de Pontos Fortes, Melhorias, Oportunidades e Riscos */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="p-4 rounded-lg border border-emerald-500/30 bg-emerald-500/5 space-y-2">
                   <span className="text-xs font-bold uppercase text-emerald-700 dark:text-emerald-400 block">
-                    Forças (Strengths)
+                    Pontos Fortes
                   </span>
                   <textarea
                     rows={4}
@@ -1107,7 +1107,7 @@ export function WorkspaceViabilityPage() {
 
                 <div className="p-4 rounded-lg border border-amber-500/30 bg-amber-500/5 space-y-2">
                   <span className="text-xs font-bold uppercase text-amber-700 dark:text-amber-400 block">
-                    Fraquezas (Weaknesses)
+                    Pontos a Melhorar
                   </span>
                   <textarea
                     rows={4}
@@ -1131,7 +1131,7 @@ export function WorkspaceViabilityPage() {
 
                 <div className="p-4 rounded-lg border border-blue-500/30 bg-blue-500/5 space-y-2">
                   <span className="text-xs font-bold uppercase text-blue-700 dark:text-blue-400 block">
-                    Oportunidades (Opportunities)
+                    Oportunidades
                   </span>
                   <textarea
                     rows={4}
@@ -1155,7 +1155,7 @@ export function WorkspaceViabilityPage() {
 
                 <div className="p-4 rounded-lg border border-destructive/30 bg-destructive/5 space-y-2">
                   <span className="text-xs font-bold uppercase text-destructive block">
-                    Ameaças (Threats)
+                    Riscos e Desafios
                   </span>
                   <textarea
                     rows={4}

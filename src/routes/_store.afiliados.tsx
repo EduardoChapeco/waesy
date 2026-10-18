@@ -466,11 +466,11 @@ function AfiliadosPage() {
                 </TabsTrigger>
                 <TabsTrigger value="ledger" className="h-11 min-h-11 px-3 text-xs rounded-lg gap-2 font-medium shrink-0">
                   <Coins className="size-4" />
-                  <span>Extrato Méliuz</span>
+                  <span>Extrato</span>
                 </TabsTrigger>
                 <TabsTrigger value="phia" className="h-11 min-h-11 px-3 text-xs rounded-lg gap-2 font-medium shrink-0">
                   <Globe className="size-4" />
-                  <span>Catálogo Phia</span>
+                  <span>Campanhas</span>
                 </TabsTrigger>
                 <TabsTrigger value="showcase" className="h-11 min-h-11 px-3 text-xs rounded-lg gap-2 font-medium shrink-0">
                   <Layers className="size-4" />
@@ -697,11 +697,11 @@ function AfiliadosPage() {
                   </div>
 
                   <div className="p-4 rounded-lg bg-card border border-border/60 space-y-1">
-                    <span className="text-xs text-muted-foreground block">Garantia / Escrow</span>
+                    <span className="text-xs text-muted-foreground block">Em Garantia</span>
                     <p className="text-lg sm:text-xl font-bold text-foreground">
                       {formatMoney(ledgerData?.summary?.awaitingEscrowCents || 0)}
                     </p>
-                    <span className="text-xs text-muted-foreground block">Prazo de 7-15 dias</span>
+                    <span className="text-xs text-muted-foreground block">Liberação em 15 dias</span>
                   </div>
 
                   <div className="p-4 rounded-lg bg-card border border-border/60 space-y-1">
@@ -713,11 +713,11 @@ function AfiliadosPage() {
                   </div>
 
                   <div className="p-4 rounded-lg bg-card border border-border/60 space-y-1">
-                    <span className="text-xs text-muted-foreground block">Canceladas / Estornos</span>
+                    <span className="text-xs text-muted-foreground block">Canceladas ou Estornos</span>
                     <p className="text-lg sm:text-xl font-bold text-destructive">
                       {formatMoney(ledgerData?.summary?.cancelledCents || 0)}
                     </p>
-                    <span className="text-xs text-muted-foreground block">Clawback Méliuz</span>
+                    <span className="text-xs text-muted-foreground block">Estornos de pedidos</span>
                   </div>
                 </div>
 
@@ -726,7 +726,7 @@ function AfiliadosPage() {
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border/40 pb-3">
                     <div>
                       <h3 className="text-sm font-bold text-foreground">
-                        Livro-Razão de Comissões
+                        Histórico de Comissões
                       </h3>
                       <p className="text-xs text-muted-foreground">
                         Acompanhe o status em tempo real de cada venda gerada a partir dos seus links e vitrine.
@@ -803,13 +803,13 @@ function AfiliadosPage() {
                 <div className="p-4 sm:p-5 rounded-lg border border-border/60 bg-card space-y-4">
                   <div>
                     <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
-                      <span>Campanhas Globais Curadas (Padrão Phia)</span>
+                      <span>Campanhas Recomendadas</span>
                       <Badge variant="secondary" className="text-xs">
-                        1-Click Add
+                        Parcerias
                       </Badge>
                     </h3>
                     <p className="text-xs text-muted-foreground mt-1">
-                      Monetize sua vitrine indicando marcas consolidadas como Booking.com, produtos naturais e tech com split automático de comissão e cashback.
+                      Indique marcas parceiras e receba comissão direta por cada venda ou reserva confirmada.
                     </p>
                   </div>
 
@@ -1568,7 +1568,7 @@ function AfiliadosPage() {
             <Dialog open={isStorePickerOpen} onOpenChange={setIsStorePickerOpen}>
               <DialogContent className="sm:max-w-lg">
                 <DialogHeader>
-                  <DialogTitle className="text-base font-bold">Conectar Lojas Parceiras à sua Vitrine</DialogTitle>
+                  <DialogTitle className="text-base font-bold">Lojas Parceiras</DialogTitle>
                 </DialogHeader>
 
                 <div className="space-y-4 pt-2">
@@ -1678,7 +1678,7 @@ function AfiliadosPage() {
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
                       <Coins className="size-4 text-emerald-600" />
-                      <h3 className="text-xs font-bold text-foreground">Ativação Rápida: Apenas Links e Comissões</h3>
+                      <h3 className="text-xs font-bold text-foreground">Apenas Links e Comissões</h3>
                     </div>
                     <p className="text-xs text-muted-foreground leading-relaxed">
                       Não quer uma vitrine pública de criador? Ative seu link de parceiro agora para divulgar lojas e produtos e receber comissões diretamente no seu CPF via PIX.
@@ -1701,7 +1701,7 @@ function AfiliadosPage() {
                       onClick={handleFastAffiliateActivation}
                       className="w-full sm:w-auto h-11 min-h-11 px-4 rounded-lg text-xs font-bold bg-emerald-600 text-primary-foreground hover:bg-emerald-700 cursor-pointer shrink-0"
                     >
-                      {isSubmitting ? "Ativando..." : "Ativar Links Imediatamente"}
+                      {isSubmitting ? "Ativando..." : "Ativar Links"}
                     </Button>
                   </div>
                 </div>
@@ -1715,7 +1715,7 @@ function AfiliadosPage() {
 
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border/40 pb-3">
                   <div className="space-y-1">
-                    <h2 className="text-base font-bold text-foreground">Defina sua Identidade de Criador</h2>
+                    <h2 className="text-base font-bold text-foreground">Identidade do Perfil</h2>
                     <p className="text-xs text-muted-foreground">
                       Escolha o identificador exclusivo (@handle) que representará sua marca ou nome artístico.
                     </p>
