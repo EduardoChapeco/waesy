@@ -15,6 +15,7 @@ export const CANONICAL_BUILDER_BLOCK_IDS = [
   "testimonials_social_proof",
   "contact_form_direct",
   "faq_clean_accordion",
+  "interactive_quote_calculator",
 ] as const;
 
 export type CanonicalBuilderBlockId = (typeof CANONICAL_BUILDER_BLOCK_IDS)[number];
@@ -240,6 +241,34 @@ export const FaqBlockDataSchema = z.object({
   items: z.array(FaqItemSchema).default([]),
 });
 export type FaqBlockData = z.infer<typeof FaqBlockDataSchema>;
+
+// Interactive Quote Calculator Block
+export const CalculatorOptionItemSchema = z.object({
+  id: z.string(),
+  label: z.string(),
+  description: z.string().optional(),
+  priceCents: z.number().int().nonnegative().default(0),
+  isDefault: z.boolean().optional(),
+});
+export type CalculatorOptionItem = z.infer<typeof CalculatorOptionItemSchema>;
+
+export const InteractiveCalculatorBlockDataSchema = z.object({
+  title: z.string().default("Calculadora de Cotação em Tempo Real"),
+  subtitle: z.string().optional(),
+  basePriceCents: z.number().int().nonnegative().default(0),
+  unitLabel: z.string().default("Item"),
+  unitPluralLabel: z.string().default("Itens"),
+  minUnits: z.number().int().min(1).default(1),
+  maxUnits: z.number().int().max(1000).default(50),
+  defaultUnits: z.number().int().default(5),
+  unitPriceCents: z.number().int().nonnegative().default(5000),
+  options: z.array(CalculatorOptionItemSchema).default([]),
+  whatsappNumber: z.string().optional(),
+  submitButtonText: z.string().default("Solicitar Proposta Oficial"),
+  successMessage: z.string().default("Cotação enviada com sucesso! Entraremos em contato."),
+  disclaimer: z.string().default("Os valores calculados são estimativas e podem variar conforme especificações finais."),
+});
+export type InteractiveCalculatorBlockData = z.infer<typeof InteractiveCalculatorBlockDataSchema>;
 
 // ── 3. ESTRUTURA DA INSTÂNCIA DO BLOCO (STATE TREE NODE) ──
 

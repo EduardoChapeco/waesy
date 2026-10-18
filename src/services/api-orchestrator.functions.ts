@@ -231,6 +231,131 @@ export const testPoolKeyConnection = createServerFn({ method: "POST" })
     return internalTestPoolKeyConnection(id);
   });
 
+/**
+ * 4.2 Cadastra múltiplas chaves em lote para um provedor (ex.: várias chaves Groq / OpenRouter) sem sobrescrever as existentes.
+ */
+export const batchSaveApiKeysToPool = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      provider: apiProviderEnum,
+      labelPrefix: z.string().min(2, "Informe o prefixo de identificação"),
+      rawKeysText: z.string().min(4, "Informe ao menos uma chave"),
+      priority: z.number().int().min(1).default(1),
+      rateLimitPerMinute: z.number().int().min(1).default(60),
+    }),
+  )
+  .handler(async ({ data }) => {
+    await requireAdmin();
+    const supabase = getServerClient();
+
+    const rawList = data.rawKeysText
+      .split(/[\r\n,;]+/)
+      .map((k) => k.trim())
+      .filter((k) => k.length >= 6);
+
+    const uniqueRawKeys = [...new Set(rawList)];
+    if (uniqueRawKeys.length === 0) {
+      throw new Error("Nenhuma chave válida identificada no lote.");
+    }
+
+    const createdOrUpdated: ApiKeyPoolDTO[] = [];
+
+    for (let idx = 0; idx < uniqueRawKeys.length; idx++) {
+      const rawKey = uniqueRawKeys[idx];
+      const masked =
+        rawKey.length > 8
+          ? `${rawKey.slice(0, 4)}...${rawKey.slice(-4)}`
+          : `***${rawKey.slice(-2)}`;
+      const encrypted = Buffer.from(rawKey).toString("base64");
+      const keyLabel =
+        uniqueRawKeys.length === 1
+          ? data.labelPrefix.trim()
+          : `${data.labelPrefix.trim()} #${idx + 1}`;
+
+      const { data: existing } = await supabase
+        .from("api_key_pools")
+        .select("id")
+        .eq("provider", data.provider)
+        .eq("encrypted_key", encrypted)
+        .maybeSingle();
+
+      if (existing?.id) {
+        const { data: updated } = await supabase
+          .from("api_key_pools")
+          .update({
+            label: keyLabel,
+            masked_key: masked,
+            priority: data.priority,
+            rate_limit_per_minute: data.rateLimitPerMinute,
+            is_active: true,
+            last_error_at: null,
+            last_error_message: null,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", existing.id)
+          .select()
+          .single();
+        if (updated) createdOrUpdated.push(updated as ApiKeyPoolDTO);
+      } else {
+        const { data: inserted } = await supabase
+          .from("api_key_pools")
+          .insert({
+            provider: data.provider,
+            label: keyLabel,
+            encrypted_key: encrypted,
+            masked_key: masked,
+            priority: data.priority,
+            rate_limit_per_minute: data.rateLimitPerMinute,
+            is_active: true,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          })
+          .select()
+          .single();
+        if (inserted) createdOrUpdated.push(inserted as ApiKeyPoolDTO);
+      }
+    }
+
+    return {
+      success: true,
+      count: createdOrUpdated.length,
+      keys: createdOrUpdated,
+    };
+  });
+
+/**
+ * 4.3 Limpa erros e cooldowns (HTTP 429) de todas as chaves de um provedor ou de toda a pool.
+ */
+export const resetProviderPoolCooldowns = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      provider: apiProviderEnum.optional(),
+    }),
+  )
+  .handler(async ({ data }) => {
+    await requireAdmin();
+    const supabase = getServerClient();
+    clearInMemoryKeyCooldowns(data.provider);
+
+    let query = supabase
+      .from("api_key_pools")
+      .update({
+        last_error_at: null,
+        last_error_message: null,
+        is_active: true,
+        updated_at: new Date().toISOString(),
+      });
+
+    if (data.provider) {
+      query = query.eq("provider", data.provider);
+    } else {
+      query = query.not("id", "is", null);
+    }
+
+    await query;
+    return { success: true };
+  });
+
 // ============================================================
 // Funções de Gestão de Prompts Master (Platform Admin)
 // ============================================================
@@ -317,10 +442,35 @@ export const saveMasterPrompt = createServerFn({ method: "POST" })
 // Motor de Importação Inteligente de Produtos via URL
 // ============================================================
 
+const keyCooldownUntilMap = new Map<string, number>();
+const providerRoundRobinCursor = new Map<string, number>();
+
+export function clearInMemoryKeyCooldowns(provider?: string): void {
+  if (!provider) {
+    keyCooldownUntilMap.clear();
+    return;
+  }
+  for (const [key] of keyCooldownUntilMap.entries()) {
+    if (key.includes(provider)) {
+      keyCooldownUntilMap.delete(key);
+    }
+  }
+}
+
+function isKeyInMemoryCooldown(keyId: string): boolean {
+  const until = keyCooldownUntilMap.get(keyId);
+  if (!until) return false;
+  if (Date.now() > until) {
+    keyCooldownUntilMap.delete(keyId);
+    return false;
+  }
+  return true;
+}
+
 /**
  * Obtém todas as chaves ativas do pool para um provedor, ordenadas para equilibrar o consumo
- * entre os limites gratuitos (menor daily_request_count e mais antiga last_used_at),
- * respeitando a quarentena de 5 minutos caso tenha sofrido HTTP 429.
+ * entre múltiplas chaves (Round-Robin em memória + menor daily_request_count + mais antiga last_used_at),
+ * respeitando a quarentena individual por chave caso tenha sofrido HTTP 429.
  */
 export async function getAllActiveKeysForProvider(
   provider: ApiProvider,
@@ -338,35 +488,60 @@ export async function getAllActiveKeysForProvider(
     } catch {}
   }
 
-  // 2. Chaves cadastradas na api_key_pools do Admin Master
+  // 2. Chaves cadastradas na api_key_pools do Admin Master (suporta N chaves simultâneas por provedor)
   try {
     const supabase = getServerClient();
-    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+    const nowIso = new Date().toISOString();
+
+    // Libera quarentenas vencidas e zera contadores diários/mensais via RPC atômica;
+    // falha da RPC (ex.: migration ainda não aplicada) cai no SELECT filtrado abaixo.
+    await supabase
+      .rpc("claim_healthy_api_keys_for_provider", { p_provider: provider, p_limit: 1 })
+      .then(() => null, () => null);
 
     const { data: poolRows } = await supabase
       .from("api_key_pools")
-      .select("id, encrypted_key, daily_request_count, last_used_at, last_error_at, last_error_message")
+      .select("id, encrypted_key, priority, daily_request_count, last_used_at, quarantine_until")
       .eq("provider", provider)
       .eq("is_active", true)
+      .or(`quarantine_until.is.null,quarantine_until.lte.${nowIso}`)
+      .order("priority", { ascending: true })
       .order("daily_request_count", { ascending: true })
-      .order("last_used_at", { ascending: true, nullsFirst: true });
+      .order("last_used_at", { ascending: true, nullsFirst: true })
+      .limit(50);
 
     if (poolRows && poolRows.length > 0) {
-      // Prioriza chaves fora do cooldown de erro 429
-      const availableKeys = poolRows.filter((r) => {
-        if (!r.last_error_at) return true;
-        const inCooldown = r.last_error_at > fiveMinutesAgo;
-        const isRateLimit = (r.last_error_message || "").includes("429");
-        return !(inCooldown && isRateLimit);
-      });
+      // Quarentena é estrita: chaves bloqueadas NUNCA voltam à rotação antes do prazo.
+      const selectedPool = poolRows.filter((r) => !isKeyInMemoryCooldown(r.id));
 
-      const selectedPool = availableKeys.length > 0 ? availableKeys : poolRows;
+      const decodedPool: Array<{ id: string; rawKey: string }> = [];
 
       for (const row of selectedPool) {
         if (row.encrypted_key) {
           const rawKey = Buffer.from(row.encrypted_key, "base64").toString("utf-8").trim();
-          if (rawKey && !keys.some((k) => k.rawKey === rawKey)) {
-            keys.push({ id: row.id, rawKey });
+          if (rawKey && !decodedPool.some((k) => k.rawKey === rawKey)) {
+            decodedPool.push({ id: row.id, rawKey });
+          }
+        }
+      }
+
+      // Rotação Round-Robin em memória entre as chaves saudáveis para distribuir chamadas concorrentes
+      if (decodedPool.length > 1) {
+        const cursor = (providerRoundRobinCursor.get(provider) || 0) % decodedPool.length;
+        providerRoundRobinCursor.set(provider, cursor + 1);
+        const rotated = [
+          ...decodedPool.slice(cursor),
+          ...decodedPool.slice(0, cursor),
+        ];
+        for (const item of rotated) {
+          if (!keys.some((k) => k.rawKey === item.rawKey)) {
+            keys.push(item);
+          }
+        }
+      } else {
+        for (const item of decodedPool) {
+          if (!keys.some((k) => k.rawKey === item.rawKey)) {
+            keys.push(item);
           }
         }
       }
@@ -375,28 +550,43 @@ export async function getAllActiveKeysForProvider(
     console.warn(`[api-orchestrator] Falha ao ler chaves do pool para ${provider}:`, err);
   }
 
-  // 3. Fallbacks de variáveis de ambiente locais
-  const envKeyName = `${provider.toUpperCase()}_API_KEY`;
-  const envFallback = (typeof process !== "undefined" && process.env ? process.env[envKeyName] : undefined)?.trim();
-  if (envFallback && !keys.some((k) => k.rawKey === envFallback)) {
-    keys.push({ id: `env-${provider}`, rawKey: envFallback });
-  }
+  // 3. Fallbacks de variáveis de ambiente locais (suporta chave única, numeradas _1.._10 e lista _KEYS separada por vírgula)
+  if (typeof process !== "undefined" && process.env) {
+    const prefix = provider.toUpperCase();
+    const envCandidates: string[] = [];
 
-  if (provider === "gemini") {
-    const alt = process.env.GOOGLE_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.VITE_GEMINI_API_KEY;
-    if (alt && !keys.some((k) => k.rawKey === alt.trim())) {
-      keys.push({ id: "env-gemini-alt", rawKey: alt.trim() });
+    const baseEnv = process.env[`${prefix}_API_KEY`]?.trim();
+    if (baseEnv) envCandidates.push(baseEnv);
+
+    const multiListEnv = process.env[`${prefix}_API_KEYS`]?.trim();
+    if (multiListEnv) {
+      for (const part of multiListEnv.split(/[,;\r\n]+/)) {
+        if (part.trim()) envCandidates.push(part.trim());
+      }
     }
-  } else if (provider === "firecrawl") {
-    const alt = process.env.FIRECRAWL_API_KEY_1 || process.env.FIRECRAWL_API_KEY_2 || process.env.VITE_FIRECRAWL_API_KEY;
-    if (alt && !keys.some((k) => k.rawKey === alt.trim())) {
-      keys.push({ id: "env-firecrawl-alt", rawKey: alt.trim() });
+
+    for (let idx = 1; idx <= 10; idx++) {
+      const numbered = process.env[`${prefix}_API_KEY_${idx}`]?.trim();
+      if (numbered) envCandidates.push(numbered);
     }
-  } else if (provider === "steel") {
-    const alt = process.env.VITE_STEEL_API_KEY;
-    if (alt && !keys.some((k) => k.rawKey === alt.trim())) {
-      keys.push({ id: "env-steel-alt", rawKey: alt.trim() });
+
+    if (provider === "gemini") {
+      const alt = process.env.GOOGLE_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.VITE_GEMINI_API_KEY;
+      if (alt?.trim()) envCandidates.push(alt.trim());
+    } else if (provider === "firecrawl") {
+      const alt = process.env.VITE_FIRECRAWL_API_KEY;
+      if (alt?.trim()) envCandidates.push(alt.trim());
+    } else if (provider === "steel") {
+      const alt = process.env.VITE_STEEL_API_KEY;
+      if (alt?.trim()) envCandidates.push(alt.trim());
     }
+
+    envCandidates.forEach((rawKey, i) => {
+      const envId = `env-${provider}-${i + 1}`;
+      if (rawKey && !isKeyInMemoryCooldown(envId) && !keys.some((k) => k.rawKey === rawKey)) {
+        keys.push({ id: envId, rawKey });
+      }
+    });
   }
 
   return keys;
@@ -480,34 +670,92 @@ export async function getNextActiveKey(provider: ApiProvider, ownerId?: string):
   return null;
 }
 
+export type KeyQuarantineScope = "minute" | "day" | "month" | "permanent";
+
+export interface KeyQuotaClassification {
+  scope: KeyQuarantineScope;
+  reason: string;
+  /** Instante (epoch ms) em que a chave volta à rotação; null = permanente. */
+  until: number | null;
+}
+
 /**
- * Registra falha de requisição ou rate limit (HTTP 429) em uma chave de API do pool.
- * Atualiza last_error_at, last_error_message e temporariamente rotaciona a chave.
+ * Classifica o erro HTTP/corpo de um provedor de IA no escopo temporal de quota correto.
+ * - permanent: 401/403 chave inválida/revogada (desativa a chave)
+ * - month: 402 / insufficient_quota / créditos esgotados (até dia 1º do próximo mês, UTC)
+ * - day: 429 com RPD/TPD/"per day" (até 00:00 UTC do dia seguinte)
+ * - minute: 429 padrão RPM/TPM (60s) ou 5xx transitório (30s)
+ */
+export function classifyKeyQuotaError(
+  statusCode?: number,
+  errorMessage: string = "",
+  nowMs: number = Date.now(),
+): KeyQuotaClassification {
+  const msg = (errorMessage || "").toLowerCase();
+  const now = new Date(nowMs);
+
+  const isInvalid =
+    statusCode === 401 ||
+    statusCode === 403 ||
+    /invalid[_ ]api[_ ]key|api key not valid|unauthorized|revoked|account_deactivated|permission_denied/.test(msg);
+  if (isInvalid && statusCode !== 429) {
+    return { scope: "permanent", reason: "invalid_key", until: null };
+  }
+
+  const isMonthly =
+    statusCode === 402 ||
+    /insufficient_quota|billing_hard_limit_reached|monthly[_ ]limit|credit balance is too low|exceeded your current quota|spend limit|per month|monthly quota/.test(msg);
+  if (isMonthly) {
+    const nextMonth = Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1, 0, 0, 0);
+    return { scope: "month", reason: "monthly_quota_exhausted", until: nextMonth };
+  }
+
+  const isDaily = /per day|daily|\brpd\b|\btpd\b|tokens per day|requests per day|generaterequestsperday|perdayperproject/.test(msg);
+  if (isDaily) {
+    const tomorrow = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1, 0, 0, 0);
+    return { scope: "day", reason: "daily_quota_exhausted", until: tomorrow };
+  }
+
+  if (statusCode === 429 || /rate limit|too many requests|per minute|\brpm\b|\btpm\b/.test(msg)) {
+    return { scope: "minute", reason: "rate_limit_minute", until: nowMs + 60_000 };
+  }
+
+  return { scope: "minute", reason: "transient_error", until: nowMs + 30_000 };
+}
+
+/**
+ * Registra falha em uma chave do pool aplicando quarentena com escopo temporal real
+ * (memória + colunas quarantine_* em api_key_pools). A próxima chamada usa a próxima chave saudável.
  */
 export async function markKeyError(
-  keyId: string, 
+  keyId: string,
   errorMessage: string = "Rate limit or network error",
   statusCode?: number
 ): Promise<void> {
-  if (!keyId || keyId.startsWith("env-") || keyId.startsWith("byok-")) return;
+  if (!keyId) return;
+  const cls = classifyKeyQuotaError(statusCode, errorMessage);
+  keyCooldownUntilMap.set(keyId, cls.until ?? Date.now() + 365 * 86_400_000);
+
+  if (keyId.startsWith("env-") || keyId.startsWith("byok-") || keyId === "override-key") return;
   const supabase = getServerClient();
-  try {
-    const isAuthError = statusCode === 401 || errorMessage.toLowerCase().includes("invalid api key") || errorMessage.toLowerCase().includes("unauthorized");
-    await supabase
-      .from("api_key_pools")
-      .update({
-        last_error_at: new Date().toISOString(),
-        last_error_message: errorMessage.slice(0, 255),
-        is_active: isAuthError ? false : true,
-      })
-      .eq("id", keyId);
-  } catch (err) {
-    console.warn(`[api-orchestrator] Falha ao registrar erro da chave ${keyId}:`, err);
+  const { error } = await supabase
+    .from("api_key_pools")
+    .update({
+      last_error_at: new Date().toISOString(),
+      last_error_message: errorMessage.slice(0, 255),
+      is_active: cls.scope === "permanent" ? false : true,
+      quarantine_scope: cls.scope,
+      quarantine_reason: cls.reason,
+      quarantine_until: cls.until ? new Date(cls.until).toISOString() : null,
+    })
+    .eq("id", keyId);
+  if (error) {
+    console.warn(`[api-orchestrator] Falha ao registrar quarentena da chave ${keyId}:`, error.message);
   }
 }
 
 /**
- * Cadastra ou atualiza uma chave de API para o SimLab e módulos de IA diretamente.
+ * Cadastra ou adiciona uma nova chave de API no pool sem sobrescrever chaves diferentes do mesmo provedor.
  */
 export const saveSimLabApiKey = createServerFn({ method: "POST" })
   .validator(
@@ -523,12 +771,12 @@ export const saveSimLabApiKey = createServerFn({ method: "POST" })
 
     const supabase = getServerClient();
     const rawKey = data.apiKey.trim();
-    const masked = rawKey.length > 8 ? `${rawKey.slice(0, 3)}...${rawKey.slice(-4)}` : `***${rawKey.slice(-2)}`;
+    const masked = rawKey.length > 8 ? `${rawKey.slice(0, 4)}...${rawKey.slice(-4)}` : `***${rawKey.slice(-2)}`;
     const encrypted = Buffer.from(rawKey).toString("base64");
 
     const payload = {
       provider: data.provider,
-      label: data.label || `Chave ${data.provider.toUpperCase()} (SimLab / IA)`,
+      label: data.label || `Chave ${data.provider.toUpperCase()} (${masked})`,
       encrypted_key: encrypted,
       masked_key: masked,
       priority: 1,
@@ -537,11 +785,12 @@ export const saveSimLabApiKey = createServerFn({ method: "POST" })
       updated_at: new Date().toISOString(),
     };
 
-    // Upsert pelo provedor
+    // Verifica apenas se esta exata chave já existe (preservando outras chaves do mesmo provedor!)
     const { data: existing } = await supabase
       .from("api_key_pools")
       .select("id")
       .eq("provider", data.provider)
+      .eq("encrypted_key", encrypted)
       .limit(1)
       .maybeSingle();
 
@@ -732,8 +981,26 @@ export async function executeUnifiedAiCall(options: UnifiedAiCallOptions): Promi
 
       try {
       if (provider === "openrouter") {
-        const defaultModel = images.length > 0 ? "google/gemini-2.5-flash" : "meta-llama/llama-3.3-70b-instruct";
-        const model = options.modelOverride || defaultModel;
+        const openRouterModels =
+          images.length > 0
+            ? ["google/gemini-2.5-flash", "qwen/qwen2.5-vl-72b-instruct:free"]
+            : [
+                "meta-llama/llama-3.3-70b-instruct:free",
+                "qwen/qwen3-235b-a22b:free",
+                "deepseek/deepseek-chat-v3-0324:free",
+                "meta-llama/llama-3.3-70b-instruct",
+                "google/gemini-2.5-flash",
+              ];
+
+        if (options.modelOverride) {
+          if (!openRouterModels.includes(options.modelOverride)) {
+            openRouterModels.unshift(options.modelOverride);
+          } else {
+            openRouterModels.splice(openRouterModels.indexOf(options.modelOverride), 1);
+            openRouterModels.unshift(options.modelOverride);
+          }
+        }
+
         const messages: any[] = [];
         if (systemPrompt) {
           messages.push({ role: "system", content: systemPrompt });
@@ -752,37 +1019,56 @@ export async function executeUnifiedAiCall(options: UnifiedAiCallOptions): Promi
           messages.push({ role: "user", content: userPrompt });
         }
 
-        const bodyPayload: any = {
-          model,
-          messages,
-          temperature: options.temperature ?? 0.3,
-          max_tokens: options.maxTokens ?? 2048,
-        };
-        if (isJson) {
-          bodyPayload.response_format = { type: "json_object" };
+        let orRes: Response | null = null;
+        let activeOrModel = openRouterModels[0];
+        let lastOrStatus = 500;
+        let lastOrErrText = "";
+
+        for (const candidateModel of openRouterModels) {
+          activeOrModel = candidateModel;
+          const bodyPayload: any = {
+            model: candidateModel,
+            messages,
+            temperature: options.temperature ?? 0.3,
+            max_tokens: options.maxTokens ?? 2048,
+          };
+          if (isJson) {
+            bodyPayload.response_format = { type: "json_object" };
+          }
+
+          const attemptRes = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${keyInfo.rawKey}`,
+              "HTTP-Referer": "https://waesy.pages.dev",
+              "X-Title": "Waesy Platform",
+            },
+            body: JSON.stringify(bodyPayload),
+            signal: AbortSignal.timeout(12000),
+          });
+
+          if (attemptRes.ok) {
+            orRes = attemptRes;
+            break;
+          }
+
+          lastOrStatus = attemptRes.status;
+          lastOrErrText = await attemptRes.text().catch(() => "");
+          if (attemptRes.status === 401 || attemptRes.status === 402 || attemptRes.status === 403) {
+            break;
+          }
         }
 
-        const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${keyInfo.rawKey}`,
-            "HTTP-Referer": "https://waesy.pages.dev",
-            "X-Title": "Waesy Platform",
-          },
-          body: JSON.stringify(bodyPayload),
-          signal: AbortSignal.timeout(8000),
-        });
-
-        if (!res.ok) {
-          const errText = await res.text().catch(() => "");
-          await markKeyError(keyInfo.id, `OpenRouter HTTP ${res.status}: ${errText.slice(0, 150)}`);
-          errors.push(`OpenRouter (${res.status})`);
+        if (!orRes || !orRes.ok) {
+          await markKeyError(keyInfo.id, `OpenRouter HTTP ${lastOrStatus}: ${lastOrErrText.slice(0, 150)}`, lastOrStatus);
+          errors.push(`OpenRouter (${lastOrStatus})`);
           continue;
         }
 
-        const data = await res.json();
-        const content = data?.choices?.[0]?.message?.content || "";
+        const data = await orRes.json();
+        const rawContent = data?.choices?.[0]?.message?.content || "";
+        const content = rawContent.replace(/<think>[\s\S]*?<\/think>/gi, "").trim();
         if (!content) {
           errors.push("OpenRouter retornou resposta vazia");
           continue;
@@ -801,7 +1087,7 @@ export async function executeUnifiedAiCall(options: UnifiedAiCallOptions): Promi
           }
         }
 
-        return await finalizeSuccess(content, model, parsedJson);
+        return await finalizeSuccess(content, activeOrModel, parsedJson);
       }
 
       if (provider === "groq") {
@@ -810,12 +1096,17 @@ export async function executeUnifiedAiCall(options: UnifiedAiCallOptions): Promi
           continue;
         }
 
-        // Higienização de modelo para o Groq: utilizar modelo ativo no provedor
-        let model = "qwen/qwen3.8-27b";
+        // Higienização e cascata de modelos para o Groq: garante resiliência caso um modelo específico oscile
+        const groqModels = ["qwen/qwen3.8-27b", "llama-3.3-70b-versatile", "openai/gpt-oss-120b"];
         if (options.modelOverride) {
           const o = options.modelOverride.toLowerCase();
           if (o.includes("qwen") || o.includes("llama") || o.includes("gpt-oss") || o.includes("mixtral") || o.includes("gemma")) {
-            model = options.modelOverride;
+            if (!groqModels.includes(options.modelOverride)) {
+              groqModels.unshift(options.modelOverride);
+            } else {
+              groqModels.splice(groqModels.indexOf(options.modelOverride), 1);
+              groqModels.unshift(options.modelOverride);
+            }
           }
         }
 
@@ -825,35 +1116,55 @@ export async function executeUnifiedAiCall(options: UnifiedAiCallOptions): Promi
         }
         messages.push({ role: "user", content: userPrompt });
 
-        const bodyPayload: any = {
-          model,
-          messages,
-          temperature: options.temperature ?? 0.3,
-          max_tokens: options.maxTokens ?? 4096,
-        };
-        if (isJson) {
-          bodyPayload.response_format = { type: "json_object" };
+        let groqRes: Response | null = null;
+        let activeGroqModel = groqModels[0];
+        let lastGroqStatus = 500;
+        let lastGroqErrText = "";
+
+        for (const candidateModel of groqModels) {
+          activeGroqModel = candidateModel;
+          const bodyPayload: any = {
+            model: candidateModel,
+            messages,
+            temperature: options.temperature ?? 0.3,
+            max_tokens: options.maxTokens ?? 4096,
+          };
+          if (isJson) {
+            bodyPayload.response_format = { type: "json_object" };
+          }
+
+          const attemptRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${keyInfo.rawKey}`,
+            },
+            body: JSON.stringify(bodyPayload),
+            signal: AbortSignal.timeout(20000),
+          });
+
+          if (attemptRes.ok) {
+            groqRes = attemptRes;
+            break;
+          }
+
+          lastGroqStatus = attemptRes.status;
+          lastGroqErrText = await attemptRes.text().catch(() => "");
+          // Se for erro de autenticação (401/403), a chave em si é inválida; não adianta trocar modelo na mesma chave
+          if (attemptRes.status === 401 || attemptRes.status === 403) {
+            break;
+          }
         }
 
-        const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${keyInfo.rawKey}`,
-          },
-          body: JSON.stringify(bodyPayload),
-          signal: AbortSignal.timeout(20000),
-        });
-
-        if (!res.ok) {
-          const errText = await res.text().catch(() => "");
-          await markKeyError(keyInfo.id, `Groq HTTP ${res.status}: ${errText.slice(0, 150)}`, res.status);
-          errors.push(`Groq (${res.status})`);
+        if (!groqRes || !groqRes.ok) {
+          await markKeyError(keyInfo.id, `Groq HTTP ${lastGroqStatus}: ${lastGroqErrText.slice(0, 300)}`, lastGroqStatus);
+          errors.push(`Groq (${lastGroqStatus})`);
           continue;
         }
 
-        const data = await res.json();
-        const content = data?.choices?.[0]?.message?.content || "";
+        const data = await groqRes.json();
+        const rawContent = data?.choices?.[0]?.message?.content || "";
+        const content = rawContent.replace(/<think>[\s\S]*?<\/think>/gi, "").trim();
         if (!content) {
           errors.push("Groq retornou resposta vazia");
           continue;
@@ -872,7 +1183,7 @@ export async function executeUnifiedAiCall(options: UnifiedAiCallOptions): Promi
           }
         }
 
-        return await finalizeSuccess(content, model, parsedJson);
+        return await finalizeSuccess(content, activeGroqModel, parsedJson);
       }
 
       if (provider === "gemini") {
@@ -923,7 +1234,7 @@ export async function executeUnifiedAiCall(options: UnifiedAiCallOptions): Promi
 
         if (!res.ok) {
           const errText = await res.text().catch(() => "");
-          await markKeyError(keyInfo.id, `Gemini HTTP ${res.status}: ${errText.slice(0, 150)}`);
+          await markKeyError(keyInfo.id, `Gemini HTTP ${res.status}: ${errText.slice(0, 300)}`, res.status);
           errors.push(`Gemini (${res.status})`);
           continue;
         }
@@ -993,7 +1304,7 @@ export async function executeUnifiedAiCall(options: UnifiedAiCallOptions): Promi
 
         if (!res.ok) {
           const errText = await res.text().catch(() => "");
-          await markKeyError(keyInfo.id, `OpenAI HTTP ${res.status}: ${errText.slice(0, 150)}`);
+          await markKeyError(keyInfo.id, `OpenAI HTTP ${res.status}: ${errText.slice(0, 300)}`, res.status);
           errors.push(`OpenAI (${res.status})`);
           continue;
         }
@@ -1065,7 +1376,7 @@ export async function executeUnifiedAiCall(options: UnifiedAiCallOptions): Promi
 
         if (!res.ok) {
           const errText = await res.text().catch(() => "");
-          await markKeyError(keyInfo.id, `Anthropic HTTP ${res.status}: ${errText.slice(0, 150)}`);
+          await markKeyError(keyInfo.id, `Anthropic HTTP ${res.status}: ${errText.slice(0, 300)}`, res.status);
           errors.push(`Anthropic (${res.status})`);
           continue;
         }

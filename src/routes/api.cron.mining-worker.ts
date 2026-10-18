@@ -4,7 +4,20 @@ import { z } from "zod";
 
 import type {} from "@tanstack/react-start";
 export const cronBodySchema = z.object({
-  jobType: z.enum(["market-data", "rss-fetcher", "cnpj-enrichment", "continuous-crawler", "datajud-sync"]),
+  jobType: z.enum([
+    "market-data",
+    "rss-fetcher",
+    "rss-fetch",
+    "cnpj-enrichment",
+    "continuous-crawler",
+    "crawl-batch",
+    "datajud-sync",
+    "queue-reaper",
+    "ai-curate",
+    "publish-approved",
+    "events-harvest",
+    "full-daily-pipeline",
+  ]),
   triggeredAt: z.string().optional(),
   source: z.string().optional(),
 });

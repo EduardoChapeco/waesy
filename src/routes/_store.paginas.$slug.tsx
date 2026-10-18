@@ -24,19 +24,25 @@ export const Route = createFileRoute("/_store/paginas/$slug")({
         throw new Error("Erro ao carregar a página.");
       }
 
-      const products = catalogRes?.status === "ok" && Array.isArray(catalogRes.data) ? catalogRes.data : [];
+      const storeProducts = Array.isArray(res.data?.products) && res.data.products.length > 0 ? res.data.products : null;
+      const fallbackProducts = catalogRes?.status === "ok" && Array.isArray(catalogRes.data) ? catalogRes.data : [];
+      const products = storeProducts ?? fallbackProducts;
+      const categories = Array.isArray(res.data?.categories) ? res.data.categories : [];
+      const storeData = res.data?.storeData ?? null;
 
       return {
         document: res.data.document,
         tree: res.data.tree,
         products,
+        categories,
+        storeData,
       };
     } catch (err) {
       if (isNotFound(err) || isRedirect(err)) {
         throw err;
       }
       console.error("[loader:_store.paginas.$slug] Unhandled error:", err);
-      return { document: null, tree: null, products: [] };
+      return { document: null, tree: null, products: [], categories: [], storeData: null };
     }
   },
   head: ({ loaderData }) => {
@@ -59,7 +65,7 @@ export const Route = createFileRoute("/_store/paginas/$slug")({
   },
   component: PublicPage,
   pendingComponent: () => (
-    <div className="flex flex-col items-center justify-center min-h-[60vh] bg-background">
+    <div className="flex flex-col items-center justify-center min-h-dvh bg-background">
       <Loader2 className="size-10 animate-spin text-foreground/30" />
       <p className="mt-4 font-mono text-sm text-foreground/60 uppercase">Carregando página...</p>
     </div>
@@ -69,16 +75,16 @@ export const Route = createFileRoute("/_store/paginas/$slug")({
       throw error;
     }
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] p-4 bg-background">
+      <div className="flex flex-col items-center justify-center min-h-dvh p-4 bg-background">
         <Surface
           variant="default"
           padding="lg"
-          className="max-w-md w-full text-center "
+          className="max-w-md w-full text-center"
         >
           <AlertCircle className="size-12 text-destructive mx-auto mb-4" />
           <h2 className="font-semibold text-2xl mb-2 text-foreground">Erro no Carregamento</h2>
           <p className="font-sans text-muted-foreground mb-6">{error.message}</p>
-          <Button asChild className="w-full">
+          <Button asChild className="w-full h-11 min-h-11">
             <Link to="/">Voltar para o Início</Link>
           </Button>
         </Surface>
@@ -86,18 +92,18 @@ export const Route = createFileRoute("/_store/paginas/$slug")({
     );
   },
   notFoundComponent: () => (
-    <div className="flex flex-col items-center justify-center min-h-[60vh] p-4 bg-background">
+    <div className="flex flex-col items-center justify-center min-h-dvh p-4 bg-background">
       <Surface
         variant="default"
         padding="lg"
-        className="max-w-md w-full text-center "
+        className="max-w-md w-full text-center"
       >
         <FileQuestion className="size-12 text-foreground mx-auto mb-4 opacity-50" />
         <h2 className="font-semibold text-2xl mb-2">Página Vazia</h2>
         <p className="font-sans text-muted-foreground mb-6">
           A página que você tentou acessar não existe ou ainda não foi configurada.
         </p>
-        <Button asChild className="w-full">
+        <Button asChild className="w-full h-11 min-h-11">
           <Link to="/">Explorar Comunidade</Link>
         </Button>
       </Surface>
@@ -106,11 +112,11 @@ export const Route = createFileRoute("/_store/paginas/$slug")({
 });
 
 function PublicPage() {
-  const { document, tree, products } = ((Route.useLoaderData?.() as any) || {});
+  const { document, tree, products, categories, storeData } = ((Route.useLoaderData?.() as any) || {});
 
   if (!document) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] p-4 bg-background">
+      <div className="flex flex-col items-center justify-center min-h-dvh p-4 bg-background">
         <Surface
           variant="default"
           padding="lg"
@@ -121,7 +127,7 @@ function PublicPage() {
           <p className="font-sans text-muted-foreground mb-6">
             Não foi possível carregar o conteúdo desta página no momento.
           </p>
-          <Button asChild className="w-full">
+          <Button asChild className="w-full h-11 min-h-11">
             <Link to="/">Voltar ao Início</Link>
           </Button>
         </Surface>
@@ -131,17 +137,19 @@ function PublicPage() {
 
   if (document?.settings?.omni_page?.blocks && Array.isArray(document.settings.omni_page.blocks) && document.settings.omni_page.blocks.length > 0) {
     return (
-      <main className="w-full flex flex-col gap-0 min-h-[100dvh] bg-background">
+      <main className="w-full flex flex-col gap-0 min-h-dvh bg-background">
         <OmniPageRenderer
           document={document.settings.omni_page}
           products={products}
+          categories={categories}
+          storeData={storeData}
         />
       </main>
     );
   }
 
   return (
-    <main className="w-full flex flex-col gap-0 min-h-[100dvh] bg-background">
+    <main className="w-full flex flex-col gap-0 min-h-dvh bg-background">
       <ExperienceRenderer nodes={tree} />
     </main>
   );

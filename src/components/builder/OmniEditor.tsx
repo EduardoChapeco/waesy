@@ -42,6 +42,7 @@ import {
   Eye,
   Check,
   Palette,
+  Calculator,
   LayoutTemplate,
   Layers,
   ArrowLeft,
@@ -131,6 +132,7 @@ const BLOCK_ICONS: Record<string, any> = {
   location_map_card: MapPin,
   store_hours: Clock,
   store_contact: Mail,
+  interactive_quote_calculator: Calculator,
 };
 
 interface BlockContentFieldsProps {
@@ -141,7 +143,24 @@ interface BlockContentFieldsProps {
   onUpdateAssetAltText?: (usageSlot: string, altText: string) => void;
   unsplashUsageSlot?: string;
   unsplashDefaultQuery?: string;
+  products?: any[];
+  categories?: any[];
+  collections?: any[];
 }
+
+const CATALOG_BOUND_BLOCK_TYPES = new Set([
+  "product_grid",
+  "product_rail",
+  "product_carousel",
+  "curated_hits_rail",
+  "dynamic_product_carousel",
+  "food_menu_tabs",
+  "food_menu_streamlined",
+  "tourism_destinations_carousel",
+  "travel_hotel_slider",
+  "service_pricing_table",
+  "event_rail",
+]);
 
 export const BlockContentFields: React.FC<BlockContentFieldsProps> = ({
   selectedBlock,
@@ -151,34 +170,49 @@ export const BlockContentFields: React.FC<BlockContentFieldsProps> = ({
   onUpdateAssetAltText,
   unsplashUsageSlot,
   unsplashDefaultQuery,
+  products = [],
+  categories = [],
+  collections = [],
 }) => {
   const config = selectedBlock.config as any;
+  const isCatalogBlock = CATALOG_BOUND_BLOCK_TYPES.has(selectedBlock.type);
 
   return (
     <div className="space-y-4">
-      {/* 1. Título Padrão */}
-      {config.title !== undefined && (
+      {/* 1. Título Padrão / Headline Sincronizado */}
+      {(config.title !== undefined || config.headline !== undefined) && (
         <div>
           <label className="block text-xs font-semibold text-foreground mb-1">
             Título da Seção
           </label>
           <Input
-            value={config.title || ""}
-            onChange={(e) => onUpdateConfig("title", e.target.value)}
-            className="h-9 rounded-lg text-xs"
+            value={config.title ?? config.headline ?? ""}
+            onChange={(e) => {
+              const val = e.target.value;
+              if (config.title !== undefined) onUpdateConfig("title", val);
+              if (config.headline !== undefined) onUpdateConfig("headline", val);
+              if (config.title === undefined && config.headline === undefined) {
+                onUpdateConfig("title", val);
+              }
+            }}
+            className="h-11 min-h-11 rounded-lg text-xs"
           />
         </div>
       )}
 
-      {/* 2. Subtítulo / Descrição */}
-      {config.subtitle !== undefined && (
+      {/* 2. Subtítulo / Subheadline / Descrição */}
+      {(config.subtitle !== undefined || config.subheadline !== undefined) && (
         <div>
           <label className="block text-xs font-semibold text-foreground mb-1">
             Subtítulo / Descrição
           </label>
           <Textarea
-            value={config.subtitle || ""}
-            onChange={(e) => onUpdateConfig("subtitle", e.target.value)}
+            value={config.subtitle ?? config.subheadline ?? ""}
+            onChange={(e) => {
+              const val = e.target.value;
+              if (config.subtitle !== undefined) onUpdateConfig("subtitle", val);
+              if (config.subheadline !== undefined) onUpdateConfig("subheadline", val);
+            }}
             rows={3}
             className="rounded-lg text-xs resize-none"
           />
@@ -186,28 +220,184 @@ export const BlockContentFields: React.FC<BlockContentFieldsProps> = ({
       )}
 
       {/* 3. Badge Superior */}
-      {config.badgeText !== undefined && (
+      {(config.badgeText !== undefined || config.badge !== undefined) && (
         <div>
           <label className="block text-xs font-semibold text-foreground mb-1">
             Pílula Superior (Badge)
           </label>
           <Input
-            value={config.badgeText || ""}
-            onChange={(e) => onUpdateConfig("badgeText", e.target.value)}
-            className="h-9 rounded-lg text-xs"
+            value={config.badgeText ?? config.badge ?? ""}
+            onChange={(e) => {
+              const val = e.target.value;
+              if (config.badgeText !== undefined) onUpdateConfig("badgeText", val);
+              if (config.badge !== undefined) onUpdateConfig("badge", val);
+            }}
+            className="h-11 min-h-11 rounded-lg text-xs"
           />
         </div>
       )}
 
+      {/* 3B. VÍNCULO COM CATÁLOGO REAL (Exclusivo para Blocos de Produtos, Serviços, Cardápio e Pacotes) */}
+      {isCatalogBlock && (
+        <div className="pt-3 border-t border-border/50 space-y-3 bg-muted/20 p-3 rounded-lg border border-border/60">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-foreground">
+              Fonte de Dados do Catálogo
+            </span>
+            <span className="text-xs text-muted-foreground font-mono">
+              {products.length} item(ns) na loja
+            </span>
+          </div>
+
+          {/* Filtro por Categoria */}
+          <div>
+            <label className="block text-xs font-semibold text-foreground mb-1">
+              Filtrar por Categoria
+            </label>
+            <select
+              value={config.categoryId || config.filterCategory || ""}
+              onChange={(e) => {
+                const val = e.target.value;
+                onUpdateConfig("categoryId", val);
+                onUpdateConfig("filterCategory", val);
+              }}
+              className="w-full h-11 min-h-11 rounded-lg border border-border bg-background px-3 text-xs"
+            >
+              <option value="">Todas as Categorias (Automático)</option>
+              {categories.map((cat: any) => (
+                <option key={cat.id || cat.slug} value={cat.id || cat.slug}>
+                  {cat.name || cat.title || cat.slug}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Filtro por Coleção (se houver coleções) */}
+          {collections.length > 0 && (
+            <div>
+              <label className="block text-xs font-semibold text-foreground mb-1">
+                Vincular Coleção Curada
+              </label>
+              <select
+                value={config.collectionId || config.collection_slug || ""}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  onUpdateConfig("collectionId", val);
+                  onUpdateConfig("collection_slug", val);
+                }}
+                className="w-full h-11 min-h-11 rounded-lg border border-border bg-background px-3 text-xs"
+              >
+                <option value="">Nenhuma coleção específica</option>
+                {collections.map((col: any) => (
+                  <option key={col.id || col.slug} value={col.slug || col.id}>
+                    {col.title || col.name || col.slug}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          {/* Layout de Colunas e Limite */}
+          <div className="grid grid-cols-2 gap-2">
+            {selectedBlock.type === "product_grid" && (
+              <div>
+                <label className="block text-xs font-semibold text-foreground mb-1">
+                  Colunas (Desktop)
+                </label>
+                <select
+                  value={Number(config.columns || 4)}
+                  onChange={(e) => onUpdateConfig("columns", Number(e.target.value))}
+                  className="w-full h-11 min-h-11 rounded-lg border border-border bg-background px-2 text-xs"
+                >
+                  <option value={2}>2 Colunas</option>
+                  <option value={3}>3 Colunas</option>
+                  <option value={4}>4 Colunas</option>
+                  <option value={5}>5 Colunas</option>
+                </select>
+              </div>
+            )}
+            <div>
+              <label className="block text-xs font-semibold text-foreground mb-1">
+                Limite de Itens
+              </label>
+              <select
+                value={Number(config.limit || 8)}
+                onChange={(e) => onUpdateConfig("limit", Number(e.target.value))}
+                className="w-full h-11 min-h-11 rounded-lg border border-border bg-background px-2 text-xs"
+              >
+                <option value={4}>4 itens</option>
+                <option value={6}>6 itens</option>
+                <option value={8}>8 itens</option>
+                <option value={12}>12 itens</option>
+                <option value={16}>16 itens</option>
+                <option value={24}>24 itens</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Seleção Manual de Produtos / Pacotes Específicos */}
+          {products.length > 0 && (
+            <div className="space-y-1.5 pt-1">
+              <div className="flex items-center justify-between">
+                <label className="block text-xs font-semibold text-foreground">
+                  Seleção Manual (Opcional)
+                </label>
+                {Array.isArray(config.selectedProductIds) && config.selectedProductIds.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => onUpdateConfig("selectedProductIds", [])}
+                    className="text-xs text-primary hover:underline cursor-pointer"
+                  >
+                    Limpar ({config.selectedProductIds.length})
+                  </button>
+                )}
+              </div>
+              <div className="max-h-40 overflow-y-auto space-y-1 rounded-lg border border-border/60 bg-background p-2">
+                {products.slice(0, 50).map((prod: any) => {
+                  const selectedIds: string[] = Array.isArray(config.selectedProductIds)
+                    ? config.selectedProductIds
+                    : [];
+                  const isChecked = selectedIds.includes(String(prod.id));
+                  return (
+                    <label
+                      key={prod.id}
+                      className="flex items-center gap-2 p-1.5 rounded-md hover:bg-muted/60 text-xs cursor-pointer"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={isChecked}
+                        onChange={(e) => {
+                          const next = e.target.checked
+                            ? [...selectedIds, String(prod.id)]
+                            : selectedIds.filter((id) => id !== String(prod.id));
+                          onUpdateConfig("selectedProductIds", next);
+                        }}
+                        className="rounded border-border"
+                      />
+                      <span className="truncate flex-1 font-medium text-foreground">
+                        {prod.name || prod.title}
+                      </span>
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* 4. Imagem Principal Simples (Upload Real para Storage - Zero Mocks) */}
-      {config.imageUrl !== undefined && (
+      {(config.imageUrl !== undefined || config.coverImageUrl !== undefined) && (
         <div className="pt-2 border-t border-border/40 space-y-2">
           <label className="block text-xs font-semibold text-foreground">
             Imagem Principal
           </label>
           <MediaUploader
-            value={config.imageUrl || ""}
-            onChange={(url) => onUpdateConfig("imageUrl", url)}
+            value={config.imageUrl ?? config.coverImageUrl ?? ""}
+            onChange={(url) => {
+              if (config.imageUrl !== undefined) onUpdateConfig("imageUrl", url);
+              if (config.coverImageUrl !== undefined) onUpdateConfig("coverImageUrl", url);
+            }}
             bucket="public_media"
             folder="builder"
             label="Imagem de Destaque"
@@ -238,15 +428,180 @@ export const BlockContentFields: React.FC<BlockContentFieldsProps> = ({
               }}
               maxLength={500}
               placeholder="Descreva fielmente o que aparece; vazio apenas se decorativa"
-              className="h-9 rounded-lg text-xs"
+              className="h-11 min-h-11 rounded-lg text-xs"
             />
           </div>
         </div>
       )}
 
-      {/* 5. Galeria de Mídia Mosaico (Uploads Reais E2E) */}
-      {selectedBlock.type === "media_gallery_mosaic" && (
+      {/* 4B. Player de Vídeo Nativo & Embed (video_section) */}
+      {selectedBlock.type === "video_section" && (
+        <div className="pt-3 border-t border-border/50 space-y-3">
+          <span className="text-xs font-bold text-foreground block">
+            Configuração do Player de Vídeo
+          </span>
+          <div>
+            <label className="block text-xs font-semibold text-foreground mb-1">
+              URL do Vídeo (YouTube, Vimeo ou .mp4 direto)
+            </label>
+            <Input
+              value={config.video_url || config.videoUrl || ""}
+              onChange={(e) => {
+                onUpdateConfig("video_url", e.target.value);
+                onUpdateConfig("videoUrl", e.target.value);
+              }}
+              placeholder="https://www.youtube.com/watch?v=... ou arquivo .mp4"
+              className="h-11 min-h-11 rounded-lg text-xs"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-foreground mb-1">
+              Ou envie arquivo de Vídeo (.mp4) / Capa
+            </label>
+            <MediaUploader
+              value={config.video_url || ""}
+              onChange={(url) => {
+                onUpdateConfig("video_url", url);
+                onUpdateConfig("videoUrl", url);
+              }}
+              bucket="public_media"
+              folder="builder"
+              label="Upload de Vídeo"
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="block text-xs font-semibold text-foreground mb-1">
+                Proporção (Aspect Ratio)
+              </label>
+              <select
+                value={config.aspect_ratio || "16:9"}
+                onChange={(e) => onUpdateConfig("aspect_ratio", e.target.value)}
+                className="w-full h-11 min-h-11 rounded-lg border border-border bg-background px-2 text-xs"
+              >
+                <option value="16:9">Widescreen (16:9)</option>
+                <option value="9:16">Vertical / Reels (9:16)</option>
+                <option value="4:3">Clássico (4:3)</option>
+                <option value="1:1">Quadrado (1:1)</option>
+              </select>
+            </div>
+            <div className="flex flex-col justify-end gap-2 pb-1">
+              <label className="flex items-center gap-2 text-xs font-medium text-foreground cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={Boolean(config.auto_play)}
+                  onChange={(e) => onUpdateConfig("auto_play", e.target.checked)}
+                />
+                <span>Autoplay Mudo</span>
+              </label>
+              <label className="flex items-center gap-2 text-xs font-medium text-foreground cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={Boolean(config.loop ?? true)}
+                  onChange={(e) => onUpdateConfig("loop", e.target.checked)}
+                />
+                <span>Repetir em Loop</span>
+              </label>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <Input
+              value={config.button_text || ""}
+              onChange={(e) => onUpdateConfig("button_text", e.target.value)}
+              placeholder="Texto do botão (opcional)"
+              className="h-11 min-h-11 rounded-lg text-xs"
+            />
+            <Input
+              value={config.button_link || ""}
+              onChange={(e) => onUpdateConfig("button_link", e.target.value)}
+              placeholder="Link de destino (#)"
+              className="h-11 min-h-11 rounded-lg text-xs"
+            />
+          </div>
+        </div>
+      )}
+
+      {/* 4C. Comparador Antes & Depois (before_after_slider) */}
+      {selectedBlock.type === "before_after_slider" && (
+        <div className="pt-3 border-t border-border/50 space-y-3">
+          <span className="text-xs font-bold text-foreground block">
+            Imagens de Comparação (Antes e Depois)
+          </span>
+          <div className="p-3 rounded-lg border border-border/60 bg-muted/20 space-y-2">
+            <label className="block text-xs font-semibold text-foreground">
+              1. Imagem "Antes"
+            </label>
+            <MediaUploader
+              value={config.beforeImageUrl || ""}
+              onChange={(url) => onUpdateConfig("beforeImageUrl", url)}
+              bucket="public_media"
+              folder="builder"
+              label="Foto Antes"
+            />
+            <Input
+              value={config.beforeLabel || "Antes"}
+              onChange={(e) => onUpdateConfig("beforeLabel", e.target.value)}
+              placeholder="Rótulo Antes"
+              className="h-11 min-h-11 rounded-lg text-xs"
+            />
+          </div>
+          <div className="p-3 rounded-lg border border-border/60 bg-muted/20 space-y-2">
+            <label className="block text-xs font-semibold text-foreground">
+              2. Imagem "Depois"
+            </label>
+            <MediaUploader
+              value={config.afterImageUrl || ""}
+              onChange={(url) => onUpdateConfig("afterImageUrl", url)}
+              bucket="public_media"
+              folder="builder"
+              label="Foto Depois"
+            />
+            <Input
+              value={config.afterLabel || "Depois"}
+              onChange={(e) => onUpdateConfig("afterLabel", e.target.value)}
+              placeholder="Rótulo Depois"
+              className="h-11 min-h-11 rounded-lg text-xs"
+            />
+          </div>
+        </div>
+      )}
+
+      {/* 5. Galeria de Mídia Mosaico & Gallery Grid (Uploads Reais + Link Clicável por Imagem) */}
+      {(selectedBlock.type === "media_gallery_mosaic" || selectedBlock.type === "gallery_grid") && (
         <div className="pt-2 border-t border-border/40 space-y-3">
+          {selectedBlock.type === "gallery_grid" && (
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="block text-xs font-semibold text-foreground mb-1">
+                  Colunas
+                </label>
+                <select
+                  value={Number(config.columns || 3)}
+                  onChange={(e) => onUpdateConfig("columns", Number(e.target.value))}
+                  className="w-full h-11 min-h-11 rounded-lg border border-border bg-background px-2 text-xs"
+                >
+                  <option value={2}>2 Colunas</option>
+                  <option value={3}>3 Colunas</option>
+                  <option value={4}>4 Colunas</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-foreground mb-1">
+                  Formato
+                </label>
+                <select
+                  value={config.aspectRatio || "square"}
+                  onChange={(e) => onUpdateConfig("aspectRatio", e.target.value)}
+                  className="w-full h-11 min-h-11 rounded-lg border border-border bg-background px-2 text-xs"
+                >
+                  <option value="square">Quadrado (1:1)</option>
+                  <option value="video">Horizontal (16:9)</option>
+                  <option value="portrait">Vertical (3:4)</option>
+                </select>
+              </div>
+            </div>
+          )}
+
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-foreground">Fotos da Galeria</span>
             <Button
@@ -254,35 +609,141 @@ export const BlockContentFields: React.FC<BlockContentFieldsProps> = ({
               size="sm"
               variant="outline"
               onClick={() => {
-                const current = config.items || [];
+                const listKey = selectedBlock.type === "gallery_grid" ? "images" : "items";
+                const current = config[listKey] || config.items || [];
                 const newItem = {
                   id: `g-${Date.now()}`,
+                  url: "",
                   imageUrl: "",
                   imageAlt: "",
+                  alt: "",
                   title: "Nova Foto",
                   caption: "",
+                  link: "",
                 };
-                onUpdateConfig("items", [...current, newItem]);
+                onUpdateConfig(listKey, [...current, newItem]);
               }}
-              className="h-7 text-xs px-2 rounded-lg gap-1 cursor-pointer"
+              className="h-11 min-h-11 text-xs px-3 rounded-lg gap-1 cursor-pointer"
             >
-              <Plus className="size-3" />
+              <Plus className="size-3.5" />
               Adicionar Foto
             </Button>
           </div>
 
-          <div className="space-y-3 max-h-80 overflow-y-auto pr-1">
-            {(config.items || []).map((item: any, idx: number) => (
-              <div key={item.id || idx} className="p-3 rounded-lg border border-border/60 bg-muted/20 space-y-2">
+          <div className="space-y-3 max-h-96 overflow-y-auto pr-1">
+            {((selectedBlock.type === "gallery_grid" ? config.images : config.items) || []).map((item: any, idx: number) => {
+              const listKey = selectedBlock.type === "gallery_grid" ? "images" : "items";
+              const currentList = config[listKey] || [];
+              return (
+                <div key={item.id || idx} className="p-3 rounded-lg border border-border/60 bg-muted/20 space-y-2">
+                  <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground">
+                    <span>Foto #{idx + 1}</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onClearAssetRef?.(`${selectedBlock.id}-gallery-${item.id || idx}`);
+                        onUpdateConfig(
+                          listKey,
+                          currentList.filter((_: any, i: number) => i !== idx)
+                        );
+                      }}
+                      className="text-destructive hover:underline text-xs cursor-pointer"
+                    >
+                      Remover
+                    </button>
+                  </div>
+                  <MediaUploader
+                    value={item.imageUrl || item.url || ""}
+                    onChange={(url) => {
+                      const current = [...currentList];
+                      current[idx] = { ...current[idx], imageUrl: url, url };
+                      onUpdateConfig(listKey, current);
+                    }}
+                    bucket="public_media"
+                    folder="builder"
+                    label="Mídia da Galeria"
+                    studioAssetUsageSlot={`${selectedBlock.id}-gallery-${item.id || idx}`}
+                    onAssetUploaded={onUpdateAssetRef}
+                    onAssetCleared={onClearAssetRef}
+                  />
+                  <Input
+                    value={item.title || ""}
+                    onChange={(e) => {
+                      const current = [...currentList];
+                      current[idx] = { ...current[idx], title: e.target.value };
+                      onUpdateConfig(listKey, current);
+                    }}
+                    placeholder="Título da foto"
+                    className="h-11 min-h-11 text-xs"
+                  />
+                  <Input
+                    value={item.caption || ""}
+                    onChange={(e) => {
+                      const current = [...currentList];
+                      current[idx] = { ...current[idx], caption: e.target.value };
+                      onUpdateConfig(listKey, current);
+                    }}
+                    placeholder="Legenda da foto"
+                    className="h-11 min-h-11 text-xs"
+                  />
+                  <Input
+                    value={item.link || item.href || ""}
+                    onChange={(e) => {
+                      const current = [...currentList];
+                      current[idx] = { ...current[idx], link: e.target.value, href: e.target.value };
+                      onUpdateConfig(listKey, current);
+                    }}
+                    placeholder="Link ao clicar (ex: /paginas/roteiros ou #cotacao)"
+                    className="h-11 min-h-11 text-xs"
+                  />
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* 5B. Mosaic Banners & Stories Ring (Banners Clicáveis Vinculáveis a Páginas) */}
+      {selectedBlock.type === "mosaic_banners" && (
+        <div className="pt-2 border-t border-border/40 space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-foreground">Banners do Mosaico</span>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                const current = config.banners || [];
+                onUpdateConfig("banners", [
+                  ...current,
+                  {
+                    id: `b-${Date.now()}`,
+                    title: "Novo Banner",
+                    subtitle: "Subtítulo promocional",
+                    imageUrl: "",
+                    ctaText: "Explorar",
+                    link: "#",
+                    span: "normal",
+                  },
+                ]);
+              }}
+              className="h-11 min-h-11 text-xs px-3 rounded-lg gap-1 cursor-pointer"
+            >
+              <Plus className="size-3.5" />
+              Adicionar Banner
+            </Button>
+          </div>
+          <div className="space-y-3 max-h-96 overflow-y-auto pr-1">
+            {(config.banners || []).map((banner: any, idx: number) => (
+              <div key={banner.id || idx} className="p-3 rounded-lg border border-border/60 bg-muted/20 space-y-2">
                 <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground">
-                  <span>Foto #{idx + 1}</span>
+                  <span>Banner #{idx + 1}</span>
                   <button
                     type="button"
                     onClick={() => {
-                      const current = config.items || [];
-                      onClearAssetRef?.(`${selectedBlock.id}-gallery-${item.id || idx}`);
+                      const current = config.banners || [];
                       onUpdateConfig(
-                        "items",
+                        "banners",
                         current.filter((_: any, i: number) => i !== idx)
                       );
                     }}
@@ -292,58 +753,65 @@ export const BlockContentFields: React.FC<BlockContentFieldsProps> = ({
                   </button>
                 </div>
                 <MediaUploader
-                  value={item.imageUrl || ""}
+                  value={banner.imageUrl || ""}
                   onChange={(url) => {
-                    const current = [...(config.items || [])];
+                    const current = [...(config.banners || [])];
                     current[idx] = { ...current[idx], imageUrl: url };
-                    onUpdateConfig("items", current);
+                    onUpdateConfig("banners", current);
                   }}
                   bucket="public_media"
                   folder="builder"
-                  label="Mídia da Galeria"
-                  studioAssetUsageSlot={`${selectedBlock.id}-gallery-${item.id || idx}`}
-                  onAssetUploaded={onUpdateAssetRef}
-                  onAssetCleared={onClearAssetRef}
+                  label="Imagem do Banner"
                 />
                 <Input
-                  value={item.imageAlt || ""}
+                  value={banner.title || ""}
                   onChange={(e) => {
-                    const current = [...(config.items || [])];
-                    current[idx] = { ...current[idx], imageAlt: e.target.value };
-                    onUpdateConfig("items", current);
-                    onUpdateAssetAltText?.(`${selectedBlock.id}-gallery-${item.id || idx}`, e.target.value);
-                  }}
-                  maxLength={500}
-                  placeholder="Texto alternativo da foto"
-                  className="h-8 text-xs"
-                />
-                <Input
-                  value={item.title || ""}
-                  onChange={(e) => {
-                    const current = [...(config.items || [])];
+                    const current = [...(config.banners || [])];
                     current[idx] = { ...current[idx], title: e.target.value };
-                    onUpdateConfig("items", current);
+                    onUpdateConfig("banners", current);
                   }}
-                  placeholder="Título da foto"
-                  className="h-8 text-xs"
+                  placeholder="Título do Banner"
+                  className="h-11 min-h-11 text-xs"
                 />
                 <Input
-                  value={item.caption || ""}
+                  value={banner.subtitle || ""}
                   onChange={(e) => {
-                    const current = [...(config.items || [])];
-                    current[idx] = { ...current[idx], caption: e.target.value };
-                    onUpdateConfig("items", current);
+                    const current = [...(config.banners || [])];
+                    current[idx] = { ...current[idx], subtitle: e.target.value };
+                    onUpdateConfig("banners", current);
                   }}
-                  placeholder="Legenda da foto"
-                  className="h-8 text-xs"
+                  placeholder="Subtítulo"
+                  className="h-11 min-h-11 text-xs"
                 />
+                <div className="grid grid-cols-2 gap-2">
+                  <Input
+                    value={banner.ctaText || ""}
+                    onChange={(e) => {
+                      const current = [...(config.banners || [])];
+                      current[idx] = { ...current[idx], ctaText: e.target.value };
+                      onUpdateConfig("banners", current);
+                    }}
+                    placeholder="Texto do Botão"
+                    className="h-11 min-h-11 text-xs"
+                  />
+                  <Input
+                    value={banner.link || ""}
+                    onChange={(e) => {
+                      const current = [...(config.banners || [])];
+                      current[idx] = { ...current[idx], link: e.target.value };
+                      onUpdateConfig("banners", current);
+                    }}
+                    placeholder="Link (/paginas/...)"
+                    className="h-11 min-h-11 text-xs"
+                  />
+                </div>
               </div>
             ))}
           </div>
         </div>
       )}
 
-      {/* 6. Carrossel de Destaques (Slides com Upload Real) */}
+      {/* 6. Carrossel de Destaques (Slides com Upload Real + Link de Página por Slide) */}
       {selectedBlock.type === "hero_interactive_carousel" && (
         <div className="pt-2 border-t border-border/40 space-y-3">
           <div className="flex items-center justify-between">
@@ -362,17 +830,18 @@ export const BlockContentFields: React.FC<BlockContentFieldsProps> = ({
                   imageAlt: "",
                   ctaText: "Ver Mais",
                   ctaHref: "#",
+                  primaryCta: { label: "Ver Mais", href: "#" },
                 };
                 onUpdateConfig("slides", [...current, newSlide]);
               }}
-              className="h-7 text-xs px-2 rounded-lg gap-1 cursor-pointer"
+              className="h-11 min-h-11 text-xs px-3 rounded-lg gap-1 cursor-pointer"
             >
-              <Plus className="size-3" />
+              <Plus className="size-3.5" />
               Adicionar Slide
             </Button>
           </div>
 
-          <div className="space-y-3 max-h-80 overflow-y-auto pr-1">
+          <div className="space-y-3 max-h-96 overflow-y-auto pr-1">
             {(config.slides || []).map((slide: any, idx: number) => (
               <div key={slide.id || idx} className="p-3 rounded-lg border border-border/60 bg-muted/20 space-y-2">
                 <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground">
@@ -407,18 +876,6 @@ export const BlockContentFields: React.FC<BlockContentFieldsProps> = ({
                   onAssetCleared={onClearAssetRef}
                 />
                 <Input
-                  value={slide.imageAlt || ""}
-                  onChange={(e) => {
-                    const current = [...(config.slides || [])];
-                    current[idx] = { ...current[idx], imageAlt: e.target.value };
-                    onUpdateConfig("slides", current);
-                    onUpdateAssetAltText?.(`${selectedBlock.id}-slide-${slide.id || idx}`, e.target.value);
-                  }}
-                  maxLength={500}
-                  placeholder="Texto alternativo do slide"
-                  className="h-8 text-xs"
-                />
-                <Input
                   value={slide.title || ""}
                   onChange={(e) => {
                     const current = [...(config.slides || [])];
@@ -426,7 +883,687 @@ export const BlockContentFields: React.FC<BlockContentFieldsProps> = ({
                     onUpdateConfig("slides", current);
                   }}
                   placeholder="Título do Slide"
-                  className="h-8 text-xs"
+                  className="h-11 min-h-11 text-xs"
+                />
+                <Input
+                  value={slide.subtitle || ""}
+                  onChange={(e) => {
+                    const current = [...(config.slides || [])];
+                    current[idx] = { ...current[idx], subtitle: e.target.value };
+                    onUpdateConfig("slides", current);
+                  }}
+                  placeholder="Subtítulo do Slide"
+                  className="h-11 min-h-11 text-xs"
+                />
+                <div className="grid grid-cols-2 gap-2">
+                  <Input
+                    value={slide.ctaText || slide.primaryCta?.label || ""}
+                    onChange={(e) => {
+                      const current = [...(config.slides || [])];
+                      const label = e.target.value;
+                      const href = current[idx].ctaHref || current[idx].primaryCta?.href || "#";
+                      current[idx] = {
+                        ...current[idx],
+                        ctaText: label,
+                        primaryCta: { label, href },
+                      };
+                      onUpdateConfig("slides", current);
+                    }}
+                    placeholder="Texto do Botão"
+                    className="h-11 min-h-11 text-xs"
+                  />
+                  <Input
+                    value={slide.ctaHref || slide.primaryCta?.href || ""}
+                    onChange={(e) => {
+                      const current = [...(config.slides || [])];
+                      const href = e.target.value;
+                      const label = current[idx].ctaText || current[idx].primaryCta?.label || "Explorar";
+                      current[idx] = {
+                        ...current[idx],
+                        ctaHref: href,
+                        primaryCta: { label, href },
+                      };
+                      onUpdateConfig("slides", current);
+                    }}
+                    placeholder="Link (/paginas/...)"
+                    className="h-11 min-h-11 text-xs"
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* 6B. Blocos de Turismo: Motor de Cotação, Pacote & Roteiro Dia a Dia */}
+      {(selectedBlock.type === "dynamic_booking_hero" || selectedBlock.type === "tourism_quote_hero") && (
+        <div className="pt-3 border-t border-border/50 space-y-3 bg-muted/20 p-3 rounded-lg border border-border/60">
+          <span className="text-xs font-bold text-foreground block">
+            Motor de Busca & Cotação (Turismo / GDS)
+          </span>
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="block text-xs font-semibold text-foreground mb-1">
+                Origem Padrão
+              </label>
+              <Input
+                value={config.defaultOrigin || ""}
+                onChange={(e) => onUpdateConfig("defaultOrigin", e.target.value)}
+                placeholder="Ex: Chapecó (XAP)"
+                className="h-11 min-h-11 rounded-lg text-xs"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-foreground mb-1">
+                Destino Sugerido
+              </label>
+              <Input
+                value={config.defaultDestination || ""}
+                onChange={(e) => onUpdateConfig("defaultDestination", e.target.value)}
+                placeholder="Ex: Maceió, Cancún..."
+                className="h-11 min-h-11 rounded-lg text-xs"
+              />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="block text-xs font-semibold text-foreground mb-1">
+                WhatsApp da Agência
+              </label>
+              <Input
+                value={config.whatsappPhone || ""}
+                onChange={(e) => onUpdateConfig("whatsappPhone", e.target.value)}
+                placeholder="5549999999999"
+                className="h-11 min-h-11 rounded-lg text-xs font-mono"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-foreground mb-1">
+                Texto do Botão
+              </label>
+              <Input
+                value={config.ctaButtonText || ""}
+                onChange={(e) => onUpdateConfig("ctaButtonText", e.target.value)}
+                placeholder="Cotar Viagem Agora"
+                className="h-11 min-h-11 rounded-lg text-xs"
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {selectedBlock.type === "travel_package_hero" && (
+        <div className="pt-3 border-t border-border/50 space-y-3 bg-muted/20 p-3 rounded-lg border border-border/60">
+          <span className="text-xs font-bold text-foreground block">
+            Ficha do Pacote Turístico
+          </span>
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="block text-xs font-semibold text-foreground mb-1">
+                Destino
+              </label>
+              <Input
+                value={config.destination || ""}
+                onChange={(e) => onUpdateConfig("destination", e.target.value)}
+                placeholder="Maceió & Maragogi"
+                className="h-11 min-h-11 rounded-lg text-xs"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-foreground mb-1">
+                Duração
+              </label>
+              <Input
+                value={config.durationText || ""}
+                onChange={(e) => onUpdateConfig("durationText", e.target.value)}
+                placeholder="7 Dias / 6 Noites"
+                className="h-11 min-h-11 rounded-lg text-xs"
+              />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="block text-xs font-semibold text-foreground mb-1">
+                Preço por Pessoa (R$)
+              </label>
+              <Input
+                type="number"
+                value={config.priceCents ? Number(config.priceCents) / 100 : ""}
+                onChange={(e) => onUpdateConfig("priceCents", Math.round(Number(e.target.value || 0) * 100))}
+                placeholder="3490"
+                className="h-11 min-h-11 rounded-lg text-xs"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-foreground mb-1">
+                Parcelas Sem Juros
+              </label>
+              <Input
+                type="number"
+                value={config.installmentsCount || 10}
+                onChange={(e) => onUpdateConfig("installmentsCount", Number(e.target.value || 1))}
+                placeholder="10"
+                className="h-11 min-h-11 rounded-lg text-xs"
+              />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <Input
+              value={config.hotelName || ""}
+              onChange={(e) => onUpdateConfig("hotelName", e.target.value)}
+              placeholder="Nome do Hotel / Resort"
+              className="h-11 min-h-11 rounded-lg text-xs"
+            />
+            <Input
+              value={config.whatsappPhone || ""}
+              onChange={(e) => onUpdateConfig("whatsappPhone", e.target.value)}
+              placeholder="WhatsApp (55499...)"
+              className="h-11 min-h-11 rounded-lg text-xs font-mono"
+            />
+          </div>
+        </div>
+      )}
+
+      {selectedBlock.type === "travel_itinerary_timeline" && (
+        <div className="pt-3 border-t border-border/50 space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-foreground">Dias do Roteiro</span>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                const current = config.days || [];
+                onUpdateConfig("days", [
+                  ...current,
+                  {
+                    id: `day-${Date.now()}`,
+                    dayNumber: current.length + 1,
+                    title: `Dia ${current.length + 1}: Novo Passeio`,
+                    location: "Destino",
+                    description: "Descrição das atividades do dia.",
+                    meals: "Café da manhã incluso",
+                    accommodation: "",
+                  },
+                ]);
+              }}
+              className="h-11 min-h-11 text-xs px-3 rounded-lg gap-1 cursor-pointer"
+            >
+              <Plus className="size-3.5" />
+              Adicionar Dia
+            </Button>
+          </div>
+          <div className="space-y-3 max-h-96 overflow-y-auto pr-1">
+            {(config.days || []).map((day: any, idx: number) => (
+              <div key={day.id || idx} className="p-3 rounded-lg border border-border/60 bg-muted/20 space-y-2">
+                <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground">
+                  <span>Dia #{day.dayNumber || idx + 1}</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const current = config.days || [];
+                      onUpdateConfig(
+                        "days",
+                        current.filter((_: any, i: number) => i !== idx)
+                      );
+                    }}
+                    className="text-destructive hover:underline text-xs cursor-pointer"
+                  >
+                    Remover
+                  </button>
+                </div>
+                <Input
+                  value={day.title || ""}
+                  onChange={(e) => {
+                    const current = [...(config.days || [])];
+                    current[idx] = { ...current[idx], title: e.target.value };
+                    onUpdateConfig("days", current);
+                  }}
+                  placeholder="Título do Dia"
+                  className="h-11 min-h-11 text-xs"
+                />
+                <Input
+                  value={day.location || ""}
+                  onChange={(e) => {
+                    const current = [...(config.days || [])];
+                    current[idx] = { ...current[idx], location: e.target.value };
+                    onUpdateConfig("days", current);
+                  }}
+                  placeholder="Localização / Cidade"
+                  className="h-11 min-h-11 text-xs"
+                />
+                <Textarea
+                  value={day.description || ""}
+                  onChange={(e) => {
+                    const current = [...(config.days || [])];
+                    current[idx] = { ...current[idx], description: e.target.value };
+                    onUpdateConfig("days", current);
+                  }}
+                  rows={2}
+                  placeholder="Descrição detalhada do dia"
+                  className="text-xs resize-none"
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* 6C. Perguntas Frequentes (faq_clean_accordion) */}
+      {selectedBlock.type === "faq_clean_accordion" && (
+        <div className="pt-3 border-t border-border/50 space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-foreground">Perguntas Frequentes (FAQ)</span>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                const current = config.items || [];
+                onUpdateConfig("items", [
+                  ...current,
+                  {
+                    id: `faq-${Date.now()}`,
+                    question: "Nova pergunta?",
+                    answer: "Resposta clara e objetiva.",
+                  },
+                ]);
+              }}
+              className="h-11 min-h-11 text-xs px-3 rounded-lg gap-1 cursor-pointer"
+            >
+              <Plus className="size-3.5" />
+              Adicionar
+            </Button>
+          </div>
+          <div className="space-y-3 max-h-96 overflow-y-auto pr-1">
+            {(config.items || []).map((item: any, idx: number) => (
+              <div key={item.id || idx} className="p-3 rounded-lg border border-border/60 bg-muted/20 space-y-2">
+                <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground">
+                  <span>Pergunta #{idx + 1}</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const current = config.items || [];
+                      onUpdateConfig(
+                        "items",
+                        current.filter((_: any, i: number) => i !== idx)
+                      );
+                    }}
+                    className="text-destructive hover:underline text-xs cursor-pointer"
+                  >
+                    Remover
+                  </button>
+                </div>
+                <Input
+                  value={item.question || ""}
+                  onChange={(e) => {
+                    const current = [...(config.items || [])];
+                    current[idx] = { ...current[idx], question: e.target.value };
+                    onUpdateConfig("items", current);
+                  }}
+                  placeholder="Pergunta"
+                  className="h-11 min-h-11 text-xs"
+                />
+                <Textarea
+                  value={item.answer || ""}
+                  onChange={(e) => {
+                    const current = [...(config.items || [])];
+                    current[idx] = { ...current[idx], answer: e.target.value };
+                    onUpdateConfig("items", current);
+                  }}
+                  rows={2}
+                  placeholder="Resposta"
+                  className="text-xs resize-none"
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* 6C-2. Calculadora de Cotação Interativa (interactive_quote_calculator) */}
+      {selectedBlock.type === "interactive_quote_calculator" && (
+        <div className="pt-3 border-t border-border/50 space-y-3">
+          <span className="text-xs font-bold text-foreground block">
+            Parâmetros de Cálculo da Cotação
+          </span>
+
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="block text-xs font-semibold text-foreground mb-1">
+                Rótulo Unidade (Singular)
+              </label>
+              <Input
+                value={config.unitLabel || "Item"}
+                onChange={(e) => onUpdateConfig("unitLabel", e.target.value)}
+                placeholder="Ex: Pessoa, Hora, Quarto"
+                className="h-11 min-h-11 text-xs"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-foreground mb-1">
+                Rótulo Unidade (Plural)
+              </label>
+              <Input
+                value={config.unitPluralLabel || "Itens"}
+                onChange={(e) => onUpdateConfig("unitPluralLabel", e.target.value)}
+                placeholder="Ex: Pessoas, Horas, Quartos"
+                className="h-11 min-h-11 text-xs"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="block text-xs font-semibold text-foreground mb-1">
+                Valor Base Fixo (R$)
+              </label>
+              <Input
+                type="number"
+                step="0.01"
+                min="0"
+                value={(Number(config.basePriceCents || 0) / 100).toFixed(2)}
+                onChange={(e) =>
+                  onUpdateConfig(
+                    "basePriceCents",
+                    Math.round(Math.max(0, parseFloat(e.target.value) || 0) * 100)
+                  )
+                }
+                className="h-11 min-h-11 text-xs"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-foreground mb-1">
+                Valor por Unidade (R$)
+              </label>
+              <Input
+                type="number"
+                step="0.01"
+                min="0"
+                value={(Number(config.unitPriceCents || 0) / 100).toFixed(2)}
+                onChange={(e) =>
+                  onUpdateConfig(
+                    "unitPriceCents",
+                    Math.round(Math.max(0, parseFloat(e.target.value) || 0) * 100)
+                  )
+                }
+                className="h-11 min-h-11 text-xs"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            <div>
+              <label className="block text-xs font-semibold text-foreground mb-1">
+                Mínimo
+              </label>
+              <Input
+                type="number"
+                min="1"
+                value={Number(config.minUnits ?? 1)}
+                onChange={(e) =>
+                  onUpdateConfig("minUnits", Math.max(1, parseInt(e.target.value) || 1))
+                }
+                className="h-11 min-h-11 text-xs"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-foreground mb-1">
+                Máximo
+              </label>
+              <Input
+                type="number"
+                min="1"
+                value={Number(config.maxUnits ?? 50)}
+                onChange={(e) =>
+                  onUpdateConfig("maxUnits", Math.max(1, parseInt(e.target.value) || 50))
+                }
+                className="h-11 min-h-11 text-xs"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-foreground mb-1">
+                Padrão
+              </label>
+              <Input
+                type="number"
+                min="1"
+                value={Number(config.defaultUnits ?? 5)}
+                onChange={(e) =>
+                  onUpdateConfig("defaultUnits", Math.max(1, parseInt(e.target.value) || 5))
+                }
+                className="h-11 min-h-11 text-xs"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-foreground mb-1">
+              WhatsApp para Destino da Cotação (com DDD)
+            </label>
+            <Input
+              value={config.whatsappNumber || ""}
+              onChange={(e) => onUpdateConfig("whatsappNumber", e.target.value)}
+              placeholder="Ex: 5511999998888"
+              className="h-11 min-h-11 text-xs"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-foreground mb-1">
+              Texto do Botão de Envio
+            </label>
+            <Input
+              value={config.submitButtonText || "Solicitar Proposta Oficial"}
+              onChange={(e) => onUpdateConfig("submitButtonText", e.target.value)}
+              placeholder="Ex: Solicitar Proposta Oficial"
+              className="h-11 min-h-11 text-xs"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-foreground mb-1">
+              Aviso Legal / Disclaimer
+            </label>
+            <Input
+              value={config.disclaimer || ""}
+              onChange={(e) => onUpdateConfig("disclaimer", e.target.value)}
+              placeholder="Ex: Valores estimados sujeitos à confirmação."
+              className="h-11 min-h-11 text-xs"
+            />
+          </div>
+
+          {/* Opcionais da Calculadora */}
+          <div className="pt-2 border-t border-border/40">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-bold text-foreground">Opcionais & Adicionais</span>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  const current = config.options || [];
+                  onUpdateConfig("options", [
+                    ...current,
+                    {
+                      id: `opt-${Date.now()}`,
+                      label: "Novo Opcional",
+                      description: "Descrição do serviço ou comodidade",
+                      priceCents: 5000,
+                      isDefault: false,
+                    },
+                  ]);
+                }}
+                className="h-11 min-h-11 text-xs px-3 rounded-lg gap-1 cursor-pointer"
+              >
+                <Plus className="size-3.5" />
+                Adicionar Opcional
+              </Button>
+            </div>
+
+            <div className="space-y-3 max-h-80 overflow-y-auto pr-1">
+              {(config.options || []).map((opt: any, idx: number) => (
+                <div
+                  key={opt.id || idx}
+                  className="p-3 rounded-lg border border-border/60 bg-muted/20 space-y-2"
+                >
+                  <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground">
+                    <span>Opcional #{idx + 1}</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const current = config.options || [];
+                        onUpdateConfig(
+                          "options",
+                          current.filter((_: any, i: number) => i !== idx)
+                        );
+                      }}
+                      className="text-destructive hover:underline text-xs cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    >
+                      Remover
+                    </button>
+                  </div>
+                  <Input
+                    value={opt.label || ""}
+                    onChange={(e) => {
+                      const current = [...(config.options || [])];
+                      current[idx] = { ...current[idx], label: e.target.value };
+                      onUpdateConfig("options", current);
+                    }}
+                    placeholder="Nome do Opcional (ex: Café da Manhã)"
+                    className="h-11 min-h-11 text-xs"
+                  />
+                  <Input
+                    value={opt.description || ""}
+                    onChange={(e) => {
+                      const current = [...(config.options || [])];
+                      current[idx] = { ...current[idx], description: e.target.value };
+                      onUpdateConfig("options", current);
+                    }}
+                    placeholder="Descrição breve"
+                    className="h-11 min-h-11 text-xs"
+                  />
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="block text-2xs text-muted-foreground mb-1">
+                        Valor Adicional (R$)
+                      </label>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        value={(Number(opt.priceCents || 0) / 100).toFixed(2)}
+                        onChange={(e) => {
+                          const current = [...(config.options || [])];
+                          current[idx] = {
+                            ...current[idx],
+                            priceCents: Math.round(
+                              Math.max(0, parseFloat(e.target.value) || 0) * 100
+                            ),
+                          };
+                          onUpdateConfig("options", current);
+                        }}
+                        className="h-11 min-h-11 text-xs"
+                      />
+                    </div>
+                    <div className="flex items-center pt-4">
+                      <label className="flex items-center gap-2 text-xs text-foreground cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={Boolean(opt.isDefault)}
+                          onChange={(e) => {
+                            const current = [...(config.options || [])];
+                            current[idx] = { ...current[idx], isDefault: e.target.checked };
+                            onUpdateConfig("options", current);
+                          }}
+                        />
+                        <span>Marcado por padrão</span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 6D. Botões de Ação BioLink (biolink_action_buttons) */}
+      {selectedBlock.type === "biolink_action_buttons" && (
+        <div className="pt-3 border-t border-border/50 space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-foreground">Botões de Link</span>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                const current = config.links || [];
+                onUpdateConfig("links", [
+                  ...current,
+                  {
+                    id: `link-${Date.now()}`,
+                    label: "Novo Link",
+                    sublabel: "Acesse agora",
+                    href: "https://",
+                    highlight: false,
+                  },
+                ]);
+              }}
+              className="h-11 min-h-11 text-xs px-3 rounded-lg gap-1 cursor-pointer"
+            >
+              <Plus className="size-3.5" />
+              Adicionar Link
+            </Button>
+          </div>
+          <div className="space-y-3 max-h-96 overflow-y-auto pr-1">
+            {(config.links || []).map((lnk: any, idx: number) => (
+              <div key={lnk.id || idx} className="p-3 rounded-lg border border-border/60 bg-muted/20 space-y-2">
+                <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground">
+                  <span>Botão #{idx + 1}</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const current = config.links || [];
+                      onUpdateConfig(
+                        "links",
+                        current.filter((_: any, i: number) => i !== idx)
+                      );
+                    }}
+                    className="text-destructive hover:underline text-xs cursor-pointer"
+                  >
+                    Remover
+                  </button>
+                </div>
+                <Input
+                  value={lnk.label || ""}
+                  onChange={(e) => {
+                    const current = [...(config.links || [])];
+                    current[idx] = { ...current[idx], label: e.target.value };
+                    onUpdateConfig("links", current);
+                  }}
+                  placeholder="Título do botão"
+                  className="h-11 min-h-11 text-xs"
+                />
+                <Input
+                  value={lnk.sublabel || ""}
+                  onChange={(e) => {
+                    const current = [...(config.links || [])];
+                    current[idx] = { ...current[idx], sublabel: e.target.value };
+                    onUpdateConfig("links", current);
+                  }}
+                  placeholder="Subtítulo opcional"
+                  className="h-11 min-h-11 text-xs"
+                />
+                <Input
+                  value={lnk.href || ""}
+                  onChange={(e) => {
+                    const current = [...(config.links || [])];
+                    current[idx] = { ...current[idx], href: e.target.value };
+                    onUpdateConfig("links", current);
+                  }}
+                  placeholder="URL de destino (https://... ou /paginas/...)"
+                  className="h-11 min-h-11 text-xs"
                 />
               </div>
             ))}
@@ -457,9 +1594,9 @@ export const BlockContentFields: React.FC<BlockContentFieldsProps> = ({
                 };
                 onUpdateConfig("testimonials", [...current, newT]);
               }}
-              className="h-7 text-xs px-2 rounded-lg gap-1 cursor-pointer"
+              className="h-11 min-h-11 text-xs px-3 rounded-lg gap-1 cursor-pointer"
             >
-              <Plus className="size-3" />
+              <Plus className="size-3.5" />
               Adicionar
             </Button>
           </div>
@@ -501,18 +1638,6 @@ export const BlockContentFields: React.FC<BlockContentFieldsProps> = ({
                   onAssetCleared={onClearAssetRef}
                 />
                 <Input
-                  value={t.imageAlt || ""}
-                  onChange={(e) => {
-                    const current = [...(config.testimonials || [])];
-                    current[idx] = { ...current[idx], imageAlt: e.target.value };
-                    onUpdateConfig("testimonials", current);
-                    onUpdateAssetAltText?.(`${selectedBlock.id}-testimonial-${t.id || idx}`, e.target.value);
-                  }}
-                  maxLength={500}
-                  placeholder="Texto alternativo da foto"
-                  className="h-8 text-xs"
-                />
-                <Input
                   value={t.name || ""}
                   onChange={(e) => {
                     const current = [...(config.testimonials || [])];
@@ -520,7 +1645,7 @@ export const BlockContentFields: React.FC<BlockContentFieldsProps> = ({
                     onUpdateConfig("testimonials", current);
                   }}
                   placeholder="Nome do Cliente"
-                  className="h-8 text-xs"
+                  className="h-11 min-h-11 text-xs"
                 />
                 <Input
                   value={t.role || ""}
@@ -530,7 +1655,7 @@ export const BlockContentFields: React.FC<BlockContentFieldsProps> = ({
                     onUpdateConfig("testimonials", current);
                   }}
                   placeholder="Cargo ou Cidade"
-                  className="h-8 text-xs"
+                  className="h-11 min-h-11 text-xs"
                 />
                 <Textarea
                   value={t.comment || ""}
@@ -564,7 +1689,7 @@ export const BlockContentFields: React.FC<BlockContentFieldsProps> = ({
               })
             }
             placeholder="Texto do Botão"
-            className="h-9 rounded-lg text-xs"
+            className="h-11 min-h-11 rounded-lg text-xs"
           />
           <Input
             value={config.primaryCta.href || ""}
@@ -575,12 +1700,12 @@ export const BlockContentFields: React.FC<BlockContentFieldsProps> = ({
               })
             }
             placeholder="Link de Destino (#contato)"
-            className="h-9 rounded-lg text-xs"
+            className="h-11 min-h-11 rounded-lg text-xs"
           />
         </div>
       )}
 
-      {/* 9. Campos de Identificação Comercial (Nome da Loja / Horários) */}
+      {/* 9. Campos de Identificação Comercial (Nome da Loja / Horários / Contato Direto) */}
       {config.storeName !== undefined && (
         <div className="pt-2 border-t border-border/40">
           <label className="block text-xs font-semibold text-foreground mb-1">
@@ -589,20 +1714,37 @@ export const BlockContentFields: React.FC<BlockContentFieldsProps> = ({
           <Input
             value={config.storeName || ""}
             onChange={(e) => onUpdateConfig("storeName", e.target.value)}
-            className="h-9 rounded-lg text-xs"
+            className="h-11 min-h-11 rounded-lg text-xs"
           />
         </div>
       )}
 
-      {config.openingHoursText !== undefined && (
+      {(config.openingHoursText !== undefined || config.openingHours !== undefined) && (
         <div>
           <label className="block text-xs font-semibold text-foreground mb-1">
             Horário de Funcionamento
           </label>
           <Input
-            value={config.openingHoursText || ""}
-            onChange={(e) => onUpdateConfig("openingHoursText", e.target.value)}
-            className="h-9 rounded-lg text-xs"
+            value={config.openingHoursText ?? config.openingHours ?? ""}
+            onChange={(e) => {
+              if (config.openingHoursText !== undefined) onUpdateConfig("openingHoursText", e.target.value);
+              if (config.openingHours !== undefined) onUpdateConfig("openingHours", e.target.value);
+            }}
+            className="h-11 min-h-11 rounded-lg text-xs"
+          />
+        </div>
+      )}
+
+      {config.whatsappNumber !== undefined && (
+        <div>
+          <label className="block text-xs font-semibold text-foreground mb-1">
+            WhatsApp para Receber Mensagens
+          </label>
+          <Input
+            value={config.whatsappNumber || ""}
+            onChange={(e) => onUpdateConfig("whatsappNumber", e.target.value)}
+            placeholder="5549999999999"
+            className="h-11 min-h-11 rounded-lg text-xs font-mono"
           />
         </div>
       )}
@@ -617,14 +1759,14 @@ export const BlockContentFields: React.FC<BlockContentFieldsProps> = ({
             value={config.buttonText || ""}
             onChange={(e) => onUpdateConfig("buttonText", e.target.value)}
             placeholder="Texto do Botão"
-            className="h-9 rounded-lg text-xs"
+            className="h-11 min-h-11 rounded-lg text-xs"
           />
           {config.buttonLink !== undefined && (
             <Input
               value={config.buttonLink || ""}
               onChange={(e) => onUpdateConfig("buttonLink", e.target.value)}
               placeholder="Link (#produtos)"
-              className="h-9 rounded-lg text-xs"
+              className="h-11 min-h-11 rounded-lg text-xs"
             />
           )}
         </div>
@@ -639,14 +1781,14 @@ export const BlockContentFields: React.FC<BlockContentFieldsProps> = ({
           <Input
             value={config.tableNumber || ""}
             onChange={(e) => onUpdateConfig("tableNumber", e.target.value)}
-            className="h-9 rounded-lg text-xs font-mono"
+            className="h-11 min-h-11 rounded-lg text-xs font-mono"
           />
           {config.wifiName !== undefined && (
             <Input
               value={config.wifiName || ""}
               onChange={(e) => onUpdateConfig("wifiName", e.target.value)}
               placeholder="Nome da Rede Wi-Fi"
-              className="h-9 rounded-lg text-xs"
+              className="h-11 min-h-11 rounded-lg text-xs"
             />
           )}
         </div>
@@ -661,7 +1803,7 @@ export const BlockContentFields: React.FC<BlockContentFieldsProps> = ({
           <Input
             value={config.dishName || ""}
             onChange={(e) => onUpdateConfig("dishName", e.target.value)}
-            className="h-9 rounded-lg text-xs"
+            className="h-11 min-h-11 rounded-lg text-xs"
           />
           {config.description !== undefined && (
             <Textarea
@@ -685,7 +1827,7 @@ export const BlockContentFields: React.FC<BlockContentFieldsProps> = ({
             value={config.handle || ""}
             onChange={(e) => onUpdateConfig("handle", e.target.value)}
             placeholder="@seunome"
-            className="h-9 rounded-lg text-xs font-mono"
+            className="h-11 min-h-11 rounded-lg text-xs font-mono"
           />
           {config.bio !== undefined && (
             <Textarea
@@ -709,37 +1851,40 @@ export const BlockContentFields: React.FC<BlockContentFieldsProps> = ({
             value={config.pixKey || ""}
             onChange={(e) => onUpdateConfig("pixKey", e.target.value)}
             placeholder="contato@empresa.com.br"
-            className="h-9 rounded-lg text-xs font-mono"
+            className="h-11 min-h-11 rounded-lg text-xs font-mono"
           />
           {config.beneficiaryName !== undefined && (
             <Input
               value={config.beneficiaryName || ""}
               onChange={(e) => onUpdateConfig("beneficiaryName", e.target.value)}
               placeholder="Nome do Beneficiário"
-              className="h-9 rounded-lg text-xs"
+              className="h-11 min-h-11 rounded-lg text-xs"
             />
           )}
         </div>
       )}
 
       {/* 15. Endereço Físico */}
-      {config.address !== undefined && (
+      {(config.address !== undefined || config.addressText !== undefined) && (
         <div className="pt-2 border-t border-border/40 space-y-2">
           <label className="block text-xs font-semibold text-foreground">
             Endereço & Cidade
           </label>
           <Input
-            value={config.address || ""}
-            onChange={(e) => onUpdateConfig("address", e.target.value)}
+            value={config.address ?? config.addressText ?? ""}
+            onChange={(e) => {
+              if (config.address !== undefined) onUpdateConfig("address", e.target.value);
+              if (config.addressText !== undefined) onUpdateConfig("addressText", e.target.value);
+            }}
             placeholder="Rua, Número, Bairro"
-            className="h-9 rounded-lg text-xs"
+            className="h-11 min-h-11 rounded-lg text-xs"
           />
           {config.cityState !== undefined && (
             <Input
               value={config.cityState || ""}
               onChange={(e) => onUpdateConfig("cityState", e.target.value)}
               placeholder="Cidade - UF"
-              className="h-9 rounded-lg text-xs"
+              className="h-11 min-h-11 rounded-lg text-xs"
             />
           )}
         </div>
@@ -1172,7 +2317,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                         </span>
                       </div>
                       {tpl.status === "review_required" && (
-                        <span className="mb-2 inline-flex rounded bg-amber-100 px-2 py-1 text-xs font-medium text-amber-900 dark:bg-amber-950 dark:text-amber-100">
+                        <span className="mb-2 inline-flex rounded bg-secondary px-2 py-1 text-xs font-medium text-secondary-foreground border border-border">
                           Revisar conteúdo antes de publicar
                         </span>
                       )}
@@ -1340,6 +2485,9 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                   onUpdateAssetAltText={handleUpdateAssetAltText}
                   unsplashUsageSlot={unsplashDecorativeSlot?.id}
                   unsplashDefaultQuery={unsplashDecorativeSlot?.searchHints[0] ?? activeStudioManifest?.niche.replace(/[-_]/g, " ")}
+                  products={products}
+                  categories={categories}
+                  collections={collections}
                 />
               ) : (
                 /* Aba de Estilo Isolado */
@@ -1613,6 +2761,9 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                     onUpdateAssetAltText={handleUpdateAssetAltText}
                     unsplashUsageSlot={unsplashDecorativeSlot?.id}
                     unsplashDefaultQuery={unsplashDecorativeSlot?.searchHints[0] ?? activeStudioManifest?.niche.replace(/[-_]/g, " ")}
+                    products={products}
+                    categories={categories}
+                    collections={collections}
                   />
                 </div>
               ) : (
@@ -1712,7 +2863,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                   </span>
                 </div>
                 {tpl.status === "review_required" && (
-                  <span className="mb-2 inline-flex rounded bg-amber-100 px-2 py-1 text-xs font-medium text-amber-900 dark:bg-amber-950 dark:text-amber-100">
+                  <span className="mb-2 inline-flex rounded bg-secondary px-2 py-1 text-xs font-medium text-secondary-foreground border border-border">
                     Revisar antes de publicar
                   </span>
                 )}
@@ -1728,7 +2879,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                       setPreviewTemplate(tpl);
                       setIsMobileTemplateOpen(false);
                     }}
-                    className="h-8 px-3 text-xs font-semibold gap-2 rounded-lg flex-1 cursor-pointer"
+                    className="h-11 min-h-11 px-3 text-xs font-semibold gap-2 rounded-lg flex-1 cursor-pointer focus-visible:ring-2"
                   >
                     <Eye className="size-3.5" />
                     <span>Visualizar</span>
@@ -1740,7 +2891,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                       handleApplyTemplate(tpl.id);
                       setIsMobileTemplateOpen(false);
                     }}
-                    className="h-8 px-3 text-xs font-bold rounded-lg flex-1 bg-foreground text-background cursor-pointer"
+                    className="h-11 min-h-11 px-3 text-xs font-bold rounded-lg flex-1 bg-foreground text-background cursor-pointer focus-visible:ring-2"
                   >
                     <span>Usar Modelo</span>
                   </Button>
@@ -1769,46 +2920,51 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                   key={block.id}
                   className="p-3 rounded-lg border border-border/80 bg-card flex items-center justify-between shadow-xs"
                 >
-                  <div
+                  <button
+                    type="button"
                     onClick={() => {
                       setSelectedBlockId(block.id);
                       setIsMobileLayersOpen(false);
                     }}
-                    className="flex-1 pr-2 cursor-pointer min-w-0"
+                    className="flex-1 pr-2 cursor-pointer min-w-0 text-left focus-visible:ring-2 rounded-md"
                   >
                     <span className="text-xs text-muted-foreground/75 font-mono text-muted-foreground uppercase tracking-wider block">
                       {def.name}
                     </span>
                     <h4 className="text-xs font-bold text-foreground truncate">{title}</h4>
-                  </div>
+                  </button>
 
                   <div className="flex items-center gap-1 shrink-0">
                     <button
+                      type="button"
                       disabled={index === 0}
                       onClick={() => handleMove(index, "up")}
-                      className="size-8 rounded-lg bg-muted/60 flex items-center justify-center text-muted-foreground disabled:opacity-30"
+                      className="size-11 min-h-11 min-w-11 rounded-lg bg-muted/60 flex items-center justify-center text-muted-foreground disabled:opacity-30 focus-visible:ring-2"
                       title="Subir"
                     >
                       <ChevronUp className="size-4" />
                     </button>
                     <button
+                      type="button"
                       disabled={index === document.blocks.length - 1}
                       onClick={() => handleMove(index, "down")}
-                      className="size-8 rounded-lg bg-muted/60 flex items-center justify-center text-muted-foreground disabled:opacity-30"
+                      className="size-11 min-h-11 min-w-11 rounded-lg bg-muted/60 flex items-center justify-center text-muted-foreground disabled:opacity-30 focus-visible:ring-2"
                       title="Descer"
                     >
                       <ChevronDown className="size-4" />
                     </button>
                     <button
+                      type="button"
                       onClick={() => handleDuplicate(block.id)}
-                      className="size-8 rounded-lg bg-muted/60 flex items-center justify-center text-muted-foreground"
+                      className="size-11 min-h-11 min-w-11 rounded-lg bg-muted/60 flex items-center justify-center text-muted-foreground focus-visible:ring-2"
                       title="Duplicar"
                     >
                       <Copy className="size-3.5" />
                     </button>
                     <button
+                      type="button"
                       onClick={() => handleRemove(block.id)}
-                      className="size-8 rounded-lg bg-destructive/10 flex items-center justify-center text-destructive"
+                      className="size-11 min-h-11 min-w-11 rounded-lg bg-destructive/10 flex items-center justify-center text-destructive focus-visible:ring-2"
                       title="Excluir"
                     >
                       <Trash2 className="size-3.5" />

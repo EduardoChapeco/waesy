@@ -1007,47 +1007,203 @@ export const applyParsedVoucherToTrip = createServerFn({ method: "POST" })
   });
 
 /**
- * 10. Listagem das Viagens e Pacotes da Agência para o Painel do Viajante (Minha Conta)
- * Centraliza pacotes fechados, aéreos, hotéis e vouchers emitidos pela agência.
+ * 10. Listagem Multi-Agência das Viagens e Pacotes para o Painel do Viajante (Minha Conta)
+ * Centraliza pacotes fechados, aéreos, hotéis, localizadores e vouchers emitidos por qualquer agência do ecossistema.
+ * Aplica Deny-by-Default estrito para sessões não autenticadas e reconcilia por ID, E-mail, CPF e WhatsApp.
  */
 export const listCustomerAgencyTrips = createServerFn({ method: "GET" }).handler(
   async (): Promise<any[]> => {
     const supabase = getServerClient();
     const identity = await getServerIdentity().catch(() => null);
 
-    let query = supabase
-      .from("tourism_trips")
-      .select(`
-        id, store_id, trip_number, title, destination_city,
-        travel_start_date, travel_end_date, adults_count, children_count,
-        currency, total_cents, status, client_name, client_whatsapp,
-        client_email, client_document, flights, hotels, transfers, tours,
-        insurance, notes, created_at,
-        tourism_vouchers ( id, public_token, voucher_code, voucher_type )
-      `)
-      .order("created_at", { ascending: false });
-
-    // Se o cliente estiver logado, filtra pelo seu id
-    if (identity?.id) {
-      query = query.or(`customer_id.eq.${identity.id},client_id.eq.${identity.id}`);
-    } else {
-      // Caso não haja filtro restrito de sessão do cliente, retorna as viagens recentes da loja ativa
-      if (identity?.store_id) {
-        query = query.eq("store_id", identity.store_id).limit(10);
-      } else {
-        query = query.limit(10);
-      }
-    }
-
-    const { data, error } = await query;
-    if (error) {
-      console.warn("[listCustomerAgencyTrips] Falha ao carregar viagens do cliente:", error.message);
+    // Barreira Zero-Trust: visitante deslogado nunca recebe viagens de terceiros
+    if (!identity?.id) {
       return [];
     }
 
-    return data || [];
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("id, email, phone, document_number, full_name")
+      .eq("id", identity.id)
+      .maybeSingle();
+
+    const cleanEmail = String(profile?.email || identity.email || "")
+      .trim()
+      .toLowerCase();
+    const cleanDoc = String((profile as any)?.document_number || "")
+      .replace(/\D/g, "");
+    const cleanPhone = String(profile?.phone || "").replace(/\D/g, "");
+    const phoneSuffix = cleanPhone.length >= 8 ? cleanPhone.slice(-8) : "";
+
+    // 1. Verificar se o usuário consta como passageiro em alguma viagem (trip_passengers)
+    const passengerOrClauses: string[] = [];
+    if (cleanEmail && cleanEmail.includes("@")) {
+      passengerOrClauses.push(`email.ilike.${cleanEmail}`);
+    }
+    if (cleanDoc.length >= 9) {
+      passengerOrClauses.push(`document.ilike.%${cleanDoc}%`);
+    }
+
+    let passengerTripIds: string[] = [];
+    if (passengerOrClauses.length > 0) {
+      const { data: paxRows } = await supabase
+        .from("trip_passengers")
+        .select("trip_id")
+        .or(passengerOrClauses.join(","))
+        .limit(50);
+      if (paxRows && paxRows.length > 0) {
+        passengerTripIds = Array.from(
+          new Set(paxRows.map((r: any) => String(r.trip_id)).filter(Boolean))
+        );
+      }
+    }
+
+    // 2. Construir cláusula unificada multi-agência
+    const tripOrClauses: string[] = [
+      `customer_id.eq.${identity.id}`,
+      `client_id.eq.${identity.id}`,
+    ];
+    if (cleanEmail && cleanEmail.includes("@")) {
+      tripOrClauses.push(`client_email.ilike.${cleanEmail}`);
+    }
+    if (cleanDoc.length >= 9) {
+      tripOrClauses.push(`client_document.ilike.%${cleanDoc}%`);
+    }
+    if (phoneSuffix.length >= 8) {
+      tripOrClauses.push(`client_whatsapp.ilike.%${phoneSuffix}%`);
+    }
+    if (passengerTripIds.length > 0) {
+      tripOrClauses.push(`id.in.(${passengerTripIds.join(",")})`);
+    }
+
+    const { data, error } = await supabase
+      .from("tourism_trips")
+      .select(`
+        id, store_id, proposal_id, customer_id, trip_number, title, destination_city,
+        travel_start_date, travel_end_date, adults_count, children_count,
+        currency, total_cents, status, client_name, client_whatsapp,
+        client_email, client_document, cover_image_url, operator_name,
+        payment_method, installments_count, financial_details,
+        flights, hotels, transfers, tours, itinerary, includes, excludes,
+        insurance, notes, created_at,
+        stores ( id, name, slug, logo_url, phone, settings ),
+        tourism_vouchers ( id, public_token, voucher_code, voucher_type ),
+        trip_confirmation_items ( id, item_type, provider_name, locator_code, status, service_date )
+      `)
+      .or(tripOrClauses.join(","))
+      .order("created_at", { ascending: false })
+      .limit(50);
+
+    if (error) {
+      console.warn("[listCustomerAgencyTrips] Falha ao carregar viagens multi-agência do cliente:", error.message);
+      return [];
+    }
+
+    return (data || []).map((row: any) => {
+      const storeObj = Array.isArray(row.stores) ? row.stores[0] : row.stores;
+      const storeSettings = storeObj?.settings || {};
+      return {
+        ...row,
+        agency_name: storeObj?.name || row.operator_name || "Agência Credenciada Waesy",
+        agency_slug: storeObj?.slug || null,
+        agency_logo_url: storeObj?.logo_url || null,
+        agency_whatsapp: storeSettings.whatsapp_phone || storeSettings.phone || storeObj?.phone || null,
+      };
+    });
   }
 );
+
+/**
+ * 10B. Dossiê Multi-Agência Completo do Viajante (Propostas, Cotações e Contratos)
+ * Retorna todas as propostas interativas, cotações em andamento e contratos jurídicos do viajante
+ * em qualquer agência de turismo do ecossistema Waesy.
+ */
+export const listCustomerTravelDossierFn = createServerFn({ method: "GET" }).handler(
+  async (): Promise<{
+    proposals: any[];
+    quotes: any[];
+    contracts: any[];
+  }> => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity().catch(() => null);
+
+    if (!identity?.id) {
+      return { proposals: [], quotes: [], contracts: [] };
+    }
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("id, email, phone, document_number, full_name")
+      .eq("id", identity.id)
+      .maybeSingle();
+
+    const cleanEmail = String(profile?.email || identity.email || "")
+      .trim()
+      .toLowerCase();
+    const cleanDoc = String((profile as any)?.document_number || "")
+      .replace(/\D/g, "");
+    const cleanPhone = String(profile?.phone || "").replace(/\D/g, "");
+    const phoneSuffix = cleanPhone.length >= 8 ? cleanPhone.slice(-8) : "";
+
+    const proposalClauses: string[] = [];
+    const quoteClauses: string[] = [];
+    const contractClauses: string[] = [];
+
+    if (cleanEmail && cleanEmail.includes("@")) {
+      proposalClauses.push(`client_email.ilike.${cleanEmail}`);
+      quoteClauses.push(`contact_email.ilike.${cleanEmail}`);
+      contractClauses.push(`client_email.ilike.${cleanEmail}`);
+    }
+    if (phoneSuffix.length >= 8) {
+      proposalClauses.push(`client_whatsapp.ilike.%${phoneSuffix}%`);
+      quoteClauses.push(`contact_whatsapp.ilike.%${phoneSuffix}%`);
+      contractClauses.push(`client_phone.ilike.%${phoneSuffix}%`);
+    }
+    if (cleanDoc.length >= 9) {
+      contractClauses.push(`client_document.ilike.%${cleanDoc}%`);
+    }
+
+    const [proposalsRes, quotesRes, contractsRes] = await Promise.all([
+      proposalClauses.length > 0
+        ? supabase
+            .from("travel_proposals")
+            .select(
+              "id, store_id, agency_name, agency_logo_url, agency_whatsapp, public_token, title, subtitle, cover_image_url, destination_city, travel_start_date, travel_end_date, adults_count, children_count, pricing, status, acceptance_status, valid_until, created_at"
+            )
+            .or(proposalClauses.join(","))
+            .order("created_at", { ascending: false })
+            .limit(30)
+        : Promise.resolve({ data: [] as any[], error: null }),
+      quoteClauses.length > 0
+        ? supabase
+            .from("travel_quotes")
+            .select(
+              "id, origin_city, origin_iata, destination_city, destination_iata, departure_date, return_date, adults_count, children_count, trip_type, status, quote_amount_cents, agency_notes, created_at"
+            )
+            .or(quoteClauses.join(","))
+            .order("created_at", { ascending: false })
+            .limit(30)
+        : Promise.resolve({ data: [] as any[], error: null }),
+      contractClauses.length > 0
+        ? supabase
+            .from("travel_contracts")
+            .select(
+              "id, store_id, agency_name, agency_whatsapp, public_token, proposal_id, contract_title, destination, travel_start_date, travel_end_date, total_value_cents, payment_conditions, status, signed_at, pdf_url, created_at"
+            )
+            .or(contractClauses.join(","))
+            .order("created_at", { ascending: false })
+            .limit(30)
+        : Promise.resolve({ data: [] as any[], error: null }),
+    ]);
+
+    return {
+      proposals: proposalsRes.data || [],
+      quotes: quotesRes.data || [],
+      contracts: contractsRes.data || [],
+    };
+  }
+);
+
 
 /**
  * 11. Salvar / Atualizar Passageiro da Viagem (trip_passengers)

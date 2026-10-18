@@ -19,21 +19,54 @@ interface VideoSectionProps {
     button_text?: string;
     button_link?: string;
   };
+  badge?: string;
+  title?: string;
+  subtitle?: string;
+  description?: string;
+  video_url?: string;
+  videoUrl?: string;
+  media_url?: string;
+  auto_play?: boolean;
+  loop?: boolean;
+  aspect_ratio?: "16:9" | "9:16" | "4:3" | "1:1" | "video";
+  button_text?: string;
+  button_link?: string;
   design_tokens?: any;
 }
 
-export function VideoSection({ content, design_tokens }: VideoSectionProps) {
+export function VideoSection({
+  content,
+  badge: topBadge,
+  title: topTitle,
+  subtitle: topSubtitle,
+  description: topDescription,
+  video_url: topVideoUrl,
+  videoUrl: topVideoUrlCamel,
+  media_url: topMediaUrl,
+  auto_play: topAutoPlay,
+  loop: topLoop,
+  aspect_ratio: topAspectRatio,
+  button_text: topButtonText,
+  button_link: topButtonLink,
+  design_tokens,
+}: VideoSectionProps) {
   const videoUrl =
-    content?.video_url || content?.videoUrl || content?.media_url || "";
-  const badge = content?.badge || "";
-  const title = content?.title || "";
-  const subtitle = content?.subtitle || "";
-  const description = content?.description || "";
-  const autoPlay = Boolean(content?.auto_play);
-  const loop = content?.loop !== false;
-  const aspectRatio = content?.aspect_ratio || "16:9";
-  const buttonText = content?.button_text || "";
-  const buttonLink = content?.button_link || "";
+    topVideoUrl ||
+    topVideoUrlCamel ||
+    topMediaUrl ||
+    content?.video_url ||
+    content?.videoUrl ||
+    content?.media_url ||
+    "";
+  const badge = topBadge ?? content?.badge ?? "";
+  const title = topTitle ?? content?.title ?? "";
+  const subtitle = topSubtitle ?? content?.subtitle ?? "";
+  const description = topDescription ?? content?.description ?? "";
+  const autoPlay = Boolean(topAutoPlay ?? content?.auto_play);
+  const loop = (topLoop ?? content?.loop) !== false;
+  const aspectRatio = topAspectRatio || content?.aspect_ratio || "16:9";
+  const buttonText = topButtonText ?? content?.button_text ?? "";
+  const buttonLink = topButtonLink ?? content?.button_link ?? "";
 
   // Helper to extract YouTube ID
   const getYouTubeId = (url: string) => {
@@ -57,11 +90,11 @@ export function VideoSection({ content, design_tokens }: VideoSectionProps) {
 
   const aspectClass =
     aspectRatio === "9:16"
-      ? "aspect-[9/16] max-w-sm mx-auto"
+      ? "aspect-square sm:aspect-video max-w-sm mx-auto"
       : aspectRatio === "1:1"
       ? "aspect-square max-w-2xl mx-auto"
       : aspectRatio === "4:3"
-      ? "aspect-[4/3] max-w-3xl mx-auto"
+      ? "aspect-video max-w-3xl mx-auto"
       : "aspect-video w-full";
 
   const renderVideoPlayer = () => {
@@ -112,7 +145,7 @@ export function VideoSection({ content, design_tokens }: VideoSectionProps) {
         <p className="text-xs font-semibold text-foreground">
           Nenhum vídeo configurado
         </p>
-        <span className="text-[10px] text-muted-foreground mt-1 max-w-xs break-all">
+        <span className="text-xs text-muted-foreground mt-1 max-w-xs break-all">
           {videoUrl || "Adicione um arquivo de vídeo (MP4, WebM) ou link do YouTube/Vimeo nas configurações"}
         </span>
       </div>
@@ -151,7 +184,7 @@ export function VideoSection({ content, design_tokens }: VideoSectionProps) {
           </div>
         )}
 
-        <div className={cn("relative overflow-hidden bg-black/90 rounded-lg shadow-xs border border-border/40", aspectClass)}>
+        <div className={cn("relative overflow-hidden bg-card rounded-lg shadow-xs border border-border/40", aspectClass)}>
           {renderVideoPlayer()}
         </div>
 
@@ -163,7 +196,7 @@ export function VideoSection({ content, design_tokens }: VideoSectionProps) {
 
         {buttonText && (
           <div className="pt-2">
-            <Button asChild size="lg" className="rounded-lg h-11 px-6 font-bold text-xs gap-2">
+            <Button asChild size="lg" className="rounded-lg h-11 min-h-11 px-6 font-bold text-xs gap-2">
               <Link to={buttonLink || "/explorar"}>
                 <span>{buttonText}</span>
                 <ArrowRight className="size-4" />

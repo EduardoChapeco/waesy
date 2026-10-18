@@ -5,7 +5,7 @@ import { getServerClient } from "@/lib/supabase";
 import { getServerIdentity, assertStoreAccess, requireAdmin } from "@/lib/server-access";
 import { inspectPromptSecurity, buildSandboxedPromptPayload, sanitizeAiOutput } from "@/lib/prompt-shield";
 import { logOperationalEvent } from "@/lib/telemetry/operational-logger";
-import { getNextActiveKey, markKeyError } from "./api-orchestrator.functions";
+import { getNextActiveKey, getAllActiveKeysForProvider, recordKeyUsage, markKeyError } from "./api-orchestrator.functions";
 
 // ============================================================
 // Tipos & Schemas Canônicos da Porta Única (ia/02-contrato.md)
@@ -335,19 +335,21 @@ async function callProviderLowLevel(
       };
 
       let res = await tryFetchGroq(model);
-      if (!res.ok && (res.status === 400 || res.status === 404) && model !== "llama-3.3-70b-versatile") {
+      if (!res.ok && (res.status === 400 || res.status === 404 || res.status === 429) && model !== "llama-3.3-70b-versatile") {
         const firstErr = await res.text().catch(() => "");
         const lowerErr = firstErr.toLowerCase();
         if (
+          res.status === 429 ||
           lowerErr.includes("model_not_found") ||
           lowerErr.includes("does not exist") ||
           lowerErr.includes("not found") ||
           lowerErr.includes("not supported") ||
           lowerErr.includes("decommissioned") ||
           lowerErr.includes("invalid model") ||
-          lowerErr.includes("unknown model")
+          lowerErr.includes("unknown model") ||
+          lowerErr.includes("json_validate_failed")
         ) {
-          console.warn(`[Groq] Modelo "${model}" indisponível no Groq (${res.status}). Executando failover transparente para "llama-3.3-70b-versatile"...`);
+          console.warn(`[Groq] Modelo "${model}" indisponível ou limitado no Groq (${res.status}). Executando failover transparente para "llama-3.3-70b-versatile"...`);
           res = await tryFetchGroq("llama-3.3-70b-versatile");
         } else {
           throw new Error(`Groq error ${res.status}: ${firstErr}`);
@@ -360,13 +362,22 @@ async function callProviderLowLevel(
       }
 
       const json = await res.json();
-      const content = json.choices?.[0]?.message?.content || "";
+      const rawContent = json.choices?.[0]?.message?.content || "";
+      const content = rawContent.replace(/<think>[\s\S]*?<\/think>/gi, "").trim();
       const inTokens = json.usage?.prompt_tokens || Math.ceil((prompt.length + (systemPrompt?.length || 0)) / 4);
       const outTokens = json.usage?.completion_tokens || Math.ceil(content.length / 4);
 
       let parsed: any;
-      if (options?.responseFormat === "json_object") {
-        try { parsed = JSON.parse(content); } catch { /* ignore */ }
+      if (options?.responseFormat === "json_object" || content.startsWith("{") || content.startsWith("[")) {
+        const cleanJson = content.replace(/```json\s*|\s*```/gi, "").trim();
+        try {
+          parsed = JSON.parse(cleanJson);
+        } catch {
+          const match = cleanJson.match(/\{[\s\S]*\}|\[[\s\S]*\]/);
+          if (match) {
+            try { parsed = JSON.parse(match[0]); } catch { /* ignore */ }
+          }
+        }
       }
 
       return { text: content, inputTokens: inTokens, outputTokens: outTokens, rawJson: parsed };
@@ -503,21 +514,37 @@ async function callProviderLowLevel(
         headers["X-Title"] = "Waesy AI Core";
       }
 
-      const res = await fetch(endpoint, {
-        method: "POST",
-        headers,
-        body: JSON.stringify({
-          model,
-          messages: [
-            ...(systemPrompt ? [{ role: "system", content: systemPrompt }] : []),
-            { role: "user", content: prompt },
-          ],
-          temperature: options?.temperature ?? 0.7,
-          max_tokens: options?.maxTokens || 1024,
-          ...(options?.responseFormat === "json_object" ? { response_format: { type: "json_object" } } : {}),
-        }),
-        signal: controller.signal,
-      });
+      const tryOpenAiCompatible = async (targetModel: string) => {
+        return fetch(endpoint, {
+          method: "POST",
+          headers,
+          body: JSON.stringify({
+            model: targetModel,
+            messages: [
+              ...(systemPrompt ? [{ role: "system", content: systemPrompt }] : []),
+              { role: "user", content: prompt },
+            ],
+            temperature: options?.temperature ?? 0.7,
+            max_tokens: options?.maxTokens || 1024,
+            ...(options?.responseFormat === "json_object" ? { response_format: { type: "json_object" } } : {}),
+          }),
+          signal: controller.signal,
+        });
+      };
+
+      let res = await tryOpenAiCompatible(model);
+      if (!res.ok && provider === "openrouter" && res.status !== 401 && res.status !== 402 && res.status !== 403) {
+        const fallbackOrModels = [
+          "meta-llama/llama-3.3-70b-instruct:free",
+          "qwen/qwen3-235b-a22b:free",
+          "deepseek/deepseek-chat-v3-0324:free",
+        ].filter((m) => m !== model);
+
+        for (const altModel of fallbackOrModels) {
+          res = await tryOpenAiCompatible(altModel);
+          if (res.ok) break;
+        }
+      }
 
       if (!res.ok) {
         const errText = await res.text().catch(() => "");
@@ -525,13 +552,22 @@ async function callProviderLowLevel(
       }
 
       const json = await res.json();
-      const content = json.choices?.[0]?.message?.content || "";
+      const rawContent = json.choices?.[0]?.message?.content || "";
+      const content = rawContent.replace(/<think>[\s\S]*?<\/think>/gi, "").trim();
       const inTokens = json.usage?.prompt_tokens || Math.ceil(prompt.length / 4);
       const outTokens = json.usage?.completion_tokens || Math.ceil(content.length / 4);
 
       let parsed: any;
-      if (options?.responseFormat === "json_object") {
-        try { parsed = JSON.parse(content); } catch { /* ignore */ }
+      if (options?.responseFormat === "json_object" || content.startsWith("{") || content.startsWith("[")) {
+        const cleanJson = content.replace(/```json\s*|\s*```/gi, "").trim();
+        try {
+          parsed = JSON.parse(cleanJson);
+        } catch {
+          const match = cleanJson.match(/\{[\s\S]*\}|\[[\s\S]*\]/);
+          if (match) {
+            try { parsed = JSON.parse(match[0]); } catch { /* ignore */ }
+          }
+        }
       }
 
       return { text: content, inputTokens: inTokens, outputTokens: outTokens, rawJson: parsed };
@@ -732,136 +768,183 @@ export async function executeAiCoreGateway(request: AIGatewayRequest): Promise<A
         continue;
       }
 
-      // 5.2 Obter Chave Ativa do Pool (sem expor chave ao cliente)
-      let activeKey: { id: string; rawKey: string } | null = null;
+      // 5.2 Obter todas as chaves ativas do Provedor para rotação Multi-Key intra-provedor
+      let providerKeys: Array<{ id: string; rawKey: string; label?: string }> = [];
       try {
-        activeKey = await getNextActiveKey(candidate.provider as any);
+        if (typeof getAllActiveKeysForProvider === "function") {
+          const allKeys = await getAllActiveKeysForProvider(candidate.provider as any);
+          if (Array.isArray(allKeys) && allKeys.length > 0) {
+            providerKeys = allKeys;
+          }
+        }
+        if (providerKeys.length === 0) {
+          const singleKey = await getNextActiveKey(candidate.provider as any);
+          if (singleKey && singleKey.rawKey) {
+            providerKeys = [singleKey];
+          }
+        }
       } catch (keyErr) {
         console.warn(`[AI-CORE-GATEWAY] Pool sem chave para ${candidate.provider}:`, keyErr);
       }
 
-      if (!activeKey || !activeKey.rawKey) {
+      if (providerKeys.length === 0) {
         console.warn(`[AI-CORE-GATEWAY] Nenhuma chave disponível no pool para ${candidate.provider}`);
         if (!fallbackFrom) fallbackFrom = candidate.provider;
         fallbackUsed = true;
         continue;
       }
 
-      try {
-        const response = await callProviderLowLevel(
-          candidate.provider,
-          candidate.model,
-          activeKey.rawKey,
-          sandboxedUserPrompt,
-          hardenedSystemPrompt,
-          {
-            temperature: request.constraints?.temperature,
-            maxTokens: request.constraints?.maxTokens,
-            responseFormat: request.constraints?.responseFormat,
-            images: request.images,
-            timeoutMs: request.constraints?.timeoutMs,
-            signal: request.signal,
-          }
-        );
+      let providerLastError: any = null;
 
-        recordCircuitSuccess(candidate.provider);
-
-        const sanitizedText = sanitizeAiOutput(response.text);
-        const costUsd = calculateCost(candidate.provider, candidate.model, response.inputTokens, response.outputTokens);
-        const latencyMs = Date.now() - startTime;
-
-        const providerMedia = response.rawJson?.__media;
-        const gatewayResult: AIGatewayResponse = {
-          success: true,
-          result: {
-            text: sanitizedText,
-            parsedJson: providerMedia ? undefined : response.rawJson,
-            ...(providerMedia ? { media: providerMedia } : {}),
-          },
-          metadata: {
-            callId,
-            provider: candidate.provider,
-            model: candidate.model,
-            fallbackUsed,
-            fallbackFrom,
-            attemptsCount: attempts,
-            latencyMs,
-            cacheHit: false,
-            usage: {
-              inputTokens: response.inputTokens,
-              outputTokens: response.outputTokens,
-              totalTokens: response.inputTokens + response.outputTokens,
-            },
-            costUsd,
-            promptVersion: request.promptVersion || "v1.0",
-            fingerprint,
-          },
-        };
-
-        if (!request.bypassCache && request.task !== "imagem" && (!request.images || request.images.length === 0)) {
-          const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
-          Promise.resolve(
-            supabase
-              .from("ai_response_cache")
-              .upsert({
-                fingerprint_hash: fingerprint,
-                task: request.task,
-                provider: candidate.provider,
-                model: candidate.model,
-                response_payload: gatewayResult.result,
-                input_tokens: response.inputTokens,
-                output_tokens: response.outputTokens,
-                expires_at: expiresAt,
-                updated_at: new Date().toISOString(),
-              })
-          ).catch(() => {});
+      for (let kIdx = 0; kIdx < providerKeys.length; kIdx++) {
+        const activeKey = providerKeys[kIdx];
+        if (kIdx > 0) {
+          attempts++;
+          fallbackUsed = true;
         }
 
-        Promise.resolve(
-          supabase
-            .from("ai_telemetry_logs")
-            .insert({
-              call_id: callId,
-              task: request.task,
-              module: request.module || "core_gateway",
-              user_id: request.authContext?.userId || null,
-              workspace_id: request.authContext?.workspaceId || null,
-              store_id: request.authContext?.storeId || null,
+        try {
+          const response = await callProviderLowLevel(
+            candidate.provider,
+            candidate.model,
+            activeKey.rawKey,
+            sandboxedUserPrompt,
+            hardenedSystemPrompt,
+            {
+              temperature: request.constraints?.temperature,
+              maxTokens: request.constraints?.maxTokens,
+              responseFormat: request.constraints?.responseFormat,
+              images: request.images,
+              timeoutMs: request.constraints?.timeoutMs,
+              signal: request.signal,
+            }
+          );
+
+          recordCircuitSuccess(candidate.provider);
+          if (typeof recordKeyUsage === "function") {
+            recordKeyUsage(activeKey.id).catch(() => {});
+          }
+
+          const sanitizedText = sanitizeAiOutput(response.text);
+          const costUsd = calculateCost(candidate.provider, candidate.model, response.inputTokens, response.outputTokens);
+          const latencyMs = Date.now() - startTime;
+
+          const providerMedia = response.rawJson?.__media;
+          const gatewayResult: AIGatewayResponse = {
+            success: true,
+            result: {
+              text: sanitizedText,
+              parsedJson: providerMedia ? undefined : response.rawJson,
+              ...(providerMedia ? { media: providerMedia } : {}),
+            },
+            metadata: {
+              callId,
               provider: candidate.provider,
               model: candidate.model,
-              prompt_version: request.promptVersion || "v1.0",
-              input_tokens: response.inputTokens,
-              output_tokens: response.outputTokens,
-              total_tokens: response.inputTokens + response.outputTokens,
-              cost_usd: costUsd,
-              latency_ms: latencyMs,
-              attempts_count: attempts,
-              fallback_used: fallbackUsed,
-              fallback_from: fallbackFrom || null,
-              status: fallbackUsed ? "fallback_recovered" : "success",
-              request_fingerprint: fingerprint,
-              cache_hit: false,
-            })
-        ).catch((telemetryErr: any) => {
-          logOperationalEvent("error", "ai_telemetry_persist_failed", {
+              fallbackUsed,
+              fallbackFrom,
+              attemptsCount: attempts,
+              latencyMs,
+              cacheHit: false,
+              usage: {
+                inputTokens: response.inputTokens,
+                outputTokens: response.outputTokens,
+                totalTokens: response.inputTokens + response.outputTokens,
+              },
+              costUsd,
+              promptVersion: request.promptVersion || "v1.0",
+              fingerprint,
+            },
+          };
+
+          if (!request.bypassCache && request.task !== "imagem" && (!request.images || request.images.length === 0)) {
+            const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+            Promise.resolve(
+              supabase
+                .from("ai_response_cache")
+                .upsert({
+                  fingerprint_hash: fingerprint,
+                  task: request.task,
+                  provider: candidate.provider,
+                  model: candidate.model,
+                  response_payload: gatewayResult.result,
+                  input_tokens: response.inputTokens,
+                  output_tokens: response.outputTokens,
+                  expires_at: expiresAt,
+                  updated_at: new Date().toISOString(),
+                })
+            ).catch(() => {});
+          }
+
+          Promise.resolve(
+            supabase
+              .from("ai_telemetry_logs")
+              .insert({
+                call_id: callId,
+                task: request.task,
+                module: request.module || "core_gateway",
+                user_id: request.authContext?.userId || null,
+                workspace_id: request.authContext?.workspaceId || null,
+                store_id: request.authContext?.storeId || null,
+                provider: candidate.provider,
+                model: candidate.model,
+                prompt_version: request.promptVersion || "v1.0",
+                input_tokens: response.inputTokens,
+                output_tokens: response.outputTokens,
+                total_tokens: response.inputTokens + response.outputTokens,
+                cost_usd: costUsd,
+                latency_ms: latencyMs,
+                attempts_count: attempts,
+                fallback_used: fallbackUsed,
+                fallback_from: fallbackFrom || null,
+                status: fallbackUsed ? "fallback_recovered" : "success",
+                request_fingerprint: fingerprint,
+                cache_hit: false,
+              })
+          ).catch((telemetryErr: any) => {
+            logOperationalEvent("error", "ai_telemetry_persist_failed", {
+              requestId: callId,
+              tenantId: request.authContext?.storeId,
+              provider: candidate.provider,
+            }, { error: telemetryErr instanceof Error ? telemetryErr.message : "unknown" });
+          });
+
+          return gatewayResult;
+        } catch (err: any) {
+          lastError = err;
+          providerLastError = err;
+          logOperationalEvent("error", "ai_provider_key_failed", {
             requestId: callId,
             tenantId: request.authContext?.storeId,
             provider: candidate.provider,
-          }, { error: telemetryErr instanceof Error ? telemetryErr.message : "unknown" });
-        });
+          }, {
+            keyId: activeKey.id,
+            keyAttempt: kIdx + 1,
+            totalProviderKeys: providerKeys.length,
+            error: err instanceof Error ? err.message : String(err),
+          });
 
-        return gatewayResult;
-      } catch (err: any) {
-        lastError = err;
-        logOperationalEvent("error", "ai_provider_failed", {
-          requestId: callId,
-          tenantId: request.authContext?.storeId,
-          provider: candidate.provider,
-        }, { error: err instanceof Error ? err.message : String(err) });
+          const errMessage = err instanceof Error ? err.message : String(err);
+          const statusMatch = errMessage.match(/\b(401|402|403|429|500|502|503|504)\b/);
+          const parsedStatus = (err as any)?.status ?? (statusMatch ? Number(statusMatch[1]) : undefined);
+          markKeyError(activeKey.id, errMessage, parsedStatus).catch(() => {});
+        }
+      }
 
-        recordCircuitFailure(candidate.provider, err.message);
-        markKeyError(activeKey.id, err.message).catch(() => {});
-
+      // Circuit Breaker do provedor só abre se TODAS as chaves saudáveis falharam e o pool
+      // não tem mais nenhuma chave fora de quarentena (evita derrubar o provedor por 1 chave com 429).
+      if (providerLastError) {
+        let remainingHealthy = 0;
+        try {
+          const triedIds = new Set(providerKeys.map((k) => k.id));
+          const refreshed = await getAllActiveKeysForProvider(candidate.provider as any);
+          remainingHealthy = refreshed.filter((k) => !triedIds.has(k.id)).length;
+        } catch {
+          remainingHealthy = 0;
+        }
+        if (remainingHealthy === 0) {
+          recordCircuitFailure(candidate.provider, providerLastError.message);
+        }
         if (!fallbackFrom) fallbackFrom = candidate.provider;
         fallbackUsed = true;
       }

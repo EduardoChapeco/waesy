@@ -17,6 +17,7 @@ import { saveSecretKey, deleteSecretKey, listConfiguredSecrets, testSecretKeyCon
 import { listMarketplaceConnectors, type MarketplaceConnectorDTO } from "@/services/marketplace-hub.functions";
 import { getGmbStatus, connectGmb, syncGmbStoreProfile, type GmbLocationDTO } from "@/services/gmb.functions";
 import { getWorkspaceLinkedInStatus, getLinkedInAuthRedirectUrl, disconnectLinkedInCompanyPage } from "@/services/linkedin-integrations.functions";
+import { getExternalAdsOAuthUrl } from "@/services/ads.functions";
 import { Linkedin, Loader2 } from "lucide-react";
 import { listWorkspaceWhatsAppInstances, saveWorkspaceWhatsAppInstance, toggleWorkspaceWhatsAppInstance, type WhatsAppChannelInstanceDTO } from "@/services/whatsapp-channel-instances.functions";
 import { testCurrentInfotravelConnection } from "@/services/infotravel";
@@ -1442,13 +1443,88 @@ function UnifiedIntegrationsHubPage() {
         {/* 6. ABA PIXELS & GROWTH */}
         <TabsContent value="growth_pixels" className="space-y-4 outline-none">
           <div className="grid lg:grid-cols-2 gap-6">
+            {/* Google Ads & Meta Ads MCP 1-Click OAuth 2.0 Card */}
+            <Card className="bg-card rounded-lg border border-border/70 shadow-none flex flex-col justify-between lg:col-span-2">
+              <CardHeader className="pb-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="p-3 bg-primary/10 rounded-lg text-primary shrink-0">
+                      <Zap className="size-5" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-base flex items-center gap-2">
+                        Google Ads & Meta Ads (Facebook / Instagram) — Protocolo MCP
+                        <Badge variant="secondary" className="text-xs">
+                          OAuth 2.0 + GAQL + CAPI
+                        </Badge>
+                      </CardTitle>
+                      <CardDescription className="text-xs mt-1">
+                        Conexão rápida em 1 clique com autodescoberta de Contas (`act_...` / Customer ID), Pixels, sincronização de gasto real e Skill de Diagnóstico IA.
+                      </CardDescription>
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="secondary"
+                      onClick={async () => {
+                        try {
+                          const res = await getExternalAdsOAuthUrl({
+                            data: { platform: "meta_ads", returnTo: "/workspace/marketing/anuncios" },
+                          });
+                          if (res?.configured && res.authUrl) {
+                            window.location.href = res.authUrl;
+                            return;
+                          }
+                          toast.info(res?.message || "Abra o painel de Anúncios para vincular sua conta Meta Ads.");
+                        } catch (err: any) {
+                          toast.error(err?.message || "Erro ao iniciar login Meta Ads.");
+                        }
+                      }}
+                      className="h-11 min-h-11 rounded-lg text-xs font-bold px-4 focus-visible:ring-2"
+                    >
+                      Conectar Meta Ads (1-Clique)
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="secondary"
+                      onClick={async () => {
+                        try {
+                          const res = await getExternalAdsOAuthUrl({
+                            data: { platform: "google_ads", returnTo: "/workspace/marketing/anuncios" },
+                          });
+                          if (res?.configured && res.authUrl) {
+                            window.location.href = res.authUrl;
+                            return;
+                          }
+                          toast.info(res?.message || "Abra o painel de Anúncios para vincular sua conta Google Ads.");
+                        } catch (err: any) {
+                          toast.error(err?.message || "Erro ao iniciar login Google Ads.");
+                        }
+                      }}
+                      className="h-11 min-h-11 rounded-lg text-xs font-bold px-4 focus-visible:ring-2"
+                    >
+                      Conectar Google Ads (1-Clique)
+                    </Button>
+                    <Button asChild size="sm" variant="outline" className="h-11 min-h-11 rounded-lg text-xs font-semibold px-4 focus-visible:ring-2">
+                      <Link to="/workspace/marketing/anuncios">
+                        Abrir Painel MCP de Anúncios
+                      </Link>
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
+            </Card>
+
             {/* LinkedIn Company Page Integration Card */}
             <Card className="bg-card rounded-lg border border-border/70 shadow-none flex flex-col justify-between">
               <div>
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="p-3 bg-[#0A66C2]/10 rounded-lg text-[#0A66C2] shrink-0">
+                      <div className="p-3 bg-primary/10 rounded-lg text-primary shrink-0">
                         <Linkedin className="size-5 fill-current" />
                       </div>
                       <div>
@@ -1513,7 +1589,7 @@ function UnifiedIntegrationsHubPage() {
                         type="button"
                         onClick={handleConnectLinkedIn}
                         disabled={isConnectingLinkedIn}
-                        className="w-full h-10 rounded-lg text-xs font-bold gap-2 bg-[#0A66C2] hover:bg-[#084e96] text-white shadow-xs cursor-pointer"
+                        className="w-full h-11 min-h-11 rounded-lg text-xs font-bold gap-2 bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs cursor-pointer"
                       >
                         {isConnectingLinkedIn ? (
                           <>

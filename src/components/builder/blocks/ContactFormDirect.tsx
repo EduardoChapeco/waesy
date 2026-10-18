@@ -1,16 +1,25 @@
 import React, { useState } from "react";
 import { ContactFormBlockData, OmniBlockStyling } from "../types";
-import { Send, CheckCircle2, MessageSquare, Phone, Mail } from "lucide-react";
+import { Send, CheckCircle2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import { submitOmniPageLeadFn } from "@/services/builder.functions";
 
 export interface ContactFormDirectProps {
   id: string;
   data: ContactFormBlockData;
   styling?: OmniBlockStyling;
   className?: string;
+  storeData?: any;
+  pageSlug?: string;
+  onLeadSubmit?: (payload: {
+    name: string;
+    phone?: string;
+    email?: string;
+    message?: string;
+  }) => Promise<unknown>;
 }
 
 export const ContactFormDirect: React.FC<ContactFormDirectProps> = ({
@@ -18,13 +27,22 @@ export const ContactFormDirect: React.FC<ContactFormDirectProps> = ({
   data,
   styling,
   className = "",
+  storeData,
+  pageSlug,
+  onLeadSubmit,
 }) => {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const whatsappDigits = (data.whatsappNumber ?? "").replace(/\D/g, "");
+  const whatsappDigits = (
+    data.whatsappNumber ||
+    storeData?.whatsapp ||
+    storeData?.phone ||
+    ""
+  ).replace(/\D/g, "");
   const hasValidWhatsApp = /^\d{10,15}$/.test(whatsappDigits);
 
   const paddingYClasses = {
@@ -50,7 +68,7 @@ export const ContactFormDirect: React.FC<ContactFormDirectProps> = ({
     color: styling?.textColor || undefined,
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) {
       toast.error("Por favor, informe seu nome.");
@@ -61,22 +79,52 @@ export const ContactFormDirect: React.FC<ContactFormDirectProps> = ({
       return;
     }
 
-    if (!hasValidWhatsApp) {
-      toast.error("Este formulário ainda não tem um WhatsApp válido configurado.");
-      return;
-    }
+    setIsSubmitting(true);
+    try {
+      if (onLeadSubmit) {
+        await onLeadSubmit({
+          name: name.trim(),
+          phone: phone.trim() || undefined,
+          email: email.trim() || undefined,
+          message: message.trim() || undefined,
+        });
+      } else {
+        await submitOmniPageLeadFn({
+          data: {
+            storeId: storeData?.id || null,
+            storeSlug: storeData?.slug || null,
+            pageSlug: pageSlug || null,
+            blockId: id,
+            blockType: "contact_form_direct",
+            name: name.trim(),
+            phone: phone.trim() || null,
+            email: email.trim() || null,
+            message: message.trim() || null,
+          },
+        });
+      }
 
-    const text = encodeURIComponent(
-      `Olá! Mensagem iniciada pelo site:\n*Nome:* ${name}\n*Contato:* ${phone || email}\n*Mensagem:* ${message || "Tenho interesse nos serviços."}`
-    );
-    const openedWindow = window.open(`https://wa.me/${whatsappDigits}?text=${text}`, "_blank");
-    if (!openedWindow) {
-      toast.error("O navegador bloqueou a abertura do WhatsApp. Permita pop-ups e tente novamente.");
-      return;
+      if (hasValidWhatsApp) {
+        const text = encodeURIComponent(
+          `Olá! Mensagem iniciada pelo site:\n*Nome:* ${name}\n*Contato:* ${phone || email}\n*Mensagem:* ${message || "Tenho interesse nos serviços."}`
+        );
+        const openedWindow = window.open(`https://wa.me/${whatsappDigits}?text=${text}`, "_blank");
+        if (openedWindow) {
+          openedWindow.opener = null;
+        }
+      }
+
+      setIsSubmitted(true);
+      toast.success(
+        hasValidWhatsApp
+          ? "Contato registrado no CRM e WhatsApp aberto!"
+          : "Mensagem recebida! Nossa equipe entrará em contato em breve."
+      );
+    } catch {
+      toast.error("Não foi possível registrar seu contato agora. Tente novamente.");
+    } finally {
+      setIsSubmitting(false);
     }
-    openedWindow.opener = null;
-    setIsSubmitted(true);
-    toast.success("WhatsApp aberto. Revise a mensagem e toque em Enviar para concluir o contato.");
   };
 
   return (
@@ -86,7 +134,7 @@ export const ContactFormDirect: React.FC<ContactFormDirectProps> = ({
       className={`relative w-full ${paddingYClasses} border-b border-border/40 ${className}`}
     >
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className={`p-8 sm:p-12 bg-card border border-border/70 ${radiusClass} shadow-sm`}>
+        <div className={`p-8 sm:p-12 bg-card border border-border/70 ${radiusClass}`}>
           {/* Cabeçalho */}
           <div className="text-center max-w-xl mx-auto mb-8">
             <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-foreground mb-2">
@@ -104,12 +152,17 @@ export const ContactFormDirect: React.FC<ContactFormDirectProps> = ({
               <div className="size-16 rounded-full bg-emerald-500/10 text-emerald-600 flex items-center justify-center mb-4">
                 <CheckCircle2 className="size-8" />
               </div>
-              <h3 className="text-xl font-bold text-foreground mb-2">Continue no WhatsApp</h3>
+              <h3 className="text-xl font-bold text-foreground mb-2">
+                {hasValidWhatsApp ? "Contato Registrado & WhatsApp Aberto" : "Solicitação Enviada com Sucesso"}
+              </h3>
               <p className="text-sm text-muted-foreground max-w-md mb-6">
-                O WhatsApp foi aberto com a mensagem preenchida. Revise o conteúdo e toque em Enviar para concluir o contato.
+                {hasValidWhatsApp
+                  ? "Seus dados já foram salvos no atendimento da loja e o WhatsApp foi aberto com a mensagem preenchida."
+                  : "Seus dados foram salvos diretamente na central de atendimento da loja. Retornaremos em breve."}
               </p>
               <Button
                 variant="outline"
+                className="h-11 min-h-11"
                 onClick={() => {
                   setIsSubmitted(false);
                   setName("");
@@ -183,18 +236,21 @@ export const ContactFormDirect: React.FC<ContactFormDirectProps> = ({
                 </div>
               )}
 
-              {!hasValidWhatsApp && <p role="status" className="text-sm text-destructive">
-                Destino de WhatsApp não configurado. O responsável pelo site precisa corrigir essa configuração antes de publicar o formulário.
-              </p>}
+              {!hasValidWhatsApp && !onLeadSubmit && (
+                <p className="text-2xs text-muted-foreground text-center">
+                  Destino de WhatsApp não configurado
+                </p>
+              )}
+
               <Button
                 type="submit"
-                disabled={!hasValidWhatsApp}
+                disabled={isSubmitting || (!hasValidWhatsApp && !onLeadSubmit)}
                 size="lg"
-                className="w-full h-12 text-base font-semibold rounded-lg bg-foreground text-background hover:bg-foreground/90 transition-transform active:scale-95 shadow-sm mt-2"
+                className="w-full h-12 min-h-11 text-base font-semibold rounded-lg bg-foreground text-background hover:bg-foreground/90 transition-colors motion-reduce:transition-none mt-2"
               >
                 <span className="flex items-center justify-center gap-2">
-                  <Send className="size-4" />
-                  {data.submitButtonText || "Abrir WhatsApp"}
+                  {isSubmitting ? <Loader2 className="size-4 animate-spin motion-reduce:animate-none" /> : <Send className="size-4" />}
+                  {data.submitButtonText || (hasValidWhatsApp ? "Enviar e Abrir WhatsApp" : "Enviar Mensagem")}
                 </span>
               </Button>
             </form>

@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { listMarketplaceConnectors, saveMarketplaceConnector, disconnectMarketplaceConnector, triggerSyncConnector, getMarketplaceFinancialSummary, syncProductStockToMarketplaces, mapProductToMarketplace, deleteProductChannelListing, listProductMarketplaceMappings, importProductFromMercadoLivre, calculateAndApplyChannelPricing, listMarketplaceSyncLogs, type MarketplaceConnectorDTO, type MarketplacePlatform, type ProductMarketplaceMappingDTO, type MarketplaceSyncLogDTO } from "@/services/marketplace-hub.functions";
+import { listMarketplaceConnectors, saveMarketplaceConnector, disconnectMarketplaceConnector, triggerSyncConnector, getMarketplaceFinancialSummary, syncProductStockToMarketplaces, mapProductToMarketplace, deleteProductChannelListing, listProductMarketplaceMappings, importProductFromMercadoLivre, calculateAndApplyChannelPricing, listMarketplaceSyncLogs, getMarketplaceOAuthUrl, testMarketplaceConnectorCredentialsFn, type MarketplaceConnectorDTO, type MarketplacePlatform, type ProductMarketplaceMappingDTO, type MarketplaceSyncLogDTO } from "@/services/marketplace-hub.functions";
 import { listStoreWebhookEvents, reprocessWebhookEvent } from "@/services/marketplace-webhooks.functions";
 import { formatMoney } from "@/lib/money";
 import { formatDateTime } from "@/lib/datetime";
@@ -1076,9 +1076,40 @@ function MarketplaceHubPage() {
               Configurar {selectedPlatform?.name}
             </DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground">
-              Insira as credenciais oficiais fornecidas no portal do desenvolvedor da plataforma.
+              Insira as credenciais oficiais fornecidas no portal do desenvolvedor da plataforma ou use o Login Rápido OAuth 2.0.
             </DialogDescription>
           </DialogHeader>
+
+          {selectedPlatform && ["mercadolivre", "bling"].includes(selectedPlatform.platform) && (
+            <div className="pt-1 pb-2 border-b border-border/50">
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                onClick={async () => {
+                  try {
+                    const res = await getMarketplaceOAuthUrl({
+                      data: {
+                        platform: selectedPlatform.platform,
+                        clientId: formValues.client_id || undefined,
+                      },
+                    });
+                    if (res?.configured && res.authUrl) {
+                      window.location.href = res.authUrl;
+                      return;
+                    }
+                    toast.info(res?.message || "Preencha o Client ID abaixo para iniciar o OAuth 2.0.");
+                  } catch (err: any) {
+                    toast.error(err?.message || "Falha ao gerar link OAuth 2.0.");
+                  }
+                }}
+                className="w-full h-11 min-h-11 rounded-lg text-xs font-bold gap-2 focus-visible:ring-2"
+              >
+                <ExternalLink className="size-3.5" />
+                <span>Login Rápido OAuth 2.0 ({selectedPlatform.name})</span>
+              </Button>
+            </div>
+          )}
 
           <div className="space-y-4 py-2">
             {/* Apelido da conta */}
@@ -1089,7 +1120,7 @@ function MarketplaceHubPage() {
                 placeholder="Ex: Loja Oficial SP"
                 value={accountNickname}
                 onChange={(e) => setAccountNickname(e.target.value)}
-                className="h-10 text-xs rounded-lg"
+                className="h-11 min-h-11 text-xs rounded-lg"
               />
             </div>
 
@@ -1098,7 +1129,7 @@ function MarketplaceHubPage() {
               <div key={field.key} className="space-y-2">
                 <Label htmlFor={`cred-${field.key}`} className="text-xs font-medium">
                   {field.label}
-                  {field.required && <span className="text-rose-500 ml-1">*</span>}
+                  {field.required && <span className="text-destructive ml-1">*</span>}
                 </Label>
                 <Input
                   id={`cred-${field.key}`}
@@ -1106,7 +1137,7 @@ function MarketplaceHubPage() {
                   placeholder={field.placeholder}
                   value={formValues[field.key] || ""}
                   onChange={(e) => setFormValues((prev) => ({ ...prev, [field.key]: e.target.value }))}
-                  className="h-10 text-xs rounded-lg font-mono"
+                  className="h-11 min-h-11 text-xs rounded-lg font-mono"
                   autoComplete={field.type === "password" ? "new-password" : undefined}
                 />
                 {field.hint && (
@@ -1138,21 +1169,50 @@ function MarketplaceHubPage() {
             </div>
           </div>
 
-          <div className="flex items-center justify-end gap-2 pt-3 border-t border-border/60">
+          <div className="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-border/60">
             <Button
+              type="button"
               variant="outline"
-              className="h-10 rounded-lg text-xs cursor-pointer"
-              onClick={() => setConfigModalOpen(false)}
+              size="sm"
+              onClick={async () => {
+                if (!selectedPlatform) return;
+                try {
+                  const res = await testMarketplaceConnectorCredentialsFn({
+                    data: {
+                      platform: selectedPlatform.platform,
+                      credentialPayload: formValues,
+                    },
+                  });
+                  if (res.success) {
+                    toast.success(res.message);
+                  } else {
+                    toast.error(res.message);
+                  }
+                } catch (err: any) {
+                  toast.error(err?.message || "Erro ao testar credenciais.");
+                }
+              }}
+              className="h-11 min-h-11 rounded-lg text-xs font-semibold gap-1.5 cursor-pointer"
             >
-              Cancelar
+              <RefreshCw className="size-3.5" />
+              <span>Testar API</span>
             </Button>
-            <Button
-              className="h-10 rounded-lg text-xs font-semibold bg-foreground text-background cursor-pointer"
-              onClick={handleSaveConfig}
-              disabled={saveConnectorMutation.isPending}
-            >
-              {saveConnectorMutation.isPending ? "Salvando..." : "Salvar Conexão"}
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                className="h-11 min-h-11 rounded-lg text-xs cursor-pointer"
+                onClick={() => setConfigModalOpen(false)}
+              >
+                Cancelar
+              </Button>
+              <Button
+                className="h-11 min-h-11 rounded-lg text-xs font-semibold bg-foreground text-background cursor-pointer"
+                onClick={handleSaveConfig}
+                disabled={saveConnectorMutation.isPending}
+              >
+                {saveConnectorMutation.isPending ? "Salvando..." : "Salvar Conexão"}
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>

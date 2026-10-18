@@ -1271,6 +1271,40 @@ export const TOURISM_WIX_APP_PAGES: TourismWixAppPageTemplate[] = [
           subtitle: "Cuidamos de passagens, hospedagem, seguro viagem, locação de veículos e vistos.",
         },
       },
+      {
+        type: "interactive_quote_calculator",
+        config: {
+          title: "Simulador de Viagens em Grupo & Pacotes",
+          subtitle: "Calcule uma estimativa preliminar para o seu grupo com comodidades inclusas.",
+          basePriceCents: 120000,
+          unitLabel: "Viajante",
+          unitPluralLabel: "Viajantes",
+          minUnits: 1,
+          maxUnits: 40,
+          defaultUnits: 2,
+          unitPriceCents: 85000,
+          options: [
+            {
+              id: "opt-seguro",
+              label: "Seguro Viagem Internacional Completo",
+              description: "Cobertura médica de até USD 60.000 e extravio de bagagem.",
+              priceCents: 18000,
+              isDefault: true,
+            },
+            {
+              id: "opt-transfer",
+              label: "Transfer Privativo Aeroporto ↔ Hotel",
+              description: "Recepção com motorista credenciado em van executiva.",
+              priceCents: 25000,
+              isDefault: false,
+            },
+          ],
+          whatsappNumber: "5511999998888",
+          submitButtonText: "Solicitar Proposta Completa da Agência",
+          successMessage: "Simulação enviada com sucesso! Um consultor entrará em contato.",
+          disclaimer: "Estimativa baseada em tarifas médias de baixa temporada. Sujeito à disponibilidade no ato da reserva.",
+        },
+      },
     ],
   },
   {
@@ -1295,10 +1329,442 @@ export const TOURISM_WIX_APP_PAGES: TourismWixAppPageTemplate[] = [
   },
 ];
 
+export const COMMERCE_WIX_APP_PAGES: TourismWixAppPageTemplate[] = [
+  {
+    id: "wix_commerce_home",
+    name: "Vitrine Principal do E-Commerce",
+    niche: "commerce",
+    slug: "inicio-loja",
+    title: "Início — Vitrine Oficial da Loja",
+    document_type: "storefront",
+    is_home: true,
+    badge: "App Loja • Home",
+    description: "Página inicial com carrossel dinâmico, produtos em alta, ofertas relâmpago e selos de segurança.",
+    blocks: [
+      {
+        type: "hero_interactive_carousel",
+        config: {
+          autoPlay: true,
+          intervalSeconds: 5,
+          slides: [
+            {
+              id: "sl-1",
+              badgeText: "NOVIDADES DA SEMANA",
+              title: "Coleção exclusiva com pronta entrega para todo o Brasil.",
+              subtitle: "Produtos selecionados com garantia de procedência e frete rápido.",
+              primaryCta: { label: "Ver Produtos", href: "#produtos" },
+              highlightTag: "Destaque",
+              floatingStat: { label: "SATISFAÇÃO", value: "4.9/5 Estrelas", statusDot: true },
+            },
+          ],
+        },
+      },
+      {
+        type: "category_icon_grid",
+        config: {
+          title: "Navegue por Categorias",
+          subtitle: "Encontre exatamente o que você procura em poucos cliques.",
+          columns: 6,
+        },
+      },
+      {
+        type: "curated_hits_rail",
+        config: {
+          title: "Top Mais Vendidos da Semana",
+          subtitle: "Os itens mais pedidos pelos clientes com disponibilidade imediata.",
+        },
+      },
+      {
+        type: "product_grid",
+        config: {
+          title: "Destaques do Estoque",
+          subtitle: "Grade completa de produtos disponíveis para compra com 1 toque.",
+          columns: 4,
+        },
+      },
+      {
+        type: "flash_sale_hero",
+        config: {
+          title: "Descontos Especiais por Tempo Limitado",
+          subtitle: "Aproveite cupons promocionais válidos até o final da semana.",
+          discountPercentage: "25% OFF",
+          couponCode: "PRIMEIRACOMPRA",
+          buttonText: "Comprar com Desconto",
+          targetLink: "#produtos",
+        },
+      },
+      {
+        type: "trust_badges",
+        config: {
+          badges: [
+            { icon: "Truck", title: "Entrega Rastreada", description: "Envio rápido com código de acompanhamento" },
+            { icon: "ShieldCheck", title: "Pagamento 100% Protegido", description: "Pix instantâneo e parcelamento seguro" },
+            { icon: "RotateCcw", title: "Troca Sem Burocracia", description: "7 dias para devolução gratuita" },
+          ],
+        },
+      },
+      {
+        type: "testimonials_social_proof",
+        config: {
+          title: "O Que Nossos Clientes Dizem",
+          subtitle: "Avaliações verificadas de quem comprou e aprovou nossos produtos.",
+          testimonials: [],
+        },
+      },
+    ],
+  },
+  {
+    id: "wix_commerce_catalog",
+    name: "Catálogo Completo & Busca",
+    niche: "commerce",
+    slug: "catalogo-produtos",
+    title: "Catálogo Completo — Todos os Produtos",
+    document_type: "storefront",
+    is_home: false,
+    badge: "App Loja • Catálogo",
+    description: "Página dedicada para navegação aprofundada com categorias, ordenação e vitrines completas.",
+    blocks: [
+      {
+        type: "category_icon_grid",
+        config: {
+          title: "Categorias da Loja",
+          subtitle: "Filtre por departamentos e linhas de produtos.",
+          columns: 6,
+        },
+      },
+      {
+        type: "product_grid",
+        config: {
+          title: "Todos os Produtos",
+          subtitle: "Catálogo completo sincronizado com nosso estoque em tempo real.",
+          columns: 4,
+        },
+      },
+      {
+        type: "product_rail",
+        config: {
+          title: "Outros Lançamentos",
+          subtitle: "Novidades que acabaram de chegar ao centro de distribuição.",
+        },
+      },
+      {
+        type: "info_cards",
+        config: {
+          cards: [
+            { icon: "truck", title: "Frete Inteligente", description: "Cálculo direto no carrinho com transportadoras parceiras." },
+            { icon: "shield", title: "Compra Segura", description: "Ambiente criptografado com validação antifraude." },
+          ],
+        },
+      },
+    ],
+  },
+  {
+    id: "wix_commerce_pdp",
+    name: "Página de Produto (PDP) & Detalhes",
+    niche: "commerce",
+    slug: "detalhes-produto",
+    title: "Detalhe do Produto — Especificações e Compra",
+    document_type: "storefront",
+    is_home: false,
+    badge: "App Loja • Produto",
+    description: "Estrutura padrão de página de produto com composição, tabela de medidas e dúvidas frequentes.",
+    blocks: [
+      {
+        type: "shop_the_look_hotspots",
+        config: {
+          title: "Composição & Detalhes da Peça",
+          subtitle: "Observe a matéria-prima, caimento e acabamentos técnicos.",
+          hotspots: [],
+        },
+      },
+      {
+        type: "size_guide_table",
+        config: {
+          title: "Guia de Medidas & Caimento",
+          subtitle: "Consulte as medidas exatas para escolher o tamanho perfeito.",
+        },
+      },
+      {
+        type: "media_gallery_mosaic",
+        config: {
+          title: "Galeria de Fotos do Produto",
+          subtitle: "Ângulos em alta definição e fotos de clientes.",
+          items: [],
+        },
+      },
+      {
+        type: "faq_clean_accordion",
+        config: {
+          title: "Dúvidas Frequentes sobre Envio e Devoluções",
+          subtitle: "Respostas claras para você comprar com tranquilidade.",
+          items: [
+            {
+              id: "faq-pdp-1",
+              question: "Qual o prazo médio de entrega para a minha cidade?",
+              answer: "O prazo varia de acordo com o CEP informado no checkout. Capitais costumam receber entre 2 a 5 dias úteis, com rastreamento completo.",
+            },
+            {
+              id: "faq-pdp-2",
+              question: "Como funciona caso o tamanho não sirva?",
+              answer: "Você tem até 7 dias corridos após o recebimento para solicitar a primeira troca de forma totalmente gratuita.",
+            },
+          ],
+        },
+      },
+    ],
+  },
+  {
+    id: "wix_commerce_portal",
+    name: "Central do Cliente (Meus Pedidos & Carnês)",
+    niche: "commerce",
+    slug: "minhas-compras",
+    title: "Minha Conta — Pedidos, Entregas e Faturas",
+    document_type: "institutional",
+    is_home: false,
+    badge: "App Loja • Minha Conta",
+    description: "Área logada do consumidor para rastrear compras, emitir segunda via de boletos/Pix e avaliar produtos.",
+    blocks: [
+      {
+        type: "portal_orders_rentals",
+        config: {
+          title: "Meus Pedidos e Compras",
+          subtitle: "Acompanhe o status de preparação, despacho e entrega dos seus pedidos.",
+        },
+      },
+      {
+        type: "portal_carnes_bills",
+        config: {
+          title: "Carnês & Boletos em Aberto",
+          subtitle: "Acesse parcelas e gere códigos Pix para liquidação imediata.",
+        },
+      },
+      {
+        type: "reputation_score_header",
+        config: {
+          company_name: "Loja Oficial",
+          reputation_score: 9.6,
+          reputation_badge: "Excelente",
+          total_complaints: 4,
+          resolved_percentage: 100,
+        },
+      },
+      {
+        type: "reputation_badges_strip",
+        config: {},
+      },
+    ],
+  },
+];
+
+export const SERVICES_WIX_APP_PAGES: TourismWixAppPageTemplate[] = [
+  {
+    id: "wix_services_home",
+    name: "Apresentação & Especialistas",
+    niche: "services",
+    slug: "inicio-servicos",
+    title: "Início — Atendimento & Consultoria Especializada",
+    document_type: "storefront",
+    is_home: true,
+    badge: "App Serviços • Home",
+    description: "Página de apresentação com diferenciais em Bento grid, equipe técnica e depoimentos reais.",
+    blocks: [
+      {
+        type: "hero_minimal_split",
+        config: {
+          badgeText: "ATENDIMENTO DE EXCELÊNCIA",
+          title: "Soluções profissionais sob medida com agendamento simplificado.",
+          subtitle: "Conheça nossos serviços, simule valores e reserve horários com nossa equipe de especialistas.",
+          primaryCta: { label: "Agendar Horário", href: "#agendamento" },
+          secondaryCta: { label: "Calcular Cotação", href: "#simulador" },
+        },
+      },
+      {
+        type: "bento_asymmetric_4",
+        config: {
+          sectionTitle: "Por Que Escolher Nossos Serviços",
+          sectionSubtitle: "Compromisso com pontualidade, rigor técnico e satisfação garantida.",
+          cells: [
+            { id: "s-1", tag: "QUALIFICAÇÃO", title: "Profissionais Certificados", description: "Equipe com titulação e ampla experiência de mercado.", colSpan: 2 },
+            { id: "s-2", tag: "AGILIDADE", title: "Confirmação Imediata", description: "Notificações de lembrete diretamente pelo WhatsApp.", colSpan: 1 },
+            { id: "s-3", tag: "TRANSPARÊNCIA", title: "Valores Claros", description: "Sem taxas ocultas ou surpresas na conclusão do atendimento.", colSpan: 1 },
+            { id: "s-4", tag: "GARANTIA", title: "Suporte Pós-Atendimento", description: "Acompanhamento dedicado para assegurar os melhores resultados.", colSpan: 2 },
+          ],
+        },
+      },
+      {
+        type: "specialist_team_grid",
+        config: {
+          title: "Nossa Equipe de Especialistas",
+          subtitle: "Profissionais dedicados prontos para oferecer a melhor assistência.",
+        },
+      },
+      {
+        type: "trust_badges",
+        config: {
+          badges: [
+            { icon: "ShieldCheck", title: "Profissionais Credenciados", description: "Registros e licenças ativas" },
+            { icon: "Clock", title: "Pontualidade Rigorosa", description: "Horários agendados sem atrasos" },
+            { icon: "RotateCcw", title: "Garantia de Satisfação", description: "Revisão garantida sem custo adicional" },
+          ],
+        },
+      },
+    ],
+  },
+  {
+    id: "wix_services_booking",
+    name: "Agendamento Online & Agenda",
+    niche: "services",
+    slug: "agendamento-online",
+    title: "Agendar Horário — Seleção de Data e Serviço",
+    document_type: "landing_page",
+    is_home: false,
+    badge: "App Serviços • Agenda",
+    description: "Calendário interativo integrado à agenda dos profissionais com confirmação por WhatsApp.",
+    blocks: [
+      {
+        type: "booking_calendar",
+        config: {
+          title: "Escolha o Dia e Horário Desejado",
+          subtitle: "Consulte a disponibilidade em tempo real e garanta sua reserva em minutos.",
+        },
+      },
+      {
+        type: "service_pricing_table",
+        config: {
+          title: "Tabela de Procedimentos & Serviços",
+          subtitle: "Confira a relação completa de atendimentos, duração e valores correspondentes.",
+        },
+      },
+      {
+        type: "routine_steps",
+        config: {
+          title: "Passo a Passo do Atendimento",
+          steps: [
+            { step: "1", title: "Escolha na Agenda", description: "Selecione o profissional e o melhor dia/horário." },
+            { step: "2", title: "Confirmação Imediata", description: "Você receberá uma confirmação com os detalhes no WhatsApp." },
+            { step: "3", title: "Atendimento Realizado", description: "Compareça no local ou conecte-se na sala virtual." },
+          ],
+        },
+      },
+    ],
+  },
+  {
+    id: "wix_services_calculator",
+    name: "Simulador de Cotação Interativa",
+    niche: "services",
+    slug: "simulador-cotacao",
+    title: "Simule sua Cotação — Orçamento em Tempo Real",
+    document_type: "landing_page",
+    is_home: false,
+    badge: "App Serviços • Cotação",
+    description: "Calculadora em tempo real para orçamentos complexos com opcionais e envio para CRM.",
+    blocks: [
+      {
+        type: "interactive_quote_calculator",
+        config: {
+          title: "Calculadora de Proposta & Serviços",
+          subtitle: "Selecione os parâmetros e comodidades para obter uma estimativa de investimento instantânea.",
+          basePriceCents: 25000,
+          unitLabel: "Hora de Consultoria",
+          unitPluralLabel: "Horas de Consultoria",
+          minUnits: 1,
+          maxUnits: 20,
+          defaultUnits: 4,
+          unitPriceCents: 12000,
+          options: [
+            {
+              id: "opt-urgencia",
+              label: "Atendimento Prioritário (Em até 24h)",
+              description: "Início imediato fora do horário comercial.",
+              priceCents: 15000,
+              isDefault: false,
+            },
+            {
+              id: "opt-laudo",
+              label: "Emissão de Laudo Técnico Assinado",
+              description: "Documento oficial assinado com certificação digital.",
+              priceCents: 8000,
+              isDefault: true,
+            },
+          ],
+          whatsappNumber: "5511999998888",
+          submitButtonText: "Solicitar Proposta Formal",
+          successMessage: "Simulação recebida! Enviaremos a proposta detalhada em breve.",
+          disclaimer: "Estimativa inicial não vinculante. Valores finais formalizados em contrato de prestação de serviços.",
+        },
+      },
+      {
+        type: "faq_clean_accordion",
+        config: {
+          title: "Dúvidas Frequentes sobre Orçamentos",
+          subtitle: "Esclarecimentos sobre formas de pagamento, prazos e escopo.",
+          items: [
+            {
+              id: "faq-svc-1",
+              question: "Os valores calculados incluem emissão de Nota Fiscal?",
+              answer: "Sim. Todos os serviços prestados contam com emissão regular de Nota Fiscal de Serviços eletrônica (NFS-e).",
+            },
+            {
+              id: "faq-svc-2",
+              question: "Como funciona a forma de pagamento?",
+              answer: "Aceitamos Pix instantâneo, boleto bancário faturado para empresas e parcelamento no cartão em até 12x.",
+            },
+          ],
+        },
+      },
+      {
+        type: "contact_form_direct",
+        config: {
+          title: "Dúvidas Específicas ou Projetos Customizados",
+          subtitle: "Caso sua necessidade exija escopo personalizado, fale diretamente com nossa diretoria técnica.",
+          submitButtonText: "Enviar Mensagem Direta",
+          whatsappNumber: "5511999998888",
+        },
+      },
+    ],
+  },
+  {
+    id: "wix_services_portal",
+    name: "Central de Atendimento & Contratos",
+    niche: "services",
+    slug: "meus-atendimentos",
+    title: "Minha Área — Agendamentos e Contratos",
+    document_type: "institutional",
+    is_home: false,
+    badge: "App Serviços • Portal",
+    description: "Painel do cliente para consulta de horários marcados, download de contratos e assinatura digital.",
+    blocks: [
+      {
+        type: "portal_appointments",
+        config: {
+          title: "Meus Agendamentos Confirmados",
+          subtitle: "Consulte data, horário e profissional responsável pelo seu atendimento.",
+        },
+      },
+      {
+        type: "portal_contracts",
+        config: {
+          title: "Contratos de Prestação de Serviços",
+          subtitle: "Documentos pendentes de assinatura e termos vigentes com validade jurídica.",
+        },
+      },
+      {
+        type: "office_contract_viewer",
+        config: {
+          title: "Assinador Digital Integrado",
+          documentNumber: "CONTRATO-SERVICOS-2027",
+        },
+      },
+    ],
+  },
+];
+
 export function getTemplateById(id: string): NicheTemplateDefinition | undefined {
   return (
     NICHE_TEMPLATE_MATRIX.find((t) => t.id === id) ||
-    TOURISM_WIX_APP_PAGES.find((t) => t.id === id)
+    TOURISM_WIX_APP_PAGES.find((t) => t.id === id) ||
+    COMMERCE_WIX_APP_PAGES.find((t) => t.id === id) ||
+    SERVICES_WIX_APP_PAGES.find((t) => t.id === id)
   );
 }
 

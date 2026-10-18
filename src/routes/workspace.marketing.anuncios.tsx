@@ -11,14 +11,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { CurrencyField } from "@/components/ui/currency-field";
 import { MediaUploader } from "@/components/ui/media-uploader";
 import { formatMoney } from "@/lib/money";
-import { listAdCampaigns, toggleAdCampaignStatus, deleteAdCampaign, createAdCampaign, getStoreAdTargets, getStoreAdChannelsSettings, saveStoreAdChannelsSettings, generateUtmTrackingLink, getStoreMarketingTierStatus, upgradeStoreToWaesyMax, connectExternalAdAccountOAuth, dispatchExternalMetaOrGoogleCampaign, generateAiAdCreativeFromCatalog, getMarketingRoiClosedLoopMetrics, type AdCampaign, type StoreAdChannelsDTO } from "@/services/ads.functions";
-import { Lock, ShieldCheck, ArrowUpRight, Layers } from "lucide-react";
+import { listAdCampaigns, toggleAdCampaignStatus, deleteAdCampaign, createAdCampaign, getStoreAdTargets, getStoreAdChannelsSettings, saveStoreAdChannelsSettings, generateUtmTrackingLink, getStoreMarketingTierStatus, upgradeStoreToWaesyMax, connectExternalAdAccountOAuth, dispatchExternalMetaOrGoogleCampaign, generateAiAdCreativeFromCatalog, getMarketingRoiClosedLoopMetrics, getExternalAdsOAuthUrl, discoverAccessibleAdAccountsFn, syncExternalAdCampaignMetricsFn, diagnoseAdAccountsHealthMcpFn, type AdCampaign, type StoreAdChannelsDTO } from "@/services/ads.functions";
+import { Lock, ShieldCheck, ArrowUpRight, Layers, RefreshCw, Activity } from "lucide-react";
 import { boostAdCampaignAtomic } from "@/services/deep-core.functions";
 import { WorkspaceCanonicalToolbar, type WorkspaceToolbarTab } from "@/components/workspace/workspace-canonical-toolbar";
 import { WorkspaceDashboardSheet, type MetricCardItem } from "@/components/workspace/workspace-dashboard-sheet";
 import { NicheOperationalGuard } from "@/components/workspace/niche-operational-guard";
 import { CampaignDynamicBlock } from "@/components/marketing/campaign-dynamic-block";
 import { executeMcpTool } from "@/services/mcp-server.functions";
+import { orchestrateCampaignIntent } from "@/services/mcp-orchestrator.functions";
 import type { DynamicRenderableBlock } from "@/types/ad-tech-mcp";
 import { Mic, MicOff, Send, Wand2 } from "lucide-react";
 
@@ -105,11 +106,103 @@ function AnunciosWorkspacePage() {
   );
   const [updatingId, setUpdatingId] = useState<string | null>(null);
 
-  // Estados do Assistente MCP de Anúncios Dinâmicos
+  // Estados do Assistente MCP de Anúncios Dinâmicos & Diagnóstico Oficial Google/Meta Ads
   const [mcpPrompt, setMcpPrompt] = useState("");
   const [isGeneratingMcp, setIsGeneratingMcp] = useState(false);
   const [dynamicBlock, setDynamicBlock] = useState<DynamicRenderableBlock | null>(null);
+  const [mcpDiagnosticsReport, setMcpDiagnosticsReport] = useState<any>(null);
+  const [isSyncingLiveMetrics, setIsSyncingLiveMetrics] = useState(false);
+  const [isDiscoveringAccounts, setIsDiscoveringAccounts] = useState(false);
+  const [discoveredAccounts, setDiscoveredAccounts] = useState<Array<{ id: string; name: string; currency?: string; status?: string }>>([]);
+  const [discoveredPixels, setDiscoveredPixels] = useState<Array<{ id: string; name: string }>>([]);
+  const [isStartingOAuthRedirect, setIsStartingOAuthRedirect] = useState(false);
   const [isListeningVoice, setIsListeningVoice] = useState(false);
+
+  const handleFastOAuthLogin = async (platform: "meta_ads" | "google_ads") => {
+    setIsStartingOAuthRedirect(true);
+    try {
+      const res = await getExternalAdsOAuthUrl({
+        data: {
+          platform,
+          returnTo: "/workspace/marketing/anuncios",
+        },
+      });
+      if (res?.configured && res.authUrl) {
+        window.location.href = res.authUrl;
+        return;
+      }
+      toast.info(res?.message || "Configure o App OAuth no painel ou insira o token manualmente.");
+      setActivationSheetPlatform(platform);
+    } catch (err: any) {
+      toast.error(err?.message || "Não foi possível iniciar o login OAuth.");
+    } finally {
+      setIsStartingOAuthRedirect(false);
+    }
+  };
+
+  const handleDiscoverAccounts = async (platform: "meta_ads" | "google_ads") => {
+    setIsDiscoveringAccounts(true);
+    try {
+      const res = await discoverAccessibleAdAccountsFn({ data: { platform } });
+      setDiscoveredAccounts(res?.accounts || []);
+      setDiscoveredPixels(res?.pixels || []);
+      if ((res?.accounts || []).length > 0) {
+        const firstAcc = res.accounts[0];
+        if (platform === "google_ads" && !googleCustomerId) {
+          setGoogleCustomerId(firstAcc.id);
+        } else if (platform === "meta_ads" && !metaAdAccountId) {
+          setMetaAdAccountId(firstAcc.id);
+        }
+        if (platform === "meta_ads" && (res?.pixels || []).length > 0 && !metaPixelId) {
+          setMetaPixelId(res.pixels[0].id);
+        }
+        toast.success(`${res.accounts.length} conta(s) encontrada(s) via MCP!`);
+      } else {
+        toast.info((res as any)?.message || "Nenhuma conta adicional descoberta.");
+      }
+    } catch (err: any) {
+      toast.error(err?.message || "Falha ao descobrir contas vinculadas.");
+    } finally {
+      setIsDiscoveringAccounts(false);
+    }
+  };
+
+  const handleSyncLiveMetrics = async () => {
+    setIsSyncingLiveMetrics(true);
+    try {
+      const res = await syncExternalAdCampaignMetricsFn({ data: { datePreset: "LAST_30_DAYS" } });
+      const totalSpendSynced = (res.syncedCampaigns || []).reduce(
+        (acc, c) => acc + Number(c.spendCents || 0),
+        0,
+      );
+      toast.success(
+        `Sincronizado via GAQL/Insights: ${res.syncedCount} campanha(s) atualizadas (${formatMoney(totalSpendSynced)} observados).`
+      );
+      await router.invalidate();
+    } catch (err: any) {
+      toast.error(err?.message || "Falha ao sincronizar métricas externas.");
+    } finally {
+      setIsSyncingLiveMetrics(false);
+    }
+  };
+
+  const handleRunMcpDiagnostics = async (customQuestion?: string) => {
+    setIsGeneratingMcp(true);
+    try {
+      const diag = await diagnoseAdAccountsHealthMcpFn({
+        data: {
+          question: customQuestion || undefined,
+          syncLiveFirst: true,
+        },
+      });
+      setMcpDiagnosticsReport(diag);
+      toast.success("Diagnóstico de Saúde de Contas (Google & Meta MCP) concluído!");
+    } catch (err: any) {
+      toast.error(err?.message || "Falha ao executar diagnóstico MCP.");
+    } finally {
+      setIsGeneratingMcp(false);
+    }
+  };
 
   const handleToggleVoice = () => {
     const SpeechRec = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
@@ -147,25 +240,51 @@ function AnunciosWorkspacePage() {
       toast.error("Digite ou fale um comando para a campanha.");
       return;
     }
+    const lower = promptToUse.toLowerCase();
+    const isDiagnosticIntent =
+      lower.includes("diagnostic") ||
+      lower.includes("diagnóstico") ||
+      lower.includes("queda") ||
+      lower.includes("travad") ||
+      lower.includes("reprovad") ||
+      lower.includes("por que") ||
+      lower.includes("porque") ||
+      lower.includes("saúde da conta") ||
+      lower.includes("auditar");
+
+    if (isDiagnosticIntent) {
+      await handleRunMcpDiagnostics(promptToUse);
+      return;
+    }
+
     setIsGeneratingMcp(true);
     try {
-      const targetStoreId = storeTargets?.storeId || campaigns[0]?.store_id || undefined;
-      const res = await executeMcpTool({
+      const block = await orchestrateCampaignIntent({
         data: {
-          tool: "generate_ad_campaign_proposal",
-          arguments: {
-            prompt: promptToUse,
-            storeId: targetStoreId,
-          },
+          prompt: promptToUse,
         },
       });
 
-      if (res.status === "success" && res.content?.[0]?.data?.block) {
-        setDynamicBlock(res.content[0].data.block);
+      if (block && ((block as any).proposal || (block as any).props)) {
+        setDynamicBlock(block);
         toast.success("Proposta de anúncio gerada com IA!");
       } else {
-        const errMsg = res.content?.[0]?.text || "Não foi possível gerar a campanha.";
-        toast.error(errMsg);
+        const targetStoreId = storeTargets?.storeId || campaigns[0]?.store_id || undefined;
+        const res = await executeMcpTool({
+          data: {
+            tool: "generate_ad_campaign_proposal",
+            arguments: {
+              naturalLanguagePrompt: promptToUse,
+              storeId: targetStoreId,
+            },
+          },
+        });
+        if (res.status === "success" && res.content?.[0]?.data?.block) {
+          setDynamicBlock(res.content[0].data.block);
+          toast.success("Proposta de anúncio gerada com IA!");
+        } else {
+          toast.error("Não foi possível gerar a proposta de anúncio.");
+        }
       }
     } catch (err: any) {
       toast.error(err?.message || "Erro ao conectar com assistente MCP.");
@@ -391,13 +510,33 @@ function AnunciosWorkspacePage() {
                 </p>
               )}
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={isSyncingLiveMetrics}
+                onClick={handleSyncLiveMetrics}
+                className="h-11 min-h-11 rounded-lg text-xs font-semibold gap-2 focus-visible:ring-2"
+              >
+                <RefreshCw className={`size-3.5 ${isSyncingLiveMetrics ? "animate-spin" : ""}`} />
+                <span>{isSyncingLiveMetrics ? "Sincronizando GAQL..." : "Sincronizar Gasto Real (MCP)"}</span>
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={isGeneratingMcp}
+                onClick={() => handleRunMcpDiagnostics()}
+                className="h-11 min-h-11 rounded-lg text-xs font-semibold gap-2 focus-visible:ring-2"
+              >
+                <Activity className="size-3.5" />
+                <span>Diagnosticar Contas (MCP)</span>
+              </Button>
               {!tierStatus?.isMaxUnlocked && (
                 <Button
                   size="sm"
                   variant="outline"
                   onClick={() => setMaxUpsellOpen(true)}
-                  className="h-11 rounded-lg text-xs font-semibold gap-2"
+                  className="h-11 min-h-11 rounded-lg text-xs font-semibold gap-2 focus-visible:ring-2"
                 >
                   <Lock className="size-3.5" />
                   Desbloquear Tráfego Externo
@@ -605,37 +744,63 @@ function AnunciosWorkspacePage() {
               <div className="space-y-1 max-w-md">
                 <h3 className="text-base font-bold text-foreground">Meta Ads não conectado</h3>
                 <p className="text-xs text-muted-foreground">
-                  Nenhuma chave OAuth 2.0 ou Conta de Anúncios da Meta encontrada no cofre encriptado da loja.
+                  Conecte em 1 clique via OAuth 2.0 (Facebook & Instagram Ads) para autodescobrir seu Ad Account, Pixel CAPI e sincronizar gastos via Graph API.
                 </p>
               </div>
-              <Button
-                size="sm"
-                onClick={() => setActivationSheetPlatform("meta_ads")}
-                className="h-11 rounded-lg text-xs font-bold px-6"
-              >
-                Ativar Integração
-              </Button>
+              <div className="flex flex-wrap items-center justify-center gap-3">
+                <Button
+                  size="sm"
+                  disabled={isStartingOAuthRedirect}
+                  onClick={() => handleFastOAuthLogin("meta_ads")}
+                  className="h-11 min-h-11 rounded-lg text-xs font-bold px-6 focus-visible:ring-2"
+                >
+                  {isStartingOAuthRedirect ? "Redirecionando..." : "Login Rápido com Facebook (1-Clique)"}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setActivationSheetPlatform("meta_ads")}
+                  className="h-11 min-h-11 rounded-lg text-xs font-semibold px-5 focus-visible:ring-2"
+                >
+                  Configurar Token Manual
+                </Button>
+              </div>
             </div>
           ) : (
             <div className="rounded-lg border border-border/60 bg-card p-6 space-y-6">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/40 pb-5">
                 <div>
                   <div className="flex items-center gap-2">
-                    <h3 className="text-base font-bold text-foreground">Meta Ads</h3>
-                    <Badge variant="default" className="text-xs">Conectado (AES-256-GCM)</Badge>
+                    <h3 className="text-base font-bold text-foreground">Meta Ads & Instagram</h3>
+                    <Badge variant="default" className="text-xs">Conectado (AES-256-GCM + MCP)</Badge>
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Conta Business sincronizada via Graph API v20.0 e Catálogo CSV ativo.
+                    Conta Business ({channelsSettings?.meta_ads?.ad_account_id || "vinculada"}) sincronizada via Graph API v20.0, Insights e Catálogo CSV ativo.
                   </p>
                 </div>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setActivationSheetPlatform("meta_ads")}
-                  className="h-11 rounded-lg text-xs font-semibold"
-                >
-                  Atualizar Credenciais OAuth
-                </Button>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    disabled={isSyncingLiveMetrics}
+                    onClick={handleSyncLiveMetrics}
+                    className="h-11 min-h-11 rounded-lg text-xs font-semibold gap-2 focus-visible:ring-2"
+                  >
+                    <RefreshCw className={`size-3.5 ${isSyncingLiveMetrics ? "animate-spin" : ""}`} />
+                    <span>Sincronizar Insights</span>
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      setActivationSheetPlatform("meta_ads");
+                      handleDiscoverAccounts("meta_ads");
+                    }}
+                    className="h-11 min-h-11 rounded-lg text-xs font-semibold focus-visible:ring-2"
+                  >
+                    Trocar Conta / Pixel (MCP)
+                  </Button>
+                </div>
               </div>
 
               <div className="p-4 rounded-lg bg-muted/30 border border-border/50 space-y-2">
@@ -678,16 +843,27 @@ function AnunciosWorkspacePage() {
               <div className="space-y-1 max-w-md">
                 <h3 className="text-base font-bold text-foreground">Google Ads não conectado</h3>
                 <p className="text-xs text-muted-foreground">
-                  Nenhuma chave OAuth 2.0 ou Customer ID do Google Ads encontrado no cofre encriptado da loja.
+                  Conecte em 1 clique via Google OAuth 2.0 para listar seus Customer IDs (`listAccessibleCustomers`) e sincronizar gastos via GAQL (`googleAds:searchStream`).
                 </p>
               </div>
-              <Button
-                size="sm"
-                onClick={() => setActivationSheetPlatform("google_ads")}
-                className="h-11 rounded-lg text-xs font-bold px-6"
-              >
-                Ativar Integração
-              </Button>
+              <div className="flex flex-wrap items-center justify-center gap-3">
+                <Button
+                  size="sm"
+                  disabled={isStartingOAuthRedirect}
+                  onClick={() => handleFastOAuthLogin("google_ads")}
+                  className="h-11 min-h-11 rounded-lg text-xs font-bold px-6 focus-visible:ring-2"
+                >
+                  {isStartingOAuthRedirect ? "Redirecionando..." : "Login Rápido com Google Ads (1-Clique)"}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setActivationSheetPlatform("google_ads")}
+                  className="h-11 min-h-11 rounded-lg text-xs font-semibold px-5 focus-visible:ring-2"
+                >
+                  Configurar Token Manual
+                </Button>
+              </div>
             </div>
           ) : (
             <div className="rounded-lg border border-border/60 bg-card p-6 space-y-6">
@@ -695,20 +871,35 @@ function AnunciosWorkspacePage() {
                 <div>
                   <div className="flex items-center gap-2">
                     <h3 className="text-base font-bold text-foreground">Google Ads e Merchant Center</h3>
-                    <Badge variant="default" className="text-xs">Conectado (AES-256-GCM)</Badge>
+                    <Badge variant="default" className="text-xs">Conectado (AES-256-GCM + GAQL MCP)</Badge>
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Sincronização ativa com Google Ads API v17 e Merchant Center XML.
+                    Sincronização ativa com Google Ads API v17 ({channelsSettings?.google_ads?.customer_id || "Customer ID ativo"}), GAQL SearchStream e Merchant Center XML.
                   </p>
                 </div>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setActivationSheetPlatform("google_ads")}
-                  className="h-11 rounded-lg text-xs font-semibold"
-                >
-                  Atualizar Credenciais OAuth
-                </Button>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    disabled={isSyncingLiveMetrics}
+                    onClick={handleSyncLiveMetrics}
+                    className="h-11 min-h-11 rounded-lg text-xs font-semibold gap-2 focus-visible:ring-2"
+                  >
+                    <RefreshCw className={`size-3.5 ${isSyncingLiveMetrics ? "animate-spin" : ""}`} />
+                    <span>Sincronizar GAQL</span>
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      setActivationSheetPlatform("google_ads");
+                      handleDiscoverAccounts("google_ads");
+                    }}
+                    className="h-11 min-h-11 rounded-lg text-xs font-semibold focus-visible:ring-2"
+                  >
+                    Trocar Customer ID (MCP)
+                  </Button>
+                </div>
               </div>
 
               <div className="p-4 rounded-lg bg-muted/30 border border-border/50 space-y-2">
@@ -741,18 +932,99 @@ function AnunciosWorkspacePage() {
           )
         )}
 
-        {/* ── SHEET DE ATIVAÇÃO AUTÊNTICA DE API COM COFRE AES-256-GCM (FASE 3) ── */}
+        {/* ── SHEET DE ATIVAÇÃO AUTÊNTICA DE API COM COFRE AES-256-GCM E LOGIN RÁPIDO OAUTH 2.0 (FASE 3) ── */}
         <Sheet open={Boolean(activationSheetPlatform)} onOpenChange={(open) => !open && setActivationSheetPlatform(null)}>
           <SheetContent side="bottom" className="rounded-t-lg max-w-xl mx-auto p-6 space-y-5">
             <SheetHeader className="space-y-1 text-left">
-              <Badge variant="outline" className="w-fit text-xs">Cofre AES-256-GCM</Badge>
+              <Badge variant="outline" className="w-fit text-xs">Cofre AES-256-GCM & OAuth 2.0 MCP</Badge>
               <SheetTitle className="text-lg font-bold">
                 {activationSheetPlatform === "google_ads" ? "Conectar Google Ads" : "Conectar Meta Ads"}
               </SheetTitle>
               <SheetDescription className="text-xs text-muted-foreground">
-                Insira o ID da Conta e o Access Token OAuth 2.0. A chave será encriptada com AES-256-GCM antes de persistir no banco.
+                Conecte em 1 clique via OAuth 2.0 para descobrir automaticamente suas Contas de Anúncios e Pixels, ou informe manualmente o ID e Token.
               </SheetDescription>
             </SheetHeader>
+
+            <div className="flex flex-wrap items-center gap-2 pb-2 border-b border-border/40">
+              <Button
+                type="button"
+                size="sm"
+                variant="secondary"
+                disabled={isStartingOAuthRedirect}
+                onClick={() => activationSheetPlatform && handleFastOAuthLogin(activationSheetPlatform)}
+                className="h-11 min-h-11 rounded-lg text-xs font-bold gap-2 focus-visible:ring-2"
+              >
+                <ExternalLink className="size-3.5" />
+                <span>
+                  {activationSheetPlatform === "google_ads"
+                    ? "Login Rápido Google OAuth 2.0"
+                    : "Login Rápido Facebook / Instagram OAuth 2.0"}
+                </span>
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                disabled={isDiscoveringAccounts}
+                onClick={() => activationSheetPlatform && handleDiscoverAccounts(activationSheetPlatform)}
+                className="h-11 min-h-11 rounded-lg text-xs font-semibold gap-2 focus-visible:ring-2"
+              >
+                <RefreshCw className={`size-3.5 ${isDiscoveringAccounts ? "animate-spin" : ""}`} />
+                <span>{isDiscoveringAccounts ? "Buscando..." : "Autodescobrir Contas (MCP)"}</span>
+              </Button>
+            </div>
+
+            {discoveredAccounts.length > 0 && (
+              <div className="space-y-2 p-3 rounded-lg bg-muted/30 border border-border/50">
+                <Label className="text-xs font-bold text-foreground">
+                  Contas Descobertas via MCP (Clique para selecionar)
+                </Label>
+                <div className="flex flex-wrap gap-2">
+                  {discoveredAccounts.map((acc) => (
+                    <Button
+                      key={acc.id}
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        if (activationSheetPlatform === "google_ads") {
+                          setGoogleCustomerId(acc.id);
+                        } else {
+                          setMetaAdAccountId(acc.id);
+                        }
+                        toast.success(`Conta ${acc.id} selecionada!`);
+                      }}
+                      className="h-9 rounded-lg text-xs font-mono"
+                    >
+                      {acc.name} ({acc.id})
+                    </Button>
+                  ))}
+                </div>
+                {discoveredPixels.length > 0 && activationSheetPlatform === "meta_ads" && (
+                  <div className="pt-2 space-y-1">
+                    <Label className="text-xs font-semibold text-muted-foreground">Pixels CAPI Descobertos</Label>
+                    <div className="flex flex-wrap gap-2">
+                      {discoveredPixels.map((px) => (
+                        <Button
+                          key={px.id}
+                          type="button"
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => {
+                            setMetaPixelId(px.id);
+                            toast.success(`Pixel ${px.id} selecionado!`);
+                          }}
+                          className="h-8 rounded-lg text-xs font-mono border border-border/50"
+                        >
+                          {px.name} ({px.id})
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
             <div className="space-y-3">
               <div className="space-y-2">
                 <Label className="text-xs font-semibold">
@@ -785,12 +1057,14 @@ function AnunciosWorkspacePage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label className="text-xs font-semibold">OAuth 2.0 Access Token / Client Secret</Label>
+                <Label className="text-xs font-semibold">
+                  OAuth 2.0 Access Token {(activationSheetPlatform === "google_ads" ? isGoogleConnected : isMetaConnected) ? "(Opcional se já conectado via OAuth)" : ""}
+                </Label>
                 <Input
                   type="password"
                   value={oauthTokenInput}
                   onChange={(e) => setOauthTokenInput(e.target.value)}
-                  placeholder="Cole o token OAuth 2.0 oficial..."
+                  placeholder="Cole o token OAuth 2.0 oficial (ou deixe em branco para manter o atual)..."
                   className="h-11 rounded-lg bg-background text-xs font-mono"
                 />
               </div>
@@ -806,8 +1080,9 @@ function AnunciosWorkspacePage() {
                   const targetPlatform = activationSheetPlatform || "meta_ads";
                   const accId = targetPlatform === "google_ads" ? googleCustomerId : metaAdAccountId;
                   const pixId = targetPlatform === "google_ads" ? googleConversionId : metaPixelId;
-                  if (!accId.trim() || !oauthTokenInput.trim()) {
-                    toast.error("Informe o ID da Conta e o Token OAuth 2.0.");
+                  const alreadyConnected = targetPlatform === "google_ads" ? isGoogleConnected : isMetaConnected;
+                  if (!accId.trim() || (!oauthTokenInput.trim() && !alreadyConnected)) {
+                    toast.error("Informe o ID da Conta e o Token OAuth 2.0 (ou use o Login Rápido).");
                     return;
                   }
                   setIsSavingChannels(true);
@@ -817,7 +1092,7 @@ function AnunciosWorkspacePage() {
                         platform: targetPlatform,
                         accountId: accId.trim(),
                         accountName: targetPlatform === "google_ads" ? "Google Ads Account" : "Meta Business Account",
-                        oauthAccessToken: oauthTokenInput.trim(),
+                        oauthAccessToken: oauthTokenInput.trim() || undefined,
                         pixelOrConversionId: pixId.trim() || undefined,
                       },
                     });
@@ -966,20 +1241,23 @@ function AnunciosWorkspacePage() {
                 <Wand2 className="size-3.5" />
               </div>
               <span className="text-xs font-bold text-foreground">
-                Criador de Anúncios com IA (Protocolo MCP)
+                Criador e Auditor de Anúncios com IA (Google & Meta MCP)
               </span>
               <Badge variant="outline" className="text-xs h-5 px-2 font-mono text-muted-foreground border-border/60">
-                Linguagem Natural e Voz
+                GAQL + Graph API + Voz
               </Badge>
             </div>
-            {dynamicBlock && (
+            {(dynamicBlock || mcpDiagnosticsReport) && (
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setDynamicBlock(null)}
-                className="h-6 text-xs text-muted-foreground hover:text-foreground px-2"
+                onClick={() => {
+                  setDynamicBlock(null);
+                  setMcpDiagnosticsReport(null);
+                }}
+                className="h-8 text-xs text-muted-foreground hover:text-foreground px-2"
               >
-                Fechar Prévia
+                Fechar Painel MCP
               </Button>
             )}
           </div>
@@ -995,7 +1273,7 @@ function AnunciosWorkspacePage() {
               <Input
                 value={mcpPrompt}
                 onChange={(e) => setMcpPrompt(e.target.value)}
-                placeholder="Ex: Cria anúncio no Instagram de R$ 50/dia para a Oktoberfest..."
+                placeholder="Ex: Cria anúncio no Instagram de R$ 50/dia ou 'Diagnosticar queda de conversão no Google Ads'..."
                 disabled={isGeneratingMcp}
                 className="h-11 rounded-lg text-xs bg-muted/20 border-border/60 pr-10 focus-visible:ring-1"
               />
@@ -1021,26 +1299,27 @@ function AnunciosWorkspacePage() {
               {isGeneratingMcp ? (
                 <>
                   <Loader2 className="size-3.5 animate-spin" />
-                  <span className="hidden sm:inline">Gerando...</span>
+                  <span className="hidden sm:inline">Processando...</span>
                 </>
               ) : (
                 <>
                   <Send className="size-3.5" />
-                  <span className="hidden sm:inline">Gerar Anúncio</span>
+                  <span className="hidden sm:inline">Executar MCP</span>
                 </>
               )}
             </Button>
           </form>
 
           {/* Sugestões Rápidas de Prompt em 1 Toque */}
-          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pt-1">
+          <div className="flex flex-wrap items-center gap-2 pt-1">
             <span className="text-xs font-medium text-muted-foreground shrink-0 mr-1">
-              Sugestões:
+              Sugestões MCP:
             </span>
             {[
+              "Diagnosticar saúde da conta Google e Meta Ads",
               "Especial Oktoberfest de R$ 50/dia",
               "Promoção Relâmpago de R$ 30/dia",
-              "Anúncio no Bairro de R$ 20/dia",
+              "Por que minha campanha caiu de conversão?",
               "Destaque dos Melhores Produtos no Instagram",
             ].map((sug) => (
               <button
@@ -1051,13 +1330,69 @@ function AnunciosWorkspacePage() {
                   handleGenerateMcp(sug);
                 }}
                 disabled={isGeneratingMcp}
-                className="text-xs whitespace-nowrap px-3 py-1 rounded-lg border border-border/60 bg-muted/10 hover:bg-muted/30 text-foreground transition-colors cursor-pointer shrink-0"
+                className="text-xs whitespace-nowrap px-3 py-1 rounded-lg border border-border/60 bg-muted/10 hover:bg-muted/30 text-foreground transition-colors cursor-pointer shrink-0 focus-visible:ring-2"
               >
                 {sug}
               </button>
             ))}
           </div>
         </div>
+
+        {/* ── RELATÓRIO DE DIAGNÓSTICO DE SAÚDE DE CONTAS (SKILL OFICIAL GOOGLE & META ADS MCP) ── */}
+        {mcpDiagnosticsReport && (
+          <div className="rounded-lg border border-border/80 bg-card p-5 space-y-4 shadow-xs">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border/40 pb-3">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <Badge variant="secondary" className="text-xs">Diagnóstico MCP Oficial</Badge>
+                  <span className="text-xs font-mono text-muted-foreground">
+                    Gasto Auditado: {formatMoney(mcpDiagnosticsReport.totalRealSpendCents || 0)} • Receita Atribuída: {formatMoney(mcpDiagnosticsReport.attributedRevenueCents || 0)}
+                  </span>
+                </div>
+                <h3 className="text-sm font-bold text-foreground">
+                  Auditoria de Performance Google Ads (GAQL) & Meta Ads (Graph API)
+                </h3>
+              </div>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => setMcpDiagnosticsReport(null)}
+                className="h-11 min-h-11 text-xs text-muted-foreground focus-visible:ring-2"
+              >
+                Fechar Diagnóstico
+              </Button>
+            </div>
+
+            {mcpDiagnosticsReport.aiExecutiveSummary && (
+              <div className="p-3 rounded-lg bg-primary/5 border border-primary/20 text-xs text-foreground leading-relaxed whitespace-pre-line">
+                {mcpDiagnosticsReport.aiExecutiveSummary}
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {(mcpDiagnosticsReport.findings || []).map((f: any, idx: number) => (
+                <div
+                  key={idx}
+                  className="p-3 rounded-lg border border-border/60 bg-muted/20 space-y-1.5"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs font-bold text-foreground">{f.title}</span>
+                    <Badge
+                      variant={f.severity === "critical" ? "destructive" : f.severity === "warning" ? "secondary" : "outline"}
+                      className="text-xs uppercase"
+                    >
+                      {f.platform} • {f.severity}
+                    </Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground leading-relaxed">{f.diagnosis}</p>
+                  <p className="text-xs font-semibold text-foreground pt-1">
+                    Ação recomendada: {f.recommendedAction}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* ── PRÉVIA REALISTA DO BLOCO DINÂMICO GERADO VIA MCP ── */}
         {dynamicBlock && (
@@ -1081,7 +1416,7 @@ function AnunciosWorkspacePage() {
                 Campanhas Veiculadas ({filteredCampaigns.length})
               </h2>
             </div>
-            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 sm:pb-0">
+            <div className="flex flex-wrap items-center gap-2 pb-1 sm:pb-0">
               <Button asChild variant="outline" size="sm" className="h-8 px-3 text-xs font-medium shrink-0">
                 <Link to="/workspace/marketing/pixels">
                   Pixels CAPI

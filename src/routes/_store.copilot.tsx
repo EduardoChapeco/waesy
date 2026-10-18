@@ -17,7 +17,9 @@ import {
   deleteAiConversationThread,
   toggleAiThreadPinned,
   toggleAiThreadArchived,
+  uploadCopilotMultimodalAttachment,
 } from "@/services/ai-conversations.functions";
+import { uploadComposerAttachments } from "@/lib/copilot-attachments";
 import type { AIChatAction } from "@/components/chat/structured-message-view";
 import { getUserSession } from "@/services/auth.functions";
 import { NativeMobileHeader } from "@/components/navigation/native-mobile-header";
@@ -213,13 +215,17 @@ function CopilotPage() {
 
     try {
       if (effectiveUserId && isUuid(activeThreadId) && activeThreadId !== DEFAULT_GUEST_THREAD_ID) {
+        const uploadedAttachments = await uploadComposerAttachments(
+          attachments,
+          uploadCopilotMultimodalAttachment as any,
+        );
         const result = await sendAiConversationMessage({
           data: {
             threadId: requestThreadId,
             clientMessageId: userMessageItem.id,
             message: text,
             replyToId,
-            attachments,
+            attachments: uploadedAttachments,
             userLat: userCoords.lat,
             userLng: userCoords.lng,
           },

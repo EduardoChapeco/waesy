@@ -38,9 +38,13 @@ export type BookingServiceTab = "packages" | "hotels" | "flights" | "activities"
 
 export interface DynamicBookingHeroProps {
   title?: string;
+  headline?: string;
   subtitle?: string;
+  subheadline?: string;
   badge?: string;
+  badgeText?: string;
   bgImageUrl?: string;
+  imageUrl?: string;
   defaultOrigin?: string;
   defaultDestination?: string;
   whatsappPhone?: string;
@@ -57,10 +61,14 @@ export interface DynamicBookingHeroProps {
 }
 
 export const DynamicBookingHero: React.FC<DynamicBookingHeroProps> = ({
-  title = "Sua Próxima Viagem Começa Aqui",
-  subtitle = "Pacotes completos, passagens aéreas e resorts exclusivos com cotação online imediata.",
-  badge = "Tarifas Exclusivas de Agência",
-  bgImageUrl = "",
+  title: rawTitle,
+  headline,
+  subtitle: rawSubtitle,
+  subheadline,
+  badge: rawBadge,
+  badgeText,
+  bgImageUrl: rawBgImageUrl,
+  imageUrl,
   defaultOrigin = "São Paulo, SP",
   defaultDestination = "Maceió, AL",
   whatsappPhone = "",
@@ -68,6 +76,13 @@ export const DynamicBookingHero: React.FC<DynamicBookingHeroProps> = ({
   storeData,
   onSearch,
 }) => {
+  const title = rawTitle || headline || "Sua Próxima Viagem Começa Aqui";
+  const subtitle =
+    rawSubtitle ||
+    subheadline ||
+    "Pacotes completos, passagens aéreas e resorts exclusivos com cotação online imediata.";
+  const badge = rawBadge || badgeText || "Tarifas Exclusivas de Agência";
+  const bgImageUrl = rawBgImageUrl || imageUrl || "";
   const [activeTab, setActiveTab] = useState<BookingServiceTab>("packages");
   const [origin, setOrigin] = useState(defaultOrigin);
   const [destination, setDestination] = useState(defaultDestination);

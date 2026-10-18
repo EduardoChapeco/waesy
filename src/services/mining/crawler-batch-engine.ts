@@ -66,12 +66,17 @@ export async function reapStalledProcessingQueueItems(supabaseClient?: any): Pro
       updated_at: new Date().toISOString(),
     })
     .eq("status", "processing")
-    .or(`processed_at.lt.${tenMinutesAgo},processed_at.is.null,started_at.lt.${tenMinutesAgo}`)
+    .or(`processed_at.lt.${tenMinutesAgo},started_at.lt.${tenMinutesAgo},processed_at.is.null,started_at.is.null`)
     .select("id");
 
   if (error) {
-    console.warn("[CrawlerReaper] Falha ao recuperar itens travados na fila:", error);
-    return 0;
+    // Fallback defensivo caso processed_at não esteja disponível na view/tabela
+    const { data: fallbackStalled } = await supabase
+      .from("crawl_queue")
+      .update({ status: "pending" })
+      .eq("status", "processing")
+      .select("id");
+    return fallbackStalled?.length || 0;
   }
 
   const count = stalled?.length || 0;
@@ -85,7 +90,7 @@ export async function executeCrawlQueueBatchDirect(
   options?: CrawlBatchOptions
 ): Promise<CrawlBatchResult> {
   const supabase = getServerClient();
-  const batchSize = options?.batchSize || options?.limit || 5;
+  const batchSize = options?.batchSize || options?.limit || 2;
 
   // 0. Auto-reset / Reaper de itens presos em 'processing' há mais de 10 minutos
   await reapStalledProcessingQueueItems(supabase);
@@ -396,13 +401,16 @@ export async function executeCrawlQueueBatchDirect(
           coverUrl = getFallbackThematicImage(editorial?.category || "cidade");
         }
 
+        const defaultStoreId = item.store_id || "5108ce27-2df1-4ce2-89f2-681fea6dba95";
+
         const { data: minedArticle, error: insertErr } = await supabase
           .from("mined_articles")
           .insert({
+            crawl_queue_id: item.id,
             source_url: item.url,
             source_domain: new URL(item.url).hostname,
             source_type: "crawl",
-            store_id: item.store_id || null,
+            store_id: defaultStoreId,
             raw_title: extraction.title,
             ai_structured_title: editorial?.title || extraction.title,
             ai_structured_subtitle: editorial?.subtitle || extraction.lead || "",
@@ -418,6 +426,7 @@ export async function executeCrawlQueueBatchDirect(
             has_cover_image: Boolean(coverUrl),
             is_duplicate: false,
             status: "pending_review",
+            curation_status: "pending",
             extracted_markdown: extraction.bodyMarkdown,
             ai_structured_sections: editorial?.mobile_sections || [],
             metadata: {
@@ -465,7 +474,6 @@ export async function executeCrawlQueueBatchDirect(
                   .filter((p) => p.trim().length > 20)
                   .map((p) => ({ type: "paragraph", content: p.trim() }));
 
-            const defaultStoreId = item.store_id || null;
             const tags = Array.from(new Set([
               editorial?.category || "cidade",
               city.toLowerCase(),
@@ -505,6 +513,10 @@ export async function executeCrawlQueueBatchDirect(
               .select("id")
               .maybeSingle();
 
+            if (pubErr) {
+              console.error("[CrawlerBatchEngine] Falha ao publicar em news_articles:", pubErr.message);
+            }
+
             if (!pubErr && pubArticle) {
               publishedArticleId = pubArticle.id;
               if (minedArticle?.id) {
@@ -517,6 +529,17 @@ export async function executeCrawlQueueBatchDirect(
                   })
                   .eq("id", minedArticle.id);
               }
+
+              // Se a matéria descreve um evento cultural, feira, show ou congresso, promove também para public.events
+              if (/(show|festival|feira|exposi[çc][ãa]o|congresso|oktoberfest|agenda cultural|espet[áa]culo|campeonato)/i.test(cleanTitle)) {
+                await harvestAndPersistEvent({
+                  url: item.url,
+                  city,
+                  state,
+                  storeId: defaultStoreId || undefined,
+                  sourceName: new URL(item.url).hostname,
+                }).catch(() => null);
+              }
             }
           }
         }
@@ -527,6 +550,7 @@ export async function executeCrawlQueueBatchDirect(
             status: "completed",
             last_error: null,
             processing_error: null,
+            mined_article_id: minedArticle?.id || null,
             completed_at: new Date().toISOString(),
           })
           .eq("id", item.id);

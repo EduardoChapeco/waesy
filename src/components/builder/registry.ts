@@ -13,6 +13,7 @@ import { MediaGalleryMosaic } from "./blocks/MediaGalleryMosaic";
 import { TestimonialsSocialProof } from "./blocks/TestimonialsSocialProof";
 import { ContactFormDirect } from "./blocks/ContactFormDirect";
 import { FaqCleanAccordion } from "./blocks/FaqCleanAccordion";
+import { InteractiveQuoteCalculator } from "./blocks/InteractiveQuoteCalculator";
 
 import { createClassicOmniBlock } from "./ClassicBlockAdapter";
 
@@ -104,6 +105,7 @@ import type {
   TestimonialsBlockData,
   ContactFormBlockData,
   FaqBlockData,
+  InteractiveCalculatorBlockData,
 } from "./types";
 
 export const SITE_BUILDER_BLOCKS: SiteBuilderBlockDefinition[] = [
@@ -732,6 +734,45 @@ export const SITE_BUILDER_BLOCKS: SiteBuilderBlockDefinition[] = [
         },
       ],
     } as PricingBlockData,
+  },
+
+  {
+    id: "interactive_quote_calculator",
+    name: "Calculadora de Cotação Interativa",
+    category: "pricing",
+    description: "Simulador de valores em tempo real com controle de quantidades, opcionais e envio para WhatsApp/CRM.",
+    component: InteractiveQuoteCalculator as any,
+    defaultProps: {
+      title: "Simule e Solicite sua Cotação",
+      subtitle: "Ajuste os parâmetros abaixo para calcular uma estimativa instantânea.",
+      basePriceCents: 15000,
+      unitLabel: "Pessoa",
+      unitPluralLabel: "Pessoas",
+      minUnits: 1,
+      maxUnits: 30,
+      defaultUnits: 4,
+      unitPriceCents: 4500,
+      options: [
+        {
+          id: "opt-1",
+          label: "Assessoria VIP Dedicada",
+          description: "Atendimento prioritário com especialista exclusivo.",
+          priceCents: 12000,
+          isDefault: true,
+        },
+        {
+          id: "opt-2",
+          label: "Seguro Garantia Estendido",
+          description: "Cobertura completa contra imprevistos ou cancelamento.",
+          priceCents: 8500,
+          isDefault: false,
+        },
+      ],
+      whatsappNumber: "5511999998888",
+      submitButtonText: "Solicitar Proposta Oficial",
+      successMessage: "Cotação registrada com sucesso! Entraremos em contato.",
+      disclaimer: "Estimativa inicial em tempo real. Valores finais sujeitos à confirmação de disponibilidade.",
+    } as InteractiveCalculatorBlockData,
   },
 
   // ── 10. DEPOIMENTOS & AVALIAÇÕES ──
@@ -1373,6 +1414,7 @@ export const BLOCK_TO_WIX_CATEGORY: Record<string, WixBlockCategory> = {
   portal_orders_rentals: "services",
   portal_carnes_bills: "services",
   office_contract_viewer: "services",
+  interactive_quote_calculator: "services",
 
   // Turismo
   tourism_quote_hero: "tourism",

@@ -10,6 +10,12 @@ import { executeSimLabBatchSimulation } from "@/services/simlab.functions";
 import { executeOrchestrateMarketingPost } from "@/services/squad-content.functions";
 import { executeUnifiedAiCall } from "@/services/api-orchestrator.functions";
 import { captureAndAnalyzeCompetitorLogic } from "@/services/market-radar.functions";
+import {
+  executeDiscoverAccessibleAdAccounts,
+  executeSyncExternalAdCampaignMetrics,
+  executeDiagnoseAdAccountsHealthMcp,
+  executeIngestAdConversionEventMcp,
+} from "@/services/ads.functions";
 
 export type McpToolAccessTier = "public" | "store_staff" | "admin_only";
 
@@ -1396,6 +1402,141 @@ export const MCP_TOOL_REGISTRY: Record<string, McpToolRegistryEntry> = {
         sourceEvidence: snapshot.source_evidence,
         provenance: { provider: snapshot.ai_provider, model: snapshot.ai_model, capturedAt: snapshot.captured_at },
       };
+    },
+  },
+
+  ads_mcp_list_accessible_accounts: {
+    name: "ads_mcp_list_accessible_accounts",
+    module: "marketing",
+    description: "Lista todas as contas acessíveis de Google Ads (customers:listAccessibleCustomers) ou Meta Ads (me/adaccounts) e Pixels da loja via OAuth 2.0.",
+    tier: "store_staff",
+    requiredScope: "store:marketing:read",
+    permission: { action: "read", resource: "reports" },
+    idempotent: true,
+    rateLimitBucket: "webmcp_tool_call_staff",
+    inputZodSchema: z.object({
+      storeId: z.string().uuid(),
+      platform: z.enum(["meta_ads", "google_ads"]),
+    }),
+    inputSchema: {
+      type: "object",
+      properties: {
+        storeId: { type: "string", description: "UUID da loja autorizada" },
+        platform: { type: "string", enum: ["meta_ads", "google_ads"], description: "Plataforma de anúncios a inspecionar" },
+      },
+      required: ["storeId", "platform"],
+    },
+    handler: async (ctx, args) => {
+      return executeDiscoverAccessibleAdAccounts(ctx.supabase, ctx.storeId || args.storeId, args.platform);
+    },
+  },
+
+  ads_mcp_sync_insights_and_gaql: {
+    name: "ads_mcp_sync_insights_and_gaql",
+    module: "marketing",
+    description: "Executa consultas GAQL no Google Ads (googleAds:searchStream) e Meta Graph Insights para sincronizar gasto real, cliques, impressões e conversões.",
+    tier: "store_staff",
+    requiredScope: "store:marketing:read",
+    permission: { action: "read", resource: "reports" },
+    idempotent: true,
+    rateLimitBucket: "webmcp_tool_call_staff",
+    inputZodSchema: z.object({
+      storeId: z.string().uuid(),
+      platform: z.enum(["meta_ads", "google_ads", "all"]).default("all"),
+      datePreset: z.enum(["LAST_7_DAYS", "LAST_30_DAYS", "THIS_MONTH"]).default("LAST_30_DAYS"),
+    }),
+    inputSchema: {
+      type: "object",
+      properties: {
+        storeId: { type: "string", description: "UUID da loja autorizada" },
+        platform: { type: "string", enum: ["meta_ads", "google_ads", "all"], description: "Canal a sincronizar" },
+        datePreset: { type: "string", enum: ["LAST_7_DAYS", "LAST_30_DAYS", "THIS_MONTH"], description: "Janela temporal da consulta" },
+      },
+      required: ["storeId"],
+    },
+    handler: async (ctx, args) => {
+      return executeSyncExternalAdCampaignMetrics(
+        ctx.supabase,
+        ctx.storeId || args.storeId,
+        args.platform || "all",
+        args.datePreset || "LAST_30_DAYS"
+      );
+    },
+  },
+
+  ads_mcp_diagnose_account_health: {
+    name: "ads_mcp_diagnose_account_health",
+    module: "marketing",
+    description: "Executa a Skill de Diagnóstico Autônomo de Contas Google Ads e Meta Ads: detecta queda de conversão, verba travada, fadiga criativa e perda de impressão.",
+    tier: "store_staff",
+    requiredScope: "store:marketing:read",
+    permission: { action: "read", resource: "reports" },
+    idempotent: true,
+    rateLimitBucket: "webmcp_tool_call_staff",
+    inputZodSchema: z.object({
+      storeId: z.string().uuid(),
+      question: z.string().optional(),
+      syncLiveFirst: z.boolean().default(true),
+    }),
+    inputSchema: {
+      type: "object",
+      properties: {
+        storeId: { type: "string", description: "UUID da loja autorizada" },
+        question: { type: "string", description: "Pergunta específica do gestor em português (opcional)" },
+        syncLiveFirst: { type: "boolean", description: "Se verdadeiro, sincroniza GAQL/Insights antes de diagnosticar" },
+      },
+      required: ["storeId"],
+    },
+    handler: async (ctx, args) => {
+      return executeDiagnoseAdAccountsHealthMcp(
+        ctx.supabase,
+        ctx.storeId || args.storeId,
+        args.question,
+        args.syncLiveFirst ?? true
+      );
+    },
+  },
+
+  ads_mcp_ingest_conversion_event: {
+    name: "ads_mcp_ingest_conversion_event",
+    module: "marketing",
+    description: "Envia eventos de conversão server-side com hash SHA-256 para Google Ads Data Manager API e Meta Conversions API (CAPI).",
+    tier: "store_staff",
+    requiredScope: "store:marketing:write",
+    permission: { action: "create", resource: "reports" },
+    idempotent: false,
+    rateLimitBucket: "webmcp_tool_call_staff",
+    inputZodSchema: z.object({
+      storeId: z.string().uuid(),
+      eventName: z.enum(["Purchase", "Lead", "InitiateCheckout"]).default("Purchase"),
+      orderId: z.string().optional(),
+      valueCents: z.number().int().nonnegative(),
+      currency: z.string().default("BRL"),
+      customerEmail: z.string().email().optional(),
+      customerPhone: z.string().optional(),
+    }),
+    inputSchema: {
+      type: "object",
+      properties: {
+        storeId: { type: "string", description: "UUID da loja autorizada" },
+        eventName: { type: "string", enum: ["Purchase", "Lead", "InitiateCheckout"], description: "Nome do evento de conversão" },
+        orderId: { type: "string", description: "ID do pedido ou transação para desduplicação" },
+        valueCents: { type: "integer", description: "Valor da conversão em centavos" },
+        currency: { type: "string", description: "Moeda ISO (ex: BRL)" },
+        customerEmail: { type: "string", description: "E-mail do comprador para hash SHA-256" },
+        customerPhone: { type: "string", description: "Telefone do comprador para hash SHA-256" },
+      },
+      required: ["storeId", "valueCents"],
+    },
+    handler: async (ctx, args) => {
+      return executeIngestAdConversionEventMcp(ctx.supabase, ctx.storeId || args.storeId, {
+        eventName: args.eventName || "Purchase",
+        orderId: args.orderId,
+        valueCents: args.valueCents,
+        currency: args.currency || "BRL",
+        customerEmail: args.customerEmail,
+        customerPhone: args.customerPhone,
+      });
     },
   },
 

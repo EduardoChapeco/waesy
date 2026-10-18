@@ -1976,7 +1976,7 @@ const SchedulePreBoardingMeetingSchema = z.object({
 });
 
 export const schedulePreBoardingMeetingFn = createServerFn({ method: "POST" })
-  .inputValidator(SchedulePreBoardingMeetingSchema)
+  .validator(SchedulePreBoardingMeetingSchema)
   .handler(async ({ data }) => {
     const {
       presentationId,
@@ -2027,7 +2027,7 @@ const RespondPreBoardingMeetingSchema = z.object({
 });
 
 export const respondToPreBoardingMeetingInviteFn = createServerFn({ method: "POST" })
-  .inputValidator(RespondPreBoardingMeetingSchema)
+  .validator(RespondPreBoardingMeetingSchema)
   .handler(async ({ data }) => {
     const { tripId, acceptedSlotIso, modality, clientNotes } = data;
     try {
@@ -2061,7 +2061,7 @@ const ImportUniversalCrmBatchSchema = z.object({
 });
 
 export const importUniversalCrmSpreadsheetBatchFn = createServerFn({ method: "POST" })
-  .inputValidator(ImportUniversalCrmBatchSchema)
+  .validator(ImportUniversalCrmBatchSchema)
   .handler(async ({ data }) => {
     const { rawText, sourceType } = data;
     const parsed = parseAndMapUniversalCrmSpreadsheet(rawText);

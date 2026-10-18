@@ -2278,7 +2278,7 @@ export const getPublicExperienceDocumentBySlug = createServerFn({ method: "GET" 
 
       let { data: doc, error: docError } = await docQuery.maybeSingle();
 
-      // Fallback: se não encontrou com o document_type exato, busca qualquer documento ativo com esse slug
+      // Fallback 1: se não encontrou com o document_type exato na mesma loja, busca qualquer documento ativo com esse slug na loja
       if (!doc && input.document_type) {
         const { data: fallbackDoc } = await db
           .from("experience_documents")
@@ -2290,6 +2290,23 @@ export const getPublicExperienceDocumentBySlug = createServerFn({ method: "GET" 
 
         if (fallbackDoc) {
           doc = fallbackDoc;
+          docError = null;
+        }
+      }
+
+      // Fallback 2: se acessado via rota pública /paginas/$slug sem subdomínio específico da agência/loja, localiza pelo slug ativo
+      if (!doc && input.slug !== "home") {
+        const { data: globalSlugDoc } = await db
+          .from("experience_documents")
+          .select("*")
+          .eq("slug", input.slug)
+          .eq("is_active", true)
+          .order("updated_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (globalSlugDoc) {
+          doc = globalSlugDoc;
           docError = null;
         }
       }
@@ -2374,10 +2391,47 @@ export const getPublicExperienceDocumentBySlug = createServerFn({ method: "GET" 
         setSellerRefCookie(doc.owner_id);
       }
 
-      // Suporte a Documento Moderno Omni-Builder
+      const effectiveDocStoreId = doc.store_id || storeId;
+
+      // Suporte a Documento Moderno Omni-Builder com hidratação da loja proprietária
       const omniDoc = (doc.settings as any)?.omni_page;
       if (omniDoc?.blocks && Array.isArray(omniDoc.blocks) && omniDoc.blocks.length > 0) {
-        return { status: "ok" as const, data: { document: doc as ExperienceDocument, tree: [] } };
+        const [storeRes, productsRes, categoriesRes] = await Promise.all([
+          effectiveDocStoreId
+            ? db
+                .from("stores")
+                .select("id, name, slug, logo_url, cover_url, phone, description, city, state, settings")
+                .eq("id", effectiveDocStoreId)
+                .maybeSingle()
+            : Promise.resolve({ data: null }),
+          effectiveDocStoreId
+            ? db
+                .from("products")
+                .select("*")
+                .eq("store_id", effectiveDocStoreId)
+                .eq("status", "active")
+                .order("created_at", { ascending: false })
+                .limit(48)
+            : Promise.resolve({ data: [] }),
+          effectiveDocStoreId
+            ? db
+                .from("categories")
+                .select("id, name, slug")
+                .eq("store_id", effectiveDocStoreId)
+                .order("name", { ascending: true })
+            : Promise.resolve({ data: [] }),
+        ]);
+
+        return {
+          status: "ok" as const,
+          data: {
+            document: doc as ExperienceDocument,
+            tree: [],
+            storeData: storeRes.data || null,
+            products: productsRes.data || [],
+            categories: categoriesRes.data || [],
+          },
+        };
       }
 
       // 2. Get the latest PUBLISHED version
@@ -3298,4 +3352,431 @@ export const provisionTourismWixAppSuiteFn = createServerFn({ method: "POST" }).
     };
   },
 );
+
+export const provisionCommerceWixAppSuiteFn = createServerFn({ method: "POST" }).handler(
+  async () => {
+    await requireAdmin();
+    const { getServerIdentity } = await import("@/lib/server-access");
+    const identity = await getServerIdentity();
+    if (!identity.store_id) throw new Error("Loja não identificada para instalar a suíte de e-commerce.");
+
+    const db = getServerClient();
+    const { createEmptyOmniPage } = await import("@/types/omni-builder");
+    const { COMMERCE_WIX_APP_PAGES, applyTemplateToPage } = await import("@/lib/builder/omni-templates");
+
+    const suiteDefinitions = [
+      {
+        templateId: "wix_commerce_home",
+        title: "Vitrine Oficial & Início",
+        slug: "inicio-loja",
+        documentType: "storefront",
+      },
+      {
+        templateId: "wix_commerce_catalog",
+        title: "Catálogo Completo de Produtos",
+        slug: "catalogo-produtos",
+        documentType: "campaign",
+      },
+      {
+        templateId: "wix_commerce_pdp",
+        title: "Página de Produto (PDP) & Detalhes",
+        slug: "detalhes-produto",
+        documentType: "campaign",
+      },
+      {
+        templateId: "wix_commerce_portal",
+        title: "Minha Conta — Pedidos e Entregas",
+        slug: "minhas-compras",
+        documentType: "campaign",
+      },
+    ] as const;
+
+    const provisionedPages: Array<{ id: string; slug: string; title: string; created: boolean }> = [];
+
+    for (const def of suiteDefinitions) {
+      const tplExists = COMMERCE_WIX_APP_PAGES.some((t) => t.id === def.templateId);
+      if (!tplExists) continue;
+
+      let omniDoc = createEmptyOmniPage(def.slug, def.title, "commerce" as any);
+      omniDoc = applyTemplateToPage(omniDoc, def.templateId);
+      omniDoc.published_at = new Date().toISOString();
+
+      const { data: existing } = await db
+        .from("experience_documents")
+        .select("id, settings")
+        .eq("store_id", identity.store_id)
+        .eq("slug", def.slug)
+        .maybeSingle();
+
+      if (existing?.id) {
+        omniDoc.id = existing.id;
+        const mergedSettings = {
+          ...((existing.settings as Record<string, unknown>) || {}),
+          template_id: def.templateId,
+          omni_page_draft: omniDoc,
+          omni_page: omniDoc,
+          wix_app_suite: "commerce_suite_v1",
+        };
+        await db
+          .from("experience_documents")
+          .update({
+            title: def.title,
+            is_active: true,
+            settings: mergedSettings,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", existing.id);
+
+        provisionedPages.push({
+          id: existing.id,
+          slug: def.slug,
+          title: def.title,
+          created: false,
+        });
+      } else {
+        const { data: createdDoc, error: createErr } = await db
+          .from("experience_documents")
+          .insert({
+            store_id: identity.store_id,
+            title: def.title,
+            slug: def.slug,
+            document_type: def.documentType,
+            is_active: true,
+            settings: {
+              template_id: def.templateId,
+              omni_page_draft: omniDoc,
+              omni_page: omniDoc,
+              wix_app_suite: "commerce_suite_v1",
+            },
+          })
+          .select("id")
+          .single();
+
+        if (createErr || !createdDoc) continue;
+
+        omniDoc.id = createdDoc.id;
+
+        const { data: ver } = await db
+          .from("experience_versions")
+          .insert({
+            document_id: createdDoc.id,
+            version_number: 1,
+            status: "published",
+            document_snapshot: omniDoc,
+            published_at: new Date().toISOString(),
+          })
+          .select("id")
+          .single();
+
+        if (ver?.id) {
+          await db
+            .from("experience_documents")
+            .update({ published_version_id: ver.id })
+            .eq("id", createdDoc.id);
+        }
+
+        provisionedPages.push({
+          id: createdDoc.id,
+          slug: def.slug,
+          title: def.title,
+          created: true,
+        });
+      }
+    }
+
+    return {
+      status: "ok" as const,
+      pagesCount: provisionedPages.length,
+      pages: provisionedPages,
+    };
+  },
+);
+
+export const provisionServicesWixAppSuiteFn = createServerFn({ method: "POST" }).handler(
+  async () => {
+    await requireAdmin();
+    const { getServerIdentity } = await import("@/lib/server-access");
+    const identity = await getServerIdentity();
+    if (!identity.store_id) throw new Error("Loja não identificada para instalar a suíte de serviços.");
+
+    const db = getServerClient();
+    const { createEmptyOmniPage } = await import("@/types/omni-builder");
+    const { SERVICES_WIX_APP_PAGES, applyTemplateToPage } = await import("@/lib/builder/omni-templates");
+
+    const suiteDefinitions = [
+      {
+        templateId: "wix_services_home",
+        title: "Apresentação & Especialistas",
+        slug: "inicio-servicos",
+        documentType: "storefront",
+      },
+      {
+        templateId: "wix_services_booking",
+        title: "Agendamento Online de Horários",
+        slug: "agendamento-online",
+        documentType: "campaign",
+      },
+      {
+        templateId: "wix_services_calculator",
+        title: "Simulador de Cotação Interativa",
+        slug: "simulador-cotacao",
+        documentType: "campaign",
+      },
+      {
+        templateId: "wix_services_portal",
+        title: "Minha Área — Atendimentos e Contratos",
+        slug: "meus-atendimentos",
+        documentType: "campaign",
+      },
+    ] as const;
+
+    const provisionedPages: Array<{ id: string; slug: string; title: string; created: boolean }> = [];
+
+    for (const def of suiteDefinitions) {
+      const tplExists = SERVICES_WIX_APP_PAGES.some((t) => t.id === def.templateId);
+      if (!tplExists) continue;
+
+      let omniDoc = createEmptyOmniPage(def.slug, def.title, "services" as any);
+      omniDoc = applyTemplateToPage(omniDoc, def.templateId);
+      omniDoc.published_at = new Date().toISOString();
+
+      const { data: existing } = await db
+        .from("experience_documents")
+        .select("id, settings")
+        .eq("store_id", identity.store_id)
+        .eq("slug", def.slug)
+        .maybeSingle();
+
+      if (existing?.id) {
+        omniDoc.id = existing.id;
+        const mergedSettings = {
+          ...((existing.settings as Record<string, unknown>) || {}),
+          template_id: def.templateId,
+          omni_page_draft: omniDoc,
+          omni_page: omniDoc,
+          wix_app_suite: "services_suite_v1",
+        };
+        await db
+          .from("experience_documents")
+          .update({
+            title: def.title,
+            is_active: true,
+            settings: mergedSettings,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", existing.id);
+
+        provisionedPages.push({
+          id: existing.id,
+          slug: def.slug,
+          title: def.title,
+          created: false,
+        });
+      } else {
+        const { data: createdDoc, error: createErr } = await db
+          .from("experience_documents")
+          .insert({
+            store_id: identity.store_id,
+            title: def.title,
+            slug: def.slug,
+            document_type: def.documentType,
+            is_active: true,
+            settings: {
+              template_id: def.templateId,
+              omni_page_draft: omniDoc,
+              omni_page: omniDoc,
+              wix_app_suite: "services_suite_v1",
+            },
+          })
+          .select("id")
+          .single();
+
+        if (createErr || !createdDoc) continue;
+
+        omniDoc.id = createdDoc.id;
+
+        const { data: ver } = await db
+          .from("experience_versions")
+          .insert({
+            document_id: createdDoc.id,
+            version_number: 1,
+            status: "published",
+            document_snapshot: omniDoc,
+            published_at: new Date().toISOString(),
+          })
+          .select("id")
+          .single();
+
+        if (ver?.id) {
+          await db
+            .from("experience_documents")
+            .update({ published_version_id: ver.id })
+            .eq("id", createdDoc.id);
+        }
+
+        provisionedPages.push({
+          id: createdDoc.id,
+          slug: def.slug,
+          title: def.title,
+          created: true,
+        });
+      }
+    }
+
+    return {
+      status: "ok" as const,
+      pagesCount: provisionedPages.length,
+      pages: provisionedPages,
+    };
+  },
+);
+
+const SubmitOmniPageLeadSchema = z.object({
+  storeId: z.string().uuid().optional().nullable(),
+  storeSlug: z.string().optional().nullable(),
+  pageSlug: z.string().optional().nullable(),
+  blockId: z.string().optional().nullable(),
+  blockType: z.string().default("contact_form"),
+  name: z.string().min(2, "Informe seu nome"),
+  phone: z.string().optional().nullable(),
+  email: z.string().email().optional().nullable().or(z.literal("")),
+  message: z.string().max(4000).optional().nullable(),
+  destination: z.string().optional().nullable(),
+  metadata: z.record(z.any()).optional().default({}),
+});
+
+export const submitOmniPageLeadFn = createServerFn({ method: "POST" })
+  .validator(SubmitOmniPageLeadSchema)
+  .handler(
+    async ({
+      data,
+    }): Promise<{
+      success: boolean;
+      leadId: string | null;
+      quoteRequestId: string | null;
+    }> => {
+      const db = getServerClient();
+      let resolvedStoreId = data.storeId || null;
+
+      if (!resolvedStoreId && data.storeSlug) {
+        const { data: storeRow } = await db
+          .from("stores")
+          .select("id")
+          .eq("slug", data.storeSlug)
+          .maybeSingle();
+        if (storeRow?.id) resolvedStoreId = storeRow.id;
+      }
+
+      if (!resolvedStoreId && data.pageSlug) {
+        const { data: docRow } = await db
+          .from("experience_documents")
+          .select("store_id")
+          .eq("slug", data.pageSlug)
+          .maybeSingle();
+        if (docRow?.store_id) resolvedStoreId = docRow.store_id;
+      }
+
+      const now = new Date().toISOString();
+      let leadId: string | null = null;
+      let quoteRequestId: string | null = null;
+
+      if (resolvedStoreId) {
+        // 1. Gravar no CRM canônico da loja (leads_crm / crm_leads)
+        try {
+          const { data: createdLead } = await db
+            .from("leads_crm")
+            .insert({
+              store_id: resolvedStoreId,
+              name: data.name.trim(),
+              phone: data.phone?.trim() || null,
+              email: data.email?.trim() || null,
+              source: `omni_builder:${data.blockType}`,
+              status: "new",
+              notes: data.message?.trim() || null,
+              metadata: {
+                page_slug: data.pageSlug || null,
+                block_id: data.blockId || null,
+                block_type: data.blockType,
+                ...(data.metadata || {}),
+              },
+              created_at: now,
+              updated_at: now,
+            })
+            .select("id")
+            .maybeSingle();
+
+          if (createdLead?.id) {
+            leadId = createdLead.id;
+          }
+        } catch {
+          // Fallback para tabela crm_leads caso o alias seja utilizado no ambiente
+        }
+
+        if (!leadId) {
+          try {
+            const { data: fallbackLead } = await db
+              .from("crm_leads")
+              .insert({
+                store_id: resolvedStoreId,
+                name: data.name.trim(),
+                phone: data.phone?.trim() || null,
+                email: data.email?.trim() || null,
+                source: `omni_builder:${data.blockType}`,
+                status: "new",
+                notes: data.message?.trim() || null,
+                created_at: now,
+              })
+              .select("id")
+              .maybeSingle();
+
+            if (fallbackLead?.id) {
+              leadId = fallbackLead.id;
+            }
+          } catch {
+            // Segue para cotação caso aplicável
+          }
+        }
+
+        // 2. Se for formulário de cotação ou contiver destino turístico, gravar no Kanban de Cotações (travel_quote_requests)
+        const isQuoteBlock =
+          data.blockType.includes("quote") ||
+          data.blockType.includes("tourism") ||
+          Boolean(data.destination?.trim());
+
+        if (isQuoteBlock) {
+          try {
+            const { data: createdQuote } = await db
+              .from("travel_quote_requests")
+              .insert({
+                store_id: resolvedStoreId,
+                client_name: data.name.trim(),
+                client_phone: data.phone?.trim() || "",
+                client_email: data.email?.trim() || null,
+                destination: data.destination?.trim() || "Cotação via Vitrine Builder",
+                status: "new",
+                notes: data.message?.trim() || null,
+                source: "omni_builder_vitrine",
+                created_at: now,
+                updated_at: now,
+              })
+              .select("id")
+              .maybeSingle();
+
+            if (createdQuote?.id) {
+              quoteRequestId = createdQuote.id;
+            }
+          } catch {
+            // Resiliente se a loja não operar módulo de turismo
+          }
+        }
+      }
+
+      return {
+        success: true,
+        leadId,
+        quoteRequestId,
+      };
+    },
+  );
+
 

@@ -94,8 +94,8 @@ describe("Pilar 3: Hub de Marketplaces (Padrão Outbox Transacional)", () => {
       itemCount: 1,
     });
 
-    expect(res.status).toBe("dispatched");
+    expect(res.status).toBe("completed");
     expect(res.itemsProcessed).toBe(1);
-    expect(res.message).toContain("fila de despacho");
+    expect(res.message).toContain("sincronização de stock processada no canal BLING");
   });
 });

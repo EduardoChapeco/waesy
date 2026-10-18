@@ -3,6 +3,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { ContactFormDirect } from "./ContactFormDirect";
 import { FaqCleanAccordion } from "./FaqCleanAccordion";
+import { InteractiveQuoteCalculator } from "./InteractiveQuoteCalculator";
 import { PricingTablesClean } from "./PricingTablesClean";
 import { TestimonialsSocialProof } from "./TestimonialsSocialProof";
 
@@ -54,5 +55,26 @@ describe("empty builder blocks do not fabricate business content", () => {
     expect(html).toContain("Destino de WhatsApp não configurado");
     expect(html).toContain("disabled=\"\"");
     expect(html).not.toContain("Mensagem Recebida!");
+  });
+
+  it("does not enable quote submission without valid WhatsApp destination or onLeadSubmit handler", () => {
+    const html = renderToStaticMarkup(<InteractiveQuoteCalculator id="calc" data={{
+      title: "Simule e Solicite sua Cotação",
+      basePriceCents: 15000,
+      unitPriceCents: 4500,
+      minUnits: 1,
+      maxUnits: 20,
+      defaultUnits: 2,
+      unitLabel: "Pessoa",
+      unitPluralLabel: "Pessoas",
+      options: [],
+      whatsappNumber: "",
+      submitButtonText: "Solicitar Proposta Oficial",
+      successMessage: "Enviado!",
+      disclaimer: "Estimativa",
+    }} />);
+    expect(html).toContain("Destino de WhatsApp não configurado");
+    expect(html).toContain("disabled=\"\"");
+    expect(html).toContain("Simulador em Tempo Real");
   });
 });

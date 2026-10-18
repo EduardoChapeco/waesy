@@ -756,7 +756,7 @@ export const getInfotravelIntegrationStatusFn = createServerFn({ method: "GET" }
 );
 
 export const infotravelSearchPackages = createServerFn({ method: "POST" })
-  .inputValidator(
+  .validator(
     z.object({
       destination: z.string().min(2),
       departureDate: z.string().min(8),
@@ -860,7 +860,7 @@ export const infotravelSearchPackages = createServerFn({ method: "POST" })
   });
 
 export const infotravelSearchAllotments = createServerFn({ method: "POST" })
-  .inputValidator(
+  .validator(
     z.object({
       originCode: z.string().min(3),
       destinationCode: z.string().min(3),
@@ -954,7 +954,7 @@ export const infotravelSearchAllotments = createServerFn({ method: "POST" })
   });
 
 export const infotravelSearchInsurances = createServerFn({ method: "POST" })
-  .inputValidator(
+  .validator(
     z.object({
       destinationRegion: z.enum([
         "brasil",
@@ -1029,7 +1029,7 @@ export const infotravelSearchInsurances = createServerFn({ method: "POST" })
   });
 
 export const infotravelSearchCarRentals = createServerFn({ method: "POST" })
-  .inputValidator(
+  .validator(
     z.object({
       pickupAirportOrCity: z.string().min(2),
       pickupDate: z.string().min(8),
@@ -1121,7 +1121,7 @@ export interface InfoTravelHistoricalBookingSyncedItem {
 export const infotravelImportHistoricalBookingsBatch = createServerFn({
   method: "POST",
 })
-  .inputValidator(
+  .validator(
     z.object({
       operatorSlug: z
         .enum([
@@ -1232,7 +1232,7 @@ export interface AgencyGdsFlightOfferDTO {
 }
 
 export const searchAgencyGdsFlightsFn = createServerFn({ method: "POST" })
-  .inputValidator(
+  .validator(
     z.object({
       origin: z.string().min(2),
       destination: z.string().min(2),
@@ -1389,7 +1389,7 @@ export interface PublicTourismAutoServiceItemDTO {
 }
 
 export const publicTourismAutoServiceSearchFn = createServerFn({ method: "POST" })
-  .inputValidator(
+  .validator(
     z.object({
       storeId: z.string().uuid().optional(),
       service: z.enum(["packages", "hotels", "flights", "activities", "cars"]).default("packages"),

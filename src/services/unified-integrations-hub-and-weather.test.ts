@@ -58,7 +58,7 @@ describe("Unified Integrations Hub, AI Orchestration & Real-time Weather Tests",
       const key = await getNextActiveKey("anthropic");
       expect(key).not.toBeNull();
       expect(key?.rawKey).toBe("sk-ant-env-fallback-999");
-      expect(key?.id).toBe("env-anthropic");
+      expect(key?.id).toBe("env-anthropic-1");
     });
   });
 

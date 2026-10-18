@@ -3031,32 +3031,28 @@ export const getGhostStoreMetricsFn = createServerFn({ method: "GET" })
 export const dispatchScheduledMiningJobFn = createServerFn({ method: "POST" })
   .validator(
     z.object({
-      jobType: z.enum(["market-data", "rss-fetcher", "cnpj-enrichment", "continuous-crawler", "datajud-sync", "queue-reaper"]),
+      jobType: z.enum([
+        "market-data",
+        "rss-fetcher",
+        "rss-fetch",
+        "cnpj-enrichment",
+        "continuous-crawler",
+        "crawl-batch",
+        "datajud-sync",
+        "queue-reaper",
+        "ai-curate",
+        "publish-approved",
+        "events-harvest",
+        "full-daily-pipeline",
+      ]),
     })
   )
   .handler(async ({ data }): Promise<{ success: boolean; result: any }> => {
     const supabase = getServerClient();
     const startTime = Date.now();
 
-    let jobResult: any = null;
-
-    if (data.jobType === "market-data") {
-      const syncRes = await syncAndPersistEconomicIndicators();
-      jobResult = syncRes;
-      await supabase.from("scraper_audit_log").insert({
-        scraper_name: "market-data-miner",
-        action: "sync_economic_indicators_cron",
-        target_table: "economic_indicators",
-        status: syncRes.success ? "success" : "failed",
-        duration_ms: Date.now() - startTime,
-        records_affected: syncRes.totalSynced,
-        result_summary: syncRes,
-      });
-    } else if (data.jobType === "rss-fetcher") {
-      // 1. Polling das fontes canônicas do Omni-Crawler V127 (crawler_sources)
+    const runRssDiscovery = async () => {
       const sourcesResult = await pollActiveCrawlerSources(10);
-
-      // 2. Coleta de feeds legados na tabela rss_feeds (se houver)
       const { data: feeds } = await supabase
         .from("rss_feeds")
         .select("id, feed_url, name")
@@ -3100,14 +3096,178 @@ export const dispatchScheduledMiningJobFn = createServerFn({ method: "POST" })
         }
       }
 
-      jobResult = {
+      return {
         sourcesPolled: sourcesResult.polled,
         sourcesQueued: sourcesResult.itemsQueued,
         sourcesErrors: sourcesResult.errors,
         legacyFeedsProcessed: feeds?.length || 0,
         itemsQueued: totalQueued + sourcesResult.itemsQueued,
       };
+    };
 
+    const runAiCurationAndPublish = async (limitCount = 10) => {
+      const { data: pendingArticles } = await supabase
+        .from("mined_articles")
+        .select("*")
+        .in("status", ["pending_review", "approved"])
+        .is("published_article_id", null)
+        .order("created_at", { ascending: false })
+        .limit(limitCount);
+
+      let curatedCount = 0;
+      let publishedNewsCount = 0;
+      let publishedEventsCount = 0;
+
+      for (const art of pendingArticles || []) {
+        try {
+          const rawTitle = (art.ai_structured_title || art.raw_title || "").trim();
+          const rawMarkdown = (art.extracted_markdown || art.ai_summary || "").trim();
+          if (!rawTitle || rawMarkdown.length < 60) continue;
+
+          let editorialTitle = art.ai_structured_title || rawTitle;
+          let editorialSubtitle = art.ai_structured_subtitle || art.ai_summary || "";
+          let editorialKicker = art.ai_suggested_kicker || "ATUALIDADE REGIONAL";
+          let editorialCategory = art.ai_suggested_category || "cidade";
+          let editorialTags: string[] = Array.isArray(art.ai_suggested_tags) ? art.ai_suggested_tags : ["notícias", "chapecó"];
+          let editorialSections: any[] = Array.isArray(art.ai_structured_sections) ? art.ai_structured_sections : [];
+
+          if (editorialSections.length === 0) {
+            const curated = await curateWithEditorialSquad({
+              rawTitle,
+              rawText: rawMarkdown,
+              sourceName: art.source_domain || "Redação Regional",
+              sourceUrl: art.source_url || "https://waesy.com",
+              city: "Chapecó",
+            }).catch(() => null);
+
+            if (curated) {
+              editorialTitle = curated.title;
+              editorialSubtitle = curated.subtitle;
+              editorialKicker = curated.kicker;
+              editorialCategory = curated.category;
+              editorialTags = curated.tags;
+              editorialSections = curated.mobile_sections;
+              curatedCount++;
+            }
+          } else {
+            curatedCount++;
+          }
+
+          const { data: existingNews } = await supabase
+            .from("news_articles")
+            .select("id")
+            .eq("source_url", art.source_url)
+            .maybeSingle();
+
+          let pubId = existingNews?.id;
+          if (!pubId) {
+            const slugBase = editorialTitle
+              .toLowerCase()
+              .normalize("NFD")
+              .replace(/[\u0300-\u036f]/g, "")
+              .replace(/[^a-z0-9]+/g, "-")
+              .slice(0, 70);
+            const slug = `${slugBase}-${Date.now().toString(36)}`;
+
+            const sectionsToSave =
+              editorialSections.length >= 2
+                ? editorialSections
+                : rawMarkdown
+                    .split(/\n\n+/)
+                    .filter((p: string) => p.trim().length > 20)
+                    .map((p: string) => ({ type: "paragraph", content: p.trim() }));
+
+            const { data: insertedNews, error: pubErr } = await supabase
+              .from("news_articles")
+              .insert({
+                store_id: art.store_id || "5108ce27-2df1-4ce2-89f2-681fea6dba95",
+                title: editorialTitle,
+                slug,
+                kicker: editorialKicker,
+                subtitle: editorialSubtitle,
+                content_sections: sectionsToSave,
+                cover_media_url: art.ai_suggested_cover_url || null,
+                cover_media_type: "image",
+                category: editorialCategory,
+                tags: editorialTags,
+                city: "Chapecó",
+                state: "SC",
+                reading_time_minutes: 3,
+                source_url: art.source_url,
+                source_type: "crawler",
+                author_name: art.source_domain || "Redação Waesy",
+                status: "published",
+                published_at: new Date().toISOString(),
+                quality_score: art.quality_score || 85,
+                curation_status: "approved",
+                ai_summary: editorialSubtitle,
+                ai_keywords: editorialTags,
+                mined_article_id: art.id,
+              })
+              .select("id")
+              .maybeSingle();
+
+            if (pubErr) {
+              console.error("[MiningCron] Erro ao publicar matéria em news_articles:", pubErr.message);
+            }
+
+            if (insertedNews?.id) {
+              pubId = insertedNews.id;
+              publishedNewsCount++;
+            }
+          }
+
+          if (pubId) {
+            await supabase
+              .from("mined_articles")
+              .update({
+                status: "approved",
+                curation_status: "approved",
+                published_article_id: pubId,
+              })
+              .eq("id", art.id);
+          }
+
+          if (/(show|festival|feira|exposi[çc][ãa]o|congresso|oktoberfest|agenda cultural|espet[áa]culo)/i.test(editorialTitle) && art.source_url) {
+            const { harvestAndPersistEvent } = await import("./mining/event-harvester");
+            const evRes = await harvestAndPersistEvent({
+              url: art.source_url,
+              city: "Chapecó",
+              state: "SC",
+              storeId: art.store_id || undefined,
+              sourceName: art.source_domain || "Agenda Cultural",
+            }).catch(() => null);
+            if (evRes?.success) publishedEventsCount++;
+          }
+        } catch (curErr) {
+          console.warn("[MiningCron] Falha ao curar/publicar artigo:", curErr);
+        }
+      }
+
+      return {
+        inspected: pendingArticles?.length || 0,
+        curatedCount,
+        publishedNewsCount,
+        publishedEventsCount,
+      };
+    };
+
+    let jobResult: any = null;
+
+    if (data.jobType === "market-data") {
+      const syncRes = await syncAndPersistEconomicIndicators();
+      jobResult = syncRes;
+      await supabase.from("scraper_audit_log").insert({
+        scraper_name: "market-data-miner",
+        action: "sync_economic_indicators_cron",
+        target_table: "economic_indicators",
+        status: syncRes.success ? "success" : "failed",
+        duration_ms: Date.now() - startTime,
+        records_affected: syncRes.totalSynced,
+        result_summary: syncRes,
+      });
+    } else if (data.jobType === "rss-fetcher" || data.jobType === "rss-fetch") {
+      jobResult = await runRssDiscovery();
       await supabase.from("scraper_audit_log").insert({
         scraper_name: "rss-fetcher",
         action: "fetch_and_queue_sources_cron",
@@ -3117,8 +3277,8 @@ export const dispatchScheduledMiningJobFn = createServerFn({ method: "POST" })
         records_affected: jobResult.itemsQueued,
         result_summary: jobResult,
       });
-    } else if (data.jobType === "continuous-crawler") {
-      const batchRes = await executeCrawlQueueBatchDirect({ limit: 5 });
+    } else if (data.jobType === "continuous-crawler" || data.jobType === "crawl-batch") {
+      const batchRes = await executeCrawlQueueBatchDirect({ limit: 6 });
       jobResult = batchRes;
 
       await supabase.from("scraper_audit_log").insert({
@@ -3130,8 +3290,73 @@ export const dispatchScheduledMiningJobFn = createServerFn({ method: "POST" })
         records_affected: batchRes?.succeeded || 0,
         result_summary: batchRes,
       });
+    } else if (data.jobType === "ai-curate" || data.jobType === "publish-approved") {
+      jobResult = await runAiCurationAndPublish(12);
+      await supabase.from("scraper_audit_log").insert({
+        scraper_name: data.jobType,
+        action: "curate_and_publish_articles_cron",
+        target_table: "news_articles",
+        status: "success",
+        duration_ms: Date.now() - startTime,
+        records_affected: jobResult.publishedNewsCount,
+        result_summary: jobResult,
+      });
+    } else if (data.jobType === "events-harvest") {
+      const { harvestAndPersistEvent } = await import("./mining/event-harvester");
+      const { data: eventQueue } = await supabase
+        .from("crawl_queue")
+        .select("id, url, store_id, metadata")
+        .in("entity_type", ["event", "events", "agenda"])
+        .eq("status", "pending")
+        .limit(6);
+
+      let harvestedEvents = 0;
+      for (const eq of eventQueue || []) {
+        const res = await harvestAndPersistEvent({
+          url: eq.url,
+          city: eq.metadata?.city || "Chapecó",
+          state: eq.metadata?.state || "SC",
+          storeId: eq.store_id || undefined,
+        }).catch(() => null);
+        if (res?.success) {
+          harvestedEvents++;
+          await supabase.from("crawl_queue").update({ status: "completed", completed_at: new Date().toISOString() }).eq("id", eq.id);
+        }
+      }
+      const fromArticles = await runAiCurationAndPublish(6);
+      jobResult = { harvestedEvents: harvestedEvents + fromArticles.publishedEventsCount, fromArticles };
+      await supabase.from("scraper_audit_log").insert({
+        scraper_name: "events-harvest",
+        action: "harvest_events_cron",
+        target_table: "events",
+        status: "success",
+        duration_ms: Date.now() - startTime,
+        records_affected: jobResult.harvestedEvents,
+        result_summary: jobResult,
+      });
+    } else if (data.jobType === "full-daily-pipeline") {
+      const reapedCount = await reapStalledProcessingQueueItems(supabase);
+      const rssSummary = await runRssDiscovery();
+      const crawlSummary = await executeCrawlQueueBatchDirect({ limit: 8 });
+      const curationSummary = await runAiCurationAndPublish(12);
+
+      jobResult = {
+        reapedCount,
+        rssSummary,
+        crawlSummary,
+        curationSummary,
+      };
+
+      await supabase.from("scraper_audit_log").insert({
+        scraper_name: "full-daily-pipeline",
+        action: "execute_full_daily_pipeline",
+        target_table: "news_articles",
+        status: "success",
+        duration_ms: Date.now() - startTime,
+        records_affected: (crawlSummary?.succeeded || 0) + curationSummary.publishedNewsCount,
+        result_summary: jobResult,
+      });
     } else if (data.jobType === "cnpj-enrichment") {
-      // Usa enriquecimento cruzado completo (Fase 1: CNPJ BrasilAPI + Fase 2: Descoberta Web & Favicon HD)
       const enrichRes = await crossEnrichListingsWithCnpj({ limit: 10 });
       jobResult = enrichRes;
 

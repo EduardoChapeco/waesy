@@ -334,52 +334,216 @@ export const signContractAsPayer = createServerFn({ method: "POST" })
       signatureImage: z.string().max(350000).optional(),
     }),
   )
-  .handler(async ({ data }): Promise<{ success: boolean; signatureHash: string }> => {
-    const request = getRequest();
-    const { getRealClientIP } = await import("@/lib/network-telemetry.server");
-    const ipAddress = getRealClientIP(request);
-    const userAgent = request.headers.get("user-agent")?.slice(0, 512) || "Desconhecido";
-    const anonClient = getAnonServerClient();
+  .handler(
+    async ({
+      data,
+    }): Promise<{
+      success: boolean;
+      signatureHash: string;
+      allSignersCompleted?: boolean;
+      generatedBoletosCount?: number;
+      commissionRecorded?: boolean;
+    }> => {
+      const request = getRequest();
+      const { getRealClientIP } = await import("@/lib/network-telemetry.server");
+      const ipAddress = getRealClientIP(request);
+      const userAgent = request.headers.get("user-agent")?.slice(0, 512) || "Desconhecido";
+      const anonClient = getAnonServerClient();
 
-    const { data: signer, error: sErr } = await anonClient
-      .from("travel_contract_signers")
-      .select("id, contract_id, cpf_cnpj, signature_status")
-      .eq("public_sign_token", data.token)
-      .maybeSingle();
+      const { data: signer, error: sErr } = await anonClient
+        .from("travel_contract_signers")
+        .select("id, contract_id, store_id, full_name, cpf_cnpj, share_amount_cents, payment_method, signature_status")
+        .eq("public_sign_token", data.token)
+        .maybeSingle();
 
-    if (sErr || !signer) throw new Error("Assinante não encontrado.");
-    if (signer.signature_status === "signed") {
-      throw new Error("Este contrato já foi assinado por este pagador.");
-    }
+      if (sErr || !signer) throw new Error("Assinante não encontrado.");
+      if (signer.signature_status === "signed") {
+        throw new Error("Este contrato já foi assinado por este pagador.");
+      }
 
-    const now = new Date().toISOString();
-    const hashPayload = `${signer.contract_id}|${signer.id}|${signer.cpf_cnpj}|${now}|${ipAddress}`;
-    const encoder = new TextEncoder();
-    const hashBuffer = await crypto.subtle.digest("SHA-256", encoder.encode(hashPayload));
-    const signatureHash = Array.from(new Uint8Array(hashBuffer))
-      .map((b) => b.toString(16).padStart(2, "0"))
-      .join("");
+      const now = new Date().toISOString();
+      const hashPayload = `${signer.contract_id}|${signer.id}|${signer.cpf_cnpj}|${now}|${ipAddress}`;
+      const encoder = new TextEncoder();
+      const hashBuffer = await crypto.subtle.digest("SHA-256", encoder.encode(hashPayload));
+      const signatureHash = Array.from(new Uint8Array(hashBuffer))
+        .map((b) => b.toString(16).padStart(2, "0"))
+        .join("");
 
-    const { error: updErr } = await anonClient
-      .from("travel_contract_signers")
-      .update({
-        signature_status: "signed",
-        signed_at: now,
-        signer_ip: ipAddress,
-        signer_user_agent: userAgent,
-        signature_hash: signatureHash,
-        audit_metadata: {
-          signed_via: "web_mobile_flow",
-          has_signature_image: Boolean(data.signatureImage),
-        },
-        updated_at: now,
-      })
-      .eq("id", signer.id);
+      const { error: updErr } = await anonClient
+        .from("travel_contract_signers")
+        .update({
+          signature_status: "signed",
+          signed_at: now,
+          signer_ip: ipAddress,
+          signer_user_agent: userAgent,
+          signature_hash: signatureHash,
+          audit_metadata: {
+            signed_via: "web_mobile_flow",
+            has_signature_image: Boolean(data.signatureImage),
+          },
+          updated_at: now,
+        })
+        .eq("id", signer.id);
 
-    if (updErr) throw new Error("Erro ao salvar assinatura eletrônica: " + updErr.message);
+      if (updErr) throw new Error("Erro ao salvar assinatura eletrônica: " + updErr.message);
 
-    return { success: true, signatureHash };
-  });
+      // Automação Pós-Assinatura: verificar se TODOS os pagadores/assinantes do contrato assinaram
+      let allSignersCompleted = false;
+      let generatedBoletosCount = 0;
+      let commissionRecorded = false;
+
+      try {
+        const supabase = getServerClient();
+        const { data: allSigners } = await supabase
+          .from("travel_contract_signers")
+          .select("id, full_name, cpf_cnpj, share_amount_cents, payment_method, signature_status")
+          .eq("contract_id", signer.contract_id);
+
+        const signersList = Array.isArray(allSigners) && allSigners.length > 0 ? allSigners : [
+          { ...signer, signature_status: "signed" },
+        ];
+
+        const pendingCount = signersList.filter(
+          (s: any) => s.id !== signer.id && s.signature_status !== "signed",
+        ).length;
+
+        if (pendingCount === 0) {
+          allSignersCompleted = true;
+
+          // 1. Marcar contrato como assinado em travel_contracts
+          const { data: contractRow } = await supabase
+            .from("travel_contracts")
+            .update({
+              status: "signed",
+              signed_at: now,
+              updated_at: now,
+            })
+            .eq("id", signer.contract_id)
+            .select("id, store_id, proposal_id, client_name, client_document, destination, total_value_cents, payment_conditions")
+            .maybeSingle();
+
+          const storeId = contractRow?.store_id || (signer as any).store_id;
+          const totalValueCents = Number(
+            contractRow?.total_value_cents ||
+              signersList.reduce((acc: number, s: any) => acc + Number(s.share_amount_cents || 0), 0) ||
+              0,
+          );
+
+          // 2. Localizar viagem vinculada (tourism_trips) e destravar status
+          let tripId: string | null = null;
+          if (contractRow?.proposal_id && storeId) {
+            const { data: tripRow } = await supabase
+              .from("tourism_trips")
+              .select("id")
+              .eq("proposal_id", contractRow.proposal_id)
+              .eq("store_id", storeId)
+              .maybeSingle();
+
+            if (tripRow?.id) {
+              tripId = tripRow.id;
+              await supabase
+                .from("tourism_trips")
+                .update({
+                  status: "confirmed",
+                  updated_at: now,
+                })
+                .eq("id", tripId);
+            }
+          }
+
+          // 3. Gerar automaticamente o carnê de parcelas/boletos em travel_trip_installment_boletos
+          if (storeId && totalValueCents > 0) {
+            const condText = String(contractRow?.payment_conditions || "");
+            const matchInstallments = condText.match(/(\d+)\s*x/i);
+            const installmentsCount = Math.min(
+              15,
+              Math.max(1, matchInstallments ? parseInt(matchInstallments[1], 10) : 4),
+            );
+            const perInstallmentCents = Math.floor(totalValueCents / installmentsCount);
+            const remainderCents = totalValueCents - perInstallmentCents * installmentsCount;
+
+            const boletoRows = Array.from({ length: installmentsCount }, (_, idx) => {
+              const dueDate = new Date(Date.now() + (idx + 1) * 30 * 24 * 60 * 60 * 1000)
+                .toISOString()
+                .slice(0, 10);
+              const amountCents = idx === 0 ? perInstallmentCents + remainderCents : perInstallmentCents;
+              return {
+                store_id: storeId,
+                trip_id: tripId || signer.contract_id,
+                installment_number: idx + 1,
+                total_installments: installmentsCount,
+                due_date: dueDate,
+                amount_cents: amountCents,
+                currency: "BRL",
+                operator_slug: "orinter",
+                payment_channel: (signer as any).payment_method === "boleto" ? "orinter_portal" : "agency_pix",
+                status: "pending",
+                customer_notes: `Parcela ${idx + 1}/${installmentsCount} gerada automaticamente após assinatura do contrato`,
+              };
+            });
+
+            const { error: bolErr } = await supabase
+              .from("travel_trip_installment_boletos")
+              .upsert(boletoRows, { onConflict: "trip_id,installment_number" });
+
+            if (!bolErr) {
+              generatedBoletosCount = boletoRows.length;
+            }
+          }
+
+          // 4. Registrar automaticamente na planilha de vendas e comissões
+          if (storeId && totalValueCents > 0) {
+            const supplierNetCents = Math.round(totalValueCents * 0.88);
+            const agencyCommissionCents = Math.max(0, totalValueCents - supplierNetCents);
+            const agentCommissionCents = Math.round(agencyCommissionCents * 0.15);
+
+            await supabase.from("travel_agent_commission_splits").insert({
+              store_id: storeId,
+              trip_id: tripId,
+              reservation_code: `CTR-${String(signer.contract_id).slice(0, 8).toUpperCase()}`,
+              operator_name: "Orinter",
+              agent_name: "Consultor Responsável",
+              lead_source: "contrato_assinado",
+              gross_sale_cents: totalValueCents,
+              supplier_net_cents: supplierNetCents,
+              agency_commission_cents: agencyCommissionCents,
+              financed_by_operator_cents: supplierNetCents,
+              pix_received_by_agency_cents: agencyCommissionCents,
+              retained_commission_from_pix_cents: agencyCommissionCents,
+              net_remittance_to_operator_cents: 0,
+              agent_commission_rate_pct: 15,
+              agent_commission_cents: agentCommissionCents,
+              payout_status: "pending",
+            });
+
+            await supabase.from("travel_sales_spreadsheet_rows").insert({
+              store_id: storeId,
+              trip_id: tripId,
+              contract_id: signer.contract_id,
+              client_name: contractRow?.client_name || (signer as any).full_name || "Cliente",
+              destination: contractRow?.destination || "Pacote Turístico",
+              gross_sale_cents: totalValueCents,
+              net_commissionable_cents: agencyCommissionCents,
+              agent_commission_cents: agentCommissionCents,
+              status: "active",
+            });
+
+            commissionRecorded = true;
+          }
+        }
+      } catch {
+        // Garantir que a assinatura eletrônica em si nunca falhe caso tabelas auxiliares ainda estejam sincronizando
+      }
+
+      return {
+        success: true,
+        signatureHash,
+        allSignersCompleted,
+        generatedBoletosCount,
+        commissionRecorded,
+      };
+    },
+  );
 
 // ── 3. Livro-Razão de Blindagem Fiscal & Split da Agência ──────────────────────
 

@@ -271,9 +271,9 @@ async function searchTable(
   const discriminatorTokens = extractDiscriminatorTokens(query);
 
   const scoredRows = (data ?? []).map((row: Record<string, any>) => {
-    if (table === "classifieds" || table === "events" || table === "directory_listings" || table === "news_articles") {
+    if (table === "classifieds" || table === "events" || table === "directory_listings" || table === "news_articles" || table === "jobs") {
       const status = String(row.status ?? row.visibility ?? "").toLowerCase();
-      if (status && !["active", "published", "approved", "live", "public"].includes(status)) return null;
+      if (status && !["active", "published", "approved", "live", "public", "open"].includes(status)) return null;
     }
 
     // Se não há tokens discriminatórios na busca do usuário, exibe registros padrão
@@ -281,11 +281,11 @@ async function searchTable(
       return { row, score: 1 };
     }
 
-    const titleHaystack = [row.title, row.name, row.business_name, row.store_name, row.destination_name, row.package_name]
+    const titleHaystack = [row.title, row.name, row.business_name, row.store_name, row.destination_name, row.package_name, row.hotel_name, row.company_name, row.line_name]
       .filter(Boolean).join(" ").toLocaleLowerCase("pt-BR").normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-    const locationHaystack = [row.address, row.city, row.state, row.venue, row.destination]
+    const locationHaystack = [row.address, row.city, row.state, row.venue, row.destination, row.origin, row.neighborhood]
       .filter(Boolean).join(" ").toLocaleLowerCase("pt-BR").normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-    const bodyHaystack = [row.category, row.description, row.summary, row.short_description, row.subtitle, row.kicker]
+    const bodyHaystack = [row.category, row.description, row.summary, row.short_description, row.subtitle, row.kicker, row.amenities]
       .filter(Boolean).join(" ").toLocaleLowerCase("pt-BR").normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
     let score = 0;
@@ -313,23 +313,34 @@ export function shouldSearchPlatform(prompt: string): boolean {
   return SEARCH_TERMS.test(prompt) || prompt.trim().split(/\s+/).length >= 3;
 }
 
-export async function searchPlatformForCopilot(db: SupabaseClient, prompt: string): Promise<InternalSearchResult> {
-  const query = extractQuery(prompt);
-  const kinds = uniqueKinds(prompt);
+export async function searchPlatformForCopilot(
+  db: SupabaseClient,
+  prompt: string,
+  options?: {
+    plannerQueries?: string[];
+    plannerKinds?: InternalSearchKind[];
+  },
+): Promise<InternalSearchResult> {
+  const baseQuery = extractQuery(prompt);
+  const extraQueries = (options?.plannerQueries || []).map((q) => safeSearchTerm(q)).filter(Boolean);
+  const combinedQuery = [baseQuery, ...extraQueries].filter(Boolean).join(" ").slice(0, 140) || baseQuery;
+  const kinds = options?.plannerKinds && options.plannerKinds.length > 0
+    ? [...new Set([...options.plannerKinds, ...uniqueKinds(prompt)])]
+    : uniqueKinds(prompt);
   const tableByKind: Record<InternalSearchKind, string[]> = {
     product: ["products"],
     store: ["directory_listings", "stores"],
     event: ["events"],
-    classified: ["classifieds"],
-    travel: ["destinations", "tourism_trips"],
+    classified: ["classifieds", "jobs"],
+    travel: ["destinations", "tourism_trips", "global_hotels"],
     news: ["news_articles"],
   };
-  const searches = await Promise.all(kinds.flatMap((kind) => tableByKind[kind].map(async (table) => ({ kind, table, result: await searchTable(db, table, query, kind) }))));
+  const searches = await Promise.all(kinds.flatMap((kind) => tableByKind[kind].map(async (table) => ({ kind, table, result: await searchTable(db, table, combinedQuery, kind) }))));
   const cards = searches.flatMap(({ result }) => result.cards);
   const deduped = [...new Map(cards.map((card) => [card.id, card])).values()].slice(0, 12);
 
   return {
-    query,
+    query: combinedQuery,
     cards: deduped,
     searchedKinds: kinds,
     searchedTables: [...new Set(searches.map(({ table }) => table))],

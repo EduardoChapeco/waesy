@@ -64,7 +64,7 @@ export const TourismQuoteHero: React.FC<TourismQuoteHeroProps> = ({
           contact_whatsapp: clientPhone.trim(),
           special_notes: passengers ? `Viajantes: ${passengers}` : undefined,
         },
-      }).catch(() => null);
+      });
 
       // 2. Registra telemetria de Lead WhatsApp
       await recordWhatsAppLead({
@@ -75,7 +75,7 @@ export const TourismQuoteHero: React.FC<TourismQuoteHeroProps> = ({
           device_type: "desktop",
           metadata: { notes: `Nome: ${clientName} | Origem: ${origin} | Data: ${departureDate}` },
         },
-      }).catch(() => null);
+      });
 
       setSubmitted(true);
       toast.success("Solicitação de cotação enviada com sucesso!");

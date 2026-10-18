@@ -473,9 +473,10 @@ export async function createBuilderArtifactFromCopilot(params: {
   sessionId?: string | null;
   messageId?: string | null;
   title?: string;
+  groundingContext?: string;
 }): Promise<CopilotBuilderCommandResult> {
   const docType = params.docType || detectBuilderDocType(params.userPrompt);
-  const title =
+  let title =
     params.title ||
     (docType === "spreadsheet"
       ? "Planilha de Controle Operacional"
@@ -524,6 +525,106 @@ export async function createBuilderArtifactFromCopilot(params: {
       summaryMessage = `Redigi o documento "${title}" estruturado em seções e marcos para homologação no Workspace.`;
       break;
     }
+  }
+
+  // Enriquecimento Generativo Real via IA (RAG + Síntese Estruturada)
+  try {
+    const { executeUnifiedAiCall } = await import("./api-orchestrator.functions");
+    const aiResult = await executeUnifiedAiCall({
+      feature: `builder_artifact_${docType}`,
+      responseFormat: "json_object",
+      temperature: 0.35,
+      maxTokens: 2500,
+      storeId: params.storeId || undefined,
+      ownerId: params.authorProfileId,
+      systemPrompt: [
+        "Você é o Arquiteto Chefe de Artefatos Executivos do Waesy Copilot.",
+        "Sua missão é gerar conteúdo 100% real, analítico, profundo e personalizado para o artefato solicitado pelo usuário.",
+        "Retorne EXCLUSIVAMENTE um objeto JSON válido contendo:",
+        "- title: título executivo conciso (máximo 6 palavras)",
+        "- summaryMessage: resposta analítica e consultiva explicando os destaques do artefato gerado (2 a 4 frases ricas)",
+        docType === "spreadsheet"
+          ? "- columns: array de { key, label, type: 'text'|'currency'|'number'|'formula' }\n- rows: array de objetos com valores reais condizentes com o pedido\n- summaryMetrics: array de { label, value }"
+          : docType === "presentation"
+            ? "- slides: array de { id, layout: 'cover'|'metrics'|'split'|'closing', title, subtitle, bullets: string[], highlightValue?: string }"
+            : docType === "website"
+              ? "- sections: array de { id, type: 'hero'|'features'|'pricing'|'cta', headline, subheadline, ctaLabel, items?: Array<{ title, description }> }"
+              : docType === "social_post"
+                ? "- headline: frase de impacto\n- caption: legenda persuasiva completa\n- hashtags: array de tags\n- callToAction: chamada de ação"
+                : docType === "travel_itinerary"
+                  ? "- destination: nome do destino\n- durationDays: número de dias\n- totalAmountBrl: valor estimado em reais\n- days: array de { day, title, morning, afternoon, evening, diningTip }\n- inclusions: array de itens inclusos"
+                  : "- sections: array de { id, heading, content }\n- executiveSummary: resumo executivo denso",
+      ].join("\n"),
+      userPrompt: `Pedido do usuário: "${params.userPrompt}"\nTipo de artefato: ${docType}\n${params.groundingContext ? `Dados reais da plataforma/contexto:\n${params.groundingContext}` : ""}`,
+    });
+
+    const parsed = aiResult?.parsedJson;
+    if (parsed && typeof parsed === "object") {
+      if (typeof parsed.title === "string" && parsed.title.trim().length > 2) {
+        title = parsed.title.trim();
+      }
+      if (typeof parsed.summaryMessage === "string" && parsed.summaryMessage.trim().length > 10) {
+        summaryMessage = parsed.summaryMessage.trim();
+      }
+      if (docType === "spreadsheet" && Array.isArray(parsed.rows) && parsed.rows.length > 0) {
+        payload = {
+          ...payload,
+          title,
+          columns: Array.isArray(parsed.columns) && parsed.columns.length > 0 ? parsed.columns : payload.columns,
+          rows: parsed.rows,
+          summaryMetrics: Array.isArray(parsed.summaryMetrics) ? parsed.summaryMetrics : payload.summaryMetrics,
+        };
+      } else if (docType === "presentation" && Array.isArray(parsed.slides) && parsed.slides.length > 0) {
+        payload = {
+          ...payload,
+          title,
+          slides: parsed.slides,
+        };
+      } else if (docType === "website" && Array.isArray(parsed.sections) && parsed.sections.length > 0) {
+        payload = {
+          ...payload,
+          title,
+          sections: parsed.sections,
+        };
+      } else if (docType === "social_post" && (parsed.caption || parsed.headline)) {
+        payload = {
+          ...payload,
+          title,
+          headline: parsed.headline || payload.headline,
+          caption: parsed.caption || payload.caption,
+          hashtags: Array.isArray(parsed.hashtags) ? parsed.hashtags : payload.hashtags,
+          callToAction: parsed.callToAction || payload.callToAction,
+        };
+      } else if (docType === "travel_itinerary" && Array.isArray(parsed.days) && parsed.days.length > 0) {
+        const amount = typeof parsed.totalAmountBrl === "number" && parsed.totalAmountBrl > 0 ? parsed.totalAmountBrl : payload.totalAmountBrl;
+        const pixCode = generatePixBrCode({
+          pixKey: payload.pixKey || "reservas@waesy.com.br",
+          merchantName: "WAESY VIAGENS",
+          merchantCity: "SAO MIGUEL",
+          amountCents: Math.round(Number(amount || 0) * 100),
+          txId: `TRV${Date.now().toString().slice(-7)}`,
+        } as any);
+        payload = {
+          ...payload,
+          title,
+          destination: parsed.destination || payload.destination,
+          durationDays: parsed.durationDays || parsed.days.length,
+          totalAmountBrl: amount,
+          days: parsed.days,
+          inclusions: Array.isArray(parsed.inclusions) ? parsed.inclusions : payload.inclusions,
+          pixCopyPaste: pixCode,
+        };
+      } else if (docType === "document" && Array.isArray(parsed.sections) && parsed.sections.length > 0) {
+        payload = {
+          ...payload,
+          title,
+          executiveSummary: parsed.executiveSummary || payload.executiveSummary,
+          sections: parsed.sections,
+        };
+      }
+    }
+  } catch (aiErr) {
+    console.warn("[builder-copilot-bridge] Fallback determinístico preservado:", aiErr instanceof Error ? aiErr.message : aiErr);
   }
 
   // 1. Salva no banco unificado de builders
@@ -720,4 +821,192 @@ export const updateBuilderDocumentFn = createServerFn({ method: "POST" })
     if (!updated) throw new Error("Não foi possível atualizar o documento");
     return updated;
   });
+
+const PersistCopilotArtifactSchema = z.object({
+  artifactKind: z.enum([
+    "website_page",
+    "ad_campaign",
+    "catalog_product",
+    "social_post",
+    "builder_document",
+  ]),
+  title: z.string().min(2),
+  storeId: z.string().uuid().optional().nullable(),
+  payload: z.record(z.any()).default({}),
+});
+
+export const persistCopilotGeneratedArtifactFn = createServerFn({ method: "POST" })
+  .validator(PersistCopilotArtifactSchema)
+  .handler(
+    async ({
+      data,
+    }): Promise<{
+      success: boolean;
+      targetTable: string;
+      recordId: string;
+      redirectRoute: string;
+    }> => {
+      const identity = await getServerIdentity().catch(() => null);
+      if (!identity?.id) throw new Error("Autenticação necessária para salvar artefato.");
+
+      const resolvedStoreId = data.storeId || identity.store_id || null;
+      const db = getServerClient();
+      const now = new Date().toISOString();
+      const normalizedTitle = data.title
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-|-$/g, "");
+      const safeSlug = `${normalizedTitle || "item"}-${crypto.randomBytes(2).toString("hex")}`;
+
+      if (data.artifactKind === "website_page") {
+        if (!resolvedStoreId) throw new Error("Loja não identificada para salvar página.");
+        const { data: createdPage, error } = await db
+          .from("experience_documents")
+          .insert({
+            store_id: resolvedStoreId,
+            title: data.title,
+            slug: safeSlug,
+            document_type: "campaign",
+            is_active: true,
+            settings: {
+              omni_page_draft: data.payload,
+              omni_page: data.payload,
+              generated_by_copilot: true,
+            },
+            created_at: now,
+            updated_at: now,
+          })
+          .select("id")
+          .single();
+
+        if (error || !createdPage?.id) {
+          throw new Error("Erro ao salvar página no Builder: " + (error?.message || "ID ausente"));
+        }
+
+        return {
+          success: true,
+          targetTable: "experience_documents",
+          recordId: createdPage.id,
+          redirectRoute: `/workspace/aparencia`,
+        };
+      }
+
+      if (data.artifactKind === "ad_campaign") {
+        if (!resolvedStoreId) throw new Error("Loja não identificada para salvar campanha.");
+        const dailyBudgetCents = Number(data.payload.dailyBudgetCents || data.payload.budgetCents || 5000);
+        const channel = String(data.payload.channel || "meta_ads");
+
+        const { data: createdCamp, error } = await db
+          .from("store_ad_campaigns")
+          .insert({
+            store_id: resolvedStoreId,
+            name: data.title,
+            channel,
+            status: "draft",
+            daily_budget_cents: dailyBudgetCents,
+            total_budget_cents: dailyBudgetCents * 7,
+            headline: String(data.payload.headline || data.title),
+            ad_copy: String(data.payload.adCopy || data.payload.copyFeed || ""),
+            destination_url: String(data.payload.destinationUrl || "/"),
+            created_at: now,
+            updated_at: now,
+          })
+          .select("id")
+          .single();
+
+        if (error || !createdCamp?.id) {
+          throw new Error("Erro ao salvar campanha de anúncio: " + (error?.message || "ID ausente"));
+        }
+
+        return {
+          success: true,
+          targetTable: "store_ad_campaigns",
+          recordId: createdCamp.id,
+          redirectRoute: `/workspace/marketing/anuncios`,
+        };
+      }
+
+      if (data.artifactKind === "catalog_product") {
+        if (!resolvedStoreId) throw new Error("Loja não identificada para salvar produto.");
+        const priceCents = Number(
+          data.payload.priceCents || data.payload.estimatedBudgetCents || 9900,
+        );
+
+        const { data: createdProd, error } = await db
+          .from("products")
+          .insert({
+            store_id: resolvedStoreId,
+            title: data.title,
+            slug: safeSlug,
+            description: String(data.payload.description || data.payload.subtitle || ""),
+            price_cents: priceCents,
+            status: "published",
+            created_at: now,
+            updated_at: now,
+          })
+          .select("id")
+          .single();
+
+        if (error || !createdProd?.id) {
+          throw new Error("Erro ao salvar produto no catálogo: " + (error?.message || "ID ausente"));
+        }
+
+        return {
+          success: true,
+          targetTable: "products",
+          recordId: createdProd.id,
+          redirectRoute: `/workspace/catalogo/produtos`,
+        };
+      }
+
+      if (data.artifactKind === "social_post") {
+        const postContent = String(
+          data.payload.copyFeed ||
+            data.payload.content ||
+            `${data.title}\n\n${(data.payload.hashtags || []).join(" ")}`,
+        );
+
+        const { data: createdPost, error } = await db
+          .from("posts")
+          .insert({
+            author_id: identity.id,
+            store_id: resolvedStoreId,
+            content: postContent.trim(),
+            created_at: now,
+          })
+          .select("id")
+          .single();
+
+        if (error || !createdPost?.id) {
+          throw new Error("Erro ao publicar post social: " + (error?.message || "ID ausente"));
+        }
+
+        return {
+          success: true,
+          targetTable: "posts",
+          recordId: createdPost.id,
+          redirectRoute: `/social`,
+        };
+      }
+
+      const savedDoc = await createOrUpdateBuilderDocument({
+        storeId: resolvedStoreId,
+        authorProfileId: identity.id,
+        docType: (data.payload.docType as BuilderDocType) || "document",
+        title: data.title,
+        contentSchema: data.payload,
+        isPublic: true,
+      });
+
+      return {
+        success: true,
+        targetTable: "workspace_builder_documents",
+        recordId: savedDoc.id,
+        redirectRoute: `/workspace/copilot`,
+      };
+    },
+  );
+
 

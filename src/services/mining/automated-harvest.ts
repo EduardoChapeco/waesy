@@ -235,7 +235,7 @@ export async function executeAutomatedNewsHarvest(
       const { data: publishedArticle, error: pubError } = await supabase
         .from("news_articles")
         .insert({
-          store_id: options.storeId || "00000000-0000-0000-0000-000000000000",
+          store_id: options.storeId || "5108ce27-2df1-4ce2-89f2-681fea6dba95",
           title: curatedArticle.title,
           slug,
           kicker: curatedArticle.kicker,

@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useTransition, useRef } from "react";
 import { Globe, Rss, Queue, Plus, Clock, CheckCircle, XCircle, ArrowClockwise, Play, SpinnerGap, Warning, Eye, ThumbsUp, ThumbsDown, MagnifyingGlass, Robot, Database, Broadcast, Shield, Lightning, Star, ArrowRight, ToggleLeft, ToggleRight, Funnel, PencilSimple, TrashSimple, Ticket, Buildings, ArrowsClockwise, Calendar, MapPin, CurrencyDollar, ArrowSquareOut, FileText, Check, Users, Briefcase, Article, LinkSimple } from "@phosphor-icons/react";
-import { getMiningStats, listCrawlQueue, listRssFeeds, listMinedArticles, listScraperConfigs, addUrlToCrawlQueue, processUrlWithAI, curateMineArticle, triggerRssFeedFetch, upsertRssFeed, toggleRssFeed, reprocessFailedQueueItems, syncPncpMunicipalBids, listPncpContractsAction, convertPncpBidToNewsArticle, type MinedArticleDTO, type ScraperConfigDTO } from "@/services/mining.functions";
+import { getMiningStats, listCrawlQueue, listRssFeeds, listMinedArticles, listScraperConfigs, addUrlToCrawlQueue, processUrlWithAI, curateMineArticle, triggerRssFeedFetch, upsertRssFeed, toggleRssFeed, reprocessFailedQueueItems, syncPncpMunicipalBids, listPncpContractsAction, convertPncpBidToNewsArticle, dispatchScheduledMiningJobFn, type MinedArticleDTO, type ScraperConfigDTO } from "@/services/mining.functions";
 import { listCrawlerSources, toggleCrawlerSourceActive, triggerCrawlerSourceFetch, upsertCrawlerSource, type CrawlerSourceDTO } from "@/services/crawler-sources.functions";
 import { isHealthyImageUrl, getFallbackThematicImage } from "@/services/mining/integrity-gate";
 import { mineAndPublishExternalJob, listExternalJobs, type JobItemDTO } from "@/services/jobs.functions";
@@ -534,6 +534,27 @@ function AdminMiningHubPage() {
     }
   };
 
+  const [isRunningFullPipeline, setIsRunningFullPipeline] = useState(false);
+
+  const handleRunFullDailyPipeline = async () => {
+    setIsRunningFullPipeline(true);
+    try {
+      const res = await dispatchScheduledMiningJobFn({
+        data: { jobType: "full-daily-pipeline" },
+      });
+      const cur = res?.result?.curationSummary;
+      const crw = res?.result?.crawlSummary;
+      toast.success(
+        `Pipeline diário concluído: ${crw?.succeeded || 0} extraídos, ${cur?.publishedNewsCount || 0} notícias e ${cur?.publishedEventsCount || 0} eventos publicados!`,
+      );
+      window.location.reload();
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao executar o pipeline completo.");
+    } finally {
+      setIsRunningFullPipeline(false);
+    }
+  };
+
   const filteredSources = sourcesList.filter((s) => {
     const matchesType = sourcesFilterType === "all" || s.type === sourcesFilterType;
     const matchesSearch =
@@ -557,7 +578,7 @@ function AdminMiningHubPage() {
   ];
 
  return (
- <div className="min-h-[100dvh] bg-background">
+ <div className="min-h-dvh bg-background">
  <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
 
  {/* ── Header ─────────────────────────────────────────────────────── */}
@@ -567,9 +588,23 @@ function AdminMiningHubPage() {
  Extração e Curadoria de Conteúdo
  </h1>
  <p className="text-xs text-muted-foreground mt-1">
- Content Factory, revisão editorial, licitações PNCP e publicação em notícias.
+ Content Factory, revisão editorial IA, licitações PNCP e publicação diária indexada.
  </p>
  </div>
+ <div className="flex flex-wrap items-center gap-2">
+ <Button
+ variant="default"
+ onClick={handleRunFullDailyPipeline}
+ disabled={isRunningFullPipeline}
+ className="h-11 min-h-11 px-4 text-xs font-semibold gap-2 rounded-lg"
+ >
+ {isRunningFullPipeline ? (
+ <SpinnerGap className="h-4 w-4 animate-spin" />
+ ) : (
+ <Play className="h-4 w-4" weight="fill" />
+ )}
+ <span>{isRunningFullPipeline ? "Executando Esteira..." : "Executar Pipeline Diário"}</span>
+ </Button>
  <Link
  to="/workspace/mining"
  className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring inline-flex items-center gap-2 rounded-lg border border-border/70 bg-card px-4 h-11 min-h-11 text-xs font-semibold text-foreground hover:bg-muted/50 transition-all cursor-pointer"
@@ -578,33 +613,34 @@ function AdminMiningHubPage() {
  <span>Telemetria e Fila Contínua</span>
  </Link>
  </div>
+ </div>
 
  {/* ── KPIs ───────────────────────────────────────────────────────── */}
- <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-6">
- <StatCard icon={<Clock className="h-4 w-4 text-amber-400" />} label="Pendentes na Fila" value={stats.queue.pending} />
- <StatCard icon={<ArrowClockwise className="h-4 w-4 text-violet-400 animate-spin" />} label="Processando" value={stats.queue.processing} />
- <StatCard icon={<Warning className="h-4 w-4 text-amber-400" />} label="Aguardando Curadoria" value={stats.mined.pending_review} accent="amber" />
- <StatCard icon={<CheckCircle className="h-4 w-4 text-emerald-400" />} label="Publicados" value={stats.mined.published} accent="green" />
- <StatCard icon={<Rss className="h-4 w-4 text-blue-400" />} label="Feeds Ativos" value={stats.feeds.active} />
- <StatCard icon={<Star className="h-4 w-4 text-amber-400" />} label="Qualidade Média" value={`${stats.mined.avg_quality}%`} />
+ <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+ <StatCard icon={<Clock className="h-4 w-4 text-warning" />} label="Pendentes na Fila" value={stats.queue.pending} />
+ <StatCard icon={<ArrowClockwise className="h-4 w-4 text-primary animate-spin" />} label="Processando" value={stats.queue.processing} />
+ <StatCard icon={<Warning className="h-4 w-4 text-warning" />} label="Aguardando Curadoria" value={stats.mined.pending_review} accent="amber" />
+ <StatCard icon={<CheckCircle className="h-4 w-4 text-success" />} label="Publicados" value={stats.mined.published} accent="green" />
+ <StatCard icon={<Rss className="h-4 w-4 text-info" />} label="Feeds Ativos" value={stats.feeds.active} />
+ <StatCard icon={<Star className="h-4 w-4 text-warning" />} label="Qualidade Média" value={`${stats.mined.avg_quality}%`} />
  </div>
 
  {/* ── Tabs ───────────────────────────────────────────────────────── */}
- <div className="mb-5 flex flex-wrap gap-2">
+ <div className="mb-6 flex flex-nowrap overflow-x-auto no-scrollbar gap-2 pb-1">
  {TABS.map((tab) => (
  <button
  key={tab.id}
  onClick={() => setActiveTab(tab.id)}
- className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 text-xs font-semibold transition-all ${
+ className={`focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring inline-flex items-center gap-2 rounded-lg px-4 h-11 min-h-11 shrink-0 text-xs font-semibold transition-all ${
  activeTab === tab.id
- ? "bg-primary text-primary-foreground "
+ ? "bg-primary text-primary-foreground"
  : "bg-card border border-border text-muted-foreground hover:text-foreground hover:border-primary/30"
  }`}
  >
  {tab.icon}
  {tab.label}
  {tab.badge !== undefined && tab.badge > 0 && (
- <span className={`ml-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-bold ${
+ <span className={`ml-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-xs font-bold ${
  activeTab === tab.id ? "bg-primary-foreground/20 text-primary-foreground" : "bg-primary/10 text-primary"
  }`}>
  {tab.badge}

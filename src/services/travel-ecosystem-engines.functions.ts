@@ -1060,7 +1060,7 @@ const ResolveGatewaySchema = z.object({
 });
 
 export const resolveDestinationGatewayFn = createServerFn({ method: "POST" })
-  .inputValidator(ResolveGatewaySchema)
+  .validator(ResolveGatewaySchema)
   .handler(async ({ data }): Promise<{ gateway: DestinationGatewayResolution | null }> => {
     const { destinationQuery } = data;
     const localMatch = resolveDestinationGatewayEngine(destinationQuery);
@@ -1143,7 +1143,7 @@ const SubmitCustomerReceiptSchema = z.object({
 });
 
 export const submitAndAutoMatchCustomerReceiptFn = createServerFn({ method: "POST" })
-  .inputValidator(SubmitCustomerReceiptSchema)
+  .validator(SubmitCustomerReceiptSchema)
   .handler(async ({ data }): Promise<ReceiptAutoMatchResult> => {
     const {
       tripId,

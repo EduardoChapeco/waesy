@@ -16,7 +16,7 @@ import { getLinkedInMasterCredentials, saveLinkedInMasterCredentials, type Linke
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { getPlatformApiIntegrations, updatePlatformApiIntegrations, type PlatformApiIntegrationsDTO } from "@/services/master.functions";
-import { listApiKeyPools, saveApiKeyToPool, toggleApiKeyStatus, deleteApiKeyFromPool, testPoolKeyConnection, listMasterPrompts, saveMasterPrompt, type ApiKeyPoolDTO, type MasterPromptDTO, type ApiProvider } from "@/services/api-orchestrator.functions";
+import { listApiKeyPools, saveApiKeyToPool, batchSaveApiKeysToPool, resetProviderPoolCooldowns, toggleApiKeyStatus, deleteApiKeyFromPool, testPoolKeyConnection, listMasterPrompts, saveMasterPrompt, type ApiKeyPoolDTO, type MasterPromptDTO, type ApiProvider } from "@/services/api-orchestrator.functions";
 import { listMasterWhatsAppInstances, toggleMasterWhatsAppInstance, type WhatsAppChannelInstanceDTO } from "@/services/whatsapp-channel-instances.functions";
 
 export const Route = createFileRoute("/admin-master/integracoes")({
@@ -266,32 +266,76 @@ function AdminMasterIntegracoesPage() {
  }
  };
 
- // Ações da Pool de Chaves
+ // Ações da Pool de Chaves (Suporte a Chave Única ou Lote Multi-Key para Groq / OpenRouter / Gemini)
+ const [isResettingCooldowns, setIsResettingCooldowns] = useState(false);
+
+ const handleResetPoolCooldowns = async (provider?: ApiProvider) => {
+ setIsResettingCooldowns(true);
+ try {
+ await resetProviderPoolCooldowns({ data: { provider } });
+ const refreshed = await listApiKeyPools().catch(() => pools);
+ setPools(refreshed);
+ toast.success(provider ? `Cooldowns de ${provider} resetados!` : "Cooldowns 429 de todas as pools resetados!");
+ router.invalidate();
+ } catch (e: any) {
+ toast.error(e.message || "Erro ao resetar cooldowns.");
+ } finally {
+ setIsResettingCooldowns(false);
+ }
+ };
+
  const handleSaveKeyToPool = async () => {
  if (!newKeyLabel.trim() || !newKeySecret.trim()) {
- toast.error("Preencha o rótulo e a chave de API.");
+ toast.error("Preencha o rótulo base e pelo menos uma chave de API.");
+ return;
+ }
+
+ const parsedKeys = newKeySecret
+ .split(/[\r\n,]+/)
+ .map((k) => k.trim())
+ .filter((k) => k.length >= 5);
+
+ if (parsedKeys.length === 0) {
+ toast.error("Nenhuma chave válida informada.");
  return;
  }
 
  try {
- const created = await saveApiKeyToPool({
+ if (parsedKeys.length > 1) {
+ const batchRes = await batchSaveApiKeysToPool({
  data: {
  provider: newKeyProvider,
- label: newKeyLabel,
- apiKey: newKeySecret,
+ labelPrefix: newKeyLabel.trim() || "Key",
+ rawKeysText: parsedKeys.join("\n"),
  priority: newKeyPriority,
  rateLimitPerMinute: newKeyRateLimit,
  },
  });
-
+ toast.success(
+ `${batchRes.count} chave(s) adicionada(s) ao pool de ${newKeyProvider.toUpperCase()}.`
+ );
+ const refreshed = await listApiKeyPools().catch(() => pools);
+ setPools(refreshed);
+ } else {
+ const created = await saveApiKeyToPool({
+ data: {
+ provider: newKeyProvider,
+ label: newKeyLabel.trim(),
+ apiKey: parsedKeys[0],
+ priority: newKeyPriority,
+ rateLimitPerMinute: newKeyRateLimit,
+ },
+ });
  toast.success("Chave adicionada ao pool com sucesso!");
+ setPools((prev) => [created as any, ...prev]);
+ }
+
  setIsNewKeyModalOpen(false);
  setNewKeyLabel("");
  setNewKeySecret("");
- setPools((prev) => [created as any, ...prev]);
  router.invalidate();
  } catch (e: any) {
- toast.error(e.message || "Erro ao cadastrar chave no pool.");
+ toast.error(e.message || "Erro ao cadastrar chave(s) no pool.");
  }
  };
 
@@ -430,7 +474,7 @@ function AdminMasterIntegracoesPage() {
  </div>
 
  {/* Navegação por Abas */}
- <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1 ">
+ <div className="flex flex-wrap gap-2 pb-1">
  <button
  type="button"
  onClick={() => setActiveTab("pools")}
@@ -527,20 +571,31 @@ function AdminMasterIntegracoesPage() {
  {/* ── ABA 1: POOL DE CHAVES & ROTAÇÃO ── */}
  {activeTab === "pools" && (
  <div className="space-y-5">
- <div className="flex items-center justify-between">
+ <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
  <div>
- <h2 className="text-base font-bold text-foreground">Pools de Chaves de APIs</h2>
+ <h2 className="text-base font-bold text-foreground">Pool Multi-Chaves de APIs</h2>
  <p className="text-xs text-muted-foreground">
- Cadastre múltiplas chaves para Firecrawl, Steel.dev, Gemini Flash e Groq com failover automático contra erro 429.
+ Cadastre múltiplas chaves para Groq, OpenRouter, Gemini Flash, Firecrawl e Steel.dev com rotação Round-Robin e failover automático intra-provedor contra erro 429.
  </p>
  </div>
+ <div className="flex flex-wrap items-center gap-2">
+ <Button
+ variant="outline"
+ onClick={() => handleResetPoolCooldowns()}
+ disabled={isResettingCooldowns}
+ className="rounded-lg font-bold text-xs h-11 min-h-11 gap-2"
+ >
+ <RefreshCw className={`size-3.5 ${isResettingCooldowns ? "animate-spin" : ""}`} />
+ <span>Limpar Cooldowns 429</span>
+ </Button>
  <Button
  onClick={() => setIsNewKeyModalOpen(true)}
- className="rounded-lg font-bold text-xs h-9 gap-2"
+ className="rounded-lg font-bold text-xs h-11 min-h-11 gap-2"
  >
  <Plus className="size-3.5" />
- <span>Adicionar Chave à Pool</span>
+ <span>Adicionar Chave(s) à Pool</span>
  </Button>
+ </div>
  </div>
 
  {pools.length === 0 ? (
@@ -1618,13 +1673,13 @@ function AdminMasterIntegracoesPage() {
     </div>
   )}
 
-  {/* Modal: Adicionar Chave à Pool */}
+   {/* Modal: Adicionar Chave(s) à Pool */}
  <Dialog open={isNewKeyModalOpen} onOpenChange={setIsNewKeyModalOpen}>
  <DialogContent className="sm:max-w-md sm:rounded-lg">
  <DialogHeader>
- <DialogTitle className="text-lg font-bold">Adicionar Chave à Pool</DialogTitle>
+ <DialogTitle className="text-lg font-bold">Adicionar Chave(s) à Pool</DialogTitle>
  <DialogDescription className="text-xs">
- A chave será criptografada e armazenada de forma segura no servidor.
+ Cole uma ou várias chaves (uma por linha) para Groq, OpenRouter ou Gemini. Todas serão criptografadas e balanceadas em Round-Robin.
  </DialogDescription>
  </DialogHeader>
 
@@ -1632,12 +1687,12 @@ function AdminMasterIntegracoesPage() {
  <div className="space-y-2">
  <Label className="text-xs font-bold">Provedor do Serviço</Label>
  <Select value={newKeyProvider} onValueChange={(v: any) => setNewKeyProvider(v)}>
- <SelectTrigger className="h-10 text-xs rounded-lg">
+ <SelectTrigger className="h-11 min-h-11 text-xs rounded-lg">
  <SelectValue placeholder="Selecione o provedor" />
  </SelectTrigger>
  <SelectContent className="rounded-lg">
- <SelectItem value="openrouter">OpenRouter (Multi-Modelo: Llama 3.3, Claude, DeepSeek)</SelectItem>
- <SelectItem value="groq">Groq LPU (Inferência Ultra-rápida Llama 3.3)</SelectItem>
+ <SelectItem value="openrouter">OpenRouter (Multi-Modelo: Llama 3.3, Qwen3, DeepSeek)</SelectItem>
+ <SelectItem value="groq">Groq LPU (Inferência Ultra-rápida Qwen3 / Llama 3.3)</SelectItem>
  <SelectItem value="gemini">Google Gemini (Flash e Pro)</SelectItem>
  <SelectItem value="openai">OpenAI (GPT-4o e Embeddings)</SelectItem>
  <SelectItem value="anthropic">Anthropic Claude (Sonnet e Opus)</SelectItem>
@@ -1651,23 +1706,23 @@ function AdminMasterIntegracoesPage() {
  </div>
 
  <div className="space-y-2">
- <Label className="text-xs font-bold">Rótulo / Identificação</Label>
+ <Label className="text-xs font-bold">Rótulo Base / Identificação</Label>
  <Input
  value={newKeyLabel}
  onChange={(e) => setNewKeyLabel(e.target.value)}
- placeholder="Ex: Firecrawl Chave 01 (Plano Pro)"
- className="h-10 text-xs rounded-lg"
+ placeholder="Ex: Groq LPU Cluster ou OpenRouter Pool"
+ className="h-11 min-h-11 text-xs rounded-lg"
  />
  </div>
 
  <div className="space-y-2">
- <Label className="text-xs font-bold">Chave Secreta de API (Secret Key)</Label>
- <Input
- type="password"
+ <Label className="text-xs font-bold">Chave(s) Secreta(s) de API (1 por linha para lote)</Label>
+ <Textarea
+ rows={4}
  value={newKeySecret}
  onChange={(e) => setNewKeySecret(e.target.value)}
- placeholder="sk_... ou AIza..."
- className="h-10 text-xs font-mono rounded-lg"
+ placeholder={"gsk_chave1...\ngsk_chave2...\nou sk-or-v1-..."}
+ className="text-xs font-mono rounded-lg"
  />
  </div>
 
@@ -1680,28 +1735,28 @@ function AdminMasterIntegracoesPage() {
  max={10}
  value={newKeyPriority}
  onChange={(e) => setNewKeyPriority(Number(e.target.value))}
- className="h-10 text-xs rounded-lg"
+ className="h-11 min-h-11 text-xs rounded-lg"
  />
  </div>
  <div className="space-y-2">
- <Label className="text-xs font-bold">Limite / Minuto</Label>
+ <Label className="text-xs font-bold">Limite / Minuto (por chave)</Label>
  <Input
  type="number"
  min={1}
  value={newKeyRateLimit}
  onChange={(e) => setNewKeyRateLimit(Number(e.target.value))}
- className="h-10 text-xs rounded-lg"
+ className="h-11 min-h-11 text-xs rounded-lg"
  />
  </div>
  </div>
  </div>
 
- <DialogFooter>
- <Button variant="outline" onClick={() => setIsNewKeyModalOpen(false)} className="rounded-lg text-xs">
+ <DialogFooter className="gap-2">
+ <Button variant="outline" onClick={() => setIsNewKeyModalOpen(false)} className="rounded-lg text-xs h-11 min-h-11">
  Cancelar
  </Button>
- <Button onClick={handleSaveKeyToPool} className="rounded-lg font-bold text-xs">
- Salvar Chave no Pool
+ <Button onClick={handleSaveKeyToPool} className="rounded-lg font-bold text-xs h-11 min-h-11">
+ Salvar Chave(s) no Pool
  </Button>
  </DialogFooter>
  </DialogContent>
