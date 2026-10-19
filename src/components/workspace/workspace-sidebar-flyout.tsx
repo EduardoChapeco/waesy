@@ -62,6 +62,7 @@ export function WorkspaceSidebarFlyout({
  return (
  <Link
  to={singleItem.path}
+ title={group.label}
  className={cn(
  "group flex min-h-11 items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
  isSingleActive
@@ -101,6 +102,7 @@ export function WorkspaceSidebarFlyout({
  <button
  type="button"
  onClick={onToggleExpand}
+ title={group.label}
  className={cn(
  "flex min-h-11 w-full items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
  isGroupActive
@@ -131,6 +133,7 @@ export function WorkspaceSidebarFlyout({
  <Link
  key={item.path}
  to={item.path}
+ title={item.label}
  className={cn(
  "flex min-h-11 items-center px-3 py-2 rounded-lg text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
  isItemActive
@@ -160,6 +163,7 @@ export function WorkspaceSidebarFlyout({
  <button
  type="button"
  onClick={onToggleExpand}
+ title={group.label}
  className={cn(
  "group flex min-h-11 w-full items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold transition-colors cursor-pointer relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
  isGroupActive
@@ -213,6 +217,7 @@ export function WorkspaceSidebarFlyout({
  <Link
  key={item.path}
  to={item.path}
+ title={item.label}
  className={cn(
  "flex min-h-11 items-center px-3 py-2 rounded-lg text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
  isItemActive

@@ -4,6 +4,7 @@ import { Store, Plus, ArrowRight, ExternalLink, CheckCircle2, Package, Building2
 import { PageHeader } from "@/components/commerce/page-header";
 import { getMyStoresList } from "@/services/store.functions";
 import { setTenantContext } from "@/services/identity.functions";
+import { setClientContextCookies } from "@/lib/context-auth";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";

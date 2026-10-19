@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { getServerIdentity } from "@/lib/server-access";
+import { getServerIdentity, clearIdentityCache } from "@/lib/server-access";
 import { getServerClient } from "@/lib/supabase";
 
 export const getIdentity = createServerFn({ method: "GET" }).handler(async () => {
@@ -30,6 +30,13 @@ export const setTenantContext = createServerFn({ method: "POST" })
           secure: process.env.NODE_ENV === "production",
           sameSite: "lax",
         });
+        setCookie("waesy_store_id", "", {
+          path: "/",
+          maxAge: 0,
+          httpOnly: false,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: "lax",
+        });
         setCookie("waesy_active_creator", "", {
           path: "/",
           maxAge: 0,
@@ -40,6 +47,9 @@ export const setTenantContext = createServerFn({ method: "POST" })
       } catch {
         // Ignorado se header já foi enviado
       }
+      try {
+        await clearIdentityCache();
+      } catch {}
       return { success: true, store_id: null };
     }
 
@@ -86,6 +96,13 @@ export const setTenantContext = createServerFn({ method: "POST" })
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
       });
+      setCookie("waesy_store_id", store_id, {
+        path: "/",
+        maxAge: 60 * 60 * 24 * 30,
+        httpOnly: false,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+      });
       setCookie("waesy_active_creator", "", {
         path: "/",
         maxAge: 0,
@@ -96,6 +113,10 @@ export const setTenantContext = createServerFn({ method: "POST" })
     } catch {
       // Ignorado
     }
+
+    try {
+      await clearIdentityCache();
+    } catch {}
 
     return { success: true, store_id, storeName: targetStore.name };
   });

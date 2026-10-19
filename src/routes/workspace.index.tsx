@@ -302,18 +302,19 @@ export default function WorkspaceDashboardPage() {
           </Button>
 
           {activeStore?.slug && (
-            <Button asChild size="sm" variant="outline" className="rounded-lg text-xs font-semibold gap-2 border-border/40 hover:bg-muted/50 h-11 min-h-11">
-              <Link to="/diretorio/$id" params={{ id: activeStore.slug }}>
+            <Button asChild size="sm" variant="outline" className="rounded-lg text-xs font-semibold gap-2 border-border/40 hover:bg-muted/50 h-11 min-h-11 focus-visible:ring-2 focus-visible:ring-ring">
+              <Link to="/diretorio/$id" params={{ id: activeStore.slug }} target="_blank">
                 <Store className="size-3.5 text-primary" />
                 <span>Vitrine Pública</span>
+                <ArrowUpRight className="size-3 text-muted-foreground" />
               </Link>
             </Button>
           )}
 
-          <Button asChild size="sm" variant="ghost" className="rounded-lg text-xs font-semibold gap-1 text-muted-foreground hover:text-foreground hover:bg-muted/50 h-11 min-h-11">
+          <Button asChild size="sm" variant="ghost" className="rounded-lg text-xs font-semibold gap-1 text-muted-foreground hover:text-foreground hover:bg-muted/50 h-11 min-h-11 focus-visible:ring-2 focus-visible:ring-ring">
             <Link to="/workspace/marketing/vitrine">
               <Layers className="size-3.5" />
-              <span>Vitrine</span>
+              <span>Editar Vitrine</span>
             </Link>
           </Button>
 

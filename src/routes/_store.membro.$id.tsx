@@ -2344,16 +2344,19 @@ export function MemberPublicProfileView({
  isSaving={isSavingResume}
  />
 
- {/* Modal Editar Perfil & Vitrine da Marca */}
- {isCreator && (
- <CreatorProfileEditModal
- open={editingSection === "creator_profile"}
- onOpenChange={(op) => !op && setEditingSection(null)}
- creatorProfile={creatorProfile}
+ {/* Edição In-Page Perfil & Vitrine da Marca (Zero Modais/Sheets) */}
+ {isCreator && editingSection === "creator_profile" && (
+ <ProfileInPageEditor
+ isOpen={true}
+ onClose={() => setEditingSection(null)}
  profile={profile}
- onSaveSuccess={() => {
- router.invalidate();
- }}
+ creatorProfile={creatorProfile}
+ isCreator={isCreator}
+ isBrandPersonaView={isBrandPersonaView}
+ availableStores={partnerStores}
+ ownBrandStores={ownBrandStores}
+ pinnedProducts={data?.pinnedProducts || []}
+ initialTab="vitrine"
  />
  )}
   {isOwner && (

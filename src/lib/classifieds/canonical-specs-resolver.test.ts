@@ -227,6 +227,46 @@ describe("resolveClassifiedDetailedSpecs", () => {
       ])
     );
   });
+
+  it("isola estritamente produtos de conveniência/bebidas contra vazamento de viagens, veículos e imóveis (Invariante B.37)", () => {
+    const beverageAd = {
+      title: "Drink Pronto Mansão Maromba Whisky Double Darkness - 1L Alcoólico",
+      category: "grocery",
+      deal_type: "venda",
+      delivery_mode: "both",
+      attributes: {
+        brand: "Mansão Maromba",
+        volume: "1L",
+        is_alcoholic: true,
+        department: "Bebidas & Destilados",
+        deal_type: "venda",
+        max_guests: 1, // resíduo comum de banco/template
+      },
+    };
+
+    const specs = resolveClassifiedDetailedSpecs(beverageAd);
+
+    // Deve conter especificações de conveniência / bebidas
+    expect(specs).toEqual(
+      expect.arrayContaining([
+        { label: "Marca", value: "Mansão Maromba", category: "technical", highlight: true },
+        { label: "Volume / Peso", value: "1L", category: "dimensions", highlight: true },
+        { label: "Bebida Alcoólica", value: "Sim (+18)", category: "technical", highlight: true },
+        { label: "Departamento", value: "Bebidas & Destilados", category: "technical" },
+        { label: "Logística", value: "Entrega Local ou Retirada", category: "logistics", highlight: true },
+      ])
+    );
+
+    // NÃO deve vazar especificações de imóveis, viagens, veículos ou serviços
+    const labels = specs.map((s) => s.label);
+    expect(labels).not.toContain("Capacidade");
+    expect(labels).not.toContain("Finalidade");
+    expect(labels).not.toContain("Destino");
+    expect(labels).not.toContain("Passageiros");
+    expect(labels).not.toContain("Quartos");
+    expect(labels).not.toContain("Quilometragem");
+    expect(labels).not.toContain("Câmbio");
+  });
 });
 
 

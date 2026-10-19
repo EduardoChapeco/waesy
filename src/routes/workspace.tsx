@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Store, AlertTriangle, ArrowLeft, RefreshCw, LogIn } from "lucide-react";
 import { getSystemOnboardingSteps } from "@/services/system-onboarding.functions";
 import { WelcomeOnboardingModal } from "@/components/workspace/welcome-onboarding-modal";
+import { setClientContextCookies, getClientActiveTenant } from "@/lib/context-auth";
 
 
 function isPlatformAdminUser(session: any): boolean {
@@ -164,17 +165,19 @@ function WorkspaceLayout() {
 
  const isPlatformAdmin = isPlatformAdminUser(session);
 
-  useEffect(() => {
-    if (typeof window !== "undefined" && session?.memberships?.[0]?.store_id) {
-      const activeStoreId = session.store_id || session.memberships[0].store_id;
-      window.document.cookie = "waesy_active_context=store; path=/; max-age=31536000; SameSite=Lax";
-      window.document.cookie = `waesy_active_tenant=${activeStoreId}; path=/; max-age=31536000; SameSite=Lax`;
-      window.document.cookie = `waesy_store_id=${activeStoreId}; path=/; max-age=31536000; SameSite=Lax`;
-      window.document.cookie = "waesy_active_creator=; path=/; max-age=0; SameSite=Lax";
-    }
-  }, [session]);
+  const memberships = (session?.memberships as any[]) || [];
+  const existingCookieTenant = typeof window !== "undefined" ? getClientActiveTenant() : null;
+  const isExistingTenantValid = existingCookieTenant && memberships.some((m: any) => m.store_id === existingCookieTenant);
 
-  const activeMembership = session?.memberships?.[0];
+  const activeStoreId = (isExistingTenantValid ? existingCookieTenant : null) || session?.store_id || memberships[0]?.store_id;
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && activeStoreId) {
+      setClientContextCookies({ context: "store", storeId: activeStoreId });
+    }
+  }, [activeStoreId]);
+
+  const activeMembership = memberships.find((m: any) => m.store_id === activeStoreId) || memberships[0];
   const effectiveRole = (
     isPlatformAdmin
       ? "owner"

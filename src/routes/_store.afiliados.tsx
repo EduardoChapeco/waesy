@@ -2,21 +2,17 @@ import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Copy, Share2, Users, ShieldCheck, CheckCircle2, Clock, ExternalLink, Target, Coins, Lock, Eye, EyeOff, ShoppingBag, Store, Layers, ArrowRight, TrendingUp, SlidersHorizontal, Star, Ticket, ChevronRight, Check, PenSquare, Globe, Tag, Percent, ArrowUp, ArrowDown, Calendar, Plus, Trash2, MessageCircle, Send, Image as ImageIcon, Edit3 } from "lucide-react";
+import { Copy, ShieldCheck, CheckCircle2, ExternalLink, Coins, ShoppingBag, Store, Layers, ArrowRight, TrendingUp, Star, Ticket, Check, Globe, Percent, ArrowUp, ArrowDown, Calendar, Plus, Trash2, Send, Image as ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CreatorNicheSelect } from "@/components/profile/creator-niche-select";
-import { CreatorProfileSheetEditor, CreatorProfileSheetData } from "@/components/profile/creator-profile-sheet-editor";
-import { getCreatorNicheLabel } from "@/lib/constants/creator-niches";
 import { ImageUpload } from "@/components/ui/image-upload";
 import { NativeMobileHeader } from "@/components/navigation/native-mobile-header";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { formatDate } from "@/lib/datetime";
 import { formatMoney } from "@/lib/money";
-import { getMyAffiliateTokensOverview, registerAffiliate, upsertCreatorProfile, updateProfilePrivacyMode, getAffiliateShowcaseProducts, getAvailablePartnerStores, getCreatorAnalytics, saveCreatorShowcaseSettings, togglePartnerStoreConnection, getCreatorEvents } from "@/services/affiliates.functions";
+import { getMyAffiliateTokensOverview, registerAffiliate, getAffiliateShowcaseProducts, getAvailablePartnerStores, getCreatorAnalytics, saveCreatorShowcaseSettings, togglePartnerStoreConnection, getCreatorEvents } from "@/services/affiliates.functions";
 import {
   listAffiliateCommissionsForPartner,
   listExternalAffiliateCampaigns,
@@ -27,11 +23,11 @@ import { getProfile } from "@/services/auth.functions";
 export const Route = createFileRoute("/_store/afiliados")({
   head: () => ({
     meta: [
-      { title: "Parceiros e Criadores de Conteúdo | Waesy" },
+      { title: "Central de Afiliados | Waesy" },
       {
         name: "description",
         content:
-          "Monetize suas recomendações com vitrines digitais, cupons de lojas locais e acumulação de tokens na Rede Waesy.",
+          "Gerencie links comissionados, extrato em garantia, campanhas parceiras, cupons de lojas locais e vitrine comercial.",
       },
     ],
   }),
@@ -75,7 +71,6 @@ function AfiliadosPage() {
   const {
     data: overview,
     isLoading,
-    refetch,
   } = useQuery({
     queryKey: ["my-affiliate-overview"],
     queryFn: () => getMyAffiliateTokensOverview(),
@@ -92,7 +87,6 @@ function AfiliadosPage() {
   const siteUrl = typeof window !== "undefined" ? window.location.origin : "https://usewaesy.com.br";
   const referralHandle = partner?.handle || creator?.handle || "";
   const generalAffiliateUrl = referralHandle ? `${siteUrl}/?ref=${referralHandle}` : "";
-  const creatorShowcaseUrl = referralHandle ? `${siteUrl}/u/${referralHandle}` : "";
 
   const { data: analytics } = useQuery({
     queryKey: ["creator-analytics", referralHandle],
@@ -148,10 +142,8 @@ function AfiliadosPage() {
   const [activeTab, setActiveTab] = useState<string>("dashboard");
   const [copiedLink, setCopiedLink] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isUpdatingPrivacy, setIsUpdatingPrivacy] = useState(false);
   const [isSavingShowcase, setIsSavingShowcase] = useState(false);
-  const [isStorePickerOpen, setIsStorePickerOpen] = useState(false);
-  const [isProfileEditorOpen, setIsProfileEditorOpen] = useState(false);
+  const [showInlineStorePicker, setShowInlineStorePicker] = useState(false);
 
   // Auto-preenche handle a partir do username do perfil
   const defaultHandle =
@@ -159,13 +151,7 @@ function AfiliadosPage() {
     loaderProfile?.email?.split("@")[0]?.toLowerCase().replace(/[^a-z0-9_-]/g, "") ||
     "";
 
-  // Estados do Onboarding para Novo Afiliado (Multi-step)
-  const [onboardingStep, setOnboardingStep] = useState<1 | 2 | 3 | 4>(1);
   const [onboardingHandle, setOnboardingHandle] = useState(defaultHandle);
-  const [onboardingName, setOnboardingName] = useState(loaderProfile?.full_name || "");
-  const [onboardingBio, setOnboardingBio] = useState("");
-  const [onboardingCategory, setOnboardingCategory] = useState("Geral");
-  const [onboardingAnonymize, setOnboardingAnonymize] = useState(true);
 
   // Estados do CMS de Vitrine (Banner, Ordem de Seções, Lojas Conectadas)
   const [bannerUrl, setBannerUrl] = useState(creator?.banner_url || "");
@@ -187,12 +173,6 @@ function AfiliadosPage() {
       if (creator.partner_store_ids) setConnectedStoreIds(creator.partner_store_ids);
     }
   }, [creator]);
-
-  // Privacy states
-  const [isAnonymous, setIsAnonymous] = useState(Boolean(loaderProfile?.is_anonymous));
-  const [privacyMode, setPrivacyMode] = useState<"public" | "unlisted" | "private">(
-    (loaderProfile?.privacy_mode as any) || "public"
-  );
 
   const handleCopy = (text: string, label: string) => {
     if (!text) return;
@@ -254,7 +234,7 @@ function AfiliadosPage() {
           partnerStoreIds: connectedStoreIds,
         },
       });
-      toast.success("Vitrine pública atualizada com sucesso!");
+      toast.success("Vitrine comercial atualizada com sucesso!");
       await queryClient.invalidateQueries({ queryKey: ["my-affiliate-overview"] });
       router.invalidate();
     } catch (err: any) {
@@ -267,7 +247,7 @@ function AfiliadosPage() {
   const handleFastAffiliateActivation = async () => {
     const cleanHandle = (onboardingHandle || defaultHandle).trim().toLowerCase().replace(/[^a-z0-9_-]/g, "");
     if (!cleanHandle || cleanHandle.length < 3) {
-      toast.error("O identificador de indicação deve ter no mínimo 3 caracteres.");
+      toast.error("O código de indicação deve ter no mínimo 3 caracteres.");
       return;
     }
 
@@ -282,7 +262,7 @@ function AfiliadosPage() {
         },
       });
 
-      toast.success("Conta de Afiliado ativada! Seus links de indicação e comissões via PIX já estão disponíveis.");
+      toast.success("Conta de Afiliado ativada! Seus links e comissões já estão prontos.");
       await queryClient.invalidateQueries({ queryKey: ["my-affiliate-overview"] });
       router.invalidate();
     } catch (err: any) {
@@ -292,87 +272,25 @@ function AfiliadosPage() {
     }
   };
 
-  const handleOnboardingSubmit = async () => {
-    if (!onboardingHandle.trim() || onboardingHandle.length < 3) {
-      toast.error("O identificador único deve ter no mínimo 3 caracteres.");
-      return;
-    }
-
-    setIsSubmitting(true);
-    try {
-      await registerAffiliate({
-        data: {
-          handle: onboardingHandle.trim().toLowerCase(),
-          displayName: onboardingName.trim() || loaderProfile?.full_name || "Criador Waesy",
-          bio: onboardingBio.trim() || undefined,
-          category: onboardingCategory,
-        },
-      });
-
-      if (onboardingAnonymize) {
-        await updateProfilePrivacyMode({
-          data: {
-            isAnonymous: true,
-            privacyMode: "unlisted",
-          },
-        }).catch(() => null);
-      }
-
-      toast.success("Perfil de parceiro e criador ativado com sucesso!");
-      await queryClient.invalidateQueries({ queryKey: ["my-affiliate-overview"] });
-      router.invalidate();
-    } catch (err: any) {
-      toast.error(err?.message || "Erro ao ativar perfil de parceiro.");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleTogglePrivacy = async (newAnonymous: boolean, newMode: "public" | "unlisted" | "private") => {
-    setIsUpdatingPrivacy(true);
-    try {
-      await updateProfilePrivacyMode({
-        data: {
-          isAnonymous: newAnonymous,
-          privacyMode: newMode,
-        },
-      });
-
-      setIsAnonymous(newAnonymous);
-      setPrivacyMode(newMode);
-      toast.success(
-        newAnonymous
-          ? "Perfil pessoal discreto. Suas compras e dados de CPF não aparecem em buscas públicas; sua marca interage publicamente."
-          : "Perfil civil restaurado para exibição comunitária padrão."
-      );
-      await queryClient.invalidateQueries({ queryKey: ["my-affiliate-overview"] });
-      router.invalidate();
-    } catch (err: any) {
-      toast.error(err?.message || "Erro ao atualizar privacidade.");
-    } finally {
-      setIsUpdatingPrivacy(false);
-    }
-  };
-
   const sectionLabels: Record<string, { label: string; desc: string; icon: any }> = {
     banner: {
-      label: "Banner Promocional da Marca",
-      desc: "Imagem de destaque 16:9 no topo da vitrine com chamada e link",
+      label: "Banner de Destaque (16:9)",
+      desc: "Imagem promocional no topo da vitrine com chamada e link",
       icon: ImageIcon,
     },
     stores: {
       label: "Lojas Parceiras Conectadas",
-      desc: `${connectedStoreIds.length} loja(s) com cupons exclusivos exibidas aos seus seguidores`,
+      desc: `${connectedStoreIds.length} loja(s) com cupons exclusivos na vitrine`,
       icon: Store,
     },
     products: {
       label: "Produtos Recomendados",
-      desc: `${showcaseProducts.length} produto(s) disponíveis para comissão`,
+      desc: `${showcaseProducts.length} produto(s) comissionados no catálogo`,
       icon: ShoppingBag,
     },
     events: {
-      label: "Próximos Eventos e Shows",
-      desc: `${creatorEvents.length} evento(s) da marca agendados`,
+      label: "Eventos e Ativações",
+      desc: `${creatorEvents.length} evento(s) vinculados ao seu código`,
       icon: Calendar,
     },
   };
@@ -380,10 +298,10 @@ function AfiliadosPage() {
   const connectedStoresList = partnerStores.filter((s: any) => connectedStoreIds.includes(s.id));
 
   return (
-    <div className="min-h-dvh bg-background text-foreground pb-28">
+    <div className="min-h-dvh bg-background text-foreground pb-32">
       {/* ─── V117 Universal Header Mobile ─── */}
       <NativeMobileHeader
-        title="Parceiros"
+        title="Central de Afiliados"
         centerTitle
         backTo="/conta"
         rightAction={
@@ -398,12 +316,12 @@ function AfiliadosPage() {
         }
       />
 
-      {/* ─── Top Bar Desktop Apple HIG (Direta, Comercial e Silenciosa) ─── */}
+      {/* ─── Top Bar Desktop Apple HIG (Direta, Comercial e Sem Viés de Perfil) ─── */}
       <div className="hidden md:block border-b border-border/40 bg-card/70 backdrop-blur-md px-6 py-4 sticky top-0 z-20">
         <div className="max-w-5xl mx-auto flex items-center justify-between gap-3">
           <div className="flex items-center gap-2 min-w-0">
-            <h1 className="text-base font-bold tracking-tight text-foreground truncate">
-              Parceiros
+            <h1 className="text-base font-bold tracking-tight text-foreground">
+              Central de Afiliados
             </h1>
             {partner && (
               <Badge variant="outline" className="text-xs font-mono bg-primary/5 text-primary border-primary/20 shrink-0">
@@ -414,28 +332,17 @@ function AfiliadosPage() {
 
           {partner && (
             <div className="flex items-center gap-2 shrink-0">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => setIsProfileEditorOpen(true)}
-                className="h-11 min-h-11 px-3 rounded-lg text-xs gap-2 focus-visible:ring-2 focus-visible:ring-primary"
-              >
-                <Edit3 className="size-4" />
-                <span className="hidden sm:inline">Editar Perfil</span>
+              <Button asChild variant="outline" size="sm" className="h-11 min-h-11 px-3 rounded-lg text-xs gap-2 focus-visible:ring-2 focus-visible:ring-primary">
+                <Link to="/workspace/afiliados/conciliacao">
+                  <Coins className="size-4" />
+                  <span>Conciliação de Faturas</span>
+                </Link>
               </Button>
 
               <Button asChild variant="outline" size="sm" className="h-11 min-h-11 px-3 rounded-lg text-xs gap-2 focus-visible:ring-2 focus-visible:ring-primary">
                 <Link to="/u/$username" params={{ username: referralHandle }}>
                   <Globe className="size-4" />
-                  <span>Minha Vitrine</span>
-                </Link>
-              </Button>
-
-              <Button asChild size="sm" className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold gap-2">
-                <Link to="/feed">
-                  <PenSquare className="size-4" />
-                  <span>Publicar</span>
+                  <span>Abrir Vitrine Pública</span>
                 </Link>
               </Button>
             </div>
@@ -443,19 +350,19 @@ function AfiliadosPage() {
         </div>
       </div>
 
-      {/* Container Principal com Respiro Anti-Claustrofobia (V117 px-4 sm:px-5) */}
-      <div className="max-w-5xl mx-auto px-0 sm:px-4 md:px-0 py-3 sm:py-6">
+      {/* Container Principal com Respiro Anti-Claustrofobia */}
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
         {isLoading && !partner ? (
           <div className="max-w-md mx-auto py-20 text-center space-y-4">
             <div className="size-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center mx-auto animate-pulse">
               <Star className="size-6" />
             </div>
-            <p className="text-sm font-semibold text-foreground">Carregando painel...</p>
+            <p className="text-sm font-semibold text-foreground">Carregando central de afiliados...</p>
           </div>
         ) : partner ? (
-          /* ─── PAINEL COMPLETO DO CRIADOR / PARCEIRO ────────────── */
+          /* ─── PAINEL DE MONETIZAÇÃO, LINKS & VITRINE DO AFILIADO ────────────── */
           <div className="space-y-4 sm:space-y-6">
-            {/* Navegação em Tabs (Snap & Fade Physics no Mobile) */}
+            {/* Navegação Horizontal Contínua em Linha Única (B.39) */}
             <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
               <TabsList
                 className="h-11 p-1 bg-muted/40 rounded-lg border border-border/40 flex flex-nowrap items-center gap-1 overflow-x-auto no-scrollbar tab-list w-full"
@@ -466,27 +373,23 @@ function AfiliadosPage() {
                 </TabsTrigger>
                 <TabsTrigger value="ledger" className="h-11 min-h-11 px-3 text-xs rounded-lg gap-2 font-medium shrink-0">
                   <Coins className="size-4" />
-                  <span>Extrato</span>
+                  <span>Extrato & Comissões</span>
                 </TabsTrigger>
                 <TabsTrigger value="phia" className="h-11 min-h-11 px-3 text-xs rounded-lg gap-2 font-medium shrink-0">
                   <Globe className="size-4" />
-                  <span>Campanhas</span>
+                  <span>Campanhas Globais</span>
                 </TabsTrigger>
                 <TabsTrigger value="showcase" className="h-11 min-h-11 px-3 text-xs rounded-lg gap-2 font-medium shrink-0">
                   <Layers className="size-4" />
-                  <span>Vitrine</span>
+                  <span>Curadoria da Vitrine</span>
                 </TabsTrigger>
                 <TabsTrigger value="stores" className="h-11 min-h-11 px-3 text-xs rounded-lg gap-2 font-medium shrink-0">
                   <Store className="size-4" />
-                  <span>Lojas Locais</span>
+                  <span>Lojas Parceiras</span>
                 </TabsTrigger>
                 <TabsTrigger value="referrals" className="h-11 min-h-11 px-3 text-xs rounded-lg gap-2 font-medium shrink-0">
-                  <Coins className="size-4" />
-                  <span>Tokens & Vesting</span>
-                </TabsTrigger>
-                <TabsTrigger value="settings" className="h-11 min-h-11 px-3 text-xs rounded-lg gap-2 font-medium shrink-0">
-                  <SlidersHorizontal className="size-4" />
-                  <span>Configurações</span>
+                  <ShieldCheck className="size-4" />
+                  <span>Indicações & Repasses</span>
                 </TabsTrigger>
               </TabsList>
 
@@ -588,7 +491,7 @@ function AfiliadosPage() {
                   <Input
                     readOnly
                     value={generalAffiliateUrl}
-                    className="h-10 rounded-lg bg-muted/30 font-mono text-xs border-border/50 select-all"
+                    className="h-11 min-h-11 rounded-lg bg-muted/30 font-mono text-xs border-border/50 select-all"
                   />
                 </div>
 
@@ -944,7 +847,7 @@ function AfiliadosPage() {
                               size="sm"
                               disabled={idx === 0}
                               onClick={() => moveSection(idx, "up")}
-                              className="size-11 min-size-11 p-0 rounded-lg text-muted-foreground hover:text-foreground"
+                              className="size-11 min-h-11 min-w-11 p-0 rounded-lg text-muted-foreground hover:text-foreground"
                               title="Subir camada"
                             >
                               <ArrowUp className="size-4" />
@@ -956,7 +859,7 @@ function AfiliadosPage() {
                               size="sm"
                               disabled={idx === showcaseOrder.length - 1}
                               onClick={() => moveSection(idx, "down")}
-                              className="size-11 min-size-11 p-0 rounded-lg text-muted-foreground hover:text-foreground"
+                              className="size-11 min-h-11 min-w-11 p-0 rounded-lg text-muted-foreground hover:text-foreground"
                               title="Descer camada"
                             >
                               <ArrowDown className="size-4" />
@@ -974,7 +877,7 @@ function AfiliadosPage() {
                     <div>
                       <h4 className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-2">
                         <ImageIcon className="size-4 text-primary" />
-                        <span>Banner Promocional da Marca (16:9)</span>
+                        <span>Banner de Destaque da Vitrine (16:9)</span>
                       </h4>
                       <p className="text-xs text-muted-foreground">
                         Apresente uma foto temática, cupom da semana ou parceria em destaque no topo da sua vitrine.
@@ -1001,7 +904,7 @@ function AfiliadosPage() {
                       <Badge className="text-xs bg-primary text-primary-foreground border-none">
                         Destaque da Semana
                       </Badge>
-                      <h3 className="text-base sm:text-xl font-extrabold text-primary-foreground line-clamp-1">
+                      <h3 className="text-base sm:text-xl font-extrabold text-primary-foreground break-words text-wrap leading-tight">
                         {bannerTitle || "Seu Título Promocional em Destaque Aqui"}
                       </h3>
                       {bannerLink && (
@@ -1051,7 +954,7 @@ function AfiliadosPage() {
                   </div>
                 </div>
 
-                {/* 3. Lojas Parceiras Conectadas à Vitrine */}
+                {/* 3. Lojas Parceiras Conectadas à Vitrine (Seleção 100% In-Page sem Modal) */}
                 <div className="p-4 sm:p-6 rounded-lg border border-border/60 bg-card space-y-4">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <div>
@@ -1060,27 +963,89 @@ function AfiliadosPage() {
                         <span>Lojas Parceiras Conectadas ({connectedStoreIds.length})</span>
                       </h4>
                       <p className="text-xs text-muted-foreground">
-                        Lojas que aparecem com seus cupons de 10% de desconto na sua vitrine pública.
+                        Lojas exibidas com seus cupons de 10% de desconto na sua vitrine pública.
                       </p>
                     </div>
 
                     <Button
                       type="button"
+                      variant={showInlineStorePicker ? "secondary" : "outline"}
                       size="sm"
-                      onClick={() => setIsStorePickerOpen(true)}
+                      onClick={() => setShowInlineStorePicker((prev) => !prev)}
                       className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold gap-2 self-start sm:self-auto"
                     >
                       <Plus className="size-4" />
-                      <span>Conectar Nova Loja</span>
+                      <span>{showInlineStorePicker ? "Fechar Catálogo de Lojas" : "Conectar Lojas na Página"}</span>
                     </Button>
                   </div>
+
+                  {/* Seletor In-Page de Lojas Parceiras (Sem Modal) */}
+                  {showInlineStorePicker && (
+                    <div className="p-4 rounded-lg border border-primary/30 bg-primary/5 space-y-3">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-xs font-bold text-foreground">
+                          Selecione as lojas para conectar ou desconectar da vitrine
+                        </span>
+                        <Badge variant="outline" className="text-xs font-mono">
+                          {partnerStores.length} disponíveis
+                        </Badge>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-96 overflow-y-auto pr-1">
+                        {partnerStores.map((s: any) => {
+                          const isConnected = connectedStoreIds.includes(s.id);
+                          return (
+                            <div
+                              key={s.id}
+                              className="p-3 rounded-lg border border-border/60 bg-card flex items-center justify-between gap-3"
+                            >
+                              <div className="flex items-center gap-3 min-w-0">
+                                <div className="size-11 rounded-lg bg-muted/60 overflow-hidden shrink-0 border border-border/40 flex items-center justify-center">
+                                  {s.logoUrl ? (
+                                    <img src={s.logoUrl} alt={s.name} className="size-full object-cover" />
+                                  ) : (
+                                    <Store className="size-5 text-muted-foreground" />
+                                  )}
+                                </div>
+                                <div className="min-w-0">
+                                  <h5 className="text-xs font-bold text-foreground break-words text-wrap leading-tight">{s.name}</h5>
+                                  <p className="text-xs text-muted-foreground break-words text-wrap">
+                                    {s.segment} • {s.city}
+                                  </p>
+                                </div>
+                              </div>
+
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant={isConnected ? "secondary" : "default"}
+                                onClick={() => handleToggleStoreConnection(s.id)}
+                                className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold gap-1 shrink-0"
+                              >
+                                {isConnected ? (
+                                  <>
+                                    <Check className="size-3 text-emerald-600" />
+                                    <span>Conectada</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Plus className="size-3" />
+                                    <span>Conectar</span>
+                                  </>
+                                )}
+                              </Button>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
 
                   {connectedStoresList.length === 0 ? (
                     <div className="p-6 text-center rounded-lg bg-muted/20 border border-border/40 space-y-2">
                       <Store className="size-6 text-muted-foreground mx-auto" />
                       <p className="text-xs font-semibold text-foreground">Nenhuma loja conectada ainda</p>
                       <p className="text-xs text-muted-foreground">
-                        Conecte lojas parceiras para enriquecer sua vitrine.
+                        Conecte lojas parceiras para exibir cupons exclusivos na sua vitrine.
                       </p>
                     </div>
                   ) : (
@@ -1099,8 +1064,8 @@ function AfiliadosPage() {
                               )}
                             </div>
                             <div className="min-w-0">
-                              <h5 className="text-xs font-bold text-foreground truncate">{s.name}</h5>
-                              <p className="text-xs text-muted-foreground truncate">
+                              <h5 className="text-xs font-bold text-foreground break-words text-wrap leading-tight">{s.name}</h5>
+                              <p className="text-xs text-muted-foreground break-words text-wrap mt-1">
                                 Cupom: <span className="font-mono font-bold text-primary">{s.couponCode}</span> (10% OFF)
                               </p>
                             </div>
@@ -1111,7 +1076,7 @@ function AfiliadosPage() {
                             variant="ghost"
                             size="sm"
                             onClick={() => handleToggleStoreConnection(s.id)}
-                            className="size-11 min-size-11 p-0 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                            className="size-11 min-h-11 min-w-11 p-0 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 shrink-0"
                             title="Remover loja da vitrine"
                           >
                             <Trash2 className="size-4" />
@@ -1171,8 +1136,8 @@ function AfiliadosPage() {
                                 <span className="text-xs text-muted-foreground uppercase font-medium">
                                   {p.storeName}
                                 </span>
-                                <h5 className="text-xs font-bold text-foreground line-clamp-1">{p.name}</h5>
-                                <p className="text-xs font-extrabold text-primary">{formatMoney(p.priceCents)}</p>
+                                <h5 className="text-xs font-bold text-foreground break-words text-wrap leading-tight">{p.name}</h5>
+                                <p className="text-xs font-extrabold text-primary mt-1">{formatMoney(p.priceCents)}</p>
                               </div>
                             </div>
 
@@ -1199,16 +1164,16 @@ function AfiliadosPage() {
                   )}
                 </div>
 
-                {/* 5. Próximos Eventos & Shows da Marca */}
+                {/* 5. Próximos Eventos & Ativações */}
                 <div className="p-4 sm:p-6 rounded-lg border border-border/60 bg-card space-y-4">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <div>
                       <h4 className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-2">
                         <Calendar className="size-4 text-primary" />
-                        <span>Próximos Eventos & Shows da Marca ({creatorEvents.length})</span>
+                        <span>Eventos & Ativações ({creatorEvents.length})</span>
                       </h4>
                       <p className="text-xs text-muted-foreground">
-                        Apresentações, workshops e eventos em que você atua ou co-organiza.
+                        Eventos e workshops vinculados ao seu código de parceiro.
                       </p>
                     </div>
 
@@ -1246,7 +1211,7 @@ function AfiliadosPage() {
                           </div>
 
                           <div className="space-y-1 min-w-0">
-                            <h5 className="text-xs font-bold text-foreground truncate">{evt.title}</h5>
+                            <h5 className="text-xs font-bold text-foreground break-words text-wrap leading-tight">{evt.title}</h5>
                             <p className="text-xs text-muted-foreground">
                               {evt.event_date ? formatDate(evt.event_date) : "Data a definir"} • {evt.location || evt.city || "Chapecó"}
                             </p>
@@ -1291,8 +1256,8 @@ function AfiliadosPage() {
                           </div>
 
                           <div className="space-y-1">
-                            <div className="flex items-center gap-2">
-                              <h4 className="text-sm font-bold text-foreground">{s.name}</h4>
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <h4 className="text-sm font-bold text-foreground break-words text-wrap leading-tight">{s.name}</h4>
                               <Badge variant="secondary" className="text-xs">
                                 {s.segment}
                               </Badge>
@@ -1369,40 +1334,64 @@ function AfiliadosPage() {
                 </div>
               </TabsContent>
 
-              {/* ─── TAB 4: INDICAÇÕES & SALDO ────────────────────── */}
+              {/* ─── TAB 4: INDICAÇÕES, TOKENS & LIQUIDAÇÃO DE REPASSES ────────────────────── */}
               <TabsContent value="referrals" className="space-y-4 sm:space-y-6 mt-0">
-                {/* Bloco de Saldo e Saques */}
-                <div className="p-4 sm:p-5 rounded-lg border border-primary/30 bg-primary/5 space-y-3">
-                  <div className="flex items-center gap-3">
-                    <div className="size-11 min-size-11 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                      <ShieldCheck className="size-4" />
+                {/* Regras de Liquidação Pix & Conciliação B2B */}
+                <div className="p-4 sm:p-6 rounded-lg border border-primary/30 bg-primary/5 space-y-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      <div className="size-11 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                        <ShieldCheck className="size-5" />
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-bold text-foreground">
+                          Liquidação de Comissões e Repasses Pix
+                        </h3>
+                        <p className="text-xs text-muted-foreground">
+                          Ciclo de garantia contra cancelamentos (D+30) e conciliação de faturas com lojas parceiras.
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="text-sm font-bold text-foreground">
-                        Seus Ganhos e Extrato
-                      </h3>
-                      <p className="text-xs text-muted-foreground">
-                        Comissões e bônus acumulados por indicações e vendas confirmadas.
+                    <Button asChild variant="outline" size="sm" className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold gap-2 shrink-0">
+                      <Link to="/workspace/afiliados/conciliacao">
+                        <Coins className="size-4" />
+                        <span>Abrir Conciliação de Faturas</span>
+                      </Link>
+                    </Button>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                    <div className="p-3 rounded-lg bg-background border border-border/50 space-y-1">
+                      <span className="font-bold text-foreground block">1. Pedido Rastreado</span>
+                      <p className="text-muted-foreground leading-relaxed">
+                        A comissão aparece imediatamente no extrato quando o cliente finaliza o pedido pelo seu link ou cupom.
+                      </p>
+                    </div>
+                    <div className="p-3 rounded-lg bg-background border border-border/50 space-y-1">
+                      <span className="font-bold text-foreground block">2. Garantia (Escrow)</span>
+                      <p className="text-muted-foreground leading-relaxed">
+                        Após a entrega confirmada, o saldo aguarda o prazo legal de devolução. Pedidos cancelados estornam a comissão automaticamente.
+                      </p>
+                    </div>
+                    <div className="p-3 rounded-lg bg-background border border-border/50 space-y-1">
+                      <span className="font-bold text-foreground block">3. Saque via Pix</span>
+                      <p className="text-muted-foreground leading-relaxed">
+                        Com a fatura liquidada, o valor fica livre para resgate via Pix ou uso como saldo na plataforma.
                       </p>
                     </div>
                   </div>
-
-                  <p className="text-xs text-muted-foreground leading-relaxed">
-                    Suas comissões por vendas e bônus por indicações são creditados automaticamente no seu saldo.
-                    Você pode solicitar o resgate via Pix ou utilizar como desconto em compras na rede.
-                  </p>
                 </div>
 
                 {/* Regras Ativas de Tokens */}
                 {rules.length > 0 && (
                   <div className="p-4 sm:p-5 rounded-lg border border-border/60 bg-card space-y-3">
                     <h3 className="text-sm font-bold text-foreground">Regras de Bônus por Indicação</h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                       {rules.map((r: any) => (
                         <div key={r.id} className="p-3 rounded-lg border border-border/60 bg-muted/20 space-y-1">
-                          <div className="flex items-center justify-between">
-                            <span className="text-xs font-semibold text-foreground">{r.title}</span>
-                            <Badge variant="secondary" className="text-xs">
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="text-xs font-semibold text-foreground break-words text-wrap">{r.title}</span>
+                            <Badge variant="secondary" className="text-xs shrink-0">
                               {r.vesting_days}d liberação
                             </Badge>
                           </div>
@@ -1416,12 +1405,12 @@ function AfiliadosPage() {
                   </div>
                 )}
 
-                {/* Histórico */}
+                {/* Histórico de Indicações */}
                 <div className="p-4 sm:p-5 rounded-lg border border-border/60 bg-card space-y-3">
                   <h3 className="text-sm font-bold text-foreground">Histórico de Indicações Recentes</h3>
                   {referrals.length === 0 ? (
                     <p className="text-xs text-muted-foreground text-center py-6">
-                      Nenhuma indicação registrada.
+                      Nenhuma indicação registrada até o momento.
                     </p>
                   ) : (
                     <div className="divide-y divide-border/40">
@@ -1451,552 +1440,93 @@ function AfiliadosPage() {
                   )}
                 </div>
               </TabsContent>
-
-              {/* ─── TAB 5: IDENTIDADE & CONFIGURAÇÕES ─────────────── */}
-              <TabsContent value="settings" className="space-y-4 sm:space-y-6 mt-0">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-                  {/* Perfil Público da Marca / Criador (Canônico) */}
-                  <div className="p-4 sm:p-6 rounded-lg border border-border/60 bg-card space-y-4">
-                    <div className="flex items-center justify-between gap-3">
-                      <div>
-                        <h3 className="text-sm font-bold text-foreground">Perfil Público da Marca</h3>
-                        <p className="text-xs text-muted-foreground">
-                          Como seus seguidores e lojas parceiras enxergam você na comunidade.
-                        </p>
-                      </div>
-                      <Badge variant="outline" className="text-xs font-mono shrink-0">
-                        @{referralHandle}
-                      </Badge>
-                    </div>
-
-                    {/* Visualização de Resumo da Identidade */}
-                    <div className="p-4 rounded-lg bg-muted/20 border border-border/40 space-y-3">
-                      <div className="flex items-center gap-3">
-                        <div className="size-12 rounded-lg bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-base uppercase shrink-0 overflow-hidden">
-                          {creator?.avatar_url ? (
-                            <img src={creator.avatar_url} alt={referralHandle} className="size-full object-cover" />
-                          ) : (
-                            referralHandle.slice(0, 2)
-                          )}
-                        </div>
-
-                        <div className="min-w-0 flex-1 space-y-1">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <h4 className="text-sm font-bold text-foreground truncate">
-                              {creator?.stage_name || partner?.display_name || loaderProfile?.full_name || referralHandle}
-                            </h4>
-                            <Badge variant="secondary" className="text-xs bg-muted/60">
-                              {getCreatorNicheLabel(creator?.category || partner?.category || "geral")}
-                            </Badge>
-                          </div>
-                          {creator?.bio ? (
-                            <p className="text-xs text-muted-foreground line-clamp-2">{creator.bio}</p>
-                          ) : (
-                            <p className="text-xs text-muted-foreground italic">Nenhuma biografia configurada.</p>
-                          )}
-                        </div>
-                      </div>
-
-                      {creator?.cover_url && (
-                        <div className="aspect-video w-full rounded-md overflow-hidden border border-border/30 bg-muted/30">
-                          <img src={creator.cover_url} alt="Capa da marca" className="size-full object-cover" />
-                        </div>
-                      )}
-                    </div>
-
-                    <Button
-                      type="button"
-                      onClick={() => setIsProfileEditorOpen(true)}
-                      className="w-full h-11 min-h-11 rounded-lg text-xs font-semibold gap-2"
-                    >
-                      <Edit3 className="size-4" />
-                      <span>Editar Perfil de Marca</span>
-                    </Button>
-                  </div>
-
-                  {/* Privacidade do Perfil */}
-                  <div className="p-4 sm:p-6 rounded-lg border border-border/60 bg-card space-y-3 sm:space-y-4">
-                    <div className="flex items-center gap-3">
-                      <div className="size-11 min-size-11 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
-                        <ShieldCheck className="size-4" />
-                      </div>
-                      <div>
-                        <h3 className="text-sm font-bold text-foreground">Privacidade do Perfil</h3>
-                        <p className="text-xs text-muted-foreground">
-                          Controle a visibilidade da sua conta nas buscas da comunidade.
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="p-4 rounded-lg bg-muted/20 border border-border/40 space-y-3 text-xs">
-                      <div className="flex items-center justify-between">
-                        <span className="font-medium text-foreground">Visibilidade nas Buscas:</span>
-                        <Badge
-                          variant={isAnonymous ? "default" : "outline"}
-                          className="text-xs font-semibold"
-                        >
-                          {isAnonymous ? "Perfil Discreto" : "Visível na Busca"}
-                        </Badge>
-                      </div>
-
-                      <p className="text-xs text-muted-foreground leading-relaxed">
-                        Ao ativar o modo discreto, seu perfil pessoal não aparece nas buscas públicas da comunidade.
-                        Suas divulgações e links continuam funcionando normalmente através de <strong className="text-foreground">@{referralHandle}</strong>.
-                      </p>
-
-                      <Button
-                        type="button"
-                        variant={isAnonymous ? "outline" : "default"}
-                        disabled={isUpdatingPrivacy}
-                        onClick={() => handleTogglePrivacy(!isAnonymous, isAnonymous ? "public" : "unlisted")}
-                        className="w-full h-11 min-h-11 rounded-lg text-xs font-semibold gap-2"
-                      >
-                        {isAnonymous ? <Eye className="size-4" /> : <EyeOff className="size-4" />}
-                        <span>
-                          {isAnonymous
-                            ? "Tornar Visível na Busca"
-                            : "Manter Perfil Discreto (Ocultar da Busca)"}
-                        </span>
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </TabsContent>
             </Tabs>
-
-            {/* Modal de Conexão Rápida de Lojas Parceiras */}
-            <Dialog open={isStorePickerOpen} onOpenChange={setIsStorePickerOpen}>
-              <DialogContent className="sm:max-w-lg">
-                <DialogHeader>
-                  <DialogTitle className="text-base font-bold">Lojas Parceiras</DialogTitle>
-                </DialogHeader>
-
-                <div className="space-y-4 pt-2">
-                  <p className="text-xs text-muted-foreground">
-                    Selecione as lojas que deseja exibir aos seus seguidores na sua vitrine pública. Os cupons
-                    de 10% com o seu nome serão ativados automaticamente.
-                  </p>
-
-                  <div className="space-y-2 max-h-96 overflow-y-auto pr-1">
-                    {partnerStores.map((s: any) => {
-                      const isConnected = connectedStoreIds.includes(s.id);
-                      return (
-                        <div
-                          key={s.id}
-                          className="p-3 rounded-lg border border-border/60 bg-card flex items-center justify-between gap-3"
-                        >
-                          <div className="flex items-center gap-3 min-w-0">
-                            <div className="size-10 rounded-lg bg-muted/60 overflow-hidden shrink-0 border border-border/40 flex items-center justify-center">
-                              {s.logoUrl ? (
-                                <img src={s.logoUrl} alt={s.name} className="size-full object-cover" />
-                              ) : (
-                                <Store className="size-5 text-muted-foreground" />
-                              )}
-                            </div>
-                            <div className="min-w-0">
-                              <h5 className="text-xs font-bold text-foreground truncate">{s.name}</h5>
-                              <p className="text-xs text-muted-foreground truncate">
-                                {s.segment} • {s.city}
-                              </p>
-                            </div>
-                          </div>
-
-                          <Button
-                            type="button"
-                            size="sm"
-                            variant={isConnected ? "secondary" : "default"}
-                            onClick={() => handleToggleStoreConnection(s.id)}
-                            className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold gap-1 shrink-0"
-                          >
-                            {isConnected ? (
-                              <>
-                                <Check className="size-3 text-emerald-600" />
-                                <span>Conectada</span>
-                              </>
-                            ) : (
-                              <>
-                                <Plus className="size-3" />
-                                <span>Conectar</span>
-                              </>
-                            )}
-                          </Button>
-                        </div>
-                      );
-                    })}
-                  </div>
-
-                  <Button
-                    type="button"
-                    onClick={() => setIsStorePickerOpen(false)}
-                    className="w-full h-11 rounded-lg text-xs font-semibold"
-                  >
-                    Concluir Seleção
-                  </Button>
-                </div>
-              </DialogContent>
-            </Dialog>
           </div>
         ) : (
-          /* ─── ONBOARDING EM 4 PASSOS ESTILO CRIAÇÃO DE EMPRESA ───── */
-          <div className="w-full max-w-xl mx-auto p-4 sm:p-8 rounded-lg sm:rounded-lg border border-border/60 bg-card shadow-xs space-y-6">
-            {/* Stepper no Topo */}
-            <div className="flex items-center justify-between border-b border-border/40 pb-4">
-              {[
-                { num: 1, label: "Identidade" },
-                { num: 2, label: "Privacidade" },
-                { num: 3, label: "Monetização" },
-                { num: 4, label: "Conclusão" },
-              ].map((step) => (
-                <div key={step.num} className="flex items-center gap-2">
-                  <div
-                    className={`size-6 rounded-full flex items-center justify-center text-xs font-bold transition-colors motion-reduce:transition-none ${
-                      onboardingStep === step.num
-                        ? "bg-primary text-primary-foreground"
-                        : onboardingStep > step.num
-                        ? "bg-emerald-500 text-primary-foreground"
-                        : "bg-muted text-muted-foreground"
-                    }`}
-                  >
-                    {onboardingStep > step.num ? <Check className="size-4" /> : step.num}
-                  </div>
-                  <span
-                    className={`text-xs font-medium hidden sm:inline ${
-                      onboardingStep === step.num ? "text-foreground font-bold" : "text-muted-foreground"
-                    }`}
-                  >
-                    {step.label}
-                  </span>
-                </div>
-              ))}
+          /* ─── ATIVAÇÃO DIRETA DE CONTA DE AFILIADO (1 PASSO SEM VIÉS DE PERFIL SOCIAL) ───── */
+          <div className="w-full max-w-2xl mx-auto p-5 sm:p-8 rounded-lg border border-border/60 bg-card space-y-6">
+            <div className="space-y-2">
+              <Badge variant="outline" className="text-xs font-semibold text-primary border-primary/30 bg-primary/5">
+                Programa de Afiliados & Parcerias Comerciais
+              </Badge>
+              <h2 className="text-lg sm:text-xl font-bold text-foreground tracking-tight">
+                Ative sua Central de Afiliados
+              </h2>
+              <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                Gere links rastreados de ofertas, conecte lojas parceiras à sua vitrine comercial e receba comissões reais via Pix a cada venda confirmada.
+              </p>
             </div>
 
-            {/* Passo 1: Identidade da Marca ou Apenas Links */}
-            {onboardingStep === 1 && (
-              <div className="space-y-4">
-                {/* ── CARD EXPRESS: APENAS LINKS & COMISSÕES (SEM VITRINE) ── */}
-                <div className="p-4 rounded-lg border border-emerald-500/30 bg-emerald-500/5 space-y-3">
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <Coins className="size-4 text-emerald-600" />
-                      <h3 className="text-xs font-bold text-foreground">Apenas Links e Comissões</h3>
-                    </div>
-                    <p className="text-xs text-muted-foreground leading-relaxed">
-                      Não quer uma vitrine pública de criador? Ative seu link de parceiro agora para divulgar lojas e produtos e receber comissões diretamente no seu CPF via PIX.
-                    </p>
-                  </div>
-
-                  <div className="flex flex-col sm:flex-row items-center gap-2 pt-1">
-                    <div className="relative w-full sm:flex-1">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-mono text-muted-foreground">@</span>
-                      <Input
-                        value={onboardingHandle}
-                        onChange={(e) => setOnboardingHandle(e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ""))}
-                        placeholder="seu_codigo_indicacao"
-                        className="h-10 pl-7 text-xs font-mono rounded-lg bg-background"
-                      />
-                    </div>
-                    <Button
-                      type="button"
-                      disabled={isSubmitting || !onboardingHandle}
-                      onClick={handleFastAffiliateActivation}
-                      className="w-full sm:w-auto h-11 min-h-11 px-4 rounded-lg text-xs font-bold bg-emerald-600 text-primary-foreground hover:bg-emerald-700 cursor-pointer shrink-0"
-                    >
-                      {isSubmitting ? "Ativando..." : "Ativar Links"}
-                    </Button>
-                  </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="p-4 rounded-lg border border-border/60 bg-muted/20 space-y-2">
+                <div className="size-11 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center">
+                  <Percent className="size-5" />
                 </div>
+                <h3 className="text-xs font-bold text-foreground">Comissões Rastreadas</h3>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Rastreamento automático de pedidos gerados pelos seus links e cupons.
+                </p>
+              </div>
 
-                <div className="relative flex items-center justify-center my-1">
-                  <div className="border-t border-border/60 w-full" />
-                  <span className="bg-card px-3 text-xs text-muted-foreground font-semibold uppercase tracking-wider shrink-0">
-                    Ou configure uma vitrine pública de criador
+              <div className="p-4 rounded-lg border border-border/60 bg-muted/20 space-y-2">
+                <div className="size-11 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+                  <Globe className="size-5" />
+                </div>
+                <h3 className="text-xs font-bold text-foreground">Campanhas 1-Click</h3>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Adicione marcas globais e lojas locais à sua vitrine comercial sem estoque próprio.
+                </p>
+              </div>
+
+              <div className="p-4 rounded-lg border border-border/60 bg-muted/20 space-y-2">
+                <div className="size-11 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center">
+                  <Coins className="size-5" />
+                </div>
+                <h3 className="text-xs font-bold text-foreground">Liquidação via Pix</h3>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Extrato transparente com saldo em garantia e liberação direta após confirmação.
+                </p>
+              </div>
+            </div>
+
+            <div className="p-4 sm:p-5 rounded-lg border border-primary/30 bg-primary/5 space-y-4">
+              <div className="space-y-1">
+                <Label className="text-xs font-bold text-foreground">
+                  Seu Código de Rastreamento de Afiliado (@handle)
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  Este código identifica seus links comissionados (`?ref=seu_codigo`) e cupons nas lojas parceiras.
+                </p>
+              </div>
+
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                <div className="relative flex-1">
+                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs font-mono text-muted-foreground">
+                    @
                   </span>
+                  <Input
+                    value={onboardingHandle}
+                    onChange={(e) =>
+                      setOnboardingHandle(e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ""))
+                    }
+                    placeholder="seu_codigo_afiliado"
+                    className="h-11 min-h-11 pl-8 rounded-lg text-xs font-mono bg-background"
+                  />
                 </div>
-
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border/40 pb-3">
-                  <div className="space-y-1">
-                    <h2 className="text-base font-bold text-foreground">Identidade do Perfil</h2>
-                    <p className="text-xs text-muted-foreground">
-                      Escolha o identificador exclusivo (@handle) que representará sua marca ou nome artístico.
-                    </p>
-                  </div>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={async () => {
-                      const res = await refetch();
-                      if (res.data?.partner) {
-                        toast.success("Perfil sincronizado com sucesso!");
-                      } else {
-                        toast.info("Nenhum cadastro prévio detectado. Complete as etapas abaixo.");
-                      }
-                    }}
-                    className="h-11 min-h-11 px-3 rounded-lg text-xs gap-2 shrink-0 self-start sm:self-auto font-medium"
-                  >
-                    <Star className="size-4 text-primary" />
-                    <span>Sincronizar meu perfil</span>
-                  </Button>
-                </div>
-
-                <div className="space-y-3">
-                  <div className="space-y-2">
-                    <Label className="text-xs font-medium">Identificador Único (@handle)</Label>
-                    <div className="relative">
-                      <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs font-mono text-muted-foreground">
-                        @
-                      </span>
-                      <Input
-                        value={onboardingHandle}
-                        onChange={(e) =>
-                          setOnboardingHandle(e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ""))
-                        }
-                        placeholder="seu_nome_ou_marca"
-                        className="h-11 pl-8 rounded-lg text-xs font-mono"
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label className="text-xs font-medium">Nome Artístico / Apresentação Pública</Label>
-                    <Input
-                      value={onboardingName}
-                      onChange={(e) => setOnboardingName(e.target.value)}
-                      placeholder="Como seus seguidores conhecem você"
-                      className="h-11 rounded-lg text-xs"
-                      required
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label className="text-xs font-medium">Segmento de Atuação</Label>
-                    <CreatorNicheSelect
-                      value={onboardingCategory}
-                      onValueChange={(val) => setOnboardingCategory(val)}
-                    />
-                  </div>
-                </div>
-
                 <Button
                   type="button"
-                  onClick={() => {
-                    if (!onboardingHandle.trim() || onboardingHandle.length < 3) {
-                      toast.error("O identificador deve ter no mínimo 3 caracteres.");
-                      return;
-                    }
-                    setOnboardingStep(2);
-                  }}
-                  className="w-full h-11 rounded-lg text-xs font-semibold gap-2 mt-2"
+                  disabled={isSubmitting || !onboardingHandle}
+                  onClick={handleFastAffiliateActivation}
+                  className="h-11 min-h-11 px-6 rounded-lg text-xs font-bold gap-2 shrink-0"
                 >
-                  <span>Avançar para Privacidade</span>
+                  <span>{isSubmitting ? "Ativando..." : "Ativar Conta de Afiliado"}</span>
                   <ArrowRight className="size-4" />
                 </Button>
               </div>
-            )}
-
-            {/* Passo 2: Privacidade Pessoal Civil */}
-            {onboardingStep === 2 && (
-              <div className="space-y-4">
-                <div className="space-y-1">
-                  <h2 className="text-base font-bold text-foreground">Privacidade do Perfil Pessoal</h2>
-                  <p className="text-xs text-muted-foreground">
-                    Separe sua vida civil (compras, contratos) da sua atuação pública como criador ou marca.
-                  </p>
-                </div>
-
-                <div className="p-4 rounded-lg border border-border/60 bg-muted/20 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-1">
-                      <span className="text-xs font-bold text-foreground">Manter Perfil Civil Discreto</span>
-                      <p className="text-xs text-muted-foreground">
-                        Seu nome de certidão e histórico de compras não aparecem nas buscas públicas.
-                      </p>
-                    </div>
-
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant={onboardingAnonymize ? "default" : "outline"}
-                      onClick={() => setOnboardingAnonymize(!onboardingAnonymize)}
-                      className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold"
-                    >
-                      {onboardingAnonymize ? "Discreto" : "Público"}
-                    </Button>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setOnboardingStep(1)}
-                    className="flex-1 h-11 rounded-lg text-xs font-semibold"
-                  >
-                    Voltar
-                  </Button>
-                  <Button
-                    type="button"
-                    onClick={() => setOnboardingStep(3)}
-                    className="flex-1 h-11 rounded-lg text-xs font-semibold gap-2"
-                  >
-                    <span>Ver Modelo de Ganhos</span>
-                    <ArrowRight className="size-4" />
-                  </Button>
-                </div>
-              </div>
-            )}
-
-            {/* Passo 3: Modelo de Monetização */}
-            {onboardingStep === 3 && (
-              <div className="space-y-4">
-                <div className="space-y-1">
-                  <h2 className="text-base font-bold text-foreground">Seu Modelo de Monetização</h2>
-                  <p className="text-xs text-muted-foreground">
-                    Como você é remunerado na Rede Waesy de forma transparente:
-                  </p>
-                </div>
-
-                <div className="space-y-3">
-                  <div className="p-4 rounded-lg border border-border/60 bg-card flex items-start gap-3">
-                    <div className="size-11 min-size-11 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0">
-                      <Percent className="size-4" />
-                    </div>
-                    <div className="space-y-1">
-                      <h4 className="text-xs font-bold text-foreground">Vendas Comissionadas das Lojas</h4>
-                      <p className="text-xs text-muted-foreground">
-                        Lojas cadastradas pagam comissões em dinheiro por cada pedido convertido via seu link.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="p-4 rounded-lg border border-border/60 bg-card flex items-start gap-3">
-                    <div className="size-11 min-size-11 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                      <ShoppingBag className="size-4" />
-                    </div>
-                    <div className="space-y-1">
-                      <h4 className="text-xs font-bold text-foreground">Vitrine Digital Pessoal</h4>
-                      <p className="text-xs text-muted-foreground">
-                        Cure produtos, banners e cupons favoritos em uma página pública que leva sua marca.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="p-4 rounded-lg border border-border/60 bg-card flex items-start gap-3">
-                    <div className="size-11 min-size-11 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center shrink-0">
-                      <Coins className="size-4" />
-                    </div>
-                    <div className="space-y-1">
-                      <h4 className="text-xs font-bold text-foreground">Bônus por Indicação</h4>
-                      <p className="text-xs text-muted-foreground">
-                        Receba 50.000 tokens por membro e 500.000 tokens por empresa cadastrada pelo seu link.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setOnboardingStep(2)}
-                    className="flex-1 h-11 rounded-lg text-xs font-semibold"
-                  >
-                    Voltar
-                  </Button>
-                  <Button
-                    type="button"
-                    onClick={() => setOnboardingStep(4)}
-                    className="flex-1 h-11 rounded-lg text-xs font-semibold gap-2"
-                  >
-                    <span>Revisar e Ativar</span>
-                    <ArrowRight className="size-4" />
-                  </Button>
-                </div>
-              </div>
-            )}
-
-            {/* Passo 4: Conclusão */}
-            {onboardingStep === 4 && (
-              <div className="space-y-4">
-                <div className="space-y-1 text-center">
-                  <div className="size-12 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center mx-auto mb-2">
-                    <CheckCircle2 className="size-6" />
-                  </div>
-                  <h2 className="text-base font-bold text-foreground">Tudo Pronto para a Ativação!</h2>
-                  <p className="text-xs text-muted-foreground">
-                    Revise seus dados antes de iniciar suas atividades na plataforma:
-                  </p>
-                </div>
-
-                <div className="p-4 rounded-lg border border-border/60 bg-muted/20 space-y-2 text-xs">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Identificador:</span>
-                    <span className="font-mono font-bold text-foreground">@{onboardingHandle}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Nome da Marca:</span>
-                    <span className="font-bold text-foreground">{onboardingName}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Segmento:</span>
-                    <span className="font-bold text-foreground">{onboardingCategory}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Privacidade Pessoal:</span>
-                    <span className="font-bold text-emerald-600">
-                      {onboardingAnonymize ? "Ativa (Perfil civil discreto)" : "Padrão"}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setOnboardingStep(3)}
-                    className="flex-1 h-11 rounded-lg text-xs font-semibold"
-                  >
-                    Voltar
-                  </Button>
-                  <Button
-                    type="button"
-                    disabled={isSubmitting}
-                    onClick={handleOnboardingSubmit}
-                    className="flex-1 h-11 rounded-lg text-xs font-semibold gap-2"
-                  >
-                    {isSubmitting ? "Ativando Perfil..." : "Confirmar & Ativar Perfil"}
-                  </Button>
-                </div>
-              </div>
-            )}
+            </div>
           </div>
         )}
       </div>
-
-      {/* Editor Canônico de Perfil de Criador & Marca (Unificado para toda a plataforma) */}
-      <CreatorProfileSheetEditor
-        open={isProfileEditorOpen}
-        onOpenChange={setIsProfileEditorOpen}
-        initialData={{
-          handle: referralHandle,
-          stageName: creator?.stage_name || partner?.display_name || loaderProfile?.full_name || referralHandle,
-          bio: creator?.bio || "",
-          category: creator?.category || partner?.category || "geral",
-          avatarUrl: creator?.avatar_url || "",
-          coverUrl: creator?.cover_url || "",
-          socialLinks: creator?.social_links || {},
-          pinnedProducts: creator?.pinned_products || [],
-          privacyMode: privacyMode,
-          isAnonymous: isAnonymous,
-        }}
-        isNew={false}
-        onSuccess={async () => {
-          await queryClient.invalidateQueries({ queryKey: ["my-affiliate-overview"] });
-          await queryClient.invalidateQueries({ queryKey: ["my-creator-profiles-list"] });
-          router.invalidate();
-        }}
-      />
     </div>
   );
 }

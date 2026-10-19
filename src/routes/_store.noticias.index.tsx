@@ -2,7 +2,21 @@ import { resolveActiveCity } from "@/lib/city-helper";
 import { Tag } from "lucide-react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { NewspaperClipping, Flame, MagnifyingGlass, ArrowRight, Lightning, Buildings, CalendarDots, Briefcase, Trophy, Laptop, Lightbulb } from "@phosphor-icons/react";
+import {
+  NewspaperClipping,
+  Flame,
+  MagnifyingGlass,
+  ArrowRight,
+  Lightning,
+  Buildings,
+  CalendarDots,
+  Briefcase,
+  Trophy,
+  Laptop,
+  Lightbulb,
+  SquaresFour,
+  List as ListIcon,
+} from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -73,6 +87,7 @@ export function NoticiasFeedPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const [isError, setIsError] = useState(false);
+  const [feedView, setFeedView] = useState<"grid" | "list">("grid");
 
   const handleFilterCategory = async (cat: string) => {
     setSelectedCategory(cat);
@@ -152,7 +167,7 @@ export function NoticiasFeedPage() {
             onChange={(e) => setSearchQuery(e.target.value)}
             className="rounded-lg h-11 bg-card text-xs border-border px-4"
           />
-          <Button type="submit" size="icon" className="size-11 rounded-lg shrink-0 font-bold">
+          <Button type="submit" size="icon" className="size-11 rounded-lg shrink-0 font-bold cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
             <MagnifyingGlass size={18} weight="bold" />
           </Button>
         </form>
@@ -211,64 +226,17 @@ export function NoticiasFeedPage() {
             onAction={() => handleFilterCategory("urgente")}
           >
             {breakingNews.map((article) => (
-              <div key={article.id} className="w-68 shrink-0">
-                <NewsCard article={article} compact={true} />
+              <div key={article.id} className="w-80 sm:w-88 shrink-0">
+                <NewsCard article={article} variant="compact" />
               </div>
             ))}
           </HorizontalRail>
         </section>
       )}
 
-      {/* ── 5. Manchete Principal em Destaque (Layout Vertical Apple HIG sem espremer) ── */}
+      {/* ── 5. Manchete Principal em Destaque (Layout Bipartido Apple HIG no Desktop) ── */}
       {featuredArticle && !searchQuery && !isSearching && (
-        <section className="relative rounded-lg overflow-hidden bg-card border border-border/60 group hover-elevate transition-colors duration-200">
-          <Link
-            to="/noticias/$slug"
-            params={{ slug: featuredArticle.slug }}
-            className="flex flex-col w-full"
-          >
-            {featuredArticle.cover_media_url && (
-              <div className="relative aspect-video w-full overflow-hidden bg-muted">
-                <img
-                  src={featuredArticle.cover_media_url}
-                  alt={featuredArticle.title}
-                  className="size-full object-cover group-hover:scale-103 transition-transform duration-200"
-                />
-              </div>
-            )}
-
-            <div className="p-5 sm:p-6 space-y-3">
-              <div className="flex items-center gap-2">
-                <Badge variant="secondary">
-                  {featuredArticle.kicker || "Manchete Principal"}
-                </Badge>
-                <span className="text-xs text-muted-foreground font-mono">
-                  {featuredArticle.reading_time_minutes} min de leitura
-                </span>
-              </div>
-
-              <h2 className="text-xl sm:text-2xl lg:text-3xl font-black tracking-tight text-foreground leading-tight group-hover:text-primary transition-colors">
-                {featuredArticle.title}
-              </h2>
-
-              {featuredArticle.subtitle && (
-                <p className="text-xs sm:text-sm text-muted-foreground line-clamp-3 leading-relaxed">
-                  {featuredArticle.subtitle}
-                </p>
-              )}
-
-              <div className="pt-3 border-t border-border/40 flex items-center justify-between">
-                <span className="text-xs font-bold text-foreground/80">
-                  {featuredArticle.store_name || "Redação Waesy"}
-                </span>
-                <span className="inline-flex items-center gap-2 text-xs font-bold text-foreground group-hover:text-primary transition-colors">
-                  <span>Ler Matéria Completa</span>
-                  <ArrowRight className="size-4" />
-                </span>
-              </div>
-            </div>
-          </Link>
-        </section>
+        <NewsCard article={featuredArticle} variant="hero" />
       )}
 
       {/* ── 6. Carrossel de Cotidiano & Cidade ── */}
@@ -280,8 +248,8 @@ export function NoticiasFeedPage() {
             onAction={() => handleFilterCategory("cidade")}
           >
             {cityArticles.map((article) => (
-              <div key={article.id} className="w-68 shrink-0">
-                <NewsCard article={article} compact={true} />
+              <div key={article.id} className="w-80 sm:w-88 shrink-0">
+                <NewsCard article={article} variant="compact" />
               </div>
             ))}
           </HorizontalRail>
@@ -297,8 +265,8 @@ export function NoticiasFeedPage() {
             onAction={() => handleFilterCategory("economia")}
           >
             {economyArticles.map((article) => (
-              <div key={article.id} className="w-68 shrink-0">
-                <NewsCard article={article} compact={true} />
+              <div key={article.id} className="w-80 sm:w-88 shrink-0">
+                <NewsCard article={article} variant="compact" />
               </div>
             ))}
           </HorizontalRail>
@@ -314,8 +282,8 @@ export function NoticiasFeedPage() {
             onAction={() => handleFilterCategory("cultura")}
           >
             {cultureArticles.map((article) => (
-              <div key={article.id} className="w-68 shrink-0">
-                <NewsCard article={article} compact={true} />
+              <div key={article.id} className="w-80 sm:w-88 shrink-0">
+                <NewsCard article={article} variant="compact" />
               </div>
             ))}
           </HorizontalRail>
@@ -331,15 +299,15 @@ export function NoticiasFeedPage() {
             onAction={() => handleFilterCategory("esportes")}
           >
             {sportsArticles.map((article) => (
-              <div key={article.id} className="w-68 shrink-0">
-                <NewsCard article={article} compact={true} />
+              <div key={article.id} className="w-80 sm:w-88 shrink-0">
+                <NewsCard article={article} variant="compact" />
               </div>
             ))}
           </HorizontalRail>
         </section>
       )}
 
-      {/* ── 8. Lista de Notícias Mais Recentes com Injeção Randômica de Anúncios ── */}
+      {/* ── 8. Feed de Notícias Bidirecional com Alternância Grade / Lista ── */}
       {isError ? (
         <div className="py-16 text-center rounded-lg border border-border bg-card space-y-3">
           <NewspaperClipping className="size-10 text-muted-foreground mx-auto" />
@@ -351,7 +319,7 @@ export function NoticiasFeedPage() {
             variant="outline"
             size="sm"
             onClick={() => handleFilterCategory(selectedCategory)}
-            className="h-11 px-4 text-xs font-semibold rounded-lg"
+            className="h-11 px-4 text-xs font-semibold rounded-lg cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             Tentar novamente
           </Button>
@@ -362,11 +330,11 @@ export function NoticiasFeedPage() {
             <Skeleton className="h-6 w-32 rounded-lg" />
             <Skeleton className="h-4 w-20 rounded-lg" />
           </div>
-          <div className="space-y-4">
-            {Array.from({ length: 4 }).map((_, idx) => (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {Array.from({ length: 6 }).map((_, idx) => (
               <div key={idx} className="rounded-lg border border-border/60 bg-card p-4 space-y-3">
                 <div className="flex gap-4">
-                  <Skeleton className="size-24 rounded-lg shrink-0" />
+                  <Skeleton className="size-20 rounded-lg shrink-0" />
                   <div className="space-y-2 flex-1">
                     <Skeleton className="h-4 w-24 rounded-md" />
                     <Skeleton className="h-5 w-3/4 rounded-md" />
@@ -387,37 +355,98 @@ export function NoticiasFeedPage() {
         </div>
       ) : (
         <section aria-label="Feed de Notícias" className="space-y-4 w-full">
-          <div className="flex items-center justify-between pb-2">
+          {/* Header do Feed com Contador & Seletor Ergonômico de Visualização */}
+          <div className="flex items-center justify-between pb-2 border-b border-border/40">
             <div className="flex items-center gap-2">
-              <NewspaperClipping size={16} weight="bold" className="text-primary" />
-              <h2 className="text-sm font-bold text-foreground tracking-tight">
-                {searchQuery ? "Resultados" : "Notícias"}
+              <NewspaperClipping size={18} weight="bold" className="text-primary" />
+              <h2 className="text-sm sm:text-base font-bold text-foreground tracking-tight">
+                {searchQuery ? "Resultados da Busca" : "Todas as Notícias"}
               </h2>
             </div>
-            <span className="text-xs text-muted-foreground font-mono">
-              {(searchQuery ? articles : gridArticles).length} matérias
-            </span>
-          </div>
 
-          <div className="space-y-6">
-            {(searchQuery ? articles : gridArticles).map((article, idx) => {
-              const showSponsor = sponsors && sponsors.length > 0 && idx > 0 && idx % 3 === 0;
-              const sponsor = showSponsor ? sponsors[(idx / 3 - 1) % sponsors.length] : null;
+            <div className="flex items-center gap-3">
+              <span className="text-xs text-muted-foreground font-mono hidden sm:inline">
+                {(searchQuery ? articles : gridArticles).length} matérias
+              </span>
 
-              return (
-                <div key={article.id} className="space-y-6">
-                  {showSponsor && sponsor && (
-                    <NewsSponsorBanner
-                      sponsor={sponsor}
-                      articleId={article.id}
-                      placementType="news_in_article"
-                    />
+              {/* Seletor de Grade vs Lista */}
+              <div className="flex items-center p-1 bg-muted/60 rounded-lg border border-border/50">
+                <button
+                  type="button"
+                  onClick={() => setFeedView("grid")}
+                  className={cn(
+                    "size-9 rounded-md flex items-center justify-center transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                    feedView === "grid"
+                      ? "bg-card text-foreground shadow-2xs font-bold"
+                      : "text-muted-foreground hover:text-foreground"
                   )}
-                  <NewsCard article={article} />
-                </div>
-              );
-            })}
+                  title="Visualização em Grade"
+                  aria-label="Visualização em Grade"
+                >
+                  <SquaresFour size={16} weight="bold" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFeedView("list")}
+                  className={cn(
+                    "size-9 rounded-md flex items-center justify-center transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                    feedView === "list"
+                      ? "bg-card text-foreground shadow-2xs font-bold"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                  title="Visualização em Lista"
+                  aria-label="Visualização em Lista"
+                >
+                  <ListIcon size={16} weight="bold" />
+                </button>
+              </div>
+            </div>
           </div>
+
+          {/* Renderização Adaptativa: Grade de 3 Colunas vs Lista Compacta */}
+          {feedView === "grid" ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              {(searchQuery ? articles : gridArticles).map((article, idx) => {
+                const showSponsor = sponsors && sponsors.length > 0 && idx > 0 && idx % 6 === 0;
+                const sponsor = showSponsor ? sponsors[(idx / 6 - 1) % sponsors.length] : null;
+
+                return (
+                  <div key={article.id} className="contents">
+                    {showSponsor && sponsor && (
+                      <div className="col-span-full my-2">
+                        <NewsSponsorBanner
+                          sponsor={sponsor}
+                          articleId={article.id}
+                          placementType="news_in_article"
+                        />
+                      </div>
+                    )}
+                    <NewsCard article={article} variant="grid" />
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {(searchQuery ? articles : gridArticles).map((article, idx) => {
+                const showSponsor = sponsors && sponsors.length > 0 && idx > 0 && idx % 6 === 0;
+                const sponsor = showSponsor ? sponsors[(idx / 6 - 1) % sponsors.length] : null;
+
+                return (
+                  <div key={article.id} className="space-y-3">
+                    {showSponsor && sponsor && (
+                      <NewsSponsorBanner
+                        sponsor={sponsor}
+                        articleId={article.id}
+                        placementType="news_in_article"
+                      />
+                    )}
+                    <NewsCard article={article} variant="list" />
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </section>
       )}
     </div>

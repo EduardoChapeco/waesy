@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { formatMoney } from "@/lib/money";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,8 @@ import { getMyCreatorProfilesList } from "@/services/affiliates.functions";
 import { cn } from "@/lib/utils";
 import { ContextSwitcher } from "@/components/profile/context-switcher";
 import { getMyCourierProfile } from "@/services/mobility.functions";
+import { setTenantContext } from "@/services/identity.functions";
+import { setClientContextCookies, getClientActiveContext } from "@/lib/context-auth";
 import { Shield, Store, ArrowRight, Plus, ShoppingBag, Calendar, Ticket, Bookmark, Plane, CreditCard, Coins, Gift, HelpCircle, RotateCcw, Layers, LogOut, User, ChevronRight, Building2, Lock, ShieldCheck, Briefcase, Wallet, FileText, Trophy, Bell, MessageCircle, Handshake, MapPin, Car, Star, RefreshCw, Users, Bike } from "lucide-react";
 import { toast } from "sonner";
 
@@ -108,6 +110,12 @@ function AccountDashboardPage() {
     : null;
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
+  useEffect(() => {
+    if (typeof window !== "undefined" && getClientActiveContext() === "store") {
+      setClientContextCookies({ context: "civil" });
+    }
+  }, []);
+
   const isAuthenticated = !!(session?.user || profile?.id);
 
   const userRole = profile?.role || session?.role || session?.user?.user_metadata?.role || "customer";
@@ -119,9 +127,10 @@ function AccountDashboardPage() {
   const userAvatar = profile?.avatarUrl || session?.avatarUrl || session?.user?.user_metadata?.avatar_url || "";
 
   // Seta o cookie de tenant ativo e navega para o workspace da loja correta
-  const handleOpenWorkspace = (storeId: string) => {
-    window.document.cookie = `waesy_active_tenant=${storeId}; path=/; max-age=31536000; SameSite=Lax`;
-    navigate({ to: "/workspace" });
+  const handleOpenWorkspace = async (storeId: string) => {
+    setClientContextCookies({ context: "store", storeId });
+    await setTenantContext({ data: { store_id: storeId } }).catch(() => null);
+    window.location.href = "/workspace";
   };
 
   const handleSignOut = async () => {
@@ -260,105 +269,105 @@ function AccountDashboardPage() {
 
   return (
     <div className="w-full max-w-6xl mx-auto space-y-4 sm:space-y-6 pb-20 px-0 sm:px-4 md:px-0 animate-in fade-in duration-200">
-      {/* ── 1. Header do Perfil com Acesso ao Perfil & Master ── */}
-      <div className="bg-card rounded-lg border border-border/60 p-4 sm:p-6 flex flex-col gap-4">
-        {/* Linha 1: Avatar, Identidade e Botão Sair perfeitamente alinhado na mesma linha */}
-        <div className="flex items-center justify-between gap-4 w-full">
-          <div className="flex items-center gap-4 min-w-0">
-            <div className="size-14 rounded-lg bg-muted overflow-hidden shrink-0 flex items-center justify-center border border-border/40">
+      {/* ── 1. Header do Perfil Unificado em Card Squircle Canônico Bidirecional ── */}
+      <div className="bg-card rounded-lg border border-border/60 p-3 sm:px-5 sm:py-3 shadow-2xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          {/* Lado Esquerdo: Avatar Squircle + Identidade e Metadados do Usuário */}
+          <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
+            <div className="size-12 sm:size-12 rounded-lg bg-muted/80 overflow-hidden shrink-0 flex items-center justify-center border border-border/60 shadow-2xs">
               {userAvatar ? (
                 <img src={userAvatar} alt={userName} className="size-full object-cover" />
               ) : (
-                <span className="text-lg font-black text-primary">{userName.charAt(0).toUpperCase()}</span>
+                <span className="text-base sm:text-lg font-black text-primary select-none">{userName.charAt(0).toUpperCase()}</span>
               )}
             </div>
 
             <div className="min-w-0 space-y-1">
-              <div className="flex items-center gap-2">
-                <h1 className="text-base sm:text-lg font-bold text-foreground truncate tracking-tight">{userName}</h1>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h1 className="text-sm sm:text-base font-bold text-foreground truncate tracking-tight">{userName}</h1>
                 {isMasterAdmin && (
-                  <Badge className="bg-primary/10 text-primary border-primary/20 text-[9px] font-mono">
+                  <Badge className="bg-primary/10 text-primary border-primary/25 text-2xs font-mono tracking-wide px-2 py-1 rounded-md">
                     MASTER ADMIN
                   </Badge>
                 )}
               </div>
-              <p className="text-xs text-muted-foreground font-mono truncate">@{userHandle} • {userEmail}</p>
+              <p className="text-xs text-muted-foreground font-mono truncate">
+                @{userHandle} • {userEmail}
+              </p>
             </div>
           </div>
 
-          {/* Botão Sair integrado no fluxo sem sobreposição absoluta */}
-          <button
-            type="button"
-            onClick={handleSignOut}
-            disabled={isLoggingOut}
-            className="h-11 min-h-11 px-4 rounded-lg border border-border/70 hover:border-destructive/40 text-xs font-semibold text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors cursor-pointer flex items-center gap-2 shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            title="Encerrar Sessão"
-          >
-            <LogOut className="size-4" />
-            <span className="hidden sm:inline">Sair</span>
-          </button>
-        </div>
+          {/* Lado Direito: Toolbar de Ações em Cards Squircle Padronizados (Linha Única) */}
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1 shrink-0">
+            <ContextSwitcher
+              currentContextType="civil"
+              activeProfileId={activeCreatorFromCookie || activeTenantFromCookie}
+              currentStoreId={activeTenantFromCookie}
+              civilUser={{
+                name: userName,
+                email: userEmail,
+                username: userHandle,
+                avatarUrl: userAvatar,
+                role: isMasterAdmin ? "platform_admin" : (session?.role || session?.user?.role),
+              }}
+              personas={creatorProfiles.map((cp: any) => ({
+                id: cp.handle || cp.id,
+                name: cp.stage_name || cp.name || cp.handle,
+                handle: cp.handle,
+                avatarUrl: cp.avatar_url,
+                category: cp.category || cp.niche,
+              }))}
+              stores={stores.map((st: any) => ({
+                store_id: st.id || st.store_id,
+                name: st.name || st.store_name || "Minha Empresa",
+                role: st.role || "owner",
+                logo_url: st.logo_url || st.settings?.logoUrl,
+                slug: st.slug,
+              }))}
+              hasCreatorProfile={profile?.is_creator || creatorProfiles.length > 0}
+              creatorHandle={profile?.creator_handle || (creatorProfiles[0]?.handle) || userHandle}
+              hasCourierProfile={!!courierProfile}
+              courierVehicle={courierProfile?.vehicle_model || courierProfile?.vehicle_type}
+            />
 
-        {/* Linha 2: Alternador de Contexto e Atalhos Administrativos */}
-        <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full pt-1 border-t border-border/30">
+            {isMasterAdmin && (
+              <Button asChild size="sm" variant="default" className="rounded-lg text-xs h-11 min-h-11 px-3 font-bold bg-primary text-primary-foreground gap-2 cursor-pointer active:scale-98 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary shadow-2xs shrink-0">
+                <Link to="/admin-master">
+                  <Shield className="size-4" />
+                  <span>Master</span>
+                </Link>
+              </Button>
+            )}
 
-          <ContextSwitcher
-            currentContextType={activeContextFromCookie}
-            activeProfileId={activeCreatorFromCookie || activeTenantFromCookie}
-            currentStoreId={activeTenantFromCookie}
-            civilUser={{
-              name: userName,
-              email: userEmail,
-              username: userHandle,
-              avatarUrl: userAvatar,
-              role: isMasterAdmin ? "platform_admin" : (session?.role || session?.user?.role),
-            }}
-            personas={creatorProfiles.map((cp: any) => ({
-              id: cp.handle || cp.id,
-              name: cp.stage_name || cp.name || cp.handle,
-              handle: cp.handle,
-              avatarUrl: cp.avatar_url,
-              category: cp.category || cp.niche,
-            }))}
-            stores={stores.map((st: any) => ({
-              store_id: st.id || st.store_id,
-              name: st.name || st.store_name || "Minha Empresa",
-              role: st.role || "owner",
-              logo_url: st.logo_url || st.settings?.logoUrl,
-              slug: st.slug,
-            }))}
-            hasCreatorProfile={profile?.is_creator || creatorProfiles.length > 0}
-            creatorHandle={profile?.creator_handle || (creatorProfiles[0]?.handle) || userHandle}
-            hasCourierProfile={!!courierProfile}
-            courierVehicle={courierProfile?.vehicle_model || courierProfile?.vehicle_type}
-          />
-
-          {isMasterAdmin && (
-            <Button asChild size="sm" variant="default" className="rounded-lg text-xs h-11 min-h-11 px-4 font-bold bg-primary text-primary-foreground gap-2 cursor-pointer active:scale-98 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
-              <Link to="/admin-master">
-                <Shield className="size-3.5" />
-                <span>Master</span>
-              </Link>
+            <Button asChild variant="outline" size="sm" className="rounded-lg text-xs h-11 min-h-11 px-3 font-semibold border-border/80 bg-background hover:bg-muted/40 cursor-pointer active:scale-98 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary shadow-2xs shrink-0">
+              <Link to="/conta/perfil">Editar Perfil</Link>
             </Button>
-          )}
 
-          <Button asChild variant="outline" size="sm" className="rounded-lg text-xs h-11 min-h-11 px-4 font-semibold border-border/70 bg-card hover:bg-muted/50 cursor-pointer active:scale-98 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
-            <Link to="/conta/perfil">Editar Perfil</Link>
-          </Button>
+            <button
+              type="button"
+              onClick={handleSignOut}
+              disabled={isLoggingOut}
+              className="h-11 min-h-11 px-3 rounded-lg border border-border/80 hover:border-destructive/40 text-xs font-semibold text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors cursor-pointer flex items-center gap-2 shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring shadow-2xs active:scale-98"
+              title="Encerrar Sessão"
+            >
+              <LogOut className="size-4 shrink-0" />
+              <span className="hidden sm:inline">Sair</span>
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* ── 1.1 Barra Compacta de Atalhos (Single-Line Direct Pills) ── */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+      {/* ── 1.1 Barra Compacta de Atalhos em Cards Squircle Canônicos (Bidirecional) ── */}
+      <div className="flex flex-nowrap overflow-x-auto no-scrollbar gap-2 sm:grid sm:grid-cols-4 sm:gap-3 pb-1">
         <Link
           to="/conta/pedidos"
-          className="h-11 px-4 rounded-lg border border-border/60 bg-card hover:bg-muted/40 transition-colors flex items-center justify-between gap-2 cursor-pointer"
+          className="h-11 min-h-11 px-3 rounded-lg border border-border/60 bg-card hover:bg-muted/40 transition-colors flex items-center justify-between gap-2 cursor-pointer shadow-2xs shrink-0 min-w-36 sm:min-w-0 flex-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
         >
           <div className="flex items-center gap-2 min-w-0">
             <ShoppingBag className="size-4 text-muted-foreground shrink-0" />
             <span className="text-xs font-semibold text-foreground truncate">Pedidos</span>
           </div>
-          <Badge variant="secondary" className="text-[10px] font-bold h-5 px-2 shrink-0">
+          <Badge variant="secondary" className="text-2xs font-bold h-5 px-2 shrink-0 rounded-md">
             {orders.length}
           </Badge>
         </Link>
@@ -366,7 +375,7 @@ function AccountDashboardPage() {
         <Link
           to="/conta/notificacoes"
           className={cn(
-            "h-11 px-4 rounded-lg border transition-colors flex items-center justify-between gap-2 cursor-pointer",
+            "h-11 min-h-11 px-3 rounded-lg border transition-colors flex items-center justify-between gap-2 cursor-pointer shadow-2xs shrink-0 min-w-36 sm:min-w-0 flex-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
             unreadNotifsCount > 0
               ? "border-primary/40 bg-primary/[0.04] hover:bg-primary/[0.08]"
               : "border-border/60 bg-card hover:bg-muted/40"
@@ -376,14 +385,14 @@ function AccountDashboardPage() {
             <Bell className={cn("size-4 shrink-0", unreadNotifsCount > 0 ? "text-primary" : "text-muted-foreground")} />
             <span className="text-xs font-semibold text-foreground truncate">Notificações</span>
           </div>
-          <Badge variant={unreadNotifsCount > 0 ? "default" : "secondary"} className="text-[10px] font-bold h-5 px-2 shrink-0">
+          <Badge variant={unreadNotifsCount > 0 ? "default" : "secondary"} className="text-2xs font-bold h-5 px-2 shrink-0 rounded-md">
             {unreadNotifsCount}
           </Badge>
         </Link>
 
         <Link
           to="/conta/negociacoes"
-          className="h-11 px-4 rounded-lg border border-border/60 bg-card hover:bg-muted/40 transition-colors flex items-center justify-between gap-2 cursor-pointer"
+          className="h-11 min-h-11 px-3 rounded-lg border border-border/60 bg-card hover:bg-muted/40 transition-colors flex items-center justify-between gap-2 cursor-pointer shadow-2xs shrink-0 min-w-36 sm:min-w-0 flex-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
         >
           <div className="flex items-center gap-2 min-w-0">
             <Handshake className="size-4 text-muted-foreground shrink-0" />
@@ -394,7 +403,7 @@ function AccountDashboardPage() {
 
         <Link
           to="/conta/salvos"
-          className="h-11 px-4 rounded-lg border border-border/60 bg-card hover:bg-muted/40 transition-colors flex items-center justify-between gap-2 cursor-pointer"
+          className="h-11 min-h-11 px-3 rounded-lg border border-border/60 bg-card hover:bg-muted/40 transition-colors flex items-center justify-between gap-2 cursor-pointer shadow-2xs shrink-0 min-w-36 sm:min-w-0 flex-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
         >
           <div className="flex items-center gap-2 min-w-0">
             <Bookmark className="size-4 text-muted-foreground shrink-0" />
@@ -406,16 +415,16 @@ function AccountDashboardPage() {
 
       {/* ── 2. SELETOR DE PERFIL: EMPRESAS & LOJAS DO USUÁRIO ── */}
       {stores.length > 0 && (
-        <div className="bg-card rounded-lg border border-border/60 overflow-hidden shadow-xs">
-          <div className="flex items-center justify-between px-5 py-4 border-b border-border/40 bg-muted/20">
+        <div className="bg-card rounded-lg border border-border/60 overflow-hidden shadow-2xs">
+          <div className="flex items-center justify-between px-4 sm:px-5 py-3 border-b border-border/40 bg-muted/15">
             <div className="flex items-center gap-2">
               <Building2 className="size-4 text-primary" />
               <h2 className="text-sm font-bold text-foreground tracking-tight">Meus Negócios</h2>
-              <Badge variant="secondary" className="text-[10px] font-mono">
+              <Badge variant="secondary" className="text-2xs font-mono rounded-md">
                 {stores.length}
               </Badge>
             </div>
-            <Button asChild variant="ghost" size="sm" className="rounded-lg text-xs sm:text-sm font-semibold h-10 px-4 text-primary hover:bg-primary/10 cursor-pointer shadow-2xs active:scale-98">
+            <Button asChild variant="ghost" size="sm" className="rounded-lg text-xs font-semibold h-11 min-h-11 px-3 text-primary hover:bg-primary/10 cursor-pointer shadow-2xs active:scale-98">
               <Link to="/criar-negocio">
                 <Plus className="size-4 mr-2" />
                 <span>Criar</span>
@@ -423,7 +432,7 @@ function AccountDashboardPage() {
             </Button>
           </div>
 
-          <div className="p-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="p-4 sm:p-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
             {stores.map((st: any) => {
               const storeId = st.id || st.store_id;
               const storeName = st.name || st.store_name || "Minha Empresa";
@@ -433,10 +442,10 @@ function AccountDashboardPage() {
               return (
                 <div
                   key={storeId}
-                  className="p-4 rounded-lg border border-border/60 hover:border-primary/50 transition-all bg-background flex items-center justify-between gap-3 group"
+                  className="p-4 sm:p-4 rounded-lg border border-border/60 hover:border-primary/50 transition-colors bg-background flex items-center justify-between gap-3 group shadow-2xs"
                 >
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="size-10 rounded-lg bg-muted border border-border/40 overflow-hidden flex items-center justify-center shrink-0">
+                    <div className="size-11 rounded-lg bg-muted border border-border/40 overflow-hidden flex items-center justify-center shrink-0">
                       {logoUrl ? (
                         <img src={logoUrl} alt={storeName} className="size-full object-cover" />
                       ) : (
@@ -444,15 +453,15 @@ function AccountDashboardPage() {
                       )}
                     </div>
                     <div className="min-w-0 space-y-1">
-                      <p className="text-xs font-bold text-foreground truncate">{storeName}</p>
-                      <p className="text-[10px] text-muted-foreground font-medium">{storeRole}</p>
+                      <p className="text-xs sm:text-sm font-bold text-foreground truncate">{storeName}</p>
+                      <p className="text-2xs text-muted-foreground font-medium">{storeRole}</p>
                     </div>
                   </div>
 
                   <Button
                     onClick={() => handleOpenWorkspace(storeId)}
                     size="sm"
-                    className="h-10 sm:h-11 px-4 sm:px-4 rounded-lg text-xs sm:text-sm font-bold bg-primary text-primary-foreground hover:bg-primary/90 gap-2 cursor-pointer shadow-2xs shrink-0 active:scale-98"
+                    className="h-11 min-h-11 px-4 rounded-lg text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 gap-2 cursor-pointer shadow-2xs shrink-0 active:scale-98"
                   >
                     <span>Entrar</span>
                     <ArrowRight className="size-3.5" />
@@ -476,7 +485,7 @@ function AccountDashboardPage() {
               <p className="text-xs text-muted-foreground">Gerencie catálogo, vendas e operação completa no Workspace.</p>
             </div>
           </div>
-          <Button asChild size="sm" className="rounded-lg text-xs sm:text-sm font-bold bg-primary text-primary-foreground h-10 sm:h-11 px-4 sm:px-5 shrink-0 shadow-2xs cursor-pointer active:scale-98">
+          <Button asChild size="sm" className="rounded-lg text-xs sm:text-sm font-bold bg-primary text-primary-foreground h-11 min-h-11 px-4 sm:px-5 shrink-0 shadow-2xs cursor-pointer active:scale-98">
             <Link to="/criar-negocio">
               <span>Criar Empresa</span>
               <ArrowRight className="size-4 ml-2" />
@@ -493,7 +502,7 @@ function AccountDashboardPage() {
             className="bg-card border-y border-border/40 sm:border sm:rounded-lg overflow-hidden shadow-2xs"
           >
             <div className="px-4 py-3 bg-muted/15 border-b border-border/30">
-              <h2 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground font-mono">
+              <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground font-mono">
                 {group.title}
               </h2>
             </div>
@@ -518,7 +527,7 @@ function AccountDashboardPage() {
                       {sec.badge && (
                         <Badge
                           variant={sec.badgeVariant || "secondary"}
-                          className="text-[10px] font-medium font-mono h-5 px-2"
+                          className="text-xs font-medium font-mono h-5 px-2"
                         >
                           {sec.badge}
                         </Badge>

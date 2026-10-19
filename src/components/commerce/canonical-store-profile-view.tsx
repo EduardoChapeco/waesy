@@ -23,7 +23,7 @@ import { BannerHeroCarousel } from "@/components/commerce/banner-hero-carousel";
 import { DynamicMediaChip } from "@/components/commerce/dynamic-media-chip";
 import { ProductModifiersModal, type SelectedModifier } from "@/components/pos/product-modifiers-modal";
 import { MediaLightboxModal } from "@/components/community/media-lightbox-modal";
-import { normalizeWorkingHours, formatWeeklyScheduleSummary, WEEKDAYS_ORDER } from "@/lib/business-hours";
+import { normalizeWorkingHours, formatWeeklyScheduleSummary, WEEKDAYS_ORDER, resolveStoreDepartmentSchedules, type StoreDepartmentSchedule } from "@/lib/business-hours";
 import { getOpenStatus, formatDate } from "@/lib/datetime";
 import { formatMoney } from "@/lib/money";
 import { trackAndOpenWhatsApp } from "@/lib/whatsapp";
@@ -317,6 +317,11 @@ export function CanonicalStoreProfileView({
   const scheduleSummary = rawHours
     ? formatWeeklyScheduleSummary(weeklySchedule)
     : "Horários sob consulta";
+
+  // Horários de atendimento e SLA / tempo de resposta por setor da empresa
+  const departmentSchedules = useMemo(() => {
+    return resolveStoreDepartmentSchedules(store);
+  }, [store]);
 
   // Lista de banners da loja para scroll interno contínuo
   const storeBannersList = useMemo(() => {
@@ -2538,6 +2543,96 @@ function cleanAddressSegment(text: string): string {
                       </div>
                     )}
                   </div>
+                </div>
+              </div>
+
+              {/* 5. Atendimento por Setor & Tempo de Resposta */}
+              <div className="p-5 sm:p-6 rounded-lg bg-card border border-border/60 space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <Clock className="size-4 text-primary" />
+                    <h3 className="text-sm font-bold text-foreground">Horários por Setor & Tempo de Resposta</h3>
+                  </div>
+                  <Badge variant="outline" className="text-xs font-mono font-semibold w-fit border-primary/30 text-primary bg-primary/5">
+                    Tempo de Resposta Médio
+                  </Badge>
+                </div>
+
+                <p className="text-xs text-muted-foreground">
+                  Consulte os horários de operação e canais dedicados para cada departamento da empresa.
+                </p>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+                  {departmentSchedules.map((dept) => {
+                    const targetPhone = dept.phone || whatsappNumber || phoneCallNumber;
+                    return (
+                      <div
+                        key={dept.id}
+                        className="p-4 rounded-lg bg-muted/20 border border-border/50 space-y-3 flex flex-col justify-between"
+                      >
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between gap-1">
+                            <span className="font-bold text-xs text-foreground truncate">
+                              {dept.name}
+                            </span>
+                            <Badge
+                              variant="outline"
+                              className={cn(
+                                "text-xs px-2 py-1 font-bold uppercase",
+                                dept.is24h
+                                  ? "border-blue-500/40 text-blue-600 bg-blue-500/10"
+                                  : dept.isOpenNow
+                                  ? "border-emerald-500/40 text-emerald-600 bg-emerald-500/10"
+                                  : "border-border/60 text-muted-foreground bg-muted/20"
+                              )}
+                            >
+                              {dept.is24h ? "24 Horas" : dept.isOpenNow ? "Aberto" : "Fechado"}
+                            </Badge>
+                          </div>
+
+                          <div className="space-y-1 text-xs">
+                            <div className="flex items-center gap-2 text-muted-foreground">
+                              <Clock className="size-3 text-muted-foreground shrink-0" />
+                              <span className="font-mono text-foreground font-medium">{dept.hours}</span>
+                            </div>
+                            <p className="text-xs text-muted-foreground pl-4">
+                              {dept.daysDescription}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="space-y-2 pt-2 border-t border-border/40">
+                          <div className="flex items-center justify-between text-xs">
+                            <span className="text-muted-foreground text-xs">Retorno:</span>
+                            <span className="font-semibold text-xs text-primary font-mono">
+                              {dept.responseTime}
+                            </span>
+                          </div>
+
+                          {targetPhone && (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={() => {
+                                trackAndOpenWhatsApp({
+                                  phone: targetPhone,
+                                  storeId: store.id,
+                                  entityType: "store",
+                                  entityId: store.id,
+                                  entityTitle: store.name,
+                                  customMessage: `Olá! Gostaria de falar com o setor de ${dept.name} da empresa ${store.name}.`,
+                                });
+                              }}
+                              className="w-full h-11 min-h-11 rounded-lg text-xs font-bold gap-2 cursor-pointer border-border/70 hover:bg-muted focus-visible:ring-2 focus-visible:ring-primary"
+                            >
+                              <WhatsappLogo size={16} className="text-emerald-500 shrink-0" />
+                              <span className="truncate">Falar com {dept.name.split(" ")[0]}</span>
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             </div>

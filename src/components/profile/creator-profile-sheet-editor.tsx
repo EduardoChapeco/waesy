@@ -11,7 +11,23 @@ import { CreatorNicheSelect } from "@/components/profile/creator-niche-select";
 import { getPostMediaSignedUrl, uploadProfileMediaDirect } from "@/services/storage.functions";
 import { upsertCreatorProfile, registerAffiliate } from "@/services/affiliates.functions";
 import { toast } from "sonner";
-import { Camera, Image as ImageIcon, User, Star, Globe, Instagram, Share2, ShieldCheck, Check, Loader2, SlidersHorizontal } from "lucide-react";
+import {
+  Camera,
+  Image as ImageIcon,
+  User,
+  Star,
+  Globe,
+  Instagram,
+  Share2,
+  ShieldCheck,
+  Check,
+  Loader2,
+  SlidersHorizontal,
+  UserCheck,
+  Video,
+  Youtube,
+  MessageCircle,
+} from "lucide-react";
 
 export interface CreatorProfileSheetData {
   handle: string;
@@ -26,11 +42,12 @@ export interface CreatorProfileSheetData {
   isAnonymous?: boolean;
 }
 
-interface CreatorProfileSheetEditorProps {
+export interface CreatorProfileSheetEditorProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   initialData?: Partial<CreatorProfileSheetData> | null;
   isNew?: boolean;
+  mode?: "affiliate" | "creator";
   onSuccess?: (savedData: CreatorProfileSheetData) => void;
 }
 
@@ -39,8 +56,11 @@ export function CreatorProfileSheetEditor({
   onOpenChange,
   initialData,
   isNew = false,
+  mode = "creator",
   onSuccess,
 }: CreatorProfileSheetEditorProps) {
+  const isAffiliate = mode === "affiliate";
+
   const [handle, setHandle] = useState("");
   const [stageName, setStageName] = useState("");
   const [category, setCategory] = useState("moda_estilo");
@@ -105,29 +125,33 @@ export function CreatorProfileSheetEditor({
     setIsUploadingMedia(true);
 
     try {
-      const type = cropperType;
-      const base64Data = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
+      const ext = croppedBlob.type === "image/png" ? "png" : "jpg";
+      const targetPrefix = cropperType === "avatar" ? "creator_avatar" : "creator_cover";
+      const fileName = `${targetPrefix}_${Date.now()}.${ext}`;
+
+      const reader = new FileReader();
+      const base64Promise = new Promise<string>((resolve, reject) => {
         reader.onloadend = () => resolve(reader.result as string);
         reader.onerror = reject;
         reader.readAsDataURL(croppedBlob);
       });
+      const base64Data = await base64Promise;
 
-      const res = await uploadProfileMediaDirect({
+      const { publicUrl } = await uploadProfileMediaDirect({
         data: {
-          fileName: `creator_${type}_${Date.now()}.png`,
-          fileType: "image/png",
           base64Data,
-          target: type === "avatar" ? "creator_avatar" : "creator_cover",
+          fileName,
+          fileType: croppedBlob.type || "image/jpeg",
+          target: cropperType === "avatar" ? "creator_avatar" : "creator_cover",
         },
       });
 
-      if (type === "avatar") {
-        setAvatarUrl(res.publicUrl);
-        toast.success("Foto / Logo da marca atualizada com sucesso!");
+      if (cropperType === "avatar") {
+        setAvatarUrl(publicUrl);
+        toast.success(isAffiliate ? "Foto de identificação do parceiro atualizada!" : "Avatar da marca atualizado com sucesso!");
       } else {
-        setCoverUrl(res.publicUrl);
-        toast.success("Foto de capa panorâmica atualizada com sucesso!");
+        setCoverUrl(publicUrl);
+        toast.success(isAffiliate ? "Capa de identificação do parceiro atualizada!" : "Foto de capa panorâmica atualizada com sucesso!");
       }
     } catch (err: any) {
       toast.error(err?.message || "Erro ao processar imagem.");
@@ -145,7 +169,7 @@ export function CreatorProfileSheetEditor({
     }
 
     if (!stageName.trim()) {
-      toast.error("O nome artístico ou da marca é obrigatório.");
+      toast.error(isAffiliate ? "O nome de exibição do parceiro é obrigatório." : "O nome artístico ou da marca é obrigatório.");
       return;
     }
 
@@ -158,6 +182,7 @@ export function CreatorProfileSheetEditor({
       if (whatsapp.trim()) socialLinks.whatsapp = whatsapp.trim();
       if (website.trim()) socialLinks.website = website.trim();
 
+      // Sincroniza em creator_profiles
       await upsertCreatorProfile({
         data: {
           handle: cleanHandle,
@@ -185,8 +210,8 @@ export function CreatorProfileSheetEditor({
 
       toast.success(
         isNew
-          ? `Perfil @${cleanHandle} ativado com sucesso!`
-          : `Perfil @${cleanHandle} atualizado com sucesso!`
+          ? (isAffiliate ? `Perfil de parceiro @${cleanHandle} ativado com sucesso!` : `Perfil @${cleanHandle} ativado com sucesso!`)
+          : (isAffiliate ? `Perfil de parceiro @${cleanHandle} atualizado com sucesso!` : `Perfil @${cleanHandle} atualizado com sucesso!`)
       );
 
       const savedPayload: CreatorProfileSheetData = {
@@ -205,7 +230,7 @@ export function CreatorProfileSheetEditor({
       onOpenChange(false);
       onSuccess?.(savedPayload);
     } catch (err: any) {
-      toast.error(err?.message || "Erro ao salvar perfil de criador.");
+      toast.error(err?.message || (isAffiliate ? "Erro ao salvar perfil de parceiro." : "Erro ao salvar perfil de criador."));
     } finally {
       setIsSaving(false);
     }
@@ -219,9 +244,15 @@ export function CreatorProfileSheetEditor({
         size="lg"
         title={
           <div className="flex items-center gap-3">
-            <Star className="size-5 text-primary" />
+            {isAffiliate ? (
+              <UserCheck className="size-5 text-primary" />
+            ) : (
+              <Star className="size-5 text-primary" />
+            )}
             <span>
-              {isNew ? "Ativar Perfil de Criador & Marca" : `Editar Perfil de Criador`}
+              {isAffiliate
+                ? (isNew ? "Ativar Perfil de Parceiro" : "Editar Perfil de Parceiro")
+                : (isNew ? "Ativar Perfil de Criador & Marca" : "Editar Perfil de Criador & Marca")}
             </span>
             {handle && (
               <Badge variant="outline" className="font-mono text-xs">
@@ -230,7 +261,11 @@ export function CreatorProfileSheetEditor({
             )}
           </div>
         }
-        description="Defina sua identidade visual, segmento de atuação e canais para curar vitrines."
+        description={
+          isAffiliate
+            ? "Defina sua identificação de parceiro, dados de divulgação e canais de indicação."
+            : "Defina sua identidade visual, segmento de atuação e canais para curar vitrines."
+        }
         footer={
           <div className="flex items-center justify-end gap-3 w-full">
             <Button
@@ -238,7 +273,7 @@ export function CreatorProfileSheetEditor({
               variant="outline"
               onClick={() => onOpenChange(false)}
               disabled={isSaving}
-              className="h-10 px-4 rounded-lg text-xs"
+              className="h-11 min-h-11 px-4 rounded-lg text-xs cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               Cancelar
             </Button>
@@ -246,7 +281,7 @@ export function CreatorProfileSheetEditor({
               type="button"
               onClick={() => handleSubmit()}
               disabled={isSaving || isUploadingMedia}
-              className="h-10 px-5 rounded-lg text-xs font-semibold gap-2"
+              className="h-11 min-h-11 px-5 rounded-lg text-xs font-semibold gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               {isSaving ? (
                 <>
@@ -256,7 +291,11 @@ export function CreatorProfileSheetEditor({
               ) : (
                 <>
                   <Check className="size-3.5" />
-                  <span>{isNew ? "Ativar Perfil" : "Salvar Alterações"}</span>
+                  <span>
+                    {isNew
+                      ? (isAffiliate ? "Ativar Perfil de Parceiro" : "Ativar Perfil")
+                      : (isAffiliate ? "Salvar Perfil de Parceiro" : "Salvar Alterações")}
+                  </span>
                 </>
               )}
             </Button>
@@ -268,21 +307,21 @@ export function CreatorProfileSheetEditor({
             <TabsList className="bg-muted/30 p-1 rounded-lg h-11 flex gap-1 w-full sm:w-auto">
               <TabsTrigger
                 value="dados"
-                className="flex-1 sm:flex-initial h-9 rounded-lg text-xs font-bold gap-2"
+                className="flex-1 sm:flex-initial h-9 rounded-lg text-xs font-bold gap-2 cursor-pointer"
               >
-                <User className="size-3.5" />
-                <span>Identidade</span>
+                {isAffiliate ? <UserCheck className="size-3.5" /> : <User className="size-3.5" />}
+                <span>{isAffiliate ? "Identidade do Parceiro" : "Identidade"}</span>
               </TabsTrigger>
               <TabsTrigger
                 value="redes"
-                className="flex-1 sm:flex-initial h-9 rounded-lg text-xs font-bold gap-2"
+                className="flex-1 sm:flex-initial h-9 rounded-lg text-xs font-bold gap-2 cursor-pointer"
               >
                 <Share2 className="size-3.5" />
-                <span>Redes</span>
+                <span>Canais</span>
               </TabsTrigger>
               <TabsTrigger
                 value="avancado"
-                className="flex-1 sm:flex-initial h-9 rounded-lg text-xs font-bold gap-2"
+                className="flex-1 sm:flex-initial h-9 rounded-lg text-xs font-bold gap-2 cursor-pointer"
               >
                 <SlidersHorizontal className="size-3.5" />
                 <span>Avançado</span>
@@ -291,42 +330,39 @@ export function CreatorProfileSheetEditor({
 
             {/* ─── TAB 1: IDENTIDADE ─── */}
             <TabsContent value="dados" className="space-y-5 mt-0">
-              {/* Card 1: Fotos com Ferramenta de Recorte e Zoom (Padrão _store.conta.perfil.tsx) */}
+              {/* Card 1: Fotos com Ferramenta de Recorte e Zoom */}
               <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60 shadow-2xs">
                 <div className="flex items-center justify-between pb-3 border-b border-border/40">
                   <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
                     <Camera className="size-4 text-primary shrink-0" />
-                    <span>Identidade Visual</span>
+                    <span>{isAffiliate ? "Identidade do Parceiro" : "Identidade Visual da Marca"}</span>
                   </div>
-                  <Badge variant="outline" className="text-[10px] font-mono border-primary/30 text-primary">
+                  <span className="text-[11px] text-muted-foreground font-mono">
                     1:1 Squircle + 21:9 Panorâmica
-                  </Badge>
+                  </span>
                 </div>
 
-                {/* Linha Canônica: Avatar Squircle 1:1 ao lado da Capa 21:9 */}
-                <div className="flex items-center gap-3 sm:gap-5 w-full">
-                  {/* Avatar Squircle 1:1 */}
-                  <div className="relative group shrink-0">
-                    <div className="size-20 sm:size-24 rounded-lg bg-card border-2 border-border/60 overflow-hidden flex items-center justify-center shadow-xs">
-                      {avatarUrl ? (
-                        <img
-                          src={avatarUrl}
-                          alt="Avatar da Marca"
-                          className="size-full object-cover select-none"
-                        />
-                      ) : (
-                        <div className="size-full bg-muted flex items-center justify-center text-xl sm:text-2xl font-black text-primary">
-                          {stageName ? stageName.charAt(0).toUpperCase() : "C"}
-                        </div>
-                      )}
-                    </div>
+                <div className="flex items-center gap-4">
+                  {/* Foto de Perfil 1:1 Squircle */}
+                  <div className="relative size-20 sm:size-24 rounded-lg bg-muted/30 border border-border/50 shrink-0 overflow-hidden group flex items-center justify-center">
+                    {avatarUrl ? (
+                      <img
+                        src={avatarUrl}
+                        alt={stageName || handle}
+                        className="size-full object-cover select-none"
+                      />
+                    ) : (
+                      <span className="text-xl sm:text-2xl font-bold uppercase text-primary">
+                        {(stageName || handle || "P").charAt(0)}
+                      </span>
+                    )}
 
                     <button
                       type="button"
                       onClick={() => avatarInputRef.current?.click()}
                       disabled={isUploadingMedia}
-                      className="absolute inset-0 bg-black/40 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-xs font-semibold gap-1 cursor-pointer"
-                      title="Alterar Logo/Foto (1:1)"
+                      className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white gap-1 cursor-pointer"
+                      title={isAffiliate ? "Alterar Foto do Parceiro" : "Alterar Foto do Perfil"}
                     >
                       <Camera className="size-4" />
                       <span className="text-[10px]">Alterar</span>
@@ -345,12 +381,14 @@ export function CreatorProfileSheetEditor({
                     {coverUrl ? (
                       <img
                         src={coverUrl}
-                        alt="Capa da marca"
+                        alt="Capa"
                         className="size-full object-cover select-none"
                       />
                     ) : (
-                      <div className="size-full bg-gradient-to-r from-primary/10 via-muted/40 to-primary/15 flex items-center justify-center text-muted-foreground p-3 text-center">
-                        <span className="text-xs font-medium">Sem capa (21:9)</span>
+                      <div className="size-full bg-muted/40 flex items-center justify-center text-muted-foreground p-3 text-center">
+                        <span className="text-xs font-medium">
+                          {isAffiliate ? "Capa do parceiro (21:9)" : "Sem capa (21:9)"}
+                        </span>
                       </div>
                     )}
 
@@ -358,7 +396,7 @@ export function CreatorProfileSheetEditor({
                       type="button"
                       onClick={() => coverInputRef.current?.click()}
                       disabled={isUploadingMedia}
-                      className="absolute top-2.5 right-2.5 bg-background/85 hover:bg-background backdrop-blur-md border border-border/80 text-foreground px-3 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-xs transition-transform active:scale-95"
+                      className="absolute top-2.5 right-2.5 bg-background/90 hover:bg-background border border-border/80 text-foreground px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-2 cursor-pointer shadow-xs transition-transform active:scale-95"
                       title="Alterar Capa (21:9)"
                     >
                       <Camera className="size-3.5" />
@@ -391,7 +429,7 @@ export function CreatorProfileSheetEditor({
               <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60 shadow-2xs">
                 <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground pb-3 border-b border-border/40">
                   <User className="size-4 text-primary shrink-0" />
-                  <span>2. Identificação e Segmento</span>
+                  <span>{isAffiliate ? "2. Identificação e Área de Atuação" : "2. Identificação e Segmento"}</span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -406,7 +444,7 @@ export function CreatorProfileSheetEditor({
                         onChange={(e) =>
                           setHandle(e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ""))
                         }
-                        placeholder="seu_nome_ou_marca"
+                        placeholder={isAffiliate ? "seu_codigo_ou_marca" : "seu_nome_ou_marca"}
                         className="h-11 pl-8 rounded-lg text-xs font-mono"
                         required
                         disabled={!isNew && !!initialData?.handle}
@@ -415,44 +453,57 @@ export function CreatorProfileSheetEditor({
                   </div>
 
                   <div className="space-y-2">
-                    <Label className="text-xs font-medium">Nome Artístico / Marca Pública *</Label>
+                    <Label className="text-xs font-medium">
+                      {isAffiliate ? "Nome de Exibição do Parceiro *" : "Nome Artístico / Marca Pública *"}
+                    </Label>
                     <Input
                       value={stageName}
                       onChange={(e) => setStageName(e.target.value)}
-                      placeholder="Como você é reconhecido pelo público"
+                      placeholder={isAffiliate ? "Ex: Eduardo Ramos, Achei em Chapecó" : "Ex: Ana Silva, TechReview, Modas BR"}
                       className="h-11 rounded-lg text-xs"
                       required
                     />
                   </div>
                 </div>
 
-                {/* Categoria / Segmento via SELECT CANÔNICO */}
                 <div className="space-y-2">
                   <Label className="text-xs font-medium">
-                    Segmento Principal *
+                    {isAffiliate ? "Área de Atuação / Divulgação *" : "Segmento Principal *"}
                   </Label>
                   <CreatorNicheSelect
                     value={category}
-                    onValueChange={(val) => setCategory(val)}
+                    onValueChange={(val: string) => setCategory(val)}
                   />
                   <p className="text-[11px] text-muted-foreground">
-                    Segmenta sua vitrine nas buscas e parcerias da plataforma.
+                    {isAffiliate
+                      ? "Define sua principal categoria de recomendação e afiliação comercial."
+                      : "Define o nicho de curadoria para vitrines de produtos e lojas parceiras."}
                   </p>
                 </div>
 
-                {/* Biografia Comercial */}
                 <div className="space-y-2">
-                  <Label className="text-xs font-medium">Mini Biografia Comercial</Label>
+                  <Label className="text-xs font-medium">
+                    {isAffiliate ? "Apresentação do Parceiro" : "Mini-Biografia Pública"}
+                  </Label>
                   <Textarea
                     value={bio}
                     onChange={(e) => setBio(e.target.value)}
-                    placeholder="Conte resumidamente seu foco, proposta de valor ou estilo de conteúdo..."
+                    placeholder={
+                      isAffiliate
+                        ? "Conte sobre seus canais de divulgação, nicho de público ou estilo de recomendação..."
+                        : "Conte sobre sua curadoria, estilo ou propostas de parceria..."
+                    }
                     rows={3}
                     maxLength={500}
                     className="rounded-lg text-xs resize-none"
                   />
-                  <div className="text-right text-[10px] text-muted-foreground">
-                    {bio.length}/500 caracteres
+                  <div className="flex justify-between text-[11px] text-muted-foreground">
+                    <span>
+                      {isAffiliate
+                        ? "Aparece para as lojas parceiras e em seus canais de indicação."
+                        : "Aparece no topo da sua vitrine pública."}
+                    </span>
+                    <span>{bio.length}/500 caracteres</span>
                   </div>
                 </div>
               </div>
@@ -463,13 +514,13 @@ export function CreatorProfileSheetEditor({
               <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60 shadow-2xs">
                 <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground pb-3 border-b border-border/40">
                   <Share2 className="size-4 text-primary shrink-0" />
-                  <span>Canais Sociais e Pontos de Contato</span>
+                  <span>{isAffiliate ? "Canais de Divulgação e Contato" : "Canais Sociais e Pontos de Contato"}</span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label className="text-xs font-medium flex items-center gap-2">
-                      <Instagram className="size-3.5 text-pink-500" />
+                      <Instagram className="size-3.5 text-primary" />
                       <span>Instagram</span>
                     </Label>
                     <Input
@@ -482,7 +533,7 @@ export function CreatorProfileSheetEditor({
 
                   <div className="space-y-2">
                     <Label className="text-xs font-medium flex items-center gap-2">
-                      <span className="font-bold text-xs">🎵</span>
+                      <Video className="size-3.5 text-primary" />
                       <span>TikTok</span>
                     </Label>
                     <Input
@@ -495,7 +546,7 @@ export function CreatorProfileSheetEditor({
 
                   <div className="space-y-2">
                     <Label className="text-xs font-medium flex items-center gap-2">
-                      <span className="text-red-500 font-bold text-xs">▶</span>
+                      <Youtube className="size-3.5 text-primary" />
                       <span>YouTube</span>
                     </Label>
                     <Input
@@ -508,8 +559,8 @@ export function CreatorProfileSheetEditor({
 
                   <div className="space-y-2">
                     <Label className="text-xs font-medium flex items-center gap-2">
-                      <span className="text-emerald-500 font-bold text-xs">💬</span>
-                      <span>WhatsApp Comercial</span>
+                      <MessageCircle className="size-3.5 text-primary" />
+                      <span>WhatsApp de Parcerias</span>
                     </Label>
                     <Input
                       value={whatsapp}
@@ -540,17 +591,19 @@ export function CreatorProfileSheetEditor({
               <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60 shadow-2xs">
                 <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground pb-3 border-b border-border/40">
                   <ShieldCheck className="size-4 text-primary shrink-0" />
-                  <span>Governança e Privacidade da Vitrine</span>
+                  <span>{isAffiliate ? "Governança e Privacidade de Indicação" : "Governança e Privacidade da Vitrine"}</span>
                 </div>
 
                 <div className="p-4 rounded-lg border border-border/40 bg-muted/10 space-y-3">
                   <div className="flex items-center justify-between gap-3">
                     <div className="space-y-1">
                       <h4 className="text-xs font-bold text-foreground">
-                        Visibilidade da Vitrine
+                        {isAffiliate ? "Visibilidade nas Buscas e Parcerias" : "Visibilidade da Vitrine"}
                       </h4>
                       <p className="text-[11px] text-muted-foreground">
-                        Define se sua vitrine aparece no diretório público de criadores e nas buscas da rede.
+                        {isAffiliate
+                          ? "Define se sua identificação de parceiro aparece no diretório de parceiros e nas buscas da rede."
+                          : "Define se sua vitrine aparece no diretório público de criadores e nas buscas da rede."}
                       </p>
                     </div>
 
@@ -560,7 +613,7 @@ export function CreatorProfileSheetEditor({
                         size="sm"
                         variant={privacyMode === "public" ? "default" : "ghost"}
                         onClick={() => setPrivacyMode("public")}
-                        className="h-8 px-3 rounded-md text-xs"
+                        className="h-9 px-3 rounded-md text-xs cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       >
                         Pública
                       </Button>
@@ -569,7 +622,7 @@ export function CreatorProfileSheetEditor({
                         size="sm"
                         variant={privacyMode === "unlisted" ? "default" : "ghost"}
                         onClick={() => setPrivacyMode("unlisted")}
-                        className="h-8 px-3 rounded-md text-xs"
+                        className="h-9 px-3 rounded-md text-xs cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       >
                         Não Listada
                       </Button>
@@ -582,7 +635,7 @@ export function CreatorProfileSheetEditor({
                     Monetização e Comissões
                   </h4>
                   <p className="text-[11px] text-muted-foreground leading-relaxed">
-                    Seus links de afiliação e cupons de 10% vinculados ao seu @handle continuam ativos e gerando comissões no CPF titular registrado na sua conta.
+                    Seus links de afiliação e cupons vinculados ao seu @handle continuam ativos e gerando comissões e tokens registrados na sua conta.
                   </p>
                 </div>
               </div>
@@ -599,7 +652,11 @@ export function CreatorProfileSheetEditor({
         aspect={cropperType === "avatar" ? 1 : 21 / 9}
         cropShape="rect"
         lockAspect={true}
-        title={cropperType === "avatar" ? "Recortar Foto / Logo da Marca (1:1)" : "Recortar Capa Panorâmica da Marca (21:9)"}
+        title={
+          cropperType === "avatar"
+            ? (isAffiliate ? "Recortar Foto do Parceiro (1:1)" : "Recortar Foto / Logo da Marca (1:1)")
+            : (isAffiliate ? "Recortar Capa do Parceiro (21:9)" : "Recortar Capa Panorâmica da Marca (21:9)")
+        }
         onCropComplete={handleCropComplete}
       />
     </>

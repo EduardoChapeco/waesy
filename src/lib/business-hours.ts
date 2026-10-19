@@ -225,6 +225,92 @@ export function formatWeeklyScheduleSummary(schedule: WeeklySchedule): string {
  const sunStr = schedule.sun.intervals.map((i) => `${i.from} às ${i.to}`).join(", ");
  parts.push(`Dom: ${sunStr}`);
  }
-
- return parts.join(" • ") || "Horários sob consulta";
+  return parts.join(" • ") || "Horários sob consulta";
 }
+
+export interface StoreDepartmentSchedule {
+  id: string;
+  name: string;
+  hours: string;
+  responseTime: string;
+  daysDescription: string;
+  isOpenNow: boolean;
+  is24h?: boolean;
+  phone?: string | null;
+}
+
+/**
+ * Resolve os horários de atendimento e tempo de resposta de cada setor da empresa.
+ * Se configurado em store.settings, consome a configuração persistida.
+ * Se não houver, infere setores canônicos inteligentes com base na vertical e horários da loja.
+ */
+export function resolveStoreDepartmentSchedules(store: any): StoreDepartmentSchedule[] {
+  const settings = store?.settings || {};
+  const explicit = settings.department_schedules || settings.departments;
+  if (Array.isArray(explicit) && explicit.length > 0) {
+    return explicit.map((dept: any, index: number) => ({
+      id: dept.id || `dept-${index}`,
+      name: dept.name || dept.label || "Atendimento",
+      hours: dept.hours || "08:00 às 18:00",
+      responseTime: dept.responseTime || dept.response_time || "Até 30 min",
+      daysDescription: dept.daysDescription || dept.days || "Segunda a Sexta",
+      isOpenNow: typeof dept.isOpenNow === "boolean" ? dept.isOpenNow : true,
+      is24h: Boolean(dept.is24h || (typeof dept.hours === "string" && dept.hours.toLowerCase().includes("24h"))),
+      phone: dept.phone || store?.phone || store?.contact_phone || null,
+    }));
+  }
+
+  const rawHours =
+    settings.working_hours ||
+    settings.business_hours_extended ||
+    store?.business_hours ||
+    store?.working_hours ||
+    null;
+  const weekly = normalizeWorkingHours(rawHours);
+  const monInv = weekly.mon?.intervals?.[0];
+  const generalHoursStr = monInv ? `${monInv.from} às ${monInv.to}` : "08:00 às 18:00";
+  const satOpen = weekly.sat?.open;
+  const is24hGeneral = Boolean(weekly.mon?.open && monInv?.from === "00:00" && monInv?.to === "23:59");
+
+  const category = (store?.category || "").toLowerCase();
+  const isFoodOrHospitality =
+    category.includes("gastro") ||
+    category.includes("restauran") ||
+    category.includes("hotel") ||
+    category.includes("pousada") ||
+    category.includes("farmacia");
+
+  return [
+    {
+      id: "vendas",
+      name: "Vendas & Orçamentos",
+      hours: is24hGeneral ? "24 Horas" : generalHoursStr,
+      responseTime: "Geralmente responde em 10 min",
+      daysDescription: satOpen ? "Segunda a Sábado" : "Segunda a Sexta",
+      isOpenNow: true,
+      is24h: is24hGeneral,
+      phone: store?.phone || store?.contact_phone || null,
+    },
+    {
+      id: "suporte",
+      name: "Suporte & Pós-Venda",
+      hours: isFoodOrHospitality ? (is24hGeneral ? "Plantão 24h" : generalHoursStr) : "08:00 às 18:00",
+      responseTime: "Em até 30 min",
+      daysDescription: "Segunda a Sexta",
+      isOpenNow: true,
+      is24h: false,
+      phone: store?.phone || store?.contact_phone || null,
+    },
+    {
+      id: "financeiro",
+      name: "Financeiro & Pix",
+      hours: "09:00 às 17:00",
+      responseTime: "Em até 1 hora",
+      daysDescription: "Dias Úteis",
+      isOpenNow: true,
+      is24h: false,
+      phone: store?.phone || store?.contact_phone || null,
+    },
+  ];
+}
+

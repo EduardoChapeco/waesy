@@ -22,6 +22,11 @@ interface CacheEntry {
 }
 const IDENTITY_MEMO_CACHE = new Map<string, CacheEntry>();
 
+/** Invalida todo o cache em memória de identidades (chamado em logout ou troca de tenant). */
+export function clearIdentityCache(): void {
+  IDENTITY_MEMO_CACHE.clear();
+}
+
 function resolveMemoKey(): string {
   try {
     const raw = getRequestHeader("cookie") || "";

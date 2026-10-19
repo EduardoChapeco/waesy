@@ -236,7 +236,7 @@ function CreatorProfilesManagementPage() {
 
                     <div className="flex items-center gap-2 self-start sm:self-auto flex-wrap">
                       {activeCreator === cp.handle || activeCreator === cp.id ? (
-                        <div className="flex items-center gap-1.5 shrink-0">
+                        <div className="flex items-center gap-2 shrink-0">
                           <Badge
                             variant="outline"
                             className="h-9 px-3 rounded-lg text-xs font-bold bg-amber-500/10 text-amber-600 border-amber-500/30 gap-2 shrink-0"
@@ -249,7 +249,7 @@ function CreatorProfilesManagementPage() {
                             variant="ghost"
                             size="sm"
                             onClick={handleDeactivatePersona}
-                            className="h-9 px-2.5 rounded-lg text-xs font-semibold text-muted-foreground hover:text-foreground cursor-pointer"
+                            className="h-9 px-2 rounded-lg text-xs font-semibold text-muted-foreground hover:text-foreground cursor-pointer"
                             title="Voltar ao Perfil Civil"
                           >
                             Desativar
@@ -372,6 +372,7 @@ function CreatorProfilesManagementPage() {
       <CreatorProfileSheetEditor
         open={editorOpen}
         onOpenChange={setEditorOpen}
+        mode="creator"
         initialData={editorInitialData}
         isNew={isEditorNew}
         onSuccess={handleEditorSuccess}

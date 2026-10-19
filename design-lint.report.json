@@ -1,33 +1,33 @@
 {
   "version": "2.0.0",
-  "timestamp": "2026-10-18T19:06:51.624Z",
-  "inspectedFiles": 2166,
-  "totalViolations": 12323,
+  "timestamp": "2026-10-19T11:08:59.333Z",
+  "inspectedFiles": 2169,
+  "totalViolations": 12306,
   "summary": {
-    "totalViolations": 12323,
+    "totalViolations": 12306,
     "bySeverity": {
-      "P0": 1425,
-      "P1": 8304,
+      "P0": 1423,
+      "P1": 8289,
       "P2": 1298,
       "P3": 1296
     },
     "byRule": {
       "DL-18": 1150,
-      "DL-02": 3486,
-      "DL-14": 2084,
-      "DL-28": 286,
-      "DL-15": 1422,
-      "DL-07": 485,
-      "DL-27": 1044,
-      "DL-30": 252,
+      "DL-02": 3468,
+      "DL-14": 2083,
+      "DL-28": 287,
+      "DL-15": 1420,
+      "DL-07": 487,
+      "DL-27": 1042,
+      "DL-30": 254,
       "DL-26": 85,
       "DL-01": 887,
       "DL-29": 117,
       "DL-05": 133,
-      "DL-23": 420,
-      "DL-03": 215,
-      "DL-09": 61,
-      "DL-08": 102,
+      "DL-23": 418,
+      "DL-03": 218,
+      "DL-09": 62,
+      "DL-08": 101,
       "DL-24": 2,
       "DL-11": 21,
       "DL-12": 31,
@@ -38,11 +38,11 @@
     },
     "byModule": {
       "components/app": {
-        "total": 5342,
-        "P0": 569,
-        "P1": 3584,
+        "total": 5328,
+        "P0": 566,
+        "P1": 3575,
         "P2": 651,
-        "P3": 538
+        "P3": 536
       },
       "components/builder": {
         "total": 126,
@@ -108,18 +108,18 @@
         "P3": 6
       },
       "routes/workspace": {
-        "total": 2195,
-        "P0": 440,
-        "P1": 1374,
+        "total": 2200,
+        "P0": 441,
+        "P1": 1377,
         "P2": 111,
-        "P3": 270
+        "P3": 271
       },
       "routes/store": {
-        "total": 1501,
+        "total": 1493,
         "P0": 135,
-        "P1": 996,
+        "P1": 987,
         "P2": 140,
-        "P3": 230
+        "P3": 231
       },
       "services": {
         "total": 211,
@@ -143,8 +143,8 @@
         "P3": 0
       }
     },
-    "filesWithViolations": 875,
-    "filesCount": 2166
+    "filesWithViolations": 878,
+    "filesCount": 2169
   },
   "config": {
     "$schema": "https://json-schema.org/draft/2020-12/schema",

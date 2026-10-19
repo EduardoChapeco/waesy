@@ -101,15 +101,17 @@ export function HorizontalRail({
 
       {/* ── Horizontal Scroll Container with Snap, Peek & Desktop Hover Floating Arrows ────────── */}
       <div className="relative group/rail w-full">
-        {/* Seta Flutuante Esquerda (Desktop) */}
-        <button
-          type="button"
-          onClick={() => scroll("left")}
-          aria-label="Rolar para a esquerda"
-          className="hidden lg:flex absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 z-20 size-11 sm:size-9 rounded-lg bg-background/95 hover:bg-background backdrop-blur-md shadow-md border border-border/70 items-center justify-center text-foreground opacity-0 group-hover/rail:opacity-100 transition-opacity hover:scale-105 active:scale-95 cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-        >
-          <ChevronLeft className="size-5" />
-        </button>
+        {/* Seta Flutuante Esquerda (Desktop - ativa apenas quando o cabeçalho estiver oculto para não sobrepor cartões) */}
+        {hideHeader && (
+          <button
+            type="button"
+            onClick={() => scroll("left")}
+            aria-label="Rolar para a esquerda"
+            className="hidden lg:flex absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 z-20 size-11 sm:size-9 rounded-lg bg-background/95 hover:bg-background shadow-md border border-border/70 items-center justify-center text-foreground opacity-0 group-hover/rail:opacity-100 transition-opacity hover:scale-105 active:scale-95 cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          >
+            <ChevronLeft className="size-5" />
+          </button>
+        )}
 
         {/* Scroll Container */}
         <div
@@ -122,15 +124,17 @@ export function HorizontalRail({
           {children}
         </div>
 
-        {/* Seta Flutuante Direita (Desktop) */}
-        <button
-          type="button"
-          onClick={() => scroll("right")}
-          aria-label="Rolar para a direita"
-          className="hidden lg:flex absolute right-0 top-1/2 -translate-y-1/2 translate-x-3 z-20 size-11 sm:size-9 rounded-lg bg-background/95 hover:bg-background backdrop-blur-md shadow-md border border-border/70 items-center justify-center text-foreground opacity-0 group-hover/rail:opacity-100 transition-opacity hover:scale-105 active:scale-95 cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-        >
-          <ChevronRight className="size-5" />
-        </button>
+        {/* Seta Flutuante Direita (Desktop - ativa apenas quando o cabeçalho estiver oculto para não sobrepor cartões) */}
+        {hideHeader && (
+          <button
+            type="button"
+            onClick={() => scroll("right")}
+            aria-label="Rolar para a direita"
+            className="hidden lg:flex absolute right-0 top-1/2 -translate-y-1/2 translate-x-3 z-20 size-11 sm:size-9 rounded-lg bg-background/95 hover:bg-background shadow-md border border-border/70 items-center justify-center text-foreground opacity-0 group-hover/rail:opacity-100 transition-opacity hover:scale-105 active:scale-95 cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          >
+            <ChevronRight className="size-5" />
+          </button>
+        )}
       </div>
     </section>
   );

@@ -1270,6 +1270,38 @@ export function getNicheSemantics(storeData: any): NicheSemantics {
  ""
  ).toLowerCase();
  const description = (storeData?.description || "").toLowerCase();
+
+ // Salvaguarda Canônica Anti-Vazamento de Nichos (Invariante B.37)
+ const hasFashionKeyword =
+ storeName.includes("moda") ||
+ storeName.includes("roupa") ||
+ storeName.includes("vestu") ||
+ storeName.includes("boutique") ||
+ storeName.includes("calcado") ||
+ storeName.includes("calçado") ||
+ storeName.includes("fashion") ||
+ storeName.includes("otica") ||
+ storeName.includes("óticas");
+
+ const hasTravelInName =
+ storeName.includes("viag") ||
+ storeName.includes("turis") ||
+ storeName.includes("hotel") ||
+ storeName.includes("pousad") ||
+ storeName.includes("excurs") ||
+ storeName.includes("travel");
+
+ if (hasFashionKeyword && !hasTravelInName) {
+ const retailBase = { ...NICHE_SEMANTICS_REGISTRY.retail };
+ retailBase.name = "Moda & Vestuário";
+ retailBase.catalogTitle = "Coleções & Produtos";
+ retailBase.itemSingular = "Peça / Produto";
+ retailBase.itemPlural = "Peças & Produtos";
+ retailBase.newItemAction = "Adicionar Produto";
+ retailBase.modifiersLabel = "Grades, Cores & Tamanhos";
+ return enrichNicheSemantics(retailBase);
+ }
+
  const combined = `${explicitSegment} ${storeName} ${description}`.trim();
  const segment = combined || "retail";
 

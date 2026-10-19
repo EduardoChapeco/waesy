@@ -43,6 +43,30 @@ export function resolveClassifiedDetailedSpecs(classified: any): ClassifiedSpecI
     ""
   ).toLowerCase();
 
+  const titleLower = (classified.title || "").toLowerCase();
+
+  const isGrocery = Boolean(
+    classified.template_style === "convenience" ||
+    attrs.template_style === "conveniencia" ||
+    attrs.template_style === "convenience" ||
+    attrs.grocery_department ||
+    attrs.department ||
+    attrs.food_prep_time_minutes ||
+    rawCategory.includes("bebida") ||
+    rawCategory.includes("mercado") ||
+    rawCategory.includes("conveniencia") ||
+    rawCategory.includes("gastronomia") ||
+    rawCategory.includes("aliment") ||
+    rawCategory.includes("grocery") ||
+    classified.niche_id === "food" ||
+    classified.niche_id === "market" ||
+    classified.niche_id === "pharmacy" ||
+    (classified.title &&
+      /drink|whisky|whiskey|cerveja|refrigerante|energético|vinho|vodka|gin|suco|água mineral|conveniência|fardo|picanha|filé|costela|alcatra|queijo|presunto/i.test(
+        classified.title
+      ))
+  );
+
   const isTravel = Boolean(
     attrs.destination_city ||
     attrs.destination ||
@@ -57,31 +81,49 @@ export function resolveClassifiedDetailedSpecs(classified: any): ClassifiedSpecI
     rawCategory.includes("turismo") ||
     rawCategory.includes("viag") ||
     rawCategory.includes("pacote") ||
-    rawCategory.includes("travel")
-  );
+    rawCategory.includes("travel") ||
+    classified.niche_id === "travel"
+  ) && !isGrocery;
+
+  const isHospitality = Boolean(
+    rawCategory.includes("hosped") ||
+    rawCategory.includes("temporada") ||
+    classified.niche_id === "hospitality_stay" ||
+    attrs.niche_id === "hospitality_stay" ||
+    (classified.deal_type === "temporada" && rawCategory.includes("imove"))
+  ) && !isTravel && !isGrocery;
 
   const isRealEstate = Boolean(
     classified.property_type ||
     attrs.property_type ||
     classified.area_sqm ||
     attrs.area_sqm ||
+    attrs.usable_area ||
+    attrs.total_area ||
     rawCategory.includes("imove") ||
     rawCategory.includes("imobili") ||
-    rawCategory.includes("aluguel") ||
-    rawCategory.includes("temporada")
-  ) && !isTravel;
+    rawCategory.includes("real_estate") ||
+    classified.niche_id === "real_estate" ||
+    classified.niche_id === "real_estate_sale" ||
+    classified.niche_id === "real_estate_rent"
+  ) && !isTravel && !isGrocery;
 
   const isVehicle = Boolean(
-    attrs.brand ||
-    classified.brand ||
-    attrs.mileage_km ||
-    attrs.mileage ||
-    classified.mileage ||
     rawCategory.includes("veic") ||
     rawCategory.includes("auto") ||
     rawCategory.includes("carro") ||
-    rawCategory.includes("moto")
-  ) && !isTravel;
+    rawCategory.includes("moto") ||
+    rawCategory.includes("caminhao") ||
+    rawCategory.includes("nautic") ||
+    classified.niche_id === "vehicle" ||
+    attrs.niche_id === "vehicle" ||
+    (attrs.mileage_km !== undefined && attrs.mileage_km !== null && attrs.mileage_km !== "") ||
+    (attrs.mileage !== undefined && attrs.mileage !== null && attrs.mileage !== "") ||
+    attrs.fuel_type ||
+    attrs.license_plate_end ||
+    attrs.renavam ||
+    attrs.chassis
+  ) && !isTravel && !isGrocery && !isRealEstate && !isHospitality;
 
   const isEquipment = Boolean(
     attrs.equipment_period ||
@@ -89,16 +131,18 @@ export function resolveClassifiedDetailedSpecs(classified: any): ClassifiedSpecI
     attrs.deposit_cents ||
     attrs.equipment_power ||
     rawCategory.includes("equipamento") ||
-    rawCategory.includes("maquina")
-  ) && !isTravel && !isVehicle;
+    rawCategory.includes("maquina") ||
+    classified.niche_id === "equipment"
+  ) && !isTravel && !isVehicle && !isGrocery && !isRealEstate && !isHospitality;
 
   const isServices = Boolean(
     attrs.modality ||
     attrs.service_area ||
     classified.service_duration_minutes ||
     attrs.service_duration_minutes ||
-    rawCategory.includes("servic")
-  ) && !isTravel && !isRealEstate && !isVehicle;
+    rawCategory.includes("servic") ||
+    classified.niche_id === "service"
+  ) && !isTravel && !isRealEstate && !isHospitality && !isVehicle && !isGrocery;
 
   const isJobs = Boolean(
     attrs.role ||
@@ -106,45 +150,38 @@ export function resolveClassifiedDetailedSpecs(classified: any): ClassifiedSpecI
     attrs.salary_range ||
     rawCategory.includes("emprego") ||
     rawCategory.includes("vaga") ||
-    rawCategory.includes("job")
-  );
+    rawCategory.includes("job") ||
+    classified.niche_id === "job"
+  ) && !isGrocery;
 
   const isBusiness = Boolean(
     attrs.business_type ||
     attrs.monthly_revenue_cents ||
     rawCategory.includes("negocio") ||
     rawCategory.includes("empresa") ||
-    rawCategory.includes("m&a")
-  );
+    rawCategory.includes("m&a") ||
+    classified.niche_id === "business"
+  ) && !isGrocery;
 
   const isSubscription = Boolean(
     classified.pricing_model === "recurring" ||
     attrs.pricing_model === "recurring" ||
-    rawCategory.includes("assinatura")
-  );
+    rawCategory.includes("assinatura") ||
+    classified.niche_id === "subscription"
+  ) && !isGrocery;
 
   const isDonation = Boolean(
     attrs.is_donation ||
     classified.is_donation ||
-    rawCategory.includes("doacao")
-  );
+    rawCategory.includes("doacao") ||
+    classified.niche_id === "donation"
+  ) && !isGrocery;
 
-  const isGrocery = Boolean(
-    classified.template_style === "convenience" ||
-    attrs.template_style === "conveniencia" ||
-    attrs.grocery_department ||
-    attrs.department ||
-    attrs.food_prep_time_minutes ||
-    rawCategory.includes("bebida") ||
-    rawCategory.includes("mercado") ||
-    rawCategory.includes("conveniencia") ||
-    rawCategory.includes("gastronomia") ||
-    rawCategory.includes("aliment")
-  ) && !isTravel && !isRealEstate && !isVehicle && !isServices && !isJobs;
+  const isPhysicalGoods = !isTravel && !isRealEstate && !isHospitality && !isServices && !isJobs && !isSubscription && !isBusiness && !isDonation;
 
   // ── 1. CONDIÇÃO & GARANTIA (Exclusivo para bens duráveis) ──
   const rawCondition = classified.condition || attrs.condition;
-  if (rawCondition && !isTravel && !isJobs && !isServices && !isSubscription && !isDonation) {
+  if (rawCondition && isPhysicalGoods && !isGrocery) {
     let condLabel = "Usado";
     if (rawCondition === "new") condLabel = "Novo na Caixa";
     else if (rawCondition === "refurbished") condLabel = "Revisado / Recondicionado";
@@ -153,12 +190,12 @@ export function resolveClassifiedDetailedSpecs(classified: any): ClassifiedSpecI
   }
 
   const rawWarranty = attrs.service_warranty || attrs.warranty || classified.warranty;
-  if (rawWarranty && !isTravel && !isJobs && !isSubscription) {
+  if (rawWarranty && (isPhysicalGoods || isVehicle || isServices) && !isGrocery) {
     list.push({ label: "Garantia", value: String(rawWarranty), category: "commercial" });
   }
 
-  // ── 2. VEÍCULOS ──
-  if (!isTravel) {
+  // ── 2. VEÍCULOS (Estritamente para automóveis, motos e náutica) ──
+  if (isVehicle && !isTravel && !isGrocery) {
     const brand = attrs.brand || classified.brand;
     const model = attrs.model || classified.model;
     const version = attrs.version || classified.version;
@@ -218,8 +255,8 @@ export function resolveClassifiedDetailedSpecs(classified: any): ClassifiedSpecI
     }
   }
 
-  // ── 3. IMÓVEIS & HOSPEDAGEM AVULSA ──
-  if (!isTravel) {
+  // ── 3. IMÓVEIS & HOSPEDAGEM AVULSA (Estritamente para propriedades e temporada) ──
+  if ((isRealEstate || isHospitality) && !isTravel && !isGrocery) {
     const propertyType = classified.property_type || attrs.property_type;
     const dealType = classified.deal_type || attrs.deal_type;
     const areaSqm = classified.area_sqm ?? attrs.area_sqm ?? attrs.usable_area;
@@ -239,7 +276,7 @@ export function resolveClassifiedDetailedSpecs(classified: any): ClassifiedSpecI
     const solarPosition = attrs.solar_position;
 
     if (propertyType) list.push({ label: "Tipo de Imóvel", value: String(propertyType), category: "technical" });
-    if (dealType && (isRealEstate || isVehicle || isEquipment || isBusiness)) {
+    if (dealType) {
       const dealLabel = dealType === "venda" ? "Venda" : dealType === "aluguel" ? "Locação Mensal" : dealType === "temporada" ? "Temporada" : String(dealType);
       list.push({ label: "Finalidade", value: dealLabel, category: "commercial" });
     }
@@ -259,7 +296,10 @@ export function resolveClassifiedDetailedSpecs(classified: any): ClassifiedSpecI
     if (attrs.pets_allowed !== undefined) {
       list.push({ label: "Aceita Animais", value: attrs.pets_allowed ? "Sim, aceita pets" : "Não permite", category: "technical" });
     }
-    if (maxGuests) list.push({ label: "Capacidade", value: `Até ${maxGuests} hóspedes`, category: "technical" });
+    // Capacidade exclusiva para hospedagem ou temporada
+    if (maxGuests && (isHospitality || dealType === "temporada")) {
+      list.push({ label: "Capacidade", value: `Até ${maxGuests} hóspedes`, category: "technical" });
+    }
     if (cleaningFeeCents && cleaningFeeCents > 0) {
       list.push({ label: "Taxa de Limpeza", value: formatMoney(cleaningFeeCents), category: "commercial" });
     }
@@ -277,7 +317,11 @@ export function resolveClassifiedDetailedSpecs(classified: any): ClassifiedSpecI
   }
 
   // ── 3.5 EQUIPAMENTOS E MÁQUINAS ──
-  if (!isTravel) {
+  if (isEquipment && !isTravel && !isGrocery) {
+    const dealType = classified.deal_type || attrs.deal_type;
+    if (dealType) {
+      list.push({ label: "Finalidade", value: dealType === "aluguel" ? "Locação de Equipamento" : "Venda", category: "commercial" });
+    }
     const equipmentPeriod = attrs.equipment_period || attrs.rental_period;
     const depositCents = attrs.deposit_cents || attrs.security_deposit_cents;
     const equipmentPower = attrs.equipment_power || attrs.power;
@@ -297,7 +341,7 @@ export function resolveClassifiedDetailedSpecs(classified: any): ClassifiedSpecI
   }
 
   // ── 4. SERVIÇOS & PROFISSIONAIS AUTÔNOMOS ──
-  if (!isTravel) {
+  if (isServices && !isTravel && !isGrocery && !isRealEstate && !isHospitality) {
     const modality = attrs.modality;
     const serviceArea = attrs.service_area;
     const serviceDuration = classified.service_duration_minutes ?? attrs.service_duration_minutes ?? attrs.service_duration ?? attrs.estimated_duration;
@@ -324,8 +368,10 @@ export function resolveClassifiedDetailedSpecs(classified: any): ClassifiedSpecI
     }
   }
 
-  // ── 5. DESAPEGO / ELETRÔNICOS / INFORMÁTICA / MÓVEIS / MODA / PRODUTO FÍSICO ──
-  if (!isTravel && !isJobs && !isServices) {
+  // ── 5. DESAPEGO / ELETRÔNICOS / INFORMÁTICA / MÓVEIS / MODA / PRODUTO FÍSICO GERAL ──
+  if (isPhysicalGoods && !isGrocery && !isVehicle && !isEquipment) {
+    const brand = attrs.brand || classified.brand;
+    const model = attrs.model || classified.model;
     const storage = attrs.storage;
     const batteryHealth = attrs.battery_health;
     const computerType = attrs.computer_type;
@@ -342,6 +388,8 @@ export function resolveClassifiedDetailedSpecs(classified: any): ClassifiedSpecI
     const weightKg = attrs.weight_kg ?? classified.weight_kg;
     const dimensions = attrs.dimensions ?? classified.dimensions;
 
+    if (brand) list.push({ label: "Marca", value: String(brand), category: "technical", highlight: true });
+    if (model) list.push({ label: "Modelo", value: String(model), category: "technical" });
     if (weightKg) list.push({ label: "Peso", value: `${weightKg} kg`, category: "dimensions" });
     if (dimensions) list.push({ label: "Dimensões", value: String(dimensions), category: "dimensions" });
     if (storage) list.push({ label: "Armazenamento", value: String(storage), category: "technical", highlight: true });
@@ -451,6 +499,7 @@ export function resolveClassifiedDetailedSpecs(classified: any): ClassifiedSpecI
 
   // ── 6. MERCADO, CONVENIÊNCIA & GASTRONOMIA (Isolado contra vazamento em outros nichos) ──
   if (isGrocery) {
+    const brand = attrs.brand || classified.brand;
     const department = attrs.grocery_department || attrs.department;
     const grocerySub = attrs.grocery_sub_category || attrs.sub_category;
     const unitType = attrs.grocery_unit_type || attrs.unit_type;
@@ -458,10 +507,37 @@ export function resolveClassifiedDetailedSpecs(classified: any): ClassifiedSpecI
     const temperature = attrs.temperature || attrs.storage_temp;
     const prepTime = attrs.food_prep_time_minutes;
 
-    if (department) list.push({ label: "Departamento", value: String(department), category: "technical" });
+    if (brand) {
+      list.push({ label: "Marca", value: String(brand), category: "technical", highlight: true });
+    } else {
+      if (titleLower.includes("mansao maromba") || titleLower.includes("mansão maromba")) {
+        list.push({ label: "Marca", value: "Mansão Maromba", category: "technical", highlight: true });
+      }
+    }
+
+    if (volume) {
+      list.push({ label: "Volume / Peso", value: String(volume), category: "dimensions", highlight: true });
+    } else {
+      const titleMatch = (classified.title || "").match(/\b(\d+(?:[.,]\d+)?\s*(?:l|ml|kg|g))\b/i);
+      if (titleMatch) {
+        list.push({ label: "Volume / Peso", value: titleMatch[1].toUpperCase(), category: "dimensions", highlight: true });
+      }
+    }
+
+    if (attrs.is_alcoholic !== undefined) {
+      list.push({ label: "Bebida Alcoólica", value: attrs.is_alcoholic ? "Sim (+18)" : "Não alcoólico", category: "technical", highlight: true });
+    } else if (titleLower.includes("alcoólico") || titleLower.includes("alcoolico") || titleLower.includes("whisky") || titleLower.includes("cerveja") || titleLower.includes("gin") || titleLower.includes("vodka") || titleLower.includes("vinho")) {
+      list.push({ label: "Bebida Alcoólica", value: "Sim (+18)", category: "technical", highlight: true });
+    }
+
+    if (department) {
+      list.push({ label: "Departamento", value: String(department), category: "technical" });
+    } else if (titleLower.includes("drink") || titleLower.includes("whisky") || titleLower.includes("cerveja") || titleLower.includes("bebida")) {
+      list.push({ label: "Departamento", value: "Bebidas & Destilados", category: "technical" });
+    }
+
     if (grocerySub) list.push({ label: "Subcategoria", value: String(grocerySub), category: "technical" });
     if (unitType) list.push({ label: "Unidade", value: String(unitType), category: "technical" });
-    if (volume) list.push({ label: "Volume / Peso", value: String(volume), category: "dimensions" });
     if (temperature && temperature !== "none") {
       let tempLabel = String(temperature);
       if (tempLabel === "gelada") tempLabel = "Gelada / Imediata";
@@ -469,9 +545,6 @@ export function resolveClassifiedDetailedSpecs(classified: any): ClassifiedSpecI
       else if (tempLabel === "congelado") tempLabel = "Congelado";
       else if (tempLabel === "resfriado") tempLabel = "Resfriado";
       list.push({ label: "Temperatura", value: tempLabel, category: "technical" });
-    }
-    if (attrs.is_alcoholic !== undefined) {
-      list.push({ label: "Bebida Alcoólica", value: attrs.is_alcoholic ? "Sim (+18)" : "Não alcoólico", category: "technical" });
     }
     if (prepTime) list.push({ label: "Tempo de Preparo", value: `~${prepTime} min`, category: "logistics" });
   }
@@ -533,14 +606,13 @@ export function resolveClassifiedDetailedSpecs(classified: any): ClassifiedSpecI
 
   // ── 10. LOGÍSTICA & ENVIO GERAL ──
   // Estritamente para produtos físicos que exigem envio/retirada; Proibido em Turismo, Imóveis, Serviços, Empregos e Assinaturas
-  const isPhysicalGoods = !isTravel && !isRealEstate && !isServices && !isJobs && !isSubscription && !isBusiness;
   const deliveryMode = classified.delivery_mode || attrs.delivery_mode;
-  if (deliveryMode && isPhysicalGoods) {
+  if (deliveryMode && (isPhysicalGoods || isGrocery)) {
     let delivLabel = "Retirada no Local";
     if (deliveryMode === "shipping") delivLabel = "Envio para Todo o Brasil";
     else if (deliveryMode === "local_delivery") delivLabel = "Entrega Local";
-    else if (deliveryMode === "both") delivLabel = "Retirada ou Envio Disponível";
-    list.push({ label: "Logística", value: delivLabel, category: "logistics" });
+    else if (deliveryMode === "both") delivLabel = "Entrega Local ou Retirada";
+    list.push({ label: "Logística", value: delivLabel, category: "logistics", highlight: true });
   }
 
   return list;

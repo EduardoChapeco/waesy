@@ -27,7 +27,7 @@ const GROUP_OVERVIEW: NavGroup = {
   icon: LayoutDashboard,
   section: "master",
   items: [
-    { path: "/workspace", label: "Dashboard", icon: LayoutDashboard },
+    { path: "/workspace", label: "Visão Geral", icon: LayoutDashboard },
     { path: "/workspace/onboarding", label: "Ativação", icon: Layers },
   ],
 };
@@ -71,6 +71,7 @@ const GROUP_MASTER_INBOX: NavGroup = {
   section: "master",
   items: [
     { path: "/workspace/atendimento", label: "Conversas", icon: MessageSquare },
+    { path: "/workspace/clientes", label: "Clientes", icon: Users },
     { path: "/workspace/avaliacoes", label: "Avaliações", icon: Star },
     { path: "/workspace/notificacoes", label: "Notificações", icon: Bell },
     { path: "/workspace/suporte", label: "Suporte", icon: LifeBuoy },
@@ -933,7 +934,6 @@ export function resolveWorkspaceNavigation(
         GROUP_MASTER_INBOX,
         GROUP_RETAIL_CATALOG,
         GROUP_RETAIL_SALES,
-        GROUP_COMMERCIAL_SALES,
         GROUP_MARKETING_VITRINE,
         GROUP_LOGISTICS_EXPEDITION,
         GROUP_FINANCE_CLEAN,
@@ -966,7 +966,6 @@ export function resolveWorkspaceNavigation(
         group.id === "logistics-expedition" ||
         group.id === "settings" ||
         group.id === "team-rh" ||
-        group.id.startsWith("tourism") ||
         group.id.startsWith(semantics.nicheId)
       ) {
         finalGroups.push(group);
@@ -1028,7 +1027,7 @@ export function resolveWorkspaceNavigation(
     if (enabledModules.includes("real_estate") && !finalGroups.some((g) => g.id === "real-estate")) {
       finalGroups.splice(finalGroups.length - 2, 0, GROUP_REAL_ESTATE);
     }
-    if (enabledModules.includes("tourism") && !finalGroups.some((g) => g.id.startsWith("tourism"))) {
+    if (enabledModules.includes("tourism") && semantics.nicheId === "tourism" && !finalGroups.some((g) => g.id.startsWith("tourism"))) {
       finalGroups.splice(
         finalGroups.length - 2,
         0,

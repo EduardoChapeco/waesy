@@ -17,6 +17,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { setTenantContext } from "@/services/identity.functions";
+import { setClientContextCookies } from "@/lib/context-auth";
 
 export interface ContextMembership {
   store_id: string;
@@ -114,13 +116,9 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
   );
 
   // ── 1. Alternar para a Conta Civil (Root Transacional) ──
-  const handleSwitchToCivil = () => {
-    if (typeof window !== "undefined") {
-      window.document.cookie = "waesy_active_context=civil; path=/; max-age=31536000; SameSite=Lax";
-      window.document.cookie = "waesy_active_tenant=; path=/; max-age=0; SameSite=Lax";
-      window.document.cookie = "waesy_active_creator=; path=/; max-age=0; SameSite=Lax";
-      window.document.cookie = "waesy_store_id=; path=/; max-age=0; SameSite=Lax";
-    }
+  const handleSwitchToCivil = async () => {
+    setClientContextCookies({ context: "civil" });
+    await setTenantContext({ data: { store_id: null } }).catch(() => null);
 
     const state: ActiveContextState = {
       type: "civil",
@@ -137,14 +135,10 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
   };
 
   // ── 2. Alternar para uma Persona de Criador ──
-  const handleSwitchToCreator = (persona: CreatorPersona) => {
+  const handleSwitchToCreator = async (persona: CreatorPersona) => {
     const handleClean = persona.handle || "criador";
-    if (typeof window !== "undefined") {
-      window.document.cookie = "waesy_active_context=creator; path=/; max-age=31536000; SameSite=Lax";
-      window.document.cookie = `waesy_active_creator=${encodeURIComponent(handleClean)}; path=/; max-age=31536000; SameSite=Lax`;
-      window.document.cookie = "waesy_active_tenant=; path=/; max-age=0; SameSite=Lax";
-      window.document.cookie = "waesy_store_id=; path=/; max-age=0; SameSite=Lax";
-    }
+    setClientContextCookies({ context: "creator", creatorHandle: handleClean });
+    await setTenantContext({ data: { store_id: null } }).catch(() => null);
 
     const state: ActiveContextState = {
       type: "creator",
@@ -161,12 +155,9 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
   };
 
   // ── 3. Alternar para uma Empresa / Workspace ──
-  const handleSwitchToStore = (store: ContextMembership) => {
-    if (typeof window !== "undefined") {
-      window.document.cookie = "waesy_active_context=store; path=/; max-age=31536000; SameSite=Lax";
-      window.document.cookie = `waesy_active_tenant=${store.store_id}; path=/; max-age=31536000; SameSite=Lax`;
-      window.document.cookie = "waesy_active_creator=; path=/; max-age=0; SameSite=Lax";
-    }
+  const handleSwitchToStore = async (store: ContextMembership) => {
+    setClientContextCookies({ context: "store", storeId: store.store_id });
+    await setTenantContext({ data: { store_id: store.store_id } }).catch(() => null);
 
     const state: ActiveContextState = {
       type: "store",
@@ -182,12 +173,9 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
   };
 
   // ── 4. Alternar para o Modo Condutor / Waesy Go ──
-  const handleSwitchToCourier = () => {
-    if (typeof window !== "undefined") {
-      window.document.cookie = "waesy_active_context=courier; path=/; max-age=31536000; SameSite=Lax";
-      window.document.cookie = "waesy_active_tenant=; path=/; max-age=0; SameSite=Lax";
-      window.document.cookie = "waesy_active_creator=; path=/; max-age=0; SameSite=Lax";
-    }
+  const handleSwitchToCourier = async () => {
+    setClientContextCookies({ context: "courier" });
+    await setTenantContext({ data: { store_id: null } }).catch(() => null);
 
     const state: ActiveContextState = {
       type: "courier",

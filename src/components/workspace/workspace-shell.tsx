@@ -5,6 +5,7 @@ import { Package, Tags, Tag, Store, LayoutDashboard, Settings, Calendar, Users, 
 import { cn } from "@/lib/utils";
 import { signOut } from "@/services/auth.functions";
 import { setTenantContext } from "@/services/identity.functions";
+import { setClientContextCookies } from "@/lib/context-auth";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -65,8 +66,8 @@ function getStoreContextualAction(storeData: any) {
       };
     default:
       return {
-        label: "Vitrine",
-        icon: ShoppingBag,
+        label: "Vitrine Pública",
+        icon: Store,
         aba: "catalogo",
       };
   }
@@ -118,7 +119,7 @@ function getStoreHeaderOperationalAction(storeData: any) {
     case "wholesale":
     default:
       return {
-        label: "PDV",
+        label: "Frente de Caixa",
         path: "/workspace/pdv",
         icon: Store,
       };
@@ -312,35 +313,27 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
  };
 
  const handleSwitchStore = async (storeId: string) => {
- if (storeId === activeStoreId || isSwitching) return;
- setIsSwitching(true);
- try {
- if (typeof window !== "undefined") {
- window.document.cookie = "waesy_active_context=store; path=/; max-age=31536000; SameSite=Lax";
- window.document.cookie = `waesy_active_tenant=${storeId}; path=/; max-age=31536000; SameSite=Lax`;
- window.document.cookie = "waesy_active_creator=; path=/; max-age=0; SameSite=Lax";
- }
- const res = await setTenantContext({ data: { store_id: storeId } }).catch(() => null);
- const storeName = res?.storeName || "Espaço";
- toast.success(`Espaço de trabalho alterado para ${storeName}`);
- window.location.href = "/workspace";
- } catch {
- toast.error("Erro ao alternar loja.");
- setIsSwitching(false);
- }
- };
+    if (storeId === activeStoreId || isSwitching) return;
+    setIsSwitching(true);
+    try {
+      setClientContextCookies({ context: "store", storeId });
+      const res = await setTenantContext({ data: { store_id: storeId } }).catch(() => null);
+      const storeName = res?.storeName || "Espaço";
+      toast.success(`Espaço de trabalho alterado para ${storeName}`);
+      window.location.href = "/workspace";
+    } catch {
+      toast.error("Erro ao alternar loja.");
+      setIsSwitching(false);
+    }
+  };
 
- const confirmSwitchToPersonal = () => {
-   setShowPersonalSwitchModal(false);
-   if (typeof window !== "undefined") {
-     window.document.cookie = "waesy_active_context=civil; path=/; max-age=31536000; SameSite=Lax";
-     window.document.cookie = "waesy_active_tenant=; path=/; max-age=0; SameSite=Lax";
-     window.document.cookie = "waesy_active_creator=; path=/; max-age=0; SameSite=Lax";
-     window.document.cookie = "waesy_store_id=; path=/; max-age=0; SameSite=Lax";
-   }
-   toast.success(`Alternando para o perfil de ${userDisplayName}...`);
-   window.location.href = targetPersonalPath || "/conta";
- };
+  const confirmSwitchToPersonal = async () => {
+    setShowPersonalSwitchModal(false);
+    setClientContextCookies({ context: "civil" });
+    await setTenantContext({ data: { store_id: null } }).catch(() => null);
+    toast.success(`Alternando para o perfil de ${userDisplayName}...`);
+    window.location.href = targetPersonalPath || "/conta";
+  };
 
  const requestSwitchToPersonal = (destination = "/conta") => {
    setTargetPersonalPath(destination);
@@ -430,7 +423,7 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
   return (
     <div className={cn("flex h-dvh w-full overflow-hidden bg-background text-foreground selection:bg-primary selection:text-primary-foreground font-sans relative", themeClass)}>
       {/* ── 1. BARRA LATERAL CANÔNICA DO WORKSPACE (PADRÃO META STUDIO - FIXA) ── */}
-      <aside className="hidden waesy-expanded-flex flex-col w-64 shrink-0 sticky top-0 h-dvh bg-background border-r border-border/60 justify-between select-none z-30 overflow-hidden">
+      <aside className="hidden waesy-expanded-flex flex-col w-72 shrink-0 sticky top-0 h-dvh bg-background border-r border-border/60 justify-between select-none z-30 overflow-hidden">
         {/* Topo da Sidebar com altura exata h-14 (56px) alinhada continuamente à linha do Header */}
         <div className="h-14 border-b border-border/60 px-3 flex items-center shrink-0">
           <WorkspaceAccountSwitcher
@@ -441,6 +434,7 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
             userEmail={session?.email}
             isSwitching={isSwitching}
             onSwitchStore={handleSwitchStore}
+            onSwitchToPersonal={confirmSwitchToPersonal}
           />
         </div>
 
@@ -618,7 +612,7 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
                   type="button"
                   className="flex items-center gap-2 p-1 pl-2 h-11 min-h-11 rounded-lg border border-border/60 bg-card hover:bg-muted/80 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 >
-                  <span className="text-xs font-bold text-foreground max-w-28 truncate hidden waesy-expanded-flex">
+                  <span className="text-xs font-bold text-foreground max-w-44 truncate hidden waesy-expanded-flex">
                     {userDisplayName}
                   </span>
                   <Avatar className="size-7 rounded-lg">

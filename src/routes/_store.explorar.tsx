@@ -920,7 +920,7 @@ function CommunityHomePage() {
               >
                 {filteredNews.map((article: NewsArticleDTO) => (
                   <div key={article.id} className="min-w-72 sm:min-w-80 max-w-sm shrink-0">
-                    <NewsCard article={article} />
+                    <NewsCard article={article} variant="compact" />
                   </div>
                 ))}
               </HorizontalRail>

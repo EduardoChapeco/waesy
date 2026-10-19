@@ -104,3 +104,9 @@ export async function requirePlatformAdmin(): Promise<{ id: string; role: Role; 
   const mod = await import("@/lib/auth-guards.server");
   return mod.requirePlatformAdmin();
 }
+
+/** Invalida o cache em memória de identidades (chamado em logout ou troca de tenant). */
+export async function clearIdentityCache(): Promise<void> {
+  const mod = await import("@/lib/identity.server");
+  mod.clearIdentityCache();
+}

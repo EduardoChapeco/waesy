@@ -49,7 +49,7 @@ export function TeteterisGridView<T = any>({
       aria-label="Grade Dinâmica Teteterisgrid"
       className={cn(
         "grid gap-3 sm:gap-4 auto-rows-fr",
-        maxCols === 4 ? "grid-cols-2 md:grid-cols-4" : "grid-cols-2 sm:grid-cols-3 lg:grid-cols-6",
+        maxCols === 4 ? "grid-cols-2 sm:grid-cols-2 xl:grid-cols-4" : "grid-cols-2 sm:grid-cols-3 lg:grid-cols-6",
         className
       )}
     >
@@ -58,11 +58,11 @@ export function TeteterisGridView<T = any>({
           slot.colSpan === 6
             ? "col-span-2 sm:col-span-3 lg:col-span-6"
             : slot.colSpan === 4
-            ? "col-span-2 md:col-span-4"
+            ? "col-span-2 xl:col-span-4"
             : slot.colSpan === 3
-            ? "col-span-2 md:col-span-3"
+            ? "col-span-2 xl:col-span-3"
             : slot.colSpan === 2
-            ? "col-span-2 md:col-span-2"
+            ? "col-span-2"
             : "col-span-1";
 
         const rowSpanClass = slot.rowSpan === 2 ? "row-span-2" : "row-span-1";

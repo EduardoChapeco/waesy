@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { MessageSquare, ArrowLeft, Search, Filter, Send, UserCheck, Building2, Clock, CheckCircle2, AlertTriangle, Package, DollarSign, Info, Loader2, RefreshCw, Layers, ShieldCheck, Bot, Star, Flame, Target, HelpCircle, Copy, ExternalLink, MessageCircle, Plus, FileText } from 'lucide-react';
+import { Lock, EyeOff, MessageSquare, ArrowLeft, Search, Filter, Send, UserCheck, Building2, Clock, CheckCircle2, AlertTriangle, Package, DollarSign, Info, Loader2, RefreshCw, Layers, ShieldCheck, Bot, Star, Flame, Target, HelpCircle, Copy, ExternalLink, MessageCircle, Plus, FileText } from 'lucide-react';
 import { toast } from "sonner";
 import { formatDate, formatRelativeTime } from "@/lib/datetime";
 import { formatMoney } from "@/lib/money";
@@ -104,6 +104,7 @@ function WorkspaceAtendimentoPage() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [showCustomer360, setShowCustomer360] = useState(true);
+  const [isWhisperMode, setIsWhisperMode] = useState(false);
 
   // Ticket Resolver Modal state
   const [ticketModalOpen, setTicketModalOpen] = useState(false);
@@ -113,6 +114,22 @@ function WorkspaceAtendimentoPage() {
   const [isResolvingTicket, setIsResolvingTicket] = useState(false);
 
   const activeThread = threads.find((t) => t.id === activeThreadId);
+  // Cálculo da Janela de 24h WhatsApp Meta Cloud API
+  const isWhatsAppWindowOpen = useMemo(() => {
+    if (!messages || messages.length === 0) return true;
+    const customerMsgs = messages.filter((m) => !m.is_staff_reply && m.created_at);
+    if (customerMsgs.length === 0) return true;
+    const lastCustomerMsg = customerMsgs[customerMsgs.length - 1];
+    const diffHours = (Date.now() - new Date(lastCustomerMsg.created_at).getTime()) / (1000 * 60 * 60);
+    return diffHours <= 24;
+  }, [messages]);
+
+  // Ticket SAC / Suporte vinculado à conversa ativa
+  const linkedTicket = useMemo(() => {
+    if (!messages) return null;
+    const rmaMsg = messages.find((m) => m.message_type === "rma_ticket" && m.payload?.ticket_id);
+    return rmaMsg ? rmaMsg.payload : null;
+  }, [messages]);
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
   const filteredSdrSessions = useMemo(() => {
@@ -732,6 +749,34 @@ function WorkspaceAtendimentoPage() {
                 </div>
 
                 <div className="flex items-center gap-2 shrink-0">
+                  {/* Sinalizador Janela 24h WhatsApp Meta Cloud API */}
+                  <div className="hidden sm:flex items-center gap-2 px-3 py-1 rounded-lg border text-xs font-mono font-semibold shrink-0 bg-muted/40 border-border/60">
+                    <Clock className="size-3 text-primary shrink-0" />
+                    <span className={cn(
+                      "text-xs",
+                      isWhatsAppWindowOpen ? "text-emerald-600 dark:text-emerald-400 font-bold" : "text-muted-foreground"
+                    )}>
+                      {isWhatsAppWindowOpen ? "Janela 24h Aberta" : "Janela 24h Expirada"}
+                    </span>
+                  </div>
+
+                  {/* Acesso Rápido ao Ticket SAC Vinculado */}
+                  {linkedTicket && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setSelectedTicket(linkedTicket);
+                        setTicketModalOpen(true);
+                      }}
+                      className="h-8 rounded-lg text-xs font-mono font-bold gap-2 border-amber-500/40 text-amber-700 dark:text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 cursor-pointer"
+                    >
+                      <ShieldCheck className="size-3.5" />
+                      <span>Ticket #{linkedTicket.ticket_id?.slice(0, 8)}</span>
+                    </Button>
+                  )}
+
                   <Select
                     value={activeThread.department || "geral"}
                     onValueChange={handleDepartmentChange}
@@ -785,6 +830,25 @@ function WorkspaceAtendimentoPage() {
                           className={`flex ${isStaff ? "justify-end" : "justify-start"} w-full`}
                         >
                           <OrderMessageCard order={msg.payload.order} isStaff={true} />
+                        </div>
+                      );
+                    }
+
+                    // Card de Nota Interna (Whisper / Gestão Assistida)
+                    if (msg.payload?.is_whisper || (msg.message_type === "system_event" && msg.payload?.is_whisper)) {
+                      return (
+                        <div key={msg.id} className="w-full flex justify-center my-2">
+                          <div className="max-w-lg w-full p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200 text-xs space-y-1 shadow-2xs">
+                            <div className="flex items-center justify-between text-xs font-bold">
+                              <span className="flex items-center gap-2 text-amber-700 dark:text-amber-300">
+                                <Lock className="size-3.5 shrink-0" />
+                                <span>Nota Interna da Equipe (Whisper)</span>
+                              </span>
+                              <span className="font-mono text-xs opacity-75">{formatDate(msg.created_at)}</span>
+                            </div>
+                            <p className="whitespace-pre-wrap leading-relaxed font-medium">{msg.message || msg.payload?.text}</p>
+                            <span className="text-xs opacity-70 block text-right italic">Invisível para o cliente no WhatsApp</span>
+                          </div>
                         </div>
                       );
                     }
@@ -863,11 +927,32 @@ function WorkspaceAtendimentoPage() {
                 )}
               </div>
 
-              {/* Input de Envio do Atendente */}
-              <form
-                onSubmit={handleSend}
-                className="p-3 bg-card border-t border-border/80 flex items-center gap-2"
-              >
+              {/* Input de Envio do Atendente & Macros Rápidas */}
+              <div className="bg-card border-t border-border/80 p-3 space-y-2">
+                {/* Trilho de Respostas Rápidas / Macros */}
+                <div role="tablist" aria-label="Atalhos Rápidos" className="tab-list flex items-center gap-2 overflow-x-auto no-scrollbar">
+                  <span className="text-xs text-muted-foreground shrink-0 font-mono">Macros:</span>
+                  {[
+                    { cmd: "/ola", text: "Olá! Seja muito bem-vindo ao atendimento da nossa empresa. Como podemos te ajudar?", label: "Saudação" },
+                    { cmd: "/pix", text: "Nossa chave PIX oficial é confirmada diretamente no pedido. O comprovante é validado automaticamente!", label: "Chave PIX" },
+                    { cmd: "/horarios", text: "Nosso horário de atendimento é de Segunda a Sexta das 08h às 18h e Sábados das 08h às 12h.", label: "Horários" },
+                    { cmd: "/rastreio", text: "Seu pedido está em processamento logístico e você pode acompanhar pelo link de rastreio acima.", label: "Rastreio" },
+                  ].map((macro) => (
+                    <button
+                      key={macro.cmd}
+                      type="button"
+                      onClick={() => setText(macro.text)}
+                      className="px-2 py-1 rounded-lg text-xs font-mono font-medium bg-muted/50 hover:bg-muted border border-border/60 text-muted-foreground hover:text-foreground shrink-0 transition-colors cursor-pointer"
+                    >
+                      {macro.cmd} <span className="text-xs opacity-75">({macro.label})</span>
+                    </button>
+                  ))}
+                </div>
+
+                <form
+                  onSubmit={handleSend}
+                  className="flex items-center gap-2"
+                >
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button
@@ -983,11 +1068,33 @@ function WorkspaceAtendimentoPage() {
                   </DropdownMenuContent>
                 </DropdownMenu>
 
+                <Button
+                  type="button"
+                  variant={isWhisperMode ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setIsWhisperMode(!isWhisperMode)}
+                  className={cn(
+                    "h-10 px-3 rounded-lg text-xs font-bold gap-2 shrink-0 transition-all cursor-pointer focus-visible:ring-2",
+                    isWhisperMode
+                      ? "bg-amber-500 hover:bg-amber-600 text-white border-amber-600 shadow-xs"
+                      : "border-border/80 hover:bg-muted text-muted-foreground"
+                  )}
+                  title={isWhisperMode ? "Modo Whisper Ativo (Nota Interna da Equipe)" : "Alternar para Nota Interna"}
+                >
+                  {isWhisperMode ? <Lock className="size-3.5" /> : <EyeOff className="size-3.5" />}
+                  <span className="hidden sm:inline">{isWhisperMode ? "Nota Interna" : "Whisper"}</span>
+                </Button>
+
                 <Input
                   value={text}
                   onChange={(e) => setText(e.target.value)}
-                  placeholder="Escreva uma resposta para o cliente..."
-                  className="flex-1 h-10 rounded-lg text-xs bg-muted/30"
+                  placeholder={isWhisperMode ? "Escrever nota interna (visível apenas para a equipe)..." : "Escreva uma resposta para o cliente..."}
+                  className={cn(
+                    "flex-1 h-10 rounded-lg text-xs transition-colors",
+                    isWhisperMode
+                      ? "bg-amber-500/10 border-amber-500/40 text-amber-900 dark:text-amber-100 placeholder:text-amber-700/60 dark:placeholder:text-amber-300/60"
+                      : "bg-muted/30"
+                  )}
                   disabled={isSending}
                 />
                 <Button
@@ -1003,6 +1110,7 @@ function WorkspaceAtendimentoPage() {
                   )}
                 </Button>
               </form>
+              </div>
             </div>
           ) : (
             <div className="flex-1 flex flex-col items-center justify-center p-8 text-center text-muted-foreground gap-2">

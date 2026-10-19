@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { signOut } from "@/services/auth.functions";
 import { setTenantContext } from "@/services/identity.functions";
+import { setClientContextCookies, getClientActiveContext } from "@/lib/context-auth";
 import { useCartContext } from "@/lib/cart-context";
 import { useQuery } from "@tanstack/react-query";
 import { getMyCreatorProfilesList } from "@/services/affiliates.functions";
@@ -30,26 +31,17 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
   const [avatarError, setAvatarError] = useState(false);
   const [isAccountOpen, setIsAccountOpen] = useState(false);
 
-  const handleSwitchCourier = () => {
-    if (typeof window !== "undefined") {
-      window.document.cookie = "waesy_active_context=courier; path=/; max-age=31536000; SameSite=Lax";
-      window.document.cookie = "waesy_active_tenant=; path=/; max-age=0; SameSite=Lax";
-      window.document.cookie = "waesy_active_creator=; path=/; max-age=0; SameSite=Lax";
-    }
+  const handleSwitchCourier = async () => {
+    setClientContextCookies({ context: "courier" });
+    await setTenantContext({ data: { store_id: null } }).catch(() => null);
     toast.success("Modo Condutor (Waesy Go) ativado");
     window.location.href = "/conta/entregador";
   };
 
   const handleOpenWorkspace = async (targetStoreId?: string) => {
     const storeId = targetStoreId || activeStoreId || memberships[0]?.store_id;
-    if (typeof window !== "undefined") {
-      window.document.cookie = "waesy_active_context=store; path=/; max-age=31536000; SameSite=Lax";
-      if (storeId) {
-        window.document.cookie = `waesy_active_tenant=${storeId}; path=/; max-age=31536000; SameSite=Lax`;
-      }
-      window.document.cookie = "waesy_active_creator=; path=/; max-age=0; SameSite=Lax";
-    }
     if (storeId) {
+      setClientContextCookies({ context: "store", storeId });
       await setTenantContext({ data: { store_id: storeId } }).catch(() => null);
     }
     toast.success("Acessando Workspace...");
@@ -137,26 +129,18 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
 
   const activeStoreName = memberships.find((m: any) => m.store_id === (activeStoreId || rawTenant))?.name || "Minha Empresa";
 
-  const handleSwitchCreator = (persona: any) => {
+  const handleSwitchCreator = async (persona: any) => {
     const handleClean = persona.handle || persona.stage_name || "criador";
-    if (typeof window !== "undefined") {
-      window.document.cookie = "waesy_active_context=creator; path=/; max-age=31536000; SameSite=Lax";
-      window.document.cookie = `waesy_active_creator=${encodeURIComponent(handleClean)}; path=/; max-age=31536000; SameSite=Lax`;
-      window.document.cookie = "waesy_active_tenant=; path=/; max-age=0; SameSite=Lax";
-      window.document.cookie = "waesy_store_id=; path=/; max-age=0; SameSite=Lax";
-    }
+    setClientContextCookies({ context: "creator", creatorHandle: handleClean });
+    await setTenantContext({ data: { store_id: null } }).catch(() => null);
     toast.success(`Contexto ativo: @${handleClean}`);
     setIsAccountOpen(false);
     window.location.href = "/conta/criadores";
   };
 
-  const handleSwitchCivil = () => {
-    if (typeof window !== "undefined") {
-      window.document.cookie = "waesy_active_context=civil; path=/; max-age=31536000; SameSite=Lax";
-      window.document.cookie = "waesy_active_tenant=; path=/; max-age=0; SameSite=Lax";
-      window.document.cookie = "waesy_active_creator=; path=/; max-age=0; SameSite=Lax";
-      window.document.cookie = "waesy_store_id=; path=/; max-age=0; SameSite=Lax";
-    }
+  const handleSwitchCivil = async () => {
+    setClientContextCookies({ context: "civil" });
+    await setTenantContext({ data: { store_id: null } }).catch(() => null);
     toast.success(`Contexto ativo: ${userName} (Conta Civil)`);
     setIsAccountOpen(false);
     window.location.href = "/conta";
@@ -166,11 +150,7 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
     if (isSwitching) return;
     setIsSwitching(true);
     try {
-      if (typeof window !== "undefined") {
-        window.document.cookie = "waesy_active_context=store; path=/; max-age=31536000; SameSite=Lax";
-        window.document.cookie = `waesy_active_tenant=${storeId}; path=/; max-age=31536000; SameSite=Lax`;
-        window.document.cookie = "waesy_active_creator=; path=/; max-age=0; SameSite=Lax";
-      }
+      setClientContextCookies({ context: "store", storeId });
       await setTenantContext({ data: { store_id: storeId } }).catch(() => null);
       toast.success("Acessando painel da empresa...");
       setIsAccountOpen(false);

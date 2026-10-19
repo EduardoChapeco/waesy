@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Store, Plus, ArrowRight, ExternalLink, CheckCircle2, Package, Building2, MapPin, ShieldCheck } from "lucide-react";
 import { getMyStoresList } from "@/services/store.functions";
 import { setTenantContext } from "@/services/identity.functions";
+import { setClientContextCookies } from "@/lib/context-auth";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";

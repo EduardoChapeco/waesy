@@ -254,15 +254,29 @@ export function NicheSpecificationsDisplay({
           maxCols={4}
           renderCard={(item) => {
             const IconComp = item.icon || resolveSpecIcon(item.label);
+            const val = String(item.value || "");
+            const isNumericOrShort = /^[0-9.,\sR$kmbL%/+-]+$/i.test(val) || val.length <= 6;
+            const valLength = val.length;
+            const textSizeClass = valLength > 22
+              ? "text-xs sm:text-sm font-semibold"
+              : valLength > 12
+              ? "text-sm sm:text-base font-bold"
+              : "text-base sm:text-lg lg:text-xl font-extrabold";
+            const fontFamClass = isNumericOrShort ? "font-mono" : "font-sans";
+
             return (
               <>
                 <div className="flex items-center gap-2 text-muted-foreground min-w-0">
                   <IconComp className="size-4 text-primary shrink-0 transition-transform group-hover:scale-110" />
-                  <span className="text-xs font-bold uppercase tracking-wider leading-tight break-words text-wrap">
+                  <span className="text-xs font-bold uppercase tracking-wider leading-tight break-normal text-wrap">
                     {item.label}
                   </span>
                 </div>
-                <p className="text-base sm:text-lg lg:text-xl font-extrabold text-foreground font-mono tracking-tight leading-snug break-words text-wrap pt-0.5">
+                <p className={cn(
+                  textSizeClass,
+                  fontFamClass,
+                  "text-foreground tracking-tight leading-snug break-normal text-wrap hyphens-none pt-1"
+                )}>
                   {item.value}
                 </p>
               </>
@@ -288,6 +302,7 @@ export function NicheSpecificationsDisplay({
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3">
             {detailedSpecs.map((item, idx) => {
               const IconComp = item.icon || resolveSpecIcon(item.label);
+              const isNum = /^[0-9.,\sR$kmbL%/+-]+$/i.test(item.value);
               return (
                 <div
                   key={`spec-${idx}`}
@@ -295,11 +310,14 @@ export function NicheSpecificationsDisplay({
                 >
                   <div className="flex items-center gap-2 text-muted-foreground min-w-0 flex-1">
                     <IconComp className="size-4 text-primary/80 shrink-0" />
-                    <span className="text-xs font-semibold text-muted-foreground leading-tight break-words text-wrap">
+                    <span className="text-xs font-semibold text-muted-foreground leading-tight break-normal text-wrap">
                       {item.label}
                     </span>
                   </div>
-                  <span className="text-xs sm:text-sm font-bold text-foreground font-mono leading-tight break-words text-wrap text-right max-w-[55%]">
+                  <span className={cn(
+                    "text-xs sm:text-sm font-bold text-foreground leading-tight break-normal text-wrap hyphens-none text-right max-w-[55%]",
+                    isNum ? "font-mono" : "font-sans"
+                  )}>
                     {item.value}
                   </span>
                 </div>
@@ -333,7 +351,7 @@ export function NicheSpecificationsDisplay({
                   {pills.map((pill, tagIdx) => (
                     <span
                       key={`pill-tag-${tagIdx}`}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-muted/60 text-foreground border border-border/50"
+                      className="inline-flex items-center gap-2 px-3 py-1 rounded-lg text-xs font-semibold bg-muted/60 text-foreground border border-border/50"
                     >
                       <Check className="size-3 text-primary shrink-0" />
                       <span>{pill}</span>
