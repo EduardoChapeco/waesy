@@ -102,17 +102,22 @@ export const listChatThreads = createServerFn({ method: "GET" })
  `
  id, store_id, customer_id, guest_name, guest_email, status, subject,
  department, assigned_to_profile_id, order_id, priority, satisfaction_rating,
- internal_notes, updated_at, created_at,
+ internal_notes, updated_at, created_at, thread_type, context_type, entity_id,
  chat_messages(id, message, message_type, created_at, is_staff_reply, attachments, payload)
  `,
  )
  .eq("store_id", identity.store_id)
+		.not("thread_type", "in", '("ai_assistant","copilot")')
  .order("updated_at", { ascending: false });
 
  // Filtro de status
- if (data?.status && data.status !== "all") {
- query = query.eq("status", data.status);
- }
+ if (data?.status === "archived") {
+		query = query.eq("status", "archived");
+	} else if (data?.status && data.status !== "all") {
+		query = query.eq("status", data.status);
+	} else {
+		query = query.neq("status", "archived");
+	}
 
  // Filtro de departamento
  if (data?.department && data.department !== "all") {
@@ -174,10 +179,15 @@ export const listChatThreads = createServerFn({ method: "GET" })
  priority: thread.priority || "normal",
  satisfaction_rating: thread.satisfaction_rating,
  assigned_agent: agentProfile,
- customer: customerProfile || {
- full_name: thread.guest_name || "Cliente",
- email: thread.guest_email || "",
- },
+ thread_type: thread.thread_type,
+			context_type: thread.context_type,
+			channel: thread.context_type === "whatsapp" ? "whatsapp" : "web",
+			customer: customerProfile || {
+				full_name: thread.guest_name || (thread.context_type === "whatsapp" ? ("WhatsApp " + (thread.entity_id || "")) : "Cliente"),
+				email: thread.guest_email || "",
+				phone: thread.entity_id || "",
+				avatar_url: null,
+			},
  order_id: thread.order_id,
  internal_notes: thread.internal_notes,
  updated_at: thread.updated_at,
@@ -954,3 +964,30 @@ export const mutateCustomerChatThreadAction = createServerFn({ method: "POST" })
     }
   });
 
+
+// ============================================================
+// Função Canônica para Arquivar Conversa (Soft-Delete)
+// ============================================================
+export const archiveChatThreadSchema = z.object({
+	threadId: z.string().uuid(),
+	archived: z.boolean().default(true),
+});
+
+export const archiveChatThread = createServerFn({ method: "POST" })
+	.validator(archiveChatThreadSchema)
+	.handler(async ({ data: { threadId, archived } }) => {
+		const identity = await getServerIdentity();
+		assertStoreAccess(identity, STAFF_ROLES, identity.store_id);
+		const db = getServerClient();
+		const newStatus = archived ? "archived" : "open";
+		const { error } = await db
+			.from("chat_threads")
+			.update({
+				status: newStatus,
+				updated_at: new Date().toISOString(),
+			})
+			.eq("id", threadId)
+			.eq("store_id", identity.store_id);
+		if (error) throw new Error(`Falha ao arquivar conversa: ${error.message}`);
+		return { success: true, threadId, status: newStatus };
+	});

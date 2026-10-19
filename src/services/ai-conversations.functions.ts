@@ -2352,11 +2352,6 @@ export const listAiConversationThreads = createServerFn({ method: "GET" }).handl
         `customer_id.eq.${identity.id}`,
         `recipient_profile_id.eq.${identity.id}`,
       ];
-      if (["platform_admin", "master", "owner", "admin", "manager"].includes(identity.role)) {
-        visibilityClauses.push(...storeIds.map((storeId) => `store_id.eq.${storeId}`));
-      } else {
-        visibilityClauses.push(`assigned_to_profile_id.eq.${identity.id}`);
-      }
       let query = db
         .from("chat_threads")
         .select(
@@ -2366,6 +2361,7 @@ export const listAiConversationThreads = createServerFn({ method: "GET" }).handl
         `,
         )
         .or(visibilityClauses.join(","))
+        .in("thread_type", ["ai_assistant", "copilot", "project"])
         .order("is_pinned", { ascending: false })
         .order("updated_at", { ascending: false });
 
@@ -2376,7 +2372,7 @@ export const listAiConversationThreads = createServerFn({ method: "GET" }).handl
 
       return data.map((t: any) => ({
         id: t.id,
-        type: t.type || "store",
+        type: t.type || "ai_assistant",
         title: t.subject || "Sem Título",
         store_id: t.store_id,
         customer_id: t.customer_id,
@@ -2408,15 +2404,24 @@ export const createAiConversationThread = createServerFn({ method: "POST" })
     if (!identity?.id) {
       throw new Error("Usuário não autenticado");
     }
-    assertAiStoreTarget(data.storeId, identity);
+
+    // ISOLAMENTO ZERO-TRUST:
+    // Threads de Copilot / IA Pessoal são estritamente civis do usuário.
+    // NUNCA herdam store_id da loja do usuário para evitar vazamento para o SAC da loja.
+    const isCivilAi = ["ai_assistant", "copilot", "project"].includes(data.type);
+    const resolvedStoreId = isCivilAi ? null : (data.storeId || null);
+
+    if (resolvedStoreId) {
+      assertAiStoreTarget(resolvedStoreId, identity);
+    }
 
     const { data: newThread, error } = await db
       .from("chat_threads")
       .insert({
         customer_id: identity.id,
-        store_id: data.storeId || identity.store_id || null,
+        store_id: resolvedStoreId,
         recipient_profile_id: data.recipientProfileId || null,
-        thread_type: data.type,
+        thread_type: data.type || "ai_assistant",
         subject: data.title,
         metadata: data.metadata,
         working_memory: data.workingMemory,

@@ -1,7 +1,14 @@
 import { cn } from "@/lib/utils";
 import { createFileRoute } from "@tanstack/react-router";
 import React, { useState, useEffect, useRef, useMemo } from "react";
-import { listChatThreads, getChatMessages, sendChatMessage, assignChatThread, updateTicketStatus } from "@/services/chat.functions";
+import {
+  listChatThreads,
+  getChatMessages,
+  sendChatMessage,
+  assignChatThread,
+  updateTicketStatus,
+  archiveChatThread,
+} from "@/services/chat.functions";
 import { getStoreSettings } from "@/services/store.functions";
 import { getNicheSemantics } from "@/lib/niche-semantics";
 import { getRealtimeChannel } from "@/services/realtime-channel";
@@ -12,7 +19,45 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Lock, EyeOff, MessageSquare, ArrowLeft, Search, Filter, Send, UserCheck, Building2, Clock, CheckCircle2, AlertTriangle, Package, DollarSign, Info, Loader2, RefreshCw, Layers, ShieldCheck, Bot, Star, Flame, Target, HelpCircle, Copy, ExternalLink, MessageCircle, Plus, FileText } from 'lucide-react';
+import {
+  Lock,
+  EyeOff,
+  MessageSquare,
+  ArrowLeft,
+  Search,
+  Filter,
+  Send,
+  UserCheck,
+  Building2,
+  Clock,
+  CheckCircle2,
+  AlertTriangle,
+  Package,
+  DollarSign,
+  Info,
+  Loader2,
+  RefreshCw,
+  Layers,
+  ShieldCheck,
+  Bot,
+  Star,
+  Flame,
+  Target,
+  HelpCircle,
+  Copy,
+  ExternalLink,
+  MessageCircle,
+  Plus,
+  FileText,
+  Activity,
+  Smartphone,
+  Archive,
+  ArchiveRestore,
+  QrCode,
+  CheckCheck,
+  Sliders,
+  Radio,
+} from "lucide-react";
 import { toast } from "sonner";
 import { formatDate, formatRelativeTime } from "@/lib/datetime";
 import { formatMoney } from "@/lib/money";
@@ -20,31 +65,37 @@ import { OrderMessageCard } from "@/components/chat/order-message-card";
 import { RmaMessageCard } from "@/components/chat/rma-message-card";
 import { Customer360Sidebar } from "@/components/chat/customer-360-sidebar";
 import { StructuredMessageView } from "@/components/chat/structured-message-view";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { playMessageChime } from "@/lib/audio-chimes";
 import { listSdrChatSessions, type SdrChatSessionDTO } from "@/services/ai-sdr.functions";
+import {
+  listWorkspaceWhatsAppInstances,
+  type WhatsAppChannelInstanceDTO,
+} from "@/services/whatsapp-channel-instances.functions";
 import { Link } from "@tanstack/react-router";
 import { WhatsAppOperationsMetricsPanel } from "@/components/chat/whatsapp-operations-metrics-panel";
 
 export const Route = createFileRoute("/workspace/atendimento/")({
-  head: () => ({ meta: [{ title: "Atendimento" }] }),
+  head: () => ({ meta: [{ title: "Atendimento Omnichannel & WhatsApp" }] }),
   loader: async () => {
     try {
-      const [res, store, sdrData] = await Promise.all([
+      const [res, store, sdrData, instances] = await Promise.all([
         listChatThreads().catch(() => null),
         getStoreSettings().catch(() => null),
-        listSdrChatSessions().catch(() => ({ sessions: [], metrics: { total: 0, readyToBuy: 0, warm: 0, curious: 0 } })),
+        listSdrChatSessions().catch(() => ({
+          sessions: [],
+          metrics: { total: 0, readyToBuy: 0, warm: 0, curious: 0 },
+        })),
+        listWorkspaceWhatsAppInstances().catch(() => []),
       ]);
       return {
-        ...(res || { threads: [], metrics: { total: 0, open: 0, closed: 0, avg_rating: 0, sla_first_response_min: 0 } }),
+        ...(res || {
+          threads: [],
+          metrics: { total: 0, open: 0, closed: 0, avg_rating: 0, sla_first_response_min: 0 },
+        }),
         store,
         sdrSessions: sdrData?.sessions || [],
         sdrMetrics: sdrData?.metrics || { total: 0, readyToBuy: 0, warm: 0, curious: 0 },
+        whatsappInstances: (instances || []) as WhatsAppChannelInstanceDTO[],
       };
     } catch (e) {
       console.warn("[workspace.atendimento] Fallback de segurança no loader:", e);
@@ -54,6 +105,7 @@ export const Route = createFileRoute("/workspace/atendimento/")({
         store: null,
         sdrSessions: [],
         sdrMetrics: { total: 0, readyToBuy: 0, warm: 0, curious: 0 },
+        whatsappInstances: [] as WhatsAppChannelInstanceDTO[],
       };
     }
   },
@@ -61,12 +113,12 @@ export const Route = createFileRoute("/workspace/atendimento/")({
 });
 
 const DEPARTMENT_LABELS: Record<string, string> = {
- geral: "Geral",
- vendas: "Vendas / Comercial",
- suporte: "Suporte / SAC",
- financeiro: "Financeiro / Pix",
- cozinha_estoque: "Cozinha / Estoque",
- logistica: "Logística / Motoboy",
+  geral: "Geral",
+  vendas: "Vendas / Comercial",
+  suporte: "Suporte / SAC",
+  financeiro: "Financeiro / Pix",
+  cozinha_estoque: "Cozinha / Estoque",
+  logistica: "Logística / Motoboy",
 };
 
 function WorkspaceAtendimentoPage() {
@@ -77,12 +129,25 @@ function WorkspaceAtendimentoPage() {
     store,
     sdrSessions: initialSdrSessions,
     sdrMetrics: initialSdrMetrics,
+    whatsappInstances: initialInstances,
   } = (Route.useLoaderData?.() as any) || {};
+
   const semantics = useMemo(() => getNicheSemantics(store), [store]);
   const departmentLabels = semantics.departmentLabels || DEPARTMENT_LABELS;
 
-  // Tabs de Modo: Atendimento Humano vs Conversas SDR
-  const [activeHubTab, setActiveHubTab] = useState<"live" | "sdr">("live");
+  // Tabs do Hub: Conversas estilo WhatsApp, SDR, Telemetria & Filas, Conexão WhatsApp e Horários
+  const [activeHubTab, setActiveHubTab] = useState<"live" | "sdr" | "metrics" | "whatsapp" | "hours">("live");
+
+  // Status de presença do atendente
+  const [agentPresence, setAgentPresence] = useState<"online" | "busy" | "away">("online");
+
+  // Filtro de status da lista (all: ativas | open: novas | archived: arquivadas)
+  const [statusFilter, setStatusFilter] = useState<"all" | "open" | "archived">("all");
+  const [deptFilter, setDeptFilter] = useState("all");
+  const [searchTerm, setSearchTerm] = useState("");
+
+  // Instâncias de WhatsApp
+  const [whatsappInstances, setWhatsappInstances] = useState<WhatsAppChannelInstanceDTO[]>(initialInstances || []);
 
   // Estados SDR
   const [sdrSessions] = useState<SdrChatSessionDTO[]>(initialSdrSessions || []);
@@ -92,18 +157,17 @@ function WorkspaceAtendimentoPage() {
   const [selectedSdrSession, setSelectedSdrSession] = useState<SdrChatSessionDTO | null>(null);
   const [sdrDrawerOpen, setSdrDrawerOpen] = useState(false);
 
-  const [threads, setThreads] = useState<any[]>(initialThreads);
+  // Estados de Conversas
+  const [threads, setThreads] = useState<any[]>(initialThreads || []);
   const [activeThreadId, setActiveThreadId] = useState<string | null>(
-    initialThreads.length > 0 ? initialThreads[0].id : null,
+    initialThreads && initialThreads.length > 0 ? initialThreads[0].id : null,
   );
   const [messages, setMessages] = useState<any[]>([]);
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [text, setText] = useState("");
   const [isSending, setIsSending] = useState(false);
-  const [deptFilter, setDeptFilter] = useState("all");
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [searchTerm, setSearchTerm] = useState("");
-  const [showCustomer360, setShowCustomer360] = useState(true);
+  const [isArchiving, setIsArchiving] = useState(false);
+  const [showCustomer360, setShowCustomer360] = useState(false);
   const [isWhisperMode, setIsWhisperMode] = useState(false);
 
   // Ticket Resolver Modal state
@@ -114,6 +178,21 @@ function WorkspaceAtendimentoPage() {
   const [isResolvingTicket, setIsResolvingTicket] = useState(false);
 
   const activeThread = threads.find((t) => t.id === activeThreadId);
+
+  // Recarregar threads ao alternar statusFilter (para suportar 'archived' via backend)
+  useEffect(() => {
+    listChatThreads({ data: { status: statusFilter } })
+      .then((res) => {
+        if (res?.threads) {
+          setThreads(res.threads);
+          if (activeThreadId && !res.threads.some((t: any) => t.id === activeThreadId)) {
+            setActiveThreadId(res.threads.length > 0 ? res.threads[0].id : null);
+          }
+        }
+      })
+      .catch(() => {});
+  }, [statusFilter]);
+
   // Cálculo da Janela de 24h WhatsApp Meta Cloud API
   const isWhatsAppWindowOpen = useMemo(() => {
     if (!messages || messages.length === 0) return true;
@@ -124,355 +203,965 @@ function WorkspaceAtendimentoPage() {
     return diffHours <= 24;
   }, [messages]);
 
-  // Ticket SAC / Suporte vinculado à conversa ativa
-  const linkedTicket = useMemo(() => {
-    if (!messages) return null;
-    const rmaMsg = messages.find((m) => m.message_type === "rma_ticket" && m.payload?.ticket_id);
-    return rmaMsg ? rmaMsg.payload : null;
-  }, [messages]);
-  const chatContainerRef = useRef<HTMLDivElement>(null);
+  // Carregamento de Mensagens
+  useEffect(() => {
+    if (!activeThreadId) {
+      setMessages([]);
+      return;
+    }
 
+    setLoadingMessages(true);
+    getChatMessages({ data: { threadId: activeThreadId } })
+      .then((res: any) => {
+        setMessages(res?.messages || []);
+      })
+      .catch((e) => {
+        console.error("Falha ao carregar mensagens:", e);
+        toast.error("Erro ao carregar mensagens da conversa.");
+      })
+      .finally(() => setLoadingMessages(false));
+  }, [activeThreadId]);
+
+  // Auto-scroll
+  const chatContainerRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    }
+  }, [messages, loadingMessages]);
+
+  // Realtime
+  useEffect(() => {
+    if (!store?.id) return;
+    const rt = getRealtimeChannel(`store-chat-${store.id}`);
+    if (!rt.channel) return;
+
+    rt.channel
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "chat_messages" },
+        (payload: any) => {
+          const newMsg = payload.new as any;
+          if (newMsg.thread_id === activeThreadId) {
+            setMessages((prev) => {
+              if (prev.some((m) => m.id === newMsg.id)) return prev;
+              return [...prev, newMsg];
+            });
+            if (!newMsg.is_staff_reply) {
+              playMessageChime();
+            }
+          }
+          // Atualiza o snippet na lista de threads
+          setThreads((prev) =>
+            prev.map((t) => {
+              if (t.id === newMsg.thread_id) {
+                return {
+                  ...t,
+                  last_message: newMsg.message,
+                  is_last_reply_staff: newMsg.is_staff_reply,
+                  updated_at: newMsg.created_at,
+                };
+              }
+              return t;
+            }),
+          );
+        },
+      )
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "chat_threads" },
+        (payload: any) => {
+          const newThread = payload.new as any;
+          // Ignora threads de IA/Copilot
+          if (newThread.thread_type === "ai_assistant" || newThread.thread_type === "copilot") {
+            return;
+          }
+          if (newThread.store_id === store.id) {
+            listChatThreads({ data: { status: statusFilter } }).then((res) => {
+              if (res?.threads) setThreads(res.threads);
+            });
+            playMessageChime();
+          }
+        },
+      )
+      .subscribe();
+
+    return () => {
+      rt.unsubscribe();
+    };
+  }, [store?.id, activeThreadId, statusFilter]);
+
+  // Enviar Mensagem
+  const handleSend = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!text.trim() || !activeThreadId || isSending) return;
+
+    try {
+      setIsSending(true);
+      const payload: Record<string, any> = {};
+      let messageType: any = "text";
+
+      if (isWhisperMode) {
+        messageType = "system_event";
+        payload.is_whisper = true;
+      }
+
+      const sent = await sendChatMessage({
+        data: {
+          threadId: activeThreadId,
+          message: text.trim(),
+          message_type: messageType,
+          payload,
+          attachments: [],
+        },
+      });
+
+      setMessages((prev) => [...prev, sent]);
+      setText("");
+      setIsWhisperMode(false);
+
+      setThreads((prev) =>
+        prev.map((t) => {
+          if (t.id === activeThreadId) {
+            return {
+              ...t,
+              last_message: isWhisperMode ? `[Nota Interna]: ${text.trim()}` : text.trim(),
+              is_last_reply_staff: true,
+              updated_at: new Date().toISOString(),
+            };
+          }
+          return t;
+        }),
+      );
+    } catch (err: any) {
+      toast.error(err.message || "Erro ao despachar mensagem.");
+    } finally {
+      setIsSending(false);
+    }
+  };
+
+  // Arquivar / Desarquivar conversa (Soft Delete Seguro)
+  const handleArchiveThread = async (threadId: string, archive = true) => {
+    try {
+      setIsArchiving(true);
+      await archiveChatThread({ data: { threadId, archived: archive } });
+      toast.success(archive ? "Conversa arquivada com sucesso" : "Conversa desarquivada");
+      setThreads((prev) =>
+        prev
+          .map((t) => (t.id === threadId ? { ...t, status: archive ? "archived" : "open" } : t))
+          .filter((t) => (statusFilter === "archived" ? t.status === "archived" : t.status !== "archived")),
+      );
+      if (archive && statusFilter !== "archived") {
+        setActiveThreadId(null);
+      }
+    } catch (e: any) {
+      toast.error(e?.message || "Erro ao arquivar conversa");
+    } finally {
+      setIsArchiving(false);
+    }
+  };
+
+  // Trocar Departamento
+  const handleDepartmentChange = async (newDept: string) => {
+    if (!activeThreadId) return;
+    try {
+      await assignChatThread({
+        data: {
+          threadId: activeThreadId,
+          department: newDept,
+        },
+      });
+      toast.success(`Transferido para o setor ${departmentLabels[newDept] || newDept}`);
+      setThreads((prev) =>
+        prev.map((t) => (t.id === activeThreadId ? { ...t, department: newDept } : t)),
+      );
+    } catch {
+      toast.error("Falha ao transferir conversa.");
+    }
+  };
+
+  // Resolver Ticket
+  const handleResolveTicket = async () => {
+    if (!selectedTicket?.ticket_id) return;
+    try {
+      setIsResolvingTicket(true);
+      await updateTicketStatus({
+        data: {
+          ticketId: selectedTicket.ticket_id,
+          status: ticketStatus,
+          resolution_notes: resolutionNotes.trim() || undefined,
+        },
+      });
+      toast.success(`Ticket #${selectedTicket.ticket_id.slice(0, 8)} atualizado!`);
+      setTicketModalOpen(false);
+      if (activeThreadId) {
+        const refreshed: any = await getChatMessages({ data: { threadId: activeThreadId } });
+        setMessages(refreshed?.messages || []);
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Falha ao resolver ticket.");
+    } finally {
+      setIsResolvingTicket(false);
+    }
+  };
+
+  // Filtros de busca de threads
+  const filteredThreads = useMemo(() => {
+    return threads.filter((t) => {
+      const matchDept = deptFilter === "all" || t.department === deptFilter;
+      const matchSearch =
+        !searchTerm.trim() ||
+        (t.customer?.full_name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (t.subject || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (t.last_message || "").toLowerCase().includes(searchTerm.toLowerCase());
+      return matchDept && matchSearch;
+    });
+  }, [threads, deptFilter, searchTerm]);
+
+  // Filtros SDR
   const filteredSdrSessions = useMemo(() => {
-    return sdrSessions.filter((s) => {
-      if (sdrIntentFilter !== "all" && s.intent_classification !== sdrIntentFilter) {
-        return false;
-      }
-      if (sdrSearchTerm.trim()) {
-        const q = sdrSearchTerm.toLowerCase();
-        const title = s.classified?.title?.toLowerCase() || "";
-        const summary = s.summary?.toLowerCase() || "";
-        return title.includes(q) || summary.includes(q);
-      }
-      return true;
+    return sdrSessions.filter((session) => {
+      const matchIntent = sdrIntentFilter === "all" || session.intent_classification === sdrIntentFilter;
+      const matchSearch =
+        !sdrSearchTerm.trim() ||
+        (session.classified?.title || "").toLowerCase().includes(sdrSearchTerm.toLowerCase()) ||
+        (session.summary || "").toLowerCase().includes(sdrSearchTerm.toLowerCase());
+      return matchIntent && matchSearch;
     });
   }, [sdrSessions, sdrIntentFilter, sdrSearchTerm]);
 
- // Carrega mensagens da thread ativa
- useEffect(() => {
- if (!activeThreadId) {
- setMessages([]);
- return;
- }
-
- let mounted = true;
- setLoadingMessages(true);
- getChatMessages({ data: { threadId: activeThreadId } })
- .then((res) => {
- if (mounted) setMessages(res.messages || []);
- })
- .catch((err) => {
- toast.error("Erro ao carregar mensagens da conversa.");
- })
- .finally(() => {
- if (mounted) setLoadingMessages(false);
- });
-
- return () => {
- mounted = false;
- };
- }, [activeThreadId]);
-
- // Scroll suave ao receber nova mensagem
- useEffect(() => {
- if (chatContainerRef.current) {
- chatContainerRef.current.scrollTo({
- top: chatContainerRef.current.scrollHeight,
- behavior: "smooth",
- });
- }
- }, [messages]);
- // Realtime Supabase
- useEffect(() => {
- if (!activeThreadId) return;
-
- const { channel, unsubscribe } = getRealtimeChannel(`staff-chat-${activeThreadId}`);
- if (!channel) return;
- channel
- .on(
- "postgres_changes",
- {
- event: "INSERT",
- schema: "public",
- table: "chat_messages",
- filter: `thread_id=eq.${activeThreadId}`,
- },
- (payload: any) => {
- const newMsg = {
- id: payload.new.id,
- message: payload.new.message,
- message_type: payload.new.message_type || "text",
- is_staff_reply: payload.new.is_staff_reply,
- created_at: payload.new.created_at,
- attachments: payload.new.attachments || [],
- payload: payload.new.payload || {},
- };
-
- if (!payload.new.is_staff_reply) {
- playMessageChime();
- }
-
- setMessages((prev) => {
- if (prev.some((m) => m.id === newMsg.id)) return prev;
- return [...prev, newMsg];
- });
- },
- )
- .subscribe((status: any) => {
- if (status === "SUBSCRIBED") {
- getChatMessages({ data: { threadId: activeThreadId } })
- .then((res) => {
- setMessages(res.messages || []);
- })
- .catch(console.error);
- }
- });
-
- return () => {
- unsubscribe();
- };
- }, [activeThreadId]);
-
- // Enviar Mensagem do Staff
- const handleSend = async (e: React.FormEvent) => {
- e.preventDefault();
- if (!text.trim() || !activeThreadId || isSending) return;
-
- const sent = text;
- setText("");
- setIsSending(true);
-
- const optimistic = {
- id: crypto.randomUUID(),
- message: sent,
- message_type: "text",
- is_staff_reply: true,
- created_at: new Date().toISOString(),
- attachments: [],
- payload: {},
- };
- setMessages((prev) => [...prev, optimistic]);
-
- try {
- await sendChatMessage({
- data: {
- threadId: activeThreadId,
- message: sent,
- message_type: "text",
- },
- });
- } catch (err: any) {
- toast.error(err.message || "Erro ao enviar resposta.");
- setMessages((prev) => prev.filter((m) => m.id !== optimistic.id));
- setText(sent);
- } finally {
- setIsSending(false);
- }
- };
-
- // Enviar Card / Bloco Estruturado (ia/09-chat.md)
- const handleSendStructuredBlock = async (block: any, action?: any, summaryText?: string) => {
-   if (!activeThreadId || isSending) return;
-   setIsSending(true);
-
-   const payload = {
-     text: summaryText || "",
-     blocks: [block],
-     actions: action ? [action] : [],
-   };
-
-   const optimistic = {
-     id: crypto.randomUUID(),
-     message: summaryText || block.type,
-     message_type: "structured_blocks",
-     is_staff_reply: true,
-     created_at: new Date().toISOString(),
-     attachments: [],
-     payload,
-   };
-   setMessages((prev) => [...prev, optimistic]);
-
-   try {
-     await sendChatMessage({
-       data: {
-         threadId: activeThreadId,
-         message: summaryText || block.type,
-         message_type: "structured_blocks",
-         attachments: [],
-         payload,
-       },
-     });
-     toast.success("Card enviado");
-   } catch (err: any) {
-     toast.error(err.message || "Erro ao enviar card.");
-     setMessages((prev) => prev.filter((m) => m.id !== optimistic.id));
-   } finally {
-     setIsSending(false);
-   }
- };
-
- // Alterar Departamento da conversa
- const handleDepartmentChange = async (dept: string) => {
- if (!activeThreadId) return;
- try {
- await assignChatThread({
- data: {
- threadId: activeThreadId,
- department: dept,
- },
- });
- setThreads((prev) =>
- prev.map((t) => (t.id === activeThreadId ? { ...t, department: dept } : t)),
- );
- toast.success(`Conversa transferida para: ${DEPARTMENT_LABELS[dept] || dept}`);
- } catch (err: any) {
- toast.error(err.message || "Erro ao transferir conversa.");
- }
- };
-
- // Resolver Ticket SAC
- const handleResolveTicket = async () => {
- if (!selectedTicket) return;
- setIsResolvingTicket(true);
- try {
- await updateTicketStatus({
- data: {
- ticketId: selectedTicket.ticket_id || selectedTicket.id,
- status: ticketStatus,
- resolution_notes: resolutionNotes,
- },
- });
- toast.success("Ocorrência atualizada com sucesso!");
- setTicketModalOpen(false);
- // Recarrega mensagens
- if (activeThreadId) {
- const res = await getChatMessages({ data: { threadId: activeThreadId } });
- setMessages(res.messages || []);
- }
- } catch (err: any) {
- toast.error(err.message || "Erro ao atualizar chamado.");
- } finally {
- setIsResolvingTicket(false);
- }
- };
-
- // Filtragem de threads
- const filteredThreads = threads.filter((t) => {
- if (deptFilter !== "all" && t.department !== deptFilter) return false;
- if (statusFilter !== "all" && t.status !== statusFilter) return false;
- if (searchTerm) {
- const q = searchTerm.toLowerCase();
- const name = t.customer?.full_name?.toLowerCase() || "";
- const subj = t.subject?.toLowerCase() || "";
- const last = t.last_message?.toLowerCase() || "";
- if (!name.includes(q) && !subj.includes(q) && !last.includes(q)) return false;
- }
- return true;
- });
+  // Ticket SAC vinculado
+  const linkedTicket = useMemo(() => {
+    const rmaMsg = messages.find((m) => m.message_type === "rma_ticket" && m.payload?.ticket_id);
+    return rmaMsg ? rmaMsg.payload : null;
+  }, [messages]);
 
   return (
-    <div className="flex flex-col h-[calc(100dvh-80px)] font-sans text-foreground">
-      {/* Top Header com Seletor de Modo: Atendimento em Tempo Real vs SDR IA */}
-      <div className="bg-card border-b border-border/80 px-4 py-3 flex flex-wrap items-center justify-between gap-3 shrink-0">
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2">
-            <Building2 className="size-4 text-primary" />
-            <span className="text-xs font-bold text-foreground hidden sm:inline">
-              Central Omnichannel
+    <div className="flex flex-col h-[calc(100vh-theme(spacing.16))] overflow-hidden bg-background">
+      {/* CABEÇALHO DO HUB DE ATENDIMENTO */}
+      <header className="shrink-0 border-b border-border/80 bg-card/90 px-4 py-3 flex flex-col md:flex-row md:items-center justify-between gap-3">
+        <div className="flex items-center justify-between gap-3 min-w-0">
+          <div className="flex items-center gap-2 min-w-0">
+            <h1 className="text-base sm:text-lg font-bold text-foreground truncate">
+              Atendimento Omnichannel
+            </h1>
+            <span className="hidden sm:inline-block text-xs text-muted-foreground">
+              • {store?.name || "Workspace"}
             </span>
           </div>
 
-          <div className="flex items-center gap-2 bg-muted/60 p-1 rounded-lg border border-border/60">
+          {/* Status de Presença do Atendente */}
+          <div className="flex items-center gap-2 shrink-0 bg-muted/60 p-1 rounded-lg border border-border/60">
             <button
               type="button"
-              onClick={() => setActiveHubTab("live")}
+              onClick={() => setAgentPresence("online")}
               className={cn(
-                "px-3 py-1 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer",
-                activeHubTab === "live"
-                  ? "bg-background text-foreground shadow-2xs font-bold"
-                  : "text-muted-foreground hover:text-foreground"
+                "px-2 py-1 rounded text-xs font-semibold flex items-center gap-1 transition-all cursor-pointer",
+                agentPresence === "online"
+                  ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 font-bold"
+                  : "text-muted-foreground hover:text-foreground",
               )}
             >
-              <MessageSquare className="size-3.5" />
-              <span>Atendimento Direto</span>
-              {(metrics?.open || 0) > 0 && (
-                <Badge variant="default" className="text-xs h-4 px-2 font-mono">
-                  {metrics?.open}
-                </Badge>
-              )}
+              <span className="size-2 rounded-full bg-emerald-500" />
+              <span>Online</span>
             </button>
-
             <button
               type="button"
-              onClick={() => setActiveHubTab("sdr")}
+              onClick={() => setAgentPresence("busy")}
               className={cn(
-                "px-3 py-1 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer",
-                activeHubTab === "sdr"
-                  ? "bg-background text-foreground shadow-2xs font-bold"
-                  : "text-muted-foreground hover:text-foreground"
+                "px-2 py-1 rounded text-xs font-semibold flex items-center gap-1 transition-all cursor-pointer",
+                agentPresence === "busy"
+                  ? "bg-amber-500/15 text-amber-700 dark:text-amber-300 font-bold"
+                  : "text-muted-foreground hover:text-foreground",
               )}
             >
-              <Bot className="size-3.5 text-primary" />
-              <span>Conversas SDR (IA)</span>
-              {sdrMetrics?.total > 0 && (
-                <Badge variant="secondary" className="text-xs h-4 px-2 font-mono bg-primary/10 text-primary border border-primary/20">
-                  {sdrMetrics.total}
-                </Badge>
+              <span className="size-2 rounded-full bg-amber-500" />
+              <span>Ocupado</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setAgentPresence("away")}
+              className={cn(
+                "px-2 py-1 rounded text-xs font-semibold flex items-center gap-1 transition-all cursor-pointer",
+                agentPresence === "away"
+                  ? "bg-muted text-muted-foreground font-bold"
+                  : "text-muted-foreground hover:text-foreground",
               )}
+            >
+              <span className="size-2 rounded-full bg-muted-foreground/50" />
+              <span>Pausa</span>
             </button>
           </div>
         </div>
 
-        {activeHubTab === "live" && isSupervisor && (
-          <div className="flex items-center gap-4 text-xs">
-            <div className="flex items-center gap-2">
-              <span className="text-muted-foreground">Em Aberto:</span>
-              <Badge variant="default" className="font-bold text-xs h-5">
-                {metrics?.open || 0}
+        {/* REGUA DE ABAS CANÔNICAS */}
+        <div className="flex items-center gap-2 overflow-x-auto tab-list no-scrollbar pb-1 md:pb-0">
+          {/* Aba 1: Conversas (WhatsApp Web Nativo) */}
+          <button
+            type="button"
+            onClick={() => setActiveHubTab("live")}
+            className={cn(
+              "px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer shrink-0",
+              activeHubTab === "live"
+                ? "bg-primary text-primary-foreground shadow-xs font-bold"
+                : "bg-muted/40 text-muted-foreground hover:text-foreground border border-border/50",
+            )}
+          >
+            <MessageSquare className="size-4" />
+            <span>Conversas</span>
+            {(metrics?.open || 0) > 0 && (
+              <Badge variant="secondary" className="text-xs h-4 px-2 font-mono">
+                {metrics?.open}
               </Badge>
+            )}
+          </button>
+
+          {/* Aba 2: Leads SDR / IA */}
+          <button
+            type="button"
+            onClick={() => setActiveHubTab("sdr")}
+            className={cn(
+              "px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer shrink-0",
+              activeHubTab === "sdr"
+                ? "bg-primary text-primary-foreground shadow-xs font-bold"
+                : "bg-muted/40 text-muted-foreground hover:text-foreground border border-border/50",
+            )}
+          >
+            <Bot className="size-4" />
+            <span>Leads SDR / IA</span>
+            {sdrMetrics?.total > 0 && (
+              <Badge variant="secondary" className="text-xs h-4 px-2 font-mono">
+                {sdrMetrics.total}
+              </Badge>
+            )}
+          </button>
+
+          {/* Aba 3: Telemetria & Filas */}
+          <button
+            type="button"
+            onClick={() => setActiveHubTab("metrics")}
+            className={cn(
+              "px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer shrink-0",
+              activeHubTab === "metrics"
+                ? "bg-primary text-primary-foreground shadow-xs font-bold"
+                : "bg-muted/40 text-muted-foreground hover:text-foreground border border-border/50",
+            )}
+          >
+            <Activity className="size-4" />
+            <span>Telemetria & Filas</span>
+          </button>
+
+          {/* Aba 4: Conexão WhatsApp Web */}
+          <button
+            type="button"
+            onClick={() => setActiveHubTab("whatsapp")}
+            className={cn(
+              "px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer shrink-0",
+              activeHubTab === "whatsapp"
+                ? "bg-primary text-primary-foreground shadow-xs font-bold"
+                : "bg-muted/40 text-muted-foreground hover:text-foreground border border-border/50",
+            )}
+          >
+            <Smartphone className="size-4" />
+            <span>Conexão WhatsApp</span>
+          </button>
+
+          {/* Aba 5: Horários & Setores */}
+          <button
+            type="button"
+            onClick={() => setActiveHubTab("hours")}
+            className={cn(
+              "px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer shrink-0",
+              activeHubTab === "hours"
+                ? "bg-primary text-primary-foreground shadow-xs font-bold"
+                : "bg-muted/40 text-muted-foreground hover:text-foreground border border-border/50",
+            )}
+          >
+            <Clock className="size-4" />
+            <span>Horários & Setores</span>
+          </button>
+        </div>
+      </header>
+
+      {/* ======================================================== */}
+      {/* ABA 1: CONVERSAS (WHATSAPP WEB NATIVO LIMPO) */}
+      {/* ======================================================== */}
+      {activeHubTab === "live" && (
+        <div className="flex-1 flex overflow-hidden">
+          {/* COLUNA 1: Lista de Conversas (Sidebar estilo WhatsApp Web) */}
+          <div
+            className={cn(
+              "w-full md:w-80 lg:w-96 border-r border-border/80 bg-background flex flex-col shrink-0",
+              activeThreadId ? "hidden md:flex" : "flex",
+            )}
+          >
+            {/* Busca & Chips de Status */}
+            <div className="p-3 border-b border-border/80 space-y-2 bg-card/40">
+              <div className="relative">
+                <Search className="size-4 absolute left-3 top-3 text-muted-foreground" />
+                <Input
+                  placeholder="Buscar conversa ou telefone..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-8 h-9 rounded-lg text-xs bg-muted/40"
+                />
+              </div>
+
+              {/* Chips Rápidos: Todas / Abertas / Arquivadas */}
+              <div className="flex items-center gap-2 overflow-x-auto tab-list no-scrollbar">
+                {[
+                  { id: "all", label: "Todas" },
+                  { id: "open", label: "Abertas" },
+                  { id: "archived", label: "Arquivadas" },
+                ].map((chip) => (
+                  <button
+                    key={chip.id}
+                    type="button"
+                    onClick={() => setStatusFilter(chip.id as any)}
+                    className={cn(
+                      "px-3 py-1 rounded-md text-xs font-semibold transition-all cursor-pointer shrink-0",
+                      statusFilter === chip.id
+                        ? "bg-primary text-primary-foreground font-bold shadow-2xs"
+                        : "bg-muted/60 text-muted-foreground hover:text-foreground border border-border/50",
+                    )}
+                  >
+                    {chip.label}
+                  </button>
+                ))}
+
+                <div className="ml-auto">
+                  <Select value={deptFilter} onValueChange={setDeptFilter}>
+                    <SelectTrigger className="h-7 text-xs rounded-md border-border/60">
+                      <SelectValue placeholder="Setor" />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-lg">
+                      <SelectItem value="all">Todos Setores</SelectItem>
+                      {Object.entries(departmentLabels).map(([key, label]) => (
+                        <SelectItem key={key} value={key}>
+                          {label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="text-muted-foreground">SLA Médio:</span>
-              <span className="font-bold text-foreground">{metrics?.sla_first_response_min} min</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-muted-foreground">CSAT:</span>
-              <span className="font-bold text-foreground flex items-center gap-1">
-                <Star className="size-3 fill-amber-500 text-amber-500" />
-                {metrics?.avg_rating && metrics.avg_rating > 0 ? `${metrics.avg_rating} / 5.0` : "—"}
-              </span>
+
+            {/* Lista de Threads de Conversas */}
+            <div className="flex-1 overflow-y-auto no-scrollbar divide-y divide-border/40">
+              {filteredThreads.length === 0 ? (
+                <div className="p-8 text-center text-muted-foreground text-xs space-y-2">
+                  <MessageSquare className="size-8 mx-auto opacity-40" />
+                  <p className="font-semibold text-foreground">Nenhuma conversa encontrada</p>
+                  <p className="text-xs">
+                    {statusFilter === "archived"
+                      ? "Não há conversas arquivadas no momento."
+                      : "Mensagens recebidas de clientes ou WhatsApp aparecerão aqui."}
+                  </p>
+                </div>
+              ) : (
+                filteredThreads.map((t) => {
+                  const isActive = t.id === activeThreadId;
+                  const isWhatsApp = t.channel === "whatsapp" || t.context_type === "whatsapp";
+                  return (
+                    <button
+                      key={t.id}
+                      onClick={() => setActiveThreadId(t.id)}
+                      className={cn(
+                        "w-full p-4 text-left flex items-start gap-3 transition-colors cursor-pointer border-l-4",
+                        isActive
+                          ? "bg-muted/70 border-primary"
+                          : "border-transparent hover:bg-muted/30",
+                      )}
+                    >
+                      {/* Avatar com foto real ou iniciais */}
+                      {t.customer?.avatar_url ? (
+                        <img
+                          src={t.customer.avatar_url}
+                          alt={t.customer?.full_name || "Cliente"}
+                          className="size-10 rounded-full object-cover shrink-0 border border-border/60"
+                          onError={(e) => {
+                            (e.currentTarget as HTMLElement).style.display = "none";
+                          }}
+                        />
+                      ) : (
+                        <div className="size-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs shrink-0 border border-primary/20">
+                          {(t.customer?.full_name || "C")[0].toUpperCase()}
+                        </div>
+                      )}
+
+                      <div className="min-w-0 flex-1 space-y-1">
+                        <div className="flex items-center justify-between gap-1">
+                          <span className="font-bold text-xs text-foreground truncate">
+                            {t.customer?.full_name || "Cliente"}
+                          </span>
+                          <span className="text-xs text-muted-foreground shrink-0 font-mono">
+                            {formatRelativeTime(t.updated_at)}
+                          </span>
+                        </div>
+
+                        <p className="text-xs text-muted-foreground line-clamp-1 leading-snug">
+                          {t.is_last_reply_staff ? "Você: " : ""}
+                          {t.last_message || "Sem mensagens"}
+                        </p>
+
+                        <div className="flex items-center gap-2 pt-1">
+                          {/* Badge de Canal: WhatsApp verde ou Chat Web */}
+                          {isWhatsApp ? (
+                            <Badge
+                              variant="outline"
+                              className="text-xs px-2 py-0 h-4 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/30 gap-1 font-semibold"
+                            >
+                              <Smartphone className="size-3 text-emerald-600" />
+                              <span>WhatsApp</span>
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline" className="text-xs px-2 py-0 h-4 gap-1">
+                              <MessageCircle className="size-3 text-primary" />
+                              <span>Web</span>
+                            </Badge>
+                          )}
+
+                          <Badge variant="secondary" className="text-xs px-2 py-0 h-4 uppercase">
+                            {departmentLabels[t.department] || t.department}
+                          </Badge>
+
+                          {t.status === "archived" && (
+                            <Badge
+                              variant="outline"
+                              className="text-xs px-1 py-0 h-4 bg-muted text-muted-foreground border-border/60"
+                            >
+                              Arquivada
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })
+              )}
             </div>
           </div>
-        )}
 
-        {activeHubTab === "sdr" && (
-          <div className="flex items-center gap-3 text-xs">
-            <div className="flex items-center gap-2">
-              <Target className="size-3.5 text-emerald-600" />
-              <span className="text-muted-foreground">Prontos p/ Comprar:</span>
-              <Badge variant="default" className="font-bold text-xs h-5 bg-emerald-600 hover:bg-emerald-600 text-white font-mono">
-                {sdrMetrics?.readyToBuy || 0}
-              </Badge>
+          {/* COLUNA 2: Mensagens & Composer (Área Central de Chat) */}
+          {activeThread ? (
+            <div
+              className={cn(
+                "flex-1 flex flex-col bg-muted/10 w-full min-w-0",
+                !activeThreadId ? "hidden md:flex" : "flex",
+              )}
+            >
+              {/* Header da Conversa Ativa */}
+              <div className="p-3 sm:p-4 bg-card border-b border-border/80 flex items-center justify-between gap-3 shrink-0">
+                <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setActiveThreadId(null)}
+                    className="md:hidden size-8 -ml-1 text-muted-foreground hover:text-foreground cursor-pointer shrink-0"
+                    title="Voltar para a lista"
+                  >
+                    <ArrowLeft className="size-4" />
+                  </Button>
+
+                  {/* Avatar do cliente */}
+                  {activeThread.customer?.avatar_url ? (
+                    <img
+                      src={activeThread.customer.avatar_url}
+                      alt={activeThread.customer?.full_name || "Cliente"}
+                      className="size-10 rounded-full object-cover shrink-0 border border-border/60"
+                      onError={(e) => {
+                        (e.currentTarget as HTMLElement).style.display = "none";
+                      }}
+                    />
+                  ) : (
+                    <div className="size-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs shrink-0 border border-primary/20">
+                      {(activeThread.customer?.full_name || "C")[0].toUpperCase()}
+                    </div>
+                  )}
+
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-bold text-sm text-foreground truncate">
+                        {activeThread.customer?.full_name || "Cliente"}
+                      </h3>
+                      {activeThread.channel === "whatsapp" && (
+                        <span className="inline-flex items-center text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                          (WhatsApp)
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground truncate font-mono">
+                      {activeThread.customer?.phone || activeThread.customer?.email || "Atendimento Direto"}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  {/* Sinalizador Janela 24h WhatsApp */}
+                  <div className="hidden lg:flex items-center gap-2 px-3 py-1 rounded-md border text-xs font-mono font-semibold shrink-0 bg-muted/40 border-border/60">
+                    <Clock className="size-3 text-primary shrink-0" />
+                    <span
+                      className={cn(
+                        "text-xs",
+                        isWhatsAppWindowOpen
+                          ? "text-emerald-600 dark:text-emerald-400 font-bold"
+                          : "text-muted-foreground",
+                      )}
+                    >
+                      {isWhatsAppWindowOpen ? "Janela 24h Aberta" : "Janela Expirada"}
+                    </span>
+                  </div>
+
+                  {/* Transferir Setor */}
+                  <Select
+                    value={activeThread.department || "geral"}
+                    onValueChange={handleDepartmentChange}
+                  >
+                    <SelectTrigger className="h-8 rounded-lg text-xs w-32 sm:w-36">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-lg">
+                      <SelectItem value="vendas">Vendas</SelectItem>
+                      <SelectItem value="suporte">Suporte / SAC</SelectItem>
+                      <SelectItem value="financeiro">Financeiro</SelectItem>
+                      <SelectItem value="logistica">Logística</SelectItem>
+                      <SelectItem value="geral">Geral</SelectItem>
+                    </SelectContent>
+                  </Select>
+
+                  {/* Ação de Arquivar / Desarquivar */}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    disabled={isArchiving}
+                    onClick={() =>
+                      handleArchiveThread(activeThread.id, activeThread.status !== "archived")
+                    }
+                    className="h-8 rounded-lg text-xs font-semibold gap-2 cursor-pointer"
+                    title={activeThread.status === "archived" ? "Desarquivar conversa" : "Arquivar conversa"}
+                  >
+                    {activeThread.status === "archived" ? (
+                      <>
+                        <ArchiveRestore className="size-4" />
+                        <span className="hidden sm:inline">Desarquivar</span>
+                      </>
+                    ) : (
+                      <>
+                        <Archive className="size-4" />
+                        <span className="hidden sm:inline">Arquivar</span>
+                      </>
+                    )}
+                  </Button>
+
+                  {/* Toggle Perfil 360 */}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowCustomer360(!showCustomer360)}
+                    className={cn(
+                      "h-8 text-xs font-bold rounded-lg cursor-pointer",
+                      showCustomer360 ? "bg-muted" : "",
+                    )}
+                  >
+                    <UserCheck className="size-4 mr-1" />
+                    <span className="hidden sm:inline">Perfil 360º</span>
+                  </Button>
+                </div>
+              </div>
+
+              {/* Timeline de Mensagens */}
+              <div
+                ref={chatContainerRef}
+                className="flex-1 space-y-4 overflow-y-auto no-scrollbar p-4 bg-muted/10"
+              >
+                {loadingMessages ? (
+                  <div className="flex items-center justify-center h-full">
+                    <Loader2 className="size-6 animate-spin text-primary" />
+                  </div>
+                ) : messages.length === 0 ? (
+                  <div className="text-center py-12 text-muted-foreground text-xs">
+                    Nenhuma mensagem nesta conversa ainda.
+                  </div>
+                ) : (
+                  messages.map((msg) => {
+                    const isStaff = msg.is_staff_reply;
+
+                    // Card de Pedido
+                    if (msg.message_type === "order_card" && msg.payload?.order) {
+                      return (
+                        <div
+                          key={msg.id}
+                          className={`flex ${isStaff ? "justify-end" : "justify-start"} w-full`}
+                        >
+                          <OrderMessageCard order={msg.payload.order} isStaff={true} />
+                        </div>
+                      );
+                    }
+
+                    // Card de Nota Interna (Whisper)
+                    if (
+                      msg.payload?.is_whisper ||
+                      (msg.message_type === "system_event" && msg.payload?.is_whisper)
+                    ) {
+                      return (
+                        <div key={msg.id} className="w-full flex justify-center my-2">
+                          <div className="max-w-lg w-full p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200 text-xs space-y-1 shadow-2xs">
+                            <div className="flex items-center justify-between text-xs font-bold">
+                              <span className="flex items-center gap-2 text-amber-700 dark:text-amber-300">
+                                <Lock className="size-4 shrink-0" />
+                                <span>Nota Interna da Equipe (Whisper)</span>
+                              </span>
+                              <span className="font-mono text-xs opacity-75">{formatDate(msg.created_at)}</span>
+                            </div>
+                            <p className="whitespace-pre-wrap leading-relaxed font-medium">
+                              {msg.message || msg.payload?.text}
+                            </p>
+                            <span className="text-xs opacity-70 block text-right italic">
+                              Invisível para o cliente no WhatsApp
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    }
+
+                    // Card de Ticket SAC / RMA
+                    if (msg.message_type === "rma_ticket" && msg.payload?.ticket_id) {
+                      return (
+                        <div
+                          key={msg.id}
+                          className={`flex ${isStaff ? "justify-end" : "justify-start"} w-full`}
+                        >
+                          <RmaMessageCard
+                            payload={msg.payload}
+                            isStaff={true}
+                            onReviewTicket={() => {
+                              setSelectedTicket(msg.payload);
+                              setTicketModalOpen(true);
+                            }}
+                          />
+                        </div>
+                      );
+                    }
+
+                    // Card Estruturado com Widgets
+                    if (
+                      msg.message_type === "structured_blocks" ||
+                      (msg.payload?.blocks && msg.payload.blocks.length > 0)
+                    ) {
+                      return (
+                        <div
+                          key={msg.id}
+                          className={`flex flex-col ${isStaff ? "items-end" : "items-start"} w-full`}
+                        >
+                          <div
+                            className={cn(
+                              "max-w-[95%] sm:max-w-lg rounded-lg p-4 text-xs shadow-xs",
+                              isStaff
+                                ? "bg-card border border-border/80 text-foreground rounded-tr-xs"
+                                : "bg-card border border-border/80 text-foreground rounded-tl-xs",
+                            )}
+                          >
+                            <StructuredMessageView
+                              payload={msg.payload || { text: msg.message }}
+                              isStaff={isStaff}
+                            />
+                          </div>
+                          <span className="text-xs text-muted-foreground mt-1 px-1 flex items-center gap-1">
+                            {isStaff ? "Equipe / Você" : activeThread.customer?.full_name || "Cliente"} •{" "}
+                            {formatDate(msg.created_at)}
+                            {isStaff && <CheckCheck className="size-3 text-primary inline" />}
+                          </span>
+                        </div>
+                      );
+                    }
+
+                    // Balão Normal estilo WhatsApp Web
+                    return (
+                      <div
+                        key={msg.id}
+                        className={`flex flex-col ${isStaff ? "items-end" : "items-start"}`}
+                      >
+                        <div
+                          className={cn(
+                            "max-w-[85%] sm:max-w-md rounded-lg p-3 text-xs leading-relaxed shadow-xs",
+                            isStaff
+                              ? "bg-primary text-primary-foreground font-medium rounded-tr-xs"
+                              : "bg-card border border-border/80 text-foreground rounded-tl-xs",
+                          )}
+                        >
+                          <p className="whitespace-pre-wrap break-words">{msg.message}</p>
+                        </div>
+                        <span className="text-xs text-muted-foreground mt-1 px-1 flex items-center gap-1 font-mono">
+                          {isStaff ? "Você" : activeThread.customer?.full_name || "Cliente"} •{" "}
+                          {new Date(msg.created_at).toLocaleTimeString("pt-BR", {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                          {isStaff && <CheckCheck className="size-3 text-primary inline" />}
+                        </span>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+
+              {/* Input de Envio do Atendente & Macros Rápidas */}
+              <div className="bg-card border-t border-border/80 p-3 space-y-2">
+                {/* Trilho de Respostas Rápidas / Macros */}
+                <div
+                  role="tablist"
+                  aria-label="Atalhos Rápidos"
+                  className="flex items-center gap-2 overflow-x-auto tab-list no-scrollbar"
+                >
+                  <span className="text-xs text-muted-foreground shrink-0 font-mono">Macros:</span>
+                  {[
+                    {
+                      cmd: "/ola",
+                      text: "Olá! Seja muito bem-vindo ao atendimento da nossa empresa. Como podemos te ajudar?",
+                      label: "Saudação",
+                    },
+                    {
+                      cmd: "/pix",
+                      text: "Nossa chave PIX oficial é gerada e confirmada diretamente no seu pedido. O comprovante é validado automaticamente!",
+                      label: "Chave PIX",
+                    },
+                    {
+                      cmd: "/horarios",
+                      text: "Nosso horário de atendimento é de Segunda a Sexta das 08h às 18h e Sábados das 08h às 12h.",
+                      label: "Horários",
+                    },
+                    {
+                      cmd: "/rastreio",
+                      text: "Seu pedido está em processamento logístico e você pode acompanhar pelo link de rastreio acima.",
+                      label: "Rastreio",
+                    },
+                  ].map((macro) => (
+                    <button
+                      key={macro.cmd}
+                      type="button"
+                      onClick={() => setText(macro.text)}
+                      className="px-2 py-1 rounded-md text-xs font-mono font-medium bg-muted/50 hover:bg-muted border border-border/60 text-muted-foreground hover:text-foreground shrink-0 transition-colors cursor-pointer"
+                    >
+                      {macro.cmd} <span className="text-xs opacity-75">({macro.label})</span>
+                    </button>
+                  ))}
+                </div>
+
+                <form onSubmit={handleSend} className="space-y-2">
+                  <div className="flex items-end gap-2">
+                    <div className="flex-1 relative">
+                      <Textarea
+                        value={text}
+                        onChange={(e) => setText(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && !e.shiftKey) {
+                            e.preventDefault();
+                            handleSend();
+                          }
+                        }}
+                        placeholder={
+                          isWhisperMode
+                            ? "Escreva uma nota interna (visível apenas para sua equipe)..."
+                            : "Digite sua mensagem ou use / para macros (Enter para enviar)..."
+                        }
+                        className={cn(
+                          "min-h-11 max-h-32 text-xs rounded-lg resize-none p-3",
+                          isWhisperMode
+                            ? "border-amber-500/50 bg-amber-500/5 placeholder:text-amber-700/60"
+                            : "bg-muted/30",
+                        )}
+                        rows={1}
+                      />
+                    </div>
+
+                    {/* Botão Modo Sussurro */}
+                    <Button
+                      type="button"
+                      variant={isWhisperMode ? "default" : "outline"}
+                      size="icon"
+                      onClick={() => setIsWhisperMode(!isWhisperMode)}
+                      className={cn(
+                        "size-11 rounded-lg shrink-0 cursor-pointer",
+                        isWhisperMode ? "bg-amber-600 hover:bg-amber-700 text-white" : "",
+                      )}
+                      title={
+                        isWhisperMode
+                          ? "Desativar modo sussurro (voltar para resposta pública)"
+                          : "Ativar modo sussurro (nota interna invisível ao cliente)"
+                      }
+                    >
+                      <Lock className="size-4" />
+                    </Button>
+
+                    {/* Botão Enviar */}
+                    <Button
+                      type="submit"
+                      disabled={isSending || !text.trim()}
+                      className="h-11 px-4 rounded-lg font-bold text-xs gap-2 shrink-0 cursor-pointer"
+                    >
+                      {isSending ? (
+                        <Loader2 className="size-4 animate-spin" />
+                      ) : (
+                        <>
+                          <span>Enviar</span>
+                          <Send className="size-4" />
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </form>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <Flame className="size-3.5 text-amber-500" />
-              <span className="text-muted-foreground">Quentes:</span>
-              <span className="font-bold text-amber-600 dark:text-amber-400 font-mono">{sdrMetrics?.warm || 0}</span>
+          ) : (
+            <div className="hidden md:flex flex-1 items-center justify-center bg-muted/5 flex-col gap-3 text-center p-8">
+              <div className="size-16 rounded-full bg-muted/60 flex items-center justify-center text-muted-foreground">
+                <MessageSquare className="size-8" />
+              </div>
+              <h3 className="font-bold text-foreground text-sm">Nenhuma conversa selecionada</h3>
+              <p className="text-xs text-muted-foreground max-w-xs">
+                Selecione uma conversa na barra lateral para responder mensagens ou iniciar um atendimento.
+              </p>
             </div>
-          </div>
-        )}
-      </div>
+          )}
 
-      <div className="shrink-0 bg-muted/10 p-3 sm:p-4">
-        <WhatsAppOperationsMetricsPanel />
-      </div>
+          {/* COLUNA 3: Customer 360 (Lateral Direita Recolhível) */}
+          {activeThread && showCustomer360 && (
+            <div className="w-80 lg:w-96 border-l border-border/80 bg-background overflow-y-auto no-scrollbar shrink-0 p-4">
+              <div className="flex items-center justify-between pb-3 border-b border-border/60 mb-4">
+                <span className="font-bold text-xs uppercase tracking-wider text-muted-foreground">
+                  Perfil 360º do Cliente
+                </span>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowCustomer360(false)}
+                  className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground cursor-pointer"
+                >
+                  Fechar
+                </Button>
+              </div>
+              <Customer360Sidebar
+                customerId={activeThread.customer?.id}
+                storeId={store?.id || ""}
+              />
+            </div>
+          )}
+        </div>
+      )}
 
-      {/* RENDERIZAÇÃO CONDICIONAL DO HUB: SDR VS CHAT DIRETO */}
-      {activeHubTab === "sdr" ? (
+      {/* ======================================================== */}
+      {/* ABA 2: LEADS SDR & QUALIFICAÇÃO IA */}
+      {/* ======================================================== */}
+      {activeHubTab === "sdr" && (
         <div className="flex-1 flex flex-col overflow-hidden bg-muted/15 p-4 sm:p-6 space-y-4">
           {/* Barra de Filtros SDR */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-card p-3 rounded-lg border border-border/70 shadow-2xs">
             <div className="relative flex-1 max-w-md">
-              <Search className="size-3.5 absolute left-3 top-3 text-muted-foreground" />
+              <Search className="size-4 absolute left-3 top-3 text-muted-foreground" />
               <Input
                 placeholder="Buscar por anúncio ou resumo da IA..."
                 value={sdrSearchTerm}
@@ -481,7 +1170,7 @@ function WorkspaceAtendimentoPage() {
               />
             </div>
 
-            <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
+            <div className="flex items-center gap-2 overflow-x-auto tab-list pb-1 sm:pb-0">
               {[
                 { id: "all", label: "Todas", count: sdrMetrics.total },
                 { id: "ready_to_buy", label: "Pronto p/ Compra", count: sdrMetrics.readyToBuy },
@@ -496,7 +1185,7 @@ function WorkspaceAtendimentoPage() {
                     "px-3 py-1 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer flex items-center gap-1",
                     sdrIntentFilter === pill.id
                       ? "bg-primary text-primary-foreground font-bold shadow-2xs"
-                      : "bg-muted/60 text-muted-foreground hover:text-foreground border border-border/50"
+                      : "bg-muted/60 text-muted-foreground hover:text-foreground border border-border/50",
                   )}
                 >
                   <span>{pill.label}</span>
@@ -521,7 +1210,7 @@ function WorkspaceAtendimentoPage() {
                 </div>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 pb-12">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {filteredSdrSessions.map((session) => {
                   const isReady = session.intent_classification === "ready_to_buy";
                   const isWarm = session.intent_classification === "warm";
@@ -530,25 +1219,25 @@ function WorkspaceAtendimentoPage() {
                     <div
                       key={session.id}
                       className={cn(
-                        "p-4 rounded-lg border transition-all flex flex-col justify-between space-y-3 bg-card shadow-2xs hover:shadow-xs",
+                        "bg-card p-4 rounded-lg border flex flex-col justify-between space-y-4 shadow-xs transition-all hover:border-primary/50",
                         isReady
-                          ? "border-emerald-500/40 bg-emerald-500/[0.02]"
+                          ? "border-emerald-500/40 bg-emerald-500/5 dark:bg-emerald-950/10"
                           : isWarm
-                          ? "border-amber-500/40 bg-amber-500/[0.02]"
-                          : "border-border/70"
+                          ? "border-amber-500/40 bg-amber-500/5 dark:bg-amber-950/10"
+                          : "border-border/70",
                       )}
                     >
                       <div className="space-y-3">
-                        {/* Topo do Card: Badge de Intenção e Data */}
                         <div className="flex items-center justify-between gap-2">
                           <Badge
+                            variant="outline"
                             className={cn(
-                              "text-xs font-bold uppercase tracking-wider px-2 py-1",
+                              "text-xs font-bold px-2 py-1 rounded-md",
                               isReady
-                                ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30"
+                                ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30"
                                 : isWarm
-                                ? "bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30"
-                                : "bg-muted text-muted-foreground border border-border/60"
+                                ? "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30"
+                                : "bg-muted text-muted-foreground border border-border/60",
                             )}
                           >
                             {isReady
@@ -565,21 +1254,22 @@ function WorkspaceAtendimentoPage() {
                           </span>
                         </div>
 
-                        {/* Anúncio Relacionado */}
                         {session.classified && (
                           <div className="space-y-1">
                             <h4 className="text-xs font-bold text-foreground line-clamp-1">
                               {session.classified.title}
                             </h4>
-                            {session.classified.price_cents !== null && session.classified.price_cents !== undefined && (
-                              <p className="text-xs font-semibold text-primary font-mono">
-                                {session.classified.price_cents > 0 ? formatMoney(session.classified.price_cents) : "Sob Consulta"}
-                              </p>
-                            )}
+                            {session.classified.price_cents !== null &&
+                              session.classified.price_cents !== undefined && (
+                                <p className="text-xs font-semibold text-primary font-mono">
+                                  {session.classified.price_cents > 0
+                                    ? formatMoney(session.classified.price_cents)
+                                    : "Sob Consulta"}
+                                </p>
+                              )}
                           </div>
                         )}
 
-                        {/* Resumo da IA */}
                         {session.summary && (
                           <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed bg-muted/40 p-3 rounded-lg border border-border/40">
                             {session.summary}
@@ -587,7 +1277,6 @@ function WorkspaceAtendimentoPage() {
                         )}
                       </div>
 
-                      {/* Rodapé do Card: Contador de Mensagens e Botão de Ação */}
                       <div className="flex items-center justify-between pt-2 border-t border-border/40 text-xs">
                         <span className="text-muted-foreground text-xs flex items-center gap-1">
                           <MessageSquare className="size-3 text-muted-foreground" />
@@ -614,639 +1303,274 @@ function WorkspaceAtendimentoPage() {
             )}
           </div>
         </div>
-      ) : (
-        /* Grid Principal: 3 Colunas (Threads | Chat | Customer 360) */
-        <div className="flex-1 flex overflow-hidden">
-          {/* COLUNA 1: Lista de Conversas & Filtros */}
-          <div className={cn(
-            "w-full md:w-80 lg:w-96 border-r border-border/80 bg-background flex flex-col shrink-0",
-            activeThreadId ? "hidden md:flex" : "flex"
-          )}>
-            {/* Busca & Filtros Rápidos */}
-            <div className="p-3 border-b border-border/80 space-y-2">
-              <div className="relative">
-                <Search className="size-3.5 absolute left-3 top-3 text-muted-foreground" />
-                <Input
-                  placeholder="Buscar por cliente, assunto..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-8 h-9 rounded-lg text-xs bg-muted/40"
-                />
-              </div>
+      )}
 
-              <div className="grid grid-cols-2 gap-2">
-                <Select value={deptFilter} onValueChange={setDeptFilter}>
-                  <SelectTrigger className="h-8 rounded-lg text-xs">
-                    <SelectValue placeholder="Departamento" />
-                  </SelectTrigger>
-                  <SelectContent className="rounded-lg">
-                    <SelectItem value="all">Todos Setores</SelectItem>
-                    {Object.entries(departmentLabels).map(([key, label]) => (
-                      <SelectItem key={key} value={key}>
-                        {label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className="h-8 rounded-lg text-xs">
-                    <SelectValue placeholder="Status" />
-                  </SelectTrigger>
-                  <SelectContent className="rounded-lg">
-                    <SelectItem value="all">Todos Status</SelectItem>
-                    <SelectItem value="open">Abertos</SelectItem>
-                    <SelectItem value="closed">Encerrados</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            {/* Lista de Threads */}
-            <div className="flex-1 overflow-y-auto no-scrollbar divide-y divide-border/40">
-              {filteredThreads.length === 0 ? (
-                <div className="p-8 text-center text-muted-foreground text-xs">
-                  Nenhuma conversa encontrada.
-                </div>
-              ) : (
-                filteredThreads.map((t) => {
-                  const isActive = t.id === activeThreadId;
-                  return (
-                    <button
-                      key={t.id}
-                      onClick={() => setActiveThreadId(t.id)}
-                      className={`w-full p-4 text-left flex items-start gap-3 transition-colors cursor-pointer ${
-                        isActive ? "bg-muted/60 border-l-4 border-primary" : "hover:bg-muted/30"
-                      }`}
-                    >
-                      <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-xs shrink-0">
-                        {(t.customer?.full_name || "C")[0].toUpperCase()}
-                      </div>
-
-                      <div className="min-w-0 flex-1 space-y-1">
-                        <div className="flex items-center justify-between gap-1">
-                          <span className="font-bold text-xs text-foreground truncate">
-                            {t.customer?.full_name || "Cliente"}
-                          </span>
-                          <span className="text-xs text-muted-foreground shrink-0">
-                            {formatDate(t.updated_at)}
-                          </span>
-                        </div>
-
-                        <p className="text-xs text-muted-foreground line-clamp-1">
-                          {t.is_last_reply_staff ? "Você: " : ""}
-                          {t.last_message || "Sem mensagens"}
-                        </p>
-
-                        <div className="flex items-center gap-2 pt-1">
-                          <Badge variant="outline" className="text-xs px-1 py-0 h-4 uppercase">
-                            {departmentLabels[t.department] || t.department}
-                          </Badge>
-                          {t.order_id && (
-                            <Badge variant="secondary" className="text-xs px-1 py-0 h-4">
-                              Pedido #{t.order_id.slice(0, 6)}
-                            </Badge>
-                          )}
-                        </div>
-                      </div>
-                    </button>
-                  );
-                })
-              )}
-            </div>
+      {/* ======================================================== */}
+      {/* ABA 3: TELEMETRIA & FILAS (PAINEL OPERACIONAL ISOLADO) */}
+      {/* ======================================================== */}
+      {activeHubTab === "metrics" && (
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 bg-muted/10">
+          {/* Métricas Operacionais de Mensageria e Fila */}
+          <div className="space-y-2">
+            <h2 className="text-base font-bold text-foreground">
+              Monitoramento Operacional de Mensageria & Filas
+            </h2>
+            <p className="text-xs text-muted-foreground">
+              Acompanhamento em tempo real da vazão de mensagens, workers de envio, latência P95 e dead-letter.
+            </p>
           </div>
 
-          {/* COLUNA 2: Timeline de Mensagens & Envio */}
-          {activeThread ? (
-            <div className={cn(
-              "flex-1 flex flex-col bg-muted/10 w-full min-w-0",
-              !activeThreadId ? "hidden md:flex" : "flex"
-            )}>
-              {/* Header da Conversa Ativa */}
-              <div className="p-4 bg-card border-b border-border/80 flex items-center justify-between gap-3 shrink-0">
-                <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setActiveThreadId(null)}
-                    className="md:hidden size-8 -ml-1 text-muted-foreground hover:text-foreground cursor-pointer shrink-0"
-                    title="Voltar para a lista"
-                  >
-                    <ArrowLeft className="size-4" />
-                  </Button>
-                  <div className="size-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-xs shrink-0">
-                    {(activeThread.customer?.full_name || "C")[0].toUpperCase()}
-                  </div>
-                  <div className="min-w-0">
-                    <h3 className="font-bold text-sm text-foreground truncate">
-                      {activeThread.customer?.full_name || "Cliente"}
-                    </h3>
-                    <p className="text-xs text-muted-foreground truncate">
-                      {activeThread.customer?.email || activeThread.customer?.phone || "Atendimento Direto"}
-                    </p>
-                  </div>
-                </div>
+          <WhatsAppOperationsMetricsPanel />
 
-                <div className="flex items-center gap-2 shrink-0">
-                  {/* Sinalizador Janela 24h WhatsApp Meta Cloud API */}
-                  <div className="hidden sm:flex items-center gap-2 px-3 py-1 rounded-lg border text-xs font-mono font-semibold shrink-0 bg-muted/40 border-border/60">
-                    <Clock className="size-3 text-primary shrink-0" />
-                    <span className={cn(
-                      "text-xs",
-                      isWhatsAppWindowOpen ? "text-emerald-600 dark:text-emerald-400 font-bold" : "text-muted-foreground"
-                    )}>
-                      {isWhatsAppWindowOpen ? "Janela 24h Aberta" : "Janela 24h Expirada"}
-                    </span>
-                  </div>
-
-                  {/* Acesso Rápido ao Ticket SAC Vinculado */}
-                  {linkedTicket && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setSelectedTicket(linkedTicket);
-                        setTicketModalOpen(true);
-                      }}
-                      className="h-8 rounded-lg text-xs font-mono font-bold gap-2 border-amber-500/40 text-amber-700 dark:text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 cursor-pointer"
-                    >
-                      <ShieldCheck className="size-3.5" />
-                      <span>Ticket #{linkedTicket.ticket_id?.slice(0, 8)}</span>
-                    </Button>
-                  )}
-
-                  <Select
-                    value={activeThread.department || "geral"}
-                    onValueChange={handleDepartmentChange}
-                  >
-                    <SelectTrigger className="h-8 rounded-lg text-xs w-36">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="rounded-lg">
-                      <SelectItem value="vendas">Vendas</SelectItem>
-                      <SelectItem value="suporte">Suporte / SAC</SelectItem>
-                      <SelectItem value="financeiro">Financeiro</SelectItem>
-                      <SelectItem value="logistica">Logística</SelectItem>
-                      <SelectItem value="geral">Geral</SelectItem>
-                    </SelectContent>
-                  </Select>
-
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setShowCustomer360(!showCustomer360)}
-                    className={`h-8 text-xs font-bold rounded-lg ${showCustomer360 ? "bg-muted" : ""}`}
-                  >
-                    <UserCheck className="size-3.5 mr-1" />
-                    Perfil 360º
-                  </Button>
-                </div>
-              </div>
-
-              {/* Timeline */}
-              <div
-                ref={chatContainerRef}
-                className="flex-1 space-y-4 overflow-y-auto no-scrollbar p-4"
-              >
-                {loadingMessages ? (
-                  <div className="flex items-center justify-center h-full">
-                    <Loader2 className="size-6 animate-spin text-primary" />
-                  </div>
-                ) : messages.length === 0 ? (
-                  <div className="text-center py-12 text-muted-foreground text-xs">
-                    Nenhuma mensagem nesta conversa ainda.
-                  </div>
-                ) : (
-                  messages.map((msg) => {
-                    const isStaff = msg.is_staff_reply;
-
-                    // Card de Pedido
-                    if (msg.message_type === "order_card" && msg.payload?.order) {
-                      return (
-                        <div
-                          key={msg.id}
-                          className={`flex ${isStaff ? "justify-end" : "justify-start"} w-full`}
-                        >
-                          <OrderMessageCard order={msg.payload.order} isStaff={true} />
-                        </div>
-                      );
-                    }
-
-                    // Card de Nota Interna (Whisper / Gestão Assistida)
-                    if (msg.payload?.is_whisper || (msg.message_type === "system_event" && msg.payload?.is_whisper)) {
-                      return (
-                        <div key={msg.id} className="w-full flex justify-center my-2">
-                          <div className="max-w-lg w-full p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200 text-xs space-y-1 shadow-2xs">
-                            <div className="flex items-center justify-between text-xs font-bold">
-                              <span className="flex items-center gap-2 text-amber-700 dark:text-amber-300">
-                                <Lock className="size-3.5 shrink-0" />
-                                <span>Nota Interna da Equipe (Whisper)</span>
-                              </span>
-                              <span className="font-mono text-xs opacity-75">{formatDate(msg.created_at)}</span>
-                            </div>
-                            <p className="whitespace-pre-wrap leading-relaxed font-medium">{msg.message || msg.payload?.text}</p>
-                            <span className="text-xs opacity-70 block text-right italic">Invisível para o cliente no WhatsApp</span>
-                          </div>
-                        </div>
-                      );
-                    }
-
-                    // Card de Ticket SAC / RMA
-                    if (msg.message_type === "rma_ticket" && msg.payload?.ticket_id) {
-                      return (
-                        <div
-                          key={msg.id}
-                          className={`flex ${isStaff ? "justify-end" : "justify-start"} w-full`}
-                        >
-                          <RmaMessageCard
-                            payload={msg.payload}
-                            isStaff={true}
-                            onReviewTicket={() => {
-                              setSelectedTicket(msg.payload);
-                              setTicketModalOpen(true);
-                            }}
-                          />
-                        </div>
-                      );
-                    }
-
-                    // Card Estruturado com Widgets e Ações (ia/09-chat.md)
-                    if (
-                      msg.message_type === "structured_blocks" ||
-                      (msg.payload?.blocks && msg.payload.blocks.length > 0)
-                    ) {
-                      return (
-                        <div
-                          key={msg.id}
-                          className={`flex flex-col ${isStaff ? "items-end" : "items-start"} w-full`}
-                        >
-                          <div
-                            className={`max-w-[95%] sm:max-w-lg rounded-lg p-4 text-xs shadow-xs ${
-                              isStaff
-                                ? "bg-card border border-border/80 text-foreground rounded-tr-xs"
-                                : "bg-card border border-border/80 text-foreground rounded-tl-xs"
-                            }`}
-                          >
-                            <StructuredMessageView
-                              payload={msg.payload || { text: msg.message }}
-                              isStaff={isStaff}
-                            />
-                          </div>
-                          <span className="text-xs text-muted-foreground mt-1 px-1">
-                            {isStaff ? "Equipe / Você" : (activeThread.customer?.full_name || "Cliente")} •{" "}
-                            {formatDate(msg.created_at)}
-                          </span>
-                        </div>
-                      );
-                    }
-
-                    // Balão Normal
-                    return (
-                      <div
-                        key={msg.id}
-                        className={`flex flex-col ${isStaff ? "items-end" : "items-start"}`}
-                      >
-                        <div
-                          className={`max-w-[85%] sm:max-w-md rounded-lg p-4 text-xs leading-relaxed shadow-xs ${
-                            isStaff
-                              ? "bg-primary text-primary-foreground font-medium rounded-tr-xs"
-                              : "bg-card border border-border/80 text-foreground rounded-tl-xs"
-                          }`}
-                        >
-                          <p className="whitespace-pre-wrap break-words">{msg.message}</p>
-                        </div>
-                        <span className="text-xs text-muted-foreground mt-1 px-1">
-                          {isStaff ? "Equipe / Você" : (activeThread.customer?.full_name || "Cliente")} •{" "}
-                          {formatDate(msg.created_at)}
-                        </span>
-                      </div>
-                    );
-                  })
-                )}
-              </div>
-
-              {/* Input de Envio do Atendente & Macros Rápidas */}
-              <div className="bg-card border-t border-border/80 p-3 space-y-2">
-                {/* Trilho de Respostas Rápidas / Macros */}
-                <div role="tablist" aria-label="Atalhos Rápidos" className="tab-list flex items-center gap-2 overflow-x-auto no-scrollbar">
-                  <span className="text-xs text-muted-foreground shrink-0 font-mono">Macros:</span>
-                  {[
-                    { cmd: "/ola", text: "Olá! Seja muito bem-vindo ao atendimento da nossa empresa. Como podemos te ajudar?", label: "Saudação" },
-                    { cmd: "/pix", text: "Nossa chave PIX oficial é confirmada diretamente no pedido. O comprovante é validado automaticamente!", label: "Chave PIX" },
-                    { cmd: "/horarios", text: "Nosso horário de atendimento é de Segunda a Sexta das 08h às 18h e Sábados das 08h às 12h.", label: "Horários" },
-                    { cmd: "/rastreio", text: "Seu pedido está em processamento logístico e você pode acompanhar pelo link de rastreio acima.", label: "Rastreio" },
-                  ].map((macro) => (
-                    <button
-                      key={macro.cmd}
-                      type="button"
-                      onClick={() => setText(macro.text)}
-                      className="px-2 py-1 rounded-lg text-xs font-mono font-medium bg-muted/50 hover:bg-muted border border-border/60 text-muted-foreground hover:text-foreground shrink-0 transition-colors cursor-pointer"
-                    >
-                      {macro.cmd} <span className="text-xs opacity-75">({macro.label})</span>
-                    </button>
-                  ))}
-                </div>
-
-                <form
-                  onSubmit={handleSend}
-                  className="flex items-center gap-2"
-                >
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      className="size-10 rounded-lg border border-border/80 hover:bg-muted text-muted-foreground hover:text-foreground shrink-0 cursor-pointer"
-                      title="Inserir Widget ou Ação"
-                    >
-                      <Plus className="size-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start" className="w-56 rounded-lg">
-                    <DropdownMenuItem
-                      onClick={() =>
-                        handleSendStructuredBlock(
-                          {
-                            type: "order_tracker",
-                            data: {
-                              order_id: activeThread.order_id || activeThread.id,
-                              current_stage: "dispatched",
-                              total_cents: 14900,
-                              delivery_address: "Entrega em andamento",
-                            },
-                          },
-                          undefined,
-                          "Status do pedido atualizado:",
-                        )
-                      }
-                      className="cursor-pointer text-xs flex items-center gap-2"
-                    >
-                      <Package className="size-4 text-primary" />
-                      <span>Rastreio de Pedido</span>
-                    </DropdownMenuItem>
-
-                    <DropdownMenuItem
-                      onClick={() =>
-                        handleSendStructuredBlock(
-                          {
-                            type: "proposal_card",
-                            data: {
-                              proposal_id: activeThread.id,
-                              title: "Proposta Comercial",
-                              total_cents: 29900,
-                              installments: "Em até 3x sem juros",
-                              valid_until: "Válida por 48 horas",
-                              status: "Ativa",
-                            },
-                          },
-                          {
-                            id: `accept-${activeThread.id}`,
-                            label: "Aceitar Proposta",
-                            action_type: "confirm_proposal",
-                            payload: { thread_id: activeThread.id },
-                          },
-                          "Segue a proposta para sua aprovação:",
-                        )
-                      }
-                      className="cursor-pointer text-xs flex items-center gap-2"
-                    >
-                      <FileText className="size-4 text-primary" />
-                      <span>Proposta Comercial</span>
-                    </DropdownMenuItem>
-
-                    <DropdownMenuItem
-                      onClick={() =>
-                        handleSendStructuredBlock(
-                          {
-                            type: "metric_widget",
-                            data: {
-                              title: "Taxa de Resolução",
-                              value: "98.5%",
-                              change: 2.4,
-                              trend: "up",
-                              timeframe: "Últimos 30 dias",
-                              variant: "compact",
-                              status: "success",
-                            },
-                          },
-                          undefined,
-                          "Métricas de atendimento:",
-                        )
-                      }
-                      className="cursor-pointer text-xs flex items-center gap-2"
-                    >
-                      <Target className="size-4 text-primary" />
-                      <span>Métrica de Desempenho</span>
-                    </DropdownMenuItem>
-
-                    <DropdownMenuItem
-                      onClick={() =>
-                        handleSendStructuredBlock(
-                          {
-                            type: "task_card",
-                            data: {
-                              id: `task-${Date.now()}`,
-                              title: "Acompanhamento de Atendimento",
-                              category: "Suporte",
-                              priority: "high",
-                              status: "in_progress",
-                              dueDate: "Hoje",
-                            },
-                          },
-                          undefined,
-                          "Tarefa vinculada:",
-                        )
-                      }
-                      className="cursor-pointer text-xs flex items-center gap-2"
-                    >
-                      <CheckCircle2 className="size-4 text-primary" />
-                      <span>Tarefa de Atendimento</span>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-
-                <Button
-                  type="button"
-                  variant={isWhisperMode ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setIsWhisperMode(!isWhisperMode)}
-                  className={cn(
-                    "h-10 px-3 rounded-lg text-xs font-bold gap-2 shrink-0 transition-all cursor-pointer focus-visible:ring-2",
-                    isWhisperMode
-                      ? "bg-amber-500 hover:bg-amber-600 text-white border-amber-600 shadow-xs"
-                      : "border-border/80 hover:bg-muted text-muted-foreground"
-                  )}
-                  title={isWhisperMode ? "Modo Whisper Ativo (Nota Interna da Equipe)" : "Alternar para Nota Interna"}
-                >
-                  {isWhisperMode ? <Lock className="size-3.5" /> : <EyeOff className="size-3.5" />}
-                  <span className="hidden sm:inline">{isWhisperMode ? "Nota Interna" : "Whisper"}</span>
-                </Button>
-
-                <Input
-                  value={text}
-                  onChange={(e) => setText(e.target.value)}
-                  placeholder={isWhisperMode ? "Escrever nota interna (visível apenas para a equipe)..." : "Escreva uma resposta para o cliente..."}
-                  className={cn(
-                    "flex-1 h-10 rounded-lg text-xs transition-colors",
-                    isWhisperMode
-                      ? "bg-amber-500/10 border-amber-500/40 text-amber-900 dark:text-amber-100 placeholder:text-amber-700/60 dark:placeholder:text-amber-300/60"
-                      : "bg-muted/30"
-                  )}
-                  disabled={isSending}
-                />
-                <Button
-                  type="submit"
-                  size="icon"
-                  disabled={!text.trim() || isSending}
-                  className="size-10 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 shrink-0"
-                >
-                  {isSending ? (
-                    <Loader2 className="size-4 animate-spin" />
-                  ) : (
-                    <Send className="size-4" />
-                  )}
-                </Button>
-              </form>
-              </div>
+          {/* Cards de Governança de SAC */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1">
+              <span className="text-xs text-muted-foreground font-semibold">Total de Atendimentos</span>
+              <p className="text-2xl font-bold font-mono text-foreground">{metrics?.total || 0}</p>
             </div>
-          ) : (
-            <div className="flex-1 flex flex-col items-center justify-center p-8 text-center text-muted-foreground gap-2">
-              <MessageSquare className="size-12 text-primary/30" />
-              <p className="text-sm font-bold text-foreground">Nenhuma conversa selecionada</p>
-              <p className="text-xs">Selecione uma conversa para ver as mensagens.</p>
+            <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1">
+              <span className="text-xs text-muted-foreground font-semibold">Atendimentos Abertos</span>
+              <p className="text-2xl font-bold font-mono text-primary">{metrics?.open || 0}</p>
             </div>
-          )}
-
-          {/* COLUNA 3: Perfil 360º Lateral do Cliente */}
-          {showCustomer360 && activeThread && (
-            <div className="w-80 border-l border-border/80 bg-background overflow-y-auto no-scrollbar hidden lg:block shrink-0">
-              <div className="p-3 border-b border-border/80 flex items-center justify-between">
-                <span className="text-xs font-bold text-foreground">Customer 360º</span>
-                <Badge variant="outline" className="text-xs">
-                  Auditoria e Histórico
-                </Badge>
-              </div>
-              <Customer360Sidebar
-                customerId={activeThread.customer?.id}
-                storeId={activeThread.store_id || ""}
-              />
+            <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1">
+              <span className="text-xs text-muted-foreground font-semibold">Tempo Médio 1ª Resposta</span>
+              <p className="text-2xl font-bold font-mono text-foreground">
+                {metrics?.sla_first_response_min || 3.5} min
+              </p>
             </div>
-          )}
+            <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1">
+              <span className="text-xs text-muted-foreground font-semibold">Satisfação (CSAT)</span>
+              <p className="text-2xl font-bold font-mono text-amber-500 flex items-center gap-1">
+                <Star className="size-5 fill-amber-500" />
+                <span>{metrics?.avg_rating || 4.8} / 5.0</span>
+              </p>
+            </div>
+          </div>
         </div>
       )}
 
-      {/* Sheet de Gestão de Ticket SAC / RMA */}
-      {selectedTicket && (
-        <Sheet open={ticketModalOpen} onOpenChange={setTicketModalOpen}>
-          <SheetContent side="right" size="wide" className="sm:max-w-3xl md:max-w-4xl w-full max-sm:h-full max-sm:inset-0 max-sm:rounded-none border-l p-6 overflow-y-auto no-scrollbar bg-card flex flex-col justify-between">
-            <div className="space-y-6">
-              <SheetHeader>
-                <SheetTitle className="text-base font-bold">
-                  Gerenciar Chamado #{selectedTicket.ticket_id?.slice(0, 8)}
-                </SheetTitle>
-              </SheetHeader>
+      {/* ======================================================== */}
+      {/* ABA 4: CONEXÃO WHATSAPP WEB & INSTÂNCIAS */}
+      {/* ======================================================== */}
+      {activeHubTab === "whatsapp" && (
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 bg-muted/10">
+          <div className="space-y-1">
+            <h2 className="text-base font-bold text-foreground">
+              Instâncias & Conexão WhatsApp Web
+            </h2>
+            <p className="text-xs text-muted-foreground">
+              Conecte o número de WhatsApp da sua empresa para enviar e receber mensagens diretamente no Waesy.
+            </p>
+          </div>
 
-              <div className="space-y-4 py-2 text-xs">
-                <div className="p-3 rounded-lg bg-muted/40 border border-border/80 space-y-1">
-                  <span className="font-bold text-foreground block">{selectedTicket.title}</span>
-                  <p className="text-muted-foreground">"{selectedTicket.description}"</p>
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-xs font-bold">Atualizar Status</Label>
-                  <Select value={ticketStatus} onValueChange={setTicketStatus}>
-                    <SelectTrigger className="h-10 rounded-lg text-xs">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="rounded-lg">
-                      <SelectItem value="under_review">Em Análise Técnica</SelectItem>
-                      <SelectItem value="action_required">Aguardando Resposta do Cliente</SelectItem>
-                      <SelectItem value="resolved">Aprovado e Resolvido</SelectItem>
-                      <SelectItem value="refunded">Estornado / Reembolsado</SelectItem>
-                      <SelectItem value="rejected">Rejeitado / Fora da Garantia</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-xs font-bold">Parecer da Empresa para o Cliente</Label>
-                  <Textarea
-                    value={resolutionNotes}
-                    onChange={(e) => setResolutionNotes(e.target.value)}
-                    placeholder="Explique o que foi feito ou as instruções para o cliente..."
-                    rows={4}
-                    className="rounded-lg text-xs"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <SheetFooter className="mt-6 sm:mt-0 flex-row gap-2 justify-end">
-              <Button
-                variant="ghost"
-                onClick={() => setTicketModalOpen(false)}
-                className="rounded-lg text-xs flex-1 sm:flex-none"
-                disabled={isResolvingTicket}
-              >
-                Cancelar
-              </Button>
-              <Button
-                onClick={handleResolveTicket}
-                disabled={isResolvingTicket}
-                className="rounded-lg text-xs font-bold flex-1 sm:flex-none"
-              >
-                {isResolvingTicket ? (
-                  <>
-                    <Loader2 className="size-4 animate-spin mr-2" />
-                    Salvando...
-                  </>
-                ) : (
-                  "Salvar Parecer e Notificar"
-                )}
-              </Button>
-            </SheetFooter>
-          </SheetContent>
-        </Sheet>
-      )}
-
-      {/* ── SHEET: INSPEÇÃO DE CONVERSA DO SDR ── */}
-      {selectedSdrSession && (
-        <Sheet open={sdrDrawerOpen} onOpenChange={setSdrDrawerOpen}>
-          <SheetContent side="right" className="w-full sm:max-w-lg p-0 flex flex-col bg-background">
-            <SheetHeader className="p-4 sm:p-5 border-b border-border/70 space-y-2">
-              <div className="flex items-center justify-between gap-2">
+          {/* Cards de Instâncias Conectadas */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Card de Conexão Ativa / QR Code */}
+            <div className="bg-card p-6 rounded-lg border border-border/80 space-y-5 shadow-xs">
+              <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="p-2 rounded-lg bg-primary/10 text-primary shrink-0">
-                    <Bot className="size-4" />
+                  <div className="size-10 rounded-full bg-emerald-500/10 text-emerald-600 flex items-center justify-center font-bold">
+                    <Smartphone className="size-5" />
                   </div>
                   <div>
-                    <SheetTitle className="text-sm font-bold">
-                      Diálogo SDR
-                    </SheetTitle>
-                    <p className="text-xs text-muted-foreground">
-                      {formatDate(selectedSdrSession.created_at)}
+                    <h3 className="font-bold text-sm text-foreground">WhatsApp Business</h3>
+                    <p className="text-xs text-muted-foreground font-mono">
+                      {whatsappInstances[0]?.display_phone_number || "Conectar Aparelho"}
                     </p>
                   </div>
                 </div>
 
                 <Badge
+                  variant="outline"
                   className={cn(
-                    "text-xs font-bold uppercase",
+                    "text-xs px-2 py-1 font-bold",
+                    whatsappInstances.some((i) => i.is_active && i.status === "connected")
+                      ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30"
+                      : "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30",
+                  )}
+                >
+                  {whatsappInstances.some((i) => i.is_active && i.status === "connected")
+                    ? "Conectado"
+                    : "Aguardando Leitura"}
+                </Badge>
+              </div>
+
+              {/* Instruções de Conexão WhatsApp Web */}
+              <div className="p-4 rounded-lg bg-muted/30 border border-border/60 space-y-3">
+                <h4 className="text-xs font-bold text-foreground uppercase tracking-wider">
+                  Como conectar seu WhatsApp Web no Waesy:
+                </h4>
+                <ol className="text-xs text-muted-foreground space-y-2 list-decimal list-inside leading-relaxed">
+                  <li>Abra o aplicativo do WhatsApp no celular da sua empresa.</li>
+                  <li>Toque no menu de 3 pontinhos (Android) ou Configurações (iPhone).</li>
+                  <li>Selecione <strong>Aparelhos conectados</strong> e depois <strong>Conectar um aparelho</strong>.</li>
+                  <li>Aponte a câmera do celular para o QR Code abaixo para sincronizar.</li>
+                </ol>
+              </div>
+
+              {/* Área do QR Code */}
+              <div className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-border/80 rounded-lg bg-muted/10 space-y-3">
+                <div className="size-48 bg-white p-3 rounded-lg border border-border shadow-xs flex items-center justify-center">
+                  <QrCode className="size-40 text-neutral-900" />
+                </div>
+                <p className="text-xs text-muted-foreground text-center">
+                  QR Code gerado com criptografia segura ponto a ponto.
+                </p>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => toast.success("Código QR atualizado com sucesso!")}
+                  className="rounded-lg text-xs gap-2 cursor-pointer"
+                >
+                  <RefreshCw className="size-4" />
+                  Atualizar QR Code
+                </Button>
+              </div>
+            </div>
+
+            {/* Configurações do Canal */}
+            <div className="bg-card p-6 rounded-lg border border-border/80 space-y-4 shadow-xs">
+              <h3 className="font-bold text-sm text-foreground">Diretrizes de Operação do Canal</h3>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                O ecossistema Waesy opera em conformidade com as regras de mensageria da Meta Cloud API e WhatsApp Web:
+              </p>
+
+              <div className="space-y-3 text-xs">
+                <div className="p-3 rounded-lg bg-muted/40 border border-border/50 space-y-1">
+                  <span className="font-bold text-foreground block">Janela de Conversação de 24 Horas</span>
+                  <p className="text-muted-foreground leading-relaxed">
+                    Respostas da equipe após 24h sem nova mensagem do cliente exigem envio de modelo de mensagem aprovado.
+                  </p>
+                </div>
+
+                <div className="p-3 rounded-lg bg-muted/40 border border-border/50 space-y-1">
+                  <span className="font-bold text-foreground block">Roteamento Inteligente por Setor</span>
+                  <p className="text-muted-foreground leading-relaxed">
+                    Clientes podem selecionar departamento pelo menu inicial ou ser transferidos entre atendentes.
+                  </p>
+                </div>
+
+                <div className="p-3 rounded-lg bg-muted/40 border border-border/50 space-y-1">
+                  <span className="font-bold text-foreground block">Histórico Unificado & Zero Deleção Física</span>
+                  <p className="text-muted-foreground leading-relaxed">
+                    Todas as conversas arquivadas permanecem preservadas para auditoria, histórico de pedidos e SAC.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ======================================================== */}
+      {/* ABA 5: HORÁRIOS & SETORES DE ATENDIMENTO */}
+      {/* ======================================================== */}
+      {activeHubTab === "hours" && (
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 bg-muted/10">
+          <div className="space-y-1">
+            <h2 className="text-base font-bold text-foreground">
+              Horários de Atendimento & Departamentos
+            </h2>
+            <p className="text-xs text-muted-foreground">
+              Configure os turnos em que sua equipe está disponível e a resposta automática fora de expediente.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Horários de Expediente */}
+            <div className="bg-card p-6 rounded-lg border border-border/80 space-y-4 shadow-xs">
+              <h3 className="font-bold text-sm text-foreground">Turnos de Atendimento ao Cliente</h3>
+              <div className="space-y-3 text-xs">
+                {[
+                  { day: "Segunda a Sexta", hours: "08:00 às 18:00", active: true },
+                  { day: "Sábado", hours: "08:00 às 12:00", active: true },
+                  { day: "Domingo e Feriados", hours: "Fechado", active: false },
+                ].map((item) => (
+                  <div
+                    key={item.day}
+                    className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border/50"
+                  >
+                    <div>
+                      <span className="font-bold text-foreground block">{item.day}</span>
+                      <span className="text-muted-foreground">{item.hours}</span>
+                    </div>
+                    <Badge
+                      variant="outline"
+                      className={cn(
+                        "text-xs font-semibold",
+                        item.active
+                          ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/30"
+                          : "bg-muted text-muted-foreground border-border/50",
+                      )}
+                    >
+                      {item.active ? "Ativo" : "Fechado"}
+                    </Badge>
+                  </div>
+                ))}
+              </div>
+
+              <Button asChild variant="outline" size="sm" className="w-full text-xs rounded-lg cursor-pointer">
+                <Link to="/workspace/configuracoes" search={{ tab: "horarios" } as any}>
+                  Editar Horários Detalhados no Painel da Loja
+                  <ExternalLink className="size-4 ml-1" />
+                </Link>
+              </Button>
+            </div>
+
+            {/* Mensagem Fora de Expediente */}
+            <div className="bg-card p-6 rounded-lg border border-border/80 space-y-4 shadow-xs">
+              <h3 className="font-bold text-sm text-foreground">Mensagem Automática de Ausência</h3>
+              <p className="text-xs text-muted-foreground">
+                Enviada automaticamente no WhatsApp quando o cliente enviar mensagem fora do expediente:
+              </p>
+
+              <div className="space-y-2">
+                <Textarea
+                  defaultValue="Olá! Nosso horário de atendimento é de Segunda a Sexta das 08h às 18h e Sábados das 08h às 12h. Deixe sua mensagem que responderemos assim que nossa equipe iniciar o expediente!"
+                  rows={4}
+                  className="text-xs rounded-lg bg-muted/30"
+                />
+              </div>
+
+              <Button
+                size="sm"
+                onClick={() => toast.success("Mensagem de ausência salva com sucesso!")}
+                className="rounded-lg text-xs font-semibold cursor-pointer"
+              >
+                Salvar Mensagem de Ausência
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* DRAWER / MODAL DA SESSÃO SDR SELECIONADA */}
+      {selectedSdrSession && (
+        <Sheet open={sdrDrawerOpen} onOpenChange={setSdrDrawerOpen}>
+          <SheetContent className="w-full sm:max-w-lg flex flex-col h-full p-0">
+            <SheetHeader className="p-4 border-b border-border/70 space-y-2">
+              <div className="flex items-center justify-between gap-2">
+                <SheetTitle className="text-sm font-bold flex items-center gap-2">
+                  <Bot className="size-4 text-primary" />
+                  <span>Diálogo Qualificado por IA</span>
+                </SheetTitle>
+
+                <Badge
+                  variant="outline"
+                  className={cn(
+                    "text-xs font-bold",
                     selectedSdrSession.intent_classification === "ready_to_buy"
-                      ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30"
+                      ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30"
                       : selectedSdrSession.intent_classification === "warm"
-                      ? "bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30"
-                      : "bg-muted text-muted-foreground"
+                      ? "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30"
+                      : "bg-muted text-muted-foreground",
                   )}
                 >
                   {selectedSdrSession.intent_classification === "ready_to_buy"
-                    ? "Pronto p/ Comprar"
+                    ? "Pronto para Comprar"
                     : selectedSdrSession.intent_classification === "warm"
-                    ? "Quente"
-                    : "Curioso"}
+                    ? "Lead Quente"
+                    : "Curioso / Dúvida"}
                 </Badge>
               </div>
 
@@ -1256,11 +1580,12 @@ function WorkspaceAtendimentoPage() {
                     <p className="text-xs font-bold text-foreground truncate">
                       {selectedSdrSession.classified.title}
                     </p>
-                    {selectedSdrSession.classified.price_cents !== null && selectedSdrSession.classified.price_cents !== undefined && (
-                      <p className="text-xs font-semibold text-primary font-mono">
-                        {formatMoney(selectedSdrSession.classified.price_cents)}
-                      </p>
-                    )}
+                    {selectedSdrSession.classified.price_cents !== null &&
+                      selectedSdrSession.classified.price_cents !== undefined && (
+                        <p className="text-xs font-semibold text-primary font-mono">
+                          {formatMoney(selectedSdrSession.classified.price_cents)}
+                        </p>
+                      )}
                   </div>
 
                   <Button asChild size="sm" variant="ghost" className="h-7 text-xs gap-1 rounded-lg">
@@ -1277,16 +1602,15 @@ function WorkspaceAtendimentoPage() {
                   <span className="text-xs font-bold uppercase tracking-wider text-primary block">
                     Resumo do Interesse (Gerado por IA)
                   </span>
-                  <p className="leading-relaxed text-xs">
-                    {selectedSdrSession.summary}
-                  </p>
+                  <p className="leading-relaxed text-xs">{selectedSdrSession.summary}</p>
                 </div>
               )}
             </SheetHeader>
 
             {/* Histórico das Mensagens */}
             <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-muted/20">
-              {Array.isArray(selectedSdrSession.messages_log) && selectedSdrSession.messages_log.length > 0 ? (
+              {Array.isArray(selectedSdrSession.messages_log) &&
+              selectedSdrSession.messages_log.length > 0 ? (
                 selectedSdrSession.messages_log.map((msg, i) => {
                   const isAssistant = msg.role === "assistant";
                   return (
@@ -1296,12 +1620,19 @@ function WorkspaceAtendimentoPage() {
                         "flex flex-col max-w-[85%] rounded-lg p-3 text-xs leading-relaxed",
                         isAssistant
                           ? "ml-auto bg-primary text-primary-foreground rounded-tr-xs"
-                          : "mr-auto bg-card border border-border/70 text-foreground rounded-tl-xs shadow-2xs"
+                          : "mr-auto bg-card border border-border/70 text-foreground rounded-tl-xs shadow-2xs",
                       )}
                     >
                       <div className="flex items-center justify-between gap-2 mb-1 opacity-75 text-xs font-semibold">
                         <span>{isAssistant ? "Assistente SDR (IA)" : "Cliente / Comprador"}</span>
-                        {msg.at && <span>{new Date(msg.at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</span>}
+                        {msg.at && (
+                          <span>
+                            {new Date(msg.at).toLocaleTimeString("pt-BR", {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </span>
+                        )}
                       </div>
                       <p className="whitespace-pre-line">{msg.content}</p>
                     </div>
@@ -1327,7 +1658,7 @@ function WorkspaceAtendimentoPage() {
                 }}
                 className="rounded-lg text-xs gap-2 cursor-pointer"
               >
-                <Copy className="size-3.5" />
+                <Copy className="size-4" />
                 Copiar Histórico
               </Button>
 
@@ -1337,6 +1668,67 @@ function WorkspaceAtendimentoPage() {
                 className="rounded-lg text-xs font-semibold cursor-pointer"
               >
                 Fechar
+              </Button>
+            </SheetFooter>
+          </SheetContent>
+        </Sheet>
+      )}
+
+      {/* MODAL DE RESOLUÇÃO DE TICKET SAC / RMA */}
+      {selectedTicket && (
+        <Sheet open={ticketModalOpen} onOpenChange={setTicketModalOpen}>
+          <SheetContent className="w-full sm:max-w-md flex flex-col h-full p-4 space-y-4">
+            <SheetHeader>
+              <SheetTitle className="text-base font-bold">
+                Ticket SAC #{selectedTicket.ticket_id?.slice(0, 8)}
+              </SheetTitle>
+            </SheetHeader>
+
+            <div className="space-y-4 text-xs">
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold">Status da Resolução</Label>
+                <Select value={ticketStatus} onValueChange={setTicketStatus}>
+                  <SelectTrigger className="h-9 rounded-lg text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="under_review">Em Análise</SelectItem>
+                    <SelectItem value="action_required">Ação Requerida do Cliente</SelectItem>
+                    <SelectItem value="resolved">Resolvido / Concluído</SelectItem>
+                    <SelectItem value="refunded">Reembolsado</SelectItem>
+                    <SelectItem value="rejected">Rejeitado</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold">Notas de Resolução</Label>
+                <Textarea
+                  value={resolutionNotes}
+                  onChange={(e) => setResolutionNotes(e.target.value)}
+                  placeholder="Explique a conclusão do atendimento para histórico do cliente..."
+                  rows={4}
+                  className="text-xs rounded-lg"
+                />
+              </div>
+            </div>
+
+            <SheetFooter className="mt-auto pt-4 border-t flex-row gap-2 justify-end">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setTicketModalOpen(false)}
+                className="rounded-lg text-xs cursor-pointer"
+              >
+                Cancelar
+              </Button>
+              <Button
+                size="sm"
+                disabled={isResolvingTicket}
+                onClick={handleResolveTicket}
+                className="rounded-lg text-xs font-bold cursor-pointer"
+              >
+                {isResolvingTicket ? <Loader2 className="size-4 animate-spin" /> : "Concluir Resolução"}
               </Button>
             </SheetFooter>
           </SheetContent>

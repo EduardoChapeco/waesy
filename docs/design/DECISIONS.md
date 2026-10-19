@@ -3567,3 +3567,29 @@
 - **Fundamentação:** AGENTS.md B.1 a B.41, docs/specs/SPEC-CHAT-HUB-OMNICHANNEL-REENGINEERING.md.
 - **Consequências:** Estabelecimentos locais exibem clareza transacional sobre tempos de resposta e canais por setor, enquanto o painel de atendimento ganha ferramentas profissionais de supervisão comparáveis aos líderes de mercado (Umbler Talks, Chatwoot e Intercom).
 
+## DEC-253: Isolamento Zero-Trust de Conversas Copilot Civil vs SAC da Loja, Desacoplamento da Telemetria e Experiência WhatsApp Web Nativa
+- **Data:** 2026-10-19
+- **ID da Decisão:** DEC-253
+- **Contexto:** Auditoria forense e solicitação de urgência identificaram vazamento de conversa civil com o Waesy Copilot para o Hub de Atendimento Omnichannel da loja no Workspace (`workspace.atendimento.index.tsx`). Causa raiz: `createAiConversationThread` herdava indevidamente `identity.store_id` da loja ativa do lojista para threads civis (`ai_assistant`, `copilot`), e `listChatThreads` não excluía explicitamente threads de IA. Além disso, o painel de telemetria operacional (`WhatsAppOperationsMetricsPanel`) fora acoplado no topo da visualização de conversas, espremendo o chat e quebrando a ergonomia estilo WhatsApp Web.
+- **Decisão Adotada:**
+  1. **Isolamento Zero-Trust Multi-Tenant (`src/services/ai-conversations.functions.ts` & `src/services/chat.functions.ts`):**
+     - Em `createAiConversationThread`, threads dos tipos `ai_assistant`, `copilot` ou `project` têm `store_id` forçado estritamente a `null`.
+     - Em `listAiConversationThreads`, a busca restringe-se a threads onde o usuário é o criador (`customer_id.eq.${identity.id}` ou `recipient_profile_id.eq.${identity.id}`) e do tipo IA, sem herdar tickets de lojas por role de gerente/admin.
+     - Em `listChatThreads`, inserido filtro estrito `.not("thread_type", "in", '("ai_assistant","copilot")')` e desconsideração padrão de threads arquivadas (`.neq("status", "archived")`).
+     - Criada migração `supabase/migrations/20270119000000_isolate_copilot_and_store_chat_threads.sql` desvinculando retroativamente qualquer thread de IA com `store_id` preenchido.
+  2. **Controle Canônico de Arquivamento (Soft-Delete) & Identidade Visual:**
+     - Criada server function `archiveChatThread` (com validação RBAC e atualização de status para `archived` / `open`).
+     - Adicionado filtro de "Arquivadas" na sidebar de conversas e botão de arquivar/desarquivar no header da thread ativa.
+     - Suporte a renderização de foto real do perfil (`customer.avatar_url`) com fallback colorido de inicial e badge de canal (WhatsApp verde vs Web azul).
+  3. **Desacoplamento do Atendimento Omnichannel em 5 Abas Especializadas (`src/routes/workspace.atendimento.index.tsx`):**
+     - **Aba "Conversas"**: Visualização WhatsApp Web / Linear Inbox nativa limpa, em tela cheia (`h-[calc(100vh-theme(spacing.16))]`), sem poluição de métricas no topo. Sidebar com busca e chips de status, área central de chat com balões bidirecionais e composer tátil, e Customer 360 lateral recolhível.
+     - **Aba "Leads SDR / IA"**: Visualização dedicada das sessões de qualificação de compra com transcrição e resumos IA.
+     - **Aba "Telemetria & Filas"**: Painel dedicado contendo o `WhatsAppOperationsMetricsPanel`, Dead-letter, Fila Ativa, latência P95 e CSAT.
+     - **Aba "Conexão WhatsApp"**: Monitoramento de instâncias (Meta Cloud API / Evolution), status de conexão e guia com simulador de QR Code do WhatsApp Web.
+     - **Aba "Horários & Setores"**: Configuração de turnos de expediente por setor e mensagem de ausência automática.
+  4. **Conformidade Estrita:**
+     - TypeScript com 0 erros de compilação (`tsc --noEmit` Exit Code 0).
+     - Design Lint aprovado pela catraca (`node scripts/design-lint.mjs --ratchet` com redução de 321 violações).
+     - Testes unitários 100% aprovados (32/32 testes verdes em `chat` e `whatsapp-provider-webhook`).
+- **Fundamentação:** AGENTS.md B.1 a B.41, B.10 (Protocolo de Parada / Isolamento Multi-Tenant), B.26 (Piso 44px) e B.33 (Honestidade Transacional).
+- **Consequências:** Fim absoluto de vazamentos cross-tenant entre civil e loja; experiência de chat profissional 100% desobstruída no padrão WhatsApp Web para desktop e mobile nativo.
