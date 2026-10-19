@@ -24,7 +24,7 @@ import { listDestinations } from "@/services/travel-catalog.functions";
 import { searchAgencyGdsFlightsFn } from "@/services/infotravel";
 import { getStoreSettings } from "@/services/store.functions";
 import { NicheOperationalGuard } from "@/components/workspace/niche-operational-guard";
-import { UniversalQuoteProposalStudio } from "@/components/tourism/universal-quote-proposal-studio";
+import { UnifiedProposalWorkspace } from "@/components/tourism/unified-proposal-workspace";
 import { TravelAiImporterBanner } from "@/components/tourism/promotional-flyer/travel-ai-importer-banner";
 import { ingestTravelDocument } from "@/services/travel-canonical-pipeline.functions";
 import { formatDate } from "@/lib/datetime";
@@ -744,7 +744,7 @@ export default function AgencyQuotesPage() {
  )}
 
  {/* ── 5. Gerador Canônico Unificado de Cotação & Proposta (Web + HTML2PDF + InfoTravel + Rooming) ── */}
- <UniversalQuoteProposalStudio
+ <UnifiedProposalWorkspace
  open={isNewSheetOpen}
  onOpenChange={setIsNewSheetOpen}
  mode="kanban_lead_quote"

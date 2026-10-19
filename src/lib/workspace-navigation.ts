@@ -230,74 +230,56 @@ const GROUP_REAL_ESTATE: NavGroup = {
   ],
 };
 
-// 8. Turismo
+// 8. Turismo Canônico (4 Pilares Operacionais sem Emojis)
 const GROUP_TURISMO_COMMERCIAL: NavGroup = {
   id: "tourism-commercial",
-  label: "Comercial",
+  label: "Vendas & Atendimento",
   icon: Kanban,
   section: "niche",
   items: [
-    { path: "/workspace/comercial", label: "Funil", icon: Kanban },
-    { path: "/workspace/turismo/cotacoes", label: "Cotações", icon: Plane },
-    { path: "/workspace/turismo/propostas", label: "Propostas", icon: FileSpreadsheet },
-    { path: "/workspace/orcamentos", label: "Orçamentos", icon: FileText },
+    { path: "/workspace/turismo", label: "Funil Comercial", icon: Kanban },
+    { path: "/workspace/turismo/propostas", label: "Propostas Emitidas", icon: FileText },
+    { path: "/workspace/turismo/cotacoes", label: "Cotações Rápidas", icon: Plane },
   ],
 };
 
 const GROUP_TURISMO_OPERATIONS: NavGroup = {
   id: "tourism-trips",
-  label: "Operações",
+  label: "Viagens & Operações",
   icon: Compass,
   section: "niche",
   items: [
-    { path: "/workspace/turismo/viagens", label: "Viagens", icon: Compass },
-    { path: "/workspace/turismo/aereos", label: "Aéreos", icon: Plane },
-    { path: "/workspace/turismo/incidentes", label: "Incidentes", icon: AlertTriangle },
-    { path: "/workspace/turismo/comissoes", label: "Comissões", icon: DollarSign },
-    { path: "/workspace/turismo/documentos-ocr", label: "OCR de Documentos", icon: FileText },
-    { path: "/workspace/turismo/reacomodacao", label: "Reacomodação", icon: ShieldAlert },
-    { path: "/workspace/turismo/embarques", label: "Embarques", icon: Calendar },
-    { path: "/workspace/turismo/vouchers", label: "Vouchers", icon: Ticket },
-    { path: "/workspace/turismo/contratos", label: "Contratos", icon: FileText },
-    { path: "/workspace/turismo/vistos", label: "Vistos", icon: Globe },
-    { path: "/workspace/turismo/radar", label: "Radar", icon: Navigation },
-    { path: "/workspace/turismo/viagens?view=embarque", label: "Check-in", icon: UserCheck },
+    { path: "/workspace/turismo/viagens", label: "Viagens Confirmadas", icon: Compass },
+    { path: "/workspace/turismo/grupos", label: "Excursões & Frota", icon: Bus },
+    { path: "/workspace/turismo/vouchers", label: "Vouchers & Bilhetes", icon: Ticket },
+    { path: "/workspace/turismo/incidentes", label: "SAC & Reacomodação", icon: AlertTriangle },
+  ],
+};
+
+const GROUP_TURISMO_BOARDING: NavGroup = {
+  id: "tourism-boarding",
+  label: "Passageiros & Embarque",
+  icon: UserCheck,
+  section: "niche",
+  items: [
+    { path: "/workspace/turismo/embarques", label: "Gestão de Embarques", icon: Calendar },
+    { path: "/workspace/clientes", label: "Lista de Passageiros", icon: Users },
+    { path: "/workspace/turismo/vistos", label: "Vistos & Documentação", icon: Globe },
   ],
 };
 
 const GROUP_TURISMO_CATALOG: NavGroup = {
   id: "tourism-catalog",
-  label: "Catálogo",
+  label: "Catálogo & Parceiros",
   icon: Package,
   section: "niche",
   items: [
-    { path: "/workspace/catalogo/produtos", label: "Roteiros", icon: Package },
-    { path: "/workspace/turismo/destinos", label: "Destinos", icon: MapPin },
-    { path: "/workspace/turismo/hoteis", label: "Hotéis", icon: Building2 },
-    { path: "/workspace/turismo/fornecedores", label: "Fornecedores", icon: Building2 },
-  ],
-};
-
-const GROUP_TURISMO_FLEET_GROUPS: NavGroup = {
-  id: "tourism-fleet-groups",
-  label: "Frota",
-  icon: Bus,
-  section: "niche",
-  items: [
-    { path: "/workspace/turismo/grupos", label: "Excursões", icon: Users },
-    { path: "/workspace/turismo/frota", label: "Ônibus", icon: Bus },
-    { path: "/workspace/eventos", label: "Passeios", icon: Calendar },
-  ],
-};
-
-const GROUP_TURISMO_CLIENTS: NavGroup = {
-  id: "tourism-clients",
-  label: "Passageiros",
-  icon: Users,
-  section: "niche",
-  items: [
-    { path: "/workspace/clientes", label: "Passageiros", icon: Users },
-    { path: "/workspace/pedidos", label: "Emissões", icon: ShoppingBag },
+    { path: "/workspace/catalogo/produtos", label: "Roteiros & Pacotes", icon: Package },
+    { path: "/workspace/turismo/destinos", label: "Destinos & Atrativos", icon: MapPin },
+    { path: "/workspace/turismo/hoteis", label: "Banco de Hotéis", icon: Building2 },
+    { path: "/workspace/turismo/fornecedores", label: "Operadoras & Parceiros", icon: Building2 },
+    { path: "/workspace/turismo/contratos", label: "Contratos Turísticos", icon: FileText },
+    { path: "/workspace/turismo/comissoes", label: "Comissões & Over", icon: DollarSign },
   ],
 };
 
@@ -647,9 +629,8 @@ export function resolveWorkspaceNavigation(
       GROUP_AGENTIC_INTELLIGENCE,
       GROUP_TURISMO_COMMERCIAL,
       GROUP_TURISMO_OPERATIONS,
+      GROUP_TURISMO_BOARDING,
       GROUP_TURISMO_CATALOG,
-      GROUP_TURISMO_FLEET_GROUPS,
-      GROUP_TURISMO_CLIENTS,
       GROUP_GASTRO_CATALOG,
       GROUP_GASTRO_ORDERS,
       GROUP_RETAIL_CATALOG,
@@ -686,17 +667,12 @@ export function resolveWorkspaceNavigation(
     case "tourism":
       rawGroups = [
         GROUP_OVERVIEW,
-        GROUP_MASTER_TASKS,
-        GROUP_MASTER_INBOX,
         GROUP_TURISMO_COMMERCIAL,
         GROUP_TURISMO_OPERATIONS,
+        GROUP_TURISMO_BOARDING,
         GROUP_TURISMO_CATALOG,
-        GROUP_TURISMO_FLEET_GROUPS,
-        GROUP_TURISMO_CLIENTS,
         GROUP_TURISMO_MARKETING,
         GROUP_FINANCE_CLEAN,
-        GROUP_FISCAL_ACCOUNTING,
-        GROUP_TEAM_RH,
         GROUP_SETTINGS,
       ];
       break;
@@ -1033,9 +1009,8 @@ export function resolveWorkspaceNavigation(
         0,
         GROUP_TURISMO_COMMERCIAL,
         GROUP_TURISMO_OPERATIONS,
-        GROUP_TURISMO_CATALOG,
-        GROUP_TURISMO_FLEET_GROUPS,
-        GROUP_TURISMO_CLIENTS
+        GROUP_TURISMO_BOARDING,
+        GROUP_TURISMO_CATALOG
       );
     }
     if (enabledModules.includes("education") && !finalGroups.some((g) => g.id === "education")) {

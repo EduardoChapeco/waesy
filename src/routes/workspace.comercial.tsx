@@ -22,7 +22,7 @@ import { WorkspaceCanonicalToolbar } from "@/components/workspace/workspace-cano
 import { WorkspaceDashboardSheet } from "@/components/workspace/workspace-dashboard-sheet";
 import { KanbanColumnCustomizerModal } from "@/components/workspace/kanban/kanban-column-customizer-modal";
 import { LeadImportModal } from "@/components/commercial/lead-import-modal";
-import { LeadVisualProposalSheet } from "@/components/commercial/lead-visual-proposal-sheet";
+import { UnifiedProposalWorkspace } from "@/components/tourism/unified-proposal-workspace";
 import { LeadCommissionCalculatorSheet } from "@/components/commercial/lead-commission-calculator-sheet";
 import { LeadFlightGridSheet } from "@/components/commercial/lead-flight-grid-sheet";
 import { LeadCard } from "@/components/tourism/crm/LeadCard";
@@ -1976,12 +1976,14 @@ function WorkspaceComercialPage() {
         onSuccess={() => router.invalidate()}
       />
 
-      <LeadVisualProposalSheet
-        isOpen={!!proposalLead}
-        onClose={() => setProposalLead(null)}
+      <UnifiedProposalWorkspace
+        open={Boolean(proposalLead)}
+        onOpenChange={(open) => {
+          if (!open) setProposalLead(null);
+        }}
         lead={proposalLead}
-        storeId={storeId}
-        onSuccess={() => router.invalidate()}
+        mode="kanban_lead_quote"
+        onCreated={() => router.invalidate()}
       />
 
       <LeadCommissionCalculatorSheet

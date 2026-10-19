@@ -353,6 +353,7 @@ import { Route as WorkspaceRelatoriosMetasRouteImport } from './routes/workspace
 import { Route as WorkspaceRhPontoRouteImport } from './routes/workspace.rh.ponto'
 import { Route as WorkspaceSimlabFocusGroupRouteImport } from './routes/workspace.simlab.focus-group'
 import { Route as WorkspaceSquadsIndexRouteImport } from './routes/workspace.squads.index'
+import { Route as WorkspaceTurismoIndexRouteImport } from './routes/workspace.turismo.index'
 import { Route as WorkspaceTurismoAereosRouteImport } from './routes/workspace.turismo.aereos'
 import { Route as WorkspaceTurismoComissoesRouteImport } from './routes/workspace.turismo.comissoes'
 import { Route as WorkspaceTurismoCotacoesRouteImport } from './routes/workspace.turismo.cotacoes'
@@ -2217,6 +2218,11 @@ const WorkspaceSquadsIndexRoute = WorkspaceSquadsIndexRouteImport.update({
   path: '/',
   getParentRoute: () => WorkspaceSquadsRoute,
 } as any)
+const WorkspaceTurismoIndexRoute = WorkspaceTurismoIndexRouteImport.update({
+  id: '/turismo/',
+  path: '/turismo/',
+  getParentRoute: () => WorkspaceRoute,
+} as any)
 const WorkspaceTurismoAereosRoute = WorkspaceTurismoAereosRouteImport.update({
   id: '/turismo/aereos',
   path: '/turismo/aereos',
@@ -2952,6 +2958,7 @@ export interface FileRoutesByFullPath {
   '/workspace/pdv/': typeof WorkspacePdvIndexRoute
   '/workspace/pedidos/': typeof WorkspacePedidosIndexRoute
   '/workspace/squads/': typeof WorkspaceSquadsIndexRoute
+  '/workspace/turismo/': typeof WorkspaceTurismoIndexRoute
   '/conta/classificados/novo': typeof StoreContaClassificadosNovoRoute
   '/conta/conversas/$id': typeof StoreContaConversasIdRoute
   '/conta/pedidos/$id': typeof StoreContaPedidosIdRoute
@@ -3353,6 +3360,7 @@ export interface FileRoutesByTo {
   '/workspace/pdv': typeof WorkspacePdvIndexRoute
   '/workspace/pedidos': typeof WorkspacePedidosIndexRoute
   '/workspace/squads': typeof WorkspaceSquadsIndexRoute
+  '/workspace/turismo': typeof WorkspaceTurismoIndexRoute
   '/conta/classificados/novo': typeof StoreContaClassificadosNovoRoute
   '/conta/conversas/$id': typeof StoreContaConversasIdRoute
   '/conta/pedidos/$id': typeof StoreContaPedidosIdRoute
@@ -3765,6 +3773,7 @@ export interface FileRoutesById {
   '/workspace/pdv/': typeof WorkspacePdvIndexRoute
   '/workspace/pedidos/': typeof WorkspacePedidosIndexRoute
   '/workspace/squads/': typeof WorkspaceSquadsIndexRoute
+  '/workspace/turismo/': typeof WorkspaceTurismoIndexRoute
   '/_store/conta/classificados/novo': typeof StoreContaClassificadosNovoRoute
   '/_store/conta/conversas/$id': typeof StoreContaConversasIdRoute
   '/_store/conta/pedidos/$id': typeof StoreContaPedidosIdRoute
@@ -4177,6 +4186,7 @@ export interface FileRouteTypes {
     | '/workspace/pdv/'
     | '/workspace/pedidos/'
     | '/workspace/squads/'
+    | '/workspace/turismo/'
     | '/conta/classificados/novo'
     | '/conta/conversas/$id'
     | '/conta/pedidos/$id'
@@ -4578,6 +4588,7 @@ export interface FileRouteTypes {
     | '/workspace/pdv'
     | '/workspace/pedidos'
     | '/workspace/squads'
+    | '/workspace/turismo'
     | '/conta/classificados/novo'
     | '/conta/conversas/$id'
     | '/conta/pedidos/$id'
@@ -4989,6 +5000,7 @@ export interface FileRouteTypes {
     | '/workspace/pdv/'
     | '/workspace/pedidos/'
     | '/workspace/squads/'
+    | '/workspace/turismo/'
     | '/_store/conta/classificados/novo'
     | '/_store/conta/conversas/$id'
     | '/_store/conta/pedidos/$id'
@@ -7502,6 +7514,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WorkspaceSquadsIndexRouteImport
       parentRoute: typeof WorkspaceSquadsRoute
     }
+    '/workspace/turismo/': {
+      id: '/workspace/turismo/'
+      path: '/turismo'
+      fullPath: '/workspace/turismo/'
+      preLoaderRoute: typeof WorkspaceTurismoIndexRouteImport
+      parentRoute: typeof WorkspaceRoute
+    }
     '/workspace/turismo/aereos': {
       id: '/workspace/turismo/aereos'
       path: '/turismo/aereos'
@@ -8651,6 +8670,7 @@ interface WorkspaceRouteChildren {
   WorkspacePacotesIndexRoute: typeof WorkspacePacotesIndexRoute
   WorkspacePdvIndexRoute: typeof WorkspacePdvIndexRoute
   WorkspacePedidosIndexRoute: typeof WorkspacePedidosIndexRoute
+  WorkspaceTurismoIndexRoute: typeof WorkspaceTurismoIndexRoute
   WorkspaceBuilderDocumentIdEditorRoute: typeof WorkspaceBuilderDocumentIdEditorRoute
   WorkspaceCatalogoCategoriasIdRoute: typeof WorkspaceCatalogoCategoriasIdRoute
   WorkspaceCatalogoCategoriasNovoRoute: typeof WorkspaceCatalogoCategoriasNovoRoute
@@ -8830,6 +8850,7 @@ const WorkspaceRouteChildren: WorkspaceRouteChildren = {
   WorkspacePacotesIndexRoute: WorkspacePacotesIndexRoute,
   WorkspacePdvIndexRoute: WorkspacePdvIndexRoute,
   WorkspacePedidosIndexRoute: WorkspacePedidosIndexRoute,
+  WorkspaceTurismoIndexRoute: WorkspaceTurismoIndexRoute,
   WorkspaceBuilderDocumentIdEditorRoute: WorkspaceBuilderDocumentIdEditorRoute,
   WorkspaceCatalogoCategoriasIdRoute: WorkspaceCatalogoCategoriasIdRoute,
   WorkspaceCatalogoCategoriasNovoRoute: WorkspaceCatalogoCategoriasNovoRoute,
@@ -8933,13 +8954,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
