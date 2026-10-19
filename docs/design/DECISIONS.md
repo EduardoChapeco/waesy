@@ -1,5 +1,12 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-254: Consolidação Canônica do Pipeline de Turismo, Cockpit de Vendas e Fusão de Builders de Propostas
+- **Data:** 2026-10-19
+- **Contexto:** Auditoria de integridade operacional identificou severa fragmentação no módulo de Turismo: coexistência de 24 rotas, 3 builders concorrentes de propostas (UniversalQuoteProposalStudio, LeadVisualProposalSheet, WorkspaceProposalStudioPage), 5 grupos de menu lateral com mais de 20 subitens e desconexão entre o Kanban de leads e o fechamento da viagem.
+- **Decisão:** (1) **Fusão no Construtor Canônico (UnifiedProposalWorkspace):** Unificação dos 3 builders em componente único preservando 100% dos recursos: cálculo multi-quartos e faixas etárias, campanhas de operadoras (Orinter, FRT, Incomum, Santander), add-ons opcionais, autocomplete do banco de hotéis, leitor OCR multimodal, exportação em PDF e disparo com rastreio por WhatsApp; (2) **Cockpit de Vendas Centralizado (/workspace/turismo):** Funil comercial integrado onde o operador abre o Drawer do lead e gera propostas in-situ sem trocar de tela, com conversão automática de proposta ganha para Viagem Confirmada e Contrato; (3) **Saneamento do Menu de Navegação:** Redução dos 5 grupos para 4 pilares essenciais limpos sem emojis (Vendas & Atendimento, Operações & Viagens, Pré-Embarque & Pós-Venda, Contratos & Comissões); (4) **Preservação de Módulos Especializados:** Embarques (check-in aéreo, checklist de vistos, vacinas, malas), Gestão de Contratos e Financeiro da Venda mantidos como ferramentas avançadas dedicadas conectadas ao fluxo principal.
+- **Fundamentação:** AGENTS.md B.1 a B.12, B.8, B.14, B.20, B.25, B.28, B.36; docs/specs/SPEC-TURISMO-UNIFIED-PIPELINE-AND-BUILDER-CONSOLIDATION.md; WCAG 2.2 AA.
+- **Consequências:** Erradicação de telas concorrentes, fluxo comercial contínuo de ponta a ponta sem digitação dupla e menu lateral intuitivo e profissional.
+
 ## DEC-253: Auditoria Sistêmica Real, Confronto Adversarial do Conselho Executivo e Plano Mestre de Microfases
 - **Data:** 2026-10-19
 - **Contexto:** Solicitação executiva determinando a interrupção imediata de adições superficiais e o acionamento do Conselho de Agentes em modo de auditoria sistêmica profunda sobre o código real do repositório, inventariando 411 rotas, 254 arquivos BFF (1.908 server functions), 784 componentes de UI, 515 migrações SQL e 323 suítes de teste.
