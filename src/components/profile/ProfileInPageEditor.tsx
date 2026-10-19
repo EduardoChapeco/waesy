@@ -1,44 +1,60 @@
 import React, { useState, useEffect, useRef } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import { ImageUpload } from "@/components/ui/image-upload";
-import { RichBioContent } from "@/components/profile/RichBioContent";
+import { Switch } from "@/components/ui/switch";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { CitySelect } from "@/components/ui/city-select";
+import { ImageCropperDialog } from "@/components/ui/image-cropper-dialog";
+import {
+  ProfessionalResumeEditor,
+  ResumeDataDTO,
+} from "@/components/profile/professional-resume-editor";
 import { updateProfile } from "@/services/auth.functions";
 import {
   upsertCreatorProfile,
   saveCreatorShowcaseSettings,
   togglePartnerStoreConnection,
 } from "@/services/affiliates.functions";
+import { uploadProfileMediaDirect } from "@/services/storage.functions";
 import { toast } from "sonner";
 import { useRouter } from "@tanstack/react-router";
+import { cn } from "@/lib/utils";
 import {
   User,
-  Link2,
+  Briefcase,
   ShoppingBag,
+  Link as LinkIcon,
+  Lock,
   Camera,
   Trash2,
-  Plus,
   Check,
-  Store,
+  Plus,
+  ShieldCheck,
+  Building2,
+  Sparkles,
   ArrowUp,
   ArrowDown,
-  Building2,
-  X,
+  Store,
+  ExternalLink,
+  Loader2,
 } from "lucide-react";
-
-const DEFAULT_SHOWCASE_ORDER = ["banner", "own_brands", "stores", "products", "events"];
-
-const SHOWCASE_SECTION_LABELS: Record<string, string> = {
-  banner: "Banner de Destaque (16:9)",
-  own_brands: "Minhas Próprias Marcas",
-  stores: "Lojas Parceiras Comissionadas",
-  products: "Produtos Recomendados Fixados",
-  events: "Agenda & Eventos",
-};
 
 export interface ProfileInPageEditorProps {
   isOpen: boolean;
@@ -50,7 +66,47 @@ export interface ProfileInPageEditorProps {
   availableStores?: any[];
   ownBrandStores?: any[];
   pinnedProducts?: any[];
-  initialTab?: "identidade" | "links" | "vitrine";
+  initialTab?: "identidade" | "curriculo" | "vitrine" | "links" | "privacidade";
+}
+
+const DEFAULT_SHOWCASE_ORDER = [
+  "banner",
+  "own_brands",
+  "stores",
+  "products",
+  "events",
+];
+
+const SHOWCASE_SECTION_LABELS: Record<string, string> = {
+  banner: "Banner de Destaque (16:9)",
+  own_brands: "Minhas Próprias Marcas",
+  stores: "Lojas Parceiras Comissionadas",
+  products: "Produtos Recomendados Fixados",
+  events: "Agenda & Eventos",
+};
+
+function maskCpf(value: string): string {
+  const digits = value.replace(/\D/g, "").slice(0, 11);
+  return digits
+    .replace(/(\d{3})(\d)/, "$1.$2")
+    .replace(/(\d{3})\.(\d{3})(\d)/, "$1.$2.$3")
+    .replace(/(\d{3})\.(\d{3})\.(\d{3})(\d)/, "$1.$2.$3-$4");
+}
+
+function maskPhone(value: string): string {
+  const digits = value.replace(/\D/g, "").slice(0, 11);
+  if (digits.length <= 10) {
+    return digits.replace(/(\d{2})(\d{4})(\d{0,4})/, "($1) $2-$3").trim();
+  }
+  return digits.replace(/(\d{2})(\d{5})(\d{0,4})/, "($1) $2-$3").trim();
+}
+
+function normalizeGenderValue(g?: string): "feminino" | "masculino" | "outro" | "prefiro_nao_dizer" {
+  if (!g || g === "not_informed") return "prefiro_nao_dizer";
+  if (g === "female" || g === "feminino") return "feminino";
+  if (g === "male" || g === "masculino") return "masculino";
+  if (g === "other" || g === "non_binary" || g === "outro") return "outro";
+  return "prefiro_nao_dizer";
 }
 
 export function ProfileInPageEditor({
@@ -66,28 +122,49 @@ export function ProfileInPageEditor({
   initialTab = "identidade",
 }: ProfileInPageEditorProps) {
   const router = useRouter();
-  const containerRef = useRef<HTMLElement | null>(null);
+
+  // Abas canônicas
+  const effectiveInitialTab =
+    initialTab === "curriculo" && isBrandPersonaView
+      ? "vitrine"
+      : initialTab === "vitrine" && !isBrandPersonaView
+      ? "curriculo"
+      : initialTab;
+  const [activeTab, setActiveTab] = useState<string>(effectiveInitialTab);
+
+  const [isSaving, setIsSaving] = useState(false);
 
   // 1. Identidade e Visual
   const [fullName, setFullName] = useState("");
   const [username, setUsername] = useState("");
-  const [occupation, setOccupation] = useState("");
+  const [cpf, setCpf] = useState("");
+  const [phone, setPhone] = useState("");
+  const [birthDate, setBirthDate] = useState("");
+  const [gender, setGender] = useState<"feminino" | "masculino" | "outro" | "prefiro_nao_dizer">("prefiro_nao_dizer");
+  const [city, setCity] = useState("");
+  const [state, setState] = useState("SC");
   const [bio, setBio] = useState("");
+  const [occupation, setOccupation] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
   const [coverUrl, setCoverUrl] = useState("");
-  const [city, setCity] = useState("");
-  const [state, setState] = useState("");
-  const [phone, setPhone] = useState("");
 
-  // 2. Links Sociais & BioLinks
-  const [website, setWebsite] = useState("");
-  const [instagram, setInstagram] = useState("");
-  const [biolinks, setBiolinks] = useState<Array<{ id: string; label: string; url: string }>>([]);
-  const [newLinkLabel, setNewLinkLabel] = useState("");
-  const [newLinkUrl, setNewLinkUrl] = useState("");
+  // 2. Currículo / Perfil Profissional (Civil)
+  const [resumeData, setResumeData] = useState<ResumeDataDTO>({
+    headline: "",
+    summary: "",
+    hiringStatus: "open_to_work",
+    skills: [],
+    availability: {},
+    experiences: [],
+    educations: [],
+    certifications: [],
+    projects: [],
+    volunteering: [],
+    causes: [],
+    languages: [],
+  });
 
-  // 3. Vitrine Comercial & Afiliado Manager
-  const [isAffiliateEnabled, setIsAffiliateEnabled] = useState(false);
+  // 3. Vitrine Comercial (Marca / Criador)
   const [stageName, setStageName] = useState("");
   const [creatorNiche, setCreatorNiche] = useState("Geral");
   const [showcaseBannerUrl, setShowcaseBannerUrl] = useState("");
@@ -97,105 +174,247 @@ export function ProfileInPageEditor({
   const [selectedPartnerStoreIds, setSelectedPartnerStoreIds] = useState<string[]>([]);
   const [showcaseOrder, setShowcaseOrder] = useState<string[]>(DEFAULT_SHOWCASE_ORDER);
 
-  const [isSaving, setIsSaving] = useState(false);
-  const [activeTab, setActiveTab] = useState<"identidade" | "links" | "vitrine">(initialTab);
+  // 4. Links & Redes Sociais
+  const [website, setWebsite] = useState("");
+  const [instagram, setInstagram] = useState("");
+  const [biolinks, setBiolinks] = useState<
+    Array<{
+      id: string;
+      label: string;
+      title?: string;
+      url: string;
+      imageUrl?: string;
+      isHighlight?: boolean;
+    }>
+  >([]);
+  const [newLinkLabel, setNewLinkLabel] = useState("");
+  const [newLinkUrl, setNewLinkUrl] = useState("");
+  const [newLinkImage, setNewLinkImage] = useState("");
+  const [isUploadingBiolinkImage, setIsUploadingBiolinkImage] = useState(false);
+
+  // 5. Privacidade
+  const [isAnonymous, setIsAnonymous] = useState(false);
+  const [hideLocation, setHideLocation] = useState(false);
+
+  // Recorte de Mídia (Avatar 1:1, Capa 21:9, Banner 16:9)
+  const [cropperOpen, setCropperOpen] = useState(false);
+  const [cropperSrc, setCropperSrc] = useState<string | null>(null);
+  const [cropperType, setCropperType] = useState<"avatar" | "cover" | "showcase_banner">("avatar");
+  const [isUploadingMedia, setIsUploadingMedia] = useState(false);
+
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+  const coverInputRef = useRef<HTMLInputElement>(null);
+  const showcaseBannerInputRef = useRef<HTMLInputElement>(null);
+  const biolinkImageInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (isOpen && profile) {
       if (isBrandPersonaView && creatorProfile) {
         setFullName(creatorProfile.stage_name || creatorProfile.name || profile.full_name || "");
-        setUsername(creatorProfile.handle || profile.username || "");
+        setUsername(
+          creatorProfile.handle ||
+          profile.username ||
+          ""
+        );
+        setCpf(profile.cpf ? maskCpf(profile.cpf) : "");
+        setPhone(profile.phone ? maskPhone(profile.phone) : "");
+        setCity(creatorProfile.city || profile.city || "");
+        setState(creatorProfile.state || profile.state || "SC");
+        setBio(creatorProfile.bio || profile.bio || "");
         setOccupation(creatorProfile.category || creatorProfile.niche || "Marca");
-        setBio(creatorProfile.bio || "");
         setAvatarUrl(creatorProfile.avatar_url || profile.avatar_url || "");
         setCoverUrl(creatorProfile.cover_url || profile.cover_url || "");
-      } else {
-        setFullName(profile.full_name || "");
-        setUsername(profile.username || "");
-        setOccupation(profile.occupation || "");
-        setBio(profile.bio || "");
-        setAvatarUrl(profile.avatar_url || "");
-        setCoverUrl(profile.cover_url || "");
-      }
-
-      setCity(profile.city || "");
-      setState(profile.state || "");
-      setPhone(profile.phone || "");
-      setWebsite(creatorProfile?.social_links?.website || profile.website || "");
-      setInstagram(creatorProfile?.social_links?.instagram || profile.instagram || "");
-
-      if (Array.isArray(profile.biolinks)) {
-        setBiolinks(
-          profile.biolinks.map((b: any, i: number) => ({
-            id: b.id || `link-${i}`,
-            label: b.label || b.title || "Link",
-            url: b.url || "",
-          })),
+        setShowcaseBannerUrl(creatorProfile.banner_url || "");
+        setShowcaseBannerTitle(creatorProfile.banner_title || "");
+        setShowcaseBannerLink(creatorProfile.banner_link || "");
+        setCreatorNiche(creatorProfile.niche || creatorProfile.category || "Geral");
+        setStageName(creatorProfile.stage_name || creatorProfile.name || "");
+        setSelectedPartnerStoreIds(creatorProfile.partner_store_ids || []);
+        setSelectedOwnBrandIds(
+          creatorProfile.social_links?.own_brand_store_ids ||
+          creatorProfile.own_brand_store_ids ||
+          []
+        );
+        setShowcaseOrder(
+          creatorProfile.showcase_order && creatorProfile.showcase_order.length > 0
+            ? creatorProfile.showcase_order
+            : DEFAULT_SHOWCASE_ORDER
         );
       } else {
-        setBiolinks([]);
+        setFullName(profile.full_name || profile.fullName || "");
+        setUsername(profile.username || "");
+        setCpf(profile.cpf ? maskCpf(profile.cpf) : "");
+        setPhone(profile.phone ? maskPhone(profile.phone) : "");
+        setBirthDate(profile.birth_date || profile.birthDate || "");
+        setGender(normalizeGenderValue(profile.gender));
+        setCity(profile.city || "");
+        setState(profile.state || "SC");
+        setBio(profile.bio || "");
+        setOccupation(profile.occupation || "");
+        setAvatarUrl(profile.avatar_url || profile.avatarUrl || "");
+        setCoverUrl(profile.cover_url || profile.coverUrl || "");
       }
 
-      const hasCreatorRecord = Boolean(creatorProfile?.id || isCreator);
-      setIsAffiliateEnabled(hasCreatorRecord);
-      setStageName(creatorProfile?.stage_name || profile.full_name || "");
-      setCreatorNiche(creatorProfile?.category || creatorProfile?.niche || profile.occupation || "Geral");
-      setShowcaseBannerUrl(creatorProfile?.banner_url || profile.featured_banner_url || "");
-      setShowcaseBannerTitle(creatorProfile?.banner_title || "");
-      setShowcaseBannerLink(creatorProfile?.banner_link || profile.featured_banner_link || "");
+      setWebsite(profile.website || creatorProfile?.social_links?.website || "");
+      setInstagram(
+        profile.instagram ||
+        creatorProfile?.social_links?.instagram ||
+        ""
+      );
+      setBiolinks(Array.isArray(profile.biolinks) ? profile.biolinks : []);
+      setIsAnonymous(profile.is_anonymous ?? profile.isAnonymous ?? false);
+      setHideLocation(profile.hide_location ?? profile.hideLocation ?? false);
 
-      const savedOwnBrands =
-        Array.isArray(creatorProfile?.own_brand_store_ids)
-          ? creatorProfile.own_brand_store_ids
-          : Array.isArray(creatorProfile?.social_links?.own_brand_store_ids)
-            ? creatorProfile.social_links.own_brand_store_ids
-            : ownBrandStores.map((s: any) => s.id);
-      setSelectedOwnBrandIds(savedOwnBrands);
+      const rawResume = profile.resume_data || {};
+      setResumeData({
+        headline: rawResume.headline || "",
+        summary: rawResume.summary || "",
+        hiringStatus: rawResume.hiringStatus || "open",
+        skills: Array.isArray(rawResume.skills)
+          ? rawResume.skills
+          : typeof rawResume.skillsString === "string"
+          ? rawResume.skillsString.split(",").map((s: string) => s.trim()).filter(Boolean)
+          : [],
+        availability: rawResume.availability || {},
+        experiences: Array.isArray(rawResume.experiences) ? rawResume.experiences : [],
+        educations: Array.isArray(rawResume.educations) ? rawResume.educations : [],
+        certifications: Array.isArray(rawResume.certifications) ? rawResume.certifications : [],
+        projects: Array.isArray(rawResume.projects) ? rawResume.projects : [],
+        volunteering: Array.isArray(rawResume.volunteering) ? rawResume.volunteering : [],
+        causes: Array.isArray(rawResume.causes) ? rawResume.causes : [],
+        languages: Array.isArray(rawResume.languages) ? rawResume.languages : [],
+      });
 
-      const savedPartners = Array.isArray(creatorProfile?.partner_store_ids)
-        ? creatorProfile.partner_store_ids
-        : [];
-      setSelectedPartnerStoreIds(savedPartners);
-
-      if (Array.isArray(creatorProfile?.showcase_order) && creatorProfile.showcase_order.length > 0) {
-        const mergedOrder = [...creatorProfile.showcase_order];
-        for (const sec of DEFAULT_SHOWCASE_ORDER) {
-          if (!mergedOrder.includes(sec)) mergedOrder.push(sec);
-        }
-        setShowcaseOrder(mergedOrder);
-      } else {
-        setShowcaseOrder(DEFAULT_SHOWCASE_ORDER);
-      }
-
-      setActiveTab(initialTab);
-      setTimeout(() => {
-        containerRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
-      }, 60);
+      setActiveTab(effectiveInitialTab);
     }
-  }, [isOpen, profile, creatorProfile, isCreator, isBrandPersonaView, initialTab, ownBrandStores]);
+  }, [isOpen, profile, creatorProfile, isBrandPersonaView, effectiveInitialTab]);
+
+  const handleFileSelected = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    type: "avatar" | "cover" | "showcase_banner"
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      setCropperSrc(reader.result as string);
+      setCropperType(type);
+      setCropperOpen(true);
+    };
+    reader.readAsDataURL(file);
+    e.target.value = "";
+  };
+
+  const handleCropComplete = async (croppedBlob: Blob) => {
+    setCropperOpen(false);
+    setIsUploadingMedia(true);
+
+    try {
+      const type = cropperType;
+      const base64Data = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(croppedBlob);
+      });
+
+      const res = await uploadProfileMediaDirect({
+        data: {
+          fileName: `profile_${type}_${Date.now()}.png`,
+          fileType: "image/png",
+          base64Data,
+          target:
+            type === "avatar"
+              ? isBrandPersonaView
+                ? "creator_avatar"
+                : "avatar"
+              : type === "cover"
+              ? isBrandPersonaView
+                ? "creator_cover"
+                : "cover"
+              : "biolink_banner",
+        },
+      });
+
+      if (type === "avatar") {
+        setAvatarUrl(res.publicUrl);
+        toast.success("Foto de perfil atualizada!");
+      } else if (type === "cover") {
+        setCoverUrl(res.publicUrl);
+        toast.success("Capa panorâmica atualizada!");
+      } else if (type === "showcase_banner") {
+        setShowcaseBannerUrl(res.publicUrl);
+        toast.success("Banner da vitrine atualizado!");
+      }
+    } catch (err: unknown) {
+      toast.error(
+        (err instanceof Error ? err.message : String(err)) || "Erro no upload da imagem."
+      );
+    } finally {
+      setIsUploadingMedia(false);
+    }
+  };
 
   const handleAddBiolink = () => {
     if (!newLinkLabel.trim() || !newLinkUrl.trim()) {
-      toast.error("Informe o título e a URL do link.");
+      toast.error("Informe o título e o endereço (URL) do link.");
       return;
     }
-    const cleanUrl = newLinkUrl.startsWith("http") ? newLinkUrl.trim() : `https://${newLinkUrl.trim()}`;
-    setBiolinks((prev) => [
-      ...prev,
-      { id: `link-${Date.now()}`, label: newLinkLabel.trim(), url: cleanUrl },
-    ]);
+    let url = newLinkUrl.trim();
+    if (!/^https?:\/\//i.test(url)) {
+      url = `https://${url}`;
+    }
+    const newEntry = {
+      id: `bio_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+      label: newLinkLabel.trim(),
+      title: newLinkLabel.trim(),
+      url,
+      imageUrl: newLinkImage.trim() || undefined,
+      isHighlight: false,
+    };
+    setBiolinks((prev) => [...prev, newEntry]);
     setNewLinkLabel("");
     setNewLinkUrl("");
+    setNewLinkImage("");
+    toast.success("Link adicionado.");
   };
 
   const handleRemoveBiolink = (id: string) => {
-    setBiolinks((prev) => prev.filter((item) => item.id !== id));
+    setBiolinks((prev) => prev.filter((b) => b.id !== id));
   };
 
-  const handleToggleOwnBrand = (storeId: string) => {
-    setSelectedOwnBrandIds((prev) =>
-      prev.includes(storeId) ? prev.filter((id) => id !== storeId) : [...prev, storeId],
-    );
+  const handleBiolinkImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsUploadingBiolinkImage(true);
+    try {
+      const base64Data = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+
+      const res = await uploadProfileMediaDirect({
+        data: {
+          fileName: `biolink_${Date.now()}.${file.name.split(".").pop() || "png"}`,
+          fileType: file.type || "image/png",
+          base64Data,
+          target: "biolink_banner",
+        },
+      });
+
+      setNewLinkImage(res.publicUrl);
+      toast.success("Banner do link carregado!");
+    } catch (err: unknown) {
+      toast.error(
+        (err instanceof Error ? err.message : String(err)) || "Erro no upload do banner."
+      );
+    } finally {
+      setIsUploadingBiolinkImage(false);
+      e.target.value = "";
+    }
   };
 
   const handleTogglePartnerStore = async (storeId: string) => {
@@ -203,7 +422,7 @@ export function ProfileInPageEditor({
     const nextConnected = !isCurrentlyConnected;
 
     setSelectedPartnerStoreIds((prev) =>
-      nextConnected ? [...prev, storeId] : prev.filter((id) => id !== storeId),
+      nextConnected ? [...prev, storeId] : prev.filter((id) => id !== storeId)
     );
 
     const effectiveHandle = (
@@ -231,7 +450,7 @@ export function ProfileInPageEditor({
     }
   };
 
-  const handleMoveSection = (index: number, direction: "up" | "down") => {
+  const handleMoveShowcaseSection = (index: number, direction: "up" | "down") => {
     const targetIndex = direction === "up" ? index - 1 : index + 1;
     if (targetIndex < 0 || targetIndex >= showcaseOrder.length) return;
     setShowcaseOrder((prev) => {
@@ -265,6 +484,7 @@ export function ProfileInPageEditor({
         .replace(/^@/, "");
 
       if (isBrandPersonaView) {
+        // Salvar Perfil de Marca / Criador
         await upsertCreatorProfile({
           data: {
             handle: effectiveHandle,
@@ -299,72 +519,43 @@ export function ProfileInPageEditor({
           },
         }).catch(() => {});
 
-        toast.success("Marca e vitrine atualizadas!");
+        toast.success("Perfil da marca e vitrine atualizados com sucesso!");
         onClose();
         router.invalidate();
         return;
       }
 
-      // 1. Salvar Perfil Civil
+      // Salvar Perfil Civil
       await updateProfile({
         data: {
           fullName: fullName.trim(),
-          username: username.trim() || undefined,
+          username: effectiveHandle || undefined,
+          cpf: cpf.replace(/\D/g, "") || undefined,
+          phone: phone.replace(/\D/g, "") || undefined,
+          birthDate: birthDate || undefined,
+          gender: gender || undefined,
           occupation: occupation.trim() || undefined,
           bio: bio.trim().slice(0, 280),
           avatarUrl: avatarUrl || undefined,
           coverUrl: coverUrl || undefined,
           city: city.trim() || undefined,
           state: state.trim() || undefined,
-          phone: phone.trim() || undefined,
           website: website.trim() || undefined,
           instagram: instagram.trim().replace(/^@/, "") || undefined,
           biolinks,
+          resumeData: resumeData as any,
+          isAnonymous,
+          hideLocation,
         },
       });
 
-      // 2. Se a Vitrine estiver habilitada, sincronizar configurações da vitrine
-      if (isAffiliateEnabled) {
-        await upsertCreatorProfile({
-          data: {
-            handle: effectiveHandle,
-            stageName: stageName.trim() || fullName.trim(),
-            category: creatorNiche,
-            bio: bio.trim().slice(0, 280),
-            avatarUrl: avatarUrl || undefined,
-            coverUrl: coverUrl || undefined,
-            bannerUrl: showcaseBannerUrl || undefined,
-            bannerTitle: showcaseBannerTitle.trim() || undefined,
-            bannerLink: showcaseBannerLink.trim() || undefined,
-            showcaseOrder,
-            partnerStoreIds: selectedPartnerStoreIds,
-            ownBrandStoreIds: selectedOwnBrandIds,
-            socialLinks: {
-              ...(instagram.trim() ? { instagram: instagram.trim().replace(/^@/, "") } : {}),
-              ...(website.trim() ? { website: website.trim() } : {}),
-              own_brand_store_ids: selectedOwnBrandIds,
-            },
-          },
-        });
-
-        await saveCreatorShowcaseSettings({
-          data: {
-            handle: effectiveHandle,
-            bannerUrl: showcaseBannerUrl || null,
-            bannerTitle: showcaseBannerTitle.trim() || null,
-            bannerLink: showcaseBannerLink.trim() || null,
-            showcaseOrder,
-            partnerStoreIds: selectedPartnerStoreIds,
-            ownBrandStoreIds: selectedOwnBrandIds,
-          },
-        }).catch(() => {});
-      }
-
-      toast.success("Perfil atualizado!");
+      toast.success("Perfil atualizado com sucesso!");
       onClose();
       router.invalidate();
-    } catch (err: any) {
-      toast.error(err?.message || "Erro ao salvar alterações do perfil.");
+    } catch (err: unknown) {
+      toast.error(
+        (err instanceof Error ? err.message : String(err)) || "Erro ao salvar alterações."
+      );
     } finally {
       setIsSaving(false);
     }
@@ -374,582 +565,814 @@ export function ProfileInPageEditor({
 
   const charsRemaining = 280 - (bio || "").length;
 
-  const navItems: Array<{ id: "identidade" | "links" | "vitrine"; label: string; icon: any }> = [
-    { id: "identidade", label: "Identidade", icon: User },
-    { id: "links", label: "Links e Contato", icon: Link2 },
-    { id: "vitrine", label: "Vitrine Comercial", icon: ShoppingBag },
-  ];
-
   return (
-    <section
-      ref={containerRef}
-      aria-label="Edição de perfil na página"
-      className="rounded-lg border border-primary/40 bg-card p-4 sm:p-6 space-y-6 pb-20"
-    >
-      {/* Barra Superior do Editor In-Page */}
-      <div className="flex items-center justify-between gap-3 border-b border-border/40 pb-4">
-        <div className="flex items-center gap-2 flex-wrap min-w-0">
-          <h2 className="text-base sm:text-lg font-bold text-foreground">
-            {isBrandPersonaView ? "Editar Marca" : "Editar Perfil"}
-          </h2>
-          <Badge variant="outline" className="text-xs font-mono">
-            {isBrandPersonaView ? "Marca" : "Edição na Página"}
-          </Badge>
-        </div>
+    <>
+      <Dialog open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
+        <DialogContent className="max-w-4xl max-h-[92vh] overflow-y-auto p-4 sm:p-6 md:p-8 rounded-2xl border-border/70 bg-background text-foreground shadow-2xl space-y-6">
+          <DialogHeader className="pb-2 border-b border-border/40">
+            <DialogTitle className="text-lg sm:text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
+              {isBrandPersonaView ? (
+                <>
+                  <Building2 className="size-5 text-primary" />
+                  <span>Editar Perfil de Marca</span>
+                </>
+              ) : (
+                <>
+                  <User className="size-5 text-primary" />
+                  <span>Editar Meu Perfil</span>
+                </>
+              )}
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground">
+              {isBrandPersonaView
+                ? "Atualize as informações públicas, mídias e vitrine da sua marca na comunidade."
+                : "Atualize sua identidade civil, apresentação profissional, links e privacidade."}
+            </DialogDescription>
+          </DialogHeader>
 
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          onClick={onClose}
-          className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold gap-2 text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-        >
-          <X className="size-4" />
-          <span>Fechar</span>
-        </Button>
-      </div>
+          {/* ── 1. Banner de Claridade de Identidade (Padrão Canônico das Imagens 1 e 2) ── */}
+          <div className="rounded-lg border border-border/60 bg-muted/30 p-4 sm:p-5 flex items-start justify-between gap-4 text-xs text-foreground">
+            <div className="flex items-start gap-3 min-w-0">
+              <div className="size-9 rounded-lg bg-card border border-border/50 text-foreground flex items-center justify-center shrink-0 mt-0.5 shadow-2xs">
+                {isBrandPersonaView ? (
+                  <Sparkles className="size-5 text-primary" />
+                ) : (
+                  <ShieldCheck className="size-5 text-primary" />
+                )}
+              </div>
+              <div className="space-y-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <h3 className="font-bold text-foreground text-sm">
+                    {isBrandPersonaView ? "Perfil de Marca" : "Conta Civil"}
+                  </h3>
+                  <Badge variant="outline" className="text-[10px] font-mono border-primary/30 text-primary">
+                    {isBrandPersonaView ? "Marca Oficial" : "Perfil Oficial"}
+                  </Badge>
+                </div>
+                <p className="text-muted-foreground text-xs leading-relaxed">
+                  {isBrandPersonaView
+                    ? "Sua identidade comercial para vitrine, parcerias de produtos e publicações na comunidade."
+                    : "Sua identidade pessoal para compras na loja, reservas, contratos e pedidos na comunidade."}
+                </p>
+              </div>
+            </div>
+          </div>
 
-      {/* Navegação Mobile (Régua Horizontal Contínua B.39) */}
-      <div
-        role="tablist"
-        aria-label="Seções de edição"
-        className="md:hidden flex flex-nowrap overflow-x-auto no-scrollbar gap-2 p-1 rounded-lg bg-muted/40 border border-border/40 tab-list"
-      >
-        {navItems.map((item) => {
-          const IconComp = item.icon;
-          const isActive = activeTab === item.id;
-          return (
-            <button
-              key={item.id}
-              type="button"
-              role="tab"
-              aria-selected={isActive}
-              onClick={() => setActiveTab(item.id)}
-              className={`h-11 min-h-11 px-4 rounded-lg text-xs font-semibold flex items-center gap-2 shrink-0 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
-                isActive
-                  ? "bg-background text-foreground font-bold"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              <IconComp className="size-4" />
-              <span>{item.label}</span>
-            </button>
-          );
-        })}
-      </div>
+          {/* ── 2. Régua Horizontal Canônica de Abas (B.39) ── */}
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+            <div className="flex items-center overflow-x-auto no-scrollbar pb-1">
+              <TabsList className="bg-transparent p-0 gap-2 h-auto flex flex-nowrap">
+                <TabsTrigger
+                  value="identidade"
+                  className="h-9 px-4 rounded-full text-xs font-semibold gap-2 data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:border-primary/20 border border-transparent text-muted-foreground hover:text-foreground cursor-pointer"
+                >
+                  <User className="size-3.5" strokeWidth={1.75} />
+                  <span>Identidade</span>
+                </TabsTrigger>
 
-      {/* Layout Bidirecional Desktop (12 Colunas) & Mobile (Bloco Direto) */}
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
-        {/* Coluna Lateral Desktop (3 Colunas) */}
-        <div className="hidden md:flex md:col-span-3 flex-col gap-2 p-2 rounded-lg bg-muted/20 border border-border/40">
-          {navItems.map((item) => {
-            const IconComp = item.icon;
-            const isActive = activeTab === item.id;
-            return (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => setActiveTab(item.id)}
-                className={`h-11 min-h-11 px-3 rounded-lg text-xs font-semibold flex items-center gap-3 text-left transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
-                  isActive
-                    ? "bg-primary/10 text-primary font-bold border border-primary/30"
-                    : "text-muted-foreground hover:bg-muted/40 hover:text-foreground"
-                }`}
-              >
-                <IconComp className="size-4 shrink-0" />
-                <span className="break-words text-wrap leading-tight">{item.label}</span>
-              </button>
-            );
-          })}
-        </div>
+                {isBrandPersonaView ? (
+                  <TabsTrigger
+                    value="vitrine"
+                    className="h-9 px-4 rounded-full text-xs font-semibold gap-2 data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:border-primary/20 border border-transparent text-muted-foreground hover:text-foreground cursor-pointer"
+                  >
+                    <ShoppingBag className="size-3.5" strokeWidth={1.75} />
+                    <span>Vitrine</span>
+                  </TabsTrigger>
+                ) : (
+                  <TabsTrigger
+                    value="curriculo"
+                    className="h-9 px-4 rounded-full text-xs font-semibold gap-2 data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:border-primary/20 border border-transparent text-muted-foreground hover:text-foreground cursor-pointer"
+                  >
+                    <Briefcase className="size-3.5" strokeWidth={1.75} />
+                    <span>Currículo</span>
+                  </TabsTrigger>
+                )}
 
-        {/* Coluna Principal de Campos Inline (9 Colunas no Desktop) */}
-        <div className="md:col-span-9 space-y-6">
-          {/* ── SEÇÃO 1: IDENTIDADE ── */}
-          {activeTab === "identidade" && (
-            <div className="space-y-5">
-              {/* Upload de Capa e Avatar em Grade Bidirecional */}
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 p-4 rounded-lg bg-muted/20 border border-border/50">
-                <div className="lg:col-span-8 space-y-2">
-                  <Label className="text-xs font-semibold">Capa Panorâmica</Label>
-                  {/* design-lint-ignore DL-02 reason:"Proporcao panoramica 4:1 da capa de perfil" expiry:"2027-12-31" */}
-                  <div className="w-full aspect-[4/1] rounded-lg border border-border/60 bg-muted/30 overflow-hidden relative flex items-center justify-center">
-                    {coverUrl ? (
-                      <img src={coverUrl} alt="Capa" className="size-full object-cover select-none" />
-                    ) : (
-                      <span className="text-xs text-muted-foreground flex items-center gap-2">
-                        <Camera className="size-4" />
-                        <span>Sem imagem de capa</span>
-                      </span>
-                    )}
+                <TabsTrigger
+                  value="links"
+                  className="h-9 px-4 rounded-full text-xs font-semibold gap-2 data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:border-primary/20 border border-transparent text-muted-foreground hover:text-foreground cursor-pointer"
+                >
+                  <LinkIcon className="size-3.5" strokeWidth={1.75} />
+                  <span>Links</span>
+                </TabsTrigger>
+
+                <TabsTrigger
+                  value="privacidade"
+                  className="h-9 px-4 rounded-full text-xs font-semibold gap-2 data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:border-primary/20 border border-transparent text-muted-foreground hover:text-foreground cursor-pointer"
+                >
+                  <Lock className="size-3.5" strokeWidth={1.75} />
+                  <span>Privacidade</span>
+                </TabsTrigger>
+              </TabsList>
+            </div>
+
+            {/* ══════════════════════════════════════════════════════════════
+                ABA 1: IDENTIDADE (Visual + Documentos e Dados)
+            ══════════════════════════════════════════════════════════════ */}
+            <TabsContent value="identidade" className="space-y-5">
+              {/* Card 1: Identidade Visual Canônica (1:1 Squircle + 21:9 Panorâmica) */}
+              <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60">
+                <div className="flex items-center justify-between pb-3 border-b border-border/40">
+                  <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
+                    <Camera className="size-4 text-primary shrink-0" />
+                    <span>Identidade Visual</span>
                   </div>
-                  <ImageUpload
-                    value={coverUrl}
-                    onChange={(url) => setCoverUrl(url || "")}
-                    bucket="user-media"
-                  />
+                  <Badge variant="outline" className="text-[10px] font-mono border-primary/30 text-primary">
+                    1:1 Squircle + 21:9 Panorâmica
+                  </Badge>
                 </div>
 
-                <div className="lg:col-span-4 space-y-2">
-                  <Label className="text-xs font-semibold">Foto de Perfil (Squircle)</Label>
-                  <div className="flex items-center gap-3">
-                    <div className="size-16 rounded-lg border border-border/60 bg-muted overflow-hidden shrink-0 flex items-center justify-center">
+                {/* Linha Canônica: Avatar Squircle 1:1 ao lado da Capa 21:9 */}
+                <div className="flex items-center gap-3 sm:gap-5 w-full">
+                  {/* Avatar Squircle 1:1 */}
+                  <div className="relative group shrink-0">
+                    <div className="size-20 sm:size-28 md:size-32 rounded-lg bg-card border-2 border-border/60 overflow-hidden flex items-center justify-center shadow-xs">
                       {avatarUrl ? (
-                        <img src={avatarUrl} alt="Avatar" className="size-full object-cover" />
+                        <img
+                          src={avatarUrl}
+                          alt="Foto de Perfil"
+                          className="size-full object-cover select-none"
+                        />
                       ) : (
-                        <User className="size-7 text-muted-foreground" />
+                        <div className="size-full bg-muted flex items-center justify-center text-xl sm:text-3xl font-black text-primary">
+                          {fullName ? fullName.charAt(0).toUpperCase() : "U"}
+                        </div>
                       )}
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <ImageUpload
-                        value={avatarUrl}
-                        onChange={(url) => setAvatarUrl(url || "")}
-                        bucket="user-media"
+
+                    <button
+                      type="button"
+                      onClick={() => avatarInputRef.current?.click()}
+                      disabled={isUploadingMedia}
+                      className="absolute inset-0 bg-black/40 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-xs font-semibold gap-1 cursor-pointer"
+                      title="Alterar Foto de Perfil (1:1)"
+                    >
+                      <Camera className="size-4 sm:size-5" />
+                      <span className="text-[10px]">Alterar</span>
+                    </button>
+                    <input
+                      ref={avatarInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleFileSelected(e, "avatar")}
+                      className="hidden"
+                    />
+                  </div>
+
+                  {/* Capa Panorâmica Canônica 21:9 ao lado */}
+                  <div className="flex-1 min-w-0 aspect-[21/9] rounded-lg bg-muted/20 relative overflow-hidden flex items-center group border border-border/40 shadow-xs">
+                    {coverUrl ? (
+                      <img
+                        src={coverUrl}
+                        alt="Capa do Perfil"
+                        className="size-full object-cover select-none"
                       />
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Nome, Usuário e Profissão */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="space-y-1">
-                  <Label htmlFor="prof-name" className="text-xs font-semibold">
-                    {isBrandPersonaView ? "Nome da Marca" : "Nome Completo"}
-                  </Label>
-                  <Input
-                    id="prof-name"
-                    value={fullName}
-                    onChange={(e) => {
-                      setFullName(e.target.value);
-                      if (isBrandPersonaView) setStageName(e.target.value);
-                    }}
-                    placeholder={isBrandPersonaView ? "Nome da Marca" : "Seu Nome"}
-                    className="h-11 min-h-11 rounded-lg"
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <Label htmlFor="prof-user" className="text-xs font-semibold">
-                    Identificador (@handle)
-                  </Label>
-                  <Input
-                    id="prof-user"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    placeholder="usuario"
-                    className="h-11 min-h-11 rounded-lg font-mono"
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <Label htmlFor="prof-occ" className="text-xs font-semibold">
-                    {isBrandPersonaView ? "Segmento" : "Profissão / Ocupação"}
-                  </Label>
-                  <Input
-                    id="prof-occ"
-                    value={occupation}
-                    onChange={(e) => setOccupation(e.target.value)}
-                    placeholder="Ex: Arquiteto, Designer"
-                    className="h-11 min-h-11 rounded-lg"
-                  />
-                </div>
-              </div>
-
-              {/* Bio Completa 280 Caracteres */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="prof-bio" className="text-xs font-semibold">
-                    Biografia (Até 280 caracteres)
-                  </Label>
-                  <span className="text-xs font-mono text-muted-foreground">
-                    {charsRemaining} disponíveis
-                  </span>
-                </div>
-                <Textarea
-                  id="prof-bio"
-                  value={bio}
-                  maxLength={280}
-                  onChange={(e) => setBio(e.target.value)}
-                  placeholder="Apresente sua trajetória, especialidades e interesses..."
-                  rows={4}
-                  className="resize-none text-xs leading-relaxed rounded-lg"
-                />
-
-                {bio.trim() && (
-                  <div className="p-3 rounded-lg bg-muted/20 border border-border/40">
-                    <RichBioContent content={bio} />
-                  </div>
-                )}
-              </div>
-
-              {/* Cidade e Estado */}
-              {!isBrandPersonaView && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <Label htmlFor="prof-city" className="text-xs font-semibold">Cidade</Label>
-                    <Input
-                      id="prof-city"
-                      value={city}
-                      onChange={(e) => setCity(e.target.value)}
-                      placeholder="Ex: Chapecó"
-                      className="h-11 min-h-11 rounded-lg"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <Label htmlFor="prof-state" className="text-xs font-semibold">Estado (UF)</Label>
-                    <Input
-                      id="prof-state"
-                      value={state}
-                      onChange={(e) => setState(e.target.value)}
-                      placeholder="SC"
-                      maxLength={2}
-                      className="h-11 min-h-11 uppercase rounded-lg"
-                    />
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* ── SEÇÃO 2: LINKS E CONTATO ── */}
-          {activeTab === "links" && (
-            <div className="space-y-5">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="space-y-1">
-                  <Label htmlFor="prof-ig" className="text-xs font-semibold">Instagram</Label>
-                  <Input
-                    id="prof-ig"
-                    value={instagram}
-                    onChange={(e) => setInstagram(e.target.value)}
-                    placeholder="@seuperfil"
-                    className="h-11 min-h-11 rounded-lg"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <Label htmlFor="prof-web" className="text-xs font-semibold">Website</Label>
-                  <Input
-                    id="prof-web"
-                    value={website}
-                    onChange={(e) => setWebsite(e.target.value)}
-                    placeholder="https://meusite.com.br"
-                    className="h-11 min-h-11 rounded-lg"
-                  />
-                </div>
-                {!isBrandPersonaView && (
-                  <div className="space-y-1">
-                    <Label htmlFor="prof-phone" className="text-xs font-semibold">WhatsApp</Label>
-                    <Input
-                      id="prof-phone"
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      placeholder="(49) 99999-9999"
-                      className="h-11 min-h-11 rounded-lg"
-                    />
-                  </div>
-                )}
-              </div>
-
-              {/* Gestor de Links Rápidos */}
-              <div className="space-y-3 pt-4 border-t border-border/40">
-                <Label className="text-xs font-semibold">Links da Bio</Label>
-                <div className="flex flex-col sm:flex-row items-center gap-2">
-                  <Input
-                    value={newLinkLabel}
-                    onChange={(e) => setNewLinkLabel(e.target.value)}
-                    placeholder="Título (ex: Portfólio)"
-                    className="h-11 min-h-11 text-xs rounded-lg"
-                  />
-                  <Input
-                    value={newLinkUrl}
-                    onChange={(e) => setNewLinkUrl(e.target.value)}
-                    placeholder="https://..."
-                    className="h-11 min-h-11 text-xs rounded-lg"
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={handleAddBiolink}
-                    className="h-11 min-h-11 px-4 shrink-0 font-semibold text-xs rounded-lg w-full sm:w-auto"
-                  >
-                    <Plus className="size-4 mr-1" />
-                    <span>Adicionar</span>
-                  </Button>
-                </div>
-
-                {biolinks.length > 0 && (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2">
-                    {biolinks.map((link) => (
-                      <div
-                        key={link.id}
-                        className="flex items-center justify-between p-3 rounded-lg bg-muted/20 border border-border/50 text-xs gap-2"
-                      >
-                        <div className="flex items-center gap-2 min-w-0 flex-1">
-                          <Link2 className="size-4 text-primary shrink-0" />
-                          <div className="min-w-0 flex-1">
-                            <p className="font-semibold text-foreground break-words text-wrap leading-tight">
-                              {link.label}
-                            </p>
-                            <p className="text-muted-foreground break-all text-xs">{link.url}</p>
-                          </div>
-                        </div>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => handleRemoveBiolink(link.id)}
-                          className="size-11 min-h-11 min-w-11 p-0 rounded-lg text-muted-foreground hover:text-destructive shrink-0"
-                          aria-label="Remover link"
-                        >
-                          <Trash2 className="size-4" />
-                        </Button>
+                    ) : (
+                      <div className="size-full bg-gradient-to-r from-muted to-muted/60 flex items-center justify-center text-muted-foreground p-3 text-center">
+                        <span className="text-xs font-medium">Sem imagem de capa (Proporção 21:9)</span>
                       </div>
-                    ))}
+                    )}
+
+                    <div className="absolute top-2.5 right-2.5 sm:top-3 sm:right-3 flex items-center gap-2">
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="secondary"
+                        onClick={() => coverInputRef.current?.click()}
+                        disabled={isUploadingMedia}
+                        className="bg-background/85 hover:bg-background text-foreground backdrop-blur-md border border-border/80 px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-xs h-9 min-h-9"
+                      >
+                        <Camera className="size-3.5" />
+                        <span className="hidden sm:inline">Alterar Capa (21:9)</span>
+                        <span className="sm:hidden">Alterar</span>
+                      </Button>
+                      {coverUrl && (
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => setCoverUrl("")}
+                          disabled={isUploadingMedia}
+                          className="bg-destructive/85 hover:bg-destructive text-destructive-foreground px-2.5 py-1.5 rounded-lg text-xs font-semibold flex items-center cursor-pointer h-9 min-h-9"
+                          title="Remover Capa"
+                        >
+                          <Trash2 className="size-3.5" />
+                        </Button>
+                      )}
+                    </div>
+                    <input
+                      ref={coverInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleFileSelected(e, "cover")}
+                      className="hidden"
+                    />
+                  </div>
+                </div>
+
+                {coverUrl && (
+                  <div className="flex justify-end pt-1">
+                    <button
+                      type="button"
+                      onClick={() => setCoverUrl("")}
+                      className="text-xs text-muted-foreground hover:text-destructive cursor-pointer transition-colors"
+                    >
+                      Remover Imagem de Capa
+                    </button>
                   </div>
                 )}
               </div>
-            </div>
-          )}
 
-          {/* ── SEÇÃO 3: VITRINE COMERCIAL ── */}
-          {activeTab === "vitrine" && (
-            <div className="space-y-5">
-              <div className="p-4 rounded-lg bg-muted/20 border border-border/50 flex items-center justify-between gap-4">
-                <div className="space-y-1">
-                  <p className="text-xs font-bold text-foreground">Habilitar Aba de Vitrine Comercial</p>
-                  <p className="text-xs text-muted-foreground">
-                    Exibe marcas próprias, lojas parceiras e produtos recomendados na sua página pública.
-                  </p>
+              {/* Card 2: Documentos & Dados Cadastrais */}
+              <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60">
+                <div className="pb-3 border-b border-border/40">
+                  <h3 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
+                    {isBrandPersonaView ? "Dados da Marca" : "Documentos & Dados"}
+                  </h3>
                 </div>
-                <Switch
-                  checked={isAffiliateEnabled}
-                  onCheckedChange={setIsAffiliateEnabled}
-                />
-              </div>
 
-              {isAffiliateEnabled && (
-                <div className="space-y-5">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-1">
-                      <Label htmlFor="creator-stage" className="text-xs font-semibold">Título da Vitrine</Label>
-                      <Input
-                        id="creator-stage"
-                        value={stageName}
-                        onChange={(e) => setStageName(e.target.value)}
-                        placeholder="Ex: Recomendações"
-                        className="h-11 min-h-11 rounded-lg"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <Label htmlFor="creator-niche" className="text-xs font-semibold">Segmento</Label>
-                      <Input
-                        id="creator-niche"
-                        value={creatorNiche}
-                        onChange={(e) => setCreatorNiche(e.target.value)}
-                        placeholder="Ex: Tecnologia, Moda"
-                        className="h-11 min-h-11 rounded-lg"
-                      />
-                    </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-semibold">
+                      {isBrandPersonaView ? "Nome da Marca / Razão Social *" : "Nome Completo *"}
+                    </Label>
+                    <Input
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      placeholder={isBrandPersonaView ? "Ex: Excelência Tour" : "Seu nome completo"}
+                      className="h-11 rounded-lg text-xs"
+                    />
                   </div>
 
-                  {/* Banner 16:9 */}
-                  <div className="space-y-3 p-4 rounded-lg bg-muted/20 border border-border/50">
-                    <Label className="text-xs font-bold text-foreground">Banner de Destaque (16:9)</Label>
-                    <ImageUpload
-                      value={showcaseBannerUrl}
-                      onChange={(url) => setShowcaseBannerUrl(url || "")}
-                      bucket="user-media"
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-semibold">Nome de Usuário (@) *</Label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-xs font-mono">
+                        @
+                      </span>
+                      <Input
+                        value={username}
+                        onChange={(e) =>
+                          setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9._]/g, ""))
+                        }
+                        placeholder="usuario"
+                        className="h-11 pl-7 rounded-lg text-xs font-mono"
+                      />
+                    </div>
+                    <p className="text-[11px] text-muted-foreground">
+                      Seu identificador único na rede comunitária.
+                    </p>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-semibold">
+                      {isBrandPersonaView ? "Documento (CNPJ ou CPF)" : "CPF (Pessoa Física)"}
+                    </Label>
+                    <Input
+                      value={cpf}
+                      onChange={(e) => setCpf(maskCpf(e.target.value))}
+                      placeholder={isBrandPersonaView ? "00.000.000/0000-00" : "000.000.000-00"}
+                      className="h-11 rounded-lg text-xs font-mono"
                     />
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                    <p className="text-[11px] text-muted-foreground">
+                      Necessário para emissão de notas fiscais, contratos e validações de segurança.
+                    </p>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-semibold">Telefone / WhatsApp</Label>
+                    <Input
+                      value={phone}
+                      onChange={(e) => setPhone(maskPhone(e.target.value))}
+                      placeholder="(00) 00000-0000"
+                      className="h-11 rounded-lg text-xs font-mono"
+                    />
+                    <p className="text-[11px] text-muted-foreground">
+                      Para confirmações de atendimento, pedidos e segurança em dois fatores.
+                    </p>
+                  </div>
+
+                  {!isBrandPersonaView ? (
+                    <>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-semibold">Data de Nascimento</Label>
+                        <Input
+                          type="date"
+                          value={birthDate}
+                          onChange={(e) => setBirthDate(e.target.value)}
+                          className="h-11 rounded-lg text-xs font-mono"
+                        />
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-semibold">Gênero</Label>
+                        <Select
+                          value={gender}
+                          onValueChange={(val: any) => setGender(val)}
+                        >
+                          <SelectTrigger className="h-11 rounded-lg text-xs">
+                            <SelectValue placeholder="Selecione o gênero" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="prefiro_nao_dizer">Prefiro não informar</SelectItem>
+                            <SelectItem value="feminino">Feminino</SelectItem>
+                            <SelectItem value="masculino">Masculino</SelectItem>
+                            <SelectItem value="outro">Outro</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="space-y-1.5 sm:col-span-2">
+                      <Label className="text-xs font-semibold">Categoria / Nicho de Atuação</Label>
+                      <Input
+                        value={occupation}
+                        onChange={(e) => setOccupation(e.target.value)}
+                        placeholder="Ex: Agência de Viagens, Gastronomia, Moda & Vestuário"
+                        className="h-11 rounded-lg text-xs"
+                      />
+                    </div>
+                  )}
+
+                  <div className="space-y-1.5 sm:col-span-2">
+                    <Label className="text-xs font-semibold">Localização (Cidade e Estado)</Label>
+                    <CitySelect
+                      stateValue={state}
+                      cityValue={city}
+                      onStateChange={setState}
+                      onCityChange={(c) => setCity(c)}
+                    />
+                  </div>
+
+                  <div className="space-y-1.5 sm:col-span-2">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-xs font-semibold">
+                        {isBrandPersonaView ? "Biografia da Marca (Apresentação)" : "Biografia Pública"}
+                      </Label>
+                      <span
+                        className={cn(
+                          "text-[10px] font-mono",
+                          charsRemaining < 20 ? "text-destructive font-bold" : "text-muted-foreground"
+                        )}
+                      >
+                        {charsRemaining} caracteres restantes
+                      </span>
+                    </div>
+                    <Textarea
+                      value={bio}
+                      onChange={(e) => setBio(e.target.value.slice(0, 280))}
+                      rows={3}
+                      placeholder={
+                        isBrandPersonaView
+                          ? "Descreva sua marca, diferenciais e missão na comunidade..."
+                          : "Conte um pouco sobre você, interesses e objetivos..."
+                      }
+                      className="rounded-lg text-xs leading-relaxed"
+                    />
+                  </div>
+                </div>
+              </div>
+            </TabsContent>
+
+            {/* ══════════════════════════════════════════════════════════════
+                ABA 2 (CIVIL): CURRÍCULO & APRESENTAÇÃO PROFISSIONAL
+            ══════════════════════════════════════════════════════════════ */}
+            {!isBrandPersonaView && (
+              <TabsContent value="curriculo" className="space-y-5">
+                <ProfessionalResumeEditor
+                  resumeData={resumeData}
+                  onChange={setResumeData}
+                  avatarUrl={avatarUrl}
+                  fullName={fullName}
+                />
+              </TabsContent>
+            )}
+
+            {/* ══════════════════════════════════════════════════════════════
+                ABA 2 (MARCA): VITRINE COMERCIAL & AFILIADOS
+            ══════════════════════════════════════════════════════════════ */}
+            {isBrandPersonaView && (
+              <TabsContent value="vitrine" className="space-y-5">
+                {/* Card 1: Banner Promocional da Vitrine (16:9 Cinema) */}
+                <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60">
+                  <div className="flex items-center justify-between pb-3 border-b border-border/40">
+                    <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
+                      <Sparkles className="size-4 text-primary shrink-0" />
+                      <span>Banner Promocional da Vitrine</span>
+                    </div>
+                    <Badge variant="outline" className="text-[10px] font-mono border-primary/30 text-primary">
+                      16:9 Widescreen
+                    </Badge>
+                  </div>
+
+                  <div className="aspect-video w-full rounded-lg bg-muted/20 relative overflow-hidden flex items-center justify-center border border-border/40 shadow-xs">
+                    {showcaseBannerUrl ? (
+                      <img
+                        src={showcaseBannerUrl}
+                        alt="Banner Promocional"
+                        className="size-full object-cover select-none"
+                      />
+                    ) : (
+                      <div className="text-xs text-muted-foreground flex flex-col items-center gap-2 p-4 text-center">
+                        <Camera className="size-6 text-muted-foreground/60" />
+                        <span>Sem banner promocional ativo na vitrine (Proporção 16:9)</span>
+                      </div>
+                    )}
+
+                    <div className="absolute top-3 right-3 flex items-center gap-2">
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="secondary"
+                        onClick={() => showcaseBannerInputRef.current?.click()}
+                        disabled={isUploadingMedia}
+                        className="bg-background/85 hover:bg-background text-foreground backdrop-blur-md border border-border/80 px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-xs h-9 min-h-9"
+                      >
+                        <Camera className="size-3.5" />
+                        <span>Alterar Banner (16:9)</span>
+                      </Button>
+                      {showcaseBannerUrl && (
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => setShowcaseBannerUrl("")}
+                          disabled={isUploadingMedia}
+                          className="bg-destructive/85 hover:bg-destructive text-destructive-foreground px-2.5 py-1.5 rounded-lg text-xs font-semibold flex items-center cursor-pointer h-9 min-h-9"
+                          title="Remover Banner"
+                        >
+                          <Trash2 className="size-3.5" />
+                        </Button>
+                      )}
+                    </div>
+                    <input
+                      ref={showcaseBannerInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleFileSelected(e, "showcase_banner")}
+                      className="hidden"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-semibold">Título / Chamada da Campanha</Label>
                       <Input
                         value={showcaseBannerTitle}
                         onChange={(e) => setShowcaseBannerTitle(e.target.value)}
-                        placeholder="Título do Banner"
-                        className="h-11 min-h-11 text-xs rounded-lg"
+                        placeholder="Ex: Pacotes Especiais de Inverno"
+                        className="h-11 rounded-lg text-xs"
                       />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-semibold">Link de Destino do Banner</Label>
                       <Input
                         value={showcaseBannerLink}
                         onChange={(e) => setShowcaseBannerLink(e.target.value)}
-                        placeholder="Link de destino (https://...)"
-                        className="h-11 min-h-11 text-xs rounded-lg"
+                        placeholder="Ex: /loja/minha-loja ou https://..."
+                        className="h-11 rounded-lg text-xs font-mono"
                       />
                     </div>
                   </div>
+                </div>
 
-                  {/* Minhas Próprias Marcas */}
-                  <div className="space-y-2 pt-3 border-t border-border/40">
-                    <Label className="text-xs font-bold text-foreground flex items-center gap-2">
-                      <Building2 className="size-4 text-primary" />
-                      <span>Minhas Marcas ({selectedOwnBrandIds.length})</span>
-                    </Label>
-                    {ownBrandStores.length === 0 ? (
-                      <p className="text-xs text-muted-foreground py-2">
-                        Nenhuma empresa própria vinculada à sua conta.
-                      </p>
-                    ) : (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {/* Card 2: Minhas Próprias Marcas & Lojas Parceiras */}
+                <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60">
+                  <div className="pb-3 border-b border-border/40">
+                    <h3 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
+                      Minhas Marcas & Lojas Conectadas
+                    </h3>
+                  </div>
+
+                  {ownBrandStores.length > 0 ? (
+                    <div className="space-y-3">
+                      <Label className="text-xs font-semibold text-muted-foreground">
+                        Lojas vinculadas à sua conta exibidas na vitrine:
+                      </Label>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         {ownBrandStores.map((st: any) => {
                           const isSelected = selectedOwnBrandIds.includes(st.id);
                           return (
-                            <button
+                            <div
                               key={st.id}
-                              type="button"
-                              onClick={() => handleToggleOwnBrand(st.id)}
-                              className={`h-11 min-h-11 px-3 rounded-lg border text-left flex items-center justify-between gap-2 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                              className={cn(
+                                "p-3 rounded-lg border flex items-center justify-between gap-3 transition-colors",
                                 isSelected
-                                  ? "bg-primary/10 border-primary/40 text-foreground font-bold"
-                                  : "bg-card border-border/60 text-muted-foreground hover:text-foreground"
-                              }`}
+                                  ? "border-primary/50 bg-primary/5"
+                                  : "border-border/60 bg-muted/20"
+                              )}
                             >
-                              <span className="text-xs break-words text-wrap leading-tight">{st.name}</span>
-                              {isSelected && <Check className="size-4 text-primary shrink-0" />}
-                            </button>
+                              <div className="flex items-center gap-2.5 min-w-0">
+                                <Store className="size-4 text-primary shrink-0" />
+                                <div className="min-w-0">
+                                  <p className="text-xs font-bold text-foreground truncate">{st.name}</p>
+                                  <p className="text-[11px] text-muted-foreground truncate">{st.city || "SC"}</p>
+                                </div>
+                              </div>
+                              <Switch
+                                checked={isSelected}
+                                onCheckedChange={(checked) => {
+                                  setSelectedOwnBrandIds((prev) =>
+                                    checked ? [...prev, st.id] : prev.filter((id) => id !== st.id)
+                                  );
+                                }}
+                              />
+                            </div>
                           );
                         })}
                       </div>
-                    )}
-                  </div>
+                    </div>
+                  ) : (
+                    <p className="text-xs text-muted-foreground">
+                      Nenhuma loja própria vinculada a esta conta no momento.
+                    </p>
+                  )}
 
-                  {/* Lojas Parceiras */}
-                  <div className="space-y-2 pt-3 border-t border-border/40">
-                    <Label className="text-xs font-bold text-foreground flex items-center gap-2">
-                      <Store className="size-4 text-primary" />
-                      <span>Lojas Parceiras ({selectedPartnerStoreIds.length})</span>
-                    </Label>
-                    {availableStores.length === 0 ? (
-                      <p className="text-xs text-muted-foreground py-2">
-                        Nenhuma loja parceira disponível.
-                      </p>
-                    ) : (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {availableStores.length > 0 && (
+                    <div className="space-y-3 pt-3 border-t border-border/40">
+                      <Label className="text-xs font-semibold text-muted-foreground">
+                        Lojas parceiras comissionadas conectadas:
+                      </Label>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         {availableStores.map((st: any) => {
                           const isConnected = selectedPartnerStoreIds.includes(st.id);
                           return (
-                            <button
-                              key={st.id}
-                              type="button"
-                              onClick={() => handleTogglePartnerStore(st.id)}
-                              className={`h-11 min-h-11 px-3 rounded-lg border text-left flex items-center justify-between gap-2 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
-                                isConnected
-                                  ? "bg-primary/10 border-primary/40 text-foreground font-bold"
-                                  : "bg-card border-border/60 text-muted-foreground hover:text-foreground"
-                              }`}
-                            >
-                              <span className="text-xs break-words text-wrap leading-tight">{st.name}</span>
-                              {isConnected ? (
-                                <Check className="size-4 text-primary shrink-0" />
-                              ) : (
-                                <Plus className="size-4 text-muted-foreground shrink-0" />
-                              )}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Produtos Fixados */}
-                  {pinnedProducts.length > 0 && (
-                    <div className="space-y-2 pt-3 border-t border-border/40">
-                      <Label className="text-xs font-bold text-foreground">
-                        Produtos Recomendados ({pinnedProducts.length})
-                      </Label>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                        {pinnedProducts.slice(0, 6).map((item: any) => {
-                          const prod = item?.product || item;
-                          return (
                             <div
-                              key={prod?.id || item?.id}
-                              className="p-3 rounded-lg bg-muted/20 border border-border/50 flex items-center justify-between text-xs gap-2"
+                              key={st.id}
+                              className={cn(
+                                "p-3 rounded-lg border flex items-center justify-between gap-3 transition-colors",
+                                isConnected
+                                  ? "border-primary/50 bg-primary/5"
+                                  : "border-border/60 bg-muted/20"
+                              )}
                             >
-                              <span className="font-semibold text-foreground break-words text-wrap leading-tight">
-                                {prod?.name || item?.custom_title || "Produto"}
-                              </span>
-                              <Badge variant="secondary" className="text-xs shrink-0">Fixado</Badge>
+                              <div className="flex items-center gap-2.5 min-w-0">
+                                <Store className="size-4 text-primary shrink-0" />
+                                <div className="min-w-0">
+                                  <p className="text-xs font-bold text-foreground truncate">{st.name}</p>
+                                  <p className="text-[11px] text-muted-foreground truncate">{st.segment || "Parceiro"}</p>
+                                </div>
+                              </div>
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant={isConnected ? "default" : "outline"}
+                                onClick={() => handleTogglePartnerStore(st.id)}
+                                className="h-9 px-3 rounded-lg text-xs font-semibold cursor-pointer"
+                              >
+                                {isConnected ? "Conectada" : "Conectar"}
+                              </Button>
                             </div>
                           );
                         })}
                       </div>
                     </div>
                   )}
+                </div>
 
-                  {/* Reordenação de Seções */}
-                  <div className="space-y-2 pt-3 border-t border-border/40">
-                    <Label className="text-xs font-bold text-foreground">
-                      Ordem das Seções na Vitrine
-                    </Label>
-                    <div className="space-y-2">
-                      {showcaseOrder.map((secKey, idx) => (
-                        <div
-                          key={secKey}
-                          className="flex items-center justify-between p-2 pl-3 rounded-lg bg-card border border-border/60 text-xs"
-                        >
-                          <span className="font-semibold text-foreground break-words text-wrap leading-tight">
-                            {idx + 1}. {SHOWCASE_SECTION_LABELS[secKey] || secKey}
-                          </span>
-                          <div className="flex items-center gap-1 shrink-0">
-                            <Button
-                              type="button"
-                              size="sm"
-                              variant="ghost"
-                              disabled={idx === 0}
-                              onClick={() => handleMoveSection(idx, "up")}
-                              className="size-11 min-h-11 min-w-11 p-0 rounded-lg text-muted-foreground hover:text-foreground"
-                              aria-label="Mover seção para cima"
-                            >
-                              <ArrowUp className="size-4" />
-                            </Button>
-                            <Button
-                              type="button"
-                              size="sm"
-                              variant="ghost"
-                              disabled={idx === showcaseOrder.length - 1}
-                              onClick={() => handleMoveSection(idx, "down")}
-                              className="size-11 min-h-11 min-w-11 p-0 rounded-lg text-muted-foreground hover:text-foreground"
-                              aria-label="Mover seção para baixo"
-                            >
-                              <ArrowDown className="size-4" />
-                            </Button>
-                          </div>
+                {/* Card 3: Ordem de Exibição das Seções */}
+                <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60">
+                  <div className="pb-3 border-b border-border/40">
+                    <h3 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
+                      Ordem de Exibição das Seções na Vitrine
+                    </h3>
+                  </div>
+
+                  <div className="space-y-2">
+                    {showcaseOrder.map((sectionKey, index) => (
+                      <div
+                        key={sectionKey}
+                        className="flex items-center justify-between p-3 rounded-lg border border-border/50 bg-muted/20 gap-3"
+                      >
+                        <span className="text-xs font-semibold text-foreground">
+                          {SHOWCASE_SECTION_LABELS[sectionKey] || sectionKey}
+                        </span>
+                        <div className="flex items-center gap-1">
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="ghost"
+                            disabled={index === 0}
+                            onClick={() => handleMoveShowcaseSection(index, "up")}
+                            className="size-8 p-0 rounded-lg cursor-pointer disabled:opacity-30"
+                          >
+                            <ArrowUp className="size-4" />
+                          </Button>
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="ghost"
+                            disabled={index === showcaseOrder.length - 1}
+                            onClick={() => handleMoveShowcaseSection(index, "down")}
+                            className="size-8 p-0 rounded-lg cursor-pointer disabled:opacity-30"
+                          >
+                            <ArrowDown className="size-4" />
+                          </Button>
                         </div>
-                      ))}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </TabsContent>
+            )}
+
+            {/* ══════════════════════════════════════════════════════════════
+                ABA 3: LINKS & REDES SOCIAIS
+            ══════════════════════════════════════════════════════════════ */}
+            <TabsContent value="links" className="space-y-5">
+              {/* Card 1: Redes Sociais Oficiais */}
+              <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60">
+                <div className="pb-3 border-b border-border/40">
+                  <h3 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
+                    Redes Sociais Oficiais
+                  </h3>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-semibold">Instagram (@handle)</Label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-xs font-mono">
+                        @
+                      </span>
+                      <Input
+                        value={instagram}
+                        onChange={(e) =>
+                          setInstagram(e.target.value.toLowerCase().replace(/[^a-z0-9._]/g, ""))
+                        }
+                        placeholder="perfil.instagram"
+                        className="h-11 pl-7 rounded-lg text-xs font-mono"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-semibold">Website Oficial</Label>
+                    <Input
+                      value={website}
+                      onChange={(e) => setWebsite(e.target.value)}
+                      placeholder="https://meusite.com.br"
+                      className="h-11 rounded-lg text-xs font-mono"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Card 2: Biolinks Dinâmicos */}
+              <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60">
+                <div className="pb-3 border-b border-border/40">
+                  <h3 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
+                    Links Públicos (Biolinks)
+                  </h3>
+                </div>
+
+                <div className="space-y-3">
+                  {biolinks.map((link) => (
+                    <div
+                      key={link.id}
+                      className="flex items-center justify-between p-3 rounded-lg border border-border/50 bg-muted/20 gap-3"
+                    >
+                      <div className="min-w-0">
+                        <p className="text-xs font-bold text-foreground truncate">
+                          {link.label || link.title}
+                        </p>
+                        <p className="text-[11px] text-muted-foreground font-mono truncate">{link.url}</p>
+                      </div>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => handleRemoveBiolink(link.id)}
+                        className="text-muted-foreground hover:text-destructive h-9 px-2.5 rounded-lg cursor-pointer"
+                      >
+                        <Trash2 className="size-4" />
+                      </Button>
+                    </div>
+                  ))}
+
+                  <div className="p-3 rounded-lg border border-dashed border-border/80 space-y-3 bg-card">
+                    <p className="text-xs font-semibold text-foreground">Adicionar Novo Link</p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <Input
+                        value={newLinkLabel}
+                        onChange={(e) => setNewLinkLabel(e.target.value)}
+                        placeholder="Título do Link (ex: Agendar Consulta)"
+                        className="h-11 rounded-lg text-xs"
+                      />
+                      <Input
+                        value={newLinkUrl}
+                        onChange={(e) => setNewLinkUrl(e.target.value)}
+                        placeholder="https://link-de-destino.com"
+                        className="h-11 rounded-lg text-xs font-mono"
+                      />
+                    </div>
+                    <div className="flex justify-end pt-1">
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={handleAddBiolink}
+                        className="h-11 min-h-11 px-4 rounded-lg text-xs font-bold gap-2 cursor-pointer"
+                      >
+                        <Plus className="size-4" />
+                        <span>Adicionar Link</span>
+                      </Button>
                     </div>
                   </div>
                 </div>
-              )}
-            </div>
-          )}
-        </div>
-      </div>
+              </div>
+            </TabsContent>
 
-      {/* Barra de Ação Sticky Inferior (Invariante B.34 z-30 e B.8 Único CTA Primário) */}
-      <div className="fixed bottom-0 inset-x-0 z-30 bg-background/95 backdrop-blur-md border-t border-border/60 px-4 py-3 pb-safe">
-        <div className="max-w-5xl mx-auto flex items-center justify-between gap-3">
-          <span className="text-xs font-medium text-muted-foreground hidden sm:inline">
-            Edição direta na página ativa
-          </span>
-          <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+            {/* ══════════════════════════════════════════════════════════════
+                ABA 4: PRIVACIDADE
+            ══════════════════════════════════════════════════════════════ */}
+            <TabsContent value="privacidade" className="space-y-5">
+              <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60">
+                <div className="pb-3 border-b border-border/40">
+                  <h3 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
+                    Privacidade & Visibilidade
+                  </h3>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between gap-4 p-3 rounded-lg border border-border/40 bg-muted/20">
+                    <div>
+                      <p className="text-xs font-bold text-foreground">Perfil Anônimo</p>
+                      <p className="text-[11px] text-muted-foreground">
+                        Oculta seu nome em buscas públicas comunitárias.
+                      </p>
+                    </div>
+                    <Switch
+                      checked={isAnonymous}
+                      onCheckedChange={setIsAnonymous}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between gap-4 p-3 rounded-lg border border-border/40 bg-muted/20">
+                    <div>
+                      <p className="text-xs font-bold text-foreground">Ocultar Minha Cidade</p>
+                      <p className="text-[11px] text-muted-foreground">
+                        Não exibe sua localização geográfica no cabeçalho do perfil público.
+                      </p>
+                    </div>
+                    <Switch
+                      checked={hideLocation}
+                      onCheckedChange={setHideLocation}
+                    />
+                  </div>
+                </div>
+              </div>
+            </TabsContent>
+          </Tabs>
+
+          {/* ── Modal Footer de Ações ── */}
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-border/40">
             <Button
               type="button"
               variant="outline"
               onClick={onClose}
               disabled={isSaving}
-              className="flex-1 sm:flex-initial h-11 min-h-11 px-4 text-xs font-semibold rounded-lg"
+              className="h-11 min-h-11 px-5 rounded-lg text-xs font-semibold cursor-pointer"
             >
               Cancelar
             </Button>
             <Button
               type="button"
-              variant="default"
               onClick={handleSave}
               disabled={isSaving}
-              className="flex-1 sm:flex-initial h-11 min-h-11 px-5 text-xs font-bold gap-2 rounded-lg"
+              className="h-11 min-h-11 px-6 rounded-lg text-xs font-bold gap-2 cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90"
             >
-              <Check className="size-4" />
-              <span>{isSaving ? "Salvando..." : "Salvar Alterações"}</span>
+              {isSaving ? (
+                <>
+                  <Loader2 className="size-4 animate-spin" />
+                  <span>Salvando...</span>
+                </>
+              ) : (
+                <>
+                  <Check className="size-4" />
+                  <span>Salvar Alterações</span>
+                </>
+              )}
             </Button>
           </div>
-        </div>
-      </div>
-    </section>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de Recorte de Imagens (Avatar 1:1, Capa 21:9, Banner 16:9) */}
+      <ImageCropperDialog
+        open={cropperOpen}
+        onOpenChange={setCropperOpen}
+        imageSrc={cropperSrc}
+        aspect={cropperType === "avatar" ? 1 : cropperType === "cover" ? 21 / 9 : 16 / 9}
+        cropShape={cropperType === "avatar" ? "round" : "rect"}
+        title={
+          cropperType === "avatar"
+            ? "Enquadrar Foto de Perfil (1:1)"
+            : cropperType === "cover"
+            ? "Enquadrar Capa Panorâmica (21:9)"
+            : "Enquadrar Banner Promocional (16:9)"
+        }
+        onCropComplete={handleCropComplete}
+      />
+    </>
   );
 }

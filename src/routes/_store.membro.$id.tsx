@@ -72,7 +72,7 @@ export const Route = createFileRoute("/_store/membro/$id")({
 export default function MemberPublicProfilePage() {
  const { data } = ((Route.useLoaderData?.() as any) || {});
  const search = Route.useSearch();
- const defaultMode = data?.isCreator ? "comercial" : "social";
+ const defaultMode = data?.isBrandPersonaView ? "comercial" : "social";
  return <MemberPublicProfileView data={data} activeMode={search.modo || defaultMode} />;
 }
 
@@ -410,7 +410,7 @@ export function MemberPublicProfileView({
       <div className="flex items-center justify-between gap-2 px-1">
         {/* Switcher de Modos: Social, Profissional, Comercial / Vitrine */}
         <div className="flex flex-nowrap overflow-x-auto no-scrollbar tab-list items-center gap-1 p-1 rounded-lg bg-muted/40 text-xs font-semibold">
-          {isCreator ? (
+          {isBrandPersonaView ? (
             <>
               <Link
                 to="/membro/$id"
@@ -465,7 +465,7 @@ export function MemberPublicProfileView({
                     : "text-muted-foreground hover:text-foreground"
                 )}
               >
-                Social
+                Publicações
               </Link>
               <Link
                 to="/membro/$id"
@@ -478,43 +478,11 @@ export function MemberPublicProfileView({
                     : "text-muted-foreground hover:text-foreground"
                 )}
               >
-                Profissional
-              </Link>
-              <Link
-                to="/membro/$id"
-                params={{ id: profile.username || profile.id }}
-                search={{ modo: "comercial" }}
-                className={cn(
-                  "h-11 min-h-11 px-4 inline-flex items-center justify-center shrink-0 rounded-lg transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-                  activeMode === "comercial"
-                    ? "bg-background text-foreground font-bold"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                Comercial
+                Sobre & Currículo
               </Link>
             </>
           )}
         </div>
-
-        {/* Botão de Edição Rápida In-Page */}
-        {isOwner && (
-          <div className="flex items-center gap-2">
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              onClick={() => {
-                setEditorInitialTab(activeMode === "comercial" ? "vitrine" : "identidade");
-                setIsProfileInPageEditorOpen(true);
-              }}
-              className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold gap-2 border-border/70 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-            >
-              <Edit3 className="size-4" />
-              <span>{activeMode === "comercial" ? "Editar Vitrine" : "Editar Perfil"}</span>
-            </Button>
-          </div>
-        )}
       </div>
 
       {/* ── Bloco 1: Header do Perfil (Capa Full-Bleed Twitter-Style + Avatar Sobreposto + Stats em Linha) ── */}
@@ -2344,25 +2312,14 @@ export function MemberPublicProfileView({
  isSaving={isSavingResume}
  />
 
- {/* Edição In-Page Perfil & Vitrine da Marca (Zero Modais/Sheets) */}
- {isCreator && editingSection === "creator_profile" && (
- <ProfileInPageEditor
- isOpen={true}
- onClose={() => setEditingSection(null)}
- profile={profile}
- creatorProfile={creatorProfile}
- isCreator={isCreator}
- isBrandPersonaView={isBrandPersonaView}
- availableStores={partnerStores}
- ownBrandStores={ownBrandStores}
- pinnedProducts={data?.pinnedProducts || []}
- initialTab="vitrine"
- />
- )}
+  {/* Modal Canônico de Edição de Perfil & Vitrine (Padrão _store.conta.perfil 1:1) */}
   {isOwner && (
     <ProfileInPageEditor
-      isOpen={isProfileInPageEditorOpen}
-      onClose={() => setIsProfileInPageEditorOpen(false)}
+      isOpen={isProfileInPageEditorOpen || (isCreator && editingSection === "creator_profile")}
+      onClose={() => {
+        setIsProfileInPageEditorOpen(false);
+        setEditingSection(null);
+      }}
       profile={profile}
       creatorProfile={creatorProfile}
       isCreator={isCreator}
@@ -2370,7 +2327,7 @@ export function MemberPublicProfileView({
       availableStores={partnerStores}
       ownBrandStores={ownBrandStores}
       pinnedProducts={data?.pinnedProducts || []}
-      initialTab={editorInitialTab}
+      initialTab={editingSection === "creator_profile" ? "vitrine" : editorInitialTab}
     />
   )}
   </>
