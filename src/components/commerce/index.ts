@@ -6,3 +6,4 @@ export { ProductOptionsCustomizer, type OptionValue, type OptionGroup } from './
 export { PublicFooter } from './public-footer';
 export { PublicHeader } from './public-header';
 export { VitrineEngineSelector } from './vitrine-engine-selector';
+export { UniversalNicheCard, type UniversalNicheCardProps, type FeaturePill, resolveNicheFeaturePills } from './universal-niche-card';

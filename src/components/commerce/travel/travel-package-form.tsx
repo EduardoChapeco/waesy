@@ -1,95 +1,218 @@
 import React, { useState } from "react";
-import { Plane, Bus, Ship, Anchor, Hotel, Calendar, Check, Plus, Trash2, Sliders, MapPin, Clock, ShieldCheck, ShieldAlert, Sun, Camera, Layers, Utensils, Coffee, ChevronDown, ChevronUp, Star, X, Compass, ArrowUp, ArrowDown, Loader2, CreditCard, Car, Award, CheckCircle2 } from "lucide-react";
+import {
+  Plane,
+  Bus,
+  Ship,
+  Hotel,
+  Calendar,
+  Plus,
+  Trash2,
+  Sliders,
+  MapPin,
+  Clock,
+  ShieldCheck,
+  ShieldAlert,
+  ChevronDown,
+  ChevronUp,
+  Star,
+  X,
+  Loader2,
+  CreditCard,
+  Car,
+  CheckCircle2,
+  MessageCircle,
+  Bot,
+  Building2,
+  Tag,
+  Key,
+  Navigation,
+  Users,
+  FileText,
+  DollarSign,
+  Percent,
+  ExternalLink,
+  Route as RouteIcon,
+} from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ImageUpload } from "@/components/ui/image-upload";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { listHotelsBank, createHotel, listDestinations, createDestination, type HotelBankDTO, type DestinationDTO } from "@/services/travel-catalog.functions";
-import { DEFAULT_TRAVEL_INCLUSIONS_PRESETS, DEFAULT_TRAVEL_EXCLUSIONS_PRESETS, type TravelPackageData, type TravelItineraryDay, type TravelNearbyRecommendation, CANONICAL_AIRLINES, CANONICAL_BUS_CATEGORIES, CANONICAL_CRUISE_LINES, CANONICAL_CABIN_CATEGORIES, type FlightDetails, type PaymentConditions } from "@/types/travel-package";
+import {
+  listHotelsBank,
+  createHotel,
+  listDestinations,
+  createDestination,
+  type HotelBankDTO,
+  type DestinationDTO,
+} from "@/services/travel-catalog.functions";
+import {
+  type TravelPackageData,
+  type TravelItineraryDay,
+  type TravelNearbyRecommendation,
+  type FlightDetails,
+  type PaymentConditions,
+  type TravelRoomRates,
+} from "@/types/travel-package";
 import { StoryHighlightUploader, type StoryHighlight } from "@/components/classifieds/story-highlight-uploader";
+import { WeatherWidget } from "@/components/classifieds/weather-widget";
+import {
+  CANONICAL_AIRPORTS,
+  airportLabel,
+  type DepartureOption,
+  type DepartureStatus,
+  DEPARTURE_STATUS_CONFIG,
+  CANONICAL_AIRLINES as CANONICAL_AIRLINES_CATALOG,
+  CANONICAL_BUS_CATEGORIES,
+  CANONICAL_TRANSFER_VEHICLES,
+  CANONICAL_GUIDE_SERVICES,
+  CANONICAL_CRUISE_LINES,
+  CANONICAL_TRANSPORT_TYPES,
+} from "@/lib/classifieds/canonical-airports";
 import { uploadClassifiedMedia } from "@/lib/classifieds/upload-classified-media";
 import { formatMoney } from "@/lib/money";
+import { cn } from "@/lib/utils";
 
-interface TravelPackageFormProps {
- value: Partial<TravelPackageData>;
- onChange: (val: Partial<TravelPackageData>) => void;
- priceCents: number;
+export interface TravelPackageFormProps {
+  value: Partial<TravelPackageData>;
+  onChange: (val: Partial<TravelPackageData>) => void;
+  priceCents: number;
+  activeSection?: "roteiro" | "hospedagem" | "transporte" | "tarifas" | "inclusoes" | "reserva" | "all";
+  formValues?: any;
+  onTitleChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  register?: any;
+  setValue?: any;
+  categoriesList?: Array<{ id: string; name: string }>;
+  onOpenQuickCategory?: () => void;
+  onPriceChange?: (cents: number) => void;
+  storeName?: string;
+  storePhone?: string;
 }
 
-export function TravelPackageForm({ value, onChange, priceCents }: TravelPackageFormProps) {
- const queryClient = useQueryClient();
+const CANONICAL_INCLUSIONS_CLEAN = [
+  "Passagens aéreas ida e volta",
+  "Hospedagem no hotel ou resort selecionado",
+  "Regime All Inclusive (alimentação e bebidas inclusas)",
+  "Pensão Completa (café da manhã, almoço e jantar)",
+  "Café da manhã incluso diariamente",
+  "Transfer aeroporto para hotel e retorno (in/out)",
+  "Seguro viagem internacional com cobertura médica",
+  "City tour panorâmico pelos principais pontos turísticos",
+  "Guia de turismo credenciado CADASTUR acompanhante",
+  "Ingressos e taxas das atrações programadas",
+  "Bagagem despachada de 23kg inclusa",
+  "Kit de viagem personalizado da agência",
+];
 
- // Estados locais
- const [newInclusionText, setNewInclusionText] = useState("");
- const [newExclusionText, setNewExclusionText] = useState("");
- const [newBadgeText, setNewBadgeText] = useState("");
- const [newBioBulletText, setNewBioBulletText] = useState("");
+const CANONICAL_EXCLUSIONS_CLEAN = [
+  "Despesas pessoais e consumo de frigobar",
+  "Refeições e bebidas não mencionadas no roteiro",
+  "Bebidas alcoólicas fora do regime contratado",
+  "Passeios e atividades opcionais no destino",
+  "Taxas turísticas municipais ou governamentais locais",
+  "Gorjetas para carregadores, motoristas e guias",
+  "Check-in antecipado ou late check-out no hotel",
+  "Emissão de passaportes e taxas consulares de vistos",
+];
 
- // Modal / Formulário Rápido de Destino
- const [showNewDestModal, setShowNewDestModal] = useState(false);
- const [quickDestName, setQuickDestName] = useState("");
- const [quickDestRegion, setQuickDestRegion] = useState("");
- const [isSavingDest, setIsSavingDest] = useState(false);
+const CANONICAL_BOARDING_DOCS_CLEAN = [
+  "Passaporte brasileiro válido por no mínimo 6 meses",
+  "RG original em perfeito estado emitido há menos de 10 anos (Mercosul)",
+  "Visto consular ou autorização eletrônica de viagem",
+  "Certificado Internacional de Vacinação (Febre Amarela)",
+  "Seguro viagem com cobertura mínima para despesas médicas hospitalares",
+  "Autorização judicial com firma reconhecida para menores de idade desacompanhados",
+];
 
- // Modal / Formulário Rápido de Hotel
- const [showNewHotelModal, setShowNewHotelModal] = useState(false);
- const [quickHotelName, setQuickHotelName] = useState("");
- const [quickHotelCity, setQuickHotelCity] = useState("");
- const [quickHotelRegime, setQuickHotelRegime] = useState("All Inclusive");
- const [isSavingHotel, setIsSavingHotel] = useState(false);
+export function TravelPackageForm({
+  value,
+  onChange,
+  priceCents,
+  activeSection = "all",
+  formValues,
+  onTitleChange,
+  categoriesList = [],
+  onOpenQuickCategory,
+  onPriceChange,
+  storeName = "Agência Parceira",
+  storePhone = "",
+}: TravelPackageFormProps) {
+  const queryClient = useQueryClient();
 
- // Seções colapsáveis avançadas
- const [isAdvancedFlightsOpen, setIsAdvancedFlightsOpen] = useState(false);
- const [isRecommendationsOpen, setIsRecommendationsOpen] = useState(false);
+  // Estados locais para inputs rápidos
+  const [newInclusionText, setNewInclusionText] = useState("");
+  const [newExclusionText, setNewExclusionText] = useState("");
+  const [newDocText, setNewDocText] = useState("");
+  const [newBadgeText, setNewBadgeText] = useState("");
+  const [newBioBulletText, setNewBioBulletText] = useState("");
+  const [gatewayInput, setGatewayInput] = useState("");
 
- // Queries para carregar Destinos e Banco de Hotéis
- const { data: destinationsList = [] } = useQuery({
- queryKey: ["travel_destinations_options"],
- queryFn: () => listDestinations().catch(() => []),
- });
+  // Modal / Formulário Rápido de Destino
+  const [showNewDestModal, setShowNewDestModal] = useState(false);
+  const [quickDestName, setQuickDestName] = useState("");
+  const [quickDestRegion, setQuickDestRegion] = useState("");
+  const [isSavingDest, setIsSavingDest] = useState(false);
 
- const { data: hotelsBankList = [] } = useQuery({
- queryKey: ["travel_hotels_options"],
- queryFn: () => listHotelsBank().catch(() => []),
- });
+  // Modal / Formulário Rápido de Hotel
+  const [showNewHotelModal, setShowNewHotelModal] = useState(false);
+  const [quickHotelName, setQuickHotelName] = useState("");
+  const [quickHotelCity, setQuickHotelCity] = useState("");
+  const [quickHotelRegime, setQuickHotelRegime] = useState("All Inclusive");
+  const [isSavingHotel, setIsSavingHotel] = useState(false);
 
- const destination = value.destination || { name: "", region: "", country: "Brasil" };
- const resort = value.resort || {
- name: "",
- meal_plan: "All Inclusive",
- duration_text: "",
- guests_text: "",
- badges: [],
- };
- const inclusions = value.inclusions || [];
- const exclusions = value.exclusions || [];
- // 4. Roteiro — inicia vazio, gestor adiciona
- const itinerary = value.itinerary_days || [];
- const flightDetails = value.flight_details || {
- origin_airport: "",
- destination_iata: "",
- flight_type: "Direto",
- baggage_included: true,
- transfer_included: true,
- flight_duration: "",
- airline_partner: "",
- };
- const recommendations = value.recommendations || [];
+  // Queries para carregar Destinos e Banco de Hotéis
+  const { data: destinationsList = [] } = useQuery({
+    queryKey: ["travel_destinations_options"],
+    queryFn: () => listDestinations().catch(() => []),
+  });
 
-  // Condições Comerciais & Parcelamento (Bilateral - Regra 22)
+  const { data: hotelsBankList = [] } = useQuery({
+    queryKey: ["travel_hotels_options"],
+    queryFn: () => listHotelsBank().catch(() => []),
+  });
+
+  const destination = value.destination || { name: "", region: "", country: "Brasil" };
+  const resort = value.resort || {
+    name: "",
+    meal_plan: "All Inclusive",
+    duration_text: "",
+    guests_text: "",
+    badges: [],
+    bio_bullets: [],
+  };
+  const inclusions = value.inclusions || [];
+  const exclusions = value.exclusions || [];
+  const itinerary = value.itinerary_days || [];
+  const flightDetails = value.flight_details || {
+    origin_airport: "",
+    destination_iata: "",
+    flight_type: "Direto",
+    baggage_included: true,
+    transfer_included: true,
+    flight_duration: "",
+    airline_partner: "",
+  };
+  const recommendations = value.recommendations || [];
+  const departureOptions: DepartureOption[] = value.departure_options || [];
+  const roomRates: TravelRoomRates = value.room_rates || {};
+  const boardingDocs: string[] = value.boarding_requirements || [];
+
+  // Condições Comerciais & Parcelamento (Bilateral)
   const paymentConditions = value.payment_conditions || {};
   const maxInstallments = Math.max(1, Math.min(24, paymentConditions.installments_max ?? 12));
-  const feeFreeInstallments = Math.max(1, Math.min(maxInstallments, paymentConditions.installments_fee_free ?? maxInstallments));
+  const feeFreeInstallments = Math.max(
+    1,
+    Math.min(maxInstallments, paymentConditions.installments_fee_free ?? maxInstallments)
+  );
   const pixDiscountPercent = paymentConditions.pix_discount_percent ?? 0;
   const depositPercent = paymentConditions.deposit_percent ?? 0;
 
   const installmentCents = maxInstallments > 0 && priceCents > 0 ? Math.round(priceCents / maxInstallments) : 0;
-  const pixCents = pixDiscountPercent > 0 && priceCents > 0 ? Math.round(priceCents * (1 - pixDiscountPercent / 100)) : priceCents;
+  const pixCents =
+    pixDiscountPercent > 0 && priceCents > 0 ? Math.round(priceCents * (1 - pixDiscountPercent / 100)) : priceCents;
 
   const updatePaymentConditions = (field: keyof PaymentConditions, val: any) => {
     onChange({
@@ -101,7 +224,38 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
     });
   };
 
-  // Destaques Visuais (Story Highlights)
+  const updateDestination = (field: string, val: any) => {
+    onChange({
+      ...value,
+      destination: { ...destination, [field]: val },
+    });
+  };
+
+  const updateResort = (field: string, val: any) => {
+    onChange({
+      ...value,
+      resort: { ...resort, [field]: val },
+    });
+  };
+
+  const updateFlightDetails = (field: string, val: any) => {
+    onChange({
+      ...value,
+      flight_details: { ...flightDetails, [field]: val },
+    });
+  };
+
+  const updateRoomRate = (field: keyof TravelRoomRates, cents: number) => {
+    onChange({
+      ...value,
+      room_rates: {
+        ...roomRates,
+        [field]: cents,
+      },
+    });
+  };
+
+  // Story Highlights
   const highlights: StoryHighlight[] = (value.story_highlights || resort.highlights || []).map((h: any) => ({
     id: h.id,
     title: h.title || h.label || "Destaque",
@@ -121,191 +275,182 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
     });
   };
 
- const updateDestination = (field: string, val: any) => {
- onChange({
- ...value,
- destination: { ...destination, [field]: val },
- });
- };
+  const handleSelectHotelFromBank = (hotelId: string) => {
+    if (!hotelId) return;
+    const hotel = hotelsBankList.find((h: HotelBankDTO) => h.id === hotelId);
+    if (!hotel) return;
 
- const updateResort = (field: string, val: any) => {
- onChange({
- ...value,
- resort: { ...resort, [field]: val },
- });
- };
+    onChange({
+      ...value,
+      resort: {
+        ...resort,
+        name: hotel.name,
+        meal_plan: hotel.regime_options?.[0] || resort.meal_plan || "",
+        cover_image_url: hotel.cover_photo_url || resort.cover_image_url,
+        badges: hotel.badges && hotel.badges.length > 0 ? hotel.badges : resort.badges,
+        bio_bullets: hotel.bio_bullets && hotel.bio_bullets.length > 0 ? hotel.bio_bullets : resort.bio_bullets,
+        photos: hotel.photos && hotel.photos.length > 0 ? hotel.photos : resort.photos,
+      },
+      destination: {
+        ...destination,
+        name: hotel.city || destination.name,
+        region: hotel.state ? `${hotel.state}, Brasil` : destination.region,
+      },
+    });
+    toast.success(`Hotel "${hotel.name}" vinculado com sucesso!`);
+  };
 
- const updateFlightDetails = (field: string, val: any) => {
- onChange({
- ...value,
- flight_details: { ...flightDetails, [field]: val },
- });
- };
+  const handleSelectDestinationFromBank = (destId: string) => {
+    if (!destId) return;
+    const dest = destinationsList.find((d: DestinationDTO) => d.id === destId);
+    if (!dest) return;
 
- const handleSelectHotelFromBank = (hotelId: string) => {
- if (!hotelId) return;
- const hotel = hotelsBankList.find((h: HotelBankDTO) => h.id === hotelId);
- if (!hotel) return;
+    onChange({
+      ...value,
+      destination: {
+        ...destination,
+        name: dest.name,
+        region: dest.state
+          ? `${dest.state}, ${dest.country}`
+          : dest.region
+            ? `${dest.region}, ${dest.country}`
+            : dest.country,
+        country: dest.country,
+        iata_gateway: dest.iata_gateway || destination.iata_gateway,
+        gallery_urls: dest.gallery_urls && dest.gallery_urls.length > 0 ? dest.gallery_urls : destination.gallery_urls,
+        description: dest.description || destination.description,
+      },
+    });
+    toast.success(`Destino "${dest.name}" vinculado ao pacote!`);
+  };
 
- onChange({
- ...value,
- resort: {
- ...resort,
- name: hotel.name,
- meal_plan: hotel.regime_options?.[0] || resort.meal_plan || "",
- cover_image_url: hotel.cover_photo_url || resort.cover_image_url,
- badges: hotel.badges && hotel.badges.length > 0 ? hotel.badges : resort.badges,
- bio_bullets: hotel.bio_bullets && hotel.bio_bullets.length > 0 ? hotel.bio_bullets : resort.bio_bullets,
- photos: hotel.photos && hotel.photos.length > 0 ? hotel.photos : resort.photos,
- },
- destination: {
- ...destination,
- name: hotel.city || destination.name,
- region: hotel.state ? `${hotel.state}, Brasil` : destination.region,
- },
- });
- toast.success(`Hotel "${hotel.name}" vinculado! Dados pré-preenchidos.`);
- };
+  const handleQuickAddDest = async () => {
+    if (!quickDestName.trim()) {
+      toast.error("Informe o nome da cidade ou destino.");
+      return;
+    }
+    setIsSavingDest(true);
+    try {
+      const created = await createDestination({
+        data: {
+          name: quickDestName.trim(),
+          region: quickDestRegion.trim() || undefined,
+          country: "Brasil",
+        },
+      });
 
- const handleSelectDestinationFromBank = (destId: string) => {
- if (!destId) return;
- const dest = destinationsList.find((d: DestinationDTO) => d.id === destId);
- if (!dest) return;
+      queryClient.invalidateQueries({ queryKey: ["travel_destinations_options"] });
+      updateDestination("name", created.name);
+      if (created.region) updateDestination("region", created.region);
+      setShowNewDestModal(false);
+      setQuickDestName("");
+      setQuickDestRegion("");
+      toast.success(`Destino "${created.name}" cadastrado no catálogo oficial!`);
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao salvar destino.");
+    } finally {
+      setIsSavingDest(false);
+    }
+  };
 
- onChange({
- ...value,
- destination: {
- ...destination,
- name: dest.name,
- region: dest.state ? `${dest.state}, ${dest.country}` : (dest.region ? `${dest.region}, ${dest.country}` : dest.country),
- country: dest.country,
- iata_gateway: dest.iata_gateway || destination.iata_gateway,
- gallery_urls: dest.gallery_urls && dest.gallery_urls.length > 0 ? dest.gallery_urls : destination.gallery_urls,
- description: dest.description || destination.description,
- },
- });
- toast.success(`Destino "${dest.name}" vinculado ao pacote com sucesso!`);
- };
+  const handleQuickAddHotel = async () => {
+    if (!quickHotelName.trim() || !quickHotelCity.trim()) {
+      toast.error("Informe o nome do hotel e a cidade.");
+      return;
+    }
+    setIsSavingHotel(true);
+    try {
+      const created = await createHotel({
+        data: {
+          name: quickHotelName.trim(),
+          city: quickHotelCity.trim(),
+          country: "Brasil",
+          stars: 4,
+          regime_options: [quickHotelRegime],
+          bio_bullets: [
+            "Excelente localização e infraestrutura completa de lazer",
+            `${quickHotelRegime}: comodidade e gastronomia para suas férias`,
+          ],
+          badges: ["Parceiro Oficial", "Pé na Areia"],
+        },
+      });
 
- // Cadastro rápido de destino no banco real
- const handleQuickAddDest = async () => {
- if (!quickDestName.trim()) {
- toast.error("Informe o nome da cidade ou destino.");
- return;
- }
- setIsSavingDest(true);
- try {
- const created = await createDestination({
- data: {
- name: quickDestName.trim(),
- region: quickDestRegion.trim() || undefined,
- country: "Brasil",
- },
- });
+      queryClient.invalidateQueries({ queryKey: ["travel_hotels_options"] });
+      updateResort("name", created.name);
+      updateResort("meal_plan", quickHotelRegime);
+      updateDestination("name", created.city);
+      setShowNewHotelModal(false);
+      setQuickHotelName("");
+      setQuickHotelCity("");
+      toast.success(`Hotel "${created.name}" cadastrado e vinculado!`);
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao salvar hotel no catálogo.");
+    } finally {
+      setIsSavingHotel(false);
+    }
+  };
 
- queryClient.invalidateQueries({ queryKey: ["travel_destinations_options"] });
- updateDestination("name", created.name);
- if (created.region) updateDestination("region", created.region);
- setShowNewDestModal(false);
- setQuickDestName("");
- setQuickDestRegion("");
- toast.success(`Destino "${created.name}" cadastrado no catálogo oficial!`);
- } catch (err: any) {
- toast.error(err?.message || "Erro ao salvar destino.");
- } finally {
- setIsSavingDest(false);
- }
- };
+  // Inclusões
+  const toggleInclusion = (label: string) => {
+    const next = inclusions.includes(label) ? inclusions.filter((i) => i !== label) : [...inclusions, label];
+    onChange({ ...value, inclusions: next });
+  };
 
- // Cadastro rápido de hotel no banco real
- const handleQuickAddHotel = async () => {
- if (!quickHotelName.trim() || !quickHotelCity.trim()) {
- toast.error("Informe o nome do hotel e a cidade.");
- return;
- }
- setIsSavingHotel(true);
- try {
- const created = await createHotel({
- data: {
- name: quickHotelName.trim(),
- city: quickHotelCity.trim(),
- country: "Brasil",
- stars: 4,
- regime_options: [quickHotelRegime],
- bio_bullets: [
- "🌴 Excelente localização e infraestrutura de lazer",
- `🍹 ${quickHotelRegime}: comodidade e sabor para suas férias`,
- ],
- badges: ["Parceiro Oficial", "Pé na Areia"],
- },
- });
+  const addCustomInclusion = () => {
+    if (!newInclusionText.trim()) return;
+    if (!inclusions.includes(newInclusionText.trim())) {
+      onChange({ ...value, inclusions: [...inclusions, newInclusionText.trim()] });
+    }
+    setNewInclusionText("");
+  };
 
- queryClient.invalidateQueries({ queryKey: ["travel_hotels_options"] });
- updateResort("name", created.name);
- updateResort("meal_plan", quickHotelRegime);
- updateDestination("name", created.city);
- setShowNewHotelModal(false);
- setQuickHotelName("");
- setQuickHotelCity("");
- toast.success(`Hotel "${created.name}" salvo no banco e vinculado!`);
- } catch (err: any) {
- toast.error(err?.message || "Erro ao salvar hotel no banco.");
- } finally {
- setIsSavingHotel(false);
- }
- };
+  // Exclusões
+  const toggleExclusion = (label: string) => {
+    const next = exclusions.includes(label) ? exclusions.filter((i) => i !== label) : [...exclusions, label];
+    onChange({ ...value, exclusions: next });
+  };
 
- // Inclusões
- const toggleInclusion = (label: string) => {
- const next = inclusions.includes(label)
- ? inclusions.filter((i) => i !== label)
- : [...inclusions, label];
- onChange({ ...value, inclusions: next });
- };
+  const addCustomExclusion = () => {
+    if (!newExclusionText.trim()) return;
+    if (!exclusions.includes(newExclusionText.trim())) {
+      onChange({ ...value, exclusions: [...exclusions, newExclusionText.trim()] });
+    }
+    setNewExclusionText("");
+  };
 
- const addCustomInclusion = () => {
- if (!newInclusionText.trim()) return;
- if (!inclusions.includes(newInclusionText.trim())) {
- onChange({ ...value, inclusions: [...inclusions, newInclusionText.trim()] });
- }
- setNewInclusionText("");
- };
+  // Documentação e Requisitos de Embarque
+  const toggleBoardingDoc = (label: string) => {
+    const next = boardingDocs.includes(label) ? boardingDocs.filter((i) => i !== label) : [...boardingDocs, label];
+    onChange({ ...value, boarding_requirements: next });
+  };
 
- // Exclusões
- const toggleExclusion = (label: string) => {
- const next = exclusions.includes(label)
- ? exclusions.filter((i) => i !== label)
- : [...exclusions, label];
- onChange({ ...value, exclusions: next });
- };
+  const addCustomDoc = () => {
+    if (!newDocText.trim()) return;
+    if (!boardingDocs.includes(newDocText.trim())) {
+      onChange({ ...value, boarding_requirements: [...boardingDocs, newDocText.trim()] });
+    }
+    setNewDocText("");
+  };
 
- const addCustomExclusion = () => {
- if (!newExclusionText.trim()) return;
- if (!exclusions.includes(newExclusionText.trim())) {
- onChange({ ...value, exclusions: [...exclusions, newExclusionText.trim()] });
- }
- setNewExclusionText("");
- };
+  // Badges
+  const addBadge = () => {
+    if (!newBadgeText.trim()) return;
+    const current = resort.badges || [];
+    if (!current.includes(newBadgeText.trim())) {
+      updateResort("badges", [...current, newBadgeText.trim()]);
+    }
+    setNewBadgeText("");
+  };
 
- // Badges
- const addBadge = () => {
- if (!newBadgeText.trim()) return;
- const current = resort.badges || [];
- if (!current.includes(newBadgeText.trim())) {
- updateResort("badges", [...current, newBadgeText.trim()]);
- }
- setNewBadgeText("");
- };
+  const removeBadge = (idx: number) => {
+    const current = resort.badges || [];
+    updateResort(
+      "badges",
+      current.filter((_, i) => i !== idx)
+    );
+  };
 
- const removeBadge = (idx: number) => {
- const current = resort.badges || [];
- updateResort(
- "badges",
- current.filter((_, i) => i !== idx)
- );
- };
-
-  // Destaques da Hospedagem (Bio Bullets — Regra 19)
+  // Diferenciais do Pacote (Bio Bullets)
   const addBioBullet = () => {
     if (!newBioBulletText.trim()) return;
     const current = resort.bio_bullets || [];
@@ -323,1640 +468,2103 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
     );
   };
 
- // Itinerário
- const addItineraryDay = () => {
- const nextDayNum = itinerary.length + 1;
- const newDay: TravelItineraryDay = {
- id: `day_${Date.now()}`,
- day: nextDayNum,
- period: "Manhã & Tarde",
- title: `Dia ${nextDayNum} — Atividades e Passeios`,
- description: "Descreva a programação das manhãs, tardes e noites deste dia...",
- };
- onChange({
- ...value,
- itinerary_days: [...itinerary, newDay],
- });
- };
-
- const updateItineraryDay = (index: number, field: string, val: any) => {
- const next = [...itinerary];
- next[index] = { ...next[index], [field]: val };
- onChange({ ...value, itinerary_days: next });
- };
-
- const removeItineraryDay = (index: number) => {
- const next = itinerary
- .filter((_, i) => i !== index)
- .map((item, i) => ({ ...item, day: i + 1 }));
- onChange({ ...value, itinerary_days: next });
- };
-
- const moveDay = (index: number, direction: "up" | "down") => {
- const targetIdx = direction === "up" ? index - 1 : index + 1;
- if (targetIdx < 0 || targetIdx >= itinerary.length) return;
- const next = [...itinerary];
- const temp = next[index];
- next[index] = next[targetIdx];
- next[targetIdx] = temp;
- const reindexed = next.map((item, i) => ({ ...item, day: i + 1 }));
- onChange({ ...value, itinerary_days: reindexed });
- };
-
- // Recomendações locais
- const addRecommendation = () => {
- const newRec: TravelNearbyRecommendation = {
- id: `rec_${Date.now()}`,
- title: "",
- category: "",
- distance: "",
- rating: 0,
- };
- onChange({
- ...value,
- recommendations: [...recommendations, newRec],
- });
- };
-
- const updateRecommendation = (index: number, field: string, val: any) => {
- const next = [...recommendations];
- next[index] = { ...next[index], [field]: val };
- onChange({ ...value, recommendations: next });
- };
-
- const removeRecommendation = (index: number) => {
- const next = recommendations.filter((_, i) => i !== index);
- onChange({ ...value, recommendations: next });
- };
-
- return (
- <div className="space-y-6 animate-in fade-in duration-200">
- {/* ── 1. DESTINO TURÍSTICO & BANCO CANÔNICO ── */}
- <div className="bg-card rounded-lg p-5 space-y-4 border border-border/70 shadow-2xs">
- <div className="flex items-center justify-between pb-2 border-b border-border/40">
- <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
- <MapPin className="size-4 text-primary" />
- <span>Destino Turístico da Viagem</span>
- </div>
-
- <Button
- type="button"
- size="sm"
- variant="outline"
- onClick={() => setShowNewDestModal(!showNewDestModal)}
- className="rounded-lg text-xs font-semibold gap-1 h-8 cursor-pointer"
- >
- <Plus className="size-3.5" />
- <span>+ Novo Destino Rápido</span>
- </Button>
- </div>
-
- {/* Seletor de Destino Pré-cadastrado */}
- {destinationsList.length > 0 && (
- <div className="p-3 rounded-lg bg-muted/20 border border-border/50 space-y-2">
- <Label className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1">
- <Sliders className="size-3 text-primary" />
- <span>Vincular do Banco de Destinos Cadastrados</span>
- </Label>
- <Select onValueChange={handleSelectDestinationFromBank}>
- <SelectTrigger className="h-9 rounded-lg text-xs bg-background">
- <SelectValue placeholder="Escolher um destino do banco..." />
- </SelectTrigger>
- <SelectContent>
- {destinationsList.map((d: DestinationDTO) => (
- <SelectItem key={d.id} value={d.id}>
- {d.name} ({d.region || d.country})
- </SelectItem>
- ))}
- </SelectContent>
- </Select>
- </div>
- )}
-
- {/* Modal Inline de Cadastro Rápido de Destino */}
- {showNewDestModal && (
- <div className="p-4 rounded-lg bg-muted/40 border border-primary/30 space-y-3">
- <div className="flex items-center justify-between">
- <h4 className="text-xs font-bold text-foreground">Cadastrar Novo Destino no Banco</h4>
- <button
- type="button"
- onClick={() => setShowNewDestModal(false)}
- className="size-5 flex items-center justify-center text-muted-foreground hover:text-foreground"
- >
- <X className="size-3.5" />
- </button>
- </div>
- <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
- <div className="space-y-1">
- <Label className="text-[11px] font-semibold text-muted-foreground">Cidade / Destino</Label>
- <Input
- value={quickDestName}
- onChange={(e) => setQuickDestName(e.target.value)}
- placeholder="Ex: Ilhéus, Maceió, Natal"
- className="h-9 rounded-lg text-xs bg-background"
- disabled={isSavingDest}
- />
- </div>
- <div className="space-y-1">
- <Label className="text-[11px] font-semibold text-muted-foreground">Estado / Região</Label>
- <Input
- value={quickDestRegion}
- onChange={(e) => setQuickDestRegion(e.target.value)}
- placeholder="Ex: Bahia, Alagoas, Rio Grande do Norte"
- className="h-9 rounded-lg text-xs bg-background"
- disabled={isSavingDest}
- />
- </div>
- </div>
- <div className="flex justify-end gap-2 pt-1">
- <Button
- type="button"
- size="sm"
- variant="ghost"
- onClick={() => setShowNewDestModal(false)}
- disabled={isSavingDest}
- className="rounded-lg text-xs"
- >
- Cancelar
- </Button>
- <Button
- type="button"
- size="sm"
- onClick={handleQuickAddDest}
- disabled={isSavingDest || !quickDestName.trim()}
- className="rounded-lg text-xs font-semibold bg-primary text-primary-foreground gap-2"
- >
- {isSavingDest ? (
- <>
- <Loader2 className="size-3.5 animate-spin" />
- <span>Salvando...</span>
- </>
- ) : (
- <>
- <Check className="size-3.5" />
- <span>Salvar Destino</span>
- </>
- )}
- </Button>
- </div>
- </div>
- )}
-
- <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
- <div className="space-y-1 sm:col-span-2">
- <Label className="text-[11px] font-semibold text-muted-foreground">Nome da Cidade / Destino</Label>
- <Input
- value={destination.name || ""}
- onChange={(e) => updateDestination("name", e.target.value)}
- placeholder="Ex: Ilhéus, Gramado, Maceió"
- className="h-9 rounded-lg text-xs bg-background"
- />
- </div>
- <div className="space-y-1">
- <Label className="text-[11px] font-semibold text-muted-foreground">Estado / País</Label>
- <Input
- value={destination.region || ""}
- onChange={(e) => updateDestination("region", e.target.value)}
- placeholder="Ex: Bahia, Brasil"
- className="h-9 rounded-lg text-xs bg-background"
- />
- </div>
- <div className="space-y-1 sm:col-span-3">
- <Label className="text-[11px] font-semibold text-muted-foreground">Resumo de Logística / Como Chegar</Label>
- <Input
- value={destination.flight_summary || ""}
- onChange={(e) => updateDestination("flight_summary", e.target.value)}
- placeholder="Ex: Voo fretado direto + transfer in/out garantido com saída regional..."
- className="h-9 rounded-lg text-xs bg-background"
- />
- </div>
- </div>
- </div>
-
- {/* ── 1b. TIPO DE TRANSPORTE ── */}
- <div className="bg-card rounded-lg p-5 space-y-4 border border-border/70 shadow-2xs">
- <div className="flex items-center gap-2 pb-2 border-b border-border/40 text-xs font-bold uppercase tracking-wider text-foreground">
- <Plane className="size-4 text-primary" />
- <span>Tipo de Transporte do Pacote</span>
- </div>
-
- <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
- {(["aereo", "terrestre", "cruzeiro", "misto"] as const).map((type) => {
- const labelMap = {
- aereo: "✈️ Aéreo",
- terrestre: "🚌 Terrestre",
- cruzeiro: "🛳️ Cruzeiro",
- misto: "🔀 Misto",
- };
- const isSelected = (value.transport_type || "aereo") === type;
- return (
- <button
- key={type}
- type="button"
- onClick={() => onChange({ ...value, transport_type: type })}
- className={[
- "rounded-lg border py-2 px-3 text-xs font-semibold transition-all cursor-pointer text-center",
- isSelected
- ? "border-primary bg-primary/10 text-primary"
- : "border-border/60 bg-background text-muted-foreground hover:border-primary/50",
- ].join(" ")}
- >
- {labelMap[type]}
- </button>
- );
- })}
- </div>
-
- {/* Campos condicionais por tipo */}
- {(value.transport_type === "aereo" || !value.transport_type) && (
- <p className="text-[11px] text-muted-foreground">
- Configure os detalhes do voo na seção <strong>Voo e Logística Aérea</strong> abaixo.
- </p>
- )}
- {value.transport_type === "terrestre" && (
- <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
- <div className="space-y-1">
- <label className="text-[11px] font-semibold text-muted-foreground">Ponto de Embarque</label>
- <input
- value={value.flight_details?.origin_airport || ""}
- onChange={(e) => updateFlightDetails("origin_airport", e.target.value)}
- placeholder="Ex: Terminal Rodoviário de Chapecó"
- className="flex h-9 w-full rounded-lg border border-input bg-background px-3 text-xs"
- />
- </div>
- <div className="space-y-1">
- <label className="text-[11px] font-semibold text-muted-foreground">Ponto de Desembarque</label>
- <input
- value={value.flight_details?.destination_iata || ""}
- onChange={(e) => updateFlightDetails("destination_iata", e.target.value)}
- placeholder="Ex: Terminal Turístico de Ilhéus"
- className="flex h-9 w-full rounded-lg border border-input bg-background px-3 text-xs"
- />
- </div>
- </div>
- )}
- {value.transport_type === "cruzeiro" && (
- <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
- <div className="space-y-1">
- <label className="text-[11px] font-semibold text-muted-foreground">Porto de Embarque</label>
- <input
- value={value.flight_details?.origin_airport || ""}
- onChange={(e) => updateFlightDetails("origin_airport", e.target.value)}
- placeholder="Ex: Porto de Santos, Terminal Marítimo"
- className="flex h-9 w-full rounded-lg border border-input bg-background px-3 text-xs"
- />
- </div>
- <div className="space-y-1">
- <label className="text-[11px] font-semibold text-muted-foreground">Navio / Armador</label>
- <input
- value={value.flight_details?.airline_partner || ""}
- onChange={(e) => updateFlightDetails("airline_partner", e.target.value)}
- placeholder="Ex: MSC Seashore, Costa Diadema"
- className="flex h-9 w-full rounded-lg border border-input bg-background px-3 text-xs"
- />
- </div>
- </div>
- )}
- {value.transport_type === "misto" && (
- <p className="text-[11px] text-muted-foreground">
- Este pacote combina múltiplos modais. Configure os detalhes de cada trecho na seção de Voo e Logística abaixo e use o campo de Observações para detalhar os trechos terrestres ou marítimos.
- </p>
- )}
- </div>
-
- {/* ── 2. HOSPEDAGEM & BANCO DE HOTÉIS ── */}
- <div className="bg-card rounded-lg p-5 space-y-4 border border-border/70 shadow-2xs">
- <div className="flex items-center justify-between pb-2 border-b border-border/40">
- <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
- <Hotel className="size-4 text-primary" />
- <span>Hospedagem, Resort e Comodidades</span>
- </div>
-
- <div className="flex items-center gap-2">
- {hotelsBankList.length > 0 && (
- <Badge variant="outline" className="text-[10px] font-mono">
- {hotelsBankList.length} no Banco
- </Badge>
- )}
- <Button
- type="button"
- size="sm"
- variant="outline"
- onClick={() => setShowNewHotelModal(!showNewHotelModal)}
- className="rounded-lg text-xs font-semibold gap-1 h-8 cursor-pointer"
- >
- <Plus className="size-3.5" />
- <span>+ Novo Hotel Rápido</span>
- </Button>
- </div>
- </div>
-
- {/* Modal Inline de Cadastro Rápido de Hotel */}
- {showNewHotelModal && (
- <div className="p-4 rounded-lg bg-muted/40 border border-primary/30 space-y-3">
- <div className="flex items-center justify-between">
- <h4 className="text-xs font-bold text-foreground">Cadastrar Novo Hotel no Banco</h4>
- <button
- type="button"
- onClick={() => setShowNewHotelModal(false)}
- className="size-5 flex items-center justify-center text-muted-foreground hover:text-foreground"
- >
- <X className="size-3.5" />
- </button>
- </div>
- <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
- <div className="space-y-1 sm:col-span-2">
- <Label className="text-[11px] font-semibold text-muted-foreground">Nome do Hotel/Resort</Label>
- <Input
- value={quickHotelName}
- onChange={(e) => setQuickHotelName(e.target.value)}
- placeholder="Ex: Resort Tororomba, Carmel Charme Resort"
- className="h-9 rounded-lg text-xs bg-background"
- disabled={isSavingHotel}
- />
- </div>
- <div className="space-y-1">
- <Label className="text-[11px] font-semibold text-muted-foreground">Cidade / UF</Label>
- <Input
- value={quickHotelCity}
- onChange={(e) => setQuickHotelCity(e.target.value)}
- placeholder="Ex: Ilhéus, BA"
- className="h-9 rounded-lg text-xs bg-background"
- disabled={isSavingHotel}
- />
- </div>
- </div>
- <div className="space-y-1">
- <Label className="text-[11px] font-semibold text-muted-foreground">Regime Alimentar</Label>
- <Select value={quickHotelRegime} onValueChange={setQuickHotelRegime} disabled={isSavingHotel}>
- <SelectTrigger className="h-9 rounded-lg text-xs bg-background">
- <SelectValue />
- </SelectTrigger>
- <SelectContent>
- <SelectItem value="All Inclusive">🍹 All Inclusive (Tudo Incluso)</SelectItem>
- <SelectItem value="Pensão Completa">🍽️ Pensão Completa (3 Refeições)</SelectItem>
- <SelectItem value="Café da Manhã">🥐 Café da Manhã</SelectItem>
- </SelectContent>
- </Select>
- </div>
- <div className="flex justify-end gap-2 pt-1">
- <Button
- type="button"
- size="sm"
- variant="ghost"
- onClick={() => setShowNewHotelModal(false)}
- disabled={isSavingHotel}
- className="rounded-lg text-xs"
- >
- Cancelar
- </Button>
- <Button
- type="button"
- size="sm"
- onClick={handleQuickAddHotel}
- disabled={isSavingHotel || !quickHotelName.trim() || !quickHotelCity.trim()}
- className="rounded-lg text-xs font-semibold bg-primary text-primary-foreground gap-2"
- >
- {isSavingHotel ? (
- <>
- <Loader2 className="size-3.5 animate-spin" />
- <span>Salvando...</span>
- </>
- ) : (
- <>
- <Check className="size-3.5" />
- <span>Salvar Hotel</span>
- </>
- )}
- </Button>
- </div>
- </div>
- )}
-
- {/* Seletor de Hotel do Banco para Auto-preenchimento */}
- {hotelsBankList.length > 0 && (
- <div className="p-3 rounded-lg bg-primary/5 border border-primary/20 space-y-2">
- <Label className="text-[11px] font-semibold text-primary flex items-center gap-2">
- <Sliders className="size-3.5 text-primary" />
- <span>Auto-preencher pelo Banco de Hotéis / Resorts</span>
- </Label>
- <Select onValueChange={handleSelectHotelFromBank}>
- <SelectTrigger className="h-9 rounded-lg text-xs bg-background">
- <SelectValue placeholder="Selecione um hotel parceiro para carregar fotos e dados..." />
- </SelectTrigger>
- <SelectContent>
- {hotelsBankList.map((h: HotelBankDTO) => (
- <SelectItem key={h.id} value={h.id}>
- {h.name} — {h.city}/{h.state || h.country} ({h.regime_options[0] || "Hospedagem"})
- </SelectItem>
- ))}
- </SelectContent>
- </Select>
- </div>
- )}
-
- <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
- <div className="space-y-2">
- <Label className="text-[11px] font-semibold text-muted-foreground">Nome do Hotel / Resort</Label>
- <Input
- value={resort.name || ""}
- onChange={(e) => updateResort("name", e.target.value)}
- placeholder="Ex: Resort Tororomba, Hotel Fasano"
- className="h-9 rounded-lg text-xs bg-background"
- />
- </div>
-
- <div className="space-y-2">
- <Label className="text-[11px] font-semibold text-muted-foreground">Regime de Alimentação</Label>
- <Select
- value={resort.meal_plan || ""}
- onValueChange={(val) => updateResort("meal_plan", val)}
- >
- <SelectTrigger className="h-9 rounded-lg text-xs bg-background">
- <SelectValue />
- </SelectTrigger>
- <SelectContent>
- <SelectItem value="All Inclusive">🍹 All Inclusive (Tudo Incluso)</SelectItem>
- <SelectItem value="Pensão Completa">🍽️ Pensão Completa (Café, Almoço e Jantar)</SelectItem>
- <SelectItem value="Meia Pensão">☕ Meia Pensão (Café e Jantar)</SelectItem>
- <SelectItem value="Café da Manhã">🥐 Café da Manhã Incluso</SelectItem>
- <SelectItem value="Sem Refeições">🏨 Apenas Hospedagem</SelectItem>
- </SelectContent>
- </Select>
- </div>
- </div>
-
- <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
- <div className="space-y-2">
- <Label className="text-[11px] font-semibold text-muted-foreground">Duração da Estadia</Label>
- <Input
- value={resort.duration_text || ""}
- onChange={(e) => updateResort("duration_text", e.target.value)}
- placeholder="Ex: 5 Dias / 4 Noites, 7 Dias"
- className="h-9 rounded-lg text-xs bg-background font-mono"
- />
- </div>
-
- <div className="space-y-2">
- <Label className="text-[11px] font-semibold text-muted-foreground">Hóspedes / Acomodação</Label>
- <Input
- value={resort.guests_text || ""}
- onChange={(e) => updateResort("guests_text", e.target.value)}
- placeholder="Ex: 2 Adultos, 2 Adultos + 1 Criança Free"
- className="h-9 rounded-lg text-xs bg-background"
- />
- </div>
- </div>
-
- {/* Badges do Resort (ex: Eco-friendly, Pé na Areia) */}
- <div className="space-y-2 pt-2 border-t border-border/30">
- <Label className="text-[11px] font-semibold text-muted-foreground">Badges do Hotel</Label>
- <div className="flex flex-wrap items-center gap-2">
- {(resort.badges || []).map((badge, idx) => (
- <span
- key={idx}
- className="inline-flex items-center gap-2 px-3 py-1 rounded-lg text-xs bg-muted text-foreground border border-border/60"
- >
- <span>{badge}</span>
- <button
- type="button"
- onClick={() => removeBadge(idx)}
- className="size-3.5 hover:text-destructive text-muted-foreground cursor-pointer"
- >
- ×
- </button>
- </span>
- ))}
- <div className="flex items-center gap-2">
- <Input
- value={newBadgeText}
- onChange={(e) => setNewBadgeText(e.target.value)}
- onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addBadge())}
- placeholder="Ex: Pé na Areia..."
- className="h-8 w-36 rounded-lg text-xs bg-background"
- />
- <Button type="button" size="sm" variant="ghost" onClick={addBadge} className="h-8 px-2 text-xs">
- +
- </Button>
- </div>
- </div>
- </div>
-
- {/* Destaques da Hospedagem & Especificações (Bio Bullets — Regra 19 Paridade CMS ↔ Vitrine) */}
- <div className="space-y-2 pt-3 border-t border-border/30">
- <div className="flex items-center justify-between">
- <Label className="text-[11px] font-semibold text-muted-foreground flex items-center gap-2">
- <CheckCircle2 className="size-3.5 text-primary" />
- <span>Destaques da Hospedagem (Bio Bullets na Vitrine)</span>
- </Label>
- <span className="text-[10px] text-muted-foreground font-mono">
- {(resort.bio_bullets || []).length} destaques
- </span>
- </div>
-
- <div className="space-y-2">
- {(resort.bio_bullets || []).map((bullet, idx) => (
- <div
- key={idx}
- className="flex items-center justify-between gap-2 p-2 rounded-lg bg-muted/30 border border-border/50 text-xs"
- >
- <div className="flex items-center gap-2 min-w-0">
- <CheckCircle2 className="size-3.5 text-primary shrink-0" />
- <span className="text-foreground truncate">{bullet}</span>
- </div>
- <button
- type="button"
- onClick={() => removeBioBullet(idx)}
- className="size-5 flex items-center justify-center text-muted-foreground hover:text-destructive shrink-0 cursor-pointer"
- title="Remover destaque"
- >
- <Trash2 className="size-3" />
- </button>
- </div>
- ))}
-
- <div className="flex items-center gap-2 pt-1">
- <Input
- value={newBioBulletText}
- onChange={(e) => setNewBioBulletText(e.target.value)}
- onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addBioBullet())}
- placeholder="Ex: Piscina térmica com bar molhado, Spa completo..."
- className="h-9 rounded-lg text-xs bg-background flex-1"
- />
- <Button
- type="button"
- size="sm"
- variant="outline"
- onClick={addBioBullet}
- className="rounded-lg text-xs font-semibold gap-1 h-9 cursor-pointer"
- >
- <Plus className="size-3.5" />
- <span>Adicionar</span>
- </Button>
- </div>
- </div>
- </div>
- </div>
-
- {/* ── 3. CHECKLIST INTERATIVO DE INCLUSÕES ("O QUE INCLUI") ── */}
- <div className="bg-card rounded-lg p-5 space-y-4 border border-border/70 shadow-2xs">
- <div className="flex items-center justify-between pb-2 border-b border-border/40">
- <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
- <ShieldCheck className="size-4 text-emerald-500" />
- <span>Checklist de Inclusões ("O que inclui")</span>
- </div>
- <Badge variant="outline" className="text-xs font-mono text-emerald-600 dark:text-emerald-400">
- {inclusions.length} Inclusos
- </Badge>
- </div>
-
- <div className="space-y-2">
- <p className="text-xs text-muted-foreground">
- Selecione os itens garantidos no pacote para gerar a lista na página:
- </p>
- <div className="flex flex-wrap gap-2">
- {DEFAULT_TRAVEL_INCLUSIONS_PRESETS.map((preset) => {
- const active = inclusions.includes(preset.label);
- return (
- <button
- key={preset.id}
- type="button"
- onClick={() => toggleInclusion(preset.label)}
- className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer border ${
- active
- ? "bg-emerald-500/10 border-emerald-500/40 text-emerald-700 dark:text-emerald-300 shadow-2xs"
- : "bg-muted/40 border-border/60 text-muted-foreground hover:text-foreground"
- }`}
- >
- <span>{preset.emoji}</span>
- <span>{preset.label}</span>
- {active && <Check className="size-3 text-emerald-500 stroke-[3]" />}
- </button>
- );
- })}
- </div>
- </div>
-
- <div className="flex items-center gap-2 pt-2 border-t border-border/30">
- <Input
- value={newInclusionText}
- onChange={(e) => setNewInclusionText(e.target.value)}
- onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addCustomInclusion())}
- placeholder="Adicionar item personalizado (ex: Passeio de Escuna, Aluguel de Carro)..."
- className="h-9 rounded-lg text-xs bg-background flex-1"
- />
- <Button
- type="button"
- size="sm"
- variant="outline"
- onClick={addCustomInclusion}
- className="rounded-lg text-xs font-semibold gap-1 h-9 cursor-pointer"
- >
- <Plus className="size-3.5" />
- <span>Adicionar</span>
- </Button>
- </div>
- </div>
-
- {/* ── 4. CHECKLIST DE EXCLUSÕES ("O QUE NÃO INCLUI") ── */}
- <div className="bg-card rounded-lg p-5 space-y-4 border border-border/70 shadow-2xs">
- <div className="flex items-center justify-between pb-2 border-b border-border/40">
- <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
- <ShieldAlert className="size-4 text-amber-500" />
- <span>Checklist de Exclusões ("O que NÃO inclui")</span>
- </div>
- <Badge variant="outline" className="text-xs font-mono text-amber-600 dark:text-amber-400">
- {exclusions.length} Excluídos
- </Badge>
- </div>
-
- <div className="space-y-2">
- <p className="text-xs text-muted-foreground">
- Deixe explícito o que fica por conta do cliente para evitar dúvidas contratuais:
- </p>
- <div className="flex flex-wrap gap-2">
- {DEFAULT_TRAVEL_EXCLUSIONS_PRESETS.map((preset) => {
- const active = exclusions.includes(preset.label);
- return (
- <button
- key={preset.id}
- type="button"
- onClick={() => toggleExclusion(preset.label)}
- className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer border ${
- active
- ? "bg-amber-500/10 border-amber-500/40 text-amber-700 dark:text-amber-300 shadow-2xs"
- : "bg-muted/40 border-border/60 text-muted-foreground hover:text-foreground"
- }`}
- >
- <span>{preset.emoji}</span>
- <span>{preset.label}</span>
- {active && <Check className="size-3 text-amber-500 stroke-[3]" />}
- </button>
- );
- })}
- </div>
- </div>
-
- <div className="flex items-center gap-2 pt-2 border-t border-border/30">
- <Input
- value={newExclusionText}
- onChange={(e) => setNewExclusionText(e.target.value)}
- onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addCustomExclusion())}
- placeholder="Adicionar exclusão personalizada (ex: Bebidas destiladas fora do buffet)..."
- className="h-9 rounded-lg text-xs bg-background flex-1"
- />
- <Button
- type="button"
- size="sm"
- variant="outline"
- onClick={addCustomExclusion}
- className="rounded-lg text-xs font-semibold gap-1 h-9 cursor-pointer"
- >
- <Plus className="size-3.5" />
- <span>Adicionar</span>
- </Button>
- </div>
- </div>
-
- {/* ── 4B. CONDIÇÕES COMERCIAIS & PARCELAMENTO REAL (Bilateral) ── */}
- <div className="bg-card rounded-lg p-5 space-y-4 border border-border/70 shadow-2xs">
- <div className="flex items-center justify-between pb-2 border-b border-border/40">
- <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
- <CreditCard className="size-4 text-primary" />
- <span>Condições de Pagamento e Parcelamento</span>
- </div>
- </div>
-
- <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
- <div className="space-y-2">
- <Label className="text-xs font-medium text-foreground">Máximo de Parcelas (Cartão)</Label>
- <Select
- value={String(value.payment_conditions?.installments_max || 12)}
- onValueChange={(v) =>
- onChange({
- ...value,
- payment_conditions: {
- ...value.payment_conditions,
- installments_max: parseInt(v) || 12,
- },
- })
- }
- >
- <SelectTrigger className="h-9 rounded-lg text-xs bg-background">
- <SelectValue />
- </SelectTrigger>
- <SelectContent>
- <SelectItem value="1">1x (À vista)</SelectItem>
- <SelectItem value="3">Até 3x</SelectItem>
- <SelectItem value="6">Até 6x</SelectItem>
- <SelectItem value="10">Até 10x</SelectItem>
- <SelectItem value="12">Até 12x</SelectItem>
- <SelectItem value="18">Até 18x</SelectItem>
- <SelectItem value="24">Até 24x</SelectItem>
- </SelectContent>
- </Select>
- </div>
-
- <div className="space-y-2">
- <Label className="text-xs font-medium text-foreground">Parcelas Sem Juros</Label>
- <Select
- value={String(value.payment_conditions?.installments_fee_free || 6)}
- onValueChange={(v) =>
- onChange({
- ...value,
- payment_conditions: {
- ...value.payment_conditions,
- installments_fee_free: parseInt(v) || 6,
- },
- })
- }
- >
- <SelectTrigger className="h-9 rounded-lg text-xs bg-background">
- <SelectValue />
- </SelectTrigger>
- <SelectContent>
- <SelectItem value="1">1x (Apenas à vista)</SelectItem>
- <SelectItem value="3">3x sem juros</SelectItem>
- <SelectItem value="6">6x sem juros</SelectItem>
- <SelectItem value="10">10x sem juros</SelectItem>
- <SelectItem value="12">12x sem juros</SelectItem>
- </SelectContent>
- </Select>
- </div>
-
- <div className="space-y-2">
- <Label className="text-xs font-medium text-foreground">Desconto no PIX (%)</Label>
- <Input
- type="number"
- min="0"
- max="50"
- value={value.payment_conditions?.pix_discount_percent ?? 5}
- onChange={(e) =>
- onChange({
- ...value,
- payment_conditions: {
- ...value.payment_conditions,
- accepts_pix: true,
- pix_discount_percent: parseFloat(e.target.value) || 0,
- },
- })
- }
- placeholder="Ex: 5"
- className="h-9 rounded-lg text-xs bg-background font-mono"
- />
- </div>
- </div>
-
- <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
- <div className="space-y-2">
- <Label className="text-xs font-medium text-foreground">Sinal / Entrada para Reserva (%)</Label>
- <Input
- type="number"
- min="0"
- max="100"
- value={value.payment_conditions?.deposit_percent ?? 30}
- onChange={(e) =>
- onChange({
- ...value,
- payment_conditions: {
- ...value.payment_conditions,
- deposit_percent: parseFloat(e.target.value) || 0,
- },
- })
- }
- placeholder="Ex: 30 (% do total)"
- className="h-9 rounded-lg text-xs bg-background font-mono"
- />
- </div>
-
- <div className="space-y-2">
- <Label className="text-xs font-medium text-foreground">Prazo do Saldo Restante (Dias antes do embarque)</Label>
- <Input
- type="number"
- min="1"
- max="90"
- value={value.payment_conditions?.balance_deadline_days ?? 15}
- onChange={(e) =>
- onChange({
- ...value,
- payment_conditions: {
- ...value.payment_conditions,
- balance_deadline_days: parseInt(e.target.value) || 15,
- },
- })
- }
- placeholder="Ex: 15 dias"
- className="h-9 rounded-lg text-xs bg-background font-mono"
- />
- </div>
- </div>
- </div>
-
- {/* ── 5. ROTEIRO DIA A DIA (ITINERÁRIO ENRIQUECIDO) ── */}
- <div className="bg-card rounded-lg p-5 space-y-4 border border-border/70 shadow-2xs">
- <div className="flex items-center justify-between pb-2 border-b border-border/40">
- <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
- <Calendar className="size-4 text-primary" />
- <span>Roteiro Dia a Dia (Programação Detalhada)</span>
- </div>
-
- <Button
- type="button"
- size="sm"
- variant="outline"
- onClick={addItineraryDay}
- className="rounded-lg text-xs font-semibold gap-2 h-8 cursor-pointer"
- >
- <Plus className="size-3.5" />
- <span>+ Adicionar Dia</span>
- </Button>
- </div>
-
- <div className="space-y-4">
- {itinerary.map((day, idx) => (
- <div
- key={day.id || idx}
- className="p-4 rounded-lg border border-border/60 bg-muted/20 space-y-3 relative group"
- >
- <div className="flex items-center justify-between pb-1 border-b border-border/30">
- <div className="flex items-center gap-2">
- <span className="size-6 rounded-full bg-primary/10 text-primary font-bold text-xs flex items-center justify-center">
- {day.day}
- </span>
- <span className="text-xs font-bold text-foreground">Dia {day.day}</span>
- </div>
-
- <div className="flex items-center gap-1">
- <Button
- type="button"
- size="icon"
- variant="ghost"
- disabled={idx === 0}
- onClick={() => moveDay(idx, "up")}
- className="size-7 text-muted-foreground hover:text-foreground rounded-lg cursor-pointer"
- title="Mover para cima"
- >
- <ArrowUp className="size-3" />
- </Button>
- <Button
- type="button"
- size="icon"
- variant="ghost"
- disabled={idx === itinerary.length - 1}
- onClick={() => moveDay(idx, "down")}
- className="size-7 text-muted-foreground hover:text-foreground rounded-lg cursor-pointer"
- title="Mover para baixo"
- >
- <ArrowDown className="size-3" />
- </Button>
- <Button
- type="button"
- size="icon"
- variant="ghost"
- onClick={() => removeItineraryDay(idx)}
- className="size-7 text-destructive hover:bg-destructive/10 rounded-lg cursor-pointer"
- title="Remover dia"
- >
- <Trash2 className="size-3.5" />
- </Button>
- </div>
- </div>
-
- <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
- <div className="space-y-1 sm:col-span-2">
- <Label className="text-[11px] font-semibold text-muted-foreground">Título do Dia</Label>
- <Input
- value={day.title}
- onChange={(e) => updateItineraryDay(idx, "title", e.target.value)}
- placeholder="Ex: Chegada e Check-in, City Tour Histórico"
- className="h-9 rounded-lg text-xs bg-background font-semibold"
- />
- </div>
- <div className="space-y-1">
- <Label className="text-[11px] font-semibold text-muted-foreground">Turno / Horário</Label>
- <Input
- value={day.period || ""}
- onChange={(e) => updateItineraryDay(idx, "period", e.target.value)}
- placeholder="Ex: Manhã, Tarde, Dia Todo"
- className="h-9 rounded-lg text-xs bg-background"
- />
- </div>
- <div className="space-y-1">
- <Label className="text-[11px] font-semibold text-muted-foreground">Data (Opcional)</Label>
- <Input
- value={day.date || ""}
- onChange={(e) => updateItineraryDay(idx, "date", e.target.value)}
- placeholder="Ex: 23 Out"
- className="h-9 rounded-lg text-xs bg-background font-mono"
- />
- </div>
- </div>
-
- <div className="space-y-1">
- <Label className="text-[11px] font-semibold text-muted-foreground">Descrição da Programação</Label>
- <Textarea
- value={day.description}
- onChange={(e) => updateItineraryDay(idx, "description", e.target.value)}
- rows={2}
- placeholder="Detalhes das atividades, paradas para fotos, almoço e dicas do guia..."
- className="rounded-lg text-xs bg-background"
- />
- </div>
-
- <div className="space-y-1">
- <Label className="text-[11px] font-semibold text-muted-foreground">Foto do Dia</Label>
- <ImageUpload
- value={day.imageUrl || ""}
- onChange={(url) => updateItineraryDay(idx, "imageUrl", url)}
- onRemove={() => updateItineraryDay(idx, "imageUrl", "")}
- bucket="destination-media"
- aspectPreset="widescreen"
- helperText="Upload da foto das atividades do dia"
- />
- </div>
- </div>
- ))}
- </div>
- </div>
-
- {/* ── 6. SEÇÃO EXPANSÍVEL: LOGÍSTICA MULTIMODAL & HORÁRIOS REAIS ── */}
- <div className="bg-card rounded-lg border border-border/70 shadow-2xs overflow-hidden">
- <button
- type="button"
- onClick={() => setIsAdvancedFlightsOpen(!isAdvancedFlightsOpen)}
- className="w-full p-4 flex items-center justify-between text-left hover:bg-muted/20 transition-colors cursor-pointer"
- >
- <div className="flex items-center gap-2">
- {value.transport_type === "terrestre" ? (
- <Bus className="size-4 text-primary" />
- ) : value.transport_type === "cruzeiro" ? (
- <Ship className="size-4 text-primary" />
- ) : value.transport_type === "misto" ? (
- <Layers className="size-4 text-primary" />
- ) : (
- <Plane className="size-4 text-primary" />
- )}
- <div>
- <h4 className="text-xs font-bold text-foreground">
- {value.transport_type === "terrestre"
- ? "Logística Rodoviária & Transporte Terrestre (Ônibus/Van)"
- : value.transport_type === "cruzeiro"
- ? "Logística Marítima & Cruzeiro (Navio, Cabine & Portos)"
- : value.transport_type === "misto"
- ? "Logística Multimodal Combinada (Aéreo, Terrestre & Cruzeiro)"
- : "Logística Aérea & Voos Garantidos (Trecho Ida, Volta & Transfer)"}
- </h4>
- <p className="text-[11px] text-muted-foreground">
- {value.transport_type === "terrestre"
- ? "Configurar empresa de ônibus, categoria de poltrona, terminais e horários de embarque"
- : value.transport_type === "cruzeiro"
- ? "Configurar companhia marítima, navio, categoria de cabine, portos e horários de check-in"
- : value.transport_type === "misto"
- ? "Configurar múltiplos trechos integrados (voo, ônibus e navio) no mesmo pacote"
- : "Configurar companhia aérea canônica, número dos voos, horários e transfer aeroporto/hotel"}
- </p>
- </div>
- </div>
- {isAdvancedFlightsOpen ? <ChevronUp className="size-4 text-muted-foreground" /> : <ChevronDown className="size-4 text-muted-foreground" />}
- </button>
-
- {isAdvancedFlightsOpen && (
- <div className="p-5 pt-0 space-y-4 border-t border-border/40 animate-in fade-in duration-150">
- 
- {/* ─── MODAL AÉREO ─── */}
- {(value.transport_type === "aereo" || !value.transport_type || value.transport_type === "misto") && (
- <div className="space-y-4 pt-3">
- {value.transport_type === "misto" && (
- <span className="text-[11px] font-bold uppercase tracking-wider text-primary flex items-center gap-2">
- <Plane className="size-3.5" /> 1. Trecho Aéreo do Pacote
- </span>
- )}
- 
- {/* Companhia Aérea e Duração */}
- <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
- <div className="space-y-1">
- <Label className="text-xs font-medium text-muted-foreground">Companhia Aérea Canônica</Label>
- <Select
- value={flightDetails.airline_name || flightDetails.airline_partner || ""}
- onValueChange={(val) => {
- updateFlightDetails("airline_name", val);
- updateFlightDetails("airline_partner", val);
- }}
- >
- <SelectTrigger className="h-9 rounded-lg text-xs bg-background">
- <SelectValue placeholder="Selecione a Cia Aérea..." />
- </SelectTrigger>
- <SelectContent>
- {CANONICAL_AIRLINES.map((airline) => (
- <SelectItem key={airline} value={airline}>
- {airline}
- </SelectItem>
- ))}
- </SelectContent>
- </Select>
- </div>
-
- <div className="space-y-1">
- <Label className="text-xs font-medium text-muted-foreground">Duração Estimada do Voo</Label>
- <Input
- value={flightDetails.flight_duration || ""}
- onChange={(e) => updateFlightDetails("flight_duration", e.target.value)}
- placeholder="Ex: 2h15 direto"
- className="h-9 rounded-lg text-xs bg-background"
- />
- </div>
- </div>
-
- {/* Voo de Ida */}
- <div className="p-4 rounded-lg bg-muted/20 border border-border/50 space-y-3">
- <div className="flex items-center justify-between">
- <span className="text-xs font-semibold text-foreground flex items-center gap-2">
- <Plane className="size-3.5 text-primary" /> Voo de Ida (Embarque)
- </span>
- <span className="text-[10px] text-muted-foreground font-mono">Trecho 1</span>
- </div>
- <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
- <div className="space-y-1">
- <Label className="text-[11px] text-muted-foreground">Nº do Voo</Label>
- <Input
- value={flightDetails.flight_number_out || ""}
- onChange={(e) => updateFlightDetails("flight_number_out", e.target.value)}
- placeholder="Ex: LA3001"
- className="h-9 rounded-lg text-xs bg-background font-mono font-semibold"
- />
- </div>
- <div className="space-y-1">
- <Label className="text-[11px] text-muted-foreground">Horário de Saída</Label>
- <Input
- value={flightDetails.departure_time_out || ""}
- onChange={(e) => updateFlightDetails("departure_time_out", e.target.value)}
- placeholder="Ex: 08:30"
- className="h-9 rounded-lg text-xs bg-background font-mono"
- />
- </div>
- <div className="space-y-1">
- <Label className="text-[11px] text-muted-foreground">Horário de Chegada</Label>
- <Input
- value={flightDetails.arrival_time_out || ""}
- onChange={(e) => updateFlightDetails("arrival_time_out", e.target.value)}
- placeholder="Ex: 10:45"
- className="h-9 rounded-lg text-xs bg-background font-mono"
- />
- </div>
- </div>
- <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
- <div className="space-y-1">
- <Label className="text-[11px] text-muted-foreground">Aeroporto de Origem</Label>
- <Input
- value={flightDetails.departure_airport || flightDetails.origin_airport || ""}
- onChange={(e) => {
- updateFlightDetails("departure_airport", e.target.value);
- updateFlightDetails("origin_airport", e.target.value);
- }}
- placeholder="Ex: GRU - São Paulo / Guarulhos ou XAP - Chapecó"
- className="h-9 rounded-lg text-xs bg-background"
- />
- </div>
- <div className="space-y-1">
- <Label className="text-[11px] text-muted-foreground">Aeroporto de Destino (IATA)</Label>
- <Input
- value={flightDetails.destination_airport || flightDetails.destination_iata || ""}
- onChange={(e) => {
- updateFlightDetails("destination_airport", e.target.value);
- updateFlightDetails("destination_iata", e.target.value);
- }}
- placeholder="Ex: IOS - Ilhéus / Bahia"
- className="h-9 rounded-lg text-xs bg-background"
- />
- </div>
- </div>
- </div>
-
- {/* Voo de Volta */}
- <div className="p-4 rounded-lg bg-muted/20 border border-border/50 space-y-3">
- <div className="flex items-center justify-between">
- <span className="text-xs font-semibold text-foreground flex items-center gap-2">
- <Plane className="size-3.5 text-primary rotate-180" /> Voo de Retorno (Volta)
- </span>
- <span className="text-[10px] text-muted-foreground font-mono">Trecho 2</span>
- </div>
- <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
- <div className="space-y-1">
- <Label className="text-[11px] text-muted-foreground">Nº do Voo</Label>
- <Input
- value={flightDetails.flight_number_return || ""}
- onChange={(e) => updateFlightDetails("flight_number_return", e.target.value)}
- placeholder="Ex: LA3002"
- className="h-9 rounded-lg text-xs bg-background font-mono font-semibold"
- />
- </div>
- <div className="space-y-1">
- <Label className="text-[11px] text-muted-foreground">Horário de Saída (Volta)</Label>
- <Input
- value={flightDetails.departure_time_return || ""}
- onChange={(e) => updateFlightDetails("departure_time_return", e.target.value)}
- placeholder="Ex: 16:30"
- className="h-9 rounded-lg text-xs bg-background font-mono"
- />
- </div>
- <div className="space-y-1">
- <Label className="text-[11px] text-muted-foreground">Horário de Chegada (Volta)</Label>
- <Input
- value={flightDetails.arrival_time_return || ""}
- onChange={(e) => updateFlightDetails("arrival_time_return", e.target.value)}
- placeholder="Ex: 18:45"
- className="h-9 rounded-lg text-xs bg-background font-mono"
- />
- </div>
- </div>
- </div>
- </div>
- )}
-
- {/* ─── MODAL TERRESTRE (ÔNIBUS / VAN) ─── */}
- {(value.transport_type === "terrestre" || value.transport_type === "misto") && (
- <div className="space-y-4 pt-3">
- {value.transport_type === "misto" && (
- <span className="text-[11px] font-bold uppercase tracking-wider text-primary flex items-center gap-2">
- <Bus className="size-3.5" /> 2. Trecho Rodoviário do Pacote
- </span>
- )}
-
- <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
- <div className="space-y-1">
- <Label className="text-xs font-medium text-muted-foreground">Empresa de Transporte / Ônibus</Label>
- <Input
- value={flightDetails.bus_company || ""}
- onChange={(e) => updateFlightDetails("bus_company", e.target.value)}
- placeholder="Ex: Auto Viação Catarinense, Fretamento Especial"
- className="h-9 rounded-lg text-xs bg-background"
- />
- </div>
-
- <div className="space-y-1">
- <Label className="text-xs font-medium text-muted-foreground">Categoria do Ônibus / Assento</Label>
- <Select
- value={flightDetails.bus_category || ""}
- onValueChange={(val) => updateFlightDetails("bus_category", val)}
- >
- <SelectTrigger className="h-9 rounded-lg text-xs bg-background">
- <SelectValue placeholder="Selecione a categoria..." />
- </SelectTrigger>
- <SelectContent>
- {CANONICAL_BUS_CATEGORIES.map((cat) => (
- <SelectItem key={cat} value={cat}>
- {cat}
- </SelectItem>
- ))}
- </SelectContent>
- </Select>
- </div>
- </div>
-
- {/* Embarque e Desembarque Rodoviário */}
- <div className="p-4 rounded-lg bg-muted/20 border border-border/50 space-y-3">
- <span className="text-xs font-semibold text-foreground flex items-center gap-2">
- <Bus className="size-3.5 text-primary" /> Trecho Rodoviário de Ida e Volta
- </span>
- <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
- <div className="space-y-1">
- <Label className="text-[11px] text-muted-foreground">Terminal / Ponto de Embarque (Ida)</Label>
- <Input
- value={flightDetails.bus_departure_terminal || flightDetails.origin_airport || ""}
- onChange={(e) => {
- updateFlightDetails("bus_departure_terminal", e.target.value);
- updateFlightDetails("origin_airport", e.target.value);
- }}
- placeholder="Ex: Terminal Rodoviário de Chapecó (Plataforma 04)"
- className="h-9 rounded-lg text-xs bg-background"
- />
- </div>
- <div className="space-y-1">
- <Label className="text-[11px] text-muted-foreground">Horário de Saída (Ida)</Label>
- <Input
- value={flightDetails.bus_departure_time_out || flightDetails.departure_time_out || ""}
- onChange={(e) => {
- updateFlightDetails("bus_departure_time_out", e.target.value);
- updateFlightDetails("departure_time_out", e.target.value);
- }}
- placeholder="Ex: 21:00"
- className="h-9 rounded-lg text-xs bg-background font-mono"
- />
- </div>
- </div>
-
- <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
- <div className="space-y-1">
- <Label className="text-[11px] text-muted-foreground">Terminal de Chegada / Ponto Final</Label>
- <Input
- value={flightDetails.bus_arrival_terminal || flightDetails.destination_iata || ""}
- onChange={(e) => {
- updateFlightDetails("bus_arrival_terminal", e.target.value);
- updateFlightDetails("destination_iata", e.target.value);
- }}
- placeholder="Ex: Rodoviária de Gramado / Centro Turístico"
- className="h-9 rounded-lg text-xs bg-background"
- />
- </div>
- <div className="space-y-1">
- <Label className="text-[11px] text-muted-foreground">Horário Estimado de Chegada (Ida)</Label>
- <Input
- value={flightDetails.bus_arrival_time_out || flightDetails.arrival_time_out || ""}
- onChange={(e) => {
- updateFlightDetails("bus_arrival_time_out", e.target.value);
- updateFlightDetails("arrival_time_out", e.target.value);
- }}
- placeholder="Ex: 07:30"
- className="h-9 rounded-lg text-xs bg-background font-mono"
- />
- </div>
- </div>
-
- <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-border/40">
- <div className="space-y-1">
- <Label className="text-[11px] text-muted-foreground">Horário de Saída (Retorno)</Label>
- <Input
- value={flightDetails.bus_departure_time_return || flightDetails.departure_time_return || ""}
- onChange={(e) => {
- updateFlightDetails("bus_departure_time_return", e.target.value);
- updateFlightDetails("departure_time_return", e.target.value);
- }}
- placeholder="Ex: 18:00 (Check-out e Embarque)"
- className="h-9 rounded-lg text-xs bg-background font-mono"
- />
- </div>
- <div className="space-y-1">
- <Label className="text-[11px] text-muted-foreground">Horário Estimado de Chegada (Retorno)</Label>
- <Input
- value={flightDetails.bus_arrival_time_return || flightDetails.arrival_time_return || ""}
- onChange={(e) => {
- updateFlightDetails("bus_arrival_time_return", e.target.value);
- updateFlightDetails("arrival_time_return", e.target.value);
- }}
- placeholder="Ex: 06:00 (Dia seguinte)"
- className="h-9 rounded-lg text-xs bg-background font-mono"
- />
- </div>
- </div>
- </div>
- </div>
- )}
-
- {/* ─── MODAL CRUZEIRO (MARÍTIMO / FLUVIAL) ─── */}
- {(value.transport_type === "cruzeiro" || value.transport_type === "misto") && (
- <div className="space-y-4 pt-3">
- {value.transport_type === "misto" && (
- <span className="text-[11px] font-bold uppercase tracking-wider text-primary flex items-center gap-2">
- <Ship className="size-3.5" /> 3. Trecho de Cruzeiro Marítimo
- </span>
- )}
-
- <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
- <div className="space-y-1">
- <Label className="text-xs font-medium text-muted-foreground">Companhia Marítima</Label>
- <Select
- value={flightDetails.cruise_line || ""}
- onValueChange={(val) => updateFlightDetails("cruise_line", val)}
- >
- <SelectTrigger className="h-9 rounded-lg text-xs bg-background">
- <SelectValue placeholder="Selecione a Armadora..." />
- </SelectTrigger>
- <SelectContent>
- {CANONICAL_CRUISE_LINES.map((line) => (
- <SelectItem key={line} value={line}>
- {line}
- </SelectItem>
- ))}
- </SelectContent>
- </Select>
- </div>
-
- <div className="space-y-1">
- <Label className="text-xs font-medium text-muted-foreground">Nome do Navio</Label>
- <Input
- value={flightDetails.ship_name || ""}
- onChange={(e) => updateFlightDetails("ship_name", e.target.value)}
- placeholder="Ex: MSC Seaview, Costa Diadema"
- className="h-9 rounded-lg text-xs bg-background font-semibold"
- />
- </div>
-
- <div className="space-y-1">
- <Label className="text-xs font-medium text-muted-foreground">Categoria da Cabine</Label>
- <Select
- value={flightDetails.cabin_category || ""}
- onValueChange={(val) => updateFlightDetails("cabin_category", val)}
- >
- <SelectTrigger className="h-9 rounded-lg text-xs bg-background">
- <SelectValue placeholder="Tipo de cabine..." />
- </SelectTrigger>
- <SelectContent>
- {CANONICAL_CABIN_CATEGORIES.map((cab) => (
- <SelectItem key={cab} value={cab}>
- {cab}
- </SelectItem>
- ))}
- </SelectContent>
- </Select>
- </div>
- </div>
-
- {/* Portos e Horários de Embarque / Desatracação */}
- <div className="p-4 rounded-lg bg-muted/20 border border-border/50 space-y-3">
- <span className="text-xs font-semibold text-foreground flex items-center gap-2">
- <Anchor className="size-3.5 text-primary" /> Portos e Horários Portuários
- </span>
-
- <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
- <div className="space-y-1">
- <Label className="text-[11px] text-muted-foreground">Porto de Embarque</Label>
- <Input
- value={flightDetails.embarkation_port || ""}
- onChange={(e) => updateFlightDetails("embarkation_port", e.target.value)}
- placeholder="Ex: Porto de Santos / Concais"
- className="h-9 rounded-lg text-xs bg-background"
- />
- </div>
- <div className="space-y-1">
- <Label className="text-[11px] text-muted-foreground">Horário de Check-in / Bagagens</Label>
- <Input
- value={flightDetails.boarding_checkin_time || ""}
- onChange={(e) => updateFlightDetails("boarding_checkin_time", e.target.value)}
- placeholder="Ex: 11:00 às 14:00"
- className="h-9 rounded-lg text-xs bg-background font-mono"
- />
- </div>
- <div className="space-y-1">
- <Label className="text-[11px] text-muted-foreground">Partida do Navio (Desatracação)</Label>
- <Input
- value={flightDetails.ship_departure_time || ""}
- onChange={(e) => updateFlightDetails("ship_departure_time", e.target.value)}
- placeholder="Ex: 18:00"
- className="h-9 rounded-lg text-xs bg-background font-mono"
- />
- </div>
- </div>
-
- <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-border/40">
- <div className="space-y-1">
- <Label className="text-[11px] text-muted-foreground">Porto de Desembarque Final</Label>
- <Input
- value={flightDetails.disembarkation_port || ""}
- onChange={(e) => updateFlightDetails("disembarkation_port", e.target.value)}
- placeholder="Ex: Porto de Santos ou Salvador"
- className="h-9 rounded-lg text-xs bg-background"
- />
- </div>
- <div className="space-y-1">
- <Label className="text-[11px] text-muted-foreground">Horário de Retorno / Desembarque</Label>
- <Input
- value={flightDetails.ship_arrival_time || ""}
- onChange={(e) => updateFlightDetails("ship_arrival_time", e.target.value)}
- placeholder="Ex: 08:00 (Atracação)"
- className="h-9 rounded-lg text-xs bg-background font-mono"
- />
- </div>
- </div>
- </div>
- </div>
- )}
-
- {/* ─── RESUMO MISTO ─── */}
- {value.transport_type === "misto" && (
- <div className="space-y-2 pt-2">
- <Label className="text-xs font-medium text-muted-foreground">Resumo das Conexões Multimodais</Label>
- <Textarea
- value={flightDetails.mixed_transport_summary || ""}
- onChange={(e) => updateFlightDetails("mixed_transport_summary", e.target.value)}
- placeholder="Ex: Voo SP -> Salvador + Transfer privativo em van executiva até o terminal náutico + Lancha rápida até Morro de São Paulo..."
- rows={2}
- className="rounded-lg text-xs bg-background"
- />
- </div>
- )}
-
- {/* ─── TRANSFER BILATERAL (COMUM A TODOS OS MODAIS) ─── */}
- <div className="p-4 rounded-lg bg-muted/20 border border-border/50 space-y-3">
- <span className="text-xs font-semibold text-foreground flex items-center gap-2">
- <Car className="size-3.5 text-primary" /> Transfer Bilateral (In / Out)
- </span>
- <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
- <div className="space-y-1">
- <Label className="text-[11px] text-muted-foreground">Horário do Transfer Ida (Aeroporto/Porto/Rodoviária → Hotel)</Label>
- <Input
- value={flightDetails.transfer_pickup_time || ""}
- onChange={(e) => updateFlightDetails("transfer_pickup_time", e.target.value)}
- placeholder="Ex: 11:15 (Recepção com placa nominal)"
- className="h-9 rounded-lg text-xs bg-background"
- />
- </div>
- <div className="space-y-1">
- <Label className="text-[11px] text-muted-foreground">Horário do Transfer Retorno (Hotel → Ponto de Partida)</Label>
- <Input
- value={flightDetails.transfer_return_time || ""}
- onChange={(e) => updateFlightDetails("transfer_return_time", e.target.value)}
- placeholder="Ex: 13:30 (Saída pontual do lobby)"
- className="h-9 rounded-lg text-xs bg-background"
- />
- </div>
- </div>
- </div>
- </div>
- )}
- </div>
-
- {/* ── 7. SEÇÃO EXPANSÍVEL: CURADORIA DE RECOMENDAÇÕES LOCAIS ── */}
- <div className="bg-card rounded-lg border border-border/70 shadow-2xs overflow-hidden">
- <button
- type="button"
- onClick={() => setIsRecommendationsOpen(!isRecommendationsOpen)}
- className="w-full p-4 flex items-center justify-between text-left hover:bg-muted/20 transition-colors cursor-pointer"
- >
- <div className="flex items-center gap-2">
- <Compass className="size-4 text-primary" />
- <div>
- <h4 className="text-xs font-bold text-foreground">Curadoria Local (Restaurantes, Praias e Dicas)</h4>
- <p className="text-[11px] text-muted-foreground">Pontos de interesse próximos exibidos na aba de roteiro e explore</p>
- </div>
- </div>
- {isRecommendationsOpen ? <ChevronUp className="size-4 text-muted-foreground" /> : <ChevronDown className="size-4 text-muted-foreground" />}
- </button>
-
- {isRecommendationsOpen && (
- <div className="p-5 pt-0 space-y-4 border-t border-border/40 animate-in fade-in duration-150">
- <div className="flex justify-end pt-3">
- <Button
- type="button"
- size="sm"
- variant="outline"
- onClick={addRecommendation}
- className="rounded-lg text-xs font-semibold gap-2 h-8 cursor-pointer"
- >
- <Plus className="size-3.5" />
- <span>+ Adicionar Recomendação</span>
- </Button>
- </div>
-
- <div className="space-y-3">
- {recommendations.map((rec, i) => (
- <div key={rec.id || i} className="p-4 rounded-lg border border-border/60 bg-muted/20 space-y-3">
- <div className="flex items-center justify-between">
- <span className="text-xs font-bold text-foreground">Recomendação #{i + 1}</span>
- <button
- type="button"
- onClick={() => removeRecommendation(i)}
- className="text-destructive hover:bg-destructive/10 p-1 rounded-md"
- >
- <Trash2 className="size-3.5" />
- </button>
- </div>
- <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
- <div className="space-y-1">
- <Label className="text-[10px] font-semibold text-muted-foreground">Nome do Local</Label>
- <Input
- value={rec.title}
- onChange={(e) => updateRecommendation(i, "title", e.target.value)}
- placeholder="Ex: Restaurante Mar Aberto"
- className="h-8 text-xs rounded-lg"
- />
- </div>
- <div className="space-y-1">
- <Label className="text-[10px] font-semibold text-muted-foreground">Categoria / Especialidade</Label>
- <Input
- value={rec.category}
- onChange={(e) => updateRecommendation(i, "category", e.target.value)}
- placeholder="Ex: Frutos do Mar & Moquecas"
- className="h-8 text-xs rounded-lg"
- />
- </div>
- <div className="space-y-1">
- <Label className="text-[10px] font-semibold text-muted-foreground">Distância</Label>
- <Input
- value={rec.distance}
- onChange={(e) => updateRecommendation(i, "distance", e.target.value)}
- placeholder="Ex: 2.5 km do resort"
- className="h-8 text-xs rounded-lg"
- />
- </div>
- </div>
- </div>
- ))}
- </div>
- </div>
- )}
- </div>
-
- {/* ── 8. CONDIÇÕES COMERCIAIS & PARCELAMENTO BILATERAL (REGRA 22) ── */}
- <div className="bg-card rounded-lg p-5 space-y-4 border border-border/70 shadow-2xs">
- <div className="flex items-center justify-between pb-2 border-b border-border/40">
- <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
- <CreditCard className="size-4 text-primary" />
- <span>Condições Comerciais e Parcelamento</span>
- </div>
- <Badge variant="outline" className="text-[10px] font-mono text-emerald-600 bg-emerald-500/10 border-emerald-500/20">
- Regra 22: 1-24x
- </Badge>
- </div>
-
- <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
- {/* Slider de Parcelamento Máximo */}
- <div className="space-y-2 sm:col-span-2 p-4 rounded-lg bg-muted/20 border border-border/50">
- <div className="flex items-center justify-between">
- <Label className="text-xs font-semibold text-foreground">
- Parcelamento Máximo no Cartão
- </Label>
- <span className="text-sm font-black font-display text-primary">
- Até {maxInstallments}x {priceCents > 0 ? `de ${formatMoney(installmentCents)}` : ""}
- </span>
- </div>
- <input
- type="range"
- min={1}
- max={24}
- step={1}
- value={maxInstallments}
- onChange={(e) => updatePaymentConditions("installments_max", Number(e.target.value))}
- className="w-full h-2 rounded-full accent-primary cursor-pointer"
- aria-label="Máximo de parcelas permitidas"
- />
- <div className="flex justify-between text-[10px] text-muted-foreground font-mono">
- <span>1x</span>
- <span>6x</span>
- <span>12x</span>
- <span>18x</span>
- <span>24x</span>
- </div>
- </div>
-
- <div className="space-y-2">
- <Label className="text-xs text-foreground font-medium">Parcelas Sem Juros</Label>
- <Input
- type="number"
- min={1}
- max={maxInstallments}
- value={feeFreeInstallments}
- onChange={(e) => updatePaymentConditions("installments_fee_free", Number(e.target.value))}
- placeholder="12"
- className="h-10 rounded-lg text-xs bg-background font-mono"
- />
- <p className="text-[10px] text-muted-foreground">Quantas parcelas o lojista assume a taxa do cartão.</p>
- </div>
-
- <div className="space-y-2">
- <Label className="text-xs text-foreground font-medium">Desconto à Vista no PIX (%)</Label>
- <Input
- type="number"
- min={0}
- max={50}
- value={pixDiscountPercent}
- onChange={(e) => updatePaymentConditions("pix_discount_percent", Number(e.target.value))}
- placeholder="5"
- className="h-10 rounded-lg text-xs bg-background font-mono"
- />
- {pixDiscountPercent > 0 && priceCents > 0 && (
- <p className="text-[10px] text-emerald-600 font-semibold font-mono">
- Valor no PIX: {formatMoney(pixCents)} ({pixDiscountPercent}% OFF)
- </p>
- )}
- </div>
-
- <div className="space-y-2 sm:col-span-2">
- <Label className="text-xs text-foreground font-medium">Sinal Mínimo de Entrada (%)</Label>
- <Input
- type="number"
- min={0}
- max={100}
- value={depositPercent}
- onChange={(e) => updatePaymentConditions("deposit_percent", Number(e.target.value))}
- placeholder="0 (Sem entrada obrigatória)"
- className="h-10 rounded-lg text-xs bg-background font-mono"
- />
- <p className="text-[10px] text-muted-foreground">Porcentagem exigida no ato da confirmação da reserva.</p>
- </div>
- </div>
- </div>
-
- {/* ── 9. DESTAQUES VISUAIS EM CÍRCULOS (STORY HIGHLIGHTS — REGRAS 19 & 20) ── */}
- <div className="bg-card rounded-lg p-5 space-y-4 border border-border/70 shadow-2xs">
- <div className="flex items-center justify-between pb-2 border-b border-border/40">
- <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
- <Star className="size-4 text-primary" />
- <span>Destaques Visuais (Story Highlights)</span>
- </div>
- <Badge variant="outline" className="text-[10px] font-mono text-primary bg-primary/10 border-primary/30">
- Regra 20: Upload Contextual
- </Badge>
- </div>
- <p className="text-xs text-muted-foreground">
- Círculos táteis inspirados no Instagram exibidos no topo da vitrine para destacar Resort, Piscinas, Gastronomia e Praias.
- </p>
- <StoryHighlightUploader
- highlights={highlights}
- onChange={handleHighlightsChange}
- onUpload={(file) => uploadClassifiedMedia(file, "travel-highlights")}
- maxHighlights={8}
- />
- </div>
- </div>
- );
+  const moveBioBullet = (idx: number, direction: "up" | "down") => {
+    const current = resort.bio_bullets || [];
+    const targetIdx = direction === "up" ? idx - 1 : idx + 1;
+    if (targetIdx < 0 || targetIdx >= current.length) return;
+    const next = [...current];
+    const temp = next[idx];
+    next[idx] = next[targetIdx];
+    next[targetIdx] = temp;
+    updateResort("bio_bullets", next);
+  };
+
+  // Roteiro Dia a Dia
+  const addItineraryDay = () => {
+    const newDayNumber = itinerary.length + 1;
+    const newDay: TravelItineraryDay = {
+      id: `day_${Date.now()}`,
+      day: newDayNumber,
+      title: `Dia ${newDayNumber} — Chegada e Boas-Vindas`,
+      description: "Chegada ao destino, recepção no aeroporto, transfer para o resort e dia livre para relaxar.",
+    };
+    onChange({ ...value, itinerary_days: [...itinerary, newDay] });
+  };
+
+  const updateItineraryDay = (index: number, field: string, val: any) => {
+    const next = [...itinerary];
+    next[index] = { ...next[index], [field]: val };
+    onChange({ ...value, itinerary_days: next });
+  };
+
+  const removeItineraryDay = (index: number) => {
+    const next = itinerary.filter((_, i) => i !== index);
+    const reindexed = next.map((item, i) => ({ ...item, day: i + 1 }));
+    onChange({ ...value, itinerary_days: reindexed });
+  };
+
+  const moveDay = (index: number, direction: "up" | "down") => {
+    const targetIdx = direction === "up" ? index - 1 : index + 1;
+    if (targetIdx < 0 || targetIdx >= itinerary.length) return;
+    const next = [...itinerary];
+    const temp = next[index];
+    next[index] = next[targetIdx];
+    next[targetIdx] = temp;
+    const reindexed = next.map((item, i) => ({ ...item, day: i + 1 }));
+    onChange({ ...value, itinerary_days: reindexed });
+  };
+
+  // Curadoria de Recomendações Locais
+  const addRecommendation = () => {
+    const newRec: TravelNearbyRecommendation = {
+      id: `rec_${Date.now()}`,
+      title: "",
+      category: "",
+      distance: "",
+      rating: 0,
+    };
+    onChange({
+      ...value,
+      recommendations: [...recommendations, newRec],
+    });
+  };
+
+  const updateRecommendation = (index: number, field: string, val: any) => {
+    const next = [...recommendations];
+    next[index] = { ...next[index], [field]: val };
+    onChange({ ...value, recommendations: next });
+  };
+
+  const removeRecommendation = (index: number) => {
+    const next = recommendations.filter((_, i) => i !== index);
+    onChange({ ...value, recommendations: next });
+  };
+
+  // Saídas Confirmadas (Departure Options)
+  const handleAddDeparture = () => {
+    const newOpt: DepartureOption = {
+      id: `dep_${Date.now()}`,
+      label: `Saída ${departureOptions.length + 1}`,
+      departure_date: "",
+      return_date: "",
+      status: "confirmed",
+      available_seats: 20,
+    };
+    onChange({
+      ...value,
+      departure_options: [...departureOptions, newOpt],
+    });
+  };
+
+  const handleUpdateDeparture = (id: string, patch: Partial<DepartureOption>) => {
+    onChange({
+      ...value,
+      departure_options: departureOptions.map((opt) => (opt.id === id ? { ...opt, ...patch } : opt)),
+    });
+  };
+
+  const handleRemoveDeparture = (id: string) => {
+    onChange({
+      ...value,
+      departure_options: departureOptions.filter((opt) => opt.id !== id),
+    });
+  };
+
+  // Gateways Rodoviários
+  const handleAddGateway = () => {
+    if (!gatewayInput.trim()) return;
+    const current = (flightDetails as any).boarding_gateways || [];
+    if (!current.includes(gatewayInput.trim())) {
+      updateFlightDetails("boarding_gateways", [...current, gatewayInput.trim()]);
+    }
+    setGatewayInput("");
+  };
+
+  const handleRemoveGateway = (gw: string) => {
+    const current = (flightDetails as any).boarding_gateways || [];
+    updateFlightDetails(
+      "boarding_gateways",
+      current.filter((g: string) => g !== gw)
+    );
+  };
+
+  // Flags de Visibilidade por Seção
+  const showRoteiro = activeSection === "roteiro" || activeSection === "all";
+  const showHospedagem = activeSection === "hospedagem" || activeSection === "all";
+  const showTransporte = activeSection === "transporte" || activeSection === "all";
+  const showTarifas = activeSection === "tarifas" || activeSection === "all";
+  const showInclusoes = activeSection === "inclusoes" || activeSection === "all";
+  const showReserva = activeSection === "reserva" || activeSection === "all";
+
+  // Modal de Transporte Ativo
+  const currentTransportType = value.transport_type || "aereo";
+
+  return (
+    <div className="space-y-6 animate-in fade-in duration-200">
+      {/* ─────────────────────────────────────────────────────────────
+          1. ABA ROTEIRO & DESTINO
+      ───────────────────────────────────────────────────────────── */}
+      {showRoteiro && (
+        <div className="space-y-6">
+          {/* Identificação e Visibilidade do Pacote */}
+          <div className="bg-card rounded-lg p-5 space-y-4 border border-border/70 shadow-2xs">
+            <div className="flex items-center justify-between pb-2 border-b border-border/40">
+              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
+                <Tag className="size-4 text-primary" />
+                <span>Identificação & Visibilidade do Pacote</span>
+              </div>
+              <Badge variant="outline" className="text-[10px] font-mono text-primary bg-primary/10 border-primary/20">
+                Padrão Editorial
+              </Badge>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-xs font-semibold text-foreground">Nome do Pacote / Roteiro</Label>
+              <Input
+                value={formValues?.title ?? ""}
+                onChange={onTitleChange}
+                placeholder="Ex: Punta Cana All Inclusive — Resort Frente Mar com Aéreo"
+                className="h-11 rounded-lg text-sm bg-background font-medium focus-visible:ring-2 focus-visible:ring-ring"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label className="text-xs text-foreground font-medium">Modo de Exibição na Vitrine</Label>
+                <Select
+                  value={value.visibility_mode || "public"}
+                  onValueChange={(v: "public" | "unlisted" | "private") => onChange({ ...value, visibility_mode: v })}
+                >
+                  <SelectTrigger className="h-11 rounded-lg text-xs bg-background">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="public">Público na Vitrine & Catálogo</SelectItem>
+                    <SelectItem value="unlisted">Não Listado (Apenas Link Direto)</SelectItem>
+                    <SelectItem value="private">Rascunho Interno Privado</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-1">
+                <Label className="text-xs text-foreground font-medium">Tipo de Oferta Comercial</Label>
+                <Select
+                  value={value.is_custom_quote ? "custom_quote" : "standard_package"}
+                  onValueChange={(v) => onChange({ ...value, is_custom_quote: v === "custom_quote" })}
+                >
+                  <SelectTrigger className="h-11 rounded-lg text-xs bg-background">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="standard_package">Pacote de Vitrine (CTA: Garantir Reserva)</SelectItem>
+                    <SelectItem value="custom_quote">Orçamento Sob Medida (CTA: Aceitar Orçamento)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Composição de Passageiros Base */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-border/40">
+              <div className="space-y-1">
+                <Label className="text-xs text-foreground font-medium">Qtd. Adultos Base</Label>
+                <Input
+                  type="number"
+                  min={1}
+                  max={20}
+                  value={value.adults_count ?? 2}
+                  onChange={(e) =>
+                    onChange({ ...value, adults_count: Math.max(1, Number(e.target.value) || 1) })
+                  }
+                  className="h-11 rounded-lg text-xs bg-background font-mono"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs text-foreground font-medium">Qtd. Crianças Base</Label>
+                <Input
+                  type="number"
+                  min={0}
+                  max={10}
+                  value={value.children_count ?? 0}
+                  onChange={(e) =>
+                    onChange({ ...value, children_count: Math.max(0, Number(e.target.value) || 0) })
+                  }
+                  className="h-11 rounded-lg text-xs bg-background font-mono"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs text-foreground font-medium">Idade Máx. Criança (Anos)</Label>
+                <Input
+                  type="number"
+                  min={1}
+                  max={17}
+                  value={value.children_max_age ?? 11}
+                  onChange={(e) =>
+                    onChange({ ...value, children_max_age: Math.max(1, Number(e.target.value) || 11) })
+                  }
+                  className="h-11 rounded-lg text-xs bg-background font-mono"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Destino Turístico & Banco Canônico */}
+          <div className="bg-card rounded-lg p-5 space-y-4 border border-border/70 shadow-2xs">
+            <div className="flex items-center justify-between pb-2 border-b border-border/40">
+              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
+                <MapPin className="size-4 text-primary" />
+                <span>Destino Turístico da Viagem</span>
+              </div>
+
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={() => setShowNewDestModal(!showNewDestModal)}
+                className="rounded-lg text-xs font-semibold gap-1 h-9 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <Plus className="size-3.5" />
+                <span>+ Novo Destino</span>
+              </Button>
+            </div>
+
+            {/* Seletor de Destino Pré-cadastrado */}
+            {destinationsList.length > 0 && (
+              <div className="p-3 rounded-lg bg-muted/20 border border-border/50 space-y-2">
+                <Label className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1">
+                  <Sliders className="size-3 text-primary" />
+                  <span>Vincular do Catálogo de Destinos</span>
+                </Label>
+                <Select onValueChange={handleSelectDestinationFromBank}>
+                  <SelectTrigger className="h-11 rounded-lg text-xs bg-background">
+                    <SelectValue placeholder="Escolher um destino cadastrado..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {destinationsList.map((d: DestinationDTO) => (
+                      <SelectItem key={d.id} value={d.id}>
+                        {d.name} ({d.region || d.country})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
+            {/* Modal Inline de Cadastro Rápido de Destino */}
+            {showNewDestModal && (
+              <div className="p-4 rounded-lg bg-muted/40 border border-primary/30 space-y-3">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-bold text-foreground">Cadastrar Novo Destino</h4>
+                  <button
+                    type="button"
+                    onClick={() => setShowNewDestModal(false)}
+                    className="size-5 flex items-center justify-center text-muted-foreground hover:text-foreground"
+                  >
+                    <X className="size-3.5" />
+                  </button>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <Label className="text-[11px] font-semibold text-muted-foreground">Cidade / Destino</Label>
+                    <Input
+                      value={quickDestName}
+                      onChange={(e) => setQuickDestName(e.target.value)}
+                      placeholder="Ex: Ilhéus, Maceió, Natal, Orlando"
+                      className="h-10 rounded-lg text-xs bg-background"
+                      disabled={isSavingDest}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-[11px] font-semibold text-muted-foreground">Estado / Região</Label>
+                    <Input
+                      value={quickDestRegion}
+                      onChange={(e) => setQuickDestRegion(e.target.value)}
+                      placeholder="Ex: Bahia, Flórida, Alagoas"
+                      className="h-10 rounded-lg text-xs bg-background"
+                      disabled={isSavingDest}
+                    />
+                  </div>
+                </div>
+                <div className="flex justify-end gap-2 pt-1">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => setShowNewDestModal(false)}
+                    disabled={isSavingDest}
+                    className="rounded-lg text-xs h-9"
+                  >
+                    Cancelar
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={handleQuickAddDest}
+                    disabled={isSavingDest || !quickDestName.trim()}
+                    className="rounded-lg text-xs font-semibold bg-primary text-primary-foreground gap-2 h-9"
+                  >
+                    {isSavingDest ? (
+                      <>
+                        <Loader2 className="size-3.5 animate-spin" />
+                        <span>Salvando...</span>
+                      </>
+                    ) : (
+                      <span>Salvar Destino</span>
+                    )}
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label className="text-xs font-medium text-foreground">Cidade / Destino</Label>
+                <Input
+                  value={destination.name}
+                  onChange={(e) => updateDestination("name", e.target.value)}
+                  placeholder="Ex: Porto Seguro, Gramado, Punta Cana"
+                  className="h-11 rounded-lg text-xs bg-background font-medium"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs font-medium text-foreground">Estado / Região</Label>
+                <Input
+                  value={destination.region || ""}
+                  onChange={(e) => updateDestination("region", e.target.value)}
+                  placeholder="Ex: Bahia, Serra Gaúcha, Caribe"
+                  className="h-11 rounded-lg text-xs bg-background font-medium"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs font-medium text-foreground">País</Label>
+                <Input
+                  value={destination.country || "Brasil"}
+                  onChange={(e) => updateDestination("country", e.target.value)}
+                  placeholder="Brasil"
+                  className="h-11 rounded-lg text-xs bg-background font-medium"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs font-medium text-foreground">Aeroporto de Chegada / IATA</Label>
+                <Input
+                  value={destination.iata_gateway || ""}
+                  onChange={(e) => updateDestination("iata_gateway", e.target.value.toUpperCase())}
+                  placeholder="Ex: BPS, POA, PUJ"
+                  className="h-11 rounded-lg text-xs bg-background font-mono uppercase"
+                  maxLength={4}
+                />
+              </div>
+            </div>
+
+            {/* Widget de Clima Real em Tempo Real */}
+            {destination.name && (
+              <div className="pt-2">
+                <WeatherWidget city={destination.name} className="border-border/60" />
+              </div>
+            )}
+          </div>
+
+          {/* Destaques Visuais (Story Highlights) */}
+          <div className="bg-card rounded-lg p-5 space-y-4 border border-border/70 shadow-2xs">
+            <div className="flex items-center justify-between pb-2 border-b border-border/40">
+              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
+                <Star className="size-4 text-primary" />
+                <span>Destaques Visuais (Story Highlights)</span>
+              </div>
+              <Badge variant="outline" className="text-[10px] font-mono text-primary bg-primary/10 border-primary/30">
+                Círculos Táteis
+              </Badge>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Círculos interativos inspirados no formato de stories para destacar Resort, Gastronomia, Piscinas e Praias.
+            </p>
+            <StoryHighlightUploader
+              highlights={highlights}
+              onChange={handleHighlightsChange}
+              onUpload={(file) => uploadClassifiedMedia(file, "travel-highlights")}
+              maxHighlights={8}
+            />
+          </div>
+
+          {/* Diferenciais do Pacote (Bio Bullets) */}
+          <div className="bg-card rounded-lg p-5 space-y-4 border border-border/70 shadow-2xs">
+            <div className="flex items-center justify-between pb-2 border-b border-border/40">
+              <div>
+                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
+                  <CheckCircle2 className="size-4 text-primary" />
+                  <span>Diferenciais do Pacote</span>
+                </div>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Pontos fortes exibidos em formato de bullets destacados no anúncio.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex gap-2">
+              <Input
+                value={newBioBulletText}
+                onChange={(e) => setNewBioBulletText(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    addBioBullet();
+                  }
+                }}
+                placeholder="Ex: Resort pé na areia com complexo aquático aquecido"
+                className="h-11 rounded-lg text-xs bg-background flex-1"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={addBioBullet}
+                disabled={!newBioBulletText.trim()}
+                className="h-11 px-4 rounded-lg text-xs font-semibold border-primary/30 text-primary hover:bg-primary/5 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <Plus className="size-4 mr-1" />
+                Adicionar
+              </Button>
+            </div>
+
+            {resort.bio_bullets && resort.bio_bullets.length > 0 && (
+              <div className="space-y-2 pt-1">
+                {resort.bio_bullets.map((bullet, idx) => (
+                  <div
+                    key={idx}
+                    className="flex items-center justify-between gap-2 p-3 rounded-lg bg-muted/20 border border-border/50 text-xs"
+                  >
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                      <span className="text-xs font-mono text-muted-foreground w-4 text-center shrink-0">
+                        {idx + 1}.
+                      </span>
+                      <span className="text-foreground font-medium truncate">{bullet}</span>
+                    </div>
+
+                    <div className="flex items-center gap-1 shrink-0">
+                      {resort.bio_bullets!.length > 1 && (
+                        <>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            disabled={idx === 0}
+                            onClick={() => moveBioBullet(idx, "up")}
+                            className="size-8 p-0 rounded-lg text-muted-foreground hover:text-foreground disabled:opacity-30 cursor-pointer"
+                            title="Mover para cima"
+                          >
+                            <ChevronUp className="size-3.5" />
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            disabled={idx === resort.bio_bullets!.length - 1}
+                            onClick={() => moveBioBullet(idx, "down")}
+                            className="size-8 p-0 rounded-lg text-muted-foreground hover:text-foreground disabled:opacity-30 cursor-pointer"
+                            title="Mover para baixo"
+                          >
+                            <ChevronDown className="size-3.5" />
+                          </Button>
+                        </>
+                      )}
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeBioBullet(idx)}
+                        className="size-8 p-0 rounded-lg text-destructive hover:bg-destructive/10 cursor-pointer"
+                      >
+                        <Trash2 className="size-3.5" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Roteiro Dia a Dia (Itinerário Enriquecido) */}
+          <div className="bg-card rounded-lg p-5 space-y-4 border border-border/70 shadow-2xs">
+            <div className="flex items-center justify-between pb-2 border-b border-border/40">
+              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
+                <Calendar className="size-4 text-primary" />
+                <span>Roteiro Dia a Dia (Itinerário)</span>
+              </div>
+
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={addItineraryDay}
+                className="rounded-lg text-xs font-semibold gap-1 h-9 cursor-pointer border-primary/30 text-primary hover:bg-primary/5 focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <Plus className="size-3.5" />
+                <span>+ Adicionar Dia</span>
+              </Button>
+            </div>
+
+            {itinerary.length === 0 ? (
+              <div className="text-center py-8 border border-dashed border-border/60 rounded-lg bg-muted/10 space-y-2">
+                <Calendar className="size-8 text-muted-foreground/50 mx-auto" />
+                <p className="text-xs text-muted-foreground">Nenhum dia cadastrado ainda no roteiro.</p>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={addItineraryDay}
+                  className="rounded-lg text-xs font-semibold gap-1 h-9 cursor-pointer"
+                >
+                  <Plus className="size-3.5" />
+                  <span>Cadastrar Primeiro Dia</span>
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {itinerary.map((dayItem, idx) => (
+                  <div
+                    key={dayItem.id || idx}
+                    className="p-4 rounded-lg bg-card border border-border/60 space-y-3 relative group"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Badge
+                          variant="outline"
+                          className="text-xs font-mono font-bold text-primary bg-primary/10 border-primary/20"
+                        >
+                          Dia {dayItem.day}
+                        </Badge>
+                        <span className="text-xs font-semibold text-foreground truncate max-w-xs">
+                          {dayItem.title || "Dia sem título"}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-1">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          disabled={idx === 0}
+                          onClick={() => moveDay(idx, "up")}
+                          className="size-8 p-0 rounded-lg text-muted-foreground hover:text-foreground disabled:opacity-30 cursor-pointer"
+                          title="Mover dia para cima"
+                        >
+                          <ChevronUp className="size-3.5" />
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          disabled={idx === itinerary.length - 1}
+                          onClick={() => moveDay(idx, "down")}
+                          className="size-8 p-0 rounded-lg text-muted-foreground hover:text-foreground disabled:opacity-30 cursor-pointer"
+                          title="Mover dia para baixo"
+                        >
+                          <ChevronDown className="size-3.5" />
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removeItineraryDay(idx)}
+                          className="size-8 p-0 rounded-lg text-destructive hover:bg-destructive/10 cursor-pointer"
+                          title="Excluir dia"
+                        >
+                          <Trash2 className="size-3.5" />
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-[11px] font-semibold text-muted-foreground">Título do Dia</Label>
+                      <Input
+                        value={dayItem.title}
+                        onChange={(e) => updateItineraryDay(idx, "title", e.target.value)}
+                        placeholder="Ex: Passeio de Escuna e Almoço Típico"
+                        className="h-10 rounded-lg text-xs bg-background"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-[11px] font-semibold text-muted-foreground">Descrição das Atividades</Label>
+                      <Textarea
+                        value={dayItem.description}
+                        onChange={(e) => updateItineraryDay(idx, "description", e.target.value)}
+                        placeholder="Descreva o que os passageiros farão neste dia..."
+                        className="text-xs bg-background min-h-20 rounded-lg"
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Curadoria de Recomendações Locais */}
+          <div className="bg-card rounded-lg p-5 space-y-4 border border-border/70 shadow-2xs">
+            <div className="flex items-center justify-between pb-2 border-b border-border/40">
+              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
+                <Navigation className="size-4 text-primary" />
+                <span>Curadoria de Dicas & Atrações Locais</span>
+              </div>
+
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={addRecommendation}
+                className="rounded-lg text-xs font-semibold gap-1 h-9 cursor-pointer border-primary/30 text-primary hover:bg-primary/5 focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <Plus className="size-3.5" />
+                <span>+ Adicionar Dica</span>
+              </Button>
+            </div>
+
+            {recommendations.length === 0 ? (
+              <p className="text-xs text-muted-foreground/70 py-4 text-center border border-dashed border-border/50 rounded-lg">
+                Nenhuma atração ou dica local cadastrada ainda.
+              </p>
+            ) : (
+              <div className="space-y-3">
+                {recommendations.map((rec, idx) => (
+                  <div key={rec.id || idx} className="p-3 rounded-lg bg-card border border-border/60 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-foreground">Atração {idx + 1}</span>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeRecommendation(idx)}
+                        className="size-8 p-0 rounded-lg text-destructive hover:bg-destructive/10 cursor-pointer"
+                      >
+                        <Trash2 className="size-3.5" />
+                      </Button>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                      <div className="space-y-1">
+                        <Label className="text-[11px] font-medium text-muted-foreground">Nome da Atração</Label>
+                        <Input
+                          value={rec.title}
+                          onChange={(e) => updateRecommendation(idx, "title", e.target.value)}
+                          placeholder="Ex: Praia dos Carneiros"
+                          className="h-10 rounded-lg text-xs bg-background"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-[11px] font-medium text-muted-foreground">Categoria</Label>
+                        <Input
+                          value={rec.category}
+                          onChange={(e) => updateRecommendation(idx, "category", e.target.value)}
+                          placeholder="Ex: Praia / Ecoturismo"
+                          className="h-10 rounded-lg text-xs bg-background"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-[11px] font-medium text-muted-foreground">Distância do Hotel</Label>
+                        <Input
+                          value={rec.distance}
+                          onChange={(e) => updateRecommendation(idx, "distance", e.target.value)}
+                          placeholder="Ex: 15 min de carro"
+                          className="h-10 rounded-lg text-xs bg-background"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ─────────────────────────────────────────────────────────────
+          2. ABA HOSPEDAGEM & HOTÉIS
+      ───────────────────────────────────────────────────────────── */}
+      {showHospedagem && (
+        <div className="space-y-6">
+          <div className="bg-card rounded-lg p-5 space-y-4 border border-border/70 shadow-2xs">
+            <div className="flex items-center justify-between pb-2 border-b border-border/40">
+              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
+                <Hotel className="size-4 text-primary" />
+                <span>Hospedagem, Resort & Comodidades</span>
+              </div>
+
+              <div className="flex items-center gap-2">
+                {hotelsBankList.length > 0 && (
+                  <Badge variant="outline" className="text-[10px] font-mono">
+                    {hotelsBankList.length} no Catálogo
+                  </Badge>
+                )}
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setShowNewHotelModal(!showNewHotelModal)}
+                  className="rounded-lg text-xs font-semibold gap-1 h-9 cursor-pointer border-primary/30 text-primary hover:bg-primary/5 focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <Plus className="size-3.5" />
+                  <span>+ Novo Hotel</span>
+                </Button>
+              </div>
+            </div>
+
+            {/* Seletor de Hotel Pré-cadastrado */}
+            {hotelsBankList.length > 0 && (
+              <div className="p-3 rounded-lg bg-muted/20 border border-border/50 space-y-2">
+                <Label className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1">
+                  <Sliders className="size-3 text-primary" />
+                  <span>Vincular do Catálogo Oficial de Hotéis & Resorts</span>
+                </Label>
+                <Select onValueChange={handleSelectHotelFromBank}>
+                  <SelectTrigger className="h-11 rounded-lg text-xs bg-background">
+                    <SelectValue placeholder="Escolher um hotel parceiro cadastrado..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {hotelsBankList.map((h: HotelBankDTO) => (
+                      <SelectItem key={h.id} value={h.id}>
+                        {h.name} — {h.city}, {h.state}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
+            {/* Modal Inline de Cadastro Rápido de Hotel */}
+            {showNewHotelModal && (
+              <div className="p-4 rounded-lg bg-muted/40 border border-primary/30 space-y-3">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-bold text-foreground">Cadastrar Novo Hotel no Catálogo</h4>
+                  <button
+                    type="button"
+                    onClick={() => setShowNewHotelModal(false)}
+                    className="size-5 flex items-center justify-center text-muted-foreground hover:text-foreground"
+                  >
+                    <X className="size-3.5" />
+                  </button>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="space-y-1 sm:col-span-2">
+                    <Label className="text-[11px] font-semibold text-muted-foreground">Nome do Hotel/Resort</Label>
+                    <Input
+                      value={quickHotelName}
+                      onChange={(e) => setQuickHotelName(e.target.value)}
+                      placeholder="Ex: Resort Tororomba, Salinas Maragogi"
+                      className="h-10 rounded-lg text-xs bg-background"
+                      disabled={isSavingHotel}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-[11px] font-semibold text-muted-foreground">Cidade / UF</Label>
+                    <Input
+                      value={quickHotelCity}
+                      onChange={(e) => setQuickHotelCity(e.target.value)}
+                      placeholder="Ex: Ilhéus, BA"
+                      className="h-10 rounded-lg text-xs bg-background"
+                      disabled={isSavingHotel}
+                    />
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-[11px] font-semibold text-muted-foreground">Regime Alimentar</Label>
+                  <Select value={quickHotelRegime} onValueChange={setQuickHotelRegime} disabled={isSavingHotel}>
+                    <SelectTrigger className="h-10 rounded-lg text-xs bg-background">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="All Inclusive">All Inclusive (Tudo Incluso)</SelectItem>
+                      <SelectItem value="Pensão Completa">Pensão Completa (3 Refeições)</SelectItem>
+                      <SelectItem value="Meia Pensão">Meia Pensão (Café e Jantar)</SelectItem>
+                      <SelectItem value="Café da Manhã">Café da Manhã Incluso</SelectItem>
+                      <SelectItem value="Só Hospedagem">Só Hospedagem</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex justify-end gap-2 pt-1">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => setShowNewHotelModal(false)}
+                    disabled={isSavingHotel}
+                    className="rounded-lg text-xs h-9"
+                  >
+                    Cancelar
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={handleQuickAddHotel}
+                    disabled={isSavingHotel || !quickHotelName.trim() || !quickHotelCity.trim()}
+                    className="rounded-lg text-xs font-semibold bg-primary text-primary-foreground gap-2 h-9"
+                  >
+                    {isSavingHotel ? (
+                      <>
+                        <Loader2 className="size-3.5 animate-spin" />
+                        <span>Salvando...</span>
+                      </>
+                    ) : (
+                      <span>Salvar Hotel</span>
+                    )}
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1 sm:col-span-2">
+                <Label className="text-xs font-medium text-foreground">Nome do Hotel / Pousada / Resort</Label>
+                <Input
+                  value={resort.name}
+                  onChange={(e) => updateResort("name", e.target.value)}
+                  placeholder="Ex: Carmel Charme Resort, Salinas de Maceió"
+                  className="h-11 rounded-lg text-xs bg-background font-medium"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <Label className="text-xs font-medium text-foreground">Regime Alimentar</Label>
+                <Select
+                  value={resort.meal_plan || "All Inclusive"}
+                  onValueChange={(val) => updateResort("meal_plan", val)}
+                >
+                  <SelectTrigger className="h-11 rounded-lg text-xs bg-background">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="All Inclusive">All Inclusive (Tudo Incluso)</SelectItem>
+                    <SelectItem value="Pensão Completa">Pensão Completa (3 Refeições)</SelectItem>
+                    <SelectItem value="Meia Pensão">Meia Pensão (Café e Jantar)</SelectItem>
+                    <SelectItem value="Café da Manhã">Café da Manhã Incluso</SelectItem>
+                    <SelectItem value="Só Hospedagem">Só Hospedagem</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-1">
+                <Label className="text-xs font-medium text-foreground">Duração do Pacote (Ex: 5D / 4N)</Label>
+                <Input
+                  value={resort.duration_text || ""}
+                  onChange={(e) => updateResort("duration_text", e.target.value)}
+                  placeholder="Ex: 5 Dias / 4 Noites"
+                  className="h-11 rounded-lg text-xs bg-background font-medium"
+                />
+              </div>
+
+              <div className="space-y-1 sm:col-span-2">
+                <Label className="text-xs font-medium text-foreground">Hóspedes Recomendados</Label>
+                <Input
+                  value={resort.guests_text || ""}
+                  onChange={(e) => updateResort("guests_text", e.target.value)}
+                  placeholder="Ex: 2 Adultos + 1 Criança Free"
+                  className="h-11 rounded-lg text-xs bg-background font-medium"
+                />
+              </div>
+            </div>
+
+            {/* Badges de Selos do Hotel */}
+            <div className="pt-2 border-t border-border/40 space-y-3">
+              <Label className="text-xs font-semibold text-foreground">Selos & Destaques de Hospedagem</Label>
+              <div className="flex gap-2">
+                <Input
+                  value={newBadgeText}
+                  onChange={(e) => setNewBadgeText(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      addBadge();
+                    }
+                  }}
+                  placeholder="Ex: Pé na Areia, Vista Mar, Spa Completo, All Inclusive"
+                  className="h-11 rounded-lg text-xs bg-background flex-1"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={addBadge}
+                  disabled={!newBadgeText.trim()}
+                  className="h-11 px-4 rounded-lg text-xs font-semibold border-primary/30 text-primary hover:bg-primary/5 cursor-pointer"
+                >
+                  <Plus className="size-4 mr-1" />
+                  Adicionar
+                </Button>
+              </div>
+
+              {resort.badges && resort.badges.length > 0 && (
+                <div className="flex flex-wrap gap-2 pt-1">
+                  {resort.badges.map((badge, idx) => (
+                    <Badge
+                      key={idx}
+                      variant="secondary"
+                      className="px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 bg-primary/10 text-primary border border-primary/20"
+                    >
+                      <span>{badge}</span>
+                      <button
+                        type="button"
+                        onClick={() => removeBadge(idx)}
+                        className="size-4 rounded-full flex items-center justify-center hover:bg-destructive/20 text-muted-foreground hover:text-destructive"
+                      >
+                        <X className="size-3" />
+                      </button>
+                    </Badge>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ─────────────────────────────────────────────────────────────
+          3. ABA TRANSPORTE & LOGÍSTICA
+      ───────────────────────────────────────────────────────────── */}
+      {showTransporte && (
+        <div className="space-y-6">
+          {/* Seletor de Modal de Transporte */}
+          <div className="bg-card rounded-lg p-5 space-y-4 border border-border/70 shadow-2xs">
+            <div className="flex items-center justify-between pb-2 border-b border-border/40">
+              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
+                <RouteIcon className="size-4 text-primary" />
+                <span>Modal de Transporte Principal</span>
+              </div>
+              <Badge variant="outline" className="text-[10px] font-mono text-primary bg-primary/10 border-primary/30">
+                Logística Integrada
+              </Badge>
+            </div>
+
+            {/* Chips de seleção do modal sem emojis */}
+            <div className="flex flex-wrap gap-2">
+              {[
+                { id: "aereo", label: "Aéreo Comercial", icon: Plane },
+                { id: "terrestre", label: "Excursão Rodoviária", icon: Bus },
+                { id: "cruzeiro", label: "Cruzeiro Marítimo", icon: Ship },
+                { id: "misto", label: "Multimodal (Combo)", icon: RouteIcon },
+                { id: "car", label: "Carro Próprio / Local", icon: Car },
+              ].map((m) => {
+                const Icon = m.icon;
+                const isSelected = currentTransportType === m.id;
+                return (
+                  <button
+                    key={m.id}
+                    type="button"
+                    onClick={() => onChange({ ...value, transport_type: m.id as any })}
+                    className={cn(
+                      "h-11 px-4 rounded-lg border text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                      isSelected
+                        ? "bg-primary text-primary-foreground border-primary shadow-xs"
+                        : "bg-background border-border/60 text-muted-foreground hover:border-primary/50 hover:text-foreground"
+                    )}
+                  >
+                    <Icon className="size-4 shrink-0" />
+                    <span>{m.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* ── MODAL AÉREO ── */}
+            {(currentTransportType === "aereo" || currentTransportType === "misto") && (
+              <div className="rounded-lg border border-border/50 bg-muted/20 p-4 space-y-4 pt-4 mt-2">
+                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-primary">
+                  <Plane className="size-4" />
+                  <span>Detalhes da Malha Aérea</span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <Label className="text-xs font-medium text-foreground">Aeroporto de Origem (IATA)</Label>
+                    <Select
+                      value={flightDetails.origin_airport || flightDetails.departure_iata || ""}
+                      onValueChange={(val) => {
+                        updateFlightDetails("origin_airport", val);
+                        updateFlightDetails("departure_iata", val);
+                      }}
+                    >
+                      <SelectTrigger className="h-11 rounded-lg text-xs bg-background">
+                        <SelectValue placeholder="Selecione o aeroporto de saída..." />
+                      </SelectTrigger>
+                      <SelectContent className="max-h-72">
+                        {CANONICAL_AIRPORTS.map((a) => (
+                          <SelectItem key={a.iata} value={a.iata}>
+                            {airportLabel(a)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-1">
+                    <Label className="text-xs font-medium text-foreground">Aeroporto de Destino (IATA)</Label>
+                    <Select
+                      value={flightDetails.destination_iata || destination.iata_gateway || ""}
+                      onValueChange={(val) => {
+                        updateFlightDetails("destination_iata", val);
+                        updateDestination("iata_gateway", val);
+                      }}
+                    >
+                      <SelectTrigger className="h-11 rounded-lg text-xs bg-background">
+                        <SelectValue placeholder="Selecione o aeroporto de chegada..." />
+                      </SelectTrigger>
+                      <SelectContent className="max-h-72">
+                        {CANONICAL_AIRPORTS.map((a) => (
+                          <SelectItem key={a.iata} value={a.iata}>
+                            {airportLabel(a)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-1">
+                    <Label className="text-xs font-medium text-foreground">Companhia Aérea</Label>
+                    <Select
+                      value={flightDetails.airline_partner || flightDetails.airline_name || ""}
+                      onValueChange={(val) => {
+                        updateFlightDetails("airline_partner", val);
+                        updateFlightDetails("airline_name", val);
+                      }}
+                    >
+                      <SelectTrigger className="h-11 rounded-lg text-xs bg-background">
+                        <SelectValue placeholder="Selecione a Cia Aérea parceira..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {CANONICAL_AIRLINES_CATALOG.map((al) => (
+                          <SelectItem key={al.id} value={al.label}>
+                            {al.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-1">
+                    <Label className="text-xs font-medium text-foreground">Tipo de Voo</Label>
+                    <Select
+                      value={flightDetails.flight_type || "Direto"}
+                      onValueChange={(val: any) => updateFlightDetails("flight_type", val)}
+                    >
+                      <SelectTrigger className="h-11 rounded-lg text-xs bg-background">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Direto">Voo Direto (Sem Escalas)</SelectItem>
+                        <SelectItem value="Com Conexão">Voo com 1 ou mais conexões</SelectItem>
+                        <SelectItem value="Fretamento Exclusivo">Fretamento Exclusivo (Charter)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                {/* Franquia de Bagagem Inclusa */}
+                <div className="pt-3 border-t border-border/40 space-y-2">
+                  <Label className="text-xs font-semibold text-foreground">Franquia de Bagagem</Label>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        updateFlightDetails("baggage_included", !flightDetails.baggage_included)
+                      }
+                      className={cn(
+                        "h-11 px-3 rounded-lg border text-xs font-semibold flex items-center justify-between cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                        flightDetails.baggage_included
+                          ? "bg-primary/10 border-primary/40 text-primary"
+                          : "bg-background border-border/50 text-muted-foreground"
+                      )}
+                    >
+                      <span>Bagagem de Bordo (10kg)</span>
+                      <span>{flightDetails.baggage_included ? "Inclusa" : "Não Inclusa"}</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        updateFlightDetails("transfer_included", !flightDetails.transfer_included)
+                      }
+                      className={cn(
+                        "h-11 px-3 rounded-lg border text-xs font-semibold flex items-center justify-between cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                        flightDetails.transfer_included
+                          ? "bg-primary/10 border-primary/40 text-primary"
+                          : "bg-background border-border/50 text-muted-foreground"
+                      )}
+                    >
+                      <span>Transfer In/Out Aeroporto/Hotel</span>
+                      <span>{flightDetails.transfer_included ? "Incluso" : "Não Incluso"}</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* ── MODAL TERRESTRE / RODOVIÁRIO ── */}
+            {currentTransportType === "terrestre" && (
+              <div className="rounded-lg border border-border/50 bg-muted/20 p-4 space-y-4 pt-4 mt-2">
+                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-primary">
+                  <Bus className="size-4" />
+                  <span>Detalhes da Excursão Rodoviária</span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <Label className="text-xs font-medium text-foreground">Categoria do Veículo</Label>
+                    <Select
+                      value={flightDetails.bus_category || "leito_total"}
+                      onValueChange={(val) => updateFlightDetails("bus_category", val)}
+                    >
+                      <SelectTrigger className="h-11 rounded-lg text-xs bg-background">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {CANONICAL_BUS_CATEGORIES.map((b) => (
+                          <SelectItem key={b.id} value={b.id}>
+                            {b.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-1">
+                    <Label className="text-xs font-medium text-foreground">Empresa Fretadora / Operadora</Label>
+                    <Input
+                      value={flightDetails.bus_company || ""}
+                      onChange={(e) => updateFlightDetails("bus_company", e.target.value)}
+                      placeholder="Ex: Auto Viação Catarinense, Fretur SC"
+                      className="h-11 rounded-lg text-xs bg-background"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <Label className="text-xs font-medium text-foreground">Ponto de Partida / Embarque Inicial</Label>
+                    <Input
+                      value={flightDetails.bus_departure_terminal || ""}
+                      onChange={(e) => updateFlightDetails("bus_departure_terminal", e.target.value)}
+                      placeholder="Ex: Terminal Rodoviário de Chapecó — 22:00h"
+                      className="h-11 rounded-lg text-xs bg-background"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <Label className="text-xs font-medium text-foreground">Ponto de Desembarque no Destino</Label>
+                    <Input
+                      value={flightDetails.bus_arrival_terminal || ""}
+                      onChange={(e) => updateFlightDetails("bus_arrival_terminal", e.target.value)}
+                      placeholder="Ex: Hotel ou Centro Turístico"
+                      className="h-11 rounded-lg text-xs bg-background"
+                    />
+                  </div>
+                </div>
+
+                {/* Pontos de Embarque na Rota (Gateways) */}
+                <div className="space-y-2 pt-2 border-t border-border/40">
+                  <Label className="text-xs font-medium text-foreground flex items-center gap-1.5">
+                    <Navigation className="size-3.5 text-primary" />
+                    <span>Pontos de Embarque ao Longo da Rota</span>
+                  </Label>
+                  <p className="text-xs text-muted-foreground">
+                    Cidades ou paradas autorizadas onde passageiros podem embarcar.
+                  </p>
+                  <div className="flex gap-2">
+                    <Input
+                      value={gatewayInput}
+                      onChange={(e) => setGatewayInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          handleAddGateway();
+                        }
+                      }}
+                      placeholder="Ex: Xaxim, Xanxerê, Joaçaba..."
+                      className="h-11 rounded-lg text-xs bg-background flex-1"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={handleAddGateway}
+                      className="h-11 px-4 rounded-lg text-xs font-semibold border-primary/30 text-primary hover:bg-primary/5 cursor-pointer"
+                    >
+                      <Plus className="size-4 mr-1" />
+                      Adicionar
+                    </Button>
+                  </div>
+
+                  {((flightDetails as any).boarding_gateways || []).length > 0 && (
+                    <div className="flex flex-wrap gap-2 pt-1">
+                      {((flightDetails as any).boarding_gateways || []).map((gw: string) => (
+                        <span
+                          key={gw}
+                          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-md bg-primary/10 border border-primary/20 text-xs font-medium text-primary"
+                        >
+                          <Navigation className="size-3" />
+                          {gw}
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveGateway(gw)}
+                            className="size-4 hover:bg-destructive/20 rounded flex items-center justify-center ml-1 text-primary hover:text-destructive cursor-pointer"
+                          >
+                            <X className="size-2.5" />
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* ── MODAL CRUZEIRO ── */}
+            {currentTransportType === "cruzeiro" && (
+              <div className="rounded-lg border border-border/50 bg-muted/20 p-4 space-y-4 pt-4 mt-2">
+                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-primary">
+                  <Ship className="size-4" />
+                  <span>Detalhes do Cruzeiro Marítimo</span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <Label className="text-xs font-medium text-foreground">Companhia Marítima</Label>
+                    <Select
+                      value={flightDetails.cruise_line || ""}
+                      onValueChange={(val) => updateFlightDetails("cruise_line", val)}
+                    >
+                      <SelectTrigger className="h-11 rounded-lg text-xs bg-background">
+                        <SelectValue placeholder="Selecione a armadora..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {CANONICAL_CRUISE_LINES.map((c) => (
+                          <SelectItem key={c.id} value={c.label}>
+                            {c.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-1">
+                    <Label className="text-xs font-medium text-foreground">Nome do Navio</Label>
+                    <Input
+                      value={flightDetails.ship_name || ""}
+                      onChange={(e) => updateFlightDetails("ship_name", e.target.value)}
+                      placeholder="Ex: MSC Grandiosa, Costa Diadema"
+                      className="h-11 rounded-lg text-xs bg-background"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <Label className="text-xs font-medium text-foreground">Porto de Embarque</Label>
+                    <Input
+                      value={flightDetails.embarkation_port || ""}
+                      onChange={(e) => updateFlightDetails("embarkation_port", e.target.value)}
+                      placeholder="Ex: Porto de Santos — Terminal Concais"
+                      className="h-11 rounded-lg text-xs bg-background"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <Label className="text-xs font-medium text-foreground">Categoria da Cabine</Label>
+                    <Input
+                      value={flightDetails.cabin_category || ""}
+                      onChange={(e) => updateFlightDetails("cabin_category", e.target.value)}
+                      placeholder="Ex: Cabine com Varanda para o Mar"
+                      className="h-11 rounded-lg text-xs bg-background"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* ── MODAL CARRO PRÓPRIO / HOTEL ONLY ── */}
+            {currentTransportType === "car" && (
+              <div className="rounded-lg border border-border/50 bg-muted/10 p-4 space-y-2 mt-2">
+                <p className="text-xs text-muted-foreground">
+                  Pacote voltado para viagem em veículo próprio ou alugado. O cliente organiza o trajeto até o destino.
+                </p>
+                <div className="space-y-1 pt-2">
+                  <Label className="text-xs font-medium text-foreground">Ponto de Encontro / Recepção no Destino</Label>
+                  <Input
+                    value={flightDetails.origin_airport || ""}
+                    onChange={(e) => updateFlightDetails("origin_airport", e.target.value)}
+                    placeholder="Ex: Recepção do Resort a partir das 14:00h"
+                    className="h-11 rounded-lg text-xs bg-background"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Saídas Confirmadas (Departure Options) */}
+          <div className="bg-card rounded-lg p-5 space-y-4 border border-border/70 shadow-2xs">
+            <div className="flex items-center justify-between pb-2 border-b border-border/40">
+              <div>
+                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
+                  <Calendar className="size-4 text-primary" />
+                  <span>Saídas Confirmadas & Múltiplas Datas</span>
+                </div>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Cadastre as datas em que a viagem acontecerá. O cliente poderá escolher a data de sua preferência.
+                </p>
+              </div>
+
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={handleAddDeparture}
+                className="rounded-lg text-xs font-semibold gap-1 h-9 cursor-pointer border-primary/30 text-primary hover:bg-primary/5 focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <Plus className="size-3.5" />
+                <span>+ Adicionar Saída</span>
+              </Button>
+            </div>
+
+            {departureOptions.length === 0 ? (
+              <div className="text-center py-6 border border-dashed border-border/60 rounded-lg bg-muted/10 space-y-2">
+                <Calendar className="size-7 text-muted-foreground/50 mx-auto" />
+                <p className="text-xs text-muted-foreground">
+                  Nenhuma data cadastrada. Se não houver saídas cadastradas, o pacote será exibido sob consulta.
+                </p>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={handleAddDeparture}
+                  className="rounded-lg text-xs font-semibold gap-1 h-9 cursor-pointer"
+                >
+                  <Plus className="size-3.5" />
+                  <span>Cadastrar Primeira Saída</span>
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {departureOptions.map((opt, idx) => (
+                  <div
+                    key={opt.id}
+                    className="rounded-lg border border-border/60 bg-card p-4 space-y-3 relative group"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-foreground">
+                        {opt.label || `Saída ${idx + 1}`}
+                      </span>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleRemoveDeparture(opt.id)}
+                        className="size-8 p-0 rounded-lg text-destructive hover:bg-destructive/10 cursor-pointer"
+                      >
+                        <Trash2 className="size-3.5" />
+                      </Button>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                      <div className="space-y-1">
+                        <Label className="text-[11px] font-medium text-muted-foreground">Rótulo / Temporada</Label>
+                        <Input
+                          value={opt.label || ""}
+                          onChange={(e) => handleUpdateDeparture(opt.id, { label: e.target.value })}
+                          placeholder="Ex: Feriado de Páscoa"
+                          className="h-10 rounded-lg text-xs bg-background"
+                        />
+                      </div>
+
+                      <div className="space-y-1">
+                        <Label className="text-[11px] font-medium text-muted-foreground">Data de Saída</Label>
+                        <Input
+                          type="date"
+                          value={opt.departure_date}
+                          onChange={(e) => handleUpdateDeparture(opt.id, { departure_date: e.target.value })}
+                          className="h-10 rounded-lg text-xs bg-background font-mono"
+                        />
+                      </div>
+
+                      <div className="space-y-1">
+                        <Label className="text-[11px] font-medium text-muted-foreground">Data de Retorno</Label>
+                        <Input
+                          type="date"
+                          value={opt.return_date}
+                          onChange={(e) => handleUpdateDeparture(opt.id, { return_date: e.target.value })}
+                          className="h-10 rounded-lg text-xs bg-background font-mono"
+                        />
+                      </div>
+
+                      <div className="space-y-1">
+                        <Label className="text-[11px] font-medium text-muted-foreground">Status da Saída</Label>
+                        <Select
+                          value={opt.status}
+                          onValueChange={(val: DepartureStatus) =>
+                            handleUpdateDeparture(opt.id, { status: val })
+                          }
+                        >
+                          <SelectTrigger className="h-10 rounded-lg text-xs bg-background">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="confirmed">Confirmada</SelectItem>
+                            <SelectItem value="filling_fast">Quase Esgotando</SelectItem>
+                            <SelectItem value="few_seats">Últimas Vagas</SelectItem>
+                            <SelectItem value="sold_out">Esgotada</SelectItem>
+                            <SelectItem value="on_request">Sob Consulta</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ─────────────────────────────────────────────────────────────
+          4. ABA TARIFAS & QUARTOS
+      ───────────────────────────────────────────────────────────── */}
+      {showTarifas && (
+        <div className="space-y-6">
+          {/* Preço Base de Vitrine */}
+          <div className="bg-card rounded-lg p-5 space-y-4 border border-border/70 shadow-2xs">
+            <div className="flex items-center justify-between pb-2 border-b border-border/40">
+              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
+                <DollarSign className="size-4 text-primary" />
+                <span>Preço Base do Pacote (Por Pessoa em Apto Duplo)</span>
+              </div>
+              <Badge variant="outline" className="text-[10px] font-mono text-emerald-600 bg-emerald-500/10 border-emerald-500/20">
+                Moeda: Real (BRL)
+              </Badge>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="text-xs font-semibold text-foreground">Preço Promocional (De)</Label>
+                <div className="relative">
+                  <span className="absolute left-3 top-3 text-xs text-muted-foreground font-mono">R$</span>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    value={formValues?.compare_at_cents ? formValues.compare_at_cents / 100 : ""}
+                    onChange={(e) => {
+                      const cents = Math.round(parseFloat(e.target.value || "0") * 100);
+                      if (onPriceChange) onPriceChange(cents);
+                    }}
+                    placeholder="0,00 (Preço riscado anterior)"
+                    className="h-11 pl-9 rounded-lg text-sm bg-background font-mono"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-xs font-semibold text-foreground">Preço à Vista / Principal (Por)</Label>
+                <div className="relative">
+                  <span className="absolute left-3 top-3 text-xs text-muted-foreground font-mono">R$</span>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    value={priceCents ? priceCents / 100 : ""}
+                    onChange={(e) => {
+                      const cents = Math.round(parseFloat(e.target.value || "0") * 100);
+                      if (onPriceChange) onPriceChange(cents);
+                    }}
+                    placeholder="4.250,00"
+                    className="h-11 pl-9 rounded-lg text-sm bg-background font-mono font-bold text-primary"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Tarifário por Tipo de Acomodação */}
+          <div className="bg-card rounded-lg p-5 space-y-4 border border-border/70 shadow-2xs">
+            <div className="flex items-center justify-between pb-2 border-b border-border/40">
+              <div>
+                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
+                  <Users className="size-4 text-primary" />
+                  <span>Tarifário por Tipo de Quarto & Acomodação</span>
+                </div>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Valores calculados por pessoa de acordo com a distribuição do quarto.
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+              <div className="space-y-1 p-3 rounded-lg bg-muted/20 border border-border/50">
+                <Label className="text-xs font-medium text-foreground">Quarto Individual (Single)</Label>
+                <div className="relative">
+                  <span className="absolute left-2.5 top-2.5 text-[11px] text-muted-foreground font-mono">R$</span>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    value={roomRates.single_cents ? roomRates.single_cents / 100 : ""}
+                    onChange={(e) =>
+                      updateRoomRate("single_cents", Math.round(parseFloat(e.target.value || "0") * 100))
+                    }
+                    placeholder="Ex: 5.600,00"
+                    className="h-10 pl-8 rounded-lg text-xs bg-background font-mono"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1 p-3 rounded-lg bg-muted/20 border border-border/50">
+                <Label className="text-xs font-medium text-foreground">Quarto Duplo (Double — Padrão)</Label>
+                <div className="relative">
+                  <span className="absolute left-2.5 top-2.5 text-[11px] text-muted-foreground font-mono">R$</span>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    value={roomRates.double_cents ? roomRates.double_cents / 100 : (priceCents ? priceCents / 100 : "")}
+                    onChange={(e) =>
+                      updateRoomRate("double_cents", Math.round(parseFloat(e.target.value || "0") * 100))
+                    }
+                    placeholder="Ex: 4.250,00"
+                    className="h-10 pl-8 rounded-lg text-xs bg-background font-mono"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1 p-3 rounded-lg bg-muted/20 border border-border/50">
+                <Label className="text-xs font-medium text-foreground">Quarto Triplo (Triple)</Label>
+                <div className="relative">
+                  <span className="absolute left-2.5 top-2.5 text-[11px] text-muted-foreground font-mono">R$</span>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    value={roomRates.triple_cents ? roomRates.triple_cents / 100 : ""}
+                    onChange={(e) =>
+                      updateRoomRate("triple_cents", Math.round(parseFloat(e.target.value || "0") * 100))
+                    }
+                    placeholder="Ex: 3.990,00"
+                    className="h-10 pl-8 rounded-lg text-xs bg-background font-mono"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1 p-3 rounded-lg bg-muted/20 border border-border/50">
+                <Label className="text-xs font-medium text-foreground">Quarto Quádruplo (Quad)</Label>
+                <div className="relative">
+                  <span className="absolute left-2.5 top-2.5 text-[11px] text-muted-foreground font-mono">R$</span>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    value={roomRates.quad_cents ? roomRates.quad_cents / 100 : ""}
+                    onChange={(e) =>
+                      updateRoomRate("quad_cents", Math.round(parseFloat(e.target.value || "0") * 100))
+                    }
+                    placeholder="Ex: 3.750,00"
+                    className="h-10 pl-8 rounded-lg text-xs bg-background font-mono"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1 p-3 rounded-lg bg-muted/20 border border-border/50">
+                <Label className="text-xs font-medium text-foreground">Criança / Cama Extra (Child)</Label>
+                <div className="relative">
+                  <span className="absolute left-2.5 top-2.5 text-[11px] text-muted-foreground font-mono">R$</span>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    value={roomRates.child_cents ? roomRates.child_cents / 100 : ""}
+                    onChange={(e) =>
+                      updateRoomRate("child_cents", Math.round(parseFloat(e.target.value || "0") * 100))
+                    }
+                    placeholder="Ex: 1.890,00"
+                    className="h-10 pl-8 rounded-lg text-xs bg-background font-mono"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Condições Comerciais e Parcelamento */}
+          <div className="bg-card rounded-lg p-5 space-y-4 border border-border/70 shadow-2xs">
+            <div className="flex items-center justify-between pb-2 border-b border-border/40">
+              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
+                <CreditCard className="size-4 text-primary" />
+                <span>Condições Comerciais e Parcelamento</span>
+              </div>
+              <Badge variant="outline" className="text-[10px] font-mono text-emerald-600 bg-emerald-500/10 border-emerald-500/20">
+                Parcelamento Flexível
+              </Badge>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Slider de Parcelamento Máximo */}
+              <div className="space-y-2 sm:col-span-2 p-4 rounded-lg bg-muted/20 border border-border/50">
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs font-semibold text-foreground">Parcelamento Máximo no Cartão</Label>
+                  <span className="text-sm font-black font-display text-primary">
+                    Até {maxInstallments}x {priceCents > 0 ? `de ${formatMoney(installmentCents)}` : ""}
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min={1}
+                  max={24}
+                  step={1}
+                  value={maxInstallments}
+                  onChange={(e) => updatePaymentConditions("installments_max", Number(e.target.value))}
+                  className="w-full h-2 rounded-full accent-primary cursor-pointer"
+                  aria-label="Máximo de parcelas permitidas"
+                />
+                <div className="flex justify-between text-[10px] text-muted-foreground font-mono">
+                  <span>1x</span>
+                  <span>6x</span>
+                  <span>10x</span>
+                  <span>12x</span>
+                  <span>18x</span>
+                  <span>24x</span>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-xs text-foreground font-medium">Parcelas Sem Juros</Label>
+                <Input
+                  type="number"
+                  min={1}
+                  max={maxInstallments}
+                  value={feeFreeInstallments}
+                  onChange={(e) => updatePaymentConditions("installments_fee_free", Number(e.target.value))}
+                  placeholder="12"
+                  className="h-11 rounded-lg text-xs bg-background font-mono"
+                />
+                <p className="text-[11px] text-muted-foreground">Quantas parcelas a agência oferece sem acréscimo.</p>
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-xs text-foreground font-medium">Desconto à Vista no PIX (%)</Label>
+                <Input
+                  type="number"
+                  min={0}
+                  max={50}
+                  value={pixDiscountPercent}
+                  onChange={(e) => updatePaymentConditions("pix_discount_percent", Number(e.target.value))}
+                  placeholder="5"
+                  className="h-11 rounded-lg text-xs bg-background font-mono"
+                />
+                {pixDiscountPercent > 0 && priceCents > 0 && (
+                  <p className="text-[11px] text-emerald-600 font-semibold font-mono">
+                    Valor no PIX: {formatMoney(pixCents)} ({pixDiscountPercent}% OFF)
+                  </p>
+                )}
+              </div>
+
+              <div className="space-y-2 sm:col-span-2">
+                <Label className="text-xs text-foreground font-medium">Sinal Mínimo de Entrada (%)</Label>
+                <Input
+                  type="number"
+                  min={0}
+                  max={100}
+                  value={depositPercent}
+                  onChange={(e) => updatePaymentConditions("deposit_percent", Number(e.target.value))}
+                  placeholder="0 (Sem entrada obrigatória)"
+                  className="h-11 rounded-lg text-xs bg-background font-mono"
+                />
+                <p className="text-[11px] text-muted-foreground">Percentual exigido no momento da confirmação da reserva.</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Campanhas de Operadoras Parceiras & Disclaimers */}
+          <div className="bg-card rounded-lg p-5 space-y-4 border border-border/70 shadow-2xs">
+            <div className="flex items-center justify-between pb-2 border-b border-border/40">
+              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
+                <Building2 className="size-4 text-primary" />
+                <span>Operadora Consolidada & Transparência</span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label className="text-xs font-medium text-foreground">Operadora Parceira</Label>
+                <Select
+                  value={value.operator_campaign || "propria"}
+                  onValueChange={(val) => onChange({ ...value, operator_campaign: val })}
+                >
+                  <SelectTrigger className="h-11 rounded-lg text-xs bg-background">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="propria">Operação Própria / Agência Local</SelectItem>
+                    <SelectItem value="Orinter">Orinter Tour & Travel</SelectItem>
+                    <SelectItem value="FRT">FRT Operadora</SelectItem>
+                    <SelectItem value="Incomum">Incomum Viagens</SelectItem>
+                    <SelectItem value="CVC">CVC Corp</SelectItem>
+                    <SelectItem value="ViagensPromo">ViagensPromo</SelectItem>
+                    <SelectItem value="E-HTL">E-HTL Hotéis</SelectItem>
+                    <SelectItem value="Europlus">Europlus Operadora</SelectItem>
+                    <SelectItem value="Schultz">Schultz Operadora</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-1">
+                <Label className="text-xs font-medium text-foreground">Aviso Legal de Tarifas (Disclaimer)</Label>
+                <Select
+                  value={value.disclaimer_type || "padrao"}
+                  onValueChange={(val) => onChange({ ...value, disclaimer_type: val })}
+                >
+                  <SelectTrigger className="h-11 rounded-lg text-xs bg-background">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="padrao">Tarifas por pessoa em apto duplo, sujeitas a disponibilidade</SelectItem>
+                    <SelectItem value="cambio">Valores convertidos pelo câmbio turismo na data do fechamento</SelectItem>
+                    <SelectItem value="promocional">Valores promocionais com limite de assentos e quartos</SelectItem>
+                    <SelectItem value="custom">Sob medida: tarifas cotadas exclusivamente para o cliente</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ─────────────────────────────────────────────────────────────
+          5. ABA INCLUSÕES, REGRAS & DOCUMENTAÇÃO
+      ───────────────────────────────────────────────────────────── */}
+      {showInclusoes && (
+        <div className="space-y-6">
+          {/* Checklist de Inclusões ("O que inclui") */}
+          <div className="bg-card rounded-lg p-5 space-y-4 border border-border/70 shadow-2xs">
+            <div className="flex items-center justify-between pb-2 border-b border-border/40">
+              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-emerald-600">
+                <ShieldCheck className="size-4" />
+                <span>O Que Está Incluso no Pacote</span>
+              </div>
+              <Badge variant="outline" className="text-[10px] font-mono text-emerald-600 bg-emerald-500/10 border-emerald-500/20">
+                {inclusions.length} inclusos
+              </Badge>
+            </div>
+
+            {/* Presets clicáveis rápidos sem emojis */}
+            <div className="space-y-2">
+              <Label className="text-[11px] font-semibold text-muted-foreground">Sugestões Rápidas de Inclusões</Label>
+              <div className="flex flex-wrap gap-2">
+                {CANONICAL_INCLUSIONS_CLEAN.map((item) => {
+                  const isChecked = inclusions.includes(item);
+                  return (
+                    <button
+                      key={item}
+                      type="button"
+                      onClick={() => toggleInclusion(item)}
+                      className={cn(
+                        "h-9 px-3 rounded-lg border text-xs font-medium flex items-center gap-1.5 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                        isChecked
+                          ? "bg-emerald-500/15 border-emerald-500/40 text-emerald-700 dark:text-emerald-300 font-semibold"
+                          : "bg-background border-border/60 text-muted-foreground hover:border-emerald-500/30"
+                      )}
+                    >
+                      <CheckCircle2 className={cn("size-3.5 shrink-0", isChecked ? "text-emerald-600" : "text-muted-foreground/40")} />
+                      <span>{item}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Inclusão Personalizada */}
+            <div className="flex gap-2 pt-2 border-t border-border/40">
+              <Input
+                value={newInclusionText}
+                onChange={(e) => setNewInclusionText(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    addCustomInclusion();
+                  }
+                }}
+                placeholder="Adicionar item customizado que está incluso..."
+                className="h-11 rounded-lg text-xs bg-background flex-1"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={addCustomInclusion}
+                disabled={!newInclusionText.trim()}
+                className="h-11 px-4 rounded-lg text-xs font-semibold border-emerald-500/30 text-emerald-600 hover:bg-emerald-500/5 cursor-pointer"
+              >
+                <Plus className="size-4 mr-1" />
+                Adicionar
+              </Button>
+            </div>
+          </div>
+
+          {/* Checklist de Exclusões ("O que NÃO inclui") */}
+          <div className="bg-card rounded-lg p-5 space-y-4 border border-border/70 shadow-2xs">
+            <div className="flex items-center justify-between pb-2 border-b border-border/40">
+              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-destructive">
+                <ShieldAlert className="size-4" />
+                <span>O Que Não Está Incluso no Pacote</span>
+              </div>
+              <Badge variant="outline" className="text-[10px] font-mono text-destructive bg-destructive/10 border-destructive/20">
+                {exclusions.length} exclusos
+              </Badge>
+            </div>
+
+            {/* Presets clicáveis rápidos sem emojis */}
+            <div className="space-y-2">
+              <Label className="text-[11px] font-semibold text-muted-foreground">Sugestões Rápidas de Exclusões</Label>
+              <div className="flex flex-wrap gap-2">
+                {CANONICAL_EXCLUSIONS_CLEAN.map((item) => {
+                  const isChecked = exclusions.includes(item);
+                  return (
+                    <button
+                      key={item}
+                      type="button"
+                      onClick={() => toggleExclusion(item)}
+                      className={cn(
+                        "h-9 px-3 rounded-lg border text-xs font-medium flex items-center gap-1.5 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                        isChecked
+                          ? "bg-destructive/15 border-destructive/40 text-destructive font-semibold"
+                          : "bg-background border-border/60 text-muted-foreground hover:border-destructive/30"
+                      )}
+                    >
+                      <X className={cn("size-3.5 shrink-0", isChecked ? "text-destructive" : "text-muted-foreground/40")} />
+                      <span>{item}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Exclusão Personalizada */}
+            <div className="flex gap-2 pt-2 border-t border-border/40">
+              <Input
+                value={newExclusionText}
+                onChange={(e) => setNewExclusionText(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    addCustomExclusion();
+                  }
+                }}
+                placeholder="Adicionar item customizado que NÃO está incluso..."
+                className="h-11 rounded-lg text-xs bg-background flex-1"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={addCustomExclusion}
+                disabled={!newExclusionText.trim()}
+                className="h-11 px-4 rounded-lg text-xs font-semibold border-destructive/30 text-destructive hover:bg-destructive/5 cursor-pointer"
+              >
+                <Plus className="size-4 mr-1" />
+                Adicionar
+              </Button>
+            </div>
+          </div>
+
+          {/* Requisitos de Embarque & Documentação */}
+          <div className="bg-card rounded-lg p-5 space-y-4 border border-border/70 shadow-2xs">
+            <div className="flex items-center justify-between pb-2 border-b border-border/40">
+              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
+                <FileText className="size-4 text-primary" />
+                <span>Requisitos de Embarque & Documentação</span>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex flex-wrap gap-2">
+                {CANONICAL_BOARDING_DOCS_CLEAN.map((item) => {
+                  const isChecked = boardingDocs.includes(item);
+                  return (
+                    <button
+                      key={item}
+                      type="button"
+                      onClick={() => toggleBoardingDoc(item)}
+                      className={cn(
+                        "h-9 px-3 rounded-lg border text-xs font-medium flex items-center gap-1.5 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                        isChecked
+                          ? "bg-primary/15 border-primary/40 text-primary font-semibold"
+                          : "bg-background border-border/60 text-muted-foreground hover:border-primary/30"
+                      )}
+                    >
+                      <CheckCircle2 className={cn("size-3.5 shrink-0", isChecked ? "text-primary" : "text-muted-foreground/40")} />
+                      <span>{item}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="flex gap-2 pt-2 border-t border-border/40">
+              <Input
+                value={newDocText}
+                onChange={(e) => setNewDocText(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    addCustomDoc();
+                  }
+                }}
+                placeholder="Adicionar exigência de embarque..."
+                className="h-11 rounded-lg text-xs bg-background flex-1"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={addCustomDoc}
+                disabled={!newDocText.trim()}
+                className="h-11 px-4 rounded-lg text-xs font-semibold border-primary/30 text-primary hover:bg-primary/5 cursor-pointer"
+              >
+                <Plus className="size-4 mr-1" />
+                Adicionar
+              </Button>
+            </div>
+          </div>
+
+          {/* Política de Cancelamento e Reembolso */}
+          <div className="bg-card rounded-lg p-5 space-y-4 border border-border/70 shadow-2xs">
+            <div className="flex items-center justify-between pb-2 border-b border-border/40">
+              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
+                <Clock className="size-4 text-primary" />
+                <span>Política de Cancelamento & Reembolso</span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              {[
+                {
+                  id: "flexivel",
+                  label: "Flexível (Até 30 dias)",
+                  desc: "Reembolso integral cancelando até 30 dias antes do embarque.",
+                },
+                {
+                  id: "moderada",
+                  label: "Moderada (Taxa de 20%)",
+                  desc: "Cancelamento até 45 dias com taxa administrativa da agência.",
+                },
+                {
+                  id: "rigorosa",
+                  label: "Não Reembolsável",
+                  desc: "Tarifas promocionais emitidas sem direito a cancelamento voluntário.",
+                },
+              ].map((p) => (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() => onChange({ ...value, cancellation_policy: p.desc })}
+                  className={cn(
+                    "p-3 rounded-lg border text-left space-y-1 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                    value.cancellation_policy === p.desc
+                      ? "bg-primary/10 border-primary/40 text-primary"
+                      : "bg-background border-border/60 text-muted-foreground hover:border-primary/30"
+                  )}
+                >
+                  <span className="text-xs font-bold text-foreground block">{p.label}</span>
+                  <span className="text-[11px] text-muted-foreground leading-snug block">{p.desc}</span>
+                </button>
+              ))}
+            </div>
+
+            <div className="space-y-1 pt-2">
+              <Label className="text-xs font-medium text-foreground">Texto Detalhado da Política</Label>
+              <Textarea
+                value={value.cancellation_policy || ""}
+                onChange={(e) => onChange({ ...value, cancellation_policy: e.target.value })}
+                placeholder="Descreva as condições contratuais de cancelamento, prazos e taxas aplicáveis..."
+                className="text-xs bg-background min-h-20 rounded-lg"
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ─────────────────────────────────────────────────────────────
+          6. ABA RESERVA ONLINE & IA SDR
+      ───────────────────────────────────────────────────────────── */}
+      {showReserva && (
+        <div className="space-y-6">
+          {/* WhatsApp & Atendimento Humano Direto */}
+          <div className="bg-card rounded-lg p-5 space-y-4 border border-border/70 shadow-2xs">
+            <div className="flex items-center justify-between pb-2 border-b border-border/40">
+              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-emerald-600">
+                <MessageCircle className="size-4" />
+                <span>Reserva Online & Canal Direto no WhatsApp</span>
+              </div>
+              <Badge variant="outline" className="text-[10px] font-mono text-emerald-600 bg-emerald-500/10 border-emerald-500/20">
+                Atendimento Imediato
+              </Badge>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label className="text-xs font-medium text-foreground">Nome da Agência / Atendente</Label>
+                <Input
+                  value={storeName}
+                  disabled
+                  className="h-11 rounded-lg text-xs bg-muted/30 font-medium"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <Label className="text-xs font-medium text-foreground">WhatsApp Cadastrado</Label>
+                <Input
+                  value={storePhone || "Configurado nas configurações da loja"}
+                  disabled
+                  className="h-11 rounded-lg text-xs bg-muted/30 font-mono"
+                />
+              </div>
+            </div>
+
+            <div className="p-4 rounded-lg bg-emerald-500/5 border border-emerald-500/20 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400">
+                  Mensagem Automática Pré-configurada para o Cliente
+                </span>
+                <span className="text-[10px] font-mono text-muted-foreground">Link Dinâmico</span>
+              </div>
+              <p className="text-xs font-mono text-foreground/80 bg-background/80 p-2.5 rounded-md border border-border/50">
+                Olá {storeName}! Gostaria de mais informações e garantir minha reserva para o pacote &quot;
+                {formValues?.title || destination.name || "Viagem"}&quot; com saída para {destination.name || "o destino"}.
+              </p>
+            </div>
+          </div>
+
+          {/* IA Sales Advisor / SDR para Viagens */}
+          <div className="bg-card rounded-lg p-5 space-y-4 border border-border/70 shadow-2xs">
+            <div className="flex items-center justify-between pb-2 border-b border-border/40">
+              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-primary">
+                <Bot className="size-4" />
+                <span>IA Sales Advisor (Consultor Virtual de Viagens)</span>
+              </div>
+              <Badge variant="outline" className="text-[10px] font-mono text-primary bg-primary/10 border-primary/20">
+                Atendimento 24/7
+              </Badge>
+            </div>
+
+            <div className="flex items-center justify-between p-3.5 rounded-lg bg-muted/20 border border-border/50">
+              <div>
+                <span className="text-xs font-bold text-foreground block">
+                  Ativar Consultor Virtual IA para este Pacote
+                </span>
+                <span className="text-[11px] text-muted-foreground block">
+                  A IA responderá dúvidas de passageiros no chat da vitrine com base nas regras deste roteiro.
+                </span>
+              </div>
+              <input
+                type="checkbox"
+                checked={Boolean(value.ai_sales_advisor_enabled ?? true)}
+                onChange={(e) => onChange({ ...value, ai_sales_advisor_enabled: e.target.checked })}
+                className="size-5 rounded border-border text-primary accent-primary cursor-pointer"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <Label className="text-xs font-medium text-foreground">
+                Instruções & Argumentos Comerciais para a IA
+              </Label>
+              <Textarea
+                value={value.ai_sales_advisor_prompt || ""}
+                onChange={(e) => onChange({ ...value, ai_sales_advisor_prompt: e.target.value })}
+                placeholder="Ex: Enfatizar que as vagas são limitadas para a saída de Páscoa e que o resort possui regime All Inclusive completo sem custos extras no destino..."
+                className="text-xs bg-background min-h-24 rounded-lg"
+              />
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }

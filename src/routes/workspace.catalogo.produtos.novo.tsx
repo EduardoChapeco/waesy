@@ -13,6 +13,7 @@ import { getNicheCatalogContext } from "@/lib/catalog-niche-context";
 import { getNicheSemantics } from "@/lib/niche-semantics";
 import { getStoreSettings } from "@/services/store.functions";
 import { MasterCatalogSearchDialog } from "@/components/admin/catalog/master-catalog-search-dialog";
+import { TravelPackageForm } from "@/components/commerce/travel/travel-package-form";
 
 import {
   ProductEditorHeader,
@@ -166,29 +167,62 @@ export function UnifiedNewProductPage() {
             <Tabs value={editor.activeTab} onValueChange={editor.setActiveTab} className="w-full space-y-4">
               <div className="flex items-center justify-between gap-2 overflow-x-auto pb-1">
                 <TabsList className="justify-start overflow-x-auto bg-muted p-1 rounded-lg h-auto flex flex-nowrap gap-1">
-                  <TabsTrigger value="basico" className="rounded-md text-xs font-bold whitespace-nowrap shrink-0 px-3 h-9">
-                    Básico
-                  </TabsTrigger>
-                  <TabsTrigger value="especificacoes" className="rounded-md text-xs font-bold whitespace-nowrap shrink-0 px-3 h-9">
-                    Especificações
-                  </TabsTrigger>
-                  <TabsTrigger value="preco" className="rounded-md text-xs font-bold whitespace-nowrap shrink-0 px-3 h-9">
-                    Preço & Grade 2D
-                  </TabsTrigger>
-                  <TabsTrigger value="fiscal" className="rounded-md text-xs font-bold whitespace-nowrap shrink-0 px-3 h-9">
-                    Fiscal
-                  </TabsTrigger>
-                  {nicheCtx.isFoodBusiness && (
-                    <TabsTrigger value="cardapio" className="rounded-md text-xs font-bold whitespace-nowrap shrink-0 px-3 h-9">
-                      Cardápio
-                    </TabsTrigger>
+                  {editor.isTravelPackageMode ? (
+                    <>
+                      <TabsTrigger value="roteiro" className="rounded-md text-xs font-bold whitespace-nowrap shrink-0 px-3 h-9">
+                        Roteiro & Destino
+                      </TabsTrigger>
+                      <TabsTrigger value="hospedagem" className="rounded-md text-xs font-bold whitespace-nowrap shrink-0 px-3 h-9">
+                        Hospedagem
+                      </TabsTrigger>
+                      <TabsTrigger value="transporte" className="rounded-md text-xs font-bold whitespace-nowrap shrink-0 px-3 h-9">
+                        Transporte & Saídas
+                      </TabsTrigger>
+                      <TabsTrigger value="tarifas" className="rounded-md text-xs font-bold whitespace-nowrap shrink-0 px-3 h-9">
+                        Tarifas & Quartos
+                      </TabsTrigger>
+                      <TabsTrigger value="inclusoes" className="rounded-md text-xs font-bold whitespace-nowrap shrink-0 px-3 h-9">
+                        Inclusões & Regras
+                      </TabsTrigger>
+                      <TabsTrigger value="midias" className="rounded-md text-xs font-bold whitespace-nowrap shrink-0 px-3 h-9">
+                        Fotos
+                      </TabsTrigger>
+                      <TabsTrigger value="comercial" className="rounded-md text-xs font-bold whitespace-nowrap shrink-0 px-3 h-9">
+                        Comercial & SEO
+                      </TabsTrigger>
+                      <TabsTrigger value="reserva" className="rounded-md text-xs font-bold whitespace-nowrap shrink-0 px-3 h-9">
+                        Reserva & IA
+                      </TabsTrigger>
+                    </>
+                  ) : (
+                    <>
+                      <TabsTrigger value="basico" className="rounded-md text-xs font-bold whitespace-nowrap shrink-0 px-3 h-9">
+                        Básico
+                      </TabsTrigger>
+                      <TabsTrigger value="especificacoes" className="rounded-md text-xs font-bold whitespace-nowrap shrink-0 px-3 h-9">
+                        Especificações
+                      </TabsTrigger>
+                      <TabsTrigger value="preco" className="rounded-md text-xs font-bold whitespace-nowrap shrink-0 px-3 h-9">
+                        Preço & Grade 2D
+                      </TabsTrigger>
+                      <TabsTrigger value="fiscal" className="rounded-md text-xs font-bold whitespace-nowrap shrink-0 px-3 h-9">
+                        Fiscal
+                      </TabsTrigger>
+                      {nicheCtx.isFoodBusiness && (
+                        <TabsTrigger value="cardapio" className="rounded-md text-xs font-bold whitespace-nowrap shrink-0 px-3 h-9">
+                          Cardápio
+                        </TabsTrigger>
+                      )}
+                      <TabsTrigger value="midias" className="rounded-md text-xs font-bold whitespace-nowrap shrink-0 px-3 h-9">
+                        Fotos
+                      </TabsTrigger>
+                      {(nicheCtx.isFoodBusiness || semantics.nicheId === "manufacturing") && (
+                        <TabsTrigger value="insumos" className="rounded-md text-xs font-bold whitespace-nowrap shrink-0 px-3 h-9">
+                          Insumos
+                        </TabsTrigger>
+                      )}
+                    </>
                   )}
-                  <TabsTrigger value="midias" className="rounded-md text-xs font-bold whitespace-nowrap shrink-0 px-3 h-9">
-                    Fotos
-                  </TabsTrigger>
-                  <TabsTrigger value="insumos" className="rounded-md text-xs font-bold whitespace-nowrap shrink-0 px-3 h-9">
-                    Insumos
-                  </TabsTrigger>
                 </TabsList>
 
                 <Button
@@ -204,77 +238,203 @@ export function UnifiedNewProductPage() {
                 </Button>
               </div>
 
-              <TabsContent value="basico" className="space-y-4 m-0">
-                <ProductBasicTab
-                  isTravelPackageMode={editor.isTravelPackageMode}
-                  travelData={editor.travelData}
-                  onTravelDataChange={editor.setTravelData}
-                  priceCents={editor.formValues.price_cents}
-                  nicheCtx={nicheCtx}
-                  formValues={editor.formValues}
-                  register={editor.form.register}
-                  setValue={editor.form.setValue}
-                  onTitleChange={editor.handleTitleChange}
-                  categoriesList={editor.categoriesList}
-                  onOpenQuickCategory={() => editor.setIsQuickCategoryOpen(true)}
-                />
-              </TabsContent>
+              {editor.isTravelPackageMode ? (
+                <>
+                  <TabsContent value="roteiro" className="space-y-4 m-0">
+                    <TravelPackageForm
+                      value={editor.travelData}
+                      onChange={editor.setTravelData}
+                      priceCents={editor.formValues.price_cents || 0}
+                      activeSection="roteiro"
+                      formValues={editor.formValues}
+                      onTitleChange={editor.handleTitleChange}
+                      categoriesList={editor.categoriesList}
+                      onOpenQuickCategory={() => editor.setIsQuickCategoryOpen(true)}
+                      onPriceChange={(cents) => editor.form.setValue("price_cents", cents)}
+                      storeName={store?.name}
+                      storePhone={store?.phone || store?.settings?.whatsapp}
+                    />
+                  </TabsContent>
 
-              <TabsContent value="especificacoes" className="space-y-4 m-0">
-                <ProductSpecsTab
-                  attributes={editor.nicheAttributes}
-                  onChange={editor.setNicheAttributes}
-                  nicheContext={nicheCtx}
-                />
-              </TabsContent>
+                  <TabsContent value="hospedagem" className="space-y-4 m-0">
+                    <TravelPackageForm
+                      value={editor.travelData}
+                      onChange={editor.setTravelData}
+                      priceCents={editor.formValues.price_cents || 0}
+                      activeSection="hospedagem"
+                      formValues={editor.formValues}
+                      onTitleChange={editor.handleTitleChange}
+                      categoriesList={editor.categoriesList}
+                      onOpenQuickCategory={() => editor.setIsQuickCategoryOpen(true)}
+                      onPriceChange={(cents) => editor.form.setValue("price_cents", cents)}
+                      storeName={store?.name}
+                      storePhone={store?.phone || store?.settings?.whatsapp}
+                    />
+                  </TabsContent>
 
-              <TabsContent value="preco" className="space-y-4 m-0">
-                <ProductPricingTab
-                  control={editor.form.control}
-                  register={editor.form.register}
-                  setValue={editor.form.setValue}
-                  formValues={editor.formValues}
-                  nicheCtx={nicheCtx}
-                  variantsMatrix={editor.variantsMatrix}
-                  onVariantsMatrixChange={editor.setVariantsMatrix}
-                  onOpenAddDimension={() => editor.setIsAddDimensionOpen(true)}
-                  optionGroups={editor.optionGroups}
-                  selectedOptionGroupIds={editor.selectedOptionGroupIds}
-                  onSelectedGroupIdsChange={editor.setSelectedOptionGroupIds}
-                  onOptionGroupsChange={editor.setOptionGroups}
-                  wholesaleEnabled={editor.isWholesaleEnabled}
-                />
-              </TabsContent>
+                  <TabsContent value="transporte" className="space-y-4 m-0">
+                    <TravelPackageForm
+                      value={editor.travelData}
+                      onChange={editor.setTravelData}
+                      priceCents={editor.formValues.price_cents || 0}
+                      activeSection="transporte"
+                      formValues={editor.formValues}
+                      onTitleChange={editor.handleTitleChange}
+                      categoriesList={editor.categoriesList}
+                      onOpenQuickCategory={() => editor.setIsQuickCategoryOpen(true)}
+                      onPriceChange={(cents) => editor.form.setValue("price_cents", cents)}
+                      storeName={store?.name}
+                      storePhone={store?.phone || store?.settings?.whatsapp}
+                    />
+                  </TabsContent>
 
-              <TabsContent value="fiscal" className="space-y-4 m-0">
-                <ProductFiscalTab
-                  fiscalData={editor.fiscalData}
-                  onFiscalDataChange={editor.setFiscalData}
-                  onOpenMasterCatalog={() => editor.setIsMasterCatalogOpen(true)}
-                />
-              </TabsContent>
+                  <TabsContent value="tarifas" className="space-y-4 m-0">
+                    <TravelPackageForm
+                      value={editor.travelData}
+                      onChange={editor.setTravelData}
+                      priceCents={editor.formValues.price_cents || 0}
+                      activeSection="tarifas"
+                      formValues={editor.formValues}
+                      onTitleChange={editor.handleTitleChange}
+                      categoriesList={editor.categoriesList}
+                      onOpenQuickCategory={() => editor.setIsQuickCategoryOpen(true)}
+                      onPriceChange={(cents) => editor.form.setValue("price_cents", cents)}
+                      storeName={store?.name}
+                      storePhone={store?.phone || store?.settings?.whatsapp}
+                    />
+                  </TabsContent>
 
-              <TabsContent value="midias" className="space-y-4 m-0">
-                <ProductMediaTab images={editor.images} onImagesChange={editor.setImages} />
-              </TabsContent>
+                  <TabsContent value="inclusoes" className="space-y-4 m-0">
+                    <TravelPackageForm
+                      value={editor.travelData}
+                      onChange={editor.setTravelData}
+                      priceCents={editor.formValues.price_cents || 0}
+                      activeSection="inclusoes"
+                      formValues={editor.formValues}
+                      onTitleChange={editor.handleTitleChange}
+                      categoriesList={editor.categoriesList}
+                      onOpenQuickCategory={() => editor.setIsQuickCategoryOpen(true)}
+                      onPriceChange={(cents) => editor.form.setValue("price_cents", cents)}
+                      storeName={store?.name}
+                      storePhone={store?.phone || store?.settings?.whatsapp}
+                    />
+                  </TabsContent>
 
-              {nicheCtx.isFoodBusiness && (
-                <TabsContent value="cardapio" className="space-y-4 m-0">
-                  <ProductFoodSpecsCard value={editor.foodSpecs} onChange={editor.setFoodSpecs} />
-                </TabsContent>
+                  <TabsContent value="midias" className="space-y-4 m-0">
+                    <ProductMediaTab images={editor.images} onImagesChange={editor.setImages} />
+                  </TabsContent>
+
+                  <TabsContent value="comercial" className="space-y-4 m-0">
+                    <ProductPricingTab
+                      control={editor.form.control}
+                      register={editor.form.register}
+                      setValue={editor.form.setValue}
+                      formValues={editor.formValues}
+                      nicheCtx={nicheCtx}
+                      variantsMatrix={editor.variantsMatrix}
+                      onVariantsMatrixChange={editor.setVariantsMatrix}
+                      onOpenAddDimension={() => editor.setIsAddDimensionOpen(true)}
+                      optionGroups={editor.optionGroups}
+                      selectedOptionGroupIds={editor.selectedOptionGroupIds}
+                      onSelectedGroupIdsChange={editor.setSelectedOptionGroupIds}
+                      onOptionGroupsChange={editor.setOptionGroups}
+                      isTravelPackageMode={true}
+                    />
+                  </TabsContent>
+
+                  <TabsContent value="reserva" className="space-y-4 m-0">
+                    <TravelPackageForm
+                      value={editor.travelData}
+                      onChange={editor.setTravelData}
+                      priceCents={editor.formValues.price_cents || 0}
+                      activeSection="reserva"
+                      formValues={editor.formValues}
+                      onTitleChange={editor.handleTitleChange}
+                      categoriesList={editor.categoriesList}
+                      onOpenQuickCategory={() => editor.setIsQuickCategoryOpen(true)}
+                      onPriceChange={(cents) => editor.form.setValue("price_cents", cents)}
+                      storeName={store?.name}
+                      storePhone={store?.phone || store?.settings?.whatsapp}
+                    />
+                  </TabsContent>
+                </>
+              ) : (
+                <>
+                  <TabsContent value="basico" className="space-y-4 m-0">
+                    <ProductBasicTab
+                      isTravelPackageMode={false}
+                      travelData={editor.travelData}
+                      onTravelDataChange={editor.setTravelData}
+                      priceCents={editor.formValues.price_cents}
+                      nicheCtx={nicheCtx}
+                      formValues={editor.formValues}
+                      register={editor.form.register}
+                      setValue={editor.form.setValue}
+                      onTitleChange={editor.handleTitleChange}
+                      categoriesList={editor.categoriesList}
+                      onOpenQuickCategory={() => editor.setIsQuickCategoryOpen(true)}
+                    />
+                  </TabsContent>
+
+                  <TabsContent value="especificacoes" className="space-y-4 m-0">
+                    <ProductSpecsTab
+                      attributes={editor.nicheAttributes}
+                      onChange={editor.setNicheAttributes}
+                      nicheContext={nicheCtx}
+                    />
+                  </TabsContent>
+
+                  <TabsContent value="preco" className="space-y-4 m-0">
+                    <ProductPricingTab
+                      control={editor.form.control}
+                      register={editor.form.register}
+                      setValue={editor.form.setValue}
+                      formValues={editor.formValues}
+                      nicheCtx={nicheCtx}
+                      variantsMatrix={editor.variantsMatrix}
+                      onVariantsMatrixChange={editor.setVariantsMatrix}
+                      onOpenAddDimension={() => editor.setIsAddDimensionOpen(true)}
+                      optionGroups={editor.optionGroups}
+                      selectedOptionGroupIds={editor.selectedOptionGroupIds}
+                      onSelectedGroupIdsChange={editor.setSelectedOptionGroupIds}
+                      onOptionGroupsChange={editor.setOptionGroups}
+                      wholesaleEnabled={editor.isWholesaleEnabled}
+                    />
+                  </TabsContent>
+
+                  <TabsContent value="fiscal" className="space-y-4 m-0">
+                    <ProductFiscalTab
+                      fiscalData={editor.fiscalData}
+                      onFiscalDataChange={editor.setFiscalData}
+                      onOpenMasterCatalog={() => editor.setIsMasterCatalogOpen(true)}
+                    />
+                  </TabsContent>
+
+                  <TabsContent value="midias" className="space-y-4 m-0">
+                    <ProductMediaTab images={editor.images} onImagesChange={editor.setImages} />
+                  </TabsContent>
+
+                  {nicheCtx.isFoodBusiness && (
+                    <TabsContent value="cardapio" className="space-y-4 m-0">
+                      <ProductFoodSpecsCard value={editor.foodSpecs} onChange={editor.setFoodSpecs} />
+                    </TabsContent>
+                  )}
+
+                  {(nicheCtx.isFoodBusiness || semantics.nicheId === "manufacturing") && (
+                    <TabsContent value="insumos" className="space-y-4 m-0">
+                      <ProductBomCard
+                        initialItems={editor.bomItems}
+                        productPriceCents={editor.formValues.price_cents || 0}
+                        onApplyCostToProduct={(calculatedCostCents) => {
+                          editor.form.setValue("cost_cents", calculatedCostCents);
+                          toast.success(`Custo calculado aplicado!`);
+                        }}
+                        onItemsChange={editor.setBomItems}
+                      />
+                    </TabsContent>
+                  )}
+                </>
               )}
-
-              <TabsContent value="insumos" className="space-y-4 m-0">
-                <ProductBomCard
-                  initialItems={editor.bomItems}
-                  productPriceCents={editor.formValues.price_cents || 0}
-                  onApplyCostToProduct={(calculatedCostCents) => {
-                    editor.form.setValue("cost_cents", calculatedCostCents);
-                    toast.success(`Custo calculado aplicado!`);
-                  }}
-                  onItemsChange={editor.setBomItems}
-                />
-              </TabsContent>
             </Tabs>
           );
 

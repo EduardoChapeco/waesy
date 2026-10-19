@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { setCookie } from "@tanstack/start-server-core";
 import { getServerClient, SupabaseUnconfiguredError } from "@/lib/supabase";
-import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
+import { getServerIdentity, assertStoreAccess, clearIdentityCache } from "@/lib/server-access";
 
 export type OnboardingStepStatus =
  "unconfigured" | "partially_configured" | "completed" | "locked" | "technical_error";
@@ -850,6 +850,12 @@ export const provisionBusiness = createServerFn({ method: "POST" })
  console.warn("[onboarding] Falha ao vincular membro:", cleanEmail, memberErr);
  }
  }
+ }
+
+ try {
+ await clearIdentityCache();
+ } catch (cacheErr: any) {
+ console.warn("[onboarding] Aviso clearIdentityCache:", cacheErr?.message);
  }
 
  return {

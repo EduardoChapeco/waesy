@@ -102,12 +102,12 @@ export const listChatThreads = createServerFn({ method: "GET" })
  `
  id, store_id, customer_id, guest_name, guest_email, status, subject,
  department, assigned_to_profile_id, order_id, priority, satisfaction_rating,
- internal_notes, updated_at, created_at, thread_type, context_type, entity_id,
+ internal_notes, updated_at, created_at, thread_type, context_type, entity_id, metadata,
  chat_messages(id, message, message_type, created_at, is_staff_reply, attachments, payload)
  `,
  )
  .eq("store_id", identity.store_id)
-		.not("thread_type", "in", '("ai_assistant","copilot")')
+		.not("thread_type", "in", "(ai_assistant,copilot,project)")
  .order("updated_at", { ascending: false });
 
  // Filtro de status
@@ -140,7 +140,12 @@ export const listChatThreads = createServerFn({ method: "GET" })
  };
  }
 
- const threadsList = rawThreads || [];
+ const threadsList = (rawThreads || []).filter((t: any) => {
+    if (t.thread_type === 'ai_assistant' || t.thread_type === 'copilot' || t.thread_type === 'project') return false;
+    if (t.context_type === 'ai_assistant' || t.context_type === 'copilot' || t.context_type === 'project') return false;
+    if (t.metadata?.is_copilot || t.metadata?.is_civil || t.metadata?.agent_mode) return false;
+    return true;
+  });
 
  // Buscar perfis associados (clientes e agentes) sem depender de FKs frágeis no PostgREST
  const profileIds = new Set<string>();
@@ -234,12 +239,23 @@ export const getChatMessages = createServerFn({ method: "GET" })
 
  const { data: thread } = await db
  .from("chat_threads")
- .select("id, store_id, customer_id, order_id, department, status")
+ .select("id, store_id, customer_id, order_id, department, status, thread_type, context_type, metadata")
  .eq("id", threadId)
  .eq("store_id", identity.store_id)
  .single();
 
  if (!thread) throw new Error("Conversa não encontrada ou acesso negado.");
+  if (
+    thread.thread_type === 'ai_assistant' ||
+    thread.thread_type === 'copilot' ||
+    thread.thread_type === 'project' ||
+    thread.context_type === 'ai_assistant' ||
+    thread.context_type === 'copilot' ||
+    thread.metadata?.is_copilot ||
+    thread.metadata?.is_civil
+  ) {
+    throw new Error("Conversa civil protegida. Acesso não permitido no SAC da loja.");
+  }
 
  const { data: messages, error } = await db
  .from("chat_messages")
@@ -990,4 +1006,60 @@ export const archiveChatThread = createServerFn({ method: "POST" })
 			.eq("store_id", identity.store_id);
 		if (error) throw new Error(`Falha ao arquivar conversa: ${error.message}`);
 		return { success: true, threadId, status: newStatus };
+	});
+
+// ============================================================
+// Governança de Horários de Atendimento e Mensagens de Ausência
+// ============================================================
+export const supportScheduleItemSchema = z.object({
+	day: z.string(),
+	hours: z.string(),
+	active: z.boolean(),
+});
+
+export const saveStoreSupportSettingsSchema = z.object({
+	away_message: z.string().max(1000).optional(),
+	auto_reply_enabled: z.boolean().optional(),
+	support_schedules: z.array(supportScheduleItemSchema).optional(),
+});
+
+export const saveStoreSupportSettings = createServerFn({ method: "POST" })
+	.validator(saveStoreSupportSettingsSchema)
+	.handler(async ({ data }) => {
+		const identity = await getServerIdentity();
+		assertStoreAccess(identity, STAFF_ROLES, identity.store_id);
+		const db = getServerClient();
+
+		const { data: currentStore, error: fetchErr } = await db
+			.from("stores")
+			.select("settings")
+			.eq("id", identity.store_id)
+			.single();
+
+		if (fetchErr) throw new Error(`Falha ao ler configurações da loja: ${fetchErr.message}`);
+
+		const currentSettings = (currentStore?.settings || {}) as Record<string, any>;
+		const updatedSupportSettings = {
+			...(currentSettings.support_settings || {}),
+			...(data.away_message !== undefined ? { away_message: data.away_message } : {}),
+			...(data.auto_reply_enabled !== undefined ? { auto_reply_enabled: data.auto_reply_enabled } : {}),
+			...(data.support_schedules !== undefined ? { support_schedules: data.support_schedules } : {}),
+			updated_at: new Date().toISOString(),
+		};
+
+		const mergedSettings = {
+			...currentSettings,
+			support_settings: updatedSupportSettings,
+		};
+
+		const { error: updateErr } = await db
+			.from("stores")
+			.update({
+				settings: mergedSettings,
+			})
+			.eq("id", identity.store_id);
+
+		if (updateErr) throw new Error(`Falha ao salvar configurações de atendimento: ${updateErr.message}`);
+
+		return { success: true, support_settings: updatedSupportSettings };
 	});

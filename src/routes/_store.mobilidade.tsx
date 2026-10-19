@@ -83,6 +83,14 @@ const CATEGORY_TABS: MobilityCategoryTab[] = [
  placeholderDest: "Local de entrega do frete",
  },
  {
+ id: "moving_truck",
+ label: "Mudança",
+ title: "Solicitar mudança",
+ icon: Boxes,
+ placeholderOrigin: "Endereço atual",
+ placeholderDest: "Novo endereço",
+ },
+ {
  id: "ride_moto",
  label: "Moto",
  title: "Solicitar moto",
@@ -586,6 +594,70 @@ function MobilityPage() {
  </button>
  </div>
  </div>
+
+ {/* Opções Especiais de Frete & Mudança */}
+ {(selectedService === "moving_truck" || selectedService === "freight_van") && (
+ <div className="p-4 rounded-lg bg-card border border-border/70 space-y-4">
+ <div className="flex items-center justify-between">
+ <span className="text-xs font-bold text-foreground">Ajudantes de Carga/Descarga</span>
+ <div className="flex items-center gap-2">
+ {[0, 1, 2, 3].map((num) => (
+ <button
+ key={num}
+ type="button"
+ onClick={() => setHelpersCount(num)}
+ className={`size-11 min-h-11 min-w-11 rounded-lg text-xs font-bold flex items-center justify-center transition-all cursor-pointer border focus-visible:ring-2 focus-visible:ring-primary ${
+ helpersCount === num
+ ? "bg-foreground text-background border-foreground shadow-xs"
+ : "bg-muted/40 text-muted-foreground border-border/60 hover:text-foreground hover:bg-muted"
+ }`}
+ >
+ {num === 0 ? "0" : `+${num}`}
+ </button>
+ ))}
+ </div>
+ </div>
+
+ <div className="space-y-2">
+ <span className="text-xs font-bold text-foreground block">Tipo de Imóvel / Acesso</span>
+ <div className="grid grid-cols-3 gap-2">
+ <button
+ type="button"
+ onClick={() => setPropertyType("ground")}
+ className={`h-11 min-h-11 px-2 text-center rounded-lg text-xs font-semibold border transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-primary ${
+ propertyType === "ground"
+ ? "bg-foreground text-background border-foreground shadow-xs"
+ : "bg-muted/40 text-muted-foreground border-border/60 hover:text-foreground hover:bg-muted"
+ }`}
+ >
+ Térreo
+ </button>
+ <button
+ type="button"
+ onClick={() => setPropertyType("elevator")}
+ className={`h-11 min-h-11 px-2 text-center rounded-lg text-xs font-semibold border transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-primary ${
+ propertyType === "elevator"
+ ? "bg-foreground text-background border-foreground shadow-xs"
+ : "bg-muted/40 text-muted-foreground border-border/60 hover:text-foreground hover:bg-muted"
+ }`}
+ >
+ Elevador
+ </button>
+ <button
+ type="button"
+ onClick={() => setPropertyType("stairs")}
+ className={`h-11 min-h-11 px-2 text-center rounded-lg text-xs font-semibold border transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-primary ${
+ propertyType === "stairs"
+ ? "bg-foreground text-background border-foreground shadow-xs"
+ : "bg-muted/40 text-muted-foreground border-border/60 hover:text-foreground hover:bg-muted"
+ }`}
+ >
+ Escadas (+taxa)
+ </button>
+ </div>
+ </div>
+ </div>
+ )}
 
  {/* Accordion de Informações Adicionais */}
  <div>

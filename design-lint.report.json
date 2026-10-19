@@ -1,48 +1,48 @@
 {
   "version": "2.0.0",
-  "timestamp": "2026-10-19T14:52:59.371Z",
-  "inspectedFiles": 2171,
-  "totalViolations": 12384,
+  "timestamp": "2026-10-19T21:40:57.705Z",
+  "inspectedFiles": 2174,
+  "totalViolations": 12624,
   "summary": {
-    "totalViolations": 12384,
+    "totalViolations": 12624,
     "bySeverity": {
-      "P0": 1427,
-      "P1": 8358,
-      "P2": 1297,
-      "P3": 1302
+      "P0": 1426,
+      "P1": 8554,
+      "P2": 1331,
+      "P3": 1313
     },
     "byRule": {
-      "DL-18": 1154,
-      "DL-02": 3501,
-      "DL-14": 2088,
+      "DL-18": 1169,
+      "DL-02": 3480,
+      "DL-14": 2134,
       "DL-28": 287,
-      "DL-15": 1424,
-      "DL-07": 488,
-      "DL-27": 1047,
-      "DL-30": 255,
-      "DL-26": 85,
+      "DL-15": 1423,
+      "DL-07": 495,
+      "DL-27": 1056,
+      "DL-30": 257,
+      "DL-26": 86,
       "DL-01": 888,
-      "DL-29": 118,
-      "DL-05": 133,
-      "DL-23": 419,
-      "DL-03": 245,
-      "DL-09": 62,
-      "DL-08": 99,
+      "DL-29": 120,
+      "DL-05": 134,
+      "DL-23": 405,
+      "DL-03": 400,
+      "DL-09": 90,
+      "DL-08": 104,
+      "DL-25": 26,
       "DL-24": 2,
       "DL-11": 21,
       "DL-12": 30,
       "DL-13": 11,
-      "DL-25": 21,
       "DL-06": 3,
       "DL-04": 3
     },
     "byModule": {
       "components/app": {
-        "total": 5330,
+        "total": 5547,
         "P0": 565,
-        "P1": 3581,
-        "P2": 649,
-        "P3": 535
+        "P1": 3755,
+        "P2": 681,
+        "P3": 546
       },
       "components/builder": {
         "total": 126,
@@ -108,17 +108,17 @@
         "P3": 6
       },
       "routes/workspace": {
-        "total": 2233,
+        "total": 2230,
         "P0": 445,
-        "P1": 1401,
+        "P1": 1398,
         "P2": 110,
         "P3": 277
       },
       "routes/store": {
-        "total": 1501,
-        "P0": 135,
-        "P1": 995,
-        "P2": 140,
+        "total": 1527,
+        "P0": 134,
+        "P1": 1020,
+        "P2": 142,
         "P3": 231
       },
       "services": {
@@ -143,8 +143,8 @@
         "P3": 0
       }
     },
-    "filesWithViolations": 882,
-    "filesCount": 2171
+    "filesWithViolations": 886,
+    "filesCount": 2174
   },
   "config": {
     "$schema": "https://json-schema.org/draft/2020-12/schema",

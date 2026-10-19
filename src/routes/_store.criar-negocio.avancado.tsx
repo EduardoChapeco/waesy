@@ -27,6 +27,7 @@ import { getPublicLogisticsPresentation } from "@/services/master.functions";
 import { NeighborhoodsManager, type NeighborhoodItem } from "@/components/commerce/neighborhoods-manager";
 import { CHAPECO_NEIGHBORHOODS } from "@/lib/constants/cities";
 import { useMasterLocation } from "@/components/location/location-master-pill";
+import { setClientContextCookies } from "@/lib/context-auth";
 import { formatMoney } from "@/lib/money";
 import { cn } from "@/lib/utils";
 
@@ -305,16 +306,12 @@ function CriarNegocioPage() {
  });
 
  if (result?.storeId) {
- if (typeof window !== "undefined") {
- window.document.cookie = "waesy_active_context=store; path=/; max-age=31536000; SameSite=Lax";
- window.document.cookie = `waesy_active_tenant=${result.storeId}; path=/; max-age=31536000; SameSite=Lax`;
- window.document.cookie = "waesy_active_creator=; path=/; max-age=0; SameSite=Lax";
- }
- await setTenantContext({ data: { store_id: result.storeId } }).catch(() => null);
- }
+    setClientContextCookies({ context: "store", storeId: result.storeId });
+    await setTenantContext({ data: { store_id: result.storeId } }).catch(() => null);
+  }
 
- toast.success(`Negócio "${result?.storeName || name}" cadastrado com sucesso! Redirecionando...`);
- window.location.href = "/workspace";
+  toast.success(`Negócio "${result?.storeName || name}" cadastrado com sucesso! Redirecionando...`);
+  window.location.href = result?.storeId ? `/workspace?storeId=${result.storeId}` : "/workspace";
  } catch (err: unknown) {
  toast.error(
  (err instanceof Error ? err.message : String(err)) || "Erro ao cadastrar negócio."

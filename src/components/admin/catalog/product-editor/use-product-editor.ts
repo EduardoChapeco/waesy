@@ -28,8 +28,6 @@ export function useProductEditor(initialCategories: any[], initialOptionGroups: 
   const [isQuickCategoryOpen, setIsQuickCategoryOpen] = useState(false);
   const [quickCategoryName, setQuickCategoryName] = useState("");
   const [isCreatingCategory, setIsCreatingCategory] = useState(false);
-
-  const [activeTab, setActiveTab] = useState("basico");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [images, setImages] = useState<string[]>([]);
   const [activePreviewImage, setActivePreviewImage] = useState(0);
@@ -63,11 +61,22 @@ export function useProductEditor(initialCategories: any[], initialOptionGroups: 
     semantics?.nicheId === "convenience" ||
     semantics?.nicheId === "grocery";
 
-  const [showcaseMode, setShowcaseMode] = useState<"standard" | "travel" | "grocery">(
+  const [showcaseMode, setShowcaseModeState] = useState<"standard" | "travel" | "grocery">(
     isTourismStore ? "travel" : isGroceryStore ? "grocery" : "standard"
   );
   const isTravelPackageMode = showcaseMode === "travel";
   const isGroceryMode = showcaseMode === "grocery";
+
+  const [activeTab, setActiveTab] = useState(isTourismStore ? "roteiro" : "basico");
+
+  const setShowcaseMode = (mode: "standard" | "travel" | "grocery") => {
+    setShowcaseModeState(mode);
+    if (mode === "travel") {
+      setActiveTab("roteiro");
+    } else {
+      setActiveTab("basico");
+    }
+  };
 
   const [travelData, setTravelData] = useState<Partial<TravelPackageData>>({
     destination: { name: "", region: "", country: "Brasil", flight_summary: "" },
@@ -121,6 +130,25 @@ export function useProductEditor(initialCategories: any[], initialOptionGroups: 
       length_cm: 20,
       preparation_time_days: 0,
       status: "published" as "published" | "draft" | "archived",
+      payment_mode: "inherit" as "inherit" | "custom",
+      allow_coupons: true,
+      allow_pix: true,
+      allow_credit_card: true,
+      allow_cash_on_delivery: true,
+      max_installments: 12,
+      allow_delivery: true,
+      allow_takeaway: true,
+      allow_dine_in: false,
+      visibility_channel: "marketplace_and_store" as "marketplace_and_store" | "store_only" | "vip_only" | "direct_link",
+      offer_valid_from: "",
+      offer_valid_until: "",
+      channel_ifood: false,
+      channel_mercadolivre: false,
+      channel_google_merchant: false,
+      channel_meta_instagram: false,
+      seo_title: "",
+      seo_description: "",
+      webmcp_ai_discoverable: true,
     },
   });
 
@@ -216,12 +244,36 @@ export function useProductEditor(initialCategories: any[], initialOptionGroups: 
           }))
         : [{ sku: String(data.sku || `${generatedSlug}-default`), attributes: {}, stock: Number(data.stock || 10), price_override_cents: null, image_url: images[0] || null }];
 
+      const commercialRules = {
+        payment_mode: data.payment_mode || "inherit",
+        allow_pix: data.allow_pix ?? true,
+        allow_credit_card: data.allow_credit_card ?? true,
+        allow_cash_on_delivery: data.allow_cash_on_delivery ?? true,
+        max_installments: Number(data.max_installments || 12),
+        allow_delivery: data.allow_delivery ?? true,
+        allow_takeaway: data.allow_takeaway ?? true,
+        allow_dine_in: data.allow_dine_in ?? false,
+        visibility_channel: data.visibility_channel || "marketplace_and_store",
+        allow_coupons: data.allow_coupons ?? true,
+        offer_valid_from: data.offer_valid_from || null,
+        offer_valid_until: data.offer_valid_until || null,
+        channels: {
+          ifood: Boolean(data.channel_ifood),
+          mercadolivre: Boolean(data.channel_mercadolivre),
+          google_merchant: Boolean(data.channel_google_merchant),
+          meta_instagram: Boolean(data.channel_meta_instagram),
+        },
+        webmcp_ai_discoverable: data.webmcp_ai_discoverable ?? true,
+      };
+
       await createProduct({
         data: {
           title: data.title.trim(),
           slug: generatedSlug,
           description: data.description || null,
           short_description: data.short_description || null,
+          meta_title: data.seo_title || null,
+          meta_description: data.seo_description || null,
           status: data.status || "published",
           brand: data.brand || null,
           ean: foodSpecs.barcodeEan?.trim() || data.ean || null,
@@ -246,6 +298,7 @@ export function useProductEditor(initialCategories: any[], initialOptionGroups: 
             bill_of_materials: bomItems,
             food_specs: foodSpecs,
             fiscal: fiscalData,
+            commercial_rules: commercialRules,
             ...nicheAttributes,
           },
         },
@@ -279,12 +332,36 @@ export function useProductEditor(initialCategories: any[], initialOptionGroups: 
           }))
         : [{ sku: String(data.sku || `${generatedSlug}-default`), attributes: {}, stock: Number(data.stock || 10), price_override_cents: null, image_url: images[0] || null }];
 
+      const commercialRules = {
+        payment_mode: data.payment_mode || "inherit",
+        allow_pix: data.allow_pix ?? true,
+        allow_credit_card: data.allow_credit_card ?? true,
+        allow_cash_on_delivery: data.allow_cash_on_delivery ?? true,
+        max_installments: Number(data.max_installments || 12),
+        allow_delivery: data.allow_delivery ?? true,
+        allow_takeaway: data.allow_takeaway ?? true,
+        allow_dine_in: data.allow_dine_in ?? false,
+        visibility_channel: data.visibility_channel || "marketplace_and_store",
+        allow_coupons: data.allow_coupons ?? true,
+        offer_valid_from: data.offer_valid_from || null,
+        offer_valid_until: data.offer_valid_until || null,
+        channels: {
+          ifood: Boolean(data.channel_ifood),
+          mercadolivre: Boolean(data.channel_mercadolivre),
+          google_merchant: Boolean(data.channel_google_merchant),
+          meta_instagram: Boolean(data.channel_meta_instagram),
+        },
+        webmcp_ai_discoverable: data.webmcp_ai_discoverable ?? true,
+      };
+
       await createProduct({
         data: {
           title: data.title.trim(),
           slug: generatedSlug,
           description: data.description || null,
           short_description: data.short_description || null,
+          meta_title: data.seo_title || null,
+          meta_description: data.seo_description || null,
           status: "draft",
           brand: data.brand || null,
           ean: foodSpecs.barcodeEan?.trim() || (data as any).ean || null,
@@ -309,6 +386,7 @@ export function useProductEditor(initialCategories: any[], initialOptionGroups: 
             bill_of_materials: bomItems,
             food_specs: foodSpecs,
             fiscal: fiscalData,
+            commercial_rules: commercialRules,
             ...nicheAttributes,
           },
         },

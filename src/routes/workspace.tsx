@@ -166,10 +166,17 @@ function WorkspaceLayout() {
  const isPlatformAdmin = isPlatformAdminUser(session);
 
   const memberships = (session?.memberships as any[]) || [];
+  const searchParams = new URLSearchParams(typeof window !== "undefined" ? window.location.search : "");
+  const queryStoreId = searchParams.get("storeId");
+  const isQueryStoreValid = queryStoreId && (isPlatformAdmin || memberships.some((m: any) => m.store_id === queryStoreId));
   const existingCookieTenant = typeof window !== "undefined" ? getClientActiveTenant() : null;
   const isExistingTenantValid = existingCookieTenant && memberships.some((m: any) => m.store_id === existingCookieTenant);
 
-  const activeStoreId = (isExistingTenantValid ? existingCookieTenant : null) || session?.store_id || memberships[0]?.store_id;
+  const activeStoreId =
+    (isQueryStoreValid ? queryStoreId : null) ||
+    (isExistingTenantValid ? existingCookieTenant : null) ||
+    session?.store_id ||
+    memberships[0]?.store_id;
 
   useEffect(() => {
     if (typeof window !== "undefined" && activeStoreId) {

@@ -228,6 +228,21 @@ export const BUSINESS_SEGMENTS: BusinessSegment[] = [
  },
 
  // ── 4. EVENTOS, CULTURA & EXPERIÊNCIAS ──
+  {
+  id: "events",
+  category: "experiencias",
+  categoryLabel: "Eventos, Cultura & Outros",
+  title: "Eventos, Shows e Ingressos",
+  shortDesc: "Festas, baladas, shows, congressos, feiras e bilheteria de ingressos.",
+  fullDesc: "Venda de ingressos divididos em lotes com virada automática, validação de entrada via aplicativo de portaria com leitura de QR Code e relatórios de bilheteria.",
+  badge: "Lotes & Portaria QR",
+  modules: ["Lotes de Ingressos", "Check-in com QR Code", "Área VIP / Mesas", "Relatório de Bilheteria"],
+  icon: Ticket,
+  iconBg: "bg-fuchsia-500/15",
+  iconColor: "text-fuchsia-500",
+  gradient: "from-fuchsia-950/90 via-black/60 to-black/90",
+  coverImage: "",
+  },
  {
  id: "event_producer",
  category: "experiencias",

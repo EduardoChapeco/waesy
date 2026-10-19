@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { setCookie } from "@tanstack/start-server-core";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
-import { getSSRClient, getServerIdentity, assertStoreAccess, STAFF_ROLES, MANAGER_ROLES } from "@/lib/server-access";
+import { getSSRClient, getServerIdentity, assertStoreAccess, clearIdentityCache, STAFF_ROLES, MANAGER_ROLES } from "@/lib/server-access";
 import { getIdentity } from "./identity.functions";
 import { enrichCnpj } from "@/lib/mining/cnpj-enrichment.engine";
 import { generateSlug, resolveUniqueStoreSlug } from "@/lib/slug-utils";
@@ -14,10 +14,19 @@ import { generateSlug, resolveUniqueStoreSlug } from "@/lib/slug-utils";
 export const FastRegisterCompanySchema = z.object({
   name: z.string().min(2, "Nome da empresa é obrigatório"),
   category: z.string().default("servicos"),
+  niche: z.string().optional(),
   phone: z.string().min(8, "Telefone/WhatsApp de atendimento é obrigatório"),
+  email: z.string().optional(),
   city: z.string().min(2, "Cidade é obrigatória"),
   state: z.string().default("SC"),
   address: z.string().optional(),
+  street: z.string().optional(),
+  number: z.string().optional(),
+  complement: z.string().optional(),
+  neighborhood: z.string().optional(),
+  zip_code: z.string().optional(),
+  latitude: z.number().optional(),
+  longitude: z.number().optional(),
   bio: z.string().optional(),
   logoUrl: z.string().optional(),
   bannerUrl: z.string().optional(),
@@ -78,8 +87,10 @@ export const fastRegisterCompany = createServerFn({ method: "POST" })
     if (!existingProfile) {
       await db.from("profiles").insert({
         id: userId,
-        role: "customer",
+        role: "owner",
       });
+    } else if (existingProfile.role === "customer" || !existingProfile.role) {
+      await db.from("profiles").update({ role: "owner" }).eq("id", userId);
     }
 
     // 1. Criar Organização
@@ -95,11 +106,44 @@ export const fastRegisterCompany = createServerFn({ method: "POST" })
       throw new Error("Erro ao criar organização: " + orgError.message);
     }
 
+    // 1.1 Mapeamento Canônico de Nicho
+    const NICHE_MAP: Record<string, string> = {
+      events: "events",
+      eventos: "events",
+      event_producer: "events",
+      turismo: "tourism",
+      tourism: "tourism",
+      gastronomia: "gastronomy",
+      gastronomy: "gastronomy",
+      servicos: "services",
+      services: "services",
+      equipamentos: "rental_events",
+      rental_events: "rental_events",
+      hospedagem: "tourism",
+      comercio: "retail",
+      varejo: "retail",
+      retail: "retail",
+      saude: "services",
+      automotivo: "vehicles",
+      vehicles: "vehicles",
+      outros: "retail",
+    };
+    const rawCat = (data.niche || data.category || "servicos").toLowerCase();
+    const resolvedNiche = NICHE_MAP[rawCat] || data.niche || data.category || "services";
+
+    // 1.2 Formatar Endereço Estruturado Completo
+    const formattedAddress = data.address || (
+      data.street
+        ? `${data.street}, ${data.number || "S/N"}${data.neighborhood ? ` - ${data.neighborhood}` : ""}, ${data.city} - ${data.state}`
+        : (enrichedData?.endereco?.logradouro ? `${enrichedData.endereco.logradouro}, ${enrichedData.endereco.numero || "S/N"}` : data.city)
+    );
+
     // 2. Settings estruturado
     const settings = {
       category: data.category,
-      segment: data.category,
-      niche: data.category,
+      segment: resolvedNiche,
+      niche: resolvedNiche,
+      type: resolvedNiche,
       user_id: userId,
       created_by: userId,
       bio: data.bio || (enrichedData?.cnae_principal?.descricao ? `Atividade: ${enrichedData.cnae_principal.descricao}` : ""),
@@ -108,9 +152,17 @@ export const fastRegisterCompany = createServerFn({ method: "POST" })
       cover_url: data.bannerUrl || null,
       website: data.website || null,
       instagram: data.instagram || null,
+      street: data.street || null,
+      number: data.number || null,
+      complement: data.complement || null,
+      neighborhood: data.neighborhood || null,
+      zip_code: data.zip_code || null,
+      latitude: data.latitude || null,
+      longitude: data.longitude || null,
       is_address_public: true,
       coverage_cities: [data.city],
       working_hours: null,
+      enabled_modules: resolvedNiche === "events" ? ["events", "marketing", "finance", "team"] : undefined,
       created_via: "mvp_fast_onboarding",
       cnae: enrichedData?.cnae_principal?.codigo || null,
       socios: enrichedData?.socios || [],
@@ -121,10 +173,11 @@ export const fastRegisterCompany = createServerFn({ method: "POST" })
       organization_id: org.id,
       name: resolvedName,
       slug: orgSlug,
-      email: userEmail || undefined,
+      email: data.email || userEmail || undefined,
       city: enrichedData?.endereco?.municipio || data.city,
       state: enrichedData?.endereco?.uf || data.state || "SC",
-      address: data.address || (enrichedData?.endereco?.logradouro ? `${enrichedData.endereco.logradouro}, ${enrichedData.endereco.numero || 'S/N'}` : data.city),
+      address: formattedAddress,
+      zip_code: data.zip_code || enrichedData?.endereco?.cep || null,
       phone: enrichedData?.telefones?.[0] || data.phone,
       cnpj: enrichedData?.cnpj || data.cnpj || null,
       logo_url: data.logoUrl || null,
@@ -157,6 +210,29 @@ export const fastRegisterCompany = createServerFn({ method: "POST" })
       throw new Error("A loja não foi ativada porque o vínculo seguro do proprietário falhou: " + membershipError.message);
     }
 
+    // 4.1 Categorias Iniciais do Nicho
+    try {
+      let defaultCategories: string[] = ["Destaques", "Mais Vendidos", "Novidades"];
+      if (resolvedNiche === "events") {
+        defaultCategories = ["Ingressos & Lotes", "Área VIP & Camarotes", "Mesas & Lounges", "Estacionamento & Estruturas"];
+      } else if (resolvedNiche === "tourism") {
+        defaultCategories = ["Pacotes Nacionais", "Viagens Internacionais", "Passeios & Ecoturismo", "Excursões Regionais"];
+      } else if (resolvedNiche === "gastronomy") {
+        defaultCategories = ["Lanches & Burgers", "Porções & Entradas", "Bebidas", "Sobremesas"];
+      }
+
+      const catPayload = defaultCategories.map((catName, idx) => ({
+        store_id: store.id,
+        name: catName,
+        slug: `${generateSlug(catName)}-${Math.floor(100 + Math.random() * 900)}`,
+        position: idx,
+        is_active: true,
+      }));
+      await db.from("categories").insert(catPayload);
+    } catch (catErr: any) {
+      console.warn("[fastRegisterCompany] Categorias default:", catErr?.message);
+    }
+
     // 5. Cadastrar no Guia / Diretório Oficial (Single Source of Truth)
     try {
       await db.from("directory_listings").insert({
@@ -185,7 +261,14 @@ export const fastRegisterCompany = createServerFn({ method: "POST" })
       }
     }
 
-    // 7. Definir Cookies de Tenant e Contexto Canônico (Zero Desconexão)
+    // 7. Limpar Cache em Memória de Identidades no Servidor (Zero Desconexão de Tenant)
+    try {
+      await clearIdentityCache();
+    } catch (cacheErr: any) {
+      console.warn("[fastRegisterCompany] Aviso clearIdentityCache:", cacheErr?.message);
+    }
+
+    // 8. Definir Cookies de Tenant e Contexto Canônico
     try {
       const isProd = process.env.NODE_ENV === "production";
       const cookieOpts = {
@@ -206,6 +289,7 @@ export const fastRegisterCompany = createServerFn({ method: "POST" })
       success: true,
       store,
       storeId: store.id,
+      slug: orgSlug,
     };
   });
 

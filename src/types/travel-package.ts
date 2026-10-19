@@ -154,7 +154,16 @@ export interface TravelPricingInstallments {
  pax_note?: string;
 }
 
-export type TransportType = "aereo" | "terrestre" | "cruzeiro" | "misto";
+export type TransportType = "aereo" | "terrestre" | "cruzeiro" | "misto" | "car";
+
+export interface TravelRoomRates {
+  single_cents?: number;
+  double_cents?: number;
+  triple_cents?: number;
+  quad_cents?: number;
+  child_cents?: number;
+  extra_bed_cents?: number;
+}
 
 export interface TravelPackageData {
  destination: TravelDestinationDetails;
@@ -169,6 +178,20 @@ export interface TravelPackageData {
  story_highlights?: TravelHighlightCircle[];
  /** Tipo modal do transporte: aereo (padrão), terrestre (ônibus/van), cruzeiro (marítimo) ou misto. */
  transport_type?: TransportType;
+ departure_options?: any[];
+ lodgings?: any[];
+ room_rates?: TravelRoomRates;
+ boarding_requirements?: string[];
+ cancellation_policy?: string;
+ visibility_mode?: "public" | "unlisted" | "private";
+ is_custom_quote?: boolean;
+ adults_count?: number;
+ children_count?: number;
+ children_max_age?: number;
+ operator_campaign?: string;
+ disclaimer_type?: string;
+ ai_sales_advisor_enabled?: boolean;
+ ai_sales_advisor_prompt?: string;
 }
 
 export const DEFAULT_TRAVEL_INCLUSIONS_PRESETS = [

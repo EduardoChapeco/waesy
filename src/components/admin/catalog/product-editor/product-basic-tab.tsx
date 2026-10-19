@@ -45,113 +45,115 @@ export function ProductBasicTab({
         />
       )}
 
-      {/* Identificação do Produto */}
-      <div className="bg-card rounded-lg p-6 space-y-4 border border-border">
-        <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
-          <Tag className="size-4 text-primary" />
-          <span>Identificação do {nicheCtx.entityName}</span>
-        </div>
-
-        <div className="space-y-2">
-          <Label className="text-xs font-medium text-foreground">{nicheCtx.nameLabel}</Label>
-          <Input
-            value={formValues.title}
-            onChange={onTitleChange}
-            placeholder={nicheCtx.namePlaceholder}
-            className="h-11 rounded-lg text-xs bg-background"
-          />
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label className="text-xs font-medium text-foreground">{nicheCtx.categoryLabel}</Label>
-              <button /* focus-visible: */
-                type="button"
-                onClick={onOpenQuickCategory} /* focus-visible:ring-2 */
-                className="text-xs text-primary hover:underline font-semibold cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none rounded-sm"
-              >
-                + Criar Rápido
-              </button>
-            </div>
-            <Select
-              value={formValues.category_id}
-              onValueChange={(val) => setValue("category_id", val)}
-            >
-              <SelectTrigger className="h-11 rounded-lg text-xs bg-background">
-                <SelectValue placeholder="Selecione a categoria..." />
-              </SelectTrigger>
-              <SelectContent>
-                {categoriesList.map((cat: any) => (
-                  <SelectItem key={cat.id} value={cat.id}>
-                    {cat.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+      {/* Identificação do Produto (Apenas Varejo Não-Turismo) */}
+      {!isTravelPackageMode && (
+        <div className="bg-card rounded-lg p-6 space-y-4 border border-border">
+          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
+            <Tag className="size-4 text-primary" />
+            <span>Identificação do {nicheCtx.entityName}</span>
           </div>
 
           <div className="space-y-2">
-            <Label className="text-xs font-medium text-foreground">{nicheCtx.brandLabel}</Label>
+            <Label className="text-xs font-medium text-foreground">{nicheCtx.nameLabel}</Label>
             <Input
-              {...register("brand")}
-              placeholder={nicheCtx.brandPlaceholder}
+              value={formValues.title}
+              onChange={onTitleChange}
+              placeholder={nicheCtx.namePlaceholder}
               className="h-11 rounded-lg text-xs bg-background"
             />
           </div>
-        </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label className="text-xs font-medium text-foreground">{nicheCtx.categoryLabel}</Label>
+                <button /* focus-visible: */
+                  type="button"
+                  onClick={onOpenQuickCategory} /* focus-visible:ring-2 */
+                  className="text-xs text-primary hover:underline font-semibold cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none rounded-sm"
+                >
+                  + Criar Rápido
+                </button>
+              </div>
+              <Select
+                value={formValues.category_id}
+                onValueChange={(val) => setValue("category_id", val)}
+              >
+                <SelectTrigger className="h-11 rounded-lg text-xs bg-background">
+                  <SelectValue placeholder="Selecione a categoria..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {categoriesList.map((cat: any) => (
+                    <SelectItem key={cat.id} value={cat.id}>
+                      {cat.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-xs font-medium text-foreground">{nicheCtx.brandLabel}</Label>
+              <Input
+                {...register("brand")}
+                placeholder={nicheCtx.brandPlaceholder}
+                className="h-11 rounded-lg text-xs bg-background"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label className="text-xs font-medium text-foreground">Slug URL</Label>
+              <Input
+                {...register("slug")}
+                placeholder="slug-do-item"
+                className="h-11 rounded-lg text-xs bg-background font-mono"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-xs font-medium text-foreground">Unidade de Venda</Label>
+              <Select
+                value={formValues.selling_unit}
+                onValueChange={(val) => setValue("selling_unit", val)}
+              >
+                <SelectTrigger className="h-11 rounded-lg text-xs bg-background font-mono">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="un">Unidade (un)</SelectItem>
+                  <SelectItem value="kg">Quilo (kg)</SelectItem>
+                  <SelectItem value="g">Grama (g)</SelectItem>
+                  <SelectItem value="l">Litro (l)</SelectItem>
+                  <SelectItem value="ml">Mililitro (ml)</SelectItem>
+                  <SelectItem value="cx">Caixa (cx)</SelectItem>
+                  <SelectItem value="fd">Fardo (fd)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
           <div className="space-y-2">
-            <Label className="text-xs font-medium text-foreground">Slug URL</Label>
+            <Label className="text-xs font-medium text-foreground">{nicheCtx.shortDescLabel}</Label>
             <Input
-              {...register("slug")}
-              placeholder="slug-do-item"
-              className="h-11 rounded-lg text-xs bg-background font-mono"
+              {...register("short_description")}
+              placeholder={nicheCtx.shortDescPlaceholder}
+              className="h-11 rounded-lg text-xs bg-background"
             />
           </div>
 
           <div className="space-y-2">
-            <Label className="text-xs font-medium text-foreground">Unidade de Venda</Label>
-            <Select
-              value={formValues.selling_unit}
-              onValueChange={(val) => setValue("selling_unit", val)}
-            >
-              <SelectTrigger className="h-11 rounded-lg text-xs bg-background font-mono">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="un">Unidade (un)</SelectItem>
-                <SelectItem value="kg">Quilo (kg)</SelectItem>
-                <SelectItem value="g">Grama (g)</SelectItem>
-                <SelectItem value="l">Litro (l)</SelectItem>
-                <SelectItem value="ml">Mililitro (ml)</SelectItem>
-                <SelectItem value="cx">Caixa (cx)</SelectItem>
-                <SelectItem value="fd">Fardo (fd)</SelectItem>
-              </SelectContent>
-            </Select>
+            <Label className="text-xs font-medium text-foreground">{nicheCtx.descLabel}</Label>
+            <Textarea
+              {...register("description")}
+              rows={4}
+              placeholder={nicheCtx.descPlaceholder}
+              className="rounded-lg text-xs bg-background"
+            />
           </div>
         </div>
-
-        <div className="space-y-2">
-          <Label className="text-xs font-medium text-foreground">{nicheCtx.shortDescLabel}</Label>
-          <Input
-            {...register("short_description")}
-            placeholder={nicheCtx.shortDescPlaceholder}
-            className="h-11 rounded-lg text-xs bg-background"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label className="text-xs font-medium text-foreground">{nicheCtx.descLabel}</Label>
-          <Textarea
-            {...register("description")}
-            rows={4}
-            placeholder={nicheCtx.descPlaceholder}
-            className="rounded-lg text-xs bg-background"
-          />
-        </div>
-      </div>
+      )}
 
       {/* Logística & Frete (Apenas para produtos físicos) */}
       {!isTravelPackageMode && (

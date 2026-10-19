@@ -1912,7 +1912,7 @@ export const listCustomerEventTickets = createServerFn({ method: "GET" }).handle
 
     if (!user) return [];
 
-    // Busca pedidos com itens de ingresso
+    // 1. Busca pedidos com itens de ingresso
     const { data: orders, error } = await ssrClient
       .from("orders")
       .select(
@@ -1924,7 +1924,6 @@ export const listCustomerEventTickets = createServerFn({ method: "GET" }).handle
 
     if (error) {
       console.warn("[events.functions] listCustomerEventTickets error:", error.message);
-      return [];
     }
 
     const ticketOrders = (orders || []).filter((o: any) =>
@@ -1936,7 +1935,7 @@ export const listCustomerEventTickets = createServerFn({ method: "GET" }).handle
       )
     );
 
-    return ticketOrders.map((order: any) => {
+    const orderTickets: CustomerEventTicketDTO[] = ticketOrders.map((order: any) => {
       const ticketItem = order.order_items?.find(
         (i: any) =>
           i.item_type === "ticket" ||
@@ -1959,8 +1958,85 @@ export const listCustomerEventTickets = createServerFn({ method: "GET" }).handle
         isUsed: meta.is_used === true || order.status === "delivered",
         accessCode: meta.access_code || order.id.slice(0, 8).toUpperCase(),
         createdAt: order.created_at,
+        classifiedId: null,
       };
     });
+
+    // 2. Busca inscrições em eventos de classificados feitas pelo usuário autenticado
+    let classifiedTickets: CustomerEventTicketDTO[] = [];
+    try {
+      const { data: userProfile } = await ssrClient
+        .from("profiles")
+        .select("phone, email")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      const userPhone = userProfile?.phone || (user as any).phone;
+      const userEmail = userProfile?.email || user.email;
+
+      let appQuery = ssrClient
+        .from("classified_applications")
+        .select(
+          `id, classified_id, name, phone, email, candidate_role, status, created_at,
+          classified:classifieds (
+            id, title, category, location_name, images, attributes
+          )`
+        )
+        .not("candidate_role", "like", "survey_vote:%")
+        .order("created_at", { ascending: false });
+
+      if (user.id) {
+        appQuery = appQuery.or(
+          `applicant_id.eq.${user.id}${userPhone ? `,phone.eq.${userPhone}` : ""}${userEmail ? `,email.eq.${userEmail}` : ""}`
+        );
+      }
+
+      const { data: applications, error: appErr } = await appQuery;
+
+      if (!appErr && applications) {
+        classifiedTickets = applications
+          .filter((app: any) => {
+            const cat = app.classified?.category;
+            const niche = app.classified?.attributes?.niche;
+            return cat === "event" || niche === "evento";
+          })
+          .map((app: any) => {
+            const classified = app.classified;
+            const attrs = classified?.attributes || {};
+            const lotLabel = app.candidate_role?.startsWith("Ingresso: ")
+              ? app.candidate_role.replace("Ingresso: ", "")
+              : app.candidate_role || "Inscrição Confirmada";
+
+            const accessCode = `WAESY-${app.id.slice(0, 8).toUpperCase()}`;
+
+            return {
+              id: app.id,
+              orderId: app.id,
+              eventTitle: classified?.title || "Evento",
+              eventDate: attrs.event_date || null,
+              eventLocation: attrs.venue_name || classified?.location_name || null,
+              lotName: lotLabel,
+              quantity: 1,
+              priceCents: attrs.ticket_price_cents || 0,
+              status: app.status === "confirmed" ? "completed" : (app.status || "completed"),
+              qrHash: accessCode,
+              coverUrl: classified?.images?.[0] || null,
+              isUsed: app.status === "used",
+              accessCode,
+              createdAt: app.created_at,
+              classifiedId: classified?.id || app.classified_id,
+            };
+          });
+      }
+    } catch (classifiedErr) {
+      console.warn("[events.functions] classified tickets fetch notice:", classifiedErr);
+    }
+
+    const allTickets = [...orderTickets, ...classifiedTickets].sort(
+      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+
+    return allTickets;
   } catch (e) {
     console.warn("[events.functions] listCustomerEventTickets fallback:", e);
     return [];
@@ -1982,6 +2058,8 @@ export type CustomerEventTicketDTO = {
   isUsed: boolean;
   accessCode: string;
   createdAt: string;
+  classifiedId?: string | null;
+  eventId?: string | null;
 };
 
 // ---------------------------------------------------------------------------

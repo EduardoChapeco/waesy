@@ -406,86 +406,28 @@ export function MemberPublicProfileView({
         rightActions={null}
       />
 
-      {/* ── 2. Seletor de Tipo de Perfil & Ação Editar (Abaixo do Top Bar) ── */}
-      <div className="flex items-center justify-between gap-2 px-1">
-        {/* Switcher de Modos: Social, Profissional, Comercial / Vitrine */}
-        <div className="flex flex-nowrap overflow-x-auto no-scrollbar tab-list items-center gap-1 p-1 rounded-lg bg-muted/40 text-xs font-semibold">
-          {isBrandPersonaView ? (
-            <>
-              <Link
-                to="/membro/$id"
-                params={{ id: profile.username || profile.id }}
-                search={{ modo: "comercial" }}
-                className={cn(
-                  "h-11 min-h-11 px-4 inline-flex items-center justify-center shrink-0 rounded-lg transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-                  activeMode === "comercial"
-                    ? "bg-background text-foreground font-bold"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                Vitrine
-              </Link>
-              <Link
-                to="/membro/$id"
-                params={{ id: profile.username || profile.id }}
-                search={{ modo: "social" }}
-                className={cn(
-                  "h-11 min-h-11 px-4 inline-flex items-center justify-center shrink-0 rounded-lg transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-                  activeMode === "social"
-                    ? "bg-background text-foreground font-bold"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                Publicações
-              </Link>
-              <Link
-                to="/membro/$id"
-                params={{ id: profile.username || profile.id }}
-                search={{ modo: "profissional" }}
-                className={cn(
-                  "h-11 min-h-11 px-4 inline-flex items-center justify-center shrink-0 rounded-lg transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-                  activeMode === "profissional"
-                    ? "bg-background text-foreground font-bold"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                Sobre
-              </Link>
-            </>
-          ) : (
-            <>
-              <Link
-                to="/membro/$id"
-                params={{ id: profile.username || profile.id }}
-                search={{ modo: "social" }}
-                className={cn(
-                  "h-11 min-h-11 px-4 inline-flex items-center justify-center shrink-0 rounded-lg transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-                  activeMode === "social"
-                    ? "bg-background text-foreground font-bold"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                Publicações
-              </Link>
-              <Link
-                to="/membro/$id"
-                params={{ id: profile.username || profile.id }}
-                search={{ modo: "profissional" }}
-                className={cn(
-                  "h-11 min-h-11 px-4 inline-flex items-center justify-center shrink-0 rounded-lg transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-                  activeMode === "profissional"
-                    ? "bg-background text-foreground font-bold"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                Sobre & Currículo
-              </Link>
-            </>
-          )}
+      {/* ── 2. Modo de Edição In-Page (Zero Modais / Zero Popups) ── */}
+      {isOwner && (isProfileInPageEditorOpen || (isCreator && editingSection === "creator_profile")) ? (
+        <div className="w-full max-w-5xl mx-auto space-y-6 bg-card rounded-2xl border border-border/70 p-4 sm:p-6 md:p-8 shadow-xs animate-in fade-in duration-200">
+          <ProfileInPageEditor
+            isOpen={true}
+            onClose={() => {
+              setIsProfileInPageEditorOpen(false);
+              setEditingSection(null);
+            }}
+            profile={profile}
+            creatorProfile={creatorProfile}
+            isCreator={isCreator}
+            isBrandPersonaView={isBrandPersonaView}
+            availableStores={partnerStores}
+            ownBrandStores={ownBrandStores}
+            pinnedProducts={data?.pinnedProducts || []}
+            initialTab={editingSection === "creator_profile" ? "vitrine" : editorInitialTab}
+          />
         </div>
-      </div>
-
-      {/* ── Bloco 1: Header do Perfil (Capa Full-Bleed Twitter-Style + Avatar Sobreposto + Stats em Linha) ── */}
+      ) : (
+        <>
+          {/* ── Bloco 1: Header do Perfil (Capa Full-Bleed Twitter-Style + Avatar Sobreposto + Stats em Linha) ── */}
       <div className="rounded-lg bg-card border border-border/40 overflow-hidden">
         {/* Capa Panorâmica Superior 4:1 (sem scroll interno) */}
         {/* design-lint-ignore DL-02 reason:"Aspect ratio canonico da capa panoramica de perfil" expiry:"2027-12-31" */}
@@ -807,6 +749,84 @@ export function MemberPublicProfileView({
  ))}
  </div>
  )}
+
+ {/* ── Seletor de Tipo de Perfil / Modos: Vitrine / Publicações / Sobre & Currículo (Logo depois das infos da bio e links, antes das abas do perfil) ── */}
+ <div className="flex items-center justify-between gap-2 pt-2 pb-1 border-t border-border/40">
+ <div className="flex flex-nowrap overflow-x-auto no-scrollbar tab-list items-center gap-1 p-1 rounded-lg bg-muted/40 text-xs font-semibold">
+ {isBrandPersonaView ? (
+ <>
+ <Link
+ to="/membro/$id"
+ params={{ id: profile.username || profile.id }}
+ search={{ modo: "comercial" }}
+ className={cn(
+ "h-11 min-h-11 px-4 inline-flex items-center justify-center shrink-0 rounded-lg transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+ activeMode === "comercial"
+ ? "bg-background text-foreground font-bold shadow-xs"
+ : "text-muted-foreground hover:text-foreground"
+ )}
+ >
+ Vitrine
+ </Link>
+ <Link
+ to="/membro/$id"
+ params={{ id: profile.username || profile.id }}
+ search={{ modo: "social" }}
+ className={cn(
+ "h-11 min-h-11 px-4 inline-flex items-center justify-center shrink-0 rounded-lg transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+ activeMode === "social"
+ ? "bg-background text-foreground font-bold shadow-xs"
+ : "text-muted-foreground hover:text-foreground"
+ )}
+ >
+ Publicações
+ </Link>
+ <Link
+ to="/membro/$id"
+ params={{ id: profile.username || profile.id }}
+ search={{ modo: "profissional" }}
+ className={cn(
+ "h-11 min-h-11 px-4 inline-flex items-center justify-center shrink-0 rounded-lg transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+ activeMode === "profissional"
+ ? "bg-background text-foreground font-bold shadow-xs"
+ : "text-muted-foreground hover:text-foreground"
+ )}
+ >
+ Sobre
+ </Link>
+ </>
+ ) : (
+ <>
+ <Link
+ to="/membro/$id"
+ params={{ id: profile.username || profile.id }}
+ search={{ modo: "social" }}
+ className={cn(
+ "h-11 min-h-11 px-4 inline-flex items-center justify-center shrink-0 rounded-lg transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+ activeMode === "social"
+ ? "bg-background text-foreground font-bold shadow-xs"
+ : "text-muted-foreground hover:text-foreground"
+ )}
+ >
+ Publicações
+ </Link>
+ <Link
+ to="/membro/$id"
+ params={{ id: profile.username || profile.id }}
+ search={{ modo: "profissional" }}
+ className={cn(
+ "h-11 min-h-11 px-4 inline-flex items-center justify-center shrink-0 rounded-lg transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+ activeMode === "profissional"
+ ? "bg-background text-foreground font-bold shadow-xs"
+ : "text-muted-foreground hover:text-foreground"
+ )}
+ >
+ Sobre & Currículo
+ </Link>
+ </>
+ )}
+ </div>
+ </div>
 
  {/* ── Bloco 2: Perfil Profissional Corporativo (Quando modo === "profissional") ── */}
  {activeMode === "profissional" && (
@@ -2312,26 +2332,10 @@ export function MemberPublicProfileView({
  isSaving={isSavingResume}
  />
 
-  {/* Modal Canônico de Edição de Perfil & Vitrine (Padrão _store.conta.perfil 1:1) */}
-  {isOwner && (
-    <ProfileInPageEditor
-      isOpen={isProfileInPageEditorOpen || (isCreator && editingSection === "creator_profile")}
-      onClose={() => {
-        setIsProfileInPageEditorOpen(false);
-        setEditingSection(null);
-      }}
-      profile={profile}
-      creatorProfile={creatorProfile}
-      isCreator={isCreator}
-      isBrandPersonaView={isBrandPersonaView}
-      availableStores={partnerStores}
-      ownBrandStores={ownBrandStores}
-      pinnedProducts={data?.pinnedProducts || []}
-      initialTab={editingSection === "creator_profile" ? "vitrine" : editorInitialTab}
-    />
-  )}
   </>
   )}
+        </>
+      )}
  </div>
  );
 }

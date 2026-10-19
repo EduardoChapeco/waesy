@@ -1,11 +1,4 @@
 import React, { useState, useEffect, useRef } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -54,10 +47,11 @@ import {
   Store,
   ExternalLink,
   Loader2,
+  X,
 } from "lucide-react";
 
 export interface ProfileInPageEditorProps {
-  isOpen: boolean;
+  isOpen?: boolean;
   onClose: () => void;
   profile: any;
   creatorProfile?: any;
@@ -561,34 +555,42 @@ export function ProfileInPageEditor({
     }
   };
 
-  if (!isOpen) return null;
+  if (isOpen === false) return null;
 
   const charsRemaining = 280 - (bio || "").length;
 
   return (
     <>
-      <Dialog open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
-        <DialogContent className="max-w-4xl max-h-[92vh] overflow-y-auto p-4 sm:p-6 md:p-8 rounded-2xl border-border/70 bg-background text-foreground shadow-2xl space-y-6">
-          <DialogHeader className="pb-2 border-b border-border/40">
-            <DialogTitle className="text-lg sm:text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
+      <div className="w-full space-y-6 animate-in fade-in duration-200">
+        {/* Header do Editor In-Page com Título e Ação de Fechar */}
+        <div className="flex items-center justify-between pb-4 border-b border-border/40">
+          <div className="space-y-0.5">
+            <div className="flex items-center gap-2">
               {isBrandPersonaView ? (
-                <>
-                  <Building2 className="size-5 text-primary" />
-                  <span>Editar Perfil de Marca</span>
-                </>
+                <Building2 className="size-5 text-primary" />
               ) : (
-                <>
-                  <User className="size-5 text-primary" />
-                  <span>Editar Meu Perfil</span>
-                </>
+                <User className="size-5 text-primary" />
               )}
-            </DialogTitle>
-            <DialogDescription className="text-xs text-muted-foreground">
+              <h2 className="text-lg sm:text-xl font-bold tracking-tight text-foreground">
+                {isBrandPersonaView ? "Editar Perfil de Marca" : "Editar Meu Perfil"}
+              </h2>
+            </div>
+            <p className="text-xs text-muted-foreground">
               {isBrandPersonaView
                 ? "Atualize as informações públicas, mídias e vitrine da sua marca na comunidade."
                 : "Atualize sua identidade civil, apresentação profissional, links e privacidade."}
-            </DialogDescription>
-          </DialogHeader>
+            </p>
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onClose}
+            className="h-10 px-4 rounded-lg text-xs font-semibold gap-1.5 cursor-pointer border-border/70 hover:bg-muted/40"
+          >
+            <X className="size-4" />
+            <span>Fechar</span>
+          </Button>
+        </div>
 
           {/* ── 1. Banner de Claridade de Identidade (Padrão Canônico das Imagens 1 e 2) ── */}
           <div className="rounded-lg border border-border/60 bg-muted/30 p-4 sm:p-5 flex items-start justify-between gap-4 text-xs text-foreground">
@@ -1354,8 +1356,7 @@ export function ProfileInPageEditor({
               )}
             </Button>
           </div>
-        </DialogContent>
-      </Dialog>
+      </div>
 
       {/* Modal de Recorte de Imagens (Avatar 1:1, Capa 21:9, Banner 16:9) */}
       <ImageCropperDialog

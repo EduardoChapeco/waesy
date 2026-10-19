@@ -29,6 +29,14 @@ export interface NicheAttributesData {
   service_modality?: string;
   service_warranty?: string;
 
+  // Turismo / Viagem
+  travel_category?: string;
+  meal_plan?: string;
+  lodging_category?: string;
+  baggage_policy?: string;
+  required_documents?: string;
+  guide_language?: string;
+
   // Geral / Físico
   weight_kg?: number | string;
   dimensions?: string;
@@ -43,11 +51,13 @@ export interface ProductSpecsTabProps {
 
 /**
  * ProductSpecsTab — Ficha Técnica e Especificações Canônicas do Produto/Serviço no Workspace
+ * Isolamento Semântico Estrito de Nichos (Regra B.37)
  * Layout Amplo, Sem Esmagamento | Inputs h-11 | Zero Títulos Compostos
  */
 export function ProductSpecsTab({
   attributes,
   onChange,
+  nicheContext,
 }: ProductSpecsTabProps) {
   const updateField = (key: keyof NicheAttributesData, value: any) => {
     onChange({
@@ -56,14 +66,126 @@ export function ProductSpecsTab({
     });
   };
 
+  const isTourism = Boolean(nicheContext?.isTourismBusiness || nicheContext?.isTravel || nicheContext?.showcaseMode === "travel");
+  const isVehicle = Boolean(nicheContext?.isVehicleBusiness);
+  const isRealEstate = Boolean(nicheContext?.isRealEstateBusiness);
+  const isService = Boolean(nicheContext?.isServiceBusiness);
+  const isPhysical = !isTourism && !isVehicle && !isRealEstate && !isService;
+
   return (
     <div className="space-y-6">
-      {/* 1. Dimensões e Embalagem (Físico Geral) */}
-      <div className="bg-card rounded-lg p-5 sm:p-6 space-y-4 border border-border">
-        <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
-          <Package className="size-4 text-primary shrink-0" />
-          <span>Dimensões</span>
+      {/* 0. Especificações de Turismo & Viagem (Se aplicável) */}
+      {isTourism && (
+        <div className="bg-card rounded-lg p-5 sm:p-6 space-y-4 border border-border">
+          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
+            <Layers className="size-4 text-primary shrink-0" />
+            <span>Ficha Técnica do Pacote</span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <Label className="text-xs font-medium text-foreground">Categoria da Viagem</Label>
+              <Select
+                value={attributes.travel_category || "nacional"}
+                onValueChange={(v) => updateField("travel_category", v)}
+              >
+                <SelectTrigger className="h-11 rounded-lg text-xs bg-background">
+                  <SelectValue placeholder="Selecione a categoria" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="nacional">Nacional / Brasil</SelectItem>
+                  <SelectItem value="internacional">Internacional</SelectItem>
+                  <SelectItem value="excursao">Excursão Rodoviária</SelectItem>
+                  <SelectItem value="resort">Resort & Relaxamento</SelectItem>
+                  <SelectItem value="ecoturismo">Ecoturismo & Aventura</SelectItem>
+                  <SelectItem value="cruzeiro">Cruzeiro Marítimo</SelectItem>
+                  <SelectItem value="neve">Neve & Esqui</SelectItem>
+                  <SelectItem value="cultural">Histórico & Cultural</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-xs font-medium text-foreground">Regime Alimentar Principal</Label>
+              <Select
+                value={attributes.meal_plan || "cafe_da_manha"}
+                onValueChange={(v) => updateField("meal_plan", v)}
+              >
+                <SelectTrigger className="h-11 rounded-lg text-xs bg-background">
+                  <SelectValue placeholder="Selecione o regime" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all_inclusive">All Inclusive (Tudo Incluso)</SelectItem>
+                  <SelectItem value="pensao_completa">Pensão Completa (3 Refeições)</SelectItem>
+                  <SelectItem value="meia_pensao">Meia Pensão (Café e Jantar)</SelectItem>
+                  <SelectItem value="cafe_da_manha">Café da Manhã Incluso</SelectItem>
+                  <SelectItem value="sem_refeicoes">Só Hospedagem</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-xs font-medium text-foreground">Padrão da Hospedagem</Label>
+              <Select
+                value={attributes.lodging_category || "hotel_4_estrelas"}
+                onValueChange={(v) => updateField("lodging_category", v)}
+              >
+                <SelectTrigger className="h-11 rounded-lg text-xs bg-background">
+                  <SelectValue placeholder="Classificação" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="resort_5_estrelas">Resort 5 Estrelas Luxo</SelectItem>
+                  <SelectItem value="hotel_5_estrelas">Hotel 5 Estrelas</SelectItem>
+                  <SelectItem value="hotel_4_estrelas">Hotel 4 Estrelas Superior</SelectItem>
+                  <SelectItem value="hotel_3_estrelas">Hotel 3 Estrelas Turístico</SelectItem>
+                  <SelectItem value="pousada_boutique">Pousada Boutique / Charme</SelectItem>
+                  <SelectItem value="chale_montanha">Chalé / Serra</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <Label className="text-xs font-medium text-foreground">Franquia de Bagagem Recomendada</Label>
+              <Input
+                value={attributes.baggage_policy ?? ""}
+                onChange={(e) => updateField("baggage_policy", e.target.value)}
+                placeholder="Ex: Item pessoal + mala de mão 10kg inclusos"
+                className="h-11 rounded-lg text-xs bg-background"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-xs font-medium text-foreground">Guia e Idiomas</Label>
+              <Input
+                value={attributes.guide_language ?? ""}
+                onChange={(e) => updateField("guide_language", e.target.value)}
+                placeholder="Ex: Guia credenciado CADASTUR em Português"
+                className="h-11 rounded-lg text-xs bg-background"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-xs font-medium text-foreground">Documentação Mínima</Label>
+              <Input
+                value={attributes.required_documents ?? ""}
+                onChange={(e) => updateField("required_documents", e.target.value)}
+                placeholder="Ex: RG com menos de 10 anos ou Passaporte válido"
+                className="h-11 rounded-lg text-xs bg-background"
+              />
+            </div>
+          </div>
         </div>
+      )}
+
+      {/* 1. Dimensões e Embalagem (Físico Geral - Apenas Varejo Físico) */}
+      {isPhysical && (
+        <div className="bg-card rounded-lg p-5 sm:p-6 space-y-4 border border-border">
+          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
+            <Package className="size-4 text-primary shrink-0" />
+            <span>Dimensões</span>
+          </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="space-y-2">
@@ -99,8 +221,10 @@ export function ProductSpecsTab({
           </div>
         </div>
       </div>
+      )}
 
-      {/* 2. Especificações de Veículos (Se aplicável) */}
+      {/* 2. Especificações de Veículos (Apenas Veículos) */}
+      {isVehicle && (
       <div className="bg-card rounded-lg p-5 sm:p-6 space-y-4 border border-border">
         <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
           <Car className="size-4 text-primary shrink-0" />
@@ -225,8 +349,10 @@ export function ProductSpecsTab({
           </div>
         </div>
       </div>
+      )}
 
-      {/* 3. Especificações de Imóveis (Se aplicável) */}
+      {/* 3. Especificações de Imóveis (Apenas Imóveis) */}
+      {isRealEstate && (
       <div className="bg-card rounded-lg p-5 sm:p-6 space-y-4 border border-border">
         <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
           <HomeIcon className="size-4 text-primary shrink-0" />
@@ -303,8 +429,10 @@ export function ProductSpecsTab({
           </div>
         </div>
       </div>
+      )}
 
-      {/* 4. Especificações de Serviços (Se aplicável) */}
+      {/* 4. Especificações de Serviços (Apenas Serviços) */}
+      {isService && (
       <div className="bg-card rounded-lg p-5 sm:p-6 space-y-4 border border-border">
         <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
           <Wrench className="size-4 text-primary shrink-0" />
@@ -353,6 +481,7 @@ export function ProductSpecsTab({
           </div>
         </div>
       </div>
+      )}
     </div>
   );
 }

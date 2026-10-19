@@ -15,6 +15,7 @@ import { listPublicTourism } from "@/services/tourism.functions";
 import { HorizontalRail } from "@/components/commerce/horizontal-rail";
 import { ContextualStoriesRail } from "@/components/stories/contextual-stories-rail";
 import { TravelQuoteModal } from "@/components/tourism/travel-quote-modal";
+import { UniversalNicheCard } from "@/components/commerce/universal-niche-card";
 import { formatMoney } from "@/lib/money";
 import { cn } from "@/lib/utils";
 
@@ -216,7 +217,7 @@ function TourismMasterPage() {
               type="button"
               onClick={() => setSelectedAirport(air.id)}
               className={cn(
-                "h-11 min-h-11 px-4 rounded-lg border text-xs sm:text-sm font-semibold whitespace-nowrap shrink-0 cursor-pointer shadow-2xs transition-all select-none active:scale-98 snap-start",
+                "h-11 min-h-11 px-4 rounded-lg border text-xs sm:text-sm font-semibold whitespace-nowrap shrink-0 cursor-pointer shadow-2xs transition-colors select-none active:scale-98 snap-start focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                 isActive
                   ? "bg-foreground text-background border-foreground font-bold shadow-xs"
                   : "bg-card text-muted-foreground hover:text-foreground border-border/70 hover:bg-muted/50"
@@ -232,8 +233,8 @@ function TourismMasterPage() {
       {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="rounded-lg border border-border/60 bg-card overflow-hidden animate-pulse">
-              <div className="aspect-[16/10] w-full bg-muted" />
+            <div key={i} className="rounded-lg border border-border/60 bg-card overflow-hidden animate-pulse motion-reduce:animate-none">
+              <div className="aspect-video w-full bg-muted" />
               <div className="p-5 space-y-3">
                 <div className="h-3 w-24 bg-muted rounded-full" />
                 <div className="h-4 w-4/5 bg-muted rounded-full" />
@@ -261,111 +262,16 @@ function TourismMasterPage() {
           </Button>
         </div>
       ) : layoutMode === "cards" ? (
-        /* MODO 1: CARTÕES LIMPOS */
+        /* MODO 1: CARTÕES MODERNOS CANÔNICOS DE TURISMO (ESTILO SQUIRCLE 2 COLUNAS) */
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {tourismList.map((item) => {
-            const configuredInstallments = Number(item.attributes?.max_installments || item.max_installments);
-            const maxInstallments = configuredInstallments > 1 ? Math.min(24, configuredInstallments) : 1;
-            const priceCents = item.price_cents || 0;
-            const installmentCents = (priceCents > 0 && maxInstallments > 1) ? Math.round(priceCents / maxInstallments) : 0;
-            const mealPlan = item.attributes?.meal_plan || item.meal_plan || null;
-            const durationDays = item.duration_days || item.attributes?.duration_days || null;
-
-            return (
-              <div
-                key={item.id}
-                className="rounded-lg border border-border/60 bg-card overflow-hidden hover:border-border transition-all flex flex-col justify-between group"
-              >
-                <div className="relative aspect-[16/10] w-full overflow-hidden bg-muted">
-                  {item.cover_image ? (
-                    <img
-                      src={item.cover_image}
-                      alt={item.title}
-                      className="size-full object-cover group-hover:scale-102 transition-transform duration-300"
-                      loading="lazy"
-                    />
-                  ) : (
-                    <div className="size-full flex items-center justify-center bg-muted text-muted-foreground">
-                      <AirplaneTilt size={32} className="opacity-40" />
-                    </div>
-                  )}
-
-                  <div className="absolute top-3 left-3 flex items-center gap-2">
-                    {mealPlan && (
-                      <span className="bg-background/90 text-foreground text-[10px] font-medium px-2 py-1 rounded-md border border-border/40">
-                        {mealPlan}
-                      </span>
-                    )}
-                    {durationDays && (
-                      <span className="bg-background/90 text-foreground text-[10px] font-medium px-2 py-1 rounded-md border border-border/40">
-                        {durationDays} dias
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                <div className="p-4 sm:p-5 space-y-3 flex-1 flex flex-col justify-between">
-                  <div className="space-y-1">
-                    <div className="flex items-center justify-between gap-1 text-xs text-muted-foreground">
-                      <span>{item.location_name || item.destination_city || "Regional"}</span>
-                      {item.departure_city && (
-                        <span className="text-[10px] text-muted-foreground">
-                          Saída: {item.departure_city}
-                        </span>
-                      )}
-                    </div>
-
-                    <h3 className="font-bold text-base text-foreground line-clamp-1">
-                      {item.title}
-                    </h3>
-
-                    {item.subtitle && (
-                      <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
-                        {item.subtitle}
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="pt-3 border-t border-border/40 flex items-end justify-between gap-2">
-                    <div>
-                      <span className="text-[10px] text-muted-foreground block font-mono">
-                        A partir de
-                      </span>
-                      <span className="text-base font-bold font-mono text-foreground block">
-                        {item.price_display || (priceCents > 0 ? formatMoney(priceCents) : "Consulte")}
-                      </span>
-                      {installmentCents > 0 && maxInstallments > 1 && (
-                        <span className="text-[11px] text-muted-foreground block">
-                          em até {maxInstallments}x de {formatMoney(installmentCents)}
-                        </span>
-                      )}
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleOpenQuote(item.title)}
-                        className="rounded-lg text-xs h-9 px-3 font-medium cursor-pointer"
-                      >
-                        Cotar
-                      </Button>
-                      <Button
-                        asChild
-                        size="sm"
-                        className="rounded-lg text-xs h-9 px-4 font-medium cursor-pointer"
-                      >
-                        <Link to="/turismo/$id" params={{ id: item.id }}>
-                          <span>Ver</span>
-                          <ArrowRight size={12} className="ml-1" />
-                        </Link>
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+          {tourismList.map((item) => (
+            <UniversalNicheCard
+              key={item.id}
+              item={item}
+              forcedNiche="travel"
+              actionLabel="Reserve agora"
+            />
+          ))}
         </div>
       ) : layoutMode === "compact" ? (
         /* MODO 2: COMPACTO (Full-Height Left Edge-to-Edge List Card) */
@@ -375,12 +281,12 @@ function TourismMasterPage() {
             return (
               <div
                 key={item.id}
-                className="group relative overflow-hidden rounded-lg border border-border/60 bg-card min-h-[136px] pl-32 sm:pl-44 p-4 sm:p-4 hover:border-foreground/30 transition-all flex items-center justify-between gap-4 w-full"
+                className="group relative overflow-hidden rounded-lg border border-border/60 bg-card min-h-36 pl-32 sm:pl-44 p-4 hover:border-foreground/30 transition-colors flex items-center justify-between gap-4 w-full"
               >
                 <Link
                   to="/turismo/$id"
                   params={{ id: item.id }}
-                  className="absolute inset-y-0 left-0 w-32 sm:w-44 overflow-hidden rounded-l-lg bg-muted border-r border-border/40"
+                  className="absolute inset-y-0 left-0 w-32 sm:w-44 overflow-hidden rounded-l-lg bg-muted border-r border-border/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   {item.cover_image ? (
                     <img
@@ -395,7 +301,7 @@ function TourismMasterPage() {
                     </div>
                   )}
                   {item.departure_city && (
-                    <span className="absolute bottom-2 left-2 text-[9px] bg-background/90 px-2 py-1 rounded text-foreground font-medium">
+                    <span className="absolute bottom-2 left-2 text-xs bg-background/90 px-2 py-1 rounded text-foreground font-medium font-mono">
                       {item.departure_city}
                     </span>
                   )}
@@ -403,10 +309,10 @@ function TourismMasterPage() {
 
                 <div className="flex-1 min-w-0 pl-1 space-y-2 flex flex-col justify-between">
                   <div>
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block truncate">
+                    <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground block truncate">
                       {item.location_name || item.destination || "Regional"}
                     </span>
-                    <Link to="/turismo/$id" params={{ id: item.id }} className="block">
+                    <Link to="/turismo/$id" params={{ id: item.id }} className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded">
                       <h4 className="font-bold text-sm sm:text-base text-foreground line-clamp-2 group-hover:text-primary transition-colors">
                         {item.title}
                       </h4>
@@ -421,7 +327,7 @@ function TourismMasterPage() {
                       asChild
                       size="sm"
                       variant="outline"
-                      className="h-9 px-4 text-xs rounded-lg font-bold cursor-pointer"
+                      className="h-11 min-h-11 px-4 text-xs rounded-lg font-bold cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       <Link to="/turismo/$id" params={{ id: item.id }}>
                         Ver Roteiro
@@ -449,65 +355,12 @@ function TourismMasterPage() {
                 }}
               >
                 {catItems.map((item) => (
-                  <div
-                    key={item.id}
-                    className="min-w-72 sm:min-w-80 max-w-[340px] rounded-lg border border-border/60 bg-card overflow-hidden hover:border-border transition-all flex flex-col justify-between shrink-0"
-                  >
-                    <div className="relative aspect-[16/10] w-full overflow-hidden bg-muted">
-                      {item.cover_image ? (
-                        <img
-                          src={item.cover_image}
-                          alt={item.title}
-                          className="size-full object-cover"
-                          loading="lazy"
-                        />
-                      ) : (
-                        <div className="size-full flex items-center justify-center bg-muted">
-                          <AirplaneTilt size={24} className="opacity-40" />
-                        </div>
-                      )}
-                      {item.departure_city && (
-                        <span className="absolute bottom-2 left-2 text-[9px] bg-background/90 px-2 py-1 rounded text-foreground font-medium">
-                          {item.departure_city}
-                        </span>
-                      )}
-                    </div>
-
-                    <div className="p-4 space-y-2 flex-1 flex flex-col justify-between">
-                      <div>
-                        <span className="text-[11px] text-muted-foreground block truncate">
-                          {item.location_name || "Regional"}
-                        </span>
-                        <h4 className="font-semibold text-sm text-foreground line-clamp-1">
-                          {item.title}
-                        </h4>
-                      </div>
-
-                      <div className="pt-2 flex items-center justify-between gap-2">
-                        <span className="font-mono text-sm font-bold text-foreground">
-                          {item.price_display || (item.price_cents ? formatMoney(item.price_cents) : "Consulte")}
-                        </span>
-                        <div className="flex items-center gap-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleOpenQuote(item.title)}
-                            className="h-8 px-3 rounded-lg text-xs font-medium"
-                          >
-                            Cotar
-                          </Button>
-                          <Button
-                            asChild
-                            size="sm"
-                            className="h-8 px-3 rounded-lg text-xs font-medium"
-                          >
-                            <Link to="/turismo/$id" params={{ id: item.id }}>
-                              Ver
-                            </Link>
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
+                  <div key={item.id} className="w-80 shrink-0">
+                    <UniversalNicheCard
+                      item={item}
+                      forcedNiche="travel"
+                      actionLabel="Reserve agora"
+                    />
                   </div>
                 ))}
               </HorizontalRail>

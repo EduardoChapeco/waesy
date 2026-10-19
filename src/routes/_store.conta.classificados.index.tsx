@@ -23,7 +23,12 @@ import {
   MoreVertical,
   MousePointer,
   Trash2,
+  Download,
   X,
+  Copy,
+  Archive,
+  Globe,
+  Lock,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -34,7 +39,10 @@ import {
   getBoostPaymentById,
   convertClassifiedToWorkspaceStore,
   deleteClassified,
+  duplicateClassified,
+  updateClassifiedVisibility,
 } from "@/services/classifieds.functions";
+import { exportClassifiedEventLeadsCsv } from "@/services/classifieds-events.functions";
 import { EmptyState } from "@/components/ui/empty-state";
 import { NativeMobileHeader } from "@/components/navigation";
 import { BoostBottomSheet } from "@/components/commerce/boost-bottom-sheet";
@@ -244,6 +252,30 @@ function ClassificadosIndex() {
     }
   };
 
+  const handleExportEventLeads = async (adId: string, adTitle: string) => {
+    toast.loading("Exportando lista de participantes...", { id: "export-leads" });
+    try {
+      const res = await exportClassifiedEventLeadsCsv({ data: { classifiedId: adId } });
+      if (!res.csvContent || res.count === 0) {
+        toast.info("Nenhum participante inscrito neste evento até o momento.", { id: "export-leads" });
+        return;
+      }
+
+      const blob = new Blob([res.csvContent], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `inscritos-${(adTitle || "evento").toLowerCase().replace(/[^a-z0-9]/g, "_")}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      toast.success(`${res.count} inscritos exportados com sucesso!`, { id: "export-leads" });
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao exportar inscritos.", { id: "export-leads" });
+    }
+  };
+
   // Gateway de Pagamento
   const { data: gatewayStatus, isLoading: gatewayLoading } = useQuery({
     queryKey: ["boost-gateway-status"],
@@ -270,6 +302,45 @@ function ClassificadosIndex() {
       toast.error(err.message || "Erro ao atualizar status do anúncio.");
     },
   });
+
+  const duplicateMutation = useMutation({
+    mutationFn: async (classifiedId: string) => {
+      return await duplicateClassified({ data: { classifiedId } });
+    },
+    onSuccess: (res) => {
+      toast.success(`Anúncio "${res.title}" duplicado em rascunho com sucesso!`);
+      queryClient.invalidateQueries({ queryKey: ["classifieds"] });
+    },
+    onError: (err: any) => {
+      toast.error(err?.message || "Erro ao duplicar anúncio.");
+    },
+  });
+
+  const updateVisibilityMutation = useMutation({
+    mutationFn: async ({ id, visibility }: { id: string; visibility: "public" | "unlisted" }) => {
+      return await updateClassifiedVisibility({ data: { id, visibility } });
+    },
+    onSuccess: (_, vars) => {
+      toast.success(
+        vars.visibility === "unlisted"
+          ? "Visibilidade alterada para Não Listado (acesso exclusivo por link)."
+          : "Visibilidade alterada para Público (disponível na vitrine)."
+      );
+      queryClient.invalidateQueries({ queryKey: ["classifieds"] });
+    },
+    onError: (err: any) => {
+      toast.error(err?.message || "Erro ao alterar visibilidade.");
+    },
+  });
+
+  const handleCopyDirectLink = (ad: any) => {
+    if (typeof window === "undefined") return;
+    const origin = window.location.origin;
+    const tokenParam = ad.access_token ? `?token=${ad.access_token}` : "";
+    const directUrl = `${origin}/classificados/${ad.id}${tokenParam}`;
+    navigator.clipboard.writeText(directUrl);
+    toast.success("Link direto copiado para a área de transferência!");
+  };
 
   const initiateBoostMutation = useMutation({
     mutationFn: async ({ adId, planDays }: { adId: string; planDays: 7 | 15 | 30 }) => {
@@ -568,6 +639,56 @@ function ClassificadosIndex() {
                         </DropdownMenuItem>
 
                         <DropdownMenuItem
+                          onClick={() => handleCopyDirectLink(ad)}
+                          className="rounded-lg cursor-pointer text-xs font-semibold py-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                        >
+                          <Copy className="size-4 mr-2 text-muted-foreground" />
+                          <span>Copiar Link Direto</span>
+                        </DropdownMenuItem>
+
+                        <DropdownMenuItem
+                          onClick={() => duplicateMutation.mutate(ad.id)}
+                          disabled={duplicateMutation.isPending}
+                          className="rounded-lg cursor-pointer text-xs font-semibold py-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary text-primary"
+                        >
+                          <Copy className="size-4 mr-2" />
+                          <span>Duplicar Anúncio</span>
+                        </DropdownMenuItem>
+
+                        <DropdownMenuItem
+                          onClick={() =>
+                            updateVisibilityMutation.mutate({
+                              id: ad.id,
+                              visibility: ad.visibility === "unlisted" ? "public" : "unlisted",
+                            })
+                          }
+                          disabled={updateVisibilityMutation.isPending}
+                          className="rounded-lg cursor-pointer text-xs font-semibold py-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                        >
+                          {ad.visibility === "unlisted" ? (
+                            <>
+                              <Globe className="size-4 mr-2 text-emerald-600" />
+                              <span>Tornar Público</span>
+                            </>
+                          ) : (
+                            <>
+                              <Lock className="size-4 mr-2 text-amber-600" />
+                              <span>Tornar Não Listado</span>
+                            </>
+                          )}
+                        </DropdownMenuItem>
+
+                        {(ad.category === "event" || ad.attributes?.niche === "evento") && (
+                          <DropdownMenuItem
+                            onClick={() => handleExportEventLeads(ad.id, ad.title)}
+                            className="rounded-lg cursor-pointer text-xs font-semibold py-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary text-primary"
+                          >
+                            <Download className="size-4 mr-2" />
+                            <span>Exportar Inscritos (CSV)</span>
+                          </DropdownMenuItem>
+                        )}
+
+                        <DropdownMenuItem
                           onClick={() =>
                             toggleStatusMutation.mutate({
                               id: ad.id,
@@ -589,6 +710,22 @@ function ClassificadosIndex() {
                             </>
                           )}
                         </DropdownMenuItem>
+
+                        {ad.status !== "archived" && (
+                          <DropdownMenuItem
+                            onClick={() =>
+                              toggleStatusMutation.mutate({
+                                id: ad.id,
+                                newStatus: "archived" as any,
+                              })
+                            }
+                            disabled={toggleStatusMutation.isPending}
+                            className="rounded-lg cursor-pointer text-xs font-semibold py-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary text-muted-foreground"
+                          >
+                            <Archive className="size-4 mr-2" />
+                            <span>Arquivar Anúncio</span>
+                          </DropdownMenuItem>
+                        )}
 
                         {ad.status !== "completed" && (
                           <DropdownMenuItem
@@ -798,6 +935,56 @@ function ClassificadosIndex() {
                             </DropdownMenuItem>
 
                             <DropdownMenuItem
+                              onClick={() => handleCopyDirectLink(ad)}
+                              className="rounded-lg cursor-pointer text-xs font-semibold py-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                            >
+                              <Copy className="size-4 mr-2 text-muted-foreground" />
+                              <span>Copiar Link Direto</span>
+                            </DropdownMenuItem>
+
+                            <DropdownMenuItem
+                              onClick={() => duplicateMutation.mutate(ad.id)}
+                              disabled={duplicateMutation.isPending}
+                              className="rounded-lg cursor-pointer text-xs font-semibold py-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary text-primary"
+                            >
+                              <Copy className="size-4 mr-2" />
+                              <span>Duplicar Anúncio</span>
+                            </DropdownMenuItem>
+
+                            <DropdownMenuItem
+                              onClick={() =>
+                                updateVisibilityMutation.mutate({
+                                  id: ad.id,
+                                  visibility: ad.visibility === "unlisted" ? "public" : "unlisted",
+                                })
+                              }
+                              disabled={updateVisibilityMutation.isPending}
+                              className="rounded-lg cursor-pointer text-xs font-semibold py-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                            >
+                              {ad.visibility === "unlisted" ? (
+                                <>
+                                  <Globe className="size-4 mr-2 text-emerald-600" />
+                                  <span>Tornar Público</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Lock className="size-4 mr-2 text-amber-600" />
+                                  <span>Tornar Não Listado</span>
+                                </>
+                              )}
+                            </DropdownMenuItem>
+
+                            {(ad.category === "event" || ad.attributes?.niche === "evento") && (
+                              <DropdownMenuItem
+                                onClick={() => handleExportEventLeads(ad.id, ad.title)}
+                                className="rounded-lg cursor-pointer text-xs font-semibold py-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary text-primary"
+                              >
+                                <Download className="size-4 mr-2" />
+                                <span>Exportar Inscritos (CSV)</span>
+                              </DropdownMenuItem>
+                            )}
+
+                            <DropdownMenuItem
                               onClick={() =>
                                 toggleStatusMutation.mutate({
                                   id: ad.id,
@@ -819,6 +1006,22 @@ function ClassificadosIndex() {
                                 </>
                               )}
                             </DropdownMenuItem>
+
+                            {ad.status !== "archived" && (
+                              <DropdownMenuItem
+                                onClick={() =>
+                                  toggleStatusMutation.mutate({
+                                    id: ad.id,
+                                    newStatus: "archived" as any,
+                                  })
+                                }
+                                disabled={toggleStatusMutation.isPending}
+                                className="rounded-lg cursor-pointer text-xs font-semibold py-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary text-muted-foreground"
+                              >
+                                <Archive className="size-4 mr-2" />
+                                <span>Arquivar Anúncio</span>
+                              </DropdownMenuItem>
+                            )}
 
                             {ad.status !== "completed" && (
                               <DropdownMenuItem

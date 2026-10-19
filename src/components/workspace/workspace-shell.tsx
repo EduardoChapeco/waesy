@@ -5,7 +5,7 @@ import { Package, Tags, Tag, Store, LayoutDashboard, Settings, Calendar, Users, 
 import { cn } from "@/lib/utils";
 import { signOut } from "@/services/auth.functions";
 import { setTenantContext } from "@/services/identity.functions";
-import { setClientContextCookies } from "@/lib/context-auth";
+import { setClientContextCookies, getClientActiveTenant } from "@/lib/context-auth";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -141,7 +141,17 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
 
  const [isSwitching, setIsSwitching] = useState(false);
  const memberships = (session?.memberships as any[]) || [];
- const activeStoreId = session?.store_id;
+ const searchParams = new URLSearchParams(typeof window !== "undefined" ? window.location.search : "");
+ const queryStoreId = searchParams.get("storeId");
+ const clientTenant = typeof window !== "undefined" ? getClientActiveTenant() : null;
+ const isQueryValid = queryStoreId && memberships.some((m) => m.store_id === queryStoreId);
+ const isClientValid = clientTenant && memberships.some((m) => m.store_id === clientTenant);
+
+ const activeStoreId =
+   (isQueryValid ? queryStoreId : null) ||
+   (isClientValid ? clientTenant : null) ||
+   session?.store_id ||
+   memberships[0]?.store_id;
  const activeStore = memberships.find((m) => m.store_id === activeStoreId) || memberships[0];
 
  const isPlatformAdmin =

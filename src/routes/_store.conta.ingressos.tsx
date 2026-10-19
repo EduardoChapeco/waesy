@@ -218,17 +218,31 @@ function TicketCard({ ticket }: { ticket: CustomerEventTicketDTO }) {
 
       {/* Ações */}
       <div className="px-4 py-3 flex items-center gap-2">
-        <Button
-          asChild
-          size="default"
-          variant="outline"
-          className="flex-1 rounded-lg text-xs font-semibold h-11 min-h-11 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
-        >
-          <Link to="/conta/pedidos/$id" params={{ id: ticket.orderId }}>
-            <ChevronRight className="size-4 mr-1" strokeWidth={2} />
-            <span>Comprovante</span>
-          </Link>
-        </Button>
+        {ticket.classifiedId ? (
+          <Button
+            asChild
+            size="default"
+            variant="outline"
+            className="flex-1 rounded-lg text-xs font-semibold h-11 min-h-11 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+          >
+            <Link to="/classificados/$id" params={{ id: ticket.classifiedId }}>
+              <ChevronRight className="size-4 mr-1" strokeWidth={2} />
+              <span>Ver Evento</span>
+            </Link>
+          </Button>
+        ) : (
+          <Button
+            asChild
+            size="default"
+            variant="outline"
+            className="flex-1 rounded-lg text-xs font-semibold h-11 min-h-11 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+          >
+            <Link to="/conta/pedidos/$id" params={{ id: ticket.orderId }}>
+              <ChevronRight className="size-4 mr-1" strokeWidth={2} />
+              <span>Comprovante</span>
+            </Link>
+          </Button>
+        )}
         {isValid && (
           <Button
             type="button"

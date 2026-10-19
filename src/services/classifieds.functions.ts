@@ -45,6 +45,40 @@ const CLASSIFIED_PUBLIC_ALLOWLIST_EXTRA = new Set([
   "amenities",
   "features",
   "provenance",
+  // Eventos & Ingressos (CMS Rico)
+  "event_date",
+  "end_date",
+  "start_time",
+  "end_time",
+  "gates_open_time",
+  "venue_name",
+  "venue_address",
+  "venue_city",
+  "venue_state",
+  "venue_zip",
+  "latitude",
+  "longitude",
+  "age_rating",
+  "video_url",
+  "banner_image_url",
+  "ticket_tiers",
+  "schedule",
+  "speakers",
+  "sponsors",
+  "policies",
+  "surveys",
+  "visibility",
+  "event_category",
+  "parking_info",
+  "transit_info",
+  "event_data",
+  "story_url",
+  "story_auto_open",
+  "pwa_enabled",
+  "host_name",
+  "host_avatar_url",
+  "host_phone",
+  "host_role",
 ]);
 
 function sanitizePublicClassifiedAttributes(
@@ -56,7 +90,6 @@ function sanitizePublicClassifiedAttributes(
     const lower = key.toLowerCase();
     if (
       CLASSIFIED_PUBLIC_ALLOWLIST_EXTRA.has(lower) &&
-      (typeof value !== "object" || Array.isArray(value)) &&
       value !== null &&
       value !== undefined
     ) {
@@ -3103,3 +3136,147 @@ export const checkAndExpireClassifieds = createServerFn({ method: "POST" }).hand
   }
   return { success: true, expiredCount: Number(data) || 0 };
 });
+
+// ---------------------------------------------------------------------------
+// FASE 2: Duplicação Server-Side de Anúncios e Gestão de Visibilidade
+// ---------------------------------------------------------------------------
+export const duplicateClassified = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      classifiedId: z.string().uuid(),
+    }),
+  )
+  .handler(async ({ data: { classifiedId } }) => {
+    const supabase = getServerClient();
+    const identity = await getIdentity();
+
+    if (!identity || !identity.id) {
+      throw new Error("Não autenticado");
+    }
+
+    const { data: original, error: fetchErr } = await supabase
+      .from("classifieds")
+      .select("*")
+      .eq("id", classifiedId)
+      .maybeSingle();
+
+    if (fetchErr || !original) {
+      throw new Error("Anúncio original não encontrado.");
+    }
+
+    const isPlatformAdmin = ["admin", "master", "superadmin", "platform_admin"].includes(
+      identity.role || "",
+    );
+    const isAuthor = original.author_profile_id === identity.id;
+    let isStoreManager = false;
+
+    if (!isAuthor && original.store_id) {
+      const hasMembership = (identity.memberships || []).some(
+        (m: any) => m.store_id === original.store_id,
+      );
+      if (hasMembership || isPlatformAdmin) {
+        isStoreManager = true;
+      }
+    }
+
+    if (!isAuthor && !isStoreManager && !isPlatformAdmin) {
+      throw new Error("Você não tem autorização para duplicar este anúncio.");
+    }
+
+    // Limpa campos únicos e metadados de ciclo de vida
+    const { id: _id, created_at: _ca, updated_at: _ua, ...cloneSource } = original;
+
+    const newPayload = {
+      ...cloneSource,
+      title: `${original.title} (Cópia)`,
+      status: "draft",
+      author_profile_id: identity.id,
+      views_count: 0,
+      clicks_count: 0,
+      whatsapp_clicks_count: 0,
+      proposals_count: 0,
+      is_boosted: false,
+      boosted_until: null,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+
+    const { data: inserted, error: insertErr } = await supabase
+      .from("classifieds")
+      .insert(newPayload)
+      .select("id, title, category, status")
+      .single();
+
+    if (insertErr || !inserted) {
+      console.error("[classifieds] duplicateClassified error:", insertErr);
+      throw new Error(insertErr?.message || "Falha ao duplicar o anúncio.");
+    }
+
+    return {
+      success: true,
+      newId: inserted.id,
+      title: inserted.title,
+      category: inserted.category,
+      status: inserted.status,
+    };
+  });
+
+export const updateClassifiedVisibility = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      id: z.string().uuid(),
+      visibility: z.enum(["public", "unlisted", "archived"]),
+    }),
+  )
+  .handler(async ({ data: { id, visibility } }) => {
+    const supabase = getServerClient();
+    const identity = await getIdentity();
+
+    if (!identity || !identity.id) {
+      throw new Error("Não autenticado");
+    }
+
+    const { data: existing, error: fetchErr } = await supabase
+      .from("classifieds")
+      .select("id, author_profile_id, store_id, attributes")
+      .eq("id", id)
+      .maybeSingle();
+
+    if (fetchErr || !existing) {
+      throw new Error("Anúncio não encontrado.");
+    }
+
+    const isPlatformAdmin = ["admin", "master", "superadmin", "platform_admin"].includes(
+      identity.role || "",
+    );
+    const isAuthor = existing.author_profile_id === identity.id;
+
+    if (!isAuthor && !isPlatformAdmin) {
+      throw new Error("Você não tem permissão para alterar a visibilidade deste anúncio.");
+    }
+
+    const currentAttrs = existing.attributes && typeof existing.attributes === "object"
+      ? existing.attributes
+      : {};
+
+    const { data, error } = await supabase
+      .from("classifieds")
+      .update({
+        visibility,
+        attributes: {
+          ...currentAttrs,
+          visibility,
+        },
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", id)
+      .select("id, visibility")
+      .single();
+
+    if (error) {
+      throw new Error("Erro ao atualizar visibilidade: " + error.message);
+    }
+
+    return { success: true, visibility: data.visibility };
+  });
+

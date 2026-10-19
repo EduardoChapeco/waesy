@@ -8,6 +8,7 @@ import {
   assignChatThread,
   updateTicketStatus,
   archiveChatThread,
+  saveStoreSupportSettings,
 } from "@/services/chat.functions";
 import { getStoreSettings } from "@/services/store.functions";
 import { getNicheSemantics } from "@/lib/niche-semantics";
@@ -19,6 +20,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import {
   Lock,
   EyeOff,
@@ -176,6 +178,42 @@ function WorkspaceAtendimentoPage() {
   const [ticketStatus, setTicketStatus] = useState<any>("resolved");
   const [resolutionNotes, setResolutionNotes] = useState("");
   const [isResolvingTicket, setIsResolvingTicket] = useState(false);
+
+  // Estados de Horários de Atendimento & Ausência (Persistidos)
+  const initialSupportSettings = (store?.settings as any)?.support_settings || {};
+  const [supportSchedules, setSupportSchedules] = useState<Array<{ day: string; hours: string; active: boolean }>>(
+    initialSupportSettings.support_schedules || [
+      { day: "Segunda a Sexta", hours: "08:00 às 18:00", active: true },
+      { day: "Sábado", hours: "08:00 às 12:00", active: true },
+      { day: "Domingo e Feriados", hours: "Fechado", active: false },
+    ],
+  );
+  const [awayMessage, setAwayMessage] = useState<string>(
+    initialSupportSettings.away_message ||
+      "Olá! Nosso horário de atendimento é de Segunda a Sexta das 08h às 18h e Sábados das 08h às 12h. Deixe sua mensagem que responderemos assim que nossa equipe iniciar o expediente!",
+  );
+  const [autoReplyEnabled, setAutoReplyEnabled] = useState<boolean>(
+    initialSupportSettings.auto_reply_enabled ?? true,
+  );
+  const [isSavingSupportSettings, setIsSavingSupportSettings] = useState(false);
+
+  const handleSaveSupportSettings = async () => {
+    setIsSavingSupportSettings(true);
+    try {
+      await saveStoreSupportSettings({
+        data: {
+          away_message: awayMessage,
+          auto_reply_enabled: autoReplyEnabled,
+          support_schedules: supportSchedules,
+        },
+      });
+      toast.success("Horários e mensagem de ausência salvos no banco com sucesso!");
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao salvar configurações de atendimento.");
+    } finally {
+      setIsSavingSupportSettings(false);
+    }
+  };
 
   const activeThread = threads.find((t) => t.id === activeThreadId);
 
@@ -439,7 +477,10 @@ function WorkspaceAtendimentoPage() {
   return (
     <div className="flex flex-col h-[calc(100vh-theme(spacing.16))] overflow-hidden bg-background">
       {/* CABEÇALHO DO HUB DE ATENDIMENTO */}
-      <header className="shrink-0 border-b border-border/80 bg-card/90 px-4 py-3 flex flex-col md:flex-row md:items-center justify-between gap-3">
+      <header className={cn(
+        "shrink-0 border-b border-border/80 bg-card/90 px-4 py-2.5 flex-col md:flex-row md:items-center justify-between gap-3",
+        activeHubTab === "live" && activeThreadId ? "hidden md:flex" : "flex"
+      )}>
         <div className="flex items-center justify-between gap-3 min-w-0">
           <div className="flex items-center gap-2 min-w-0">
             <h1 className="text-base sm:text-lg font-bold text-foreground truncate">
@@ -759,10 +800,10 @@ function WorkspaceAtendimentoPage() {
                     variant="ghost"
                     size="icon"
                     onClick={() => setActiveThreadId(null)}
-                    className="md:hidden size-8 -ml-1 text-muted-foreground hover:text-foreground cursor-pointer shrink-0"
+                    className="md:hidden size-11 -ml-2 text-muted-foreground hover:text-foreground cursor-pointer shrink-0 focus-visible:ring-2 focus-visible:ring-ring"
                     title="Voltar para a lista"
                   >
-                    <ArrowLeft className="size-4" />
+                    <ArrowLeft className="size-5" />
                   </Button>
 
                   {/* Avatar do cliente */}
@@ -819,7 +860,7 @@ function WorkspaceAtendimentoPage() {
                     value={activeThread.department || "geral"}
                     onValueChange={handleDepartmentChange}
                   >
-                    <SelectTrigger className="h-8 rounded-lg text-xs w-32 sm:w-36">
+                    <SelectTrigger className="h-11 rounded-lg text-xs w-32 sm:w-36 focus-visible:ring-2 focus-visible:ring-ring">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent className="rounded-lg">
@@ -840,7 +881,7 @@ function WorkspaceAtendimentoPage() {
                     onClick={() =>
                       handleArchiveThread(activeThread.id, activeThread.status !== "archived")
                     }
-                    className="h-8 rounded-lg text-xs font-semibold gap-2 cursor-pointer"
+                    className="h-11 rounded-lg text-xs font-semibold gap-2 px-3 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
                     title={activeThread.status === "archived" ? "Desarquivar conversa" : "Arquivar conversa"}
                   >
                     {activeThread.status === "archived" ? (
@@ -862,7 +903,7 @@ function WorkspaceAtendimentoPage() {
                     size="sm"
                     onClick={() => setShowCustomer360(!showCustomer360)}
                     className={cn(
-                      "h-8 text-xs font-bold rounded-lg cursor-pointer",
+                      "h-11 text-xs font-bold rounded-lg px-3 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring",
                       showCustomer360 ? "bg-muted" : "",
                     )}
                   >
@@ -1129,7 +1170,7 @@ function WorkspaceAtendimentoPage() {
 
           {/* COLUNA 3: Customer 360 (Lateral Direita Recolhível) */}
           {activeThread && showCustomer360 && (
-            <div className="w-80 lg:w-96 border-l border-border/80 bg-background overflow-y-auto no-scrollbar shrink-0 p-4">
+            <div className="hidden lg:block w-80 xl:w-96 border-l border-border/80 bg-background overflow-y-auto no-scrollbar shrink-0 p-4">
               <div className="flex items-center justify-between pb-3 border-b border-border/60 mb-4">
                 <span className="font-bold text-xs uppercase tracking-wider text-muted-foreground">
                   Perfil 360º do Cliente
@@ -1139,7 +1180,7 @@ function WorkspaceAtendimentoPage() {
                   variant="ghost"
                   size="sm"
                   onClick={() => setShowCustomer360(false)}
-                  className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground cursor-pointer"
+                  className="h-9 px-2 text-xs text-muted-foreground hover:text-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   Fechar
                 </Button>
@@ -1150,6 +1191,23 @@ function WorkspaceAtendimentoPage() {
               />
             </div>
           )}
+
+          {/* Drawer Sheet Mobile/Tablet do Perfil 360 */}
+          <Sheet open={Boolean(activeThread && showCustomer360)} onOpenChange={setShowCustomer360}>
+            <SheetContent side="right" className="lg:hidden w-full sm:max-w-md p-0 overflow-y-auto">
+              <SheetHeader className="p-4 border-b border-border/60">
+                <SheetTitle className="text-xs uppercase tracking-wider text-muted-foreground font-bold">
+                  Perfil 360º do Cliente
+                </SheetTitle>
+              </SheetHeader>
+              <div className="p-4">
+                <Customer360Sidebar
+                  customerId={activeThread?.customer?.id}
+                  storeId={store?.id || ""}
+                />
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
       )}
 
@@ -1479,65 +1537,115 @@ function WorkspaceAtendimentoPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Horários de Expediente */}
             <div className="bg-card p-6 rounded-lg border border-border/80 space-y-4 shadow-xs">
-              <h3 className="font-bold text-sm text-foreground">Turnos de Atendimento ao Cliente</h3>
+              <div className="flex items-center justify-between">
+                <h3 className="font-bold text-sm text-foreground">Turnos de Atendimento ao Cliente</h3>
+                <span className="text-xs text-muted-foreground font-mono">Sincronizado</span>
+              </div>
               <div className="space-y-3 text-xs">
-                {[
-                  { day: "Segunda a Sexta", hours: "08:00 às 18:00", active: true },
-                  { day: "Sábado", hours: "08:00 às 12:00", active: true },
-                  { day: "Domingo e Feriados", hours: "Fechado", active: false },
-                ].map((item) => (
+                {supportSchedules.map((item, idx) => (
                   <div
                     key={item.day}
-                    className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border/50"
+                    className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border/50 gap-3"
                   >
-                    <div>
+                    <div className="flex-1">
                       <span className="font-bold text-foreground block">{item.day}</span>
-                      <span className="text-muted-foreground">{item.hours}</span>
+                      <Input
+                        value={item.hours}
+                        onChange={(e) => {
+                          const updated = [...supportSchedules];
+                          updated[idx] = { ...updated[idx], hours: e.target.value };
+                          setSupportSchedules(updated);
+                        }}
+                        className="h-8 text-xs bg-background mt-1"
+                        placeholder="Ex: 08:00 às 18:00 ou Fechado"
+                      />
                     </div>
-                    <Badge
-                      variant="outline"
-                      className={cn(
-                        "text-xs font-semibold",
-                        item.active
-                          ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/30"
-                          : "bg-muted text-muted-foreground border-border/50",
-                      )}
-                    >
-                      {item.active ? "Ativo" : "Fechado"}
-                    </Badge>
+                    <div className="flex items-center gap-2 shrink-0 pt-4">
+                      <Switch
+                        id={`schedule-switch-${idx}`}
+                        checked={item.active}
+                        onCheckedChange={(checked) => {
+                          const updated = [...supportSchedules];
+                          updated[idx] = { ...updated[idx], active: checked };
+                          setSupportSchedules(updated);
+                        }}
+                      />
+                      <Badge
+                        variant="outline"
+                        className={cn(
+                          "text-xs font-semibold select-none",
+                          item.active
+                            ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/30"
+                            : "bg-muted text-muted-foreground border-border/50",
+                        )}
+                      >
+                        {item.active ? "Ativo" : "Fechado"}
+                      </Badge>
+                    </div>
                   </div>
                 ))}
               </div>
 
-              <Button asChild variant="outline" size="sm" className="w-full text-xs rounded-lg cursor-pointer">
-                <Link to="/workspace/configuracoes" search={{ tab: "horarios" } as any}>
-                  Editar Horários Detalhados no Painel da Loja
-                  <ExternalLink className="size-4 ml-1" />
-                </Link>
+              <Button
+                type="button"
+                onClick={handleSaveSupportSettings}
+                disabled={isSavingSupportSettings}
+                className="w-full h-11 min-h-11 rounded-lg text-xs font-bold bg-foreground text-background hover:bg-foreground/90 transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-primary flex items-center justify-center gap-2"
+              >
+                {isSavingSupportSettings ? (
+                  <>
+                    <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
+                    <span>Salvando...</span>
+                  </>
+                ) : (
+                  <span>Salvar Turnos de Atendimento</span>
+                )}
               </Button>
             </div>
 
             {/* Mensagem Fora de Expediente */}
             <div className="bg-card p-6 rounded-lg border border-border/80 space-y-4 shadow-xs">
-              <h3 className="font-bold text-sm text-foreground">Mensagem Automática de Ausência</h3>
+              <div className="flex items-center justify-between">
+                <h3 className="font-bold text-sm text-foreground">Mensagem Automática de Ausência</h3>
+                <div className="flex items-center gap-2">
+                  <Switch
+                    id="auto-reply-toggle"
+                    checked={autoReplyEnabled}
+                    onCheckedChange={setAutoReplyEnabled}
+                  />
+                  <Label htmlFor="auto-reply-toggle" className="text-xs text-muted-foreground cursor-pointer">
+                    {autoReplyEnabled ? "Ativada" : "Desativada"}
+                  </Label>
+                </div>
+              </div>
               <p className="text-xs text-muted-foreground">
-                Enviada automaticamente no WhatsApp quando o cliente enviar mensagem fora do expediente:
+                Enviada automaticamente no WhatsApp quando o cliente enviar mensagem fora do expediente comercial:
               </p>
 
               <div className="space-y-2">
                 <Textarea
-                  defaultValue="Olá! Nosso horário de atendimento é de Segunda a Sexta das 08h às 18h e Sábados das 08h às 12h. Deixe sua mensagem que responderemos assim que nossa equipe iniciar o expediente!"
+                  value={awayMessage}
+                  onChange={(e) => setAwayMessage(e.target.value)}
                   rows={4}
-                  className="text-xs rounded-lg bg-muted/30"
+                  className="text-xs rounded-lg bg-muted/30 resize-none"
+                  placeholder="Digite a mensagem de ausência..."
                 />
               </div>
 
               <Button
-                size="sm"
-                onClick={() => toast.success("Mensagem de ausência salva com sucesso!")}
-                className="rounded-lg text-xs font-semibold cursor-pointer"
+                type="button"
+                onClick={handleSaveSupportSettings}
+                disabled={isSavingSupportSettings}
+                className="w-full h-11 min-h-11 rounded-lg text-xs font-bold bg-foreground text-background hover:bg-foreground/90 transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-primary flex items-center justify-center gap-2"
               >
-                Salvar Mensagem de Ausência
+                {isSavingSupportSettings ? (
+                  <>
+                    <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
+                    <span>Salvando...</span>
+                  </>
+                ) : (
+                  <span>Salvar Mensagem de Ausência</span>
+                )}
               </Button>
             </div>
           </div>
