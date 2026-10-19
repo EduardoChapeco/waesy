@@ -89,25 +89,44 @@ export function BannerHeroCarousel({
         </div>
       );
     }
+    const desktopMedia = banner.media_desktop_url || banner.media_url;
+    const mobileMedia = banner.media_mobile_url || banner.media_url;
+
     return (
       <div className="relative size-full overflow-hidden">
         {/* Camada Ambiente: Desfoque suave que preenche as laterais sem cortar as bordas do anúncio */}
-        <img
-          src={banner.media_url}
-          alt=""
-          aria-hidden="true"
-          className="absolute inset-0 size-full object-cover blur-2xl opacity-40 scale-110 pointer-events-none select-none"
-        />
+        <picture className="absolute inset-0 size-full select-none pointer-events-none">
+          {banner.media_mobile_url && (
+            <source media="(max-width: 767px)" srcSet={banner.media_mobile_url} />
+          )}
+          {banner.media_desktop_url && (
+            <source media="(min-width: 768px)" srcSet={banner.media_desktop_url} />
+          )}
+          <img
+            src={desktopMedia}
+            alt=""
+            aria-hidden="true"
+            className="size-full object-cover blur-2xl opacity-40 scale-110 pointer-events-none select-none"
+          />
+        </picture>
         {/* Mídia Principal: Escala Proporcional Verdadeira sem Cortes */}
-        <img
-          src={banner.media_url}
-          alt={banner.title}
-          className="relative size-full object-cover object-center transition-transform duration-300 motion-reduce:transition-none will-change-transform select-none rounded-lg"
-          loading="eager"
-          onError={(e) => {
-            (e.currentTarget as HTMLImageElement).style.display = "none";
-          }}
-        />
+        <picture className="relative size-full block">
+          {banner.media_mobile_url && (
+            <source media="(max-width: 767px)" srcSet={banner.media_mobile_url} />
+          )}
+          {banner.media_desktop_url && (
+            <source media="(min-width: 768px)" srcSet={banner.media_desktop_url} />
+          )}
+          <img
+            src={desktopMedia}
+            alt={banner.title || ""}
+            className="relative size-full object-cover object-center transition-transform duration-300 motion-reduce:transition-none will-change-transform select-none rounded-lg"
+            loading="eager"
+            onError={(e) => {
+              (e.currentTarget as HTMLImageElement).style.display = "none";
+            }}
+          />
+        </picture>
       </div>
     );
   };
@@ -122,8 +141,8 @@ export function BannerHeroCarousel({
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
-      {/* ── Proporção Unificada 16:9 em Mobile e Desktop (Zero Corte Divergente) ── */}
-      <div className="relative w-full aspect-banner-cinema overflow-hidden rounded-lg bg-muted">
+      {/* ── Proporção Fina Desktop (28:9) e Cinema Mobile (16:9) com Zero Jank ── */}
+      <div className="relative w-full aspect-banner-cinema md:aspect-banner-slim md:max-h-72 lg:max-h-80 overflow-hidden rounded-lg bg-muted">
         {/* Render Actual Image / Video */}
         {renderMedia(currentBanner)}
 

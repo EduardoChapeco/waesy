@@ -117,6 +117,8 @@ function AdminMasterBannersPage() {
   const [subtitle, setSubtitle] = useState("");
   const [mediaType, setMediaType] = useState<"image" | "video" | "gif">("image");
   const [mediaUrl, setMediaUrl] = useState("");
+  const [mediaDesktopUrl, setMediaDesktopUrl] = useState("");
+  const [mediaMobileUrl, setMediaMobileUrl] = useState("");
   const [targetType, setTargetType] = useState<
     "category" | "product" | "hotpage" | "store" | "external_url"
   >("hotpage");
@@ -156,6 +158,8 @@ function AdminMasterBannersPage() {
     setTitle("");
     setSubtitle("");
     setMediaUrl("");
+    setMediaDesktopUrl("");
+    setMediaMobileUrl("");
     setTargetUrl("");
     setPlacement(targetPlacement);
     setCityFilter("all");
@@ -176,6 +180,8 @@ function AdminMasterBannersPage() {
     setSubtitle(banner.subtitle || "");
     setMediaType(banner.media_type || "image");
     setMediaUrl(banner.media_url || "");
+    setMediaDesktopUrl((banner as any).media_desktop_url || "");
+    setMediaMobileUrl((banner as any).media_mobile_url || "");
     setTargetType(banner.target_type || "hotpage");
     setTargetUrl(banner.target_url || "");
     setPlacement(banner.placement || "home");
@@ -229,6 +235,8 @@ function AdminMasterBannersPage() {
             subtitle: subtitle || null,
             media_type: mediaType,
             media_url: mediaUrl,
+            media_desktop_url: mediaDesktopUrl.trim() || null,
+            media_mobile_url: mediaMobileUrl.trim() || null,
             target_type: targetType,
             target_url: targetUrl || null,
             placement,
@@ -253,6 +261,8 @@ function AdminMasterBannersPage() {
             subtitle: subtitle || undefined,
             media_type: mediaType,
             media_url: mediaUrl,
+            media_desktop_url: mediaDesktopUrl.trim() || undefined,
+            media_mobile_url: mediaMobileUrl.trim() || undefined,
             target_type: targetType,
             target_url: targetUrl || undefined,
             placement,
@@ -589,22 +599,62 @@ function AdminMasterBannersPage() {
             </p>
           </div>
 
-          <div className="space-y-2">
-            <Label className="text-xs font-semibold">Mídia do Banner (Imagem / Vídeo)</Label>
-            <MediaUploader
-              value={mediaUrl ? [mediaUrl] : []}
-              onChange={(urls) => {
-                const url = urls[0] || "";
-                setMediaUrl(url);
-                const isVideo = url.endsWith(".mp4") || url.endsWith(".webm");
-                setMediaType(isVideo ? "video" : "image");
-              }}
-              bucket="banners"
-              folder="destaques"
-              aspect={21 / 9}
-              lockAspect={true}
-              maxFiles={1}
-            />
+          <div className="space-y-3 p-3 rounded-lg bg-muted/20 border border-border/50">
+            <div className="space-y-1">
+              <Label className="text-xs font-semibold">Mídia Principal / Padrão (Imagem / Vídeo)</Label>
+              <MediaUploader
+                value={mediaUrl ? [mediaUrl] : []}
+                onChange={(urls) => {
+                  const url = urls[0] || "";
+                  setMediaUrl(url);
+                  const isVideo = url.endsWith(".mp4") || url.endsWith(".webm");
+                  setMediaType(isVideo ? "video" : "image");
+                }}
+                bucket="banners"
+                folder="destaques"
+                aspect={21 / 9}
+                lockAspect={false}
+                maxFiles={1}
+              />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-border/30">
+              <div className="space-y-1">
+                <Label className="text-2xs font-semibold text-foreground/90">
+                  Mídia Desktop (Widescreen Fino 28:9)
+                </Label>
+                <MediaUploader
+                  value={mediaDesktopUrl ? [mediaDesktopUrl] : []}
+                  onChange={(urls) => setMediaDesktopUrl(urls[0] || "")}
+                  bucket="banners"
+                  folder="destaques/desktop"
+                  aspect={28 / 9}
+                  lockAspect={false}
+                  maxFiles={1}
+                />
+                <p className="text-3xs text-muted-foreground">
+                  Proporção fina para monitores, sem cortes laterais.
+                </p>
+              </div>
+
+              <div className="space-y-1">
+                <Label className="text-2xs font-semibold text-foreground/90">
+                  Mídia Mobile (Nativa App 16:9)
+                </Label>
+                <MediaUploader
+                  value={mediaMobileUrl ? [mediaMobileUrl] : []}
+                  onChange={(urls) => setMediaMobileUrl(urls[0] || "")}
+                  bucket="banners"
+                  folder="destaques/mobile"
+                  aspect={16 / 9}
+                  lockAspect={false}
+                  maxFiles={1}
+                />
+                <p className="text-3xs text-muted-foreground">
+                  Exibido em celulares no formato clássico.
+                </p>
+              </div>
+            </div>
           </div>
 
           <div className="space-y-2">

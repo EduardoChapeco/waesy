@@ -1,5 +1,6 @@
 import React from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
+import { cn } from "@/lib/utils";
 import {
   MapPin,
   Storefront,
@@ -211,15 +212,26 @@ export function HomeMobileNativeApp({
           {sec.layout_variant === "bento_grid" && (
             <BentoGridTetris items={sec.items} aspectRatio={sec.aspect_ratio} />
           )}
-          {sec.layout_variant === "carousel" && (
-            <MetamorphicBannerSlider items={sec.items} aspectRatio={sec.aspect_ratio} />
+          {(sec.layout_variant === "carousel" || sec.layout_variant === "slim_slider") && (
+            <MetamorphicBannerSlider
+              items={sec.items}
+              aspectRatio={sec.layout_variant === "slim_slider" ? "slim_desktop" : sec.aspect_ratio}
+            />
           )}
           {sec.layout_variant === "horizontal_scroll" && (
             <NoorNativeCategoryDock items={sec.items} />
           )}
-          {sec.layout_variant === "grid_2d" && (
-            /* design-lint-ignore DL-29 reason:"Grade iFood 4x2 nativa no mobile" expiry:"2027-12-31" */
-            <div className="grid grid-cols-4 gap-2">
+          {(sec.layout_variant === "grid_2d" ||
+            sec.layout_variant === "cards_action_grid" ||
+            sec.layout_variant === "custom_buttons") && (
+            /* design-lint-ignore DL-29 reason:"Grade iFood 4x2 ou cards de ação 2x2 nativa no mobile" expiry:"2027-12-31" */
+            <div
+              className={cn(
+                sec.layout_variant === "cards_action_grid"
+                  ? "grid grid-cols-2 gap-2"
+                  : "grid grid-cols-4 gap-2",
+              )}
+            >
               {sec.items.map((it) => (
                 <IFoodSquareCategoryButton
                   key={it.id}
@@ -256,7 +268,7 @@ export function HomeMobileNativeApp({
                 return (
                   <div
                     key={item.id}
-                    className="w-64 shrink-0 snap-start group flex flex-col justify-between rounded-lg border border-border/60 bg-card overflow-hidden hover:border-foreground/30 transition-colors h-68"
+                    className="w-72 shrink-0 snap-start group flex flex-col justify-between rounded-lg border border-border/60 bg-card overflow-hidden hover:border-foreground/30 transition-colors h-68"
                   >
                     <Link to="/diretorio/$id" params={{ id: item.id }} className="block">
                       <div className="relative aspect-video w-full overflow-hidden bg-muted/40">
@@ -356,7 +368,7 @@ export function HomeMobileNativeApp({
                   actionTo="/marketplace"
                 >
                   {filteredMarketplaceProducts.map((offer: any) => (
-                    <div key={offer.id} className="w-56 shrink-0 snap-start">
+                    <div key={offer.id} className="w-72 shrink-0 snap-start">
                       <OfferCard {...offer} />
                     </div>
                   ))}
@@ -393,7 +405,7 @@ export function HomeMobileNativeApp({
                     key={item.id}
                     to="/classificados/$id"
                     params={{ id: item.id }}
-                    className="w-56 shrink-0 snap-start group flex flex-col justify-between rounded-lg border border-border/60 bg-card overflow-hidden hover:border-foreground/30 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    className="w-72 shrink-0 snap-start group flex flex-col justify-between rounded-lg border border-border/60 bg-card overflow-hidden hover:border-foreground/30 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                   >
                     <div className="relative aspect-square w-full overflow-hidden bg-muted/30">
                       {coverImage ? (

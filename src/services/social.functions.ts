@@ -227,6 +227,7 @@ export type MuralFeedItem = {
  content?: string | null;
  scope?: string | null;
  media_urls: string[];
+ aspect_ratio?: "1:1" | "4:5" | "16:9" | "9:16" | "auto" | string;
  layout_style?: "grid" | "carousel" | "trilho_horizontal" | "carrossel_unico" | "panoramico";
  post_type: PostType;
  location_name?: string | null;
@@ -371,7 +372,7 @@ export const getMuralFeed = createServerFn({ method: "GET" })
       .from("posts")
       .select(
         `
-        id, content_text, media_urls, layout_style, post_type, location_name, location_lat, location_lng,
+        id, content_text, media_urls, aspect_ratio, layout_style, post_type, location_name, location_lat, location_lng,
         city, state, region, publish_as_handle, paid_partner_handle, paid_partner_label, collaborators, tags,
         metadata, reference_type, reference_id, created_at,
         author_profile_id, author_store_id,
@@ -541,6 +542,7 @@ export const getMuralFeed = createServerFn({ method: "GET" })
         },
         content_text: p.content_text,
         media_urls: p.media_urls || [],
+        aspect_ratio: (p as any).aspect_ratio || p.metadata?.aspect_ratio || "auto",
         layout_style: p.layout_style,
         post_type:
           (p.post_type as PostType) || (p.layout_style === "carousel" ? "carousel" : "simple"),
@@ -661,6 +663,7 @@ export const createPost = createServerFn({ method: "POST" })
         .nullable()
         .transform((v) => (v && v.trim() ? v.trim() : null)),
       media_urls: z.array(z.string()).max(10, "Máximo de 10 mídias por publicação").optional(),
+      aspect_ratio: z.enum(["1:1", "4:5", "16:9", "9:16", "auto"]).default("auto").optional(),
       layout_style: z.enum(["grid", "carousel", "trilho_horizontal", "carrossel_unico", "panoramico"]).default("grid"),
       post_type: z
         .enum([
@@ -803,7 +806,8 @@ export const createPost = createServerFn({ method: "POST" })
         tags: effectiveTags,
         scheduled_at: input.scheduled_at || null,
         is_scheduled: input.is_scheduled || false,
-        metadata: input.metadata || {},
+        aspect_ratio: input.aspect_ratio || "auto",
+        metadata: { ...(input.metadata || {}), aspect_ratio: input.aspect_ratio || "auto" },
         reference_type: input.reference_type,
         reference_id: input.reference_id || null,
         status: "active",

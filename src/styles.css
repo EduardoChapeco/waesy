@@ -104,6 +104,12 @@
 }
 
 /* Canonical Aspect Ratio Traps for Anti-Jank & Zero CLS (Apple HIG / iFood) */
+.aspect-banner-slim {
+  aspect-ratio: 28 / 9;
+}
+.aspect-banner-ultrawide {
+  aspect-ratio: 32 / 9;
+}
 .aspect-banner-ifood {
   aspect-ratio: 21 / 9;
 }

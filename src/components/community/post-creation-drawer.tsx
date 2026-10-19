@@ -12,6 +12,7 @@ import { createPost } from "@/services/social.functions";
 import { uploadPostMedia, getPostMediaSignedUrl } from "@/services/storage.functions";
 import { Highlighter } from "lucide-react";
 import { extractMediaFromClipboard, fileToBase64 } from "@/lib/clipboard-media";
+import { cn } from "@/lib/utils";
 
 export interface ThreadNode {
  id: string;
@@ -47,6 +48,7 @@ export function PostCreationDrawer({
  const [travelOrigin, setTravelOrigin] = useState("");
  const [travelDestination, setTravelDestination] = useState("");
  const [mediaUrls, setMediaUrls] = useState<string[]>([]);
+ const [aspectRatio, setAspectRatio] = useState<"1:1" | "4:5" | "16:9" | "9:16">("4:5");
  const [mediaPreviews, setMediaPreviews] = useState<
  { url: string; type: "image" | "video"; file?: File }[]
  >([]);
@@ -304,6 +306,7 @@ export function PostCreationDrawer({
  data: {
  content_text: contentText.trim() || undefined,
  media_urls: mediaUrls,
+ aspect_ratio: aspectRatio,
  layout_style: activeFormat === "grid" ? "grid" : mediaUrls.length > 1 ? "trilho_horizontal" : "panoramico",
  post_type: activeFormat === "grid" ? "grid" : "simple",
  location_name: locationName.trim() || undefined,
@@ -316,6 +319,7 @@ export function PostCreationDrawer({
  data: {
  content_text: contentText.trim() || undefined,
  media_urls: mediaUrls,
+ aspect_ratio: aspectRatio,
  layout_style: "trilho_horizontal",
  post_type: "trilho_horizontal",
  location_name: locationName.trim() || undefined,
@@ -362,6 +366,7 @@ export function PostCreationDrawer({
  data: {
  content_text: contentText.trim() || undefined,
  media_urls: mediaUrls,
+ aspect_ratio: aspectRatio,
  layout_style: "carrossel_unico",
  post_type: "carrossel_unico",
  location_name: locationName.trim() || undefined,
@@ -571,6 +576,29 @@ export function PostCreationDrawer({
  </button>
  </div>
  ))}
+ </div>
+ )}
+
+ {mediaPreviews.length > 0 && (
+ <div className="flex items-center gap-2 pt-2">
+ <span className="text-xs font-semibold text-muted-foreground">Formato:</span>
+ <div className="inline-flex rounded-lg border border-border/60 bg-muted/40 p-1">
+ {(["4:5", "1:1", "16:9", "9:16"] as const).map((ratio) => (
+ <button
+ key={ratio}
+ type="button"
+ onClick={() => setAspectRatio(ratio)}
+ className={cn(
+ "px-3 py-1 text-xs font-bold rounded-md transition-colors cursor-pointer",
+ aspectRatio === ratio
+ ? "bg-background text-foreground shadow-xs"
+ : "text-muted-foreground hover:text-foreground"
+ )}
+ >
+ {ratio === "4:5" ? "4:5 (Feed)" : ratio === "1:1" ? "1:1 (Quadrado)" : ratio === "16:9" ? "16:9 (Cinema)" : "9:16 (Story/Vídeo)"}
+ </button>
+ ))}
+ </div>
  </div>
  )}
  </div>

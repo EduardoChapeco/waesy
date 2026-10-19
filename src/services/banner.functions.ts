@@ -44,6 +44,9 @@ export interface BannerDTO {
   subtitle?: string | null;
   badge_text?: string | null;
   media_url: string;
+  media_mobile_url?: string | null;
+  media_desktop_url?: string | null;
+  aspect_ratio_mode?: string | null;
   media_type: "image" | "video" | "gif";
   target_type: "product" | "category" | "hotpage" | "store" | "external_url";
   target_id?: string | null;
@@ -203,6 +206,9 @@ export const createBanner = createServerFn({ method: "POST" })
       subtitle: z.string().optional(),
       badge_text: z.string().optional(),
       media_url: z.string().url(),
+      media_mobile_url: z.string().optional().nullable(),
+      media_desktop_url: z.string().optional().nullable(),
+      aspect_ratio_mode: z.string().optional().nullable(),
       media_type: z.enum(["image", "video", "gif"]).default("image"),
       target_type: z
         .enum(["product", "category", "hotpage", "store", "external_url"])
@@ -272,6 +278,9 @@ export const updateBanner = createServerFn({ method: "POST" })
       subtitle: z.string().optional().nullable(),
       badge_text: z.string().optional().nullable(),
       media_url: z.string().url().optional(),
+      media_mobile_url: z.string().optional().nullable(),
+      media_desktop_url: z.string().optional().nullable(),
+      aspect_ratio_mode: z.string().optional().nullable(),
       media_type: z.enum(["image", "video", "gif"]).optional(),
       target_type: z
         .enum(["product", "category", "hotpage", "store", "external_url"])

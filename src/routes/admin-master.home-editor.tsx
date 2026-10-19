@@ -71,18 +71,24 @@ export const Route = createFileRoute("/admin-master/home-editor")({
 });
 
 const LAYOUT_VARIANTS: Array<{ id: HomeLayoutVariant; label: string; desc: string }> = [
+  { id: "slim_slider", label: "Slider Fino Widescreen (28:9)", desc: "Carrossel panorâmico elegante e sem cortes para Desktop e Mobile" },
   { id: "carousel", label: "Carrossel Deslizante (Banner)", desc: "Trilho com snap scroll horizontal e dots" },
+  { id: "cards_action_grid", label: "Grade de Cards / Botões (2x2)", desc: "Cards clicáveis estilo botão com ícone ou background personalizado" },
+  { id: "custom_buttons", label: "Botões de Ação Personalizados", desc: "Grade de atalhos rápidos com background e badges configuráveis" },
   { id: "horizontal_scroll", label: "Menu Deslizante (Noor / iFood)", desc: "Trilho contínuo sem quebra de linha" },
   { id: "bento_grid", label: "Bento Grid Modular (Tetris)", desc: "Composição em blocos com spans flexíveis" },
-  { id: "grid_2d", label: "Grade Bidimensional", desc: "Grade estática em colunas uniformes" },
+  { id: "grid_2d", label: "Grade Bidimensional (4 Colunas)", desc: "Grade estática em colunas uniformes" },
   { id: "native_dock", label: "Dock Flutuante Nativo", desc: "Barra de atalhos rápidos com física elástica" },
 ];
 
 const ASPECT_RATIOS: Array<{ id: HomeAspectRatio; label: string; ratioDesc: string }> = [
+  { id: "slim_desktop", label: "Desktop Fino Panorâmico (28:9)", ratioDesc: "Slider fino anti-corte para desktops e monitores ultrawide" },
   { id: "ifood", label: "iFood Panorâmico (21:9)", ratioDesc: "Ideal para banners horizontais mobile" },
   { id: "16:9", label: "Cinema / Vídeo (16:9)", ratioDesc: "Proporção universal widescreen" },
   { id: "4:3", label: "Clássico Fotográfico (4:3)", ratioDesc: "Proporção editorial para fotos" },
   { id: "1:1", label: "Quadrado Perfeito (1:1)", ratioDesc: "Botões de categorias e ícones iFood" },
+  { id: "4:5", label: "Vertical Feed (4:5)", ratioDesc: "Proporção vertical clássica de posts e cards" },
+  { id: "9:16", label: "Story / Reels Vertical (9:16)", ratioDesc: "Proporção de vídeo e momento" },
   { id: "auto", label: "Automático / Responsivo", ratioDesc: "Ajuste dinâmico conforme conteúdo" },
 ];
 
@@ -111,11 +117,17 @@ function AdminMasterHomeEditorPage() {
   const [itemTitle, setItemTitle] = useState("");
   const [itemSubtitle, setItemSubtitle] = useState("");
   const [itemImageUrl, setItemImageUrl] = useState("");
+  const [itemImageDesktopUrl, setItemImageDesktopUrl] = useState("");
+  const [itemImageMobileUrl, setItemImageMobileUrl] = useState("");
+  const [itemBgColor, setItemBgColor] = useState("");
+  const [itemIconName, setItemIconName] = useState("");
   const [itemTargetUrl, setItemTargetUrl] = useState("/");
   const [itemShowText, setItemShowText] = useState(false);
   const [itemBadgeText, setItemBadgeText] = useState("");
   const [itemSpanX, setItemSpanX] = useState(1);
   const [itemSpanY, setItemSpanY] = useState(1);
+  const [itemStartsAt, setItemStartsAt] = useState("");
+  const [itemEndsAt, setItemEndsAt] = useState("");
   const [itemIsActive, setItemIsActive] = useState(true);
 
   const [isSaving, setIsSaving] = useState(false);
@@ -204,11 +216,17 @@ function AdminMasterHomeEditorPage() {
     setItemTitle("");
     setItemSubtitle("");
     setItemImageUrl("");
+    setItemImageDesktopUrl("");
+    setItemImageMobileUrl("");
+    setItemBgColor("");
+    setItemIconName("");
     setItemTargetUrl("/");
     setItemShowText(false);
     setItemBadgeText("");
     setItemSpanX(1);
     setItemSpanY(1);
+    setItemStartsAt("");
+    setItemEndsAt("");
     setItemIsActive(true);
     setIsItemDialogOpen(true);
   };
@@ -219,11 +237,17 @@ function AdminMasterHomeEditorPage() {
     setItemTitle(item.title || "");
     setItemSubtitle(item.subtitle || "");
     setItemImageUrl(item.image_url);
+    setItemImageDesktopUrl(item.image_desktop_url || "");
+    setItemImageMobileUrl(item.image_mobile_url || "");
+    setItemBgColor(item.bg_color || "");
+    setItemIconName(item.icon_name || "");
     setItemTargetUrl(item.target_url);
     setItemShowText(item.show_text);
     setItemBadgeText(item.badge_text || "");
     setItemSpanX(item.grid_span_x || 1);
     setItemSpanY(item.grid_span_y || 1);
+    setItemStartsAt(item.starts_at ? item.starts_at.slice(0, 16) : "");
+    setItemEndsAt(item.ends_at ? item.ends_at.slice(0, 16) : "");
     setItemIsActive(item.is_active);
     setIsItemDialogOpen(true);
   };
@@ -246,6 +270,12 @@ function AdminMasterHomeEditorPage() {
           title: itemTitle.trim() || null,
           subtitle: itemSubtitle.trim() || null,
           image_url: itemImageUrl.trim(),
+          image_desktop_url: itemImageDesktopUrl.trim() || null,
+          image_mobile_url: itemImageMobileUrl.trim() || null,
+          bg_color: itemBgColor.trim() || null,
+          icon_name: itemIconName.trim() || null,
+          starts_at: itemStartsAt ? new Date(itemStartsAt).toISOString() : null,
+          ends_at: itemEndsAt ? new Date(itemEndsAt).toISOString() : null,
           target_url: itemTargetUrl.trim() || "/",
           show_text: itemShowText,
           grid_span_x: itemSpanX,
@@ -793,22 +823,108 @@ function AdminMasterHomeEditorPage() {
 
           <div className="space-y-4 py-2">
             {/* Upload de Mídia com MediaUploader Canônico */}
-            <div className="space-y-2">
-              <Label className="text-xs font-bold">Mídia / Imagem do Card</Label>
-              <MediaUploader
-                value={itemImageUrl ? [itemImageUrl] : []}
-                onChange={(urls) => {
-                  if (urls && urls.length > 0) {
-                    setItemImageUrl(urls[0]);
-                  }
-                }}
-                bucket="home-banners"
-                folder="home-cms"
-                accept="image"
-                maxFiles={1}
-                enableCrop={false}
-                showExternalUrlOption={true}
-              />
+            <div className="space-y-3 p-3 rounded-lg bg-muted/20 border border-border/50">
+              <div className="space-y-1">
+                <Label className="text-xs font-bold">Mídia Principal / Padrão (Fallback)</Label>
+                <MediaUploader
+                  value={itemImageUrl ? [itemImageUrl] : []}
+                  onChange={(urls) => {
+                    if (urls && urls.length > 0) {
+                      setItemImageUrl(urls[0]);
+                    }
+                  }}
+                  bucket="home-banners"
+                  folder="home-cms"
+                  accept="image"
+                  maxFiles={1}
+                  enableCrop={false}
+                  showExternalUrlOption={true}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-border/30">
+                <div className="space-y-1">
+                  <Label className="text-2xs font-semibold text-foreground/90">
+                    Mídia Desktop (Widescreen Fino 28:9)
+                  </Label>
+                  <MediaUploader
+                    value={itemImageDesktopUrl ? [itemImageDesktopUrl] : []}
+                    onChange={(urls) => setItemImageDesktopUrl(urls[0] || "")}
+                    bucket="home-banners"
+                    folder="home-cms/desktop"
+                    accept="image"
+                    maxFiles={1}
+                    enableCrop={false}
+                    showExternalUrlOption={true}
+                  />
+                  <p className="text-3xs text-muted-foreground">
+                    Exibido no desktop sem cortes ou perdas laterais.
+                  </p>
+                </div>
+
+                <div className="space-y-1">
+                  <Label className="text-2xs font-semibold text-foreground/90">
+                    Mídia Mobile (Nativa App 16:9 / 21:9)
+                  </Label>
+                  <MediaUploader
+                    value={itemImageMobileUrl ? [itemImageMobileUrl] : []}
+                    onChange={(urls) => setItemImageMobileUrl(urls[0] || "")}
+                    bucket="home-banners"
+                    folder="home-cms/mobile"
+                    accept="image"
+                    maxFiles={1}
+                    enableCrop={false}
+                    showExternalUrlOption={true}
+                  />
+                  <p className="text-3xs text-muted-foreground">
+                    Exibido no mobile no frame nativo do app.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Configurações de Botão / Card Customizado */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label className="text-xs font-bold">Cor de Fundo / Estilo (Opcional)</Label>
+                <Input
+                  value={itemBgColor}
+                  onChange={(e) => setItemBgColor(e.target.value)}
+                  placeholder="ex: #1e293b ou bg-primary/10"
+                  className="font-mono text-xs"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs font-bold">Nome do Ícone (Opcional)</Label>
+                <Input
+                  value={itemIconName}
+                  onChange={(e) => setItemIconName(e.target.value)}
+                  placeholder="ex: Storefront, Sparkle, Tag"
+                  className="font-mono text-xs"
+                />
+              </div>
+            </div>
+
+            {/* Agendamento Temporal do Item */}
+            <div className="grid grid-cols-2 gap-3 p-3 rounded-lg bg-muted/20 border border-border/40">
+              <div className="space-y-1">
+                <Label className="text-2xs font-semibold">Agendar Início</Label>
+                <Input
+                  type="datetime-local"
+                  value={itemStartsAt}
+                  onChange={(e) => setItemStartsAt(e.target.value)}
+                  className="text-xs h-9"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-2xs font-semibold">Expiração Silenciosa</Label>
+                <Input
+                  type="datetime-local"
+                  value={itemEndsAt}
+                  onChange={(e) => setItemEndsAt(e.target.value)}
+                  className="text-xs h-9"
+                />
+              </div>
             </div>
 
             {/* Seletor de Destino com DestinationPicker */}

@@ -22,10 +22,13 @@ export interface ImageCropperDialogProps {
 }
 
 const ASPECT_PRESETS: Array<{ label: string; value: number | undefined }> = [
-  { label: "4:3 (Vitrine)", value: 4 / 3 },
+  { label: "28:9 (Desktop Fino)", value: 28 / 9 },
+  { label: "21:9 (iFood/Banner)", value: 21 / 9 },
+  { label: "16:9 (Widescreen)", value: 16 / 9 },
+  { label: "4:5 (Post Threads)", value: 4 / 5 },
+  { label: "9:16 (Story/Reels)", value: 9 / 16 },
   { label: "1:1 (Quadrado)", value: 1 },
-  { label: "16:9 (Panorâmico)", value: 16 / 9 },
-  { label: "9:16 (Story)", value: 9 / 16 },
+  { label: "4:3 (Vitrine)", value: 4 / 3 },
   { label: "Livre", value: undefined },
 ];
 
@@ -131,12 +134,14 @@ export function ImageCropperDialog({
   const getAspectLabel = (val?: number, round?: boolean) => {
     if (round) return "1:1 Circular (Avatar / Perfil)";
     if (!val) return "Proporção Livre";
+    if (Math.abs(val - 28 / 9) < 0.05) return "28:9 (Desktop Fino)";
     if (Math.abs(val - 3) < 0.05) return "3:1 (Capa de Loja / Perfil)";
-    if (Math.abs(val - 21 / 9) < 0.05) return "21:9 (Banner Hero)";
+    if (Math.abs(val - 21 / 9) < 0.05) return "21:9 (Banner Hero / iFood)";
     if (Math.abs(val - 16 / 9) < 0.05) return "16:9 (Panorâmico)";
     if (Math.abs(val - 4 / 3) < 0.05) return "4:3 (Classificados / Vitrine)";
+    if (Math.abs(val - 4 / 5) < 0.05) return "4:5 (Post Threads / Retrato)";
     if (Math.abs(val - 1) < 0.05) return "1:1 (Produtos & Logos)";
-    if (Math.abs(val - 9 / 16) < 0.05) return "9:16 (Story / Guia)";
+    if (Math.abs(val - 9 / 16) < 0.05) return "9:16 (Story / Reels / Guia)";
     if (Math.abs(val - 4) < 0.05) return "4:1 (Faixa Panorâmica)";
     return `${val.toFixed(2)}:1`;
   };

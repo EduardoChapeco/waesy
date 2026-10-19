@@ -4,8 +4,25 @@ import { getServerClient, getAnonServerClient } from "@/lib/supabase";
 import { getUserSession } from "@/services/auth.functions";
 import { resolveCityNewsCover } from "@/lib/news/city-editorial-images";
 
-export type HomeLayoutVariant = "carousel" | "bento_grid" | "horizontal_scroll" | "grid_2d" | "native_dock";
-export type HomeAspectRatio = "ifood" | "16:9" | "4:3" | "1:1" | "auto";
+export type HomeLayoutVariant =
+  | "carousel"
+  | "bento_grid"
+  | "horizontal_scroll"
+  | "grid_2d"
+  | "native_dock"
+  | "cards_action_grid"
+  | "slim_slider"
+  | "custom_buttons";
+
+export type HomeAspectRatio =
+  | "slim_desktop"
+  | "ifood"
+  | "16:9"
+  | "4:3"
+  | "1:1"
+  | "4:5"
+  | "9:16"
+  | "auto";
 
 export interface HomeSectionItemDTO {
   id: string;
@@ -13,11 +30,19 @@ export interface HomeSectionItemDTO {
   title?: string | null;
   subtitle?: string | null;
   image_url: string;
+  image_mobile_url?: string | null;
+  image_desktop_url?: string | null;
   target_url: string;
   show_text: boolean;
   grid_span_x: number;
   grid_span_y: number;
   badge_text?: string | null;
+  bg_color?: string | null;
+  text_color?: string | null;
+  icon_name?: string | null;
+  button_shape?: string | null;
+  starts_at?: string | null;
+  ends_at?: string | null;
   is_active: boolean;
   sort_order: number;
   created_at?: string;
@@ -35,6 +60,10 @@ export interface HomePageSectionDTO {
   aspect_ratio: HomeAspectRatio;
   is_active: boolean;
   sort_order: number;
+  city_filter?: string | null;
+  starts_at?: string | null;
+  ends_at?: string | null;
+  auto_archive_at?: string | null;
   metadata?: Record<string, any>;
   created_at?: string;
   updated_at?: string;
@@ -444,8 +473,12 @@ export const listPublicHomePageSections = createServerFn({ method: "GET" })
         .eq("is_active", true)
         .order("sort_order", { ascending: true });
 
+      const now = new Date().toISOString();
       const itemsMap = new Map<string, HomeSectionItemDTO[]>();
       (dbItems || []).forEach((item: any) => {
+        if (item.ends_at && item.ends_at < now) return;
+        if (item.starts_at && item.starts_at > now) return;
+
         const list = itemsMap.get(item.section_id) || [];
         list.push({
           id: item.id,
@@ -453,11 +486,19 @@ export const listPublicHomePageSections = createServerFn({ method: "GET" })
           title: item.title,
           subtitle: item.subtitle,
           image_url: isHealthyImageUrl(item.image_url) ? String(item.image_url).trim() : (item.image_url || ""),
+          image_mobile_url: item.image_mobile_url || null,
+          image_desktop_url: item.image_desktop_url || null,
           target_url: item.target_url || "/",
           show_text: item.show_text ?? false,
           grid_span_x: item.grid_span_x || 1,
           grid_span_y: item.grid_span_y || 1,
           badge_text: item.badge_text,
+          bg_color: item.bg_color || null,
+          text_color: item.text_color || null,
+          icon_name: item.icon_name || null,
+          button_shape: item.button_shape || "squircle",
+          starts_at: item.starts_at || null,
+          ends_at: item.ends_at || null,
           is_active: item.is_active !== false,
           sort_order: item.sort_order ?? 0,
           created_at: item.created_at,
@@ -466,22 +507,33 @@ export const listPublicHomePageSections = createServerFn({ method: "GET" })
         itemsMap.set(item.section_id, list);
       });
 
-      return dbSections.map((sec) => ({
-        id: sec.id,
-        section_key: sec.section_key,
-        title: sec.title,
-        subtitle: sec.subtitle,
-        show_title: sec.show_title ?? false,
-        show_subtitle: sec.show_subtitle ?? false,
-        layout_variant: sec.layout_variant as HomeLayoutVariant,
-        aspect_ratio: sec.aspect_ratio as HomeAspectRatio,
-        is_active: sec.is_active !== false,
-        sort_order: sec.sort_order ?? 0,
-        metadata: sec.metadata || {},
-        created_at: sec.created_at,
-        updated_at: sec.updated_at,
-        items: itemsMap.get(sec.id) || [],
-      }));
+      return dbSections
+        .filter((sec) => {
+          if (sec.ends_at && sec.ends_at < now) return false;
+          if (sec.starts_at && sec.starts_at > now) return false;
+          if (sec.city_filter && city && sec.city_filter !== "all" && sec.city_filter !== city) return false;
+          return true;
+        })
+        .map((sec) => ({
+          id: sec.id,
+          section_key: sec.section_key,
+          title: sec.title,
+          subtitle: sec.subtitle,
+          show_title: sec.show_title ?? false,
+          show_subtitle: sec.show_subtitle ?? false,
+          layout_variant: sec.layout_variant as HomeLayoutVariant,
+          aspect_ratio: sec.aspect_ratio as HomeAspectRatio,
+          is_active: sec.is_active !== false,
+          sort_order: sec.sort_order ?? 0,
+          city_filter: sec.city_filter || null,
+          starts_at: sec.starts_at || null,
+          ends_at: sec.ends_at || null,
+          auto_archive_at: sec.auto_archive_at || null,
+          metadata: sec.metadata || {},
+          created_at: sec.created_at,
+          updated_at: sec.updated_at,
+          items: itemsMap.get(sec.id) || [],
+        }));
     } catch (err) {
       console.warn("[listPublicHomePageSections] Fallback ativado:", err);
       return CANONICAL_DEFAULT_HOME_SECTIONS;
@@ -520,11 +572,19 @@ export const listAdminHomePageSections = createServerFn({ method: "GET" })
           title: item.title,
           subtitle: item.subtitle,
           image_url: isHealthyImageUrl(item.image_url) ? String(item.image_url).trim() : (item.image_url || ""),
+          image_mobile_url: item.image_mobile_url || null,
+          image_desktop_url: item.image_desktop_url || null,
           target_url: item.target_url || "/",
           show_text: item.show_text ?? false,
           grid_span_x: item.grid_span_x || 1,
           grid_span_y: item.grid_span_y || 1,
           badge_text: item.badge_text,
+          bg_color: item.bg_color || null,
+          text_color: item.text_color || null,
+          icon_name: item.icon_name || null,
+          button_shape: item.button_shape || "squircle",
+          starts_at: item.starts_at || null,
+          ends_at: item.ends_at || null,
           is_active: item.is_active !== false,
           sort_order: item.sort_order ?? 0,
           created_at: item.created_at,
@@ -544,6 +604,10 @@ export const listAdminHomePageSections = createServerFn({ method: "GET" })
         aspect_ratio: sec.aspect_ratio as HomeAspectRatio,
         is_active: sec.is_active !== false,
         sort_order: sec.sort_order ?? 0,
+        city_filter: sec.city_filter || null,
+        starts_at: sec.starts_at || null,
+        ends_at: sec.ends_at || null,
+        auto_archive_at: sec.auto_archive_at || null,
         metadata: sec.metadata || {},
         created_at: sec.created_at,
         updated_at: sec.updated_at,
@@ -563,10 +627,36 @@ const UpsertSectionSchema = z.object({
   subtitle: z.string().optional().nullable(),
   show_title: z.boolean().default(false),
   show_subtitle: z.boolean().default(false),
-  layout_variant: z.enum(["carousel", "bento_grid", "horizontal_scroll", "grid_2d", "native_dock"]).default("carousel"),
-  aspect_ratio: z.enum(["ifood", "16:9", "4:3", "1:1", "auto"]).default("ifood"),
+  layout_variant: z
+    .enum([
+      "carousel",
+      "bento_grid",
+      "horizontal_scroll",
+      "grid_2d",
+      "native_dock",
+      "cards_action_grid",
+      "slim_slider",
+      "custom_buttons",
+    ])
+    .default("carousel"),
+  aspect_ratio: z
+    .enum([
+      "slim_desktop",
+      "ifood",
+      "16:9",
+      "4:3",
+      "1:1",
+      "4:5",
+      "9:16",
+      "auto",
+    ])
+    .default("ifood"),
   is_active: z.boolean().default(true),
   sort_order: z.number().int().default(0),
+  city_filter: z.string().optional().nullable(),
+  starts_at: z.string().optional().nullable(),
+  ends_at: z.string().optional().nullable(),
+  auto_archive_at: z.string().optional().nullable(),
   metadata: z.record(z.any()).optional().nullable(),
 });
 
@@ -590,6 +680,10 @@ export const upsertHomePageSection = createServerFn({ method: "POST" })
       aspect_ratio,
       is_active,
       sort_order,
+      city_filter,
+      starts_at,
+      ends_at,
+      auto_archive_at,
       metadata,
     } = payload;
 
@@ -603,6 +697,10 @@ export const upsertHomePageSection = createServerFn({ method: "POST" })
       aspect_ratio,
       is_active: Boolean(is_active),
       sort_order: Number(sort_order) || 0,
+      city_filter: city_filter || null,
+      starts_at: starts_at ? new Date(starts_at).toISOString() : null,
+      ends_at: ends_at ? new Date(ends_at).toISOString() : null,
+      auto_archive_at: auto_archive_at ? new Date(auto_archive_at).toISOString() : null,
       metadata: metadata || {},
       updated_at: new Date().toISOString(),
     };
@@ -647,11 +745,19 @@ const UpsertItemSchema = z.object({
   title: z.string().optional().nullable(),
   subtitle: z.string().optional().nullable(),
   image_url: z.string().min(1, "URL da imagem é obrigatória"),
+  image_mobile_url: z.string().optional().nullable(),
+  image_desktop_url: z.string().optional().nullable(),
   target_url: z.string().default("/"),
   show_text: z.boolean().default(false),
   grid_span_x: z.number().int().min(1).max(6).default(1),
   grid_span_y: z.number().int().min(1).max(4).default(1),
   badge_text: z.string().optional().nullable(),
+  bg_color: z.string().optional().nullable(),
+  text_color: z.string().optional().nullable(),
+  icon_name: z.string().optional().nullable(),
+  button_shape: z.string().optional().nullable(),
+  starts_at: z.string().optional().nullable(),
+  ends_at: z.string().optional().nullable(),
   is_active: z.boolean().default(true),
   sort_order: z.number().int().default(0),
 });
@@ -669,11 +775,19 @@ export const upsertHomeSectionItem = createServerFn({ method: "POST" })
       title,
       subtitle,
       image_url,
+      image_mobile_url,
+      image_desktop_url,
       target_url,
       show_text,
       grid_span_x,
       grid_span_y,
       badge_text,
+      bg_color,
+      text_color,
+      icon_name,
+      button_shape,
+      starts_at,
+      ends_at,
       is_active,
       sort_order,
     } = payload;
@@ -683,11 +797,19 @@ export const upsertHomeSectionItem = createServerFn({ method: "POST" })
       title: title || null,
       subtitle: subtitle || null,
       image_url,
+      image_mobile_url: image_mobile_url || null,
+      image_desktop_url: image_desktop_url || null,
       target_url: target_url || "/",
       show_text: Boolean(show_text),
       grid_span_x: Number(grid_span_x) || 1,
       grid_span_y: Number(grid_span_y) || 1,
       badge_text: badge_text || null,
+      bg_color: bg_color || null,
+      text_color: text_color || null,
+      icon_name: icon_name || null,
+      button_shape: button_shape || "squircle",
+      starts_at: starts_at ? new Date(starts_at).toISOString() : null,
+      ends_at: ends_at ? new Date(ends_at).toISOString() : null,
       is_active: Boolean(is_active),
       sort_order: Number(sort_order) || 0,
       updated_at: new Date().toISOString(),

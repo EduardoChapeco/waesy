@@ -28,19 +28,25 @@ export function MetamorphicBannerSlider({
   const total = activeItems.length;
   const useTwoColsDesktop = columnsDesktop === 2 && total >= 2;
 
-  // Mapeamento canônico de aspect ratio com zero classes arbitrárias entre colchetes
+  // Mapeamento canônico de aspect ratio com suporte a slider fino desktop (28:9) e anti-jank mobile
   const aspectClass = React.useMemo(() => {
     switch (aspectRatio) {
+      case "slim_desktop":
+        return "aspect-banner-cinema md:aspect-banner-slim md:max-h-72 lg:max-h-80";
       case "16:9":
-        return "aspect-banner-cinema";
+        return "aspect-banner-cinema md:aspect-banner-slim md:max-h-72 lg:max-h-80";
       case "ifood":
-        return "aspect-banner-ifood";
+        return "aspect-banner-ifood md:aspect-banner-slim md:max-h-72 lg:max-h-80";
       case "4:3":
         return "aspect-banner-classic";
       case "1:1":
         return "aspect-banner-square";
+      case "4:5":
+        return "aspect-post-vertical";
+      case "9:16":
+        return "aspect-post-moment";
       default:
-        return "aspect-banner-cinema";
+        return "aspect-banner-cinema md:aspect-banner-slim md:max-h-72 lg:max-h-80";
     }
   }, [aspectRatio]);
 
@@ -139,20 +145,21 @@ export function MetamorphicBannerSlider({
               className="block size-full relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               aria-label={item.title || "Banner promocional"}
             >
-              <img
-                src={item.image_url}
-                alt=""
-                loading={idx === 0 ? "eager" : "lazy"}
-                className="size-full object-cover object-center transition-transform duration-300 group-hover:scale-101 motion-reduce:transition-none rounded-lg"
-                onError={(e) => {
-                  const img = e.currentTarget as HTMLImageElement;
-                  const fallback =
-                    "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=1200&q=80";
-                  if (img.src !== fallback) {
-                    img.src = fallback;
-                  }
-                }}
-              />
+              <picture className="size-full block">
+                {item.image_mobile_url && (
+                  <source media="(max-width: 767px)" srcSet={item.image_mobile_url} />
+                )}
+                {item.image_desktop_url && (
+                  <source media="(min-width: 768px)" srcSet={item.image_desktop_url} />
+                )}
+                <img
+                  src={item.image_desktop_url || item.image_url}
+                  alt={item.title || ""}
+                  loading={idx === 0 ? "eager" : "lazy"}
+                  decoding="async"
+                  className="size-full object-cover object-center transition-transform duration-300 group-hover:scale-101 motion-reduce:transition-none rounded-lg"
+                />
+              </picture>
             </Link>
           </div>
         ))}

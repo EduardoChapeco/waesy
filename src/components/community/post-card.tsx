@@ -548,32 +548,52 @@ export function PostCard(props: PostCardProps) {
               </div>
             ))}
           </div>
-        ) : item.media_urls.length === 1 ? (
-          /* FORMATO: DESTAQUE PANORÂMICO / MÍDIA ÚNICA */
-          <div
-            className={`mb-3 overflow-hidden rounded-lg bg-muted border border-border/40 ${
-              item.post_type === "moment" ? "aspect-post-moment max-w-xs mx-auto" : "aspect-post-card"
-            } cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
-            onClick={() => setSelectedMediaLightboxIndex(0)}
-          >
-            {isVideoUrl(item.media_urls[0]) ? (
-              <video
-                src={item.media_urls[0]}
-                controls
-                playsInline
-                preload="metadata"
-                className="size-full object-cover"
-              />
-            ) : (
-              <img
-                src={item.media_urls[0]}
-                alt="Mídia da publicação"
-                className="size-full object-cover hover:scale-102 transition-transform duration-300"
-                loading="lazy"
-              />
-            )}
-          </div>
-        ) : null}
+        ) : item.media_urls.length === 1 ? (() => {
+          const isVideo = isVideoUrl(item.media_urls[0]);
+          const postRatio = item.aspect_ratio || item.metadata?.aspect_ratio;
+
+          let containerAspectClass = "aspect-post-vertical sm:aspect-post-card max-h-[580px]";
+          let objectFitClass = "object-cover";
+
+          if (item.post_type === "moment" || postRatio === "9:16") {
+            containerAspectClass = "aspect-post-moment max-w-xs mx-auto max-h-[580px]";
+            objectFitClass = isVideo ? "object-contain bg-black/95" : "object-cover";
+          } else if (postRatio === "1:1") {
+            containerAspectClass = "aspect-square max-h-[540px]";
+          } else if (postRatio === "4:5") {
+            containerAspectClass = "aspect-post-vertical max-h-[580px]";
+          } else if (postRatio === "16:9") {
+            containerAspectClass = "aspect-video max-h-[500px]";
+          } else if (isVideo) {
+            containerAspectClass = "aspect-post-vertical max-h-[580px]";
+            objectFitClass = "object-contain bg-black/95";
+          }
+
+          return (
+            /* FORMATO: MÍDIA ÚNICA ADAPTATIVA SEM CORTE */
+            <div
+              className={`relative mb-3 overflow-hidden rounded-lg bg-muted border border-border/40 ${containerAspectClass} cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
+              onClick={() => setSelectedMediaLightboxIndex(0)}
+            >
+              {isVideo ? (
+                <video
+                  src={item.media_urls[0]}
+                  controls
+                  playsInline
+                  preload="metadata"
+                  className={`size-full ${objectFitClass}`}
+                />
+              ) : (
+                <img
+                  src={item.media_urls[0]}
+                  alt="Mídia da publicação"
+                  className={`size-full ${objectFitClass} hover:scale-102 transition-transform duration-300`}
+                  loading="lazy"
+                />
+              )}
+            </div>
+          );
+        })() : null}
       </div>
 
       {/* ── 4. Cards de Referência / Integração ───────────────────────── */}
