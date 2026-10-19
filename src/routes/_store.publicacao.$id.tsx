@@ -266,26 +266,49 @@ function PostThreadPage() {
               </div>
             ))}
           </div>
-        ) : post.media_urls && post.media_urls.filter(Boolean).length === 1 ? (
-          <div className="rounded-lg overflow-hidden border border-border/60 bg-muted aspect-post-card">
-            {isVideoUrl(post.media_urls.filter(Boolean)[0]) ? (
-              <video
-                src={post.media_urls.filter(Boolean)[0]}
-                controls
-                playsInline
-                preload="metadata"
-                className="size-full object-cover bg-neutral-950"
-              />
-            ) : (
-              <img
-                src={post.media_urls.filter(Boolean)[0]}
-                alt="Mídia da publicação"
-                className="size-full object-cover"
-                loading="lazy"
-              />
-            )}
-          </div>
-        ) : null}
+        ) : post.media_urls && post.media_urls.filter(Boolean).length === 1 ? (() => {
+          const singleUrl = post.media_urls.filter(Boolean)[0];
+          const isVideo = isVideoUrl(singleUrl);
+          const postRatio = (post as any).aspect_ratio || post.metadata?.aspect_ratio;
+
+          let containerAspectClass = "aspect-post-vertical sm:aspect-post-card max-h-[640px]";
+          let objectFitClass = "object-cover";
+
+          if (post.post_type === "moment" || postRatio === "9:16") {
+            containerAspectClass = "aspect-post-moment max-w-sm mx-auto max-h-[640px]";
+            objectFitClass = isVideo ? "object-contain bg-black/95" : "object-cover";
+          } else if (postRatio === "1:1") {
+            containerAspectClass = "aspect-square max-h-[580px]";
+          } else if (postRatio === "4:5") {
+            containerAspectClass = "aspect-post-vertical max-h-[640px]";
+          } else if (postRatio === "16:9") {
+            containerAspectClass = "aspect-video max-h-[540px]";
+          } else if (isVideo) {
+            containerAspectClass = "aspect-post-vertical max-h-[640px]";
+            objectFitClass = "object-contain bg-black/95";
+          }
+
+          return (
+            <div className={`rounded-lg overflow-hidden border border-border/60 bg-muted ${containerAspectClass}`}>
+              {isVideo ? (
+                <video
+                  src={singleUrl}
+                  controls
+                  playsInline
+                  preload="metadata"
+                  className={`size-full ${objectFitClass}`}
+                />
+              ) : (
+                <img
+                  src={singleUrl}
+                  alt="Mídia da publicação"
+                  className={`size-full ${objectFitClass}`}
+                  loading="lazy"
+                />
+              )}
+            </div>
+          );
+        })() : null}
 
         {/* Card de Referência Embutido (Produto ou Evento) */}
         {post.reference_data && (

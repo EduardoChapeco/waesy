@@ -152,6 +152,12 @@ export function HomeDesktopWebApp({
             )}
             {sec.layout_variant === "bento_grid" ? (
               <BentoGridTetris items={activeSecItems} aspectRatio={sec.aspect_ratio} />
+            ) : sec.layout_variant === "slim_slider" ? (
+              <MetamorphicBannerSlider
+                items={activeSecItems}
+                aspectRatio="slim_desktop"
+                columnsDesktop={1}
+              />
             ) : sec.layout_variant === "carousel" ? (
               <MetamorphicBannerSlider
                 items={activeSecItems}
@@ -160,6 +166,50 @@ export function HomeDesktopWebApp({
               />
             ) : sec.layout_variant === "horizontal_scroll" ? (
               <NoorNativeCategoryDock items={activeSecItems} />
+            ) : sec.layout_variant === "cards_action_grid" || sec.layout_variant === "custom_buttons" ? (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {activeSecItems.map((it) => (
+                  <Link
+                    key={it.id}
+                    to={it.target_url as any}
+                    className="group flex items-center gap-3 p-4 rounded-lg border border-border/60 bg-card hover:border-foreground/30 hover:bg-muted/30 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    aria-label={it.title || "Botão de Ação"}
+                  >
+                    <div className="size-12 rounded-lg bg-primary/10 overflow-hidden shrink-0 flex items-center justify-center border border-border/40">
+                      {it.image_url ? (
+                        <picture className="size-full block">
+                          {it.image_desktop_url && (
+                            <source media="(min-width: 768px)" srcSet={it.image_desktop_url} />
+                          )}
+                          <img
+                            src={it.image_desktop_url || it.image_url}
+                            alt=""
+                            className="size-full object-cover"
+                            loading="lazy"
+                          />
+                        </picture>
+                      ) : (
+                        <span className="text-xs font-bold text-primary font-mono">
+                          {it.title?.charAt(0) || "W"}
+                        </span>
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-bold text-foreground truncate group-hover:text-primary transition-colors">
+                        {it.title}
+                      </p>
+                      {it.subtitle && (
+                        <p className="text-xs text-muted-foreground truncate">{it.subtitle}</p>
+                      )}
+                    </div>
+                    {it.badge_text && (
+                      <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-primary/10 text-primary uppercase shrink-0">
+                        {it.badge_text}
+                      </span>
+                    )}
+                  </Link>
+                ))}
+              </div>
             ) : (
               <div className={`grid ${desktopColsClass} gap-4`}>
                 {activeSecItems.map((it) => (
@@ -170,20 +220,21 @@ export function HomeDesktopWebApp({
                     aria-label={it.title || "Destaque"}
                   >
                     <div className="relative aspect-banner-cinema w-full overflow-hidden rounded-lg bg-muted/40 border border-border/50 group-hover:border-foreground/30 transition-colors">
-                      <img
-                        src={it.image_url}
-                        alt=""
-                        loading="lazy"
-                        className="size-full object-cover group-hover:scale-105 transition-transform duration-300 motion-reduce:transition-none"
-                        onError={(e) => {
-                          const img = e.currentTarget as HTMLImageElement;
-                          const fallback =
-                            "https://images.unsplash.com/photo-1498049794561-7780e7231661?auto=format&fit=crop&w=600&q=80";
-                          if (img.src !== fallback) {
-                            img.src = fallback;
-                          }
-                        }}
-                      />
+                      <picture className="size-full block">
+                        {it.image_desktop_url && (
+                          <source media="(min-width: 768px)" srcSet={it.image_desktop_url} />
+                        )}
+                        <img
+                          src={it.image_desktop_url || it.image_url}
+                          alt=""
+                          loading="lazy"
+                          decoding="async"
+                          className="size-full object-cover group-hover:scale-105 transition-transform duration-300 motion-reduce:transition-none"
+                          onError={(e) => {
+                            (e.currentTarget as HTMLElement).style.display = "none";
+                          }}
+                        />
+                      </picture>
                     </div>
                     {it.show_text && it.title && (
                       <span className="w-full text-center text-xs font-semibold text-foreground line-clamp-1 px-1 tracking-tight">

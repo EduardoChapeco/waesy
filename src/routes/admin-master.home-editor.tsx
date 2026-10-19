@@ -448,22 +448,33 @@ function AdminMasterHomeEditorPage() {
                     {sec.show_title && sec.title && (
                       <h3 className="text-sm font-bold text-foreground">{sec.title}</h3>
                     )}
-                    {sec.layout_variant === "carousel" && (
-                      <MetamorphicBannerSlider items={sec.items} aspectRatio={sec.aspect_ratio} />
+                    {(sec.layout_variant === "carousel" || sec.layout_variant === "slim_slider") && (
+                      <MetamorphicBannerSlider
+                        items={sec.items}
+                        aspectRatio={sec.layout_variant === "slim_slider" ? "slim_desktop" : sec.aspect_ratio}
+                      />
                     )}
                     {sec.layout_variant === "horizontal_scroll" && (
                       <NoorNativeCategoryDock items={sec.items} />
                     )}
                     {sec.layout_variant === "bento_grid" && (
-                      <BentoGridTetris items={sec.items} />
+                      <BentoGridTetris items={sec.items} aspectRatio={sec.aspect_ratio} />
                     )}
-                    {sec.layout_variant === "grid_2d" && (
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    {(sec.layout_variant === "grid_2d" ||
+                      sec.layout_variant === "cards_action_grid" ||
+                      sec.layout_variant === "custom_buttons") && (
+                      <div
+                        className={
+                          sec.layout_variant === "cards_action_grid"
+                            ? "grid grid-cols-2 gap-3"
+                            : "grid grid-cols-2 sm:grid-cols-4 gap-3"
+                        }
+                      >
                         {sec.items.map((it) => (
                           <IFoodSquareCategoryButton
                             key={it.id}
                             title={it.title}
-                            imageUrl={it.image_url}
+                            imageUrl={it.image_desktop_url || it.image_url}
                             targetUrl={it.target_url}
                             showText={it.show_text}
                             badgeText={it.badge_text}

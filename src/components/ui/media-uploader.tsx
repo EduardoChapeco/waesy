@@ -70,6 +70,10 @@ export const MediaUploader: React.FC<MediaUploaderProps> = ({
  const computedAspect =
    aspect !== undefined
      ? aspect
+      : folder?.includes("desktop")
+      ? 28 / 9
+      : folder?.includes("mobile")
+      ? 16 / 9
      : bucket === "banners" || folder === "destaques" || folder === "banners"
      ? 21 / 9
      : folder === "cover" || folder === "capa" || folder === "covers"
